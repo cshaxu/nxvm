@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,19 +10,19 @@ typedef struct xchg_machine {
     core_machine *machine;
 } xchg_machine;
 
-static C_VOID xchg_reset(C_VOID *opaque)
+static void xchg_reset(void *opaque)
 {
     xchg_machine *state = (xchg_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider xchg_provider = {
     xchg_reset, LIB_NULL
 };
 
-static C_INT xchg_prepare(core_machine_cpu_profile profile, xchg_machine *state)
+static lib_i32 xchg_prepare(core_machine_cpu_profile profile, xchg_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -34,17 +35,17 @@ return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &xchg_provider, state, &state->machine);
 }
 
-static C_INT xchg_run(xchg_machine *state, const lib_u8 *code, lib_u8 bytes,
-    t_cpu *after, core_machine_cpu_diagnostic *diagnostic, type_status *status)
+static lib_i32 xchg_run(xchg_machine *state, const lib_u8 *code, lib_u8 bytes,
+    t_cpu *after, core_machine_cpu_diagnostic *diagnostic, lib_status *status)
 {
     core_machine_run_result result;
 
-    if (core_machine_memory_write(state->machine, 0u, code, bytes) != TYPE_STATUS_OK)
+    if (core_machine_memory_write(state->machine, 0u, code, bytes) != LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine,
         (core_machine_run_budget){ 1u, 0u }, &result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == TYPE_STATUS_OK;
+    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == LIB_STATUS_OK;
 }
 
 typedef struct xchg_vector {
@@ -58,7 +59,7 @@ typedef struct xchg_vector {
     lib_u32 ecx_after;
 } xchg_vector;
 
-static C_INT xchg_test_real(C_VOID)
+static lib_i32 xchg_test_real(void)
 {
     static const lib_u8 r8[] = { 0x86u, 0xc1u };
     static const lib_u8 m8[] = { 0x86u, 0x06u, 0x00u, 0x10u };
@@ -81,9 +82,9 @@ static C_INT xchg_test_real(C_VOID)
         xchg_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         lib_u32 memory_after = 0u;
-        C_INT failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(state.machine, 0u);
@@ -94,18 +95,18 @@ static C_INT xchg_test_real(C_VOID)
             if (vectors[form].memory_width != 0u)
                 failed |= core_machine_memory_write(state.machine,
                     vectors[form].memory_address, &vectors[form].memory_before,
-                    vectors[form].memory_width) != TYPE_STATUS_OK;
+                    vectors[form].memory_width) != LIB_STATUS_OK;
             failed |= !xchg_run(&state, vectors[form].code, vectors[form].bytes,
                     &after, &diagnostic, &status) ||
-                status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != vectors[form].bytes ||
                 after.data.eax != vectors[form].eax_after ||
                 after.data.ecx != vectors[form].ecx_after ||
                 after.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF);
             if (vectors[form].memory_width != 0u)
                 failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                    vectors[form].memory_address, (type_virtual_address)&memory_after,
-                    vectors[form].memory_width) != TYPE_STATUS_OK ||
+                    vectors[form].memory_address, (lib_uptr)&memory_after,
+                    vectors[form].memory_width) != LIB_STATUS_OK ||
                     memory_after != vectors[form].memory_after;
         }
         core_machine_destroy(state.machine);
@@ -115,7 +116,7 @@ static C_INT xchg_test_real(C_VOID)
     return 1;
 }
 
-static C_INT xchg_test_profiles_and_lock(C_VOID)
+static lib_i32 xchg_test_profiles_and_lock(void)
 {
     static const core_machine_cpu_profile profiles[] = { CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286 };
@@ -130,8 +131,8 @@ static C_INT xchg_test_profiles_and_lock(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
-        C_INT failed = !xchg_prepare(profiles[profile], &state);
+        lib_status status;
+        lib_i32 failed = !xchg_prepare(profiles[profile], &state);
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(state.machine,0u);
             state.machine->executor_cpu.data.eax=0x11223344u;
@@ -140,7 +141,7 @@ static C_INT xchg_test_profiles_and_lock(C_VOID)
                 state.machine);
             before=test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !xchg_run(&state,prefixes[form],form==2u?4u:3u,&after,&diagnostic,&status) ||
-                status!=TYPE_STATUS_FAULT || !diagnostic.first_fault.valid || !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD) ||
+                status!=LIB_STATUS_INTERNAL_ERROR || !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD) ||
                 after.data.eip!=before.data.eip || after.data.eax!=before.data.eax || after.data.eflags!=before.data.eflags;
         }
         core_machine_destroy(state.machine);
@@ -151,7 +152,7 @@ static C_INT xchg_test_profiles_and_lock(C_VOID)
     return 1;
 }
 
-static C_INT xchg_test_legacy_default16(C_VOID)
+static lib_i32 xchg_test_legacy_default16(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
@@ -167,9 +168,9 @@ static C_INT xchg_test_legacy_default16(C_VOID)
         xchg_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         lib_u16 memory = 0x7788u;
-        C_INT failed = !xchg_prepare(profiles[profile], &state);
+        lib_i32 failed = !xchg_prepare(profiles[profile], &state);
 
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(
@@ -180,7 +181,7 @@ static C_INT xchg_test_legacy_default16(C_VOID)
             state.machine->executor_cpu.data.eflags =
                 VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
             failed |= !xchg_run(&state, register_code, sizeof(register_code),
-                    &after, &diagnostic, &status) || status != TYPE_STATUS_OK ||
+                    &after, &diagnostic, &status) || status != LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || after.data.eip != 2u ||
                 after.data.eax != 0xaabb7788u ||
                 after.data.ecx != 0x55663344u ||
@@ -190,9 +191,9 @@ static C_INT xchg_test_legacy_default16(C_VOID)
             state.machine->executor_cpu.data.eax = 0xaabb3344u;
             state.machine->executor_cpu.data.ecx = 0x55667788u;
             failed |= core_machine_memory_write(state.machine, 0x1000u, &memory,
-                    sizeof(memory)) != TYPE_STATUS_OK ||
+                    sizeof(memory)) != LIB_STATUS_OK ||
                 !xchg_run(&state, memory_code, sizeof(memory_code), &after,
-                    &diagnostic, &status) || status != TYPE_STATUS_OK ||
+                    &diagnostic, &status) || status != LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || after.data.eip != 4u ||
                 after.data.eax != 0xaabb7788u ||
                 after.data.ecx != 0x55667788u ||
@@ -206,7 +207,7 @@ static C_INT xchg_test_legacy_default16(C_VOID)
     return 1;
 }
 
-static C_INT xchg_prepare_protected(xchg_machine *state)
+static lib_i32 xchg_prepare_protected(xchg_machine *state)
 {
     static const lib_u8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
     static const lib_u8 gdt[] = {
@@ -222,15 +223,15 @@ static C_INT xchg_prepare_protected(xchg_machine *state)
     core_machine_run_result result;
 
     return xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
-        core_machine_memory_write(state->machine,0x0100u,pointer,sizeof(pointer))==TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine,0x0300u,gdt,sizeof(gdt))==TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine,0u,bootstrap,sizeof(bootstrap))==TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine,0x2000u,hlt,sizeof(hlt))==TYPE_STATUS_OK &&
-        core_machine_run(state->machine,(core_machine_run_budget){96u,0u},&result)==TYPE_STATUS_OK &&
+        core_machine_memory_write(state->machine,0x0100u,pointer,sizeof(pointer))==LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine,0x0300u,gdt,sizeof(gdt))==LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine,0u,bootstrap,sizeof(bootstrap))==LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine,0x2000u,hlt,sizeof(hlt))==LIB_STATUS_OK &&
+        core_machine_run(state->machine,(core_machine_run_budget){96u,0u},&result)==LIB_STATUS_OK &&
         result.reason==CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT xchg_test_write_fault_atomicity(C_VOID)
+static lib_i32 xchg_test_write_fault_atomicity(void)
 {
     static const lib_u8 code[] = { 0x87u,0x06u,0x00u,0x10u };
     xchg_machine state;
@@ -240,7 +241,7 @@ static C_INT xchg_test_write_fault_atomicity(C_VOID)
     t_cpu after;
     lib_u16 memory_before = 0x7788u;
     lib_u16 memory_after = 0u;
-    C_INT failed = !xchg_prepare_protected(&state);
+    lib_i32 failed = !xchg_prepare_protected(&state);
 
     if (!failed)
     {
@@ -248,15 +249,15 @@ static C_INT xchg_test_write_fault_atomicity(C_VOID)
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
         state.machine->executor_cpu.data.ds.seg.data.writable = LIB_FALSE;
         failed |= core_machine_memory_write(state.machine,0x1000u,&memory_before,
-            sizeof(memory_before)) != TYPE_STATUS_OK ||
-            core_machine_memory_write(state.machine,0x2000u,code,sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(memory_before)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine,0x2000u,code,sizeof(code)) != LIB_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine,0u);
         before=test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result) != TYPE_STATUS_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine,&diagnostic) != TYPE_STATUS_OK;
+        failed |= core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result) != LIB_STATUS_INTERNAL_ERROR ||
+            core_machine_get_cpu_diagnostic(state.machine,&diagnostic) != LIB_STATUS_OK;
         after=test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,0x1000u,
-            (type_virtual_address)&memory_after,sizeof(memory_after)) != TYPE_STATUS_OK;
+            (lib_uptr)&memory_after,sizeof(memory_after)) != LIB_STATUS_OK;
         failed |= after.data.eax != before.data.eax || after.data.eflags != before.data.eflags ||
             after.data.eip != before.data.eip || memory_after != memory_before;
     }
@@ -264,7 +265,7 @@ static C_INT xchg_test_write_fault_atomicity(C_VOID)
     return !failed;
 }
 
-static C_INT xchg_test_read_fault_atomicity(C_VOID)
+static lib_i32 xchg_test_read_fault_atomicity(void)
 {
     static const lib_u8 codes[][5] = { {0x86u,0x06u,0x02u,0x10u,0u},
         {0x66u,0x87u,0x06u,0x02u,0x10u} };
@@ -274,26 +275,26 @@ static C_INT xchg_test_read_fault_atomicity(C_VOID)
         xchg_machine state;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         t_cpu before;
         t_cpu after;
         lib_u32 memory_before = 0x11223344u;
         lib_u32 memory_after = 0u;
-        C_INT failed = !xchg_prepare_protected(&state);
+        lib_i32 failed = !xchg_prepare_protected(&state);
         if (!failed)
         {
             state.machine->executor_cpu.data.ds.limit = 0x1001u;
             state.machine->executor_cpu.data.eax = 0xaabb3344u;
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
-            failed |= core_machine_memory_write(state.machine,0x1002u,&memory_before,4u)!=TYPE_STATUS_OK ||
-                core_machine_memory_write(state.machine,0x2000u,codes[form],form?5u:4u)!=TYPE_STATUS_OK;
+            failed |= core_machine_memory_write(state.machine,0x1002u,&memory_before,4u)!=LIB_STATUS_OK ||
+                core_machine_memory_write(state.machine,0x2000u,codes[form],form?5u:4u)!=LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine,0u);
             before=test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= (status=core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result))!=TYPE_STATUS_FAULT ||
-                core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=TYPE_STATUS_OK;
+            failed |= (status=core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result))!=LIB_STATUS_INTERNAL_ERROR ||
+                core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK;
             after=test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,0x1002u,
-                (type_virtual_address)&memory_after,4u)!=TYPE_STATUS_OK || after.data.eax!=before.data.eax ||
+                (lib_uptr)&memory_after,4u)!=LIB_STATUS_OK || after.data.eax!=before.data.eax ||
                 after.data.eip!=before.data.eip || after.data.eflags!=before.data.eflags || memory_after!=memory_before;
         }
         core_machine_destroy(state.machine);
@@ -303,7 +304,7 @@ static C_INT xchg_test_read_fault_atomicity(C_VOID)
     return 1;
 }
 
-static C_INT xchg_test_lock(C_VOID)
+static lib_i32 xchg_test_lock(void)
 {
     static const lib_u8 plain_code[] = {0x87u,0x06u,0x00u,0x10u};
     static const lib_u8 memory_code[] = {0xf0u,0x87u,0x06u,0x00u,0x10u};
@@ -312,34 +313,34 @@ static C_INT xchg_test_lock(C_VOID)
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
-    type_status status;
+    lib_status status;
     lib_u16 memory = 0x7788u;
-    C_INT failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+    lib_i32 failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
     if (!failed)
     {
         failed |= !test_core_machine_fixture_prepare_real_mode_execution(state.machine,0u);
         state.machine->executor_cpu.data.eax = 0xaabb3344u;
-        failed |= core_machine_memory_write(state.machine,0x1000u,&memory,2u)!=TYPE_STATUS_OK ||
+        failed |= core_machine_memory_write(state.machine,0x1000u,&memory,2u)!=LIB_STATUS_OK ||
             !xchg_run(&state,plain_code,sizeof(plain_code),&after,&diagnostic,&status);
         state.machine->executor_cpu.data.eip = 0u;
         state.machine->executor_cpu.data.eax = 0xaabb3344u;
         memory = 0x7788u;
-        failed |= core_machine_memory_write(state.machine,0x1000u,&memory,2u)!=TYPE_STATUS_OK ||
-            !xchg_run(&state,memory_code,sizeof(memory_code),&after,&diagnostic,&status) || status!=TYPE_STATUS_OK ||
+        failed |= core_machine_memory_write(state.machine,0x1000u,&memory,2u)!=LIB_STATUS_OK ||
+            !xchg_run(&state,memory_code,sizeof(memory_code),&after,&diagnostic,&status) || status!=LIB_STATUS_OK ||
             after.data.eax!=0xaabb7788u;
         state.machine->executor_cpu.data.eip = 0u;
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         before=test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !xchg_run(&state,register_code,sizeof(register_code),&after,&diagnostic,&status) ||
-            status!=TYPE_STATUS_FAULT || !diagnostic.first_fault.valid || !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD) ||
+            status!=LIB_STATUS_INTERNAL_ERROR || !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD) ||
             after.data.eip!=before.data.eip || after.data.eax!=before.data.eax || after.data.eflags!=before.data.eflags;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT xchg_test_irq_no_shadow(C_VOID)
+static lib_i32 xchg_test_irq_no_shadow(void)
 {
     static const lib_u8 code[] = { 0x87u, 0x06u, 0x00u, 0x10u, 0x90u };
     static const lib_u8 hlt = 0xf4u;
@@ -351,15 +352,15 @@ static C_INT xchg_test_irq_no_shadow(C_VOID)
     lib_u16 segment = 0u;
     lib_u16 frame = 0u;
     lib_u16 memory = 0x7788u;
-    C_INT failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+    lib_i32 failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
     if (!failed)
     {
         failed |= !test_core_machine_fixture_prepare_real_mode_execution(state.machine,0u) ||
-            core_machine_memory_write(state.machine,0x1000u,&memory,2u)!=TYPE_STATUS_OK ||
-            core_machine_memory_write(state.machine,0u,code,sizeof(code))!=TYPE_STATUS_OK ||
-            core_machine_memory_write(state.machine,0x80u,&offset,2u)!=TYPE_STATUS_OK ||
-            core_machine_memory_write(state.machine,0x82u,&segment,2u)!=TYPE_STATUS_OK ||
-            core_machine_memory_write(state.machine,0x100u,&hlt,1u)!=TYPE_STATUS_OK;
+            core_machine_memory_write(state.machine,0x1000u,&memory,2u)!=LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine,0u,code,sizeof(code))!=LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine,0x80u,&offset,2u)!=LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine,0x82u,&segment,2u)!=LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine,0x100u,&hlt,1u)!=LIB_STATUS_OK;
         state.machine->executor_cpu.data.eax = 0xaabb3344u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
         lib_memory_set(&source,0,sizeof(source));
@@ -367,12 +368,12 @@ static C_INT xchg_test_irq_no_shadow(C_VOID)
         core_machine_pic_irq_source_bind(&source,&state.machine->shared_pic_master,&state.machine->shared_pic_slave,0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
-        failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=TYPE_STATUS_OK ||
+        failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=LIB_STATUS_OK ||
             result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after=test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(lib_u16)after.data.esp,
-            (type_virtual_address)&frame,2u)!=TYPE_STATUS_OK || after.data.eip!=0x101u || frame!=4u ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,VPIC_ISR_IRQ(0u));
+            (lib_uptr)&frame,2u)!=LIB_STATUS_OK || after.data.eip!=0x101u || frame!=4u ||
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,VPIC_ISR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -393,7 +394,7 @@ static lib_u32 *xchg_acc_target(t_cpu *cpu, lib_u8 opcode)
     }
 }
 
-static C_INT xchg_acc_state_equal(const t_cpu *before, const t_cpu *after)
+static lib_i32 xchg_acc_state_equal(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -407,7 +408,7 @@ static C_INT xchg_acc_state_equal(const t_cpu *before, const t_cpu *after)
         before->data.eip == after->data.eip;
 }
 
-static C_INT xchg_acc_gpr_flags_equal(const t_cpu *before, const t_cpu *after)
+static lib_i32 xchg_acc_gpr_flags_equal(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -420,7 +421,7 @@ static C_INT xchg_acc_gpr_flags_equal(const t_cpu *before, const t_cpu *after)
         before->data.eflags == after->data.eflags;
 }
 
-static C_INT xchg_acc_nonparticipants_equal(const t_cpu *before,
+static lib_i32 xchg_acc_nonparticipants_equal(const t_cpu *before,
     const t_cpu *after, lib_u8 opcode)
 {
     if (opcode == 0x90u)
@@ -436,7 +437,7 @@ static C_INT xchg_acc_nonparticipants_equal(const t_cpu *before,
         (opcode == 0x97u || before->data.edi == after->data.edi);
 }
 
-static C_INT xchg_test_accumulator(C_VOID)
+static lib_i32 xchg_test_accumulator(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
@@ -456,16 +457,16 @@ static C_INT xchg_test_accumulator(C_VOID)
             t_cpu before;
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
-            type_status status;
+            lib_status status;
             lib_u8 code[] = { opcode };
             lib_u32 *target;
-            C_INT failed;
+            lib_i32 failed;
 
             lib_memory_set(&state, 0, sizeof(state));
             lib_memory_set(&before, 0, sizeof(before));
             lib_memory_set(&after, 0, sizeof(after));
             lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-            status = TYPE_STATUS_INVALID_ARGUMENT;
+            status = LIB_STATUS_INVALID_ARGUMENT;
             failed = !xchg_prepare(profiles[profile], &state);
 
             if (!failed)
@@ -489,7 +490,7 @@ static C_INT xchg_test_accumulator(C_VOID)
                     state.machine);
                 failed |= !xchg_run(&state, code, sizeof(code), &after,
                     &diagnostic, &status) ||
-                    status != TYPE_STATUS_OK ||
+                    status != LIB_STATUS_OK ||
                     diagnostic.first_fault.valid ||
                     after.data.eip != 1u ||
                     after.data.eflags != before.data.eflags;
@@ -504,7 +505,7 @@ static C_INT xchg_test_accumulator(C_VOID)
             }
             if (failed)
             {
-                STD_PRINTF(
+                printf(
                     "XCHG acc default profile=%u opcode=%02x status=%d "
                     "fault=%08x before=%08x/%08x/%08x/%08x "
                     "after=%08x/%08x/%08x/%08x\n",
@@ -529,7 +530,7 @@ static C_INT xchg_test_accumulator(C_VOID)
     return 1;
 }
 
-static C_INT xchg_test_accumulator_reject(C_VOID)
+static lib_i32 xchg_test_accumulator_reject(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
@@ -548,15 +549,15 @@ static C_INT xchg_test_accumulator_reject(C_VOID)
             t_cpu before;
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
-            type_status status;
+            lib_status status;
             lib_u8 code[] = { 0x66u, opcode };
-            C_INT failed;
+            lib_i32 failed;
 
             lib_memory_set(&state, 0, sizeof(state));
             lib_memory_set(&before, 0, sizeof(before));
             lib_memory_set(&after, 0, sizeof(after));
             lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-            status = TYPE_STATUS_INVALID_ARGUMENT;
+            status = LIB_STATUS_INVALID_ARGUMENT;
             failed = !xchg_prepare(profiles[profile], &state);
             if (!failed)
             {
@@ -571,16 +572,16 @@ static C_INT xchg_test_accumulator_reject(C_VOID)
                     state.machine);
                 failed |= !xchg_run(&state, code, sizeof(code), &after,
                     &diagnostic, &status) ||
-                    status != TYPE_STATUS_FAULT ||
+                    status != LIB_STATUS_INTERNAL_ERROR ||
                     !diagnostic.first_fault.valid ||
-                    !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                    !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                         VCPUINS_EXCEPT_UD) ||
                     !xchg_acc_state_equal(&before, &after);
             }
             core_machine_destroy(state.machine);
             if (failed)
             {
-                STD_PRINTF(
+                printf(
                     "XCHG acc 66 profile=%u opcode=%02x status=%d "
                     "fault=%08x before=%08x/%08x/%08x after=%08x/%08x/%08x\n",
                     profile,
@@ -600,7 +601,7 @@ static C_INT xchg_test_accumulator_reject(C_VOID)
     return 1;
 }
 
-static C_INT xchg_test_accumulator_lock(C_VOID)
+static lib_i32 xchg_test_accumulator_lock(void)
 {
     lib_u8 opcode;
 
@@ -610,15 +611,15 @@ static C_INT xchg_test_accumulator_lock(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         lib_u8 code[] = { 0xf0u, opcode };
-        C_INT failed;
+        lib_i32 failed;
 
         lib_memory_set(&state, 0, sizeof(state));
         lib_memory_set(&before, 0, sizeof(before));
         lib_memory_set(&after, 0, sizeof(after));
         lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-        status = TYPE_STATUS_INVALID_ARGUMENT;
+        status = LIB_STATUS_INVALID_ARGUMENT;
         failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (!failed)
         {
@@ -632,16 +633,16 @@ static C_INT xchg_test_accumulator_lock(C_VOID)
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !xchg_run(&state, code, sizeof(code), &after,
                 &diagnostic, &status) ||
-                status != TYPE_STATUS_FAULT ||
+                status != LIB_STATUS_INTERNAL_ERROR ||
                 !diagnostic.first_fault.valid ||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD) ||
                 !xchg_acc_state_equal(&before, &after);
         }
         core_machine_destroy(state.machine);
         if (failed)
         {
-            STD_PRINTF(
+            printf(
                 "XCHG acc lock opcode=%02x status=%d fault=%08x "
                 "before=%08x/%08x/%08x after=%08x/%08x/%08x\n",
                 opcode,
@@ -659,7 +660,7 @@ static C_INT xchg_test_accumulator_lock(C_VOID)
     return 1;
 }
 
-static C_INT xchg_test_accumulator_irq(C_VOID)
+static lib_i32 xchg_test_accumulator_irq(void)
 {
     static const lib_u8 code[] = { 0x91u, 0x90u };
     static const lib_u8 hlt = 0xf4u;
@@ -670,7 +671,7 @@ static C_INT xchg_test_accumulator_irq(C_VOID)
     lib_u16 offset = 0x0100u;
     lib_u16 segment = 0u;
     lib_u16 frame = 0u;
-    C_INT failed;
+    lib_i32 failed;
 
     lib_memory_set(&state, 0, sizeof(state));
     lib_memory_set(&source, 0, sizeof(source));
@@ -683,13 +684,13 @@ static C_INT xchg_test_accumulator_irq(C_VOID)
         failed |= !test_core_machine_fixture_prepare_real_mode_execution(
             state.machine, 0u) ||
             core_machine_memory_write(state.machine, 0u, code,
-                sizeof(code)) != TYPE_STATUS_OK ||
+                sizeof(code)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x80u, &offset,
-                2u) != TYPE_STATUS_OK ||
+                2u) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x82u, &segment,
-                2u) != TYPE_STATUS_OK ||
+                2u) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x100u, &hlt,
-                1u) != TYPE_STATUS_OK;
+                1u) != LIB_STATUS_OK;
         state.machine->executor_cpu.data.eax = 0xaabb3344u;
         state.machine->executor_cpu.data.ecx = 0x55667788u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
@@ -700,22 +701,22 @@ static C_INT xchg_test_accumulator_irq(C_VOID)
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
             after.data.ss.base + (lib_u16)after.data.esp,
-            (type_virtual_address)&frame, 2u) != TYPE_STATUS_OK ||
+            (lib_uptr)&frame, 2u) != LIB_STATUS_OK ||
             after.data.eip != 0x101u ||
             frame != 1u ||
             after.data.eax != 0xaabb7788u ||
             after.data.ecx != 0x55663344u ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
                 VPIC_ISR_IRQ(0u));
     }
     if (failed)
     {
-        STD_PRINTF(
+        printf(
             "XCHG acc irq reason=%d eip=%08x frame=%04x eax=%08x "
             "ecx=%08x irr=%02x isr=%02x\n",
             result.reason,
@@ -730,7 +731,7 @@ static C_INT xchg_test_accumulator_irq(C_VOID)
     return !failed;
 }
 
-static C_INT xchg_test_accumulator_386_boundaries(C_VOID)
+static lib_i32 xchg_test_accumulator_386_boundaries(void)
 {
     lib_u8 opcode;
 
@@ -740,16 +741,16 @@ static C_INT xchg_test_accumulator_386_boundaries(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         lib_u8 code[] = { 0x66u, opcode };
         lib_u32 *target;
-        C_INT failed;
+        lib_i32 failed;
 
         lib_memory_set(&state, 0, sizeof(state));
         lib_memory_set(&before, 0, sizeof(before));
         lib_memory_set(&after, 0, sizeof(after));
         lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-        status = TYPE_STATUS_INVALID_ARGUMENT;
+        status = LIB_STATUS_INVALID_ARGUMENT;
         failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed)
@@ -770,7 +771,7 @@ static C_INT xchg_test_accumulator_386_boundaries(C_VOID)
                 *target = 0x55667788u;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !xchg_run(&state, code, sizeof(code), &after, &diagnostic,
-                    &status) || status != TYPE_STATUS_OK ||
+                    &status) || status != LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || after.data.eip != 2u ||
                 after.data.eflags != before.data.eflags;
             failed |= !xchg_acc_nonparticipants_equal(&before, &after,
@@ -784,7 +785,7 @@ static C_INT xchg_test_accumulator_386_boundaries(C_VOID)
         }
         if (failed)
         {
-            STD_PRINTF(
+            printf(
                 "XCHG acc 386 opcode=%02x status=%d fault=%08x "
                 "before=%08x/%08x/%08x after=%08x/%08x/%08x\n",
                 opcode,
@@ -804,71 +805,71 @@ static C_INT xchg_test_accumulator_386_boundaries(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!xchg_test_real())
     {
-        STD_PRINTF("XCHG stage=real\n");
+        printf("XCHG stage=real\n");
         return 1;
     }
     if (!xchg_test_profiles_and_lock())
     {
-        STD_PRINTF("XCHG stage=profile\n");
+        printf("XCHG stage=profile\n");
         return 1;
     }
     if (!xchg_test_legacy_default16())
     {
-        STD_PRINTF("XCHG stage=legacy\n");
+        printf("XCHG stage=legacy\n");
         return 1;
     }
     if (!xchg_test_write_fault_atomicity())
     {
-        STD_PRINTF("XCHG stage=write-fault\n");
+        printf("XCHG stage=write-fault\n");
         return 1;
     }
     if (!xchg_test_read_fault_atomicity())
     {
-        STD_PRINTF("XCHG stage=read-fault\n");
+        printf("XCHG stage=read-fault\n");
         return 1;
     }
     if (!xchg_test_lock())
     {
-        STD_PRINTF("XCHG stage=lock\n");
+        printf("XCHG stage=lock\n");
         return 1;
     }
     if (!xchg_test_irq_no_shadow())
     {
-        STD_PRINTF("XCHG stage=irq\n");
+        printf("XCHG stage=irq\n");
         return 1;
     }
     if (!xchg_test_accumulator())
     {
-        STD_PRINTF("XCHG acc stage=default\n");
+        printf("XCHG acc stage=default\n");
         return 1;
     }
     if (!xchg_test_accumulator_386_boundaries())
     {
-        STD_PRINTF("XCHG acc stage=386\n");
+        printf("XCHG acc stage=386\n");
         return 1;
     }
     if (!xchg_test_accumulator_reject())
     {
-        STD_PRINTF("XCHG acc stage=reject\n");
+        printf("XCHG acc stage=reject\n");
         return 1;
     }
     if (!xchg_test_accumulator_lock())
     {
-        STD_PRINTF("XCHG acc stage=lock\n");
+        printf("XCHG acc stage=lock\n");
         return 1;
     }
     if (!xchg_test_accumulator_irq())
     {
-        STD_PRINTF("XCHG acc stage=irq\n");
+        printf("XCHG acc stage=irq\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S27:XCHG:OK\n");
-    STD_PRINTF("M5:T316:S28:XCHG-ACC:OK\n");
-    STD_PRINTF("M5:T401:S12:ACCUMULATOR-XCHG-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S46:XCHG-MODRM-PROFILES:OK\n");
+    printf("M5:T316:S27:XCHG:OK\n");
+    printf("M5:T316:S28:XCHG-ACC:OK\n");
+    printf("M5:T401:S12:ACCUMULATOR-XCHG-PROFILES:OK\n");
+    printf("M5:T401:S46:XCHG-MODRM-PROFILES:OK\n");
     return 0;
 }

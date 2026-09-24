@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -14,19 +15,19 @@ typedef struct direct_flags_case {
     lib_u32 initial_bits;
 } direct_flags_case;
 
-static C_VOID direct_flags_reset(C_VOID *opaque)
+static void direct_flags_reset(void *opaque)
 {
     direct_flags_machine *state = (direct_flags_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider direct_flags_provider = {
     direct_flags_reset, LIB_NULL
 };
 
-static C_INT direct_flags_prepare(core_machine_cpu_profile profile,
+static lib_i32 direct_flags_prepare(core_machine_cpu_profile profile,
     direct_flags_machine *state)
 {
     const core_machine_config config = {
@@ -41,7 +42,7 @@ static C_INT direct_flags_prepare(core_machine_cpu_profile profile,
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_VOID direct_flags_seed(direct_flags_machine *state)
+static void direct_flags_seed(direct_flags_machine *state)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -58,7 +59,7 @@ static C_VOID direct_flags_seed(direct_flags_machine *state)
         VCPU_EFLAGS_OF;
 }
 
-static C_INT direct_flags_gprs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 direct_flags_gprs_same(const t_cpu *before, const t_cpu *after)
 {
     return after->data.eax == before->data.eax &&
         after->data.ecx == before->data.ecx &&
@@ -70,7 +71,7 @@ static C_INT direct_flags_gprs_same(const t_cpu *before, const t_cpu *after)
         after->data.edi == before->data.edi;
 }
 
-static C_INT direct_flags_irq_gprs_same(const t_cpu *before,
+static lib_i32 direct_flags_irq_gprs_same(const t_cpu *before,
     const t_cpu *after)
 {
     return after->data.eax == before->data.eax &&
@@ -100,21 +101,21 @@ static lib_u32 direct_flags_expected(lib_u8 opcode, lib_u32 flags)
     }
 }
 
-static C_INT direct_flags_run(direct_flags_machine *state, const lib_u8 *code,
+static lib_i32 direct_flags_run(direct_flags_machine *state, const lib_u8 *code,
     lib_u8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
-    type_status *status, core_machine_run_result *result)
+    lib_status *status, core_machine_run_result *result)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-        TYPE_STATUS_OK)
+        LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine,
         (core_machine_run_budget){1u,0u}, result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT direct_flags_test_default(C_VOID)
+static lib_i32 direct_flags_test_default(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -135,11 +136,11 @@ static C_INT direct_flags_test_default(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             core_machine_run_result result;
-            type_status status;
+            lib_status status;
             const lib_u32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_PF |
                 VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF |
                 VCPU_EFLAGS_OF | cases[form].initial_bits;
-            C_INT failed = !direct_flags_prepare(profiles[profile], &state);
+            lib_i32 failed = !direct_flags_prepare(profiles[profile], &state);
 
             if (!failed) {
                 direct_flags_seed(&state);
@@ -148,7 +149,7 @@ static C_INT direct_flags_test_default(C_VOID)
                     state.machine);
                 failed |= !direct_flags_run(&state, &cases[form].opcode, 1u,
                     &after, &diagnostic, &status, &result) ||
-                    status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                    status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                     after.data.eip != 1u ||
                     !direct_flags_gprs_same(&before, &after) ||
                     after.data.eflags != direct_flags_expected(
@@ -162,7 +163,7 @@ static C_INT direct_flags_test_default(C_VOID)
     return 1;
 }
 
-static C_INT direct_flags_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 direct_flags_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     direct_flags_machine state;
@@ -170,8 +171,8 @@ static C_INT direct_flags_expect_ud(core_machine_cpu_profile profile,
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
-    C_INT failed = !direct_flags_prepare(profile, &state);
+    lib_status status;
+    lib_i32 failed = !direct_flags_prepare(profile, &state);
 
     if (!failed) {
         direct_flags_seed(&state);
@@ -179,8 +180,8 @@ static C_INT direct_flags_expect_ud(core_machine_cpu_profile profile,
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !direct_flags_run(&state, code, bytes, &after, &diagnostic,
-            &status, &result) || status != TYPE_STATUS_FAULT ||
-            !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+            &status, &result) || status != LIB_STATUS_INTERNAL_ERROR ||
+            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             after.data.eip != 0u || lib_memory_compare(&before.data, &after.data,
             sizeof(before.data)) != 0;
@@ -189,7 +190,7 @@ static C_INT direct_flags_expect_ud(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT direct_flags_test_attributes(C_VOID)
+static lib_i32 direct_flags_test_attributes(void)
 {
     static const lib_u8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
     static const core_machine_cpu_profile legacy[] = {
@@ -228,7 +229,7 @@ static C_INT direct_flags_test_attributes(C_VOID)
     return 1;
 }
 
-static C_INT direct_flags_test_386_attributes(C_VOID)
+static lib_i32 direct_flags_test_386_attributes(void)
 {
     static const lib_u8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
     lib_u8 opcode;
@@ -241,10 +242,10 @@ static C_INT direct_flags_test_386_attributes(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             core_machine_run_result result;
-            type_status status;
+            lib_status status;
             lib_u8 code[] = {0x66u,opcodes[opcode],0u};
             lib_u8 bytes = prefix == 2u ? 3u : 2u;
-            C_INT failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+            lib_i32 failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
             if (prefix == 1u)
@@ -259,7 +260,7 @@ static C_INT direct_flags_test_386_attributes(C_VOID)
                     state.machine);
                 failed |= !direct_flags_run(&state, code, bytes, &after,
                     &diagnostic, &status, &result) ||
-                    status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                    status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                     after.data.eip != bytes ||
                     !direct_flags_gprs_same(&before, &after) ||
                     after.data.eflags != direct_flags_expected(opcodes[opcode],
@@ -273,7 +274,7 @@ static C_INT direct_flags_test_386_attributes(C_VOID)
     return 1;
 }
 
-static C_INT direct_flags_boot_protected(direct_flags_machine *state)
+static lib_i32 direct_flags_boot_protected(direct_flags_machine *state)
 {
     static const lib_u8 pointer[] = {0x1fu,0u,0u,0x03u,0u,0u};
     static const lib_u8 gdt[] = {
@@ -289,16 +290,16 @@ static C_INT direct_flags_boot_protected(direct_flags_machine *state)
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
-        sizeof(pointer)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
+        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, boot, sizeof(boot)) ==
-        TYPE_STATUS_OK && core_machine_memory_write(state->machine, 0x2000u,
-        &halt, sizeof(halt)) == TYPE_STATUS_OK && core_machine_run(
+        LIB_STATUS_OK && core_machine_memory_write(state->machine, 0x2000u,
+        &halt, sizeof(halt)) == LIB_STATUS_OK && core_machine_run(
         state->machine, (core_machine_run_budget){96u,0u}, &result) ==
-        TYPE_STATUS_OK && result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        LIB_STATUS_OK && result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT direct_flags_test_protected(C_VOID)
+static lib_i32 direct_flags_test_protected(void)
 {
     static const lib_u8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
     lib_u8 opcode;
@@ -313,7 +314,7 @@ static C_INT direct_flags_test_protected(C_VOID)
             VCPU_EFLAGS_DF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
             VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF |
             VCPU_EFLAGS_IOPL;
-        C_INT failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed)
@@ -331,15 +332,15 @@ static C_INT direct_flags_test_protected(C_VOID)
             state.machine->executor_cpu.data.ss = ss;
             state.machine->executor_cpu.data.eflags = flags;
             failed |= core_machine_memory_write(state.machine, 0x2000u,
-                &opcodes[opcode], 1u) != TYPE_STATUS_OK;
+                &opcodes[opcode], 1u) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(
                 state.machine);
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= diagnostic.first_fault.valid || after.data.eip != 1u ||
                 !direct_flags_gprs_same(&before, &after) ||
@@ -359,7 +360,7 @@ static C_INT direct_flags_test_protected(C_VOID)
     return 1;
 }
 
-static C_INT direct_flags_test_vm86(C_VOID)
+static lib_i32 direct_flags_test_vm86(void)
 {
     static const lib_u8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
     lib_u8 opcode;
@@ -374,7 +375,7 @@ static C_INT direct_flags_test_vm86(C_VOID)
             VCPU_EFLAGS_CF | VCPU_EFLAGS_DF | VCPU_EFLAGS_PF |
             VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF |
             VCPU_EFLAGS_OF | VCPU_EFLAGS_IOPL;
-        C_INT failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed) {
@@ -394,14 +395,14 @@ static C_INT direct_flags_test_vm86(C_VOID)
             state.machine->executor_cpu.data.ss.flagValid = LIB_TRUE;
             state.machine->executor_cpu.data.ss.seg.data.big = LIB_FALSE;
             failed |= core_machine_memory_write(state.machine, 0u,
-                &opcodes[opcode], 1u) != TYPE_STATUS_OK;
+                &opcodes[opcode], 1u) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(
                 state.machine);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= diagnostic.first_fault.valid || after.data.eip != 1u ||
                 !direct_flags_gprs_same(&before, &after) ||
@@ -415,7 +416,7 @@ static C_INT direct_flags_test_vm86(C_VOID)
     return 1;
 }
 
-static C_INT direct_flags_test_irq(C_VOID)
+static lib_i32 direct_flags_test_irq(void)
 {
     static const lib_u8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
     static const lib_u8 hlt = 0xf4u;
@@ -434,16 +435,16 @@ static C_INT direct_flags_test_irq(C_VOID)
         const lib_u32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF |
             VCPU_EFLAGS_DF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
             VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF;
-        C_INT failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed) {
             failed |= core_machine_memory_write(state.machine, 0u, code,
-                sizeof(code)) != TYPE_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x80u, &offset, sizeof(offset)) != TYPE_STATUS_OK ||
+                sizeof(code)) != LIB_STATUS_OK || core_machine_memory_write(
+                state.machine, 0x80u, &offset, sizeof(offset)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x82u, &segment,
-                sizeof(segment)) != TYPE_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x100u, &hlt, sizeof(hlt)) != TYPE_STATUS_OK;
+                sizeof(segment)) != LIB_STATUS_OK || core_machine_memory_write(
+                state.machine, 0x100u, &hlt, sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
             direct_flags_seed(&state);
@@ -457,18 +458,18 @@ static C_INT direct_flags_test_irq(C_VOID)
             core_machine_pic_irq_source_assert(&irq);
             core_machine_pic_irq_source_deassert(&irq);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){2u,0u}, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
+                CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != 1u ||
                 !direct_flags_irq_gprs_same(&before, &after) ||
                 after.data.eflags != (direct_flags_expected(opcodes[opcode],
-                before.data.eflags) & ~VCPU_EFLAGS_IF) || !TYPE_GET_BIT(
+                before.data.eflags) & ~VCPU_EFLAGS_IF) || !CORE_MACHINE_BIT_IS_SET(
                 state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-                TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+                CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
         }
         core_machine_destroy(state.machine);
@@ -478,7 +479,7 @@ static C_INT direct_flags_test_irq(C_VOID)
     return 1;
 }
 
-static C_INT direct_flags_test_real_identity(C_VOID)
+static lib_i32 direct_flags_test_real_identity(void)
 {
     static const lib_u8 code[] = {
         0xb8u,0x00u,0xf0u,0x50u,0x9du,0x9cu,0x58u,0xf4u
@@ -501,17 +502,17 @@ static C_INT direct_flags_test_real_identity(C_VOID)
         direct_flags_machine state;
         core_machine_run_result result = {0};
         t_cpu after = {0};
-        type_status status = TYPE_STATUS_OK;
-        C_INT eax_matches = 0;
-        C_INT flags_match = 0;
-        C_INT failed = !direct_flags_prepare(cases[index].profile, &state);
+        lib_status status = LIB_STATUS_OK;
+        lib_i32 eax_matches = 0;
+        lib_i32 flags_match = 0;
+        lib_i32 failed = !direct_flags_prepare(cases[index].profile, &state);
 
         if (!failed) {
             direct_flags_seed(&state);
             failed |= core_machine_memory_write(state.machine, 0u, code,
-                sizeof(code)) != TYPE_STATUS_OK ||
+                sizeof(code)) != LIB_STATUS_OK ||
                 ((status = core_machine_run(state.machine,
-                (core_machine_run_budget){16u,0u}, &result)) != TYPE_STATUS_OK);
+                (core_machine_run_budget){16u,0u}, &result)) != LIB_STATUS_OK);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             eax_matches = (after.data.eax & cases[index].known_mask) ==
                 cases[index].expected_image;
@@ -521,7 +522,7 @@ static C_INT direct_flags_test_real_identity(C_VOID)
         }
         core_machine_destroy(state.machine);
         if (failed) {
-            STD_PRINTF("DIRECT-FLAGS real identity profile=%u eax=%08x flags=%08x eip=%08x esp=%08x status=%u reason=%u eax-match=%u flags-match=%u expected=%04x\n",
+            printf("DIRECT-FLAGS real identity profile=%u eax=%08x flags=%08x eip=%08x esp=%08x status=%u reason=%u eax-match=%u flags-match=%u expected=%04x\n",
                 (unsigned int)cases[index].profile, (unsigned int)after.data.eax,
                 (unsigned int)after.data.eflags, (unsigned int)after.data.eip,
                 (unsigned int)after.data.esp, (unsigned int)status,
@@ -533,37 +534,37 @@ static C_INT direct_flags_test_real_identity(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!direct_flags_test_default()) {
-        STD_PRINTF("DIRECT-FLAGS stage=default\n");
+        printf("DIRECT-FLAGS stage=default\n");
         return 1;
     }
     if (!direct_flags_test_attributes()) {
-        STD_PRINTF("DIRECT-FLAGS stage=attributes\n");
+        printf("DIRECT-FLAGS stage=attributes\n");
         return 1;
     }
     if (!direct_flags_test_386_attributes()) {
-        STD_PRINTF("DIRECT-FLAGS stage=386-attributes\n");
+        printf("DIRECT-FLAGS stage=386-attributes\n");
         return 1;
     }
     if (!direct_flags_test_protected()) {
-        STD_PRINTF("DIRECT-FLAGS stage=protected\n");
+        printf("DIRECT-FLAGS stage=protected\n");
         return 1;
     }
     if (!direct_flags_test_vm86()) {
-        STD_PRINTF("DIRECT-FLAGS stage=vm86\n");
+        printf("DIRECT-FLAGS stage=vm86\n");
         return 1;
     }
     if (!direct_flags_test_irq()) {
-        STD_PRINTF("DIRECT-FLAGS stage=irq\n");
+        printf("DIRECT-FLAGS stage=irq\n");
         return 1;
     }
     if (!direct_flags_test_real_identity()) {
-        STD_PRINTF("DIRECT-FLAGS stage=real-identity\n");
+        printf("DIRECT-FLAGS stage=real-identity\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S40:DIRECT-FLAGS:OK\n");
-    STD_PRINTF("M5:T401:S42:DIRECT-FLAGS-PROFILES:OK\n");
+    printf("M5:T316:S40:DIRECT-FLAGS:OK\n");
+    printf("M5:T401:S42:DIRECT-FLAGS-PROFILES:OK\n");
     return 0;
 }

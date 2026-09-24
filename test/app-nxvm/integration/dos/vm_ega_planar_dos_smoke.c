@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <ctype.h>
+#include <stdio.h>
 
 #include <windows.h>
 
@@ -19,7 +20,7 @@ static lib_u16 vm_ega_dos_fat12_get(const lib_u8 *fat, lib_u16 cluster)
     return (cluster & 1u) != 0u ? value >> 4 : value & 0x0fffu;
 }
 
-static C_VOID vm_ega_dos_fat12_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
+static void vm_ega_dos_fat12_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
 {
     lib_u32 offset = cluster + cluster / 2u;
     lib_u16 pair = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8));
@@ -30,7 +31,7 @@ static C_VOID vm_ega_dos_fat12_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
     fat[offset + 1u] = (lib_u8)(pair >> 8);
 }
 
-static C_INT vm_ega_dos_install_program(lib_u8 *image, DWORD image_size)
+static lib_i32 vm_ega_dos_install_program(lib_u8 *image, DWORD image_size)
 {
 #if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
     static const lib_u8 program[] = {
@@ -116,27 +117,27 @@ static C_INT vm_ega_dos_install_program(lib_u8 *image, DWORD image_size)
     return 1;
 }
 
-static type_status vm_ega_dos_install_on_overlay(
-    integration_ini_session *ini_session, C_VOID *opaque)
+static lib_status vm_ega_dos_install_on_overlay(
+    integration_ini_session *ini_session, void *opaque)
 {
     lib_u8 *image = LIB_NULL;
     lib_size image_size = 0u;
-    C_INT installed;
+    lib_i32 installed;
 
-    (C_VOID)opaque;
+    (void)opaque;
     if (ini_session == LIB_NULL || integration_ini_session_overlay_read(ini_session,
-            VM_MACHINE_MEDIA_FDD_ID, (C_VOID **)&image, &image_size) != TYPE_STATUS_OK ||
+            VM_MACHINE_MEDIA_FDD_ID, (void **)&image, &image_size) != LIB_STATUS_OK ||
         image_size > MAXDWORD) {
-        return TYPE_STATUS_FAULT;
+        return LIB_STATUS_INTERNAL_ERROR;
     }
     installed = vm_ega_dos_install_program(image, (DWORD)image_size) &&
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
-            image, image_size) == TYPE_STATUS_OK;
+            image, image_size) == LIB_STATUS_OK;
     lib_release(image);
-    return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+    return installed ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
-static C_INT vm_ega_dos_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_ega_dos_has_prompt(const core_machine_display_snapshot *snapshot)
 {
     lib_size cell;
 
@@ -144,7 +145,7 @@ static C_INT vm_ega_dos_has_prompt(const core_machine_display_snapshot *snapshot
         return 0;
     }
     for (cell = 0u; cell + 3u < 80u * 25u; ++cell) {
-        if (STD_ISALPHA(snapshot->characters[cell]) &&
+        if (isalpha(snapshot->characters[cell]) &&
             snapshot->characters[cell + 1u] == ':' &&
             snapshot->characters[cell + 2u] == '\\' &&
             snapshot->characters[cell + 3u] == '>') return 1;
@@ -152,8 +153,8 @@ static C_INT vm_ega_dos_has_prompt(const core_machine_display_snapshot *snapshot
     return 0;
 }
 
-static C_INT vm_ega_dos_run_until(vm_machine *session, lib_u32 limit,
-    C_INT want_graphics)
+static lib_i32 vm_ega_dos_run_until(vm_machine *session, lib_u32 limit,
+    lib_i32 want_graphics)
 {
     core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
@@ -161,14 +162,14 @@ static C_INT vm_ega_dos_run_until(vm_machine *session, lib_u32 limit,
     lib_u32 executed = 0u;
 
     while (executed < limit) {
-        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->core_machine,
-                &snapshot) != TYPE_STATUS_OK) return 0;
+                &snapshot) != LIB_STATUS_OK) return 0;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            C_INT advanced = 0;
+            lib_i32 advanced = 0;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
         if (!want_graphics && vm_ega_dos_has_prompt(&snapshot)) return 1;
@@ -182,7 +183,7 @@ static C_INT vm_ega_dos_run_until(vm_machine *session, lib_u32 limit,
     return 0;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
 #if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
     static const lib_u8 command[] = { 0x24u, 0x34u, 0x1cu, 0x2cu, 0x1eu,
@@ -194,10 +195,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     integration_ini_session ini_session;
     vm_machine *session;
     lib_size index;
-    C_INT passed = 0;
+    lib_i32 passed = 0;
 
     if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_ega_dos_install_on_overlay, LIB_NULL, &ini_session) != TYPE_STATUS_OK) {
+            vm_ega_dos_install_on_overlay, LIB_NULL, &ini_session) != LIB_STATUS_OK) {
         return 77;
     }
     session = ini_session.session;
@@ -205,7 +206,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !vm_ega_dos_run_until(session, VM_EGA_DOS_BOOT_BUDGET, 0)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
         if (core_machine_keyboard_receive_native_byte(session->core_machine,
-                command[index]) != TYPE_STATUS_OK) goto done;
+                command[index]) != LIB_STATUS_OK) goto done;
     }
     passed = vm_ega_dos_run_until(session, VM_EGA_DOS_RUN_BUDGET, 1);
 
@@ -213,9 +214,9 @@ done:
     integration_ini_session_close(&ini_session);
     if (!passed) return 1;
 #if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
-    STD_PRINTF("M5:T239:S3:ROM-EGA-INT10:DOS:OK\n");
+    printf("M5:T239:S3:ROM-EGA-INT10:DOS:OK\n");
 #else
-    STD_PRINTF("M5:T238:S3:EGA-PLANAR:DOS:OK\n");
+    printf("M5:T238:S3:EGA-PLANAR:DOS:OK\n");
 #endif
     return 0;
 }

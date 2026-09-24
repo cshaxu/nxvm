@@ -1,25 +1,25 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_INT core_machine_ega_write(t_ram *memory, lib_u32 physical,
+static lib_i32 core_machine_ega_write(t_ram *memory, lib_u32 physical,
     lib_u8 value)
 {
     return core_machine_memory_write_physical(memory, physical,
-        (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
+        (lib_uptr)&value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static C_INT core_machine_ega_read(t_ram *memory, lib_u32 physical,
+static lib_i32 core_machine_ega_read(t_ram *memory, lib_u32 physical,
     lib_u8 *value)
 {
     return core_machine_memory_read_physical(memory, physical,
-        (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
+        (lib_uptr)value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_vadp_ega_sequencer_config config = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
@@ -30,15 +30,15 @@ C_INT main(C_VOID)
     t_vadp vadp;
     lib_u8 value = 0u;
     lib_u64 dirty_generation;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     failed |= core_machine_vadp_configure_ega_sequencer(&vadp, &memory,
-        &config) != TYPE_STATUS_OK;
+        &config) != LIB_STATUS_OK;
     failed |= core_machine_port_read(&port, 0x03c4u) != 0u;
     failed |= core_machine_port_read(&port, 0x03c5u) != 0x03u;
 
@@ -77,7 +77,7 @@ C_INT main(C_VOID)
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) return 1;
-    STD_PRINTF("M5:T235:S1:EGA-SEQUENCER:PORT:OK\n");
-    STD_PRINTF("M5:T480:S3:EGA-VGA-COMMON:OK\n");
+    printf("M5:T235:S1:EGA-SEQUENCER:PORT:OK\n");
+    printf("M5:T480:S3:EGA-VGA-COMMON:OK\n");
     return 0;
 }

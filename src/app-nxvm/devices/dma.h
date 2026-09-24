@@ -8,8 +8,8 @@ extern "C"
 {
 #endif
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/device_support.h"
 
-#include "type.h"
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/port.h"
 
@@ -19,7 +19,7 @@ extern "C"
     typedef struct t_latch t_latch;
     typedef struct t_ram t_ram;
     typedef struct core_machine_transaction_state core_machine_transaction_state;
-    typedef C_VOID (*core_machine_dma_device_provider)(C_VOID *owner, t_latch *latch);
+    typedef void (*core_machine_dma_device_provider)(void *owner, t_latch *latch);
 
     typedef struct core_machine_dma_channel_provider {
         core_machine_dma_device_provider read_device;
@@ -53,9 +53,9 @@ extern "C"
         lib_u8 acknowledged;
         lib_u8 temp;    /* temporary register */
         lib_u8 drx;     /* dreq id of highest priority */
-        type_bool flagMSB;       /* flip-flop for msb/lsb */
-        type_bool flagEOP;       /* end of process */
-        type_bool flagM2MWrite;  /* channel-0 read completed; channel-1 write next */
+        lib_u8 flagMSB;       /* flip-flop for msb/lsb */
+        lib_u8 flagEOP;       /* end of process */
+        lib_u8 flagM2MWrite;  /* channel-0 read completed; channel-1 write next */
         lib_u8 phase;   /* Intel 8237A logical service phase */
 
         /* id of request in service in D5-D4, flag of in service in D0 */
@@ -70,8 +70,8 @@ extern "C"
         core_machine_dma_device_provider read_provider[VDMA_CHANNEL_COUNT];
         core_machine_dma_device_provider write_provider[VDMA_CHANNEL_COUNT];
         core_machine_dma_device_provider close_provider[VDMA_CHANNEL_COUNT];
-        C_VOID *device_owner[VDMA_CHANNEL_COUNT];
-        type_native_unsigned request_token;
+        void *device_owner[VDMA_CHANNEL_COUNT];
+        lib_uptr request_token;
     } t_dma_connect;
 
     typedef struct t_dma
@@ -157,7 +157,7 @@ extern "C"
 #define VDMA_GetMODE_M(cmode) (((cmode) & VDMA_MODE_M) >> 6)
 
 /* tells if drq id is in request register */
-#define VDMA_GetREQUEST_DRQ(creq, id) (TYPE_GET_BIT((creq), VDMA_REQUEST_DRQ(id)))
+#define VDMA_GetREQUEST_DRQ(creq, id) (CORE_MACHINE_BIT_IS_SET((creq), VDMA_REQUEST_DRQ(id)))
 
 /* select request register channel */
 #define VDMA_GetREQSC_CS(creqsc) ((creqsc) & VDMA_REQSC_CS)
@@ -166,9 +166,9 @@ extern "C"
 #define VDMA_GetMASKSC_CS(cmasksc) ((cmasksc) & VDMA_MASKSC_CS)
 
 /* get terminal counter */
-#define VDMA_GetSTATUS_TC(cstatus, id) (TYPE_GET_BIT((cstatus), VDMA_STATUS_TC(id)))
+#define VDMA_GetSTATUS_TC(cstatus, id) (CORE_MACHINE_BIT_IS_SET((cstatus), VDMA_STATUS_TC(id)))
 /* get drq in status register */
-#define VDMA_GetSTATUS_DRQ(cstatus, id) (TYPE_GET_BIT((cstatus), VDMA_STATUS_DRQ(id)))
+#define VDMA_GetSTATUS_DRQ(cstatus, id) (CORE_MACHINE_BIT_IS_SET((cstatus), VDMA_STATUS_DRQ(id)))
 /* get all drqs in status register */
 #define VDMA_GetSTATUS_DRQS(cstatus) (((cstatus) & VDMA_STATUS_DRQS) >> 4)
 
@@ -190,30 +190,30 @@ extern "C"
 #define VDMA_PHASE_S23 11u
 #define VDMA_PHASE_S24 12u
 
-C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
+void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port, lib_u8 controller_count);
-    C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
+    void core_machine_dma_reset(t_latch *latch, t_dma *primary,
                                   t_dma *secondary);
-    C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
+    void core_machine_dma_advance(t_latch *latch, t_dma *primary,
                                     t_dma *secondary, t_ram *ram,
                                     lib_u64 elapsed_ticks);
-    C_VOID core_machine_dma_advance_transaction(t_latch *latch,
+    void core_machine_dma_advance_transaction(t_latch *latch,
         t_dma *primary, t_dma *secondary, t_ram *ram,
         core_machine_transaction_state *transaction,
         lib_u64 elapsed_ticks);
-    C_INT core_machine_dma_has_pending_request(const t_dma *primary,
+    lib_i32 core_machine_dma_has_pending_request(const t_dma *primary,
         const t_dma *secondary);
-    type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
+    lib_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
         t_dma *secondary, lib_u8 channel,
-        const core_machine_dma_channel_provider *provider, C_VOID *device_owner,
+        const core_machine_dma_channel_provider *provider, void *device_owner,
         core_machine_dma_request_binding *out_binding);
-    C_VOID core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,
+    void core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,
         const core_machine_dma_request_binding *binding);
-    C_VOID core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
+    void core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
         const core_machine_dma_request_binding *binding);
-    C_VOID core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
+    void core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
         const core_machine_dma_request_binding *binding);
-    C_VOID core_machine_dma_finalize(t_latch *latch, t_dma *primary,
+    void core_machine_dma_finalize(t_latch *latch, t_dma *primary,
                                      t_dma *secondary);
 
 #ifdef __cplusplus

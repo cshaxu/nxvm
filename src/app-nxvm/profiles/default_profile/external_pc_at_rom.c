@@ -1,39 +1,38 @@
 /* Copyright 2012-2014 Neko. */
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "app-nxvm/profiles/byob/blob.h"
 
-static type_status vm_profile_external_pc_at_rom_configure(C_VOID *opaque,
+static lib_status vm_profile_external_pc_at_rom_configure(void *opaque,
     core_machine_firmware_context *firmware)
 {
     const vm_profile_external_pc_at_rom_context *context = opaque;
 
-    type_status status;
+    lib_status status;
 
     if (context == LIB_NULL || context->image == LIB_NULL ||
         (context->video == LIB_NULL && context->video_bytes != 0u) ||
         (context->video != LIB_NULL && !vm_profile_byob_option_rom_is_valid(
             context->video, context->video_bytes,
             VM_PROFILE_EXTERNAL_PC_AT_VIDEO_ROM_MAX_BYTES))) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_firmware_register_immutable_rom(firmware, 0x000f0000u,
         context->image, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES);
-    if (status != TYPE_STATUS_OK || context->video == LIB_NULL) return status;
+    if (status != LIB_STATUS_OK || context->video == LIB_NULL) return status;
     return core_machine_firmware_register_immutable_rom(firmware, 0x000c0000u,
         context->video, context->video_bytes);
 }
 
-static type_status vm_profile_external_pc_at_rom_reset(C_VOID *opaque,
+static lib_status vm_profile_external_pc_at_rom_reset(void *opaque,
     core_machine_firmware_context *firmware)
 {
-    (C_VOID)opaque;
-    (C_VOID)firmware;
-    return TYPE_STATUS_OK;
+    (void)opaque;
+    (void)firmware;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_firmware_provider vm_profile_external_pc_at_rom = {
@@ -41,7 +40,7 @@ static const core_machine_firmware_provider vm_profile_external_pc_at_rom = {
     LIB_NULL, LIB_NULL
 };
 
-const core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(C_VOID)
+const core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(void)
 {
     return &vm_profile_external_pc_at_rom;
 }

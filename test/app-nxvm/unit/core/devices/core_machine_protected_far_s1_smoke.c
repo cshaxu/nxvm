@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -15,11 +16,11 @@ typedef struct pft_machine {
     core_machine *machine;
 } pft_machine;
 
-static C_VOID pft_reset(C_VOID *opaque)
+static void pft_reset(void *opaque)
 {
     pft_machine *state = (pft_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
@@ -27,23 +28,23 @@ static const core_machine_execution_provider pft_provider = {
     pft_reset, LIB_NULL
 };
 
-static C_INT pft_write(pft_machine *state, lib_u32 address,
-    const C_VOID *bytes, lib_size byte_count)
+static lib_i32 pft_write(pft_machine *state, lib_u32 address,
+    const void *bytes, lib_size byte_count)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, bytes, byte_count) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT pft_read_private(pft_machine *state, lib_u32 address,
-    C_VOID *bytes, lib_size byte_count)
+static lib_i32 pft_read_private(pft_machine *state, lib_u32 address,
+    void *bytes, lib_size byte_count)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_read_physical(&state->machine->executor_memory,
-            address, (type_virtual_address)bytes, byte_count) == TYPE_STATUS_OK;
+            address, (lib_uptr)bytes, byte_count) == LIB_STATUS_OK;
 }
 
-static C_INT pft_prepare(pft_machine *state, core_machine_cpu_profile profile)
+static lib_i32 pft_prepare(pft_machine *state, core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -76,14 +77,14 @@ static C_INT pft_prepare(pft_machine *state, core_machine_cpu_profile profile)
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &pft_provider, state) ||
         !pft_write(state, PFT_GDT_POINTER, gdt_pointer, sizeof(gdt_pointer)) ||
         !pft_write(state, PFT_GDT_ADDRESS, gdt, sizeof(gdt)) ||
         !pft_write(state, 0u, real_code, sizeof(real_code)) ||
         !pft_write(state, PFT_CODE_ADDRESS, halt, sizeof(halt)) ||
-        core_machine_run(state->machine, budget, &result) != TYPE_STATUS_OK ||
+        core_machine_run(state->machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
@@ -92,24 +93,24 @@ static C_INT pft_prepare(pft_machine *state, core_machine_cpu_profile profile)
     return 1;
 }
 
-static C_INT pft_run(pft_machine *state, const lib_u8 *code,
+static lib_i32 pft_run(pft_machine *state, const lib_u8 *code,
     lib_size code_size, core_machine_stop_reason expected_reason, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = {64u,0u};
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
 
     if (!pft_write(state, PFT_CODE_ADDRESS, code, code_size)) return 0;
     test_core_machine_fixture_resume_after_halt_at(state->machine, 0u);
     status = core_machine_run(state->machine, budget, &result);
-    if ((expected_reason == CORE_MACHINE_STOP_FAULT && status != TYPE_STATUS_FAULT) ||
-        (expected_reason != CORE_MACHINE_STOP_FAULT && status != TYPE_STATUS_OK) ||
+    if ((expected_reason == CORE_MACHINE_STOP_FAULT && status != LIB_STATUS_INTERNAL_ERROR) ||
+        (expected_reason != CORE_MACHINE_STOP_FAULT && status != LIB_STATUS_OK) ||
         result.reason != expected_reason) return 0;
     *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
 }
 
-static C_INT pft_cpu_unchanged(const t_cpu *before, const t_cpu *after)
+static lib_i32 pft_cpu_unchanged(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -129,18 +130,18 @@ static C_INT pft_cpu_unchanged(const t_cpu *before, const t_cpu *after)
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT pft_expect_fault(pft_machine *state, const lib_u8 *code,
+static lib_i32 pft_expect_fault(pft_machine *state, const lib_u8 *code,
     lib_size code_size, lib_u32 expected_mask, t_cpu *out_cpu)
 {
     core_machine_cpu_diagnostic diagnostic;
 
     return pft_run(state, code, code_size, CORE_MACHINE_STOP_FAULT, out_cpu) &&
-        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == TYPE_STATUS_OK &&
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == LIB_STATUS_OK &&
         diagnostic.first_fault.valid &&
         diagnostic.first_fault.exception_mask == expected_mask;
 }
 
-static C_INT pft_test_success(core_machine_cpu_profile profile)
+static lib_i32 pft_test_success(core_machine_cpu_profile profile)
 {
     static const lib_u8 halt[] = {0xf4u};
     static const lib_u8 jmp16[] = {0xeau,0,0,0x18u,0};
@@ -152,7 +153,7 @@ static C_INT pft_test_success(core_machine_cpu_profile profile)
     t_cpu before;
     t_cpu after;
     lib_u16 frame[2] = {0u,0u};
-    C_INT failed = !pft_prepare(&state, profile);
+    lib_i32 failed = !pft_prepare(&state, profile);
 
     if (!failed) {
         failed |= !pft_write(&state, PFT_TARGET_ADDRESS, halt, sizeof(halt));
@@ -203,7 +204,7 @@ static C_INT pft_test_success(core_machine_cpu_profile profile)
     return !failed;
 }
 
-static C_INT pft_test_386_attributes(C_VOID)
+static lib_i32 pft_test_386_attributes(void)
 {
     static const lib_u8 halt[] = {0xf4u};
     static const lib_u8 jmp32[] = {0x66u,0xeau,0x00u,0x01u,0,0,0x18u,0};
@@ -226,7 +227,7 @@ static C_INT pft_test_386_attributes(C_VOID)
     pft_machine state;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !pft_write(&state, PFT_TARGET_ADDRESS + 0x100u, halt,
@@ -317,7 +318,7 @@ static C_INT pft_test_386_attributes(C_VOID)
     return !failed;
 }
 
-static C_INT pft_test_descriptor_rejections(C_VOID)
+static lib_i32 pft_test_descriptor_rejections(void)
 {
     static const lib_u8 call_dpl[] = {0x9au,0,0,0x28u,0};
     static const lib_u8 jmp_rpl[] = {0xeau,0,0,0x1bu,0};
@@ -338,7 +339,7 @@ static C_INT pft_test_descriptor_rejections(C_VOID)
         pft_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -353,7 +354,7 @@ static C_INT pft_test_descriptor_rejections(C_VOID)
     {
         pft_machine state;
         t_cpu after;
-        C_INT failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             failed |= !pft_write(&state, PFT_TARGET_ADDRESS + 0x1000u, halt,
@@ -368,7 +369,7 @@ static C_INT pft_test_descriptor_rejections(C_VOID)
     {
         pft_machine state;
         t_cpu after;
-        C_INT failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             failed |= !pft_write(&state, PFT_TARGET_ADDRESS + 0x1000u, halt,
@@ -384,7 +385,7 @@ static C_INT pft_test_descriptor_rejections(C_VOID)
     return 1;
 }
 
-static C_INT pft_test_preflight_faults(C_VOID)
+static lib_i32 pft_test_preflight_faults(void)
 {
     static const lib_u8 jmp_limit[] = {0xeau,1,0,0x18u,0};
     static const lib_u8 call_stack[] = {0x9au,0,0,0x18u,0};
@@ -393,7 +394,7 @@ static C_INT pft_test_preflight_faults(C_VOID)
     pft_machine state;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !pft_write(&state, PFT_GDT_ADDRESS + 0x18u, zero_limit,
@@ -421,7 +422,7 @@ static C_INT pft_test_preflight_faults(C_VOID)
     return !failed;
 }
 
-static C_INT pft_test_irq_no_shadow(C_VOID)
+static lib_i32 pft_test_irq_no_shadow(void)
 {
     static const lib_u8 jmp[] = {0xeau,0,0,0x18u,0,0x90u};
     static const lib_u8 target[] = {0x90u,0xf4u};
@@ -432,7 +433,7 @@ static C_INT pft_test_irq_no_shadow(C_VOID)
     core_machine_run_result result;
     t_cpu after;
     lib_u16 frame_ip = 0u;
-    C_INT failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !pft_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !pft_write(&state, PFT_TARGET_ADDRESS, target, sizeof(target)) ||
@@ -453,46 +454,46 @@ static C_INT pft_test_irq_no_shadow(C_VOID)
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){2u,0u},
-            &result) != TYPE_STATUS_OK ||
+            &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !pft_read_private(&state, PFT_DATA_ADDRESS +
             (lib_u16)after.data.esp, &frame_ip, sizeof(frame_ip)) ||
             after.data.cs.selector != 0x08u || after.data.eip != 0x101u ||
-            frame_ip != 0u || !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
+            frame_ip != 0u || !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
                 state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!pft_test_success(CORE_MACHINE_CPU_PROFILE_80286)) {
-        STD_PRINTF("PFT stage=80286\n");
+        printf("PFT stage=80286\n");
         return 1;
     }
     if (!pft_test_success(CORE_MACHINE_CPU_PROFILE_80386)) {
-        STD_PRINTF("PFT stage=80386\n");
+        printf("PFT stage=80386\n");
         return 1;
     }
     if (!pft_test_386_attributes()) {
-        STD_PRINTF("PFT stage=attributes\n");
+        printf("PFT stage=attributes\n");
         return 1;
     }
     if (!pft_test_descriptor_rejections()) {
-        STD_PRINTF("PFT stage=descriptors\n");
+        printf("PFT stage=descriptors\n");
         return 1;
     }
     if (!pft_test_preflight_faults()) {
-        STD_PRINTF("PFT stage=preflight\n");
+        printf("PFT stage=preflight\n");
         return 1;
     }
     if (!pft_test_irq_no_shadow()) {
-        STD_PRINTF("PFT stage=irq\n");
+        printf("PFT stage=irq\n");
         return 1;
     }
-    STD_PRINTF("M5:T323:S1:PROTECTED-FAR:OK\n");
+    printf("M5:T323:S1:PROTECTED-FAR:OK\n");
     return 0;
 }

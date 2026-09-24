@@ -1,7 +1,7 @@
 /* Copyright 2012-2026 Neko. */
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/device_support.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/rtc.h"
 
@@ -41,7 +41,7 @@ static lib_u8 rtc_hour_decode(const core_machine_rtc *rtc, lib_u8 value)
     return (lib_u8)(hour + ((value & 0x80u) != 0u ? 12u : 0u));
 }
 
-static type_bool rtc_divider_running(const core_machine_rtc *rtc)
+static lib_u8 rtc_divider_running(const core_machine_rtc *rtc)
 {
     lib_u8 divider = rtc->registers[CORE_MACHINE_RTC_REG_A] & 0x70u;
 
@@ -69,7 +69,7 @@ static lib_u32 rtc_periodic_hz(const core_machine_rtc *rtc)
     return rate <= 15u ? base >> (rate - 1u) : 0u;
 }
 
-static C_VOID rtc_refresh_irq(core_machine_rtc *rtc)
+static void rtc_refresh_irq(core_machine_rtc *rtc)
 {
     lib_u8 flags = rtc->registers[CORE_MACHINE_RTC_REG_C];
     lib_u8 enable = rtc->registers[CORE_MACHINE_RTC_REG_B];
@@ -93,13 +93,13 @@ static lib_u8 rtc_days_in_month(const core_machine_rtc *rtc)
 {
     static const lib_u8 days[] = {31u, 28u, 31u, 30u, 31u, 30u,
         31u, 31u, 30u, 31u, 30u, 31u};
-    type_bool leap = (rtc->calendar.year & 3u) == 0u;
+    lib_u8 leap = (rtc->calendar.year & 3u) == 0u;
 
     return rtc->calendar.month == 2u ? (lib_u8)(28u + leap) :
         days[rtc->calendar.month - 1u];
 }
 
-static C_VOID rtc_increment_second(core_machine_rtc *rtc)
+static void rtc_increment_second(core_machine_rtc *rtc)
 {
     ++rtc->calendar.second;
     if (rtc->calendar.second < 60u) return;
@@ -122,7 +122,7 @@ static C_VOID rtc_increment_second(core_machine_rtc *rtc)
         (lib_u8)(rtc->calendar.year + 1u);
 }
 
-static type_bool rtc_alarm_matches(const core_machine_rtc *rtc)
+static lib_u8 rtc_alarm_matches(const core_machine_rtc *rtc)
 {
     lib_u8 second = rtc->registers[CORE_MACHINE_RTC_SECOND_ALARM];
     lib_u8 minute = rtc->registers[CORE_MACHINE_RTC_MINUTE_ALARM];
@@ -133,7 +133,7 @@ static type_bool rtc_alarm_matches(const core_machine_rtc *rtc)
         ((hour & 0xc0u) == 0xc0u || hour == rtc_hour_encode(rtc));
 }
 
-static type_status rtc_ticks_until_alarm(const core_machine_rtc *rtc,
+static lib_status rtc_ticks_until_alarm(const core_machine_rtc *rtc,
     lib_u64 *out_ticks)
 {
     core_machine_rtc candidate;
@@ -142,7 +142,7 @@ static type_status rtc_ticks_until_alarm(const core_machine_rtc *rtc,
 
     if (rtc == LIB_NULL || out_ticks == LIB_NULL || rtc->ticks_per_second == 0u ||
         rtc->calendar.second_ticks >= rtc->ticks_per_second) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     candidate = *rtc;
     for (second = 1u; second <= 86400u; ++second) {
@@ -150,15 +150,15 @@ static type_status rtc_ticks_until_alarm(const core_machine_rtc *rtc,
         if (!rtc_alarm_matches(&candidate)) continue;
         ticks = rtc->ticks_per_second - rtc->calendar.second_ticks;
         if (second - 1u > (UINT64_MAX - ticks) / rtc->ticks_per_second) {
-            return TYPE_STATUS_INVALID_STATE;
+            return LIB_STATUS_INVALID_STATE;
         }
         *out_ticks = ticks + (second - 1u) * rtc->ticks_per_second;
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
-    return TYPE_STATUS_INVALID_STATE;
+    return LIB_STATUS_INVALID_STATE;
 }
 
-static type_bool rtc_uip_active(const core_machine_rtc *rtc)
+static lib_u8 rtc_uip_active(const core_machine_rtc *rtc)
 {
     lib_u64 window = (lib_u64)rtc->uip_lead_ticks + rtc->update_ticks;
 
@@ -191,10 +191,10 @@ static lib_u8 rtc_read_register(core_machine_rtc *rtc, lib_u8 reg)
     }
 }
 
-static C_VOID rtc_write_register(core_machine_rtc *rtc, lib_u8 reg,
+static void rtc_write_register(core_machine_rtc *rtc, lib_u8 reg,
     lib_u8 value)
 {
-    type_bool was_running = rtc_divider_running(rtc);
+    lib_u8 was_running = rtc_divider_running(rtc);
 
     switch (reg) {
     case CORE_MACHINE_RTC_SECOND: rtc->calendar.second = rtc_decode(rtc, value & 0x7fu); break;
@@ -227,11 +227,11 @@ static lib_u32 rtc_phase_ticks(lib_u32 configured,
     return converted == 0u ? 1u : (lib_u32)converted;
 }
 
-C_VOID core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
+void core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
     t_pic *pic_slave, const core_machine_rtc_config *config)
 {
     if (rtc == LIB_NULL || config == LIB_NULL) return;
-    lib_memory_set(rtc, TYPE_ZERO_8, sizeof(*rtc));
+    lib_memory_set(rtc, 0u, sizeof(*rtc));
     rtc->ticks_per_second = config->ticks_per_second == 0u ? 1u : config->ticks_per_second;
     rtc->uip_lead_ticks = rtc_phase_ticks(config->timing.uip_lead_ticks,
         rtc->ticks_per_second, 244u);
@@ -247,7 +247,7 @@ C_VOID core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
     core_machine_pic_irq_source_bind(&rtc->irq_source, pic_master, pic_slave, config->irq);
 }
 
-C_VOID core_machine_rtc_reset(core_machine_rtc *rtc)
+void core_machine_rtc_reset(core_machine_rtc *rtc)
 {
     if (rtc == LIB_NULL) return;
     /* RESET clears delivery state but does not stop the clock/calendar phase. */
@@ -259,7 +259,7 @@ C_VOID core_machine_rtc_reset(core_machine_rtc *rtc)
     core_machine_pic_irq_source_deassert(&rtc->irq_source);
 }
 
-C_VOID core_machine_rtc_advance(core_machine_rtc *rtc, lib_u64 elapsed_ticks)
+void core_machine_rtc_advance(core_machine_rtc *rtc, lib_u64 elapsed_ticks)
 {
     lib_u32 periodic_hz;
 
@@ -295,12 +295,12 @@ C_VOID core_machine_rtc_advance(core_machine_rtc *rtc, lib_u64 elapsed_ticks)
     rtc_refresh_irq(rtc);
 }
 
-C_VOID core_machine_rtc_finalize(core_machine_rtc *rtc)
+void core_machine_rtc_finalize(core_machine_rtc *rtc)
 {
     if (rtc != LIB_NULL) core_machine_pic_irq_source_deassert(&rtc->irq_source);
 }
 
-type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
+lib_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
     lib_u64 *out_ticks)
 {
     lib_u32 periodic_hz;
@@ -309,7 +309,7 @@ type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
     lib_u8 enable;
 
     if (rtc == LIB_NULL || out_ticks == LIB_NULL || !rtc_divider_running(rtc)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     enable = rtc->registers[CORE_MACHINE_RTC_REG_B];
     periodic_hz = rtc_periodic_hz(rtc);
@@ -328,15 +328,15 @@ type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
     }
     if ((enable & CORE_MACHINE_RTC_REG_B_AIE) != 0u &&
         (enable & CORE_MACHINE_RTC_REG_B_SET) == 0u &&
-        rtc_ticks_until_alarm(rtc, &update) == TYPE_STATUS_OK && update < ticks) {
+        rtc_ticks_until_alarm(rtc, &update) == LIB_STATUS_OK && update < ticks) {
         ticks = update;
     }
-    if (ticks == UINT64_MAX || ticks == 0u) return TYPE_STATUS_INVALID_STATE;
+    if (ticks == UINT64_MAX || ticks == 0u) return LIB_STATUS_INVALID_STATE;
     *out_ticks = ticks;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_rtc_select_register(core_machine_rtc *rtc, lib_u8 index)
+void core_machine_rtc_select_register(core_machine_rtc *rtc, lib_u8 index)
 {
     if (rtc != LIB_NULL) rtc->selected_register = index & 0x3fu;
 }
@@ -346,7 +346,7 @@ lib_u8 core_machine_rtc_read_selected(core_machine_rtc *rtc)
     return rtc == LIB_NULL ? 0u : rtc_read_register(rtc, rtc->selected_register);
 }
 
-C_VOID core_machine_rtc_write_selected(core_machine_rtc *rtc, lib_u8 value)
+void core_machine_rtc_write_selected(core_machine_rtc *rtc, lib_u8 value)
 {
     if (rtc != LIB_NULL) {
         rtc_write_register(rtc, rtc->selected_register, value);
@@ -354,7 +354,7 @@ C_VOID core_machine_rtc_write_selected(core_machine_rtc *rtc, lib_u8 value)
     }
 }
 
-C_VOID core_machine_rtc_write_nvram(core_machine_rtc *rtc, lib_u8 index,
+void core_machine_rtc_write_nvram(core_machine_rtc *rtc, lib_u8 index,
     lib_u8 value)
 {
     if (rtc == LIB_NULL || index >= CORE_MACHINE_RTC_REGISTER_COUNT ||
@@ -362,7 +362,7 @@ C_VOID core_machine_rtc_write_nvram(core_machine_rtc *rtc, lib_u8 index,
     rtc->registers[index] = value;
 }
 
-type_bool core_machine_rtc_get_square_wave(const core_machine_rtc *rtc)
+lib_u8 core_machine_rtc_get_square_wave(const core_machine_rtc *rtc)
 {
     return rtc == LIB_NULL ? LIB_FALSE : rtc->square_wave;
 }

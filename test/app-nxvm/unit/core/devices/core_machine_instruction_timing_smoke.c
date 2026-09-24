@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -13,29 +13,29 @@ typedef struct timing_port_state {
     lib_u32 writes;
 } timing_port_state;
 
-static type_status timing_port_read(C_VOID *owner, lib_u16 port,
+static lib_status timing_port_read(void *owner, lib_u16 port,
     lib_u32 *out_value)
 {
     timing_port_state *state = (timing_port_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     ++state->reads;
     *out_value = 0x5au;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status timing_port_write(C_VOID *owner, lib_u16 port,
+static lib_status timing_port_write(void *owner, lib_u16 port,
     lib_u32 value)
 {
     timing_port_state *state = (timing_port_state *)owner;
 
     if (state == LIB_NULL || port != 0x00e0u || value > 0xffu) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     ++state->writes;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_port_provider timing_port_provider = {
@@ -43,7 +43,7 @@ static const core_machine_port_provider timing_port_provider = {
     timing_port_write
 };
 
-static C_INT timing_prepare(core_machine **out_machine,
+static lib_i32 timing_prepare(core_machine **out_machine,
     timing_port_state *port_state)
 {
     const core_machine_config config = {
@@ -54,14 +54,14 @@ static C_INT timing_prepare(core_machine **out_machine,
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
-            &timing_port_provider, port_state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK) {
+            &timing_port_provider, port_state) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 0;
     }
@@ -69,17 +69,17 @@ static C_INT timing_prepare(core_machine **out_machine,
     return 1;
 }
 
-static C_INT timing_run(core_machine *machine, const lib_u8 *program,
+static lib_i32 timing_run(core_machine *machine, const lib_u8 *program,
     lib_size program_bytes, lib_u64 instructions, lib_u64 *out_ticks)
 {
     core_machine_run_budget budget = { instructions, 0u };
     core_machine_run_result result;
 
     if (machine == LIB_NULL || program == LIB_NULL || out_ticks == LIB_NULL ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, TIMING_RESET_LINEAR, program,
-            program_bytes) != TYPE_STATUS_OK ||
-        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            program_bytes) != LIB_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET ||
         result.executed != instructions) {
         return 0;
@@ -88,13 +88,13 @@ static C_INT timing_run(core_machine *machine, const lib_u8 *program,
     return 1;
 }
 
-static C_INT timing_case(const lib_u8 *program, lib_size program_bytes,
+static lib_i32 timing_case(const lib_u8 *program, lib_size program_bytes,
     lib_u64 instructions, lib_u64 expected_ticks)
 {
     timing_port_state port_state = { 0u, 0u };
     core_machine *machine = LIB_NULL;
     lib_u64 ticks = 0u;
-    C_INT failed = !timing_prepare(&machine, &port_state);
+    lib_i32 failed = !timing_prepare(&machine, &port_state);
 
     if (!failed) {
         failed |= !timing_run(machine, program, program_bytes, instructions,
@@ -104,7 +104,7 @@ static C_INT timing_case(const lib_u8 *program, lib_size program_bytes,
     return failed;
 }
 
-static C_INT timing_test_quantum_and_reset(C_VOID)
+static lib_i32 timing_test_quantum_and_reset(void)
 {
     static const lib_u8 program[] = { 0x90u, 0x26u, 0x90u, 0xa0u, 0x00u, 0x00u };
     timing_port_state port_state = { 0u, 0u };
@@ -114,22 +114,22 @@ static C_INT timing_test_quantum_and_reset(C_VOID)
     core_machine *machine = LIB_NULL;
     lib_u64 split_ticks = 0u;
     lib_u64 single_ticks = 0u;
-    C_INT failed = !timing_prepare(&machine, &port_state);
+    lib_i32 failed = !timing_prepare(&machine, &port_state);
     lib_u32 index;
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, TIMING_RESET_LINEAR,
-            program, sizeof(program)) != TYPE_STATUS_OK;
+            program, sizeof(program)) != LIB_STATUS_OK;
         for (index = 0u; !failed && index < 3u; ++index) {
-            failed |= core_machine_run(machine, one, &result) != TYPE_STATUS_OK ||
+            failed |= core_machine_run(machine, one, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u;
             split_ticks += result.ticks;
         }
         failed |= split_ticks != 11u;
-        failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, TIMING_RESET_LINEAR, program,
-                sizeof(program)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, all, &result) != TYPE_STATUS_OK ||
+                sizeof(program)) != LIB_STATUS_OK ||
+            core_machine_run(machine, all, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET;
         single_ticks = result.ticks;
         failed |= single_ticks != split_ticks;
@@ -138,20 +138,20 @@ static C_INT timing_test_quantum_and_reset(C_VOID)
     return failed;
 }
 
-static C_INT timing_test_fault(C_VOID)
+static lib_i32 timing_test_fault(void)
 {
     static const lib_u8 fault[] = { 0x66u, 0x90u };
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_prepare(&machine, &port_state);
+    lib_i32 failed = !timing_prepare(&machine, &port_state);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, TIMING_RESET_LINEAR, fault,
-            sizeof(fault)) != TYPE_STATUS_OK ||
+            sizeof(fault)) != LIB_STATUS_OK ||
             !test_core_machine_fixture_preflight_real_ud_terminal(machine) ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u;
     }
@@ -159,20 +159,20 @@ static C_INT timing_test_fault(C_VOID)
     return failed;
 }
 
-static C_INT timing_test_stop(C_VOID)
+static lib_i32 timing_test_stop(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_prepare(&machine, &port_state);
+    lib_i32 failed = !timing_prepare(&machine, &port_state);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, TIMING_RESET_LINEAR, nop,
-            sizeof(nop)) != TYPE_STATUS_OK ||
-            core_machine_request_stop(machine) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            sizeof(nop)) != LIB_STATUS_OK ||
+            core_machine_request_stop(machine) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_REQUESTED || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u;
     }
@@ -182,10 +182,10 @@ static C_INT timing_test_stop(C_VOID)
 
 typedef struct timing_qualification_probe {
     core_machine_retirement_eligibility_key key;
-    type_bool captured;
+    lib_u8 captured;
 } timing_qualification_probe;
 
-static C_VOID timing_qualification_record(C_VOID *context,
+static void timing_qualification_record(void *context,
     const core_machine_retirement_observation *observation)
 {
     timing_qualification_probe *probe = (timing_qualification_probe *)context;
@@ -196,7 +196,7 @@ static C_VOID timing_qualification_record(C_VOID *context,
     }
 }
 
-static C_INT timing_capture_qualification(const lib_u8 *program,
+static lib_i32 timing_capture_qualification(const lib_u8 *program,
     lib_size program_bytes, core_machine_retirement_eligibility_key *out_key)
 {
     const core_machine_config config = {
@@ -211,18 +211,18 @@ static C_INT timing_capture_qualification(const lib_u8 *program,
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = out_key == LIB_NULL ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = out_key == LIB_NULL ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
-            TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_set_retirement_observation_provider(machine, &provider) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_memory_write(machine, TIMING_RESET_LINEAR, program,
-            program_bytes) != TYPE_STATUS_OK ||
-        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            program_bytes) != LIB_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
         !probe.captured;
 
@@ -231,7 +231,7 @@ static C_INT timing_capture_qualification(const lib_u8 *program,
     return failed;
 }
 
-static C_INT timing_test_invalid_qualification(C_VOID)
+static lib_i32 timing_test_invalid_qualification(void)
 {
     core_machine_retirement_eligibility_key entry = { 0 };
     const core_machine_retirement_qualification_descriptor missing_entries = {
@@ -248,12 +248,12 @@ static C_INT timing_test_invalid_qualification(C_VOID)
     };
     core_machine *machine = LIB_NULL;
 
-    return core_machine_create(&missing_config, &machine) != TYPE_STATUS_INVALID_ARGUMENT ||
+    return core_machine_create(&missing_config, &machine) != LIB_STATUS_INVALID_ARGUMENT ||
         machine != LIB_NULL ||
-        core_machine_create(&empty_config, &machine) != TYPE_STATUS_INVALID_ARGUMENT ||
+        core_machine_create(&empty_config, &machine) != LIB_STATUS_INVALID_ARGUMENT ||
         machine != LIB_NULL;
 }
-static C_INT timing_test_physical_contract(C_VOID)
+static lib_i32 timing_test_physical_contract(void)
 {
     static const lib_u8 exact[] = { 0x90u };
     static const lib_u8 jcc[] = { 0x75u, 0xfeu };
@@ -275,54 +275,54 @@ static C_INT timing_test_physical_contract(C_VOID)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = timing_capture_qualification(exact, sizeof(exact),
+    lib_i32 failed = timing_capture_qualification(exact, sizeof(exact),
             &entries[0]) ||
         timing_capture_qualification(jcc, sizeof(jcc), &entries[1]) ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
-            &timing_port_provider, &port_state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK;
+            &timing_port_provider, &port_state) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK;
 
     if (!failed) {
         entries[0].opcode ^= 1u; /* create copied the descriptor. */
-        failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_INVALID_STATE ||
+        failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_INVALID_STATE ||
             core_machine_memory_write(machine, TIMING_RESET_LINEAR, exact,
-                sizeof(exact)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                sizeof(exact)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 3u || result.elapsed_ticks != 3u ||
-            core_machine_reset(machine) != TYPE_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, TIMING_RESET_LINEAR, jcc,
-                sizeof(jcc)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                sizeof(jcc)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 9u || result.elapsed_ticks != 9u ||
-            core_machine_reset(machine) != TYPE_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, TIMING_RESET_LINEAR,
-                classified_unqualified, sizeof(classified_unqualified)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+                classified_unqualified, sizeof(classified_unqualified)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
-            core_machine_reset(machine) != TYPE_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, TIMING_RESET_LINEAR,
                 equivalent_prefixed_nop, sizeof(equivalent_prefixed_nop)) !=
-                TYPE_STATUS_OK || core_machine_run(machine, budget, &result) !=
-                TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+                LIB_STATUS_OK || core_machine_run(machine, budget, &result) !=
+                LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             result.executed != 1u || result.ticks != 3u ||
             result.elapsed_ticks != 3u;
     }
     if (!failed) {
-        STD_PRINTF("M5:T394:S4:ELIGIBILITY-KEY:OK\n");
-        STD_PRINTF("M5:T394:S4:PHYSICAL-ABSENT-KEY:OK\n");
+        printf("M5:T394:S4:ELIGIBILITY-KEY:OK\n");
+        printf("M5:T394:S4:PHYSICAL-ABSENT-KEY:OK\n");
     }
     core_machine_destroy(machine);
     return failed;
 }
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 register_mov[] = { 0xb8u, 0x34u, 0x12u };
@@ -333,7 +333,7 @@ C_INT main(C_VOID)
     static const lib_u8 taken_branch[] = { 0x31u, 0xc0u, 0x74u, 0x01u, 0x90u };
     static const lib_u8 not_taken_branch[] = { 0x31u, 0xc0u, 0x75u, 0x00u };
     static const lib_u8 rep_movsb[] = { 0xb9u, 0x03u, 0x00u, 0xf3u, 0xa4u };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= timing_case(nop, sizeof(nop), 1u, 3u);
     failed |= timing_case(register_mov, sizeof(register_mov), 1u, 2u);
@@ -350,6 +350,6 @@ C_INT main(C_VOID)
     if (timing_test_stop()) return 7;
     if (timing_test_invalid_qualification()) return 8;
     if (timing_test_physical_contract()) return 9;
-    STD_PRINTF("M5:T265:S3:INSTRUCTION-TIMING:OK\n");
+    printf("M5:T265:S3:INSTRUCTION-TIMING:OK\n");
     return 0;
 }

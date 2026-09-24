@@ -1,7 +1,6 @@
 /* Copyright 2012-2014 Neko. */
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -10,22 +9,22 @@
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/fault.h"
 
-type_status vm_machine_get_information(const vm_machine *session,
+lib_status vm_machine_get_information(const vm_machine *session,
     vm_machine_information *out_information)
 {
     core_machine_cpu_profile cpu_profile;
     const vm_machine_fault_outcome *fault;
     lib_size memory_bytes = 0u;
-    type_status status;
+    lib_status status;
 
     if (session == LIB_NULL || out_information == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (session->core_machine == LIB_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (session->core_machine == LIB_NULL) return LIB_STATUS_INVALID_STATE;
     status = core_machine_get_memory_bytes(session->core_machine, &memory_bytes);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) return status;
     status = core_machine_get_cpu_profile(session->core_machine, &cpu_profile);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) return status;
     lib_memory_set(out_information, 0, sizeof(*out_information));
     out_information->profile_kind = session->retained_config.profile_kind;
     out_information->cpu_profile = cpu_profile;
@@ -51,5 +50,5 @@ type_status vm_machine_get_information(const vm_machine *session,
         out_information->fault_exception_cs = fault->diagnostic.first_fault.point.cs;
         out_information->fault_exception_eip = fault->diagnostic.first_fault.point.eip;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }

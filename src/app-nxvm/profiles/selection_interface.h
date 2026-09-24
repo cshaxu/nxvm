@@ -2,7 +2,6 @@
 #define VM_PROFILE_SELECTION_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/cpu_interface.h"
 #include "app-nxvm/devices/fpu_interface.h"
@@ -15,7 +14,7 @@ typedef enum vm_machine_profile_kind {
     VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
 } vm_machine_profile_kind;
 
-const C_CHAR *vm_profile_name(vm_machine_profile_kind kind);
+const char *vm_profile_name(vm_machine_profile_kind kind);
 
 typedef enum vm_machine_floppy_format {
     VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT,
@@ -35,17 +34,17 @@ typedef enum vm_machine_floppy_format {
 typedef struct vm_machine_config {
     vm_machine_profile_kind profile_kind;
     lib_size memory_bytes;
-    const C_CHAR *floppy_image[VM_MACHINE_FLOPPY_SLOT_COUNT];
-    const C_CHAR *fixed_disk_image[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
+    const char *floppy_image[VM_MACHINE_FLOPPY_SLOT_COUNT];
+    const char *fixed_disk_image[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
     lib_storage_medium_mode floppy_mode[VM_MACHINE_FLOPPY_SLOT_COUNT];
     lib_storage_medium_mode fixed_disk_mode[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
-    const C_CHAR *cmos_seed;
-    const C_CHAR *font_path;
-    const C_CHAR *bios_path[2];
+    const char *cmos_seed;
+    const char *font_path;
+    const char *bios_path[2];
     lib_size bios_count;
-    const C_CHAR *video_path;
+    const char *video_path;
     vm_machine_floppy_format floppy_format;
-    C_INT create_fdd;
+    lib_i32 create_fdd;
     lib_u16 create_hdd_cylinders;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;

@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/fpu.h"
 
@@ -17,13 +16,13 @@ static lib_u8 core_machine_fpu_physical_index(const core_machine_fpu *fpu,
     return (lib_u8)((fpu->top + logical_index) & 7u);
 }
 
-static C_VOID core_machine_fpu_sync_top(core_machine_fpu *fpu)
+static void core_machine_fpu_sync_top(core_machine_fpu *fpu)
 {
     fpu->status_word = (lib_u16)((fpu->status_word & ~CORE_MACHINE_FPU_STATUS_TOP) |
         ((lib_u16)fpu->top << 11u));
 }
 
-static C_VOID core_machine_fpu_raise(core_machine_fpu *fpu,
+static void core_machine_fpu_raise(core_machine_fpu *fpu,
     lib_u16 status_bits, lib_u16 mask_bits)
 {
     fpu->status_word = (lib_u16)(fpu->status_word | status_bits);
@@ -33,7 +32,7 @@ static C_VOID core_machine_fpu_raise(core_machine_fpu *fpu,
     }
 }
 
-static C_INT core_machine_fpu_push(core_machine_fpu *fpu,
+static lib_i32 core_machine_fpu_push(core_machine_fpu *fpu,
     const core_machine_fpu_value *value)
 {
     lib_u8 index = (lib_u8)((fpu->top + 7u) & 7u);
@@ -50,7 +49,7 @@ static C_INT core_machine_fpu_push(core_machine_fpu *fpu,
     return 1;
 }
 
-static C_INT core_machine_fpu_st(const core_machine_fpu *fpu, lib_u8 logical,
+static lib_i32 core_machine_fpu_st(const core_machine_fpu *fpu, lib_u8 logical,
     core_machine_fpu_value *out_value, lib_u8 *out_physical)
 {
     lib_u8 index;
@@ -63,20 +62,20 @@ static C_INT core_machine_fpu_st(const core_machine_fpu *fpu, lib_u8 logical,
     return 1;
 }
 
-static C_VOID core_machine_fpu_stack_fault(core_machine_fpu *fpu)
+static void core_machine_fpu_stack_fault(core_machine_fpu *fpu)
 {
     core_machine_fpu_raise(fpu, CORE_MACHINE_FPU_STATUS_IE |
         CORE_MACHINE_FPU_STATUS_SF, CORE_MACHINE_FPU_STATUS_IE);
 }
 
-static C_INT core_machine_fpu_decode_m32(lib_u32 bits,
+static lib_i32 core_machine_fpu_decode_m32(lib_u32 bits,
     core_machine_fpu_value *out_value)
 {
     lib_u32 exponent = (bits >> 23u) & 0xffu;
     lib_u32 fraction = bits & 0x007fffffu;
 
     if (exponent == 0xffu || (exponent == 0u && fraction != 0u)) return 0;
-    out_value->negative = (type_bool)((bits >> 31u) != 0u);
+    out_value->negative = (lib_u8)((bits >> 31u) != 0u);
     if (exponent == 0u) {
         out_value->kind = CORE_MACHINE_FPU_VALUE_ZERO;
         out_value->exponent = 0;
@@ -89,11 +88,11 @@ static C_INT core_machine_fpu_decode_m32(lib_u32 bits,
     return 1;
 }
 
-static C_INT core_machine_fpu_encode_m32(const core_machine_fpu_value *value,
+static lib_i32 core_machine_fpu_encode_m32(const core_machine_fpu_value *value,
     lib_u32 *out_bits)
 {
     lib_u32 bits = value->negative ? 0x80000000u : 0u;
-    C_INT exponent;
+    lib_i32 exponent;
 
     if (value->kind == CORE_MACHINE_FPU_VALUE_ZERO) {
         *out_bits = bits;
@@ -103,7 +102,7 @@ static C_INT core_machine_fpu_encode_m32(const core_machine_fpu_value *value,
         *out_bits = bits | 0x7f800000u;
         return 1;
     }
-    exponent = (C_INT)value->exponent + 127;
+    exponent = (lib_i32)value->exponent + 127;
     if (exponent <= 0 || exponent >= 0xff ||
         value->significand < 0x00800000u || value->significand >= 0x01000000u) {
         return 0;
@@ -113,7 +112,7 @@ static C_INT core_machine_fpu_encode_m32(const core_machine_fpu_value *value,
     return 1;
 }
 
-static C_INT core_machine_fpu_add(const core_machine_fpu_value *left,
+static lib_i32 core_machine_fpu_add(const core_machine_fpu_value *left,
     const core_machine_fpu_value *right, core_machine_fpu_value *out_value)
 {
     lib_i16 exponent;
@@ -164,7 +163,7 @@ static C_INT core_machine_fpu_add(const core_machine_fpu_value *left,
     return 1;
 }
 
-static C_INT core_machine_fpu_multiply(const core_machine_fpu_value *left,
+static lib_i32 core_machine_fpu_multiply(const core_machine_fpu_value *left,
     const core_machine_fpu_value *right, core_machine_fpu_value *out_value)
 {
     lib_u64 product;
@@ -190,7 +189,7 @@ static C_INT core_machine_fpu_multiply(const core_machine_fpu_value *left,
     return 1;
 }
 
-static C_INT core_machine_fpu_divide(core_machine_fpu *fpu,
+static lib_i32 core_machine_fpu_divide(core_machine_fpu *fpu,
     const core_machine_fpu_value *left, const core_machine_fpu_value *right,
     core_machine_fpu_value *out_value)
 {
@@ -226,7 +225,7 @@ static C_INT core_machine_fpu_divide(core_machine_fpu *fpu,
     return 1;
 }
 
-C_VOID core_machine_fpu_initialize(core_machine_fpu *fpu,
+void core_machine_fpu_initialize(core_machine_fpu *fpu,
     core_machine_fpu_profile profile)
 {
     if (fpu == LIB_NULL) return;
@@ -234,7 +233,7 @@ C_VOID core_machine_fpu_initialize(core_machine_fpu *fpu,
     core_machine_fpu_reset(fpu);
 }
 
-C_VOID core_machine_fpu_reset(core_machine_fpu *fpu)
+void core_machine_fpu_reset(core_machine_fpu *fpu)
 {
     lib_u8 index;
 
@@ -290,7 +289,7 @@ core_machine_fpu_operation_metadata core_machine_fpu_operation_metadata_get(
     return metadata;
 }
 
-static type_bool core_machine_fpu_profile_allows_cpu(core_machine_cpu_profile cpu,
+static lib_u8 core_machine_fpu_profile_allows_cpu(core_machine_cpu_profile cpu,
     core_machine_fpu_profile fpu)
 {
     if (fpu == CORE_MACHINE_FPU_PROFILE_NONE) return LIB_TRUE;
@@ -338,8 +337,8 @@ static lib_u32 core_machine_fpu_external_l2_ticks(
     }
 }
 
-C_VOID core_machine_fpu_begin_command(core_machine_fpu *fpu,
-    C_UCHAR escape_opcode, C_UCHAR modrm)
+void core_machine_fpu_begin_command(core_machine_fpu *fpu,
+    lib_u8 escape_opcode, lib_u8 modrm)
 {
     core_machine_fpu_operation_metadata metadata =
         core_machine_fpu_operation_metadata_get(escape_opcode, modrm);
@@ -385,7 +384,7 @@ C_VOID core_machine_fpu_begin_command(core_machine_fpu *fpu,
 
 core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
     core_machine_fpu *fpu, core_machine_cpu_profile cpu,
-    C_UCHAR escape_opcode, C_UCHAR modrm)
+    lib_u8 escape_opcode, lib_u8 modrm)
 {
     if (escape_opcode < 0xd8u || escape_opcode > 0xdfu) {
         return CORE_MACHINE_FPU_ESCAPE_UNSUPPORTED;
@@ -401,7 +400,7 @@ core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
         CORE_MACHINE_FPU_ESCAPE_EXECUTE_8087 : CORE_MACHINE_FPU_ESCAPE_HANDOFF;
 }
 
-C_VOID core_machine_fpu_advance(core_machine_fpu *fpu,
+void core_machine_fpu_advance(core_machine_fpu *fpu,
     lib_u64 elapsed_ticks)
 {
     if (fpu == LIB_NULL || !fpu->busy || elapsed_ticks == 0u) return;
@@ -413,18 +412,18 @@ C_VOID core_machine_fpu_advance(core_machine_fpu *fpu,
     }
 }
 
-type_status core_machine_fpu_ticks_until_completion(const core_machine_fpu *fpu,
+lib_status core_machine_fpu_ticks_until_completion(const core_machine_fpu *fpu,
     lib_u64 *out_ticks)
 {
     if (fpu == LIB_NULL || out_ticks == LIB_NULL || !fpu->busy ||
         fpu->completion_remaining_ticks == 0u) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     *out_ticks = fpu->completion_remaining_ticks;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_fpu_get_state(const core_machine_fpu *fpu,
+void core_machine_fpu_get_state(const core_machine_fpu *fpu,
     core_machine_fpu_state *out_state)
 {
     lib_u8 index;
@@ -445,7 +444,7 @@ core_machine_fpu_execute_result core_machine_fpu_load_m32(core_machine_fpu *fpu,
     if (fpu == LIB_NULL || !core_machine_fpu_decode_m32(bits, &value)) {
         return CORE_MACHINE_FPU_EXECUTE_UNSUPPORTED;
     }
-    (C_VOID)core_machine_fpu_push(fpu, &value);
+    (void)core_machine_fpu_push(fpu, &value);
     return CORE_MACHINE_FPU_EXECUTE_COMPLETED;
 }
 
@@ -470,7 +469,7 @@ core_machine_fpu_execute_result core_machine_fpu_store_m32(core_machine_fpu *fpu
     return CORE_MACHINE_FPU_EXECUTE_COMPLETED;
 }
 
-C_VOID core_machine_fpu_load_control_word(core_machine_fpu *fpu,
+void core_machine_fpu_load_control_word(core_machine_fpu *fpu,
     lib_u16 control_word)
 {
     if (fpu == LIB_NULL) return;
@@ -490,7 +489,7 @@ core_machine_fpu_execute_result core_machine_fpu_binary_st0_sti(core_machine_fpu
     core_machine_fpu_value right;
     core_machine_fpu_value result;
     lib_u8 destination;
-    C_INT completed = 0;
+    lib_i32 completed = 0;
 
     if (fpu == LIB_NULL || !core_machine_fpu_st(fpu, 0u, &left, &destination) ||
         !core_machine_fpu_st(fpu, index, &right, LIB_NULL)) {
@@ -512,7 +511,7 @@ core_machine_fpu_execute_result core_machine_fpu_binary_st0_sti(core_machine_fpu
     return CORE_MACHINE_FPU_EXECUTE_COMPLETED;
 }
 
-type_bool core_machine_fpu_wait_pending(const core_machine_fpu *fpu)
+lib_u8 core_machine_fpu_wait_pending(const core_machine_fpu *fpu)
 {
     return fpu != LIB_NULL && fpu->pending_unmasked_exception;
 }

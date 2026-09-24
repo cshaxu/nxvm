@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -7,9 +7,9 @@
 
 #define PREVIEW_RESET_PHYSICAL 0x000ffff0u
 
-static C_INT preview_expect(const lib_u8 *bytes,
+static lib_i32 preview_expect(const lib_u8 *bytes,
     lib_u8 available_bytes, core_machine_cpu_profile profile,
-    type_bool code_32, lib_u8 expected_bytes,
+    lib_u8 code_32, lib_u8 expected_bytes,
     lib_u8 expected_components)
 {
     core_machine_cpu_instruction_lexeme lexeme;
@@ -20,7 +20,7 @@ static C_INT preview_expect(const lib_u8 *bytes,
         lexeme.component_count == expected_components;
 }
 
-static C_INT preview_test_layouts(C_VOID)
+static lib_i32 preview_test_layouts(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 mov_imm32[] = {
@@ -73,7 +73,7 @@ static C_INT preview_test_layouts(C_VOID)
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 4u, 4u);
 }
 
-static C_INT preview_test_accumulator_xchg_profiles(C_VOID)
+static lib_i32 preview_test_accumulator_xchg_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -93,7 +93,7 @@ static C_INT preview_test_accumulator_xchg_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u,0x97u}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 2u, 2u);
 }
-static C_INT preview_test_primary_inc_dec_profiles(C_VOID)
+static lib_i32 preview_test_primary_inc_dec_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -113,7 +113,7 @@ static C_INT preview_test_primary_inc_dec_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u,0x48u}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 2u, 2u);
 }
-static C_INT preview_test_immediate_register_mov_profiles(C_VOID)
+static lib_i32 preview_test_immediate_register_mov_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -148,7 +148,7 @@ static C_INT preview_test_immediate_register_mov_profiles(C_VOID)
     return 1;
 }
 
-static C_INT preview_test_accumulator_test_profiles(C_VOID)
+static lib_i32 preview_test_accumulator_test_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -166,7 +166,7 @@ static C_INT preview_test_accumulator_test_profiles(C_VOID)
     return preview_expect(dword, sizeof(dword), CORE_MACHINE_CPU_PROFILE_80386,
         LIB_FALSE, 6u, 3u);
 }
-static C_INT preview_test_scas_profiles(C_VOID)
+static lib_i32 preview_test_scas_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -202,7 +202,7 @@ static C_INT preview_test_scas_profiles(C_VOID)
     }
     return 1;
 }
-static C_INT preview_test_lods_profiles(C_VOID)
+static lib_i32 preview_test_lods_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -235,7 +235,7 @@ static C_INT preview_test_lods_profiles(C_VOID)
     }
     return 1;
 }
-static C_INT preview_test_stos_profiles(C_VOID)
+static lib_i32 preview_test_stos_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -268,7 +268,7 @@ static C_INT preview_test_stos_profiles(C_VOID)
     }
     return 1;
 }
-static C_INT preview_test_cmps_profiles(C_VOID)
+static lib_i32 preview_test_cmps_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -305,7 +305,7 @@ static C_INT preview_test_cmps_profiles(C_VOID)
     return 1;
 }
 
-static C_INT preview_test_movs_profiles(C_VOID)
+static lib_i32 preview_test_movs_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -339,7 +339,7 @@ static C_INT preview_test_movs_profiles(C_VOID)
     return 1;
 }
 
-static C_INT preview_test_moffs_mov_profiles(C_VOID)
+static lib_i32 preview_test_moffs_mov_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -370,7 +370,7 @@ static C_INT preview_test_moffs_mov_profiles(C_VOID)
     return 1;
 }
 
-static C_INT preview_test_enter_leave_profiles(C_VOID)
+static lib_i32 preview_test_enter_leave_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
@@ -390,7 +390,7 @@ static C_INT preview_test_enter_leave_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u,0xc9u}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 2u, 2u);
 }
-static C_INT preview_test_far_return_profiles(C_VOID)
+static lib_i32 preview_test_far_return_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -409,7 +409,7 @@ static C_INT preview_test_far_return_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u, 0xcau, 4u, 0u}, 4u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 4u, 3u);
 }
-static C_INT preview_test_near_return_profiles(C_VOID)
+static lib_i32 preview_test_near_return_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -428,7 +428,7 @@ static C_INT preview_test_near_return_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u, 0xc2u, 4u, 0u}, 4u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 4u, 3u);
 }
-static C_INT preview_test_group2_immediate_profiles(C_VOID)
+static lib_i32 preview_test_group2_immediate_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
@@ -453,7 +453,7 @@ static C_INT preview_test_group2_immediate_profiles(C_VOID)
     return preview_expect((const lib_u8[]){0x66u, 0xc1u, 0xc0u, 1u},
         4u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 4u, 4u);
 }
-static C_INT preview_test_les_lds_profiles(C_VOID)
+static lib_i32 preview_test_les_lds_profiles(void)
 {
     static const lib_u8 les[] = {0xc4u,0x06u,0u,0x20u};
     static const lib_u8 lds[] = {0xc5u,0x06u,0u,0x20u};
@@ -465,14 +465,14 @@ static C_INT preview_test_les_lds_profiles(C_VOID)
     return preview_expect((const lib_u8[]){0x66u,0xc4u,0x06u,0u,0x20u},5u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,5u,4u);
 }
 
-static C_INT preview_test_sreg_push_pop_profiles(C_VOID)
+static lib_i32 preview_test_sreg_push_pop_profiles(void)
 {
     static const lib_u8 legacy[] = {0x06u,0x07u,0x0eu,0x16u,0x17u,0x1eu,0x1fu}; static const lib_u8 extended[] = {0xa0u,0xa1u,0xa8u,0xa9u}; static const core_machine_cpu_profile p[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386}; lib_u8 i,j;
     for(i=0u;i!=sizeof(p)/sizeof(p[0]);++i) for(j=0u;j!=sizeof(legacy);++j) if(!preview_expect(&legacy[j],1u,p[i],LIB_FALSE,1u,1u)) return 0;
     for(j=0u;j!=sizeof(extended);++j) { if(!preview_expect((const lib_u8[]){0x0fu,extended[j]},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u)) return 0; } return 1;
 }
 
-static C_INT preview_test_lea_profiles(C_VOID)
+static lib_i32 preview_test_lea_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = { CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386 };
     static const lib_u8 lea[] = {0x8du, 0x40u, 0x10u};
@@ -482,7 +482,7 @@ static C_INT preview_test_lea_profiles(C_VOID)
     return preview_expect((const lib_u8[]){0x66u,0x8du,0x40u,0x10u},4u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,4u,4u) && preview_expect((const lib_u8[]){0x67u,0x8du,0x46u,0x10u},4u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,4u,4u);
 }
 
-static C_INT preview_test_loop_jcxz_profiles(C_VOID)
+static lib_i32 preview_test_loop_jcxz_profiles(void)
 {
     static const lib_u8 opcodes[] = {0xe0u, 0xe1u, 0xe2u, 0xe3u};
     static const core_machine_cpu_profile profiles[] = {
@@ -501,7 +501,7 @@ static C_INT preview_test_loop_jcxz_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x67u, 0xe3u, 0u}, 3u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 3u, 3u);
 }
-static C_INT preview_test_direct_flags_profiles(C_VOID)
+static lib_i32 preview_test_direct_flags_profiles(void)
 {
     static const lib_u8 opcodes[] = {0xf5u, 0xf8u, 0xf9u, 0xfcu, 0xfdu};
     static const core_machine_cpu_profile profiles[] = {
@@ -520,7 +520,7 @@ static C_INT preview_test_direct_flags_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x67u, 0xfdu}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 2u, 2u);
 }
-static C_INT preview_test_modrm_data_move_profiles(C_VOID)
+static lib_i32 preview_test_modrm_data_move_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -568,7 +568,7 @@ static C_INT preview_test_modrm_data_move_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x8eu, 0xe1u}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 2u, 2u);
 }
-static C_INT preview_test_rm_immediate_mov_profiles(C_VOID)
+static lib_i32 preview_test_rm_immediate_mov_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -598,7 +598,7 @@ static C_INT preview_test_rm_immediate_mov_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x67u, 0xc7u, 0x46u, 0x10u,
         0x34u, 0x12u}, 6u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 6u, 5u);
 }
-static C_INT preview_test_shared_prefix_profiles(C_VOID)
+static lib_i32 preview_test_shared_prefix_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -641,7 +641,7 @@ static C_INT preview_test_shared_prefix_profiles(C_VOID)
         !core_machine_cpu_instruction_lexeme_scan(locked_add, sizeof(locked_add),
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, &lexeme) && !lexeme.available;
 }
-static C_INT preview_test_primary_alu_profiles(C_VOID)
+static lib_i32 preview_test_primary_alu_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -678,7 +678,7 @@ static C_INT preview_test_primary_alu_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u, 0x67u, 0x03u, 0x46u,
         0x10u}, 5u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 5u, 5u);
 }
-static C_INT preview_test_direct_far_control_profiles(C_VOID)
+static lib_i32 preview_test_direct_far_control_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -709,7 +709,7 @@ static C_INT preview_test_direct_far_control_profiles(C_VOID)
             0x78u, 0x56u, 0x34u, 0x12u, 0xbcu, 0x9au}, 9u,
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 9u, 4u);
 }
-static C_INT preview_test_direct_near_control_profiles(C_VOID)
+static lib_i32 preview_test_direct_near_control_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -741,7 +741,7 @@ static C_INT preview_test_direct_near_control_profiles(C_VOID)
             0x78u, 0x56u, 0x34u, 0x12u}, 7u,
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 7u, 4u);
 }
-static C_INT preview_test_near_jcc_profiles(C_VOID)
+static lib_i32 preview_test_near_jcc_profiles(void)
 {
     static const core_machine_cpu_profile unavailable_profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186,
@@ -774,7 +774,7 @@ static C_INT preview_test_near_jcc_profiles(C_VOID)
             0x8cu, 0x78u, 0x56u, 0x34u, 0x12u}, 8u,
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 8u, 5u);
 }
-static C_INT preview_test_setcc_profiles(C_VOID)
+static lib_i32 preview_test_setcc_profiles(void)
 {
     static const core_machine_cpu_profile unavailable_profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
@@ -804,7 +804,7 @@ static C_INT preview_test_setcc_profiles(C_VOID)
             0x05u, 0x78u, 0x56u, 0x34u, 0x12u}, 9u,
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 9u, 6u);
 }
-static C_INT preview_test_bit_test_profiles(C_VOID)
+static lib_i32 preview_test_bit_test_profiles(void)
 {
     static const core_machine_cpu_profile unavailable_profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
@@ -830,7 +830,7 @@ static C_INT preview_test_bit_test_profiles(C_VOID)
     for (extension = 0u; extension != 8u; ++extension) {
         const lib_u8 ba[] = {0x0fu, 0xbau,
             (lib_u8)(0xc0u | (extension << 3u)), 0x1fu};
-        const type_bool valid = extension >= 4u;
+        const lib_u8 valid = extension >= 4u;
         if (valid != (core_machine_cpu_instruction_lexeme_scan(ba, sizeof(ba),
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, &lexeme) && lexeme.available))
             return 0;
@@ -849,7 +849,7 @@ static C_INT preview_test_bit_test_profiles(C_VOID)
             0x05u, 0x78u, 0x56u, 0x34u, 0x12u}, 9u,
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 9u, 6u);
 }
-static C_INT preview_test_double_shift_profiles(C_VOID)
+static lib_i32 preview_test_double_shift_profiles(void)
 {
     static const core_machine_cpu_profile unavailable[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
@@ -881,7 +881,7 @@ static C_INT preview_test_double_shift_profiles(C_VOID)
             0x66u,0x67u,0x0fu,0xacu,0x05u,0x78u,0x56u,0x34u,0x12u,1u},
             10u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 10u, 7u);
 }
-static C_INT preview_test_bit_scan_profiles(C_VOID)
+static lib_i32 preview_test_bit_scan_profiles(void)
 {
     static const core_machine_cpu_profile unavailable[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
@@ -910,7 +910,7 @@ static C_INT preview_test_bit_scan_profiles(C_VOID)
             0x66u,0x67u,0x0fu,0xbcu,0x05u,0x78u,0x56u,0x34u,0x12u},
             9u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 9u, 6u);
 }
-static C_INT preview_test_movx_profiles(C_VOID)
+static lib_i32 preview_test_movx_profiles(void)
 {
     static const core_machine_cpu_profile unavailable[] = {CORE_MACHINE_CPU_PROFILE_80186,CORE_MACHINE_CPU_PROFILE_80286};
     static const lib_u8 opcodes[] = {0xb6u,0xb7u,0xbeu,0xbfu};
@@ -922,7 +922,7 @@ static C_INT preview_test_movx_profiles(C_VOID)
         if(!preview_expect((const lib_u8[]){0x0fu,opcodes[index],0xc8u},3u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,3u,3u)||!preview_expect((const lib_u8[]){0x0fu,opcodes[index],0x0eu,0x34u,0x12u},5u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,5u,4u))return 0;
     return preview_expect((const lib_u8[]){0x66u,0x0fu,0xb7u,0xc8u},4u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,4u,4u)&&preview_expect((const lib_u8[]){0x67u,0x0fu,0xbeu,0x05u,0x78u,0x56u,0x34u,0x12u},8u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,8u,5u)&&preview_expect((const lib_u8[]){0x66u,0x67u,0x0fu,0xbfu,0x05u,0x78u,0x56u,0x34u,0x12u},9u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,9u,6u);
 }
-static C_INT preview_test_imul2_profiles(C_VOID)
+static lib_i32 preview_test_imul2_profiles(void)
 {
     static const core_machine_cpu_profile unavailable[] = {CORE_MACHINE_CPU_PROFILE_80186,CORE_MACHINE_CPU_PROFILE_80286};
     core_machine_cpu_instruction_lexeme lexeme; lib_u8 profile;
@@ -930,7 +930,7 @@ static C_INT preview_test_imul2_profiles(C_VOID)
         if(core_machine_cpu_instruction_lexeme_scan((const lib_u8[]){0x0fu,0xafu,0xc8u},3u,unavailable[profile],LIB_FALSE,&lexeme)||lexeme.available)return 0;
     return preview_expect((const lib_u8[]){0x0fu,0xafu,0xc8u},3u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,3u,3u)&&preview_expect((const lib_u8[]){0x0fu,0xafu,0x0eu,0x34u,0x12u},5u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,5u,4u)&&preview_expect((const lib_u8[]){0x66u,0x0fu,0xafu,0xc8u},4u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,4u,4u)&&preview_expect((const lib_u8[]){0x67u,0x0fu,0xafu,0x05u,0x78u,0x56u,0x34u,0x12u},8u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,8u,5u)&&preview_expect((const lib_u8[]){0x66u,0x67u,0x0fu,0xafu,0x05u,0x78u,0x56u,0x34u,0x12u},9u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,9u,6u);
 }
-static C_INT preview_test_system_selector_group_profiles(C_VOID)
+static lib_i32 preview_test_system_selector_group_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
@@ -956,7 +956,7 @@ static C_INT preview_test_system_selector_group_profiles(C_VOID)
             0x00u, 0xc0u}, 3u, CORE_MACHINE_CPU_PROFILE_80186, LIB_FALSE,
             &lexeme) == LIB_FALSE && !lexeme.available;
 }
-static C_INT preview_test_system_group_profiles(C_VOID)
+static lib_i32 preview_test_system_group_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
@@ -992,7 +992,7 @@ static C_INT preview_test_system_group_profiles(C_VOID)
             0x0fu, 0x01u, 0x05u, 0u, 0x20u, 0u, 0u}, 8u,
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 8u, 5u);
 }
-static C_INT preview_test_test_mov_profiles(C_VOID)
+static lib_i32 preview_test_test_mov_profiles(void)
 {
     static const core_machine_cpu_profile unavailable[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
@@ -1030,7 +1030,7 @@ static C_INT preview_test_test_mov_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u, 0x67u, 0x0fu, 0x26u,
             0xf0u}, 5u, CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE, 5u, 5u);
 }
-static C_INT preview_test_lss_lfs_lgs_profiles(C_VOID)
+static lib_i32 preview_test_lss_lfs_lgs_profiles(void)
 {
     static const core_machine_cpu_profile unavailable[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
@@ -1064,7 +1064,7 @@ static C_INT preview_test_lss_lfs_lgs_profiles(C_VOID)
             0x05u, 0x78u, 0x56u, 0x34u, 0x12u}, 9u,
             CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 9u, 6u);
 }
-static C_INT preview_test_debug_mov_profiles(C_VOID)
+static lib_i32 preview_test_debug_mov_profiles(void)
 {
     static const core_machine_cpu_profile unavailable[]={CORE_MACHINE_CPU_PROFILE_80186,CORE_MACHINE_CPU_PROFILE_80286};
     static const lib_u8 opcodes[]={0x21u,0x23u},valid[]={0u,1u,2u,3u,6u,7u};
@@ -1073,7 +1073,7 @@ static C_INT preview_test_debug_mov_profiles(C_VOID)
     for(o=0u;o<sizeof(opcodes);++o){for(i=0u;i<sizeof(valid);++i)if(!preview_expect((const lib_u8[]){0x0fu,opcodes[o],(lib_u8)(0xc0u|(valid[i]<<3u))},3u,CORE_MACHINE_CPU_PROFILE_80386,LIB_TRUE,3u,3u))return 0;for(i=4u;i<6u;++i)if(core_machine_cpu_instruction_lexeme_scan((const lib_u8[]){0x0fu,opcodes[o],(lib_u8)(0xc0u|(i<<3u))},3u,CORE_MACHINE_CPU_PROFILE_80386,LIB_TRUE,&lexeme)||lexeme.available)return 0;}
     return !(core_machine_cpu_instruction_lexeme_scan((const lib_u8[]){0x0fu,0x21u,0x00u},3u,CORE_MACHINE_CPU_PROFILE_80386,LIB_TRUE,&lexeme)||lexeme.available);
 }
-static C_INT preview_test_short_jcc_profiles(C_VOID)
+static lib_i32 preview_test_short_jcc_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -1093,7 +1093,7 @@ static C_INT preview_test_short_jcc_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u, 0x67u, 0x7cu, 0u}, 4u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 4u, 4u);
 }
-static C_INT preview_test_scalar_io_profiles(C_VOID)
+static lib_i32 preview_test_scalar_io_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -1121,7 +1121,7 @@ static C_INT preview_test_scalar_io_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u, 0xefu}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 2u, 2u);
 }
-static C_INT preview_test_string_io_profiles(C_VOID)
+static lib_i32 preview_test_string_io_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
@@ -1149,7 +1149,7 @@ static C_INT preview_test_string_io_profiles(C_VOID)
         preview_expect((const lib_u8[]){0xf3u, 0x66u, 0x67u, 0x6du},
         4u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 4u, 4u);
 }
-static C_INT preview_test_push_immediate_profiles(C_VOID)
+static lib_i32 preview_test_push_immediate_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
@@ -1179,35 +1179,35 @@ static C_INT preview_test_push_immediate_profiles(C_VOID)
         0x6au, 0x80u}, 4u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
         4u, 4u);
 }
-static C_INT preview_test_gpr_push_pop_profiles(C_VOID)
+static lib_i32 preview_test_gpr_push_pop_profiles(void)
 {
     static const core_machine_cpu_profile p[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386}; lib_u8 i;
     for (i=0u;i!=sizeof(p)/sizeof(p[0]);++i) if (!preview_expect((const lib_u8[]){0x50u},1u,p[i],LIB_FALSE,1u,1u)||!preview_expect((const lib_u8[]){0x58u},1u,p[i],LIB_FALSE,1u,1u)) return 0;
     return preview_expect((const lib_u8[]){0x66u,0x50u},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u)&&preview_expect((const lib_u8[]){0x67u,0x58u},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u);
 }
 
-static C_INT preview_test_pushf_popf_profiles(C_VOID)
+static lib_i32 preview_test_pushf_popf_profiles(void)
 {
     static const core_machine_cpu_profile p[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386}; lib_u8 i;
     for (i=0u;i!=sizeof(p)/sizeof(p[0]);++i) if (!preview_expect((const lib_u8[]){0x9cu},1u,p[i],LIB_FALSE,1u,1u)||!preview_expect((const lib_u8[]){0x9du},1u,p[i],LIB_FALSE,1u,1u)) return 0;
     return preview_expect((const lib_u8[]){0x66u,0x9cu},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u)&&preview_expect((const lib_u8[]){0x67u,0x9du},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u);
 }
 
-static C_INT preview_test_hlt_profiles(C_VOID)
+static lib_i32 preview_test_hlt_profiles(void)
 {
     static const core_machine_cpu_profile p[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386}; lib_u8 i;
     for (i=0u;i!=sizeof(p)/sizeof(p[0]);++i) if (!preview_expect((const lib_u8[]){0xf4u},1u,p[i],LIB_FALSE,1u,1u)) return 0;
     return preview_expect((const lib_u8[]){0x66u,0xf4u},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u)&&preview_expect((const lib_u8[]){0x67u,0xf4u},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u);
 }
 
-static C_INT preview_test_cli_sti_profiles(C_VOID)
+static lib_i32 preview_test_cli_sti_profiles(void)
 {
     static const core_machine_cpu_profile p[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386}; lib_u8 i;
     for (i=0u;i!=sizeof(p)/sizeof(p[0]);++i) if (!preview_expect((const lib_u8[]){0xfau},1u,p[i],LIB_FALSE,1u,1u)||!preview_expect((const lib_u8[]){0xfbu},1u,p[i],LIB_FALSE,1u,1u)) return 0;
     return preview_expect((const lib_u8[]){0x66u,0xfau},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u)&&preview_expect((const lib_u8[]){0x67u,0xfbu},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u);
 }
 
-static C_INT preview_test_lahf_sahf_profiles(C_VOID)
+static lib_i32 preview_test_lahf_sahf_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386};
     lib_u8 profile;
@@ -1216,7 +1216,7 @@ static C_INT preview_test_lahf_sahf_profiles(C_VOID)
     return preview_expect((const lib_u8[]){0x66u,0x9fu},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u) && preview_expect((const lib_u8[]){0x67u,0x9eu},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u);
 }
 
-static C_INT preview_test_xlat_profiles(C_VOID)
+static lib_i32 preview_test_xlat_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386};
     lib_u8 profile;
@@ -1225,7 +1225,7 @@ static C_INT preview_test_xlat_profiles(C_VOID)
     return preview_expect((const lib_u8[]){0x67u,0xd7u},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u) && preview_expect((const lib_u8[]){0x26u,0xd7u},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u);
 }
 
-static C_INT preview_test_decimal_adjust_profiles(C_VOID)
+static lib_i32 preview_test_decimal_adjust_profiles(void)
 {
     static const lib_u8 simple[] = {0x27u,0x2fu,0x37u,0x3fu};
     static const core_machine_cpu_profile profiles[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386};
@@ -1238,7 +1238,7 @@ static C_INT preview_test_decimal_adjust_profiles(C_VOID)
     return preview_expect((const lib_u8[]){0x66u,0xd4u,10u},3u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,3u,3u) && preview_expect((const lib_u8[]){0x67u,0xd5u,10u},3u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,3u,3u);
 }
 
-static C_INT preview_test_lar_lsl_profiles(C_VOID)
+static lib_i32 preview_test_lar_lsl_profiles(void)
 {
     static const lib_u8 lar[] = {0x0fu,0x02u,0xc1u};
     static const lib_u8 lsl[] = {0x0fu,0x03u,0xc1u};
@@ -1252,7 +1252,7 @@ static C_INT preview_test_lar_lsl_profiles(C_VOID)
         preview_expect(lar,3u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,3u,3u);
 }
 
-static C_INT preview_test_pusha_popa_profiles(C_VOID)
+static lib_i32 preview_test_pusha_popa_profiles(void)
 {
     static const lib_u8 pusha[] = {0x60u};
     static const lib_u8 popa[] = {0x61u};
@@ -1262,7 +1262,7 @@ static C_INT preview_test_pusha_popa_profiles(C_VOID)
     return preview_expect(pusha,1u,CORE_MACHINE_CPU_PROFILE_80186,LIB_FALSE,1u,1u)&&preview_expect(popa,1u,CORE_MACHINE_CPU_PROFILE_80186,LIB_FALSE,1u,1u)&&preview_expect(pusha,1u,CORE_MACHINE_CPU_PROFILE_80286,LIB_FALSE,1u,1u)&&preview_expect(popa,1u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,1u,1u)&&preview_expect((const lib_u8[]){0x66u,0x60u},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u)&&preview_expect((const lib_u8[]){0x66u,0x61u},2u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,2u,2u);
 }
 
-static C_INT preview_test_imul_immediate_profiles(C_VOID)
+static lib_i32 preview_test_imul_immediate_profiles(void)
 {
     static const lib_u8 iw[] = {0x69u,0xc1u,0xfeu,0xffu};
     static const lib_u8 ib[] = {0x6bu,0xc1u,0xfeu};
@@ -1272,7 +1272,7 @@ static C_INT preview_test_imul_immediate_profiles(C_VOID)
     return preview_expect(iw,sizeof(iw),CORE_MACHINE_CPU_PROFILE_80186,LIB_FALSE,4u,3u)&&preview_expect(ib,sizeof(ib),CORE_MACHINE_CPU_PROFILE_80186,LIB_FALSE,3u,3u)&&preview_expect(iw,sizeof(iw),CORE_MACHINE_CPU_PROFILE_80286,LIB_FALSE,4u,3u)&&preview_expect(ib,sizeof(ib),CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,3u,3u)&&preview_expect((const lib_u8[]){0x66u,0x69u,0xc1u,0xfeu,0xffu,0xffu,0xffu},7u,CORE_MACHINE_CPU_PROFILE_80386,LIB_FALSE,7u,4u);
 }
 
-static C_INT preview_test_bound_profiles(C_VOID)
+static lib_i32 preview_test_bound_profiles(void)
 {
     static const lib_u8 bound[] = {0x62u, 0x06u, 0u, 0x20u};
     core_machine_cpu_instruction_lexeme lexeme;
@@ -1288,7 +1288,7 @@ static C_INT preview_test_bound_profiles(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 5u, 4u);
 }
 
-static C_INT preview_test_arpl_profiles(C_VOID)
+static lib_i32 preview_test_arpl_profiles(void)
 {
     static const lib_u8 arpl[] = {0x63u, 0xc0u};
     core_machine_cpu_instruction_lexeme lexeme;
@@ -1303,7 +1303,7 @@ static C_INT preview_test_arpl_profiles(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 2u, 2u);
 }
 
-static C_INT preview_test_iret_profiles(C_VOID)
+static lib_i32 preview_test_iret_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -1321,7 +1321,7 @@ static C_INT preview_test_iret_profiles(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 3u, 3u);
 }
 
-static C_INT preview_test_int3_into_profiles(C_VOID)
+static lib_i32 preview_test_int3_into_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -1341,7 +1341,7 @@ static C_INT preview_test_int3_into_profiles(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 3u, 3u);
 }
 
-static C_INT preview_test_int_immediate_profiles(C_VOID)
+static lib_i32 preview_test_int_immediate_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -1360,7 +1360,7 @@ static C_INT preview_test_int_immediate_profiles(C_VOID)
         preview_expect((const lib_u8[]){0x66u, 0x67u, 0xcdu, 0x31u},
         4u, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, 4u, 4u);
 }
-static C_INT preview_test_group3_profiles(C_VOID)
+static lib_i32 preview_test_group3_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -1380,9 +1380,9 @@ static C_INT preview_test_group3_profiles(C_VOID)
         core_machine_cpu_instruction_lexeme lexeme;
         const lib_u8 operand_bytes = profiles[profile_index] ==
             CORE_MACHINE_CPU_PROFILE_80386 ? 4u : 2u;
-        const type_bool code_32 = profiles[profile_index] ==
+        const lib_u8 code_32 = profiles[profile_index] ==
             CORE_MACHINE_CPU_PROFILE_80386 ? LIB_TRUE : LIB_FALSE;
-        const type_bool invalid = extension == 1u;
+        const lib_u8 invalid = extension == 1u;
 
         if (invalid) {
             if (core_machine_cpu_instruction_lexeme_scan(f6, sizeof(f6),
@@ -1399,7 +1399,7 @@ static C_INT preview_test_group3_profiles(C_VOID)
     }
     return 1;
 }
-static C_INT preview_test_group45_profiles(C_VOID)
+static lib_i32 preview_test_group45_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -1417,10 +1417,10 @@ static C_INT preview_test_group45_profiles(C_VOID)
         lib_u8 ff_memory[] = { 0xffu,
             (lib_u8)((extension << 3u) | 0x06u), 0u, 0x40u };
         core_machine_cpu_instruction_lexeme lexeme;
-        const type_bool fe_valid = extension <= 1u;
-        const type_bool ff_register_valid = extension <= 2u || extension == 4u ||
+        const lib_u8 fe_valid = extension <= 1u;
+        const lib_u8 ff_register_valid = extension <= 2u || extension == 4u ||
             extension == 6u;
-        const type_bool ff_memory_valid = extension <= 6u;
+        const lib_u8 ff_memory_valid = extension <= 6u;
 
         if (fe_valid != (core_machine_cpu_instruction_lexeme_scan(fe, sizeof(fe),
             profiles[profile_index], LIB_FALSE, &lexeme) && lexeme.available) ||
@@ -1438,7 +1438,7 @@ static C_INT preview_test_group45_profiles(C_VOID)
     }
     return 1;
 }
-static C_INT preview_test_unavailable(C_VOID)
+static lib_i32 preview_test_unavailable(void)
 {
     static const lib_u8 truncated[] = { 0x8bu };
     static const lib_u8 legacy_operand_prefix[] = { 0x66u, 0x90u };
@@ -1460,7 +1460,7 @@ static C_INT preview_test_unavailable(C_VOID)
             LIB_TRUE, &lexeme) && !lexeme.available;
 }
 
-static C_INT preview_test_cpu_fetch_nonpublication(C_VOID)
+static lib_i32 preview_test_cpu_fetch_nonpublication(void)
 {
     static const lib_u8 program[] = { 0x0fu, 0x84u, 0x78u, 0x56u };
     const core_machine_config config = {
@@ -1473,12 +1473,12 @@ static C_INT preview_test_cpu_fetch_nonpublication(C_VOID)
     lib_u64 committed = 0u;
     lib_u64 cancelled = 0u;
     lib_size trace_count = 0u;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, PREVIEW_RESET_PHYSICAL, program,
-            sizeof(program)) != TYPE_STATUS_OK ||
-        core_machine_capture_observation(machine, &before) != TYPE_STATUS_OK;
+            sizeof(program)) != LIB_STATUS_OK ||
+        core_machine_capture_observation(machine, &before) != LIB_STATUS_OK;
 
     if (!failed) {
         committed = machine->transaction.committed_count;
@@ -1487,7 +1487,7 @@ static C_INT preview_test_cpu_fetch_nonpublication(C_VOID)
         failed |= !core_machine_cpu_execution_preview_lexeme(
             &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
             lexeme.byte_count != sizeof(program) || lexeme.component_count != 3u ||
-            core_machine_capture_observation(machine, &after) != TYPE_STATUS_OK ||
+            core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0 ||
             machine->transaction.committed_count != committed ||
             machine->transaction.cancelled_count != cancelled ||
@@ -1497,7 +1497,7 @@ static C_INT preview_test_cpu_fetch_nonpublication(C_VOID)
     return failed;
 }
 
-static C_INT preview_test_limited_fetch_nonpublication(C_VOID)
+static lib_i32 preview_test_limited_fetch_nonpublication(void)
 {
     static const lib_u8 program[] = { 0x0fu, 0x84u, 0x78u, 0x56u };
     const core_machine_config config = {
@@ -1510,14 +1510,14 @@ static C_INT preview_test_limited_fetch_nonpublication(C_VOID)
     lib_u64 committed = 0u;
     lib_u64 cancelled = 0u;
     lib_size trace_count = 0u;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u) ||
         ((machine->executor_cpu.data.cs.base = 0x00fffffcu),
             core_machine_memory_write(machine, 0x00fffffcu, program,
-                sizeof(program)) != TYPE_STATUS_OK) ||
-        core_machine_capture_observation(machine, &before) != TYPE_STATUS_OK;
+                sizeof(program)) != LIB_STATUS_OK) ||
+        core_machine_capture_observation(machine, &before) != LIB_STATUS_OK;
 
     if (!failed) {
         committed = machine->transaction.committed_count;
@@ -1525,7 +1525,7 @@ static C_INT preview_test_limited_fetch_nonpublication(C_VOID)
         trace_count = machine->trace.count;
         failed |= core_machine_cpu_execution_preview_lexeme(
             &machine->executor_cpu_execution, &lexeme) || lexeme.available ||
-            core_machine_capture_observation(machine, &after) != TYPE_STATUS_OK ||
+            core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0 ||
             machine->transaction.committed_count != committed ||
             machine->transaction.cancelled_count != cancelled ||
@@ -1535,7 +1535,7 @@ static C_INT preview_test_limited_fetch_nonpublication(C_VOID)
     return failed;
 }
 
-static C_INT preview_test_taken_jcc_target(C_VOID)
+static lib_i32 preview_test_taken_jcc_target(void)
 {
     static const lib_u8 program[] = { 0x75u, 0xfeu };
     const core_machine_config config = {
@@ -1547,23 +1547,23 @@ static C_INT preview_test_taken_jcc_target(C_VOID)
     core_machine_observation after = { 0 };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, PREVIEW_RESET_PHYSICAL, program,
-            sizeof(program)) != TYPE_STATUS_OK;
+            sizeof(program)) != LIB_STATUS_OK;
 
     if (!failed) {
         machine->executor_cpu.data.eflags &= ~VCPU_EFLAGS_ZF;
-        if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             machine->executor_cpu.data.eip != 0xfff0u) {
             failed = 1;
         } else if (core_machine_capture_observation(machine, &before) !=
-            TYPE_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
+            LIB_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
                 &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
             lexeme.byte_count != 2u || lexeme.component_count != 2u ||
-            core_machine_capture_observation(machine, &after) != TYPE_STATUS_OK ||
+            core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0) {
             failed = 1;
         }
@@ -1572,7 +1572,7 @@ static C_INT preview_test_taken_jcc_target(C_VOID)
     return failed;
 }
 
-static C_INT preview_test_taken_near_jcc_target(C_VOID)
+static lib_i32 preview_test_taken_near_jcc_target(void)
 {
     static const lib_u8 program[] = {
         0x66u, 0x0fu, 0x84u, 0x02u, 0x00u, 0x00u, 0x00u,
@@ -1587,23 +1587,23 @@ static C_INT preview_test_taken_near_jcc_target(C_VOID)
     core_machine_observation after = { 0 };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, PREVIEW_RESET_PHYSICAL, program,
-            sizeof(program)) != TYPE_STATUS_OK;
+            sizeof(program)) != LIB_STATUS_OK;
 
     if (!failed) {
         machine->executor_cpu.data.eflags |= VCPU_EFLAGS_ZF;
-        if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             machine->executor_cpu.data.eip != 0xfff9u) {
             failed = 1;
         } else if (core_machine_capture_observation(machine, &before) !=
-            TYPE_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
+            LIB_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
                 &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
             lexeme.byte_count != 1u || lexeme.component_count != 1u ||
-            core_machine_capture_observation(machine, &after) != TYPE_STATUS_OK ||
+            core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0) {
             failed = 1;
         }
@@ -1611,7 +1611,7 @@ static C_INT preview_test_taken_near_jcc_target(C_VOID)
     core_machine_destroy(machine);
     return failed;
 }
-static C_INT preview_test_cr_mov_mod_quirk(C_VOID)
+static lib_i32 preview_test_cr_mov_mod_quirk(void)
 {
     static const lib_u8 programs[][7] = {
         {0x0fu,0x20u,0x05u,0x78u,0x56u,0x34u,0x12u},
@@ -1621,19 +1621,19 @@ static C_INT preview_test_cr_mov_mod_quirk(C_VOID)
         .cpu_80386_cr_mov_ignores_mod=LIB_TRUE};
     core_machine_cpu_instruction_lexeme lexeme;
     core_machine *machine=LIB_NULL; lib_u8 index;
-    C_INT failed=core_machine_create(&config,&machine)!=TYPE_STATUS_OK||
-        core_machine_freeze_execution_providers(machine)!=TYPE_STATUS_OK||
-        core_machine_reset(machine)!=TYPE_STATUS_OK;
+    lib_i32 failed=core_machine_create(&config,&machine)!=LIB_STATUS_OK||
+        core_machine_freeze_execution_providers(machine)!=LIB_STATUS_OK||
+        core_machine_reset(machine)!=LIB_STATUS_OK;
     for(index=0u;!failed&&index<2u;++index) {
         failed|=core_machine_cpu_instruction_lexeme_scan(programs[index],7u,
             CORE_MACHINE_CPU_PROFILE_80386,LIB_TRUE,&lexeme)||
-            core_machine_memory_write(machine,PREVIEW_RESET_PHYSICAL,programs[index],7u)!=TYPE_STATUS_OK||
+            core_machine_memory_write(machine,PREVIEW_RESET_PHYSICAL,programs[index],7u)!=LIB_STATUS_OK||
             !core_machine_cpu_execution_preview_lexeme(&machine->executor_cpu_execution,&lexeme)||
             !lexeme.available||lexeme.byte_count!=3u||lexeme.component_count!=3u;
     }
     core_machine_destroy(machine); return failed;
 }
-static C_INT preview_test_default_reset_alias(C_VOID)
+static lib_i32 preview_test_default_reset_alias(void)
 {
     static const lib_u8 halt[] = { 0xf4u };
     const core_machine_config config = {
@@ -1642,12 +1642,12 @@ static C_INT preview_test_default_reset_alias(C_VOID)
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x000ffff0u, halt,
-            sizeof(halt)) != TYPE_STATUS_OK ||
-        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            sizeof(halt)) != LIB_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         result.executed != 1u ||
         machine->executor_cpu.data.eip != 0xfff1u;
@@ -1656,7 +1656,7 @@ static C_INT preview_test_default_reset_alias(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!preview_test_layouts()) return 2;
     if (!preview_test_unavailable()) return 3;
@@ -1724,70 +1724,70 @@ C_INT main(C_VOID)
     if (preview_test_taken_near_jcc_target()) return 7;
     if (preview_test_default_reset_alias()) return 8;
     if (preview_test_cr_mov_mod_quirk()) return 9;
-    STD_PRINTF("M5:T357:S2:CPU-TIMING-PREVIEW:OK\n");
-    STD_PRINTF("M5:T401:S9:GROUP3-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S10:GROUP45-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S11:PRIMARY-INC-DEC-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S12:ACCUMULATOR-XCHG-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S13:IMMEDIATE-REGISTER-MOV-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S14:MOFFS-MOV-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S15:MOVS-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S16:CMPS-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S17:STOS-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S18:LODS-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S19:SCAS-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S20:ACCUMULATOR-TEST-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S21:GROUP2-IMMEDIATE-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S22:NEAR-RETURN-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S23:FAR-RETURN-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S24:ENTER-LEAVE-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S25:INT-IMMEDIATE-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S26:INT3-INTO-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S27:IRET-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S28:ARPL-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S29:BOUND-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S30:IMUL-IMMEDIATE-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S31:PUSHA-POPA-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S32:LAR-LSL-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S33:LES-LDS-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S34:DECIMAL-ADJUST-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S35:XLAT-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S36:LAHF-SAHF-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S37:CLI-STI-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S38:HLT-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S39:PUSHF-POPF-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S40:GPR-PUSH-POP-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S41:SREG-PUSH-POP-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S42:DIRECT-FLAGS-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S43:LOOP-JCXZ-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S44:LEA-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S45:SIGN-EXTEND-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S46:XCHG-MODRM-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S47:GPR-MOV-MODRM-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S48:SREG-MOV-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S49:MODRM-DATA-MOVE-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S50:PUSH-IMMEDIATE-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S51:STRING-IO-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S52:SCALAR-IO-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S53:SHORT-JCC-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S54:DIRECT-NEAR-CONTROL-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S55:DIRECT-FAR-CONTROL-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S56:PRIMARY-ALU-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S57:SHARED-PREFIX-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S58:RM-IMMEDIATE-MOV-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S59:NEAR-JCC-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S60:SETCC-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S61:BIT-TEST-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S62:DOUBLE-SHIFT-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S63:BIT-SCAN-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S64:MOVX-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S65:IMUL2-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S66:DEBUG-MOV-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S67:CONTROL-MOV-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S68:LSS-LFS-LGS-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S69:TEST-MOV-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S70:SYSTEM-GROUP-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S71:SYSTEM-SELECTOR-GROUP-PREVIEW-PROFILES:OK\n");
-    STD_PRINTF("M5:T442:S1:CPU-LEXEME-PROFILE-BOUNDARY:OK\n");
+    printf("M5:T357:S2:CPU-TIMING-PREVIEW:OK\n");
+    printf("M5:T401:S9:GROUP3-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S10:GROUP45-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S11:PRIMARY-INC-DEC-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S12:ACCUMULATOR-XCHG-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S13:IMMEDIATE-REGISTER-MOV-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S14:MOFFS-MOV-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S15:MOVS-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S16:CMPS-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S17:STOS-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S18:LODS-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S19:SCAS-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S20:ACCUMULATOR-TEST-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S21:GROUP2-IMMEDIATE-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S22:NEAR-RETURN-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S23:FAR-RETURN-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S24:ENTER-LEAVE-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S25:INT-IMMEDIATE-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S26:INT3-INTO-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S27:IRET-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S28:ARPL-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S29:BOUND-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S30:IMUL-IMMEDIATE-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S31:PUSHA-POPA-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S32:LAR-LSL-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S33:LES-LDS-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S34:DECIMAL-ADJUST-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S35:XLAT-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S36:LAHF-SAHF-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S37:CLI-STI-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S38:HLT-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S39:PUSHF-POPF-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S40:GPR-PUSH-POP-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S41:SREG-PUSH-POP-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S42:DIRECT-FLAGS-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S43:LOOP-JCXZ-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S44:LEA-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S45:SIGN-EXTEND-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S46:XCHG-MODRM-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S47:GPR-MOV-MODRM-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S48:SREG-MOV-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S49:MODRM-DATA-MOVE-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S50:PUSH-IMMEDIATE-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S51:STRING-IO-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S52:SCALAR-IO-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S53:SHORT-JCC-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S54:DIRECT-NEAR-CONTROL-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S55:DIRECT-FAR-CONTROL-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S56:PRIMARY-ALU-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S57:SHARED-PREFIX-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S58:RM-IMMEDIATE-MOV-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S59:NEAR-JCC-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S60:SETCC-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S61:BIT-TEST-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S62:DOUBLE-SHIFT-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S63:BIT-SCAN-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S64:MOVX-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S65:IMUL2-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S66:DEBUG-MOV-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S67:CONTROL-MOV-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S68:LSS-LFS-LGS-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S69:TEST-MOV-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S70:SYSTEM-GROUP-PREVIEW-PROFILES:OK\n");
+    printf("M5:T401:S71:SYSTEM-SELECTOR-GROUP-PREVIEW-PROFILES:OK\n");
+    printf("M5:T442:S1:CPU-LEXEME-PROFILE-BOUNDARY:OK\n");
     return 0;
 }

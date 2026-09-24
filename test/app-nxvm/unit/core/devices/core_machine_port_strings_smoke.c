@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -18,49 +19,49 @@ typedef struct port_strings_machine {
     port_strings_port port;
 } port_strings_machine;
 
-static type_status port_strings_read(C_VOID *owner, lib_u16 port,
+static lib_status port_strings_read(void *owner, lib_u16 port,
     lib_u32 *value)
 {
     port_strings_port *state = (port_strings_port *)owner;
 
     if (state == LIB_NULL || value == LIB_NULL || port != 0x00e0u)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     *value = state->input;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status port_strings_write(C_VOID *owner, lib_u16 port,
+static lib_status port_strings_write(void *owner, lib_u16 port,
     lib_u32 value)
 {
     port_strings_port *state = (port_strings_port *)owner;
 
     if (state == LIB_NULL || port != 0x00e0u)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     ++state->writes;
     state->last_write = value;
     if (state->writes <= sizeof(state->write_log) / sizeof(state->write_log[0]))
         state->write_log[state->writes - 1u] = value;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_port_provider port_strings_provider = {
     port_strings_read, port_strings_write
 };
 
-static C_VOID port_strings_reset(C_VOID *opaque)
+static void port_strings_reset(void *opaque)
 {
     port_strings_machine *state = (port_strings_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider port_strings_execution_provider = {
     port_strings_reset, LIB_NULL
 };
 
-static C_INT port_strings_prepare(core_machine_cpu_profile profile,
+static lib_i32 port_strings_prepare(core_machine_cpu_profile profile,
     port_strings_machine *state)
 {
     const core_machine_config config = {
@@ -70,15 +71,15 @@ static C_INT port_strings_prepare(core_machine_cpu_profile profile,
     };
 
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
+    return core_machine_create(&config, &state->machine) == LIB_STATUS_OK &&
         core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e0u,
-            &port_strings_provider, &state->port) == TYPE_STATUS_OK &&
+            &port_strings_provider, &state->port) == LIB_STATUS_OK &&
         test_core_machine_fixture_bind_freeze_reset(state->machine,
             &port_strings_execution_provider, state) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_VOID port_strings_seed(port_strings_machine *state)
+static void port_strings_seed(port_strings_machine *state)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -97,7 +98,7 @@ static C_VOID port_strings_seed(port_strings_machine *state)
     cpu->data.fs.base = 0x40000u;
 }
 
-static C_INT port_strings_nonindexes_same(const t_cpu *before,
+static lib_i32 port_strings_nonindexes_same(const t_cpu *before,
     const t_cpu *after)
 {
     return after->data.eax == before->data.eax &&
@@ -107,43 +108,43 @@ static C_INT port_strings_nonindexes_same(const t_cpu *before,
         after->data.ebp == before->data.ebp;
 }
 
-static C_INT port_strings_run(port_strings_machine *state, const lib_u8 *code,
+static lib_i32 port_strings_run(port_strings_machine *state, const lib_u8 *code,
     lib_u8 bytes, lib_u32 budget, t_cpu *after,
-    core_machine_cpu_diagnostic *diagnostic, type_status *status,
+    core_machine_cpu_diagnostic *diagnostic, lib_status *status,
     core_machine_run_result *result)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-        TYPE_STATUS_OK)
+        LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine,
         (core_machine_run_budget){budget, 0u}, result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT port_strings_memory(port_strings_machine *state, lib_u32 address,
+static lib_i32 port_strings_memory(port_strings_machine *state, lib_u32 address,
     lib_u32 expected, lib_u8 width)
 {
     lib_u32 observed = 0u;
 
     return core_machine_memory_read_physical(&state->machine->executor_memory,
-        address, TYPE_REFERENCE_OF(observed), width) == TYPE_STATUS_OK &&
+        address, CORE_MACHINE_REFERENCE_OF(observed), width) == LIB_STATUS_OK &&
         lib_memory_compare(&observed, &expected, width) == 0;
 }
 
-static C_INT port_strings_single(core_machine_cpu_profile profile, C_INT input,
+static lib_i32 port_strings_single(core_machine_cpu_profile profile, lib_i32 input,
     const lib_u8 *code, lib_u8 bytes, lib_u8 width,
-    C_INT address32, lib_u32 memory, lib_u32 value)
+    lib_i32 address32, lib_u32 memory, lib_u32 value)
 {
     port_strings_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u32 index = address32 ? 0x1020u : input ? 0x20u : 0x10u;
-    C_INT failed = !port_strings_prepare(profile, &state);
+    lib_i32 failed = !port_strings_prepare(profile, &state);
 
     if (!failed) {
         port_strings_seed(&state);
@@ -157,10 +158,10 @@ static C_INT port_strings_single(core_machine_cpu_profile profile, C_INT input,
             state.port.input = value;
         else
             failed |= core_machine_memory_write(state.machine, memory, &value,
-                width) != TYPE_STATUS_OK;
+                width) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !port_strings_run(&state, code, bytes, 1u, &after,
-            &diagnostic, &status, &result) || status != TYPE_STATUS_OK ||
+            &diagnostic, &status, &result) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
             !port_strings_nonindexes_same(&before, &after) ||
             after.data.ecx != before.data.ecx || after.data.eflags !=
@@ -179,7 +180,7 @@ static C_INT port_strings_single(core_machine_cpu_profile profile, C_INT input,
     return !failed;
 }
 
-static C_INT port_strings_test_single_profile(core_machine_cpu_profile profile)
+static lib_i32 port_strings_test_single_profile(core_machine_cpu_profile profile)
 {
     static const lib_u8 insb = 0x6cu;
     static const lib_u8 insw = 0x6du;
@@ -209,27 +210,27 @@ static C_INT port_strings_test_single_profile(core_machine_cpu_profile profile)
         out_combined, sizeof(out_combined), 4u, 1, 0x21010u, 0x5a5a5a5au);
 }
 
-static C_INT port_strings_test_single(C_VOID)
+static lib_i32 port_strings_test_single(void)
 {
     return port_strings_test_single_profile(CORE_MACHINE_CPU_PROFILE_80186) &&
         port_strings_test_single_profile(CORE_MACHINE_CPU_PROFILE_80386);
 }
 
-static C_INT port_strings_rep(core_machine_cpu_profile profile, C_INT input,
+static lib_i32 port_strings_rep(core_machine_cpu_profile profile, lib_i32 input,
     const lib_u8 *code, lib_u8 bytes, lib_u8 width,
-    C_INT address32)
+    lib_i32 address32)
 {
     port_strings_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u32 values[] = {0x11u, 0x22u, 0x33u};
     lib_u32 base = input ? (address32 ? 0x31020u : 0x30020u) :
         (address32 ? 0x21010u : 0x20010u);
     lib_u8 item;
-    C_INT failed = !port_strings_prepare(profile, &state);
+    lib_i32 failed = !port_strings_prepare(profile, &state);
 
     if (!failed) {
         port_strings_seed(&state);
@@ -245,11 +246,11 @@ static C_INT port_strings_rep(core_machine_cpu_profile profile, C_INT input,
         for (item = 0u; item != 3u; ++item) {
             if (!input)
                 failed |= core_machine_memory_write(state.machine, base + item * width,
-                    &values[item], width) != TYPE_STATUS_OK;
+                    &values[item], width) != LIB_STATUS_OK;
         }
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !port_strings_run(&state, code, bytes, 3u, &after,
-            &diagnostic, &status, &result) || status != TYPE_STATUS_OK ||
+            &diagnostic, &status, &result) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
             !port_strings_nonindexes_same(&before, &after) ||
             after.data.ecx != (address32 ? 0u : 0x11220000u) ||
@@ -275,7 +276,7 @@ static C_INT port_strings_rep(core_machine_cpu_profile profile, C_INT input,
     return !failed;
 }
 
-static C_INT port_strings_test_rep(C_VOID)
+static lib_i32 port_strings_test_rep(void)
 {
     static const lib_u8 rep_insb[] = {0xf3u, 0x6cu};
     static const lib_u8 rep_insw[] = {0xf3u, 0x6du};
@@ -297,31 +298,31 @@ static C_INT port_strings_test_rep(C_VOID)
         1);
 }
 
-static C_INT port_strings_rep_zero(C_INT input, const lib_u8 *code,
-    lib_u8 bytes, C_INT address32)
+static lib_i32 port_strings_rep_zero(lib_i32 input, const lib_u8 *code,
+    lib_u8 bytes, lib_i32 address32)
 {
     port_strings_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u8 source = 0x5au;
     lib_u8 destination = 0xa5u;
-    C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         port_strings_seed(&state);
         state.machine->executor_cpu.data.ecx = address32 ? 0u : 0x11220000u;
         failed |= core_machine_memory_write(state.machine, 0x20010u, &source,
-            sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
+            sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x30020u, &destination, sizeof(destination)) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !port_strings_run(&state, code, bytes, 1u, &after,
-            &diagnostic, &status, &result) || status != TYPE_STATUS_OK ||
+            &diagnostic, &status, &result) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
             after.data.eax != before.data.eax || after.data.ecx !=
             before.data.ecx || after.data.edx != before.data.edx ||
@@ -335,11 +336,11 @@ static C_INT port_strings_rep_zero(C_INT input, const lib_u8 *code,
             sizeof(destination));
     }
     core_machine_destroy(state.machine);
-    (C_VOID)input;
+    (void)input;
     return !failed;
 }
 
-static C_INT port_strings_test_rep_counts(C_VOID)
+static lib_i32 port_strings_test_rep_counts(void)
 {
     static const lib_u8 rep_insb[] = {0xf3u, 0x6cu};
     static const lib_u8 rep_outsb[] = {0xf3u, 0x6eu};
@@ -352,7 +353,7 @@ static C_INT port_strings_test_rep_counts(C_VOID)
         port_strings_rep_zero(0, rep_out32, sizeof(rep_out32), 1);
 }
 
-static C_INT port_strings_rep_one(C_INT input)
+static lib_i32 port_strings_rep_one(lib_i32 input)
 {
     static const lib_u8 ins[] = {0xf3u, 0x6cu};
     static const lib_u8 outs[] = {0xf3u, 0x6eu};
@@ -361,10 +362,10 @@ static C_INT port_strings_rep_one(C_INT input)
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u8 value = 0x5au;
     const lib_u8 *code = input ? ins : outs;
-    C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         port_strings_seed(&state);
@@ -373,10 +374,10 @@ static C_INT port_strings_rep_one(C_INT input)
             state.port.input = value;
         else
             failed |= core_machine_memory_write(state.machine, 0x20010u, &value,
-                sizeof(value)) != TYPE_STATUS_OK;
+                sizeof(value)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !port_strings_run(&state, code, sizeof(ins), 1u, &after,
-            &diagnostic, &status, &result) || status != TYPE_STATUS_OK ||
+            &diagnostic, &status, &result) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != 2u ||
             !port_strings_nonindexes_same(&before, &after) ||
             after.data.ecx != 0x11220000u || after.data.esi !=
@@ -392,7 +393,7 @@ static C_INT port_strings_rep_one(C_INT input)
     return !failed;
 }
 
-static C_INT port_strings_test_segments_and_df(C_VOID)
+static lib_i32 port_strings_test_segments_and_df(void)
 {
     static const lib_u8 ins_cs[] = {0x2eu, 0x6cu};
     static const lib_u8 ins_fs[] = {0x64u, 0x6cu};
@@ -412,22 +413,22 @@ static C_INT port_strings_test_segments_and_df(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        type_status status;
+        lib_status status;
         lib_u8 source = 0x5au;
         lib_u8 expected = 0x5au;
         lib_u32 source_address = form == 0u ? 0x10u : 0x40010u;
-        C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed) {
             port_strings_seed(&state);
             state.port.input = expected;
             failed |= core_machine_memory_write(state.machine, source_address,
-                &source, sizeof(source)) != TYPE_STATUS_OK;
+                &source, sizeof(source)) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !port_strings_run(&state, ins_forms[form], ins_bytes[form],
                 1u, &after, &diagnostic, &status, &result) ||
-                status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != ins_bytes[form] ||
                 !port_strings_nonindexes_same(&before, &after) ||
                 after.data.ecx != before.data.ecx || after.data.esi !=
@@ -444,11 +445,11 @@ static C_INT port_strings_test_segments_and_df(C_VOID)
         if (!failed) {
             port_strings_seed(&state);
             failed |= core_machine_memory_write(state.machine, source_address,
-                &source, sizeof(source)) != TYPE_STATUS_OK;
+                &source, sizeof(source)) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !port_strings_run(&state, out_forms[form], out_bytes[form],
                 1u, &after, &diagnostic, &status, &result) ||
-                status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != out_bytes[form] ||
                 !port_strings_nonindexes_same(&before, &after) ||
                 after.data.ecx != before.data.ecx || after.data.esi != 0x11u ||
@@ -469,9 +470,9 @@ static C_INT port_strings_test_segments_and_df(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        type_status status;
+        lib_status status;
         lib_u8 value = 0x5au;
-        C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed) {
@@ -480,7 +481,7 @@ static C_INT port_strings_test_segments_and_df(C_VOID)
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_DF;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !port_strings_run(&state, &ins_df, sizeof(ins_df), 1u,
-                &after, &diagnostic, &status, &result) || status != TYPE_STATUS_OK ||
+                &after, &diagnostic, &status, &result) || status != LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || after.data.eip != 1u ||
                 !port_strings_nonindexes_same(&before, &after) ||
                 after.data.ecx != before.data.ecx || after.data.esi !=
@@ -497,10 +498,10 @@ static C_INT port_strings_test_segments_and_df(C_VOID)
             port_strings_seed(&state);
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_DF;
             failed |= core_machine_memory_write(state.machine, 0x20010u, &value,
-                sizeof(value)) != TYPE_STATUS_OK;
+                sizeof(value)) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !port_strings_run(&state, &out_df, sizeof(out_df), 1u,
-                &after, &diagnostic, &status, &result) || status != TYPE_STATUS_OK ||
+                &after, &diagnostic, &status, &result) || status != LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || after.data.eip != 1u ||
                 !port_strings_nonindexes_same(&before, &after) ||
                 after.data.ecx != before.data.ecx || after.data.esi != 0x0fu ||
@@ -514,7 +515,7 @@ static C_INT port_strings_test_segments_and_df(C_VOID)
     }
 }
 
-static C_INT port_strings_boot_protected(port_strings_machine *state)
+static lib_i32 port_strings_boot_protected(port_strings_machine *state)
 {
     static const lib_u8 pointer[] = {0x27u,0,0,0x03u,0,0};
     static const lib_u8 gdt[] = {
@@ -531,16 +532,16 @@ static C_INT port_strings_boot_protected(port_strings_machine *state)
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
-        sizeof(pointer)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
+        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, boot, sizeof(boot)) ==
-        TYPE_STATUS_OK && core_machine_memory_write(state->machine, 0x2000u,
-        &halt, sizeof(halt)) == TYPE_STATUS_OK && core_machine_run(
+        LIB_STATUS_OK && core_machine_memory_write(state->machine, 0x2000u,
+        &halt, sizeof(halt)) == LIB_STATUS_OK && core_machine_run(
         state->machine, (core_machine_run_budget){96u,0u}, &result) ==
-        TYPE_STATUS_OK && result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        LIB_STATUS_OK && result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT port_strings_protected_single(C_INT input)
+static lib_i32 port_strings_protected_single(lib_i32 input)
 {
     static const lib_u8 ins = 0x6cu;
     static const lib_u8 outs = 0x6eu;
@@ -552,7 +553,7 @@ static C_INT port_strings_protected_single(C_INT input)
     lib_u8 source = 0x5au;
     lib_u8 destination = 0xa5u;
     const lib_u8 *code = input ? &ins : &outs;
-    C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
         failed |= !port_strings_boot_protected(&state);
@@ -573,18 +574,18 @@ static C_INT port_strings_protected_single(C_INT input)
         } else
             state.machine->executor_cpu.data.esi = 0x10u;
         failed |= core_machine_memory_write(state.machine, 0x3010u, &source,
-            sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
+            sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x4010u, &destination, sizeof(destination)) !=
-            TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
-            code, 1u) != TYPE_STATUS_OK;
+            LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
+            code, 1u) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_FAULT ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || core_machine_get_cpu_diagnostic(
-            state.machine, &diagnostic) != TYPE_STATUS_OK;
+            state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             after.data.eip != 0u || after.data.eax != before.data.eax ||
             after.data.ecx != before.data.ecx || after.data.edx !=
@@ -604,20 +605,20 @@ static C_INT port_strings_protected_single(C_INT input)
     return !failed;
 }
 
-static C_INT port_strings_test_protected(C_VOID)
+static lib_i32 port_strings_test_protected(void)
 {
     if (!port_strings_protected_single(1)) {
-        STD_PRINTF("PORT-STRINGS protected=ins\n");
+        printf("PORT-STRINGS protected=ins\n");
         return 0;
     }
     if (!port_strings_protected_single(0)) {
-        STD_PRINTF("PORT-STRINGS protected=outs\n");
+        printf("PORT-STRINGS protected=outs\n");
         return 0;
     }
     return 1;
 }
 
-static C_INT port_strings_protected_rep(C_INT input)
+static lib_i32 port_strings_protected_rep(lib_i32 input)
 {
     static const lib_u8 ins[] = {0xf3u, 0x6cu};
     static const lib_u8 outs[] = {0xf3u, 0x6eu};
@@ -629,7 +630,7 @@ static C_INT port_strings_protected_rep(C_INT input)
     lib_u8 source[] = {0x5au, 0x6bu};
     lib_u8 destination[] = {0xa5u, 0xb6u};
     const lib_u8 *code = input ? ins : outs;
-    C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
         failed |= !port_strings_boot_protected(&state);
@@ -654,18 +655,18 @@ static C_INT port_strings_protected_rep(C_INT input)
         }
         state.machine->executor_cpu.data.ecx = 0x11220003u;
         failed |= core_machine_memory_write(state.machine, 0x3010u, source,
-            sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
+            sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x4010u, destination, sizeof(destination)) !=
-            TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
-            code, sizeof(ins)) != TYPE_STATUS_OK;
+            LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
+            code, sizeof(ins)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){2u,0u}, &result) != TYPE_STATUS_FAULT ||
+            (core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || core_machine_get_cpu_diagnostic(
-            state.machine, &diagnostic) != TYPE_STATUS_OK;
+            state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             after.data.eip != 0u || after.data.eax != before.data.eax ||
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
@@ -688,7 +689,7 @@ static C_INT port_strings_protected_rep(C_INT input)
     return !failed;
 }
 
-static C_INT port_strings_irq_case(C_INT input, C_INT repeat)
+static lib_i32 port_strings_irq_case(lib_i32 input, lib_i32 repeat)
 {
     static const lib_u8 ins[] = {0x6cu, 0x90u};
     static const lib_u8 outs[] = {0x6eu, 0x90u};
@@ -706,17 +707,17 @@ static C_INT port_strings_irq_case(C_INT input, C_INT repeat)
     const lib_u8 *code = repeat ? (input ? rep_ins : rep_outs) :
         (input ? ins : outs);
     lib_u8 bytes = repeat ? 3u : 2u;
-    C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0x20010u, source,
-            sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x80u, &offset, sizeof(offset)) != TYPE_STATUS_OK ||
+            sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x80u, &offset, sizeof(offset)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x82u, &segment,
-            sizeof(segment)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x100u, &hlt, sizeof(hlt)) != TYPE_STATUS_OK ||
+            sizeof(segment)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x100u, &hlt, sizeof(hlt)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
     }
     if (!failed) {
         port_strings_seed(&state);
@@ -733,17 +734,17 @@ static C_INT port_strings_irq_case(C_INT input, C_INT repeat)
         core_machine_pic_irq_source_deassert(&irq);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){repeat ? 4u : 2u,0u}, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
             after.data.ss.base + (lib_u16)after.data.esp,
-            TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
+            CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
             after.data.eip != 0x101u || frame_ip != (repeat ? 0u : 1u) ||
             after.data.esi != (input ? 0x10u : 0x11u) || after.data.edi !=
             (input ? 0x21u : 0x20u) || after.data.ecx !=
             (repeat ? 0x11220002u : 0x11220003u) || after.data.eflags != 0u ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-            VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+            VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
             VPIC_IRR_IRQ(0u)) || (input ? state.port.reads != 1u ||
             state.port.writes != 0u || !port_strings_memory(&state, 0x30020u,
             source[0], sizeof(source[0])) : state.port.reads != 0u ||
@@ -754,13 +755,13 @@ static C_INT port_strings_irq_case(C_INT input, C_INT repeat)
     return !failed;
 }
 
-static C_INT port_strings_test_irq(C_VOID)
+static lib_i32 port_strings_test_irq(void)
 {
     return port_strings_irq_case(1, 0) && port_strings_irq_case(0, 0) &&
         port_strings_irq_case(1, 1) && port_strings_irq_case(0, 1);
 }
 
-static C_INT port_strings_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 port_strings_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     port_strings_machine state;
@@ -768,23 +769,23 @@ static C_INT port_strings_expect_ud(core_machine_cpu_profile profile,
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u8 source = 0x5au;
     lib_u8 destination = 0xa5u;
-    C_INT failed = !port_strings_prepare(profile, &state);
+    lib_i32 failed = !port_strings_prepare(profile, &state);
 
     if (!failed) {
         port_strings_seed(&state);
         failed |= core_machine_memory_write(state.machine, 0x20010u, &source,
-            sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
+            sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x30020u, &destination, sizeof(destination)) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !port_strings_run(&state, code, bytes, 1u, &after,
-            &diagnostic, &status, &result) || status != TYPE_STATUS_FAULT ||
-            !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+            &diagnostic, &status, &result) || status != LIB_STATUS_INTERNAL_ERROR ||
+            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             after.data.eip != 0u || lib_memory_compare(&before.data, &after.data,
             sizeof(before.data)) != 0 || state.port.reads != 0u ||
@@ -796,7 +797,7 @@ static C_INT port_strings_expect_ud(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT port_strings_test_rejections(C_VOID)
+static lib_i32 port_strings_test_rejections(void)
 {
     static const core_machine_cpu_profile pre386[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -827,44 +828,44 @@ static C_INT port_strings_test_rejections(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!port_strings_test_single()) {
-        STD_PRINTF("PORT-STRINGS stage=single\n");
+        printf("PORT-STRINGS stage=single\n");
         return 1;
     }
     if (!port_strings_test_rep()) {
-        STD_PRINTF("PORT-STRINGS stage=rep\n");
+        printf("PORT-STRINGS stage=rep\n");
         return 1;
     }
     if (!port_strings_test_rep_counts()) {
-        STD_PRINTF("PORT-STRINGS stage=rep-counts\n");
+        printf("PORT-STRINGS stage=rep-counts\n");
         return 1;
     }
     if (!port_strings_rep_one(1) || !port_strings_rep_one(0)) {
-        STD_PRINTF("PORT-STRINGS stage=rep-one\n");
+        printf("PORT-STRINGS stage=rep-one\n");
         return 1;
     }
     if (!port_strings_test_segments_and_df()) {
-        STD_PRINTF("PORT-STRINGS stage=segments-df\n");
+        printf("PORT-STRINGS stage=segments-df\n");
         return 1;
     }
     if (!port_strings_test_rejections()) {
-        STD_PRINTF("PORT-STRINGS stage=rejections\n");
+        printf("PORT-STRINGS stage=rejections\n");
         return 1;
     }
     if (!port_strings_test_protected()) {
-        STD_PRINTF("PORT-STRINGS stage=protected\n");
+        printf("PORT-STRINGS stage=protected\n");
         return 1;
     }
     if (!port_strings_protected_rep(1) || !port_strings_protected_rep(0)) {
-        STD_PRINTF("PORT-STRINGS stage=protected-rep\n");
+        printf("PORT-STRINGS stage=protected-rep\n");
         return 1;
     }
     if (!port_strings_test_irq()) {
-        STD_PRINTF("PORT-STRINGS stage=irq\n");
+        printf("PORT-STRINGS stage=irq\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S38:PORT-STRINGS:OK\n");
+    printf("M5:T316:S38:PORT-STRINGS:OK\n");
     return 0;
 }

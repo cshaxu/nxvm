@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/machine/frame.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine_display_event source = {0};
     static common_machine_frame destination;
@@ -20,7 +20,7 @@ C_INT main(C_VOID)
     source.characters[1999u] = 'Z';
     source.attributes[1999u] = 0x4fu;
     source.palette_rgb[14u] = 0x00ffff00u;
-    if (vm_machine_frame_from_display(&source, &destination) != TYPE_STATUS_OK ||
+    if (vm_machine_frame_from_display(&source, &destination) != LIB_STATUS_OK ||
         !destination.window.valid || destination.window.graphics ||
         destination.window.text.base.cells[0u].glyph_index != 'A' ||
         destination.window.text.base.cells[0u].foreground != 0x0eu ||
@@ -38,7 +38,7 @@ C_INT main(C_VOID)
     source.graphics = LIB_TRUE;
     source.pixel_width = 320u;
     source.pixel_height = 200u;
-    if (vm_machine_frame_from_display(&source, &destination) != TYPE_STATUS_OK ||
+    if (vm_machine_frame_from_display(&source, &destination) != LIB_STATUS_OK ||
         !destination.window.graphics || destination.window.image.width != 320u ||
         destination.window.image.height != 200u) return 1;
     {
@@ -47,7 +47,7 @@ C_INT main(C_VOID)
         source.pixel_width = (lib_u16)(KVM_WINDOW_GRAPHICS_MAX_WIDTH + 1u);
         if (before == LIB_NULL) return 1;
         *before = destination;
-        if (vm_machine_frame_from_display(&source, &destination) != TYPE_STATUS_UNSUPPORTED ||
+        if (vm_machine_frame_from_display(&source, &destination) != LIB_STATUS_UNSUPPORTED ||
             lib_memory_compare(before, &destination, sizeof(destination)) != 0) return 1;
         lib_release(before);
     }

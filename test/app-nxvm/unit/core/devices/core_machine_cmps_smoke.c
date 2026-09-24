@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -12,19 +13,19 @@ typedef struct cmps_machine {
     core_machine *machine;
 } cmps_machine;
 
-static C_VOID cmps_reset(C_VOID *opaque)
+static void cmps_reset(void *opaque)
 {
     cmps_machine *state = (cmps_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider cmps_provider = {
     cmps_reset, LIB_NULL
 };
 
-static C_INT cmps_prepare(core_machine_cpu_profile profile, cmps_machine *state)
+static lib_i32 cmps_prepare(core_machine_cpu_profile profile, cmps_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -38,7 +39,7 @@ static C_INT cmps_prepare(core_machine_cpu_profile profile, cmps_machine *state)
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_VOID cmps_seed(cmps_machine *state)
+static void cmps_seed(cmps_machine *state)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -57,7 +58,7 @@ static C_VOID cmps_seed(cmps_machine *state)
     cpu->data.fs.base = 0x40000u;
 }
 
-static C_INT cmps_nonindexes_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 cmps_nonindexes_same(const t_cpu *before, const t_cpu *after)
 {
     return after->data.eax == before->data.eax &&
         after->data.edx == before->data.edx &&
@@ -66,7 +67,7 @@ static C_INT cmps_nonindexes_same(const t_cpu *before, const t_cpu *after)
         after->data.ebp == before->data.ebp;
 }
 
-static C_INT cmps_all_gpr_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 cmps_all_gpr_same(const t_cpu *before, const t_cpu *after)
 {
     return cmps_nonindexes_same(before, after) &&
         after->data.ecx == before->data.ecx &&
@@ -74,21 +75,21 @@ static C_INT cmps_all_gpr_same(const t_cpu *before, const t_cpu *after)
         after->data.edi == before->data.edi;
 }
 
-static C_INT cmps_run(cmps_machine *state, const lib_u8 *code, lib_u8 bytes,
+static lib_i32 cmps_run(cmps_machine *state, const lib_u8 *code, lib_u8 bytes,
     lib_u32 budget, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
-    type_status *status, core_machine_run_result *result)
+    lib_status *status, core_machine_run_result *result)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-        TYPE_STATUS_OK)
+        LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine,
         (core_machine_run_budget){budget, 0u}, result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT cmps_memory_same(cmps_machine *state, lib_u32 source,
+static lib_i32 cmps_memory_same(cmps_machine *state, lib_u32 source,
     lib_u32 destination, const void *source_image, const void *destination_image,
     lib_u8 width)
 {
@@ -96,28 +97,28 @@ static C_INT cmps_memory_same(cmps_machine *state, lib_u32 source,
     lib_u32 destination_observed = 0u;
 
     return core_machine_memory_read_physical(&state->machine->executor_memory,
-        source, TYPE_REFERENCE_OF(source_observed), width) == TYPE_STATUS_OK &&
+        source, CORE_MACHINE_REFERENCE_OF(source_observed), width) == LIB_STATUS_OK &&
         core_machine_memory_read_physical(&state->machine->executor_memory,
-        destination, TYPE_REFERENCE_OF(destination_observed), width) ==
-        TYPE_STATUS_OK && lib_memory_compare(&source_observed, source_image, width) == 0 &&
+        destination, CORE_MACHINE_REFERENCE_OF(destination_observed), width) ==
+        LIB_STATUS_OK && lib_memory_compare(&source_observed, source_image, width) == 0 &&
         lib_memory_compare(&destination_observed, destination_image, width) == 0;
 }
 
-static C_INT cmps_single_case(core_machine_cpu_profile profile,
-    const lib_u8 *code, lib_u8 bytes, lib_u8 width, C_INT address32,
-    C_INT decrement, lib_u32 source, lib_u32 destination)
+static lib_i32 cmps_single_case(core_machine_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes, lib_u8 width, lib_i32 address32,
+    lib_i32 decrement, lib_u32 source, lib_u32 destination)
 {
     cmps_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u32 left = width == 4u ? 0xaabb0010u : 0x10u;
     lib_u32 right = 1u;
     lib_u32 initial_index = address32 ? 0x1020u : 0x20u;
     lib_u32 expected_index = initial_index + (decrement ? -(lib_i32)width : width);
-    C_INT failed = !cmps_prepare(profile, &state);
+    lib_i32 failed = !cmps_prepare(profile, &state);
 
     if (!failed) {
         cmps_seed(&state);
@@ -133,11 +134,11 @@ static C_INT cmps_single_case(core_machine_cpu_profile profile,
         if (decrement)
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_DF;
         failed |= core_machine_memory_write(state.machine, source, &left, width) !=
-            TYPE_STATUS_OK || core_machine_memory_write(state.machine, destination,
-            &right, width) != TYPE_STATUS_OK;
+            LIB_STATUS_OK || core_machine_memory_write(state.machine, destination,
+            &right, width) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !cmps_run(&state, code, bytes, 1u, &after, &diagnostic,
-            &status, &result) || status != TYPE_STATUS_OK ||
+            &status, &result) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
             !cmps_nonindexes_same(&before, &after) ||
             after.data.ecx != before.data.ecx ||
@@ -157,7 +158,7 @@ static C_INT cmps_single_case(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT cmps_test_single(C_VOID)
+static lib_i32 cmps_test_single(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -187,7 +188,7 @@ static C_INT cmps_test_single(C_VOID)
         0, 1, 0x20010u, 0x30020u);
 }
 
-static C_INT cmps_flag_case(lib_u8 left, lib_u8 right, lib_u32 flags)
+static lib_i32 cmps_flag_case(lib_u8 left, lib_u8 right, lib_u32 flags)
 {
     static const lib_u8 code = 0xa6u;
     cmps_machine state;
@@ -195,19 +196,19 @@ static C_INT cmps_flag_case(lib_u8 left, lib_u8 right, lib_u32 flags)
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
-    C_INT failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_status status;
+    lib_i32 failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         cmps_seed(&state);
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         failed |= core_machine_memory_write(state.machine, 0x20010u, &left,
-            sizeof(left)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x30020u, &right, sizeof(right)) != TYPE_STATUS_OK;
+            sizeof(left)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x30020u, &right, sizeof(right)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !cmps_run(&state, &code, sizeof(code), 1u, &after,
-            &diagnostic, &status, &result) || status != TYPE_STATUS_OK ||
+            &diagnostic, &status, &result) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != 1u ||
             !cmps_nonindexes_same(&before, &after) ||
             after.data.ecx != before.data.ecx || after.data.esi != 0x11u ||
@@ -220,7 +221,7 @@ static C_INT cmps_flag_case(lib_u8 left, lib_u8 right, lib_u32 flags)
     return !failed;
 }
 
-static C_INT cmps_test_flags(C_VOID)
+static lib_i32 cmps_test_flags(void)
 {
     return cmps_flag_case(0x10u, 0x01u, VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) &&
         cmps_flag_case(0x10u, 0x10u, VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) &&
@@ -229,7 +230,7 @@ static C_INT cmps_test_flags(C_VOID)
         VCPU_EFLAGS_AF | VCPU_EFLAGS_OF);
 }
 
-static C_INT cmps_override_case(const lib_u8 *code, lib_u8 bytes,
+static lib_i32 cmps_override_case(const lib_u8 *code, lib_u8 bytes,
     lib_u32 source)
 {
     cmps_machine state;
@@ -237,19 +238,19 @@ static C_INT cmps_override_case(const lib_u8 *code, lib_u8 bytes,
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u8 left = 0x10u;
     lib_u8 right = 1u;
-    C_INT failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         cmps_seed(&state);
         failed |= core_machine_memory_write(state.machine, source, &left,
-            sizeof(left)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x30020u, &right, sizeof(right)) != TYPE_STATUS_OK;
+            sizeof(left)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x30020u, &right, sizeof(right)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !cmps_run(&state, code, bytes, 1u, &after, &diagnostic,
-            &status, &result) || status != TYPE_STATUS_OK ||
+            &status, &result) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
             !cmps_nonindexes_same(&before, &after) ||
             after.data.ecx != before.data.ecx || after.data.esi != 0x11u ||
@@ -261,7 +262,7 @@ static C_INT cmps_override_case(const lib_u8 *code, lib_u8 bytes,
     return !failed;
 }
 
-static C_INT cmps_test_segments(C_VOID)
+static lib_i32 cmps_test_segments(void)
 {
     static const lib_u8 cs[] = {0x2eu, 0xa6u};
     static const lib_u8 fs[] = {0x64u, 0xa6u};
@@ -270,7 +271,7 @@ static C_INT cmps_test_segments(C_VOID)
         cmps_override_case(fs, sizeof(fs), 0x40010u);
 }
 
-static C_INT cmps_rep_case(core_machine_cpu_profile profile,
+static lib_i32 cmps_rep_case(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes, lib_u16 count, const lib_u8 *left,
     const lib_u8 *right, lib_u16 expected_count, lib_u16 expected_si,
     lib_u16 expected_di, lib_u32 flags)
@@ -280,19 +281,19 @@ static C_INT cmps_rep_case(core_machine_cpu_profile profile,
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
-    C_INT failed = !cmps_prepare(profile, &state);
+    lib_status status;
+    lib_i32 failed = !cmps_prepare(profile, &state);
 
     if (!failed) {
         cmps_seed(&state);
         state.machine->executor_cpu.data.ecx = 0x11220000u | count;
         failed |= core_machine_memory_write(state.machine, 0x20010u, left, 3u) !=
-            TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x30020u,
-            right, 3u) != TYPE_STATUS_OK;
+            LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x30020u,
+            right, 3u) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !cmps_run(&state, code, bytes, count == 0u ? 1u :
             (lib_u8)(count - expected_count), &after, &diagnostic, &status, &result) ||
-            status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
             after.data.eip != bytes || !cmps_nonindexes_same(&before, &after) ||
             after.data.ecx != ((before.data.ecx & 0xffff0000u) | expected_count) ||
             after.data.esi != ((before.data.esi & 0xffff0000u) | expected_si) ||
@@ -306,7 +307,7 @@ static C_INT cmps_rep_case(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT cmps_test_rep(C_VOID)
+static lib_i32 cmps_test_rep(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -339,15 +340,15 @@ static C_INT cmps_test_rep(C_VOID)
     return 1;
 }
 
-static C_INT cmps_rep_attribute_case(const lib_u8 *code, lib_u8 bytes,
-    lib_u8 width, C_INT address32, C_INT decrement)
+static lib_i32 cmps_rep_attribute_case(const lib_u8 *code, lib_u8 bytes,
+    lib_u8 width, lib_i32 address32, lib_i32 decrement)
 {
     cmps_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u32 image = width == 4u ? 0x11223344u : width == 2u ? 0x3344u : 0x44u;
     lib_u32 source_base = address32 ? 0x21010u : 0x20010u;
     lib_u32 destination_base = address32 ? 0x31020u : 0x30020u;
@@ -356,7 +357,7 @@ static C_INT cmps_rep_attribute_case(const lib_u8 *code, lib_u8 bytes,
     lib_u32 expected_source;
     lib_u32 expected_destination;
     lib_u8 item;
-    C_INT failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         cmps_seed(&state);
@@ -378,13 +379,13 @@ static C_INT cmps_rep_attribute_case(const lib_u8 *code, lib_u8 bytes,
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_DF;
         for (item = 0u; item != 3u; ++item) {
             failed |= core_machine_memory_write(state.machine, source_base +
-                item * width, &image, width) != TYPE_STATUS_OK ||
+                item * width, &image, width) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, destination_base +
-                item * width, &image, width) != TYPE_STATUS_OK;
+                item * width, &image, width) != LIB_STATUS_OK;
         }
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !cmps_run(&state, code, bytes, 3u, &after, &diagnostic,
-            &status, &result) || status != TYPE_STATUS_OK ||
+            &status, &result) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
             !cmps_nonindexes_same(&before, &after) ||
             after.data.ecx != (address32 ? 0u : 0x11220000u) ||
@@ -408,7 +409,7 @@ static C_INT cmps_rep_attribute_case(const lib_u8 *code, lib_u8 bytes,
     return !failed;
 }
 
-static C_INT cmps_test_rep_attributes(C_VOID)
+static lib_i32 cmps_test_rep_attributes(void)
 {
     static const lib_u8 operand32[] = {0xf3u, 0x66u, 0xa7u};
     static const lib_u8 address32[] = {0xf3u, 0x67u, 0xa6u};
@@ -421,7 +422,7 @@ static C_INT cmps_test_rep_attributes(C_VOID)
         cmps_rep_attribute_case(reverse, sizeof(reverse), 1u, 0, 1);
 }
 
-static C_INT cmps_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 cmps_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     cmps_machine state;
@@ -429,22 +430,22 @@ static C_INT cmps_expect_ud(core_machine_cpu_profile profile,
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u8 left = 0x10u;
     lib_u8 right = 1u;
-    C_INT failed = !cmps_prepare(profile, &state);
+    lib_i32 failed = !cmps_prepare(profile, &state);
 
     if (!failed) {
         cmps_seed(&state);
         failed |= core_machine_memory_write(state.machine, 0x20010u, &left,
-            sizeof(left)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x30020u, &right, sizeof(right)) != TYPE_STATUS_OK;
+            sizeof(left)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x30020u, &right, sizeof(right)) != LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !cmps_run(&state, code, bytes, 1u, &after, &diagnostic,
-            &status, &result) || status != TYPE_STATUS_FAULT ||
-            !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+            &status, &result) || status != LIB_STATUS_INTERNAL_ERROR ||
+            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             after.data.eip != 0u || !cmps_all_gpr_same(&before, &after) ||
             after.data.eflags != before.data.eflags || !cmps_memory_same(&state,
@@ -454,7 +455,7 @@ static C_INT cmps_expect_ud(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT cmps_test_rejections(C_VOID)
+static lib_i32 cmps_test_rejections(void)
 {
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -488,7 +489,7 @@ static C_INT cmps_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT cmps_boot_protected(cmps_machine *state)
+static lib_i32 cmps_boot_protected(cmps_machine *state)
 {
     static const lib_u8 pointer[] = {0x27u, 0u, 0u, 0x03u, 0u, 0u};
     static const lib_u8 gdt[] = {
@@ -505,16 +506,16 @@ static C_INT cmps_boot_protected(cmps_machine *state)
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
-        sizeof(pointer)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
+        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, boot, sizeof(boot)) ==
-        TYPE_STATUS_OK && core_machine_memory_write(state->machine, 0x2000u,
-        &halt, sizeof(halt)) == TYPE_STATUS_OK && core_machine_run(
+        LIB_STATUS_OK && core_machine_memory_write(state->machine, 0x2000u,
+        &halt, sizeof(halt)) == LIB_STATUS_OK && core_machine_run(
         state->machine, (core_machine_run_budget){96u, 0u}, &result) ==
-        TYPE_STATUS_OK && result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        LIB_STATUS_OK && result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT cmps_protected_case(C_INT source_fault)
+static lib_i32 cmps_protected_case(lib_i32 source_fault)
 {
     static const lib_u8 code = 0xa6u;
     cmps_machine state;
@@ -524,7 +525,7 @@ static C_INT cmps_protected_case(C_INT source_fault)
     core_machine_run_result result;
     lib_u8 left = 0x10u;
     lib_u8 right = 1u;
-    C_INT failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
         failed |= !cmps_boot_protected(&state);
@@ -542,18 +543,18 @@ static C_INT cmps_protected_case(C_INT source_fault)
         state.machine->executor_cpu.data.esi = source_fault ? 0x10u : 0u;
         state.machine->executor_cpu.data.edi = source_fault ? 0u : 0x10u;
         failed |= core_machine_memory_write(state.machine, 0x3010u, &left,
-            sizeof(left)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x4010u, &right, sizeof(right)) != TYPE_STATUS_OK ||
+            sizeof(left)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x4010u, &right, sizeof(right)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x2000u, &code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u, 0u}, &result) != TYPE_STATUS_FAULT ||
+            (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || core_machine_get_cpu_diagnostic(
-            state.machine, &diagnostic) != TYPE_STATUS_OK;
+            state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             after.data.eip != 0u || !cmps_all_gpr_same(&before, &after) ||
             after.data.eflags != before.data.eflags || lib_memory_compare(&before.data.ds,
@@ -566,7 +567,7 @@ static C_INT cmps_protected_case(C_INT source_fault)
     return !failed;
 }
 
-static C_INT cmps_protected_rep_case(C_INT source_fault)
+static lib_i32 cmps_protected_rep_case(lib_i32 source_fault)
 {
     static const lib_u8 code[] = {0xf3u, 0xa6u};
     cmps_machine state;
@@ -576,7 +577,7 @@ static C_INT cmps_protected_rep_case(C_INT source_fault)
     core_machine_run_result result;
     lib_u8 left[] = {0x10u, 1u};
     lib_u8 right[] = {0x10u, 1u};
-    C_INT failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
         failed |= !cmps_boot_protected(&state);
@@ -602,18 +603,18 @@ static C_INT cmps_protected_rep_case(C_INT source_fault)
         state.machine->executor_cpu.data.edi = 0x10u;
         state.machine->executor_cpu.data.ecx = 0x11220003u;
         failed |= core_machine_memory_write(state.machine, 0x3010u, left,
-            sizeof(left)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x4010u, right, sizeof(right)) != TYPE_STATUS_OK ||
+            sizeof(left)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x4010u, right, sizeof(right)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x2000u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){2u, 0u}, &result) != TYPE_STATUS_FAULT ||
+            (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || core_machine_get_cpu_diagnostic(
-            state.machine, &diagnostic) != TYPE_STATUS_OK;
+            state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             after.data.eip != 0u || !cmps_nonindexes_same(&before, &after) ||
             after.data.ecx != 0x11220002u || after.data.esi != 0x11u ||
@@ -628,13 +629,13 @@ static C_INT cmps_protected_rep_case(C_INT source_fault)
     return !failed;
 }
 
-static C_INT cmps_test_protected(C_VOID)
+static lib_i32 cmps_test_protected(void)
 {
     return cmps_protected_case(1) && cmps_protected_case(0) &&
         cmps_protected_rep_case(1) && cmps_protected_rep_case(0);
 }
 
-static C_INT cmps_irq_case(C_INT repeat)
+static lib_i32 cmps_irq_case(lib_i32 repeat)
 {
     static const lib_u8 single[] = {0xa6u, 0x90u};
     static const lib_u8 repeated[] = {0xf3u, 0xa6u, 0x90u};
@@ -650,18 +651,18 @@ static C_INT cmps_irq_case(C_INT repeat)
     lib_u8 right[] = {0x10u, 1u, 1u};
     const lib_u8 *code = repeat ? repeated : single;
     lib_u8 bytes = repeat ? sizeof(repeated) : sizeof(single);
-    C_INT failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !cmps_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0x20010u, left,
-            sizeof(left)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x30020u, right, sizeof(right)) != TYPE_STATUS_OK ||
+            sizeof(left)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x30020u, right, sizeof(right)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x80u,
-            &offset, sizeof(offset)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x82u, &segment, sizeof(segment)) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x80u,
+            &offset, sizeof(offset)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x82u, &segment, sizeof(segment)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x100u, &hlt, sizeof(hlt)) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
     }
     if (!failed) {
         cmps_seed(&state);
@@ -676,18 +677,18 @@ static C_INT cmps_irq_case(C_INT repeat)
         core_machine_pic_irq_source_deassert(&irq);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){repeat ? 4u : 2u, 0u}, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
             after.data.ss.base + (lib_u16)after.data.esp,
-            TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
+            CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
             after.data.eip != 0x101u || frame_ip != (repeat ? 0u : 1u) ||
             after.data.esi != 0x11u || after.data.edi != 0x21u ||
             after.data.ecx != (repeat ? 0x11220002u : 0x11220003u) ||
             (after.data.eflags & CMPS_FLAGS) !=
             (VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-            VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+            VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
             VPIC_IRR_IRQ(0u)) || !cmps_memory_same(&state, 0x20010u, 0x30020u,
             left, right, sizeof(left));
     }
@@ -695,46 +696,46 @@ static C_INT cmps_irq_case(C_INT repeat)
     return !failed;
 }
 
-static C_INT cmps_test_irq(C_VOID)
+static lib_i32 cmps_test_irq(void)
 {
     return cmps_irq_case(0) && cmps_irq_case(1);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!cmps_test_single()) {
-        STD_PRINTF("CMPS stage=single\n");
+        printf("CMPS stage=single\n");
         return 1;
     }
     if (!cmps_test_flags()) {
-        STD_PRINTF("CMPS stage=flags\n");
+        printf("CMPS stage=flags\n");
         return 1;
     }
     if (!cmps_test_segments()) {
-        STD_PRINTF("CMPS stage=segments\n");
+        printf("CMPS stage=segments\n");
         return 1;
     }
     if (!cmps_test_rep()) {
-        STD_PRINTF("CMPS stage=rep\n");
+        printf("CMPS stage=rep\n");
         return 1;
     }
     if (!cmps_test_rep_attributes()) {
-        STD_PRINTF("CMPS stage=rep-attributes\n");
+        printf("CMPS stage=rep-attributes\n");
         return 1;
     }
     if (!cmps_test_rejections()) {
-        STD_PRINTF("CMPS stage=rejections\n");
+        printf("CMPS stage=rejections\n");
         return 1;
     }
     if (!cmps_test_protected()) {
-        STD_PRINTF("CMPS stage=protected\n");
+        printf("CMPS stage=protected\n");
         return 1;
     }
     if (!cmps_test_irq()) {
-        STD_PRINTF("CMPS stage=irq\n");
+        printf("CMPS stage=irq\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S37:CMPS:OK\n");
-    STD_PRINTF("M5:T401:S16:CMPS-PROFILES:OK\n");
+    printf("M5:T316:S37:CMPS:OK\n");
+    printf("M5:T401:S16:CMPS-PROFILES:OK\n");
     return 0;
 }

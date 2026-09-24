@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -20,11 +21,11 @@ typedef struct descriptor_system_machine {
     core_machine *machine;
 } descriptor_system_machine;
 
-static C_VOID dt_reset(C_VOID *opaque)
+static void dt_reset(void *opaque)
 {
     descriptor_system_machine *state = (descriptor_system_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
@@ -33,8 +34,8 @@ static const core_machine_execution_provider dt_provider = {
     LIB_NULL
 };
 
-static C_INT dt_prepare_profile(descriptor_system_machine *state,
-    core_machine_cpu_profile profile, type_bool cpu_80386_cr_mov_ignores_mod)
+static lib_i32 dt_prepare_profile(descriptor_system_machine *state,
+    core_machine_cpu_profile profile, lib_u8 cpu_80386_cr_mov_ignores_mod)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -45,7 +46,7 @@ static C_INT dt_prepare_profile(descriptor_system_machine *state,
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &dt_provider, state)) {
         core_machine_destroy(state->machine);
@@ -55,61 +56,61 @@ static C_INT dt_prepare_profile(descriptor_system_machine *state,
     return 1;
 }
 
-static C_INT dt_prepare(descriptor_system_machine *state)
+static lib_i32 dt_prepare(descriptor_system_machine *state)
 {
     return dt_prepare_profile(state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE);
 }
 
-static C_INT dt_prepare_early_80386(descriptor_system_machine *state)
+static lib_i32 dt_prepare_early_80386(descriptor_system_machine *state)
 {
     return dt_prepare_profile(state, CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE);
 }
 
-static C_INT dt_write(descriptor_system_machine *state, lib_u32 address,
+static lib_i32 dt_write(descriptor_system_machine *state, lib_u32 address,
     const lib_u8 *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, data, bytes) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT dt_read(descriptor_system_machine *state, lib_u32 address,
+static lib_i32 dt_read(descriptor_system_machine *state, lib_u32 address,
     lib_u8 *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_read(state->machine, address, data, bytes) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT dt_read_private(descriptor_system_machine *state, lib_u32 address,
+static lib_i32 dt_read_private(descriptor_system_machine *state, lib_u32 address,
     lib_u8 *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_read_physical(&state->machine->executor_memory,
-            address, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
+            address, (lib_uptr)data, bytes) == LIB_STATUS_OK;
 }
 
-static C_INT dt_run(descriptor_system_machine *state, const lib_u8 *code,
-    lib_size bytes, C_INT expect_fault, lib_u32 expect_exception)
+static lib_i32 dt_run(descriptor_system_machine *state, const lib_u8 *code,
+    lib_size bytes, lib_i32 expect_fault, lib_u32 expect_exception)
 {
     const core_machine_run_budget budget = {32u, 0u};
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
 
     if (expect_fault && expect_exception == VCPUINS_EXCEPT_UD &&
-        !TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        !CORE_MACHINE_BIT_IS_SET(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
         !test_core_machine_fixture_preflight_real_ud_terminal(state->machine))
         return 0;
     if (!dt_write(state, 0u, code, bytes) ||
         core_machine_run(state->machine, budget, &result) !=
-            (expect_fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
+            (expect_fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
         result.reason != (expect_fault ? CORE_MACHINE_STOP_FAULT :
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) ||
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
-            TYPE_STATUS_OK) return 0;
+            LIB_STATUS_OK) return 0;
     if (expect_fault && state->machine->cpu_profile >=
             CORE_MACHINE_CPU_PROFILE_80386 &&
-        TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        CORE_MACHINE_BIT_IS_SET(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
         (expect_exception == VCPUINS_EXCEPT_TS ||
             expect_exception == VCPUINS_EXCEPT_NP ||
             expect_exception == VCPUINS_EXCEPT_SS ||
@@ -117,11 +118,11 @@ static C_INT dt_run(descriptor_system_machine *state, const lib_u8 *code,
         expect_exception = VCPUINS_EXCEPT_DF;
     }
     return expect_fault ? diagnostic.first_fault.valid &&
-        TYPE_GET_BIT(diagnostic.first_fault.exception_mask, expect_exception) :
+        CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, expect_exception) :
         !diagnostic.first_fault.valid;
 }
 
-static C_INT dt_run_fault_code(descriptor_system_machine *state,
+static lib_i32 dt_run_fault_code(descriptor_system_machine *state,
     const lib_u8 *code, lib_size bytes, lib_u32 exception,
     lib_u32 exception_code)
 {
@@ -129,18 +130,18 @@ static C_INT dt_run_fault_code(descriptor_system_machine *state,
 
     if (state != LIB_NULL && state->machine != LIB_NULL &&
         state->machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
-        TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        CORE_MACHINE_BIT_IS_SET(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
         (exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
             exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP)) {
         exception_code = 0u;
     }
     return dt_run(state, code, bytes, 1, exception) &&
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) ==
-            TYPE_STATUS_OK &&
+            LIB_STATUS_OK &&
         diagnostic.first_fault.exception_code == exception_code;
 }
 
-static C_INT dt_run_one(descriptor_system_machine *state, const lib_u8 *code,
+static lib_i32 dt_run_one(descriptor_system_machine *state, const lib_u8 *code,
     lib_size bytes)
 {
     const core_machine_run_budget budget = {1u, 0u};
@@ -148,13 +149,13 @@ static C_INT dt_run_one(descriptor_system_machine *state, const lib_u8 *code,
     core_machine_cpu_diagnostic diagnostic;
 
     return dt_write(state, 0u, code, bytes) &&
-        core_machine_run(state->machine, budget, &result) == TYPE_STATUS_OK &&
+        core_machine_run(state->machine, budget, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) ==
-            TYPE_STATUS_OK && !diagnostic.first_fault.valid;
+            LIB_STATUS_OK && !diagnostic.first_fault.valid;
 }
 
-static C_VOID dt_set_tables(descriptor_system_machine *state,
+static void dt_set_tables(descriptor_system_machine *state,
     lib_u32 gdtr_base, lib_u16 gdtr_limit, lib_u32 idtr_base,
     lib_u16 idtr_limit)
 {
@@ -164,7 +165,7 @@ static C_VOID dt_set_tables(descriptor_system_machine *state,
     state->machine->executor_cpu.data.idtr.limit = idtr_limit;
 }
 
-static C_INT dt_tables_equal(const t_cpu *first, const t_cpu *second)
+static lib_i32 dt_tables_equal(const t_cpu *first, const t_cpu *second)
 {
     return first->data.gdtr.base == second->data.gdtr.base &&
         first->data.gdtr.limit == second->data.gdtr.limit &&
@@ -172,12 +173,12 @@ static C_INT dt_tables_equal(const t_cpu *first, const t_cpu *second)
         first->data.idtr.limit == second->data.idtr.limit;
 }
 
-static C_VOID dt_enter_protected(descriptor_system_machine *state,
+static void dt_enter_protected(descriptor_system_machine *state,
     lib_u8 cpl)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
-    TYPE_SET_BIT(cpu->data.cr0, VCPU_CR0_PE);
+    CORE_MACHINE_BIT_SET(cpu->data.cr0, VCPU_CR0_PE);
     cpu->data.cs.selector = (lib_u16)(0x0008u | cpl);
     cpu->data.cs.dpl = cpl;
     cpu->data.cs.base = 0u;
@@ -195,14 +196,14 @@ static C_VOID dt_enter_protected(descriptor_system_machine *state,
     cpu->data.ds.dpl = cpl;
 }
 
-static C_VOID dt_enter_user_protected(descriptor_system_machine *state)
+static void dt_enter_user_protected(descriptor_system_machine *state)
 {
     dt_enter_protected(state, 3u);
     state->machine->executor_cpu.data.cs.selector = 0x004bu;
     state->machine->executor_cpu.data.ds.selector = 0x0053u;
 }
 
-static C_INT dt_sreg_equal(const t_cpu_data_sreg *first,
+static lib_i32 dt_sreg_equal(const t_cpu_data_sreg *first,
     const t_cpu_data_sreg *second)
 {
     return first->flagValid == second->flagValid &&
@@ -212,7 +213,7 @@ static C_INT dt_sreg_equal(const t_cpu_data_sreg *first,
         first->sys.type == second->sys.type;
 }
 
-static C_VOID dt_seed_system_sreg(t_cpu_data_sreg *sreg,
+static void dt_seed_system_sreg(t_cpu_data_sreg *sreg,
     t_cpu_data_sreg_type type, lib_u16 selector)
 {
     lib_memory_set(sreg, 0, sizeof(*sreg));
@@ -226,14 +227,14 @@ static C_VOID dt_seed_system_sreg(t_cpu_data_sreg *sreg,
         VCPU_DESC_SYS_TYPE_LDT;
 }
 
-static C_INT dt_control_equal(const t_cpu *first, const t_cpu *second)
+static lib_i32 dt_control_equal(const t_cpu *first, const t_cpu *second)
 {
     return first->data.cr0 == second->data.cr0 &&
         first->data.cr2 == second->data.cr2 &&
         first->data.cr3 == second->data.cr3;
 }
 
-static C_INT dt_test_msw_and_control_registers(C_VOID)
+static lib_i32 dt_test_msw_and_control_registers(void)
 {
     static const lib_u8 smsw_register[] = {0x66u,0x0fu,0x01u,0xe0u,0xf4u};
     static const lib_u8 smsw_memory[] = {0x66u,0x0fu,0x01u,0x26u,0x00u,0x02u,0xf4u};
@@ -259,7 +260,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     lib_size index;
     {
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             state.machine->executor_cpu.data.cr0 = 0x0000000cu;
@@ -273,11 +274,11 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     }
     {
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_user_protected(&state);
-            TYPE_SET_BIT(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
+            CORE_MACHINE_BIT_SET(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
             state.machine->executor_cpu.data.eax = 0xdeadbeefu;
             failed = !dt_run_one(&state, smsw_register, sizeof(smsw_register)) ||
                 state.machine->executor_cpu.data.eax != 0xdead0009u;
@@ -287,7 +288,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     }
     {
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             state.machine->executor_cpu.data.cr0 = 0x0000000cu;
@@ -300,11 +301,11 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     }
     {
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
-            TYPE_SET_BIT(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
+            CORE_MACHINE_BIT_SET(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
             state.machine->executor_cpu.data.eax = 0xabcd0000u;
             failed = !dt_run_one(&state, lmsw_register, sizeof(lmsw_register)) ||
                 state.machine->executor_cpu.data.cr0 !=
@@ -318,7 +319,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
         const core_machine_cpu_profile profile = index == 0u ?
             CORE_MACHINE_CPU_PROFILE_80286 : CORE_MACHINE_CPU_PROFILE_80386;
         const lib_u32 flags = 0x00000246u;
-        C_INT failed = !dt_prepare_profile(&state, profile, LIB_FALSE);
+        lib_i32 failed = !dt_prepare_profile(&state, profile, LIB_FALSE);
 
         if (!failed) {
             state.machine->executor_cpu.data.cr0 = VCPU_CR0_TS;
@@ -333,11 +334,11 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     {
         descriptor_system_machine state;
         const lib_u32 flags = 0x00000246u;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
-            TYPE_SET_BIT(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
+            CORE_MACHINE_BIT_SET(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
             state.machine->executor_cpu.data.eflags = flags;
             failed = !dt_run(&state, clts, sizeof(clts), 0, 0u) ||
                 state.machine->executor_cpu.data.cr0 != VCPU_CR0_PE ||
@@ -350,7 +351,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !dt_prepare_profile(&state, CORE_MACHINE_CPU_PROFILE_80186, LIB_FALSE);
+        lib_i32 failed = !dt_prepare_profile(&state, CORE_MACHINE_CPU_PROFILE_80186, LIB_FALSE);
 
         if (!failed) {
             state.machine->executor_cpu.data.cr0 = VCPU_CR0_TS;
@@ -365,7 +366,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     }
     for (index = 0u; index < 3u; ++index) {
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             state.machine->executor_cpu.data.cr0 = values[0];
@@ -380,7 +381,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     }
     for (index = 0u; index < 3u; ++index) {
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = values[index];
@@ -402,7 +403,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
             descriptor_system_machine state;
             t_cpu before;
             t_cpu after;
-            C_INT failed = !dt_prepare(&state);
+            lib_i32 failed = !dt_prepare(&state);
 
             if (!failed) {
                 state.machine->executor_cpu.data.cr0 = 0x00000001u;
@@ -425,7 +426,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
         t_cpu before;
         t_cpu after;
         const lib_u8 *code = index == 0u ? protected_lmsw : protected_mov;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 3u);
@@ -444,11 +445,11 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 3u);
-            TYPE_SET_BIT(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
+            CORE_MACHINE_BIT_SET(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed = !dt_run_fault_code(&state, clts, sizeof(clts),
                 VCPUINS_EXCEPT_GP, 0u);
@@ -467,7 +468,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
             0x66u, 0x0fu, 0x22u, 0x80u, 0xf4u
         };
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare_early_80386(&state);
+        lib_i32 failed = !dt_prepare_early_80386(&state);
 
         if (!failed) {
             state.machine->executor_cpu.data.cr0 = 0x0000000cu;
@@ -489,7 +490,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     return 1;
 }
 
-static C_INT dt_install_selector_tables(descriptor_system_machine *state)
+static lib_i32 dt_install_selector_tables(descriptor_system_machine *state)
 {
     static const lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -510,7 +511,7 @@ static C_INT dt_install_selector_tables(descriptor_system_machine *state)
     return dt_write(state, DT_GDT_ADDRESS, gdt, sizeof(gdt));
 }
 
-static C_INT dt_test_selector_stores(C_VOID)
+static lib_i32 dt_test_selector_stores(void)
 {
     static const lib_u8 register_code[][5] = {
         {0x66u,0x0fu,0x00u,0xc0u,0xf4u},
@@ -525,7 +526,7 @@ static C_INT dt_test_selector_stores(C_VOID)
 
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             failed = !dt_install_selector_tables(&state);
@@ -546,7 +547,7 @@ static C_INT dt_test_selector_stores(C_VOID)
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
         lib_u16 observed = 0u;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
@@ -565,7 +566,7 @@ static C_INT dt_test_selector_stores(C_VOID)
     return 1;
 }
 
-static C_INT dt_test_selector_loads(C_VOID)
+static lib_i32 dt_test_selector_loads(void)
 {
     static const lib_u8 lldt[] = {0x0fu,0x00u,0xd0u,0xf4u};
     static const lib_u8 ltr[] = {0x0fu,0x00u,0xd8u,0xf4u};
@@ -597,7 +598,7 @@ static C_INT dt_test_selector_loads(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -612,7 +613,7 @@ static C_INT dt_test_selector_loads(C_VOID)
     }
     {
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
@@ -631,7 +632,7 @@ static C_INT dt_test_selector_loads(C_VOID)
     }
     {
         descriptor_system_machine state;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
@@ -648,7 +649,7 @@ static C_INT dt_test_selector_loads(C_VOID)
         descriptor_system_machine state;
         const lib_u16 selector = index == 0u ? DT_LDT_SELECTOR :
             DT_TSS16_SELECTOR;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
@@ -671,7 +672,7 @@ static C_INT dt_test_selector_loads(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
@@ -692,7 +693,7 @@ static C_INT dt_test_selector_loads(C_VOID)
     {
         descriptor_system_machine state;
         lib_u8 access = 0u;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
@@ -714,7 +715,7 @@ static C_INT dt_test_selector_loads(C_VOID)
     {
         descriptor_system_machine state;
         lib_u8 access = 0u;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
@@ -740,7 +741,7 @@ static C_INT dt_test_selector_loads(C_VOID)
         t_cpu after;
         lib_u8 before_access = 0u;
         lib_u8 after_access = 0u;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
@@ -769,7 +770,7 @@ static C_INT dt_test_selector_loads(C_VOID)
     return 1;
 }
 
-static C_INT dt_test_store_layout(C_VOID)
+static lib_i32 dt_test_store_layout(void)
 {
     static const lib_u8 code[][7] = {
         {0x0fu, 0x01u, 0x06u, 0x00u, 0x02u, 0xf4u, 0u},
@@ -789,7 +790,7 @@ static C_INT dt_test_store_layout(C_VOID)
         descriptor_system_machine state;
         lib_u8 observed[6] = {0};
         lib_u8 clear[6] = {0};
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_set_tables(&state, 0x7abcde12u, 0x1234u, 0x12345678u, 0x5678u);
@@ -805,7 +806,7 @@ static C_INT dt_test_store_layout(C_VOID)
     return 1;
 }
 
-static C_INT dt_test_protected_stores(C_VOID)
+static lib_i32 dt_test_protected_stores(void)
 {
     static const lib_u8 code[][7] = {
         {0x66u, 0x0fu, 0x01u, 0x06u, 0x00u, 0x02u, 0xf4u},
@@ -820,7 +821,7 @@ static C_INT dt_test_protected_stores(C_VOID)
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
         lib_u8 observed[6] = {0};
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_set_tables(&state, 0x7abcde12u, 0x1234u, 0x12345678u, 0x5678u);
@@ -835,7 +836,7 @@ static C_INT dt_test_protected_stores(C_VOID)
     return 1;
 }
 
-static C_INT dt_test_load_layout(C_VOID)
+static lib_i32 dt_test_load_layout(void)
 {
     static const lib_u8 code[][7] = {
         {0x0fu, 0x01u, 0x16u, 0x40u, 0x02u, 0xf4u, 0u},
@@ -849,7 +850,7 @@ static C_INT dt_test_load_layout(C_VOID)
     for (index = 0u; index < 4u; ++index) {
         descriptor_system_machine state;
         t_cpu after;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             failed = !dt_write(&state, DT_LOAD_ADDRESS, source, sizeof(source)) ||
@@ -870,7 +871,7 @@ static C_INT dt_test_load_layout(C_VOID)
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
         t_cpu after;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
@@ -891,7 +892,7 @@ static C_INT dt_test_load_layout(C_VOID)
     return 1;
 }
 
-static C_INT dt_test_register_and_privilege_faults(C_VOID)
+static lib_i32 dt_test_register_and_privilege_faults(void)
 {
     static const lib_u8 register_code[][4] = {
         {0x0fu, 0x01u, 0xc0u, 0u}, {0x0fu, 0x01u, 0xc8u, 0u},
@@ -908,7 +909,7 @@ static C_INT dt_test_register_and_privilege_faults(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_set_tables(&state, 0x11112222u, 0x3333u, 0x44445555u, 0x6666u);
@@ -927,7 +928,7 @@ static C_INT dt_test_register_and_privilege_faults(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_set_tables(&state, 0x11112222u, 0x3333u, 0u, 0u);
@@ -945,7 +946,7 @@ static C_INT dt_test_register_and_privilege_faults(C_VOID)
     return 1;
 }
 
-static C_INT dt_test_memory_faults_preserve_tables(C_VOID)
+static lib_i32 dt_test_memory_faults_preserve_tables(void)
 {
     static const lib_u8 store_code[][6] = {
         {0x0fu, 0x01u, 0x06u, 0x00u, 0x02u, 0xf4u},
@@ -961,7 +962,7 @@ static C_INT dt_test_memory_faults_preserve_tables(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_set_tables(&state, 0x11112222u, 0x3333u, 0u, 0u);
@@ -981,7 +982,7 @@ static C_INT dt_test_memory_faults_preserve_tables(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !dt_prepare(&state);
+        lib_i32 failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_set_tables(&state, 0x11112222u, 0x3333u, 0u, 0u);
@@ -1000,14 +1001,14 @@ static C_INT dt_test_memory_faults_preserve_tables(C_VOID)
 }
 
 
-static C_INT dt_test_c7_segment_override_real_mode(C_VOID)
+static lib_i32 dt_test_c7_segment_override_real_mode(void)
 {
     static const lib_u8 code[] = {
         0x26u, 0xc7u, 0x47u, 0x02u, 0xffu, 0xffu, 0xf4u
     };
     descriptor_system_machine state;
     lib_u16 observed = 0u;
-    C_INT failed = !dt_prepare(&state);
+    lib_i32 failed = !dt_prepare(&state);
 
     if (!failed) {
         state.machine->executor_cpu.data.ebx = 0u;
@@ -1018,7 +1019,7 @@ static C_INT dt_test_c7_segment_override_real_mode(C_VOID)
     core_machine_destroy(state.machine);
     return !failed;
 }
-static C_INT dt_real_data_cache(const t_cpu_data_sreg *sreg,
+static lib_i32 dt_real_data_cache(const t_cpu_data_sreg *sreg,
     lib_u16 selector, t_cpu_data_sreg_type type)
 {
     return sreg->flagValid && sreg->selector == selector &&
@@ -1028,7 +1029,7 @@ static C_INT dt_real_data_cache(const t_cpu_data_sreg *sreg,
         !sreg->seg.executable && sreg->seg.data.writable &&
         !sreg->seg.data.big && !sreg->seg.data.expdown;
 }
-static C_INT dt_test_leave_protected_mode(C_VOID)
+static lib_i32 dt_test_leave_protected_mode(void)
 {
     static const lib_u8 code[] = {
         0x0fu, 0x22u, 0xc0u, 0xeau, 0x0au, 0x00u, 0x00u, 0x00u,
@@ -1036,7 +1037,7 @@ static C_INT dt_test_leave_protected_mode(C_VOID)
         0xd3u, 0x8eu, 0xdbu, 0xf4u
     };
     descriptor_system_machine state;
-    C_INT failed = !dt_prepare(&state);
+    lib_i32 failed = !dt_prepare(&state);
 
     if (!failed) {
         dt_enter_protected(&state, 0u);
@@ -1067,13 +1068,13 @@ static C_INT dt_test_leave_protected_mode(C_VOID)
     core_machine_destroy(state.machine);
     return !failed;
 }
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!dt_test_store_layout() || !dt_test_protected_stores() ||
         !dt_test_load_layout() || !dt_test_register_and_privilege_faults() ||
         !dt_test_memory_faults_preserve_tables() || !dt_test_selector_stores() ||
         !dt_test_selector_loads() || !dt_test_msw_and_control_registers() ||
         !dt_test_c7_segment_override_real_mode() || !dt_test_leave_protected_mode()) return 1;
-    STD_PRINTF("M5:T304:DESCRIPTOR-SYSTEM:OK\n");
+    printf("M5:T304:DESCRIPTOR-SYSTEM:OK\n");
     return 0;
 }

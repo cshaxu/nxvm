@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
@@ -9,20 +9,20 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
     core_machine_display_snapshot snapshot;
     static const lib_u8 text[] = { 'O', 0x07u, 'K', 0x07u };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=
-        TYPE_STATUS_OK || session == LIB_NULL;
+        LIB_STATUS_OK || session == LIB_NULL;
     if (!failed) {
         failed |= core_machine_memory_write(session->core_machine,
-            CORE_MACHINE_VADP_TEXT_BASE, text, sizeof(text)) != TYPE_STATUS_OK ||
+            CORE_MACHINE_VADP_TEXT_BASE, text, sizeof(text)) != LIB_STATUS_OK ||
             core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
-                TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
+                LIB_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
             snapshot.characters[0] != 'O' || snapshot.characters[1] != 'K';
     }
     if (!failed) {
@@ -38,9 +38,9 @@ C_INT main(C_VOID)
     }
     vm_machine_destroy(session);
     if (!failed) {
-        STD_PRINTF("M5:T386:S10:MODEL40-FEATURE-ENVIRONMENT:OK\n");
+        printf("M5:T386:S10:MODEL40-FEATURE-ENVIRONMENT:OK\n");
         return 0;
     }
-    STD_FPRINTF(STD_STDERR, "M5:T386:S10:MODEL40-FEATURE-ENVIRONMENT:FAIL\n");
+    fprintf(stderr, "M5:T386:S10:MODEL40-FEATURE-ENVIRONMENT:FAIL\n");
     return 1;
 }

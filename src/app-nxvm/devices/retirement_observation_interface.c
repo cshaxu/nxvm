@@ -1,9 +1,8 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/machine.h"
 
-static C_VOID core_machine_retirement_observation_copy_point(
+static void core_machine_retirement_observation_copy_point(
     core_machine_cpu_execution_point *point, const t_cpu *cpu,
     const t_cpuins *instructions)
 {
@@ -16,7 +15,7 @@ static C_VOID core_machine_retirement_observation_copy_point(
     lib_memory_copy(point->bytes, instructions->data.opcodes, sizeof(point->bytes));
 }
 
-C_VOID core_machine_retirement_observation_initialize(core_machine *machine)
+void core_machine_retirement_observation_initialize(core_machine *machine)
 {
     if (machine != LIB_NULL) {
         lib_memory_set(&machine->retirement_observation, 0,
@@ -24,22 +23,22 @@ C_VOID core_machine_retirement_observation_initialize(core_machine *machine)
     }
 }
 
-C_VOID core_machine_retirement_observation_reset(core_machine *machine)
+void core_machine_retirement_observation_reset(core_machine *machine)
 {
     if (machine != LIB_NULL) {
         machine->retirement_observation.pending = LIB_FALSE;
     }
 }
 
-type_status core_machine_set_retirement_observation_provider(
+lib_status core_machine_set_retirement_observation_provider(
     core_machine *machine,
     const core_machine_retirement_observation_provider *provider)
 {
-    if (machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
-        machine->lifecycle != CORE_MACHINE_PAUSED) return TYPE_STATUS_INVALID_STATE;
+        machine->lifecycle != CORE_MACHINE_PAUSED) return LIB_STATUS_INVALID_STATE;
     if (provider != LIB_NULL && provider->callback == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     lib_memory_set(&machine->retirement_observation.provider, 0,
         sizeof(machine->retirement_observation.provider));
@@ -52,7 +51,7 @@ type_status core_machine_set_retirement_observation_provider(
             &core_machine_cpu_diagnostic_provider :
             &core_machine_cpu_fault_diagnostic_provider,
         machine);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static lib_u8 core_machine_retirement_observation_prefix_count(
@@ -74,7 +73,7 @@ static lib_u8 core_machine_retirement_observation_prefix_count(
     return count;
 }
 
-static C_INT core_machine_retirement_observation_modrm_index(
+static lib_i32 core_machine_retirement_observation_modrm_index(
     const t_cpuins_data *data, lib_u8 opcode_index,
     lib_u8 *out_index)
 {
@@ -107,7 +106,7 @@ static C_INT core_machine_retirement_observation_modrm_index(
     return 0;
 }
 
-static C_VOID core_machine_retirement_observation_capture_context(
+static void core_machine_retirement_observation_capture_context(
     core_machine *machine, const t_cpu *cpu, const t_cpuins *instructions,
     core_machine_retirement_observation *observation)
 {
@@ -166,7 +165,7 @@ static C_VOID core_machine_retirement_observation_capture_context(
     }
 }
 
-static C_VOID core_machine_retirement_observation_capture_io(
+static void core_machine_retirement_observation_capture_io(
     core_machine_retirement_observation *observation, const t_cpu *cpu,
     const t_cpuins_data *data)
 {
@@ -204,7 +203,7 @@ static C_VOID core_machine_retirement_observation_capture_io(
     }
 }
 
-C_VOID core_machine_retirement_observation_capture_instruction(core_machine *machine,
+void core_machine_retirement_observation_capture_instruction(core_machine *machine,
     const t_cpu *cpu, const t_cpuins *instructions)
 {
     core_machine_retirement_observation *observation;
@@ -232,7 +231,7 @@ C_VOID core_machine_retirement_observation_capture_instruction(core_machine *mac
         machine->retirement_observation.provider.callback != LIB_NULL;
 }
 
-C_VOID core_machine_retirement_observation_capture_eligibility_key(
+void core_machine_retirement_observation_capture_eligibility_key(
     core_machine *machine)
 {
     core_machine_retirement_observation *observation;
@@ -272,7 +271,7 @@ C_VOID core_machine_retirement_observation_capture_eligibility_key(
     machine->retirement_eligibility_key = observation->eligibility_key;
     machine->retirement_eligibility_key_valid = LIB_TRUE;
 }
-C_VOID core_machine_retirement_observation_publish(core_machine *machine,
+void core_machine_retirement_observation_publish(core_machine *machine,
     lib_u64 source_ticks)
 {
     core_machine_retirement_observation_state *state;

@@ -1,18 +1,18 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_INT t386_s6_write_byte(t_ram *memory, lib_u32 physical,
+static lib_i32 t386_s6_write_byte(t_ram *memory, lib_u32 physical,
     lib_u8 value)
 {
     return core_machine_memory_write_physical(memory, physical,
-        (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
+        (lib_uptr)&value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static C_INT t386_s6_configure_ega(t_vadp *vadp, t_ram *memory)
+static lib_i32 t386_s6_configure_ega(t_vadp *vadp, t_ram *memory)
 {
     const core_machine_vadp_ega_sequencer_config sequencer = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
@@ -26,11 +26,11 @@ static C_INT t386_s6_configure_ega(t_vadp *vadp, t_ram *memory)
     };
 
     return core_machine_vadp_configure_ega_sequencer(vadp, memory, &sequencer) ==
-        TYPE_STATUS_OK && core_machine_vadp_configure_ega_controllers(vadp,
-        &controllers) == TYPE_STATUS_OK;
+        LIB_STATUS_OK && core_machine_vadp_configure_ega_controllers(vadp,
+        &controllers) == LIB_STATUS_OK;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_port port;
     t_port generic_port;
@@ -38,19 +38,19 @@ C_INT main(C_VOID)
     t_vadp vadp;
     t_vadp generic_vadp;
     core_machine_display_snapshot snapshot;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
     core_machine_port_initialize(&generic_port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_initialize(&generic_vadp, &generic_port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     failed |= core_machine_vadp_configure_ega_personality(&vadp, &port,
-        (core_machine_vadp_ega_personality)2) != TYPE_STATUS_INVALID_ARGUMENT;
+        (core_machine_vadp_ega_personality)2) != LIB_STATUS_INVALID_ARGUMENT;
     failed |= core_machine_vadp_configure_ega_personality(&vadp, &port,
-        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != TYPE_STATUS_OK;
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK;
     failed |= !core_machine_port_has_read(&port,
         CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT) ||
         !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_COMPAQ_DISPLAY_TYPE) ||
@@ -76,7 +76,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA, 0x0fu);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-    (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    (void)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x2fu);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x21u);
     failed |= !t386_s6_write_byte(&memory, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
@@ -100,9 +100,9 @@ C_INT main(C_VOID)
     core_machine_port_finalize(&generic_port);
     core_machine_port_finalize(&port);
     if (!failed) {
-        STD_PRINTF("M5:T386:S6:COMPAQ-EGA-PERSONALITY:OK\n");
+        printf("M5:T386:S6:COMPAQ-EGA-PERSONALITY:OK\n");
         return 0;
     }
-    STD_FPRINTF(STD_STDERR, "M5:T386:S6:COMPAQ-EGA-PERSONALITY:FAIL\n");
+    fprintf(stderr, "M5:T386:S6:COMPAQ-EGA-PERSONALITY:FAIL\n");
     return 1;
 }

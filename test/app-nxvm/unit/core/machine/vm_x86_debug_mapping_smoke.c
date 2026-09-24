@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/debug_interface.h"
@@ -10,7 +10,7 @@
 #include "support/common_machine_fixture.h"
 #include "support/rom/session_assets.h"
 
-static C_INT vm_debug_execute(vm_machine *machine,
+static lib_i32 vm_debug_execute(vm_machine *machine,
     const common_machine_debug_lease *lease,
     const x86_debug_request *request,
     x86_debug_response *result)
@@ -22,14 +22,14 @@ static C_INT vm_debug_execute(vm_machine *machine,
             LIB_STATUS_OK && response_size == sizeof(*result);
 }
 
-static C_INT vm_debug_wait_paused(const vm_machine *machine,
+static lib_i32 vm_debug_wait_paused(const vm_machine *machine,
     const vm_test_common_machine_state_waiter *waiter)
 {
     return vm_test_common_machine_wait_state(machine, waiter,
         COMMON_MACHINE_PAUSED, 2000u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *machine = LIB_NULL;
     vm_test_common_machine_state_waiter waiter = {0};
@@ -43,10 +43,10 @@ C_INT main(C_VOID)
     core_machine *saved_core_machine;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) !=
-            TYPE_STATUS_OK || machine == LIB_NULL ||
-        vm_test_common_machine_bind(machine) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK || machine == LIB_NULL ||
+        vm_test_common_machine_bind(machine) != LIB_STATUS_OK ||
         vm_test_common_machine_state_waiter_initialize(machine, &waiter) !=
-            TYPE_STATUS_OK) return 1;
+            LIB_STATUS_OK) return 1;
     if (!common_machine_reset(machine->executor) ||
         !vm_debug_wait_paused(machine, &waiter))
         goto failed;
@@ -56,7 +56,7 @@ C_INT main(C_VOID)
     saved_core_machine = machine->core_machine;
     machine->core_machine = LIB_NULL;
     if (core_machine_debug_read_register(machine->core_machine,
-            CORE_MACHINE_DEBUG_EAX, &register_id) != TYPE_STATUS_INVALID_ARGUMENT) {
+            CORE_MACHINE_DEBUG_EAX, &register_id) != LIB_STATUS_INVALID_ARGUMENT) {
         machine->core_machine = saved_core_machine;
         goto failed;
     }

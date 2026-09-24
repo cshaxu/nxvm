@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 #include "app-nxvm/machine/machine_private.h"
 
 
@@ -10,11 +10,11 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *machine = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &machine) != LIB_STATUS_OK ||
         machine == LIB_NULL || machine->core_machine == LIB_NULL ||
         !test_core_machine_fixture_executor_storage_is_coherent(
             machine->core_machine)) {

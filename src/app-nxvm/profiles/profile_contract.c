@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/profile_contract_interface.h"
 
-static C_INT vm_profile_contract_catalog_contains(
+static lib_i32 vm_profile_contract_catalog_contains(
     const vm_profile_contract_catalog *catalog, lib_u32 id)
 {
     lib_size first;
@@ -13,7 +13,7 @@ static C_INT vm_profile_contract_catalog_contains(
     return 0;
 }
 
-static C_INT vm_profile_contract_windows_are_valid(
+static lib_i32 vm_profile_contract_windows_are_valid(
     const vm_profile_contract_window *windows, lib_size count, lib_size capacity,
     lib_u32 enabled_devices)
 {
@@ -32,7 +32,7 @@ static C_INT vm_profile_contract_windows_are_valid(
     return 1;
 }
 
-static C_INT vm_profile_contract_port_leaves_are_valid(
+static lib_i32 vm_profile_contract_port_leaves_are_valid(
     const vm_profile_contract_port_leaf *leaves, lib_size count,
     lib_u32 enabled_devices)
 {
@@ -51,7 +51,7 @@ static C_INT vm_profile_contract_port_leaves_are_valid(
     return 1;
 }
 
-static C_INT vm_profile_contract_routes_are_valid(
+static lib_i32 vm_profile_contract_routes_are_valid(
     const vm_profile_contract_route *routes, lib_size count, lib_size capacity,
     lib_u32 enabled_devices)
 {
@@ -69,7 +69,7 @@ static C_INT vm_profile_contract_routes_are_valid(
     return 1;
 }
 
-type_status vm_profile_contract_validate(const vm_profile_contract_values *values,
+lib_status vm_profile_contract_validate(const vm_profile_contract_values *values,
     const vm_profile_contract_catalog *catalog, lib_u32 requested_options)
 {
     if (values == LIB_NULL || catalog == LIB_NULL || values->enabled_devices == 0u ||
@@ -91,6 +91,6 @@ type_status vm_profile_contract_validate(const vm_profile_contract_values *value
             values->enabled_devices) ||
         !vm_profile_contract_routes_are_valid(values->drq_routes,
             values->drq_route_count, VM_PROFILE_CONTRACT_ROUTE_CAPACITY,
-            values->enabled_devices)) return TYPE_STATUS_INVALID_ARGUMENT;
-    return TYPE_STATUS_OK;
+            values->enabled_devices)) return LIB_STATUS_INVALID_ARGUMENT;
+    return LIB_STATUS_OK;
 }

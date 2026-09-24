@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,7 +9,7 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
     lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -26,7 +26,7 @@ C_INT main(C_VOID)
     lib_u8 observed_memory = 0u;
     lib_u8 video_body_byte = 0u;
     lib_size mapping;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(odd, 1, sizeof(odd));
     video[0u] = 0x55u;
@@ -40,7 +40,7 @@ C_INT main(C_VOID)
     assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL ||
         !vm_profile_machine_plan_is_model40(session->profile_plan) || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.retirement_time_contract !=
@@ -51,7 +51,7 @@ C_INT main(C_VOID)
         session->core_machine_config.fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
         !session->core_machine_config.cpu_80386_cr_mov_ignores_mod ||
         core_machine_capture_time_observation(session->core_machine,
-            &time_observation) != TYPE_STATUS_OK || !time_observation.pacing_time_available ||
+            &time_observation) != LIB_STATUS_OK || !time_observation.pacing_time_available ||
         time_observation.pacing_ticks_per_second != 16000000u || time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u ||
         session->fdd.data.nsector != 15u || vm_profile_machine_plan_model40_rom_get(session->profile_plan)->even_bytes[0] != 0u ||
@@ -60,7 +60,7 @@ C_INT main(C_VOID)
         vm_profile_machine_plan_model40_rom_get(session->profile_plan)->video_bytes[0u] != 0x55u ||
         core_machine_memory_read(session->core_machine,
             VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START, &observed_memory,
-            sizeof(observed_memory)) != TYPE_STATUS_OK || observed_memory != 0x55u;
+            sizeof(observed_memory)) != LIB_STATUS_OK || observed_memory != 0x55u;
     for (mapping = 0u; mapping < session->core_machine->immutable_rom_mapping_count;
         ++mapping) {
         if (session->core_machine->immutable_rom_mappings[mapping].physical_start ==
@@ -71,26 +71,26 @@ C_INT main(C_VOID)
     failed |= !failed && (core_machine_memory_read(session->core_machine,
         VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START +
             VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES, &video_body_byte,
-        sizeof(video_body_byte)) != TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
+        sizeof(video_body_byte)) != LIB_STATUS_OK || core_machine_memory_read(session->core_machine,
         VM_PROFILE_MODEL40_VIDEO_ROM_COMPATIBILITY_ALIAS_START +
             VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES, &observed_memory,
-        sizeof(observed_memory)) != TYPE_STATUS_OK || observed_memory != video_body_byte);
-    failed |= !failed && (vm_machine_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
+        sizeof(observed_memory)) != LIB_STATUS_OK || observed_memory != video_body_byte);
+    failed |= !failed && (vm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     retained_memory_bytes = session->retained_config.memory_bytes;
     failed |= !failed && vm_machine_reconfigure_memory(session, 2u * 1024u * 1024u) !=
-        TYPE_STATUS_INVALID_STATE;
+        LIB_STATUS_INVALID_STATE;
     failed |= !failed && (core_machine_get_memory_bytes(session->core_machine,
-        &memory_bytes) != TYPE_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
+        &memory_bytes) != LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->retained_config.memory_bytes != retained_memory_bytes);
     failed |= !failed && (core_machine_run(session->core_machine,
-        (core_machine_run_budget) {1u, 0u}, &result) != TYPE_STATUS_OK ||
+        (core_machine_run_budget) {1u, 0u}, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u);
-    failed |= !failed && (core_machine_reset(session->core_machine) != TYPE_STATUS_OK ||
-        core_machine_advance_time(session->core_machine, 1u) != TYPE_STATUS_OK ||
+    failed |= !failed && (core_machine_reset(session->core_machine) != LIB_STATUS_OK ||
+        core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK ||
         session->core_machine->shared_pit.data.reload[1u] != 18u);
-    failed |= !failed && (vm_machine_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
+    failed |= !failed && (vm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     even[0u] = 2u;
     failed |= !failed && (vm_profile_machine_plan_model40_rom_get(session->profile_plan)->even_bytes[0] != 0u ||
@@ -98,9 +98,9 @@ C_INT main(C_VOID)
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.memory_bytes = 2u * 1024u * 1024u;
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL;
     config.memory_bytes = 0u;
-    if (!failed) STD_PRINTF("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\nM5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK\nM5:T440:S1:MODEL40-IMMUTABLE-CONFIGURATION:OK\n");
+    if (!failed) printf("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\nM5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK\nM5:T440:S1:MODEL40-IMMUTABLE-CONFIGURATION:OK\n");
     return failed;
 }

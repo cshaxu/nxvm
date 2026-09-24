@@ -1,9 +1,10 @@
 #include "lib/types/types_interface.h"
+#include <stdio.h>
 #include "app-nxvm/profiles/profile_contract_interface.h"
 
 static const lib_u32 vm_profile_contract_ids[] = {7u};
 
-static vm_profile_contract_values vm_profile_contract_values_create(C_VOID)
+static vm_profile_contract_values vm_profile_contract_values_create(void)
 {
     vm_profile_contract_values values = {0};
 
@@ -26,46 +27,46 @@ static vm_profile_contract_values vm_profile_contract_values_create(C_VOID)
     return values;
 }
 
-static C_INT vm_profile_contract_accepts_direct_values(C_VOID)
+static lib_i32 vm_profile_contract_accepts_direct_values(void)
 {
     const vm_profile_contract_catalog catalog = {vm_profile_contract_ids,
         sizeof(vm_profile_contract_ids) / sizeof(vm_profile_contract_ids[0])};
     const vm_profile_contract_values values = vm_profile_contract_values_create();
 
-    return vm_profile_contract_validate(&values, &catalog, 1u) != TYPE_STATUS_OK;
+    return vm_profile_contract_validate(&values, &catalog, 1u) != LIB_STATUS_OK;
 }
 
-static C_INT vm_profile_contract_rejects_invalid_values(C_VOID)
+static lib_i32 vm_profile_contract_rejects_invalid_values(void)
 {
     const vm_profile_contract_catalog catalog = {vm_profile_contract_ids,
         sizeof(vm_profile_contract_ids) / sizeof(vm_profile_contract_ids[0])};
     vm_profile_contract_values values = vm_profile_contract_values_create();
 
     values.port_leaves[0].device = 2u;
-    if (vm_profile_contract_validate(&values, &catalog, 1u) == TYPE_STATUS_OK) return 1;
+    if (vm_profile_contract_validate(&values, &catalog, 1u) == LIB_STATUS_OK) return 1;
     values = vm_profile_contract_values_create();
     values.irq_route_count = VM_PROFILE_CONTRACT_ROUTE_CAPACITY + 1u;
-    if (vm_profile_contract_validate(&values, &catalog, 1u) == TYPE_STATUS_OK) return 1;
+    if (vm_profile_contract_validate(&values, &catalog, 1u) == LIB_STATUS_OK) return 1;
     values = vm_profile_contract_values_create();
     values.port_leaves[1] = values.port_leaves[0];
     values.port_leaf_count = 2u;
-    if (vm_profile_contract_validate(&values, &catalog, 1u) == TYPE_STATUS_OK) return 1;
+    if (vm_profile_contract_validate(&values, &catalog, 1u) == LIB_STATUS_OK) return 1;
     values = vm_profile_contract_values_create();
     values.irq_routes[1] = values.irq_routes[0];
     values.irq_route_count = 2u;
-    if (vm_profile_contract_validate(&values, &catalog, 1u) == TYPE_STATUS_OK) return 1;
+    if (vm_profile_contract_validate(&values, &catalog, 1u) == LIB_STATUS_OK) return 1;
     values = vm_profile_contract_values_create();
     values.memory_windows[1] = (vm_profile_contract_window) {0x80u, 0x17fu, 1u};
     values.memory_window_count = 2u;
-    if (vm_profile_contract_validate(&values, &catalog, 1u) == TYPE_STATUS_OK) return 1;
+    if (vm_profile_contract_validate(&values, &catalog, 1u) == LIB_STATUS_OK) return 1;
     values = vm_profile_contract_values_create();
     values.core.id = 0u;
-    if (vm_profile_contract_validate(&values, &catalog, 1u) == TYPE_STATUS_OK) return 1;
+    if (vm_profile_contract_validate(&values, &catalog, 1u) == LIB_STATUS_OK) return 1;
     values = vm_profile_contract_values_create();
-    return vm_profile_contract_validate(&values, &catalog, 2u) == TYPE_STATUS_OK;
+    return vm_profile_contract_validate(&values, &catalog, 2u) == LIB_STATUS_OK;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     return vm_profile_contract_accepts_direct_values() ||
         vm_profile_contract_rejects_invalid_values();

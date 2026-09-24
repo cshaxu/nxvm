@@ -1,9 +1,8 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/machine/frame.h"
 
-type_status vm_machine_frame_from_display(
+lib_status vm_machine_frame_from_display(
     const vm_machine_display_event *source, common_machine_frame *destination)
 {
     static const lib_u16 cp437_controls[33u] = {
@@ -37,14 +36,14 @@ type_status vm_machine_frame_from_display(
     lib_size cell;
 
     if (source == LIB_NULL || destination == LIB_NULL)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     if (source->graphics && (source->pixel_width > KVM_WINDOW_GRAPHICS_MAX_WIDTH ||
         source->pixel_height > KVM_WINDOW_GRAPHICS_MAX_HEIGHT ||
         (lib_size)source->pixel_width * source->pixel_height > sizeof(source->pixels)))
-        return TYPE_STATUS_UNSUPPORTED;
+        return LIB_STATUS_UNSUPPORTED;
     if (!source->graphics && (source->columns > KVM_TEXT_COLUMNS ||
         source->rows > KVM_TEXT_ROWS || source->text_cell_height == 0u ||
-        source->text_cell_height > 32u)) return TYPE_STATUS_UNSUPPORTED;
+        source->text_cell_height > 32u)) return LIB_STATUS_UNSUPPORTED;
     *destination = (common_machine_frame){0};
     destination->window.valid = LIB_TRUE;
     destination->sequence = (lib_u32)source->generation;
@@ -57,7 +56,7 @@ type_status vm_machine_frame_from_display(
             (lib_size)source->pixel_width * source->pixel_height);
         lib_memory_copy(destination->window.image.palette, source->palette_rgb,
             sizeof(destination->window.image.palette));
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     destination->window.text.base.text_columns = source->columns;
     destination->window.text.base.text_rows = source->rows;
@@ -96,5 +95,5 @@ type_status vm_machine_frame_from_display(
         lib_memory_copy(destination->window.text.font, source->glyphs,
             sizeof(destination->window.text.font));
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }

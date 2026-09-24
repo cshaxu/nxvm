@@ -1,11 +1,11 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/port.h"
 
-static C_VOID core_machine_controller_fdc_command(core_machine_fdc *fdc, t_port *port,
+static void core_machine_controller_fdc_command(core_machine_fdc *fdc, t_port *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -16,7 +16,7 @@ static C_VOID core_machine_controller_fdc_command(core_machine_fdc *fdc, t_port 
     core_machine_fdc_advance(fdc);
 }
 
-static C_INT core_machine_controller_fdc_result(core_machine_fdc *fdc, t_port *port,
+static lib_i32 core_machine_controller_fdc_result(core_machine_fdc *fdc, t_port *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -29,22 +29,22 @@ static C_INT core_machine_controller_fdc_result(core_machine_fdc *fdc, t_port *p
         (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
-static C_INT core_machine_controller_hdc_program_chs(core_machine *machine,
+static lib_i32 core_machine_controller_hdc_program_chs(core_machine *machine,
     const core_machine_hdc_config *config)
 {
     return core_machine_bus_write(machine, config->bus.task_file.sector_count_port, 1u) ==
-            TYPE_STATUS_OK &&
+            LIB_STATUS_OK &&
         core_machine_bus_write(machine, config->bus.task_file.sector_number_port, 1u) ==
-            TYPE_STATUS_OK &&
+            LIB_STATUS_OK &&
         core_machine_bus_write(machine, config->bus.task_file.cylinder_low_port, 0u) ==
-            TYPE_STATUS_OK &&
+            LIB_STATUS_OK &&
         core_machine_bus_write(machine, config->bus.task_file.cylinder_high_port, 0u) ==
-            TYPE_STATUS_OK &&
+            LIB_STATUS_OK &&
         core_machine_bus_write(machine, config->bus.task_file.drive_head_port, 0u) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
     static const lib_u8 read_absent[] = {
@@ -108,36 +108,36 @@ C_INT main(C_VOID)
     lib_u8 result[7] = {0};
     lib_u32 status = 0u;
     lib_u32 error = 0u;
-    type_status fdc_before_dma = TYPE_STATUS_OK;
-    type_status dma_status = TYPE_STATUS_OK;
-    type_status fdc_status = TYPE_STATUS_OK;
-    type_status hdc_status = TYPE_STATUS_OK;
-    C_INT failed = 0;
+    lib_status fdc_before_dma = LIB_STATUS_OK;
+    lib_status dma_status = LIB_STATUS_OK;
+    lib_status fdc_status = LIB_STATUS_OK;
+    lib_status hdc_status = LIB_STATUS_OK;
+    lib_i32 failed = 0;
 
-    if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
+    if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         fdc_topology.media_registry = media;
         hdc_topology.media_registry = media;
         fdc_topology.dma_request = dma_request;
         fdc_before_dma = core_machine_configure_fdc(machine, &fdc_topology);
         dma_status = core_machine_configure_dma(machine, &dma_wiring, &dma_request);
-        if (fdc_before_dma != TYPE_STATUS_INVALID_STATE ||
-            dma_status != TYPE_STATUS_OK) {
+        if (fdc_before_dma != LIB_STATUS_INVALID_STATE ||
+            dma_status != LIB_STATUS_OK) {
             failed |= 0x02;
         }
         fdc_topology.dma_request = dma_request;
         fdc_status = core_machine_configure_fdc(machine, &fdc_topology);
         hdc_status = core_machine_configure_hdc(machine, &hdc_topology);
-        if (fdc_status != TYPE_STATUS_OK ||
+        if (fdc_status != LIB_STATUS_OK ||
             core_machine_configure_fdc(machine, &fdc_topology) !=
-                TYPE_STATUS_INVALID_STATE ||
-            hdc_status != TYPE_STATUS_OK ||
+                LIB_STATUS_INVALID_STATE ||
+            hdc_status != LIB_STATUS_OK ||
             core_machine_configure_hdc(machine, &hdc_topology) !=
-                TYPE_STATUS_INVALID_STATE ||
-            core_machine_media_registry_freeze(media) != TYPE_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-            core_machine_reset(machine) != TYPE_STATUS_OK) {
+                LIB_STATUS_INVALID_STATE ||
+            core_machine_media_registry_freeze(media) != LIB_STATUS_OK ||
+            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK) {
             failed |= 0x04;
         } else {
             port = &machine->executor_port;
@@ -165,23 +165,23 @@ C_INT main(C_VOID)
 
             if (!core_machine_controller_hdc_program_chs(machine, &hdc_config) ||
                 core_machine_bus_write(machine, hdc_config.bus.task_file.status_command_port,
-                    0x20u) != TYPE_STATUS_OK ||
+                    0x20u) != LIB_STATUS_OK ||
                 core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
-                    &status) != TYPE_STATUS_OK ||
+                    &status) != LIB_STATUS_OK ||
                 status != CORE_MACHINE_HDC_STATUS_BSY) {
                 failed |= 0x08;
             } else {
                 core_machine_hdc_advance(&machine->hdc);
                 if (core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
-                        &status) != TYPE_STATUS_OK ||
+                        &status) != LIB_STATUS_OK ||
                 core_machine_bus_read(machine, hdc_config.bus.task_file.error_features_port,
-                    &error) != TYPE_STATUS_OK ||
+                    &error) != LIB_STATUS_OK ||
                 status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
                 error != CORE_MACHINE_HDC_ERROR_ABORT) {
                     failed |= 0x08;
                 }
             }
-            if (core_machine_reset(machine) != TYPE_STATUS_OK ||
+            if (core_machine_reset(machine) != LIB_STATUS_OK ||
                 machine->fdc.data.phase != core_machine_fdc_PHASE_COMMAND ||
                 machine->hdc.data.status != (CORE_MACHINE_HDC_STATUS_DRDY |
                     CORE_MACHINE_HDC_STATUS_DSC)) {
@@ -192,7 +192,7 @@ C_INT main(C_VOID)
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T296:S4:CONTROLLER-AUTHORITY:FAIL bits=%x status=%02x error=%02x fdc0=%d dma=%d fdc=%d hdc=%d\n",
             failed, status, error, fdc_before_dma, dma_status, fdc_status, hdc_status);
         return 1;

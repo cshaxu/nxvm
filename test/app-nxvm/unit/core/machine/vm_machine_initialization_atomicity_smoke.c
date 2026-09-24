@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/runner.h"
@@ -10,9 +10,9 @@
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
 
-static C_INT verify_recovery(C_VOID);
+static lib_i32 verify_recovery(void);
 
-static C_INT verify_reset_outcome(C_VOID)
+static lib_i32 verify_reset_outcome(void)
 {
     const vm_machine_config config = {
         .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT,
@@ -22,45 +22,45 @@ static C_INT verify_reset_outcome(C_VOID)
     vm_machine *session = LIB_NULL;
 
     return vm_machine_create_from_assets(&config, &missing_assets, &session) ==
-        TYPE_STATUS_INVALID_ARGUMENT && session == LIB_NULL ? 0 : 1;
+        LIB_STATUS_INVALID_ARGUMENT && session == LIB_NULL ? 0 : 1;
 }
 
-static C_INT verify_running_reset_outcome(C_VOID)
+static lib_i32 verify_running_reset_outcome(void)
 {
     return verify_reset_outcome();
 }
 
-static C_INT verify_constructor_output_contract(C_VOID)
+static lib_i32 verify_constructor_output_contract(void)
 {
     const vm_machine_assets assets = {0};
-    vm_machine *session = (vm_machine *)(type_virtual_address)1u;
+    vm_machine *session = (vm_machine *)(lib_uptr)1u;
     vm_profile_machine_plan *plan =
-        (vm_profile_machine_plan *)(type_virtual_address)1u;
+        (vm_profile_machine_plan *)(lib_uptr)1u;
 
-    if (vm_machine_create(LIB_NULL, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
+    if (vm_machine_create(LIB_NULL, &session) != LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL) return 1;
-    session = (vm_machine *)(type_virtual_address)1u;
+    session = (vm_machine *)(lib_uptr)1u;
     if (vm_machine_create_from_assets(LIB_NULL, &assets, &session) !=
-        TYPE_STATUS_INVALID_ARGUMENT || session != LIB_NULL) return 1;
+        LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL) return 1;
     if (vm_profile_machine_plan_create(LIB_NULL, &assets, &plan) !=
-        TYPE_STATUS_INVALID_ARGUMENT || plan != LIB_NULL) return 1;
-    plan = (vm_profile_machine_plan *)(type_virtual_address)1u;
+        LIB_STATUS_INVALID_ARGUMENT || plan != LIB_NULL) return 1;
+    plan = (vm_profile_machine_plan *)(lib_uptr)1u;
     return vm_profile_machine_plan_create_file_backed(LIB_NULL, &plan) !=
-        TYPE_STATUS_INVALID_ARGUMENT || plan != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || plan != LIB_NULL;
 }
 
-static C_INT verify_byob_blob_argument_contract(C_VOID)
+static lib_i32 verify_byob_blob_argument_contract(void)
 {
     lib_u8 bytes[1u] = {0};
     const vm_profile_byob_blob invalid_blob = {LIB_NULL, LIB_NULL, sizeof(bytes)};
 
-    return vm_profile_byob_blob_load(LIB_NULL, bytes) != TYPE_STATUS_INVALID_ARGUMENT ||
-        vm_profile_byob_blob_load(&invalid_blob, bytes) != TYPE_STATUS_INVALID_ARGUMENT ||
+    return vm_profile_byob_blob_load(LIB_NULL, bytes) != LIB_STATUS_INVALID_ARGUMENT ||
+        vm_profile_byob_blob_load(&invalid_blob, bytes) != LIB_STATUS_INVALID_ARGUMENT ||
         vm_profile_byob_blob_load(&(vm_profile_byob_blob) {
-            "asset.rom", LIB_NULL, sizeof(bytes)}, LIB_NULL) != TYPE_STATUS_INVALID_ARGUMENT;
+            "asset.rom", LIB_NULL, sizeof(bytes)}, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT;
 }
 
-static C_INT profile_timing_is_materialized(const core_machine_config *config,
+static lib_i32 profile_timing_is_materialized(const core_machine_config *config,
     const vm_profile_default_pc_at_descriptor *profile)
 {
     return config != LIB_NULL && profile != LIB_NULL &&
@@ -83,7 +83,7 @@ static C_INT profile_timing_is_materialized(const core_machine_config *config,
             profile->kbc_command_response_status_polls;
 }
 
-static C_INT session_core_config_is_applied(const vm_machine *session,
+static lib_i32 session_core_config_is_applied(const vm_machine *session,
     lib_size memory_bytes, core_machine_cpu_profile cpu_profile,
     core_machine_fpu_profile fpu_profile)
 {
@@ -93,16 +93,16 @@ static C_INT session_core_config_is_applied(const vm_machine *session,
 
     return session != LIB_NULL && session->core_machine != LIB_NULL &&
         core_machine_get_memory_bytes(session->core_machine,
-            &observed_memory_bytes) == TYPE_STATUS_OK &&
+            &observed_memory_bytes) == LIB_STATUS_OK &&
         core_machine_get_cpu_profile(session->core_machine,
-            &observed_cpu_profile) == TYPE_STATUS_OK &&
+            &observed_cpu_profile) == LIB_STATUS_OK &&
         core_machine_get_fpu_profile(session->core_machine,
-            &observed_fpu_profile) == TYPE_STATUS_OK &&
+            &observed_fpu_profile) == LIB_STATUS_OK &&
         observed_memory_bytes == memory_bytes &&
         observed_cpu_profile == cpu_profile && observed_fpu_profile == fpu_profile;
 }
 
-static C_INT verify_create_materialization(
+static lib_i32 verify_create_materialization(
     const vm_profile_default_pc_at_descriptor *profile)
 {
     const vm_machine_config overrides = {
@@ -112,9 +112,9 @@ static C_INT verify_create_materialization(
     };
     vm_machine *default_session = LIB_NULL;
     vm_machine *configured_session = LIB_NULL;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    failed |= vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != TYPE_STATUS_OK ||
+    failed |= vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
         default_session == LIB_NULL ||
         default_session->core_machine_config.memory_bytes !=
             profile->default_memory_bytes ||
@@ -128,7 +128,7 @@ static C_INT verify_create_materialization(
             profile->default_memory_bytes, profile->cpu_profile,
             profile->fpu_profile);
     failed |= !failed && (vm_test_default_pc_at_session_create(&overrides, &configured_session) !=
-        TYPE_STATUS_OK || configured_session == LIB_NULL ||
+        LIB_STATUS_OK || configured_session == LIB_NULL ||
         configured_session->core_machine_config.memory_bytes !=
             overrides.memory_bytes ||
         configured_session->core_machine_config.cpu_profile !=
@@ -149,7 +149,7 @@ static C_INT verify_create_materialization(
     return failed;
 }
 
-static C_INT verify_invalid_media_slot(
+static lib_i32 verify_invalid_media_slot(
     const vm_profile_default_pc_at_descriptor *profile)
 {
     const vm_machine_config config = {
@@ -160,7 +160,7 @@ static C_INT verify_invalid_media_slot(
     };
     vm_machine *session = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
+    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
@@ -168,11 +168,11 @@ static C_INT verify_invalid_media_slot(
     return verify_recovery();
 }
 
-static C_INT verify_recovery(C_VOID)
+static lib_i32 verify_recovery(void)
 {
     vm_machine *session = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->active || session->core_machine == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
@@ -181,7 +181,7 @@ static C_INT verify_recovery(C_VOID)
     return 0;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
@@ -193,9 +193,9 @@ C_INT main(C_VOID)
         verify_byob_blob_argument_contract() != 0) {
         return 1;
     }
-    STD_PRINTF("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");
-    STD_PRINTF("M5:T332:S1:SESSION-CONFIG-MATERIALIZATION:OK\n");
-    STD_PRINTF("M5:T332:S2:SESSION-CONSTRUCTION-TRANSACTION:OK\n");
-    STD_PRINTF("M5:T439:S1:SESSION-RESET-OUTCOME:OK\n");
+    printf("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");
+    printf("M5:T332:S1:SESSION-CONFIG-MATERIALIZATION:OK\n");
+    printf("M5:T332:S2:SESSION-CONSTRUCTION-TRANSACTION:OK\n");
+    printf("M5:T439:S1:SESSION-RESET-OUTCOME:OK\n");
     return 0;
 }

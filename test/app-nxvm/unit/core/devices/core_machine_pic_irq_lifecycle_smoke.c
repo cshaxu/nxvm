@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/port.h"
 
-static C_VOID initialize_pic(t_pic *master, t_pic *slave, t_port *port,
+static void initialize_pic(t_pic *master, t_pic *slave, t_port *port,
     lib_u8 icw1)
 {
     core_machine_port_write(port, 0x0020u, icw1);
@@ -15,11 +15,11 @@ static C_VOID initialize_pic(t_pic *master, t_pic *slave, t_port *port,
     core_machine_port_write(port, 0x00a1u, 0x70u);
     core_machine_port_write(port, 0x00a1u, 0x02u);
     core_machine_port_write(port, 0x00a1u, 0x01u);
-    (C_VOID)master;
-    (C_VOID)slave;
+    (void)master;
+    (void)slave;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_pic master;
     t_pic slave;
@@ -27,7 +27,7 @@ C_INT main(C_VOID)
     core_machine_pic_irq_source irq1;
     core_machine_pic_irq_source irq6;
     core_machine_pic_irq_source irq14;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_pic_initialize(&master, &slave, &port,
@@ -105,6 +105,6 @@ C_INT main(C_VOID)
     core_machine_pic_finalize(&master, &slave);
     core_machine_port_finalize(&port);
     if (failed) return 1;
-    STD_PRINTF("M5:T216:S1:PIC-IRQ-LIFECYCLE:OK\n");
+    printf("M5:T216:S1:PIC-IRQ-LIFECYCLE:OK\n");
     return 0;
 }

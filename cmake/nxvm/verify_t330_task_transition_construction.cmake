@@ -23,8 +23,8 @@ foreach(project_t330_legacy_symbol IN ITEMS
 endforeach()
 
 foreach(project_t330_required_fragment IN ITEMS
-        "static C_VOID _ser_task_transition_tss_plan("
-        "static C_VOID _ser_task_transition_tss("
+        "static void _ser_task_transition_tss_plan("
+        "static void _ser_task_transition_tss("
         "_ser_task_transition_tss(context, newcs, nested,"
         "_ser_task_transition_tss(context, backlink,")
     string(FIND "${project_t330_cpu_text}" "${project_t330_required_fragment}"

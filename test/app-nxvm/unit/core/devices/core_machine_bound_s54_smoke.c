@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -16,10 +17,10 @@ typedef struct bound_s54_machine {
 #define BOUND_S54_IDT_BASE 0x0400u
 #define BOUND_S54_CODE_BASE 0x2000u
 
-static C_INT bound_s54_prepare(bound_s54_machine *state,
+static lib_i32 bound_s54_prepare(bound_s54_machine *state,
     core_machine_cpu_profile profile);
 
-static C_INT bound_s54_boot_protected(bound_s54_machine *state,
+static lib_i32 bound_s54_boot_protected(bound_s54_machine *state,
     const lib_u8 *program, lib_size program_bytes)
 {
     static const lib_u8 gdt_pointer[] = {
@@ -52,27 +53,27 @@ static C_INT bound_s54_boot_protected(bound_s54_machine *state,
     idt[13u * 8u + 5u] = 0x86u;
     return bound_s54_prepare(state, CORE_MACHINE_CPU_PROFILE_80386) &&
         core_machine_memory_write(state->machine, BOUND_S54_GDT_POINTER,
-            gdt_pointer, sizeof(gdt_pointer)) == TYPE_STATUS_OK &&
+            gdt_pointer, sizeof(gdt_pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, BOUND_S54_GDT_BASE, gdt,
-            sizeof(gdt)) == TYPE_STATUS_OK &&
+            sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x0110u, idt_pointer,
-            sizeof(idt_pointer)) == TYPE_STATUS_OK &&
+            sizeof(idt_pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, BOUND_S54_IDT_BASE, idt,
-            sizeof(idt)) == TYPE_STATUS_OK &&
+            sizeof(idt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, real_code,
-            sizeof(real_code)) == TYPE_STATUS_OK &&
+            sizeof(real_code)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, BOUND_S54_CODE_BASE,
-            program, program_bytes) == TYPE_STATUS_OK &&
+            program, program_bytes) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, BOUND_S54_CODE_BASE + 0x100u,
-            (const lib_u8[]){ 0xf4u }, 1u) == TYPE_STATUS_OK;
+            (const lib_u8[]){ 0xf4u }, 1u) == LIB_STATUS_OK;
 }
 
-static C_VOID bound_s54_reset(C_VOID *opaque)
+static void bound_s54_reset(void *opaque)
 {
     bound_s54_machine *state = (bound_s54_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider bound_s54_execution_provider = {
@@ -80,7 +81,7 @@ static const core_machine_execution_provider bound_s54_execution_provider = {
     LIB_NULL
 };
 
-static C_INT bound_s54_prepare(bound_s54_machine *state,
+static lib_i32 bound_s54_prepare(bound_s54_machine *state,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -92,7 +93,7 @@ static C_INT bound_s54_prepare(bound_s54_machine *state,
     if (state == LIB_NULL)
         return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK)
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK)
         return 0;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             &bound_s54_execution_provider, state)) {
@@ -103,7 +104,7 @@ static C_INT bound_s54_prepare(bound_s54_machine *state,
     return 1;
 }
 
-static C_VOID bound_s54_seed(t_cpu *cpu)
+static void bound_s54_seed(t_cpu *cpu)
 {
     cpu->data.eax = 0xa1a10000u;
     cpu->data.ecx = 0xb2b20000u;
@@ -118,7 +119,7 @@ static C_VOID bound_s54_seed(t_cpu *cpu)
         VCPU_EFLAGS_IF | VCPU_EFLAGS_DF | VCPU_EFLAGS_OF;
 }
 
-static C_INT bound_s54_gprs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 bound_s54_gprs_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -130,7 +131,7 @@ static C_INT bound_s54_gprs_same(const t_cpu *before, const t_cpu *after)
         before->data.edi == after->data.edi;
 }
 
-static C_INT bound_s54_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 bound_s54_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
@@ -146,21 +147,21 @@ static C_INT bound_s54_sregs_same(const t_cpu *before, const t_cpu *after)
             sizeof(before->data.gs)) == 0;
 }
 
-static C_INT bound_s54_run(bound_s54_machine *state, lib_u32 budget,
+static lib_i32 bound_s54_run(bound_s54_machine *state, lib_u32 budget,
     core_machine_run_result *result, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic)
 {
-    type_status status = core_machine_run(state->machine,
+    lib_status status = core_machine_run(state->machine,
         (core_machine_run_budget){ budget, 0u }, result);
 
-    if (status != TYPE_STATUS_OK && status != TYPE_STATUS_FAULT)
+    if (status != LIB_STATUS_OK && status != LIB_STATUS_INTERNAL_ERROR)
         return 0;
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT bound_s54_test_profiles_and_width(C_VOID)
+static lib_i32 bound_s54_test_profiles_and_width(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186,
@@ -178,16 +179,16 @@ static C_INT bound_s54_test_profiles_and_width(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !bound_s54_prepare(&state, profiles[profile]);
+        lib_i32 failed = !bound_s54_prepare(&state, profiles[profile]);
 
         if (!failed) {
             bound_s54_seed(&state.machine->executor_cpu);
             state.machine->executor_cpu.data.eax = 0xa1a10001u;
             before = state.machine->executor_cpu;
             failed = core_machine_memory_write(state.machine, 0u, code,
-                sizeof(code)) != TYPE_STATUS_OK;
+                sizeof(code)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(state.machine, 0x0400u, bounds,
-                sizeof(bounds)) != TYPE_STATUS_OK;
+                sizeof(bounds)) != LIB_STATUS_OK;
             failed |= !bound_s54_run(&state, 2u, &result, &after, &diagnostic);
             failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             failed |= diagnostic.first_fault.valid;
@@ -203,7 +204,7 @@ static C_INT bound_s54_test_profiles_and_width(C_VOID)
     return 1;
 }
 
-static C_INT bound_s54_test_386_dword_pair(C_VOID)
+static lib_i32 bound_s54_test_386_dword_pair(void)
 {
     static const lib_u8 code[] = {
         0x66u, 0x62u, 0x06u, 0x00u, 0x04u, 0xf4u
@@ -214,16 +215,16 @@ static C_INT bound_s54_test_386_dword_pair(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         bound_s54_seed(&state.machine->executor_cpu);
         state.machine->executor_cpu.data.eax = 1u;
         before = state.machine->executor_cpu;
         failed = core_machine_memory_write(state.machine, 0u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x0400u, bounds,
-            sizeof(bounds)) != TYPE_STATUS_OK;
+            sizeof(bounds)) != LIB_STATUS_OK;
         failed |= !bound_s54_run(&state, 2u, &result, &after, &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= diagnostic.first_fault.valid;
@@ -236,7 +237,7 @@ static C_INT bound_s54_test_386_dword_pair(C_VOID)
     return !failed;
 }
 
-static C_INT bound_s54_test_386_attributes(C_VOID)
+static lib_i32 bound_s54_test_386_attributes(void)
 {
     static const lib_u8 forms[][9] = {
         { 0x67u, 0x62u, 0x05u, 0x00u, 0x04u, 0x00u, 0x00u, 0xf4u, 0u },
@@ -253,7 +254,7 @@ static C_INT bound_s54_test_386_attributes(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !bound_s54_prepare(&state,
+        lib_i32 failed = !bound_s54_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -261,13 +262,13 @@ static C_INT bound_s54_test_386_attributes(C_VOID)
             state.machine->executor_cpu.data.eax = 1u;
             before = state.machine->executor_cpu;
             failed = core_machine_memory_write(state.machine, 0u, forms[form],
-                bytes[form]) != TYPE_STATUS_OK;
+                bytes[form]) != LIB_STATUS_OK;
             if (form == 0u)
                 failed |= core_machine_memory_write(state.machine, 0x0400u,
-                    bounds16, sizeof(bounds16)) != TYPE_STATUS_OK;
+                    bounds16, sizeof(bounds16)) != LIB_STATUS_OK;
             else
                 failed |= core_machine_memory_write(state.machine, 0x0400u,
-                    bounds32, sizeof(bounds32)) != TYPE_STATUS_OK;
+                    bounds32, sizeof(bounds32)) != LIB_STATUS_OK;
             failed |= !bound_s54_run(&state, 2u, &result, &after, &diagnostic);
             failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             failed |= diagnostic.first_fault.valid;
@@ -283,7 +284,7 @@ static C_INT bound_s54_test_386_attributes(C_VOID)
     return 1;
 }
 
-static C_INT bound_s54_test_rejections(C_VOID)
+static lib_i32 bound_s54_test_rejections(void)
 {
     static const lib_u8 codes[][6] = {
         { 0x62u, 0xc0u },
@@ -318,7 +319,7 @@ static C_INT bound_s54_test_rejections(C_VOID)
                 (index >= 2u && index <= 4u) ? pre386[profile_first] :
                 (index == 5u ? CORE_MACHINE_CPU_PROFILE_8086 :
                     CORE_MACHINE_CPU_PROFILE_80386);
-            C_INT failed = !bound_s54_prepare(&state, profile);
+            lib_i32 failed = !bound_s54_prepare(&state, profile);
 
             if (!failed) {
                 bound_s54_seed(&state.machine->executor_cpu);
@@ -326,13 +327,13 @@ static C_INT bound_s54_test_rejections(C_VOID)
                     state.machine);
                 before = state.machine->executor_cpu;
                 failed = core_machine_memory_write(state.machine, 0u,
-                    codes[index], bytes[index]) != TYPE_STATUS_OK;
+                    codes[index], bytes[index]) != LIB_STATUS_OK;
                 failed |= core_machine_memory_write(state.machine, 0x0400u,
-                    pair, sizeof(pair)) != TYPE_STATUS_OK;
+                    pair, sizeof(pair)) != LIB_STATUS_OK;
                 failed |= !bound_s54_run(&state, 1u, &result, &after,
                     &diagnostic);
                 failed |= !diagnostic.first_fault.valid;
-                failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
                 failed |= after.data.eip != before.data.eip;
                 failed |= after.data.eflags != before.data.eflags;
@@ -347,7 +348,7 @@ static C_INT bound_s54_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT bound_s54_test_real_br_delivery_profile(
+static lib_i32 bound_s54_test_real_br_delivery_profile(
     core_machine_cpu_profile profile)
 {
     static const lib_u8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
@@ -360,7 +361,7 @@ static C_INT bound_s54_test_real_br_delivery_profile(
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !bound_s54_prepare(&state, profile);
+    lib_i32 failed = !bound_s54_prepare(&state, profile);
 
     if (!failed) {
         bound_s54_seed(&state.machine->executor_cpu);
@@ -368,13 +369,13 @@ static C_INT bound_s54_test_real_br_delivery_profile(
         state.machine->executor_cpu.data.eax = 0xa1a10003u;
         before = state.machine->executor_cpu;
         failed = core_machine_memory_write(state.machine, 0u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 5u * 4u, vector,
-            sizeof(vector)) != TYPE_STATUS_OK;
+            sizeof(vector)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x0100u, handler,
-            sizeof(handler)) != TYPE_STATUS_OK;
+            sizeof(handler)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x0400u, bounds,
-            sizeof(bounds)) != TYPE_STATUS_OK;
+            sizeof(bounds)) != LIB_STATUS_OK;
         failed |= !bound_s54_run(&state, 1u, &result, &after, &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
         failed |= diagnostic.first_fault.valid;
@@ -384,7 +385,7 @@ static C_INT bound_s54_test_real_br_delivery_profile(
         failed |= !bound_s54_sregs_same(&before, &after);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
             after.data.ss.base + (lib_u16)after.data.esp,
-            (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK;
+            (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK;
         failed |= frame[0u] != 0u;
         failed |= frame[1u] != before.data.cs.selector;
         failed |= frame[2u] != (lib_u16)((before.data.eflags &
@@ -397,7 +398,7 @@ static C_INT bound_s54_test_real_br_delivery_profile(
     return !failed;
 }
 
-static C_INT bound_s54_test_real_br_delivery(C_VOID)
+static lib_i32 bound_s54_test_real_br_delivery(void)
 {
     return bound_s54_test_real_br_delivery_profile(
         CORE_MACHINE_CPU_PROFILE_80186) &&
@@ -405,7 +406,7 @@ static C_INT bound_s54_test_real_br_delivery(C_VOID)
             CORE_MACHINE_CPU_PROFILE_80386);
 }
 
-static C_INT bound_s54_test_signed_lower_bound(C_VOID)
+static lib_i32 bound_s54_test_signed_lower_bound(void)
 {
     static const lib_u8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
     static const lib_u8 handler[] = { 0xf4u };
@@ -415,20 +416,20 @@ static C_INT bound_s54_test_signed_lower_bound(C_VOID)
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    C_INT failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         bound_s54_seed(&state.machine->executor_cpu);
         state.machine->executor_cpu.data.eax = 0xa1a1fffdu;
         state.machine->executor_cpu.data.idtr.limit = 0x017fu;
         failed = core_machine_memory_write(state.machine, 0u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x0400u, bounds,
-            sizeof(bounds)) != TYPE_STATUS_OK;
+            sizeof(bounds)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 5u * 4u, vector,
-            sizeof(vector)) != TYPE_STATUS_OK;
+            sizeof(vector)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x0100u, handler,
-            sizeof(handler)) != TYPE_STATUS_OK;
+            sizeof(handler)) != LIB_STATUS_OK;
         failed |= !bound_s54_run(&state, 1u, &result, &after, &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
         failed |= !diagnostic.last_delivered_exception.valid;
@@ -438,7 +439,7 @@ static C_INT bound_s54_test_signed_lower_bound(C_VOID)
     return !failed;
 }
 
-static C_INT bound_s54_test_protected_br_delivery(C_VOID)
+static lib_i32 bound_s54_test_protected_br_delivery(void)
 {
     static const lib_u8 hlt[] = { 0xf4u };
     static const lib_u8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
@@ -448,8 +449,8 @@ static C_INT bound_s54_test_protected_br_delivery(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT initial_run;
-    C_INT failed = !bound_s54_boot_protected(&state, hlt, sizeof(hlt));
+    lib_i32 initial_run;
+    lib_i32 failed = !bound_s54_boot_protected(&state, hlt, sizeof(hlt));
 
     if (!failed) {
         initial_run = bound_s54_run(&state, 64u, &result, &after, &diagnostic);
@@ -462,14 +463,14 @@ static C_INT bound_s54_test_protected_br_delivery(C_VOID)
         state.machine->executor_cpu.data.eax = 0xa1a10003u;
         before = state.machine->executor_cpu;
         failed = core_machine_memory_write(state.machine, 0x00003400u, bounds,
-            sizeof(bounds)) != TYPE_STATUS_OK;
+            sizeof(bounds)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, BOUND_S54_CODE_BASE,
-            code, sizeof(code)) != TYPE_STATUS_OK;
+            code, sizeof(code)) != LIB_STATUS_OK;
         failed |= !bound_s54_run(&state, 64u, &result, &after, &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
         failed |= diagnostic.first_fault.valid;
         failed |= !diagnostic.last_delivered_exception.valid;
-        failed |= !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+        failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
             VCPUINS_EXCEPT_BR);
         failed |= result.executed != 0u || result.ticks != 0u;
         failed |= after.data.eip != 0x00000100u;
@@ -482,7 +483,7 @@ static C_INT bound_s54_test_protected_br_delivery(C_VOID)
     return !failed;
 }
 
-static C_INT bound_s54_test_protected_ds_upper_limit(C_VOID)
+static lib_i32 bound_s54_test_protected_ds_upper_limit(void)
 {
     static const lib_u8 hlt[] = { 0xf4u };
     static const lib_u8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
@@ -492,8 +493,8 @@ static C_INT bound_s54_test_protected_ds_upper_limit(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT initial_run;
-    C_INT failed = !bound_s54_boot_protected(&state, hlt, sizeof(hlt));
+    lib_i32 initial_run;
+    lib_i32 failed = !bound_s54_boot_protected(&state, hlt, sizeof(hlt));
 
     if (!failed) {
         initial_run = bound_s54_run(&state, 64u, &result, &after, &diagnostic);
@@ -507,15 +508,15 @@ static C_INT bound_s54_test_protected_ds_upper_limit(C_VOID)
         state.machine->executor_cpu.data.ds.limit = 0x0401u;
         before = state.machine->executor_cpu;
         failed = core_machine_memory_write(state.machine, 0x00003400u, bounds,
-            sizeof(bounds)) != TYPE_STATUS_OK;
+            sizeof(bounds)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, BOUND_S54_CODE_BASE,
-            code, sizeof(code)) != TYPE_STATUS_OK;
+            code, sizeof(code)) != LIB_STATUS_OK;
         failed |= !bound_s54_run(&state, 64u, &result, &after, &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
             result.executed != 0u || result.ticks != 0u;
         failed |= diagnostic.first_fault.valid;
         failed |= !diagnostic.last_delivered_exception.valid;
-        failed |= !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+        failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
             VCPUINS_EXCEPT_GP);
         failed |= after.data.eip != 0x00000100u;
         failed |= after.data.eax != before.data.eax;
@@ -527,7 +528,7 @@ static C_INT bound_s54_test_protected_ds_upper_limit(C_VOID)
     return !failed;
 }
 
-static C_INT bound_s54_test_protected_ss_upper_limit(C_VOID)
+static lib_i32 bound_s54_test_protected_ss_upper_limit(void)
 {
     static const lib_u8 hlt[] = { 0xf4u };
     static const lib_u8 code[] = { 0x36u, 0x62u, 0x06u, 0x00u, 0x04u };
@@ -537,12 +538,12 @@ static C_INT bound_s54_test_protected_ss_upper_limit(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT setup_failed;
-    C_INT initial_run;
-    C_INT pair_write;
-    C_INT code_write;
-    C_INT bound_run;
-    C_INT failed = !bound_s54_boot_protected(&state, hlt, sizeof(hlt));
+    lib_i32 setup_failed;
+    lib_i32 initial_run;
+    lib_i32 pair_write;
+    lib_i32 code_write;
+    lib_i32 bound_run;
+    lib_i32 failed = !bound_s54_boot_protected(&state, hlt, sizeof(hlt));
 
     if (!failed) {
         initial_run = bound_s54_run(&state, 64u, &result, &after, &diagnostic);
@@ -556,9 +557,9 @@ static C_INT bound_s54_test_protected_ss_upper_limit(C_VOID)
         state.machine->executor_cpu.data.ss.limit = 0x0401u;
         before = state.machine->executor_cpu;
         pair_write = core_machine_memory_write(state.machine, 0x00004400u,
-            bounds, sizeof(bounds)) == TYPE_STATUS_OK;
+            bounds, sizeof(bounds)) == LIB_STATUS_OK;
         code_write = core_machine_memory_write(state.machine,
-            BOUND_S54_CODE_BASE, code, sizeof(code)) == TYPE_STATUS_OK;
+            BOUND_S54_CODE_BASE, code, sizeof(code)) == LIB_STATUS_OK;
         setup_failed = !pair_write || !code_write;
         bound_run = !setup_failed && bound_s54_run(&state, 64u, &result,
             &after, &diagnostic);
@@ -572,7 +573,7 @@ static C_INT bound_s54_test_protected_ss_upper_limit(C_VOID)
     return !failed;
 }
 
-static C_INT bound_s54_test_irq_no_shadow(C_VOID)
+static lib_i32 bound_s54_test_irq_no_shadow(void)
 {
     static const lib_u8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u, 0x90u };
     static const lib_u8 hlt = 0xf4u;
@@ -585,7 +586,7 @@ static C_INT bound_s54_test_irq_no_shadow(C_VOID)
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         bound_s54_seed(&state.machine->executor_cpu);
@@ -594,15 +595,15 @@ static C_INT bound_s54_test_irq_no_shadow(C_VOID)
         state.machine->executor_cpu.data.idtr.limit = 0x017fu;
         before = state.machine->executor_cpu;
         failed = core_machine_memory_write(state.machine, 0u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x0400u, bounds,
-            sizeof(bounds)) != TYPE_STATUS_OK;
+            sizeof(bounds)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x20u * 4u,
-            &vector_offset, sizeof(vector_offset)) != TYPE_STATUS_OK;
+            &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x20u * 4u + 2u,
-            &vector_segment, sizeof(vector_segment)) != TYPE_STATUS_OK;
+            &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x0100u, &hlt,
-            sizeof(hlt)) != TYPE_STATUS_OK;
+            sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
         lib_memory_set(&source, 0, sizeof(source));
@@ -617,18 +618,18 @@ static C_INT bound_s54_test_irq_no_shadow(C_VOID)
         failed |= after.data.eax != before.data.eax;
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
             after.data.ss.base + (lib_u16)after.data.esp,
-            (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK;
+            (lib_uptr)&frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK;
         failed |= frame_ip != 4u;
-        failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
+        failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
             VPIC_ISR_IRQ(0u));
-        failed |= TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+        failed |= CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
             VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT bound_s54_test_segments(C_VOID)
+static lib_i32 bound_s54_test_segments(void)
 {
     static const lib_u8 codes[][5] = {
         { 0x62u,0x06u,0x10u,0,0 }, { 0x62u,0x46u,0,0,0 },
@@ -647,7 +648,7 @@ static C_INT bound_s54_test_segments(C_VOID)
         t_cpu after;
         lib_u16 selector = (lib_u16)(0x1000u + form * 0x1000u);
         lib_u32 address = ((lib_u32)selector << 4u) + 0x10u;
-        C_INT failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             t_cpu_data_sreg *segment = &state.machine->executor_cpu.data.ds;
@@ -666,10 +667,10 @@ static C_INT bound_s54_test_segments(C_VOID)
                 &state.machine->executor_cpu_execution, segment, selector);
             if (form == 2u)
                 failed |= core_machine_memory_write(state.machine,
-                    (lib_u32)selector << 4u, codes[form], bytes[form]) != TYPE_STATUS_OK;
+                    (lib_u32)selector << 4u, codes[form], bytes[form]) != LIB_STATUS_OK;
             else
                 failed |= core_machine_memory_write(state.machine, 0u, codes[form],
-                    bytes[form]) != TYPE_STATUS_OK;
+                    bytes[form]) != LIB_STATUS_OK;
             if (form == 1u)
                 state.machine->executor_cpu.data.ebp = 0x10u;
             bound_s54_seed(&state.machine->executor_cpu);
@@ -678,7 +679,7 @@ static C_INT bound_s54_test_segments(C_VOID)
                 state.machine->executor_cpu.data.ebp = 0x10u;
             before = state.machine->executor_cpu;
             failed |= core_machine_memory_write(state.machine, address, bounds,
-                sizeof(bounds)) != TYPE_STATUS_OK;
+                sizeof(bounds)) != LIB_STATUS_OK;
             failed |= !bound_s54_run(&state, 1u, &result, &after, &diagnostic);
             failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
             failed |= diagnostic.first_fault.valid;
@@ -695,7 +696,7 @@ static C_INT bound_s54_test_segments(C_VOID)
     return 1;
 }
 
-static C_INT bound_s54_test_signed_boundaries(C_VOID)
+static lib_i32 bound_s54_test_signed_boundaries(void)
 {
     static const lib_u8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
     static const lib_i16 pair[] = { -2, 2 };
@@ -708,7 +709,7 @@ static C_INT bound_s54_test_signed_boundaries(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !bound_s54_prepare(&state,
+        lib_i32 failed = !bound_s54_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -717,9 +718,9 @@ static C_INT bound_s54_test_signed_boundaries(C_VOID)
                 0xa1a10000u | values[value];
             before = state.machine->executor_cpu;
             failed = core_machine_memory_write(state.machine, 0u, code,
-                sizeof(code)) != TYPE_STATUS_OK;
+                sizeof(code)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(state.machine, 0x0400u, pair,
-                sizeof(pair)) != TYPE_STATUS_OK;
+                sizeof(pair)) != LIB_STATUS_OK;
             failed |= !bound_s54_run(&state, 1u, &result, &after,
                 &diagnostic);
             failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
@@ -737,7 +738,7 @@ static C_INT bound_s54_test_signed_boundaries(C_VOID)
     return 1;
 }
 
-static C_INT bound_s54_test_67_sib_stack_segment(C_VOID)
+static lib_i32 bound_s54_test_67_sib_stack_segment(void)
 {
     static const lib_u8 code[] = {
         0x67u, 0x62u, 0x44u, 0x24u, 0x10u
@@ -749,7 +750,7 @@ static C_INT bound_s54_test_67_sib_stack_segment(C_VOID)
     t_cpu before;
     t_cpu after;
     const lib_u32 address = 0x20010u;
-    C_INT failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed = core_machine_cpu_execution_load_segment(
@@ -761,9 +762,9 @@ static C_INT bound_s54_test_67_sib_stack_segment(C_VOID)
         state.machine->executor_cpu.data.eax = 0xa1a10001u;
         before = state.machine->executor_cpu;
         failed = core_machine_memory_write(state.machine, 0u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, address, pair,
-            sizeof(pair)) != TYPE_STATUS_OK;
+            sizeof(pair)) != LIB_STATUS_OK;
         failed |= !bound_s54_run(&state, 1u, &result, &after, &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
         failed |= diagnostic.first_fault.valid;
@@ -777,7 +778,7 @@ static C_INT bound_s54_test_67_sib_stack_segment(C_VOID)
     return !failed;
 }
 
-static C_INT bound_s54_test_vm86(C_VOID)
+static lib_i32 bound_s54_test_vm86(void)
 {
     static const lib_u8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
     static const lib_i16 pair[] = { -2, 2 };
@@ -786,7 +787,7 @@ static C_INT bound_s54_test_vm86(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed = !test_core_machine_fixture_prepare_real_mode_execution(
@@ -817,9 +818,9 @@ static C_INT bound_s54_test_vm86(C_VOID)
         state.machine->executor_cpu.data.eax = 0xa1a10001u;
         before = state.machine->executor_cpu;
         failed = core_machine_memory_write(state.machine, 0u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x0400u, pair,
-            sizeof(pair)) != TYPE_STATUS_OK;
+            sizeof(pair)) != LIB_STATUS_OK;
         failed |= !bound_s54_run(&state, 1u, &result, &after, &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
         failed |= diagnostic.first_fault.valid;
@@ -833,65 +834,65 @@ static C_INT bound_s54_test_vm86(C_VOID)
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!bound_s54_test_profiles_and_width()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND profiles failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND profiles failed\n");
         return 1;
     }
     if (!bound_s54_test_386_dword_pair()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND dword failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND dword failed\n");
         return 1;
     }
     if (!bound_s54_test_386_attributes()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND attributes failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND attributes failed\n");
         return 1;
     }
     if (!bound_s54_test_rejections()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND reject failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND reject failed\n");
         return 1;
     }
     if (!bound_s54_test_real_br_delivery()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND real #BR failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND real #BR failed\n");
         return 1;
     }
     if (!bound_s54_test_signed_lower_bound()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND lower failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND lower failed\n");
         return 1;
     }
     if (!bound_s54_test_protected_br_delivery()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND protected #BR failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND protected #BR failed\n");
         return 1;
     }
     if (!bound_s54_test_protected_ds_upper_limit()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND DS limit failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND DS limit failed\n");
         return 1;
     }
     if (!bound_s54_test_protected_ss_upper_limit()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND SS limit failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND SS limit failed\n");
         return 1;
     }
     if (!bound_s54_test_irq_no_shadow()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND irq failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND irq failed\n");
         return 1;
     }
     if (!bound_s54_test_segments()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND segments failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND segments failed\n");
         return 1;
     }
     if (!bound_s54_test_signed_boundaries()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND signed boundaries failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND signed boundaries failed\n");
         return 1;
     }
     if (!bound_s54_test_67_sib_stack_segment()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND 67 SIB failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND 67 SIB failed\n");
         return 1;
     }
     if (!bound_s54_test_vm86()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S54:BOUND VM86 failed\n");
+        fprintf(stderr, "M5:T316:S54:BOUND VM86 failed\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S54:BOUND:OK\n");
-    STD_PRINTF("M5:T401:S29:BOUND-PROFILES:OK\n");
+    printf("M5:T316:S54:BOUND:OK\n");
+    printf("M5:T401:S29:BOUND-PROFILES:OK\n");
     return 0;
 }

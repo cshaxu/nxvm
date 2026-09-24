@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -17,37 +18,37 @@ typedef struct s3_gate_machine {
     core_machine *machine;
 } s3_gate_machine;
 
-static C_VOID s3_gate_reset(C_VOID *opaque)
+static void s3_gate_reset(void *opaque)
 {
     s3_gate_machine *state = (s3_gate_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider s3_gate_provider = {
     s3_gate_reset, LIB_NULL
 };
 
-static C_INT s3_gate_write(s3_gate_machine *state, lib_u32 address,
-    const C_VOID *data, lib_size bytes)
+static lib_i32 s3_gate_write(s3_gate_machine *state, lib_u32 address,
+    const void *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, data, bytes) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT s3_gate_read(s3_gate_machine *state, lib_u32 address,
-    C_VOID *data, lib_size bytes)
+static lib_i32 s3_gate_read(s3_gate_machine *state, lib_u32 address,
+    void *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_read_physical(&state->machine->executor_memory,
-            address, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
+            address, (lib_uptr)data, bytes) == LIB_STATUS_OK;
 }
 
-static C_INT s3_gate_install(s3_gate_machine *state, lib_u8 vector,
+static lib_i32 s3_gate_install(s3_gate_machine *state, lib_u8 vector,
     lib_u16 selector, lib_u8 type, lib_u8 dpl,
-    type_bool present)
+    lib_u8 present)
 {
     lib_u8 gate[8u] = { 0u };
 
@@ -60,9 +61,9 @@ static C_INT s3_gate_install(s3_gate_machine *state, lib_u8 vector,
         gate, sizeof(gate));
 }
 
-static C_INT s3_gate_prepare(s3_gate_machine *state,
-    core_machine_cpu_profile profile, type_bool user_code,
-    lib_u8 gate_type, lib_u8 gate_dpl, type_bool present)
+static lib_i32 s3_gate_prepare(s3_gate_machine *state,
+    core_machine_cpu_profile profile, lib_u8 user_code,
+    lib_u8 gate_type, lib_u8 gate_dpl, lib_u8 present)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -80,7 +81,7 @@ static C_INT s3_gate_prepare(s3_gate_machine *state,
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &s3_gate_provider, state) ||
         !s3_gate_write(state, S3_GDT_BASE, gdt, sizeof(gdt)) ||
@@ -130,7 +131,7 @@ static C_INT s3_gate_prepare(s3_gate_machine *state,
     return 1;
 }
 
-static C_INT s3_gate_gprs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 s3_gate_gprs_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -140,7 +141,7 @@ static C_INT s3_gate_gprs_same(const t_cpu *before, const t_cpu *after)
         before->data.esi == after->data.esi && before->data.edi == after->data.edi;
 }
 
-static C_INT s3_gate_non_target_sregs_same(const t_cpu *before,
+static lib_i32 s3_gate_non_target_sregs_same(const t_cpu *before,
     const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
@@ -152,7 +153,7 @@ static C_INT s3_gate_non_target_sregs_same(const t_cpu *before,
             sizeof(before->data.gs)) == 0;
 }
 
-static C_INT s3_gate_success(core_machine_cpu_profile profile,
+static lib_i32 s3_gate_success(core_machine_cpu_profile profile,
     lib_u8 gate_type, const lib_u8 *code, lib_size code_size,
     lib_u16 return_ip)
 {
@@ -162,25 +163,25 @@ static C_INT s3_gate_success(core_machine_cpu_profile profile,
     lib_u16 frame[3u] = { 0u,0u,0u };
     lib_u8 code_access = 0u;
     t_cpu before;
-    C_INT expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
-    C_INT failed = !s3_gate_prepare(&state, profile, LIB_FALSE, gate_type, 0u,
+    lib_i32 expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
+    lib_i32 failed = !s3_gate_prepare(&state, profile, LIB_FALSE, gate_type, 0u,
         LIB_TRUE);
 
     if (!failed) {
         failed |= !s3_gate_write(&state, S3_CODE_BASE, code, code_size);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){32u,0u},
-                &result) != TYPE_STATUS_OK ||
+                &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || state.machine->executor_cpu.data.eip !=
                 S3_HANDLER + 1u || state.machine->executor_cpu.data.esp !=
                 S3_STACK_TOP - 6u || !s3_gate_gprs_same(&before,
                 &state.machine->executor_cpu) || !s3_gate_non_target_sregs_same(
                 &before, &state.machine->executor_cpu) ||
-            !TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_CF) ||
-            TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
-            (TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) !=
+            !CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_CF) ||
+            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
+            (CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) !=
                 expect_if) || !s3_gate_read(&state, S3_STACK_TOP - 6u, frame,
                 sizeof(frame)) || frame[0] != return_ip || frame[1] != 0x0008u ||
             frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF) ||
@@ -191,7 +192,7 @@ static C_INT s3_gate_success(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT s3_gate_attributes(C_VOID)
+static lib_i32 s3_gate_attributes(void)
 {
     static const lib_u8 operand[] = { 0x66u,0xcdu,S3_VECTOR };
     static const lib_u8 address[] = { 0x67u,0xcdu,S3_VECTOR };
@@ -205,7 +206,7 @@ static C_INT s3_gate_attributes(C_VOID)
             VCPU_DESC_SYS_TYPE_INTGATE_16, combined, sizeof(combined), 4u);
 }
 
-static C_INT s3_gate_cpu_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 s3_gate_cpu_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx && before->data.edx == after->data.edx &&
@@ -221,7 +222,7 @@ static C_INT s3_gate_cpu_same(const t_cpu *before, const t_cpu *after)
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT s3_gate_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 s3_gate_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_size code_size)
 {
     s3_gate_machine state;
@@ -229,15 +230,15 @@ static C_INT s3_gate_expect_ud(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !s3_gate_prepare(&state, profile, LIB_FALSE,
+    lib_i32 failed = !s3_gate_prepare(&state, profile, LIB_FALSE,
         VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
 
     if (!failed) {
         failed |= !s3_gate_write(&state, S3_CODE_BASE, code, code_size);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){8u,0u},
-                &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+                &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.first_fault.valid || diagnostic.first_fault.exception_mask !=
                 VCPUINS_EXCEPT_UD;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -247,7 +248,7 @@ static C_INT s3_gate_expect_ud(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT s3_gate_rejections(C_VOID)
+static lib_i32 s3_gate_rejections(void)
 {
     static const lib_u8 prefix66[] = { 0x66u,0xcdu,S3_VECTOR };
     static const lib_u8 prefix67[] = { 0x67u,0xcdu,S3_VECTOR };
@@ -261,9 +262,9 @@ static C_INT s3_gate_rejections(C_VOID)
         s3_gate_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock, sizeof(lock));
 }
 
-static C_INT s3_gate_entry_rejected(core_machine_cpu_profile profile,
-    type_bool user_code, lib_u8 gate_type, lib_u8 gate_dpl,
-    type_bool present)
+static lib_i32 s3_gate_entry_rejected(core_machine_cpu_profile profile,
+    lib_u8 user_code, lib_u8 gate_type, lib_u8 gate_dpl,
+    lib_u8 present)
 {
     static const lib_u8 code[] = { 0xcdu,S3_VECTOR };
     s3_gate_machine state;
@@ -271,15 +272,15 @@ static C_INT s3_gate_entry_rejected(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !s3_gate_prepare(&state, profile, user_code, gate_type,
+    lib_i32 failed = !s3_gate_prepare(&state, profile, user_code, gate_type,
         gate_dpl, present);
 
     if (!failed) {
         failed |= !s3_gate_write(&state, S3_CODE_BASE, code, sizeof(code));
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){16u,0u},
-                &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+                &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.first_fault.valid;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !s3_gate_cpu_same(&before, &after);
@@ -288,14 +289,14 @@ static C_INT s3_gate_entry_rejected(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT s3_gate_error_frame(C_VOID)
+static lib_i32 s3_gate_error_frame(void)
 {
     static const lib_u8 fault[] = { 0x0fu,0x01u,0xf0u };
     s3_gate_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     lib_u16 frame[4u] = { 0u,0u,0u,0u };
-    C_INT failed = !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
         LIB_FALSE, VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
 
     if (!failed) {
@@ -303,8 +304,8 @@ static C_INT s3_gate_error_frame(C_VOID)
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE) || !s3_gate_write(
             &state, S3_CODE_BASE, fault, sizeof(fault)) || core_machine_run(
             state.machine, (core_machine_run_budget){32u,0u}, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
             state.machine->executor_cpu.data.eip != S3_HANDLER + 1u ||
@@ -318,14 +319,14 @@ static C_INT s3_gate_error_frame(C_VOID)
     return !failed;
 }
 
-static C_INT s3_gate_external_irq(C_VOID)
+static lib_i32 s3_gate_external_irq(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     s3_gate_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     lib_u16 frame[3u] = { 0u,0u,0u };
-    C_INT failed = !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
         LIB_FALSE, VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
 
     lib_memory_set(&source, 0, sizeof(source));
@@ -338,14 +339,14 @@ static C_INT s3_gate_external_irq(C_VOID)
         core_machine_pic_irq_source_deassert(&source);
         failed |= !s3_gate_write(&state, S3_CODE_BASE, nop, sizeof(nop)) ||
             core_machine_run(state.machine, (core_machine_run_budget){16u,0u},
-                &result) != TYPE_STATUS_OK || result.reason !=
+                &result) != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             state.machine->executor_cpu.data.eip != S3_HANDLER + 1u ||
             state.machine->executor_cpu.data.esp != S3_STACK_TOP - 6u ||
-            TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
-            TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
+            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u)) || !s3_gate_read(&state, S3_STACK_TOP - 6u,
                 frame, sizeof(frame)) || frame[0] != 1u || frame[1] != 0x0008u ||
             frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);
@@ -354,10 +355,10 @@ static C_INT s3_gate_external_irq(C_VOID)
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 code[] = { 0xcdu,S3_VECTOR };
-    C_INT failed = !s3_gate_success(CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !s3_gate_success(CORE_MACHINE_CPU_PROFILE_80286,
         VCPU_DESC_SYS_TYPE_INTGATE_16, code, sizeof(code), 2u) ||
         !s3_gate_success(CORE_MACHINE_CPU_PROFILE_80286,
             VCPU_DESC_SYS_TYPE_TRAPGATE_16, code, sizeof(code), 2u) ||
@@ -375,6 +376,6 @@ C_INT main(C_VOID)
         !s3_gate_error_frame() || !s3_gate_external_irq();
 
     if (failed) return 1;
-    STD_PRINTF("M5:T323:S3:PROTECTED-16-GATE:OK\n");
+    printf("M5:T323:S3:PROTECTED-16-GATE:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -19,7 +19,7 @@ typedef struct timeline_trace_probe {
     lib_u32 count;
 } timeline_trace_probe;
 
-static C_VOID timeline_trace(C_VOID *opaque,
+static void timeline_trace(void *opaque,
     const core_machine_trace_event *event)
 {
     timeline_trace_probe *probe = (timeline_trace_probe *)opaque;
@@ -42,43 +42,43 @@ static const core_machine_trace_event *timeline_find_trace_event(
 }
 #endif
 
-static C_VOID timeline_record(timeline_probe *probe, lib_u8 value)
+static void timeline_record(timeline_probe *probe, lib_u8 value)
 {
     if (probe != LIB_NULL && probe->count < sizeof(probe->order)) {
         probe->order[probe->count++] = value;
     }
 }
 
-static C_VOID timeline_a(C_VOID *opaque, lib_u64 due_tick)
+static void timeline_a(void *opaque, lib_u64 due_tick)
 {
-    (C_VOID)due_tick;
+    (void)due_tick;
     timeline_record((timeline_probe *)opaque, 1u);
 }
 
-static C_VOID timeline_b(C_VOID *opaque, lib_u64 due_tick)
+static void timeline_b(void *opaque, lib_u64 due_tick)
 {
     timeline_probe *probe = (timeline_probe *)opaque;
 
     timeline_record(probe, 2u);
     if (probe != LIB_NULL) {
-        (C_VOID)core_machine_timeline_schedule(probe->timeline, due_tick,
+        (void)core_machine_timeline_schedule(probe->timeline, due_tick,
             timeline_a, probe, &probe->nested);
     }
 }
 
-static C_VOID timeline_c(C_VOID *opaque, lib_u64 due_tick)
+static void timeline_c(void *opaque, lib_u64 due_tick)
 {
-    (C_VOID)due_tick;
+    (void)due_tick;
     timeline_record((timeline_probe *)opaque, 3u);
 }
 
-static C_VOID timeline_cancelled(C_VOID *opaque, lib_u64 due_tick)
+static void timeline_cancelled(void *opaque, lib_u64 due_tick)
 {
-    (C_VOID)due_tick;
+    (void)due_tick;
     timeline_record((timeline_probe *)opaque, 4u);
 }
 
-static C_INT timeline_machine_contract(C_VOID)
+static lib_i32 timeline_machine_contract(void)
 {
     core_machine *machine = LIB_NULL;
     core_machine_config config = { 0 };
@@ -92,31 +92,31 @@ static C_INT timeline_machine_contract(C_VOID)
     timeline_trace_probe trace_probe = { { { 0 } }, 0u };
 #endif
     const lib_u8 nop = 0x90u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED
     trace.context = &trace_probe;
 #endif
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
-        0x000ffff0u, 16u) != TYPE_STATUS_OK;
-    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+        0x000ffff0u, 16u) != LIB_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0x00fffff0u, &nop, 1u) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= core_machine_timeline_schedule(&machine->timeline, 0u, timeline_a,
-        LIB_NULL, &immediate) != TYPE_STATUS_OK;
+        LIB_NULL, &immediate) != LIB_STATUS_OK;
     failed |= core_machine_capture_time_observation(machine, &time_observation) !=
-        TYPE_STATUS_OK || time_observation.next_deadline_valid ||
+        LIB_STATUS_OK || time_observation.next_deadline_valid ||
         time_observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_IMMEDIATE;
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED
-    failed |= core_machine_set_trace_provider(machine, &trace) != TYPE_STATUS_OK;
+    failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
 #endif
-    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.elapsed_ticks != 3u;
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= observation.now != 3u || observation.pending_events != 0u ||
         observation.next_sequence != 1u;
     /* Release intentionally omits development trace recording; the state and
@@ -150,7 +150,7 @@ static C_INT timeline_machine_contract(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine_timeline timeline;
     core_machine_timeline_token first;
@@ -158,38 +158,38 @@ C_INT main(C_VOID)
     core_machine_timeline_token cancelled;
     timeline_probe probe = { 0 };
     lib_u64 due_tick = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     probe.timeline = &timeline;
-    failed |= core_machine_timeline_initialize(&timeline) != TYPE_STATUS_OK;
+    failed |= core_machine_timeline_initialize(&timeline) != LIB_STATUS_OK;
     failed |= core_machine_timeline_schedule(&timeline, 10u, timeline_a, &probe,
-        &first) != TYPE_STATUS_OK;
-    failed |= core_machine_timeline_next_due(&timeline, &due_tick) != TYPE_STATUS_OK ||
+        &first) != LIB_STATUS_OK;
+    failed |= core_machine_timeline_next_due(&timeline, &due_tick) != LIB_STATUS_OK ||
         due_tick != 10u;
     failed |= core_machine_timeline_schedule(&timeline, 10u, timeline_c, &probe,
-        &second) != TYPE_STATUS_OK;
+        &second) != LIB_STATUS_OK;
     failed |= core_machine_timeline_schedule(&timeline, 5u, timeline_b, &probe,
-        &probe.nested) != TYPE_STATUS_OK;
-    failed |= core_machine_timeline_next_due(&timeline, &due_tick) != TYPE_STATUS_OK ||
+        &probe.nested) != LIB_STATUS_OK;
+    failed |= core_machine_timeline_next_due(&timeline, &due_tick) != LIB_STATUS_OK ||
         due_tick != 5u;
     failed |= core_machine_timeline_schedule(&timeline, 8u, timeline_cancelled,
-        &probe, &cancelled) != TYPE_STATUS_OK;
-    failed |= core_machine_timeline_cancel(&timeline, &cancelled) != TYPE_STATUS_OK;
-    failed |= core_machine_timeline_advance(&timeline, 10u) != TYPE_STATUS_OK;
+        &probe, &cancelled) != LIB_STATUS_OK;
+    failed |= core_machine_timeline_cancel(&timeline, &cancelled) != LIB_STATUS_OK;
+    failed |= core_machine_timeline_advance(&timeline, 10u) != LIB_STATUS_OK;
     failed |= timeline.now != 10u || core_machine_timeline_pending_count(&timeline) != 0u ||
         probe.count != 4u || probe.order[0] != 2u || probe.order[1] != 1u ||
         probe.order[2] != 1u || probe.order[3] != 3u;
-    failed |= core_machine_timeline_next_due(&timeline, &due_tick) != TYPE_STATUS_INVALID_STATE;
+    failed |= core_machine_timeline_next_due(&timeline, &due_tick) != LIB_STATUS_INVALID_STATE;
     failed |= core_machine_timeline_schedule(&timeline, 9u, timeline_a, &probe,
-        &first) != TYPE_STATUS_INVALID_ARGUMENT;
+        &first) != LIB_STATUS_INVALID_ARGUMENT;
     failed |= core_machine_timeline_schedule(&timeline, 12u, timeline_cancelled,
-        &probe, &cancelled) != TYPE_STATUS_OK;
+        &probe, &cancelled) != LIB_STATUS_OK;
     core_machine_timeline_reset(&timeline);
-    failed |= core_machine_timeline_advance(&timeline, 20u) != TYPE_STATUS_OK ||
+    failed |= core_machine_timeline_advance(&timeline, 20u) != LIB_STATUS_OK ||
         probe.count != 4u || timeline.now != 20u;
     failed |= timeline_machine_contract();
 
     if (failed) return 1;
-    STD_PRINTF("M5:T346:S2:TIMELINE:OK\n");
+    printf("M5:T346:S2:TIMELINE:OK\n");
     return 0;
 }

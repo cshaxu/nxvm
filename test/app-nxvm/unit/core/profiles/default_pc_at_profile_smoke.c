@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();

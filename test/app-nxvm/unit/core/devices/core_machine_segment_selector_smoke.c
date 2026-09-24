@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -15,11 +16,11 @@ typedef struct segment_machine {
     core_machine *machine;
 } segment_machine;
 
-static C_VOID segment_reset(C_VOID *opaque)
+static void segment_reset(void *opaque)
 {
     segment_machine *state = (segment_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
@@ -27,7 +28,7 @@ static const core_machine_execution_provider segment_provider = {
     segment_reset, LIB_NULL
 };
 
-static C_INT segment_prepare(segment_machine *state,
+static lib_i32 segment_prepare(segment_machine *state,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -38,7 +39,7 @@ static C_INT segment_prepare(segment_machine *state,
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 0;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             &segment_provider, state)) {
         core_machine_destroy(state->machine);
@@ -48,15 +49,15 @@ static C_INT segment_prepare(segment_machine *state,
     return 1;
 }
 
-static C_INT segment_write(segment_machine *state, lib_u32 address,
-    const C_VOID *bytes, lib_size byte_count)
+static lib_i32 segment_write(segment_machine *state, lib_u32 address,
+    const void *bytes, lib_size byte_count)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, bytes, byte_count) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT segment_run_halt(segment_machine *state, const lib_u8 *code,
+static lib_i32 segment_run_halt(segment_machine *state, const lib_u8 *code,
     lib_size code_size, lib_u32 address, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 96u, 0u };
@@ -67,9 +68,9 @@ static C_INT segment_run_halt(segment_machine *state, const lib_u8 *code,
         return 0;
     test_core_machine_fixture_resume_after_halt_at(state->machine,
         address == 0u ? 0u : address - SEG_CODE_ADDRESS);
-    if (core_machine_run(state->machine, budget, &result) != TYPE_STATUS_OK ||
+    if (core_machine_run(state->machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T301:SEGMENT-SELECTOR run address=%08x reason=%d detail=%08x\n",
             address, result.reason, result.detail);
         return 0;
@@ -78,7 +79,7 @@ static C_INT segment_run_halt(segment_machine *state, const lib_u8 *code,
     return 1;
 }
 
-static C_INT segment_run_ud(segment_machine *state, const lib_u8 *code,
+static lib_i32 segment_run_ud(segment_machine *state, const lib_u8 *code,
     lib_size code_size, lib_u32 address, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 16u, 0u };
@@ -88,22 +89,22 @@ static C_INT segment_run_ud(segment_machine *state, const lib_u8 *code,
     if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
         out_cpu == LIB_NULL || !segment_write(state, address, code, code_size))
         return 0;
-    if (!TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+    if (!CORE_MACHINE_BIT_IS_SET(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
         !test_core_machine_fixture_preflight_real_ud_terminal(state->machine))
         return 0;
     test_core_machine_fixture_resume_after_halt_at(state->machine,
         address == 0u ? 0u : address - SEG_CODE_ADDRESS);
-    if (core_machine_run(state->machine, budget, &result) != TYPE_STATUS_FAULT ||
+    if (core_machine_run(state->machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
         result.reason != CORE_MACHINE_STOP_FAULT ||
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
-            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-        !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD))
+            LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+        !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD))
         return 0;
     *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
 }
 
-static C_INT segment_run_exception(segment_machine *state, const lib_u8 *code,
+static lib_i32 segment_run_exception(segment_machine *state, const lib_u8 *code,
     lib_size code_size, lib_u32 address, lib_u32 exception,
     t_cpu *out_cpu)
 {
@@ -117,16 +118,16 @@ static C_INT segment_run_exception(segment_machine *state, const lib_u8 *code,
     test_core_machine_fixture_resume_after_halt_at(state->machine,
         address == 0u ? 0u : address - SEG_CODE_ADDRESS);
     if (state->machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
-        TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        CORE_MACHINE_BIT_IS_SET(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
         (exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
             exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP)) {
         exception = VCPUINS_EXCEPT_DF;
     }
-    if (core_machine_run(state->machine, budget, &result) != TYPE_STATUS_FAULT ||
+    if (core_machine_run(state->machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
         result.reason != CORE_MACHINE_STOP_FAULT ||
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
-            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-        !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, exception)) return 0;
+            LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+        !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, exception)) return 0;
     *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
 }
@@ -144,7 +145,7 @@ static const t_cpu_data_sreg *segment_sreg(const t_cpu *cpu, lib_u8 target)
     }
 }
 
-static C_INT segment_boot_protected(segment_machine *state)
+static lib_i32 segment_boot_protected(segment_machine *state)
 {
     static const lib_u8 gdt_pointer[] = {
         0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
@@ -167,8 +168,8 @@ static C_INT segment_boot_protected(segment_machine *state)
     static const lib_u8 halt[] = { 0xf4u };
     const core_machine_run_budget budget = { 96u, 0u };
     core_machine_run_result result;
-    C_INT installed;
-    type_status run_status;
+    lib_i32 installed;
+    lib_status run_status;
 
     installed = segment_write(state, SEG_GDT_POINTER, gdt_pointer,
         sizeof(gdt_pointer));
@@ -176,14 +177,14 @@ static C_INT segment_boot_protected(segment_machine *state)
     installed &= segment_write(state, 0u, real_code, sizeof(real_code));
     installed &= segment_write(state, SEG_CODE_ADDRESS, halt, sizeof(halt));
     if (!installed) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T301:SEGMENT-SELECTOR bootstrap-install-failed\n");
         return 0;
     }
     run_status = core_machine_run(state->machine, budget, &result);
-    if (run_status != TYPE_STATUS_OK ||
+    if (run_status != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T301:SEGMENT-SELECTOR bootstrap status=%d reason=%d detail=%08x\n",
             run_status, result.reason, result.detail);
         return 0;
@@ -191,7 +192,7 @@ static C_INT segment_boot_protected(segment_machine *state)
     return 1;
 }
 
-static C_INT segment_boot_protected_286(segment_machine *state)
+static lib_i32 segment_boot_protected_286(segment_machine *state)
 {
     static const lib_u8 gdt_pointer[] = {
         0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
@@ -238,11 +239,11 @@ static C_INT segment_boot_protected_286(segment_machine *state)
             sizeof(real_code)) || !segment_write(state, SEG_CODE_ADDRESS, halt,
             sizeof(halt)) || !segment_write(state, SEG_CODE_ADDRESS + 0x100u,
             halt, sizeof(halt))) return 0;
-    return core_machine_run(state->machine, budget, &result) == TYPE_STATUS_OK &&
+    return core_machine_run(state->machine, budget, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT segment_test_real_load_forms(C_VOID)
+static lib_i32 segment_test_real_load_forms(void)
 {
     static const lib_u8 mov_code[] = {
         0xb8u,0x34u,0x12u,0x8eu,0xe0u,0x8cu,0xe0u,0xf4u
@@ -261,7 +262,7 @@ static C_INT segment_test_real_load_forms(C_VOID)
     static const lib_u8 pop_value[] = { 0x56u,0x34u,0xefu,0xbeu };
     segment_machine state;
     t_cpu cpu;
-    C_INT failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !segment_run_halt(&state, mov_code, sizeof(mov_code), 0u,
@@ -302,7 +303,7 @@ static C_INT segment_test_real_load_forms(C_VOID)
     return failed;
 }
 
-static C_INT segment_test_80286_protected_legal_forms(C_VOID)
+static lib_i32 segment_test_80286_protected_legal_forms(void)
 {
     static const lib_u8 les_code[] = { 0xc4u,0x1eu,0x00u,0x04u,0xf4u };
     static const lib_u8 lds_code[] = { 0xc5u,0x1eu,0x00u,0x04u,0xf4u };
@@ -373,7 +374,7 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
         sizeof(sldt_memory_code), sizeof(ltr_memory_code),
         sizeof(str_memory_code) };
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     for (index = 0u; index < sizeof(codes) / sizeof(codes[0]); ++index) {
         segment_machine state;
@@ -404,11 +405,11 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
             break;
         case 2u:
             failed |= (cpu.data.eax & 0xffffu) != 0x9300u ||
-                !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+                !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
             break;
         case 3u:
             failed |= (cpu.data.eax & 0xffffu) != 0xffffu ||
-                !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+                !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
             break;
         case 6u:
             failed |= cpu.data.ds.selector != 0x0010u;
@@ -426,19 +427,19 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
 
             failed |= cpu.data.esp != 0x7ffeu ||
                 core_machine_memory_read(state.machine, SEG_DATA_ADDRESS + 0x7ffeu,
-                    &selector, sizeof(selector)) != TYPE_STATUS_OK ||
+                    &selector, sizeof(selector)) != LIB_STATUS_OK ||
                 selector != 0x0010u;
             break;
         }
         case 10u:
             failed |= cpu.data.ldtr.selector != 0x0028u ||
                 (cpu.data.ecx & 0xffffu) != 0x9200u ||
-                !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+                !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
             break;
         case 11u:
             failed |= cpu.data.ldtr.selector != 0x0028u ||
                 (cpu.data.ecx & 0xffffu) != 0xffffu ||
-                !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+                !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
             break;
         case 14u:
             failed |= cpu.data.ldtr.selector != 0x0028u;
@@ -450,7 +451,7 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
             failed |= cpu.data.ldtr.selector != 0x0028u ||
                 core_machine_memory_read(state.machine,
                 SEG_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector)) !=
-                TYPE_STATUS_OK || selector != 0x0028u;
+                LIB_STATUS_OK || selector != 0x0028u;
             break;
         }
         case 16u:
@@ -464,11 +465,11 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
             failed |= cpu.data.tr.selector != 0x0030u ||
                 core_machine_memory_read(state.machine,
                 SEG_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector)) !=
-                TYPE_STATUS_OK || selector != 0x0030u;
+                LIB_STATUS_OK || selector != 0x0030u;
             break;
         }
         default:
-            failed |= !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+            failed |= !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
             break;
         }
         core_machine_destroy(state.machine);
@@ -476,7 +477,7 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
     return failed;
 }
 
-static C_INT segment_test_80286_protected_cache_rejections(C_VOID)
+static lib_i32 segment_test_80286_protected_cache_rejections(void)
 {
     static const lib_u8 nonpresent_ds[] = {
         0xb8u,0x18u,0x00u,0x8eu,0xd8u
@@ -508,7 +509,7 @@ static C_INT segment_test_80286_protected_cache_rejections(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286) ||
+        lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286) ||
             !segment_boot_protected_286(&state);
 
         if (!failed) {
@@ -518,9 +519,9 @@ static C_INT segment_test_80286_protected_cache_rejections(C_VOID)
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             failed |= core_machine_run(state.machine,
                 (core_machine_run_budget){ form == 2u ? 16u : 2u, 0u },
-                &result) != TYPE_STATUS_OK ||
+                &result) != LIB_STATUS_OK ||
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             if (form == 2u) {
                 failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -539,7 +540,7 @@ static C_INT segment_test_80286_protected_cache_rejections(C_VOID)
                 failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
                     diagnostic.first_fault.valid ||
                     !diagnostic.last_delivered_exception.valid ||
-                    !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                    !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
                     exceptions[form]) || after.data.eip != 0x100u ||
                     lib_memory_compare(target, before_target, sizeof(*target)) != 0 ||
                     after.data.eax != before.data.eax ||
@@ -560,8 +561,8 @@ typedef struct segment_lxs_form {
     lib_u8 target;
 } segment_lxs_form;
 
-static C_INT segment_test_lxs_success(const segment_lxs_form *form,
-    C_INT protected_mode, C_INT pointer32)
+static lib_i32 segment_test_lxs_success(const segment_lxs_form *form,
+    lib_i32 protected_mode, lib_i32 pointer32)
 {
     static const lib_u8 pointer16[] = { 0x78u,0x56u,0x10u,0x00u };
     static const lib_u8 pointer32_bytes[] = {
@@ -577,7 +578,7 @@ static C_INT segment_test_lxs_success(const segment_lxs_form *form,
     segment_machine state;
     t_cpu cpu;
     const t_cpu_data_sreg *sreg;
-    C_INT failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed && protected_mode) failed = !segment_boot_protected(&state);
     if (!failed) {
@@ -604,7 +605,7 @@ static C_INT segment_test_lxs_success(const segment_lxs_form *form,
     return failed;
 }
 
-static C_INT segment_test_lxs_memory_only(C_VOID)
+static lib_i32 segment_test_lxs_memory_only(void)
 {
     static const segment_lxs_form forms[] = {
         { 0xc4u,0u,1u,0u }, { 0xc5u,0u,1u,1u },
@@ -612,9 +613,9 @@ static C_INT segment_test_lxs_memory_only(C_VOID)
         { 0x0fu,0xb5u,2u,4u }
     };
     lib_size index;
-    C_INT protected_mode;
-    C_INT pointer32;
-    C_INT failed = 0;
+    lib_i32 protected_mode;
+    lib_i32 pointer32;
+    lib_i32 failed = 0;
 
     for (protected_mode = 0; protected_mode <= 1; ++protected_mode) {
         for (pointer32 = 0; pointer32 <= 1; ++pointer32) {
@@ -657,7 +658,7 @@ static C_INT segment_test_lxs_memory_only(C_VOID)
     return failed;
 }
 
-static C_INT segment_test_lxs_fault_atomicity(C_VOID)
+static lib_i32 segment_test_lxs_fault_atomicity(void)
 {
     static const segment_lxs_form forms[] = {
         { 0xc4u,0u,1u,0u }, { 0xc5u,0u,1u,1u },
@@ -666,7 +667,7 @@ static C_INT segment_test_lxs_fault_atomicity(C_VOID)
     };
     static const lib_u8 pointer[] = { 0x44u,0x33u,0x22u,0x11u,0x18u,0u };
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
         lib_u8 code[8u] = {0};
@@ -705,7 +706,7 @@ static C_INT segment_test_lxs_fault_atomicity(C_VOID)
             lib_memory_compare(&before.data.gs, &after.data.gs,
                 sizeof(before.data.gs)) != 0 ||
             !test_core_machine_fixture_read_linear(state.machine,
-                SEG_GDT_ADDRESS + 29u, TYPE_REFERENCE_OF(access),
+                SEG_GDT_ADDRESS + 29u, CORE_MACHINE_REFERENCE_OF(access),
                 sizeof(access)) || access != 0x12u;
         core_machine_destroy(state.machine);
     }
@@ -720,7 +721,7 @@ typedef struct segment_sreg_form {
     lib_u8 pop_bytes;
 } segment_sreg_form;
 
-static C_INT segment_test_real_sreg_loads(C_VOID)
+static lib_i32 segment_test_real_sreg_loads(void)
 {
     static const segment_sreg_form forms[] = {
         { 0u,0xc0u,0x07u,0u,1u }, { 2u,0xd0u,0x17u,0u,1u },
@@ -730,8 +731,8 @@ static C_INT segment_test_real_sreg_loads(C_VOID)
     static const lib_u8 stack_word[] = { 0x34u,0x12u,0,0 };
     static const lib_u8 stack_dword[] = { 0x34u,0x12u,0xefu,0xbeu };
     lib_size index;
-    C_INT width32;
-    C_INT failed = 0;
+    lib_i32 width32;
+    lib_i32 failed = 0;
 
     for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
         lib_u8 code[] = { 0xb8u,0x34u,0x12u,0x8eu,forms[index].mov_modrm,0xf4u };
@@ -775,7 +776,7 @@ static C_INT segment_test_real_sreg_loads(C_VOID)
     return failed;
 }
 
-static C_INT segment_test_protected_sreg_success(C_VOID)
+static lib_i32 segment_test_protected_sreg_success(void)
 {
     static const segment_sreg_form forms[] = {
         { 0u,0xc0u,0x07u,0u,1u }, { 2u,0xd0u,0x17u,0u,1u },
@@ -785,8 +786,8 @@ static C_INT segment_test_protected_sreg_success(C_VOID)
     static const lib_u8 stack_word[] = { 0x10u,0,0,0 };
     static const lib_u8 stack_dword[] = { 0x10u,0,0xefu,0xbeu };
     lib_size index;
-    C_INT width32;
-    C_INT failed = 0;
+    lib_i32 width32;
+    lib_i32 failed = 0;
 
     for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
         lib_u8 code[] = { 0xb8u,0x10u,0,0,0,0x8eu,forms[index].mov_modrm,0xf4u };
@@ -843,7 +844,7 @@ typedef struct segment_sreg_failure {
     lib_u8 access_value;
 } segment_sreg_failure;
 
-static C_INT segment_test_protected_sreg_failures(C_VOID)
+static lib_i32 segment_test_protected_sreg_failures(void)
 {
     static const segment_sreg_failure failures[] = {
         { 1u,0xd8u,0x0018u,VCPUINS_EXCEPT_NP,SEG_GDT_ADDRESS + 29u,0x12u },
@@ -855,7 +856,7 @@ static C_INT segment_test_protected_sreg_failures(C_VOID)
     static const lib_u8 pop_ss[] = { 0x66u,0x17u };
     static const lib_u8 selector_nonpresent[] = { 0x18u,0,0,0 };
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     for (index = 0u; index < sizeof(failures) / sizeof(failures[0]); ++index) {
         lib_u8 code[] = { 0xb8u,0,0,0,0,0x8eu,failures[index].mov_modrm };
@@ -865,7 +866,7 @@ static C_INT segment_test_protected_sreg_failures(C_VOID)
         const t_cpu_data_sreg *before_sreg;
         const t_cpu_data_sreg *after_sreg;
         lib_u8 access = 0u;
-        C_INT case_failed;
+        lib_i32 case_failed;
 
         code[1u] = (lib_u8)failures[index].selector;
         code[2u] = (lib_u8)(failures[index].selector >> 8u);
@@ -881,10 +882,10 @@ static C_INT segment_test_protected_sreg_failures(C_VOID)
             before.data.esp != after.data.esp ||
             before.data.eflags != after.data.eflags ||
             !test_core_machine_fixture_read_linear(state.machine,
-                failures[index].access_address, TYPE_REFERENCE_OF(access),
+                failures[index].access_address, CORE_MACHINE_REFERENCE_OF(access),
                 sizeof(access)) ||
             access != failures[index].access_value;
-        if (case_failed) STD_FPRINTF(STD_STDERR,
+        if (case_failed) fprintf(stderr,
             "M5:T301:SEGMENT-SELECTOR mov-fail index=%u selector=%04x access=%02x esp=%08x/%08x flags=%08x/%08x\n",
             (unsigned)index, failures[index].selector, access, before.data.esp,
             after.data.esp, before.data.eflags, after.data.eflags);
@@ -902,7 +903,7 @@ static C_INT segment_test_protected_sreg_failures(C_VOID)
         const t_cpu_data_sreg *before_sreg;
         const t_cpu_data_sreg *after_sreg;
         lib_u8 access = 0u;
-        C_INT case_failed;
+        lib_i32 case_failed;
 
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !segment_boot_protected(&state)) return 1;
@@ -919,9 +920,9 @@ static C_INT segment_test_protected_sreg_failures(C_VOID)
             before.data.esp != after.data.esp ||
             before.data.eflags != after.data.eflags ||
             !test_core_machine_fixture_read_linear(state.machine,
-                SEG_GDT_ADDRESS + 29u, TYPE_REFERENCE_OF(access),
+                SEG_GDT_ADDRESS + 29u, CORE_MACHINE_REFERENCE_OF(access),
                 sizeof(access)) || access != 0x12u;
-        if (case_failed) STD_FPRINTF(STD_STDERR,
+        if (case_failed) fprintf(stderr,
             "M5:T301:SEGMENT-SELECTOR pop-fail index=%u access=%02x esp=%08x/%08x flags=%08x/%08x\n",
             (unsigned)index, access, before.data.esp, after.data.esp,
             before.data.eflags, after.data.eflags);
@@ -931,7 +932,7 @@ static C_INT segment_test_protected_sreg_failures(C_VOID)
     return failed;
 }
 
-static C_INT segment_test_protected_selector_forms(C_VOID)
+static lib_i32 segment_test_protected_selector_forms(void)
 {
     static const lib_u8 lar_code[] = {
         0xb8u,0x10u,0x00u,0x00u,0x00u,0x0fu,0x02u,0xc0u,0xf4u
@@ -954,51 +955,51 @@ static C_INT segment_test_protected_selector_forms(C_VOID)
     };
     segment_machine state;
     t_cpu cpu;
-    C_INT failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, lar_code, sizeof(lar_code), SEG_CODE_ADDRESS,
             &cpu) || cpu.data.eax != 0x00409300u ||
-        !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+        !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
     core_machine_destroy(state.machine);
     state.machine = LIB_NULL;
     if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, lsl_code, sizeof(lsl_code), SEG_CODE_ADDRESS,
             &cpu) || cpu.data.eax != 0x0000ffffu ||
-        !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+        !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
     core_machine_destroy(state.machine);
     state.machine = LIB_NULL;
     if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, lar16_code, sizeof(lar16_code), SEG_CODE_ADDRESS,
             &cpu) || cpu.data.eax != 0xabcd9300u ||
-        !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+        !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
     core_machine_destroy(state.machine);
     state.machine = LIB_NULL;
     if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, arpl_code, sizeof(arpl_code), SEG_CODE_ADDRESS,
             &cpu) || (cpu.data.eax & 0xffffu) != 0x0003u ||
-        !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+        !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
     core_machine_destroy(state.machine);
     state.machine = LIB_NULL;
     if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, verr_code, sizeof(verr_code), SEG_CODE_ADDRESS,
-            &cpu) || !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+            &cpu) || !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
     core_machine_destroy(state.machine);
     state.machine = LIB_NULL;
     if (!failed) failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
     if (!failed) failed |= !segment_boot_protected(&state) ||
         !segment_run_halt(&state, verw_code, sizeof(verw_code), SEG_CODE_ADDRESS,
-            &cpu) || !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+            &cpu) || !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
     core_machine_destroy(state.machine);
     state.machine = LIB_NULL;
     return failed;
 }
 
-static C_INT segment_test_selector_query_edges(C_VOID)
+static lib_i32 segment_test_selector_query_edges(void)
 {
     static const lib_u8 lsl16_code[] = {
         0xb8u,0x10u,0x00u,0xcdu,0xabu,0x66u,0x0fu,0x03u,0xc0u,0xf4u
@@ -1060,9 +1061,9 @@ static C_INT segment_test_selector_query_edges(C_VOID)
         0xabcd0018u,0xabcd0018u,0x00408900u,0x0000ffffu,0xabcd0033u,
         0xabcd0033u,0x00000020u,0x00000020u,0x00000018u,0x00000018u,
         0x00000010u,0x00000010u };
-    const C_INT expected_zf[] = { 1,0,0,0,0,1,1,0,0,0,0,0,0,1,1 };
+    const lib_i32 expected_zf[] = { 1,0,0,0,0,1,1,0,0,0,0,0,0,1,1 };
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     for (index = 0u; index < sizeof(codes) / sizeof(codes[0]); ++index) {
         segment_machine state;
@@ -1070,7 +1071,7 @@ static C_INT segment_test_selector_query_edges(C_VOID)
         t_cpu cpu;
         lib_u8 system_access = 0u;
         lib_u8 nonpresent_access = 0u;
-        C_INT case_failed;
+        lib_i32 case_failed;
 
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !segment_boot_protected(&state)) return 1;
@@ -1080,7 +1081,7 @@ static C_INT segment_test_selector_query_edges(C_VOID)
                 data_selector, sizeof(data_selector));
         case_failed = !segment_run_halt(&state, codes[index], sizes[index],
             SEG_CODE_ADDRESS, &cpu) || cpu.data.eax != expected_eax[index] ||
-            !!TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF) != expected_zf[index];
+            !!CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF) != expected_zf[index];
         case_failed |= cpu.data.esp != before.data.esp ||
             (cpu.data.eflags & ~VCPU_EFLAGS_ZF) !=
                 (before.data.eflags & ~VCPU_EFLAGS_ZF) ||
@@ -1090,15 +1091,15 @@ static C_INT segment_test_selector_query_edges(C_VOID)
             lib_memory_compare(&cpu.data.fs, &before.data.fs, sizeof(cpu.data.fs)) != 0 ||
             lib_memory_compare(&cpu.data.gs, &before.data.gs, sizeof(cpu.data.gs)) != 0;
         case_failed |= !test_core_machine_fixture_read_linear(state.machine,
-                SEG_GDT_ADDRESS + 45u, TYPE_REFERENCE_OF(system_access),
+                SEG_GDT_ADDRESS + 45u, CORE_MACHINE_REFERENCE_OF(system_access),
                 sizeof(system_access)) || system_access != 0x80u ||
             !test_core_machine_fixture_read_linear(state.machine,
-                SEG_GDT_ADDRESS + 29u, TYPE_REFERENCE_OF(nonpresent_access),
+                SEG_GDT_ADDRESS + 29u, CORE_MACHINE_REFERENCE_OF(nonpresent_access),
                 sizeof(nonpresent_access)) || nonpresent_access != 0x12u;
-        if (case_failed) STD_FPRINTF(STD_STDERR,
+        if (case_failed) fprintf(stderr,
             "M5:T301:SEGMENT-SELECTOR query-edge index=%u eax=%08x zf=%d/%d sys=%02x np=%02x\n",
             (unsigned)index, cpu.data.eax,
-            !!TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF), expected_zf[index],
+            !!CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF), expected_zf[index],
             system_access, nonpresent_access);
         failed |= case_failed;
         core_machine_destroy(state.machine);
@@ -1106,7 +1107,7 @@ static C_INT segment_test_selector_query_edges(C_VOID)
     return failed;
 }
 
-static C_INT segment_test_rejected_forms(C_VOID)
+static lib_i32 segment_test_rejected_forms(void)
 {
     static const lib_u8 mov_cs[] = { 0x8eu,0xc8u };
     static const lib_u8 mov_from_fs[] = { 0x8cu,0xe0u };
@@ -1142,7 +1143,7 @@ static C_INT segment_test_rejected_forms(C_VOID)
     };
     lib_size profile_index;
     lib_size program_index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     for (profile_index = 0u; profile_index < sizeof(profiles) / sizeof(profiles[0]);
          ++profile_index) {
@@ -1160,10 +1161,10 @@ static C_INT segment_test_rejected_forms(C_VOID)
                 sizes[program_index]);
             failed |= core_machine_run(state.machine,
                 (const core_machine_run_budget){ 8u, 0u }, &result) !=
-                    TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+                    LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT;
             failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                    TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                    LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
             core_machine_destroy(state.machine);
         }
@@ -1171,7 +1172,7 @@ static C_INT segment_test_rejected_forms(C_VOID)
     return failed;
 }
 
-static C_INT segment_test_pop_fault_atomicity(C_VOID)
+static lib_i32 segment_test_pop_fault_atomicity(void)
 {
     static const lib_u8 pop_fs[] = { 0x66u,0x0fu,0xa1u };
     static const lib_u8 selector[] = { 0x18u,0x00u,0,0 };
@@ -1181,7 +1182,7 @@ static C_INT segment_test_pop_fault_atomicity(C_VOID)
     segment_machine state;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) failed |= !segment_boot_protected(&state);
     if (!failed) {
@@ -1191,11 +1192,11 @@ static C_INT segment_test_pop_fault_atomicity(C_VOID)
             sizeof(selector)) || !segment_write(&state, SEG_CODE_ADDRESS, pop_fs,
             sizeof(pop_fs));
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
-        failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_FAULT ||
+        failed |= core_machine_run(state.machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+            LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             diagnostic.first_fault.exception_code != 0u;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.esp != before.data.esp ||
@@ -1205,7 +1206,7 @@ static C_INT segment_test_pop_fault_atomicity(C_VOID)
     return failed;
 }
 
-static C_INT segment_test_metadata(C_VOID)
+static lib_i32 segment_test_metadata(void)
 {
     core_machine_cpu_instruction_metadata verr =
         core_machine_cpu_instruction_metadata_get(CORE_MACHINE_CPU_INSTRUCTION_0F,
@@ -1222,33 +1223,33 @@ static C_INT segment_test_metadata(C_VOID)
         verw.minimum_cpu != CORE_MACHINE_CPU_PROFILE_80286;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT real_loads = segment_test_real_load_forms();
-    C_INT protected_286 = segment_test_80286_protected_legal_forms();
-    C_INT protected_286_rejections =
+    lib_i32 real_loads = segment_test_real_load_forms();
+    lib_i32 protected_286 = segment_test_80286_protected_legal_forms();
+    lib_i32 protected_286_rejections =
         segment_test_80286_protected_cache_rejections();
-    C_INT lxs_memory_only = segment_test_lxs_memory_only();
-    C_INT lxs_atomicity = segment_test_lxs_fault_atomicity();
-    C_INT real_sregs = segment_test_real_sreg_loads();
-    C_INT protected_sregs = segment_test_protected_sreg_success();
-    C_INT protected_sreg_failures = segment_test_protected_sreg_failures();
-    C_INT protected_forms = segment_test_protected_selector_forms();
-    C_INT query_edges = segment_test_selector_query_edges();
-    C_INT rejected = segment_test_rejected_forms();
-    C_INT atomicity = segment_test_pop_fault_atomicity();
-    C_INT metadata = segment_test_metadata();
+    lib_i32 lxs_memory_only = segment_test_lxs_memory_only();
+    lib_i32 lxs_atomicity = segment_test_lxs_fault_atomicity();
+    lib_i32 real_sregs = segment_test_real_sreg_loads();
+    lib_i32 protected_sregs = segment_test_protected_sreg_success();
+    lib_i32 protected_sreg_failures = segment_test_protected_sreg_failures();
+    lib_i32 protected_forms = segment_test_protected_selector_forms();
+    lib_i32 query_edges = segment_test_selector_query_edges();
+    lib_i32 rejected = segment_test_rejected_forms();
+    lib_i32 atomicity = segment_test_pop_fault_atomicity();
+    lib_i32 metadata = segment_test_metadata();
 
     if (real_loads || protected_286 || protected_286_rejections || lxs_memory_only || lxs_atomicity || real_sregs || protected_sregs ||
         protected_sreg_failures || protected_forms || query_edges || rejected ||
         atomicity || metadata) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T301:SEGMENT-SELECTOR:FAIL real=%d protected-286=%d protected-286-reject=%d lxs=%d lxs-atomic=%d sreg-real=%d sreg-protected=%d sreg-fault=%d protected=%d query=%d rejected=%d atomic=%d metadata=%d\n",
             real_loads, protected_286, protected_286_rejections, lxs_memory_only, lxs_atomicity, real_sregs, protected_sregs,
             protected_sreg_failures, protected_forms, query_edges, rejected,
             atomicity, metadata);
         return 1;
     }
-    STD_PRINTF("M5:T301:SEGMENT-SELECTOR:OK\n");
+    printf("M5:T301:SEGMENT-SELECTOR:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "lib/storage/file_interface.h"
 
@@ -9,12 +9,12 @@
 #include "support/common_machine_fixture.h"
 #include "support/rom/session_assets.h"
 
-static C_INT vm_machine_media_create_floppy(const C_CHAR *path)
+static lib_i32 vm_machine_media_create_floppy(const char *path)
 {
     lib_storage_file_writer *writer = LIB_NULL;
     static const lib_u8 zeroes[4096u];
     lib_size remaining = 1440u * 1024u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     if (path == LIB_NULL || lib_storage_file_writer_open(path,
             LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) != LIB_STATUS_OK) return -1;
@@ -28,11 +28,11 @@ static C_INT vm_machine_media_create_floppy(const C_CHAR *path)
         remaining -= chunk;
     }
     if (lib_storage_file_writer_close(writer) != LIB_STATUS_OK) failed = 1;
-    if (failed) (C_VOID)remove(path);
+    if (failed) (void)remove(path);
     return failed ? -1 : 0;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine_config config = {
         .create_fdd = 1,
@@ -40,15 +40,15 @@ C_INT main(C_VOID)
     };
     vm_machine *session = LIB_NULL;
     lib_u64 fdd_generation;
-    static const C_CHAR floppy_path[] = "t531-media-lifecycle.img";
-    C_INT failed = 0;
+    static const char floppy_path[] = "t531-media-lifecycle.img";
+    lib_i32 failed = 0;
 
     if (vm_machine_media_create_floppy(floppy_path) != 0) return 1;
-    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
-        session == LIB_NULL || vm_test_common_machine_bind(session) != TYPE_STATUS_OK) {
+    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
+        session == LIB_NULL || vm_test_common_machine_bind(session) != LIB_STATUS_OK) {
         vm_test_common_machine_unbind(session);
         vm_machine_destroy(session);
-        (C_VOID)remove(floppy_path);
+        (void)remove(floppy_path);
         return 1;
     }
     fdd_generation = session->fdd.connect.media_generation;
@@ -69,8 +69,8 @@ C_INT main(C_VOID)
         session->retained_config.floppy_image[0u] != LIB_NULL;
     vm_test_common_machine_unbind(session);
     vm_machine_destroy(session);
-    (C_VOID)remove(floppy_path);
+    (void)remove(floppy_path);
     if (failed) return 1;
-    STD_PRINTF("M5:T404:S3:MEDIA-LIFECYCLE:OK\n");
+    printf("M5:T404:S3:MEDIA-LIFECYCLE:OK\n");
     return 0;
 }

@@ -2,7 +2,6 @@
 #define CORE_MACHINE_ENTRY_PLAN_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/memory_interface.h"
 
@@ -46,7 +45,7 @@ typedef struct core_machine_entry_plan {
     lib_size preload_count;
 } core_machine_entry_plan;
 
-type_status core_machine_apply_entry_plan(core_machine *machine,
+lib_status core_machine_apply_entry_plan(core_machine *machine,
     const core_machine_entry_plan *plan);
 
 #ifdef __cplusplus

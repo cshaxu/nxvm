@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/memory.h"
@@ -10,23 +10,23 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
-static C_INT t386_s11_session_route(const vm_machine *session,
+static lib_i32 t386_s11_session_route(const vm_machine *session,
     lib_u32 physical, core_machine_memory_route expected)
 {
     core_machine_memory_route route;
 
     return core_machine_memory_query_physical(&session->core_machine->executor_memory,
-        physical, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) == TYPE_STATUS_OK &&
+        physical, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) == LIB_STATUS_OK &&
         route == expected;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=
-        TYPE_STATUS_OK || session == LIB_NULL;
+        LIB_STATUS_OK || session == LIB_NULL;
     if (!failed) {
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
@@ -40,13 +40,13 @@ C_INT main(C_VOID)
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
         /* Display enable suppresses presentation, not the CPU's mapped EGA
          * aperture.  Firmware clears text VRAM before it enables output. */
-        (C_VOID)core_machine_port_read(&session->core_machine->executor_port,
+        (void)core_machine_port_read(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_STATUS);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
         failed |= !t386_s11_session_route(session, 0x000a0000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
-        (C_VOID)core_machine_port_read(&session->core_machine->executor_port,
+        (void)core_machine_port_read(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_STATUS);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x20u);
@@ -80,9 +80,9 @@ C_INT main(C_VOID)
     }
     vm_machine_destroy(session);
     if (!failed) {
-        STD_PRINTF("M5:T386:S11:MODEL40-CPU-VIDEO-GATE:OK\n");
+        printf("M5:T386:S11:MODEL40-CPU-VIDEO-GATE:OK\n");
         return 0;
     }
-    STD_FPRINTF(STD_STDERR, "M5:T386:S11:MODEL40-CPU-VIDEO-GATE:FAIL\n");
+    fprintf(stderr, "M5:T386:S11:MODEL40-CPU-VIDEO-GATE:FAIL\n");
     return 1;
 }

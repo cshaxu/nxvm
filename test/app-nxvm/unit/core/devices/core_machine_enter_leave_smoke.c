@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -10,19 +11,19 @@ typedef struct enter_leave_machine
     core_machine *machine;
 } enter_leave_machine;
 
-static C_VOID enter_leave_reset(C_VOID *opaque)
+static void enter_leave_reset(void *opaque)
 {
     enter_leave_machine *state = (enter_leave_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider enter_leave_provider = {
     enter_leave_reset, LIB_NULL
 };
 
-static C_INT enter_leave_prepare(core_machine_cpu_profile profile,
+static lib_i32 enter_leave_prepare(core_machine_cpu_profile profile,
     enter_leave_machine *state)
 {
     const core_machine_config config = {
@@ -37,7 +38,7 @@ static C_INT enter_leave_prepare(core_machine_cpu_profile profile,
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_VOID enter_leave_seed(enter_leave_machine *state)
+static void enter_leave_seed(enter_leave_machine *state)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -53,7 +54,7 @@ static C_VOID enter_leave_seed(enter_leave_machine *state)
         VCPU_EFLAGS_IF;
 }
 
-static C_INT enter_leave_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 enter_leave_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
         sizeof(before->data.es)) == 0 && lib_memory_compare(&before->data.cs,
@@ -65,7 +66,7 @@ static C_INT enter_leave_sregs_same(const t_cpu *before, const t_cpu *after)
         &before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT enter_leave_cpu_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 enter_leave_cpu_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -80,30 +81,30 @@ static C_INT enter_leave_cpu_same(const t_cpu *before, const t_cpu *after)
         enter_leave_sregs_same(before, after);
 }
 
-static C_INT enter_leave_read(enter_leave_machine *state, lib_u32 address,
+static lib_i32 enter_leave_read(enter_leave_machine *state, lib_u32 address,
     lib_u8 width, lib_u32 *value)
 {
     *value = 0u;
     return core_machine_memory_read_physical(&state->machine->executor_memory,
-        address, TYPE_REFERENCE_OF(*value), width) == TYPE_STATUS_OK;
+        address, CORE_MACHINE_REFERENCE_OF(*value), width) == LIB_STATUS_OK;
 }
 
-static C_INT enter_leave_run(enter_leave_machine *state, const lib_u8 *code,
+static lib_i32 enter_leave_run(enter_leave_machine *state, const lib_u8 *code,
     lib_u8 bytes, core_machine_run_budget budget, t_cpu *after,
-    core_machine_cpu_diagnostic *diagnostic, type_status *status,
+    core_machine_cpu_diagnostic *diagnostic, lib_status *status,
     core_machine_run_result *result)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-        TYPE_STATUS_OK)
+        LIB_STATUS_OK)
         return 0;
 
     *status = core_machine_run(state->machine, budget, result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT enter_leave_expect_image(enter_leave_machine *state,
+static lib_i32 enter_leave_expect_image(enter_leave_machine *state,
     lib_u32 address, lib_u8 width, lib_u32 expected)
 {
     lib_u32 observed;
@@ -112,23 +113,23 @@ static C_INT enter_leave_expect_image(enter_leave_machine *state,
         (width == 2u ? (expected & 0xffffu) : expected);
 }
 
-static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
+static lib_i32 enter_leave_test_enter(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes, lib_u8 width, lib_u16 allocation,
-    lib_u8 level, C_INT stack32)
+    lib_u8 level, lib_i32 stack32)
 {
     enter_leave_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u32 old_stack;
     lib_u32 frame;
     lib_u32 final_stack;
     lib_u32 display0 = 0x11112222u;
     lib_u32 display1 = 0x33334444u;
     lib_u8 effective_level = level;
-    C_INT failed = !enter_leave_prepare(profile, &state);
+    lib_i32 failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
     {
@@ -149,15 +150,15 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
                 state.machine->executor_cpu.data.ebp;
 
             failed |= core_machine_memory_write(state.machine, source - width,
-                &display0, width) != TYPE_STATUS_OK;
+                &display0, width) != LIB_STATUS_OK;
             if (effective_level > 2u)
                 failed |= core_machine_memory_write(state.machine,
-                    source - 2u * width, &display1, width) != TYPE_STATUS_OK;
+                    source - 2u * width, &display1, width) != LIB_STATUS_OK;
         }
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !enter_leave_run(&state, code, bytes,
             (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,
-            &result) || status != TYPE_STATUS_OK || result.reason !=
+            &result) || status != LIB_STATUS_OK || result.reason !=
             CORE_MACHINE_STOP_BUDGET || diagnostic.first_fault.valid ||
             after.data.eip != bytes || after.data.eax != before.data.eax ||
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
@@ -197,18 +198,18 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT enter_leave_test_leave(core_machine_cpu_profile profile,
-    const lib_u8 *code, lib_u8 bytes, lib_u8 width, C_INT stack32)
+static lib_i32 enter_leave_test_leave(core_machine_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes, lib_u8 width, lib_i32 stack32)
 {
     enter_leave_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u32 old_bp = width == 2u ? 0xface4321u : 0xface4321u;
     lib_u32 frame = stack32 ? 0x00008020u : 0x00008020u;
-    C_INT failed = !enter_leave_prepare(profile, &state);
+    lib_i32 failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
     {
@@ -218,11 +219,11 @@ static C_INT enter_leave_test_leave(core_machine_cpu_profile profile,
         state.machine->executor_cpu.data.ebp = width == 2u ? 0xe1e28020u :
             frame;
         failed |= core_machine_memory_write(state.machine, frame, &old_bp,
-            width) != TYPE_STATUS_OK;
+            width) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !enter_leave_run(&state, code, bytes,
             (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,
-            &result) || status != TYPE_STATUS_OK || result.reason !=
+            &result) || status != LIB_STATUS_OK || result.reason !=
             CORE_MACHINE_STOP_BUDGET || diagnostic.first_fault.valid ||
             after.data.eip != bytes || after.data.eax != before.data.eax ||
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
@@ -245,7 +246,7 @@ static C_INT enter_leave_test_leave(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT enter_leave_test_defaults(C_VOID)
+static lib_i32 enter_leave_test_defaults(void)
 {
     static const core_machine_cpu_profile supported[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
@@ -285,7 +286,7 @@ static C_INT enter_leave_test_defaults(C_VOID)
     return 1;
 }
 
-static C_INT enter_leave_test_attributes(C_VOID)
+static lib_i32 enter_leave_test_attributes(void)
 {
     static const lib_u8 enter32[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
     static const lib_u8 leave32[] = {0x66u, 0xc9u};
@@ -316,7 +317,7 @@ static C_INT enter_leave_test_attributes(C_VOID)
     return 1;
 }
 
-static C_INT enter_leave_test_reject_case(core_machine_cpu_profile profile,
+static lib_i32 enter_leave_test_reject_case(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     enter_leave_machine state;
@@ -324,25 +325,25 @@ static C_INT enter_leave_test_reject_case(core_machine_cpu_profile profile,
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u32 image = 0xdecafbad;
     lib_u32 observed;
-    C_INT failed = !enter_leave_prepare(profile, &state);
+    lib_i32 failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
     {
         enter_leave_seed(&state);
         failed |= core_machine_memory_write(state.machine, 0x7ff0u, &image,
-            sizeof(image)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x8000u, &image, sizeof(image)) != TYPE_STATUS_OK;
+            sizeof(image)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x8000u, &image, sizeof(image)) != LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !enter_leave_run(&state, code, bytes,
             (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,
-            &result) || status != TYPE_STATUS_FAULT || result.reason !=
+            &result) || status != LIB_STATUS_INTERNAL_ERROR || result.reason !=
             CORE_MACHINE_STOP_FAULT || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
             VCPUINS_EXCEPT_UD) || !enter_leave_cpu_same(&before, &after) ||
             !enter_leave_read(&state, 0x7ff0u, sizeof(image), &observed) ||
             observed != image || !enter_leave_read(&state, 0x8000u,
@@ -352,7 +353,7 @@ static C_INT enter_leave_test_reject_case(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT enter_leave_test_rejections(C_VOID)
+static lib_i32 enter_leave_test_rejections(void)
 {
     static const lib_u8 enter[] = {0xc8u, 0x04u, 0x00u, 0x00u};
     static const lib_u8 leave[] = {0xc9u};
@@ -403,7 +404,7 @@ static C_INT enter_leave_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT enter_leave_boot_protected(enter_leave_machine *state)
+static lib_i32 enter_leave_boot_protected(enter_leave_machine *state)
 {
     static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
     static const lib_u8 gdt[] = {
@@ -422,17 +423,17 @@ static C_INT enter_leave_boot_protected(enter_leave_machine *state)
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x0100u, pointer,
-        sizeof(pointer)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x0300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
+        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x0300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, bootstrap,
-        sizeof(bootstrap)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x2000u, halt, sizeof(halt)) == TYPE_STATUS_OK &&
+        sizeof(bootstrap)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x2000u, halt, sizeof(halt)) == LIB_STATUS_OK &&
         core_machine_run(state->machine, (core_machine_run_budget){96u, 0u},
-        &result) == TYPE_STATUS_OK && result.reason ==
+        &result) == LIB_STATUS_OK && result.reason ==
         CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT enter_leave_test_protected_stack32(C_VOID)
+static lib_i32 enter_leave_test_protected_stack32(void)
 {
     static const lib_u8 enter[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
     static const lib_u8 leave[] = {0x66u, 0xc9u};
@@ -442,7 +443,7 @@ static C_INT enter_leave_test_protected_stack32(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     lib_u32 parent = 0x11112222u;
-    C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
 
     if (!failed)
@@ -454,14 +455,14 @@ static C_INT enter_leave_test_protected_stack32(C_VOID)
         state.machine->executor_cpu.data.esp = 0x00008000u;
         state.machine->executor_cpu.data.ebp = 0x00009000u;
         failed |= core_machine_memory_write(state.machine, 0xcffcu, &parent,
-            sizeof(parent)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x2000u, enter, sizeof(enter)) != TYPE_STATUS_OK;
+            sizeof(parent)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x2000u, enter, sizeof(enter)) != LIB_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
-            &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= diagnostic.first_fault.valid || after.data.eip != sizeof(enter) ||
             after.data.eax != before.data.eax || after.data.ecx != before.data.ecx ||
@@ -475,14 +476,14 @@ static C_INT enter_leave_test_protected_stack32(C_VOID)
         if (!failed)
         {
             failed |= core_machine_memory_write(state.machine, 0x2000u, leave,
-                sizeof(leave)) != TYPE_STATUS_OK;
+                sizeof(leave)) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){1u, 0u}, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= diagnostic.first_fault.valid || after.data.eip != sizeof(leave) ||
                 after.data.eax != before.data.eax || after.data.ecx != before.data.ecx ||
@@ -497,7 +498,7 @@ static C_INT enter_leave_test_protected_stack32(C_VOID)
     return !failed;
 }
 
-static C_INT enter_leave_test_protected_faults(C_VOID)
+static lib_i32 enter_leave_test_protected_faults(void)
 {
     static const lib_u8 enter[] = {0xc8u, 0x00u, 0x00u, 0x03u};
     static const lib_u8 leave[] = {0xc9u};
@@ -506,11 +507,11 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u16 stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
         0xeeeeu};
     lib_u32 value;
-    C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
 
     if (!failed)
@@ -524,21 +525,21 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
         stack_image[0] = 0x1111u;
         stack_image[1] = 0x2222u;
         failed |= core_machine_memory_write(state.machine, 0xcffeu,
-            &stack_image[0], sizeof(lib_u16)) != TYPE_STATUS_OK ||
+            &stack_image[0], sizeof(lib_u16)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0xcffcu, &stack_image[1],
-            sizeof(lib_u16)) != TYPE_STATUS_OK || core_machine_memory_write(
+            sizeof(lib_u16)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x4018u, &stack_image[2], sizeof(lib_u16)) !=
-            TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
-            enter, sizeof(enter)) != TYPE_STATUS_OK;
+            LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
+            enter, sizeof(enter)) != LIB_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         status = core_machine_run(state.machine,
             (core_machine_run_budget){1u, 0u}, &result);
-        failed |= status != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
+        failed |= status != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             !enter_leave_cpu_same(&before, &after) ||
             !enter_leave_expect_image(&state, 0x401eu, 2u,
@@ -560,16 +561,16 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
         state.machine->executor_cpu.data.ss.limit = 0x1fu;
         state.machine->executor_cpu.data.ebp = 0xe1e20020u;
         failed |= core_machine_memory_write(state.machine, 0x4020u, stack_image,
-            sizeof(lib_u16)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x2000u, leave, sizeof(leave)) != TYPE_STATUS_OK;
+            sizeof(lib_u16)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x2000u, leave, sizeof(leave)) != LIB_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
-            &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
+            &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             !enter_leave_cpu_same(&before, &after) || !enter_leave_read(&state,
             0x4020u, 2u, &value) || value != stack_image[0];
@@ -578,7 +579,7 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
     return !failed;
 }
 
-static C_INT enter_leave_test_irq_no_shadow(C_VOID)
+static lib_i32 enter_leave_test_irq_no_shadow(void)
 {
     static const lib_u8 codes[][5] = {
         {0xc8u, 0x04u, 0x00u, 0x00u, 0x90u},
@@ -599,7 +600,7 @@ static C_INT enter_leave_test_irq_no_shadow(C_VOID)
         lib_u16 segment = 0u;
         lib_u16 frame_ip = 0u;
         lib_u16 old_bp = 0x4567u;
-        C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed)
@@ -609,14 +610,14 @@ static C_INT enter_leave_test_irq_no_shadow(C_VOID)
             {
                 state.machine->executor_cpu.data.ebp = 0xe1e28020u;
                 failed |= core_machine_memory_write(state.machine, 0x8020u,
-                    &old_bp, sizeof(old_bp)) != TYPE_STATUS_OK;
+                    &old_bp, sizeof(old_bp)) != LIB_STATUS_OK;
             }
             failed |= core_machine_memory_write(state.machine, 0u, codes[form],
-                bytes[form]) != TYPE_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x80u, &offset, sizeof(offset)) != TYPE_STATUS_OK ||
+                bytes[form]) != LIB_STATUS_OK || core_machine_memory_write(
+                state.machine, 0x80u, &offset, sizeof(offset)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x82u, &segment,
-                sizeof(segment)) != TYPE_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x100u, &halt, sizeof(halt)) != TYPE_STATUS_OK;
+                sizeof(segment)) != LIB_STATUS_OK || core_machine_memory_write(
+                state.machine, 0x100u, &halt, sizeof(halt)) != LIB_STATUS_OK;
         }
         if (!failed)
         {
@@ -630,15 +631,15 @@ static C_INT enter_leave_test_irq_no_shadow(C_VOID)
             core_machine_pic_irq_source_deassert(&source);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){2u, 0u}, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
+                CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != (form == 0u ? 4u : 1u) ||
-                !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
             if (form == 0u)
             {
@@ -658,39 +659,39 @@ static C_INT enter_leave_test_irq_no_shadow(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!enter_leave_test_defaults())
     {
-        STD_PRINTF("ENTER-LEAVE stage=defaults\n");
+        printf("ENTER-LEAVE stage=defaults\n");
         return 1;
     }
     if (!enter_leave_test_attributes())
     {
-        STD_PRINTF("ENTER-LEAVE stage=attributes\n");
+        printf("ENTER-LEAVE stage=attributes\n");
         return 1;
     }
     if (!enter_leave_test_rejections())
     {
-        STD_PRINTF("ENTER-LEAVE stage=rejections\n");
+        printf("ENTER-LEAVE stage=rejections\n");
         return 1;
     }
     if (!enter_leave_test_protected_stack32())
     {
-        STD_PRINTF("ENTER-LEAVE stage=protected-stack32\n");
+        printf("ENTER-LEAVE stage=protected-stack32\n");
         return 1;
     }
     if (!enter_leave_test_protected_faults())
     {
-        STD_PRINTF("ENTER-LEAVE stage=protected-faults\n");
+        printf("ENTER-LEAVE stage=protected-faults\n");
         return 1;
     }
     if (!enter_leave_test_irq_no_shadow())
     {
-        STD_PRINTF("ENTER-LEAVE stage=irq\n");
+        printf("ENTER-LEAVE stage=irq\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S43:ENTER-LEAVE:OK\n");
-    STD_PRINTF("M5:T401:S24:ENTER-LEAVE-PROFILES:OK\n");
+    printf("M5:T316:S43:ENTER-LEAVE:OK\n");
+    printf("M5:T401:S24:ENTER-LEAVE-PROFILES:OK\n");
     return 0;
 }

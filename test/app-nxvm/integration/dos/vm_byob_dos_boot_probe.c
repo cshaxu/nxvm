@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <ctype.h>
+#include <stdio.h>
 
 #include "app-nxvm/devices/debug_interface.h"
 #include <windows.h>
@@ -44,7 +45,7 @@ typedef struct vm_byob_fdc_port_event {
     lib_u32 linear_pc;
     lib_u16 port;
     lib_u8 value;
-    type_bool write;
+    lib_u8 write;
 } vm_byob_fdc_port_event;
 
 typedef struct vm_byob_boot_trace {
@@ -94,7 +95,7 @@ typedef struct vm_byob_boot_trace {
     lib_u16 last_pushf_high;
     lib_u8 int6_vector_write_bytes[4];
     lib_u8 int6_vector_write_mask;
-    type_bool int6_pre_fault_snapshot_valid;
+    lib_u8 int6_pre_fault_snapshot_valid;
     lib_u16 int6_pre_fault_offset;
     lib_u16 int6_pre_fault_segment;
     core_machine_cpu_execution_point near_ud_history[VM_BYOB_NEAR_UD_HISTORY];
@@ -102,14 +103,14 @@ typedef struct vm_byob_boot_trace {
     lib_u32 near_ud_eax[VM_BYOB_NEAR_UD_HISTORY];
     lib_u32 near_ud_ebx[VM_BYOB_NEAR_UD_HISTORY];
     lib_u64 near_ud_count;
-    type_bool real_286_high_flags_observed;
+    lib_u8 real_286_high_flags_observed;
     core_machine_cpu_execution_point real_286_high_flags_point;
     lib_u32 real_286_high_flags_value;
-    type_bool boot_loader_jz_observed;
+    lib_u8 boot_loader_jz_observed;
     core_machine_retirement_control_outcome boot_loader_jz_outcome;
     lib_u32 boot_loader_previous_pc;
     core_machine_retirement_control_outcome boot_loader_previous_outcome;
-    type_bool boot_loader_error_observed;
+    lib_u8 boot_loader_error_observed;
     lib_u16 boot_loader_ds;
     lib_u16 boot_loader_es;
     lib_u16 boot_loader_si;
@@ -118,7 +119,7 @@ typedef struct vm_byob_boot_trace {
     lib_u16 boot_loader_flags;
     lib_u8 boot_loader_left[11];
     lib_u8 boot_loader_right[11];
-    type_bool boot_loader_read_return_observed;
+    lib_u8 boot_loader_read_return_observed;
     lib_u16 boot_loader_read_return_flags;
     lib_u8 boot_loader_int13_state[5];
     lib_u64 fdc_terminal_count;
@@ -133,11 +134,11 @@ typedef struct vm_byob_boot_trace {
     lib_u16 ibm5170_rep_stos_di;
     lib_u16 ibm5170_rep_stos_cx;
     lib_u16 ibm5170_rep_stos_ax;
-    type_bool model40_invalid_entry_observed;
+    lib_u8 model40_invalid_entry_observed;
     core_machine_cpu_execution_point model40_invalid_entry_source;
     lib_u16 model40_invalid_entry_ss;
     lib_u16 model40_invalid_entry_sp;
-    type_bool model40_int10_vector_write_observed;
+    lib_u8 model40_int10_vector_write_observed;
     lib_u64 model40_int10_vector_write_count;
     lib_u32 model40_int10_vector_write_pc;
     lib_u16 model40_int10_vector_write_cs;
@@ -155,7 +156,7 @@ typedef struct vm_byob_boot_trace {
     lib_u32 model40_int10_entry_predecessor;
     lib_u16 model40_int10_entry_ss;
     lib_u16 model40_int10_entry_sp;
-    type_bool model40_int10_iret_frame_observed;
+    lib_u8 model40_int10_iret_frame_observed;
     lib_u64 model40_int10_iret_frame_count;
     lib_u32 model40_int10_iret_frame_pc;
     lib_u16 model40_int10_iret_ss;
@@ -163,10 +164,10 @@ typedef struct vm_byob_boot_trace {
     lib_u32 model40_int10_iret_esp;
     lib_u32 model40_int10_iret_ss_base;
     lib_u32 model40_int10_iret_ss_limit;
-    type_bool model40_int10_iret_ss_big;
-    type_bool model40_int10_iret_cs_default_32;
+    lib_u8 model40_int10_iret_ss_big;
+    lib_u8 model40_int10_iret_cs_default_32;
     lib_u16 model40_int10_iret_words[4u];
-    type_bool model40_bios_iret_frame_observed;
+    lib_u8 model40_bios_iret_frame_observed;
     lib_u16 model40_bios_iret_ss;
     lib_u16 model40_bios_iret_sp;
     lib_u16 model40_bios_iret_words[4u];
@@ -193,7 +194,7 @@ typedef struct vm_byob_boot_trace {
     lib_u8 kbc_self_test_input_count;
     lib_u8 kbc_self_test_jne_outcomes[4u];
     lib_u8 kbc_self_test_jne_count;
-    type_bool kbc_keyboard_reset_seen;
+    lib_u8 kbc_keyboard_reset_seen;
     lib_u8 kbc_keyboard_reset_read_count;
     vm_byob_fdc_port_event kbc_keyboard_reset_reads[4u];
     lib_u8 kbc_reset_xmit_status_count;
@@ -209,7 +210,7 @@ typedef struct vm_byob_boot_trace {
     lib_u16 kbc_reset_jcxz_cx;
     lib_u8 kbc_reset_loop_outcome;
     lib_u8 kbc_reset_jcxz_outcome;
-    type_bool kbc_reset_xmit_output_seen;
+    lib_u8 kbc_reset_xmit_output_seen;
     lib_u8 kbc_reset_xmit_output;
     lib_u8 kbc_reset_xmit_path_count;
     lib_u32 kbc_reset_xmit_path[8u];
@@ -223,9 +224,9 @@ typedef struct vm_byob_boot_trace {
     lib_u16 model40_resume_ax;
     lib_u64 model40_reset_vector_target_entries;
     lib_u32 model40_reset_vector_target_predecessor;
-    type_bool model40_shutdown_diagnostic_valid;
+    lib_u8 model40_shutdown_diagnostic_valid;
     core_machine_cpu_diagnostic model40_shutdown_diagnostic;
-    type_bool model40_protected_transition_observed;
+    lib_u8 model40_protected_transition_observed;
     lib_u8 model40_gdt[32];
     lib_u8 model40_gdtr_pointer[6];
     lib_u64 model40_post_setup_entries;
@@ -276,7 +277,7 @@ typedef struct vm_byob_boot_trace {
     lib_u64 model40_memory_test_entries;
     lib_u16 model40_memory_test_dx;
     lib_u16 model40_memory_test_ax_entry;
-    type_bool model40_memory_status_test_active;
+    lib_u8 model40_memory_status_test_active;
     lib_u16 model40_memory_status_test_ax_entry;
     lib_u64 model40_memory_status_test_mismatches;
     lib_u16 model40_memory_status_test_expected;
@@ -288,7 +289,7 @@ typedef struct vm_byob_boot_trace {
     lib_u16 model40_memory_status_test_gdtr_limit;
     lib_u8 model40_memory_status_test_descriptor[8u];
     lib_u32 model40_memory_status_test_cr0;
-    type_bool model40_memory_status_test_video_memory_disabled;
+    lib_u8 model40_memory_status_test_video_memory_disabled;
     lib_u8 model40_memory_status_test_graphics_6;
     lib_u8 model40_memory_status_test_sequencer_0;
     lib_u8 model40_memory_status_test_high_b_page[
@@ -296,7 +297,7 @@ typedef struct vm_byob_boot_trace {
     lib_u64 model40_memory_high_b_page_writes;
     lib_u32 model40_memory_high_b_page_first_pc;
     lib_u32 model40_memory_high_b_page_last_pc;
-    type_bool model40_memory_pattern_producer_active;
+    lib_u8 model40_memory_pattern_producer_active;
     lib_u64 model40_memory_pattern_producer_entries;
     lib_u64 model40_memory_pattern_producer_high_b_writes;
     lib_u32 model40_memory_high_b_write_pcs[
@@ -336,7 +337,7 @@ typedef struct vm_byob_boot_trace {
     lib_u64 ibm5170_refresh_diagnostic_loop_not_taken;
     lib_u64 ibm5170_refresh_diagnostic_error_branch_taken;
     lib_u16 ibm5170_refresh_diagnostic_count;
-    C_INT ibm5170_refresh_diagnostic_count_valid;
+    lib_i32 ibm5170_refresh_diagnostic_count_valid;
     lib_u64 model40_memory_compare_error_branches;
     lib_u64 model40_memory_parity_error_branches;
     lib_u64 model40_memory_parity_test_reads;
@@ -393,7 +394,7 @@ typedef struct vm_byob_boot_trace {
     lib_u16 model40_memory_b_first_word_last_value;
     lib_u8 model40_memory_b_first_word_graphics_6;
     lib_u8 model40_memory_b_first_word_sequencer_0;
-    type_bool model40_memory_b_first_word_video_memory_disabled;
+    lib_u8 model40_memory_b_first_word_video_memory_disabled;
     lib_u64 model40_retirements;
     lib_u16 model40_last_es_selector;
     lib_u32 model40_last_es_base;
@@ -415,9 +416,9 @@ typedef struct vm_byob_boot_trace {
     lib_u32 model40_memory_pattern_write_last_address;
 } vm_byob_boot_trace;
 
-static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text);
+static lib_i32 vm_byob_text_memory_has(core_machine *machine, const char *text);
 
-static C_VOID vm_byob_fdc_port_record(vm_byob_boot_trace *trace,
+static void vm_byob_fdc_port_record(vm_byob_boot_trace *trace,
     const core_machine_trace_event *event)
 {
     vm_byob_fdc_port_event *record;
@@ -432,7 +433,7 @@ static C_VOID vm_byob_fdc_port_record(vm_byob_boot_trace *trace,
     record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
 }
 
-static C_VOID vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
+static void vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
     const core_machine_trace_event *event)
 {
     vm_byob_fdc_port_event *record;
@@ -447,7 +448,7 @@ static C_VOID vm_byob_hdc_port_record(vm_byob_boot_trace *trace,
     record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
 }
 
-static C_VOID vm_byob_fdc_terminal_observe(C_VOID *context,
+static void vm_byob_fdc_terminal_observe(void *context,
     const core_machine_fdc_terminal_observation *observation)
 {
     vm_byob_boot_trace *trace = context;
@@ -458,8 +459,8 @@ static C_VOID vm_byob_fdc_terminal_observe(C_VOID *context,
     trace->last_fdc_terminal = *observation;
 }
 
-static C_VOID vm_byob_model40_vector_write_observe(C_VOID *context,
-    lib_u32 physical, type_native_unsigned bytes)
+static void vm_byob_model40_vector_write_observe(void *context,
+    lib_u32 physical, lib_uptr bytes)
 {
     vm_byob_boot_trace *trace = context;
 
@@ -472,7 +473,7 @@ static C_VOID vm_byob_model40_vector_write_observe(C_VOID *context,
     trace->model40_int10_vector_write_cs = trace->machine->executor_cpu.data.cs.selector;
 }
 
-static C_VOID vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
+static void vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
     const core_machine_retirement_observation *observation)
 {
     vm_byob_fdc_port_event *record;
@@ -491,7 +492,7 @@ static C_VOID vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
     ++trace->fdc_port_accesses;
 }
 
-static C_VOID vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
+static void vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
     const core_machine_retirement_observation *observation)
 {
     vm_byob_fdc_port_event *record;
@@ -538,7 +539,7 @@ static C_VOID vm_byob_model40_video_retirement_record(vm_byob_boot_trace *trace,
     }
 }
 
-static C_VOID vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
+static void vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
     const core_machine_retirement_observation *observation)
 {
     lib_u8 index;
@@ -561,7 +562,7 @@ static C_VOID vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
     }
 }
 
-static C_VOID vm_byob_retirement_observe(C_VOID *context,
+static void vm_byob_retirement_observe(void *context,
     const core_machine_retirement_observation *observation)
 {
     vm_byob_boot_trace *trace = context;
@@ -647,19 +648,19 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         trace->model40_int10_iret_ss_big = trace->machine->executor_cpu.data.ss.seg.data.big;
         trace->model40_int10_iret_cs_default_32 =
             trace->machine->executor_cpu.data.cs.seg.exec.defsize;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             trace->machine->executor_cpu.data.ss.base + trace->model40_int10_iret_sp,
-            (type_virtual_address)trace->model40_int10_iret_words,
+            (lib_uptr)trace->model40_int10_iret_words,
             sizeof(trace->model40_int10_iret_words));
     }
     if (observation->point.linear_pc == 0x000fd7a6u && trace->machine != LIB_NULL) {
         trace->model40_bios_iret_frame_observed = LIB_TRUE;
         trace->model40_bios_iret_ss = trace->machine->executor_cpu.data.ss.selector;
         trace->model40_bios_iret_sp = (lib_u16)trace->machine->executor_cpu.data.esp;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             trace->machine->executor_cpu.data.ss.base +
                 (lib_u16)(trace->model40_bios_iret_sp - 6u),
-            (type_virtual_address)trace->model40_bios_iret_words,
+            (lib_uptr)trace->model40_bios_iret_words,
             sizeof(trace->model40_bios_iret_words));
     }
     if (!trace->model40_invalid_entry_observed && trace->machine != LIB_NULL &&
@@ -686,8 +687,8 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         observation->point.bytes[2u] == 0x00u && trace->machine != LIB_NULL) {
         trace->model40_protected_transition_observed =
             core_machine_memory_read(trace->machine, 0x0009f300u,
-                trace->model40_gdt, sizeof(trace->model40_gdt)) == TYPE_STATUS_OK;
-        (C_VOID)core_machine_memory_read(trace->machine, 0x000f0a13u,
+                trace->model40_gdt, sizeof(trace->model40_gdt)) == LIB_STATUS_OK;
+        (void)core_machine_memory_read(trace->machine, 0x000f0a13u,
             trace->model40_gdtr_pointer, sizeof(trace->model40_gdtr_pointer));
     }
     if ((observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ ||
@@ -842,13 +843,13 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             trace->machine->executor_cpu.data.gdtr.base;
         trace->model40_memory_status_test_gdtr_limit =
             trace->machine->executor_cpu.data.gdtr.limit;
-        (C_VOID)core_machine_memory_read(trace->machine,
+        (void)core_machine_memory_read(trace->machine,
             trace->model40_memory_status_test_gdtr_base + 0x48u,
             trace->model40_memory_status_test_descriptor,
             sizeof(trace->model40_memory_status_test_descriptor));
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             0x00fb0000u,
-            (type_virtual_address)trace->model40_memory_status_test_high_b_page,
+            (lib_uptr)trace->model40_memory_status_test_high_b_page,
             sizeof(trace->model40_memory_status_test_high_b_page));
     }
     if (observation->point.linear_pc == 0x000fbe86u) {
@@ -924,18 +925,18 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
     } else if (observation->point.linear_pc == 0x000fc043u && trace->machine != LIB_NULL) {
         ++trace->model40_memory_address_test_entries;
         trace->model40_memory_address_test_eflags = trace->machine->executor_cpu.data.eflags;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             trace->machine->executor_cpu.data.ds.base + 0x58u,
-            (type_virtual_address)&trace->model40_memory_address_test_status,
+            (lib_uptr)&trace->model40_memory_address_test_status,
             sizeof(trace->model40_memory_address_test_status));
     } else if (observation->point.linear_pc == 0x000fc04bu && trace->machine != LIB_NULL) {
         ++trace->model40_memory_address_error_entries;
         trace->model40_memory_address_error_predecessor = trace->last_linear_pc;
         trace->model40_memory_address_error_ds = trace->machine->executor_cpu.data.ds.selector;
         trace->model40_memory_address_error_ds_base = trace->machine->executor_cpu.data.ds.base;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             trace->model40_memory_address_error_ds_base + 0x58u,
-            (type_virtual_address)&trace->model40_memory_address_error_status,
+            (lib_uptr)&trace->model40_memory_address_error_status,
             sizeof(trace->model40_memory_address_error_status));
     } else if (observation->point.linear_pc == 0x000f8720u && trace->machine != LIB_NULL) {
         const lib_size history_index = (lib_size)(
@@ -961,9 +962,9 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                 (lib_u16)((trace->model40_memory_pattern_after_edi - 4u) & 0xffffu);
 
             if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
-                (C_VOID)core_machine_memory_read_physical(
+                (void)core_machine_memory_read_physical(
                     &trace->machine->executor_memory, physical,
-                    (type_virtual_address)&trace->model40_memory_pattern_after_value,
+                    (lib_uptr)&trace->model40_memory_pattern_after_value,
                     sizeof(trace->model40_memory_pattern_after_value));
             }
         }
@@ -984,14 +985,14 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         trace->model40_memory_compare_cr0 = trace->machine->executor_cpu.data.cr0;
         trace->model40_memory_compare_gdtr_base = trace->machine->executor_cpu.data.gdtr.base;
         trace->model40_memory_compare_gdtr_limit = trace->machine->executor_cpu.data.gdtr.limit;
-        (C_VOID)core_machine_memory_read(trace->machine,
+        (void)core_machine_memory_read(trace->machine,
             trace->model40_memory_compare_gdtr_base + 0x48u,
             trace->model40_memory_compare_descriptor,
             sizeof(trace->model40_memory_compare_descriptor));
         if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
-            (C_VOID)core_machine_memory_read_physical(
+            (void)core_machine_memory_read_physical(
                 &trace->machine->executor_memory, physical,
-                (type_virtual_address)&trace->model40_memory_compare_value,
+                (lib_uptr)&trace->model40_memory_compare_value,
                 sizeof(trace->model40_memory_compare_value));
         }
         ++trace->model40_memory_scas_entries;
@@ -1014,9 +1015,9 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                 (lib_u16)((trace->model40_memory_compare_edi - 2u) & 0xffffu);
 
             if (physical >= 0x00fa0000u && physical <= 0x00fffffeu) {
-                (C_VOID)core_machine_memory_read_physical(
+                (void)core_machine_memory_read_physical(
                     &trace->machine->executor_memory, physical,
-                    (type_virtual_address)&trace->model40_memory_compare_value,
+                    (lib_uptr)&trace->model40_memory_compare_value,
                     sizeof(trace->model40_memory_compare_value));
             }
         }
@@ -1034,8 +1035,8 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             trace->model40_memory_b_window_writes;
         trace->model40_memory_b_window_last_pc_at_mismatch =
             trace->model40_memory_b_window_last_pc;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory, physical,
-            (type_virtual_address)&trace->model40_memory_mismatch_value,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory, physical,
+            (lib_uptr)&trace->model40_memory_mismatch_value,
             sizeof(trace->model40_memory_mismatch_value));
         if (trace->model40_memory_status_test_active) {
             ++trace->model40_memory_status_test_mismatches;
@@ -1049,10 +1050,10 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                 trace->machine->executor_cpu.data.es.base;
             trace->model40_memory_status_test_cr0 =
                 trace->machine->executor_cpu.data.cr0;
-            (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
                 trace->model40_memory_status_test_es_base +
                     trace->model40_memory_status_test_offset,
-                (type_virtual_address)&trace->model40_memory_status_test_actual,
+                (lib_uptr)&trace->model40_memory_status_test_actual,
                 sizeof(trace->model40_memory_status_test_actual));
         }
     } else if ((observation->point.linear_pc == 0x000fbe62u ||
@@ -1075,8 +1076,8 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         observation->point.linear_pc == 0x000fc0acu) && trace->machine != LIB_NULL) {
         ++trace->model40_post_status_58_writes;
         trace->model40_post_status_58_last_pc = observation->point.linear_pc;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
-            0x00000458u, (type_virtual_address)&trace->model40_post_status_58_last_value,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00000458u, (lib_uptr)&trace->model40_post_status_58_last_value,
             sizeof(trace->model40_post_status_58_last_value));
     } else {
         lib_size post_status_index = VM_BYOB_MODEL40_POST_STATUS_WRITERS;
@@ -1101,7 +1102,7 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
                 trace->last_linear_pc;
         }
         if (observation->point.linear_pc == 0x000fc801u) {
-            (C_VOID)core_machine_memory_read(trace->machine, 0x00000412u,
+            (void)core_machine_memory_read(trace->machine, 0x00000412u,
                 &trace->model40_post_status_value, 1u);
         }
     }
@@ -1166,9 +1167,9 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
             trace->boot_loader_cx = (lib_u16)trace->machine->executor_cpu.data.ecx;
             trace->boot_loader_flags =
                 (lib_u16)trace->machine->executor_cpu.data.eflags;
-            (C_VOID)core_machine_memory_read(trace->machine, (lib_u32)ds * 16u + si,
+            (void)core_machine_memory_read(trace->machine, (lib_u32)ds * 16u + si,
                 trace->boot_loader_left, sizeof(trace->boot_loader_left));
-            (C_VOID)core_machine_memory_read(trace->machine, (lib_u32)es * 16u + di,
+            (void)core_machine_memory_read(trace->machine, (lib_u32)es * 16u + di,
                 trace->boot_loader_right, sizeof(trace->boot_loader_right));
         }
         trace->boot_loader_jz_observed = LIB_TRUE;
@@ -1183,13 +1184,13 @@ static C_VOID vm_byob_retirement_observe(C_VOID *context,
         trace->boot_loader_read_return_observed = LIB_TRUE;
         trace->boot_loader_read_return_flags =
             (lib_u16)trace->machine->executor_cpu.data.eflags;
-        (C_VOID)core_machine_memory_read(trace->machine, 0x003eu,
+        (void)core_machine_memory_read(trace->machine, 0x003eu,
             trace->boot_loader_int13_state, sizeof(trace->boot_loader_int13_state));
     }
     trace->last_linear_pc = observation->point.linear_pc;
 }
 
-static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *event)
+static void vm_byob_trace(void *context, const core_machine_trace_event *event)
 {
     vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
 
@@ -1212,10 +1213,10 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
         event->detail == CORE_MACHINE_STOP_RESET_REQUESTED && trace->machine != LIB_NULL) {
         trace->model40_shutdown_diagnostic_valid =
             core_machine_get_cpu_diagnostic(trace->machine,
-                &trace->model40_shutdown_diagnostic) == TYPE_STATUS_OK;
+                &trace->model40_shutdown_diagnostic) == LIB_STATUS_OK;
         trace->model40_protected_transition_observed =
             core_machine_memory_read(trace->machine, 0x0009f300u,
-                trace->model40_gdt, sizeof(trace->model40_gdt)) == TYPE_STATUS_OK;
+                trace->model40_gdt, sizeof(trace->model40_gdt)) == LIB_STATUS_OK;
     }
     if (event->type == CORE_MACHINE_TRACE_PORT_WRITE && event->address == 0x0092u) {
         ++trace->a20_port_write_count;
@@ -1355,8 +1356,8 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
     }
 }
 
-static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
-    lib_u32 physical, type_native_unsigned bytes)
+static void vm_byob_model40_memory_write_observe(void *context,
+    lib_u32 physical, lib_uptr bytes)
 {
     vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
     lib_u32 pc;
@@ -1374,13 +1375,13 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
         trace->model40_int10_vector_write_pc = pc;
         trace->model40_int10_vector_write_cs =
             trace->machine->executor_cpu.data.cs.selector;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             0x00000040u,
-            (type_virtual_address)&trace->model40_int10_vector_offset,
+            (lib_uptr)&trace->model40_int10_vector_offset,
             sizeof(trace->model40_int10_vector_offset));
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             0x00000042u,
-            (type_virtual_address)&trace->model40_int10_vector_segment,
+            (lib_uptr)&trace->model40_int10_vector_segment,
             sizeof(trace->model40_int10_vector_segment));
         trace->model40_int10_vector_history_pc[index] = pc;
         trace->model40_int10_vector_history_cs[index] =
@@ -1397,11 +1398,11 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
 
         ++trace->model40_int42_vector_write_count;
         trace->model40_int42_vector_write_pc[index] = pc;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
-            0x00000108u, (type_virtual_address)&trace->model40_int42_vector_history_offset[index],
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00000108u, (lib_uptr)&trace->model40_int42_vector_history_offset[index],
             sizeof(trace->model40_int42_vector_history_offset[index]));
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
-            0x0000010au, (type_virtual_address)&trace->model40_int42_vector_history_segment[index],
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x0000010au, (lib_uptr)&trace->model40_int42_vector_history_segment[index],
             sizeof(trace->model40_int42_vector_history_segment[index]));
     }
     if (physical <= 0x00000458u && (lib_u64)physical + bytes > 0x00000458u) {
@@ -1411,9 +1412,9 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
 
         ++trace->model40_post_status_58_observer_writes;
         trace->model40_post_status_58_observer_last_pc = pc;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             0x00000458u,
-            (type_virtual_address)&trace->model40_post_status_58_observer_last_value,
+            (lib_uptr)&trace->model40_post_status_58_observer_last_value,
             sizeof(trace->model40_post_status_58_observer_last_value));
         trace->model40_post_status_58_observer_pcs[index] = pc;
         trace->model40_post_status_58_observer_values[index] =
@@ -1427,9 +1428,9 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
 
         ++trace->model40_post_private_status_writes;
         trace->model40_post_private_status_last_pc = pc;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             VM_BYOB_MODEL40_POST_PRIVATE_STATUS_PHYSICAL,
-            (type_virtual_address)&trace->model40_post_private_status_last_value,
+            (lib_uptr)&trace->model40_post_private_status_last_value,
             sizeof(trace->model40_post_private_status_last_value));
         trace->model40_post_private_status_pcs[index] = pc;
         trace->model40_post_private_status_values[index] =
@@ -1445,8 +1446,8 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
         ++trace->model40_memory_b_first_word_writes;
         trace->model40_memory_b_first_word_retirements = trace->model40_retirements;
         trace->model40_memory_b_first_word_last_pc = pc;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
-            0x000b0000u, (type_virtual_address)&trace->model40_memory_b_first_word_last_value,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x000b0000u, (lib_uptr)&trace->model40_memory_b_first_word_last_value,
             sizeof(trace->model40_memory_b_first_word_last_value));
         trace->model40_memory_b_first_word_graphics_6 =
             trace->machine->shared_vadp.data.graphics[6u];
@@ -1474,17 +1475,17 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
             trace->model40_memory_pattern_producer_active;
         if (trace->model40_memory_pattern_producer_active)
             ++trace->model40_memory_pattern_producer_high_b_writes;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             0x00fb0000u,
-            (type_virtual_address)trace->model40_memory_high_b_write_pages[history],
+            (lib_uptr)trace->model40_memory_high_b_write_pages[history],
             sizeof(trace->model40_memory_high_b_write_pages[history]));
     }
     if (physical < 0x00fb0002u && (lib_u64)physical + bytes > 0x00fb0000u) {
         ++trace->model40_memory_fb_first_word_writes;
         trace->model40_memory_fb_first_word_retirements = trace->model40_retirements;
         trace->model40_memory_fb_first_word_last_pc = pc;
-        (C_VOID)core_machine_memory_read_physical(&trace->machine->executor_memory,
-            0x00fb0000u, (type_virtual_address)&trace->model40_memory_fb_first_word_last_value,
+        (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
+            0x00fb0000u, (lib_uptr)&trace->model40_memory_fb_first_word_last_value,
             sizeof(trace->model40_memory_fb_first_word_last_value));
     }
     if (physical < 0x00fa0000u || physical >= 0x01000000u) return;
@@ -1504,8 +1505,8 @@ static C_VOID vm_byob_model40_memory_write_observe(C_VOID *context,
     }
 }
 
-static C_INT vm_byob_snapshot_has(const core_machine_display_snapshot *snapshot,
-    const C_CHAR *text)
+static lib_i32 vm_byob_snapshot_has(const core_machine_display_snapshot *snapshot,
+    const char *text)
 {
     lib_size cell;
     lib_size length;
@@ -1520,7 +1521,7 @@ static C_INT vm_byob_snapshot_has(const core_machine_display_snapshot *snapshot,
     return 0;
 }
 
-static C_INT vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *snapshot)
 {
     lib_size cell;
     lib_size cells;
@@ -1528,7 +1529,7 @@ static C_INT vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *sn
     if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
     cells = (lib_size)snapshot->columns * snapshot->rows;
     for (cell = 0u; cell + 3u < cells; ++cell) {
-        if (STD_ISALPHA(snapshot->characters[cell]) &&
+        if (isalpha(snapshot->characters[cell]) &&
             snapshot->characters[cell + 1u] == ':' &&
             snapshot->characters[cell + 2u] == '\\' &&
             snapshot->characters[cell + 3u] == '>') return 1;
@@ -1536,7 +1537,7 @@ static C_INT vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *sn
     return 0;
 }
 
-static C_INT vm_byob_send_f1(vm_machine *session, C_INT pressed,
+static lib_i32 vm_byob_send_f1(vm_machine *session, lib_i32 pressed,
     lib_u8 *out_scan_set)
 {
     core_machine_guest_input_event event = {0};
@@ -1545,16 +1546,16 @@ static C_INT vm_byob_send_f1(vm_machine *session, C_INT pressed,
     if (session == LIB_NULL || session->core_machine == LIB_NULL ||
         out_scan_set == LIB_NULL || core_machine_keyboard_get_native_scan_set(
             session->core_machine, &scan_set) !=
-            TYPE_STATUS_OK) return 0;
+            LIB_STATUS_OK) return 0;
     *out_scan_set = scan_set;
     event.kind = CORE_MACHINE_GUEST_INPUT_KEY;
     event.data.key.scan_code = 0x3bu;
     event.data.key.virtual_key = 0x70u;
     event.data.key.pressed = pressed != 0;
-    return vm_machine_submit_host_input(session, &event) == TYPE_STATUS_OK;
+    return vm_machine_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
-static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text)
+static lib_i32 vm_byob_text_memory_has(core_machine *machine, const char *text)
 {
     lib_u8 bytes[0x4000];
     lib_size offset;
@@ -1562,7 +1563,7 @@ static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text)
 
     if (machine == LIB_NULL || text == LIB_NULL ||
         core_machine_memory_read(machine, 0x000b8000u, bytes, sizeof(bytes)) !=
-            TYPE_STATUS_OK) return 0;
+            LIB_STATUS_OK) return 0;
     length = lib_text_length(text);
     for (offset = 0u; offset + length * 2u <= sizeof(bytes); offset += 2u) {
         lib_size index;
@@ -1574,40 +1575,40 @@ static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text)
     return 0;
 }
 
-static C_VOID vm_byob_print_text_rows(core_machine *machine)
+static void vm_byob_print_text_rows(core_machine *machine)
 {
     lib_u8 bytes[80u * 25u * 2u];
     lib_u32 row;
 
     if (machine == LIB_NULL || core_machine_memory_read(machine, 0x000b8000u,
-            bytes, sizeof(bytes)) != TYPE_STATUS_OK) return;
+            bytes, sizeof(bytes)) != LIB_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
-        C_CHAR line[81];
+        char line[81];
         lib_u32 column;
-        C_INT nonblank = 0;
+        lib_i32 nonblank = 0;
 
         for (column = 0u; column < 80u; ++column) {
             lib_u8 character = bytes[(row * 80u + column) * 2u];
 
             line[column] = character >= 0x20u && character < 0x7fu ?
-                (C_CHAR)character : ' ';
+                (char)character : ' ';
             if (line[column] != ' ') nonblank = 1;
         }
         line[80u] = '\0';
-        if (nonblank) STD_PRINTF("BOOT-PROBE=text-row-%u=%s\n",
+        if (nonblank) printf("BOOT-PROBE=text-row-%u=%s\n",
             (unsigned int)row, line);
     }
 }
 
-static C_INT vm_byob_memory_has(core_machine *machine, lib_u32 address,
-    lib_size byte_count, const C_CHAR *text)
+static lib_i32 vm_byob_memory_has(core_machine *machine, lib_u32 address,
+    lib_size byte_count, const char *text)
 {
     lib_u8 bytes[1024];
     lib_size offset;
     lib_size length;
 
     if (machine == LIB_NULL || text == LIB_NULL || byte_count > sizeof(bytes) ||
-        core_machine_memory_read(machine, address, bytes, byte_count) != TYPE_STATUS_OK) {
+        core_machine_memory_read(machine, address, bytes, byte_count) != LIB_STATUS_OK) {
         return 0;
     }
     length = lib_text_length(text);
@@ -1617,15 +1618,15 @@ static C_INT vm_byob_memory_has(core_machine *machine, lib_u32 address,
     return 0;
 }
 
-static C_INT vm_byob_memory_equal(core_machine *machine, lib_u32 left,
+static lib_i32 vm_byob_memory_equal(core_machine *machine, lib_u32 left,
     lib_u32 right, lib_size byte_count)
 {
     lib_u8 left_bytes[32];
     lib_u8 right_bytes[32];
 
     return machine != LIB_NULL && byte_count <= sizeof(left_bytes) &&
-        core_machine_memory_read(machine, left, left_bytes, byte_count) == TYPE_STATUS_OK &&
-        core_machine_memory_read(machine, right, right_bytes, byte_count) == TYPE_STATUS_OK &&
+        core_machine_memory_read(machine, left, left_bytes, byte_count) == LIB_STATUS_OK &&
+        core_machine_memory_read(machine, right, right_bytes, byte_count) == LIB_STATUS_OK &&
         !lib_memory_compare(left_bytes, right_bytes, byte_count);
 }
 
@@ -1644,7 +1645,7 @@ static lib_u32 vm_byob_snapshot_checksum(
     return checksum;
 }
 
-int main(C_INT argc, C_CHAR **argv)
+int main(lib_i32 argc, char **argv)
 {
     /* Keep the host-side diagnostic wall-clock budget observable even when a
        guest instruction is stalled behind an unbounded Core wait path. */
@@ -1681,31 +1682,31 @@ int main(C_INT argc, C_CHAR **argv)
     lib_u64 run_count = 0u;
     lib_u32 last_reason = CORE_MACHINE_STOP_NONE;
     lib_u32 last_detail = 0u;
-    C_INT last_wait_advanced = 0;
+    lib_i32 last_wait_advanced = 0;
     lib_u32 wall_limit = VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS;
     lib_u32 no_progress_limit = VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS;
     ULONGLONG resume_f1_prompt_at = 0u;
     ULONGLONG resume_f1_make_at = 0u;
     ULONGLONG next_text_memory_scan;
-    C_INT have_checksum = 0;
-    C_INT have_linear_pc = 0;
-    C_INT waiting_for_interrupt = 0;
-    C_INT waiting_with_deadline = 0;
-    C_INT waiting_interrupts_enabled = 0;
-    C_INT waiting_in_rom = 0;
-    C_INT waiting_in_low_memory = 0;
-    C_INT post_memory_failure = 0;
-    C_INT post_keyboard_failure = 0;
-    C_INT post_floppy_failure = 0;
-    C_INT post_resume_required = 0;
-    C_INT resume_f1_sent = 0;
-    C_INT short_budget;
-    C_INT stop_at_first_exception;
-    C_INT trace_enabled;
-    C_INT turbo;
-    C_INT no_retirement_observation;
-    C_INT press_resume_f1;
-    C_INT exit_code = 1;
+    lib_i32 have_checksum = 0;
+    lib_i32 have_linear_pc = 0;
+    lib_i32 waiting_for_interrupt = 0;
+    lib_i32 waiting_with_deadline = 0;
+    lib_i32 waiting_interrupts_enabled = 0;
+    lib_i32 waiting_in_rom = 0;
+    lib_i32 waiting_in_low_memory = 0;
+    lib_i32 post_memory_failure = 0;
+    lib_i32 post_keyboard_failure = 0;
+    lib_i32 post_floppy_failure = 0;
+    lib_i32 post_resume_required = 0;
+    lib_i32 resume_f1_sent = 0;
+    lib_i32 short_budget;
+    lib_i32 stop_at_first_exception;
+    lib_i32 trace_enabled;
+    lib_i32 turbo;
+    lib_i32 no_retirement_observation;
+    lib_i32 press_resume_f1;
+    lib_i32 exit_code = 1;
 
     stop_at_first_exception = 0;
     short_budget = 0;
@@ -1714,7 +1715,7 @@ int main(C_INT argc, C_CHAR **argv)
     press_resume_f1 = 0;
     turbo = 0;
     while (argc > 1) {
-        const C_CHAR *option = argv[argc - 1];
+        const char *option = argv[argc - 1];
 
         if (!lib_c_strcmp(option, "--first-exception")) stop_at_first_exception = 1;
         else if (!lib_c_strcmp(option, "--short")) short_budget = 1;
@@ -1731,26 +1732,26 @@ int main(C_INT argc, C_CHAR **argv)
         no_progress_limit = 7500u;
     }
     if (argc != 3) {
-        STD_PRINTF("BOOT-PROBE=invalid-arguments\n");
+        printf("BOOT-PROBE=invalid-arguments\n");
         goto done;
     }
-    if (integration_ini_session_open(argv[1], argv[2], &ini_session) != TYPE_STATUS_OK)
+    if (integration_ini_session_open(argv[1], argv[2], &ini_session) != LIB_STATUS_OK)
         return 77;
     session = ini_session.session;
     if (session == LIB_NULL) goto done;
     /* A diagnostic begins at the same explicit reset boundary as the delivery
        runner, rather than inheriting construction's initial Core reset. */
-    if (vm_machine_reset(session) != TYPE_STATUS_OK) {
-        STD_PRINTF("BOOT-PROBE=reset-failed\n");
+    if (vm_machine_reset(session) != LIB_STATUS_OK) {
+        printf("BOOT-PROBE=reset-failed\n");
         goto done;
     }
     {
         core_machine_memory_route boundary_route = CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
-        const type_status boundary_status = core_machine_memory_query_physical(
+        const lib_status boundary_status = core_machine_memory_query_physical(
             &session->core_machine->executor_memory, 0x00100000u, 2u,
             CORE_MACHINE_MEMORY_ACCESS_WRITE, &boundary_route);
 
-        STD_PRINTF("BOOT-PROBE=memory-installed=%llu-a20=%u-boundary-write-status=%u-route=%u\n",
+        printf("BOOT-PROBE=memory-installed=%llu-a20=%u-boundary-write-status=%u-route=%u\n",
             (unsigned long long)session->core_machine->executor_memory.connect.installed_bytes,
             (unsigned int)session->core_machine->executor_memory.data.flagA20,
             (unsigned int)boundary_status, (unsigned int)boundary_route);
@@ -1763,10 +1764,10 @@ int main(C_INT argc, C_CHAR **argv)
                 0x00fffff0u : 0xfffffff0u;
         lib_size index;
 
-        (C_VOID)core_machine_memory_read_reset_physical(
+        (void)core_machine_memory_read_reset_physical(
             &session->core_machine->executor_memory, reset_physical,
-            (type_virtual_address)reset_bytes, sizeof(reset_bytes));
-        STD_PRINTF("BOOT-PROBE=reset-read=%02X,%02X,%02X,%02X-rom-mappings=%u\n",
+            (lib_uptr)reset_bytes, sizeof(reset_bytes));
+        printf("BOOT-PROBE=reset-read=%02X,%02X,%02X,%02X-rom-mappings=%u\n",
             (unsigned int)reset_bytes[0u], (unsigned int)reset_bytes[1u],
             (unsigned int)reset_bytes[2u], (unsigned int)reset_bytes[3u],
             (unsigned int)session->core_machine->immutable_rom_mapping_count);
@@ -1775,7 +1776,7 @@ int main(C_INT argc, C_CHAR **argv)
             const core_machine_immutable_rom_mapping *mapping =
                 &session->core_machine->immutable_rom_mappings[index];
 
-            STD_PRINTF("BOOT-PROBE=rom-map-%u=%08X/%u\n", (unsigned int)index,
+            printf("BOOT-PROBE=rom-map-%u=%08X/%u\n", (unsigned int)index,
                 (unsigned int)mapping->physical_start, (unsigned int)mapping->bytes);
         }
     }
@@ -1790,10 +1791,10 @@ int main(C_INT argc, C_CHAR **argv)
                 (core_machine_memory_write_observer_slot) {
                     vm_byob_model40_memory_write_observe, &trace };
         } else {
-            STD_PRINTF("BOOT-PROBE=setup-failed\n");
+            printf("BOOT-PROBE=setup-failed\n");
             goto done;
         }
-        (C_VOID)core_machine_debug_set_watchpoint(session->core_machine,
+        (void)core_machine_debug_set_watchpoint(session->core_machine,
             CORE_MACHINE_DEBUG_WATCH_WRITE, 0x00fe0000u);
     }
     {
@@ -1801,14 +1802,14 @@ int main(C_INT argc, C_CHAR **argv)
         lib_u16 segment = 0u;
 
         if (core_machine_memory_read(session->core_machine, 0x0054u, &offset,
-                sizeof(offset)) == TYPE_STATUS_OK &&
+                sizeof(offset)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x0056u, &segment,
-                sizeof(segment)) == TYPE_STATUS_OK) {
+                sizeof(segment)) == LIB_STATUS_OK) {
             trace.int15_linear = (lib_u32)segment * 16u + offset;
         }
     }
-    if (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != TYPE_STATUS_OK) {
-        STD_PRINTF("BOOT-PROBE=setup-failed\n");
+    if (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != LIB_STATUS_OK) {
+        printf("BOOT-PROBE=setup-failed\n");
         goto done;
     }
     if (turbo) {
@@ -1822,11 +1823,11 @@ int main(C_INT argc, C_CHAR **argv)
     if (!no_retirement_observation &&
         core_machine_set_retirement_observation_provider(session->core_machine,
             &(core_machine_retirement_observation_provider) {
-                vm_byob_retirement_observe, &trace }) != TYPE_STATUS_OK) {
-        STD_PRINTF("BOOT-PROBE=setup-failed\n");
+                vm_byob_retirement_observe, &trace }) != LIB_STATUS_OK) {
+        printf("BOOT-PROBE=setup-failed\n");
         goto done;
     }
-    (C_VOID)core_machine_register_memory_write_observer(session->core_machine,
+    (void)core_machine_register_memory_write_observer(session->core_machine,
         vm_byob_model40_vector_write_observe, &trace);
     /* This is probe-only observability after construction; the FDC retains the
        sole terminal event path and no guest-visible state is changed. */
@@ -1837,8 +1838,8 @@ int main(C_INT argc, C_CHAR **argv)
         trace_provider.callback = vm_byob_trace;
         trace_provider.context = &trace;
         if (core_machine_set_trace_provider(session->core_machine, &trace_provider) !=
-            TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=setup-failed\n");
+            LIB_STATUS_OK) {
+            printf("BOOT-PROBE=setup-failed\n");
             goto done;
         }
     }
@@ -1856,46 +1857,46 @@ int main(C_INT argc, C_CHAR **argv)
             (linear_pc == 0x0001450fu || linear_pc == 0x000145efu) &&
             core_machine_memory_read(session->core_machine, 0x0018u,
                 &trace.int6_pre_fault_offset,
-                sizeof(trace.int6_pre_fault_offset)) == TYPE_STATUS_OK &&
+                sizeof(trace.int6_pre_fault_offset)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x001au,
                 &trace.int6_pre_fault_segment,
-                sizeof(trace.int6_pre_fault_segment)) == TYPE_STATUS_OK) {
+                sizeof(trace.int6_pre_fault_segment)) == LIB_STATUS_OK) {
             trace.int6_pre_fault_snapshot_valid = LIB_TRUE;
             run_budget.instructions = 1u;
         }
         /* This probe drives Core directly; its host input is delivered by the
          * VM adapter before each Core quantum. */
-        if (core_machine_run(session->core_machine, run_budget, &result) != TYPE_STATUS_OK) {
+        if (core_machine_run(session->core_machine, run_budget, &result) != LIB_STATUS_OK) {
             lib_u8 fault_bytes[4] = {0u};
             lib_u8 far_pointer[6] = {0u};
             lib_u8 descriptor[8] = {0u};
             const t_cpu *fault_cpu = &session->core_machine->executor_cpu;
 
-            (C_VOID)core_machine_memory_read_physical(&session->core_machine->executor_memory,
-                result.linear_pc, (type_virtual_address)fault_bytes, sizeof(fault_bytes));
-            (C_VOID)core_machine_memory_read_physical(&session->core_machine->executor_memory,
-                0x000f8a1fu, (type_virtual_address)far_pointer, sizeof(far_pointer));
-            (C_VOID)core_machine_memory_read_physical(&session->core_machine->executor_memory,
-                0x000f0a0bu, (type_virtual_address)descriptor, sizeof(descriptor));
-            STD_PRINTF("BOOT-PROBE=run-failed-reason=%u-detail=%08X-pc=%05X\n",
+            (void)core_machine_memory_read_physical(&session->core_machine->executor_memory,
+                result.linear_pc, (lib_uptr)fault_bytes, sizeof(fault_bytes));
+            (void)core_machine_memory_read_physical(&session->core_machine->executor_memory,
+                0x000f8a1fu, (lib_uptr)far_pointer, sizeof(far_pointer));
+            (void)core_machine_memory_read_physical(&session->core_machine->executor_memory,
+                0x000f0a0bu, (lib_uptr)descriptor, sizeof(descriptor));
+            printf("BOOT-PROBE=run-failed-reason=%u-detail=%08X-pc=%05X\n",
                 (unsigned int)result.reason, (unsigned int)result.detail,
                 (unsigned int)result.linear_pc);
-            STD_PRINTF("BOOT-PROBE=fault-bytes=%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=fault-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)fault_bytes[0u], (unsigned int)fault_bytes[1u],
                 (unsigned int)fault_bytes[2u], (unsigned int)fault_bytes[3u]);
-            STD_PRINTF("BOOT-PROBE=cpu-cr0=%08X-cs=%04X-base=%08X-eip=%08X-gdt=%08X/%08X\n",
+            printf("BOOT-PROBE=cpu-cr0=%08X-cs=%04X-base=%08X-eip=%08X-gdt=%08X/%08X\n",
                 (unsigned int)fault_cpu->data.cr0, (unsigned int)fault_cpu->data.cs.selector,
                 (unsigned int)fault_cpu->data.cs.base, (unsigned int)fault_cpu->data.eip,
                 (unsigned int)fault_cpu->data.gdtr.base, (unsigned int)fault_cpu->data.gdtr.limit);
-            STD_PRINTF("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
+            printf("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
                 (unsigned int)session->core_machine->d4_memory.control,
                 (unsigned int)session->core_machine->d4_memory.ram_setup);
-            STD_PRINTF("BOOT-PROBE=transaction-owner=%u-hold-owner=%u-hold-ack=%u-refresh-pending=%u\n",
+            printf("BOOT-PROBE=transaction-owner=%u-hold-owner=%u-hold-ack=%u-refresh-pending=%u\n",
                 (unsigned int)session->core_machine->transaction.owner,
                 (unsigned int)session->core_machine->transaction.hold_owner,
                 (unsigned int)session->core_machine->transaction.hold_acknowledged,
                 (unsigned int)session->core_machine->d4_refresh_hold_pending);
-            STD_PRINTF("BOOT-PROBE=far-pointer=%02X,%02X,%02X,%02X,%02X,%02X-gdt-entry=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=far-pointer=%02X,%02X,%02X,%02X,%02X,%02X-gdt-entry=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)far_pointer[0u], (unsigned int)far_pointer[1u],
                 (unsigned int)far_pointer[2u], (unsigned int)far_pointer[3u],
                 (unsigned int)far_pointer[4u], (unsigned int)far_pointer[5u],
@@ -1910,13 +1911,13 @@ int main(C_INT argc, C_CHAR **argv)
         last_detail = result.detail;
         executed_total += result.executed;
         if (stop_at_first_exception && core_machine_get_cpu_diagnostic(
-                session->core_machine, &diagnostic) == TYPE_STATUS_OK &&
+                session->core_machine, &diagnostic) == LIB_STATUS_OK &&
             diagnostic.first_delivered_exception.valid) {
             lib_size index;
 
-            STD_PRINTF("BOOT-PROBE=first-exception-pc=%05X\n", (unsigned int)
+            printf("BOOT-PROBE=first-exception-pc=%05X\n", (unsigned int)
                 diagnostic.first_delivered_exception.point.linear_pc);
-            STD_PRINTF("BOOT-PROBE=first-exception-flags=%08X-eax=%08X-ebx=%08X-ecx=%08X-edx=%08X\n",
+            printf("BOOT-PROBE=first-exception-flags=%08X-eax=%08X-ebx=%08X-ecx=%08X-edx=%08X\n",
                 (unsigned int)diagnostic.first_delivered_exception.eflags,
                 (unsigned int)diagnostic.first_delivered_exception.eax,
                 (unsigned int)diagnostic.first_delivered_exception.ebx,
@@ -1925,7 +1926,7 @@ int main(C_INT argc, C_CHAR **argv)
             for (index = 0u; index < diagnostic.recent_count; ++index) {
                 const core_machine_cpu_execution_point *point = &diagnostic.recent[index];
 
-                STD_PRINTF("BOOT-PROBE=pre-exception-%u=%05X-%02X,%02X,%02X,%02X\n",
+                printf("BOOT-PROBE=pre-exception-%u=%05X-%02X,%02X,%02X,%02X\n",
                     (unsigned int)index, (unsigned int)point->linear_pc,
                     (unsigned int)point->bytes[0u], (unsigned int)point->bytes[1u],
                     (unsigned int)point->bytes[2u], (unsigned int)point->bytes[3u]);
@@ -1947,19 +1948,19 @@ int main(C_INT argc, C_CHAR **argv)
             last_dma_mode = session->core_machine->shared_dma_primary.data.mode[2u];
         }
         if (result.reason == CORE_MACHINE_STOP_FAULT) {
-            STD_PRINTF("BOOT-PROBE=guest-fault\n");
+            printf("BOOT-PROBE=guest-fault\n");
             goto done;
         }
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             core_machine_cpu_state cpu;
             core_machine_time_observation observation;
-            C_INT advanced = 0;
+            lib_i32 advanced = 0;
 
             if (core_machine_capture_time_observation(session->core_machine,
-                    &observation) != TYPE_STATUS_OK ||
+                    &observation) != LIB_STATUS_OK ||
                 core_machine_get_cpu_state(session->core_machine, &cpu) !=
-                    TYPE_STATUS_OK) {
-                STD_PRINTF("BOOT-PROBE=run-failed\n");
+                    LIB_STATUS_OK) {
+                printf("BOOT-PROBE=run-failed\n");
                 goto done;
             }
             waiting_for_interrupt = 1;
@@ -1970,8 +1971,8 @@ int main(C_INT argc, C_CHAR **argv)
             waiting_in_low_memory = cpu.cs_base + cpu.eip < 0x00040000u;
             waiting_linear_pc = cpu.cs_base + cpu.eip;
             if (vm_machine_waiting_advance(session, &result, &advanced) !=
-                TYPE_STATUS_OK) {
-                STD_PRINTF("BOOT-PROBE=run-failed\n");
+                LIB_STATUS_OK) {
+                printf("BOOT-PROBE=run-failed\n");
                 goto done;
             }
             last_wait_advanced = advanced;
@@ -1983,19 +1984,19 @@ int main(C_INT argc, C_CHAR **argv)
          * diagnostic context, but it is not the definition of guest progress. */
         if (result.executed != 0u || result.ticks != 0u) progress = now;
         if (now >= next_display_capture) {
-            type_status display_status = core_machine_capture_display_snapshot(
+            lib_status display_status = core_machine_capture_display_snapshot(
                 session->core_machine, &snapshot);
 
             next_display_capture = now + VM_BYOB_BOOT_DISPLAY_CADENCE_MILLISECONDS;
-            if (display_status != TYPE_STATUS_OK && display_status != TYPE_STATUS_UNSUPPORTED) {
-                STD_PRINTF("BOOT-PROBE=display-failed-status=%u\n",
+            if (display_status != LIB_STATUS_OK && display_status != LIB_STATUS_UNSUPPORTED) {
+                printf("BOOT-PROBE=display-failed-status=%u\n",
                     (unsigned int)display_status);
                 goto done;
             }
             if (now >= next_text_memory_scan) {
-                const C_INT resume_visible = vm_byob_text_memory_has(
+                const lib_i32 resume_visible = vm_byob_text_memory_has(
                     session->core_machine, "RESUME");
-                const C_INT installer_visible = resume_f1_sent &&
+                const lib_i32 installer_visible = resume_f1_sent &&
                     vm_byob_text_memory_has(session->core_machine, "ENTER=Continue");
 
                 next_text_memory_scan = now + 250u;
@@ -2005,24 +2006,24 @@ int main(C_INT argc, C_CHAR **argv)
                 }
                 post_resume_required |= resume_visible;
                 if (installer_visible) {
-                    STD_PRINTF("BOOT-PROBE=installer-ready\n");
+                    printf("BOOT-PROBE=installer-ready\n");
                     exit_code = 0;
                     goto done;
                 }
             }
-            if (display_status == TYPE_STATUS_OK) {
+            if (display_status == LIB_STATUS_OK) {
                 if (vm_byob_snapshot_has_prompt(&snapshot)) {
-                    STD_PRINTF("BOOT-PROBE=dos-prompt\n");
+                    printf("BOOT-PROBE=dos-prompt\n");
                     exit_code = 0;
                     goto done;
                 }
                 if (vm_byob_snapshot_has(&snapshot, "Current date")) {
-                    STD_PRINTF("BOOT-PROBE=date-input\n");
+                    printf("BOOT-PROBE=date-input\n");
                     exit_code = 0;
                     goto done;
                 }
                 if (vm_byob_snapshot_has(&snapshot, "ENTER=Continue")) {
-                    STD_PRINTF("BOOT-PROBE=installer-ready\n");
+                    printf("BOOT-PROBE=installer-ready\n");
                     exit_code = 0;
                     goto done;
                 }
@@ -2043,14 +2044,14 @@ int main(C_INT argc, C_CHAR **argv)
             lib_u8 scan_set = 0u;
 
             if (!vm_byob_send_f1(session, 1, &scan_set)) {
-                STD_PRINTF("BOOT-PROBE=resume-f1-input-failed\n");
+                printf("BOOT-PROBE=resume-f1-input-failed\n");
                 goto done;
             }
             resume_f1_sent = 1;
             resume_f1_make_at = now;
             started = GetTickCount64();
             progress = started;
-            STD_PRINTF("BOOT-PROBE=resume-f1-sent-scan-set=%u\n",
+            printf("BOOT-PROBE=resume-f1-sent-scan-set=%u\n",
                 (unsigned int)scan_set);
         }
         if (resume_f1_sent && resume_f1_make_at != 0u &&
@@ -2058,7 +2059,7 @@ int main(C_INT argc, C_CHAR **argv)
             lib_u8 scan_set = 0u;
 
             if (!vm_byob_send_f1(session, 0, &scan_set)) {
-                STD_PRINTF("BOOT-PROBE=resume-f1-release-failed\n");
+                printf("BOOT-PROBE=resume-f1-release-failed\n");
                 goto done;
             }
             resume_f1_make_at = 0u;
@@ -2069,108 +2070,108 @@ int main(C_INT argc, C_CHAR **argv)
         }
         if (GetTickCount64() - progress >= no_progress_limit) {
             if (waiting_for_interrupt) {
-                if (!waiting_with_deadline) STD_PRINTF("BOOT-PROBE=waiting-no-deadline\n");
+                if (!waiting_with_deadline) printf("BOOT-PROBE=waiting-no-deadline\n");
                 else if (waiting_interrupts_enabled)
-                    STD_PRINTF("BOOT-PROBE=waiting-deadline-if-enabled\n");
-                else if (waiting_in_rom) STD_PRINTF("BOOT-PROBE=waiting-rom-if-disabled\n");
+                    printf("BOOT-PROBE=waiting-deadline-if-enabled\n");
+                else if (waiting_in_rom) printf("BOOT-PROBE=waiting-rom-if-disabled\n");
                 else if (waiting_in_low_memory)
-                    STD_PRINTF("BOOT-PROBE=waiting-low-memory-if-disabled\n");
-                else STD_PRINTF("BOOT-PROBE=waiting-other-if-disabled\n");
-                STD_PRINTF("BOOT-PROBE=waiting-linear-pc=%05X\n",
+                    printf("BOOT-PROBE=waiting-low-memory-if-disabled\n");
+                else printf("BOOT-PROBE=waiting-other-if-disabled\n");
+                printf("BOOT-PROBE=waiting-linear-pc=%05X\n",
                     (unsigned int)waiting_linear_pc);
-                STD_PRINTF("BOOT-PROBE=post-message-offset=%04X\n",
+                printf("BOOT-PROBE=post-message-offset=%04X\n",
                     (unsigned int)session->core_machine->executor_cpu.data.bp);
                 if (core_machine_memory_read(session->core_machine,
                         session->core_machine->executor_cpu.data.ss.base +
                         session->core_machine->executor_cpu.data.sp + 2u,
-                        &post_caller_offset, sizeof(post_caller_offset)) == TYPE_STATUS_OK) {
-                    STD_PRINTF("BOOT-PROBE=post-caller-offset=%04X\n",
+                        &post_caller_offset, sizeof(post_caller_offset)) == LIB_STATUS_OK) {
+                    printf("BOOT-PROBE=post-caller-offset=%04X\n",
                         (unsigned int)post_caller_offset);
                 }
                 if (core_machine_memory_read(session->core_machine, 0x046bu,
                         &post_interrupt_flag, sizeof(post_interrupt_flag)) ==
-                    TYPE_STATUS_OK) {
-                    STD_PRINTF(post_interrupt_flag == 0u ?
+                    LIB_STATUS_OK) {
+                    printf(post_interrupt_flag == 0u ?
                         "BOOT-PROBE=post-interrupt-flag-cleared\n" :
                         "BOOT-PROBE=post-interrupt-flag-set\n");
                 }
                 if (core_machine_memory_read(session->core_machine, 0x0415u,
                         &post_manufacturing_error_flag,
-                        sizeof(post_manufacturing_error_flag)) == TYPE_STATUS_OK) {
-                    STD_PRINTF("BOOT-PROBE=post-manufacturing-error-flag=%02X\n",
+                        sizeof(post_manufacturing_error_flag)) == LIB_STATUS_OK) {
+                    printf("BOOT-PROBE=post-manufacturing-error-flag=%02X\n",
                         (unsigned int)post_manufacturing_error_flag);
                 }
-                STD_PRINTF("BOOT-PROBE=post-bl=%02X-post-flags=%04X\n",
+                printf("BOOT-PROBE=post-bl=%02X-post-flags=%04X\n",
                     (unsigned int)(session->core_machine->executor_cpu.data.ebx & 0xffu),
                     (unsigned int)(session->core_machine->executor_cpu.data.eflags & 0xffffu));
-                STD_PRINTF("BOOT-PROBE=post-dma-status=%02X-request=%02X-mask=%02X\n",
+                printf("BOOT-PROBE=post-dma-status=%02X-request=%02X-mask=%02X\n",
                     (unsigned int)session->core_machine->shared_dma_primary.data.status,
                     (unsigned int)session->core_machine->shared_dma_primary.data.request,
                     (unsigned int)session->core_machine->shared_dma_primary.data.mask);
-                STD_PRINTF("BOOT-PROBE=post-dma-command=%02X-mode0=%02X-count0=%04X-address0=%04X\n",
+                printf("BOOT-PROBE=post-dma-command=%02X-mode0=%02X-count0=%04X-address0=%04X\n",
                     (unsigned int)session->core_machine->shared_dma_primary.data.command,
                     (unsigned int)session->core_machine->shared_dma_primary.data.mode[0u],
                     (unsigned int)session->core_machine->shared_dma_primary.data.currCount[0u],
                     (unsigned int)session->core_machine->shared_dma_primary.data.currAddr[0u]);
-                STD_PRINTF("BOOT-PROBE=post-elapsed-ticks=%llu\n",
+                printf("BOOT-PROBE=post-elapsed-ticks=%llu\n",
                     (unsigned long long)session->core_machine->elapsed_ticks);
-                STD_PRINTF("BOOT-PROBE=pit-waits-first=%llu-second=%llu-irq0=%llu\n",
+                printf("BOOT-PROBE=pit-waits-first=%llu-second=%llu-irq0=%llu\n",
                     (unsigned long long)trace.pit_wait_first_retires,
                     (unsigned long long)trace.pit_wait_second_retires,
                     (unsigned long long)trace.irq0_retires);
-                STD_PRINTF("BOOT-PROBE=trace-cpu-retires=%llu\n",
+                printf("BOOT-PROBE=trace-cpu-retires=%llu\n",
                     (unsigned long long)trace.cpu_retires);
-                STD_PRINTF("BOOT-PROBE=pit0-cw=%02X-reload=%u-remaining=%u-out=%u-active=%u\n",
+                printf("BOOT-PROBE=pit0-cw=%02X-reload=%u-remaining=%u-out=%u-active=%u\n",
                     (unsigned int)session->core_machine->shared_pit.data.cw[0u],
                     (unsigned int)session->core_machine->shared_pit.data.reload[0u],
                     (unsigned int)session->core_machine->shared_pit.data.remaining[0u],
                     (unsigned int)session->core_machine->shared_pit.data.flagOutput[0u],
                     (unsigned int)session->core_machine->shared_pit.data.flagActive[0u]);
                 if (session->core_machine->xt_ppi_keyboard.mode_control == 0x9bu)
-                    STD_PRINTF("BOOT-PROBE=xt-ppi-unconfigured\n");
-                else STD_PRINTF("BOOT-PROBE=xt-ppi-configured\n");
+                    printf("BOOT-PROBE=xt-ppi-unconfigured\n");
+                else printf("BOOT-PROBE=xt-ppi-configured\n");
                 if (session->core_machine->xt_keyboard.clock_held)
-                    STD_PRINTF("BOOT-PROBE=xt-keyboard-clock-held\n");
+                    printf("BOOT-PROBE=xt-keyboard-clock-held\n");
                 if (session->core_machine->xt_keyboard.bat_active)
-                    STD_PRINTF("BOOT-PROBE=xt-keyboard-bat-active\n");
+                    printf("BOOT-PROBE=xt-keyboard-bat-active\n");
                 if (session->core_machine->xt_keyboard.bat_result_pending)
-                    STD_PRINTF("BOOT-PROBE=xt-keyboard-bat-pending\n");
+                    printf("BOOT-PROBE=xt-keyboard-bat-pending\n");
                 if (session->core_machine->xt_ppi_keyboard.byte_ready)
-                    STD_PRINTF("BOOT-PROBE=xt-keyboard-byte-ready\n");
-                STD_PRINTF("BOOT-PROBE=pic-imr=%02X\n",
+                    printf("BOOT-PROBE=xt-keyboard-byte-ready\n");
+                printf("BOOT-PROBE=pic-imr=%02X\n",
                     (unsigned int)session->core_machine->shared_pic_master.data.imr);
                 if (session->core_machine->shared_pic_master.data.imr == 0xffu)
-                    STD_PRINTF("BOOT-PROBE=pic-imr-ff\n");
-                else STD_PRINTF("BOOT-PROBE=pic-imr-not-ff\n");
+                    printf("BOOT-PROBE=pic-imr-ff\n");
+                else printf("BOOT-PROBE=pic-imr-not-ff\n");
                 if (session->core_machine->shared_pic_master.data.status == OCW1)
-                    STD_PRINTF("BOOT-PROBE=pic-ocw1-ready\n");
-                else STD_PRINTF("BOOT-PROBE=pic-not-ocw1-ready\n");
-                if (post_memory_failure) STD_PRINTF("BOOT-PROBE=post-memory-failure\n");
+                    printf("BOOT-PROBE=pic-ocw1-ready\n");
+                else printf("BOOT-PROBE=pic-not-ocw1-ready\n");
+                if (post_memory_failure) printf("BOOT-PROBE=post-memory-failure\n");
                 else if (post_keyboard_failure)
-                    STD_PRINTF("BOOT-PROBE=post-keyboard-failure\n");
+                    printf("BOOT-PROBE=post-keyboard-failure\n");
                 else if (post_floppy_failure)
-                    STD_PRINTF("BOOT-PROBE=post-floppy-failure\n");
-                else STD_PRINTF("BOOT-PROBE=post-other-failure\n");
+                    printf("BOOT-PROBE=post-floppy-failure\n");
+                else printf("BOOT-PROBE=post-other-failure\n");
             } else {
-                STD_PRINTF("BOOT-PROBE=running-no-display-progress\n");
+                printf("BOOT-PROBE=running-no-display-progress\n");
             }
-            if (executed_total < 16u) STD_PRINTF("BOOT-PROBE=retirement-under-16\n");
-            else if (executed_total < 256u) STD_PRINTF("BOOT-PROBE=retirement-under-256\n");
-            else STD_PRINTF("BOOT-PROBE=retirement-at-least-256\n");
+            if (executed_total < 16u) printf("BOOT-PROBE=retirement-under-16\n");
+            else if (executed_total < 256u) printf("BOOT-PROBE=retirement-under-256\n");
+            else printf("BOOT-PROBE=retirement-at-least-256\n");
             if (trace_enabled && trace.int15_calls != 0u) {
-                STD_PRINTF("BOOT-PROBE=trace-int15-calls=%llu-last-ah=%02X\n",
+                printf("BOOT-PROBE=trace-int15-calls=%llu-last-ah=%02X\n",
                     (unsigned long long)trace.int15_calls,
                     (unsigned int)trace.last_int15_ah);
-                STD_PRINTF("BOOT-PROBE=trace-int15-known-services=%02X\n",
+                printf("BOOT-PROBE=trace-int15-known-services=%02X\n",
                     (unsigned int)trace.int15_ah_seen);
             }
             if (trace_enabled && (trace.sgdt_calls != 0u || trace.sidt_calls != 0u)) {
-                STD_PRINTF("BOOT-PROBE=trace-sgdt=%llu-sidt=%llu\n",
+                printf("BOOT-PROBE=trace-sgdt=%llu-sidt=%llu\n",
                     (unsigned long long)trace.sgdt_calls,
                     (unsigned long long)trace.sidt_calls);
             }
             if (trace_enabled && trace.pushf_calls != 0u) {
-                STD_PRINTF("BOOT-PROBE=trace-pushf=%llu-last-high=%04X\n",
+                printf("BOOT-PROBE=trace-pushf=%llu-last-high=%04X\n",
                     (unsigned long long)trace.pushf_calls,
                     (unsigned int)trace.last_pushf_high);
             }
@@ -2178,46 +2179,46 @@ int main(C_INT argc, C_CHAR **argv)
         }
     }
     if (trace_enabled) {
-    STD_PRINTF("BOOT-PROBE=run-count=%llu-last-reason=%u-wait-advanced=%u\n",
+    printf("BOOT-PROBE=run-count=%llu-last-reason=%u-wait-advanced=%u\n",
         (unsigned long long)run_count, (unsigned int)last_reason,
         (unsigned int)last_wait_advanced);
-    STD_PRINTF("BOOT-PROBE=last-detail=%08X-cs=%08X-ip=%08X\n",
+    printf("BOOT-PROBE=last-detail=%08X-cs=%08X-ip=%08X\n",
         (unsigned int)last_detail,
         (unsigned int)session->core_machine->executor_cpu.data.cs.base,
         (unsigned int)session->core_machine->executor_cpu.data.eip);
-    STD_PRINTF("BOOT-PROBE=last-retired-pc=%05X\n",
+    printf("BOOT-PROBE=last-retired-pc=%05X\n",
         (unsigned int)trace.last_linear_pc);
     if (diagnostic.last_delivered_exception.valid) {
-        STD_PRINTF("BOOT-PROBE=delivered-exceptions=%u-last-mask=%08X-last-code=%08X\n",
+        printf("BOOT-PROBE=delivered-exceptions=%u-last-mask=%08X-last-code=%08X\n",
             (unsigned int)diagnostic.delivered_exception_count,
             (unsigned int)diagnostic.last_delivered_exception.exception_mask,
             (unsigned int)diagnostic.last_delivered_exception.exception_code);
-        STD_PRINTF("BOOT-PROBE=first-exception-pc=%05X-last-exception-pc=%05X\n",
+        printf("BOOT-PROBE=first-exception-pc=%05X-last-exception-pc=%05X\n",
             (unsigned int)diagnostic.first_delivered_exception.point.linear_pc,
             (unsigned int)diagnostic.last_delivered_exception.point.linear_pc);
     }
-        if (trace.reset_events != 0u) STD_PRINTF("BOOT-PROBE=trace-reset\n");
-    if (trace.rom_memory_reads != 0u) STD_PRINTF("BOOT-PROBE=trace-rom-read\n");
-    if (trace.xt_ppi_port_accesses != 0u) STD_PRINTF("BOOT-PROBE=trace-xt-ppi\n");
-    if (trace.pic_port_accesses != 0u) STD_PRINTF("BOOT-PROBE=trace-pic\n");
-    if (trace.pit_port_accesses != 0u) STD_PRINTF("BOOT-PROBE=trace-pit\n");
-    if (trace.cga_port_accesses != 0u) STD_PRINTF("BOOT-PROBE=trace-cga-port\n");
-    if (trace.cga_memory_writes != 0u) STD_PRINTF("BOOT-PROBE=trace-cga-memory\n");
-    if (trace.fdc_port_accesses != 0u) STD_PRINTF("BOOT-PROBE=trace-fdc\n");
+        if (trace.reset_events != 0u) printf("BOOT-PROBE=trace-reset\n");
+    if (trace.rom_memory_reads != 0u) printf("BOOT-PROBE=trace-rom-read\n");
+    if (trace.xt_ppi_port_accesses != 0u) printf("BOOT-PROBE=trace-xt-ppi\n");
+    if (trace.pic_port_accesses != 0u) printf("BOOT-PROBE=trace-pic\n");
+    if (trace.pit_port_accesses != 0u) printf("BOOT-PROBE=trace-pit\n");
+    if (trace.cga_port_accesses != 0u) printf("BOOT-PROBE=trace-cga-port\n");
+    if (trace.cga_memory_writes != 0u) printf("BOOT-PROBE=trace-cga-memory\n");
+    if (trace.fdc_port_accesses != 0u) printf("BOOT-PROBE=trace-fdc\n");
     if (trace.int15_calls != 0u) {
-        STD_PRINTF("BOOT-PROBE=trace-int15-calls=%llu-last-ah=%02X\n",
+        printf("BOOT-PROBE=trace-int15-calls=%llu-last-ah=%02X\n",
             (unsigned long long)trace.int15_calls,
             (unsigned int)trace.last_int15_ah);
     }
     if (trace.fdc_port_accesses == 0u && trace.xt_ppi_port_accesses == 0u) {
-        STD_PRINTF("BOOT-PROBE=wall-timeout-pre-fdc-no-xt-ppi\n");
+        printf("BOOT-PROBE=wall-timeout-pre-fdc-no-xt-ppi\n");
     }
     else if (trace.fdc_port_accesses == 0u) {
-        STD_PRINTF("BOOT-PROBE=wall-timeout-pre-fdc-after-xt-ppi\n");
+        printf("BOOT-PROBE=wall-timeout-pre-fdc-after-xt-ppi\n");
     }
     else if (trace.xt_ppi_port_accesses == 0u) {
-        STD_PRINTF("BOOT-PROBE=wall-timeout-fdc-without-xt-ppi\n");
-    } else STD_PRINTF("BOOT-PROBE=wall-timeout-fdc-and-xt-ppi\n");
+        printf("BOOT-PROBE=wall-timeout-fdc-without-xt-ppi\n");
+    } else printf("BOOT-PROBE=wall-timeout-fdc-and-xt-ppi\n");
     }
 done:
     if (session != LIB_NULL && session->core_machine != LIB_NULL) {
@@ -2256,17 +2257,17 @@ done:
             const lib_u32 idt_linear =
                 session->core_machine->executor_cpu.data.idtr.base + 0x68u;
 
-            STD_PRINTF("BOOT-PROBE=first-fault-mask=%08X-code=%08X-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=first-fault-mask=%08X-code=%08X-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)diagnostic.first_fault.exception_mask,
                 (unsigned int)diagnostic.first_fault.exception_code,
                 (unsigned int)point->linear_pc, (unsigned int)point->bytes[0u],
                 (unsigned int)point->bytes[1u], (unsigned int)point->bytes[2u],
                 (unsigned int)point->bytes[3u]);
-            (C_VOID)core_machine_memory_read(session->core_machine, descriptor_linear,
+            (void)core_machine_memory_read(session->core_machine, descriptor_linear,
                 descriptor, sizeof(descriptor));
-            (C_VOID)core_machine_memory_read(session->core_machine, idt_linear,
+            (void)core_machine_memory_read(session->core_machine, idt_linear,
                 idt_descriptor, sizeof(idt_descriptor));
-            STD_PRINTF("BOOT-PROBE=first-fault-gdtr=%05X/%04X-selector=%04X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=first-fault-gdtr=%05X/%04X-selector=%04X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)session->core_machine->executor_cpu.data.gdtr.base,
                 (unsigned int)session->core_machine->executor_cpu.data.gdtr.limit,
                 (unsigned int)(diagnostic.first_fault.exception_code & 0xffffu),
@@ -2274,26 +2275,26 @@ done:
                 (unsigned int)descriptor[2u], (unsigned int)descriptor[3u],
                 (unsigned int)descriptor[4u], (unsigned int)descriptor[5u],
                 (unsigned int)descriptor[6u], (unsigned int)descriptor[7u]);
-            STD_PRINTF("BOOT-PROBE=first-fault-idtr=%05X/%04X-vector13=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=first-fault-idtr=%05X/%04X-vector13=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)session->core_machine->executor_cpu.data.idtr.base,
                 (unsigned int)session->core_machine->executor_cpu.data.idtr.limit,
                 (unsigned int)idt_descriptor[0u], (unsigned int)idt_descriptor[1u],
                 (unsigned int)idt_descriptor[2u], (unsigned int)idt_descriptor[3u],
                 (unsigned int)idt_descriptor[4u], (unsigned int)idt_descriptor[5u],
                 (unsigned int)idt_descriptor[6u], (unsigned int)idt_descriptor[7u]);
-            (C_VOID)core_machine_memory_read(session->core_machine,
+            (void)core_machine_memory_read(session->core_machine,
                 session->core_machine->executor_cpu.data.gdtr.base + 0x30u,
                 descriptor, sizeof(descriptor));
-            STD_PRINTF("BOOT-PROBE=debug-gdt-30=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=debug-gdt-30=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)descriptor[0u], (unsigned int)descriptor[1u],
                 (unsigned int)descriptor[2u], (unsigned int)descriptor[3u],
                 (unsigned int)descriptor[4u], (unsigned int)descriptor[5u],
                 (unsigned int)descriptor[6u], (unsigned int)descriptor[7u]);
-            STD_PRINTF("BOOT-PROBE=ibm5170-gdt-writes=%llu-last=%05X/%02X\n",
+            printf("BOOT-PROBE=ibm5170-gdt-writes=%llu-last=%05X/%02X\n",
                 (unsigned long long)trace.ibm5170_gdt_writes,
                 (unsigned int)trace.ibm5170_gdt_last_address,
                 (unsigned int)trace.ibm5170_gdt_last_value);
-            STD_PRINTF("BOOT-PROBE=ibm5170-rep-stos=entries:%llu-es:%04X/%05X-di:%04X-cx:%04X-ax:%04X\n",
+            printf("BOOT-PROBE=ibm5170-rep-stos=entries:%llu-es:%04X/%05X-di:%04X-cx:%04X-ax:%04X\n",
                 (unsigned long long)trace.ibm5170_rep_stos_entries,
                 (unsigned int)trace.ibm5170_rep_stos_es,
                 (unsigned int)trace.ibm5170_rep_stos_es_base,
@@ -2305,7 +2306,7 @@ done:
             const core_machine_cpu_execution_point *point =
                 &diagnostic.last_delivered_exception.point;
 
-            STD_PRINTF("BOOT-PROBE=last-delivered-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=last-delivered-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)point->linear_pc, (unsigned int)point->bytes[0u],
                 (unsigned int)point->bytes[1u], (unsigned int)point->bytes[2u],
                 (unsigned int)point->bytes[3u]);
@@ -2314,7 +2315,7 @@ done:
             const core_machine_cpu_execution_point *point =
                 &trace.model40_invalid_entry_source;
 
-            STD_PRINTF("BOOT-PROBE=model40-invalid-entry-source=%05X-bytes=%02X,%02X,%02X,%02X-ss=%04X-sp=%04X\n",
+            printf("BOOT-PROBE=model40-invalid-entry-source=%05X-bytes=%02X,%02X,%02X,%02X-ss=%04X-sp=%04X\n",
                 (unsigned int)point->linear_pc, (unsigned int)point->bytes[0u],
                 (unsigned int)point->bytes[1u], (unsigned int)point->bytes[2u],
                 (unsigned int)point->bytes[3u], (unsigned int)trace.model40_invalid_entry_ss,
@@ -2327,7 +2328,7 @@ done:
                 trace.model40_int10_vector_write_count :
                 VM_BYOB_MODEL40_INT10_VECTOR_HISTORY;
 
-            STD_PRINTF("BOOT-PROBE=model40-int10-vector-writer=%llu-%05X-cs=%04X-vector=%04X:%04X\n",
+            printf("BOOT-PROBE=model40-int10-vector-writer=%llu-%05X-cs=%04X-vector=%04X:%04X\n",
                 (unsigned long long)trace.model40_int10_vector_write_count,
                 (unsigned int)trace.model40_int10_vector_write_pc,
                 (unsigned int)trace.model40_int10_vector_write_cs,
@@ -2338,7 +2339,7 @@ done:
                     (trace.model40_int10_vector_write_count - count + entry) %
                     VM_BYOB_MODEL40_INT10_VECTOR_HISTORY);
 
-                STD_PRINTF("BOOT-PROBE=model40-int10-vector-write-%05X-cs=%04X=%04X:%04X\n",
+                printf("BOOT-PROBE=model40-int10-vector-write-%05X-cs=%04X=%04X:%04X\n",
                     (unsigned int)trace.model40_int10_vector_history_pc[index],
                     (unsigned int)trace.model40_int10_vector_history_cs[index],
                     (unsigned int)trace.model40_int10_vector_history_segment[index],
@@ -2350,29 +2351,29 @@ done:
             lib_u16 int42_segment = 0u;
             lib_u64 entry;
 
-            (C_VOID)core_machine_memory_read(session->core_machine, 0x0108u,
+            (void)core_machine_memory_read(session->core_machine, 0x0108u,
                 &int42_offset, sizeof(int42_offset));
-            (C_VOID)core_machine_memory_read(session->core_machine, 0x010au,
+            (void)core_machine_memory_read(session->core_machine, 0x010au,
                 &int42_segment, sizeof(int42_segment));
-            STD_PRINTF("BOOT-PROBE=model40-int42-vector=%04X:%04X\n",
+            printf("BOOT-PROBE=model40-int42-vector=%04X:%04X\n",
                 (unsigned int)int42_segment, (unsigned int)int42_offset);
             for (entry = 0u; entry < trace.model40_int42_vector_write_count &&
                     entry < VM_BYOB_MODEL40_INT10_VECTOR_HISTORY; ++entry) {
-                STD_PRINTF("BOOT-PROBE=model40-int42-vector-write-%05X=%04X:%04X\n",
+                printf("BOOT-PROBE=model40-int42-vector-write-%05X=%04X:%04X\n",
                     (unsigned int)trace.model40_int42_vector_write_pc[entry],
                     (unsigned int)trace.model40_int42_vector_history_segment[entry],
                     (unsigned int)trace.model40_int42_vector_history_offset[entry]);
             }
         }
         if (trace.model40_int10_entry_count != 0u) {
-            STD_PRINTF("BOOT-PROBE=model40-int10-entry=%llu-predecessor=%05X-ss=%04X-sp=%04X\n",
+            printf("BOOT-PROBE=model40-int10-entry=%llu-predecessor=%05X-ss=%04X-sp=%04X\n",
                 (unsigned long long)trace.model40_int10_entry_count,
                 (unsigned int)trace.model40_int10_entry_predecessor,
                 (unsigned int)trace.model40_int10_entry_ss,
                 (unsigned int)trace.model40_int10_entry_sp);
         }
         if (trace.model40_int10_iret_frame_observed) {
-            STD_PRINTF("BOOT-PROBE=model40-int10-iret-frame=%llu-pc:%05X-cs-default-32:%u-ss:%04X-base:%08X-limit:%08X-big:%u-esp:%08X-words:%04X,%04X,%04X,%04X\n",
+            printf("BOOT-PROBE=model40-int10-iret-frame=%llu-pc:%05X-cs-default-32:%u-ss:%04X-base:%08X-limit:%08X-big:%u-esp:%08X-words:%04X,%04X,%04X,%04X\n",
                 (unsigned long long)trace.model40_int10_iret_frame_count,
                 (unsigned int)trace.model40_int10_iret_frame_pc,
                 (unsigned int)trace.model40_int10_iret_cs_default_32,
@@ -2387,7 +2388,7 @@ done:
                 (unsigned int)trace.model40_int10_iret_words[3u]);
         }
         if (trace.model40_bios_iret_frame_observed) {
-            STD_PRINTF("BOOT-PROBE=model40-bios-iret-frame=ss:%04X-sp:%04X-words:%04X,%04X,%04X,%04X\n",
+            printf("BOOT-PROBE=model40-bios-iret-frame=ss:%04X-sp:%04X-words:%04X,%04X,%04X,%04X\n",
                 (unsigned int)trace.model40_bios_iret_ss,
                 (unsigned int)trace.model40_bios_iret_sp,
                 (unsigned int)trace.model40_bios_iret_words[0u],
@@ -2395,10 +2396,10 @@ done:
                 (unsigned int)trace.model40_bios_iret_words[2u],
                 (unsigned int)trace.model40_bios_iret_words[3u]);
         }
-        STD_PRINTF("BOOT-PROBE=model40-video-rom-entries=%llu-first=%05X\n",
+        printf("BOOT-PROBE=model40-video-rom-entries=%llu-first=%05X\n",
             (unsigned long long)trace.model40_video_rom_entries,
             (unsigned int)trace.model40_video_rom_first_pc);
-        STD_PRINTF("BOOT-PROBE=model40-video-special=3C2:%llu/%02X-3C6:%llu/%02X-7C6:%llu/%02X-BC6:%llu/%02X-FC6:%llu/%02X\n",
+        printf("BOOT-PROBE=model40-video-special=3C2:%llu/%02X-3C6:%llu/%02X-7C6:%llu/%02X-BC6:%llu/%02X-FC6:%llu/%02X\n",
             (unsigned long long)trace.model40_video_special_accesses[0u],
             (unsigned int)trace.model40_video_special_last_values[0u],
             (unsigned long long)trace.model40_video_special_accesses[1u],
@@ -2409,7 +2410,7 @@ done:
             (unsigned int)trace.model40_video_special_last_values[3u],
             (unsigned long long)trace.model40_video_special_accesses[4u],
             (unsigned int)trace.model40_video_special_last_values[4u]);
-        STD_PRINTF("BOOT-PROBE=model40-video-error-port-84=%llu/%02X-at-%05X\n",
+        printf("BOOT-PROBE=model40-video-error-port-84=%llu/%02X-at-%05X\n",
             (unsigned long long)trace.model40_video_error_writes,
             (unsigned int)trace.model40_video_error_last_value,
             (unsigned int)trace.model40_video_error_last_pc);
@@ -2427,7 +2428,7 @@ done:
                 const vm_byob_fdc_port_event *record =
                     &trace.model40_video_special_history[index];
 
-                STD_PRINTF("BOOT-PROBE=model40-video-special-port-%05X-%c-%04X-%02X\n",
+                printf("BOOT-PROBE=model40-video-special-port-%05X-%c-%04X-%02X\n",
                     (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
                     (unsigned int)record->port, (unsigned int)record->value);
             }
@@ -2444,7 +2445,7 @@ done:
                 const vm_byob_fdc_port_event *record =
                     &trace.model40_video_port_history[index];
 
-                STD_PRINTF("BOOT-PROBE=model40-video-port-%05X-%c-%04X-%02X\n",
+                printf("BOOT-PROBE=model40-video-port-%05X-%c-%04X-%02X\n",
                     (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
                     (unsigned int)record->port, (unsigned int)record->value);
             }
@@ -2453,13 +2454,13 @@ done:
             const core_machine_cpu_execution_point *point =
                 &diagnostic.first_delivered_exception.point;
 
-            STD_PRINTF("BOOT-PROBE=first-delivered-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=first-delivered-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)point->linear_pc, (unsigned int)point->bytes[0u],
                 (unsigned int)point->bytes[1u], (unsigned int)point->bytes[2u],
                 (unsigned int)point->bytes[3u]);
         }
         if (trace.int6_vector_write_mask != 0u) {
-            STD_PRINTF("BOOT-PROBE=int6-vector-write-mask=%02X-bytes=%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=int6-vector-write-mask=%02X-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)trace.int6_vector_write_mask,
                 (unsigned int)trace.int6_vector_write_bytes[0u],
                 (unsigned int)trace.int6_vector_write_bytes[1u],
@@ -2467,7 +2468,7 @@ done:
                 (unsigned int)trace.int6_vector_write_bytes[3u]);
         }
         if (trace.int6_pre_fault_snapshot_valid) {
-            STD_PRINTF("BOOT-PROBE=int6-vector-before-66-prefix=%04X:%04X\n",
+            printf("BOOT-PROBE=int6-vector-before-66-prefix=%04X:%04X\n",
                 (unsigned int)trace.int6_pre_fault_segment,
                 (unsigned int)trace.int6_pre_fault_offset);
         }
@@ -2482,7 +2483,7 @@ done:
                 const core_machine_cpu_execution_point *point =
                     &trace.near_ud_history[history_index];
 
-                STD_PRINTF("BOOT-PROBE=pre-ud-%u-pc=%05X-bytes=%02X,%02X,%02X,%02X-flags=%08X-eax=%08X-ebx=%08X\n",
+                printf("BOOT-PROBE=pre-ud-%u-pc=%05X-bytes=%02X,%02X,%02X,%02X-flags=%08X-eax=%08X-ebx=%08X\n",
                     (unsigned int)index, (unsigned int)point->linear_pc,
                     (unsigned int)point->bytes[0u], (unsigned int)point->bytes[1u],
                     (unsigned int)point->bytes[2u], (unsigned int)point->bytes[3u],
@@ -2492,26 +2493,26 @@ done:
             }
         }
         if (trace.real_286_high_flags_observed) {
-            STD_PRINTF("BOOT-PROBE=real-286-high-flags-pc=%05X-flags=%08X\n",
+            printf("BOOT-PROBE=real-286-high-flags-pc=%05X-flags=%08X\n",
                 (unsigned int)trace.real_286_high_flags_point.linear_pc,
                 (unsigned int)trace.real_286_high_flags_value);
         }
         if (trace.int15_calls != 0u) {
-            STD_PRINTF("BOOT-PROBE=int15-calls=%llu-services=%02X-last-ah=%02X\n",
+            printf("BOOT-PROBE=int15-calls=%llu-services=%02X-last-ah=%02X\n",
                 (unsigned long long)trace.int15_calls,
                 (unsigned int)trace.int15_ah_seen,
                 (unsigned int)trace.last_int15_ah);
         }
-        STD_PRINTF("BOOT-PROBE=final-executed=%llu-trace-retires=%llu-runs=%llu-last-reason=%u\n",
+        printf("BOOT-PROBE=final-executed=%llu-trace-retires=%llu-runs=%llu-last-reason=%u\n",
             (unsigned long long)executed_total,
             (unsigned long long)trace.cpu_retires,
             (unsigned long long)run_count, (unsigned int)last_reason);
-        STD_PRINTF("BOOT-PROBE=final-pc=%05X-elapsed=%llu\n",
+        printf("BOOT-PROBE=final-pc=%05X-elapsed=%llu\n",
             (unsigned int)linear_pc,
             (unsigned long long)session->core_machine->elapsed_ticks);
         if (core_machine_memory_read(session->core_machine, linear_pc,
-                next_instruction_bytes, sizeof(next_instruction_bytes)) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=next-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+                next_instruction_bytes, sizeof(next_instruction_bytes)) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=next-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)next_instruction_bytes[0u],
                 (unsigned int)next_instruction_bytes[1u],
                 (unsigned int)next_instruction_bytes[2u],
@@ -2521,7 +2522,7 @@ done:
                 (unsigned int)next_instruction_bytes[6u],
                 (unsigned int)next_instruction_bytes[7u]);
         }
-        STD_PRINTF("BOOT-PROBE=final-cx=%04X-dx=%04X-di=%04X-ds=%04X-es=%04X-ax=%04X-bp=%04X\n",
+        printf("BOOT-PROBE=final-cx=%04X-dx=%04X-di=%04X-ds=%04X-es=%04X-ax=%04X-bp=%04X\n",
             (unsigned int)(session->core_machine->executor_cpu.data.ecx & 0xffffu),
             (unsigned int)(session->core_machine->executor_cpu.data.edx & 0xffffu),
             (unsigned int)(session->core_machine->executor_cpu.data.edi & 0xffffu),
@@ -2529,7 +2530,7 @@ done:
             (unsigned int)session->core_machine->executor_cpu.data.es.selector,
             (unsigned int)(session->core_machine->executor_cpu.data.eax & 0xffffu),
             (unsigned int)(session->core_machine->executor_cpu.data.ebp & 0xffffu));
-        STD_PRINTF("BOOT-PROBE=pit0-count=%04X-latch=%04X-remaining=%u-latched=%u-active=%u-read=%u"
+        printf("BOOT-PROBE=pit0-count=%04X-latch=%04X-remaining=%u-latched=%u-active=%u-read=%u"
             "-pit1-count=%04X-remaining=%u-active=%u-output=%u-clock=%u/%llu\n",
             (unsigned int)session->core_machine->shared_pit.data.count[0u],
             (unsigned int)session->core_machine->shared_pit.data.latch[0u],
@@ -2543,7 +2544,7 @@ done:
             (unsigned int)session->core_machine->shared_pit.data.flagOutput[1u],
             (unsigned int)session->core_machine->pit_clock.phase,
             (unsigned long long)session->core_machine->pit_clock.delivered_ticks);
-        STD_PRINTF("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
+        printf("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
             (unsigned int)session->core_machine->fdc.data.phase,
             (unsigned int)session->core_machine->fdc.data.dor,
             (unsigned int)session->core_machine->fdc.data.msr,
@@ -2554,25 +2555,25 @@ done:
             (unsigned int)session->core_machine->fdc.data.reset_sense_mask,
             (unsigned int)session->core_machine->fdc.data.seek_result_count,
             (unsigned int)session->core_machine->fdc.data.cylinder);
-        STD_PRINTF("BOOT-PROBE=fdc-result=%02X-length=%u-index=%u-st3=%02X\n",
+        printf("BOOT-PROBE=fdc-result=%02X-length=%u-index=%u-st3=%02X\n",
             (unsigned int)session->core_machine->fdc.data.ret[0u],
             (unsigned int)session->core_machine->fdc.data.result_length,
             (unsigned int)session->core_machine->fdc.data.result_index,
             (unsigned int)session->core_machine->fdc.data.st3);
-        STD_PRINTF("BOOT-PROBE=last-fdc-command=%02X-phase=%u-st=%02X/%02X/%02X\n",
+        printf("BOOT-PROBE=last-fdc-command=%02X-phase=%u-st=%02X/%02X/%02X\n",
             (unsigned int)last_fdc_command, (unsigned int)last_fdc_phase,
             (unsigned int)last_fdc_result[0u], (unsigned int)last_fdc_result[1u],
             (unsigned int)last_fdc_result[2u]);
-        STD_PRINTF("BOOT-PROBE=last-fdc-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+        printf("BOOT-PROBE=last-fdc-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
             (unsigned int)last_fdc_bytes[0u], (unsigned int)last_fdc_bytes[1u],
             (unsigned int)last_fdc_bytes[2u], (unsigned int)last_fdc_bytes[3u],
             (unsigned int)last_fdc_bytes[4u], (unsigned int)last_fdc_bytes[5u],
             (unsigned int)last_fdc_bytes[6u], (unsigned int)last_fdc_bytes[7u],
             (unsigned int)last_fdc_bytes[8u]);
-        STD_PRINTF("BOOT-PROBE=last-fdc-remaining=%u-dma2-address=%04X-count=%04X-mode=%02X\n",
+        printf("BOOT-PROBE=last-fdc-remaining=%u-dma2-address=%04X-count=%04X-mode=%02X\n",
             (unsigned int)last_fdc_remaining, (unsigned int)last_dma_address,
             (unsigned int)last_dma_count, (unsigned int)last_dma_mode);
-        STD_PRINTF("BOOT-PROBE=fdc-terminals=%llu-failed=%llu-last=%02X/%u/%02X,%02X,%02X\n",
+        printf("BOOT-PROBE=fdc-terminals=%llu-failed=%llu-last=%02X/%u/%02X,%02X,%02X\n",
             (unsigned long long)trace.fdc_terminal_count,
             (unsigned long long)trace.fdc_failed_terminal_count,
             (unsigned int)trace.last_fdc_terminal.command,
@@ -2580,7 +2581,7 @@ done:
             (unsigned int)trace.last_fdc_terminal.result[0u],
             (unsigned int)trace.last_fdc_terminal.result[1u],
             (unsigned int)trace.last_fdc_terminal.result[2u]);
-        STD_PRINTF("BOOT-PROBE=model40-resume=%llu-resume-predecessor=%05X-resume-ax=%04X-post-setup=%llu-post-predecessor=%05X-video-clear=%llu-delay=%llu-delay-predecessor=%05X\n",
+        printf("BOOT-PROBE=model40-resume=%llu-resume-predecessor=%05X-resume-ax=%04X-post-setup=%llu-post-predecessor=%05X-video-clear=%llu-delay=%llu-delay-predecessor=%05X\n",
             (unsigned long long)trace.model40_resume_entries,
             (unsigned int)trace.model40_resume_predecessor,
             (unsigned int)trace.model40_resume_ax,
@@ -2589,17 +2590,17 @@ done:
             (unsigned long long)trace.model40_video_clear_entries,
             (unsigned long long)trace.model40_video_delay_entries,
             (unsigned int)trace.model40_video_delay_predecessor);
-        STD_PRINTF("BOOT-PROBE=model40-d4-control=%02X-ram-setup=%04X\n",
+        printf("BOOT-PROBE=model40-d4-control=%02X-ram-setup=%04X\n",
             (unsigned int)session->core_machine->d4_memory.control,
             (unsigned int)session->core_machine->d4_memory.ram_setup);
-        STD_PRINTF("BOOT-PROBE=model40-reset-vector-target=%llu-predecessor=%05X\n",
+        printf("BOOT-PROBE=model40-reset-vector-target=%llu-predecessor=%05X\n",
             (unsigned long long)trace.model40_reset_vector_target_entries,
             (unsigned int)trace.model40_reset_vector_target_predecessor);
-        STD_PRINTF("BOOT-PROBE=model40-post-latch-writes=%llu-last=%05X-%02X\n",
+        printf("BOOT-PROBE=model40-post-latch-writes=%llu-last=%05X-%02X\n",
             (unsigned long long)trace.model40_post_latch_writes,
             (unsigned int)trace.model40_post_latch_last_pc,
             (unsigned int)trace.model40_post_latch_last_value);
-        STD_PRINTF("BOOT-PROBE=model40-post-latch-paths=FD41D:%llu/%05X-FD434:%llu/%05X-FD44C:%llu/%05X-FD461:%llu/%05X-FD49E:%llu/%05X\n",
+        printf("BOOT-PROBE=model40-post-latch-paths=FD41D:%llu/%05X-FD434:%llu/%05X-FD44C:%llu/%05X-FD461:%llu/%05X-FD49E:%llu/%05X\n",
             (unsigned long long)trace.model40_post_latch_path_entries[0u],
             (unsigned int)trace.model40_post_latch_path_predecessors[0u],
             (unsigned long long)trace.model40_post_latch_path_entries[1u],
@@ -2610,26 +2611,26 @@ done:
             (unsigned int)trace.model40_post_latch_path_predecessors[3u],
             (unsigned long long)trace.model40_post_latch_path_entries[4u],
             (unsigned int)trace.model40_post_latch_path_predecessors[4u]);
-        STD_PRINTF("BOOT-PROBE=model40-resume-prompt=%llu/%05X-wait=%llu/%05X\n",
+        printf("BOOT-PROBE=model40-resume-prompt=%llu/%05X-wait=%llu/%05X\n",
             (unsigned long long)trace.model40_resume_prompt_entries,
             (unsigned int)trace.model40_resume_prompt_predecessor,
             (unsigned long long)trace.model40_resume_wait_entries,
             (unsigned int)trace.model40_resume_wait_predecessor);
-        STD_PRINTF("BOOT-PROBE=model40-post-status-helper=%llu/%05X-value=%02X\n",
+        printf("BOOT-PROBE=model40-post-status-helper=%llu/%05X-value=%02X\n",
             (unsigned long long)trace.model40_post_status_helper_entries,
             (unsigned int)trace.model40_post_status_helper_predecessor,
             (unsigned int)trace.model40_post_status_value);
-        STD_PRINTF("BOOT-PROBE=model40-memory-address-error=%llu/%05X-ds=%04X/%08X-status=%04X\n",
+        printf("BOOT-PROBE=model40-memory-address-error=%llu/%05X-ds=%04X/%08X-status=%04X\n",
             (unsigned long long)trace.model40_memory_address_error_entries,
             (unsigned int)trace.model40_memory_address_error_predecessor,
             (unsigned int)trace.model40_memory_address_error_ds,
             (unsigned int)trace.model40_memory_address_error_ds_base,
             (unsigned int)trace.model40_memory_address_error_status);
-        STD_PRINTF("BOOT-PROBE=model40-memory-address-test=%llu-flags=%08X-status=%04X\n",
+        printf("BOOT-PROBE=model40-memory-address-test=%llu-flags=%08X-status=%04X\n",
             (unsigned long long)trace.model40_memory_address_test_entries,
             (unsigned int)trace.model40_memory_address_test_eflags,
             (unsigned int)trace.model40_memory_address_test_status);
-        STD_PRINTF("BOOT-PROBE=model40-memory-pattern=%llu-es=%04X/%08X-after=%08X-eax=%08X-edi=%08X-value=%04X\n",
+        printf("BOOT-PROBE=model40-memory-pattern=%llu-es=%04X/%08X-after=%08X-eax=%08X-edi=%08X-value=%04X\n",
             (unsigned long long)trace.model40_memory_pattern_entries,
             (unsigned int)trace.model40_memory_pattern_es_selector,
             (unsigned int)trace.model40_memory_pattern_es_base,
@@ -2637,7 +2638,7 @@ done:
             (unsigned int)trace.model40_memory_pattern_after_eax,
             (unsigned int)trace.model40_memory_pattern_after_edi,
             (unsigned int)trace.model40_memory_pattern_after_value);
-        STD_PRINTF("BOOT-PROBE=model40-ram-post=entry:%llu-return:%llu-failure:%llu\n",
+        printf("BOOT-PROBE=model40-ram-post=entry:%llu-return:%llu-failure:%llu\n",
             (unsigned long long)trace.model40_ram_post_entries,
             (unsigned long long)trace.model40_ram_post_returns,
             (unsigned long long)trace.model40_ram_post_failures);
@@ -2645,31 +2646,31 @@ done:
             trace.model40_memory_compare_failures != 0u) {
             lib_size index;
 
-            STD_PRINTF("BOOT-PROBE=model40-memory-bases=");
+            printf("BOOT-PROBE=model40-memory-bases=");
             for (index = 0u; index < VM_BYOB_MODEL40_MEMORY_BASE_HISTORY; ++index)
-                STD_PRINTF("%08X/%08X%s",
+                printf("%08X/%08X%s",
                     (unsigned int)trace.model40_memory_pattern_bases[index],
                     (unsigned int)trace.model40_memory_compare_bases[index],
                     index + 1u == VM_BYOB_MODEL40_MEMORY_BASE_HISTORY ? "\n" : ",");
         }
-        STD_PRINTF("BOOT-PROBE=model40-memory-1e-writes=%llu-pc=%05X-value=%02X\n",
+        printf("BOOT-PROBE=model40-memory-1e-writes=%llu-pc=%05X-value=%02X\n",
             (unsigned long long)trace.model40_memory_1e_writes,
             (unsigned int)trace.model40_memory_1e_last_pc,
             (unsigned int)trace.model40_memory_1e_last_value);
-    STD_PRINTF("BOOT-PROBE=model40-memory-high-write-cycles=%llu-first=%05X/%02X-last=%05X/%05X/%02X\n",
+    printf("BOOT-PROBE=model40-memory-high-write-cycles=%llu-first=%05X/%02X-last=%05X/%05X/%02X\n",
             (unsigned long long)trace.model40_memory_high_writes,
             (unsigned int)trace.model40_memory_high_first_address,
             (unsigned int)trace.model40_memory_high_first_value,
             (unsigned int)trace.model40_memory_high_last_address,
             (unsigned int)trace.model40_memory_high_last_pc,
             (unsigned int)trace.model40_memory_high_last_value);
-        STD_PRINTF("BOOT-PROBE=model40-memory-b-window-writes=%llu-first=%05X-last=%05X-at-mismatch=%llu/%05X\n",
+        printf("BOOT-PROBE=model40-memory-b-window-writes=%llu-first=%05X-last=%05X-at-mismatch=%llu/%05X\n",
             (unsigned long long)trace.model40_memory_b_window_writes,
             (unsigned int)trace.model40_memory_b_window_first_pc,
             (unsigned int)trace.model40_memory_b_window_last_pc,
             (unsigned long long)trace.model40_memory_b_window_writes_at_mismatch,
             (unsigned int)trace.model40_memory_b_window_last_pc_at_mismatch);
-        STD_PRINTF("BOOT-PROBE=model40-memory-b-first-word-writes=%llu-last=%05X/%04X-retirements=%llu-video-disabled=%u-gdc6=%02X-seq0=%02X\n",
+        printf("BOOT-PROBE=model40-memory-b-first-word-writes=%llu-last=%05X/%04X-retirements=%llu-video-disabled=%u-gdc6=%02X-seq0=%02X\n",
             (unsigned long long)trace.model40_memory_b_first_word_writes,
             (unsigned int)trace.model40_memory_b_first_word_last_pc,
             (unsigned int)trace.model40_memory_b_first_word_last_value,
@@ -2677,11 +2678,11 @@ done:
             (unsigned int)trace.model40_memory_b_first_word_video_memory_disabled,
             (unsigned int)trace.model40_memory_b_first_word_graphics_6,
             (unsigned int)trace.model40_memory_b_first_word_sequencer_0);
-        STD_PRINTF("BOOT-PROBE=model40-memory-fb-page-writes=%llu-first=%05X-last=%05X\n",
+        printf("BOOT-PROBE=model40-memory-fb-page-writes=%llu-first=%05X-last=%05X\n",
             (unsigned long long)trace.model40_memory_fb_page_writes,
             (unsigned int)trace.model40_memory_fb_page_first_pc,
             (unsigned int)trace.model40_memory_fb_page_last_pc);
-        STD_PRINTF("BOOT-PROBE=model40-memory-fb-first-word-writes=%llu-last=%05X/%04X-retirements=%llu\n",
+        printf("BOOT-PROBE=model40-memory-fb-first-word-writes=%llu-last=%05X/%04X-retirements=%llu\n",
             (unsigned long long)trace.model40_memory_fb_first_word_writes,
             (unsigned int)trace.model40_memory_fb_first_word_last_pc,
             (unsigned int)trace.model40_memory_fb_first_word_last_value,
@@ -2697,7 +2698,7 @@ done:
             for (index = 0u; index < count; ++index) {
                 const lib_size slot = (first + index) % VM_BYOB_MODEL40_ES_HISTORY;
 
-                STD_PRINTF("BOOT-PROBE=model40-es-change-%u=%05X-%04X/%08X-cr0=%08X\n",
+                printf("BOOT-PROBE=model40-es-change-%u=%05X-%04X/%08X-cr0=%08X\n",
                     (unsigned int)index,
                     (unsigned int)trace.model40_es_change_pcs[slot],
                     (unsigned int)trace.model40_es_change_selectors[slot],
@@ -2705,11 +2706,11 @@ done:
                     (unsigned int)trace.model40_es_change_cr0[slot]);
             }
         }
-        STD_PRINTF("BOOT-PROBE=model40-memory-pattern-writes=%llu-first=%05X-last=%05X\n",
+        printf("BOOT-PROBE=model40-memory-pattern-writes=%llu-first=%05X-last=%05X\n",
             (unsigned long long)trace.model40_memory_pattern_write_count,
             (unsigned int)trace.model40_memory_pattern_write_first_address,
             (unsigned int)trace.model40_memory_pattern_write_last_address);
-        STD_PRINTF("BOOT-PROBE=model40-memory-compare-failures=%llu-branches=%llu-eax=%08X-edi=%08X-es=%04X/%08X-cr0=%08X-gdtr=%08X/%08X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-value=%04X\n",
+        printf("BOOT-PROBE=model40-memory-compare-failures=%llu-branches=%llu-eax=%08X-edi=%08X-es=%04X/%08X-cr0=%08X-gdtr=%08X/%08X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-value=%04X\n",
             (unsigned long long)trace.model40_memory_compare_failures,
             (unsigned long long)trace.model40_memory_compare_branch_taken,
             (unsigned int)trace.model40_memory_compare_eax,
@@ -2728,7 +2729,7 @@ done:
             (unsigned int)trace.model40_memory_compare_descriptor[6u],
             (unsigned int)trace.model40_memory_compare_descriptor[7u],
             (unsigned int)trace.model40_memory_compare_value);
-        STD_PRINTF("BOOT-PROBE=model40-memory-address-failures=%llu-ds=%04X-si=%04X-eax=%08X-ebx=%08X-ebp=%08X-flags=%08X\n",
+        printf("BOOT-PROBE=model40-memory-address-failures=%llu-ds=%04X-si=%04X-eax=%08X-ebx=%08X-ebp=%08X-flags=%08X\n",
             (unsigned long long)trace.model40_memory_address_failures,
             (unsigned int)trace.model40_memory_address_failure_ds,
             (unsigned int)trace.model40_memory_address_failure_si,
@@ -2736,28 +2737,28 @@ done:
             (unsigned int)trace.model40_memory_address_failure_ebx,
             (unsigned int)trace.model40_memory_address_failure_ebp,
             (unsigned int)trace.model40_memory_address_failure_eflags);
-        STD_PRINTF("BOOT-PROBE=model40-memory-scas=%llu-ax=%04X-di=%04X-es=%04X/%08X-flags=%08X\n",
+        printf("BOOT-PROBE=model40-memory-scas=%llu-ax=%04X-di=%04X-es=%04X/%08X-flags=%08X\n",
             (unsigned long long)trace.model40_memory_scas_entries,
             (unsigned int)trace.model40_memory_scas_ax,
             (unsigned int)trace.model40_memory_scas_di,
             (unsigned int)trace.model40_memory_scas_es,
             (unsigned int)trace.model40_memory_scas_es_base,
             (unsigned int)trace.model40_memory_scas_eflags);
-        STD_PRINTF("BOOT-PROBE=model40-memory-mismatch=%llu-ax=%04X-di=%04X-es=%04X/%08X-value=%04X\n",
+        printf("BOOT-PROBE=model40-memory-mismatch=%llu-ax=%04X-di=%04X-es=%04X/%08X-value=%04X\n",
             (unsigned long long)trace.model40_memory_mismatch_entries,
             (unsigned int)trace.model40_memory_mismatch_ax,
             (unsigned int)trace.model40_memory_mismatch_di,
             (unsigned int)trace.model40_memory_mismatch_es,
             (unsigned int)trace.model40_memory_mismatch_es_base,
             (unsigned int)trace.model40_memory_mismatch_value);
-        STD_PRINTF("BOOT-PROBE=model40-memory-test-return=%llu-ax=%04X\n",
+        printf("BOOT-PROBE=model40-memory-test-return=%llu-ax=%04X\n",
             (unsigned long long)trace.model40_memory_test_return_entries,
             (unsigned int)trace.model40_memory_test_return_ax);
-        STD_PRINTF("BOOT-PROBE=model40-memory-test-entry=%llu-dx=%04X-ax=%04X\n",
+        printf("BOOT-PROBE=model40-memory-test-entry=%llu-dx=%04X-ax=%04X\n",
             (unsigned long long)trace.model40_memory_test_entries,
             (unsigned int)trace.model40_memory_test_dx,
             (unsigned int)trace.model40_memory_test_ax_entry);
-        STD_PRINTF("BOOT-PROBE=model40-memory-status-test=ax=%04X-mismatches=%llu-expected=%04X-actual=%04X-offset=%04X-es=%04X/%08X-cr0=%08X-gdtr=%08X/%04X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-video-disabled=%u-gdc6=%02X-seq0=%02X\n",
+        printf("BOOT-PROBE=model40-memory-status-test=ax=%04X-mismatches=%llu-expected=%04X-actual=%04X-offset=%04X-es=%04X/%08X-cr0=%08X-gdtr=%08X/%04X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-video-disabled=%u-gdc6=%02X-seq0=%02X\n",
             (unsigned int)trace.model40_memory_status_test_ax_entry,
             (unsigned long long)trace.model40_memory_status_test_mismatches,
             (unsigned int)trace.model40_memory_status_test_expected,
@@ -2779,7 +2780,7 @@ done:
             (unsigned int)trace.model40_memory_status_test_video_memory_disabled,
             (unsigned int)trace.model40_memory_status_test_graphics_6,
             (unsigned int)trace.model40_memory_status_test_sequencer_0);
-        STD_PRINTF("BOOT-PROBE=model40-memory-status-high-b=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-writes=%llu/%05X/%05X\n",
+        printf("BOOT-PROBE=model40-memory-status-high-b=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-writes=%llu/%05X/%05X\n",
             (unsigned int)trace.model40_memory_status_test_high_b_page[0u],
             (unsigned int)trace.model40_memory_status_test_high_b_page[1u],
             (unsigned int)trace.model40_memory_status_test_high_b_page[2u],
@@ -2799,7 +2800,7 @@ done:
             (unsigned long long)trace.model40_memory_high_b_page_writes,
             (unsigned int)trace.model40_memory_high_b_page_first_pc,
             (unsigned int)trace.model40_memory_high_b_page_last_pc);
-        STD_PRINTF("BOOT-PROBE=model40-memory-pattern-producer=entries:%llu-high-b-writes:%llu\n",
+        printf("BOOT-PROBE=model40-memory-pattern-producer=entries:%llu-high-b-writes:%llu\n",
             (unsigned long long)trace.model40_memory_pattern_producer_entries,
             (unsigned long long)trace.model40_memory_pattern_producer_high_b_writes);
         {
@@ -2810,7 +2811,7 @@ done:
             lib_size index;
 
             for (index = 0u; index < count; ++index) {
-                STD_PRINTF("BOOT-PROBE=model40-high-b-write-%u=%05X-producer=%u-page=%02X,%02X,%02X,%02X\n",
+                printf("BOOT-PROBE=model40-high-b-write-%u=%05X-producer=%u-page=%02X,%02X,%02X,%02X\n",
                     (unsigned int)index,
                     (unsigned int)trace.model40_memory_high_b_write_pcs[index],
                     (unsigned int)trace.model40_memory_high_b_write_producer[index],
@@ -2820,15 +2821,15 @@ done:
                     (unsigned int)trace.model40_memory_high_b_write_pages[index][3u]);
             }
         }
-        STD_PRINTF("BOOT-PROBE=model40-post-status-58-writes=%llu-last=%05X-value=%04X\n",
+        printf("BOOT-PROBE=model40-post-status-58-writes=%llu-last=%05X-value=%04X\n",
             (unsigned long long)trace.model40_post_status_58_writes,
             (unsigned int)trace.model40_post_status_58_last_pc,
             (unsigned int)trace.model40_post_status_58_last_value);
-        STD_PRINTF("BOOT-PROBE=model40-post-status-58-observer=%llu-last=%05X-value=%02X\n",
+        printf("BOOT-PROBE=model40-post-status-58-observer=%llu-last=%05X-value=%02X\n",
             (unsigned long long)trace.model40_post_status_58_observer_writes,
             (unsigned int)trace.model40_post_status_58_observer_last_pc,
             (unsigned int)trace.model40_post_status_58_observer_last_value);
-        STD_PRINTF("BOOT-PROBE=model40-post-private-status=%llu-last=%05X-value=%04X\n",
+        printf("BOOT-PROBE=model40-post-private-status=%llu-last=%05X-value=%04X\n",
             (unsigned long long)trace.model40_post_private_status_writes,
             (unsigned int)trace.model40_post_private_status_last_pc,
             (unsigned int)trace.model40_post_private_status_last_value);
@@ -2840,7 +2841,7 @@ done:
             lib_size index;
 
             for (index = 0u; index < count; ++index) {
-                STD_PRINTF("BOOT-PROBE=model40-post-private-status-write-%u=%05X/%04X\n",
+                printf("BOOT-PROBE=model40-post-private-status-write-%u=%05X/%04X\n",
                     (unsigned int)index,
                     (unsigned int)trace.model40_post_private_status_pcs[index],
                     (unsigned int)trace.model40_post_private_status_values[index]);
@@ -2854,19 +2855,19 @@ done:
             lib_size index;
 
             for (index = 0u; index < count; ++index) {
-                STD_PRINTF("BOOT-PROBE=model40-post-status-58-write-%u=%05X/%02X\n",
+                printf("BOOT-PROBE=model40-post-status-58-write-%u=%05X/%02X\n",
                     (unsigned int)index,
                     (unsigned int)trace.model40_post_status_58_observer_pcs[index],
                     (unsigned int)trace.model40_post_status_58_observer_values[index]);
             }
         }
-        STD_PRINTF("BOOT-PROBE=model40-port61-reads=%llu-refresh-low=%llu-wait-low=%llu-last=%05X/%02X\n",
+        printf("BOOT-PROBE=model40-port61-reads=%llu-refresh-low=%llu-wait-low=%llu-last=%05X/%02X\n",
             (unsigned long long)trace.model40_port61_reads,
             (unsigned long long)trace.model40_port61_refresh_low_reads,
             (unsigned long long)trace.model40_port61_refresh_low_wait_reads,
             (unsigned int)trace.model40_port61_last_pc,
             (unsigned int)trace.model40_port61_last_value);
-        STD_PRINTF("BOOT-PROBE=ibm5170-refresh-test=reads:%llu-low:%llu-in-ticks:%llu-test-ticks:%llu-loop-ticks:%llu-loop-taken:%llu-loop-not-taken:%llu-count:%04X-valid:%u-error:%llu\n",
+        printf("BOOT-PROBE=ibm5170-refresh-test=reads:%llu-low:%llu-in-ticks:%llu-test-ticks:%llu-loop-ticks:%llu-loop-taken:%llu-loop-not-taken:%llu-count:%04X-valid:%u-error:%llu\n",
             (unsigned long long)trace.ibm5170_refresh_diagnostic_reads,
             (unsigned long long)trace.ibm5170_refresh_diagnostic_low_reads,
             (unsigned long long)trace.ibm5170_refresh_diagnostic_in_ticks,
@@ -2877,12 +2878,12 @@ done:
             (unsigned int)trace.ibm5170_refresh_diagnostic_count,
             (unsigned int)trace.ibm5170_refresh_diagnostic_count_valid,
             (unsigned long long)trace.ibm5170_refresh_diagnostic_error_branch_taken);
-        STD_PRINTF("BOOT-PROBE=model40-memory-test-error-branches=compare:%llu-parity:%llu-port61:%llu/%02X\n",
+        printf("BOOT-PROBE=model40-memory-test-error-branches=compare:%llu-parity:%llu-port61:%llu/%02X\n",
             (unsigned long long)trace.model40_memory_compare_error_branches,
             (unsigned long long)trace.model40_memory_parity_error_branches,
             (unsigned long long)trace.model40_memory_parity_test_reads,
             (unsigned int)trace.model40_memory_parity_test_last_value);
-        STD_PRINTF("BOOT-PROBE=model40-memory-error-exit=%llu-predecessor=%05X-es=%04X-di=%04X-ax=%04X\n",
+        printf("BOOT-PROBE=model40-memory-error-exit=%llu-predecessor=%05X-es=%04X-di=%04X-ax=%04X\n",
             (unsigned long long)trace.model40_memory_error_exit_entries,
             (unsigned int)trace.model40_memory_error_exit_predecessor,
             (unsigned int)trace.model40_memory_error_es,
@@ -2896,7 +2897,7 @@ done:
                 VM_BYOB_MODEL40_POST_STATUS_HELPER_HISTORY;
 
             for (helper_index = 0u; helper_index < helper_count; ++helper_index) {
-                STD_PRINTF("BOOT-PROBE=model40-post-status-helper-caller-%u=%05X\n",
+                printf("BOOT-PROBE=model40-post-status-helper-caller-%u=%05X\n",
                     (unsigned int)helper_index,
                     (unsigned int)trace.model40_post_status_helper_predecessors[helper_index]);
             }
@@ -2913,7 +2914,7 @@ done:
                     writer_index < VM_BYOB_MODEL40_POST_STATUS_WRITERS;
                     ++writer_index) {
                 if (trace.model40_post_status_writer_entries[writer_index] == 0u) continue;
-                STD_PRINTF("BOOT-PROBE=model40-post-status-writer=%05X:%llu/%05X\n",
+                printf("BOOT-PROBE=model40-post-status-writer=%05X:%llu/%05X\n",
                     (unsigned int)writer_pcs[writer_index],
                     (unsigned long long)trace.model40_post_status_writer_entries[writer_index],
                     (unsigned int)trace.model40_post_status_writer_predecessors[writer_index]);
@@ -2922,7 +2923,7 @@ done:
         if (trace.model40_shutdown_diagnostic_valid) {
             lib_size shutdown_index;
 
-            STD_PRINTF("BOOT-PROBE=model40-shutdown-exceptions=%llu-first=%u/%u-last=%u/%u\n",
+            printf("BOOT-PROBE=model40-shutdown-exceptions=%llu-first=%u/%u-last=%u/%u\n",
                 (unsigned long long)trace.model40_shutdown_diagnostic.delivered_exception_count,
                 (unsigned int)trace.model40_shutdown_diagnostic.first_delivered_exception.exception_mask,
                 (unsigned int)trace.model40_shutdown_diagnostic.first_delivered_exception.exception_code,
@@ -2934,21 +2935,21 @@ done:
                 const core_machine_cpu_execution_point *point =
                     &trace.model40_shutdown_diagnostic.recent[shutdown_index];
 
-                STD_PRINTF("BOOT-PROBE=model40-shutdown-recent-%u=%05X-%02X,%02X,%02X,%02X\n",
+                printf("BOOT-PROBE=model40-shutdown-recent-%u=%05X-%02X,%02X,%02X,%02X\n",
                     (unsigned int)shutdown_index, (unsigned int)point->linear_pc,
                     (unsigned int)point->bytes[0u], (unsigned int)point->bytes[1u],
                     (unsigned int)point->bytes[2u], (unsigned int)point->bytes[3u]);
             }
         }
         if (trace.model40_protected_transition_observed) {
-            STD_PRINTF("BOOT-PROBE=model40-gdtr-pointer=%02X,%02X,%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=model40-gdtr-pointer=%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)trace.model40_gdtr_pointer[0u],
                 (unsigned int)trace.model40_gdtr_pointer[1u],
                 (unsigned int)trace.model40_gdtr_pointer[2u],
                 (unsigned int)trace.model40_gdtr_pointer[3u],
                 (unsigned int)trace.model40_gdtr_pointer[4u],
                 (unsigned int)trace.model40_gdtr_pointer[5u]);
-            STD_PRINTF("BOOT-PROBE=model40-gdt=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=model40-gdt=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)trace.model40_gdt[0u], (unsigned int)trace.model40_gdt[1u],
                 (unsigned int)trace.model40_gdt[2u], (unsigned int)trace.model40_gdt[3u],
                 (unsigned int)trace.model40_gdt[4u], (unsigned int)trace.model40_gdt[5u],
@@ -2966,7 +2967,7 @@ done:
                 (unsigned int)trace.model40_gdt[28u], (unsigned int)trace.model40_gdt[29u],
                 (unsigned int)trace.model40_gdt[30u], (unsigned int)trace.model40_gdt[31u]);
         }
-        STD_PRINTF("BOOT-PROBE=kbc-ports=%llu-last=%05X-%04X-%02X\n",
+        printf("BOOT-PROBE=kbc-ports=%llu-last=%05X-%04X-%02X\n",
             (unsigned long long)trace.kbc_port_accesses,
             (unsigned int)trace.kbc_last_pc,
             (unsigned int)trace.kbc_last_port,
@@ -2981,7 +2982,7 @@ done:
                 const vm_byob_fdc_port_event *access = &trace.kbc_port_history[
                     index % VM_BYOB_KBC_WRITE_HISTORY];
 
-                STD_PRINTF("BOOT-PROBE=kbc-port-%llu=%c-%05X-%04X-%02X\n",
+                printf("BOOT-PROBE=kbc-port-%llu=%c-%05X-%04X-%02X\n",
                     (unsigned long long)index, access->write ? 'W' : 'R',
                     (unsigned int)access->linear_pc, (unsigned int)access->port,
                     (unsigned int)access->value);
@@ -2997,17 +2998,17 @@ done:
                 const vm_byob_fdc_port_event *access = &trace.kbc_write_history[
                     index % VM_BYOB_KBC_WRITE_HISTORY];
 
-                STD_PRINTF("BOOT-PROBE=kbc-write-%llu=%05X-%04X-%02X\n",
+                printf("BOOT-PROBE=kbc-write-%llu=%05X-%04X-%02X\n",
                     (unsigned long long)index, (unsigned int)access->linear_pc,
                     (unsigned int)access->port, (unsigned int)access->value);
             }
         }
-        STD_PRINTF("BOOT-PROBE=a20-port-writes=%llu-last=%05X-%02X-kbc-output=%02X\n",
+        printf("BOOT-PROBE=a20-port-writes=%llu-last=%05X-%02X-kbc-output=%02X\n",
             (unsigned long long)trace.a20_port_write_count,
             (unsigned int)trace.a20_port_last_pc,
             (unsigned int)trace.a20_port_last_value,
             (unsigned int)session->core_machine->shared_kbc.data.output_port);
-        STD_PRINTF("BOOT-PROBE=kbc-queue=fifo:%u-delayed:%u/%u-response:%llu-polls:%u-config:%u-bat:%u-command:%02X-enabled:%u\n",
+        printf("BOOT-PROBE=kbc-queue=fifo:%u-delayed:%u/%u-response:%llu-polls:%u-config:%u-bat:%u-command:%02X-enabled:%u\n",
             (unsigned int)session->core_machine->shared_kbc.data.fifo_count,
             (unsigned int)session->core_machine->shared_kbc.data.delayed_response_index,
             (unsigned int)session->core_machine->shared_kbc.data.delayed_response_count,
@@ -3017,25 +3018,25 @@ done:
             (unsigned int)session->core_machine->shared_kbc.data.keyboard_bat_pending,
             (unsigned int)session->core_machine->shared_kbc.data.command_byte,
             (unsigned int)session->core_machine->shared_kbc.data.keyboard_enabled);
-        STD_PRINTF("BOOT-PROBE=kbc-line-enable=%llu/%05X-fifo:%u-bat:%u-irq-pending:%u\n",
+        printf("BOOT-PROBE=kbc-line-enable=%llu/%05X-fifo:%u-bat:%u-irq-pending:%u\n",
             (unsigned long long)trace.kbc_line_enable_writes,
             (unsigned int)trace.kbc_line_enable_pc,
             (unsigned int)trace.kbc_line_enable_fifo,
             (unsigned int)trace.kbc_line_enable_bat_pending,
             (unsigned int)trace.kbc_line_enable_irq_pending);
-        STD_PRINTF("BOOT-PROBE=kbc-self-test=after:%u/%u/%u-first-status:%02X-state:%u/%u\n",
+        printf("BOOT-PROBE=kbc-self-test=after:%u/%u/%u-first-status:%02X-state:%u/%u\n",
             (unsigned int)trace.kbc_after_self_test_fifo,
             (unsigned int)trace.kbc_after_self_test_delayed,
             (unsigned int)trace.kbc_after_self_test_polls,
             (unsigned int)trace.kbc_first_self_test_status,
             (unsigned int)trace.kbc_first_self_test_fifo,
             (unsigned int)trace.kbc_first_self_test_delayed);
-        STD_PRINTF("BOOT-PROBE=kbc-self-test-cpu=input:%04X/%08X-compare:%04X/%08X\n",
+        printf("BOOT-PROBE=kbc-self-test-cpu=input:%04X/%08X-compare:%04X/%08X\n",
             (unsigned int)trace.kbc_self_test_after_input_ax,
             (unsigned int)trace.kbc_self_test_after_input_flags,
             (unsigned int)trace.kbc_self_test_after_compare_ax,
             (unsigned int)trace.kbc_self_test_after_compare_flags);
-        STD_PRINTF("BOOT-PROBE=kbc-self-test-flow=input:%u/%02X,%02X,%02X,%02X-jne:%u/%u,%u,%u,%u\n",
+        printf("BOOT-PROBE=kbc-self-test-flow=input:%u/%02X,%02X,%02X,%02X-jne:%u/%u,%u,%u,%u\n",
             (unsigned int)trace.kbc_self_test_input_count,
             (unsigned int)trace.kbc_self_test_input_values[0u],
             (unsigned int)trace.kbc_self_test_input_values[1u],
@@ -3046,7 +3047,7 @@ done:
             (unsigned int)trace.kbc_self_test_jne_outcomes[1u],
             (unsigned int)trace.kbc_self_test_jne_outcomes[2u],
             (unsigned int)trace.kbc_self_test_jne_outcomes[3u]);
-        STD_PRINTF("BOOT-PROBE=kbc-reset=seen:%u-reads:%u/%04X:%02X,%04X:%02X,%04X:%02X,%04X:%02X\n",
+        printf("BOOT-PROBE=kbc-reset=seen:%u-reads:%u/%04X:%02X,%04X:%02X,%04X:%02X,%04X:%02X\n",
             (unsigned int)trace.kbc_keyboard_reset_seen,
             (unsigned int)trace.kbc_keyboard_reset_read_count,
             (unsigned int)trace.kbc_keyboard_reset_reads[0u].linear_pc,
@@ -3057,7 +3058,7 @@ done:
             (unsigned int)trace.kbc_keyboard_reset_reads[2u].value,
             (unsigned int)trace.kbc_keyboard_reset_reads[3u].linear_pc,
             (unsigned int)trace.kbc_keyboard_reset_reads[3u].value);
-        STD_PRINTF("BOOT-PROBE=kbc-reset-xmit=status:%u/%02X,%02X,%02X,%02X-core:%u/%u\n",
+        printf("BOOT-PROBE=kbc-reset-xmit=status:%u/%02X,%02X,%02X,%02X-core:%u/%u\n",
             (unsigned int)trace.kbc_reset_xmit_status_count,
             (unsigned int)trace.kbc_reset_xmit_status_values[0u],
             (unsigned int)trace.kbc_reset_xmit_status_values[1u],
@@ -3065,15 +3066,15 @@ done:
             (unsigned int)trace.kbc_reset_xmit_status_values[3u],
             (unsigned int)trace.kbc_reset_xmit_input_full,
             (unsigned int)trace.kbc_reset_xmit_pending_write);
-        STD_PRINTF("BOOT-PROBE=kbc-reset-flow=loop:%04X/%u-jcxz:%04X/%u\n",
+        printf("BOOT-PROBE=kbc-reset-flow=loop:%04X/%u-jcxz:%04X/%u\n",
             (unsigned int)trace.kbc_reset_loop_cx,
             (unsigned int)trace.kbc_reset_loop_outcome,
             (unsigned int)trace.kbc_reset_jcxz_cx,
             (unsigned int)trace.kbc_reset_jcxz_outcome);
-        STD_PRINTF("BOOT-PROBE=kbc-reset-out=%u/%02X\n",
+        printf("BOOT-PROBE=kbc-reset-out=%u/%02X\n",
             (unsigned int)trace.kbc_reset_xmit_output_seen,
             (unsigned int)trace.kbc_reset_xmit_output);
-        STD_PRINTF("BOOT-PROBE=kbc-reset-path=%u/%05X,%05X,%05X,%05X,%05X,%05X,%05X,%05X\n",
+        printf("BOOT-PROBE=kbc-reset-path=%u/%05X,%05X,%05X,%05X,%05X,%05X,%05X,%05X\n",
             (unsigned int)trace.kbc_reset_xmit_path_count,
             (unsigned int)trace.kbc_reset_xmit_path[0u],
             (unsigned int)trace.kbc_reset_xmit_path[1u],
@@ -3083,7 +3084,7 @@ done:
             (unsigned int)trace.kbc_reset_xmit_path[5u],
             (unsigned int)trace.kbc_reset_xmit_path[6u],
             (unsigned int)trace.kbc_reset_xmit_path[7u]);
-        STD_PRINTF("BOOT-PROBE=kbc-reset-transactions=%u/%u-%05X-%04X-%02X,%u-%05X-%04X-%02X,%u-%05X-%04X-%02X,%u-%05X-%04X-%02X\n",
+        printf("BOOT-PROBE=kbc-reset-transactions=%u/%u-%05X-%04X-%02X,%u-%05X-%04X-%02X,%u-%05X-%04X-%02X,%u-%05X-%04X-%02X\n",
             (unsigned int)trace.kbc_reset_xmit_transaction_count,
             (unsigned int)trace.kbc_reset_xmit_transactions[0u].type,
             (unsigned int)trace.kbc_reset_xmit_transactions[0u].linear_pc,
@@ -3101,7 +3102,7 @@ done:
             (unsigned int)trace.kbc_reset_xmit_transactions[3u].linear_pc,
             (unsigned int)trace.kbc_reset_xmit_transactions[3u].address,
             (unsigned int)trace.kbc_reset_xmit_transactions[3u].value);
-        STD_PRINTF("BOOT-PROBE=hdc-phase=%u-status=%02X-error=%02X-command=%02X-count=%u-sector=%u-cylinder=%02X%02X-drive-head=%02X\n",
+        printf("BOOT-PROBE=hdc-phase=%u-status=%02X-error=%02X-command=%02X-count=%u-sector=%u-cylinder=%02X%02X-drive-head=%02X\n",
             (unsigned int)session->core_machine->hdc.data.phase,
             (unsigned int)session->core_machine->hdc.data.status,
             (unsigned int)session->core_machine->hdc.data.error,
@@ -3122,7 +3123,7 @@ done:
                     entry) % VM_BYOB_FDC_PORT_HISTORY);
                 const vm_byob_fdc_port_event *record = &trace.fdc_port_history[index];
 
-                STD_PRINTF("BOOT-PROBE=fdc-port-%05X-%c-%04X-%02X\n",
+                printf("BOOT-PROBE=fdc-port-%05X-%c-%04X-%02X\n",
                     (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
                     (unsigned int)record->port,
                     (unsigned int)record->value);
@@ -3139,7 +3140,7 @@ done:
                     entry) % VM_BYOB_HDC_PORT_HISTORY);
                 const vm_byob_fdc_port_event *record = &trace.hdc_port_history[index];
 
-                STD_PRINTF("BOOT-PROBE=hdc-port-%05X-%c-%04X-%02X\n",
+                printf("BOOT-PROBE=hdc-port-%05X-%c-%04X-%02X\n",
                     (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
                     (unsigned int)record->port, (unsigned int)record->value);
             }
@@ -3149,7 +3150,7 @@ done:
 
             for (index = 0u; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
                 if (trace.cmos_reads[index] != 0u || trace.cmos_writes[index] != 0u) {
-                    STD_PRINTF("BOOT-PROBE=cmos-%02X-r=%llu-w=%llu-last=%02X-write-pc=%05X\n",
+                    printf("BOOT-PROBE=cmos-%02X-r=%llu-w=%llu-last=%02X-write-pc=%05X\n",
                         (unsigned int)index,
                         (unsigned long long)trace.cmos_reads[index],
                         (unsigned long long)trace.cmos_writes[index],
@@ -3158,37 +3159,37 @@ done:
                 }
             }
         }
-        STD_PRINTF("BOOT-PROBE=pic-imr=%02X-irr=%02X-isr=%02X-fdc-irq=%u\n",
+        printf("BOOT-PROBE=pic-imr=%02X-irr=%02X-isr=%02X-fdc-irq=%u\n",
             (unsigned int)session->core_machine->shared_pic_master.data.imr,
             (unsigned int)session->core_machine->shared_pic_master.data.irr,
             (unsigned int)session->core_machine->shared_pic_master.data.isr,
             (unsigned int)session->core_machine->fdc.connect.irq_source.asserted);
         if (core_machine_memory_read(session->core_machine, 0x0410u,
-                &bda_equipment, sizeof(bda_equipment)) == TYPE_STATUS_OK &&
+                &bda_equipment, sizeof(bda_equipment)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x0415u,
-                &bda_post_status, sizeof(bda_post_status)) == TYPE_STATUS_OK &&
+                &bda_post_status, sizeof(bda_post_status)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x041au,
-                &bda_keyboard_head, sizeof(bda_keyboard_head)) == TYPE_STATUS_OK &&
+                &bda_keyboard_head, sizeof(bda_keyboard_head)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x041cu,
-                &bda_keyboard_tail, sizeof(bda_keyboard_tail)) == TYPE_STATUS_OK) {
-        (C_VOID)core_machine_memory_read(session->core_machine, 0x0012u,
+                &bda_keyboard_tail, sizeof(bda_keyboard_tail)) == LIB_STATUS_OK) {
+        (void)core_machine_memory_read(session->core_machine, 0x0012u,
             &low_memory_12, sizeof(low_memory_12));
-        STD_PRINTF("BOOT-PROBE=bda-equipment=%04X-post-status=%02X-low12=%02X-kbd-head=%04X-kbd-tail=%04X\n",
+        printf("BOOT-PROBE=bda-equipment=%04X-post-status=%02X-low12=%02X-kbd-head=%04X-kbd-tail=%04X\n",
             (unsigned int)bda_equipment, (unsigned int)bda_post_status,
             (unsigned int)low_memory_12,
             (unsigned int)bda_keyboard_head, (unsigned int)bda_keyboard_tail);
-        (C_VOID)core_machine_memory_read(session->core_machine, 0x0441u,
+        (void)core_machine_memory_read(session->core_machine, 0x0441u,
             &bda_diskette_status, sizeof(bda_diskette_status));
-        (C_VOID)core_machine_memory_read(session->core_machine, 0x043eu,
+        (void)core_machine_memory_read(session->core_machine, 0x043eu,
             &bda_motor_wait, sizeof(bda_motor_wait));
-        (C_VOID)core_machine_memory_read(session->core_machine, 0x043fu,
+        (void)core_machine_memory_read(session->core_machine, 0x043fu,
             &bda_motor_status, sizeof(bda_motor_status));
-        STD_PRINTF("BOOT-PROBE=bda-diskette-status=%02X-motor-wait=%02X-motor-status=%02X\n",
+        printf("BOOT-PROBE=bda-diskette-status=%02X-motor-wait=%02X-motor-status=%02X\n",
             (unsigned int)bda_diskette_status, (unsigned int)bda_motor_wait,
             (unsigned int)bda_motor_status);
         if (core_machine_memory_read(session->core_machine, 0x0480u,
-                bda_wait_state, sizeof(bda_wait_state)) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=bda-80=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,"
+                bda_wait_state, sizeof(bda_wait_state)) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=bda-80=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,"
                 "%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)bda_wait_state[0u], (unsigned int)bda_wait_state[1u],
                 (unsigned int)bda_wait_state[2u], (unsigned int)bda_wait_state[3u],
@@ -3200,60 +3201,60 @@ done:
                 (unsigned int)bda_wait_state[14u], (unsigned int)bda_wait_state[15u]);
         }
         if (core_machine_memory_read(session->core_machine, 0x0490u,
-                bda_wait_state, 4u) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=bda-fdc-post=%02X,%02X,%02X,%02X\n",
+                bda_wait_state, 4u) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=bda-fdc-post=%02X,%02X,%02X,%02X\n",
                 (unsigned int)bda_wait_state[0u], (unsigned int)bda_wait_state[1u],
                 (unsigned int)bda_wait_state[2u], (unsigned int)bda_wait_state[3u]);
         }
         if (core_machine_memory_read(session->core_machine, 0x004cu, &int13_offset,
-                sizeof(int13_offset)) == TYPE_STATUS_OK &&
+                sizeof(int13_offset)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x004eu, &int13_segment,
-                sizeof(int13_segment)) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=int13-vector=%04X:%04X\n",
+                sizeof(int13_segment)) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=int13-vector=%04X:%04X\n",
                 (unsigned int)int13_segment, (unsigned int)int13_offset);
         }
         if (core_machine_memory_read(session->core_machine, 0x0413u, &bda_memory_kib,
-                sizeof(bda_memory_kib)) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=bda-memory-kib=%u\n", (unsigned int)bda_memory_kib);
+                sizeof(bda_memory_kib)) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=bda-memory-kib=%u\n", (unsigned int)bda_memory_kib);
         }
         if (core_machine_memory_read(session->core_machine, 0x0078u, &int1e_offset,
-                sizeof(int1e_offset)) == TYPE_STATUS_OK &&
+                sizeof(int1e_offset)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x007au, &int1e_segment,
-                sizeof(int1e_segment)) == TYPE_STATUS_OK) {
+                sizeof(int1e_segment)) == LIB_STATUS_OK) {
             lib_u8 int1e_bytes[4] = {0u};
 
-            (C_VOID)core_machine_memory_read(session->core_machine,
+            (void)core_machine_memory_read(session->core_machine,
                 (lib_u32)int1e_segment * 16u + int1e_offset,
                 int1e_bytes, sizeof(int1e_bytes));
-            STD_PRINTF("BOOT-PROBE=int1e-vector=%04X:%04X-bytes=%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=int1e-vector=%04X:%04X-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)int1e_segment, (unsigned int)int1e_offset,
                 (unsigned int)int1e_bytes[0u], (unsigned int)int1e_bytes[1u],
                 (unsigned int)int1e_bytes[2u], (unsigned int)int1e_bytes[3u]);
         }
         if (core_machine_memory_read(session->core_machine, 0x0038u, &irq6_offset,
-                sizeof(irq6_offset)) == TYPE_STATUS_OK &&
+                sizeof(irq6_offset)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x003au, &irq6_segment,
-                sizeof(irq6_segment)) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=irq6-vector=%04X:%04X\n",
+                sizeof(irq6_segment)) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=irq6-vector=%04X:%04X\n",
                 (unsigned int)irq6_segment, (unsigned int)irq6_offset);
         }
         if (core_machine_memory_read(session->core_machine, 0x0054u, &int15_offset,
-                sizeof(int15_offset)) == TYPE_STATUS_OK &&
+                sizeof(int15_offset)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x0056u, &int15_segment,
-                sizeof(int15_segment)) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=int15-vector=%04X:%04X\n",
+                sizeof(int15_segment)) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=int15-vector=%04X:%04X\n",
                 (unsigned int)int15_segment, (unsigned int)int15_offset);
         }
         if (core_machine_memory_read(session->core_machine, 0x0018u, &int6_offset,
-                sizeof(int6_offset)) == TYPE_STATUS_OK &&
+                sizeof(int6_offset)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x001au, &int6_segment,
-                sizeof(int6_segment)) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=int6-vector=%04X:%04X\n",
+                sizeof(int6_segment)) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=int6-vector=%04X:%04X\n",
                 (unsigned int)int6_segment, (unsigned int)int6_offset);
         }
         if (core_machine_memory_read(session->core_machine, 0x003eu, int13_state,
-                sizeof(int13_state)) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=int13-state=%02X,%02X,%02X,%02X,%02X\n",
+                sizeof(int13_state)) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=int13-state=%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)int13_state[0u], (unsigned int)int13_state[1u],
                 (unsigned int)int13_state[2u], (unsigned int)int13_state[3u],
                 (unsigned int)int13_state[4u]);
@@ -3262,8 +3263,8 @@ done:
         if (core_machine_memory_read_physical(&session->core_machine->executor_memory,
                 session->core_machine->executor_cpu.data.ss.base +
                     (session->core_machine->executor_cpu.data.esp & 0xffffu),
-                (type_virtual_address)stack_words, sizeof(stack_words)) == TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=stack-ss=%04X-sp=%04X-words=%04X,%04X,%04X,%04X,%04X,%04X,%04X,%04X\n",
+                (lib_uptr)stack_words, sizeof(stack_words)) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=stack-ss=%04X-sp=%04X-words=%04X,%04X,%04X,%04X,%04X,%04X,%04X,%04X\n",
                 (unsigned int)session->core_machine->executor_cpu.data.ss.selector,
                 (unsigned int)(session->core_machine->executor_cpu.data.esp & 0xffffu),
                 (unsigned int)stack_words[0u], (unsigned int)stack_words[1u],
@@ -3272,64 +3273,64 @@ done:
                 (unsigned int)stack_words[6u], (unsigned int)stack_words[7u]);
         }
         if (waiting_for_interrupt) {
-            STD_PRINTF("BOOT-PROBE=waiting-deadline=%u-if=%u-advanced=%u-pc=%05X\n",
+            printf("BOOT-PROBE=waiting-deadline=%u-if=%u-advanced=%u-pc=%05X\n",
                 (unsigned int)waiting_with_deadline,
                 (unsigned int)waiting_interrupts_enabled,
                 (unsigned int)last_wait_advanced,
                 (unsigned int)waiting_linear_pc);
-            STD_PRINTF("BOOT-PROBE=waiting-fdc-phase=%u-hdc-phase=%u-dma-pending=%u\n",
+            printf("BOOT-PROBE=waiting-fdc-phase=%u-hdc-phase=%u-dma-pending=%u\n",
                 (unsigned int)session->core_machine->fdc.data.phase,
                 (unsigned int)session->core_machine->hdc.data.phase,
                 (unsigned int)core_machine_dma_has_pending_request(
                     &session->core_machine->shared_dma_primary,
                     &session->core_machine->shared_dma_secondary));
-            STD_PRINTF("BOOT-PROBE=waiting-kbc=%llu/%llu/%llu-pit-rule=%u\n",
+            printf("BOOT-PROBE=waiting-kbc=%llu/%llu/%llu-pit-rule=%u\n",
                 (unsigned long long)session->core_machine->shared_kbc.data.typematic_remaining_ticks,
                 (unsigned long long)session->core_machine->shared_kbc.data.response_remaining_ticks,
                 (unsigned long long)session->core_machine->shared_kbc.data.serial_delivery_remaining_ticks,
                 (unsigned int)session->core_machine->timing_plan.controller_timing.pit_clock);
         }
-        if (post_resume_required) STD_PRINTF("BOOT-PROBE=post-resume-required\n");
-        if (post_memory_failure) STD_PRINTF("BOOT-PROBE=post-memory-failure\n");
-        if (post_keyboard_failure) STD_PRINTF("BOOT-PROBE=post-keyboard-failure\n");
-        if (post_floppy_failure) STD_PRINTF("BOOT-PROBE=post-floppy-failure\n");
+        if (post_resume_required) printf("BOOT-PROBE=post-resume-required\n");
+        if (post_memory_failure) printf("BOOT-PROBE=post-memory-failure\n");
+        if (post_keyboard_failure) printf("BOOT-PROBE=post-keyboard-failure\n");
+        if (post_floppy_failure) printf("BOOT-PROBE=post-floppy-failure\n");
         if (vm_byob_text_memory_has(session->core_machine, "101"))
-            STD_PRINTF("BOOT-PROBE=text-system-board-error\n");
+            printf("BOOT-PROBE=text-system-board-error\n");
         if (vm_byob_text_memory_has(session->core_machine, "201"))
-            STD_PRINTF("BOOT-PROBE=text-memory-error\n");
+            printf("BOOT-PROBE=text-memory-error\n");
         if (vm_byob_text_memory_has(session->core_machine, "301"))
-            STD_PRINTF("BOOT-PROBE=text-keyboard-error\n");
+            printf("BOOT-PROBE=text-keyboard-error\n");
         if (vm_byob_text_memory_has(session->core_machine, "601"))
-            STD_PRINTF("BOOT-PROBE=text-diskette-error\n");
+            printf("BOOT-PROBE=text-diskette-error\n");
         vm_byob_print_text_rows(session->core_machine);
         if (vm_byob_text_memory_has(session->core_machine, "RESUME"))
-            STD_PRINTF("BOOT-PROBE=text-resume-required\n");
+            printf("BOOT-PROBE=text-resume-required\n");
         if (vm_byob_text_memory_has(session->core_machine, "MS-DOS"))
-            STD_PRINTF("BOOT-PROBE=text-msdos\n");
+            printf("BOOT-PROBE=text-msdos\n");
         if (vm_byob_text_memory_has(session->core_machine, "Starting MS-DOS"))
-            STD_PRINTF("BOOT-PROBE=text-starting-msdos\n");
+            printf("BOOT-PROBE=text-starting-msdos\n");
         if (vm_byob_text_memory_has(session->core_machine, "Non-System disk"))
-            STD_PRINTF("BOOT-PROBE=text-non-system-disk\n");
+            printf("BOOT-PROBE=text-non-system-disk\n");
         if (vm_byob_text_memory_has(session->core_machine, "Replace and press"))
-            STD_PRINTF("BOOT-PROBE=text-replace-media\n");
+            printf("BOOT-PROBE=text-replace-media\n");
         if (vm_byob_text_memory_has(session->core_machine, "Current date"))
-            STD_PRINTF("BOOT-PROBE=text-date-input\n");
+            printf("BOOT-PROBE=text-date-input\n");
         if (vm_byob_text_memory_has(session->core_machine, "A:\\>"))
-            STD_PRINTF("BOOT-PROBE=text-dos-prompt\n");
+            printf("BOOT-PROBE=text-dos-prompt\n");
         if (vm_byob_memory_has(session->core_machine, 0x0500u, 11u, "IO      SYS"))
-            STD_PRINTF("BOOT-PROBE=root-first-is-io-sys\n");
+            printf("BOOT-PROBE=root-first-is-io-sys\n");
         if (vm_byob_memory_has(session->core_machine, 0x0520u, 11u, "MSDOS   SYS"))
-            STD_PRINTF("BOOT-PROBE=root-second-is-msdos-sys\n");
+            printf("BOOT-PROBE=root-second-is-msdos-sys\n");
         if (vm_byob_memory_equal(session->core_machine, 0x0500u, 0x7de6u, 11u))
-            STD_PRINTF("BOOT-PROBE=root-first-name-equals-loader\n");
+            printf("BOOT-PROBE=root-first-name-equals-loader\n");
         if (vm_byob_memory_equal(session->core_machine, 0x0520u, 0x7df1u, 11u))
-            STD_PRINTF("BOOT-PROBE=root-second-name-equals-loader\n");
+            printf("BOOT-PROBE=root-second-name-equals-loader\n");
         if (trace.boot_loader_jz_observed) {
-            STD_PRINTF("BOOT-PROBE=boot-loader-jz-outcome=%u\n",
+            printf("BOOT-PROBE=boot-loader-jz-outcome=%u\n",
                 (unsigned int)trace.boot_loader_jz_outcome);
         }
         if (trace.boot_loader_read_return_observed) {
-            STD_PRINTF("BOOT-PROBE=boot-loader-read-return-flags=%04X-int13-state=%02X,%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=boot-loader-read-return-flags=%04X-int13-state=%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)trace.boot_loader_read_return_flags,
                 (unsigned int)trace.boot_loader_int13_state[0u],
                 (unsigned int)trace.boot_loader_int13_state[1u],
@@ -3338,7 +3339,7 @@ done:
                 (unsigned int)trace.boot_loader_int13_state[4u]);
         }
         if (trace.boot_loader_jz_observed) {
-            STD_PRINTF("BOOT-PROBE=boot-loader-compare-ds=%04X-es=%04X-si=%04X-di=%04X-cx=%04X-flags=%04X-left=%02X,%02X,%02X,%02X-right=%02X,%02X,%02X,%02X\n",
+            printf("BOOT-PROBE=boot-loader-compare-ds=%04X-es=%04X-si=%04X-di=%04X-cx=%04X-flags=%04X-left=%02X,%02X,%02X,%02X-right=%02X,%02X,%02X,%02X\n",
                 (unsigned int)trace.boot_loader_ds, (unsigned int)trace.boot_loader_es,
                 (unsigned int)trace.boot_loader_si, (unsigned int)trace.boot_loader_di,
                 (unsigned int)trace.boot_loader_cx, (unsigned int)trace.boot_loader_flags,
@@ -3352,36 +3353,36 @@ done:
                 (unsigned int)trace.boot_loader_right[3u]);
         }
         if (trace.boot_loader_error_observed) {
-            STD_PRINTF("BOOT-PROBE=boot-loader-error-predecessor=%05X\n",
+            printf("BOOT-PROBE=boot-loader-error-predecessor=%05X\n",
                 (unsigned int)trace.boot_loader_previous_pc);
         }
         if (diagnostic.last_delivered_exception.valid) {
-            STD_PRINTF("BOOT-PROBE=delivered-exceptions=%u-last-mask=%08X-last-code=%08X\n",
+            printf("BOOT-PROBE=delivered-exceptions=%u-last-mask=%08X-last-code=%08X\n",
                 (unsigned int)diagnostic.delivered_exception_count,
                 (unsigned int)diagnostic.last_delivered_exception.exception_mask,
                 (unsigned int)diagnostic.last_delivered_exception.exception_code);
-            STD_PRINTF("BOOT-PROBE=first-exception-pc=%05X-last-exception-pc=%05X\n",
+            printf("BOOT-PROBE=first-exception-pc=%05X-last-exception-pc=%05X\n",
                 (unsigned int)diagnostic.first_delivered_exception.point.linear_pc,
                 (unsigned int)diagnostic.last_delivered_exception.point.linear_pc);
-            STD_PRINTF("BOOT-PROBE=first-exception-ss=%04X/%08X-esp=%08X-eax=%08X-eflags=%08X\n",
+            printf("BOOT-PROBE=first-exception-ss=%04X/%08X-esp=%08X-eax=%08X-eflags=%08X\n",
                 (unsigned int)diagnostic.first_delivered_exception.ss,
                 (unsigned int)diagnostic.first_delivered_exception.ss_base,
                 (unsigned int)diagnostic.first_delivered_exception.esp,
                 (unsigned int)diagnostic.first_delivered_exception.eax,
                 (unsigned int)diagnostic.first_delivered_exception.eflags);
         }
-        STD_PRINTF("BOOT-PROBE=last-retired-pc=%05X\n",
+        printf("BOOT-PROBE=last-retired-pc=%05X\n",
             (unsigned int)trace.last_linear_pc);
         if (core_machine_bus_read(session->core_machine, 0x0061u, &port_61) ==
-                TYPE_STATUS_OK &&
+                LIB_STATUS_OK &&
             core_machine_bus_read(session->core_machine, 0x0087u, &port_87) ==
-                TYPE_STATUS_OK) {
-            STD_PRINTF("BOOT-PROBE=post-port-61=%02X-87=%02X\n",
+                LIB_STATUS_OK) {
+            printf("BOOT-PROBE=post-port-61=%02X-87=%02X\n",
                 (unsigned int)port_61, (unsigned int)port_87);
         }
     }
     if (session != LIB_NULL && session->core_machine != LIB_NULL) {
-        (C_VOID)core_machine_set_trace_provider(session->core_machine, LIB_NULL);
+        (void)core_machine_set_trace_provider(session->core_machine, LIB_NULL);
     }
     integration_ini_session_close(&ini_session);
     return exit_code;

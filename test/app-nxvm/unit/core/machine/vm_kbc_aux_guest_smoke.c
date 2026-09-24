@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/entry_plan_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -37,13 +37,13 @@ static const lib_u8 vm_kbc_aux_irq12_handler[] = {
     0xb0u, 0x20u, 0xe6u, 0xa0u, 0xe6u, 0x20u, 0x5bu, 0x58u, 0xcfu
 };
 
-static C_INT vm_kbc_aux_read_count(vm_machine *session, lib_u16 *out_count)
+static lib_i32 vm_kbc_aux_read_count(vm_machine *session, lib_u16 *out_count)
 {
     return core_machine_memory_read(session->core_machine,
-        VM_KBC_AUX_COUNT_ADDRESS, out_count, sizeof(*out_count)) == TYPE_STATUS_OK;
+        VM_KBC_AUX_COUNT_ADDRESS, out_count, sizeof(*out_count)) == LIB_STATUS_OK;
 }
 
-static C_INT vm_kbc_aux_run_until_count(vm_machine *session, lib_u16 expected)
+static lib_i32 vm_kbc_aux_run_until_count(vm_machine *session, lib_u16 expected)
 {
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
@@ -51,14 +51,14 @@ static C_INT vm_kbc_aux_run_until_count(vm_machine *session, lib_u16 expected)
     lib_u16 count = 0u;
 
     for (instruction = 0u; instruction < VM_KBC_AUX_BOOT_BUDGET; ++instruction) {
-        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) return 0;
         if (vm_kbc_aux_read_count(session, &count) && count >= expected) return 1;
     }
     return 0;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const vm_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
@@ -78,19 +78,19 @@ C_INT main(C_VOID)
     vm_machine *session = LIB_NULL;
     lib_u8 bytes[4] = {0};
     lib_u16 count = 0u;
-    C_INT passed = 0;
-    C_INT stage = 0;
-    type_status create_status;
-    type_status plan_status = TYPE_STATUS_OK;
+    lib_i32 passed = 0;
+    lib_i32 stage = 0;
+    lib_status create_status;
+    lib_status plan_status = LIB_STATUS_OK;
 
     create_status = vm_test_default_pc_at_session_create(&config, &session);
-    if (create_status != TYPE_STATUS_OK || session == LIB_NULL ||
+    if (create_status != LIB_STATUS_OK || session == LIB_NULL ||
         (plan_status = core_machine_apply_entry_plan(session->core_machine,
-            &plan)) != TYPE_STATUS_OK) { stage = 1; goto done; }
+            &plan)) != LIB_STATUS_OK) { stage = 1; goto done; }
     if (!vm_kbc_aux_run_until_count(session, 1u) ||
         !vm_kbc_aux_read_count(session, &count) || count != 1u ||
         core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
-            bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0xfau) { stage = 2; goto done; }
+            bytes, 1u) != LIB_STATUS_OK || bytes[0] != 0xfau) { stage = 2; goto done; }
     {
         core_machine_guest_input_event event = {0};
 
@@ -98,21 +98,21 @@ C_INT main(C_VOID)
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;
-        if (vm_machine_submit_host_input(session, &event) != TYPE_STATUS_OK) { stage = 3; goto done; }
+        if (vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK) { stage = 3; goto done; }
     }
     if (!vm_kbc_aux_read_count(session, &count) || count != 1u) goto done;
     if (!vm_kbc_aux_run_until_count(session, 4u) ||
         core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
-            bytes, sizeof(bytes)) != TYPE_STATUS_OK || bytes[0] != 0xfau ||
+            bytes, sizeof(bytes)) != LIB_STATUS_OK || bytes[0] != 0xfau ||
         bytes[1] != 0x29u || bytes[2] != 0x05u || bytes[3] != 0xfdu) { stage = 4; goto done; }
     passed = 1;
 done:
     vm_machine_destroy(session);
     if (!passed) {
-        STD_FPRINTF(STD_STDERR, "M5:T515:S3:KBC-AUX-UNIT:stage=%d create=%d plan=%d count=%u bytes=%02X/%02X/%02X/%02X\n",
+        fprintf(stderr, "M5:T515:S3:KBC-AUX-UNIT:stage=%d create=%d plan=%d count=%u bytes=%02X/%02X/%02X/%02X\n",
             stage, create_status, plan_status, count, bytes[0], bytes[1], bytes[2], bytes[3]);
         return 1;
     }
-    STD_PRINTF("M5:T229:S3:AUX:GUEST:OK\n");
+    printf("M5:T229:S3:AUX:GUEST:OK\n");
     return 0;
 }

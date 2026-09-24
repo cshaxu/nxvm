@@ -1,11 +1,11 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_VOID vadp_write_crtc(t_port *port, lib_u8 index, lib_u8 value)
+static void vadp_write_crtc(t_port *port, lib_u8 index, lib_u8 value)
 {
     core_machine_port_write(port, 0x03d4u, index);
     core_machine_port_write(port, 0x03d5u, value);
@@ -17,14 +17,14 @@ static lib_u8 vadp_read_crtc(t_port *port, lib_u8 index)
     return core_machine_port_read(port, 0x03d5u);
 }
 
-static C_INT vadp_capture(t_vadp *vadp, t_ram *memory,
+static lib_i32 vadp_capture(t_vadp *vadp, t_ram *memory,
     core_machine_display_snapshot *snapshot)
 {
     lib_memory_set(snapshot, 0, sizeof(*snapshot));
     return core_machine_vadp_capture_text_snapshot(vadp, memory, snapshot);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine_vadp_text_timing timing = { 3u, 2u, 1u };
     core_machine_display_snapshot snapshot;
@@ -33,14 +33,14 @@ C_INT main(C_VOID)
     t_vadp vadp;
     lib_u8 value;
     lib_u8 initial_status;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     failed |= core_machine_vadp_configure_text_timing(&vadp, &timing) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     core_machine_vadp_reset(&vadp);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_MODE, 0x0du);
 
@@ -59,7 +59,7 @@ C_INT main(C_VOID)
 
     value = 'P';
     failed |= core_machine_memory_write_physical(&memory, 0x000b9000u,
-        (type_virtual_address)&value, sizeof(value)) != TYPE_STATUS_OK;
+        (lib_uptr)&value, sizeof(value)) != LIB_STATUS_OK;
     vadp_write_crtc(&port, 0x0cu, 0x08u);
     vadp_write_crtc(&port, 0x0du, 0x00u);
     vadp_write_crtc(&port, 0x0eu, 0x08u);
@@ -83,10 +83,10 @@ C_INT main(C_VOID)
 
     value = 'W';
     failed |= core_machine_memory_write_physical(&memory, 0x000bbffeu,
-        (type_virtual_address)&value, sizeof(value)) != TYPE_STATUS_OK;
+        (lib_uptr)&value, sizeof(value)) != LIB_STATUS_OK;
     value = 'R';
     failed |= core_machine_memory_write_physical(&memory, CORE_MACHINE_VADP_TEXT_BASE,
-        (type_virtual_address)&value, sizeof(value)) != TYPE_STATUS_OK;
+        (lib_uptr)&value, sizeof(value)) != LIB_STATUS_OK;
     vadp_write_crtc(&port, 0x0cu, 0x1fu);
     vadp_write_crtc(&port, 0x0du, 0xffu);
     failed |= !vadp_capture(&vadp, &memory, &snapshot) ||
@@ -146,8 +146,8 @@ C_INT main(C_VOID)
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) return 1;
-    STD_PRINTF("M5:T266:S3:VADP-TEXT-STATUS:OK\n");
-    STD_PRINTF("M5:T375:S8:MODEL339-CGA-CLOCK-RECONCILIATION:OK\n");
-    STD_PRINTF("M5:T375:S11:CGA-LOGICAL-RASTER:OK\n");
+    printf("M5:T266:S3:VADP-TEXT-STATUS:OK\n");
+    printf("M5:T375:S8:MODEL339-CGA-CLOCK-RECONCILIATION:OK\n");
+    printf("M5:T375:S11:CGA-LOGICAL-RASTER:OK\n");
     return 0;
 }

@@ -33,7 +33,7 @@ foreach(forbidden IN ITEMS "core_machine_memory_real_address" "pBase")
 endforeach()
 
 string(FIND "${machine_runtime}" "core_machine_reconfigure_memory" core_route)
-string(FIND "${machine_runtime}" "STD_MEMSET(machine, 0, sizeof(*machine))" machine_rebuild)
+string(FIND "${machine_runtime}" "lib_memory_set(machine, 0, sizeof(*machine))" machine_rebuild)
 if(core_route EQUAL -1 OR NOT machine_rebuild EQUAL -1)
     message(FATAL_ERROR "M5 T174 VM machine RAM route is not core-owned")
 endif()

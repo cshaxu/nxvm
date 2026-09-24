@@ -3,13 +3,12 @@
 /* VHDD implements Hard Disk Drive: 10 MBytes, cyl = 20, head = 16, sector = 63 */
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 
 
 #include "app-nxvm/machine/media/hdd_private.h"
 
-static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
+static core_machine_media_result vm_machine_hdd_media_query(void *context,
     core_machine_media_info *out_info)
 {
     const t_hdd *hdd = (const t_hdd *)context;
@@ -31,8 +30,8 @@ static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
         CORE_MACHINE_MEDIA_RESULT_ABSENT;
 }
 
-static core_machine_media_result vm_machine_hdd_media_read(C_VOID *context,
-    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result vm_machine_hdd_media_read(void *context,
+    lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
     const t_hdd *hdd = (const t_hdd *)context;
     lib_size image_size;
@@ -50,8 +49,8 @@ static core_machine_media_result vm_machine_hdd_media_read(C_VOID *context,
         CORE_MACHINE_MEDIA_RESULT_PERMANENT;
 }
 
-static core_machine_media_result vm_machine_hdd_media_write(C_VOID *context,
-    lib_u64 offset, const C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result vm_machine_hdd_media_write(void *context,
+    lib_u64 offset, const void *buffer, lib_u32 byte_count)
 {
     t_hdd *hdd = (t_hdd *)context;
     lib_size image_size;
@@ -70,7 +69,7 @@ static core_machine_media_result vm_machine_hdd_media_write(C_VOID *context,
         CORE_MACHINE_MEDIA_RESULT_PERMANENT;
 }
 
-static core_machine_media_result vm_machine_hdd_media_format(C_VOID *context,
+static core_machine_media_result vm_machine_hdd_media_format(void *context,
     lib_u64 logical_sector, lib_u32 sector_count, lib_u8 fill)
 {
     t_hdd *hdd = (t_hdd *)context;
@@ -92,7 +91,7 @@ static core_machine_media_result vm_machine_hdd_media_format(C_VOID *context,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-const core_machine_media_provider *vm_machine_hdd_media_provider(C_VOID)
+const core_machine_media_provider *vm_machine_hdd_media_provider(void)
 {
     static const core_machine_media_provider provider = {
         vm_machine_hdd_media_query,
@@ -118,11 +117,11 @@ lib_u32 vm_machine_hdd_cylinders(const t_hdd *hdd) {
     return hdd == LIB_NULL ? 0u : hdd->data.ncyl;
 }
 
-C_INT vm_machine_hdd_has_media(const t_hdd *hdd) {
+lib_i32 vm_machine_hdd_has_media(const t_hdd *hdd) {
     return hdd != LIB_NULL && hdd->connect.flagDiskExist;
 }
 
-static C_INT vm_machine_hdd_capacity_from_raw(lib_size raw_byte_count,
+static lib_i32 vm_machine_hdd_capacity_from_raw(lib_size raw_byte_count,
     lib_size *out_virtual_byte_count, lib_u32 *out_cylinders)
 {
     const lib_size sector_size = 512u;
@@ -159,7 +158,7 @@ static lib_storage_medium *vm_machine_hdd_allocate_candidate(
         medium : LIB_NULL;
 }
 
-static C_VOID vm_machine_hdd_install_medium(t_hdd *hdd,
+static void vm_machine_hdd_install_medium(t_hdd *hdd,
     lib_storage_medium *candidate, lib_size raw_byte_count,
     lib_size virtual_byte_count, lib_u32 cylinders)
 {
@@ -181,18 +180,18 @@ static C_VOID vm_machine_hdd_install_medium(t_hdd *hdd,
     lib_storage_medium_destroy(&old_medium);
 }
 
-C_VOID vm_machine_hdd_initialize(t_hdd *hdd) {
+void vm_machine_hdd_initialize(t_hdd *hdd) {
     if (hdd == LIB_NULL) return;
-    lib_memory_set((C_VOID *)hdd, TYPE_ZERO_8, sizeof(*hdd));
+    lib_memory_set((void *)hdd, 0u, sizeof(*hdd));
     hdd->connect.geometry_heads = 16u;
     hdd->connect.geometry_sectors_per_track = 63u;
     hdd->data.nhead = hdd->connect.geometry_heads;
     hdd->data.nsector = hdd->connect.geometry_sectors_per_track;
     hdd->data.nbyte = 512u;
 }
-C_VOID vm_machine_hdd_reset(t_hdd *hdd) {
+void vm_machine_hdd_reset(t_hdd *hdd) {
     if (hdd == LIB_NULL) return;
-    lib_memory_set((C_VOID *)&hdd->data, TYPE_ZERO_8, sizeof(hdd->data));
+    lib_memory_set((void *)&hdd->data, 0u, sizeof(hdd->data));
     hdd->data.nhead = hdd->connect.geometry_heads;
     hdd->data.nsector = hdd->connect.geometry_sectors_per_track;
     hdd->data.nbyte = 512u;
@@ -202,7 +201,7 @@ C_VOID vm_machine_hdd_reset(t_hdd *hdd) {
             (16u * 63u) - 1u) / (16u * 63u));
     }
 }
-C_VOID vm_machine_hdd_finalize(t_hdd *hdd) {
+void vm_machine_hdd_finalize(t_hdd *hdd) {
     if (hdd != LIB_NULL) lib_storage_medium_destroy(&hdd->connect.medium);
     if (hdd != LIB_NULL) {
         hdd->connect.raw_byte_count = 0u;
@@ -210,7 +209,7 @@ C_VOID vm_machine_hdd_finalize(t_hdd *hdd) {
     }
 }
 
-C_INT vm_machine_hdd_create(t_hdd *hdd, lib_u16 cylinders) {
+lib_i32 vm_machine_hdd_create(t_hdd *hdd, lib_u16 cylinders) {
     lib_size virtual_byte_count;
     lib_storage_medium *candidate;
 
@@ -224,7 +223,7 @@ C_INT vm_machine_hdd_create(t_hdd *hdd, lib_u16 cylinders) {
         virtual_byte_count, cylinders);
     return LIB_FALSE;
 }
-C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
+lib_i32 vm_machine_hdd_replace_bytes(t_hdd *hdd, const void *bytes,
     lib_size raw_byte_count)
 {
     lib_size virtual_byte_count;
@@ -251,7 +250,7 @@ C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
         virtual_byte_count, cylinders);
     return LIB_FALSE;
 }
-static C_INT vm_machine_hdd_insert_medium(t_hdd *hdd, const C_CHAR *file_name,
+static lib_i32 vm_machine_hdd_insert_medium(t_hdd *hdd, const char *file_name,
     lib_storage_medium_mode mode) {
     lib_size raw_byte_count;
     lib_size virtual_byte_count;
@@ -274,13 +273,13 @@ static C_INT vm_machine_hdd_insert_medium(t_hdd *hdd, const C_CHAR *file_name,
     hdd->connect.flagReadOnly = mode == LIB_STORAGE_MEDIUM_READONLY;
     return LIB_FALSE;
 }
-C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name,
+lib_i32 vm_machine_hdd_insert(t_hdd *hdd, const char *file_name,
     lib_storage_medium_mode mode)
 {
     return mode <= LIB_STORAGE_MEDIUM_OVERLAY ?
         vm_machine_hdd_insert_medium(hdd, file_name, mode) : LIB_TRUE;
 }
-C_INT vm_machine_hdd_remove(t_hdd *hdd) {
+lib_i32 vm_machine_hdd_remove(t_hdd *hdd) {
     if (hdd == LIB_NULL) return LIB_TRUE;
     lib_storage_medium_destroy(&hdd->connect.medium);
     hdd->connect.flagDiskExist = LIB_FALSE;
@@ -292,7 +291,7 @@ C_INT vm_machine_hdd_remove(t_hdd *hdd) {
     return LIB_FALSE;
 }
 
-C_INT vm_machine_hdd_set_geometry(t_hdd *hdd, lib_u32 cylinders,
+lib_i32 vm_machine_hdd_set_geometry(t_hdd *hdd, lib_u32 cylinders,
     lib_u16 heads, lib_u16 sectors_per_track)
 {
     lib_u64 expected_bytes;

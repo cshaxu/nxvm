@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -16,7 +16,7 @@ typedef struct t359_s4_state {
     lib_u32 writes;
     lib_u32 input;
     lib_u32 output;
-    type_bool fail_reads;
+    lib_u8 fail_reads;
 } t359_s4_state;
 
 typedef struct t359_s4_string_row {
@@ -31,45 +31,45 @@ typedef struct t359_s4_repeat_row {
     lib_u64 iteration[4];
 } t359_s4_repeat_row;
 
-static type_status t359_s4_port_read(C_VOID *owner, lib_u16 port,
+static lib_status t359_s4_port_read(void *owner, lib_u16 port,
     lib_u32 *out_value)
 {
     t359_s4_state *state = (t359_s4_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || port != T359_S4_PORT) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (state->fail_reads) return TYPE_STATUS_FAULT;
+    if (state->fail_reads) return LIB_STATUS_INTERNAL_ERROR;
     ++state->reads;
     *out_value = state->input;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status t359_s4_port_write(C_VOID *owner, lib_u16 port,
+static lib_status t359_s4_port_write(void *owner, lib_u16 port,
     lib_u32 value)
 {
     t359_s4_state *state = (t359_s4_state *)owner;
 
     if (state == LIB_NULL || port != T359_S4_PORT) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     ++state->writes;
     state->output = value;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_port_provider t359_s4_ports = {
     t359_s4_port_read, t359_s4_port_write
 };
 
-static C_VOID t359_s4_reset(C_VOID *opaque)
+static void t359_s4_reset(void *opaque)
 {
     t359_s4_state *state = (t359_s4_state *)opaque;
 
     if (state != LIB_NULL) lib_memory_set(state, 0, sizeof(*state));
 }
 
-static C_VOID t359_s4_advance(C_VOID *opaque, lib_u64 ticks)
+static void t359_s4_advance(void *opaque, lib_u64 ticks)
 {
     t359_s4_state *state = (t359_s4_state *)opaque;
 
@@ -80,21 +80,21 @@ static const core_machine_execution_provider t359_s4_execution = {
     t359_s4_reset, t359_s4_advance
 };
 
-static C_INT t359_s4_prepare(core_machine_cpu_profile profile,
+static lib_i32 t359_s4_prepare(core_machine_cpu_profile profile,
     core_machine **out_machine, t359_s4_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T359_S4_RESET_LINEAR, T359_S4_RESET_PHYSICAL, 16u) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00001000u,
-            0x00001000u, 64u) != TYPE_STATUS_OK ||
+            0x00001000u, 64u) != LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, T359_S4_PORT, T359_S4_PORT,
-            &t359_s4_ports, state) != TYPE_STATUS_OK ||
+            &t359_s4_ports, state) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &t359_s4_execution, state)) {
         core_machine_destroy(machine);
@@ -104,20 +104,20 @@ static C_INT t359_s4_prepare(core_machine_cpu_profile profile,
     return 1;
 }
 
-static C_INT t359_s4_load(core_machine *machine,
+static lib_i32 t359_s4_load(core_machine *machine,
     const lib_u8 *program, lib_size program_bytes)
 {
     static const lib_u8 source[] = { 0x11u, 0x22u, 0x33u };
     static const lib_u8 compare[] = { 0x11u, 0x44u, 0x33u };
 
     if (machine == LIB_NULL || program == LIB_NULL ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, T359_S4_RESET_LINEAR, program,
-            program_bytes) != TYPE_STATUS_OK ||
+            program_bytes) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x00001000u, source,
-            sizeof(source)) != TYPE_STATUS_OK ||
+            sizeof(source)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x00001100u, compare,
-            sizeof(compare)) != TYPE_STATUS_OK) {
+            sizeof(compare)) != LIB_STATUS_OK) {
         return 0;
     }
     machine->executor_cpu.data.si = 0x1000u;
@@ -127,7 +127,7 @@ static C_INT t359_s4_load(core_machine *machine,
     return 1;
 }
 
-static C_INT t359_s4_allow_permission(core_machine *machine, C_INT vm86)
+static lib_i32 t359_s4_allow_permission(core_machine *machine, lib_i32 vm86)
 {
     const lib_u16 iomap_base = T359_S4_IOMAP_BASE;
     const lib_u8 bitmap = 0u;
@@ -149,24 +149,24 @@ static C_INT t359_s4_allow_permission(core_machine *machine, C_INT vm86)
     machine->executor_cpu.data.tr.limit = 0x00ffu;
     machine->executor_cpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
     return core_machine_memory_write(machine, T359_S4_TSS_BASE + 0x66u,
-        &iomap_base, sizeof(iomap_base)) == TYPE_STATUS_OK &&
+        &iomap_base, sizeof(iomap_base)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, T359_S4_TSS_BASE + iomap_base +
-            0x1cu, &bitmap, sizeof(bitmap)) == TYPE_STATUS_OK;
+            0x1cu, &bitmap, sizeof(bitmap)) == LIB_STATUS_OK;
 }
 
-static C_INT t359_s4_run(core_machine *machine, t359_s4_state *state,
+static lib_i32 t359_s4_run(core_machine *machine, t359_s4_state *state,
     lib_u64 instructions, lib_u64 ticks)
 {
     const core_machine_run_budget budget = { instructions, 0u };
     core_machine_run_result result;
-    type_status status = core_machine_run(machine, budget, &result);
-    return status == TYPE_STATUS_OK &&
+    lib_status status = core_machine_run(machine, budget, &result);
+    return status == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET &&
         result.executed == instructions && result.ticks == ticks &&
         result.elapsed_ticks == ticks && state->advanced_ticks == ticks;
 }
 
-static C_INT t359_s4_test_primitives(core_machine_cpu_profile profile,
+static lib_i32 t359_s4_test_primitives(core_machine_cpu_profile profile,
     lib_u32 profile_index)
 {
     static const t359_s4_string_row rows[] = {
@@ -179,7 +179,7 @@ static C_INT t359_s4_test_primitives(core_machine_cpu_profile profile,
     t359_s4_state state;
     core_machine *machine = LIB_NULL;
     lib_size index;
-    C_INT failed = !t359_s4_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s4_prepare(profile, &machine, &state);
 
     for (index = 0u; !failed && index < sizeof(rows) / sizeof(rows[0]); ++index) {
         failed |= !t359_s4_load(machine, &rows[index].opcode, 1u) ||
@@ -189,7 +189,7 @@ static C_INT t359_s4_test_primitives(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT t359_s4_test_port_primitives(core_machine_cpu_profile profile,
+static lib_i32 t359_s4_test_port_primitives(core_machine_cpu_profile profile,
     lib_u32 profile_index)
 {
     static const t359_s4_string_row rows[] = {
@@ -199,7 +199,7 @@ static C_INT t359_s4_test_port_primitives(core_machine_cpu_profile profile,
     t359_s4_state state;
     core_machine *machine = LIB_NULL;
     lib_size index;
-    C_INT failed = !t359_s4_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s4_prepare(profile, &machine, &state);
 
     for (index = 0u; !failed && index < sizeof(rows) / sizeof(rows[0]); ++index) {
         failed |= !t359_s4_load(machine, &rows[index].opcode, 1u);
@@ -213,7 +213,7 @@ static C_INT t359_s4_test_port_primitives(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT t359_s4_test_rep_movs(core_machine_cpu_profile profile,
+static lib_i32 t359_s4_test_rep_movs(core_machine_cpu_profile profile,
     lib_u64 setup, lib_u64 iteration)
 {
     static const lib_u8 program[] = { 0xf3u, 0xa4u };
@@ -221,7 +221,7 @@ static C_INT t359_s4_test_rep_movs(core_machine_cpu_profile profile,
     t359_s4_state state;
     core_machine *machine = LIB_NULL;
     lib_size index;
-    C_INT failed = !t359_s4_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s4_prepare(profile, &machine, &state);
 
     for (index = 0u; !failed && index < sizeof(counts) / sizeof(counts[0]); ++index) {
         lib_u64 instructions = counts[index] == 0u ? 1u : counts[index];
@@ -235,13 +235,13 @@ static C_INT t359_s4_test_rep_movs(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT t359_s4_test_rep_cmps_stop(core_machine_cpu_profile profile,
+static lib_i32 t359_s4_test_rep_cmps_stop(core_machine_cpu_profile profile,
     lib_u64 setup, lib_u64 iteration)
 {
     static const lib_u8 program[] = { 0xf3u, 0xa6u };
     t359_s4_state state;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s4_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s4_prepare(profile, &machine, &state);
 
     if (!failed) failed |= !t359_s4_load(machine, program, sizeof(program)) ||
         ((machine->executor_cpu.data.cx = 3u), 0) ||
@@ -255,7 +255,7 @@ static C_INT t359_s4_test_rep_cmps_stop(core_machine_cpu_profile profile,
  * separately-owned early-stop proof above.  Exercising zero, first, and
  * continuation retirement for every form keeps the source formulas coupled
  * to the stateful publisher rather than to one MOVSB representative. */
-static C_INT t359_s4_test_rep_basic_strings(core_machine_cpu_profile profile,
+static lib_i32 t359_s4_test_rep_basic_strings(core_machine_cpu_profile profile,
     lib_u32 profile_index)
 {
     static const t359_s4_repeat_row rows[] = {
@@ -269,7 +269,7 @@ static C_INT t359_s4_test_rep_basic_strings(core_machine_cpu_profile profile,
     core_machine *machine = LIB_NULL;
     lib_size row;
     lib_size count;
-    C_INT failed = !t359_s4_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s4_prepare(profile, &machine, &state);
 
     for (row = 0u; !failed && row < sizeof(rows) / sizeof(rows[0]); ++row) {
         /* Appendix B has no selected 80286 REP LODS formula. */
@@ -300,7 +300,7 @@ static C_INT t359_s4_test_rep_basic_strings(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT t359_s4_test_rep_port_strings(core_machine_cpu_profile profile,
+static lib_i32 t359_s4_test_rep_port_strings(core_machine_cpu_profile profile,
     lib_u32 profile_index)
 {
     static const lib_u8 opcodes[] = { 0x6cu, 0x6eu };
@@ -315,7 +315,7 @@ static C_INT t359_s4_test_rep_port_strings(core_machine_cpu_profile profile,
     core_machine *machine = LIB_NULL;
     lib_size opcode;
     lib_size count;
-    C_INT failed = !t359_s4_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s4_prepare(profile, &machine, &state);
 
     for (opcode = 0u; !failed && opcode < sizeof(opcodes) / sizeof(opcodes[0]);
         ++opcode) {
@@ -341,12 +341,12 @@ static C_INT t359_s4_test_rep_port_strings(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT t359_s4_test_rep_ins_80386(C_VOID)
+static lib_i32 t359_s4_test_rep_ins_80386(void)
 {
     static const lib_u8 program[] = { 0xf3u, 0x6cu };
     t359_s4_state state;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+    lib_i32 failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
         &state);
 
     if (!failed) failed |= !t359_s4_load(machine, program, sizeof(program));
@@ -359,13 +359,13 @@ static C_INT t359_s4_test_rep_ins_80386(C_VOID)
     return failed;
 }
 
-static C_INT t359_s4_test_ordinary_io_80386(C_VOID)
+static lib_i32 t359_s4_test_ordinary_io_80386(void)
 {
     static const lib_u8 input[] = { 0x66u, 0xe5u, T359_S4_PORT };
     static const lib_u8 output[] = { 0x67u, 0xeeu };
     t359_s4_state state;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+    lib_i32 failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
         &state);
 
     if (!failed) failed |= !t359_s4_load(machine, input, sizeof(input));
@@ -380,18 +380,18 @@ static C_INT t359_s4_test_ordinary_io_80386(C_VOID)
     return failed;
 }
 
-static C_INT t359_s4_test_80386_string_port_modes(C_VOID)
+static lib_i32 t359_s4_test_80386_string_port_modes(void)
 {
     static const lib_u8 input[] = { 0x6cu };
     static const lib_u8 output[] = { 0x6eu };
     static const lib_u64 input_ticks[] = { 9u, 29u, 29u };
     static const lib_u64 output_ticks[] = { 6u, 26u, 26u };
-    C_INT mode;
+    lib_i32 mode;
 
     for (mode = 0; mode != 3; ++mode) {
         t359_s4_state state;
         core_machine *machine = LIB_NULL;
-        C_INT failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &machine, &state) || !t359_s4_load(machine, input, sizeof(input));
 
         if (!failed && mode != 0) failed |= !t359_s4_allow_permission(machine,
@@ -436,7 +436,7 @@ static C_INT t359_s4_test_80386_string_port_modes(C_VOID)
     return 0;
 }
 
-static C_INT t359_s4_test_80186_preflight(C_VOID)
+static lib_i32 t359_s4_test_80186_preflight(void)
 {
     static const lib_u8 program[] = { 0xf3u, 0xa6u };
     const core_machine_run_budget insufficient = { 1u, 26u };
@@ -444,19 +444,19 @@ static C_INT t359_s4_test_80186_preflight(C_VOID)
     core_machine_run_result result;
     t359_s4_state state;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80186, &machine,
+    lib_i32 failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80186, &machine,
         &state) || !t359_s4_load(machine, program, sizeof(program));
 
     if (!failed) machine->executor_cpu.data.cx = 1u;
     if (!failed) {
         failed |= core_machine_run(machine, insufficient, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             result.executed != 0u || result.ticks != 0u ||
             result.elapsed_ticks != 0u || state.advanced_ticks != 0u;
     }
     if (!failed) {
         failed |= core_machine_run(machine, sufficient, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             result.executed != 1u || result.ticks != 27u ||
             result.elapsed_ticks != 27u || state.advanced_ticks != 27u;
     }
@@ -464,20 +464,20 @@ static C_INT t359_s4_test_80186_preflight(C_VOID)
     return failed;
 }
 
-static C_INT t359_s4_test_repeat_continuation_reset(C_VOID)
+static lib_i32 t359_s4_test_repeat_continuation_reset(void)
 {
     static const lib_u8 program[] = { 0xf3u, 0xa4u };
     const core_machine_run_budget one = { 1u, 0u };
     core_machine_run_result result;
     t359_s4_state state;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+    lib_i32 failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
         &state) || !t359_s4_load(machine, program, sizeof(program));
 
     if (!failed) machine->executor_cpu.data.cx = 3u;
     if (!failed) failed |= !t359_s4_run(machine, &state, 1u, 9u);
     if (!failed) {
-        failed |= core_machine_run(machine, one, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_run(machine, one, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 4u || result.elapsed_ticks != 13u ||
             state.advanced_ticks != 13u;
@@ -491,7 +491,7 @@ static C_INT t359_s4_test_repeat_continuation_reset(C_VOID)
     return failed;
 }
 
-static C_INT t359_s4_test_80386_attributes_and_failure(C_VOID)
+static lib_i32 t359_s4_test_80386_attributes_and_failure(void)
 {
     static const lib_u8 operand_size[] = { 0x66u, 0xa5u };
     static const lib_u8 address_size[] = { 0x67u, 0xa4u };
@@ -501,7 +501,7 @@ static C_INT t359_s4_test_80386_attributes_and_failure(C_VOID)
     core_machine_run_result result;
     t359_s4_state state;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
+    lib_i32 failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
         &state);
 
     if (!failed) failed |= !t359_s4_load(machine, operand_size,
@@ -518,7 +518,7 @@ static C_INT t359_s4_test_80386_attributes_and_failure(C_VOID)
     if (!failed) failed |= !t359_s4_load(machine, input, sizeof(input));
     if (!failed) {
         state.fail_reads = LIB_TRUE;
-        failed |= core_machine_run(machine, one, &result) != TYPE_STATUS_FAULT ||
+        failed |= core_machine_run(machine, one, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
             state.advanced_ticks != 0u || state.reads != 0u;
@@ -527,7 +527,7 @@ static C_INT t359_s4_test_80386_attributes_and_failure(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (t359_s4_test_primitives(CORE_MACHINE_CPU_PROFILE_8086, 0u) ||
         t359_s4_test_primitives(CORE_MACHINE_CPU_PROFILE_80186, 1u) ||
@@ -560,6 +560,6 @@ C_INT main(C_VOID)
         t359_s4_test_80186_preflight() ||
         t359_s4_test_repeat_continuation_reset() ||
         t359_s4_test_80386_attributes_and_failure()) return 6;
-    STD_PRINTF("M5:T359:S4:STRING-IO-TIMING:OK\n");
+    printf("M5:T359:S4:STRING-IO-TIMING:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/dma.h"
 #include "app-nxvm/devices/fdc.h"
@@ -15,14 +15,14 @@ typedef struct core_machine_fdc_fixture_media {
     lib_u32 write_count;
     lib_u32 format_count;
     core_machine_media_address_mark mark;
-    type_bool present;
-    type_bool read_only;
+    lib_u8 present;
+    lib_u8 read_only;
     core_machine_media_result forced_read_result;
     core_machine_media_result forced_write_result;
     core_machine_media_result forced_format_result;
 } core_machine_fdc_fixture_media;
 
-static core_machine_media_result core_machine_fdc_fixture_query(C_VOID *context,
+static core_machine_media_result core_machine_fdc_fixture_query(void *context,
     core_machine_media_info *out_info)
 {
     core_machine_fdc_fixture_media *media = context;
@@ -48,8 +48,8 @@ static core_machine_media_result core_machine_fdc_fixture_query(C_VOID *context,
     return media->present ? CORE_MACHINE_MEDIA_RESULT_OK : CORE_MACHINE_MEDIA_RESULT_ABSENT;
 }
 
-static core_machine_media_result core_machine_fdc_fixture_read(C_VOID *context,
-    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result core_machine_fdc_fixture_read(void *context,
+    lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
     core_machine_fdc_fixture_media *media = context;
 
@@ -67,8 +67,8 @@ static core_machine_media_result core_machine_fdc_fixture_read(C_VOID *context,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result core_machine_fdc_fixture_write(C_VOID *context,
-    lib_u64 offset, const C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result core_machine_fdc_fixture_write(void *context,
+    lib_u64 offset, const void *buffer, lib_u32 byte_count)
 {
     core_machine_fdc_fixture_media *media = context;
 
@@ -87,7 +87,7 @@ static core_machine_media_result core_machine_fdc_fixture_write(C_VOID *context,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result core_machine_fdc_fixture_format(C_VOID *context,
+static core_machine_media_result core_machine_fdc_fixture_format(void *context,
     lib_u64 logical_sector, lib_u32 sector_count, lib_u8 fill)
 {
     core_machine_fdc_fixture_media *media = context;
@@ -106,7 +106,7 @@ static core_machine_media_result core_machine_fdc_fixture_format(C_VOID *context
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result core_machine_fdc_fixture_get_mark(C_VOID *context,
+static core_machine_media_result core_machine_fdc_fixture_get_mark(void *context,
     lib_u64 logical_sector, core_machine_media_address_mark *out_mark)
 {
     core_machine_fdc_fixture_media *media = context;
@@ -118,7 +118,7 @@ static core_machine_media_result core_machine_fdc_fixture_get_mark(C_VOID *conte
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result core_machine_fdc_fixture_set_mark(C_VOID *context,
+static core_machine_media_result core_machine_fdc_fixture_set_mark(void *context,
     lib_u64 logical_sector, core_machine_media_address_mark mark)
 {
     core_machine_fdc_fixture_media *media = context;
@@ -142,7 +142,7 @@ static const core_machine_media_provider core_machine_fdc_fixture_provider = {
     core_machine_fdc_fixture_set_mark
 };
 
-static C_VOID core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
+static void core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -158,7 +158,7 @@ static C_VOID core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
     }
 }
 
-static C_VOID core_machine_fdc_write_dma2(t_port *port, lib_u16 address,
+static void core_machine_fdc_write_dma2(t_port *port, lib_u16 address,
     lib_u16 count)
 {
     core_machine_port_write(port, 0x000cu, 0u);
@@ -171,7 +171,7 @@ static C_VOID core_machine_fdc_write_dma2(t_port *port, lib_u16 address,
     core_machine_port_write(port, 0x000au, 0x02u);
 }
 
-static C_INT core_machine_fdc_read_result(core_machine_fdc *fdc, t_port *port,
+static lib_i32 core_machine_fdc_read_result(core_machine_fdc *fdc, t_port *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -183,7 +183,7 @@ static C_INT core_machine_fdc_read_result(core_machine_fdc *fdc, t_port *port,
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
     static const lib_u8 read_sector[] = {
@@ -253,31 +253,31 @@ C_INT main(C_VOID)
     lib_u8 scan_dma[512];
     lib_u64 ndma_gate_tick;
     lib_u32 fallback_read_count;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     fixture.bytes[0] = 0x4au;
-    if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
+    if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         fdc = &machine->fdc;
         port = &machine->executor_port;
         if (fdc == LIB_NULL || port == LIB_NULL ||
             core_machine_media_registry_bind(media, 1u, &fixture,
-                &core_machine_fdc_fixture_provider) != TYPE_STATUS_OK ||
-            core_machine_media_registry_freeze(media) != TYPE_STATUS_OK ||
+                &core_machine_fdc_fixture_provider) != LIB_STATUS_OK ||
+            core_machine_media_registry_freeze(media) != LIB_STATUS_OK ||
             core_machine_media_registry_bind(media, 2u, &fixture,
-                &core_machine_fdc_fixture_provider) != TYPE_STATUS_INVALID_STATE ||
+                &core_machine_fdc_fixture_provider) != LIB_STATUS_INVALID_STATE ||
             core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
-                TYPE_STATUS_OK) {
+                LIB_STATUS_OK) {
             failed |= 0x02;
         } else {
             topology.media_registry = media;
             topology.drives = drives;
             topology.dma_request = dma_request;
             topology.config = fdc_config;
-            if (core_machine_configure_fdc(machine, &topology) != TYPE_STATUS_OK ||
-                core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-                core_machine_reset(machine) != TYPE_STATUS_OK) {
+            if (core_machine_configure_fdc(machine, &topology) != LIB_STATUS_OK ||
+                core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+                core_machine_reset(machine) != LIB_STATUS_OK) {
                 failed |= 0x04;
             } else {
                 failed |= core_machine_port_read(port, fdc_config.diagnostic_port) != 0x50u;
@@ -417,7 +417,7 @@ C_INT main(C_VOID)
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_READ;
                 failed |= core_machine_port_read(port, fdc_config.data_port) != 0x4au;
                 for (lib_u32 index = 1u; index < 512u; ++index) {
-                    (C_VOID)core_machine_port_read(port, fdc_config.data_port);
+                    (void)core_machine_port_read(port, fdc_config.data_port);
                 }
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
                     core_machine_port_read(port, fdc_config.status_port) != VFDC_MSR_CB ||
@@ -433,7 +433,7 @@ C_INT main(C_VOID)
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 failed |= core_machine_port_read(port, fdc_config.data_port) != 0x4au;
                 for (lib_u32 index = 1u; index < 512u; ++index) {
-                    (C_VOID)core_machine_port_read(port, fdc_config.data_port);
+                    (void)core_machine_port_read(port, fdc_config.data_port);
                 }
                 core_machine_fdc_advance(fdc);
                 failed |= !fdc->connect.irq_source.asserted ||
@@ -444,14 +444,14 @@ C_INT main(C_VOID)
                 fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    (C_VOID)core_machine_port_read(port, fdc_config.data_port);
+                    (void)core_machine_port_read(port, fdc_config.data_port);
                 }
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & VFDC_ST2_CONTROL_MARK) == 0u;
                 core_machine_fdc_command(fdc, port, read_deleted_sector,
                     sizeof(read_deleted_sector));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    (C_VOID)core_machine_port_read(port, fdc_config.data_port);
+                    (void)core_machine_port_read(port, fdc_config.data_port);
                 }
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & VFDC_ST2_CONTROL_MARK) != 0u;
@@ -603,7 +603,7 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.control_port, 0u);
                 lib_memory_set(scan_dma, 0xa5u, sizeof(scan_dma));
                 failed |= core_machine_memory_write_physical(&machine->executor_memory,
-                    0x0600u, (type_virtual_address)scan_dma, sizeof(scan_dma)) != TYPE_STATUS_OK;
+                    0x0600u, (lib_uptr)scan_dma, sizeof(scan_dma)) != LIB_STATUS_OK;
                 core_machine_fdc_write_dma2(port, 0x0600u, 511u);
                 core_machine_port_write(port, 0x000bu, 0x4au);
                 core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
@@ -666,7 +666,7 @@ C_INT main(C_VOID)
 
                 fixture.forced_read_result = CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
-                (C_VOID)core_machine_port_read(port, fdc_config.data_port);
+                (void)core_machine_port_read(port, fdc_config.data_port);
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[1] & 0x04u) == 0u;
                 fixture.forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK;
@@ -702,7 +702,7 @@ C_INT main(C_VOID)
                 failed |= (core_machine_port_read(port, fdc_config.status_port) &
                     VFDC_MSR_ProcessRead) != VFDC_MSR_ProcessRead ||
                     fdc->data.ndma_byte_gate_pending;
-                (C_VOID)core_machine_port_read(port, fdc_config.data_port);
+                (void)core_machine_port_read(port, fdc_config.data_port);
                 failed |= fixture.read_count != 2u;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 failed |= fdc->data.ndma_byte_gate_pending;
@@ -767,7 +767,7 @@ C_INT main(C_VOID)
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T376:S4:8272A-SCAN:FAIL %x\n", failed);
+        fprintf(stderr, "M5:T376:S4:8272A-SCAN:FAIL %x\n", failed);
         return 1;
     }
     puts("M5:T283:S2:CORE-FDC-MEDIA:OK");

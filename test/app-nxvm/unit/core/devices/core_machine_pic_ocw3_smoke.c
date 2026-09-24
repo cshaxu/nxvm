@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/port.h"
@@ -10,7 +11,7 @@ typedef struct pic_ocw3_fixture {
     t_port port;
 } pic_ocw3_fixture;
 
-static C_VOID pic_ocw3_initialize(pic_ocw3_fixture *fixture,
+static void pic_ocw3_initialize(pic_ocw3_fixture *fixture,
     lib_u8 master_icw4)
 {
     core_machine_port_initialize(&fixture->port);
@@ -27,13 +28,13 @@ static C_VOID pic_ocw3_initialize(pic_ocw3_fixture *fixture,
     core_machine_port_write(&fixture->port, 0x00a1u, 0x01u);
 }
 
-static C_VOID pic_ocw3_finalize(pic_ocw3_fixture *fixture)
+static void pic_ocw3_finalize(pic_ocw3_fixture *fixture)
 {
     core_machine_pic_finalize(&fixture->master, &fixture->slave);
     core_machine_port_finalize(&fixture->port);
 }
 
-static C_VOID pic_ocw3_raise(pic_ocw3_fixture *fixture,
+static void pic_ocw3_raise(pic_ocw3_fixture *fixture,
     core_machine_pic_irq_source *source, lib_u8 irq)
 {
     core_machine_pic_irq_source_bind(source, &fixture->master, &fixture->slave,
@@ -42,13 +43,13 @@ static C_VOID pic_ocw3_raise(pic_ocw3_fixture *fixture,
     core_machine_pic_irq_source_deassert(source);
 }
 
-static C_INT pic_ocw3_test_read_and_poll(C_VOID)
+static lib_i32 pic_ocw3_test_read_and_poll(void)
 {
     pic_ocw3_fixture fixture;
     core_machine_pic_irq_source irq4;
     core_machine_pic_irq_source irq5;
     core_machine_pic_irq_source irq14;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pic_ocw3_initialize(&fixture, 0x01u);
     pic_ocw3_raise(&fixture, &irq4, 4u);
@@ -57,7 +58,7 @@ static C_INT pic_ocw3_test_read_and_poll(C_VOID)
     failed |= core_machine_port_read(&fixture.port, 0x0020u) !=
         (VPIC_POLL_I | 4u) || fixture.master.data.irr != 0u ||
         fixture.master.data.isr != VPIC_ISR_IRQ(4u) ||
-        TYPE_GET_BIT(fixture.master.data.ocw3, VPIC_OCW3_P);
+        CORE_MACHINE_BIT_IS_SET(fixture.master.data.ocw3, VPIC_OCW3_P);
     failed |= core_machine_port_read(&fixture.port, 0x0020u) != 0u;
     core_machine_port_write(&fixture.port, 0x0020u, 0x0bu);
     failed |= core_machine_port_read(&fixture.port, 0x0020u) != VPIC_ISR_IRQ(4u) ||
@@ -88,12 +89,12 @@ static C_INT pic_ocw3_test_read_and_poll(C_VOID)
     return failed;
 }
 
-static C_INT pic_ocw3_test_special_mask(C_VOID)
+static lib_i32 pic_ocw3_test_special_mask(void)
 {
     pic_ocw3_fixture fixture;
     core_machine_pic_irq_source irq1;
     core_machine_pic_irq_source irq5;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pic_ocw3_initialize(&fixture, 0x01u);
     pic_ocw3_raise(&fixture, &irq1, 1u);
@@ -111,17 +112,17 @@ static C_INT pic_ocw3_test_special_mask(C_VOID)
     core_machine_port_write(&fixture.port, 0x0020u, 0x20u);
     failed |= fixture.master.data.isr != 0u;
     core_machine_port_write(&fixture.port, 0x0020u, 0x48u);
-    failed |= TYPE_GET_BIT(fixture.master.data.ocw3, VPIC_OCW3_SMM);
+    failed |= CORE_MACHINE_BIT_IS_SET(fixture.master.data.ocw3, VPIC_OCW3_SMM);
     pic_ocw3_finalize(&fixture);
     return failed;
 }
 
-static C_INT pic_ocw3_test_sfnm(C_VOID)
+static lib_i32 pic_ocw3_test_sfnm(void)
 {
     pic_ocw3_fixture fixture;
     core_machine_pic_irq_source irq8;
     core_machine_pic_irq_source irq14;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pic_ocw3_initialize(&fixture, 0x01u);
     pic_ocw3_raise(&fixture, &irq14, 14u);
@@ -144,14 +145,14 @@ static C_INT pic_ocw3_test_sfnm(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= pic_ocw3_test_read_and_poll();
     failed |= pic_ocw3_test_special_mask();
     failed |= pic_ocw3_test_sfnm();
     if (failed != 0) return 1;
-    STD_PRINTF("M5:T349:S3:PIC-OCW3:OK\n");
+    printf("M5:T349:S3:PIC-OCW3:OK\n");
     return 0;
 }

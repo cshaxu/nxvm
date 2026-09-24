@@ -1,28 +1,27 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/machine/fault.h"
 #include "app-nxvm/machine/machine_private.h"
 
-C_VOID vm_machine_fault_clear(vm_machine *session)
+void vm_machine_fault_clear(vm_machine *session)
 {
     if (session != LIB_NULL) {
         lib_memory_set(&session->fault_outcome, 0, sizeof(session->fault_outcome));
     }
 }
 
-C_VOID vm_machine_fault_capture(vm_machine *session,
+void vm_machine_fault_capture(vm_machine *session,
     const core_machine_run_result *run)
 {
     if (session == LIB_NULL || run == LIB_NULL) return;
     vm_machine_fault_clear(session);
     session->fault_outcome.valid = LIB_TRUE;
     session->fault_outcome.run = *run;
-    (C_VOID)core_machine_get_cpu_diagnostic(session->core_machine,
+    (void)core_machine_get_cpu_diagnostic(session->core_machine,
         &session->fault_outcome.diagnostic);
 }
 
-C_INT vm_machine_fault_get(const vm_machine *session,
+lib_i32 vm_machine_fault_get(const vm_machine *session,
     vm_machine_fault_outcome *out_outcome)
 {
     if (session == LIB_NULL || out_outcome == LIB_NULL) return 1;

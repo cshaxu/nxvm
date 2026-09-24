@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/cpu_timing.h"
@@ -8,12 +7,12 @@ static const char *const core_machine_cpu_timing_manifest_keys[] = {
 #include "cpu_timing_manifest_catalog.inc"
 };
 
-static C_INT core_machine_cpu_timing_string_odd_word(
+static lib_i32 core_machine_cpu_timing_string_odd_word(
     const t_cpuins_data *data, lib_u32 opcode_index)
 {
     lib_u8 opcode;
-    C_INT source_transfer;
-    C_INT destination_transfer;
+    lib_i32 source_transfer;
+    lib_i32 destination_transfer;
 
     if (data == LIB_NULL || opcode_index >= data->oplen) return 0;
     opcode = data->opcodes[opcode_index];
@@ -113,7 +112,7 @@ static lib_u32 core_machine_cpu_timing_formula_inputs(
     return inputs;
 }
 
-static C_INT core_machine_cpu_timing_is_wait(const t_cpuins_data *data)
+static lib_i32 core_machine_cpu_timing_is_wait(const t_cpuins_data *data)
 {
     lib_u8 index = 0u;
 
@@ -132,10 +131,10 @@ static C_INT core_machine_cpu_timing_is_wait(const t_cpuins_data *data)
     return 0;
 }
 
-static C_INT core_machine_cpu_timing_try(core_machine *machine,
+static lib_i32 core_machine_cpu_timing_try(core_machine *machine,
     core_machine_cpu_timing_result *result,
     core_machine_retirement_timing_origin origin,
-    C_INT (*evaluate)(core_machine *, lib_u64 *))
+    lib_i32 (*evaluate)(core_machine *, lib_u64 *))
 {
     lib_u64 ticks;
 
@@ -150,7 +149,7 @@ static C_INT core_machine_cpu_timing_try(core_machine *machine,
  * selector chain.  Candidate evaluators still live at their existing owner
  * during the incremental replacement, but only this profile-private branch
  * may select one for a successful 80186 retirement. */
-static C_INT core_machine_cpu_timing_select_80186(core_machine *machine,
+static lib_i32 core_machine_cpu_timing_select_80186(core_machine *machine,
     core_machine_cpu_timing_result *result)
 {
     return core_machine_cpu_timing_try(machine, result,
@@ -173,7 +172,7 @@ static C_INT core_machine_cpu_timing_select_80186(core_machine *machine,
 /* The 80286 has a complete Appendix-B timing ledger.  Keep its candidate
  * selection profile-private: 80386-only candidates and the compatibility
  * endpoint cannot silently supply a successful 80286 retirement. */
-static C_INT core_machine_cpu_timing_select_80286(core_machine *machine,
+static lib_i32 core_machine_cpu_timing_select_80286(core_machine *machine,
     core_machine_cpu_timing_result *result)
 {
     return core_machine_cpu_timing_try(machine, result,
@@ -193,7 +192,7 @@ static C_INT core_machine_cpu_timing_select_80286(core_machine *machine,
             core_machine_80286_source_instruction_cost);
 }
 
-static C_INT core_machine_cpu_timing_has_8086_lock_prefix(
+static lib_i32 core_machine_cpu_timing_has_8086_lock_prefix(
     const t_cpuins_data *data)
 {
     lib_u32 index = 0u;
@@ -217,7 +216,7 @@ static C_INT core_machine_cpu_timing_has_8086_lock_prefix(
  * applicability is a decoder/semantic question; once a valid instruction
  * has retired and one source row owns its base cost, this sole selector owns
  * the additive clock term. */
-static C_INT core_machine_cpu_timing_apply_8086_lock(core_machine *machine,
+static lib_i32 core_machine_cpu_timing_apply_8086_lock(core_machine *machine,
     core_machine_cpu_timing_result *result)
 {
     const t_cpuins_data *data;
@@ -234,7 +233,7 @@ static C_INT core_machine_cpu_timing_apply_8086_lock(core_machine *machine,
     return 1;
 }
 
-C_INT core_machine_cpu_timing_select(core_machine *machine,
+lib_i32 core_machine_cpu_timing_select(core_machine *machine,
     core_machine_cpu_timing_result *out_result)
 {
     core_machine_cpu_timing_result result;

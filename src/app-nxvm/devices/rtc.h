@@ -4,7 +4,6 @@
 #define CORE_MACHINE_RTC_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/pic.h"
 
@@ -67,21 +66,21 @@ typedef struct core_machine_rtc {
     lib_u32 uip_lead_ticks;
     lib_u32 update_ticks;
     core_machine_rtc_timing_provenance timing_provenance;
-    type_bool square_wave;
+    lib_u8 square_wave;
 } core_machine_rtc;
 
-C_VOID core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
+void core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
     t_pic *pic_slave, const core_machine_rtc_config *config);
-C_VOID core_machine_rtc_reset(core_machine_rtc *rtc);
-C_VOID core_machine_rtc_finalize(core_machine_rtc *rtc);
-C_VOID core_machine_rtc_advance(core_machine_rtc *rtc, lib_u64 elapsed_ticks);
-C_VOID core_machine_rtc_select_register(core_machine_rtc *rtc, lib_u8 index);
+void core_machine_rtc_reset(core_machine_rtc *rtc);
+void core_machine_rtc_finalize(core_machine_rtc *rtc);
+void core_machine_rtc_advance(core_machine_rtc *rtc, lib_u64 elapsed_ticks);
+void core_machine_rtc_select_register(core_machine_rtc *rtc, lib_u8 index);
 lib_u8 core_machine_rtc_read_selected(core_machine_rtc *rtc);
-C_VOID core_machine_rtc_write_selected(core_machine_rtc *rtc, lib_u8 value);
-C_VOID core_machine_rtc_write_nvram(core_machine_rtc *rtc, lib_u8 index,
+void core_machine_rtc_write_selected(core_machine_rtc *rtc, lib_u8 value);
+void core_machine_rtc_write_nvram(core_machine_rtc *rtc, lib_u8 index,
     lib_u8 value);
-type_bool core_machine_rtc_get_square_wave(const core_machine_rtc *rtc);
-type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
+lib_u8 core_machine_rtc_get_square_wave(const core_machine_rtc *rtc);
+lib_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
     lib_u64 *out_ticks);
 
 #endif

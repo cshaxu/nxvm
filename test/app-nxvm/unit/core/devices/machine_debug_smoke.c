@@ -1,18 +1,18 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 
 
 #include "app-nxvm/devices/debug_interface.h"
 #include "support/core_machine_executor_fixture.h"
 
-typedef struct debug_port_probe { type_status status; lib_u32 value; } debug_port_probe;
-static type_status debug_port_read(C_VOID *owner, lib_u16 port, lib_u32 *out)
-{ debug_port_probe *probe = owner; (C_VOID)port; if (probe->status != TYPE_STATUS_OK) return probe->status; *out = probe->value; return TYPE_STATUS_OK; }
-static type_status debug_port_write(C_VOID *owner, lib_u16 port, lib_u32 value)
-{ debug_port_probe *probe = owner; (C_VOID)port; if (probe->status != TYPE_STATUS_OK) return probe->status; probe->value = value; return TYPE_STATUS_OK; }
+typedef struct debug_port_probe { lib_status status; lib_u32 value; } debug_port_probe;
+static lib_status debug_port_read(void *owner, lib_u16 port, lib_u32 *out)
+{ debug_port_probe *probe = owner; (void)port; if (probe->status != LIB_STATUS_OK) return probe->status; *out = probe->value; return LIB_STATUS_OK; }
+static lib_status debug_port_write(void *owner, lib_u16 port, lib_u32 value)
+{ debug_port_probe *probe = owner; (void)port; if (probe->status != LIB_STATUS_OK) return probe->status; probe->value = value; return LIB_STATUS_OK; }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
     core_machine_cpu_state cpu;
@@ -21,57 +21,57 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     core_machine_run_budget budget = { 2u, 0u };
     lib_u32 value;
-    C_UCHAR byte = 0x5au;
-    C_UCHAR nop = 0x90u;
-    C_UCHAR read_moffs[] = {0xa0u, 0x00u, 0x00u};
-    C_UCHAR write_moffs[] = {0xa2u, 0x00u, 0x00u};
-    debug_port_probe port_probe = {TYPE_STATUS_OK, 0x11u};
+    lib_u8 byte = 0x5au;
+    lib_u8 nop = 0x90u;
+    lib_u8 read_moffs[] = {0xa0u, 0x00u, 0x00u};
+    lib_u8 write_moffs[] = {0xa2u, 0x00u, 0x00u};
+    debug_port_probe port_probe = {LIB_STATUS_OK, 0x11u};
     core_machine_port_provider port_provider = {debug_port_read, debug_port_write};
 
-    if (test_core_machine_create_executor(0u, &machine) != TYPE_STATUS_OK ||
+    if (test_core_machine_create_executor(0u, &machine) != LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
-            &port_provider, &port_probe) != TYPE_STATUS_OK ||
-        core_machine_debug_read_cpu(machine, &cpu) != TYPE_STATUS_INVALID_STATE ||
+            &port_provider, &port_probe) != LIB_STATUS_OK ||
+        core_machine_debug_read_cpu(machine, &cpu) != LIB_STATUS_INVALID_STATE ||
         core_machine_debug_capture_instruction_observation(machine,
-            &observation) != TYPE_STATUS_INVALID_STATE ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
-        core_machine_memory_write(machine, 0u, &byte, 1u) != TYPE_STATUS_OK ||
-        core_machine_memory_write(machine, 0xffff0u, &nop, 1u) != TYPE_STATUS_OK ||
-        core_machine_memory_write(machine, 0xffff1u, &nop, 1u) != TYPE_STATUS_OK ||
-        core_machine_debug_read_cpu(machine, &cpu) != TYPE_STATUS_OK ||
+            &observation) != LIB_STATUS_INVALID_STATE ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, &byte, 1u) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0xffff0u, &nop, 1u) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0xffff1u, &nop, 1u) != LIB_STATUS_OK ||
+        core_machine_debug_read_cpu(machine, &cpu) != LIB_STATUS_OK ||
         cpu.cs != 0xf000u || cpu.eip != 0xfff0u ||
-        core_machine_debug_read_memory(machine, 0u, &byte, 1u) != TYPE_STATUS_OK ||
+        core_machine_debug_read_memory(machine, 0u, &byte, 1u) != LIB_STATUS_OK ||
         byte != 0x5au ||
         core_machine_debug_capture_instruction_observation(machine,
-            &observation) != TYPE_STATUS_OK || observation.cs != 0xf000u ||
+            &observation) != LIB_STATUS_OK || observation.cs != 0xf000u ||
         observation.cs_base != 0xffff0000u || observation.eip != 0xfff0u ||
         observation.instruction_byte_count >
             CORE_MACHINE_DEBUG_INSTRUCTION_BYTES ||
         observation.memory_access_count >
             CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY ||
-        core_machine_debug_step(machine, &result) != TYPE_STATUS_OK ||
+        core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET ||
-        core_machine_debug_continue(machine, budget, &result) != TYPE_STATUS_OK ||
+        core_machine_debug_continue(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET) {
         core_machine_destroy(machine);
         return 1;
     }
 
-    port_probe.status = TYPE_STATUS_FAULT;
+    port_probe.status = LIB_STATUS_INTERNAL_ERROR;
     value = 0xdeadbeefu;
     if (core_machine_debug_read_port(machine, 0x00e0u, &value) !=
-            TYPE_STATUS_FAULT || value != 0xdeadbeefu ||
+            LIB_STATUS_INTERNAL_ERROR || value != 0xdeadbeefu ||
         core_machine_debug_write_port(machine, 0x00e0u, 0x55u) !=
-            TYPE_STATUS_FAULT) {
+            LIB_STATUS_INTERNAL_ERROR) {
         core_machine_destroy(machine);
         return 1;
     }
-    port_probe.status = TYPE_STATUS_OK;
+    port_probe.status = LIB_STATUS_OK;
     if (core_machine_debug_read_port(machine, 0x00e0u, &value) !=
-            TYPE_STATUS_OK || value != 0x11u ||
+            LIB_STATUS_OK || value != 0x11u ||
         core_machine_debug_write_port(machine, 0x00e0u, 0x55u) !=
-            TYPE_STATUS_OK || port_probe.value != 0x55u) {
+            LIB_STATUS_OK || port_probe.value != 0x55u) {
         core_machine_destroy(machine);
         return 1;
     }
@@ -80,69 +80,69 @@ C_INT main(C_VOID)
         CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX);
     patch.values[CORE_MACHINE_DEBUG_EAX] = 0x12345678u;
     patch.values[CORE_MACHINE_DEBUG_EBX] = 0x87654321u;
-    if (core_machine_debug_patch_registers(machine, &patch) != TYPE_STATUS_OK ||
+    if (core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
         core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
-            &value) != TYPE_STATUS_OK || value != 0x12345678u ||
+            &value) != LIB_STATUS_OK || value != 0x12345678u ||
         core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EBX,
-            &value) != TYPE_STATUS_OK || value != 0x87654321u) {
+            &value) != LIB_STATUS_OK || value != 0x87654321u) {
         core_machine_destroy(machine);
         return 1;
     }
     patch.mask |= 0x80000000u;
     patch.values[CORE_MACHINE_DEBUG_EAX] = 0u;
     if (core_machine_debug_patch_registers(machine, &patch) !=
-            TYPE_STATUS_INVALID_ARGUMENT ||
+            LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX,
-            &value) != TYPE_STATUS_OK || value != 0x12345678u) {
+            &value) != LIB_STATUS_OK || value != 0x12345678u) {
         core_machine_destroy(machine);
         return 1;
     }
 
-    if (core_machine_reset(machine) != TYPE_STATUS_OK ||
-        core_machine_memory_write(machine, 0xffff0u, &nop, 1u) != TYPE_STATUS_OK ||
+    if (core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0xffff0u, &nop, 1u) != LIB_STATUS_OK ||
         core_machine_debug_set_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_EXECUTE,
-            0xfffffff0u) != TYPE_STATUS_OK ||
-        core_machine_debug_step(machine, &result) != TYPE_STATUS_OK ||
+            0xfffffff0u) != LIB_STATUS_OK ||
+        core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_PAUSED ||
         core_machine_debug_capture_instruction_observation(machine,
-        &observation) != TYPE_STATUS_OK || !observation.watch_hit ||
+        &observation) != LIB_STATUS_OK || !observation.watch_hit ||
         observation.watch_kind != CORE_MACHINE_DEBUG_WATCH_EXECUTE ||
         observation.watch_address != 0xfffffff0u ||
         core_machine_debug_clear_watchpoint(machine,
-            CORE_MACHINE_DEBUG_WATCH_EXECUTE) != TYPE_STATUS_OK) {
+            CORE_MACHINE_DEBUG_WATCH_EXECUTE) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
-    if (core_machine_reset(machine) != TYPE_STATUS_OK ||
-        core_machine_memory_write(machine, 0u, &byte, 1u) != TYPE_STATUS_OK ||
+    if (core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, &byte, 1u) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0xffff0u, read_moffs,
-            sizeof(read_moffs)) != TYPE_STATUS_OK ||
+            sizeof(read_moffs)) != LIB_STATUS_OK ||
         core_machine_debug_set_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_READ,
-            0u) != TYPE_STATUS_OK ||
-        core_machine_debug_step(machine, &result) != TYPE_STATUS_OK ||
+            0u) != LIB_STATUS_OK ||
+        core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_PAUSED ||
         core_machine_debug_capture_instruction_observation(machine,
-            &observation) != TYPE_STATUS_OK || !observation.watch_hit ||
+            &observation) != LIB_STATUS_OK || !observation.watch_hit ||
         observation.watch_kind != CORE_MACHINE_DEBUG_WATCH_READ ||
         observation.watch_address != 0u ||
         core_machine_debug_clear_watchpoint(machine,
-            CORE_MACHINE_DEBUG_WATCH_READ) != TYPE_STATUS_OK) {
+            CORE_MACHINE_DEBUG_WATCH_READ) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
-    if (core_machine_reset(machine) != TYPE_STATUS_OK ||
+    if (core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0xffff0u, write_moffs,
-            sizeof(write_moffs)) != TYPE_STATUS_OK ||
+            sizeof(write_moffs)) != LIB_STATUS_OK ||
         core_machine_debug_set_watchpoint(machine, CORE_MACHINE_DEBUG_WATCH_WRITE,
-            0u) != TYPE_STATUS_OK ||
-        core_machine_debug_step(machine, &result) != TYPE_STATUS_OK ||
+            0u) != LIB_STATUS_OK ||
+        core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_PAUSED ||
         core_machine_debug_capture_instruction_observation(machine,
-            &observation) != TYPE_STATUS_OK || !observation.watch_hit ||
+            &observation) != LIB_STATUS_OK || !observation.watch_hit ||
         observation.watch_kind != CORE_MACHINE_DEBUG_WATCH_WRITE ||
         observation.watch_address != 0u ||
         core_machine_debug_clear_watchpoint(machine,
-            CORE_MACHINE_DEBUG_WATCH_WRITE) != TYPE_STATUS_OK) {
+            CORE_MACHINE_DEBUG_WATCH_WRITE) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }

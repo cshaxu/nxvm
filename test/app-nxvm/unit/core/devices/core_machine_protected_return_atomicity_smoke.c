@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -22,20 +23,20 @@ typedef struct atomic_machine {
 } atomic_machine;
 
 typedef struct atomic_return_case {
-    const C_CHAR *name;
+    const char *name;
     lib_u16 cs;
     lib_u16 ss;
     lib_u8 vector;
     lib_u16 error_code;
     lib_u32 exception_mask;
-    C_INT delivered;
+    lib_i32 delivered;
 } atomic_return_case;
 
-static C_VOID atomic_reset(C_VOID *opaque)
+static void atomic_reset(void *opaque)
 {
     atomic_machine *state = (atomic_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
@@ -43,7 +44,7 @@ static const core_machine_execution_provider atomic_provider = {
     atomic_reset, LIB_NULL
 };
 
-static C_INT atomic_prepare(atomic_machine *state, core_machine_cpu_profile profile)
+static lib_i32 atomic_prepare(atomic_machine *state, core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -62,14 +63,14 @@ static C_INT atomic_prepare(atomic_machine *state, core_machine_cpu_profile prof
     return 1;
 }
 
-static C_INT atomic_write(atomic_machine *state, lib_u32 address,
+static lib_i32 atomic_write(atomic_machine *state, lib_u32 address,
     const lib_u8 *bytes, lib_size byte_count)
 {
     return core_machine_memory_write(state->machine, address, bytes, byte_count) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_VOID atomic_set_gate(lib_u8 *idt, lib_u8 vector, lib_u16 offset)
+static void atomic_set_gate(lib_u8 *idt, lib_u8 vector, lib_u16 offset)
 {
     lib_u16 index = (lib_u16)vector * 8u;
 
@@ -79,7 +80,7 @@ static C_VOID atomic_set_gate(lib_u8 *idt, lib_u8 vector, lib_u16 offset)
     idt[index + 5u] = 0x86u;
 }
 
-static C_INT atomic_install(atomic_machine *state)
+static lib_i32 atomic_install(atomic_machine *state)
 {
     static const lib_u8 gdt_pointer[] = { 0x47u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u };
     static const lib_u8 idt_pointer[] = { 0x6fu, 0x00u, 0x00u, 0x04u, 0x00u, 0x00u };
@@ -121,7 +122,7 @@ static C_INT atomic_install(atomic_machine *state)
             sizeof(fault_handlers));
 }
 
-static lib_size atomic_return_code(lib_u8 *bytes, C_INT use_iret,
+static lib_size atomic_return_code(lib_u8 *bytes, lib_i32 use_iret,
     const atomic_return_case *test)
 {
     static const lib_u8 retf[] = {
@@ -160,7 +161,7 @@ static lib_u16 atomic_fault_stop_ip(lib_u8 vector)
     }
 }
 
-static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_iret)
+static lib_i32 atomic_test_outer_return(const atomic_return_case *test, lib_i32 use_iret)
 {
     static const lib_u32 access_addresses[] = {
         ATOMIC_USER_CODE_ACCESS,
@@ -182,16 +183,16 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
     lib_u16 expected_sp = use_iret ? 0x7feeu : 0x7ff0u;
     lib_u16 expected_return_ip = use_iret ? 20u : 16u;
     lib_size index;
-    C_INT install_failed;
-    C_INT boot_failed;
-    C_INT run_failed;
-    C_INT access_failed = 0;
-    C_INT state_failed;
-    C_INT failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
+    lib_i32 install_failed;
+    lib_i32 boot_failed;
+    lib_i32 run_failed;
+    lib_i32 access_failed = 0;
+    lib_i32 state_failed;
+    lib_i32 failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
 
     if (!failed) {
         install_failed = !atomic_install(&state);
-        boot_failed = core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+        boot_failed = core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= install_failed || boot_failed;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
@@ -200,22 +201,22 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
         failed |= !atomic_write(&state, ATOMIC_KERNEL_BASE, code,
             atomic_return_code(code, use_iret, test));
         if (test->delivered) {
-            run_failed = core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            run_failed = core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
-                !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
                     test->exception_mask) ||
                 diagnostic.last_delivered_exception.exception_code != test->error_code;
         } else {
-            run_failed = core_machine_run(state.machine, budget, &result) != TYPE_STATUS_FAULT ||
+            run_failed = core_machine_run(state.machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
                 result.reason != CORE_MACHINE_STOP_FAULT ||
                 result.detail != 0x00001000u;
         }
         failed |= run_failed;
         for (index = 0u; index < sizeof(access); ++index) {
             access_failed |= !test_core_machine_fixture_read_linear(state.machine,
-                access_addresses[index], TYPE_REFERENCE_OF(access[index]),
+                access_addresses[index], CORE_MACHINE_REFERENCE_OF(access[index]),
                 sizeof(access[index])) ||
                 access[index] != expected_access[index];
         }
@@ -223,7 +224,7 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
         cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         if (test->delivered) {
             state_failed = core_machine_memory_read(state.machine,
-                ATOMIC_KERNEL_STACK_BASE + expected_sp, frame, sizeof(frame)) != TYPE_STATUS_OK;
+                ATOMIC_KERNEL_STACK_BASE + expected_sp, frame, sizeof(frame)) != LIB_STATUS_OK;
             state_failed |= cpu.data.eip != atomic_fault_stop_ip(test->vector) ||
                 cpu.data.sp != expected_sp ||
                 cpu.data.flags != before.flags ||
@@ -240,7 +241,7 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
         }
         failed |= state_failed;
         if (failed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "T293 %s return=%s fail=%d/%d/%d/%d/%d ip=%04x sp=%04x flags=%04x/%04x cs=%d ss=%d access=%02x/%02x/%02x/%02x frame=%04x/%04x/%04x/%04x\n",
                 test->name, use_iret ? "iret" : "retf", install_failed, boot_failed,
                 run_failed, access_failed, state_failed,
@@ -255,8 +256,8 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
     return failed;
 }
 
-static C_INT atomic_test_outer_retf_frame(C_INT operand16, C_INT address_prefix,
-    C_INT wide_new_stack)
+static lib_i32 atomic_test_outer_retf_frame(lib_i32 operand16, lib_i32 address_prefix,
+    lib_i32 wide_new_stack)
 {
     static const lib_u8 retf32[] = { 0xcau,0x04u,0x00u };
     static const lib_u8 retf32_address[] = { 0x67u,0xcau,0x04u,0x00u };
@@ -274,11 +275,11 @@ static C_INT atomic_test_outer_retf_frame(C_INT operand16, C_INT address_prefix,
     core_machine_run_result result = {0};
     core_machine_cpu_diagnostic diagnostic;
     t_cpu cpu;
-    C_INT failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !atomic_install(&state) ||
-            core_machine_run(state.machine, boot_budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, boot_budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -291,11 +292,11 @@ static C_INT atomic_test_outer_retf_frame(C_INT operand16, C_INT address_prefix,
         }
         failed |= !atomic_write(&state, ATOMIC_KERNEL_BASE, program, program_bytes) ||
             !atomic_write(&state, ATOMIC_KERNEL_STACK_BASE + 0x8000u,
-                operand16 ? (const C_VOID *)frame16 : (const C_VOID *)frame32,
+                operand16 ? (const void *)frame16 : (const void *)frame32,
                 operand16 ? sizeof(frame16) : sizeof(frame32)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
         cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= diagnostic.first_fault.valid || cpu.data.eip != 0x0010u ||
             cpu.data.cs.selector != 0x001bu || cpu.data.cs.dpl != 3u ||
@@ -306,7 +307,7 @@ static C_INT atomic_test_outer_retf_frame(C_INT operand16, C_INT address_prefix,
     return failed;
 }
 
-static C_INT atomic_test_outer_retf32_nonpresent_stack(C_VOID)
+static lib_i32 atomic_test_outer_retf32_nonpresent_stack(void)
 {
     static const lib_u8 retf[] = { 0x66u,0xcau,0x04u,0x00u };
     static const lib_u32 frame[] = { 0x0010u,0x001bu,0u,0x1000u,0x0033u };
@@ -319,11 +320,11 @@ static C_INT atomic_test_outer_retf32_nonpresent_stack(C_VOID)
     t_cpu after;
     lib_u8 code_access = 0u;
     lib_u8 stack_access = 0u;
-    C_INT failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !atomic_install(&state) ||
-            core_machine_run(state.machine, boot_budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, boot_budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -334,16 +335,16 @@ static C_INT atomic_test_outer_retf32_nonpresent_stack(C_VOID)
                 (const lib_u8 *)frame,
                 sizeof(frame)) ||
             !test_core_machine_fixture_read_linear(state.machine,
-                ATOMIC_USER_CODE_ACCESS, TYPE_REFERENCE_OF(code_access), 1u) ||
+                ATOMIC_USER_CODE_ACCESS, CORE_MACHINE_REFERENCE_OF(code_access), 1u) ||
             !test_core_machine_fixture_read_linear(state.machine,
-                ATOMIC_NONPRESENT_STACK_ACCESS, TYPE_REFERENCE_OF(stack_access), 1u) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+                ATOMIC_NONPRESENT_STACK_ACCESS, CORE_MACHINE_REFERENCE_OF(stack_access), 1u) ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid ||
-            !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_SS) ||
             diagnostic.last_delivered_exception.exception_code != 0x0030u ||
             after.data.eip != atomic_fault_stop_ip(12u) || after.data.sp != 0x7ff8u ||
@@ -351,18 +352,18 @@ static C_INT atomic_test_outer_retf32_nonpresent_stack(C_VOID)
             lib_memory_compare(&after.data.cs, &before.data.cs, sizeof(before.data.cs)) != 0 ||
             lib_memory_compare(&after.data.ss, &before.data.ss, sizeof(before.data.ss)) != 0 ||
             !test_core_machine_fixture_read_linear(state.machine,
-                ATOMIC_USER_CODE_ACCESS, TYPE_REFERENCE_OF(code_access), 1u) ||
+                ATOMIC_USER_CODE_ACCESS, CORE_MACHINE_REFERENCE_OF(code_access), 1u) ||
             code_access != 0xfau ||
             !test_core_machine_fixture_read_linear(state.machine,
-                ATOMIC_NONPRESENT_STACK_ACCESS, TYPE_REFERENCE_OF(stack_access), 1u) ||
+                ATOMIC_NONPRESENT_STACK_ACCESS, CORE_MACHINE_REFERENCE_OF(stack_access), 1u) ||
             stack_access != 0x72u;
     }
     core_machine_destroy(state.machine);
     return failed;
 }
 
-static C_INT atomic_test_outer_iret_frame(C_INT operand16, C_INT address_prefix,
-    C_INT wide_new_stack, C_INT restricted_flags)
+static lib_i32 atomic_test_outer_iret_frame(lib_i32 operand16, lib_i32 address_prefix,
+    lib_i32 wide_new_stack, lib_i32 restricted_flags)
 {
     static const lib_u8 iret32[] = { 0xcfu };
     static const lib_u8 iret32_address[] = { 0x67u,0xcfu };
@@ -384,11 +385,11 @@ static C_INT atomic_test_outer_iret_frame(C_INT operand16, C_INT address_prefix,
     core_machine_run_result result = {0};
     core_machine_cpu_diagnostic diagnostic;
     t_cpu cpu;
-    C_INT failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !atomic_install(&state) ||
-            core_machine_run(state.machine, boot_budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, boot_budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -410,11 +411,11 @@ static C_INT atomic_test_outer_iret_frame(C_INT operand16, C_INT address_prefix,
         }
         failed |= !atomic_write(&state, ATOMIC_KERNEL_BASE, program, program_bytes) ||
             !atomic_write(&state, ATOMIC_KERNEL_STACK_BASE + 0x8000u,
-                operand16 ? (const C_VOID *)frame16 : (const C_VOID *)frame32,
+                operand16 ? (const void *)frame16 : (const void *)frame32,
                 operand16 ? sizeof(frame16) : sizeof(frame32)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
         cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= diagnostic.first_fault.valid || cpu.data.eip != 0x0010u ||
             cpu.data.cs.selector != 0x001bu || cpu.data.cs.dpl != 3u ||
@@ -426,7 +427,7 @@ static C_INT atomic_test_outer_iret_frame(C_INT operand16, C_INT address_prefix,
     return failed;
 }
 
-static C_INT atomic_test_outer_iret32_failure(C_INT target_limit)
+static lib_i32 atomic_test_outer_iret32_failure(lib_i32 target_limit)
 {
     static const lib_u8 iret[] = { 0x66u,0xcfu };
     static const lib_u32 frame[] = {
@@ -443,11 +444,11 @@ static C_INT atomic_test_outer_iret32_failure(C_INT target_limit)
     t_cpu after;
     lib_u8 current_code_access = 0u;
     lib_u8 stack_access = 0u;
-    C_INT failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !atomic_install(&state) ||
-            core_machine_run(state.machine, boot_budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, boot_budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -461,13 +462,13 @@ static C_INT atomic_test_outer_iret32_failure(C_INT target_limit)
         failed |= !atomic_write(&state, ATOMIC_KERNEL_BASE, iret, sizeof(iret)) ||
             !atomic_write(&state, ATOMIC_KERNEL_STACK_BASE + 0x8000u,
                 (const lib_u8 *)frame, sizeof(frame)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid ||
-            !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
                 target_limit ? VCPUINS_EXCEPT_GP : VCPUINS_EXCEPT_SS) ||
             diagnostic.last_delivered_exception.exception_code !=
                 (target_limit ? 0u : 0x0030u) ||
@@ -476,17 +477,17 @@ static C_INT atomic_test_outer_iret32_failure(C_INT target_limit)
             lib_memory_compare(&after.data.cs, &before.data.cs, sizeof(before.data.cs)) != 0 ||
             lib_memory_compare(&after.data.ss, &before.data.ss, sizeof(before.data.ss)) != 0 ||
             !test_core_machine_fixture_read_linear(state.machine,
-                ATOMIC_USER_CODE_ACCESS, TYPE_REFERENCE_OF(current_code_access), 1u) ||
+                ATOMIC_USER_CODE_ACCESS, CORE_MACHINE_REFERENCE_OF(current_code_access), 1u) ||
             current_code_access != (target_limit ? code_access : 0xfau) ||
             !test_core_machine_fixture_read_linear(state.machine,
-                ATOMIC_NONPRESENT_STACK_ACCESS, TYPE_REFERENCE_OF(stack_access), 1u) ||
+                ATOMIC_NONPRESENT_STACK_ACCESS, CORE_MACHINE_REFERENCE_OF(stack_access), 1u) ||
             stack_access != 0x72u;
     }
     core_machine_destroy(state.machine);
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const atomic_return_case cases[] = {
         { "nonpresent-cs", 0x002bu, 0x0023u, 11u, 0x0028u, VCPUINS_EXCEPT_NP, 1 },
@@ -510,8 +511,8 @@ C_INT main(C_VOID)
         atomic_test_outer_iret_frame(0, 0, 0, 1) ||
         atomic_test_outer_iret32_failure(0) ||
         atomic_test_outer_iret32_failure(1)) return 1;
-    STD_PRINTF("M5:T306:S4:OUTER-RETF:OK\n");
-    STD_PRINTF("M5:T306:S5:OUTER-IRET:OK\n");
-    STD_PRINTF("M5:T293:S2:PROTECTED-RETURN-ATOMICITY:OK\n");
+    printf("M5:T306:S4:OUTER-RETF:OK\n");
+    printf("M5:T306:S5:OUTER-IRET:OK\n");
+    printf("M5:T293:S2:PROTECTED-RETURN-ATOMICITY:OK\n");
     return 0;
 }

@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <ctype.h>
+#include <stdio.h>
 
 #include <windows.h>
 
@@ -19,20 +20,20 @@ typedef struct vm_ata253_program {
     lib_u16 length;
 } vm_ata253_program;
 
-static C_INT vm_ata253_put(vm_ata253_program *program, lib_u8 value)
+static lib_i32 vm_ata253_put(vm_ata253_program *program, lib_u8 value)
 {
     if (program == LIB_NULL || program->length >= sizeof(program->bytes)) return 0;
     program->bytes[program->length++] = value;
     return 1;
 }
 
-static C_INT vm_ata253_word(vm_ata253_program *program, lib_u16 value)
+static lib_i32 vm_ata253_word(vm_ata253_program *program, lib_u16 value)
 {
     return vm_ata253_put(program, (lib_u8)value) &&
         vm_ata253_put(program, (lib_u8)(value >> 8u));
 }
 
-static C_INT vm_ata253_out_task_file(vm_ata253_program *program,
+static lib_i32 vm_ata253_out_task_file(vm_ata253_program *program,
     lib_u8 command)
 {
     return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x01f2u) &&
@@ -49,7 +50,7 @@ static C_INT vm_ata253_out_task_file(vm_ata253_program *program,
         vm_ata253_put(program, command) && vm_ata253_put(program, 0xeeu);
 }
 
-static C_INT vm_ata253_write_sector(vm_ata253_program *program, lib_u16 word)
+static lib_i32 vm_ata253_write_sector(vm_ata253_program *program, lib_u16 word)
 {
     return vm_ata253_put(program, 0xb9u) && vm_ata253_word(program, 256u) &&
         vm_ata253_put(program, 0xb8u) && vm_ata253_word(program, word) &&
@@ -57,7 +58,7 @@ static C_INT vm_ata253_write_sector(vm_ata253_program *program, lib_u16 word)
         vm_ata253_put(program, 0xfdu);
 }
 
-static C_INT vm_ata253_set_nien(vm_ata253_program *program, C_INT enabled)
+static lib_i32 vm_ata253_set_nien(vm_ata253_program *program, lib_i32 enabled)
 {
     return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x03f6u) &&
         vm_ata253_put(program, 0xb0u) &&
@@ -65,14 +66,14 @@ static C_INT vm_ata253_set_nien(vm_ata253_program *program, C_INT enabled)
         vm_ata253_put(program, 0xeeu);
 }
 
-static C_INT vm_ata253_discard_words(vm_ata253_program *program, lib_u16 count)
+static lib_i32 vm_ata253_discard_words(vm_ata253_program *program, lib_u16 count)
 {
     return vm_ata253_put(program, 0xb9u) && vm_ata253_word(program, count) &&
         vm_ata253_put(program, 0xedu) && vm_ata253_put(program, 0xe2u) &&
         vm_ata253_put(program, 0xfdu);
 }
 
-static C_INT vm_ata253_wait_drq(vm_ata253_program *program)
+static lib_i32 vm_ata253_wait_drq(vm_ata253_program *program)
 {
     return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x01f7u) &&
         vm_ata253_put(program, 0xecu) && vm_ata253_put(program, 0xa8u) &&
@@ -82,7 +83,7 @@ static C_INT vm_ata253_wait_drq(vm_ata253_program *program)
         vm_ata253_put(program, 0xf7u);
 }
 
-static C_INT vm_ata253_wait_ready(vm_ata253_program *program)
+static lib_i32 vm_ata253_wait_ready(vm_ata253_program *program)
 {
     return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x01f7u) &&
         vm_ata253_put(program, 0xecu) && vm_ata253_put(program, 0xa8u) &&
@@ -92,7 +93,7 @@ static C_INT vm_ata253_wait_ready(vm_ata253_program *program)
         vm_ata253_put(program, 0xf7u);
 }
 
-static C_INT vm_ata253_marker(vm_ata253_program *program, lib_u8 character,
+static lib_i32 vm_ata253_marker(vm_ata253_program *program, lib_u8 character,
     lib_u8 exit_code)
 {
     return vm_ata253_put(program, 0xb8u) && vm_ata253_word(program, 0xb800u) &&
@@ -105,7 +106,7 @@ static C_INT vm_ata253_marker(vm_ata253_program *program, lib_u8 character,
         vm_ata253_put(program, 0x21u);
 }
 
-static C_INT vm_ata253_build_program(vm_ata253_program *program)
+static lib_i32 vm_ata253_build_program(vm_ata253_program *program)
 {
     lib_u16 first_failure;
     lib_u16 second_failure;
@@ -161,7 +162,7 @@ static lib_u16 vm_ata253_fat12_get(const lib_u8 *fat, lib_u16 cluster)
     return (cluster & 1u) != 0u ? pair >> 4u : pair & 0x0fffu;
 }
 
-static C_VOID vm_ata253_fat12_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
+static void vm_ata253_fat12_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
 {
     lib_u32 offset = cluster + cluster / 2u;
     lib_u16 pair = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8u));
@@ -172,46 +173,46 @@ static C_VOID vm_ata253_fat12_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
     fat[offset + 1u] = (lib_u8)(pair >> 8u);
 }
 
-static C_INT vm_ata253_zero_image(lib_u8 *image, DWORD image_size);
-static C_INT vm_ata253_install(lib_u8 *image, DWORD image_size);
+static lib_i32 vm_ata253_zero_image(lib_u8 *image, DWORD image_size);
+static lib_i32 vm_ata253_install(lib_u8 *image, DWORD image_size);
 
-static type_status vm_ata253_install_on_overlay(
-    integration_ini_session *ini_session, C_VOID *opaque)
+static lib_status vm_ata253_install_on_overlay(
+    integration_ini_session *ini_session, void *opaque)
 {
     lib_u8 *fdd_image = LIB_NULL;
     lib_u8 *hdd_image = LIB_NULL;
     lib_size fdd_size = 0u;
     lib_size hdd_size = 0u;
-    C_INT ok;
+    lib_i32 ok;
 
-    (C_VOID)opaque;
+    (void)opaque;
     if (ini_session == LIB_NULL || integration_ini_session_overlay_read(ini_session,
-            VM_MACHINE_MEDIA_FDD_ID, (C_VOID **)&fdd_image, &fdd_size) != TYPE_STATUS_OK ||
+            VM_MACHINE_MEDIA_FDD_ID, (void **)&fdd_image, &fdd_size) != LIB_STATUS_OK ||
         integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_HDD_ID,
-            (C_VOID **)&hdd_image, &hdd_size) != TYPE_STATUS_OK || fdd_size > MAXDWORD ||
+            (void **)&hdd_image, &hdd_size) != LIB_STATUS_OK || fdd_size > MAXDWORD ||
         hdd_size > MAXDWORD || !vm_ata253_install(fdd_image, (DWORD)fdd_size) ||
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
-            fdd_image, fdd_size) != TYPE_STATUS_OK) {
+            fdd_image, fdd_size) != LIB_STATUS_OK) {
         lib_release(fdd_image);
         lib_release(hdd_image);
-        return TYPE_STATUS_FAULT;
+        return LIB_STATUS_INTERNAL_ERROR;
     }
     ok = vm_ata253_zero_image(hdd_image, (DWORD)hdd_size) &&
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_HDD_ID,
-            hdd_image, hdd_size) == TYPE_STATUS_OK;
+            hdd_image, hdd_size) == LIB_STATUS_OK;
     lib_release(fdd_image);
     lib_release(hdd_image);
-    return ok ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+    return ok ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
-static C_INT vm_ata253_zero_image(lib_u8 *image, DWORD image_size)
+static lib_i32 vm_ata253_zero_image(lib_u8 *image, DWORD image_size)
 {
     if (image == LIB_NULL || image_size == 0u) return 0;
     lib_memory_set(image, 0, image_size);
     return 1;
 }
 
-static C_INT vm_ata253_install(lib_u8 *image, DWORD image_size)
+static lib_i32 vm_ata253_install(lib_u8 *image, DWORD image_size)
 {
     vm_ata253_program program;
     lib_u32 bytes_per_sector;
@@ -273,13 +274,13 @@ static C_INT vm_ata253_install(lib_u8 *image, DWORD image_size)
     return 1;
 }
 
-static C_INT vm_ata253_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_ata253_has_prompt(const core_machine_display_snapshot *snapshot)
 {
     lib_size cell;
 
     if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < 80u * 25u; ++cell) {
-        if (STD_ISALPHA(snapshot->characters[cell]) &&
+        if (isalpha(snapshot->characters[cell]) &&
             snapshot->characters[cell + 1u] == ':' &&
             snapshot->characters[cell + 2u] == '\\' &&
             snapshot->characters[cell + 3u] == '>') return 1;
@@ -287,7 +288,7 @@ static C_INT vm_ata253_has_prompt(const core_machine_display_snapshot *snapshot)
     return 0;
 }
 
-static C_INT vm_ata253_run_until(vm_machine *session, lib_u32 limit,
+static lib_i32 vm_ata253_run_until(vm_machine *session, lib_u32 limit,
     lib_u8 marker)
 {
     const core_machine_run_budget budget = { 128u, 0u };
@@ -296,14 +297,14 @@ static C_INT vm_ata253_run_until(vm_machine *session, lib_u32 limit,
     lib_u32 executed = 0u;
 
     while (executed < limit) {
-        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->core_machine,
-                &snapshot) != TYPE_STATUS_OK) return 0;
+                &snapshot) != LIB_STATUS_OK) return 0;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            C_INT advanced = 0;
+            lib_i32 advanced = 0;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
         if (marker != 0u ? snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
@@ -314,17 +315,17 @@ static C_INT vm_ata253_run_until(vm_machine *session, lib_u32 limit,
     return 0;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     static const lib_u8 command[] = { 0x1cu, 0x2cu, 0x1cu, 0x1eu, 0x2eu,
         0x26u, 0x5au };
     integration_ini_session ini_session;
     vm_machine *session = LIB_NULL;
     lib_size index;
-    C_INT passed = 0;
+    lib_i32 passed = 0;
 
     if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_ata253_install_on_overlay, LIB_NULL, &ini_session) != TYPE_STATUS_OK) {
+            vm_ata253_install_on_overlay, LIB_NULL, &ini_session) != LIB_STATUS_OK) {
         return 77;
     }
     session = ini_session.session;
@@ -332,14 +333,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !vm_ata253_run_until(session, VM_ATA253_BOOT_BUDGET, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
         if (core_machine_keyboard_receive_native_byte(session->core_machine,
-                command[index]) != TYPE_STATUS_OK) goto done;
+                command[index]) != LIB_STATUS_OK) goto done;
     }
     passed = vm_ata253_run_until(session, VM_ATA253_RUN_BUDGET, 'O');
 
 done:
     integration_ini_session_close(&ini_session);
     if (!passed) return 1;
-    STD_PRINTF("M5:T286:S3:ATA-NIEN:DOS:OK\n");
-    STD_PRINTF("M5:T253:S3:ATA-PIO:DOS:OK\n");
+    printf("M5:T286:S3:ATA-NIEN:DOS:OK\n");
+    printf("M5:T253:S3:ATA-PIO:DOS:OK\n");
     return 0;
 }

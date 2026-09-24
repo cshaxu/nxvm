@@ -2,7 +2,6 @@
 #define CORE_MACHINE_HDC_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/dma.h"
@@ -74,8 +73,8 @@ typedef struct core_machine_hdc_data {
     lib_u32 step_rate_ticks;
     lib_u8 status;
     lib_u8 device_control;
-    type_bool irq_pending;
-    type_bool reset_asserted;
+    lib_u8 irq_pending;
+    lib_u8 reset_asserted;
     lib_u8 last_command;
     lib_u8 pending_command;
     lib_u8 pending_features;
@@ -99,11 +98,11 @@ typedef struct core_machine_hdc_connection {
     core_machine_media_id slave_media_id;
     core_machine_pic_irq_source irq_source;
     core_machine_dma_request_binding dma_request;
-    C_VOID (*dma_request_assert)(C_VOID *owner,
+    void (*dma_request_assert)(void *owner,
         const core_machine_dma_request_binding *binding);
-    C_VOID (*dma_request_deassert)(C_VOID *owner,
+    void (*dma_request_deassert)(void *owner,
         const core_machine_dma_request_binding *binding);
-    C_VOID *dma_request_owner;
+    void *dma_request_owner;
     core_machine_hdc_config config;
 } core_machine_hdc_connection;
 
@@ -113,28 +112,28 @@ typedef struct core_machine_hdc {
     core_machine_hdc_connection connect;
 } core_machine_hdc;
 
-C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
+void core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
     t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config);
-C_VOID core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
+void core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
     const core_machine_dma_request_binding *binding,
-    C_VOID (*request_assert)(C_VOID *owner,
+    void (*request_assert)(void *owner,
         const core_machine_dma_request_binding *binding),
-    C_VOID (*request_deassert)(C_VOID *owner,
-        const core_machine_dma_request_binding *binding), C_VOID *owner);
-C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc);
-C_VOID core_machine_hdc_reset(core_machine_hdc *hdc);
+    void (*request_deassert)(void *owner,
+        const core_machine_dma_request_binding *binding), void *owner);
+void core_machine_hdc_initialize(core_machine_hdc *hdc);
+void core_machine_hdc_reset(core_machine_hdc *hdc);
 /* Owner-local immediate service helper for direct controller clients.  The
  * production scheduler advances the same owner only through elapsed ticks. */
-C_VOID core_machine_hdc_advance(core_machine_hdc *hdc);
-C_VOID core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
+void core_machine_hdc_advance(core_machine_hdc *hdc);
+void core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
     lib_u64 elapsed_ticks);
-type_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
+lib_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
     lib_u64 *out_due_tick);
-C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc);
-const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID);
-const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(C_VOID);
-type_bool core_machine_hdc_irq_pending(const core_machine_hdc *hdc);
+void core_machine_hdc_finalize(core_machine_hdc *hdc);
+const core_machine_port_provider *core_machine_hdc_port_provider(void);
+const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(void);
+lib_u8 core_machine_hdc_irq_pending(const core_machine_hdc *hdc);
 
 #endif

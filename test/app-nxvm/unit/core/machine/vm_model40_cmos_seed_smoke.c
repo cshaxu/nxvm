@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
@@ -17,7 +18,7 @@ static lib_u8 vm_model40_cmos_read(vm_machine *session,
     return (lib_u8)core_machine_port_read(port, 0x0071u);
 }
 
-static C_VOID vm_model40_cmos_write(vm_machine *session, lib_u8 index,
+static void vm_model40_cmos_write(vm_machine *session, lib_u8 index,
     lib_u8 value)
 {
     t_port *port = &session->core_machine->executor_port;
@@ -26,7 +27,7 @@ static C_VOID vm_model40_cmos_write(vm_machine *session, lib_u8 index,
     core_machine_port_write(port, 0x0071u, value);
 }
 
-static C_INT vm_model40_cmos_checksum_is_valid(vm_machine *session)
+static lib_i32 vm_model40_cmos_checksum_is_valid(vm_machine *session)
 {
     lib_u16 checksum = 0u;
     lib_u8 index;
@@ -35,11 +36,11 @@ static C_INT vm_model40_cmos_checksum_is_valid(vm_machine *session)
         checksum = (lib_u16)(checksum + vm_model40_cmos_read(session, index));
     }
     return vm_model40_cmos_read(session, 0x2eu) ==
-        TYPE_MASK_UNSIGNED_8(checksum >> 8u) &&
-        vm_model40_cmos_read(session, 0x2fu) == TYPE_MASK_UNSIGNED_8(checksum);
+        CORE_MACHINE_MASK_U8(checksum >> 8u) &&
+        vm_model40_cmos_read(session, 0x2fu) == CORE_MACHINE_MASK_U8(checksum);
 }
 
-static C_INT vm_model40_cmos_seed_matches(vm_machine *session)
+static lib_i32 vm_model40_cmos_seed_matches(vm_machine *session)
 {
     return vm_model40_cmos_read(session, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY) == 0x22u &&
         vm_model40_cmos_read(session, CORE_MACHINE_RTC_TYPE_DISK_FIXED) == 0x80u &&
@@ -52,7 +53,7 @@ static C_INT vm_model40_cmos_seed_matches(vm_machine *session)
         vm_model40_cmos_checksum_is_valid(session);
 }
 
-static C_VOID vm_model40_cmos_seed_bytes(
+static void vm_model40_cmos_seed_bytes(
     lib_u8 bytes[VM_MACHINE_CMOS_SEED_BYTES])
 {
     lib_memory_set(bytes, 0, VM_MACHINE_CMOS_SEED_BYTES);
@@ -71,12 +72,12 @@ static C_VOID vm_model40_cmos_seed_bytes(
         for (index = 0x10u; index < 0x2eu; ++index) {
             checksum = (lib_u16)(checksum + bytes[index]);
         }
-        bytes[0x2eu] = TYPE_MASK_UNSIGNED_8(checksum >> 8u);
-        bytes[0x2fu] = TYPE_MASK_UNSIGNED_8(checksum);
+        bytes[0x2eu] = CORE_MACHINE_MASK_U8(checksum >> 8u);
+        bytes[0x2fu] = CORE_MACHINE_MASK_U8(checksum);
     }
 }
 
-static type_status vm_model40_cmos_seed_session_create(
+static lib_status vm_model40_cmos_seed_session_create(
     const lib_u8 seed[VM_MACHINE_CMOS_SEED_BYTES], vm_machine **out_session)
 {
     lib_u8 even_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
@@ -96,27 +97,27 @@ static type_status vm_model40_cmos_seed_session_create(
     return vm_machine_create_from_assets(&config, &assets, out_session);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *first = LIB_NULL;
     vm_machine *second = LIB_NULL;
     vm_machine *seeded = LIB_NULL;
     lib_u8 seed[VM_MACHINE_CMOS_SEED_BYTES];
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    failed |= vm_model40_cmos_seed_session_create(LIB_NULL, &first) != TYPE_STATUS_OK ||
+    failed |= vm_model40_cmos_seed_session_create(LIB_NULL, &first) != LIB_STATUS_OK ||
         first == LIB_NULL;
     if (!failed) failed |= !vm_model40_cmos_seed_matches(first);
     if (!failed) {
         vm_model40_cmos_write(first, CORE_MACHINE_RTC_EQUIPMENT, 0x5au);
-        failed |= vm_machine_reset(first) != TYPE_STATUS_OK ||
+        failed |= vm_machine_reset(first) != LIB_STATUS_OK ||
             vm_model40_cmos_read(first, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au;
     }
-    failed |= vm_model40_cmos_seed_session_create(LIB_NULL, &second) != TYPE_STATUS_OK ||
+    failed |= vm_model40_cmos_seed_session_create(LIB_NULL, &second) != LIB_STATUS_OK ||
         second == LIB_NULL;
     if (!failed) failed |= !vm_model40_cmos_seed_matches(second);
     vm_model40_cmos_seed_bytes(seed);
-    failed |= !failed && vm_model40_cmos_seed_session_create(seed, &seeded) != TYPE_STATUS_OK;
+    failed |= !failed && vm_model40_cmos_seed_session_create(seed, &seeded) != LIB_STATUS_OK;
     if (!failed) {
         failed |= vm_model40_cmos_read(seeded, CORE_MACHINE_RTC_EQUIPMENT) !=
                 seed[CORE_MACHINE_RTC_EQUIPMENT] ||
@@ -129,6 +130,6 @@ C_INT main(C_VOID)
     vm_machine_destroy(second);
     vm_machine_destroy(first);
     if (failed) return 1;
-    STD_PRINTF("M5:T513:S4:MODEL40-CMOS-SEED:OK\n");
+    printf("M5:T513:S4:MODEL40-CMOS-SEED:OK\n");
     return 0;
 }

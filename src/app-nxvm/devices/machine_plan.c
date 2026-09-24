@@ -1,23 +1,22 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/machine.h"
 
-C_INT core_machine_retirement_time_contract_is_valid(
+lib_i32 core_machine_retirement_time_contract_is_valid(
     core_machine_retirement_time_contract contract)
 {
     return contract == CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
 }
 
-C_INT core_machine_timing_capability_is_valid(
+lib_i32 core_machine_timing_capability_is_valid(
     core_machine_timing_capability capability)
 {
     return capability >= CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC &&
         capability <= CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG;
 }
 
-static C_INT core_machine_timing_disposition_is_valid(
+static lib_i32 core_machine_timing_disposition_is_valid(
     core_machine_timing_disposition disposition)
 {
     return disposition == CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK ||
@@ -25,7 +24,7 @@ static C_INT core_machine_timing_disposition_is_valid(
         disposition == CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
 }
 
-static C_INT core_machine_controller_timing_rule_is_valid(
+static lib_i32 core_machine_controller_timing_rule_is_valid(
     core_machine_controller_timing_rule rule)
 {
     return rule == CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
@@ -33,7 +32,7 @@ static C_INT core_machine_controller_timing_rule_is_valid(
         rule == CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES;
 }
 
-static C_INT core_machine_clock_ratio_is_explicit(
+static lib_i32 core_machine_clock_ratio_is_explicit(
     const core_machine_clock_ratio *ratio)
 {
     return ratio != LIB_NULL && ratio->numerator != 0u &&
@@ -64,7 +63,7 @@ static core_machine_timing_disposition core_machine_controller_timing_dispositio
     return CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
 }
 
-static C_INT core_machine_controller_timing_rules_are_valid(
+static lib_i32 core_machine_controller_timing_rules_are_valid(
     const core_machine_plan *plan)
 {
     const core_machine_controller_timing_rules *rules =
@@ -112,7 +111,7 @@ static C_INT core_machine_controller_timing_rules_are_valid(
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
 }
 
-static C_INT core_machine_timing_capability_is_non_guest_time(
+static lib_i32 core_machine_timing_capability_is_non_guest_time(
     core_machine_timing_capability capability)
 {
     return capability == CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT ||
@@ -155,9 +154,9 @@ static core_machine_timing_seam core_machine_timing_capability_seam(
     return CORE_MACHINE_TIMING_SEAM_OBSERVATION;
 }
 
-type_status core_machine_plan_validate(const core_machine_plan *plan)
+lib_status core_machine_plan_validate(const core_machine_plan *plan)
 {
-    type_bool seen[CORE_MACHINE_TIMING_CAPABILITY_COUNT] = {0};
+    lib_u8 seen[CORE_MACHINE_TIMING_CAPABILITY_COUNT] = {0};
     lib_size index;
 
     if (plan == LIB_NULL || plan->declaration_count !=
@@ -170,7 +169,7 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
         !core_machine_transaction_contract_is_valid(
             &plan->configuration.transaction_contract) ||
         !core_machine_controller_timing_rules_are_valid(plan)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (plan->topology.absent_memory_count > CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT ||
         plan->topology.memory_alias_count > CORE_MACHINE_MEMORY_ALIAS_COUNT ||
@@ -200,7 +199,7 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
         (plan->d4_memory.present && !plan->topology.d4_platform_present) ||
         ((plan->topology.fdc_present || plan->topology.hdc_present) &&
          plan->media_registry == LIB_NULL)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     for (index = 0u; index < plan->declaration_count; ++index) {
         const core_machine_timing_declaration *declaration =
@@ -210,38 +209,38 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
             !core_machine_timing_disposition_is_valid(declaration->disposition) ||
             declaration->seam != core_machine_timing_capability_seam(
                 declaration->capability) || seen[declaration->capability]) {
-            return TYPE_STATUS_INVALID_ARGUMENT;
+            return LIB_STATUS_INVALID_ARGUMENT;
         }
         if (core_machine_timing_capability_is_non_guest_time(
                 declaration->capability)) {
             if (declaration->disposition !=
                 CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME) {
-                return TYPE_STATUS_INVALID_ARGUMENT;
+                return LIB_STATUS_INVALID_ARGUMENT;
             }
         } else if (declaration->disposition !=
             core_machine_controller_timing_disposition(plan,
                 declaration->capability)) {
-            return TYPE_STATUS_INVALID_ARGUMENT;
+            return LIB_STATUS_INVALID_ARGUMENT;
         }
         seen[declaration->capability] = LIB_TRUE;
     }
     for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index) {
-        if (!seen[index]) return TYPE_STATUS_INVALID_ARGUMENT;
+        if (!seen[index]) return LIB_STATUS_INVALID_ARGUMENT;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_plan_apply_topology(core_machine *machine,
+lib_status core_machine_plan_apply_topology(core_machine *machine,
     const core_machine_plan *plan)
 {
     core_machine_fdc_topology fdc;
     core_machine_hdc_topology hdc;
     core_machine_display_config display;
     const core_machine_plan_topology *topology;
-    type_status status;
+    lib_status status;
     lib_size index;
 
-    if (machine == LIB_NULL || plan == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL || plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     topology = &plan->topology;
     for (index = 0u; index < topology->memory_alias_count; ++index) {
         const core_machine_memory_alias_config *alias =
@@ -249,36 +248,36 @@ type_status core_machine_plan_apply_topology(core_machine *machine,
 
         status = core_machine_memory_register_mapping(&machine->executor_memory,
             alias->physical_start, alias->backing_start, alias->bytes, LIB_TRUE);
-        if (status != TYPE_STATUS_OK) return status;
+        if (status != LIB_STATUS_OK) return status;
     }
     for (index = 0u; index < topology->absent_memory_count; ++index) {
         status = core_machine_configure_absent_memory(machine,
             &topology->absent_memory[index]);
-        if (status != TYPE_STATUS_OK) return status;
+        if (status != LIB_STATUS_OK) return status;
     }
     if (topology->planar_parity_present && (status = core_machine_configure_planar_parity(
-            machine, &topology->planar_parity)) != TYPE_STATUS_OK) return status;
+            machine, &topology->planar_parity)) != LIB_STATUS_OK) return status;
     if (topology->d4_platform_present && (status = core_machine_configure_d4_platform(
-            machine, &topology->d4_platform)) != TYPE_STATUS_OK) return status;
+            machine, &topology->d4_platform)) != LIB_STATUS_OK) return status;
     if (plan->d4_memory.present && (status = core_machine_d4_memory_configure(machine,
-            &plan->d4_memory)) != TYPE_STATUS_OK) return status;
+            &plan->d4_memory)) != LIB_STATUS_OK) return status;
     if (topology->display_present) {
         display = topology->display;
         if ((status = core_machine_configure_display(machine, &display)) !=
-                TYPE_STATUS_OK) return status;
+                LIB_STATUS_OK) return status;
         core_machine_display_provider_slot_freeze(plan->display_provider);
     }
     if (topology->dma_present && (status = core_machine_configure_dma(machine,
-            &topology->dma, &machine->fdc_dma_request)) != TYPE_STATUS_OK) return status;
+            &topology->dma, &machine->fdc_dma_request)) != LIB_STATUS_OK) return status;
     if (topology->rtc_cmos_present && (status = core_machine_configure_rtc_cmos(
-            machine, &topology->rtc_cmos)) != TYPE_STATUS_OK) return status;
+            machine, &topology->rtc_cmos)) != LIB_STATUS_OK) return status;
     if (topology->fdc_present) {
         fdc.media_registry = plan->media_registry;
         fdc.drives = topology->fdc_drives;
         fdc.config = topology->fdc;
         fdc.observation_provider = plan->fdc_observation_provider;
         fdc.dma_request = machine->fdc_dma_request;
-        if ((status = core_machine_configure_fdc(machine, &fdc)) != TYPE_STATUS_OK) {
+        if ((status = core_machine_configure_fdc(machine, &fdc)) != LIB_STATUS_OK) {
             return status;
         }
     }
@@ -287,11 +286,11 @@ type_status core_machine_plan_apply_topology(core_machine *machine,
         hdc.media_id = topology->hdc_media_id;
         hdc.slave_media_id = topology->hdc_slave_media_id;
         hdc.config = topology->hdc;
-        if ((status = core_machine_configure_hdc(machine, &hdc)) != TYPE_STATUS_OK) {
+        if ((status = core_machine_configure_hdc(machine, &hdc)) != LIB_STATUS_OK) {
             return status;
         }
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 const core_machine_timing_declaration *
@@ -309,16 +308,16 @@ core_machine_plan_declaration_find(const core_machine_plan *plan,
     return LIB_NULL;
 }
 
-type_status core_machine_plan_create(const core_machine_config *configuration,
+lib_status core_machine_plan_create(const core_machine_config *configuration,
     core_machine_plan **out_plan)
 {
     lib_size index;
     core_machine_plan *plan;
 
-    if (out_plan == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_plan = LIB_NULL;
     plan = (core_machine_plan *)lib_allocate_zero(1u, sizeof(*plan));
-    if (plan == LIB_NULL) return TYPE_STATUS_NO_MEMORY;
+    if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     if (configuration != LIB_NULL) plan->configuration = *configuration;
     plan->declaration_count = CORE_MACHINE_TIMING_CAPABILITY_COUNT;
     for (index = 0u; index < plan->declaration_count; ++index) {
@@ -334,26 +333,26 @@ type_status core_machine_plan_create(const core_machine_config *configuration,
             CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
     }
     *out_plan = plan;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_plan_destroy(core_machine_plan *plan)
+void core_machine_plan_destroy(core_machine_plan *plan)
 {
     lib_release(plan);
 }
 
-type_status core_machine_plan_set_topology(core_machine_plan *plan,
+lib_status core_machine_plan_set_topology(core_machine_plan *plan,
     const core_machine_plan_topology *topology)
 {
-    if (plan == LIB_NULL || topology == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (plan == LIB_NULL || topology == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     plan->topology = *topology;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_plan_set_controller_timing_rules(core_machine_plan *plan,
+lib_status core_machine_plan_set_controller_timing_rules(core_machine_plan *plan,
     const core_machine_controller_timing_rules *rules)
 {
-    if (plan == LIB_NULL || rules == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (plan == LIB_NULL || rules == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     plan->controller_timing = *rules;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC].disposition =
         core_machine_controller_timing_disposition(plan,
@@ -367,70 +366,70 @@ type_status core_machine_plan_set_controller_timing_rules(core_machine_plan *pla
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS].disposition =
         core_machine_controller_timing_disposition(plan,
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_plan_bind_media_registry(core_machine_plan *plan,
+lib_status core_machine_plan_bind_media_registry(core_machine_plan *plan,
     const core_machine_media_registry *registry)
 {
-    if (plan == LIB_NULL || registry == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (plan == LIB_NULL || registry == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     plan->media_registry = registry;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_plan_bind_display_provider(core_machine_plan *plan,
+lib_status core_machine_plan_bind_display_provider(core_machine_plan *plan,
     core_machine_display_provider_slot *provider)
 {
-    if (plan == LIB_NULL || provider == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (plan == LIB_NULL || provider == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     plan->display_provider = provider;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_plan_bind_fdc_terminal_observation(core_machine_plan *plan,
+lib_status core_machine_plan_bind_fdc_terminal_observation(core_machine_plan *plan,
     core_machine_fdc_terminal_observation_provider provider)
 {
-    if (plan == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     plan->fdc_observation_provider = provider;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_plan_configure_fdc(core_machine_plan *plan,
+lib_status core_machine_plan_configure_fdc(core_machine_plan *plan,
     const core_machine_fdc_drive_bindings *drives,
     const core_machine_fdc_config *config)
 {
     if (plan == LIB_NULL || drives == LIB_NULL || config == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     plan->topology.fdc_present = LIB_TRUE;
     plan->topology.fdc_drives = *drives;
     plan->topology.fdc = *config;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_plan_configure_hdc(core_machine_plan *plan,
+lib_status core_machine_plan_configure_hdc(core_machine_plan *plan,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
     const core_machine_hdc_config *config)
 {
     if (plan == LIB_NULL || config == LIB_NULL ||
         media_id == CORE_MACHINE_MEDIA_ID_INVALID || slave_media_id == media_id) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     plan->topology.hdc_present = LIB_TRUE;
     plan->topology.hdc_media_id = media_id;
     plan->topology.hdc_slave_media_id = slave_media_id;
     plan->topology.hdc = *config;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_plan_configure_d4_memory(core_machine_plan *plan,
+lib_status core_machine_plan_configure_d4_memory(core_machine_plan *plan,
     const core_machine_d4_memory_config *config)
 {
     if (plan == LIB_NULL || !core_machine_d4_memory_config_is_valid(config) ||
-        plan->d4_memory.present) return TYPE_STATUS_INVALID_ARGUMENT;
+        plan->d4_memory.present) return LIB_STATUS_INVALID_ARGUMENT;
     plan->d4_memory = *config;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
-C_INT core_machine_external_cycle_timing_is_valid(
+lib_i32 core_machine_external_cycle_timing_is_valid(
     const core_machine_external_cycle_timing *timing)
 {
     if (timing == LIB_NULL || (timing->overlap_policy !=
@@ -445,7 +444,7 @@ C_INT core_machine_external_cycle_timing_is_valid(
           timing->last_eligible_address == 0u) ||
          timing->first_eligible_address <= timing->last_eligible_address);
 }
-C_INT core_machine_external_access_wait_windows_are_valid(
+lib_i32 core_machine_external_access_wait_windows_are_valid(
     const core_machine_external_access_wait_window *windows)
 {
     lib_size index;
@@ -464,7 +463,7 @@ C_INT core_machine_external_access_wait_windows_are_valid(
     return 1;
 }
 
-C_INT core_machine_transaction_contract_is_valid(
+lib_i32 core_machine_transaction_contract_is_valid(
     const core_machine_transaction_contract *contract)
 {
     return contract != LIB_NULL &&
@@ -480,7 +479,7 @@ C_INT core_machine_transaction_contract_is_valid(
          contract->cpu_prefetch_reservation_enabled == LIB_TRUE);
 }
 
-C_INT core_machine_clock_plan_is_valid(
+lib_i32 core_machine_clock_plan_is_valid(
     const core_machine_clock_plan *plan)
 {
     return plan != LIB_NULL &&

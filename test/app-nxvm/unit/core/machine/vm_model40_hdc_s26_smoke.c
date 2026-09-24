@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/hdc.h"
 #include "app-nxvm/devices/machine.h"
@@ -10,7 +10,7 @@
 
 #define MODEL40_HDC_BYTES (925u * 5u * 17u * 512u)
 
-static C_INT read_first_sector(vm_machine *session, lib_u8 drive_head,
+static lib_i32 read_first_sector(vm_machine *session, lib_u8 drive_head,
     lib_u16 expected_word)
 {
     core_machine_hdc *hdc;
@@ -32,11 +32,11 @@ static C_INT read_first_sector(vm_machine *session, lib_u8 drive_head,
     if ((value & CORE_MACHINE_HDC_STATUS_DRQ) == 0u || core_machine_hdc_irq_pending(hdc) ||
         core_machine_port_read(&session->core_machine->executor_port, 0x01f0u) != expected_word) return 0;
     for (index = 1u; index < 256u; ++index) {
-        (C_VOID)core_machine_port_read(&session->core_machine->executor_port, 0x01f0u);
+        (void)core_machine_port_read(&session->core_machine->executor_port, 0x01f0u);
     }
     core_machine_hdc_advance(hdc);
     if (!core_machine_hdc_irq_pending(hdc)) return 0;
-    (C_VOID)core_machine_port_read(&session->core_machine->executor_port, 0x01f7u);
+    (void)core_machine_port_read(&session->core_machine->executor_port, 0x01f7u);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f7u, 0xecu);
     core_machine_hdc_advance(hdc);
     value = core_machine_port_read(&session->core_machine->executor_port, 0x01f7u);
@@ -49,16 +49,16 @@ static C_INT read_first_sector(vm_machine *session, lib_u8 drive_head,
             CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     lib_u8 *image = (lib_u8 *)lib_allocate_zero(1u, MODEL40_HDC_BYTES);
     vm_machine *session = LIB_NULL;
-    C_INT failed = image == LIB_NULL;
+    lib_i32 failed = image == LIB_NULL;
 
     if (!failed) {
         image[0u] = 0xa5u;
         image[1u] = 0x5au;
-        failed = vm_model40_fixture_create(&session) != TYPE_STATUS_OK || session == LIB_NULL ||
+        failed = vm_model40_fixture_create(&session) != LIB_STATUS_OK || session == LIB_NULL ||
             vm_machine_hdd_replace_bytes(&session->hdd, image, MODEL40_HDC_BYTES) ||
             vm_machine_hdd_set_geometry(&session->hdd, 925u, 5u, 17u) ||
             !session->hdd.connect.flagDiskExist ||
@@ -73,6 +73,6 @@ C_INT main(C_VOID)
     vm_machine_destroy(session);
     lib_release(image);
     if (failed) return 1;
-    STD_PRINTF("M5:T386:S26:MODEL40-HDC-MEMORY-MEDIA:OK\n");
+    printf("M5:T386:S26:MODEL40-HDC-MEMORY-MEDIA:OK\n");
     return 0;
 }

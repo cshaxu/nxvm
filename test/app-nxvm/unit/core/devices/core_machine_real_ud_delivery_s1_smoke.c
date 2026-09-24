@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -22,19 +23,19 @@ typedef struct real_ud_case {
     core_machine_cpu_profile profile;
 } real_ud_case;
 
-static C_VOID real_ud_reset(C_VOID *opaque)
+static void real_ud_reset(void *opaque)
 {
     real_ud_machine *state = (real_ud_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider real_ud_provider = {
     real_ud_reset, LIB_NULL
 };
 
-static C_INT real_ud_prepare(real_ud_machine *state,
+static lib_i32 real_ud_prepare(real_ud_machine *state,
     const real_ud_case *test_case, lib_u16 idtr_limit)
 {
     static const lib_u8 handler[] = { 0x40u, 0xf4u };
@@ -56,15 +57,15 @@ static C_INT real_ud_prepare(real_ud_machine *state,
             REAL_UD_CODE_OFFSET) ||
         core_machine_memory_write(state->machine, REAL_UD_CODE_OFFSET,
             test_case->program, test_case->bytes) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, REAL_UD_VECTOR * 4u,
             &handler_offset, sizeof(handler_offset)) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, REAL_UD_VECTOR * 4u + 2u,
             &handler_segment, sizeof(handler_segment)) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, REAL_UD_HANDLER_OFFSET,
-            handler, sizeof(handler)) != TYPE_STATUS_OK) {
+            handler, sizeof(handler)) != LIB_STATUS_OK) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
         return 0;
@@ -77,18 +78,18 @@ static C_INT real_ud_prepare(real_ud_machine *state,
     return 1;
 }
 
-static C_INT real_ud_run(real_ud_machine *state, lib_u32 budget,
-    type_status *status, core_machine_run_result *result, t_cpu *after,
+static lib_i32 real_ud_run(real_ud_machine *state, lib_u32 budget,
+    lib_status *status, core_machine_run_result *result, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic)
 {
     *status = core_machine_run(state->machine,
         (core_machine_run_budget){ budget, 0u }, result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT real_ud_test_delivery_case(const real_ud_case *test_case)
+static lib_i32 real_ud_test_delivery_case(const real_ud_case *test_case)
 {
     real_ud_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -96,17 +97,17 @@ static C_INT real_ud_test_delivery_case(const real_ud_case *test_case)
     lib_u16 frame[3] = { 0u, 0u, 0u };
     t_cpu before;
     t_cpu after;
-    type_status status;
-    C_INT failed = !real_ud_prepare(&state, test_case,
+    lib_status status;
+    lib_i32 failed = !real_ud_prepare(&state, test_case,
         REAL_UD_VECTOR * 4u + 3u);
 
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !real_ud_run(&state, 1u, &status, &result, &after,
-            &diagnostic) || status != TYPE_STATUS_OK ||
+            &diagnostic) || status != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             diagnostic.first_fault.valid ||
-            !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+            !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_UD) || after.data.eip !=
             REAL_UD_HANDLER_OFFSET || after.data.esp !=
@@ -116,12 +117,12 @@ static C_INT real_ud_test_delivery_case(const real_ud_case *test_case)
                 ~(VCPU_EFLAGS_IF | VCPU_EFLAGS_TF)) ||
             !test_core_machine_fixture_read_linear(state.machine,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                TYPE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] !=
+                CORE_MACHINE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] !=
             REAL_UD_CODE_OFFSET || frame[1] != before.data.cs.selector ||
             frame[2] != (lib_u16)((before.data.eflags &
                 ~VCPU_EFLAGS_RESERVED) | 0x02u);
         failed |= !real_ud_run(&state, 2u, &status, &result, &after,
-            &diagnostic) || status != TYPE_STATUS_OK ||
+            &diagnostic) || status != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             after.data.eip != REAL_UD_HANDLER_OFFSET + 2u ||
             after.data.eax != before.data.eax + 1u;
@@ -130,7 +131,7 @@ static C_INT real_ud_test_delivery_case(const real_ud_case *test_case)
     return !failed;
 }
 
-static C_INT real_ud_test_delivery(C_VOID)
+static lib_i32 real_ud_test_delivery(void)
 {
     static const lib_u8 primary[] = { 0xf1u };
     static const lib_u8 escape[] = { 0x0fu, 0xffu };
@@ -151,7 +152,7 @@ static C_INT real_ud_test_delivery(C_VOID)
     return 1;
 }
 
-static C_INT real_ud_test_delivery_failure(C_VOID)
+static lib_i32 real_ud_test_delivery_failure(void)
 {
     static const lib_u8 program[] = { 0xf1u };
     const real_ud_case test_case = {
@@ -162,8 +163,8 @@ static C_INT real_ud_test_delivery_failure(C_VOID)
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_status status;
-    C_INT failed = !real_ud_prepare(&state, &test_case,
+    lib_status status;
+    lib_i32 failed = !real_ud_prepare(&state, &test_case,
         REAL_UD_VECTOR * 4u - 1u);
 
     if (!failed) {
@@ -171,9 +172,9 @@ static C_INT real_ud_test_delivery_failure(C_VOID)
             VCPU_EFLAGS_IF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !real_ud_run(&state, 1u, &status, &result, &after,
-            &diagnostic) || status != TYPE_STATUS_FAULT ||
+            &diagnostic) || status != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT ||
-            !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             diagnostic.last_delivered_exception.valid || after.data.eip !=
             before.data.eip || after.data.esp != before.data.esp ||
@@ -186,9 +187,9 @@ static C_INT real_ud_test_delivery_failure(C_VOID)
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!real_ud_test_delivery() || !real_ud_test_delivery_failure()) return 1;
-    STD_PRINTF("M5:T337:S1:REAL-UD-DELIVERY:OK\n");
+    printf("M5:T337:S1:REAL-UD-DELIVERY:OK\n");
     return 0;
 }

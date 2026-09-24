@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -13,40 +13,40 @@ typedef struct timing_80186_state {
     lib_u64 advanced_ticks;
 } timing_80186_state;
 
-static type_status timing_80186_read(C_VOID *owner, lib_u16 port,
+static lib_status timing_80186_read(void *owner, lib_u16 port,
     lib_u32 *out_value)
 {
     timing_80186_state *state = (timing_80186_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     *out_value = 0x5au;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status timing_80186_write(C_VOID *owner, lib_u16 port,
+static lib_status timing_80186_write(void *owner, lib_u16 port,
     lib_u32 value)
 {
     timing_80186_state *state = (timing_80186_state *)owner;
 
     if (state == LIB_NULL || port != 0x00e0u || value > 0xffffu)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     ++state->writes;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_port_provider timing_80186_ports = {
     timing_80186_read, timing_80186_write
 };
 
-static C_VOID timing_80186_reset(C_VOID *opaque)
+static void timing_80186_reset(void *opaque)
 {
     timing_80186_state *state = (timing_80186_state *)opaque;
     if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
-static C_VOID timing_80186_advance(C_VOID *opaque, lib_u64 ticks)
+static void timing_80186_advance(void *opaque, lib_u64 ticks)
 {
     timing_80186_state *state = (timing_80186_state *)opaque;
     if (state != LIB_NULL) state->advanced_ticks += ticks;
@@ -56,7 +56,7 @@ static const core_machine_execution_provider timing_80186_execution = {
     timing_80186_reset, timing_80186_advance
 };
 
-static C_INT timing_80186_prepare(core_machine **out_machine,
+static lib_i32 timing_80186_prepare(core_machine **out_machine,
     timing_80186_state *state)
 {
     const core_machine_config config = {
@@ -67,11 +67,11 @@ static C_INT timing_80186_prepare(core_machine **out_machine,
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_80186_RESET_LINEAR, TIMING_80186_RESET_PHYSICAL, 16u) !=
-            TYPE_STATUS_OK || core_machine_install_port_provider(machine,
-            0x00e0u, 0x00e0u, &timing_80186_ports, state) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK || core_machine_install_port_provider(machine,
+            0x00e0u, 0x00e0u, &timing_80186_ports, state) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_80186_execution, state)) {
         core_machine_destroy(machine);
@@ -81,32 +81,32 @@ static C_INT timing_80186_prepare(core_machine **out_machine,
     return 1;
 }
 
-static C_INT timing_80186_load(core_machine *machine,
+static lib_i32 timing_80186_load(core_machine *machine,
     const lib_u8 *program, lib_size bytes)
 {
-    return core_machine_reset(machine) == TYPE_STATUS_OK &&
+    return core_machine_reset(machine) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, TIMING_80186_RESET_LINEAR,
-            program, bytes) == TYPE_STATUS_OK;
+            program, bytes) == LIB_STATUS_OK;
 }
 
-static C_INT timing_80186_run(core_machine *machine, timing_80186_state *state,
+static lib_i32 timing_80186_run(core_machine *machine, timing_80186_state *state,
     lib_u64 instructions, lib_u64 ticks)
 {
     const core_machine_run_budget budget = { instructions, 0u };
     core_machine_run_result result;
 
-    return core_machine_run(machine, budget, &result) == TYPE_STATUS_OK &&
+    return core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET &&
         result.executed == instructions && result.ticks == ticks &&
         result.elapsed_ticks == ticks && state->advanced_ticks == ticks;
 }
 
-static C_INT timing_80186_case(const lib_u8 *program, lib_size bytes,
+static lib_i32 timing_80186_case(const lib_u8 *program, lib_size bytes,
     lib_u64 ticks)
 {
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_80186_prepare(&machine, &state) ||
+    lib_i32 failed = !timing_80186_prepare(&machine, &state) ||
         !timing_80186_load(machine, program, bytes) ||
         !timing_80186_run(machine, &state, 1u, ticks);
 
@@ -114,12 +114,12 @@ static C_INT timing_80186_case(const lib_u8 *program, lib_size bytes,
     return failed;
 }
 
-static C_INT timing_80186_lea(C_VOID)
+static lib_i32 timing_80186_lea(void)
 {
     static const lib_u8 program[] = { 0x8du, 0x1eu, 0x00u, 0x10u };
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_80186_prepare(&machine, &state) ||
+    lib_i32 failed = !timing_80186_prepare(&machine, &state) ||
         !timing_80186_load(machine, program, sizeof(program)) ||
         !timing_80186_run(machine, &state, 1u, 6u) ||
         machine->executor_cpu.data.bx != 0x1000u;
@@ -128,46 +128,46 @@ static C_INT timing_80186_lea(C_VOID)
     return failed;
 }
 
-static C_INT timing_80186_pointer_loads(C_VOID)
+static lib_i32 timing_80186_pointer_loads(void)
 {
     static const lib_u8 lds[] = { 0xc5u, 0x1eu, 0x00u, 0x10u };
     static const lib_u8 les[] = { 0xc4u, 0x1eu, 0x00u, 0x10u };
     static const lib_u16 pointer[] = { 0x2000u, 0x0800u };
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_80186_prepare(&machine, &state);
+    lib_i32 failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, lds, sizeof(lds)) ||
         core_machine_memory_write(machine, 0x1000u, pointer, sizeof(pointer)) !=
-            TYPE_STATUS_OK || !timing_80186_run(machine, &state, 1u, 18u) ||
+            LIB_STATUS_OK || !timing_80186_run(machine, &state, 1u, 18u) ||
         machine->executor_cpu.data.bx != 0x2000u ||
         machine->executor_cpu.data.ds.selector != 0x0800u;
     if (!failed) failed |= !timing_80186_load(machine, les, sizeof(les)) ||
         core_machine_memory_write(machine, 0x1000u, pointer, sizeof(pointer)) !=
-            TYPE_STATUS_OK || !timing_80186_run(machine, &state, 1u, 18u) ||
+            LIB_STATUS_OK || !timing_80186_run(machine, &state, 1u, 18u) ||
         machine->executor_cpu.data.bx != 0x2000u ||
         machine->executor_cpu.data.es.selector != 0x0800u;
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT timing_80186_bound(C_VOID)
+static lib_i32 timing_80186_bound(void)
 {
     static const lib_u8 program[] = { 0x62u, 0x06u, 0x00u, 0x10u };
     static const lib_u16 bounds[] = { 0x1000u, 0x2000u };
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_80186_prepare(&machine, &state) ||
+    lib_i32 failed = !timing_80186_prepare(&machine, &state) ||
         !timing_80186_load(machine, program, sizeof(program)) ||
         core_machine_memory_write(machine, 0x1000u, bounds, sizeof(bounds)) !=
-            TYPE_STATUS_OK || ((machine->executor_cpu.data.ax = 0x1800u), 0) ||
+            LIB_STATUS_OK || ((machine->executor_cpu.data.ax = 0x1800u), 0) ||
         !timing_80186_run(machine, &state, 1u, 34u);
 
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT timing_80186_alu_matrix(C_VOID)
+static lib_i32 timing_80186_alu_matrix(void)
 {
     static const lib_u8 bases[] = {
         0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u
@@ -183,7 +183,7 @@ static C_INT timing_80186_alu_matrix(C_VOID)
             const lib_u16 value = 1u;
             timing_80186_state state = { 0u, 0u, 0u };
             core_machine *machine = LIB_NULL;
-            C_INT failed;
+            lib_i32 failed;
 
             switch (form) {
             case 0u: program[0] = bases[operation] + 2u; program[1] = 0xc1u;
@@ -204,13 +204,13 @@ static C_INT timing_80186_alu_matrix(C_VOID)
             failed = !timing_80186_prepare(&machine, &state) ||
                 !timing_80186_load(machine, program, bytes) ||
                 core_machine_memory_write(machine, 0x1000u, &value,
-                    sizeof(value)) != TYPE_STATUS_OK ||
+                    sizeof(value)) != LIB_STATUS_OK ||
                 ((machine->executor_cpu.data.ax = 1u),
                     (machine->executor_cpu.data.cx = 1u), 0) ||
                 !timing_80186_run(machine, &state, 1u, ticks[form]);
             core_machine_destroy(machine);
             if (failed) {
-                STD_PRINTF("I186 ALU timing case failed: operation=%u form=%u\n",
+                printf("I186 ALU timing case failed: operation=%u form=%u\n",
                     (lib_u32)operation, (lib_u32)form);
                 return 1;
             }
@@ -219,7 +219,7 @@ static C_INT timing_80186_alu_matrix(C_VOID)
     return 0;
 }
 
-static C_INT timing_80186_cmp_test_matrix(C_VOID)
+static lib_i32 timing_80186_cmp_test_matrix(void)
 {
     typedef struct timing_80186_recipe {
         lib_u8 program[5];
@@ -240,17 +240,17 @@ static C_INT timing_80186_cmp_test_matrix(C_VOID)
         const lib_u16 value = 1u;
         timing_80186_state state = { 0u, 0u, 0u };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_80186_prepare(&machine, &state) ||
+        lib_i32 failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, recipes[index].program,
                 recipes[index].bytes) || core_machine_memory_write(machine,
-                0x1000u, &value, sizeof(value)) != TYPE_STATUS_OK ||
+                0x1000u, &value, sizeof(value)) != LIB_STATUS_OK ||
             ((machine->executor_cpu.data.ax = 1u),
                 (machine->executor_cpu.data.cx = 1u), 0) ||
             !timing_80186_run(machine, &state, 1u, recipes[index].ticks);
 
         core_machine_destroy(machine);
         if (failed) {
-            STD_PRINTF("I186 CMP/TEST timing case failed: index=%u\n",
+            printf("I186 CMP/TEST timing case failed: index=%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -258,7 +258,7 @@ static C_INT timing_80186_cmp_test_matrix(C_VOID)
     return 0;
 }
 
-static C_INT timing_80186_adjustment_matrix(C_VOID)
+static lib_i32 timing_80186_adjustment_matrix(void)
 {
     typedef struct timing_80186_adjustment_recipe {
         lib_u8 program[2];
@@ -276,7 +276,7 @@ static C_INT timing_80186_adjustment_matrix(C_VOID)
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         timing_80186_state state = { 0u, 0u, 0u };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_80186_prepare(&machine, &state) ||
+        lib_i32 failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, recipes[index].program,
                 recipes[index].bytes) || ((machine->executor_cpu.data.ax = 0x0012u),
                 0) || !timing_80186_run(machine, &state, 1u, recipes[index].ticks);
@@ -287,7 +287,7 @@ static C_INT timing_80186_adjustment_matrix(C_VOID)
     return 0;
 }
 
-static C_INT timing_80186_unary_matrix(C_VOID)
+static lib_i32 timing_80186_unary_matrix(void)
 {
     typedef struct timing_80186_recipe {
         lib_u8 program[4];
@@ -306,9 +306,9 @@ static C_INT timing_80186_unary_matrix(C_VOID)
         const lib_u16 value = 1u;
         timing_80186_state state = { 0u,0u,0u };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_80186_prepare(&machine, &state) || !timing_80186_load(machine,
+        lib_i32 failed = !timing_80186_prepare(&machine, &state) || !timing_80186_load(machine,
             recipes[index].program, recipes[index].bytes) || core_machine_memory_write(machine,
-            0x1000u, &value, sizeof(value)) != TYPE_STATUS_OK || !timing_80186_run(machine,
+            0x1000u, &value, sizeof(value)) != LIB_STATUS_OK || !timing_80186_run(machine,
             &state, 1u, recipes[index].ticks);
         core_machine_destroy(machine);
         if (failed) return 1;
@@ -316,7 +316,7 @@ static C_INT timing_80186_unary_matrix(C_VOID)
     return 0;
 }
 
-static C_INT timing_80186_flag_controls(C_VOID)
+static lib_i32 timing_80186_flag_controls(void)
 {
     typedef struct timing_80186_flag_recipe {
         lib_u8 opcode;
@@ -339,7 +339,7 @@ static C_INT timing_80186_flag_controls(C_VOID)
         const timing_80186_flag_recipe *recipe = &recipes[index];
         timing_80186_state state = { 0u,0u,0u };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_80186_prepare(&machine, &state) ||
+        lib_i32 failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, &recipe->opcode, 1u) ||
             ((machine->executor_cpu.data.eflags = recipe->initial_flags), 0) ||
             !timing_80186_run(machine, &state, 1u, recipe->ticks) ||
@@ -353,7 +353,7 @@ static C_INT timing_80186_flag_controls(C_VOID)
     return 0;
 }
 
-static C_INT timing_80186_group2_matrix(C_VOID)
+static lib_i32 timing_80186_group2_matrix(void)
 {
     static const lib_u8 operations[] = { 0u,1u,2u,3u,4u,5u,7u };
     static const lib_u64 ticks[] = { 2u,8u,15u,20u,8u,20u };
@@ -368,7 +368,7 @@ static C_INT timing_80186_group2_matrix(C_VOID)
             lib_size bytes;
             timing_80186_state state = { 0u,0u,0u };
             core_machine *machine = LIB_NULL;
-            C_INT failed;
+            lib_i32 failed;
 
             switch (form) {
             case 0u: program[0] = 0xd0u; program[1] =
@@ -394,7 +394,7 @@ static C_INT timing_80186_group2_matrix(C_VOID)
             failed = !timing_80186_prepare(&machine, &state) ||
                 !timing_80186_load(machine, program, bytes) ||
                 core_machine_memory_write(machine, 0x1000u, &value,
-                    sizeof(value)) != TYPE_STATUS_OK ||
+                    sizeof(value)) != LIB_STATUS_OK ||
                 ((machine->executor_cpu.data.cx = 3u), 0) ||
                 !timing_80186_run(machine, &state, 1u, ticks[form]);
             core_machine_destroy(machine);
@@ -404,7 +404,7 @@ static C_INT timing_80186_group2_matrix(C_VOID)
     return 0;
 }
 
-static C_INT timing_80186_l2_arithmetic_matrix(C_VOID)
+static lib_i32 timing_80186_l2_arithmetic_matrix(void)
 {
     typedef struct timing_80186_recipe {
         lib_u8 program[5];
@@ -425,10 +425,10 @@ static C_INT timing_80186_l2_arithmetic_matrix(C_VOID)
         const lib_u16 value = 1u;
         timing_80186_state state = { 0u,0u,0u };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_80186_prepare(&machine, &state) ||
+        lib_i32 failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, recipes[index].program,
                 recipes[index].bytes) || core_machine_memory_write(machine,
-                0x1000u, &value, sizeof(value)) != TYPE_STATUS_OK ||
+                0x1000u, &value, sizeof(value)) != LIB_STATUS_OK ||
             ((machine->executor_cpu.data.ax = 1u),
                 (machine->executor_cpu.data.dx = 0u), 0) ||
             !timing_80186_run(machine, &state, 1u, recipes[index].ticks);
@@ -438,7 +438,7 @@ static C_INT timing_80186_l2_arithmetic_matrix(C_VOID)
     return 0;
 }
 
-static C_INT timing_80186_div_matrix(C_VOID)
+static lib_i32 timing_80186_div_matrix(void)
 {
     typedef struct timing_80186_recipe {
         lib_u8 program[4];
@@ -454,10 +454,10 @@ static C_INT timing_80186_div_matrix(C_VOID)
         const lib_u16 value = 1u;
         timing_80186_state state = { 0u,0u,0u };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_80186_prepare(&machine, &state) ||
+        lib_i32 failed = !timing_80186_prepare(&machine, &state) ||
             !timing_80186_load(machine, recipes[index].program,
                 recipes[index].bytes) || core_machine_memory_write(machine,
-                0x1000u, &value, sizeof(value)) != TYPE_STATUS_OK ||
+                0x1000u, &value, sizeof(value)) != LIB_STATUS_OK ||
             ((machine->executor_cpu.data.ax = 1u),
                 (machine->executor_cpu.data.dx = 0u), 0) ||
             !timing_80186_run(machine, &state, 1u, recipes[index].ticks);
@@ -467,14 +467,14 @@ static C_INT timing_80186_div_matrix(C_VOID)
     return 0;
 }
 
-static C_INT timing_80186_stack_frame(C_VOID)
+static lib_i32 timing_80186_stack_frame(void)
 {
     static const lib_u8 enter[] = { 0xc8u, 0u, 0u, 0u };
     static const lib_u8 leave[] = { 0xc9u };
     const lib_u16 prior_bp = 0x1234u;
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_80186_prepare(&machine, &state);
+    lib_i32 failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, enter, sizeof(enter)) ||
         ((machine->executor_cpu.data.sp = 0x3000u),
@@ -485,14 +485,14 @@ static C_INT timing_80186_stack_frame(C_VOID)
     if (!failed) failed |= !timing_80186_load(machine, leave, sizeof(leave)) ||
         ((machine->executor_cpu.data.bp = 0x2ffeu), 0) ||
         core_machine_memory_write(machine, 0x2ffeu, &prior_bp, sizeof(prior_bp)) !=
-            TYPE_STATUS_OK || !timing_80186_run(machine, &state, 1u, 8u) ||
+            LIB_STATUS_OK || !timing_80186_run(machine, &state, 1u, 8u) ||
         machine->executor_cpu.data.sp != 0x3000u ||
         machine->executor_cpu.data.bp != prior_bp;
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT timing_80186_memory(C_VOID)
+static lib_i32 timing_80186_memory(void)
 {
     static const lib_u8 read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
     static const lib_u8 write[] = { 0x89u, 0x0eu, 0x00u, 0x10u };
@@ -512,43 +512,43 @@ static C_INT timing_80186_memory(C_VOID)
     lib_u8 byte_value = 0u;
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_80186_prepare(&machine, &state);
+    lib_i32 failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, read, sizeof(read)) ||
         core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
-            TYPE_STATUS_OK || !timing_80186_run(machine, &state, 1u, 9u) ||
+            LIB_STATUS_OK || !timing_80186_run(machine, &state, 1u, 9u) ||
         machine->executor_cpu.data.cx != value;
     if (!failed) failed |= !timing_80186_load(machine, write, sizeof(write)) ||
         ((machine->executor_cpu.data.cx = value), 0) ||
         !timing_80186_run(machine, &state, 1u, 12u);
     if (!failed) failed |= !timing_80186_load(machine, moffs_read,
         sizeof(moffs_read)) || core_machine_memory_write(machine, 0x1001u,
-        &value, sizeof(value)) != TYPE_STATUS_OK ||
+        &value, sizeof(value)) != LIB_STATUS_OK ||
         !timing_80186_run(machine, &state, 1u, 13u);
     if (!failed) failed |= !timing_80186_load(machine, moffs_write,
         sizeof(moffs_write)) || ((machine->executor_cpu.data.ax = value), 0) ||
         !timing_80186_run(machine, &state, 1u, 12u);
     if (!failed) failed |= !timing_80186_load(machine, override,
         sizeof(override)) || core_machine_memory_write(machine, 0x1000u,
-        &value, sizeof(value)) != TYPE_STATUS_OK ||
+        &value, sizeof(value)) != LIB_STATUS_OK ||
         !timing_80186_run(machine, &state, 1u, 11u);
     if (!failed) failed |= !timing_80186_load(machine, locked_add,
         sizeof(locked_add)) || core_machine_memory_write(machine, 0x1000u,
-        &value, sizeof(value)) != TYPE_STATUS_OK ||
+        &value, sizeof(value)) != LIB_STATUS_OK ||
         !timing_80186_run(machine, &state, 1u, 12u);
     if (!failed) failed |= !timing_80186_load(machine, move_memory_immediate,
         sizeof(move_memory_immediate)) || !timing_80186_run(machine, &state,
         1u, 13u) || core_machine_memory_read(machine, 0x1000u, &byte_value,
-        sizeof(byte_value)) != TYPE_STATUS_OK || byte_value != 0x5au;
+        sizeof(byte_value)) != LIB_STATUS_OK || byte_value != 0x5au;
     if (!failed) failed |= !timing_80186_load(machine, segment_odd_shift,
         sizeof(segment_odd_shift)) || core_machine_memory_write(machine, 0x1001u,
-        &value, sizeof(value)) != TYPE_STATUS_OK ||
+        &value, sizeof(value)) != LIB_STATUS_OK ||
         !timing_80186_run(machine, &state, 1u, 25u);
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT timing_80186_control_ports(C_VOID)
+static lib_i32 timing_80186_control_ports(void)
 {
     static const lib_u8 taken[] = { 0x74u, 0x01u, 0x90u, 0x90u };
     static const lib_u8 not_taken[] = { 0x75u, 0x01u, 0x90u, 0x90u };
@@ -562,7 +562,7 @@ static C_INT timing_80186_control_ports(C_VOID)
     static const lib_u8 in_dx[] = { 0xecu };
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_80186_prepare(&machine, &state);
+    lib_i32 failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, taken, sizeof(taken)) ||
         ((machine->executor_cpu.data.eflags |= VCPU_EFLAGS_ZF), 0) ||
@@ -572,20 +572,20 @@ static C_INT timing_80186_control_ports(C_VOID)
         !timing_80186_run(machine, &state, 1u, 4u);
     if (!failed) failed |= !timing_80186_load(machine, rep, sizeof(rep)) ||
         core_machine_memory_write(machine, 0x1000u, source, sizeof(source)) !=
-            TYPE_STATUS_OK || ((machine->executor_cpu.data.cx = 3u),
+            LIB_STATUS_OK || ((machine->executor_cpu.data.cx = 3u),
             (machine->executor_cpu.data.si = 0x1000u),
             (machine->executor_cpu.data.di = 0x1100u), 0) ||
         !timing_80186_run(machine, &state, 3u, 32u);
     if (!failed) failed |= !timing_80186_load(machine, rep_segment,
         sizeof(rep_segment)) || core_machine_memory_write(machine, 0x1000u,
-        source, sizeof(source)) != TYPE_STATUS_OK ||
+        source, sizeof(source)) != LIB_STATUS_OK ||
         ((machine->executor_cpu.data.cx = 3u),
         (machine->executor_cpu.data.si = 0x1000u),
         (machine->executor_cpu.data.di = 0x1100u), 0) ||
         !timing_80186_run(machine, &state, 3u, 38u);
     if (!failed) failed |= !timing_80186_load(machine, rep_odd_word,
         sizeof(rep_odd_word)) || core_machine_memory_write(machine, 0x1001u,
-        source, sizeof(source)) != TYPE_STATUS_OK ||
+        source, sizeof(source)) != LIB_STATUS_OK ||
         ((machine->executor_cpu.data.cx = 2u),
         (machine->executor_cpu.data.si = 0x1001u),
         (machine->executor_cpu.data.di = 0x1101u), 0) ||
@@ -604,7 +604,7 @@ static C_INT timing_80186_control_ports(C_VOID)
     return failed;
 }
 
-static C_INT timing_80186_boundaries(C_VOID)
+static lib_i32 timing_80186_boundaries(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 rotate[] = { 0xd0u, 0xc0u };
@@ -615,35 +615,35 @@ static C_INT timing_80186_boundaries(C_VOID)
     core_machine_run_result result;
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_80186_prepare(&machine, &state);
+    lib_i32 failed = !timing_80186_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80186_load(machine, rotate,
         sizeof(rotate)) || !timing_80186_run(machine, &state, 1u, 2u);
     if (!failed) failed |= !timing_80186_load(machine, fault, sizeof(fault)) ||
         !test_core_machine_fixture_preflight_real_ud_terminal(machine) ||
-        core_machine_run(machine, one, &result) != TYPE_STATUS_FAULT ||
+        core_machine_run(machine, one, &result) != LIB_STATUS_INTERNAL_ERROR ||
         result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
         result.ticks != 0u || state.advanced_ticks != 0u;
     if (!failed) failed |= !timing_80186_load(machine, nop, sizeof(nop)) ||
         !timing_80186_run(machine, &state, 1u, 3u) ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         machine->elapsed_ticks != 0u || state.advanced_ticks != 0u ||
         !timing_80186_load(machine, nop, sizeof(nop)) ||
-        core_machine_request_stop(machine) != TYPE_STATUS_OK ||
-        core_machine_run(machine, one, &result) != TYPE_STATUS_OK ||
+        core_machine_request_stop(machine) != LIB_STATUS_OK ||
+        core_machine_run(machine, one, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_REQUESTED || result.executed != 0u ||
         result.ticks != 0u || state.advanced_ticks != 0u;
     if (!failed) failed |= !timing_80186_load(machine, maximum, sizeof(maximum)) ||
         ((machine->executor_cpu.data.bp = 1u),
             (machine->executor_cpu.data.di = 0u), 0) ||
-        core_machine_run(machine, insufficient, &result) != TYPE_STATUS_OK ||
+        core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
         result.ticks != 0u || !timing_80186_run(machine, &state, 1u, 18u);
     if (!failed) failed |= !timing_80186_load(machine, nop, sizeof(nop));
     if (!failed) {
         machine->elapsed_ticks = UINT64_MAX - 2u;
         state.advanced_ticks = 0u;
-        failed |= core_machine_run(machine, one, &result) != TYPE_STATUS_FAULT ||
+        failed |= core_machine_run(machine, one, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || machine->elapsed_ticks != UINT64_MAX - 2u ||
             state.advanced_ticks != 0u;
@@ -652,7 +652,7 @@ static C_INT timing_80186_boundaries(C_VOID)
     return failed;
 }
 
-static C_INT timing_80186_enter_full_level(C_VOID)
+static lib_i32 timing_80186_enter_full_level(void)
 {
     static const lib_u8 level33[] = { 0xc8u, 0u, 0u, 0x21u };
     static const lib_u8 level255[] = { 0xc8u, 0u, 0u, 0xffu };
@@ -661,7 +661,7 @@ static C_INT timing_80186_enter_full_level(C_VOID)
         timing_80186_case(level255, sizeof(level255), 4086u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 clc[] = { 0xf8u };
@@ -720,6 +720,6 @@ C_INT main(C_VOID)
     if (timing_80186_control_ports()) return 3;
     if (timing_80186_boundaries()) return 4;
     if (timing_80186_enter_full_level()) return 5;
-    STD_PRINTF("M5:T357:S5:80186-INSTRUCTION-TIMING-LEDGER:OK\n");
+    printf("M5:T357:S5:80186-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

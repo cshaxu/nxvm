@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/xt_ppi_keyboard.h"
 
@@ -11,19 +10,19 @@
 #define CORE_MACHINE_XT_PPI_PORT_C_IO_CHECK 0x40u
 #define CORE_MACHINE_XT_PPI_PORT_C_RAM_PARITY 0x80u
 
-static type_bool core_machine_xt_ppi_keyboard_mode0(const core_machine_xt_ppi_keyboard *keyboard)
+static lib_u8 core_machine_xt_ppi_keyboard_mode0(const core_machine_xt_ppi_keyboard *keyboard)
 {
     return keyboard != LIB_NULL && (keyboard->mode_control & 0x64u) == 0u;
 }
 
-static type_bool core_machine_xt_ppi_keyboard_port_a_is_input(
+static lib_u8 core_machine_xt_ppi_keyboard_port_a_is_input(
     const core_machine_xt_ppi_keyboard *keyboard)
 {
     return core_machine_xt_ppi_keyboard_mode0(keyboard) &&
         (keyboard->mode_control & 0x10u) != 0u;
 }
 
-static type_bool core_machine_xt_ppi_keyboard_port_b_is_output(
+static lib_u8 core_machine_xt_ppi_keyboard_port_b_is_output(
     const core_machine_xt_ppi_keyboard *keyboard)
 {
     return core_machine_xt_ppi_keyboard_mode0(keyboard) &&
@@ -52,7 +51,7 @@ static lib_u8 core_machine_xt_ppi_keyboard_port_c_value(
     return value;
 }
 
-static type_bool core_machine_xt_ppi_keyboard_nmi_pending(
+static lib_u8 core_machine_xt_ppi_keyboard_nmi_pending(
     const core_machine_xt_ppi_keyboard *keyboard)
 {
     if (!core_machine_xt_ppi_keyboard_port_b_is_output(keyboard)) return LIB_FALSE;
@@ -62,7 +61,7 @@ static type_bool core_machine_xt_ppi_keyboard_nmi_pending(
         (keyboard->port_b_latch & CORE_MACHINE_XT_PPI_PORT_B_DISABLE_RAM_PARITY) == 0u);
 }
 
-C_VOID core_machine_xt_ppi_keyboard_refresh_nmi(core_machine_xt_ppi_keyboard *keyboard)
+void core_machine_xt_ppi_keyboard_refresh_nmi(core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL) return;
     if (!core_machine_xt_ppi_keyboard_nmi_pending(keyboard)) {
@@ -73,7 +72,7 @@ C_VOID core_machine_xt_ppi_keyboard_refresh_nmi(core_machine_xt_ppi_keyboard *ke
     }
 }
 
-static type_bool core_machine_xt_ppi_keyboard_delivery_enabled(
+static lib_u8 core_machine_xt_ppi_keyboard_delivery_enabled(
     const core_machine_xt_ppi_keyboard *keyboard)
 {
     return core_machine_xt_ppi_keyboard_port_b_is_output(keyboard) &&
@@ -82,7 +81,7 @@ static type_bool core_machine_xt_ppi_keyboard_delivery_enabled(
             CORE_MACHINE_XT_PPI_PORT_B_CLOCK_NOT_HELD;
 }
 
-static C_VOID core_machine_xt_ppi_keyboard_publish_speaker(
+static void core_machine_xt_ppi_keyboard_publish_speaker(
     core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL || keyboard->speaker_update == LIB_NULL) return;
@@ -91,7 +90,7 @@ static C_VOID core_machine_xt_ppi_keyboard_publish_speaker(
         (keyboard->port_b_latch & 0x02u) != 0u);
 }
 
-static C_VOID core_machine_xt_ppi_keyboard_deassert_irq(
+static void core_machine_xt_ppi_keyboard_deassert_irq(
     core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL || !keyboard->irq1_asserted) return;
@@ -99,7 +98,7 @@ static C_VOID core_machine_xt_ppi_keyboard_deassert_irq(
     keyboard->irq1_asserted = LIB_FALSE;
 }
 
-static C_VOID core_machine_xt_ppi_keyboard_clear_byte(
+static void core_machine_xt_ppi_keyboard_clear_byte(
     core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL) return;
@@ -110,12 +109,12 @@ static C_VOID core_machine_xt_ppi_keyboard_clear_byte(
     }
 }
 
-static type_status core_machine_xt_ppi_keyboard_read(C_VOID *owner,
+static lib_status core_machine_xt_ppi_keyboard_read(void *owner,
     lib_u16 port, lib_u32 *out_value)
 {
     core_machine_xt_ppi_keyboard *keyboard = (core_machine_xt_ppi_keyboard *)owner;
 
-    if (keyboard == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (keyboard == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == keyboard->config.port_a) {
         *out_value = core_machine_xt_ppi_keyboard_port_a_is_input(keyboard) ?
             (keyboard->byte_ready ? keyboard->current_byte : 0u) :
@@ -126,20 +125,20 @@ static type_status core_machine_xt_ppi_keyboard_read(C_VOID *owner,
     } else if (port == keyboard->config.port_c) {
         *out_value = core_machine_xt_ppi_keyboard_port_c_value(keyboard);
     } else if (port == keyboard->config.control_port) {
-        return TYPE_STATUS_UNSUPPORTED;
+        return LIB_STATUS_UNSUPPORTED;
     } else {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_xt_ppi_keyboard_write(C_VOID *owner,
+static lib_status core_machine_xt_ppi_keyboard_write(void *owner,
     lib_u16 port, lib_u32 value)
 {
     core_machine_xt_ppi_keyboard *keyboard = (core_machine_xt_ppi_keyboard *)owner;
     lib_u8 byte = (lib_u8)value;
 
-    if (keyboard == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (keyboard == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == keyboard->config.port_a) {
         keyboard->port_a_latch = byte;
     } else if (port == keyboard->config.port_b) {
@@ -168,12 +167,12 @@ static type_status core_machine_xt_ppi_keyboard_write(C_VOID *owner,
         }
         core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
     } else {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_INT core_machine_xt_ppi_keyboard_config_is_valid(
+lib_i32 core_machine_xt_ppi_keyboard_config_is_valid(
     const core_machine_xt_ppi_keyboard_config *config)
 {
     return config != LIB_NULL && config->port_a <= 0xfffcu &&
@@ -182,7 +181,7 @@ C_INT core_machine_xt_ppi_keyboard_config_is_valid(
         config->control_port == config->port_a + 3u && config->irq < 16u;
 }
 
-type_status core_machine_xt_ppi_keyboard_initialize(
+lib_status core_machine_xt_ppi_keyboard_initialize(
     core_machine_xt_ppi_keyboard *keyboard,
     const core_machine_xt_ppi_keyboard_config *config, t_port *port)
 {
@@ -192,7 +191,7 @@ type_status core_machine_xt_ppi_keyboard_initialize(
 
     if (keyboard == LIB_NULL || port == LIB_NULL ||
         !core_machine_xt_ppi_keyboard_config_is_valid(config)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     ports[0] = config->port_a;
     ports[1] = config->port_b;
@@ -201,9 +200,9 @@ type_status core_machine_xt_ppi_keyboard_initialize(
     checkpoint = core_machine_port_registration_begin(port);
     for (index = 0u; index < sizeof(ports) / sizeof(ports[0]); ++index) {
         if (core_machine_port_add_read_provider(port, ports[index],
-                core_machine_xt_ppi_keyboard_read, keyboard) != TYPE_STATUS_OK ||
+                core_machine_xt_ppi_keyboard_read, keyboard) != LIB_STATUS_OK ||
             core_machine_port_add_write_provider(port, ports[index],
-                core_machine_xt_ppi_keyboard_write, keyboard) != TYPE_STATUS_OK) {
+                core_machine_xt_ppi_keyboard_write, keyboard) != LIB_STATUS_OK) {
             core_machine_port_rollback_registration(port, checkpoint);
             return core_machine_port_registration_status(port);
         }
@@ -211,10 +210,10 @@ type_status core_machine_xt_ppi_keyboard_initialize(
     keyboard->config = *config;
     keyboard->port = port;
     core_machine_xt_ppi_keyboard_reset(keyboard);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
+void core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
     t_pic *master, t_pic *slave)
 {
     if (keyboard == LIB_NULL) return;
@@ -222,8 +221,8 @@ C_VOID core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keybo
         keyboard->config.irq);
 }
 
-C_VOID core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keyboard,
-    core_machine_xt_ppi_nmi_request request, C_VOID *owner)
+void core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keyboard,
+    core_machine_xt_ppi_nmi_request request, void *owner)
 {
     if (keyboard == LIB_NULL) return;
     keyboard->nmi_request = request;
@@ -231,8 +230,8 @@ C_VOID core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keybo
     core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
 }
 
-C_VOID core_machine_xt_ppi_keyboard_bind_speaker(core_machine_xt_ppi_keyboard *keyboard,
-    core_machine_xt_ppi_speaker_update update, C_VOID *owner)
+void core_machine_xt_ppi_keyboard_bind_speaker(core_machine_xt_ppi_keyboard *keyboard,
+    core_machine_xt_ppi_speaker_update update, void *owner)
 {
     if (keyboard == LIB_NULL) return;
     keyboard->speaker_update = update;
@@ -240,9 +239,9 @@ C_VOID core_machine_xt_ppi_keyboard_bind_speaker(core_machine_xt_ppi_keyboard *k
     core_machine_xt_ppi_keyboard_publish_speaker(keyboard);
 }
 
-C_VOID core_machine_xt_ppi_keyboard_bind_keyboard_observer(
+void core_machine_xt_ppi_keyboard_bind_keyboard_observer(
     core_machine_xt_ppi_keyboard *keyboard, core_machine_xt_ppi_line_observer observer,
-    C_VOID *owner, core_machine_xt_ppi_byte_released released)
+    void *owner, core_machine_xt_ppi_byte_released released)
 {
     if (keyboard == LIB_NULL) return;
     keyboard->line_observer = observer;
@@ -256,7 +255,7 @@ C_VOID core_machine_xt_ppi_keyboard_bind_keyboard_observer(
     }
 }
 
-C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard)
+void core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL) return;
     core_machine_xt_ppi_keyboard_deassert_irq(keyboard);
@@ -272,7 +271,7 @@ C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard
     core_machine_xt_ppi_keyboard_publish_speaker(keyboard);
 }
 
-C_VOID core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keyboard)
+void core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL) return;
     core_machine_xt_ppi_keyboard_reset(keyboard);
@@ -287,30 +286,30 @@ C_VOID core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keybo
     keyboard->byte_released_owner = LIB_NULL;
 }
 
-type_status core_machine_xt_ppi_keyboard_set_fault_input(
+lib_status core_machine_xt_ppi_keyboard_set_fault_input(
     core_machine_xt_ppi_keyboard *keyboard, core_machine_xt_ppi_fault_input input,
-    C_INT asserted)
+    lib_i32 asserted)
 {
-    if (keyboard == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (keyboard == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (input == CORE_MACHINE_XT_PPI_FAULT_IO_CHECK) {
         keyboard->io_check_asserted = asserted ? LIB_TRUE : LIB_FALSE;
     } else if (input == CORE_MACHINE_XT_PPI_FAULT_RAM_PARITY) {
         keyboard->ram_parity_asserted = asserted ? LIB_TRUE : LIB_FALSE;
-    } else return TYPE_STATUS_INVALID_ARGUMENT;
+    } else return LIB_STATUS_INVALID_ARGUMENT;
     core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_xt_ppi_keyboard_receive_device_byte(
+lib_status core_machine_xt_ppi_keyboard_receive_device_byte(
     core_machine_xt_ppi_keyboard *keyboard, lib_u8 native_byte)
 {
     if (keyboard == LIB_NULL || keyboard->byte_ready ||
         !core_machine_xt_ppi_keyboard_delivery_enabled(keyboard)) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     keyboard->current_byte = native_byte;
     keyboard->byte_ready = LIB_TRUE;
     core_machine_pic_irq_source_assert(&keyboard->irq1_source);
     keyboard->irq1_asserted = LIB_TRUE;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/pit.h"
@@ -13,7 +13,7 @@ typedef struct pit_irq0_fixture {
     core_machine_pic_irq_source irq0;
 } pit_irq0_fixture;
 
-static C_VOID pit_irq0_initialize(pit_irq0_fixture *fixture)
+static void pit_irq0_initialize(pit_irq0_fixture *fixture)
 {
     core_machine_port_initialize(&fixture->port);
     core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
@@ -35,14 +35,14 @@ static C_VOID pit_irq0_initialize(pit_irq0_fixture *fixture)
         core_machine_pic_timer_output, &fixture->irq0);
 }
 
-static C_VOID pit_irq0_finalize(pit_irq0_fixture *fixture)
+static void pit_irq0_finalize(pit_irq0_fixture *fixture)
 {
     core_machine_pit_finalize(&fixture->pit);
     core_machine_pic_finalize(&fixture->master, &fixture->slave);
     core_machine_port_finalize(&fixture->port);
 }
 
-static C_VOID pit_irq0_program(t_port *port, lib_u8 control,
+static void pit_irq0_program(t_port *port, lib_u8 control,
     lib_u16 count)
 {
     lib_u16 data_port = (lib_u16)(0x0040u +
@@ -53,10 +53,10 @@ static C_VOID pit_irq0_program(t_port *port, lib_u8 control,
     core_machine_port_write(port, data_port, count >> 8u);
 }
 
-static C_INT pit_irq0_test_mode2_edge(C_VOID)
+static lib_i32 pit_irq0_test_mode2_edge(void)
 {
     pit_irq0_fixture fixture;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pit_irq0_initialize(&fixture);
     pit_irq0_program(&fixture.port, 0x34u, 3u);
@@ -81,11 +81,11 @@ static C_INT pit_irq0_test_mode2_edge(C_VOID)
     return failed;
 }
 
-static C_INT pit_irq0_test_counter_forms(C_VOID)
+static lib_i32 pit_irq0_test_counter_forms(void)
 {
     pit_irq0_fixture fixture;
     lib_u8 status;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pit_irq0_initialize(&fixture);
     core_machine_port_write(&fixture.port, 0x0043u, 0x70u);
@@ -114,10 +114,10 @@ static C_INT pit_irq0_test_counter_forms(C_VOID)
     return failed;
 }
 
-static C_INT pit_irq0_test_gate_and_reset(C_VOID)
+static lib_i32 pit_irq0_test_gate_and_reset(void)
 {
     pit_irq0_fixture fixture;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pit_irq0_initialize(&fixture);
     pit_irq0_program(&fixture.port, 0x32u, 3u);
@@ -135,14 +135,14 @@ static C_INT pit_irq0_test_gate_and_reset(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= pit_irq0_test_mode2_edge();
     failed |= pit_irq0_test_counter_forms();
     failed |= pit_irq0_test_gate_and_reset();
     if (failed != 0) return 1;
-    STD_PRINTF("M5:T350:S2:PIT-IRQ0:OK\n");
+    printf("M5:T350:S2:PIT-IRQ0:OK\n");
     return 0;
 }

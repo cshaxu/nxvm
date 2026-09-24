@@ -1,21 +1,21 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "../../../machine/support/rom/model40_session_assets.h"
 #include "app-nxvm/machine/machine_interface.h"
 
-static C_INT vm_model40_rom_read(core_machine *machine,
+static lib_i32 vm_model40_rom_read(core_machine *machine,
     lib_u32 physical, lib_u8 expected)
 {
     lib_u8 observed = 0u;
 
     return core_machine_memory_read(machine, physical, &observed,
-        sizeof(observed)) == TYPE_STATUS_OK && observed == expected;
+        sizeof(observed)) == LIB_STATUS_OK && observed == expected;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -26,17 +26,17 @@ C_INT main(C_VOID)
     vm_machine *session = LIB_NULL;
     core_machine_run_result result;
     lib_u8 write = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     even[0u] = 0x11u;
     odd[0u] = 0x22u;
     even[0x3ff8u] = 0xf4u;
 
     failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
-        TYPE_STATUS_INVALID_ARGUMENT ||
+        LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
-        TYPE_STATUS_OK || session == LIB_NULL ||
+        LIB_STATUS_OK || session == LIB_NULL ||
         !vm_model40_rom_read(session->core_machine, 0x000f0000u, 0x11u) ||
         !vm_model40_rom_read(session->core_machine, 0x000f0001u, 0x22u) ||
         !vm_model40_rom_read(session->core_machine, 0x000f8000u, 0x11u) ||
@@ -45,17 +45,17 @@ C_INT main(C_VOID)
         !vm_model40_rom_read(session->core_machine, 0xffff8000u, 0x11u) ||
         !vm_model40_rom_read(session->core_machine, 0xfffffff0u, 0xf4u) ||
         core_machine_memory_write(session->core_machine, 0x000f0000u, &write,
-            sizeof(write)) != TYPE_STATUS_OK ||
+            sizeof(write)) != LIB_STATUS_OK ||
         core_machine_memory_write(session->core_machine, 0xffff0000u, &write,
-            sizeof(write)) != TYPE_STATUS_OK ||
+            sizeof(write)) != LIB_STATUS_OK ||
         !vm_model40_rom_read(session->core_machine, 0x000f0000u, 0x11u) ||
         !vm_model40_rom_read(session->core_machine, 0xffff0000u, 0x11u);
     if (!failed) failed |= core_machine_run(session->core_machine,
-        (core_machine_run_budget) {1u, 0u}, &result) != TYPE_STATUS_OK ||
+        (core_machine_run_budget) {1u, 0u}, &result) != LIB_STATUS_OK ||
         result.executed != 1u ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-    if (!failed) STD_PRINTF("M5:T386:S14:MODEL40-ROM-LAYOUT:OK\n");
-    if (!failed) STD_PRINTF("M5:T386:S14:MODEL40-ROM-RESET:OK\n");
+    if (!failed) printf("M5:T386:S14:MODEL40-ROM-LAYOUT:OK\n");
+    if (!failed) printf("M5:T386:S14:MODEL40-ROM-RESET:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

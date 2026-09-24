@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -15,7 +16,7 @@
 #define CORPUS_RESET_WINDOW 16u
 
 typedef struct corpus_port_event {
-    C_INT write;
+    lib_i32 write;
     lib_u16 port;
     lib_u32 value;
 } corpus_port_event;
@@ -25,8 +26,8 @@ typedef struct corpus_port_state {
     lib_size event_count;
 } corpus_port_state;
 
-static C_INT corpus_prepare_machine(core_machine **out_machine,
-    const core_machine_port_provider *port_provider, C_VOID *port_owner)
+static lib_i32 corpus_prepare_machine(core_machine **out_machine,
+    const core_machine_port_provider *port_provider, void *port_owner)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -37,15 +38,15 @@ static C_INT corpus_prepare_machine(core_machine **out_machine,
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             CORPUS_RESET_LINEAR, CORPUS_RESET_PHYSICAL,
-            CORPUS_RESET_WINDOW) != TYPE_STATUS_OK ||
+            CORPUS_RESET_WINDOW) != LIB_STATUS_OK ||
         (port_provider != LIB_NULL && core_machine_install_port_provider(
             machine, 0x00e0u, 0x00e1u, port_provider, port_owner) !=
-            TYPE_STATUS_OK) ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK) {
+            LIB_STATUS_OK) ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
@@ -53,7 +54,7 @@ static C_INT corpus_prepare_machine(core_machine **out_machine,
     return 0;
 }
 
-static C_INT corpus_run_to_ud(core_machine *machine, const lib_u8 *program,
+static lib_i32 corpus_run_to_ud(core_machine *machine, const lib_u8 *program,
     lib_size program_bytes, core_machine_cpu_fault_snapshot *out_fault)
 {
     static const lib_u8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
@@ -62,34 +63,34 @@ static C_INT corpus_run_to_ud(core_machine *machine, const lib_u8 *program,
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    type_status status;
-    C_INT failed = 0;
+    lib_status status;
+    lib_i32 failed = 0;
 
     if (machine == LIB_NULL || program == LIB_NULL || out_fault == LIB_NULL)
         return 1;
     failed |= core_machine_memory_write(machine, CORPUS_RESET_LINEAR, reset_jump,
-        sizeof(reset_jump)) != TYPE_STATUS_OK || core_machine_memory_write(
-        machine, 0u, program, program_bytes) != TYPE_STATUS_OK ||
+        sizeof(reset_jump)) != LIB_STATUS_OK || core_machine_memory_write(
+        machine, 0u, program, program_bytes) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x0018u, ud_vector,
-        sizeof(ud_vector)) != TYPE_STATUS_OK || core_machine_memory_write(
-        machine, 0x0300u, ud_handler, sizeof(ud_handler)) != TYPE_STATUS_OK;
+        sizeof(ud_vector)) != LIB_STATUS_OK || core_machine_memory_write(
+        machine, 0x0300u, ud_handler, sizeof(ud_handler)) != LIB_STATUS_OK;
     status = core_machine_run(machine, budget, &result);
-    failed |= status != TYPE_STATUS_OK ||
+    failed |= status != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET;
-    failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
+    failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
         diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
-        !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+        !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
             VCPUINS_EXCEPT_UD) ||
         diagnostic.last_delivered_exception.point.bytes[0] != 0x66u;
     status = core_machine_run(machine, (core_machine_run_budget){ 1u, 0u },
         &result);
-    failed |= status != TYPE_STATUS_OK ||
+    failed |= status != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     *out_fault = diagnostic.last_delivered_exception;
     return failed;
 }
 
-static C_INT corpus_run_to_halt(core_machine *machine, const lib_u8 *program,
+static lib_i32 corpus_run_to_halt(core_machine *machine, const lib_u8 *program,
     lib_size program_bytes)
 {
     static const lib_u8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
@@ -98,24 +99,24 @@ static C_INT corpus_run_to_halt(core_machine *machine, const lib_u8 *program,
 
     return machine == LIB_NULL || program == LIB_NULL ||
         core_machine_memory_write(machine, CORPUS_RESET_LINEAR, reset_jump,
-            sizeof(reset_jump)) != TYPE_STATUS_OK ||
+            sizeof(reset_jump)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0u, program, program_bytes) !=
-            TYPE_STATUS_OK ||
-        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT corpus_test_segment_override(C_VOID)
+static lib_i32 corpus_test_segment_override(void)
 {
     static const lib_u8 program[] = { 0x2eu, 0xa0u, 0x00u, 0x01u, 0x66u };
     static const lib_u8 source = 0xa5u;
     core_machine_cpu_fault_snapshot fault;
     core_machine *machine = LIB_NULL;
-    C_INT failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
+    lib_i32 failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x0100u, &source,
-            sizeof(source)) != TYPE_STATUS_OK;
+            sizeof(source)) != LIB_STATUS_OK;
         failed |= corpus_run_to_ud(machine, program, sizeof(program), &fault);
         failed |= (fault.eax & 0xffu) != source;
     }
@@ -123,7 +124,7 @@ static C_INT corpus_test_segment_override(C_VOID)
     return failed;
 }
 
-static C_INT corpus_test_rep_direction(C_VOID)
+static lib_i32 corpus_test_rep_direction(void)
 {
     static const lib_u8 program[] = {
         0xb8u, 0x00u, 0x00u,
@@ -147,31 +148,31 @@ static C_INT corpus_test_rep_direction(C_VOID)
     lib_u8 copied[3] = { 0u, 0u, 0u };
     lib_u8 stored = 0u;
     core_machine *machine = LIB_NULL;
-    C_INT failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
+    lib_i32 failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x0100u, source,
-            sizeof(source)) != TYPE_STATUS_OK;
+            sizeof(source)) != LIB_STATUS_OK;
         failed |= core_machine_memory_read(machine, 0x0100u, source_before,
-            sizeof(source_before)) != TYPE_STATUS_OK;
+            sizeof(source_before)) != LIB_STATUS_OK;
         failed |= source_before[0] != source[0] || source_before[1] != source[1] ||
             source_before[2] != source[2];
         failed |= corpus_run_to_halt(machine, program, sizeof(program));
         failed |= core_machine_memory_read(machine, 0x0200u, copied,
-            sizeof(copied)) != TYPE_STATUS_OK;
+            sizeof(copied)) != LIB_STATUS_OK;
         failed |= core_machine_memory_read(machine, 0x0100u, source_after,
-            sizeof(source_after)) != TYPE_STATUS_OK;
+            sizeof(source_after)) != LIB_STATUS_OK;
         failed |= core_machine_memory_read(machine, 0x0203u, &stored,
-            sizeof(stored)) != TYPE_STATUS_OK;
+            sizeof(stored)) != LIB_STATUS_OK;
         failed |= copied[0] != source[0] || copied[1] != source[1] ||
             copied[2] != 0x7du || stored != 0x7eu ||
             source_after[0] != source[0] || source_after[1] != source[1] ||
             source_after[2] != source[2];
         if (failed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "M5:T240:S2:8086-CORPUS:REP copied=%02x%02x%02x stored=%02x\n",
                 copied[0], copied[1], copied[2], stored);
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "M5:T240:S2:8086-CORPUS:REP source=%02x%02x%02x\n",
                 source_after[0], source_after[1], source_after[2]);
         }
@@ -180,7 +181,7 @@ static C_INT corpus_test_rep_direction(C_VOID)
     return failed;
 }
 
-static C_INT corpus_test_int_iret(C_VOID)
+static lib_i32 corpus_test_int_iret(void)
 {
     static const lib_u8 program[] = {
         0xbcu, 0x00u, 0x10u,
@@ -192,56 +193,56 @@ static C_INT corpus_test_int_iret(C_VOID)
     static const lib_u8 handler[] = { 0xb8u, 0x34u, 0x12u, 0xcfu };
     core_machine_cpu_fault_snapshot fault;
     core_machine *machine = LIB_NULL;
-    C_INT failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
+    lib_i32 failed = corpus_prepare_machine(&machine, LIB_NULL, LIB_NULL);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x0180u, ivt_entry,
-            sizeof(ivt_entry)) != TYPE_STATUS_OK;
+            sizeof(ivt_entry)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(machine, 0x0200u, handler,
-            sizeof(handler)) != TYPE_STATUS_OK;
+            sizeof(handler)) != LIB_STATUS_OK;
         failed |= corpus_run_to_ud(machine, program, sizeof(program), &fault);
         failed |= (fault.eax & 0xffffu) != 0x1234u ||
             (fault.esp & 0xffffu) != 0x1000u ||
-            !TYPE_GET_BIT(fault.eflags, VCPU_EFLAGS_CF);
+            !CORE_MACHINE_BIT_IS_SET(fault.eflags, VCPU_EFLAGS_CF);
     }
     core_machine_destroy(machine);
     return failed;
 }
 
-static type_status corpus_port_read(C_VOID *owner, lib_u16 port,
+static lib_status corpus_port_read(void *owner, lib_u16 port,
     lib_u32 *out_value)
 {
     corpus_port_state *state = (corpus_port_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || state->event_count >=
             sizeof(state->events) / sizeof(state->events[0])) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     state->events[state->event_count].write = 0;
     state->events[state->event_count].port = port;
     state->events[state->event_count].value = port == 0x00e0u ? 0x11u : 0x22u;
     *out_value = state->events[state->event_count].value;
     ++state->event_count;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status corpus_port_write(C_VOID *owner, lib_u16 port,
+static lib_status corpus_port_write(void *owner, lib_u16 port,
     lib_u32 value)
 {
     corpus_port_state *state = (corpus_port_state *)owner;
 
     if (state == LIB_NULL || state->event_count >=
             sizeof(state->events) / sizeof(state->events[0])) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     state->events[state->event_count].write = 1;
     state->events[state->event_count].port = port;
     state->events[state->event_count].value = value;
     ++state->event_count;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_INT corpus_test_port_transactions(C_VOID)
+static lib_i32 corpus_test_port_transactions(void)
 {
     static const lib_u8 program[] = {
         0xb0u, 0x5au,
@@ -259,7 +260,7 @@ static C_INT corpus_test_port_transactions(C_VOID)
     corpus_port_state port_state = { { { 0, 0u, 0u } }, 0u };
     core_machine_cpu_fault_snapshot fault;
     core_machine *machine = LIB_NULL;
-    C_INT failed = corpus_prepare_machine(&machine, &provider, &port_state);
+    lib_i32 failed = corpus_prepare_machine(&machine, &provider, &port_state);
 
     if (!failed) {
         failed |= corpus_run_to_ud(machine, program, sizeof(program), &fault);
@@ -279,30 +280,30 @@ static C_INT corpus_test_port_transactions(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     if (corpus_test_segment_override()) {
-        STD_FPRINTF(STD_STDERR, "M5:T240:S2:8086-CORPUS:FAIL case=segment-override\n");
+        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL case=segment-override\n");
         failed = 1;
     }
     if (corpus_test_rep_direction()) {
-        STD_FPRINTF(STD_STDERR, "M5:T240:S2:8086-CORPUS:FAIL case=rep-direction\n");
+        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL case=rep-direction\n");
         failed = 1;
     }
     if (corpus_test_int_iret()) {
-        STD_FPRINTF(STD_STDERR, "M5:T240:S2:8086-CORPUS:FAIL case=int-iret\n");
+        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL case=int-iret\n");
         failed = 1;
     }
     if (corpus_test_port_transactions()) {
-        STD_FPRINTF(STD_STDERR, "M5:T240:S2:8086-CORPUS:FAIL case=port-transactions\n");
+        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL case=port-transactions\n");
         failed = 1;
     }
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T240:S2:8086-CORPUS:FAIL\n");
+        fprintf(stderr, "M5:T240:S2:8086-CORPUS:FAIL\n");
         return 1;
     }
-    STD_PRINTF("M5:T240:S2:8086-CORPUS:OK\n");
+    printf("M5:T240:S2:8086-CORPUS:OK\n");
     return 0;
 }

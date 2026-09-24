@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/clock.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -12,14 +12,14 @@ typedef struct rational_clock_probe {
     lib_u32 count;
 } rational_clock_probe;
 
-static C_VOID rational_clock_probe_reset(C_VOID *opaque)
+static void rational_clock_probe_reset(void *opaque)
 {
     rational_clock_probe *probe = (rational_clock_probe *)opaque;
 
     if (probe != LIB_NULL) lib_memory_set(probe, 0, sizeof(*probe));
 }
 
-static C_VOID rational_clock_probe_advance(C_VOID *opaque,
+static void rational_clock_probe_advance(void *opaque,
     lib_u64 elapsed_ticks)
 {
     rational_clock_probe *probe = (rational_clock_probe *)opaque;
@@ -34,7 +34,7 @@ static const core_machine_execution_provider rational_clock_provider = {
     rational_clock_probe_advance
 };
 
-static C_INT rational_clock_prepare(core_machine **out_machine,
+static lib_i32 rational_clock_prepare(core_machine **out_machine,
     rational_clock_probe *probe)
 {
     const lib_u8 program[RATIONAL_CLOCK_STEPS] = {
@@ -47,15 +47,15 @@ static C_INT rational_clock_prepare(core_machine **out_machine,
     config.clock_plan.provider.numerator = 3u;
     config.clock_plan.provider.denominator = 2u;
     config.clock_plan.provider.reset_phase = 1u;
-    if (core_machine_create(&config, out_machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config, out_machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(*out_machine, 0xfffffff0u,
-            0x000ffff0u, sizeof(program)) != TYPE_STATUS_OK ||
+            0x000ffff0u, sizeof(program)) != LIB_STATUS_OK ||
         core_machine_bind_execution_provider(*out_machine, &rational_clock_provider,
-            probe) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(*out_machine) != TYPE_STATUS_OK ||
-        core_machine_reset(*out_machine) != TYPE_STATUS_OK ||
+            probe) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(*out_machine) != LIB_STATUS_OK ||
+        core_machine_reset(*out_machine) != LIB_STATUS_OK ||
         core_machine_memory_write(*out_machine, 0xfffffff0u, program,
-            sizeof(program)) != TYPE_STATUS_OK) {
+            sizeof(program)) != LIB_STATUS_OK) {
         core_machine_destroy(*out_machine);
         *out_machine = LIB_NULL;
         return 0;
@@ -63,25 +63,25 @@ static C_INT rational_clock_prepare(core_machine **out_machine,
     return 1;
 }
 
-static C_INT rational_clock_restart(core_machine *machine)
+static lib_i32 rational_clock_restart(core_machine *machine)
 {
     const lib_u8 program[RATIONAL_CLOCK_STEPS] = {
         0x90u, 0x90u, 0x90u, 0x90u
     };
 
-    return core_machine_reset(machine) == TYPE_STATUS_OK &&
+    return core_machine_reset(machine) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, 0xfffffff0u, program,
-            sizeof(program)) == TYPE_STATUS_OK;
+            sizeof(program)) == LIB_STATUS_OK;
 }
 
-static C_INT rational_clock_run(core_machine *machine, lib_u32 quantum)
+static lib_i32 rational_clock_run(core_machine *machine, lib_u32 quantum)
 {
     core_machine_run_budget budget = { quantum, 0u };
     core_machine_run_result result;
     lib_u32 remaining = RATIONAL_CLOCK_STEPS;
 
     while (remaining != 0u) {
-        if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             result.executed != quantum) return 0;
         remaining -= quantum;
@@ -89,7 +89,7 @@ static C_INT rational_clock_run(core_machine *machine, lib_u32 quantum)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine_clock_domain domain;
     core_machine_clock_ratio ratio = { 3u, 2u, 1u };
@@ -100,21 +100,21 @@ C_INT main(C_VOID)
     rational_clock_probe reset = { { 0u }, 0u };
     rational_clock_probe split = { { 0u }, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= core_machine_clock_domain_initialize(&domain, &ratio) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= core_machine_clock_domain_advance(&domain, 1u) != 2u;
     failed |= core_machine_clock_domain_advance(&domain, 1u) != 1u;
     failed |= core_machine_clock_domain_advance(&domain, 2u) != 3u;
     core_machine_clock_domain_reset(&domain);
     failed |= core_machine_clock_domain_advance(&domain, 1u) != 2u;
     failed |= core_machine_clock_domain_initialize(&domain, &identity) !=
-        TYPE_STATUS_OK || core_machine_clock_domain_advance(&domain, 5u) != 5u;
+        LIB_STATUS_OK || core_machine_clock_domain_advance(&domain, 5u) != 5u;
     failed |= core_machine_clock_domain_initialize(&domain, &invalid_phase) !=
-        TYPE_STATUS_INVALID_ARGUMENT;
+        LIB_STATUS_INVALID_ARGUMENT;
     failed |= core_machine_clock_domain_initialize(&domain, &invalid_zero) !=
-        TYPE_STATUS_INVALID_ARGUMENT;
+        LIB_STATUS_INVALID_ARGUMENT;
 
     if (!failed && rational_clock_prepare(&machine, &single)) {
         failed |= !rational_clock_run(machine, RATIONAL_CLOCK_STEPS);
@@ -143,6 +143,6 @@ C_INT main(C_VOID)
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T256:S3:RATIONAL-CLOCK:OK\n");
+    printf("M5:T256:S3:RATIONAL-CLOCK:OK\n");
     return 0;
 }

@@ -33,7 +33,7 @@ if(NOT public_advance_time_position EQUAL -1)
     message(FATAL_ERROR "T499 exposes arbitrary source-tick advancement outside Core")
 endif()
 
-foreach(forbidden IN ITEMS "(*refresh)(C_VOID *context)" "provider->refresh")
+foreach(forbidden IN ITEMS "(*refresh)(void *context)" "provider->refresh")
     string(FIND "${execution_provider_source}${machine_source}" "${forbidden}"
         position)
     if(NOT position EQUAL -1)

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/dma.h"
 #include "app-nxvm/devices/machine.h"
@@ -16,7 +16,7 @@ typedef struct competition_dma_source {
     lib_u8 value;
 } competition_dma_source;
 
-static C_VOID competition_trace(C_VOID *opaque,
+static void competition_trace(void *opaque,
     const core_machine_trace_event *event)
 {
     competition_probe *probe = (competition_probe *)opaque;
@@ -26,14 +26,14 @@ static C_VOID competition_trace(C_VOID *opaque,
     }
 }
 
-static C_VOID competition_dma_read(C_VOID *opaque, t_latch *latch)
+static void competition_dma_read(void *opaque, t_latch *latch)
 {
     competition_dma_source *source = (competition_dma_source *)opaque;
 
     if (source != LIB_NULL && latch != LIB_NULL) latch->data.byte = source->value;
 }
 
-static C_INT competition_find_event(const competition_probe *probe,
+static lib_i32 competition_find_event(const competition_probe *probe,
     core_machine_trace_event_type type, lib_u32 *out_index)
 {
     lib_u32 index;
@@ -48,7 +48,7 @@ static C_INT competition_find_event(const competition_probe *probe,
     return 0;
 }
 
-static C_INT competition_find_event_after(const competition_probe *probe,
+static lib_i32 competition_find_event_after(const competition_probe *probe,
     core_machine_trace_event_type type, lib_u32 start,
     lib_u32 *out_index)
 {
@@ -64,7 +64,7 @@ static C_INT competition_find_event_after(const competition_probe *probe,
     return 0;
 }
 
-static C_INT competition_find_transaction(const competition_probe *probe,
+static lib_i32 competition_find_transaction(const competition_probe *probe,
     core_machine_trace_event_type phase, core_machine_transaction_owner owner,
     core_machine_transaction_kind kind, lib_u32 *out_index)
 {
@@ -83,7 +83,7 @@ static C_INT competition_find_transaction(const competition_probe *probe,
     return 0;
 }
 
-static C_VOID competition_program_dma_channel2(t_port *port)
+static void competition_program_dma_channel2(t_port *port)
 {
     core_machine_port_write(port, 0x000cu, 0u);
     core_machine_port_write(port, 0x0004u, 0x34u);
@@ -95,7 +95,7 @@ static C_VOID competition_program_dma_channel2(t_port *port)
     core_machine_port_write(port, 0x000au, 0x02u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const core_machine_dma_channel_provider dma_provider = {
         competition_dma_read, LIB_NULL, LIB_NULL
@@ -127,43 +127,43 @@ C_INT main(C_VOID)
     lib_u32 reset_hold_request = 0u;
     lib_u32 reset_hold_acknowledge = 0u;
     lib_u32 reset_hold_release = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     trace.callback = competition_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-        0x000ffff0u, 16u) != TYPE_STATUS_OK;
+        0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_dma_bind_channel(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u,
-        &dma_provider, &source, &binding) != TYPE_STATUS_OK;
+        &dma_provider, &source, &binding) != LIB_STATUS_OK;
     failed |= core_machine_transaction_hold_request(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;
+        CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK;
     failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA) != TYPE_STATUS_OK;
+        CORE_MACHINE_TRANSACTION_OWNER_DMA) != LIB_STATUS_OK;
     failed |= core_machine_transaction_begin(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_CPU,
         CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, 0u, 0u, 0u) !=
-        TYPE_STATUS_INVALID_ARGUMENT;
+        LIB_STATUS_INVALID_ARGUMENT;
     core_machine_transaction_hold_release(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_DMA);
-    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     competition_program_dma_channel2(&machine->executor_port);
     core_machine_dma_request_assert(&machine->shared_dma_primary,
         &machine->shared_dma_secondary, &binding);
-    failed |= core_machine_set_trace_provider(machine, &trace) != TYPE_STATUS_OK;
-    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+    failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
+    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
         result.executed != 1u || result.elapsed_ticks != 3u;
     /* A normal 8237A service selects a channel before S1..S4 commits the
      * byte.  CPU retirement has already occurred; advance only device time. */
-    failed |= core_machine_advance_time(machine, 8u) != TYPE_STATUS_OK;
+    failed |= core_machine_advance_time(machine, 8u) != LIB_STATUS_OK;
     failed |= core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
-        TYPE_STATUS_OK || byte != 0xa5u;
+        LIB_STATUS_OK || byte != 0xa5u;
     failed |= !competition_find_transaction(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
         CORE_MACHINE_TRANSACTION_OWNER_CPU,
@@ -204,10 +204,10 @@ C_INT main(C_VOID)
         pit_advance >= pic_refresh;
     reset_hold_start = probe.count;
     failed |= core_machine_transaction_hold_request(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;
+        CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK;
     failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
-        CORE_MACHINE_TRANSACTION_OWNER_DMA) != TYPE_STATUS_OK;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+        CORE_MACHINE_TRANSACTION_OWNER_DMA) != LIB_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !competition_find_event_after(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, reset_hold_start,
         &reset_hold_request);
@@ -222,8 +222,8 @@ C_INT main(C_VOID)
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T354:S3:COMPETITION:OK\n");
-    STD_PRINTF("M5:T369:S3:PCAT-HOLD:OK\n");
-    STD_PRINTF("M5:T400:S1:80386-DMA-HOLD:OK\n");
+    printf("M5:T354:S3:COMPETITION:OK\n");
+    printf("M5:T369:S3:PCAT-HOLD:OK\n");
+    printf("M5:T400:S1:80386-DMA-HOLD:OK\n");
     return 0;
 }

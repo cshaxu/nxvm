@@ -3,7 +3,6 @@
 #include "lib/types/types_interface.h"
 
 
-#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,16 +52,16 @@ typedef struct core_machine_trace_event {
     lib_u32 detail;
 } core_machine_trace_event;
 
-typedef C_VOID (*core_machine_trace_event_provider)(
-    C_VOID *context,
+typedef void (*core_machine_trace_event_provider)(
+    void *context,
     const core_machine_trace_event *event);
 
 typedef struct core_machine_trace_provider {
     core_machine_trace_event_provider callback;
-    C_VOID *context;
+    void *context;
 } core_machine_trace_provider;
 
-type_status core_machine_set_trace_provider(
+lib_status core_machine_set_trace_provider(
     core_machine *machine,
     const core_machine_trace_provider *provider);
 

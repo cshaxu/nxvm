@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/cpu_instructions.h"
 
@@ -7,11 +7,11 @@
  * manifest: this runner reports what the current lexical decoder accepts,
  * while the S6 verifier decides whether every such candidate has a manual and
  * ledger disposition.  It is not a retirement or timing conformance test. */
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    const C_CHAR *const path = PROJECT_TEST_80186_DECODER_PATH;
-    type_bool opcode_seen[0x100] = { LIB_FALSE };
-    type_bool modrm_seen[0x100][0x100] = { { LIB_FALSE } };
+    const char *const path = PROJECT_TEST_80186_DECODER_PATH;
+    lib_u8 opcode_seen[0x100] = { LIB_FALSE };
+    lib_u8 modrm_seen[0x100][0x100] = { { LIB_FALSE } };
     lib_u16 opcode;
     lib_u16 modrm;
     lib_u32 accepted_pairs = 0u;
@@ -93,7 +93,7 @@ C_INT main(C_VOID)
     if (fprintf(file,
             "\n  },\n  \"semantic_only_prefixes\": [\"F0\"]\n}\n") < 0 ||
         fclose(file) != 0) return 1;
-    STD_PRINTF("M5:T435:S6:I186-DECODER-LEXEME:%u:%u\n", accepted_pairs,
+    printf("M5:T435:S6:I186-DECODER-LEXEME:%u:%u\n", accepted_pairs,
         accepted_opcodes);
     return 0;
 }

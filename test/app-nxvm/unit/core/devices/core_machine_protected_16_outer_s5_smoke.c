@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/pic.h"
 
@@ -11,7 +12,7 @@
 #define S5_TSS_BASE 0x0500u
 #define S5_KERNEL_STACK_TOP 0x7000u
 
-static C_INT s5_prepare_user_stack(s3_gate_machine *state)
+static lib_i32 s5_prepare_user_stack(s3_gate_machine *state)
 {
     static const lib_u8 user_data[] = {
         0xffu,0xffu,0,0,0,0xf2u,0,0
@@ -27,9 +28,9 @@ static C_INT s5_prepare_user_stack(s3_gate_machine *state)
     return 1;
 }
 
-static C_INT s5_prepare_outer(s3_gate_machine *state,
+static lib_i32 s5_prepare_outer(s3_gate_machine *state,
     core_machine_cpu_profile profile, lib_u8 gate_type,
-    type_bool nmi, type_bool tss32)
+    lib_u8 nmi, lib_u8 tss32)
 {
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 loop[] = { 0xebu,0xfeu };
@@ -68,17 +69,17 @@ static C_INT s5_prepare_outer(s3_gate_machine *state,
     return 1;
 }
 
-static C_INT s5_outer_event(core_machine_cpu_profile profile,
-    lib_u8 gate_type, type_bool nmi, type_bool tss32)
+static lib_i32 s5_outer_event(core_machine_cpu_profile profile,
+    lib_u8 gate_type, lib_u8 nmi, lib_u8 tss32)
 {
     s3_gate_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     lib_u16 frame[5u] = { 0u,0u,0u,0u,0u };
-    type_bool expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
+    lib_u8 expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !s5_prepare_outer(&state, profile, gate_type, nmi, tss32);
+    lib_i32 failed = !s5_prepare_outer(&state, profile, gate_type, nmi, tss32);
 
     lib_memory_set(&source, 0, sizeof(source));
     if (!failed && nmi) state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
@@ -92,15 +93,15 @@ static C_INT s5_outer_event(core_machine_cpu_profile profile,
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){2u,0u},
-            &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             state.machine->executor_cpu.data.cs.selector != 0x0008u ||
             state.machine->executor_cpu.data.cs.dpl != 0u ||
             state.machine->executor_cpu.data.ss.selector != 0x0010u ||
             state.machine->executor_cpu.data.ss.dpl != 0u ||
             state.machine->executor_cpu.data.eip != S3_HANDLER ||
             state.machine->executor_cpu.data.esp != S5_KERNEL_STACK_TOP - 10u ||
-            TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
-            (TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) !=
+            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
+            (CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) !=
                 expect_if) || !s3_gate_read(&state, S5_KERNEL_STACK_TOP - 10u,
                 frame, sizeof(frame)) || frame[0] != 1u || frame[1] != 0x001bu ||
             frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF) ||
@@ -114,8 +115,8 @@ static C_INT s5_outer_event(core_machine_cpu_profile profile,
         if (!failed && nmi) {
             failed |= state.machine->executor_cpu.data.flagNMI;
         } else if (!failed) {
-            failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
         }
     }
@@ -123,7 +124,7 @@ static C_INT s5_outer_event(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT s5_rejected_cpu_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 s5_rejected_cpu_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx && before->data.edx == after->data.edx &&
@@ -139,8 +140,8 @@ static C_INT s5_rejected_cpu_same(const t_cpu *before, const t_cpu *after)
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT s5_rejected_outer(type_bool invalid_tr, type_bool invalid_ss,
-    type_bool nonpresent_ss)
+static lib_i32 s5_rejected_outer(lib_u8 invalid_tr, lib_u8 invalid_ss,
+    lib_u8 nonpresent_ss)
 {
     s3_gate_machine state;
     core_machine_pic_irq_source source;
@@ -154,7 +155,7 @@ static C_INT s5_rejected_outer(type_bool invalid_tr, type_bool invalid_ss,
     lib_u8 nonpresent_access = 0x12u;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !s5_prepare_outer(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !s5_prepare_outer(&state, CORE_MACHINE_CPU_PROFILE_80386,
         VCPU_DESC_SYS_TYPE_INTGATE_16, LIB_FALSE, LIB_TRUE);
 
     lib_memory_set(&source, 0, sizeof(source));
@@ -177,22 +178,22 @@ static C_INT s5_rejected_outer(type_bool invalid_tr, type_bool invalid_ss,
         core_machine_pic_irq_source_deassert(&source);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){8u,0u},
-            &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+            &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.first_fault.valid;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !s5_rejected_cpu_same(&before, &after) || !s3_gate_read(&state,
             S5_KERNEL_STACK_TOP - sizeof(sentinel_after), sentinel_after,
             sizeof(sentinel_after)) || lib_memory_compare(sentinel_before, sentinel_after,
-            sizeof(sentinel_before)) != 0 || !TYPE_GET_BIT(
+            sizeof(sentinel_before)) != 0 || !CORE_MACHINE_BIT_IS_SET(
             state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
+            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
@@ -202,7 +203,7 @@ C_INT main(C_VOID)
     };
     lib_size profile;
     lib_size gate;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         for (gate = 0u; gate < sizeof(gate_types) / sizeof(gate_types[0]); ++gate) {
@@ -221,6 +222,6 @@ C_INT main(C_VOID)
         !s5_rejected_outer(LIB_FALSE, LIB_FALSE, LIB_TRUE);
 
     if (failed) return 1;
-    STD_PRINTF("M5:T323:S5:PROTECTED-16-OUTER:OK\n");
+    printf("M5:T323:S5:PROTECTED-16-OUTER:OK\n");
     return 0;
 }

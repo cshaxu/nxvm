@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -9,19 +10,19 @@ typedef struct gpr_push_pop_machine
     core_machine *machine;
 } gpr_push_pop_machine;
 
-static C_VOID gpr_push_pop_reset(C_VOID *opaque)
+static void gpr_push_pop_reset(void *opaque)
 {
     gpr_push_pop_machine *state = (gpr_push_pop_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider gpr_push_pop_provider = {
     gpr_push_pop_reset, LIB_NULL
 };
 
-static C_INT gpr_push_pop_prepare(core_machine_cpu_profile profile,
+static lib_i32 gpr_push_pop_prepare(core_machine_cpu_profile profile,
     gpr_push_pop_machine *state)
 {
     const core_machine_config config = {
@@ -36,7 +37,7 @@ return test_core_machine_fixture_create_bind_freeze_reset(&config,
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_VOID gpr_push_pop_seed(gpr_push_pop_machine *state)
+static void gpr_push_pop_seed(gpr_push_pop_machine *state)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -52,7 +53,7 @@ static C_VOID gpr_push_pop_seed(gpr_push_pop_machine *state)
         VCPU_EFLAGS_IF;
 }
 
-static C_INT gpr_push_pop_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 gpr_push_pop_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
         sizeof(before->data.es)) == 0 && lib_memory_compare(&before->data.cs,
@@ -64,7 +65,7 @@ static C_INT gpr_push_pop_sregs_same(const t_cpu *before, const t_cpu *after)
         &before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT gpr_push_pop_cpu_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 gpr_push_pop_cpu_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -79,20 +80,20 @@ static C_INT gpr_push_pop_cpu_same(const t_cpu *before, const t_cpu *after)
         gpr_push_pop_sregs_same(before, after);
 }
 
-static C_INT gpr_push_pop_run(gpr_push_pop_machine *state,
+static lib_i32 gpr_push_pop_run(gpr_push_pop_machine *state,
     const lib_u8 *code, lib_u8 bytes, t_cpu *after,
-    core_machine_cpu_diagnostic *diagnostic, type_status *status)
+    core_machine_cpu_diagnostic *diagnostic, lib_status *status)
 {
     core_machine_run_result result;
 
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-        TYPE_STATUS_OK)
+        LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine, (core_machine_run_budget){1u, 0u},
         &result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return result.reason == CORE_MACHINE_STOP_BUDGET &&
-        core_machine_get_cpu_diagnostic(state->machine, diagnostic) == TYPE_STATUS_OK;
+        core_machine_get_cpu_diagnostic(state->machine, diagnostic) == LIB_STATUS_OK;
 }
 
 static lib_u32 gpr_push_pop_register(const t_cpu *cpu, lib_u8 index)
@@ -120,7 +121,7 @@ static lib_u32 gpr_push_pop_register(const t_cpu *cpu, lib_u8 index)
     }
 }
 
-static C_INT gpr_push_pop_test_push_registers(C_VOID)
+static lib_i32 gpr_push_pop_test_push_registers(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -140,24 +141,24 @@ static C_INT gpr_push_pop_test_push_registers(C_VOID)
             core_machine_cpu_diagnostic diagnostic;
             t_cpu before;
             t_cpu after;
-            type_status status;
+            lib_status status;
             lib_u32 image = 0u;
             lib_u32 expected;
-            C_INT failed = !gpr_push_pop_prepare(profiles[profile], &state);
+            lib_i32 failed = !gpr_push_pop_prepare(profiles[profile], &state);
 
             if (!failed)
             {
                 gpr_push_pop_seed(&state);
                 before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                 failed |= !gpr_push_pop_run(&state, code, sizeof(code), &after,
-                    &diagnostic, &status) || status != TYPE_STATUS_OK ||
+                    &diagnostic, &status) || status != LIB_STATUS_OK ||
                     diagnostic.first_fault.valid;
                 expected = gpr_push_pop_register(&before, index) & 0xffffu;
                 if (index == 4u && profiles[profile] < CORE_MACHINE_CPU_PROFILE_80286)
                     expected = 0x7ffeu;
                 failed |= core_machine_memory_read_physical(
                     &state.machine->executor_memory, 0x7ffeu,
-                    TYPE_REFERENCE_OF(image), 2u) != TYPE_STATUS_OK ||
+                    CORE_MACHINE_REFERENCE_OF(image), 2u) != LIB_STATUS_OK ||
                     image != expected || after.data.eip != 1u ||
                     after.data.eflags != before.data.eflags ||
                     after.data.eax != before.data.eax ||
@@ -178,38 +179,38 @@ static C_INT gpr_push_pop_test_push_registers(C_VOID)
     return 1;
 }
 
-static C_INT gpr_push_pop_test_pop_esp_address(C_VOID)
+static lib_i32 gpr_push_pop_test_pop_esp_address(void)
 {
     static const lib_u8 code[] = {0x67u, 0x8fu, 0x44u, 0x24u, 0x04u};
     gpr_push_pop_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    type_status status;
+    lib_status status;
     lib_u16 stack_value = 0xfaceu;
     lib_u16 old_target = 0xbeefu;
     lib_u16 observed = 0u;
-    C_INT failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
     {
         gpr_push_pop_seed(&state);
         state.machine->executor_cpu.data.esp = 0x00008000u;
         failed |= core_machine_memory_write(state.machine, 0x8000u, &stack_value,
-            sizeof(stack_value)) != TYPE_STATUS_OK ||
+            sizeof(stack_value)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x8006u, &old_target,
-            sizeof(old_target)) != TYPE_STATUS_OK || !gpr_push_pop_run(&state,
+            sizeof(old_target)) != LIB_STATUS_OK || !gpr_push_pop_run(&state,
             code, sizeof(code), &after, &diagnostic, &status) ||
-            status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
             after.data.eip != sizeof(code) || after.data.esp != 0x00008002u ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                0x8006u, TYPE_REFERENCE_OF(observed), sizeof(observed)) !=
-            TYPE_STATUS_OK || observed != stack_value;
+                0x8006u, CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) !=
+            LIB_STATUS_OK || observed != stack_value;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT gpr_push_pop_test_pop_registers(C_VOID)
+static lib_i32 gpr_push_pop_test_pop_registers(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -229,19 +230,19 @@ static C_INT gpr_push_pop_test_pop_registers(C_VOID)
             core_machine_cpu_diagnostic diagnostic;
             t_cpu before;
             t_cpu after;
-            type_status status;
+            lib_status status;
             lib_u16 value = (lib_u16)(0x4100u + index);
             lib_u32 expected;
-            C_INT failed = !gpr_push_pop_prepare(profiles[profile], &state);
+            lib_i32 failed = !gpr_push_pop_prepare(profiles[profile], &state);
 
             if (!failed)
             {
                 gpr_push_pop_seed(&state);
                 failed |= core_machine_memory_write(state.machine, 0x8000u,
-                    &value, sizeof(value)) != TYPE_STATUS_OK;
+                    &value, sizeof(value)) != LIB_STATUS_OK;
                 before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                 failed |= !gpr_push_pop_run(&state, code, sizeof(code), &after,
-                    &diagnostic, &status) || status != TYPE_STATUS_OK ||
+                    &diagnostic, &status) || status != LIB_STATUS_OK ||
                     diagnostic.first_fault.valid || after.data.eip != 1u ||
                     after.data.eflags != before.data.eflags ||
                     !gpr_push_pop_sregs_same(&before, &after);
@@ -268,7 +269,7 @@ static C_INT gpr_push_pop_test_pop_registers(C_VOID)
     return 1;
 }
 
-static C_INT gpr_push_pop_test_rm_forms(C_VOID)
+static lib_i32 gpr_push_pop_test_rm_forms(void)
 {
     static const lib_u8 push_reg[] = {0xffu, 0xf0u};
     static const lib_u8 pop_reg[] = {0x8fu, 0xc1u};
@@ -298,13 +299,13 @@ static C_INT gpr_push_pop_test_rm_forms(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        type_status status;
+        lib_status status;
         lib_u32 source = 0xface7788u;
         lib_u32 image = 0xface7788u;
         lib_u32 observed = 0u;
         lib_u32 address = 0x20u;
-        C_INT push = form == 0u || form == 2u || form == 3u || form == 6u;
-        C_INT failed = !gpr_push_pop_prepare(profiles[profile], &state);
+        lib_i32 push = form == 0u || form == 2u || form == 3u || form == 6u;
+        lib_i32 failed = !gpr_push_pop_prepare(profiles[profile], &state);
 
         if (!failed)
         {
@@ -316,13 +317,13 @@ static C_INT gpr_push_pop_test_rm_forms(C_VOID)
                 state.machine->executor_cpu.data.esp = 0x00008000u;
             if (push && form != 0u)
                 failed |= core_machine_memory_write(state.machine, address, &source,
-                    2u) != TYPE_STATUS_OK;
+                    2u) != LIB_STATUS_OK;
             if (!push)
                 failed |= core_machine_memory_write(state.machine, 0x8000u,
-                    &image, 2u) != TYPE_STATUS_OK;
+                    &image, 2u) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !gpr_push_pop_run(&state, codes[form], bytes[form], &after,
-                &diagnostic, &status) || status != TYPE_STATUS_OK ||
+                &diagnostic, &status) || status != LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || after.data.eip != bytes[form] ||
                 after.data.eflags != before.data.eflags ||
                 !gpr_push_pop_sregs_same(&before, &after);
@@ -332,7 +333,7 @@ static C_INT gpr_push_pop_test_rm_forms(C_VOID)
                     ((before.data.sp - 2u) & 0xffffu));
                 failed |= core_machine_memory_read_physical(
                     &state.machine->executor_memory, 0x7ffeu,
-                    TYPE_REFERENCE_OF(observed), 2u) != TYPE_STATUS_OK ||
+                    CORE_MACHINE_REFERENCE_OF(observed), 2u) != LIB_STATUS_OK ||
                     observed != (form == 0u ? (before.data.eax & 0xffffu) :
                     (source & 0xffffu));
             }
@@ -343,7 +344,7 @@ static C_INT gpr_push_pop_test_rm_forms(C_VOID)
                 if (form != 1u)
                     failed |= core_machine_memory_read_physical(
                         &state.machine->executor_memory, address,
-                        TYPE_REFERENCE_OF(observed), 2u) != TYPE_STATUS_OK ||
+                        CORE_MACHINE_REFERENCE_OF(observed), 2u) != LIB_STATUS_OK ||
                         observed != (image & 0xffffu);
             }
             failed |= after.data.eax != before.data.eax || after.data.edx !=
@@ -360,7 +361,7 @@ static C_INT gpr_push_pop_test_rm_forms(C_VOID)
     return 1;
 }
 
-static C_INT gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     gpr_push_pop_machine state;
@@ -368,41 +369,41 @@ static C_INT gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_status status;
+    lib_status status;
     lib_u32 source = 0xface7788u;
     lib_u32 image = 0u;
-    C_INT failed = !gpr_push_pop_prepare(profile, &state);
+    lib_i32 failed = !gpr_push_pop_prepare(profile, &state);
 
     if (!failed)
     {
         gpr_push_pop_seed(&state);
         failed |= core_machine_memory_write(state.machine, 0x20u, &source,
-            sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x7ffcu, &source, sizeof(source)) != TYPE_STATUS_OK;
+            sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x7ffcu, &source, sizeof(source)) != LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_write(state.machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         status = core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
             &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK || status != TYPE_STATUS_FAULT || result.reason !=
+            LIB_STATUS_OK || status != LIB_STATUS_INTERNAL_ERROR || result.reason !=
             CORE_MACHINE_STOP_FAULT || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             !gpr_push_pop_cpu_same(&before, &after) || core_machine_memory_read_physical(
-            &state.machine->executor_memory, 0x20u, TYPE_REFERENCE_OF(image),
-            sizeof(image)) != TYPE_STATUS_OK || image != source ||
+            &state.machine->executor_memory, 0x20u, CORE_MACHINE_REFERENCE_OF(image),
+            sizeof(image)) != LIB_STATUS_OK || image != source ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x7ffcu, TYPE_REFERENCE_OF(image), sizeof(image)) != TYPE_STATUS_OK ||
+            0x7ffcu, CORE_MACHINE_REFERENCE_OF(image), sizeof(image)) != LIB_STATUS_OK ||
             image != source;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT gpr_push_pop_test_rejections(C_VOID)
+static lib_i32 gpr_push_pop_test_rejections(void)
 {
     static const lib_u8 attrs[][3] = {{0x66u, 0x50u}, {0x67u, 0x50u},
         {0x66u, 0x67u, 0x50u}};
@@ -446,7 +447,7 @@ static C_INT gpr_push_pop_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT gpr_push_pop_boot_protected(gpr_push_pop_machine *state)
+static lib_i32 gpr_push_pop_boot_protected(gpr_push_pop_machine *state)
 {
     static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
     static const lib_u8 gdt[] = {
@@ -465,28 +466,28 @@ static C_INT gpr_push_pop_boot_protected(gpr_push_pop_machine *state)
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x0100u, pointer,
-        sizeof(pointer)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x0300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
+        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x0300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, bootstrap,
-        sizeof(bootstrap)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x2000u, &halt, sizeof(halt)) == TYPE_STATUS_OK &&
+        sizeof(bootstrap)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x2000u, &halt, sizeof(halt)) == LIB_STATUS_OK &&
         core_machine_run(state->machine, (core_machine_run_budget){96u, 0u},
-        &result) == TYPE_STATUS_OK && result.reason ==
+        &result) == LIB_STATUS_OK && result.reason ==
         CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
-    lib_u8 limit_segment, lib_u32 limit, C_INT expdown)
+static lib_i32 gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
+    lib_u8 limit_segment, lib_u32 limit, lib_i32 expdown)
 {
     gpr_push_pop_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_status fault_status;
+    lib_status fault_status;
     lib_u32 sentinel = 0xdeadbeefu;
     lib_u32 observed = 0u;
-    C_INT failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
 
     if (!failed)
@@ -503,20 +504,20 @@ static C_INT gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
         else
             state.machine->executor_cpu.data.ds.limit = limit;
         failed |= core_machine_memory_write(state.machine, 0x3010u, &sentinel,
-            sizeof(sentinel)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x4010u, &sentinel, sizeof(sentinel)) != TYPE_STATUS_OK ||
+            sizeof(sentinel)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x4010u, &sentinel, sizeof(sentinel)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x47ffeu, &sentinel,
-            sizeof(sentinel)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x2000u, code, bytes) != TYPE_STATUS_OK;
+            sizeof(sentinel)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x2000u, code, bytes) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         fault_status = core_machine_run(state.machine,
             (core_machine_run_budget){1u, 0u}, &result);
-        failed |= fault_status != TYPE_STATUS_FAULT || result.reason !=
+        failed |= fault_status != LIB_STATUS_INTERNAL_ERROR || result.reason !=
             CORE_MACHINE_STOP_FAULT || core_machine_get_cpu_diagnostic(
-            state.machine, &diagnostic) != TYPE_STATUS_OK;
+            state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             after.data.eip != 0u || after.data.eax != before.data.eax ||
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
@@ -525,20 +526,20 @@ static C_INT gpr_push_pop_protected_fault(const lib_u8 *code, lib_u8 bytes,
             after.data.edi != before.data.edi || after.data.eflags !=
             before.data.eflags || !gpr_push_pop_sregs_same(&before, &after) ||
             core_machine_memory_read_physical(
-            &state.machine->executor_memory, 0x3010u, TYPE_REFERENCE_OF(observed),
-            sizeof(observed)) != TYPE_STATUS_OK || observed != sentinel ||
+            &state.machine->executor_memory, 0x3010u, CORE_MACHINE_REFERENCE_OF(observed),
+            sizeof(observed)) != LIB_STATUS_OK || observed != sentinel ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x4010u, TYPE_REFERENCE_OF(observed), sizeof(observed)) !=
-            TYPE_STATUS_OK || observed != sentinel ||
+            0x4010u, CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) !=
+            LIB_STATUS_OK || observed != sentinel ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x47ffeu, TYPE_REFERENCE_OF(observed), sizeof(observed)) !=
-            TYPE_STATUS_OK || observed != sentinel;
+            0x47ffeu, CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) !=
+            LIB_STATUS_OK || observed != sentinel;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT gpr_push_pop_test_protected_faults(C_VOID)
+static lib_i32 gpr_push_pop_test_protected_faults(void)
 {
     static const lib_u8 push[] = {0x50u};
     static const lib_u8 pop[] = {0x59u};
@@ -548,31 +549,31 @@ static C_INT gpr_push_pop_test_protected_faults(C_VOID)
     if (!gpr_push_pop_protected_fault(push, sizeof(push), 0u, 0xffffu,
         LIB_TRUE))
     {
-        STD_PRINTF("protected push\n");
+        printf("protected push\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(pop, sizeof(pop), 0u, 0x7fffu,
         LIB_FALSE))
     {
-        STD_PRINTF("protected pop\n");
+        printf("protected pop\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(push_source, sizeof(push_source), 1u,
         0x0fu, LIB_FALSE))
     {
-        STD_PRINTF("protected push-source\n");
+        printf("protected push-source\n");
         return 0;
     }
     if (!gpr_push_pop_protected_fault(pop_dest, sizeof(pop_dest), 1u, 0x0fu,
         LIB_FALSE))
     {
-        STD_PRINTF("protected pop-dest\n");
+        printf("protected pop-dest\n");
         return 0;
     }
     return 1;
 }
 
-static C_INT gpr_push_pop_test_386_attributes(C_VOID)
+static lib_i32 gpr_push_pop_test_386_attributes(void)
 {
     static const lib_u8 push32[] = {0x66u, 0x50u};
     static const lib_u8 pop32[] = {0x66u, 0x59u};
@@ -590,10 +591,10 @@ static C_INT gpr_push_pop_test_386_attributes(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        type_status status;
+        lib_status status;
         lib_u32 value = 0xface7788u;
         lib_u32 observed = 0u;
-        C_INT failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed)
@@ -601,13 +602,13 @@ static C_INT gpr_push_pop_test_386_attributes(C_VOID)
             gpr_push_pop_seed(&state);
             if (form == 2u)
                 failed |= core_machine_memory_write(state.machine, 0x20u, &value,
-                    sizeof(value)) != TYPE_STATUS_OK;
+                    sizeof(value)) != LIB_STATUS_OK;
             if (form == 1u || form == 3u)
                 failed |= core_machine_memory_write(state.machine, 0x8000u,
-                    &value, sizeof(value)) != TYPE_STATUS_OK;
+                    &value, sizeof(value)) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !gpr_push_pop_run(&state, codes[form], bytes[form], &after,
-                &diagnostic, &status) || status != TYPE_STATUS_OK ||
+                &diagnostic, &status) || status != LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || after.data.eip != bytes[form] ||
                 after.data.eflags != before.data.eflags ||
                 !gpr_push_pop_sregs_same(&before, &after);
@@ -620,8 +621,8 @@ static C_INT gpr_push_pop_test_386_attributes(C_VOID)
                 failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
                     stack) ||
                     core_machine_memory_read_physical(&state.machine->executor_memory,
-                    stack, TYPE_REFERENCE_OF(observed), width) !=
-                    TYPE_STATUS_OK || observed != (width == 2u ?
+                    stack, CORE_MACHINE_REFERENCE_OF(observed), width) !=
+                    LIB_STATUS_OK || observed != (width == 2u ?
                     (expected & 0xffffu) : expected);
             }
             else if (form == 1u)
@@ -631,8 +632,8 @@ static C_INT gpr_push_pop_test_386_attributes(C_VOID)
             {
                 failed |= after.data.esp != 0x12348004u ||
                     core_machine_memory_read_physical(&state.machine->executor_memory,
-                    0x20u, TYPE_REFERENCE_OF(observed), sizeof(observed)) !=
-                    TYPE_STATUS_OK || observed != value;
+                    0x20u, CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) !=
+                    LIB_STATUS_OK || observed != value;
             }
         }
         core_machine_destroy(state.machine);
@@ -642,7 +643,7 @@ static C_INT gpr_push_pop_test_386_attributes(C_VOID)
     return 1;
 }
 
-static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
+static lib_i32 gpr_push_pop_test_irq_no_shadow(void)
 {
     static const lib_u8 push_reg[] = {0x50u, 0x90u};
     static const lib_u8 pop_reg[] = {0x59u, 0x90u};
@@ -666,7 +667,7 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
         lib_u16 image = 0xfaceu;
         lib_u16 source_word = 0x7788u;
         lib_u16 observed = 0u;
-        C_INT failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed)
@@ -674,18 +675,18 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
             gpr_push_pop_seed(&state);
             if (form == 1u || form == 3u)
                 failed |= core_machine_memory_write(state.machine, 0x8000u,
-                    &image, sizeof(image)) != TYPE_STATUS_OK;
+                    &image, sizeof(image)) != LIB_STATUS_OK;
             if (form == 2u)
                 state.machine->executor_cpu.data.eax = 0xa1a27788u;
             failed |= core_machine_memory_write(state.machine, 0x20u,
-                &source_word, sizeof(source_word)) != TYPE_STATUS_OK ||
+                &source_word, sizeof(source_word)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0u, codes[form],
-                lengths[form] + 1u) != TYPE_STATUS_OK || core_machine_memory_write(
+                lengths[form] + 1u) != LIB_STATUS_OK || core_machine_memory_write(
                 state.machine, 0x80u, &vector_offset, sizeof(vector_offset)) !=
-                TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x82u,
-                &vector_segment, sizeof(vector_segment)) != TYPE_STATUS_OK ||
+                LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x82u,
+                &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x100u, &halt,
-                sizeof(halt)) != TYPE_STATUS_OK;
+                sizeof(halt)) != LIB_STATUS_OK;
         }
         if (!failed)
         {
@@ -699,15 +700,15 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
             core_machine_pic_irq_source_deassert(&source);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){2u, 0u}, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
+                CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != lengths[form] ||
-                !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
+                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
                 state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
                 after.data.eflags != (before.data.eflags & ~VCPU_EFLAGS_IF);
             if (form == 0u || form == 2u)
@@ -717,8 +718,8 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
 
                 failed |= after.data.esp != 0x12347ff8u ||
                     core_machine_memory_read_physical(&state.machine->executor_memory,
-                    0x7ffeu, TYPE_REFERENCE_OF(observed), sizeof(observed)) !=
-                    TYPE_STATUS_OK || observed != expected;
+                    0x7ffeu, CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) !=
+                    LIB_STATUS_OK || observed != expected;
             }
             else if (form == 1u)
                 failed |= after.data.ecx != 0xb1b2faceu ||
@@ -727,8 +728,8 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
             {
                 failed |= after.data.esp != 0x12347ffcu ||
                     core_machine_memory_read_physical(&state.machine->executor_memory,
-                    0x20u, TYPE_REFERENCE_OF(observed), sizeof(observed)) !=
-                    TYPE_STATUS_OK || observed != image;
+                    0x20u, CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) !=
+                    LIB_STATUS_OK || observed != image;
             }
         }
         core_machine_destroy(state.machine);
@@ -738,50 +739,50 @@ static C_INT gpr_push_pop_test_irq_no_shadow(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!gpr_push_pop_test_push_registers())
     {
-        STD_PRINTF("GPR-PUSH-POP stage=push-registers\n");
+        printf("GPR-PUSH-POP stage=push-registers\n");
         return 1;
     }
     if (!gpr_push_pop_test_pop_esp_address())
     {
-        STD_PRINTF("GPR-PUSH-POP stage=pop-esp-address\n");
+        printf("GPR-PUSH-POP stage=pop-esp-address\n");
         return 1;
     }
     if (!gpr_push_pop_test_pop_registers())
     {
-        STD_PRINTF("GPR-PUSH-POP stage=pop-registers\n");
+        printf("GPR-PUSH-POP stage=pop-registers\n");
         return 1;
     }
     if (!gpr_push_pop_test_rm_forms())
     {
-        STD_PRINTF("GPR-PUSH-POP stage=rm\n");
+        printf("GPR-PUSH-POP stage=rm\n");
         return 1;
     }
     if (!gpr_push_pop_test_rejections())
     {
-        STD_PRINTF("GPR-PUSH-POP stage=rejections\n");
+        printf("GPR-PUSH-POP stage=rejections\n");
         return 1;
     }
     if (!gpr_push_pop_test_386_attributes())
     {
-        STD_PRINTF("GPR-PUSH-POP stage=attributes\n");
+        printf("GPR-PUSH-POP stage=attributes\n");
         return 1;
     }
     if (!gpr_push_pop_test_protected_faults())
     {
-        STD_PRINTF("GPR-PUSH-POP stage=protected\n");
+        printf("GPR-PUSH-POP stage=protected\n");
         return 1;
     }
     if (!gpr_push_pop_test_irq_no_shadow())
     {
-        STD_PRINTF("GPR-PUSH-POP stage=irq\n");
+        printf("GPR-PUSH-POP stage=irq\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S44:GPR-PUSH-POP:OK\n");
-    STD_PRINTF("M5:T401:S40:GPR-PUSH-POP-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK\n");
+    printf("M5:T316:S44:GPR-PUSH-POP:OK\n");
+    printf("M5:T401:S40:GPR-PUSH-POP-PROFILES:OK\n");
+    printf("M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK\n");
     return 0;
 }

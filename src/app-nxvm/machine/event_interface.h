@@ -2,7 +2,6 @@
 #define VM_MACHINE_EVENT_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "common/machine/machine_interface.h"
 
@@ -17,7 +16,7 @@ typedef enum vm_machine_input_kind {
 typedef struct vm_machine_key_event {
     lib_u16 scan_code;
     lib_u16 virtual_key;
-    C_INT pressed;
+    lib_i32 pressed;
 } vm_machine_key_event;
 
 typedef struct vm_machine_mouse_event {
@@ -43,7 +42,7 @@ typedef struct vm_machine_input {
 #define VM_MACHINE_EVENT_GLYPH_BYTES (256u * 16u)
 
 typedef struct vm_machine_display_event {
-    C_INT graphics;
+    lib_i32 graphics;
     lib_u8 characters[VM_MACHINE_EVENT_TEXT_CELLS];
     lib_u8 attributes[VM_MACHINE_EVENT_TEXT_CELLS];
     lib_u16 columns;
@@ -53,10 +52,10 @@ typedef struct vm_machine_display_event {
     lib_u8 cursor_bottom;
     lib_u8 cursor_x;
     lib_u8 cursor_y;
-    C_INT cursor_visible;
-    C_INT buffer_changed;
-    C_INT cursor_changed;
-    type_bool glyphs_present;
+    lib_i32 cursor_visible;
+    lib_i32 buffer_changed;
+    lib_i32 cursor_changed;
+    lib_u8 glyphs_present;
     lib_u8 glyphs[VM_MACHINE_EVENT_GLYPH_BYTES];
     lib_u16 pixel_width;
     lib_u16 pixel_height;

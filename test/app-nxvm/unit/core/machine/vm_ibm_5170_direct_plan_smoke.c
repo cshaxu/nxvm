@@ -1,17 +1,17 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 
-static C_INT vm_ibm_5170_direct_plan_is_complete(C_VOID)
+static lib_i32 vm_ibm_5170_direct_plan_is_complete(void)
 {
     vm_profile_default_pc_at_plan_snapshot profile;
     core_machine_plan *plan = LIB_NULL;
-    type_status status;
+    lib_status status;
 
-    if (vm_profile_ibm_5170_plan_create(&profile) != TYPE_STATUS_OK ||
+    if (vm_profile_ibm_5170_plan_create(&profile) != LIB_STATUS_OK ||
         !vm_profile_default_pc_at_descriptor_is_valid(&profile.descriptor) ||
         profile.values.core.configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 ||
         profile.values.core.configuration.memory_bytes != 512u * 1024u ||
@@ -27,20 +27,20 @@ static C_INT vm_ibm_5170_direct_plan_is_complete(C_VOID)
         profile.values.firmware_policy != VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BUILTIN ||
         profile.values.media_policy != VM_PROFILE_CONTRACT_MEDIA_POLICY_SESSION) return 1;
     status = core_machine_plan_create(&profile.values.core.configuration, &plan);
-    if (status == TYPE_STATUS_OK) status = core_machine_plan_set_controller_timing_rules(plan,
+    if (status == LIB_STATUS_OK) status = core_machine_plan_set_controller_timing_rules(plan,
         &profile.values.core.controller_timing_rules);
-    if (status == TYPE_STATUS_OK) status = core_machine_plan_set_topology(plan, &profile.topology);
+    if (status == LIB_STATUS_OK) status = core_machine_plan_set_topology(plan, &profile.topology);
     core_machine_plan_destroy(plan);
-    return status != TYPE_STATUS_OK;
+    return status != LIB_STATUS_OK;
 }
 
-static C_INT vm_ibm_5170_memory_options_stay_bounded(C_VOID)
+static lib_i32 vm_ibm_5170_memory_options_stay_bounded(void)
 {
     vm_profile_default_pc_at_plan_snapshot expanded;
     vm_profile_default_pc_at_plan_snapshot rejected;
 
     if (vm_profile_ibm_5170_plan_create_memory(1536u * 1024u, &expanded) !=
-        TYPE_STATUS_OK || expanded.values.core.configuration.memory_bytes !=
+        LIB_STATUS_OK || expanded.values.core.configuration.memory_bytes !=
             1536u * 1024u || expanded.descriptor.default_memory_bytes !=
             1536u * 1024u || expanded.descriptor.cmos.base_memory_kib != 0x0280u ||
         expanded.descriptor.unpopulated_extended_memory ||
@@ -48,15 +48,15 @@ static C_INT vm_ibm_5170_memory_options_stay_bounded(C_VOID)
         return 1;
     }
     return vm_profile_ibm_5170_plan_create_memory(1024u * 1024u, &rejected) ==
-        TYPE_STATUS_OK || vm_profile_ibm_5170_plan_create_memory(4u * 1024u * 1024u,
-            &rejected) == TYPE_STATUS_OK;
+        LIB_STATUS_OK || vm_profile_ibm_5170_plan_create_memory(4u * 1024u * 1024u,
+            &rejected) == LIB_STATUS_OK;
 }
 
-static C_INT vm_model40_direct_plan_is_complete(C_VOID)
+static lib_i32 vm_model40_direct_plan_is_complete(void)
 {
     vm_profile_contract_values values;
 
-    return vm_profile_model40_values_create(&values) != TYPE_STATUS_OK ||
+    return vm_profile_model40_values_create(&values) != LIB_STATUS_OK ||
         values.core.configuration.memory_bytes != 2u * 1024u * 1024u ||
         values.core.configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         values.core.configuration.pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED ||
@@ -65,7 +65,7 @@ static C_INT vm_model40_direct_plan_is_complete(C_VOID)
         values.media_policy != VM_PROFILE_CONTRACT_MEDIA_POLICY_SESSION;
 }
 
-static C_INT vm_default_at_direct_plan_is_complete(C_VOID)
+static lib_i32 vm_default_at_direct_plan_is_complete(void)
 {
     const vm_profile_default_at_request request = {
         VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
@@ -75,7 +75,7 @@ static C_INT vm_default_at_direct_plan_is_complete(C_VOID)
         32u * 1024u * 1024u, 0x40u};
     vm_profile_default_pc_at_plan_snapshot profile;
 
-    return vm_profile_default_at_plan_create(&request, &profile) != TYPE_STATUS_OK ||
+    return vm_profile_default_at_plan_create(&request, &profile) != LIB_STATUS_OK ||
         profile.values.core.configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         profile.values.core.configuration.memory_bytes != 32u * 1024u * 1024u ||
         profile.values.allowed_session_options !=
@@ -85,7 +85,7 @@ static C_INT vm_default_at_direct_plan_is_complete(C_VOID)
         profile.descriptor.cmos.floppy_type != 0x40u;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     return vm_ibm_5170_direct_plan_is_complete() ||
         vm_ibm_5170_memory_options_stay_bounded() ||

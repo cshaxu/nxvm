@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/port.h"
@@ -11,7 +11,7 @@
 #include "app-nxvm/machine/media/fdd.h"
 #include "support/rom/session_assets.h"
 
-static C_VOID fdc_command(core_machine_fdc *fdc, t_port *port,
+static void fdc_command(core_machine_fdc *fdc, t_port *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -22,7 +22,7 @@ static C_VOID fdc_command(core_machine_fdc *fdc, t_port *port,
     core_machine_fdc_advance(fdc);
 }
 
-static C_INT fdc_read_result(core_machine_fdc *fdc, t_port *port, lib_u8 *result,
+static lib_i32 fdc_read_result(core_machine_fdc *fdc, t_port *port, lib_u8 *result,
     lib_size count)
 {
     lib_size index;
@@ -33,7 +33,7 @@ static C_INT fdc_read_result(core_machine_fdc *fdc, t_port *port, lib_u8 *result
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session;
     t_port *port;
@@ -49,9 +49,9 @@ C_INT main(C_VOID)
         0x4du, 0x00u, 0x02u, 0x01u, 0x1bu, 0xa5u
     };
     lib_u8 format_id[] = { 0x00u, 0x00u, 0x01u, 0x02u };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->active ||
         (port = session->core_machine->fdc.connect.port) == LIB_NULL) return 1;
     core_machine_port_write(port, 0x03f2u, 0x1cu);
@@ -104,7 +104,7 @@ C_INT main(C_VOID)
         (VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_NDM);
     failed |= core_machine_port_read(port, 0x03f5u) != 0xa5u;
     for (lib_u16 index = 1u; index < 512u; ++index) {
-        (C_VOID)core_machine_port_read(port, 0x03f5u);
+        (void)core_machine_port_read(port, 0x03f5u);
     }
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
     failed |= result[0] != core_machine_fdc_ST0_NORMAL;

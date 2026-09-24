@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -12,12 +13,12 @@ typedef struct pic_phase_s2_state {
     lib_u32 count;
 } pic_phase_s2_state;
 
-static C_VOID pic_phase_s2_reset(C_VOID *opaque)
+static void pic_phase_s2_reset(void *opaque)
 {
     pic_phase_s2_state *state = (pic_phase_s2_state *)opaque;
 
     if (state != LIB_NULL) {
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
     }
 }
 
@@ -25,7 +26,7 @@ static const core_machine_execution_provider pic_phase_s2_provider = {
     pic_phase_s2_reset, LIB_NULL
 };
 
-static C_VOID pic_phase_s2_trace(C_VOID *opaque,
+static void pic_phase_s2_trace(void *opaque,
     const core_machine_trace_event *event)
 {
     pic_phase_s2_state *state = (pic_phase_s2_state *)opaque;
@@ -35,7 +36,7 @@ static C_VOID pic_phase_s2_trace(C_VOID *opaque,
     }
 }
 
-static C_INT pic_phase_s2_has_acknowledgement_before_frame(
+static lib_i32 pic_phase_s2_has_acknowledgement_before_frame(
     const pic_phase_s2_state *state)
 {
     lib_u32 index;
@@ -67,7 +68,7 @@ static C_INT pic_phase_s2_has_acknowledgement_before_frame(
     return 0;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -81,18 +82,18 @@ C_INT main(C_VOID)
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     const core_machine_trace_provider trace = { pic_phase_s2_trace, &state };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(&state, 0, sizeof(state));
     lib_memory_set(&irq, 0, sizeof(irq));
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
             &pic_phase_s2_provider, &state, &state.machine)) return 1;
     failed |= core_machine_set_trace_provider(state.machine, &trace) !=
-        TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0u, program,
-            sizeof(program)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x80u, vector, sizeof(vector)) != TYPE_STATUS_OK ||
+        LIB_STATUS_OK || core_machine_memory_write(state.machine, 0u, program,
+            sizeof(program)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x80u, vector, sizeof(vector)) != LIB_STATUS_OK ||
         core_machine_memory_write(state.machine, 0x0100u, handler,
-            sizeof(handler)) != TYPE_STATUS_OK;
+            sizeof(handler)) != LIB_STATUS_OK;
     if (!failed) {
         state.machine->executor_cpu.data.esp = 0x00008000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
@@ -104,20 +105,20 @@ C_INT main(C_VOID)
         failed |= !core_machine_pic_scan_interrupt(
             &state.machine->shared_pic_master, &state.machine->shared_pic_slave) ||
             core_machine_run(state.machine, (core_machine_run_budget){ 8u, 0u },
-                &result) != TYPE_STATUS_OK || result.reason !=
+                &result) != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             state.machine->executor_cpu.data.eip != 0x0101u ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
-                VPIC_IRR_IRQ(0u)) || !TYPE_GET_BIT(
+            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+                VPIC_IRR_IRQ(0u)) || !CORE_MACHINE_BIT_IS_SET(
                 state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
             !pic_phase_s2_has_acknowledgement_before_frame(&state) ||
-            core_machine_reset(state.machine) != TYPE_STATUS_OK ||
+            core_machine_reset(state.machine) != LIB_STATUS_OK ||
             state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
             state.machine->transaction.committed_count != 0u ||
             state.machine->transaction.cancelled_count != 0u;
     }
     core_machine_destroy(state.machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T456:S2:PIC-PHASE:OK\\n");
+    printf("M5:T456:S2:PIC-PHASE:OK\\n");
     return 0;
 }

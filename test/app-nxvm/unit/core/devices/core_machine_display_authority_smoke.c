@@ -1,17 +1,17 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory_interface.h"
 #include "app-nxvm/devices/vadp.h"
 
-int main(C_VOID)
+int main(void)
 {
     core_machine_config machine_config = {0};
     core_machine_display_config display_config = {0};
     core_machine *machine = LIB_NULL;
     lib_u8 pixel = 0x5au;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     machine_config.memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES;
     display_config.text_timing.active_display_ticks = 48u;
@@ -34,19 +34,19 @@ int main(C_VOID)
     display_config.ports.crtc_first = CORE_MACHINE_VADP_PORT_CRTC_INDEX;
     display_config.ports.crtc_last = CORE_MACHINE_VADP_PORT_STATUS;
 
-    if (core_machine_create(&machine_config, &machine) != TYPE_STATUS_OK ||
-        core_machine_configure_display(machine, &display_config) != TYPE_STATUS_OK ||
+    if (core_machine_create(&machine_config, &machine) != LIB_STATUS_OK ||
+        core_machine_configure_display(machine, &display_config) != LIB_STATUS_OK ||
         core_machine_configure_display(machine, &display_config) !=
-            TYPE_STATUS_INVALID_STATE ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+            LIB_STATUS_INVALID_STATE ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_configure_display(machine, &display_config) !=
-            TYPE_STATUS_INVALID_STATE ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+            LIB_STATUS_INVALID_STATE ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
-            &pixel, sizeof(pixel)) != TYPE_STATUS_OK) {
+            &pixel, sizeof(pixel)) != LIB_STATUS_OK) {
         failed = 1;
     }
     core_machine_destroy(machine);
-    if (!failed) STD_PRINTF("M5:T296:S2:DISPLAY-AUTHORITY:OK\n");
+    if (!failed) printf("M5:T296:S2:DISPLAY-AUTHORITY:OK\n");
     return failed;
 }

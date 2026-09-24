@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/cpu.h"
 
-static C_INT prepare_machine(core_machine **out_machine)
+static lib_i32 prepare_machine(core_machine **out_machine)
 {
     static const lib_u8 rom[] = { 0xf4u };
     const core_machine_config config = {
@@ -16,10 +16,10 @@ static C_INT prepare_machine(core_machine **out_machine)
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
-            TYPE_STATUS_OK || core_machine_register_immutable_rom_mapping(machine,
-            0x1000u, rom, sizeof(rom)) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK) {
+            LIB_STATUS_OK || core_machine_register_immutable_rom_mapping(machine,
+            0x1000u, rom, sizeof(rom)) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
@@ -48,7 +48,7 @@ static core_machine_entry_plan make_plan(lib_u16 cs, lib_u16 ip,
     return plan;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 halt[] = { 0xf4u };
     core_machine *machine = LIB_NULL;
@@ -63,42 +63,42 @@ C_INT main(C_VOID)
     };
     core_machine_entry_plan plan;
     lib_u8 observed = 0xffu;
-    C_INT failed = prepare_machine(&machine);
+    lib_i32 failed = prepare_machine(&machine);
 
     if (!failed) {
-        failed |= core_machine_get_cpu_state(machine, &state) != TYPE_STATUS_OK ||
+        failed |= core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK ||
             state.cs != 0xf000u || state.eip != 0x0000fff0u;
         plan = make_plan(0u, 0x1000u, 0x1000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER, LIB_NULL, 0u);
-        failed |= core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_OK;
-        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_apply_entry_plan(machine, &plan) != LIB_STATUS_OK;
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-        failed |= core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_INVALID_STATE;
-        failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+        failed |= core_machine_apply_entry_plan(machine, &plan) != LIB_STATUS_INVALID_STATE;
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK;
 
         plan = make_plan(0u, 0x1000u, 0x1000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER, invalid_preloads, 2u);
-        failed |= core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_INVALID_ARGUMENT;
+        failed |= core_machine_apply_entry_plan(machine, &plan) != LIB_STATUS_INVALID_ARGUMENT;
         failed |= core_machine_memory_read(machine, 0x0200u, &observed,
-            sizeof(observed)) != TYPE_STATUS_OK || observed != 0u;
-        failed |= core_machine_get_cpu_state(machine, &state) != TYPE_STATUS_OK ||
+            sizeof(observed)) != LIB_STATUS_OK || observed != 0u;
+        failed |= core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK ||
             state.cs != 0xf000u || state.eip != 0x0000fff0u;
 
         plan = make_plan(0u, 0x0200u, 0x0200u,
             CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM, overlapping_preloads, 2u);
-        failed |= core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_INVALID_ARGUMENT;
+        failed |= core_machine_apply_entry_plan(machine, &plan) != LIB_STATUS_INVALID_ARGUMENT;
         failed |= core_machine_memory_read(machine, 0x0200u, &observed,
-            sizeof(observed)) != TYPE_STATUS_OK || observed != 0u;
-        failed |= core_machine_get_cpu_state(machine, &state) != TYPE_STATUS_OK ||
+            sizeof(observed)) != LIB_STATUS_OK || observed != 0u;
+        failed |= core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK ||
             state.cs != 0xf000u || state.eip != 0x0000fff0u;
 
         plan = make_plan(0u, 0x0200u, 0x0200u,
             CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM, invalid_preloads, 1u);
-        failed |= core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_OK;
-        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_apply_entry_plan(machine, &plan) != LIB_STATUS_OK;
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-        failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-        failed |= core_machine_get_cpu_state(machine, &state) != TYPE_STATUS_OK ||
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+        failed |= core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK ||
             state.cs != 0xf000u || state.eip != 0x0000fff0u;
     }
     core_machine_destroy(machine);

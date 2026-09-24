@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
-static C_INT vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes);
+static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes);
 
 static const vm_profile_default_pc_at_port_leaf default_pc_at_port_leaves[] = {
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x0020u, LIB_TRUE, LIB_TRUE },
@@ -335,18 +335,18 @@ static vm_profile_default_pc_at_device_role vm_profile_ibm_5170_route_device(
 }
 
 const vm_profile_default_pc_at_descriptor *
-vm_profile_default_pc_at_descriptor_get(C_VOID)
+vm_profile_default_pc_at_descriptor_get(void)
 {
     return &default_pc_at_descriptor;
 }
 
 const vm_profile_default_pc_at_descriptor *
-vm_profile_ibm_5170_model_339_descriptor_get(C_VOID)
+vm_profile_ibm_5170_model_339_descriptor_get(void)
 {
     return &ibm_5170_model_339_descriptor;
 }
 
-static C_INT vm_profile_default_pc_at_cpu_profile_is_valid(
+static lib_i32 vm_profile_default_pc_at_cpu_profile_is_valid(
     core_machine_cpu_profile profile)
 {
     return profile == CORE_MACHINE_CPU_PROFILE_8086 ||
@@ -355,7 +355,7 @@ static C_INT vm_profile_default_pc_at_cpu_profile_is_valid(
         profile == CORE_MACHINE_CPU_PROFILE_80386;
 }
 
-static C_INT vm_profile_default_pc_at_fpu_profile_is_valid(
+static lib_i32 vm_profile_default_pc_at_fpu_profile_is_valid(
     core_machine_fpu_profile profile)
 {
     return profile == CORE_MACHINE_FPU_PROFILE_NONE ||
@@ -364,7 +364,7 @@ static C_INT vm_profile_default_pc_at_fpu_profile_is_valid(
         profile == CORE_MACHINE_FPU_PROFILE_80387;
 }
 
-static C_INT vm_profile_default_pc_at_fdc_bounce_is_valid(
+static lib_i32 vm_profile_default_pc_at_fdc_bounce_is_valid(
     const vm_profile_default_pc_at_descriptor *descriptor)
 {
     const lib_size physical = (lib_size)descriptor->fdc_bounce_segment << 4u;
@@ -374,7 +374,7 @@ static C_INT vm_profile_default_pc_at_fdc_bounce_is_valid(
         descriptor->default_memory_bytes - physical;
 }
 
-C_INT vm_profile_default_pc_at_cpu_contract_select(
+lib_i32 vm_profile_default_pc_at_cpu_contract_select(
     const vm_profile_default_pc_at_descriptor *descriptor,
     core_machine_cpu_profile requested_cpu,
     core_machine_fpu_profile requested_fpu,
@@ -405,7 +405,7 @@ C_INT vm_profile_default_pc_at_cpu_contract_select(
     return 1;
 }
 
-C_INT vm_profile_default_pc_at_core_config_materialize(
+lib_i32 vm_profile_default_pc_at_core_config_materialize(
     const vm_profile_default_pc_at_descriptor *descriptor,
     const vm_profile_default_pc_at_cpu_contract *contract,
     core_machine_config *out_config,
@@ -444,7 +444,7 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
     return 1;
 }
 
-type_status vm_profile_default_pc_at_topology_materialize(
+lib_status vm_profile_default_pc_at_topology_materialize(
     const vm_profile_default_pc_at_descriptor *descriptor,
     const core_machine_controller_timing_rules *timing_rules,
     core_machine_plan_topology *out_topology)
@@ -466,7 +466,7 @@ type_status vm_profile_default_pc_at_topology_materialize(
 
     if (descriptor == LIB_NULL || timing_rules == LIB_NULL || out_topology == LIB_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     attribute_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0u);
@@ -498,7 +498,7 @@ type_status vm_profile_default_pc_at_topology_materialize(
         graphics_last == LIB_NULL)) || crtc_first == LIB_NULL ||
         crtc_last == LIB_NULL || cmos_first == LIB_NULL ||
         cmos_last == LIB_NULL || cmos_route == LIB_NULL || fdc_route == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (descriptor->unpopulated_extended_memory) {
         topology.absent_memory_count = 1u;
@@ -575,18 +575,18 @@ type_status vm_profile_default_pc_at_topology_materialize(
                 descriptor->cmos.fixed_disk_type_extended_0 },
             { CORE_MACHINE_RTC_EQUIPMENT, descriptor->cmos.equipment },
             { CORE_MACHINE_RTC_BASEMEM_LSB,
-                TYPE_MASK_UNSIGNED_8(descriptor->cmos.base_memory_kib) },
+                (lib_u8)descriptor->cmos.base_memory_kib },
             { CORE_MACHINE_RTC_BASEMEM_MSB,
-                TYPE_MASK_UNSIGNED_8(descriptor->cmos.base_memory_kib >> 8) }
+                (lib_u8)(descriptor->cmos.base_memory_kib >> 8) }
         },
         .default_count = CORE_MACHINE_RTC_DEFAULT_COUNT,
         .derive_configuration_checksum = LIB_TRUE
     };
     *out_topology = topology;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status vm_profile_default_pc_at_values_create(
+static lib_status vm_profile_default_pc_at_values_create(
     const vm_profile_default_pc_at_descriptor *descriptor,
     core_machine_cpu_profile cpu_profile, core_machine_fpu_profile fpu_profile,
     vm_profile_contract_values *out_values)
@@ -601,7 +601,7 @@ static type_status vm_profile_default_pc_at_values_create(
         !vm_profile_default_pc_at_core_config_materialize(descriptor, &contract,
             &out_values->core.configuration,
             &out_values->core.controller_timing_rules)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     out_values->core.id = ibm_5170_contract_ids[0];
     for (role = 0u; role <= VM_PROFILE_DEFAULT_PC_AT_DEVICE_BOARD; ++role) {
@@ -614,7 +614,7 @@ static type_status vm_profile_default_pc_at_values_create(
             if (leaf == LIB_NULL) break;
             if (out_values->port_leaf_count ==
                 VM_PROFILE_CONTRACT_PORT_LEAF_CAPACITY) {
-                return TYPE_STATUS_NO_MEMORY;
+                return LIB_STATUS_NO_MEMORY;
             }
             out_values->enabled_devices |= vm_profile_ibm_5170_device_bit(
                 (vm_profile_default_pc_at_device_role)role);
@@ -637,25 +637,25 @@ static type_status vm_profile_default_pc_at_values_create(
             vm_profile_ibm_5170_route_device(route->source));
 
         if (out_values->irq_route_count == VM_PROFILE_CONTRACT_ROUTE_CAPACITY) {
-            return TYPE_STATUS_NO_MEMORY;
+            return LIB_STATUS_NO_MEMORY;
         }
         out_values->irq_routes[out_values->irq_route_count++] =
             (vm_profile_contract_route) {device, route->irq};
         if (route->dma_channel != VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL) {
             if (out_values->drq_route_count ==
                 VM_PROFILE_CONTRACT_ROUTE_CAPACITY) {
-                return TYPE_STATUS_NO_MEMORY;
+                return LIB_STATUS_NO_MEMORY;
             }
             out_values->drq_routes[out_values->drq_route_count++] =
                 (vm_profile_contract_route) {device, route->dma_channel};
         }
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status vm_profile_default_pc_at_snapshot_copy(
+static lib_status vm_profile_default_pc_at_snapshot_copy(
     vm_profile_default_pc_at_plan_snapshot *out_profile,
-    const vm_profile_default_pc_at_descriptor *descriptor, const C_CHAR *identity,
+    const vm_profile_default_pc_at_descriptor *descriptor, const char *identity,
     lib_u8 floppy_cmos_type)
 {
     if (out_profile == LIB_NULL || descriptor == LIB_NULL || identity == LIB_NULL ||
@@ -663,7 +663,7 @@ static type_status vm_profile_default_pc_at_snapshot_copy(
         descriptor->route_count > VM_PROFILE_DEFAULT_PC_AT_PLAN_ROUTE_CAPACITY ||
         descriptor->firmware_service_count >
             VM_PROFILE_DEFAULT_PC_AT_PLAN_FIRMWARE_SERVICE_CAPACITY) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     out_profile->descriptor = *descriptor;
     lib_memory_copy(out_profile->port_leaves, descriptor->port_leaves,
@@ -688,7 +688,7 @@ static type_status vm_profile_default_pc_at_snapshot_copy(
         &out_profile->topology);
 }
 
-type_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
+lib_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
     vm_profile_contract_values *out_values)
 {
     const vm_profile_default_pc_at_descriptor *descriptor =
@@ -699,8 +699,8 @@ type_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
 
     if (out_values == LIB_NULL || !vm_profile_ibm_5170_memory_is_valid(memory_bytes) ||
         vm_profile_default_pc_at_values_create(descriptor, descriptor->cpu_profile,
-            descriptor->fpu_profile, &values) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+            descriptor->fpu_profile, &values) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (memory_bytes != 0u) {
         values.core.configuration.memory_bytes = memory_bytes;
@@ -709,14 +709,14 @@ type_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
     values.firmware_policy = VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BUILTIN;
     values.media_policy = VM_PROFILE_CONTRACT_MEDIA_POLICY_SESSION;
     if (vm_profile_contract_validate(&values, &catalog, memory_bytes != 0u ?
-            VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY : 0u) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+            VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY : 0u) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_values = values;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_INT vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes)
+static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes)
 {
     if (memory_bytes == 0u || memory_bytes == 512u * 1024u ||
         memory_bytes == 640u * 1024u) return 1;
@@ -724,7 +724,7 @@ static C_INT vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes)
         (memory_bytes - 1024u * 1024u) % (512u * 1024u) == 0u;
 }
 
-type_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
+lib_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
     vm_profile_default_pc_at_plan_snapshot *out_profile)
 {
     const vm_profile_default_pc_at_descriptor *source =
@@ -732,7 +732,7 @@ type_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
     vm_profile_default_pc_at_descriptor descriptor;
 
     if (out_profile == LIB_NULL || !vm_profile_ibm_5170_memory_is_valid(memory_bytes)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     descriptor = *source;
     if (memory_bytes != 0u) descriptor.default_memory_bytes = memory_bytes;
@@ -744,20 +744,20 @@ type_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
     }
     lib_memory_set(out_profile, 0, sizeof(*out_profile));
     if (vm_profile_ibm_5170_values_create(memory_bytes, &out_profile->values) !=
-        TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     return vm_profile_default_pc_at_snapshot_copy(out_profile, &descriptor, "pc-at-5170",
         descriptor.cmos.floppy_type);
 }
 
-type_status vm_profile_ibm_5170_plan_create(
+lib_status vm_profile_ibm_5170_plan_create(
     vm_profile_default_pc_at_plan_snapshot *out_profile)
 {
     return vm_profile_ibm_5170_plan_create_memory(0u, out_profile);
 }
 
-static type_status vm_profile_default_at_request_select(
+static lib_status vm_profile_default_at_request_select(
     const vm_profile_default_at_request *request,
     core_machine_cpu_profile *out_cpu, core_machine_fpu_profile *out_fpu,
     lib_size *out_memory)
@@ -770,7 +770,7 @@ static type_status vm_profile_default_at_request_select(
         (request->requested_options & ~(VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
             VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |
             VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY)) != 0u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_cpu = descriptor->cpu_profile;
     *out_fpu = descriptor->fpu_profile;
@@ -780,18 +780,18 @@ static type_status vm_profile_default_at_request_select(
         *out_fpu = request->fpu_profile;
     }
     if ((request->requested_options & VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY) != 0u) {
-        if (request->memory_bytes == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+        if (request->memory_bytes == 0u) return LIB_STATUS_INVALID_ARGUMENT;
         *out_memory = request->memory_bytes;
     }
     if ((request->requested_options & VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY) != 0u &&
         request->floppy_cmos_type != 0x10u && request->floppy_cmos_type != 0x20u &&
         request->floppy_cmos_type != 0x30u && request->floppy_cmos_type != 0x40u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status vm_profile_default_at_values_create(
+static lib_status vm_profile_default_at_values_create(
     const vm_profile_default_at_request *request,
     vm_profile_contract_values *out_values)
 {
@@ -804,10 +804,10 @@ static type_status vm_profile_default_at_values_create(
 
     if (out_values == LIB_NULL ||
         vm_profile_default_at_request_select(request, &cpu_profile, &fpu_profile,
-            &memory_bytes) != TYPE_STATUS_OK ||
+            &memory_bytes) != LIB_STATUS_OK ||
         vm_profile_default_pc_at_values_create(vm_profile_default_pc_at_descriptor_get(),
-            cpu_profile, fpu_profile, &values) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+            cpu_profile, fpu_profile, &values) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     values.core.configuration.memory_bytes = memory_bytes;
     values.firmware_policy = VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BUILTIN;
@@ -817,21 +817,21 @@ static type_status vm_profile_default_at_values_create(
         VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |
         VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY;
     if (vm_profile_contract_validate(&values, &catalog, request->requested_options) !=
-        TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
+        LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
     *out_values = values;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status vm_profile_default_at_plan_create(
+lib_status vm_profile_default_at_plan_create(
     const vm_profile_default_at_request *request,
     vm_profile_default_pc_at_plan_snapshot *out_profile)
 {
     if (out_profile == LIB_NULL || request == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     lib_memory_set(out_profile, 0, sizeof(*out_profile));
-    if (vm_profile_default_at_values_create(request, &out_profile->values) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+    if (vm_profile_default_at_values_create(request, &out_profile->values) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     return vm_profile_default_pc_at_snapshot_copy(out_profile,
         vm_profile_default_pc_at_descriptor_get(), "default-at",
@@ -899,7 +899,7 @@ const vm_profile_default_pc_at_route *vm_profile_default_pc_at_route_find(
     return LIB_NULL;
 }
 
-C_INT vm_profile_default_pc_at_descriptor_is_valid(
+lib_i32 vm_profile_default_pc_at_descriptor_is_valid(
     const vm_profile_default_pc_at_descriptor *descriptor)
 {
     const vm_profile_default_pc_at_route *expected_routes;

@@ -2,7 +2,6 @@
 #define CORE_MACHINE_PIC_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 /* Zero preserves the PC/AT cascaded pair; a selected single-PIC board omits
  * the slave's guest-visible port decode while retaining one private Core

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
@@ -13,7 +13,7 @@
 #define TEST_SOURCE 0x00020000u
 #define TEST_DESTINATION 0x00030000u
 
-static C_INT real_mode_386_prepare(core_machine **out_machine)
+static lib_i32 real_mode_386_prepare(core_machine **out_machine)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -25,13 +25,13 @@ static C_INT real_mode_386_prepare(core_machine **out_machine)
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
-            TYPE_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
+            LIB_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
             machine, TEST_RESET_LINEAR,
-            TEST_RESET_PHYSICAL, TEST_RESET_WINDOW) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+            TEST_RESET_PHYSICAL, TEST_RESET_WINDOW) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, TEST_RESET_LINEAR, reset_jump,
-            sizeof(reset_jump)) != TYPE_STATUS_OK) {
+            sizeof(reset_jump)) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 0;
     }
@@ -39,7 +39,7 @@ static C_INT real_mode_386_prepare(core_machine **out_machine)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 program[] = {
         0xb8u, 0x00u, 0x00u,
@@ -59,25 +59,25 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     const core_machine_run_budget budget = {256u, 0u};
     core_machine *machine = LIB_NULL;
-    C_INT failed = !real_mode_386_prepare(&machine);
+    lib_i32 failed = !real_mode_386_prepare(&machine);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0u, program,
-            sizeof(program)) != TYPE_STATUS_OK ||
+            sizeof(program)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, TEST_SOURCE, source,
-            sizeof(source)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            sizeof(source)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_memory_read(machine, TEST_DESTINATION, destination,
-            sizeof(destination)) != TYPE_STATUS_OK ||
-            core_machine_debug_read_cpu(machine, &state) != TYPE_STATUS_OK ||
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
+            sizeof(destination)) != LIB_STATUS_OK ||
+            core_machine_debug_read_cpu(machine, &state) != LIB_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
             lib_memory_compare(destination, source, sizeof(source)) != 0 ||
             state.eip == 0u;
     }
     core_machine_destroy(machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T287:S24:REAL-MODE-386-ADDR32:OK\n");
+    printf("M5:T287:S24:REAL-MODE-386-ADDR32:OK\n");
     return 0;
 }

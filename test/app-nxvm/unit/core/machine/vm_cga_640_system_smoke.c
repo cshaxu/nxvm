@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -12,7 +12,7 @@
 
 static lib_u8 vm_cga254_image[VM_CGA254_IMAGE_BYTES];
 
-static C_VOID vm_cga254_boot_fixture(C_VOID)
+static void vm_cga254_boot_fixture(void)
 {
     static const lib_u8 boot_code[] = {
         0x31u, 0xc0u, 0x8eu, 0xd8u,
@@ -28,7 +28,7 @@ static C_VOID vm_cga254_boot_fixture(C_VOID)
     vm_cga254_image[511u] = 0xaau;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const vm_machine_config config = {
         .floppy_image = { "" },
@@ -41,35 +41,35 @@ C_INT main(C_VOID)
     vm_machine *session = LIB_NULL;
     lib_u8 mode = 0u;
     lib_u32 instruction;
-    C_INT saw_cga = 0;
-    C_INT saw_text = 0;
+    lib_i32 saw_cga = 0;
+    lib_i32 saw_text = 0;
 
     vm_cga254_boot_fixture();
     {
         vm_machine_config fixture_config = config;
 
         if (vm_test_default_pc_at_session_create(&fixture_config, &session) !=
-                TYPE_STATUS_OK || session == LIB_NULL ||
+                LIB_STATUS_OK || session == LIB_NULL ||
             vm_machine_fdd_replace_bytes(&session->fdd, vm_cga254_image,
                 sizeof(vm_cga254_image)) != 0) goto done;
     }
     for (instruction = 0u; instruction < VM_CGA254_BOOT_BUDGET; ++instruction) {
-        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->core_machine,
-                &snapshot) != TYPE_STATUS_OK) goto done;
+                &snapshot) != LIB_STATUS_OK) goto done;
         if (snapshot.kind == CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 &&
             snapshot.pixels[0] == 1u && snapshot.pixels[1] == 0u &&
             snapshot.pixels[2] == 1u && snapshot.pixels[640u] == 0u &&
             snapshot.pixels[641u] == 1u && snapshot.palette_rgb[0] == 0u &&
             snapshot.palette_rgb[1] == 0xffffffu &&
             core_machine_memory_read(session->core_machine, 0x0449u, &mode,
-                sizeof(mode)) == TYPE_STATUS_OK && mode == 0x06u) {
+                sizeof(mode)) == LIB_STATUS_OK && mode == 0x06u) {
             saw_cga = 1;
         }
         if (saw_cga && snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
             core_machine_memory_read(session->core_machine, 0x0449u, &mode,
-                sizeof(mode)) == TYPE_STATUS_OK && mode == 0x03u) {
+                sizeof(mode)) == LIB_STATUS_OK && mode == 0x03u) {
             saw_text = 1;
             break;
         }
@@ -78,6 +78,6 @@ C_INT main(C_VOID)
 done:
     vm_machine_destroy(session);
     if (!saw_cga || !saw_text) return 1;
-    STD_PRINTF("M5:T254:S3:CGA-640:SYSTEM:OK\n");
+    printf("M5:T254:S3:CGA-640:SYSTEM:OK\n");
     return 0;
 }

@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_vadp_cecg_config config = {
         0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
@@ -14,7 +14,7 @@ C_INT main(C_VOID)
     t_port generic_port;
     t_vadp vadp;
     t_vadp generic_vadp;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_port_initialize(&generic_port);
@@ -23,10 +23,10 @@ C_INT main(C_VOID)
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&generic_vadp, &generic_port);
     failed |= core_machine_vadp_configure_ega_personality(&vadp, &port,
-        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != TYPE_STATUS_OK ||
-        core_machine_vadp_configure_cecg(&vadp, &config) != TYPE_STATUS_OK ||
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK ||
+        core_machine_vadp_configure_cecg(&vadp, &config) != LIB_STATUS_OK ||
         core_machine_vadp_configure_ega_personality(&generic_vadp, &generic_port,
-        CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != TYPE_STATUS_OK;
+        CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != LIB_STATUS_OK;
     failed |= !core_machine_port_has_write(&port,
         CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX) ||
         !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_MONO_STATUS) ||
@@ -68,9 +68,9 @@ C_INT main(C_VOID)
     core_machine_port_finalize(&generic_port);
     core_machine_port_finalize(&port);
     if (!failed) {
-        STD_PRINTF("M5:T386:S12:CECG-IO-BASE:OK\n");
+        printf("M5:T386:S12:CECG-IO-BASE:OK\n");
         return 0;
     }
-    STD_FPRINTF(STD_STDERR, "M5:T386:S12:CECG-IO-BASE:FAIL\n");
+    fprintf(stderr, "M5:T386:S12:CECG-IO-BASE:FAIL\n");
     return 1;
 }

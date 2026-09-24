@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/media_interface.h"
@@ -39,7 +39,7 @@ static core_machine_fdc_topology core_machine_dma_binding_token_topology(
     return topology;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine_media_registry *media = LIB_NULL;
     core_machine_dma_request_binding first_request = {0};
@@ -48,17 +48,17 @@ C_INT main(C_VOID)
     core_machine_fdc_topology second_topology;
     core_machine *first = LIB_NULL;
     core_machine *second = LIB_NULL;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+    if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
         core_machine_create(&core_machine_dma_binding_token_config, &first) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_create(&core_machine_dma_binding_token_config, &second) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_configure_dma(first, &core_machine_dma_binding_token_wiring,
-            &first_request) != TYPE_STATUS_OK ||
+            &first_request) != LIB_STATUS_OK ||
         core_machine_configure_dma(second, &core_machine_dma_binding_token_wiring,
-            &second_request) != TYPE_STATUS_OK ||
+            &second_request) != LIB_STATUS_OK ||
         first_request.core_token == 0u || second_request.core_token == 0u ||
         first_request.core_token == second_request.core_token) {
         failed = 1;
@@ -68,15 +68,15 @@ C_INT main(C_VOID)
     first_topology = core_machine_dma_binding_token_topology(media, first_request);
     second_topology = core_machine_dma_binding_token_topology(media, second_request);
     if (core_machine_configure_fdc(first, &second_topology) !=
-            TYPE_STATUS_INVALID_ARGUMENT ||
+            LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_configure_fdc(second, &first_topology) !=
-            TYPE_STATUS_INVALID_ARGUMENT ||
-        core_machine_configure_fdc(first, &first_topology) != TYPE_STATUS_OK ||
-        core_machine_configure_fdc(second, &second_topology) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(first) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(second) != TYPE_STATUS_OK ||
-        core_machine_reset(first) != TYPE_STATUS_OK ||
-        core_machine_reset(second) != TYPE_STATUS_OK) {
+            LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_configure_fdc(first, &first_topology) != LIB_STATUS_OK ||
+        core_machine_configure_fdc(second, &second_topology) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(first) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(second) != LIB_STATUS_OK ||
+        core_machine_reset(first) != LIB_STATUS_OK ||
+        core_machine_reset(second) != LIB_STATUS_OK) {
         failed = 1;
     }
 

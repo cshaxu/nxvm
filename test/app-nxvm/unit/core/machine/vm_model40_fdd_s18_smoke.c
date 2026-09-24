@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/media_interface.h"
@@ -12,7 +12,7 @@
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)
 #define MODEL40_COMPATIBLE_MEDIA_BYTES (40u * 2u * 9u * 512u)
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static lib_u8 image[MODEL40_FDD_BYTES];
     vm_machine_config model339_config = {0};
@@ -22,9 +22,9 @@ C_INT main(C_VOID)
     vm_machine *model339 = LIB_NULL;
     core_machine_media_info info;
     core_machine_media_result result;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (vm_model40_fixture_create(&model40) != TYPE_STATUS_OK ||
+    if (vm_model40_fixture_create(&model40) != LIB_STATUS_OK ||
         model40 == LIB_NULL || model40->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         model40->fdd.data.ncyl != 80u || model40->fdd.data.nhead != 2u ||
         model40->fdd.data.nsector != 15u || model40->fdd.data.nbyte != 512u ||
@@ -34,7 +34,7 @@ C_INT main(C_VOID)
         vm_machine_fdd_replace_bytes(&model40->fdd, image, sizeof(image)) !=
             LIB_FALSE ||
         core_machine_media_query(model40->media_registry, VM_MACHINE_MEDIA_FDD_ID,
-            &info, &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+            &info, &result) != LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.cylinders != 80u || info.geometry.heads != 2u ||
         info.geometry.sectors_per_track != 15u || info.geometry.bytes_per_sector != 512u ||
         model40->core_machine->fdc.connect.config.irq != 6u ||
@@ -59,7 +59,7 @@ C_INT main(C_VOID)
         lib_memory_set(odd_bytes, 1, sizeof(odd_bytes));
         if (vm_model40_fixture_create_bytes_with_floppy_format(even_bytes, odd_bytes,
                 VM_MACHINE_FLOPPY_FORMAT_360K, &model40_360k) !=
-                TYPE_STATUS_OK || model40_360k == LIB_NULL ||
+                LIB_STATUS_OK || model40_360k == LIB_NULL ||
             model40_360k->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
             model40_360k->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
             model40_360k->fdd.data.ncyl != 40u ||
@@ -71,8 +71,8 @@ C_INT main(C_VOID)
     }
 
     model339_config.profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339;
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != TYPE_STATUS_OK ||
-        vm_test_ibm_5170_session_create(&model339_config, &model339) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
+        vm_test_ibm_5170_session_create(&model339_config, &model339) != LIB_STATUS_OK ||
         default_session->fdd.data.nsector != 18u ||
         model339->fdd.data.nsector != 15u) {
         failed = 1;
@@ -84,8 +84,8 @@ done:
     vm_machine_destroy(default_session);
     vm_machine_destroy(model40);
     if (failed) return 1;
-    STD_PRINTF("M5:T386:S18:MODEL40-FDD-GEOMETRY:OK\n");
-    STD_PRINTF("M5:T386:S18:MODEL40-FDD-MEDIA:OK\n");
-    STD_PRINTF("M5:T386:S18:MODEL40-FDD-RESET-BINDING:OK\n");
+    printf("M5:T386:S18:MODEL40-FDD-GEOMETRY:OK\n");
+    printf("M5:T386:S18:MODEL40-FDD-MEDIA:OK\n");
+    printf("M5:T386:S18:MODEL40-FDD-RESET-BINDING:OK\n");
     return 0;
 }

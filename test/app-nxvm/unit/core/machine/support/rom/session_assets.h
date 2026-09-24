@@ -2,11 +2,10 @@
 #define TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/machine/machine_interface.h"
 
-static inline C_VOID vm_test_default_pc_at_assets(vm_machine_assets *assets,
+static inline void vm_test_default_pc_at_assets(vm_machine_assets *assets,
     lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES])
 {
     if (assets == LIB_NULL || rom == LIB_NULL) return;
@@ -15,7 +14,7 @@ static inline C_VOID vm_test_default_pc_at_assets(vm_machine_assets *assets,
     *assets = (vm_machine_assets) { .bios = { { rom, VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES } } };
 }
 
-static inline type_status vm_test_default_pc_at_session_create(
+static inline lib_status vm_test_default_pc_at_session_create(
     const vm_machine_config *requested, vm_machine **out_session)
 {
     lib_u8 rom[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES];
@@ -33,7 +32,7 @@ static inline type_status vm_test_default_pc_at_session_create(
     return vm_machine_create_from_assets(&config, &assets, out_session);
 }
 
-static inline C_VOID vm_test_ibm_5170_assets(vm_machine_assets *assets,
+static inline void vm_test_ibm_5170_assets(vm_machine_assets *assets,
     lib_u8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES],
     lib_u8 odd[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES])
 {
@@ -47,7 +46,7 @@ static inline C_VOID vm_test_ibm_5170_assets(vm_machine_assets *assets,
     } };
 }
 
-static inline type_status vm_test_ibm_5170_session_create(
+static inline lib_status vm_test_ibm_5170_session_create(
     const vm_machine_config *requested, vm_machine **out_session)
 {
     lib_u8 even[VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES];

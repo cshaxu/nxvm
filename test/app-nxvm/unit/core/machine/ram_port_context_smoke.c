@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 
 
@@ -7,7 +7,7 @@
 
 #include "app-nxvm/devices/port.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_ram first_memory = {0};
     t_ram second_memory = {0};
@@ -15,7 +15,7 @@ C_INT main(C_VOID)
     t_port *second_port;
     lib_u8 value = 0x5au;
     lib_u8 observed = 0xffu;
-    C_INT result = 0;
+    lib_i32 result = 0;
 
     first_port = (t_port *)lib_allocate_zero(1u, sizeof(*first_port));
     second_port = (t_port *)lib_allocate_zero(1u, sizeof(*second_port));
@@ -25,56 +25,56 @@ C_INT main(C_VOID)
         return 1;
     }
     result |= core_machine_memory_initialize_for(&first_memory,
-        16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+        16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     result |= core_machine_memory_initialize_for(&second_memory,
-        16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+        16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_port_initialize(first_port);
     core_machine_port_initialize(second_port);
 
     result |= core_machine_memory_allocate_for(&first_memory, 2u * 1024u * 1024u) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     result |= core_machine_memory_write_physical(&first_memory, 0u,
-        (type_virtual_address)&value, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&value, 1u) != LIB_STATUS_OK;
     result |= core_machine_memory_read_physical(&second_memory, 0u,
-        (type_virtual_address)&observed, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
     result |= observed != 0u;
     result |= first_memory.connect.installed_bytes != 2u * 1024u * 1024u;
     result |= core_machine_memory_write_physical(&first_memory,
-        2u * 1024u * 1024u, (type_virtual_address)&value, 1u) !=
-        TYPE_STATUS_FAULT;
+        2u * 1024u * 1024u, (lib_uptr)&value, 1u) !=
+        LIB_STATUS_INTERNAL_ERROR;
     result |= core_machine_memory_write_physical(&first_memory, 0x00100000u,
-        (type_virtual_address)&value, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&value, 1u) != LIB_STATUS_OK;
     observed = 0u;
     result |= core_machine_memory_read_physical(&first_memory, 0u,
-        (type_virtual_address)&observed, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
     result |= observed != value;
     first_memory.data.flagA20 = LIB_TRUE;
     value = 0xa5u;
     result |= core_machine_memory_write_physical(&first_memory, 0x00100000u,
-        (type_virtual_address)&value, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&value, 1u) != LIB_STATUS_OK;
     observed = 0u;
     result |= core_machine_memory_read_physical(&first_memory, 0x00100000u,
-        (type_virtual_address)&observed, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
     result |= observed != value;
     result |= core_machine_memory_register_mapping(&first_memory, 0xfffffff0u,
-        0x000ffff0u, 16u, LIB_FALSE) != TYPE_STATUS_OK;
+        0x000ffff0u, 16u, LIB_FALSE) != LIB_STATUS_OK;
     {
-        const type_native_unsigned mapping_count = first_memory.connect.mapping_count;
+        const lib_uptr mapping_count = first_memory.connect.mapping_count;
 
         result |= core_machine_memory_register_mapping(&first_memory, 0xfffffff0u,
-            0x000ffff0u, 17u, LIB_FALSE) != TYPE_STATUS_INVALID_ARGUMENT;
+            0x000ffff0u, 17u, LIB_FALSE) != LIB_STATUS_INVALID_ARGUMENT;
         result |= first_memory.connect.mapping_count != mapping_count;
     }
     value = 0xebu;
     result |= core_machine_memory_write_physical(&first_memory, 0x000ffff0u,
-        (type_virtual_address)&value, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&value, 1u) != LIB_STATUS_OK;
     observed = 0u;
     result |= core_machine_memory_read_physical(&first_memory, 0xfffffff0u,
-        (type_virtual_address)&observed, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
     result |= observed != value;
     core_machine_memory_freeze_mappings(&first_memory);
     result |= core_machine_memory_register_mapping(&first_memory, 0xfff00000u,
-        0x000f0000u, 16u, LIB_FALSE) != TYPE_STATUS_INVALID_ARGUMENT;
+        0x000f0000u, 16u, LIB_FALSE) != LIB_STATUS_INVALID_ARGUMENT;
 
     core_machine_port_write(first_port, 0xffffu, 0xa5a55a5au);
     result |= first_port->data.ioDWord != 0xa5a55a5au;
@@ -83,7 +83,7 @@ C_INT main(C_VOID)
     core_machine_memory_reset(&first_memory);
     observed = 0xffu;
     result |= core_machine_memory_read_physical(&first_memory, 0u,
-        (type_virtual_address)&observed, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&observed, 1u) != LIB_STATUS_OK;
     result |= observed != 0u;
 
     core_machine_memory_finalize(&second_memory);

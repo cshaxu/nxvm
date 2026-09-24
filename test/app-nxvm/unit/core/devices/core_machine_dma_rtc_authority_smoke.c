@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "support/core_machine_cpu_fixture.h"
 
-static C_VOID core_machine_dma_rtc_initialize_pic(core_machine *machine)
+static void core_machine_dma_rtc_initialize_pic(core_machine *machine)
 {
     core_machine_port_write(&machine->executor_port, 0x0020u, 0x11u);
     core_machine_port_write(&machine->executor_port, 0x0021u, 0x08u);
@@ -16,11 +16,11 @@ static C_VOID core_machine_dma_rtc_initialize_pic(core_machine *machine)
     core_machine_port_write(&machine->executor_port, 0x00a1u, 0x01u);
 }
 
-static C_VOID core_machine_dma_rtc_cmos_write(core_machine *machine,
+static void core_machine_dma_rtc_cmos_write(core_machine *machine,
     lib_u8 index, lib_u8 value)
 {
-    (C_VOID)core_machine_bus_write(machine, 0x0070u, index);
-    (C_VOID)core_machine_bus_write(machine, 0x0071u, value);
+    (void)core_machine_bus_write(machine, 0x0070u, index);
+    (void)core_machine_bus_write(machine, 0x0071u, value);
 }
 
 static lib_u8 core_machine_dma_rtc_cmos_read(core_machine *machine,
@@ -28,12 +28,12 @@ static lib_u8 core_machine_dma_rtc_cmos_read(core_machine *machine,
 {
     lib_u32 value = 0u;
 
-    (C_VOID)core_machine_bus_write(machine, 0x0070u, index);
-    (C_VOID)core_machine_bus_read(machine, 0x0071u, &value);
+    (void)core_machine_bus_write(machine, 0x0070u, index);
+    (void)core_machine_bus_read(machine, 0x0071u, &value);
     return (lib_u8)value;
 }
 
-static C_INT core_machine_dma_refresh_follows_pit_channel_1(C_VOID)
+static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
 {
     core_machine_config configuration = {0};
     core_machine_dma_wiring wiring = { .fdc_channel = 2u,
@@ -41,28 +41,28 @@ static C_INT core_machine_dma_refresh_follows_pit_channel_1(C_VOID)
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_dma_request_binding fdc_request = {0};
     core_machine *machine = LIB_NULL;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    failed |= core_machine_create(&configuration, &machine) != TYPE_STATUS_OK ||
-        core_machine_configure_dma(machine, &wiring, &fdc_request) != TYPE_STATUS_OK ||
+    failed |= core_machine_create(&configuration, &machine) != LIB_STATUS_OK ||
+        core_machine_configure_dma(machine, &wiring, &fdc_request) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
-            0x000ffff0u, 16u) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
-        core_machine_bus_write(machine, 0x0043u, 0x74u) != TYPE_STATUS_OK ||
-        core_machine_bus_write(machine, 0x0041u, 2u) != TYPE_STATUS_OK ||
-        core_machine_bus_write(machine, 0x0041u, 0u) != TYPE_STATUS_OK ||
-        core_machine_advance_time(machine, 3u) != TYPE_STATUS_OK ||
+            0x000ffff0u, 16u) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0043u, 0x74u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0041u, 2u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0041u, 0u) != LIB_STATUS_OK ||
+        core_machine_advance_time(machine, 3u) != LIB_STATUS_OK ||
         core_machine_pit_get_output(&machine->shared_pit, 1u) ||
         (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(0u)) == 0u ||
-        core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
+        core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
         !core_machine_pit_get_output(&machine->shared_pit, 1u) ||
         (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(0u)) != 0u;
     core_machine_destroy(machine);
     return failed;
 }
 
-int main(C_VOID)
+int main(void)
 {
     core_machine_config machine_config = {0};
     core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
@@ -76,10 +76,10 @@ int main(C_VOID)
     core_machine *machine = LIB_NULL;
     const lib_u8 program[] = { 0x90u, 0xf4u };
     lib_u8 interrupt_vector = 0u;
-    C_INT nmi_masked = 0;
-    C_INT interrupt_pending = 0;
-    C_INT failed = 0;
-    C_INT stage = 1;
+    lib_i32 nmi_masked = 0;
+    lib_i32 interrupt_pending = 0;
+    lib_i32 failed = 0;
+    lib_i32 stage = 1;
 
     failed |= core_machine_dma_refresh_follows_pit_channel_1();
     machine_config.ticks_per_instruction = 1u;
@@ -94,22 +94,22 @@ int main(C_VOID)
     rtc_config.default_count = 1u;
 
     invalid_wiring.controller_count = 1u;
-    if (core_machine_create(&machine_config, &machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&machine_config, &machine) != LIB_STATUS_OK ||
         core_machine_configure_dma(machine, &invalid_wiring, &fdc_request) !=
-            TYPE_STATUS_INVALID_ARGUMENT ||
+            LIB_STATUS_INVALID_ARGUMENT ||
         (invalid_wiring = dma_wiring, invalid_wiring.fdc_channel = 0u,
             core_machine_configure_dma(machine, &invalid_wiring, &fdc_request)) !=
-            TYPE_STATUS_INVALID_ARGUMENT ||
+            LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
-            TYPE_STATUS_OK ||
-        core_machine_configure_rtc_cmos(machine, &rtc_config) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
+        core_machine_configure_rtc_cmos(machine, &rtc_config) != LIB_STATUS_OK ||
         fdc_request.core_token == 0u || fdc_request.channel != 2u ||
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
-            TYPE_STATUS_INVALID_STATE ||
+            LIB_STATUS_INVALID_STATE ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
-            0x000ffff0u, 16u) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+            0x000ffff0u, 16u) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         machine->shared_dma_primary.connect.device_owner[2u] != &machine->fdc ||
         machine->shared_dma_primary.connect.device_owner[0u] != machine ||
         machine->refresh_dma_request.core_token == 0u ||
@@ -122,14 +122,14 @@ int main(C_VOID)
     }
 
     stage = 2;
-    (C_VOID)core_machine_bus_write(machine, 0x0070u, 0x80u);
-    if (core_machine_get_nmi_mask(machine, &nmi_masked) != TYPE_STATUS_OK ||
+    (void)core_machine_bus_write(machine, 0x0070u, 0x80u);
+    if (core_machine_get_nmi_mask(machine, &nmi_masked) != LIB_STATUS_OK ||
         !nmi_masked) {
         failed = 1;
         goto done;
     }
-    (C_VOID)core_machine_bus_write(machine, 0x0070u, 0u);
-    if (core_machine_get_nmi_mask(machine, &nmi_masked) != TYPE_STATUS_OK ||
+    (void)core_machine_bus_write(machine, 0x0070u, 0u);
+    if (core_machine_get_nmi_mask(machine, &nmi_masked) != LIB_STATUS_OK ||
         nmi_masked) {
         failed = 1;
         goto done;
@@ -140,8 +140,8 @@ int main(C_VOID)
     core_machine_dma_rtc_cmos_write(machine, CORE_MACHINE_RTC_REG_B,
         CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_UIE);
     if (core_machine_memory_write(machine, 0x00fffff0u, program, sizeof(program)) !=
-            TYPE_STATUS_OK || core_machine_run(machine, budget, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            LIB_STATUS_OK || core_machine_run(machine, budget, &result) !=
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         result.executed != 2u) {
         failed = 1;
         stage = 3;
@@ -155,7 +155,7 @@ int main(C_VOID)
             &machine->shared_pic_master, &machine->shared_pic_slave)) != 0x70u) {
         failed = 1;
         stage = 5;
-    } else if (core_machine_reset(machine) != TYPE_STATUS_OK ||
+    } else if (core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) !=
         0x5au || core_machine_dma_rtc_cmos_read(machine,
             CORE_MACHINE_RTC_SECOND) != 0x05u) {
@@ -165,7 +165,7 @@ int main(C_VOID)
 
 done:
     if (failed && machine != LIB_NULL) {
-        STD_PRINTF("M5:T296:S3:DMA-RTC-AUTHORITY:DETAIL:%d C=%02x IRQ=%u asserted=%u pending=%d vector=%02x IRR=%02x/%02x\n",
+        printf("M5:T296:S3:DMA-RTC-AUTHORITY:DETAIL:%d C=%02x IRQ=%u asserted=%u pending=%d vector=%02x IRR=%02x/%02x\n",
             stage, machine->shared_rtc.registers[CORE_MACHINE_RTC_REG_C],
             machine->shared_rtc.irq_source.irq,
             machine->shared_rtc.irq_source.asserted,
@@ -173,7 +173,7 @@ done:
             machine->shared_pic_master.data.irr, machine->shared_pic_slave.data.irr);
     }
     core_machine_destroy(machine);
-    if (failed) STD_PRINTF("M5:T296:S3:DMA-RTC-AUTHORITY:FAIL:%d\n", stage);
-    if (!failed) STD_PRINTF("M5:T296:S3:DMA-RTC-AUTHORITY:OK\n");
+    if (failed) printf("M5:T296:S3:DMA-RTC-AUTHORITY:FAIL:%d\n", stage);
+    if (!failed) printf("M5:T296:S3:DMA-RTC-AUTHORITY:OK\n");
     return failed;
 }

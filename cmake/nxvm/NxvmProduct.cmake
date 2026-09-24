@@ -226,7 +226,6 @@ add_executable(vm-app-composition-atomicity-smoke
     src/app-nxvm/product/composition.c)
 target_include_directories(vm-app-composition-atomicity-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(vm-app-composition-atomicity-smoke PRIVATE type-facade)
 add_executable(vm-app-session-smoke test/app-nxvm/unit/core/machine/nxvm_machine_smoke.c)
 target_link_libraries(vm-app-session-smoke PRIVATE vm-machine)
 add_executable(vm-machine-initialization-atomicity-smoke
@@ -1102,13 +1101,6 @@ if(POWERSHELL_EXECUTABLE)
     )
 endif()
 
-# The ISO C facade is below every product and module layer. Keep it separate
-# from core-machine so platform-only targets never acquire a machine dependency.
-add_library(type-facade STATIC src/type.c)
-target_include_directories(type-facade PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-
 set(VM_PROFILE_SOURCES
     src/app-nxvm/profiles/profile_contract.c
     src/app-nxvm/profiles/byob/blob.c
@@ -1181,13 +1173,7 @@ add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-executor PUBLIC type-facade)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
-
-add_executable(std-snprintf-smoke
-    test/app-nxvm/unit/core/devices/std_snprintf_smoke.c
-)
-target_link_libraries(std-snprintf-smoke PRIVATE type-facade)
 
 add_executable(vm-machine-frame-smoke
     test/app-nxvm/unit/core/machine/vm_machine_frame_smoke.c)
@@ -1202,8 +1188,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
-    storage
-    type-facade)
+    storage)
 
 add_executable(vm-machine-executor-state-smoke
     test/app-nxvm/unit/core/machine/vm_machine_executor_state_smoke.c)
@@ -1253,8 +1238,7 @@ target_link_libraries(vm-app PUBLIC
     x86-xasm32
     vm-machine
     storage
-    base
-    type-facade)
+    base)
 
 add_executable(vm-control-lifecycle-smoke
     test/app-nxvm/integration/dos/vm_control_lifecycle_smoke.c
@@ -1496,13 +1480,9 @@ add_executable(core-machine-ega-sequencer-port-smoke
 target_link_libraries(core-machine-ega-sequencer-port-smoke PRIVATE core-machine)
 add_executable(core-machine-ega-registration-transaction-smoke
     test/app-nxvm/unit/core/devices/core_machine_ega_registration_transaction_smoke.c
-    src/app-nxvm/devices/vadp.c
 )
 target_include_directories(core-machine-ega-registration-transaction-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
-)
-target_compile_definitions(core-machine-ega-registration-transaction-smoke PRIVATE
-    STD_CALLOC=test_ega_registration_calloc
 )
 target_link_libraries(core-machine-ega-registration-transaction-smoke PRIVATE
     core-machine
@@ -1981,7 +1961,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
     common-machine-smoke
-    std-snprintf-smoke
     common-session-smoke
     common-ui-smoke
     common-adapter-conformance
@@ -3355,8 +3334,7 @@ file(GENERATE
 # surface is independently owned by the target and clean in the S1 audit.
 # Their strictness remains target-local and never substitutes for a linked
 # production dependency.
-set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES
-    "type-facade|src/type.c")
+set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
 set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
 foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
     string(REPLACE "|" ";" project_t345_s3_fields "${project_t345_s3_entry}")
@@ -3451,7 +3429,6 @@ file(GENERATE
 # artifact and every unit executable.  A linked strict library never
 # substitutes for the direct compile command of a smoke source.
 set(PROJECT_T344_PRODUCTION_TARGETS
-    type-facade
     core-machine
     core-machine-executor
     common-machine
@@ -3594,20 +3571,13 @@ foreach(project_t344_entry IN LISTS PROJECT_T344_DIRECT_COMPILE_MATRIX)
         set(project_t345_mechanism s2-owner-test-strict-cohort)
     elseif(project_t345_status STREQUAL "retained-strict" AND
             NOT project_t345_s3_target_index EQUAL -1)
-        if(project_t345_target STREQUAL "type-facade")
-            set(project_t345_class type-foundation-production)
-        else()
-            set(project_t345_class safely-separable-production)
-        endif()
+        set(project_t345_class safely-separable-production)
         set(project_t345_mechanism s3-safe-production-strict-cohort)
     elseif(NOT project_t345_status STREQUAL "deferred")
         continue()
     elseif(project_t345_source MATCHES "^test/")
         set(project_t345_class project-owned-owner-test)
         set(project_t345_mechanism s2-owner-test-strict-cohort)
-    elseif(project_t345_target STREQUAL "type-facade")
-        set(project_t345_class type-foundation-production)
-        set(project_t345_mechanism s3-type-facade-warning-remediation)
     elseif(project_t345_target MATCHES "-smoke$")
         set(project_t345_class embedded-production-test)
         set(project_t345_mechanism s3-production-owner-warning-remediation)

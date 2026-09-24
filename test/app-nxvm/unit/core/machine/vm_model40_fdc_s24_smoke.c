@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/dma.h"
 #include "app-nxvm/devices/fdc.h"
@@ -11,7 +11,7 @@
 #include "support/rom/model40_session_assets.h"
 
 #define MODEL40_FDC_BYTES (80u * 2u * 15u * 512u)
-static C_VOID model40_fdc_command(core_machine_fdc *fdc, t_port *port,
+static void model40_fdc_command(core_machine_fdc *fdc, t_port *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -20,7 +20,7 @@ static C_VOID model40_fdc_command(core_machine_fdc *fdc, t_port *port,
     core_machine_fdc_advance(fdc);
 }
 
-static C_INT model40_fdc_result(core_machine_fdc *fdc, t_port *port,
+static lib_i32 model40_fdc_result(core_machine_fdc *fdc, t_port *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
@@ -30,7 +30,7 @@ static C_INT model40_fdc_result(core_machine_fdc *fdc, t_port *port,
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
-static C_VOID model40_fdc_write_dma2(t_port *port, lib_u16 address,
+static void model40_fdc_write_dma2(t_port *port, lib_u16 address,
     lib_u16 count)
 {
     core_machine_port_write(port, 0x000cu, 0u);
@@ -42,7 +42,7 @@ static C_VOID model40_fdc_write_dma2(t_port *port, lib_u16 address,
     core_machine_port_write(port, 0x000bu, 0x46u);
     core_machine_port_write(port, 0x000au, 0x02u);
 }
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -56,8 +56,8 @@ C_INT main(C_VOID)
     t_port *port = LIB_NULL;
     lib_u8 result[7] = {0};
     lib_u32 index;
-    type_status create_status;
-    C_INT failed = 0;
+    lib_status create_status;
+    lib_i32 failed = 0;
 
 
     static const lib_u8 boot_code[] = {
@@ -70,7 +70,7 @@ C_INT main(C_VOID)
     image[511u] = 0xaau;
     image[(15u - 1u) * 512u] = 0xa5u;
     create_status = vm_model40_fixture_create_bytes(even, odd, &session);
-    failed |= create_status != TYPE_STATUS_OK || session == LIB_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
+    failed |= create_status != LIB_STATUS_OK || session == LIB_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
         sizeof(image)) != LIB_FALSE;
     if (!failed) {
         fdc = &session->core_machine->fdc;
@@ -122,7 +122,7 @@ C_INT main(C_VOID)
         for (index = 1u; index < 512u; ++index) {
             core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks +
                 128u);
-            (C_VOID)core_machine_port_read(port, 0x03f5u);
+            (void)core_machine_port_read(port, 0x03f5u);
         }
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
             result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
@@ -144,7 +144,7 @@ C_INT main(C_VOID)
         }
         failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
             core_machine_memory_read(session->core_machine, 0x0600u, &result[0],
-                sizeof(result[0])) != TYPE_STATUS_OK || result[0] != 0xa5u;
+                sizeof(result[0])) != LIB_STATUS_OK || result[0] != 0xa5u;
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
             result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
             !session->model40_fdc_terminal_observation_valid ||
@@ -189,9 +189,9 @@ C_INT main(C_VOID)
     }
     vm_machine_destroy(session);
     if (failed) return 1;
-    STD_PRINTF("M5:T386:S24:FDC-12MB-LOGICAL:OK\n");
-    STD_PRINTF("M5:T386:S24:FDC-DMA2-IRQ6:OK\n");
-    STD_PRINTF("M5:T386:S24:MODEL40-FDC-BINDING:OK\n");
-    STD_PRINTF("M5:T431:S1:MODEL40-FDC-NOT-READY:OK\n");
+    printf("M5:T386:S24:FDC-12MB-LOGICAL:OK\n");
+    printf("M5:T386:S24:FDC-DMA2-IRQ6:OK\n");
+    printf("M5:T386:S24:MODEL40-FDC-BINDING:OK\n");
+    printf("M5:T431:S1:MODEL40-FDC-NOT-READY:OK\n");
     return 0;
 }

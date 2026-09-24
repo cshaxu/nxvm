@@ -1,9 +1,8 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/transaction.h"
 
-static C_VOID core_machine_transaction_record(
+static void core_machine_transaction_record(
     core_machine_transaction_state *state,
     core_machine_transaction_phase phase)
 {
@@ -20,17 +19,17 @@ static C_VOID core_machine_transaction_record(
     }
 }
 
-C_VOID core_machine_transaction_initialize(core_machine_transaction_state *state)
+void core_machine_transaction_initialize(core_machine_transaction_state *state)
 {
     if (state != LIB_NULL) {
         lib_memory_set(state, 0, sizeof(*state));
     }
 }
 
-C_VOID core_machine_transaction_reset(core_machine_transaction_state *state)
+void core_machine_transaction_reset(core_machine_transaction_state *state)
 {
     core_machine_transaction_trace_callback trace;
-    C_VOID *trace_context;
+    void *trace_context;
 
     if (state == LIB_NULL) {
         return;
@@ -44,8 +43,8 @@ C_VOID core_machine_transaction_reset(core_machine_transaction_state *state)
     state->trace_context = trace_context;
 }
 
-C_VOID core_machine_transaction_bind_trace(core_machine_transaction_state *state,
-    core_machine_transaction_trace_callback callback, C_VOID *context)
+void core_machine_transaction_bind_trace(core_machine_transaction_state *state,
+    core_machine_transaction_trace_callback callback, void *context)
 {
     if (state != LIB_NULL) {
         state->trace = callback;
@@ -53,7 +52,7 @@ C_VOID core_machine_transaction_bind_trace(core_machine_transaction_state *state
     }
 }
 
-type_status core_machine_transaction_begin(core_machine_transaction_state *state,
+lib_status core_machine_transaction_begin(core_machine_transaction_state *state,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     lib_u32 address, lib_u32 value, lib_u32 detail)
 {
@@ -63,7 +62,7 @@ type_status core_machine_transaction_begin(core_machine_transaction_state *state
         state->owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         (state->hold_owner != CORE_MACHINE_TRANSACTION_OWNER_NONE &&
          (state->hold_owner != owner || !state->hold_acknowledged))) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     state->owner = owner;
     state->kind = kind;
@@ -71,10 +70,10 @@ type_status core_machine_transaction_begin(core_machine_transaction_state *state
     state->value = value;
     state->detail = detail;
     core_machine_transaction_record(state, CORE_MACHINE_TRANSACTION_PHASE_BEGIN);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_transaction_set_value(core_machine_transaction_state *state,
+void core_machine_transaction_set_value(core_machine_transaction_state *state,
     lib_u32 value)
 {
     if (state != LIB_NULL && state->owner != CORE_MACHINE_TRANSACTION_OWNER_NONE) {
@@ -82,7 +81,7 @@ C_VOID core_machine_transaction_set_value(core_machine_transaction_state *state,
     }
 }
 
-C_VOID core_machine_transaction_commit(core_machine_transaction_state *state)
+void core_machine_transaction_commit(core_machine_transaction_state *state)
 {
     if (state == LIB_NULL || state->owner == CORE_MACHINE_TRANSACTION_OWNER_NONE) {
         return;
@@ -92,7 +91,7 @@ C_VOID core_machine_transaction_commit(core_machine_transaction_state *state)
     state->owner = CORE_MACHINE_TRANSACTION_OWNER_NONE;
 }
 
-C_VOID core_machine_transaction_cancel(core_machine_transaction_state *state)
+void core_machine_transaction_cancel(core_machine_transaction_state *state)
 {
     if (state == LIB_NULL || state->owner == CORE_MACHINE_TRANSACTION_OWNER_NONE) {
         return;
@@ -102,38 +101,38 @@ C_VOID core_machine_transaction_cancel(core_machine_transaction_state *state)
     state->owner = CORE_MACHINE_TRANSACTION_OWNER_NONE;
 }
 
-type_status core_machine_transaction_hold_request(
+lib_status core_machine_transaction_hold_request(
     core_machine_transaction_state *state, core_machine_transaction_owner owner,
     lib_u32 detail)
 {
     if (state == LIB_NULL || owner == CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         state->owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         state->hold_owner != CORE_MACHINE_TRANSACTION_OWNER_NONE) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     state->hold_owner = owner;
     state->hold_detail = detail;
     state->hold_acknowledged = LIB_FALSE;
     core_machine_transaction_record(state,
         CORE_MACHINE_TRANSACTION_PHASE_HOLD_REQUEST);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_transaction_hold_acknowledge(
+lib_status core_machine_transaction_hold_acknowledge(
     core_machine_transaction_state *state, core_machine_transaction_owner owner)
 {
     if (state == LIB_NULL || owner == CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         state->owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         state->hold_owner != owner || state->hold_acknowledged) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     state->hold_acknowledged = LIB_TRUE;
     core_machine_transaction_record(state,
         CORE_MACHINE_TRANSACTION_PHASE_HOLD_ACKNOWLEDGE);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_transaction_hold_release(
+void core_machine_transaction_hold_release(
     core_machine_transaction_state *state, core_machine_transaction_owner owner)
 {
     if (state == LIB_NULL || owner == CORE_MACHINE_TRANSACTION_OWNER_NONE ||

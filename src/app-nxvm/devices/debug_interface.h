@@ -2,7 +2,7 @@
 #define CORE_MACHINE_DEBUG_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
+
 
 
 
@@ -12,18 +12,18 @@
 extern "C" {
 #endif
 
-type_status core_machine_debug_read_cpu(
+lib_status core_machine_debug_read_cpu(
     const core_machine *machine,
     core_machine_cpu_state *out_state);
-type_status core_machine_debug_read_memory(
+lib_status core_machine_debug_read_memory(
     const core_machine *machine,
     lib_u32 physical,
-    C_VOID *out_data,
+    void *out_data,
     lib_size size);
-type_status core_machine_debug_step(
+lib_status core_machine_debug_step(
     core_machine *machine,
     core_machine_run_result *out_result);
-type_status core_machine_debug_continue(
+lib_status core_machine_debug_continue(
     core_machine *machine,
     core_machine_run_budget budget,
     core_machine_run_result *out_result);
@@ -50,7 +50,7 @@ typedef enum core_machine_debug_watch_kind {
 } core_machine_debug_watch_kind;
 
 typedef struct core_machine_debug_memory_access {
-    C_INT write;
+    lib_i32 write;
     lib_u32 linear;
     lib_u8 bytes;
     lib_u64 data;
@@ -62,14 +62,14 @@ typedef struct core_machine_debug_segment_snapshot {
     lib_u32 limit;
     lib_u8 dpl;
     lib_u8 type;
-    type_bool accessed;
-    type_bool executable;
-    type_bool conform;
-    type_bool readable;
-    type_bool defsize;
-    type_bool big;
-    type_bool expdown;
-    type_bool writable;
+    lib_u8 accessed;
+    lib_u8 executable;
+    lib_u8 conform;
+    lib_u8 readable;
+    lib_u8 defsize;
+    lib_u8 big;
+    lib_u8 expdown;
+    lib_u8 writable;
 } core_machine_debug_segment_snapshot;
 
 typedef struct core_machine_debug_cpu_snapshot {
@@ -99,7 +99,7 @@ typedef struct core_machine_debug_instruction_observation {
     lib_u32 esi;
     lib_u32 edi;
     lib_u32 eflags;
-    C_INT code_default_size;
+    lib_i32 code_default_size;
     lib_u16 instruction_cs;
     lib_u32 instruction_eip;
     lib_u32 instruction_linear;
@@ -108,7 +108,7 @@ typedef struct core_machine_debug_instruction_observation {
     core_machine_debug_memory_access
         memory_accesses[CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY];
     lib_u8 memory_access_count;
-    type_bool watch_hit;
+    lib_u8 watch_hit;
     core_machine_debug_watch_kind watch_kind;
     lib_u32 watch_address;
 } core_machine_debug_instruction_observation;
@@ -134,41 +134,41 @@ typedef struct core_machine_debug_register_patch {
     lib_u32 values[CORE_MACHINE_DEBUG_REGISTER_COUNT];
 } core_machine_debug_register_patch;
 
-type_status core_machine_debug_capture_instruction_observation(
+lib_status core_machine_debug_capture_instruction_observation(
     const core_machine *machine,
     core_machine_debug_instruction_observation *out_observation);
-type_status core_machine_debug_capture_cpu_snapshot(const core_machine *machine,
+lib_status core_machine_debug_capture_cpu_snapshot(const core_machine *machine,
     core_machine_debug_cpu_snapshot *out_snapshot);
-type_status core_machine_debug_read_register(
+lib_status core_machine_debug_read_register(
     const core_machine *machine, core_machine_debug_register register_id,
     lib_u32 *out_value);
-type_status core_machine_debug_write_register(
+lib_status core_machine_debug_write_register(
     core_machine *machine, core_machine_debug_register register_id,
     lib_u32 value);
-type_status core_machine_debug_patch_registers(core_machine *machine,
+lib_status core_machine_debug_patch_registers(core_machine *machine,
     const core_machine_debug_register_patch *patch);
-type_status core_machine_debug_get_code_default_size(
-    const core_machine *machine, C_INT *out_default_size);
-type_status core_machine_debug_get_code_base(
+lib_status core_machine_debug_get_code_default_size(
+    const core_machine *machine, lib_i32 *out_default_size);
+lib_status core_machine_debug_get_code_base(
     const core_machine *machine, lib_u32 *out_base);
-type_status core_machine_debug_read_linear(core_machine *machine,
-    lib_u32 address, C_VOID *out_data, lib_u8 size);
-type_status core_machine_debug_write_linear(core_machine *machine,
-    lib_u32 address, const C_VOID *data, lib_u8 size);
-type_status core_machine_debug_read_real(core_machine *machine, lib_u16 segment,
-    lib_u16 offset, C_VOID *out_data, lib_size size);
-type_status core_machine_debug_write_real(core_machine *machine, lib_u16 segment,
-    lib_u16 offset, const C_VOID *data, lib_size size);
-type_status core_machine_debug_read_port(core_machine *machine, lib_u16 port,
+lib_status core_machine_debug_read_linear(core_machine *machine,
+    lib_u32 address, void *out_data, lib_u8 size);
+lib_status core_machine_debug_write_linear(core_machine *machine,
+    lib_u32 address, const void *data, lib_u8 size);
+lib_status core_machine_debug_read_real(core_machine *machine, lib_u16 segment,
+    lib_u16 offset, void *out_data, lib_size size);
+lib_status core_machine_debug_write_real(core_machine *machine, lib_u16 segment,
+    lib_u16 offset, const void *data, lib_size size);
+lib_status core_machine_debug_read_port(core_machine *machine, lib_u16 port,
     lib_u32 *out_value);
-type_status core_machine_debug_write_port(core_machine *machine, lib_u16 port,
+lib_status core_machine_debug_write_port(core_machine *machine, lib_u16 port,
     lib_u32 value);
-type_status core_machine_debug_set_watchpoint(core_machine *machine,
+lib_status core_machine_debug_set_watchpoint(core_machine *machine,
     core_machine_debug_watch_kind kind, lib_u32 address);
-type_status core_machine_debug_clear_watchpoint(core_machine *machine,
+lib_status core_machine_debug_clear_watchpoint(core_machine *machine,
     core_machine_debug_watch_kind kind);
-type_status core_machine_debug_get_watchpoint(core_machine *machine,
-    core_machine_debug_watch_kind kind, type_bool *out_enabled,
+lib_status core_machine_debug_get_watchpoint(core_machine *machine,
+    core_machine_debug_watch_kind kind, lib_u8 *out_enabled,
     lib_u32 *out_address);
 
 #ifdef __cplusplus

@@ -3,12 +3,11 @@
 #include "lib/types/types_interface.h"
 
 
-#include "type.h"
 
 #include "app-nxvm/devices/display_interface.h"
 struct vm_machine;
-C_VOID vm_machine_bind_display(struct vm_machine *machine);
+void vm_machine_bind_display(struct vm_machine *machine);
 core_machine_display_kind vm_machine_publish_display(struct vm_machine *machine,
-    C_INT force);
+    lib_i32 force);
 
 #endif

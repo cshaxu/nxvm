@@ -1,16 +1,15 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/machine.h"
 
-static C_INT core_machine_dma_deadline_is_available(const core_machine *machine)
+static lib_i32 core_machine_dma_deadline_is_available(const core_machine *machine)
 {
     return machine != LIB_NULL && machine->timing_plan_copied &&
         machine->timing_plan.configuration.clock_plan.dma.numerator != 0u &&
         machine->timing_plan.configuration.clock_plan.dma.denominator != 0u;
 }
 
-static C_INT core_machine_deadline_is_blocked(const core_machine *machine)
+static lib_i32 core_machine_deadline_is_blocked(const core_machine *machine)
 {
     if (machine == LIB_NULL ||
         (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
@@ -22,12 +21,12 @@ static C_INT core_machine_deadline_is_blocked(const core_machine *machine)
         machine->fdc.data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE;
 }
 
-static C_INT core_machine_fast_advance_is_blocked(const core_machine *machine)
+static lib_i32 core_machine_fast_advance_is_blocked(const core_machine *machine)
 {
     return core_machine_deadline_is_blocked(machine);
 }
 
-static C_INT core_machine_l1_compatibility_is_eligible(const core_machine *machine)
+static lib_i32 core_machine_l1_compatibility_is_eligible(const core_machine *machine)
 {
     return machine != LIB_NULL &&
         ((core_machine_dma_has_pending_request(&machine->shared_dma_primary,
@@ -35,7 +34,7 @@ static C_INT core_machine_l1_compatibility_is_eligible(const core_machine *machi
           !core_machine_dma_deadline_is_available(machine)));
 }
 
-static type_bool core_machine_deadline_consider_clock(const core_machine_clock_domain *clock,
+static lib_u8 core_machine_deadline_consider_clock(const core_machine_clock_domain *clock,
     lib_u64 device_ticks, lib_u64 *io_source_ticks)
 {
     lib_u64 source_ticks;
@@ -43,7 +42,7 @@ static type_bool core_machine_deadline_consider_clock(const core_machine_clock_d
     if (device_ticks == 0u) return LIB_TRUE;
     if (io_source_ticks == LIB_NULL ||
         core_machine_clock_domain_source_ticks_until(clock, device_ticks,
-            &source_ticks) != TYPE_STATUS_OK) {
+            &source_ticks) != LIB_STATUS_OK) {
         return LIB_FALSE;
     }
     if (*io_source_ticks == 0u || source_ticks < *io_source_ticks) {
@@ -52,7 +51,7 @@ static type_bool core_machine_deadline_consider_clock(const core_machine_clock_d
     return LIB_FALSE;
 }
 
-static type_bool core_machine_deadline_consider_absolute(const core_machine *machine,
+static lib_u8 core_machine_deadline_consider_absolute(const core_machine *machine,
     lib_u64 due_tick, lib_u64 *io_source_ticks)
 {
     lib_u64 source_ticks;
@@ -66,17 +65,17 @@ static type_bool core_machine_deadline_consider_absolute(const core_machine *mac
     return LIB_FALSE;
 }
 
-static type_bool core_machine_deadline_consider_pit(const t_pit *pit,
+static lib_u8 core_machine_deadline_consider_pit(const t_pit *pit,
     const core_machine_clock_domain *clock, lib_u64 *io_source_ticks)
 {
     lib_u8 counter;
-    type_bool immediate_due = LIB_FALSE;
+    lib_u8 immediate_due = LIB_FALSE;
 
     for (counter = 0u; counter < 3u; ++counter) {
         lib_u64 device_ticks;
 
         if (core_machine_pit_ticks_until_output(pit, counter, &device_ticks) ==
-            TYPE_STATUS_OK) {
+            LIB_STATUS_OK) {
             if (core_machine_deadline_consider_clock(clock, device_ticks,
                     io_source_ticks)) immediate_due = LIB_TRUE;
         }
@@ -84,7 +83,7 @@ static type_bool core_machine_deadline_consider_pit(const t_pit *pit,
     return immediate_due;
 }
 
-C_VOID core_machine_capture_time_observation_private(const core_machine *machine,
+void core_machine_capture_time_observation_private(const core_machine *machine,
     core_machine_time_observation *out_observation)
 {
     lib_u64 source_ticks = 0u;
@@ -92,7 +91,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     lib_u64 fdc_due_tick;
     lib_u64 hdc_due_tick;
     lib_u64 timeline_due_tick;
-    type_bool immediate_due = LIB_FALSE;
+    lib_u8 immediate_due = LIB_FALSE;
 
     if (machine == LIB_NULL || out_observation == LIB_NULL) return;
     out_observation->elapsed_ticks = machine->elapsed_ticks;
@@ -113,7 +112,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
         out_observation->physical_time_available = LIB_TRUE;
     }
     if (core_machine_timeline_next_due(&machine->timeline, &timeline_due_tick) ==
-        TYPE_STATUS_OK) {
+        LIB_STATUS_OK) {
         if (core_machine_deadline_consider_absolute(machine, timeline_due_tick,
                 &source_ticks)) immediate_due = LIB_TRUE;
     }
@@ -131,7 +130,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     }
     if (machine->timing_plan_copied && machine->rtc_cmos_configured &&
         core_machine_rtc_ticks_until_irq(&machine->shared_rtc, &device_ticks) ==
-            TYPE_STATUS_OK) {
+            LIB_STATUS_OK) {
         if (core_machine_deadline_consider_clock(&machine->rtc_clock, device_ticks,
                 &source_ticks)) immediate_due = LIB_TRUE;
     }
@@ -142,17 +141,17 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
                 &source_ticks)) immediate_due = LIB_TRUE;
     }
     if (core_machine_fdc_next_due_tick(&machine->fdc, &fdc_due_tick) ==
-        TYPE_STATUS_OK) {
+        LIB_STATUS_OK) {
         if (core_machine_deadline_consider_absolute(machine, fdc_due_tick,
                 &source_ticks)) immediate_due = LIB_TRUE;
     }
     if (core_machine_hdc_next_due_tick(&machine->hdc, &hdc_due_tick) ==
-        TYPE_STATUS_OK) {
+        LIB_STATUS_OK) {
         if (core_machine_deadline_consider_absolute(machine, hdc_due_tick,
                 &source_ticks)) immediate_due = LIB_TRUE;
     }
     if (core_machine_fpu_ticks_until_completion(&machine->fpu, &device_ticks) ==
-        TYPE_STATUS_OK) {
+        LIB_STATUS_OK) {
         if (device_ticks <= UINT64_MAX - machine->elapsed_ticks &&
             core_machine_deadline_consider_absolute(machine,
                 machine->elapsed_ticks + device_ticks, &source_ticks)) {
@@ -165,12 +164,12 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
         immediate_due = LIB_TRUE;
     }
     if (core_machine_kbc_ticks_until_event(&machine->shared_kbc, &device_ticks) ==
-        TYPE_STATUS_OK) {
+        LIB_STATUS_OK) {
         if (core_machine_deadline_consider_clock(&machine->kbc_clock, device_ticks,
                 &source_ticks)) immediate_due = LIB_TRUE;
     }
     if (core_machine_pic_ticks_until_event(&machine->shared_pic_master,
-            &machine->shared_pic_slave, &device_ticks) == TYPE_STATUS_OK) {
+            &machine->shared_pic_slave, &device_ticks) == LIB_STATUS_OK) {
         if (core_machine_deadline_consider_absolute(machine,
                 machine->elapsed_ticks + device_ticks, &source_ticks)) {
             immediate_due = LIB_TRUE;
@@ -178,7 +177,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     }
     if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
         core_machine_xt_keyboard_ticks_until_event(&machine->xt_keyboard,
-            &device_ticks) == TYPE_STATUS_OK) {
+            &device_ticks) == LIB_STATUS_OK) {
         if (device_ticks == 0u) immediate_due = LIB_TRUE;
         else if (source_ticks == 0u || device_ticks < source_ticks) {
             source_ticks = device_ticks;
@@ -205,7 +204,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     }
 }
 
-static C_VOID core_machine_dma_grant_advance(core_machine *machine)
+static void core_machine_dma_grant_advance(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
     if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
@@ -213,9 +212,9 @@ static C_VOID core_machine_dma_grant_advance(core_machine *machine)
         core_machine_dma_has_pending_request(&machine->shared_dma_primary,
             &machine->shared_dma_secondary) &&
         core_machine_transaction_hold_request(&machine->transaction,
-            CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == TYPE_STATUS_OK) {
+            CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == LIB_STATUS_OK) {
         if (core_machine_transaction_hold_acknowledge(&machine->transaction,
-                CORE_MACHINE_TRANSACTION_OWNER_DMA) == TYPE_STATUS_OK) {
+                CORE_MACHINE_TRANSACTION_OWNER_DMA) == LIB_STATUS_OK) {
             core_machine_dma_advance_transaction(&machine->shared_dma_latch,
                 &machine->shared_dma_primary, &machine->shared_dma_secondary,
                 &machine->executor_memory, &machine->transaction, 1u);
@@ -228,18 +227,18 @@ static C_VOID core_machine_dma_grant_advance(core_machine *machine)
             &machine->executor_memory, &machine->transaction, 1u);
     }
 }
-static C_VOID core_machine_d4_refresh_hold_advance(core_machine *machine)
+static void core_machine_d4_refresh_hold_advance(core_machine *machine)
 {
     if (machine == LIB_NULL || !machine->d4_refresh_hold_pending) return;
     if (core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_REFRESH, machine->d4_refresh_address) !=
-        TYPE_STATUS_OK) return;
+        LIB_STATUS_OK) return;
     if (core_machine_transaction_hold_acknowledge(&machine->transaction,
-            CORE_MACHINE_TRANSACTION_OWNER_REFRESH) == TYPE_STATUS_OK &&
+            CORE_MACHINE_TRANSACTION_OWNER_REFRESH) == LIB_STATUS_OK &&
         core_machine_transaction_begin(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
             CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE,
-            machine->d4_refresh_address, 0u, 0u) == TYPE_STATUS_OK) {
+            machine->d4_refresh_address, 0u, 0u) == LIB_STATUS_OK) {
         /* Bus occupation only: Core has no DRAM electrical refresh model. */
         core_machine_transaction_commit(&machine->transaction);
         machine->d4_refresh_address = (lib_u8)(machine->d4_refresh_address + 1u);
@@ -248,13 +247,13 @@ static C_VOID core_machine_d4_refresh_hold_advance(core_machine *machine)
     core_machine_transaction_hold_release(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_REFRESH);
 }
-static C_VOID core_machine_arbitration_advance(core_machine *machine,
+static void core_machine_arbitration_advance(core_machine *machine,
     lib_u64 source_ticks)
 {
     lib_u64 dma_ticks;
     lib_u64 pit_ticks;
     lib_u64 auxiliary_pit_ticks;
-    type_bool refresh_pending;
+    lib_u8 refresh_pending;
 
     if (machine == LIB_NULL || source_ticks == 0u) return;
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, source_ticks);
@@ -287,9 +286,9 @@ static C_VOID core_machine_arbitration_advance(core_machine *machine,
         core_machine_dma_has_pending_request(&machine->shared_dma_primary,
             &machine->shared_dma_secondary) &&
         core_machine_transaction_hold_request(&machine->transaction,
-            CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == TYPE_STATUS_OK) {
+            CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == LIB_STATUS_OK) {
         if (core_machine_transaction_hold_acknowledge(&machine->transaction,
-                CORE_MACHINE_TRANSACTION_OWNER_DMA) == TYPE_STATUS_OK) {
+                CORE_MACHINE_TRANSACTION_OWNER_DMA) == LIB_STATUS_OK) {
             core_machine_dma_advance_transaction(&machine->shared_dma_latch,
                 &machine->shared_dma_primary, &machine->shared_dma_secondary,
                 &machine->executor_memory, &machine->transaction, dma_ticks);
@@ -336,7 +335,7 @@ static C_VOID core_machine_arbitration_advance(core_machine *machine,
  * and completion service are advanced here before their retained observation
  * refresh paths.
  */
-static C_VOID core_machine_readiness_advance(core_machine *machine,
+static void core_machine_readiness_advance(core_machine *machine,
     lib_u64 source_ticks, lib_u64 due_tick)
 {
     lib_u64 rtc_ticks;
@@ -366,7 +365,7 @@ static C_VOID core_machine_readiness_advance(core_machine *machine,
  * presentation consumes only copied snapshots outside this callback and does
  * not participate in machine time.
  */
-static C_VOID core_machine_peripheral_advance(core_machine *machine,
+static void core_machine_peripheral_advance(core_machine *machine,
     lib_u64 source_ticks)
 {
     lib_u64 kbc_ticks;
@@ -390,7 +389,7 @@ static C_VOID core_machine_peripheral_advance(core_machine *machine,
         0u, (lib_u32)vadp_ticks, 0u);
 }
 
-static C_VOID core_machine_advance_scheduler(core_machine *machine,
+static void core_machine_advance_scheduler(core_machine *machine,
     lib_u64 elapsed_ticks)
 {
     lib_u64 provider_ticks;
@@ -420,7 +419,7 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
         }
         source_ticks = due_tick - machine->elapsed_ticks;
         machine->elapsed_ticks = due_tick;
-        (C_VOID)core_machine_timeline_advance(&machine->timeline, due_tick);
+        (void)core_machine_timeline_advance(&machine->timeline, due_tick);
         core_machine_arbitration_advance(machine, source_ticks);
         core_machine_readiness_advance(machine, source_ticks, due_tick);
         core_machine_peripheral_advance(machine, source_ticks);
@@ -434,12 +433,12 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
     }
 }
 
-type_status core_machine_publish_elapsed_ticks(core_machine *machine,
+lib_status core_machine_publish_elapsed_ticks(core_machine *machine,
     lib_u64 elapsed_ticks, core_machine_time_publication_origin origin)
 {
     if (machine == LIB_NULL || elapsed_ticks == 0u ||
         UINT64_MAX - machine->elapsed_ticks < elapsed_ticks) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     /* Physical publication is closed to the two owners whose current source
      * rules establish a Core-axis duration. Remaining origins stay blocked
@@ -447,7 +446,7 @@ type_status core_machine_publish_elapsed_ticks(core_machine *machine,
     if (machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
         origin != CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT &&
         origin != CORE_MACHINE_TIME_PUBLICATION_DEADLINE) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     if (origin == CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_CPU_RETIRE,
@@ -457,5 +456,5 @@ type_status core_machine_publish_elapsed_ticks(core_machine *machine,
             0u, (lib_u32)elapsed_ticks, 0u);
     }
     core_machine_advance_scheduler(machine, elapsed_ticks);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }

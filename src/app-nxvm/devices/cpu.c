@@ -2,8 +2,8 @@
 
 /* VCPU defines the Central Processing Unit. */
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/device_support.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/cpu_instructions.h"
 
@@ -31,7 +31,7 @@ static lib_u32 core_machine_cpu_reset_code_base(
     return 0xffff0000u;
 }
 
-C_VOID core_machine_cpu_execution_context_initialize(
+void core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     t_cpuins *instructions, t_ram *memory, t_port *port)
 {
@@ -55,7 +55,7 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->debug_trap_pending = LIB_FALSE;
     context->debug_tf_before = LIB_FALSE;
     context->debug_rf_before = LIB_FALSE;
-    context->debug_trap_cause = TYPE_ZERO_32;
+    context->debug_trap_cause = 0u;
     context->preview_mode = LIB_FALSE;
     context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
     context->prefetch_count = 0u;
@@ -71,11 +71,11 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->fpu = LIB_NULL;
 }
 
-C_VOID core_machine_cpu_execution_context_bind_profiles(
+void core_machine_cpu_execution_context_bind_profiles(
     core_machine_cpu_execution_context *context,
     core_machine_cpu_profile cpu_profile,
     core_machine_fpu_profile fpu_profile,
-    type_bool cpu_80386_cr_mov_ignores_mod)
+    lib_u8 cpu_80386_cr_mov_ignores_mod)
 {
     if (context == LIB_NULL) return;
     context->cpu_profile = cpu_profile;
@@ -85,38 +85,38 @@ C_VOID core_machine_cpu_execution_context_bind_profiles(
     context->cpu_80386_cr_mov_ignores_mod = cpu_80386_cr_mov_ignores_mod;
 }
 
-C_VOID core_machine_cpu_execution_context_bind_fpu(
+void core_machine_cpu_execution_context_bind_fpu(
     core_machine_cpu_execution_context *context, core_machine_fpu *fpu)
 {
     if (context != LIB_NULL) context->fpu = fpu;
 }
 
-C_VOID core_machine_cpu_execution_context_bind_external_cycle_provider(
+void core_machine_cpu_execution_context_bind_external_cycle_provider(
     core_machine_cpu_execution_context *context,
-    core_machine_cpu_external_cycle_provider provider, C_VOID *provider_context)
+    core_machine_cpu_external_cycle_provider provider, void *provider_context)
 {
     if (context == LIB_NULL) return;
     context->external_cycle_provider = provider;
     context->external_cycle_context = provider_context;
 }
 
-C_VOID core_machine_cpu_execution_context_bind_firmware_interrupt_provider(
+void core_machine_cpu_execution_context_bind_firmware_interrupt_provider(
     core_machine_cpu_execution_context *context,
-    core_machine_cpu_firmware_interrupt_provider provider, C_VOID *provider_context)
+    core_machine_cpu_firmware_interrupt_provider provider, void *provider_context)
 {
     if (context == LIB_NULL) return;
     context->firmware_interrupt_provider = provider;
     context->firmware_interrupt_context = provider_context;
 }
 
-C_VOID core_machine_cpu_execution_context_bind_transaction(
+void core_machine_cpu_execution_context_bind_transaction(
     core_machine_cpu_execution_context *context,
     core_machine_transaction_state *transaction)
 {
     if (context != LIB_NULL) context->transaction = transaction;
 }
 
-const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile)
+const char *core_machine_cpu_profile_name(core_machine_cpu_profile profile)
 {
     switch (profile) {
     case CORE_MACHINE_CPU_PROFILE_8086: return "8086";
@@ -129,7 +129,7 @@ const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile)
     return "invalid";
 }
 
-C_VOID core_machine_cpu_execution_context_bind_pic(
+void core_machine_cpu_execution_context_bind_pic(
     core_machine_cpu_execution_context *context, t_pic *master,
     t_pic *slave)
 {
@@ -138,17 +138,17 @@ C_VOID core_machine_cpu_execution_context_bind_pic(
     context->pic_slave = slave;
 }
 
-C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
+void core_machine_cpu_execution_context_bind_diagnostic_provider(
     core_machine_cpu_execution_context *context,
     const core_machine_cpu_execution_diagnostic_provider *provider,
-    C_VOID *provider_context)
+    void *provider_context)
 {
     if (context == LIB_NULL) return;
     context->diagnostic_provider = provider;
     context->diagnostic_context = provider_context;
 }
 
-C_VOID core_machine_cpu_state_initialize(
+void core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context) {
     if (context == LIB_NULL || context->cpu == LIB_NULL ||
         context->instructions == LIB_NULL) return;
@@ -160,7 +160,7 @@ C_VOID core_machine_cpu_state_initialize(
         context->debug_trap_pending = LIB_FALSE;
         context->debug_tf_before = LIB_FALSE;
         context->debug_rf_before = LIB_FALSE;
-        context->debug_trap_cause = TYPE_ZERO_32;
+        context->debug_trap_cause = 0u;
         context->prefetch_count = 0u;
         context->prefetch_capacity = context->cpu_profile ==
             CORE_MACHINE_CPU_PROFILE_8088 ? 4u : 15u;
@@ -172,10 +172,10 @@ C_VOID core_machine_cpu_state_initialize(
     }
     core_machine_cpu_execution_initialize(context);
 }
-C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
+void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
     if (context == LIB_NULL || context->cpu == LIB_NULL ||
         context->instructions == LIB_NULL) return;
-    lib_memory_set((C_VOID *)context->cpu, TYPE_ZERO_8, sizeof(t_cpu));
+    lib_memory_set((void *)context->cpu, 0u, sizeof(t_cpu));
     if (context != LIB_NULL) {
         context->stop_requested = LIB_FALSE;
         context->debug_pause_requested = LIB_FALSE;
@@ -200,8 +200,8 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
         cpu_state.data.edx = 0x00000300u;
 
     cpu_state.data.cs.base = core_machine_cpu_reset_code_base(context->cpu_profile);
-    cpu_state.data.cs.dpl = TYPE_ZERO_4;
-    cpu_state.data.cs.limit = TYPE_MAX_UNSIGNED_32;
+    cpu_state.data.cs.dpl = 0u;
+    cpu_state.data.cs.limit = LIB_UINT32_MAX;
     cpu_state.data.cs.seg.accessed = LIB_TRUE;
     cpu_state.data.cs.seg.executable = LIB_TRUE;
     cpu_state.data.cs.seg.exec.conform = LIB_FALSE;
@@ -211,54 +211,54 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
     cpu_state.data.cs.sregtype = SREG_CODE;
     cpu_state.data.cs.flagValid = LIB_TRUE;
 
-    cpu_state.data.ss.base = TYPE_ZERO_32;
-    cpu_state.data.ss.dpl = TYPE_ZERO_4;
-    cpu_state.data.ss.limit = TYPE_MAX_UNSIGNED_16;
+    cpu_state.data.ss.base = 0u;
+    cpu_state.data.ss.dpl = 0u;
+    cpu_state.data.ss.limit = 0xffffu;
     cpu_state.data.ss.seg.accessed = LIB_TRUE;
     cpu_state.data.ss.seg.executable = LIB_FALSE;
     cpu_state.data.ss.seg.data.big = LIB_FALSE;
     cpu_state.data.ss.seg.data.expdown = LIB_FALSE;
     cpu_state.data.ss.seg.data.writable = LIB_TRUE;
-    cpu_state.data.ss.selector = TYPE_ZERO_16;
+    cpu_state.data.ss.selector = 0u;
     cpu_state.data.ss.sregtype = SREG_STACK;
     cpu_state.data.ss.flagValid = LIB_TRUE;
 
-    cpu_state.data.ds.base = TYPE_ZERO_32;
-    cpu_state.data.ds.dpl = TYPE_ZERO_4;
-    cpu_state.data.ds.limit = TYPE_MAX_UNSIGNED_16;
+    cpu_state.data.ds.base = 0u;
+    cpu_state.data.ds.dpl = 0u;
+    cpu_state.data.ds.limit = 0xffffu;
     cpu_state.data.ds.seg.accessed = LIB_TRUE;
     cpu_state.data.ss.seg.executable = LIB_FALSE;
     cpu_state.data.ds.seg.data.big = LIB_FALSE;
     cpu_state.data.ds.seg.data.expdown = LIB_FALSE;
     cpu_state.data.ds.seg.data.writable = LIB_TRUE;
-    cpu_state.data.ds.selector = TYPE_ZERO_16;
+    cpu_state.data.ds.selector = 0u;
     cpu_state.data.ds.sregtype = SREG_DATA;
     cpu_state.data.ds.flagValid = LIB_TRUE;
     cpu_state.data.gs = cpu_state.data.fs = cpu_state.data.es = cpu_state.data.ds;
 
-    cpu_state.data.ldtr.base = TYPE_ZERO_32;
-    cpu_state.data.ldtr.dpl = TYPE_ZERO_4;
-    cpu_state.data.ldtr.limit = TYPE_MAX_UNSIGNED_16;
-    cpu_state.data.ldtr.selector = TYPE_ZERO_16;
+    cpu_state.data.ldtr.base = 0u;
+    cpu_state.data.ldtr.dpl = 0u;
+    cpu_state.data.ldtr.limit = 0xffffu;
+    cpu_state.data.ldtr.selector = 0u;
     cpu_state.data.ldtr.sregtype = SREG_LDTR;
     cpu_state.data.ldtr.sys.type = VCPU_DESC_SYS_TYPE_LDT;
     cpu_state.data.ldtr.flagValid = LIB_TRUE;
 
-    cpu_state.data.tr.base = TYPE_ZERO_32;
-    cpu_state.data.tr.dpl = TYPE_ZERO_4;
-    cpu_state.data.tr.limit = TYPE_MAX_UNSIGNED_16;
-    cpu_state.data.tr.selector = TYPE_ZERO_16;
+    cpu_state.data.tr.base = 0u;
+    cpu_state.data.tr.dpl = 0u;
+    cpu_state.data.tr.limit = 0xffffu;
+    cpu_state.data.tr.selector = 0u;
     cpu_state.data.tr.sregtype = SREG_TR;
     cpu_state.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_AVL;
     cpu_state.data.tr.flagValid = LIB_TRUE;
 
-    cpu_state.data.idtr.base = TYPE_ZERO_32;
+    cpu_state.data.idtr.base = 0u;
     cpu_state.data.idtr.limit = 0x03ff;
     cpu_state.data.idtr.sregtype = SREG_IDTR;
     cpu_state.data.idtr.flagValid = LIB_TRUE;
 
-    cpu_state.data.gdtr.base = TYPE_ZERO_32;
-    cpu_state.data.gdtr.limit = TYPE_MAX_UNSIGNED_16;
+    cpu_state.data.gdtr.base = 0u;
+    cpu_state.data.gdtr.limit = 0xffffu;
     cpu_state.data.gdtr.sregtype = SREG_GDTR;
     cpu_state.data.gdtr.flagValid = LIB_TRUE;
 
@@ -266,7 +266,7 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
 
 }
 
-C_VOID core_machine_cpu_execution_reserve_prefetch(
+void core_machine_cpu_execution_reserve_prefetch(
     core_machine_cpu_execution_context *context)
 {
     lib_u32 offset;
@@ -297,7 +297,7 @@ C_VOID core_machine_cpu_execution_reserve_prefetch(
     context->prefetch_reservation_valid = LIB_TRUE;
 }
 
-C_VOID core_machine_cpu_execution_advance_prefetch_reservation(
+void core_machine_cpu_execution_advance_prefetch_reservation(
     core_machine_cpu_execution_context *context)
 {
     lib_u8 byte;
@@ -307,7 +307,7 @@ C_VOID core_machine_cpu_execution_advance_prefetch_reservation(
         context->memory_access_provenance =
             CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
         if (!core_machine_cpu_execution_read_linear(context,
-                context->prefetch_reservation_linear, (type_virtual_address)&byte, 1u) &&
+                context->prefetch_reservation_linear, (lib_uptr)&byte, 1u) &&
             context->prefetch_count < context->prefetch_capacity) {
             context->prefetch_bytes[context->prefetch_count++] = byte;
         }
@@ -317,7 +317,7 @@ C_VOID core_machine_cpu_execution_advance_prefetch_reservation(
     context->prefetch_reservation_linear = 0u;
     context->prefetch_reservation_count = 0u;
 }
-C_VOID core_machine_cpu_execution_invalidate_prefetch(
+void core_machine_cpu_execution_invalidate_prefetch(
     core_machine_cpu_execution_context *context)
 {
     if (context == LIB_NULL) return;
@@ -329,71 +329,71 @@ C_VOID core_machine_cpu_execution_invalidate_prefetch(
     context->prefetch_reservation_count = 0u;
 }
 
-C_VOID core_machine_cpu_execution_request_stop(
+void core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context)
 {
     if (context != LIB_NULL) context->stop_requested = LIB_TRUE;
 }
-type_bool core_machine_cpu_execution_consume_stop_request(
+lib_u8 core_machine_cpu_execution_consume_stop_request(
     core_machine_cpu_execution_context *context)
 {
-    type_bool requested = context != LIB_NULL && context->stop_requested;
+    lib_u8 requested = context != LIB_NULL && context->stop_requested;
     if (context != LIB_NULL) context->stop_requested = LIB_FALSE;
     return requested;
 }
-C_VOID core_machine_cpu_execution_request_debug_pause(
+void core_machine_cpu_execution_request_debug_pause(
     core_machine_cpu_execution_context *context)
 {
     if (context != LIB_NULL) context->debug_pause_requested = LIB_TRUE;
 }
 
-type_bool core_machine_cpu_execution_consume_debug_pause_request(
+lib_u8 core_machine_cpu_execution_consume_debug_pause_request(
     core_machine_cpu_execution_context *context)
 {
-    type_bool requested = context != LIB_NULL && context->debug_pause_requested;
+    lib_u8 requested = context != LIB_NULL && context->debug_pause_requested;
 
     if (context != LIB_NULL) context->debug_pause_requested = LIB_FALSE;
     return requested;
 }
-C_VOID core_machine_cpu_execution_request_reset(
+void core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context)
 {
     if (context != LIB_NULL) context->reset_requested = LIB_TRUE;
 }
-type_bool core_machine_cpu_execution_consume_reset_request(
+lib_u8 core_machine_cpu_execution_consume_reset_request(
     core_machine_cpu_execution_context *context)
 {
-    type_bool requested = context != LIB_NULL && context->reset_requested;
+    lib_u8 requested = context != LIB_NULL && context->reset_requested;
     if (context != LIB_NULL) context->reset_requested = LIB_FALSE;
     return requested;
 }
-C_VOID core_machine_cpu_execution_request_shutdown(
+void core_machine_cpu_execution_request_shutdown(
     core_machine_cpu_execution_context *context)
 {
     if (context != LIB_NULL) context->shutdown_requested = LIB_TRUE;
 }
-type_bool core_machine_cpu_execution_consume_shutdown_request(
+lib_u8 core_machine_cpu_execution_consume_shutdown_request(
     core_machine_cpu_execution_context *context)
 {
-    type_bool requested = context != LIB_NULL && context->shutdown_requested;
+    lib_u8 requested = context != LIB_NULL && context->shutdown_requested;
     if (context != LIB_NULL) context->shutdown_requested = LIB_FALSE;
     return requested;
 }
 
-C_INT core_machine_cpu_read_linear(core_machine_cpu_execution_context *context, lib_u32 linear, C_VOID *out_data, lib_u8 size)
+lib_i32 core_machine_cpu_read_linear(core_machine_cpu_execution_context *context, lib_u32 linear, void *out_data, lib_u8 size)
 {
     return core_machine_cpu_execution_read_linear(context, linear,
-        (type_virtual_address)out_data, size);
+        (lib_uptr)out_data, size);
 }
 
-C_INT core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
-    lib_u32 linear, const C_VOID *in_data, lib_u8 size)
+lib_i32 core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
+    lib_u32 linear, const void *in_data, lib_u8 size)
 {
     return core_machine_cpu_execution_write_linear(context, linear,
-        (type_virtual_address)in_data, size);
+        (lib_uptr)in_data, size);
 }
 
-C_INT core_machine_cpu_get_code_default_size(const core_machine_cpu_execution_context *context)
+lib_i32 core_machine_cpu_get_code_default_size(const core_machine_cpu_execution_context *context)
 {
     return cpu_state.data.cs.seg.exec.defsize;
 }
@@ -403,7 +403,7 @@ lib_u32 core_machine_cpu_get_code_base(const core_machine_cpu_execution_context 
     return cpu_state.data.cs.base;
 }
 
-C_VOID core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
+void core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind, lib_u32 linear)
 {
     switch (kind) {
@@ -422,7 +422,7 @@ C_VOID core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *conte
     }
 }
 
-C_VOID core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
+void core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind)
 {
     switch (kind) {
@@ -438,8 +438,8 @@ C_VOID core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *con
     }
 }
 
-C_VOID core_machine_cpu_get_watchpoint(const core_machine_cpu_execution_context *context,
-    core_machine_cpu_watchpoint kind, type_bool *out_enabled,
+void core_machine_cpu_get_watchpoint(const core_machine_cpu_execution_context *context,
+    core_machine_cpu_watchpoint kind, lib_u8 *out_enabled,
     lib_u32 *out_linear)
 {
     if (out_enabled == LIB_NULL || out_linear == LIB_NULL) return;

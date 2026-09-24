@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/machine/media/media.h"
@@ -10,7 +10,7 @@
 
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -21,7 +21,7 @@ C_INT main(C_VOID)
     vm_machine *session = LIB_NULL;
     core_machine_media_info info;
     core_machine_media_result result;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(odd, 1, sizeof(odd));
     image[0] = 0xebu;
@@ -34,16 +34,16 @@ C_INT main(C_VOID)
     assets.bios[0u] = (vm_machine_asset_bytes) { even, sizeof(even) };
     assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
             sizeof(image)) != LIB_FALSE || !session->fdd.connect.flagDiskExist ||
         session->fdd.data.ncyl != 80u || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != 15u || session->fdd.data.nbyte != 512u ||
         core_machine_media_query(session->media_registry, VM_MACHINE_MEDIA_FDD_ID,
-            &info, &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+            &info, &result) != LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.logical_sector_count != 2400u ||
         info.geometry.bytes_per_sector != 512u;
     vm_machine_destroy(session);
-    if (!failed) STD_PRINTF("M5:T390:S5:MODEL40-BYOB-BOOT-MEDIA:OK\n");
+    if (!failed) printf("M5:T390:S5:MODEL40-BYOB-BOOT-MEDIA:OK\n");
     return failed;
 }

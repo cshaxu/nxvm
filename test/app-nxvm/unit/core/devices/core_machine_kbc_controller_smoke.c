@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
@@ -16,7 +17,7 @@ static lib_u8 core_machine_kbc_read_byte(t_port *port, lib_u16 port_id)
     return (lib_u8)core_machine_port_read(port, port_id);
 }
 
-static C_VOID core_machine_kbc_initialize_pic(t_port *port)
+static void core_machine_kbc_initialize_pic(t_port *port)
 {
     core_machine_port_write(port, 0x0020u, 0x11u);
     core_machine_port_write(port, 0x0021u, 0x08u);
@@ -28,7 +29,7 @@ static C_VOID core_machine_kbc_initialize_pic(t_port *port)
     core_machine_port_write(port, 0x00a1u, 0x01u);
 }
 
-static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
+static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
 {
     t_kbc kbc;
     t_pic pic_master;
@@ -36,7 +37,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     t_ram memory = {0};
     core_machine_cpu_execution_context execution = {0};
     t_port port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_pic_initialize(&pic_master, &pic_slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
@@ -53,8 +54,8 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     core_machine_port_write(&port, 0x00a0u, 0x20u);
     core_machine_port_write(&port, 0x0020u, 0x20u);
 
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) != LIB_STATUS_OK;
     core_machine_port_write(&port, 0x0064u, 0x20u);
     core_machine_pic_refresh(&pic_master, &pic_slave);
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u ||
@@ -75,7 +76,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
 
     core_machine_kbc_set_command_response_timing(&kbc, 2u);
     core_machine_port_write(&port, 0x0064u, 0x20u);
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     core_machine_kbc_advance(&kbc, 2u);
     core_machine_pic_refresh(&pic_master, &pic_slave);
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u ||
@@ -84,12 +85,12 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x43u;
     core_machine_kbc_set_command_response_timing(&kbc, 0u);
 
-    failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 0u) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 0u) != LIB_STATUS_OK;
     core_machine_kbc_reset(&kbc);
     failed |= kbc.data.fifo_count != 0u || kbc.data.irq1_asserted ||
         kbc.data.irq12_asserted || !kbc.data.keyboard_enabled ||
         !kbc.data.aux_enabled || !kbc.data.scanning_enabled;
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
         !kbc.data.irq1_asserted;
     core_machine_kbc_finalize(&kbc);
     failed |= kbc.data.irq1_asserted || kbc.data.irq12_asserted;
@@ -99,7 +100,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     return failed;
 }
 
-static C_INT core_machine_kbc_set2_translation(C_VOID)
+static lib_i32 core_machine_kbc_set2_translation(void)
 {
     static const lib_u8 function_set2[] = { 0x05u, 0x06u, 0x04u,
         0x0cu, 0x03u, 0x0bu, 0x83u, 0x0au, 0x01u, 0x09u, 0x78u, 0x07u };
@@ -112,47 +113,47 @@ static C_INT core_machine_kbc_set2_translation(C_VOID)
     t_kbc kbc;
     t_port port;
     lib_u8 index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
     kbc.connect.aux_present = LIB_FALSE;
     core_machine_kbc_reset(&kbc);
     failed |= (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x05u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x05u) != LIB_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x3bu;
     for (index = 0u; index < sizeof(function_set2); ++index) {
         failed |= core_machine_kbc_submit_native_byte(&kbc, function_set2[index]) !=
-                TYPE_STATUS_OK ||
+                LIB_STATUS_OK ||
             core_machine_kbc_read_byte(&port, 0x0060u) != function_set1[index];
     }
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x01u);
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != LIB_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1cu ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xf0u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1cu;
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x41u);
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != LIB_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x9eu;
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x75u) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x75u) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x75u) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x75u) != LIB_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xe0u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x48u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xe0u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xc8u;
     for (index = 0u; index < sizeof(pause_set2); ++index) {
         failed |= core_machine_kbc_submit_native_byte(&kbc, pause_set2[index]) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
     }
     for (index = 0u; index < sizeof(pause_set1); ++index) {
         failed |= core_machine_kbc_read_byte(&port, 0x0060u) != pause_set1[index];
@@ -163,13 +164,13 @@ static C_INT core_machine_kbc_set2_translation(C_VOID)
 }
 
 
-static C_INT core_machine_kbc_set2_break_cancels_typematic(C_VOID)
+static lib_i32 core_machine_kbc_set2_break_cancels_typematic(void)
 {
     static const lib_u8 make_b[] = { 0x32u };
     static const lib_u8 break_b[] = { 0xf0u, 0x32u };
     t_kbc kbc;
     t_port port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
@@ -178,9 +179,9 @@ static C_INT core_machine_kbc_set2_break_cancels_typematic(C_VOID)
     core_machine_kbc_set_typematic_timing(&kbc, 1u, 1u);
     core_machine_kbc_set_serial_delivery_timing(&kbc, 2u);
     failed |= core_machine_kbc_submit_native_bytes(&kbc, make_b,
-        sizeof(make_b)) != TYPE_STATUS_OK || !kbc.data.typematic_active;
+        sizeof(make_b)) != LIB_STATUS_OK || !kbc.data.typematic_active;
     failed |= core_machine_kbc_submit_native_bytes(&kbc, break_b,
-        sizeof(break_b)) != TYPE_STATUS_OK || kbc.data.typematic_active;
+        sizeof(break_b)) != LIB_STATUS_OK || kbc.data.typematic_active;
     core_machine_kbc_advance(&kbc, 2u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x30u;
     core_machine_kbc_advance(&kbc, 2u);
@@ -192,15 +193,15 @@ static C_INT core_machine_kbc_set2_break_cancels_typematic(C_VOID)
     return failed;
 }
 
-static C_INT core_machine_kbc_self_test_flushes_keyboard_output(C_VOID)
+static lib_i32 core_machine_kbc_self_test_flushes_keyboard_output(void)
 {
     t_kbc kbc;
     t_port port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
         kbc.data.fifo_count != 1u;
     core_machine_port_write(&port, 0x0064u, 0xaau);
     failed |= kbc.data.fifo_count != 1u ||
@@ -210,11 +211,11 @@ static C_INT core_machine_kbc_self_test_flushes_keyboard_output(C_VOID)
     return failed;
 }
 
-static C_INT core_machine_kbc_bat_on_line_enable(C_VOID)
+static lib_i32 core_machine_kbc_bat_on_line_enable(void)
 {
     t_kbc kbc;
     t_port port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
@@ -236,11 +237,11 @@ static C_INT core_machine_kbc_bat_on_line_enable(C_VOID)
     return failed;
 }
 
-static C_INT core_machine_kbc_controller_enable_is_not_a_second_bat(C_VOID)
+static lib_i32 core_machine_kbc_controller_enable_is_not_a_second_bat(void)
 {
     t_kbc kbc;
     t_port port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
@@ -258,11 +259,11 @@ static C_INT core_machine_kbc_controller_enable_is_not_a_second_bat(C_VOID)
     return failed;
 }
 
-static C_INT core_machine_kbc_self_test_enable_releases_bat(C_VOID)
+static lib_i32 core_machine_kbc_self_test_enable_releases_bat(void)
 {
     t_kbc kbc;
     t_port port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
@@ -278,11 +279,11 @@ static C_INT core_machine_kbc_self_test_enable_releases_bat(C_VOID)
 /* A BIOS may reset the keyboard while its serial line is inhibited, consume
  * FFh's FAh/AAh pair, and only then issue AEh.  The latter is an interface
  * release, not a second device power-on. */
-static C_INT core_machine_kbc_reset_then_enable_has_one_bat(C_VOID)
+static lib_i32 core_machine_kbc_reset_then_enable_has_one_bat(void)
 {
     t_kbc kbc;
     t_port port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
@@ -303,11 +304,11 @@ static C_INT core_machine_kbc_reset_then_enable_has_one_bat(C_VOID)
  * power-on BAT; the fallback keyboard reset then has to leave ABh's interface
  * result unpolluted.  Keep the ROM-visible ordering in one test rather than
  * proving the pieces independently. */
-static C_INT core_machine_kbc_ibm_5170_post_contract(C_VOID)
+static lib_i32 core_machine_kbc_ibm_5170_post_contract(void)
 {
     t_kbc kbc;
     t_port port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
@@ -324,13 +325,13 @@ static C_INT core_machine_kbc_ibm_5170_post_contract(C_VOID)
     core_machine_port_write(&port, 0x0060u, 0x5du);
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x4du);
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
 
     core_machine_port_write(&port, 0x0064u, 0xadu);
-    (C_VOID)core_machine_kbc_read_byte(&port, 0x0060u);
+    (void)core_machine_kbc_read_byte(&port, 0x0060u);
     core_machine_port_write(&port, 0x0064u, 0xe0u);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
         (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u ||
@@ -354,12 +355,12 @@ typedef struct core_machine_kbc_cpu_fixture {
     core_machine *machine;
 } core_machine_kbc_cpu_fixture;
 
-static C_VOID core_machine_kbc_cpu_reset(C_VOID *opaque)
+static void core_machine_kbc_cpu_reset(void *opaque)
 {
     core_machine_kbc_cpu_fixture *fixture = opaque;
 
     if (fixture != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(fixture->machine);
+        (void)test_core_machine_fixture_reset_real_mode(fixture->machine);
 }
 
 static const core_machine_execution_provider core_machine_kbc_cpu_provider = {
@@ -369,7 +370,7 @@ static const core_machine_execution_provider core_machine_kbc_cpu_provider = {
 /* Keep the POST-relevant path owner-local: a real CPU issues FFh, reads its
  * synchronous FAh, then receives the queued AAh through IRQ1 after STI's
  * architectural interrupt shadow. */
-static C_INT core_machine_kbc_cpu_reset_irq1(C_VOID)
+static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
 {
     static const lib_u8 code[] = {
         0xb0u, 0xffu, 0xe6u, 0x60u, 0xe4u, 0x60u, 0xfbu, 0x90u
@@ -385,7 +386,7 @@ static C_INT core_machine_kbc_cpu_reset_irq1(C_VOID)
     core_machine_run_result result;
     lib_u16 offset = 0x0100u;
     lib_u16 segment = 0u;
-    C_INT failed = !test_core_machine_fixture_create_bind_freeze_reset(&config,
+    lib_i32 failed = !test_core_machine_fixture_create_bind_freeze_reset(&config,
         &core_machine_kbc_cpu_provider, &fixture, &fixture.machine);
 
     if (!failed) {
@@ -394,17 +395,17 @@ static C_INT core_machine_kbc_cpu_reset_irq1(C_VOID)
         failed |= !test_core_machine_fixture_prepare_real_mode_execution(
                 fixture.machine, 0u) ||
             core_machine_memory_write(fixture.machine, 0u, code, sizeof(code)) !=
-                TYPE_STATUS_OK ||
+                LIB_STATUS_OK ||
             core_machine_memory_write(fixture.machine, 0x0024u, &offset,
-                sizeof(offset)) != TYPE_STATUS_OK ||
+                sizeof(offset)) != LIB_STATUS_OK ||
             core_machine_memory_write(fixture.machine, 0x0026u, &segment,
-                sizeof(segment)) != TYPE_STATUS_OK ||
+                sizeof(segment)) != LIB_STATUS_OK ||
             core_machine_memory_write(fixture.machine, offset, &handler,
-                sizeof(handler)) != TYPE_STATUS_OK;
+                sizeof(handler)) != LIB_STATUS_OK;
     }
     if (!failed) {
         failed |= core_machine_run(fixture.machine, (core_machine_run_budget){3u, 0u},
-                &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+                &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             fixture.machine->executor_cpu.data.eip != 6u ||
             fixture.machine->shared_kbc.data.keyboard_bat_pending ||
             fixture.machine->shared_kbc.data.fifo_count != 1u ||
@@ -414,16 +415,16 @@ static C_INT core_machine_kbc_cpu_reset_irq1(C_VOID)
     }
     if (!failed) {
         failed |= core_machine_run(fixture.machine, (core_machine_run_budget){2u, 0u},
-                &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+                &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             fixture.machine->executor_cpu.data.eip != offset ||
-            !TYPE_GET_BIT(fixture.machine->shared_pic_master.data.isr,
+            !CORE_MACHINE_BIT_IS_SET(fixture.machine->shared_pic_master.data.isr,
                 VPIC_ISR_IRQ(1u));
     }
     core_machine_destroy(fixture.machine);
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_kbc kbc;
     t_pic pic_master;
@@ -431,17 +432,17 @@ C_INT main(C_VOID)
     t_ram memory = {0};
     core_machine_cpu_execution_context execution = {0};
     t_port port;
-    C_INT failed = 0;
-    C_INT mixed_failed;
-    C_INT translation_failed;
-    C_INT self_test_flush_failed;
-    C_INT typematic_break_failed;
-    C_INT line_bat_failed;
-    C_INT controller_enable_bat_failed;
-    C_INT self_test_enable_bat_failed;
-    C_INT reset_enable_bat_failed;
-    C_INT ibm_5170_post_contract_failed;
-    C_INT cpu_reset_irq1_failed;
+    lib_i32 failed = 0;
+    lib_i32 mixed_failed;
+    lib_i32 translation_failed;
+    lib_i32 self_test_flush_failed;
+    lib_i32 typematic_break_failed;
+    lib_i32 line_bat_failed;
+    lib_i32 controller_enable_bat_failed;
+    lib_i32 self_test_enable_bat_failed;
+    lib_i32 reset_enable_bat_failed;
+    lib_i32 ibm_5170_post_contract_failed;
+    lib_i32 cpu_reset_irq1_failed;
     lib_u8 index;
 
     core_machine_port_initialize(&port);
@@ -481,11 +482,11 @@ C_INT main(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x03u;
     core_machine_kbc_set_input_port(&kbc, 0u);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_INHIBIT) != 0u ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_INVALID_STATE;
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_INVALID_STATE;
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x09u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_set_input_port(&kbc, 0x80u);
     core_machine_port_write(&port, 0x0064u, 0x60u);
@@ -505,16 +506,16 @@ C_INT main(C_VOID)
 
     core_machine_port_write(&port, 0x0064u, 0xadu);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
-        TYPE_STATUS_INVALID_STATE;
+        LIB_STATUS_INVALID_STATE;
     core_machine_port_write(&port, 0x0064u, 0xaeu);
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     failed |= (pic_master.data.irr & VPIC_IRR_IRQ(1u)) == 0u;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
     core_machine_port_write(&port, 0x0020u, 0x20u);
 
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x30u) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x30u) != LIB_STATUS_OK;
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0020u, 0x20u);
@@ -545,7 +546,7 @@ C_INT main(C_VOID)
         kbc.data.keyboard_enabled ||
         (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
-            TYPE_STATUS_INVALID_STATE ||
+            LIB_STATUS_INVALID_STATE ||
         (pic_master.data.irr & VPIC_IRR_IRQ(1u)) != 0u;
     core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
     core_machine_port_write(&port, 0x0064u, 0xaau);
@@ -556,7 +557,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0064u, 0xaeu);
     failed |= !kbc.data.keyboard_enabled ||
         (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) != 0u ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
         (pic_master.data.irr & VPIC_IRR_IRQ(1u)) == 0u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
@@ -580,7 +581,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0060u, 0x01u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
         kbc.data.scan_set != CORE_MACHINE_KEYBOARD_SCAN_SET_1;
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0060u, 0xf0u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
@@ -609,13 +610,13 @@ C_INT main(C_VOID)
         kbc.data.typematic_repeat_ticks != 48u;
 
     core_machine_kbc_set_typematic_timing(&kbc, 0u, 0u);
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_advance(&kbc, 1000000u);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
 
     core_machine_kbc_set_typematic_timing(&kbc, 3u, 2u);
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_advance(&kbc, 2u);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
@@ -623,8 +624,8 @@ C_INT main(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_advance(&kbc, 2u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xf0u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_advance(&kbc, 8u);
@@ -647,10 +648,10 @@ C_INT main(C_VOID)
         kbc.data.scan_set != CORE_MACHINE_KEYBOARD_SCAN_SET_2 ||
         kbc.data.scanning_enabled || kbc.data.typematic_active ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
-            TYPE_STATUS_INVALID_STATE;
+            LIB_STATUS_INVALID_STATE;
     core_machine_port_write(&port, 0x0060u, 0xf4u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
-        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0060u, 0xf6u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
@@ -683,7 +684,7 @@ C_INT main(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfeu;
     core_machine_port_write(&port, 0x0060u, 0xfeu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0064u, 0xd0u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x01u;
@@ -715,16 +716,16 @@ C_INT main(C_VOID)
         static const lib_u8 enter_break[] = { 0xf0u, 0x1eu };
 
         core_machine_kbc_set_typematic_timing(&kbc, 3u, 2u);
-        failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
             core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu ||
             !kbc.data.typematic_active;
         for (index = 0u; index < 3u; ++index) {
-            failed |= core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != TYPE_STATUS_OK;
+            failed |= core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != LIB_STATUS_OK;
         }
         /* A full physical OBF must not discard a complete Set-2 break;
          * accepting it cancels typematic before the bytes become CPU-visible. */
         failed |= core_machine_kbc_submit_native_bytes(&kbc, enter_break,
-            sizeof(enter_break)) != TYPE_STATUS_OK || kbc.data.keyboard_serial_count !=
+            sizeof(enter_break)) != LIB_STATUS_OK || kbc.data.keyboard_serial_count !=
             4u || kbc.data.typematic_active;
     }
     /* A command reply behind rapid typeahead remains KBC-owned until the
@@ -745,7 +746,7 @@ C_INT main(C_VOID)
     core_machine_pic_finalize(&pic_master, &pic_slave);
     core_machine_port_finalize(&port);
     if (failed) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T464:S2:KBC:FAIL:mixed=%d:translation=%d:self-flush=%d:typematic=%d:line-bat=%d:enable-bat=%d:self-enable-bat=%d:reset-enable-bat=%d:ibm-post=%d:cpu-irq1=%d\n",
             mixed_failed, translation_failed, self_test_flush_failed,
             typematic_break_failed, line_bat_failed, controller_enable_bat_failed,
@@ -753,6 +754,6 @@ C_INT main(C_VOID)
             ibm_5170_post_contract_failed, cpu_reset_irq1_failed);
         return 1;
     }
-    STD_PRINTF("M5:T464:S2:KBC:OK\n");
+    printf("M5:T464:S2:KBC:OK\n");
     return 0;
 }

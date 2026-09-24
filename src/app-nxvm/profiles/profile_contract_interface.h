@@ -3,7 +3,6 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #define VM_PROFILE_CONTRACT_PORT_LEAF_CAPACITY 96u
 #define VM_PROFILE_CONTRACT_MEMORY_WINDOW_CAPACITY 8u
@@ -28,8 +27,8 @@ typedef struct vm_profile_contract_window {
 typedef struct vm_profile_contract_port_leaf {
     lib_u32 device;
     lib_u16 port;
-    type_bool read;
-    type_bool write;
+    lib_u8 read;
+    lib_u8 write;
 } vm_profile_contract_port_leaf;
 
 typedef struct vm_profile_contract_route {
@@ -66,7 +65,7 @@ typedef struct vm_profile_contract_catalog {
     lib_size count;
 } vm_profile_contract_catalog;
 
-type_status vm_profile_contract_validate(const vm_profile_contract_values *values,
+lib_status vm_profile_contract_validate(const vm_profile_contract_values *values,
     const vm_profile_contract_catalog *catalog, lib_u32 requested_options);
 
 #endif

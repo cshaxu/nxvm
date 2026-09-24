@@ -1,37 +1,37 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_INT t386_s28_write(t_ram *memory, lib_u8 value)
+static lib_i32 t386_s28_write(t_ram *memory, lib_u8 value)
 {
     return core_machine_memory_write_physical(memory, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
-        (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
+        (lib_uptr)&value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static C_INT t386_s28_read(t_ram *memory, lib_u8 *value)
+static lib_i32 t386_s28_read(t_ram *memory, lib_u8 *value)
 {
     return core_machine_memory_read_physical(memory, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
-        (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
+        (lib_uptr)value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
-static C_INT t386_s28_write_at(t_ram *memory, lib_u32 physical,
+static lib_i32 t386_s28_write_at(t_ram *memory, lib_u32 physical,
     lib_u8 value)
 {
     return core_machine_memory_write_physical(memory, physical,
-        (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
+        (lib_uptr)&value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static C_INT t386_s28_read_at(t_ram *memory, lib_u32 physical,
+static lib_i32 t386_s28_read_at(t_ram *memory, lib_u32 physical,
     lib_u8 *value)
 {
     return core_machine_memory_read_physical(memory, physical,
-        (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
+        (lib_uptr)value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
-static C_VOID t386_s28_select_ega_320(t_port *port)
+static void t386_s28_select_ega_320(t_port *port)
 {
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x27u);
@@ -43,7 +43,7 @@ static C_VOID t386_s28_select_ega_320(t_port *port)
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x14u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_vadp_cecg_config config = {
         0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
@@ -66,23 +66,23 @@ C_INT main(C_VOID)
     t_vadp generic_vadp;
     core_machine_display_snapshot snapshot;
     lib_u8 value = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_port_initialize(&generic_port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_initialize(&generic_vadp, &generic_port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&generic_vadp, &generic_port);
     failed |= core_machine_vadp_configure_ega_personality(&vadp, &port,
-        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != TYPE_STATUS_OK ||
-        core_machine_vadp_configure_cecg(&vadp, &config) != TYPE_STATUS_OK ||
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK ||
+        core_machine_vadp_configure_cecg(&vadp, &config) != LIB_STATUS_OK ||
         core_machine_vadp_configure_ega_sequencer(&vadp, &memory, &sequencer) !=
-        TYPE_STATUS_OK || core_machine_vadp_configure_ega_controllers(&vadp,
-        &controllers) != TYPE_STATUS_OK ||
+        LIB_STATUS_OK || core_machine_vadp_configure_ega_controllers(&vadp,
+        &controllers) != LIB_STATUS_OK ||
         core_machine_vadp_configure_ega_personality(&generic_vadp, &generic_port,
-        CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != TYPE_STATUS_OK;
+        CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != LIB_STATUS_OK;
     failed |= !core_machine_port_has_write(&port,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT) ||
         !core_machine_port_has_write(&generic_port,
@@ -128,9 +128,9 @@ C_INT main(C_VOID)
     core_machine_port_finalize(&generic_port);
     core_machine_port_finalize(&port);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T386:S28:CECG-ODD-EVEN-PAGE:FAIL\n");
+        fprintf(stderr, "M5:T386:S28:CECG-ODD-EVEN-PAGE:FAIL\n");
         return 1;
     }
-    STD_PRINTF("M5:T386:S28:CECG-ODD-EVEN-PAGE:OK\n");
+    printf("M5:T386:S28:CECG-ODD-EVEN-PAGE:OK\n");
     return 0;
 }

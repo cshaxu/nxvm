@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 
 
@@ -17,7 +17,7 @@ typedef struct cpu_reset_case {
     lib_u32 first_fetch;
 } cpu_reset_case;
 
-static C_INT cpu_execution_context_reset_case(
+static lib_i32 cpu_execution_context_reset_case(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     const cpu_reset_case *test_case)
 {
@@ -32,7 +32,7 @@ static C_INT cpu_execution_context_reset_case(
          cpu->data.edx != 0x00000300u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const cpu_reset_case reset_cases[] = {
         {CORE_MACHINE_CPU_PROFILE_8086, 0x000f0000u, 0x000ffff0u},
@@ -51,7 +51,7 @@ C_INT main(C_VOID)
     t_port second_port = {0};
     core_machine_cpu_execution_context first = {0};
     core_machine_cpu_execution_context second = {0};
-    C_INT result = 0;
+    lib_i32 result = 0;
 
     core_machine_cpu_execution_context_initialize(
         &first, &first_cpu, &first_instructions, &first_memory, &first_port);

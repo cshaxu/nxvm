@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
 
@@ -12,7 +11,7 @@ static const lib_u32 vm_profile_xt_5160_268_contract_ids[] = {
     VM_PROFILE_XT_5160_268_CONTRACT_ID
 };
 
-type_status vm_profile_xt_5160_268_values_create(
+lib_status vm_profile_xt_5160_268_values_create(
     vm_profile_contract_values *out_values)
 {
     vm_profile_contract_values values = {0};
@@ -20,7 +19,7 @@ type_status vm_profile_xt_5160_268_values_create(
         sizeof(vm_profile_xt_5160_268_contract_ids) /
             sizeof(vm_profile_xt_5160_268_contract_ids[0]) };
 
-    if (out_values == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_values == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     values.core.id = VM_PROFILE_XT_5160_268_CONTRACT_ID;
     values.core.configuration.memory_bytes = 256u * 1024u;
     values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_8088;
@@ -60,22 +59,22 @@ type_status vm_profile_xt_5160_268_values_create(
     values.firmware_policy = VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BYOB;
     values.media_policy = VM_PROFILE_CONTRACT_MEDIA_POLICY_NONE;
     values.allowed_session_options = 0u;
-    if (vm_profile_contract_validate(&values, &catalog, 0u) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+    if (vm_profile_contract_validate(&values, &catalog, 0u) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_values = values;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status vm_profile_xt_5160_268_plan_create(
+lib_status vm_profile_xt_5160_268_plan_create(
     vm_profile_xt_5160_268_plan_snapshot *out_profile,
-    type_bool xebec_rom_present)
+    lib_u8 xebec_rom_present)
 {
     if (out_profile == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (vm_profile_xt_5160_268_values_create(&out_profile->values) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+    if (vm_profile_xt_5160_268_values_create(&out_profile->values) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     out_profile->topology = (core_machine_plan_topology) {0};
     /* The fixed 256 KiB board leaves these windows unpopulated and POST probes
@@ -125,5 +124,5 @@ type_status vm_profile_xt_5160_268_plan_create(
              CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS,
              CORE_MACHINE_XEBEC_TYPE_2_HEADS,
              CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK}}};
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }

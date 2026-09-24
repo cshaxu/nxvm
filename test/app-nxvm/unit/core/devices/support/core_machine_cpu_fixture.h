@@ -5,7 +5,7 @@
 /* Private prepared-state operations for CPU execution corpus fixtures. */
 #include "app-nxvm/devices/machine.h"
 
-static inline C_INT test_core_machine_fixture_reset_real_mode(core_machine *machine)
+static inline lib_i32 test_core_machine_fixture_reset_real_mode(core_machine *machine)
 {
     t_cpu *cpu;
     core_machine_cpu_execution_context *execution;
@@ -20,7 +20,7 @@ static inline C_INT test_core_machine_fixture_reset_real_mode(core_machine *mach
         ((cpu->data.eip = 0u), 1);
 }
 
-static inline C_INT test_core_machine_fixture_set_control_zero(
+static inline lib_i32 test_core_machine_fixture_set_control_zero(
     core_machine *machine, lib_u32 value)
 {
     if (machine == LIB_NULL) return 0;
@@ -38,14 +38,14 @@ static inline t_cpu test_core_machine_fixture_capture_cpu_after_run(
 }
 
 /* This is the lifecycle tail after owner-local construction/setup. */
-static inline C_INT test_core_machine_fixture_bind_freeze_reset(
+static inline lib_i32 test_core_machine_fixture_bind_freeze_reset(
     core_machine *machine, const core_machine_execution_provider *provider,
-    C_VOID *provider_owner)
+    void *provider_owner)
 {
     return core_machine_bind_execution_provider(machine, provider,
-        provider_owner) == TYPE_STATUS_OK &&
-        core_machine_freeze_execution_providers(machine) == TYPE_STATUS_OK &&
-        core_machine_reset(machine) == TYPE_STATUS_OK;
+        provider_owner) == LIB_STATUS_OK &&
+        core_machine_freeze_execution_providers(machine) == LIB_STATUS_OK &&
+        core_machine_reset(machine) == LIB_STATUS_OK;
 }
 
 /*
@@ -53,24 +53,24 @@ static inline C_INT test_core_machine_fixture_bind_freeze_reset(
  * not add cleanup or validation policy.  Owner smokes retain all device and
  * instruction-specific setup before or after this fixed sequence.
  */
-static inline C_INT test_core_machine_fixture_create_bind_freeze_reset(
+static inline lib_i32 test_core_machine_fixture_create_bind_freeze_reset(
     const core_machine_config *config,
-    const core_machine_execution_provider *provider, C_VOID *provider_owner,
+    const core_machine_execution_provider *provider, void *provider_owner,
     core_machine **out_machine)
 {
-    return core_machine_create(config, out_machine) == TYPE_STATUS_OK &&
+    return core_machine_create(config, out_machine) == LIB_STATUS_OK &&
         test_core_machine_fixture_bind_freeze_reset(*out_machine, provider,
             provider_owner);
 }
 
-static inline type_status test_core_machine_fixture_register_reset_mapping(
+static inline lib_status test_core_machine_fixture_register_reset_mapping(
     core_machine *machine, lib_u32 linear, lib_u32 physical,
     lib_size bytes)
 {
-    type_status status;
+    lib_status status;
     lib_size mapped_bytes;
 
-    if (machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     /* Instruction refresh can prefetch up to 15 bytes.  A reset fixture which
      * supplies a shorter program must still map that complete window; otherwise
      * the trailing fetch can escape a high-ROM alias before the first opcode. */
@@ -79,7 +79,7 @@ static inline type_status test_core_machine_fixture_register_reset_mapping(
         physical, mapped_bytes, LIB_FALSE);
     /* The corpus names every reset fixture through the 80386 alias.  Each
      * earlier CPU fetches the same bytes through its narrower physical bus. */
-    if (status == TYPE_STATUS_OK &&
+    if (status == LIB_STATUS_OK &&
         machine->cpu_profile <= CORE_MACHINE_CPU_PROFILE_80286 &&
         linear == 0xfffffff0u) {
         status = core_machine_memory_register_mapping(&machine->executor_memory,
@@ -89,20 +89,20 @@ static inline type_status test_core_machine_fixture_register_reset_mapping(
     return status;
 }
 
-static inline type_status test_core_machine_fixture_register_memory_device_provider(
+static inline lib_status test_core_machine_fixture_register_memory_device_provider(
     core_machine *machine, lib_u32 physical, lib_size bytes,
     core_machine_memory_device_read read,
     core_machine_memory_device_write write,
-    core_machine_memory_device_query query, C_VOID *owner)
+    core_machine_memory_device_query query, void *owner)
 {
-    return machine == LIB_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+    return machine == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         core_machine_memory_register_device_provider(&machine->executor_memory,
             physical, bytes, read, write, query, owner);
 }
 
-static inline C_VOID test_core_machine_fixture_program_pit_divider(
+static inline void test_core_machine_fixture_program_pit_divider(
     core_machine *machine, lib_u8 control, lib_u16 divisor,
-    core_machine_pit_output_provider output, C_VOID *owner)
+    core_machine_pit_output_provider output, void *owner)
 {
     if (machine == LIB_NULL) return;
     core_machine_pit_set_output(&machine->shared_pit, 0u, output, owner);
@@ -118,7 +118,7 @@ static inline lib_u8 test_core_machine_fixture_read_port(
         (t_port *)&machine->executor_port, address);
 }
 
-static inline C_INT test_core_machine_fixture_capture_instruction_exception(
+static inline lib_i32 test_core_machine_fixture_capture_instruction_exception(
     const core_machine *machine, lib_u32 *out_mask, lib_u32 *out_code)
 {
     if (machine == LIB_NULL || out_mask == LIB_NULL || out_code == LIB_NULL) return 0;
@@ -127,7 +127,7 @@ static inline C_INT test_core_machine_fixture_capture_instruction_exception(
     return 1;
 }
 
-static inline C_INT test_core_machine_fixture_prepare_real_mode_execution(
+static inline lib_i32 test_core_machine_fixture_prepare_real_mode_execution(
     core_machine *machine, lib_u32 eip)
 {
     if (!test_core_machine_fixture_reset_real_mode(machine)) return 0;
@@ -143,7 +143,7 @@ static inline C_INT test_core_machine_fixture_prepare_real_mode_execution(
  * Call this immediately before the negative run; owners that prove delivery
  * instead install and validate a vector-6 handler themselves.
  */
-static inline C_INT test_core_machine_fixture_preflight_real_ud_terminal(
+static inline lib_i32 test_core_machine_fixture_preflight_real_ud_terminal(
     core_machine *machine)
 {
     if (machine == LIB_NULL) return 0;
@@ -153,7 +153,7 @@ static inline C_INT test_core_machine_fixture_preflight_real_ud_terminal(
     return 1;
 }
 
-static inline C_VOID test_core_machine_fixture_resume_after_halt_at(
+static inline void test_core_machine_fixture_resume_after_halt_at(
     core_machine *machine, lib_u32 eip)
 {
     if (machine == LIB_NULL) return;
@@ -166,17 +166,17 @@ static inline C_VOID test_core_machine_fixture_resume_after_halt_at(
  * the delivery round observable as zero retirement before invoking the
  * handler's distinct execution round.  Focused S3 tests call core_machine_run
  * directly and assert that first result themselves. */
-static inline type_status test_core_machine_fixture_run_after_delivery(
+static inline lib_status test_core_machine_fixture_run_after_delivery(
     core_machine *machine, core_machine_run_budget budget,
     core_machine_run_result *out_result)
 {
-    type_status status = core_machine_run(machine, budget, out_result);
+    lib_status status = core_machine_run(machine, budget, out_result);
     core_machine_cpu_diagnostic diagnostic;
-    type_bool delivered = LIB_FALSE;
+    lib_u8 delivered = LIB_FALSE;
 
-    if (status == TYPE_STATUS_OK && out_result != LIB_NULL &&
+    if (status == LIB_STATUS_OK && out_result != LIB_NULL &&
         out_result->reason == CORE_MACHINE_STOP_BUDGET &&
-        core_machine_get_cpu_diagnostic(machine, &diagnostic) == TYPE_STATUS_OK) {
+        core_machine_get_cpu_diagnostic(machine, &diagnostic) == LIB_STATUS_OK) {
         delivered = diagnostic.last_delivered_exception.valid;
     }
     if (delivered) {
@@ -189,24 +189,24 @@ static inline type_status test_core_machine_fixture_run_after_delivery(
 #define core_machine_run test_core_machine_fixture_run_after_delivery
 #endif
 
-static inline C_INT test_core_machine_fixture_read_linear(
-    core_machine *machine, lib_u32 address, type_virtual_address destination,
+static inline lib_i32 test_core_machine_fixture_read_linear(
+    core_machine *machine, lib_u32 address, lib_uptr destination,
     lib_size bytes)
 {
     return machine != LIB_NULL && core_machine_cpu_execution_read_linear(
         &machine->executor_cpu_execution, address, destination, bytes) == 0;
 }
 
-static inline type_status test_core_machine_fixture_query_configuration_memory_route(
+static inline lib_status test_core_machine_fixture_query_configuration_memory_route(
     const core_machine *machine, lib_u32 physical, lib_size bytes,
     core_machine_memory_access access, core_machine_memory_route *out_route)
 {
-    return machine == LIB_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+    return machine == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         core_machine_memory_query_physical(&machine->executor_memory, physical,
             bytes, access, out_route);
 }
 
-static inline C_VOID test_core_machine_fixture_initialize_rtc_with_shared_pic(
+static inline void test_core_machine_fixture_initialize_rtc_with_shared_pic(
     core_machine *machine, core_machine_rtc *rtc,
     const core_machine_rtc_config *config)
 {
@@ -216,7 +216,7 @@ static inline C_VOID test_core_machine_fixture_initialize_rtc_with_shared_pic(
     }
 }
 
-static inline C_INT test_core_machine_fixture_executor_storage_is_coherent(
+static inline lib_i32 test_core_machine_fixture_executor_storage_is_coherent(
     const core_machine *machine)
 {
     return machine != LIB_NULL && machine->executor_cpu_execution.cpu ==
@@ -224,7 +224,7 @@ static inline C_INT test_core_machine_fixture_executor_storage_is_coherent(
         &machine->executor_cpu_instructions;
 }
 
-static inline C_INT test_core_machine_fixture_sessions_are_isolated(
+static inline lib_i32 test_core_machine_fixture_sessions_are_isolated(
     core_machine *first, core_machine *second)
 {
     lib_u8 first_value = 0x11u;
@@ -240,14 +240,14 @@ static inline C_INT test_core_machine_fixture_sessions_are_isolated(
         !test_core_machine_fixture_executor_storage_is_coherent(first) ||
         !test_core_machine_fixture_executor_storage_is_coherent(second)) return 0;
     core_machine_memory_write_physical(&first->executor_memory, 0u,
-        (type_virtual_address)&first_value, 1u);
+        (lib_uptr)&first_value, 1u);
     core_machine_memory_write_physical(&second->executor_memory, 0u,
-        (type_virtual_address)&second_value, 1u);
+        (lib_uptr)&second_value, 1u);
     core_machine_memory_read_physical(&first->executor_memory, 0u,
-        (type_virtual_address)&observed, 1u);
+        (lib_uptr)&observed, 1u);
     if (observed != first_value) return 0;
     core_machine_memory_read_physical(&second->executor_memory, 0u,
-        (type_virtual_address)&observed, 1u);
+        (lib_uptr)&observed, 1u);
     if (observed != second_value) return 0;
     first->executor_cpu.data.eax = 0x11111111u;
     second->executor_cpu.data.eax = 0x22222222u;

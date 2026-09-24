@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/vadp.h"
 
-static type_status vm_profile_model40_materialize_controllers(core_machine_plan *plan,
+static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *plan,
     core_machine_fdc_terminal_observation_provider terminal_observation)
 {
     const core_machine_fdc_drive_bindings drives = {
@@ -20,7 +20,7 @@ static type_status vm_profile_model40_materialize_controllers(core_machine_plan 
     core_machine_hdc_config hdc = {0};
 
     if (plan == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     fdc = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
         0x03f7u, 0x03f7u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE,
@@ -34,16 +34,16 @@ static type_status vm_profile_model40_materialize_controllers(core_machine_plan 
             .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
             .alternate_status_device_control_port = 0x03f6u,
             .drive_address_port = 0x03f7u, .lba28_supported = LIB_FALSE}};
-    if (core_machine_plan_configure_fdc(plan, &drives, &fdc) != TYPE_STATUS_OK ||
+    if (core_machine_plan_configure_fdc(plan, &drives, &fdc) != LIB_STATUS_OK ||
         core_machine_plan_bind_fdc_terminal_observation(plan,
-            terminal_observation) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+            terminal_observation) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     return core_machine_plan_configure_hdc(plan, 2u,
         CORE_MACHINE_MEDIA_ID_INVALID, &hdc);
 }
 
-type_status vm_profile_model40_topology_materialize(
+lib_status vm_profile_model40_topology_materialize(
     core_machine_plan_topology *out_topology)
 {
     core_machine_display_config display = {0};
@@ -54,7 +54,7 @@ type_status vm_profile_model40_topology_materialize(
     core_machine_rtc_cmos_config rtc = {0};
     core_machine_plan_topology topology = {0};
     if (out_topology == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     display.text_timing = (core_machine_vadp_text_timing) {48u, 8u, 8u};
     display.cga_vram_present = LIB_FALSE;
@@ -109,18 +109,18 @@ type_status vm_profile_model40_topology_materialize(
     topology.rtc_cmos_present = LIB_TRUE;
     topology.rtc_cmos = rtc;
     *out_topology = topology;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status vm_profile_model40_materialize_plan(core_machine_plan *plan,
+lib_status vm_profile_model40_materialize_plan(core_machine_plan *plan,
     core_machine_fdc_terminal_observation_provider terminal_observation)
 {
     const core_machine_d4_memory_config d4_memory = {
         LIB_TRUE, 0x8fu, 0xfdu, 0xfc42u };
 
     if (plan == LIB_NULL || core_machine_plan_configure_d4_memory(plan,
-            &d4_memory) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+            &d4_memory) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     return vm_profile_model40_materialize_controllers(plan, terminal_observation);
 }

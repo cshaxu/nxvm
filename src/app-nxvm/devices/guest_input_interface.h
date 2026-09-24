@@ -2,7 +2,6 @@
 #define CORE_MACHINE_GUEST_INPUT_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 typedef enum core_machine_guest_input_kind {
     CORE_MACHINE_GUEST_INPUT_KEY,
@@ -15,7 +14,7 @@ typedef struct core_machine_guest_input_event {
         struct {
             lib_u16 scan_code;
             lib_u16 virtual_key;
-            C_INT pressed;
+            lib_i32 pressed;
         } key;
         struct {
             lib_i16 delta_x;

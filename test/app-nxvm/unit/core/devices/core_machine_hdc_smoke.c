@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/hdc.h"
 #include "app-nxvm/devices/machine.h"
@@ -11,13 +11,13 @@ typedef struct core_machine_hdc_fixture_media {
     lib_u32 query_count;
     lib_u32 read_count;
     lib_u32 write_count;
-    type_bool present;
-    type_bool read_only;
+    lib_u8 present;
+    lib_u8 read_only;
     core_machine_media_result forced_read_result;
     core_machine_media_result forced_write_result;
 } core_machine_hdc_fixture_media;
 
-static core_machine_media_result core_machine_hdc_fixture_query(C_VOID *context,
+static core_machine_media_result core_machine_hdc_fixture_query(void *context,
     core_machine_media_info *out_info)
 {
     core_machine_hdc_fixture_media *media = context;
@@ -40,8 +40,8 @@ static core_machine_media_result core_machine_hdc_fixture_query(C_VOID *context,
     return media->present ? CORE_MACHINE_MEDIA_RESULT_OK : CORE_MACHINE_MEDIA_RESULT_ABSENT;
 }
 
-static core_machine_media_result core_machine_hdc_fixture_read(C_VOID *context,
-    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result core_machine_hdc_fixture_read(void *context,
+    lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
     core_machine_hdc_fixture_media *media = context;
 
@@ -59,8 +59,8 @@ static core_machine_media_result core_machine_hdc_fixture_read(C_VOID *context,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result core_machine_hdc_fixture_write(C_VOID *context,
-    lib_u64 offset, const C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result core_machine_hdc_fixture_write(void *context,
+    lib_u64 offset, const void *buffer, lib_u32 byte_count)
 {
     core_machine_hdc_fixture_media *media = context;
 
@@ -89,19 +89,19 @@ static const core_machine_media_provider core_machine_hdc_fixture_provider = {
     LIB_NULL
 };
 
-static C_INT core_machine_hdc_write(core_machine *machine, lib_u16 port,
+static lib_i32 core_machine_hdc_write(core_machine *machine, lib_u16 port,
     lib_u32 value)
 {
-    return core_machine_bus_write(machine, port, value) == TYPE_STATUS_OK;
+    return core_machine_bus_write(machine, port, value) == LIB_STATUS_OK;
 }
 
-static C_INT core_machine_hdc_read(core_machine *machine, lib_u16 port,
+static lib_i32 core_machine_hdc_read(core_machine *machine, lib_u16 port,
     lib_u32 *out_value)
 {
-    return core_machine_bus_read(machine, port, out_value) == TYPE_STATUS_OK;
+    return core_machine_bus_read(machine, port, out_value) == LIB_STATUS_OK;
 }
 
-static C_INT core_machine_hdc_command(core_machine *machine,
+static lib_i32 core_machine_hdc_command(core_machine *machine,
     const core_machine_hdc_task_file_config *config, lib_u8 command)
 {
     if (!core_machine_hdc_write(machine, config->status_command_port, command)) return 0;
@@ -109,7 +109,7 @@ static C_INT core_machine_hdc_command(core_machine *machine,
     return 1;
 }
 
-static C_INT core_machine_hdc_program_chs(core_machine *machine,
+static lib_i32 core_machine_hdc_program_chs(core_machine *machine,
     const core_machine_hdc_task_file_config *config)
 {
     return core_machine_hdc_write(machine, config->sector_count_port, 1u) &&
@@ -119,7 +119,7 @@ static C_INT core_machine_hdc_program_chs(core_machine *machine,
         core_machine_hdc_write(machine, config->drive_head_port, 0u);
 }
 
-static C_INT core_machine_hdc_drain(core_machine *machine,
+static lib_i32 core_machine_hdc_drain(core_machine *machine,
     const core_machine_hdc_task_file_config *config, lib_u16 *first_word)
 {
     lib_u32 word;
@@ -132,7 +132,7 @@ static C_INT core_machine_hdc_drain(core_machine *machine,
     return 1;
 }
 
-static C_INT core_machine_hdc_fill(core_machine *machine,
+static lib_i32 core_machine_hdc_fill(core_machine *machine,
     const core_machine_hdc_task_file_config *config, lib_u16 first_word)
 {
     for (lib_u32 index = 0u; index < 256u; ++index) {
@@ -143,7 +143,7 @@ static C_INT core_machine_hdc_fill(core_machine *machine,
     return 1;
 }
 
-static C_INT core_machine_hdc_test_ibm_wd1003(C_VOID)
+static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -173,23 +173,23 @@ static C_INT core_machine_hdc_test_ibm_wd1003(C_VOID)
     core_machine *machine = LIB_NULL;
     lib_u32 status = 0u;
     lib_u16 word = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     media.sector[0][0] = 0x78u;
     media.sector[0][1] = 0x56u;
-    if (core_machine_media_registry_create(&registry) != TYPE_STATUS_OK ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    if (core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(registry, 1u, &media,
-            &core_machine_hdc_fixture_provider) != TYPE_STATUS_OK ||
-        core_machine_media_registry_freeze(registry) != TYPE_STATUS_OK) {
+            &core_machine_hdc_fixture_provider) != LIB_STATUS_OK ||
+        core_machine_media_registry_freeze(registry) != LIB_STATUS_OK) {
         failed = 1;
     } else {
         topology.media_registry = registry;
         topology.media_id = 1u;
             topology.config = hdc_plan;
-        if (core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK ||
-            core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-            core_machine_reset(machine) != TYPE_STATUS_OK ||
+        if (core_machine_configure_hdc(machine, &topology) != LIB_STATUS_OK ||
+            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK ||
             machine->hdc.data.error != CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK ||
             !core_machine_hdc_program_chs(machine, &hdc_config) ||
             !core_machine_hdc_write(machine, hdc_config.drive_head_port, 0xa0u) ||
@@ -203,7 +203,7 @@ static C_INT core_machine_hdc_test_ibm_wd1003(C_VOID)
             machine->hdc.data.fixed_disk_register != 0x08u ||
             machine->hdc.data.drive_head != 0xa0u ||
             core_machine_bus_read(machine, hdc_config.alternate_status_device_control_port,
-                &status) != TYPE_STATUS_UNSUPPORTED ||
+                &status) != LIB_STATUS_UNSUPPORTED ||
             !core_machine_hdc_program_chs(machine, &hdc_config) ||
             !core_machine_hdc_command(machine, &hdc_config, 0x91u) ||
             !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
@@ -232,7 +232,7 @@ static C_INT core_machine_hdc_test_ibm_wd1003(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -266,33 +266,33 @@ C_INT main(C_VOID)
     lib_u16 word = 0u;
     lib_u32 queries_before;
     lib_u32 reads_before;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     media.sector[0][0] = 0x34u;
     media.sector[0][1] = 0x12u;
-    if (core_machine_media_registry_create(&registry) != TYPE_STATUS_OK ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
+    if (core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         hdc = &machine->hdc;
         if (hdc == LIB_NULL ||
             core_machine_media_registry_bind(registry, 1u, &media,
-                &core_machine_hdc_fixture_provider) != TYPE_STATUS_OK ||
-            core_machine_media_registry_freeze(registry) != TYPE_STATUS_OK ||
+                &core_machine_hdc_fixture_provider) != LIB_STATUS_OK ||
+            core_machine_media_registry_freeze(registry) != LIB_STATUS_OK ||
             core_machine_media_registry_bind(registry, 2u, &media,
-                &core_machine_hdc_fixture_provider) != TYPE_STATUS_INVALID_STATE) {
+                &core_machine_hdc_fixture_provider) != LIB_STATUS_INVALID_STATE) {
             failed |= 0x02;
         } else {
             topology.media_registry = registry;
             topology.media_id = 1u;
             topology.config = (core_machine_hdc_config) {0};
             if (core_machine_configure_hdc(machine, &topology) !=
-                TYPE_STATUS_INVALID_ARGUMENT) {
+                LIB_STATUS_INVALID_ARGUMENT) {
                 failed |= 0x04;
             }
             topology.config = hdc_plan;
-            if (!failed && (core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK ||
-                core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-                core_machine_reset(machine) != TYPE_STATUS_OK)) {
+            if (!failed && (core_machine_configure_hdc(machine, &topology) != LIB_STATUS_OK ||
+                core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+                core_machine_reset(machine) != LIB_STATUS_OK)) {
                 failed |= 0x04;
             } else {
                 if (hdc->data.error != 0x01u || hdc->data.sector_count != 1u ||
@@ -545,7 +545,7 @@ C_INT main(C_VOID)
     core_machine_media_registry_destroy(registry);
     failed |= core_machine_hdc_test_ibm_wd1003();
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T286:S1:ATA-NIEN:PORT:FAIL bits=%x status=%02x error=%02x word=%04x\n",
+        fprintf(stderr, "M5:T286:S1:ATA-NIEN:PORT:FAIL bits=%x status=%02x error=%02x word=%04x\n",
             failed, status, error, word);
         return 1;
     }

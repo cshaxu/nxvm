@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -15,11 +16,11 @@ typedef struct arpl_machine {
     core_machine *machine;
 } arpl_machine;
 
-static C_VOID arpl_reset(C_VOID *opaque)
+static void arpl_reset(void *opaque)
 {
     arpl_machine *state = (arpl_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
@@ -28,7 +29,7 @@ static const core_machine_execution_provider arpl_execution_provider = {
     LIB_NULL
 };
 
-static C_INT arpl_prepare(arpl_machine *state,
+static lib_i32 arpl_prepare(arpl_machine *state,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -48,7 +49,7 @@ static C_INT arpl_prepare(arpl_machine *state,
     return 1;
 }
 
-static C_INT arpl_install_gdt(core_machine *machine)
+static lib_i32 arpl_install_gdt(core_machine *machine)
 {
     static const lib_u8 gdt_pointer[] = {
         0x17u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
@@ -60,12 +61,12 @@ static C_INT arpl_install_gdt(core_machine *machine)
     };
 
     return core_machine_memory_write(machine, ARPL_GDT_POINTER_ADDRESS,
-        gdt_pointer, sizeof(gdt_pointer)) == TYPE_STATUS_OK &&
+        gdt_pointer, sizeof(gdt_pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, ARPL_GDT_ADDRESS, gdt,
-            sizeof(gdt)) == TYPE_STATUS_OK;
+            sizeof(gdt)) == LIB_STATUS_OK;
 }
 
-static C_INT arpl_run_protected(arpl_machine *state,
+static lib_i32 arpl_run_protected(arpl_machine *state,
     const lib_u8 *protected_code, lib_size protected_code_size,
     t_cpu *out_cpu)
 {
@@ -81,19 +82,19 @@ static C_INT arpl_run_protected(arpl_machine *state,
     };
     const core_machine_run_budget budget = { 64u, 0u };
     core_machine_run_result result;
-    type_status run_status;
+    lib_status run_status;
 
     if (state == LIB_NULL || state->machine == LIB_NULL ||
         protected_code == LIB_NULL || out_cpu == LIB_NULL ||
         !arpl_install_gdt(state->machine) ||
         core_machine_memory_write(state->machine, 0u, real_code,
-            sizeof(real_code)) != TYPE_STATUS_OK ||
+            sizeof(real_code)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, ARPL_CODE_ADDRESS,
-            protected_code, protected_code_size) != TYPE_STATUS_OK) return 0;
+            protected_code, protected_code_size) != LIB_STATUS_OK) return 0;
     run_status = core_machine_run(state->machine, budget, &result);
-    if (run_status != TYPE_STATUS_OK ||
+    if (run_status != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T263:S3:ARPL run status=%d reason=%d executed=%llu\n",
             run_status, result.reason,
             (unsigned long long)result.executed);
@@ -103,7 +104,7 @@ static C_INT arpl_run_protected(arpl_machine *state,
     return 1;
 }
 
-static C_INT arpl_test_register_forms(C_VOID)
+static lib_i32 arpl_test_register_forms(void)
 {
     static const lib_u8 adjust_code[] = {
         0xb8u, 0x01u, 0x00u,
@@ -119,16 +120,16 @@ static C_INT arpl_test_register_forms(C_VOID)
     };
     arpl_machine state;
     t_cpu cpu;
-    C_INT failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
+    lib_i32 failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
 
     if (!failed) {
-        C_INT ran = arpl_run_protected(&state, adjust_code, sizeof(adjust_code),
+        lib_i32 ran = arpl_run_protected(&state, adjust_code, sizeof(adjust_code),
             &cpu);
         failed |= !ran;
         failed |= (cpu.data.eax & 0xffffu) != 0x0003u ||
-            !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+            !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
         if (!ran) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "M5:T263:S3:ARPL register-adjust stopped ip=%08x ax=%04x flags=%08x\n",
                 cpu.data.eip, cpu.data.eax & 0xffffu, cpu.data.eflags);
         }
@@ -137,13 +138,13 @@ static C_INT arpl_test_register_forms(C_VOID)
     state.machine = LIB_NULL;
     if (!failed) failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
     if (!failed) {
-        C_INT ran = arpl_run_protected(&state, retain_code, sizeof(retain_code),
+        lib_i32 ran = arpl_run_protected(&state, retain_code, sizeof(retain_code),
             &cpu);
         failed |= !ran;
         failed |= (cpu.data.eax & 0xffffu) != 0x0003u ||
-            TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+            CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
         if (!ran) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "M5:T263:S3:ARPL register-retain stopped ip=%08x ax=%04x flags=%08x\n",
                 cpu.data.eip, cpu.data.eax & 0xffffu, cpu.data.eflags);
         }
@@ -152,7 +153,7 @@ static C_INT arpl_test_register_forms(C_VOID)
     return failed;
 }
 
-static C_INT arpl_test_memory_prefix_form(C_VOID)
+static lib_i32 arpl_test_memory_prefix_form(void)
 {
     static const lib_u8 code[] = {
         0xb9u, 0x03u, 0x00u,
@@ -162,22 +163,22 @@ static C_INT arpl_test_memory_prefix_form(C_VOID)
     lib_u16 selector = 0x0001u;
     t_cpu cpu;
     arpl_machine state;
-    C_INT failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
+    lib_i32 failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
 
     if (!failed) {
-        C_INT ran;
+        lib_i32 ran;
         failed |= core_machine_memory_write(state.machine,
             ARPL_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector)) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         ran = arpl_run_protected(&state, code, sizeof(code), &cpu);
         failed |= !ran;
         failed |= core_machine_memory_read(state.machine,
             ARPL_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector)) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         failed |= selector != 0x0003u ||
-            !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+            !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_ZF);
         if (!ran) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "M5:T263:S3:ARPL memory-prefix stopped ip=%08x value=%04x flags=%08x\n",
                 cpu.data.eip, selector, cpu.data.eflags);
         }
@@ -186,7 +187,7 @@ static C_INT arpl_test_memory_prefix_form(C_VOID)
     return failed;
 }
 
-static C_INT arpl_test_rejected_forms(C_VOID)
+static lib_i32 arpl_test_rejected_forms(void)
 {
     static const lib_u8 program[] = {
         0xb8u, 0x01u, 0x00u,
@@ -200,7 +201,7 @@ static C_INT arpl_test_rejected_forms(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286
     };
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
         core_machine_run_result result;
@@ -213,14 +214,14 @@ static C_INT arpl_test_rejected_forms(C_VOID)
             continue;
         }
         failed |= core_machine_memory_write(state.machine, 0u, program,
-            sizeof(program)) != TYPE_STATUS_OK;
+            sizeof(program)) != LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         failed |= core_machine_run(state.machine, budget, &result) !=
-            TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+            LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT;
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD) || diagnostic.first_fault.point.bytes[0] !=
             0x63u;
         cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -230,7 +231,7 @@ static C_INT arpl_test_rejected_forms(C_VOID)
     return failed;
 }
 
-static C_INT arpl_test_metadata(C_VOID)
+static lib_i32 arpl_test_metadata(void)
 {
     core_machine_cpu_instruction_metadata metadata =
         core_machine_cpu_instruction_metadata_get(
@@ -240,20 +241,20 @@ static C_INT arpl_test_metadata(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT metadata = arpl_test_metadata();
-    C_INT registers = arpl_test_register_forms();
-    C_INT memory_prefix = arpl_test_memory_prefix_form();
-    C_INT rejected = arpl_test_rejected_forms();
+    lib_i32 metadata = arpl_test_metadata();
+    lib_i32 registers = arpl_test_register_forms();
+    lib_i32 memory_prefix = arpl_test_memory_prefix_form();
+    lib_i32 rejected = arpl_test_rejected_forms();
 
     if (metadata || registers || memory_prefix || rejected) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T263:S3:ARPL:FAIL metadata=%d registers=%d memory_prefix=%d rejected=%d\n",
             metadata, registers, memory_prefix, rejected);
         return 1;
     }
-    STD_PRINTF("M5:T263:S2:ARPL:OK\n");
-    STD_PRINTF("M5:T263:S3:ARPL:CORPUS:OK\n");
+    printf("M5:T263:S2:ARPL:OK\n");
+    printf("M5:T263:S3:ARPL:CORPUS:OK\n");
     return 0;
 }

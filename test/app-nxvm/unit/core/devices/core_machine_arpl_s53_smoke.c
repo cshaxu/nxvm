@@ -1,4 +1,6 @@
 #include "lib/types/types_interface.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #define main arpl_historical_main
 #include "core_machine_arpl_smoke.c"
 #undef main
@@ -7,7 +9,7 @@
 #define ARPL_S53_GDT_BASE 0x0300u
 #define ARPL_S53_CODE_BASE 0x2000u
 
-static C_INT arpl_s53_boot(arpl_machine *state,
+static lib_i32 arpl_s53_boot(arpl_machine *state,
     core_machine_cpu_profile profile, const lib_u8 *program,
     lib_size program_bytes)
 {
@@ -57,36 +59,36 @@ static C_INT arpl_s53_boot(arpl_machine *state,
 
     return arpl_prepare(state, profile) &&
         core_machine_memory_write(state->machine, ARPL_S53_GDT_POINTER,
-            gdt_pointer, sizeof(gdt_pointer)) == TYPE_STATUS_OK &&
+            gdt_pointer, sizeof(gdt_pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, ARPL_S53_GDT_BASE, gdt,
-            sizeof(gdt)) == TYPE_STATUS_OK &&
+            sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x0110u, idt_pointer,
-            sizeof(idt_pointer)) == TYPE_STATUS_OK &&
+            sizeof(idt_pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x0400u, idt, sizeof(idt)) ==
-            TYPE_STATUS_OK &&
+            LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, real_code, real_bytes) ==
-            TYPE_STATUS_OK &&
+            LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, ARPL_S53_CODE_BASE + 0x100u,
-            (const lib_u8[]){ 0xf4u }, 1u) == TYPE_STATUS_OK &&
+            (const lib_u8[]){ 0xf4u }, 1u) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, ARPL_S53_CODE_BASE, program,
-            program_bytes) == TYPE_STATUS_OK;
+            program_bytes) == LIB_STATUS_OK;
 }
 
-static C_INT arpl_s53_run(arpl_machine *state, t_cpu *out_cpu,
+static lib_i32 arpl_s53_run(arpl_machine *state, t_cpu *out_cpu,
     core_machine_cpu_diagnostic *out_diagnostic)
 {
     core_machine_run_result result;
 
     return core_machine_run(state->machine, (core_machine_run_budget){ 64u, 0u },
-            &result) == TYPE_STATUS_OK &&
+            &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
         core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) ==
-            TYPE_STATUS_OK && !out_diagnostic->first_fault.valid &&
+            LIB_STATUS_OK && !out_diagnostic->first_fault.valid &&
         ((*out_cpu = test_core_machine_fixture_capture_cpu_after_run(
             state->machine)), 1);
 }
 
-static C_INT arpl_s53_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 arpl_s53_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
@@ -117,7 +119,7 @@ static lib_u32 arpl_s53_register(const t_cpu *cpu, lib_u8 register_index)
     }
 }
 
-static C_VOID arpl_s53_set_register(t_cpu *cpu, lib_u8 register_index,
+static void arpl_s53_set_register(t_cpu *cpu, lib_u8 register_index,
     lib_u32 value)
 {
     switch (register_index) {
@@ -133,7 +135,7 @@ static C_VOID arpl_s53_set_register(t_cpu *cpu, lib_u8 register_index,
     }
 }
 
-static C_INT arpl_s53_gprs_same_except(const t_cpu *before,
+static lib_i32 arpl_s53_gprs_same_except(const t_cpu *before,
     const t_cpu *after, lib_u8 destination)
 {
     lib_u8 index;
@@ -146,7 +148,7 @@ static C_INT arpl_s53_gprs_same_except(const t_cpu *before,
     return 1;
 }
 
-static C_INT arpl_s53_nonstack_gprs_same_except(const t_cpu *before,
+static lib_i32 arpl_s53_nonstack_gprs_same_except(const t_cpu *before,
     const t_cpu *after, lib_u8 destination)
 {
     lib_u8 index;
@@ -159,7 +161,7 @@ static C_INT arpl_s53_nonstack_gprs_same_except(const t_cpu *before,
     return 1;
 }
 
-static C_VOID arpl_s53_seed_gprs(t_cpu *cpu)
+static void arpl_s53_seed_gprs(t_cpu *cpu)
 {
     cpu->data.eax = 0xa1a10000u;
     cpu->data.ecx = 0xb2b20000u;
@@ -171,7 +173,7 @@ static C_VOID arpl_s53_seed_gprs(t_cpu *cpu)
     cpu->data.edi = 0x97970000u;
 }
 
-static C_INT arpl_s53_test_direct_matrix(C_VOID)
+static lib_i32 arpl_s53_test_direct_matrix(void)
 {
     lib_u8 destination;
 
@@ -192,7 +194,7 @@ static C_INT arpl_s53_test_direct_matrix(C_VOID)
                 (lib_u16)((destination_value & ~VCPU_SELECTOR_RPL) |
                     (source_value & VCPU_SELECTOR_RPL));
 
-            C_INT failed = !arpl_s53_boot(&state,
+            lib_i32 failed = !arpl_s53_boot(&state,
                 CORE_MACHINE_CPU_PROFILE_80386, &hlt, sizeof(hlt));
 
             if (!failed)
@@ -207,14 +209,14 @@ static C_INT arpl_s53_test_direct_matrix(C_VOID)
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed = core_machine_memory_write(state.machine,
-                    ARPL_S53_CODE_BASE, code, sizeof(code)) != TYPE_STATUS_OK;
+                    ARPL_S53_CODE_BASE, code, sizeof(code)) != LIB_STATUS_OK;
             }
             if (!failed)
                 failed = !arpl_s53_run(&state, &after, &diagnostic);
             failed |= (arpl_s53_register(&after, destination) & 0xffff0000u) !=
                 (arpl_s53_register(&before, destination) & 0xffff0000u);
             failed |= (arpl_s53_register(&after, destination) & 0xffffu) != expected;
-            failed |= TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) !=
+            failed |= CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) !=
                 (source != destination);
             failed |= (after.data.eflags & ~VCPU_EFLAGS_ZF) !=
                 (before.data.eflags & ~VCPU_EFLAGS_ZF);
@@ -229,7 +231,7 @@ static C_INT arpl_s53_test_direct_matrix(C_VOID)
     return 1;
 }
 
-static C_INT arpl_s53_test_rpl_and_flags(C_VOID)
+static lib_i32 arpl_s53_test_rpl_and_flags(void)
 {
     static const lib_u8 hlt = 0xf4u;
     static const lib_u8 code[] = { 0x63u, 0xcau, 0xf4u };
@@ -240,7 +242,7 @@ static C_INT arpl_s53_test_rpl_and_flags(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !arpl_s53_boot(&state,
+        lib_i32 failed = !arpl_s53_boot(&state,
             CORE_MACHINE_CPU_PROFILE_80386, &hlt, sizeof(hlt));
 
         if (!failed)
@@ -257,7 +259,7 @@ static C_INT arpl_s53_test_rpl_and_flags(C_VOID)
             before = test_core_machine_fixture_capture_cpu_after_run(
                 state.machine);
             failed = core_machine_memory_write(state.machine,
-                ARPL_S53_CODE_BASE, code, sizeof(code)) != TYPE_STATUS_OK;
+                ARPL_S53_CODE_BASE, code, sizeof(code)) != LIB_STATUS_OK;
         }
         if (!failed)
             failed = !arpl_s53_run(&state, &after, &diagnostic);
@@ -265,7 +267,7 @@ static C_INT arpl_s53_test_rpl_and_flags(C_VOID)
             (before.data.edx & 0xffff0000u);
         failed |= (after.data.edx & 0xffffu) !=
             (change ? 0x1203u : 0x1201u);
-        failed |= TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) != change;
+        failed |= CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) != change;
         failed |= (after.data.eflags & ~VCPU_EFLAGS_ZF) !=
             (before.data.eflags & ~VCPU_EFLAGS_ZF);
         failed |= after.data.eip != 3u;
@@ -278,7 +280,7 @@ static C_INT arpl_s53_test_rpl_and_flags(C_VOID)
     return 1;
 }
 
-static C_INT arpl_s53_test_memory_case(const lib_u8 *program,
+static lib_i32 arpl_s53_test_memory_case(const lib_u8 *program,
     lib_u8 program_bytes, lib_u32 address, lib_u8 change)
 {
     const lib_u16 adjacent = 0x3ca5u;
@@ -290,7 +292,7 @@ static C_INT arpl_s53_test_memory_case(const lib_u8 *program,
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     static const lib_u8 hlt = 0xf4u;
-    C_INT failed = !arpl_s53_boot(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !arpl_s53_boot(&state, CORE_MACHINE_CPU_PROFILE_80386,
         &hlt, sizeof(hlt));
 
     if (!failed) {
@@ -307,35 +309,35 @@ static C_INT arpl_s53_test_memory_case(const lib_u8 *program,
             state.machine->executor_cpu.data.esi = 0x00000400u;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed = core_machine_memory_write(state.machine, address, &destination,
-            sizeof(destination)) != TYPE_STATUS_OK;
+            sizeof(destination)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, address + 0x10u,
-            &adjacent, sizeof(adjacent)) != TYPE_STATUS_OK;
+            &adjacent, sizeof(adjacent)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, ARPL_S53_CODE_BASE,
-            program, program_bytes) != TYPE_STATUS_OK;
+            program, program_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
         failed = !arpl_s53_run(&state, &after, &diagnostic);
         failed |= after.data.eip != program_bytes;
         failed |= after.data.ecx != before.data.ecx;
-        failed |= TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) != change;
+        failed |= CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) != change;
         failed |= (after.data.eflags & ~VCPU_EFLAGS_ZF) !=
             (before.data.eflags & ~VCPU_EFLAGS_ZF);
         failed |= !arpl_s53_gprs_same_except(&before, &after, 8u);
         failed |= !arpl_s53_sregs_same(&before, &after);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            address, (type_virtual_address)&after_destination,
-            sizeof(after_destination)) != TYPE_STATUS_OK;
+            address, (lib_uptr)&after_destination,
+            sizeof(after_destination)) != LIB_STATUS_OK;
         failed |= after_destination != (change ? 0x5a03u : destination);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            address + 0x10u, (type_virtual_address)&after_adjacent,
-            sizeof(after_adjacent)) != TYPE_STATUS_OK;
+            address + 0x10u, (lib_uptr)&after_adjacent,
+            sizeof(after_adjacent)) != LIB_STATUS_OK;
         failed |= after_adjacent != adjacent;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT arpl_s53_test_memory_and_attributes(C_VOID)
+static lib_i32 arpl_s53_test_memory_and_attributes(void)
 {
     static const lib_u8 ds[] = { 0xb9u,0x03u,0x00u,0x63u,0x0eu,0x00u,0x04u,0xf4u };
     static const lib_u8 ss[] = { 0xbdu,0x00u,0x04u,0xb9u,0x03u,0x00u,0x63u,0x4eu,0x00u,0xf4u };
@@ -372,7 +374,7 @@ static C_INT arpl_s53_test_memory_and_attributes(C_VOID)
             0x00004400u, 1u);
 }
 
-static C_INT arpl_s53_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 arpl_s53_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *program, lib_u8 program_bytes)
 {
     arpl_machine state;
@@ -382,33 +384,33 @@ static C_INT arpl_s53_expect_ud(core_machine_cpu_profile profile,
     t_cpu after;
     lib_u8 memory_before[8] = { 0xa1u,0xa2u,0xa3u,0xa4u,0xa5u,0xa6u,0xa7u,0xa8u };
     lib_u8 memory_after[sizeof(memory_before)] = { 0u };
-    C_INT failed = !arpl_prepare(&state, profile);
+    lib_i32 failed = !arpl_prepare(&state, profile);
 
     if (!failed) {
         failed = !test_core_machine_fixture_prepare_real_mode_execution(
             state.machine, 0u);
         failed |= core_machine_memory_write(state.machine, 0u, program,
-            program_bytes) != TYPE_STATUS_OK;
+            program_bytes) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x0400u,
-            memory_before, sizeof(memory_before)) != TYPE_STATUS_OK;
+            memory_before, sizeof(memory_before)) != LIB_STATUS_OK;
     }
     if (!failed) {
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_FAULT;
+            (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         failed |= result.reason != CORE_MACHINE_STOP_FAULT;
         failed |= !diagnostic.first_fault.valid;
-        failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+        failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
             VCPUINS_EXCEPT_UD);
         failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x0400u, (type_virtual_address)memory_after,
-            sizeof(memory_after)) != TYPE_STATUS_OK;
+            0x0400u, (lib_uptr)memory_after,
+            sizeof(memory_after)) != LIB_STATUS_OK;
         failed |= lib_memory_compare(memory_before, memory_after,
             sizeof(memory_before)) != 0;
     }
@@ -416,7 +418,7 @@ static C_INT arpl_s53_expect_ud(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT arpl_s53_test_rejections(C_VOID)
+static lib_i32 arpl_s53_test_rejections(void)
 {
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -454,7 +456,7 @@ static C_INT arpl_s53_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT arpl_s53_test_protected_read_limit(C_VOID)
+static lib_i32 arpl_s53_test_protected_read_limit(void)
 {
     static const lib_u8 hlt = 0xf4u;
     static const lib_u8 program[] = { 0x63u,0x0eu,0x00u,0x04u };
@@ -468,7 +470,7 @@ static C_INT arpl_s53_test_protected_read_limit(C_VOID)
     lib_u16 observed = 0u;
     lib_u16 observed_adjacent = 0u;
     lib_u16 frame[4u] = { 0u };
-    C_INT failed = !arpl_s53_boot(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !arpl_s53_boot(&state, CORE_MACHINE_CPU_PROFILE_80386,
         &hlt, sizeof(hlt));
 
     if (!failed) {
@@ -481,37 +483,37 @@ static C_INT arpl_s53_test_protected_read_limit(C_VOID)
         state.machine->executor_cpu.data.ds.limit = 0x000fu;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed = core_machine_memory_write(state.machine, 0x00004400u, &image,
-            sizeof(image)) != TYPE_STATUS_OK;
+            sizeof(image)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x00004410u, &adjacent,
-            sizeof(adjacent)) != TYPE_STATUS_OK;
+            sizeof(adjacent)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, ARPL_S53_CODE_BASE,
-            program, sizeof(program)) != TYPE_STATUS_OK;
+            program, sizeof(program)) != LIB_STATUS_OK;
     }
     if (!failed) {
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){ 64u, 0u }, &result) != TYPE_STATUS_OK;
+            (core_machine_run_budget){ 64u, 0u }, &result) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         failed |= diagnostic.first_fault.valid;
         failed |= !diagnostic.last_delivered_exception.valid;
-        failed |= !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+        failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
             VCPUINS_EXCEPT_GP);
         failed |= diagnostic.last_delivered_exception.point.eip != 0u;
         failed |= after.data.eip != 0x00000101u;
         failed |= after.data.ecx != before.data.ecx;
         failed |= !arpl_s53_sregs_same(&before, &after);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x00004400u, (type_virtual_address)&observed,
-            sizeof(observed)) != TYPE_STATUS_OK;
+            0x00004400u, (lib_uptr)&observed,
+            sizeof(observed)) != LIB_STATUS_OK;
         failed |= observed != image;
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x00004410u, (type_virtual_address)&observed_adjacent,
-            sizeof(observed_adjacent)) != TYPE_STATUS_OK;
+            0x00004410u, (lib_uptr)&observed_adjacent,
+            sizeof(observed_adjacent)) != LIB_STATUS_OK;
         failed |= observed_adjacent != adjacent;
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
             after.data.ss.base + (lib_u16)after.data.esp,
-            (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK;
+            (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK;
         failed |= frame[0u] != 0u || frame[1u] != 0u || frame[2u] != 0x0008u;
         failed |= frame[3u] != (lib_u16)before.data.eflags;
     }
@@ -519,7 +521,7 @@ static C_INT arpl_s53_test_protected_read_limit(C_VOID)
     return !failed;
 }
 
-static C_INT arpl_s53_test_irq(C_VOID)
+static lib_i32 arpl_s53_test_irq(void)
 {
     static const lib_u8 hlt = 0xf4u;
     static const lib_u8 code[] = { 0xfbu, 0x63u, 0xc8u, 0x90u };
@@ -532,15 +534,15 @@ static C_INT arpl_s53_test_irq(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        type_status run_status = TYPE_STATUS_OK;
+        lib_status run_status = LIB_STATUS_OK;
         lib_u8 gate[8] = { 0u };
         lib_u32 frame[3u] = { 0u };
-        C_INT failed = !arpl_s53_boot(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !arpl_s53_boot(&state, CORE_MACHINE_CPU_PROFILE_80386,
             &hlt, sizeof(hlt));
 
         if (!failed) {
             failed = core_machine_run(state.machine,
-                (core_machine_run_budget){ 64u, 0u }, &result) != TYPE_STATUS_OK;
+                (core_machine_run_budget){ 64u, 0u }, &result) != LIB_STATUS_OK;
             failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         }
         if (!failed) {
@@ -549,9 +551,9 @@ static C_INT arpl_s53_test_irq(C_VOID)
             gate[2u] = 0x08u;
             gate[5u] = 0x8eu;
             failed |= core_machine_memory_write(state.machine, 0x0500u, gate,
-                sizeof(gate)) != TYPE_STATUS_OK;
+                sizeof(gate)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(state.machine, ARPL_S53_CODE_BASE,
-                code, sizeof(code)) != TYPE_STATUS_OK;
+                code, sizeof(code)) != LIB_STATUS_OK;
             arpl_s53_seed_gprs(&state.machine->executor_cpu);
             state.machine->executor_cpu.data.eax = 0xa1a10000u |
                 (change ? 1u : 3u);
@@ -569,32 +571,32 @@ static C_INT arpl_s53_test_irq(C_VOID)
             core_machine_pic_irq_source_deassert(&source);
             run_status = core_machine_run(state.machine,
                 (core_machine_run_budget){ 2u, 0u }, &result);
-            failed |= run_status != TYPE_STATUS_OK;
+            failed |= run_status != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             failed |= diagnostic.first_fault.valid;
             failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
             failed |= after.data.eip != 0x100u;
             failed |= (after.data.eax & 0xffff0000u) !=
                 (before.data.eax & 0xffff0000u);
             failed |= (after.data.eax & 0xffffu) != (change ? 3u : 3u);
-            failed |= TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) != change;
+            failed |= CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) != change;
             failed |= (after.data.eflags & ~(VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF)) !=
                 (before.data.eflags & ~(VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF));
             failed |= !arpl_s53_nonstack_gprs_same_except(&before, &after, 0u);
             failed |= !arpl_s53_sregs_same(&before, &after);
-            failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
                 VPIC_ISR_IRQ(0u));
-            failed |= TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            failed |= CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK;
+                (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK;
             failed |= frame[0u] != 3u;
             failed |= (frame[2u] & ~VCPU_EFLAGS_ZF) !=
                 (before.data.eflags & ~VCPU_EFLAGS_ZF);
-            failed |= TYPE_GET_BIT(frame[2u], VCPU_EFLAGS_ZF) != change;
+            failed |= CORE_MACHINE_BIT_IS_SET(frame[2u], VCPU_EFLAGS_ZF) != change;
         }
         if (failed) {
             core_machine_destroy(state.machine);
@@ -605,43 +607,43 @@ static C_INT arpl_s53_test_irq(C_VOID)
     return 1;
 }
 
-static C_INT arpl_s53_test_legacy_and_mode(C_VOID)
+static lib_i32 arpl_s53_test_legacy_and_mode(void)
 {
     return !arpl_test_rejected_forms() && !arpl_test_metadata() &&
         !arpl_test_register_forms() && !arpl_test_memory_prefix_form();
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!arpl_s53_test_direct_matrix()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S53:ARPL direct failed\n");
+        fprintf(stderr, "M5:T316:S53:ARPL direct failed\n");
         return 1;
     }
     if (!arpl_s53_test_rpl_and_flags()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S53:ARPL flags failed\n");
+        fprintf(stderr, "M5:T316:S53:ARPL flags failed\n");
         return 1;
     }
     if (!arpl_s53_test_memory_and_attributes()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S53:ARPL memory failed\n");
+        fprintf(stderr, "M5:T316:S53:ARPL memory failed\n");
         return 1;
     }
     if (!arpl_s53_test_rejections()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S53:ARPL reject failed\n");
+        fprintf(stderr, "M5:T316:S53:ARPL reject failed\n");
         return 1;
     }
     if (!arpl_s53_test_protected_read_limit()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S53:ARPL protected failed\n");
+        fprintf(stderr, "M5:T316:S53:ARPL protected failed\n");
         return 1;
     }
     if (!arpl_s53_test_irq()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S53:ARPL irq failed\n");
+        fprintf(stderr, "M5:T316:S53:ARPL irq failed\n");
         return 1;
     }
     if (!arpl_s53_test_legacy_and_mode()) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S53:ARPL legacy failed\n");
+        fprintf(stderr, "M5:T316:S53:ARPL legacy failed\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S53:ARPL:OK\n");
-    STD_PRINTF("M5:T401:S28:ARPL-PROFILES:OK\n");
+    printf("M5:T316:S53:ARPL:OK\n");
+    printf("M5:T401:S28:ARPL-PROFILES:OK\n");
     return 0;
 }

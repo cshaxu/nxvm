@@ -1,8 +1,8 @@
 #ifndef NXVM_BANNER_H
 #define NXVM_BANNER_H
 #include "lib/types/types_interface.h"
+#include <stdio.h>
 
-#include "type.h"
 
 #ifndef PRODUCT_BUILD_VERSION
 #define PRODUCT_BUILD_VERSION "0.5.0000"
@@ -13,7 +13,7 @@
 #define PRODUCT_BUILD_TIME __DATE__ " " __TIME__
 
 #define PRODUCT_PRINT_BANNER()                               \
-    STD_PRINTF("%s [%s]\n%s\n\nBuilt on %s\n", PRODUCT_NAME, \
+    printf("%s [%s]\n%s\n\nBuilt on %s\n", PRODUCT_NAME, \
                PRODUCT_VERSION, PRODUCT_COPYRIGHT, PRODUCT_BUILD_TIME)
 
 #endif

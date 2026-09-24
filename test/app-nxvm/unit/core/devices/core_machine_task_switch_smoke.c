@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -45,11 +46,11 @@ typedef enum task_switch_task_gate_rejection {
     TASK_SWITCH_TASK_GATE_REJECTION_NOT_PRESENT
 } task_switch_task_gate_rejection;
 
-static C_VOID task_switch_reset(C_VOID *opaque)
+static void task_switch_reset(void *opaque)
 {
     task_switch_fixture *fixture = (task_switch_fixture *)opaque;
 
-    if (fixture != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (fixture != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         fixture->machine);
 }
 
@@ -57,21 +58,21 @@ static const core_machine_execution_provider task_switch_provider = {
     task_switch_reset, LIB_NULL
 };
 
-static C_INT write_bytes(core_machine *machine, lib_u32 address,
+static lib_i32 write_bytes(core_machine *machine, lib_u32 address,
     const lib_u8 *bytes, lib_size count)
 {
     return core_machine_memory_write(machine, address, bytes, count) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT task_switch_write_u32(core_machine *machine, lib_u32 address,
+static lib_i32 task_switch_write_u32(core_machine *machine, lib_u32 address,
     lib_u32 value)
 {
     return core_machine_memory_write(machine, address, &value,
-        sizeof(value)) == TYPE_STATUS_OK;
+        sizeof(value)) == LIB_STATUS_OK;
 }
 
-static C_INT task_switch_prepare(task_switch_fixture *fixture,
+static lib_i32 task_switch_prepare(task_switch_fixture *fixture,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -82,7 +83,7 @@ static C_INT task_switch_prepare(task_switch_fixture *fixture,
 
     if (fixture == LIB_NULL) return 0;
     lib_memory_set(fixture, 0, sizeof(*fixture));
-    if (core_machine_create(&config, &fixture->machine) != TYPE_STATUS_OK) return 0;
+    if (core_machine_create(&config, &fixture->machine) != LIB_STATUS_OK) return 0;
     if (!test_core_machine_fixture_bind_freeze_reset(fixture->machine,
             &task_switch_provider, fixture)) {
         core_machine_destroy(fixture->machine);
@@ -92,7 +93,7 @@ static C_INT task_switch_prepare(task_switch_fixture *fixture,
     return 1;
 }
 
-static C_INT task_switch_install(task_switch_fixture *fixture,
+static lib_i32 task_switch_install(task_switch_fixture *fixture,
     task_switch_case test_case)
 {
     static const lib_u8 gdt_pointer[] = { 0x47u,0,0x00u,0x03u,0,0 };
@@ -300,7 +301,7 @@ static C_INT task_switch_install(task_switch_fixture *fixture,
             sizeof(task_b_code));
 }
 
-static C_INT task_switch_expect_switch(core_machine_cpu_profile profile,
+static lib_i32 task_switch_expect_switch(core_machine_cpu_profile profile,
     task_switch_case test_case)
 {
     task_switch_fixture fixture;
@@ -313,20 +314,20 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     t_cpu cpu;
     const core_machine_run_budget budget = { 128u, 0u };
-    C_INT failed = !task_switch_prepare(&fixture, profile);
+    lib_i32 failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
         failed |= !task_switch_install(&fixture, test_case);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-            TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            LIB_STATUS_OK || diagnostic.first_fault.valid ||
             diagnostic.last_delivered_exception.valid;
         failed |= core_machine_memory_read(fixture.machine, 0x3000u, &marker,
-            sizeof(marker)) != TYPE_STATUS_OK || marker != 0x2222u;
+            sizeof(marker)) != LIB_STATUS_OK || marker != 0x2222u;
         failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x0eu,
-            &saved_ip, sizeof(saved_ip)) != TYPE_STATUS_OK || saved_ip !=
+            &saved_ip, sizeof(saved_ip)) != LIB_STATUS_OK || saved_ip !=
             (test_case == TASK_SWITCH_CASE_INDIRECT_SUCCESS ? 0x0007u :
                 test_case == TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS ? 0x0008u :
                 test_case == TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS ? 0x000au :
@@ -336,18 +337,18 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile,
                 test_case == TASK_SWITCH_CASE_TASK_GATE_SUCCESS ? 0x0008u :
                 0x0008u);
         failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x12u,
-            &saved_ax, sizeof(saved_ax)) != TYPE_STATUS_OK || saved_ax != 0x1111u;
+            &saved_ax, sizeof(saved_ax)) != LIB_STATUS_OK || saved_ax != 0x1111u;
         failed |= core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
-            &access[0], 1u) != TYPE_STATUS_OK || access[0] !=
+            &access[0], 1u) != LIB_STATUS_OK || access[0] !=
             (test_case == TASK_SWITCH_CASE_CALL_SUCCESS ||
                 test_case == TASK_SWITCH_CASE_TASK_GATE_SUCCESS ? 0x83u : 0x81u);
         failed |= core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-            &access[1], 1u) != TYPE_STATUS_OK || access[1] != 0x83u;
+            &access[1], 1u) != LIB_STATUS_OK || access[1] != 0x83u;
         if (test_case == TASK_SWITCH_CASE_CALL_SUCCESS ||
             test_case == TASK_SWITCH_CASE_TASK_GATE_SUCCESS) {
             failed |= core_machine_memory_read(fixture.machine, TASK_B_BASE,
-                &backlink, sizeof(backlink)) != TYPE_STATUS_OK || backlink != 0x28u ||
-                !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_NT);
+                &backlink, sizeof(backlink)) != LIB_STATUS_OK || backlink != 0x28u ||
+                !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_NT);
         }
         failed |= !cpu.data.tr.flagValid || cpu.data.tr.selector != 0x0030u ||
             cpu.data.ax != 0x2222u || cpu.data.ss.sregtype != SREG_STACK ||
@@ -356,12 +357,12 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile,
                     cpu.data.ldtr.base != 0x0900u || cpu.data.ldtr.limit != 0x17u ||
                     cpu.data.cs.selector != 0x0cu || cpu.data.ss.selector != 0x14u ||
                     cpu.data.ds.selector != 0x14u || cpu.data.es.selector != 0x14u)) ||
-            !TYPE_GET_BIT(cpu.data.cr0, VCPU_CR0_TS);
+            !CORE_MACHINE_BIT_IS_SET(cpu.data.cr0, VCPU_CR0_TS);
         if (profile == CORE_MACHINE_CPU_PROFILE_80386) {
             failed |= cpu.data.eax != 0xffff2222u;
         }
         if (failed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "T261 switch=%u case=%u result=%u marker=%04x ip=%04x ax=%04x access=%02x/%02x tr=%04x eax=%08x\n",
                 (unsigned)profile, (unsigned)test_case, (unsigned)result.reason,
                 marker, saved_ip, saved_ax, access[0], access[1],
@@ -372,23 +373,23 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT task_switch_expect_stack_fault(core_machine_cpu_profile profile)
+static lib_i32 task_switch_expect_stack_fault(core_machine_cpu_profile profile)
 {
     task_switch_fixture fixture;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu cpu;
     const core_machine_run_budget budget = { 128u, 0u };
-    C_INT failed = !task_switch_prepare(&fixture, profile);
+    lib_i32 failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
         failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_STACK_LIMIT);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
-            TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+            LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT;
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                 profile == CORE_MACHINE_CPU_PROFILE_80386 ?
                     VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_SS) ||
             diagnostic.first_fault.exception_code != 0u ||
@@ -397,7 +398,7 @@ static C_INT task_switch_expect_stack_fault(core_machine_cpu_profile profile)
             cpu.data.ss.sregtype != SREG_STACK || !cpu.data.tr.flagValid ||
             cpu.data.tr.selector != 0x0030u;
         if (failed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "T261 stack=%u result=%u mask=%x code=%04x ss=%u tr=%04x\n",
                 (unsigned)profile, (unsigned)result.reason,
                 (unsigned)diagnostic.first_fault.exception_mask,
@@ -409,7 +410,7 @@ static C_INT task_switch_expect_stack_fault(core_machine_cpu_profile profile)
     return failed;
 }
 
-static C_INT task_switch_expect_fault(core_machine_cpu_profile profile,
+static lib_i32 task_switch_expect_fault(core_machine_cpu_profile profile,
     task_switch_case test_case, lib_u32 expected_mask, lib_u16 expected_code)
 {
     task_switch_fixture fixture;
@@ -417,21 +418,21 @@ static C_INT task_switch_expect_fault(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     t_cpu cpu;
     const core_machine_run_budget budget = { 128u, 0u };
-    C_INT failed = !task_switch_prepare(&fixture, profile);
+    lib_i32 failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
         failed |= !task_switch_install(&fixture, test_case);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
-            TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+            LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT;
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, expected_mask) ||
+            LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, expected_mask) ||
             diagnostic.first_fault.exception_code != expected_code ||
             diagnostic.last_delivered_exception.valid ||
             !cpu.data.tr.flagValid || cpu.data.tr.selector != 0x0028u;
         if (failed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "T261 fault=%u/%u result=%u mask=%x code=%04x tr=%04x\n",
                 (unsigned)profile, (unsigned)test_case, (unsigned)result.reason,
                 (unsigned)diagnostic.first_fault.exception_mask,
@@ -442,7 +443,7 @@ static C_INT task_switch_expect_fault(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT task_switch_expect_pending_irq(core_machine_cpu_profile profile)
+static lib_i32 task_switch_expect_pending_irq(core_machine_cpu_profile profile)
 {
     task_switch_fixture fixture;
     core_machine_pic_irq_source irq;
@@ -452,15 +453,15 @@ static C_INT task_switch_expect_pending_irq(core_machine_cpu_profile profile)
     t_cpu cpu;
     static const lib_u8 gate[] = { 0x80u,0x01u,0x08u,0u,0u,0x86u,0u,0u };
     const core_machine_run_budget budget = { 128u, 0u };
-    C_INT failed = !task_switch_prepare(&fixture, profile);
+    lib_i32 failed = !task_switch_prepare(&fixture, profile);
 
     lib_memory_set(&irq, 0, sizeof(irq));
     if (!failed) {
         failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_IRQ_SUCCESS) ||
             core_machine_memory_write(fixture.machine, IDT_BASE + 0x100u, gate,
-                sizeof(gate)) != TYPE_STATUS_OK ||
+                sizeof(gate)) != LIB_STATUS_OK ||
             core_machine_memory_write(fixture.machine, KERNEL_BASE + 0x180u,
-                (const lib_u8[]){ 0xf4u }, 1u) != TYPE_STATUS_OK;
+                (const lib_u8[]){ 0xf4u }, 1u) != LIB_STATUS_OK;
         fixture.machine->executor_cpu.data.idtr.flagValid = LIB_TRUE;
         fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
         fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
@@ -471,24 +472,24 @@ static C_INT task_switch_expect_pending_irq(core_machine_cpu_profile profile)
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-            TYPE_STATUS_OK || diagnostic.first_fault.valid;
+            LIB_STATUS_OK || diagnostic.first_fault.valid;
         failed |=
             cpu.data.eip != 0x0181u || cpu.data.ax != 0x2222u ||
-            cpu.data.sp != 0x7ffau || TYPE_GET_BIT(cpu.data.eflags,
+            cpu.data.sp != 0x7ffau || CORE_MACHINE_BIT_IS_SET(cpu.data.eflags,
                 VCPU_EFLAGS_IF) ||
             cpu.data.tr.selector != 0x0030u ||
-            !TYPE_GET_BIT(cpu.data.cr0, VCPU_CR0_TS) ||
-            !TYPE_GET_BIT(fixture.machine->shared_pic_master.data.isr,
+            !CORE_MACHINE_BIT_IS_SET(cpu.data.cr0, VCPU_CR0_TS) ||
+            !CORE_MACHINE_BIT_IS_SET(fixture.machine->shared_pic_master.data.isr,
                 VPIC_ISR_IRQ(0u)) ||
-            TYPE_GET_BIT(fixture.machine->shared_pic_master.data.irr,
+            CORE_MACHINE_BIT_IS_SET(fixture.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
         failed |= core_machine_memory_read(fixture.machine, 0x3000u, &marker,
-            sizeof(marker)) != TYPE_STATUS_OK || marker != 0u;
+            sizeof(marker)) != LIB_STATUS_OK || marker != 0u;
         if (failed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "T329 irq=%u result=%u eip=%04x ax=%04x sp=%04x ss=%05x tr=%04x isr=%02x irr=%02x marker=%04x\n",
                 (unsigned)profile, (unsigned)result.reason, cpu.data.eip,
                 cpu.data.ax, cpu.data.sp, cpu.data.ss.base, cpu.data.tr.selector,
@@ -500,7 +501,7 @@ static C_INT task_switch_expect_pending_irq(core_machine_cpu_profile profile)
     return failed;
 }
 
-static C_INT task_switch_expect_task_gate_rejection(
+static lib_i32 task_switch_expect_task_gate_rejection(
     core_machine_cpu_profile profile, task_switch_task_gate_rejection rejection)
 {
     task_switch_fixture fixture;
@@ -509,20 +510,20 @@ static C_INT task_switch_expect_task_gate_rejection(
     t_cpu after;
     static const lib_u8 gate[] = { 0x80u,0x01u,0x08u,0u,0u,0x86u,0u,0u };
     const core_machine_run_budget budget = { 128u, 0u };
-    C_INT failed = !task_switch_prepare(&fixture, profile);
+    lib_i32 failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
         failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_TASK_GATE_SUCCESS) ||
             core_machine_memory_write(fixture.machine, IDT_BASE + 13u * 8u,
-                gate, sizeof(gate)) != TYPE_STATUS_OK ||
+                gate, sizeof(gate)) != LIB_STATUS_OK ||
             core_machine_memory_write(fixture.machine, KERNEL_BASE + 0x180u,
-                (const lib_u8[]){0xf4u}, 1u) != TYPE_STATUS_OK;
+                (const lib_u8[]){0xf4u}, 1u) != LIB_STATUS_OK;
         if (rejection == TASK_SWITCH_TASK_GATE_REJECTION_PRIVILEGE) {
             failed |= core_machine_memory_write(fixture.machine, KERNEL_BASE + 6u,
-                (const lib_u8[]){0x3bu}, 1u) != TYPE_STATUS_OK;
+                (const lib_u8[]){0x3bu}, 1u) != LIB_STATUS_OK;
         } else {
             failed |= core_machine_memory_write(fixture.machine, GDT_BASE + 0x3du,
-                (const lib_u8[]){0x05u}, 1u) != TYPE_STATUS_OK;
+                (const lib_u8[]){0x05u}, 1u) != LIB_STATUS_OK;
         }
         fixture.machine->executor_cpu.data.idtr.flagValid = LIB_TRUE;
         fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
@@ -530,15 +531,15 @@ static C_INT task_switch_expect_task_gate_rejection(
         fixture.machine->executor_cpu.data.idtr.limit = 0x006fu;
         failed |= core_machine_run(fixture.machine, budget, &result) !=
             (rejection == TASK_SWITCH_TASK_GATE_REJECTION_PRIVILEGE ?
-                TYPE_STATUS_OK : TYPE_STATUS_FAULT);
+                LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR);
         after = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= result.reason != (rejection == TASK_SWITCH_TASK_GATE_REJECTION_PRIVILEGE ?
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT : CORE_MACHINE_STOP_FAULT) ||
-            core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) != TYPE_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) != LIB_STATUS_OK ||
             (rejection == TASK_SWITCH_TASK_GATE_REJECTION_PRIVILEGE ?
                 (!diagnostic.last_delivered_exception.valid ||
                     diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_GP) :
-                (!diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                (!diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                     diagnostic.first_fault.exception_mask,
                     profile == CORE_MACHINE_CPU_PROFILE_80286 ?
                         VCPUINS_EXCEPT_NP : VCPUINS_EXCEPT_DF))) ||
@@ -552,7 +553,7 @@ static C_INT task_switch_expect_task_gate_rejection(
     return failed;
 }
 
-static C_INT task_switch_expect_nested_return_16(
+static lib_i32 task_switch_expect_nested_return_16(
     core_machine_cpu_profile profile)
 {
     task_switch_fixture fixture;
@@ -565,7 +566,7 @@ static C_INT task_switch_expect_nested_return_16(
     static const lib_u8 task_return[] = { 0xcfu,0xf4u };
     static const lib_u8 halt[] = { 0xf4u };
     const core_machine_run_budget budget = { 128u, 0u };
-    C_INT failed = !task_switch_prepare(&fixture, profile);
+    lib_i32 failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
         failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_NESTED_RETURN) ||
@@ -574,23 +575,23 @@ static C_INT task_switch_expect_nested_return_16(
                 KERNEL_BASE + 0x100u, task_return, sizeof(task_return));
         if (!failed) {
             failed |= core_machine_run(fixture.machine, budget, &result) !=
-                TYPE_STATUS_OK || result.reason !=
+                LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 diagnostic.last_delivered_exception.valid;
             cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
             failed |= core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
-                    &descriptor_a, 1u) != TYPE_STATUS_OK ||
+                    &descriptor_a, 1u) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-                    &descriptor_b, 1u) != TYPE_STATUS_OK ||
+                    &descriptor_b, 1u) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, TASK_B_BASE, &backlink,
-                    sizeof(backlink)) != TYPE_STATUS_OK ||
+                    sizeof(backlink)) != LIB_STATUS_OK ||
                 cpu.data.eip != 9u || cpu.data.eax !=
                 (profile == CORE_MACHINE_CPU_PROFILE_80386 ?
                     0xffff1111u : 0x00001111u) ||
                 cpu.data.tr.selector != 0x28u ||
-                TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_NT) ||
+                CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_NT) ||
                 descriptor_a != 0x83u || descriptor_b != 0x81u;
         }
     }
@@ -598,7 +599,7 @@ static C_INT task_switch_expect_nested_return_16(
     return failed;
 }
 
-static C_INT task_switch_expect_idt_task_gate(
+static lib_i32 task_switch_expect_idt_task_gate(
     core_machine_cpu_profile profile)
 {
     task_switch_fixture fixture;
@@ -612,7 +613,7 @@ static C_INT task_switch_expect_idt_task_gate(
         0,0,0x30u,0,0,0x85u,0,0
     };
     const core_machine_run_budget budget = { 128u, 0u };
-    C_INT failed = !task_switch_prepare(&fixture, profile);
+    lib_i32 failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
         failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_IDT_TASK_GATE) ||
@@ -624,23 +625,23 @@ static C_INT task_switch_expect_idt_task_gate(
         fixture.machine->executor_cpu.data.idtr.limit = 0x001fu;
         if (!failed) {
             failed |= core_machine_run(fixture.machine, budget, &result) !=
-                TYPE_STATUS_OK || result.reason !=
+                LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 diagnostic.last_delivered_exception.valid;
             cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
             failed |= core_machine_memory_read(fixture.machine, TASK_B_BASE,
-                    &backlink, sizeof(backlink)) != TYPE_STATUS_OK ||
+                    &backlink, sizeof(backlink)) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, 0x3000u, &marker,
-                    sizeof(marker)) != TYPE_STATUS_OK ||
+                    sizeof(marker)) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
-                    &busy[0], 1u) != TYPE_STATUS_OK ||
+                    &busy[0], 1u) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-                    &busy[1], 1u) != TYPE_STATUS_OK || backlink != 0x28u ||
+                    &busy[1], 1u) != LIB_STATUS_OK || backlink != 0x28u ||
                 marker != 0x2222u || cpu.data.eip != 0x107u ||
                 cpu.data.tr.selector != 0x30u ||
-                !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_NT) ||
+                !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_NT) ||
                 busy[0] != 0x83u || busy[1] != 0x83u;
         }
     }
@@ -648,7 +649,7 @@ static C_INT task_switch_expect_idt_task_gate(
     return failed;
 }
 
-static C_INT task_switch_expect_double_fault_task_gate(C_VOID)
+static lib_i32 task_switch_expect_double_fault_task_gate(void)
 {
     task_switch_fixture fixture;
     core_machine_run_result result;
@@ -664,7 +665,7 @@ static C_INT task_switch_expect_double_fault_task_gate(C_VOID)
         0,0,0x30u,0,0,0x85u,0,0
     };
     const core_machine_run_budget budget = { 128u, 0u };
-    C_INT failed = !task_switch_prepare(&fixture,
+    lib_i32 failed = !task_switch_prepare(&fixture,
         CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -679,25 +680,25 @@ static C_INT task_switch_expect_double_fault_task_gate(C_VOID)
         fixture.machine->executor_cpu.data.idtr.limit = 0x006fu;
         if (!failed) {
             failed |= core_machine_run(fixture.machine, budget, &result) !=
-                TYPE_STATUS_OK || result.reason !=
+                LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 !diagnostic.last_delivered_exception.valid ||
                 diagnostic.last_delivered_exception.exception_mask !=
                 VCPUINS_EXCEPT_DF;
             cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
             failed |= core_machine_memory_read(fixture.machine, TASK_B_BASE,
-                    &backlink, sizeof(backlink)) != TYPE_STATUS_OK ||
+                    &backlink, sizeof(backlink)) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, 0x3000u, &marker,
-                    sizeof(marker)) != TYPE_STATUS_OK ||
+                    sizeof(marker)) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
-                    &busy[0], 1u) != TYPE_STATUS_OK ||
+                    &busy[0], 1u) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-                    &busy[1], 1u) != TYPE_STATUS_OK || backlink != 0x28u ||
+                    &busy[1], 1u) != LIB_STATUS_OK || backlink != 0x28u ||
                 marker != 0x2222u || cpu.data.eip != 0x107u ||
                 cpu.data.tr.selector != 0x30u ||
-                !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_NT) ||
+                !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_NT) ||
                 busy[0] != 0x83u || busy[1] != 0x83u;
         }
     }
@@ -753,8 +754,8 @@ typedef enum task_switch_tss32_rejection {
     TASK_SWITCH_TSS32_PAGING_TSS_FAULT
 } task_switch_tss32_rejection;
 
-static C_INT task_switch_expect_t330_16_to_32(type_bool nested,
-    type_bool task_gate, type_bool task_return)
+static lib_i32 task_switch_expect_t330_16_to_32(lib_u8 nested,
+    lib_u8 task_gate, lib_u8 task_return)
 {
     task_switch_fixture fixture;
     core_machine_run_result result;
@@ -772,7 +773,7 @@ static C_INT task_switch_expect_t330_16_to_32(type_bool nested,
     lib_u8 busy[2] = {0u, 0u};
     t_cpu cpu;
     const core_machine_run_budget budget = {128u, 0u};
-    C_INT failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !task_switch_install(&fixture, nested ?
@@ -781,11 +782,11 @@ static C_INT task_switch_expect_t330_16_to_32(type_bool nested,
             !write_bytes(fixture.machine, GDT_BASE + 0x30u, descriptor,
                 sizeof(descriptor)) ||
             core_machine_memory_write(fixture.machine, TASK_B_BASE + 0x1cu,
-                &target, sizeof(target)) != TYPE_STATUS_OK ||
+                &target, sizeof(target)) != LIB_STATUS_OK ||
             (task_return && (!write_bytes(fixture.machine, KERNEL_BASE + 0x100u,
                 iret, sizeof(iret)) || !write_bytes(fixture.machine,
                 KERNEL_BASE + 8u, &iret[1], 1u))) ||
-            core_machine_run(fixture.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(fixture.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= cpu.data.tr.selector != (task_return ? 0x28u : 0x30u) ||
@@ -803,16 +804,16 @@ static C_INT task_switch_expect_t330_16_to_32(type_bool nested,
                 (task_return ? 0u : 0x10u) ||
             cpu.data.gs.selector != (task_return ? 0u : 0x10u) ||
             cpu.data.ldtr.flagValid ||
-            !TYPE_GET_BIT(cpu.data.cr0, VCPU_CR0_TS) ||
+            !CORE_MACHINE_BIT_IS_SET(cpu.data.cr0, VCPU_CR0_TS) ||
             core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x2au,
-                &saved_ldtr, sizeof(saved_ldtr)) != TYPE_STATUS_OK ||
+                &saved_ldtr, sizeof(saved_ldtr)) != LIB_STATUS_OK ||
             saved_ldtr != 0u || core_machine_memory_read(fixture.machine,
-                GDT_BASE + 0x2du, &busy[0], 1u) != TYPE_STATUS_OK ||
+                GDT_BASE + 0x2du, &busy[0], 1u) != LIB_STATUS_OK ||
             core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-                &busy[1], 1u) != TYPE_STATUS_OK ||
+                &busy[1], 1u) != LIB_STATUS_OK ||
             busy[0] != (task_return ? 0x83u : nested ? 0x83u : 0x81u) ||
             busy[1] != (task_return ? 0x89u : 0x8bu) ||
-            (!task_return && nested && !TYPE_GET_BIT(cpu.data.eflags,
+            (!task_return && nested && !CORE_MACHINE_BIT_IS_SET(cpu.data.eflags,
                 VCPU_EFLAGS_NT));
     }
     core_machine_destroy(fixture.machine);
@@ -840,8 +841,8 @@ typedef struct task_switch_smoke_tss16_state {
 _Static_assert(sizeof(task_switch_smoke_tss16_state) == 0x1eu,
     "TSS16 test image must retain the complete Intel saved-state span");
 
-static C_INT task_switch_expect_t330_32_to_16(type_bool nested,
-    type_bool task_gate, type_bool task_return)
+static lib_i32 task_switch_expect_t330_32_to_16(lib_u8 nested,
+    lib_u8 task_gate, lib_u8 task_return)
 {
     task_switch_fixture fixture;
     core_machine_run_result result;
@@ -883,7 +884,7 @@ static C_INT task_switch_expect_t330_32_to_16(type_bool nested,
     lib_u8 busy[2] = {0u, 0u};
     t_cpu cpu;
     const core_machine_run_budget budget = {128u, 0u};
-    C_INT failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (nested) source[48] = 0x9au;
     if (task_gate) source[51] = 0x38u;
@@ -900,10 +901,10 @@ static C_INT task_switch_expect_t330_32_to_16(type_bool nested,
                     .eip = 0u, .eflags = 0x2u, .esp = 0x00008000u,
                     .es = {0x10u,0u}, .cs = {0x08u,0u}, .ss = {0x10u,0u},
                     .ds = {0x10u,0u}, .fs = {0x10u,0u}, .gs = {0x10u,0u}
-                }, sizeof(task_switch_smoke_tss32_state)) != TYPE_STATUS_OK ||
+                }, sizeof(task_switch_smoke_tss32_state)) != LIB_STATUS_OK ||
             core_machine_memory_write(fixture.machine, TASK_B_BASE + 0x0eu,
-                &target, sizeof(target)) != TYPE_STATUS_OK ||
-            core_machine_run(fixture.machine, budget, &result) != TYPE_STATUS_OK ||
+                &target, sizeof(target)) != LIB_STATUS_OK ||
+            core_machine_run(fixture.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= cpu.data.tr.selector != (task_return ? 0x28u : 0x30u) ||
@@ -916,12 +917,12 @@ static C_INT task_switch_expect_t330_32_to_16(type_bool nested,
             cpu.data.esi != (task_return ? 0x77777777u : 0xffff7777u) ||
             cpu.data.edi != (task_return ? 0x88888888u : 0xffff8888u) ||
             core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
-                &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
+                &outgoing, sizeof(outgoing)) != LIB_STATUS_OK ||
             (!task_return && (outgoing.eax != 0x11111111u ||
                 outgoing.ldtr.selector != 0u)) ||
             core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
-                &busy[0], 1u) != TYPE_STATUS_OK || core_machine_memory_read(
-                fixture.machine, GDT_BASE + 0x35u, &busy[1], 1u) != TYPE_STATUS_OK ||
+                &busy[0], 1u) != LIB_STATUS_OK || core_machine_memory_read(
+                fixture.machine, GDT_BASE + 0x35u, &busy[1], 1u) != LIB_STATUS_OK ||
             (!task_return && (busy[0] != (nested ? 0x8bu : 0x89u) ||
                 busy[1] != 0x83u));
     }
@@ -929,31 +930,31 @@ static C_INT task_switch_expect_t330_32_to_16(type_bool nested,
     return failed;
 }
 
-static C_INT task_switch_expect_tss32_direct(type_bool operand32,
-    type_bool indirect, type_bool address32, task_switch_tss32_rejection rejection,
-    type_bool lock, type_bool pending_irq, type_bool nested,
-    type_bool task_gate)
+static lib_i32 task_switch_expect_tss32_direct(lib_u8 operand32,
+    lib_u8 indirect, lib_u8 address32, task_switch_tss32_rejection rejection,
+    lib_u8 lock, lib_u8 pending_irq, lib_u8 nested,
+    lib_u8 task_gate)
 {
     task_switch_fixture fixture;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_pic_irq_source irq;
-    type_status status;
+    lib_status status;
     lib_u32 saved_eip = 0u;
     lib_u16 backlink = 0u;
     task_switch_smoke_tss32_state outgoing;
     lib_u8 busy[2] = {0u, 0u};
-    type_bool task_return = rejection ==
+    lib_u8 task_return = rejection ==
         TASK_SWITCH_TSS32_REJECTION_NESTED_RETURN;
-    type_bool ldt_case = rejection >= TASK_SWITCH_TSS32_LDT_SUCCESS &&
+    lib_u8 ldt_case = rejection >= TASK_SWITCH_TSS32_LDT_SUCCESS &&
         rejection <= TASK_SWITCH_TSS32_LDT_BAD_DATA;
-    type_bool ldt_success = rejection == TASK_SWITCH_TSS32_LDT_SUCCESS;
-    type_bool ldt_failure = ldt_case && !ldt_success;
-    type_bool debug_trap = rejection == TASK_SWITCH_TSS32_DEBUG_TRAP_SUCCESS;
-    type_bool paging = rejection == TASK_SWITCH_TSS32_PAGING_SUCCESS;
-    type_bool paging_tss_fault = rejection == TASK_SWITCH_TSS32_PAGING_TSS_FAULT;
+    lib_u8 ldt_success = rejection == TASK_SWITCH_TSS32_LDT_SUCCESS;
+    lib_u8 ldt_failure = ldt_case && !ldt_success;
+    lib_u8 debug_trap = rejection == TASK_SWITCH_TSS32_DEBUG_TRAP_SUCCESS;
+    lib_u8 paging = rejection == TASK_SWITCH_TSS32_PAGING_SUCCESS;
+    lib_u8 paging_tss_fault = rejection == TASK_SWITCH_TSS32_PAGING_TSS_FAULT;
     lib_u32 target_base = paging_tss_fault ? 0x7000u : TASK_B_BASE;
-    C_INT rejection_failed;
+    lib_i32 rejection_failed;
     t_cpu cpu;
     static const lib_u8 gdt_pointer[] = { 0x47u,0,0,0x03u,0,0 };
     lib_u8 gdt[] = {
@@ -1106,7 +1107,7 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             sizeof(source16));
     const lib_u8 *pointer = operand32 ? pointer32 : pointer16;
     const lib_u32 pointer_bytes = operand32 ? sizeof(pointer32) : sizeof(pointer16);
-    C_INT failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
 
     lib_memory_set(&irq, 0, sizeof(irq));
     if (paging) {
@@ -1224,7 +1225,7 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
                 !write_bytes(fixture.machine, KERNEL_BASE + 0x180u, halt,
                     sizeof(halt)))) ||
             core_machine_memory_write(fixture.machine, target_base + 0x1cu,
-                &target, sizeof(target)) != TYPE_STATUS_OK;
+                &target, sizeof(target)) != LIB_STATUS_OK;
         if (paging || paging_tss_fault) {
             static const lib_u8 paging_target_code[] = {
                 0x66u, 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u, 0xf4u
@@ -1282,7 +1283,7 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
                     sizeof(debug_gate)) || !write_bytes(fixture.machine,
                     KERNEL_BASE + 0x180u, debug_handler, sizeof(debug_handler)) ||
                 core_machine_memory_write(fixture.machine, target_base + 0x64u,
-                    &debug_bit, sizeof(debug_bit)) != TYPE_STATUS_OK;
+                    &debug_bit, sizeof(debug_bit)) != LIB_STATUS_OK;
             fixture.machine->executor_cpu.data.idtr.flagValid = LIB_TRUE;
             fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
             fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
@@ -1298,25 +1299,25 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             fixture.machine->executor_cpu.data.dr7 = 0x000003ffu;
         }
         status = core_machine_run(fixture.machine, budget, &result);
-        failed |= status != (lock ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
+        failed |= status != (lock ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
             result.reason != (lock ? CORE_MACHINE_STOP_FAULT :
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         if (paging_tss_fault) {
             lib_memory_set(&outgoing, 0, sizeof(outgoing));
             failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-                    TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                    LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 !diagnostic.last_delivered_exception.valid ||
                 diagnostic.last_delivered_exception.exception_mask !=
                     VCPUINS_EXCEPT_PF || cpu.data.eip != 0x181u ||
                 cpu.data.tr.selector != 0x28u || cpu.data.ldtr.selector != 0u ||
                 cpu.data.cr3 != 0x00001000u ||
                 core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
-                    &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
+                    &outgoing, sizeof(outgoing)) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
-                    &busy[0], 1u) != TYPE_STATUS_OK ||
+                    &busy[0], 1u) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-                    &busy[1], 1u) != TYPE_STATUS_OK || busy[0] != 0x8bu ||
+                    &busy[1], 1u) != LIB_STATUS_OK || busy[0] != 0x8bu ||
                 busy[1] != 0x89u || outgoing.cr3 != 0u || outgoing.eip != 0u ||
                 outgoing.eflags != 0u || outgoing.eax != 0u || outgoing.ecx != 0u ||
                 outgoing.edx != 0u || outgoing.ebx != 0u || outgoing.esp != 0u ||
@@ -1327,13 +1328,13 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
         if (ldt_failure) {
             lib_memory_set(&outgoing, 0, sizeof(outgoing));
             failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
-                &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
+                &outgoing, sizeof(outgoing)) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
-                &busy[0], 1u) != TYPE_STATUS_OK ||
+                &busy[0], 1u) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-                &busy[1], 1u) != TYPE_STATUS_OK;
+                &busy[1], 1u) != LIB_STATUS_OK;
             failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-                    TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                    LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 !diagnostic.last_delivered_exception.valid ||
                 diagnostic.last_delivered_exception.exception_mask !=
                     (rejection == TASK_SWITCH_TSS32_LDT_NOT_PRESENT ?
@@ -1357,8 +1358,8 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             return failed;
         }
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-            TYPE_STATUS_OK || (lock && (!diagnostic.first_fault.valid ||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            LIB_STATUS_OK || (lock && (!diagnostic.first_fault.valid ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD) || diagnostic.first_fault.exception_code !=
             0u)) || (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_case &&
                 !task_return && !debug_trap && !paging && !paging_tss_fault &&
@@ -1373,11 +1374,11 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             !task_return && !debug_trap && !paging && !paging_tss_fault) {
             lib_memory_set(&outgoing, 0, sizeof(outgoing));
             rejection_failed = core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
-                    &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
+                    &outgoing, sizeof(outgoing)) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
-                    &busy[0], 1u) != TYPE_STATUS_OK ||
+                    &busy[0], 1u) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-                    &busy[1], 1u) != TYPE_STATUS_OK || cpu.data.eip != 0x181u ||
+                    &busy[1], 1u) != LIB_STATUS_OK || cpu.data.eip != 0x181u ||
                 cpu.data.eax != (nested ? 0x11111111u : 0x00001111u) ||
                 cpu.data.tr.selector != 0x28u ||
                 outgoing.cr3 != 0u || outgoing.eip != 0u ||
@@ -1414,11 +1415,11 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             failed |= diagnostic.first_fault.valid ||
                 diagnostic.last_delivered_exception.valid ||
                 core_machine_memory_read(fixture.machine, TASK_B_BASE + 0x1cu,
-                    &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
+                    &outgoing, sizeof(outgoing)) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
-                    &busy[0], 1u) != TYPE_STATUS_OK ||
+                    &busy[0], 1u) != LIB_STATUS_OK ||
                 core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-                    &busy[1], 1u) != TYPE_STATUS_OK ||
+                    &busy[1], 1u) != LIB_STATUS_OK ||
                 cpu.data.eip != source_bytes + 1u || cpu.data.eflags != 0x2u ||
                 cpu.data.eax != 0x11111111u || cpu.data.ecx != 0x22222222u ||
                 cpu.data.edx != 0x33333333u || cpu.data.ebx != 0x44444444u ||
@@ -1435,9 +1436,9 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
         }
         if (pending_irq) {
             failed |= cpu.data.eip != 0x181u || cpu.data.esp != 0x7ffau ||
-                TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_IF) ||
-                !TYPE_GET_BIT(fixture.machine->shared_pic_master.data.isr,
-                    VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
+                CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_IF) ||
+                !CORE_MACHINE_BIT_IS_SET(fixture.machine->shared_pic_master.data.isr,
+                    VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
                     fixture.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
         }
         if (debug_trap) {
@@ -1450,17 +1451,17 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
                 cpu.data.eax != target.eax + 1u || cpu.data.esp != 0x7ff4u ||
                 (cpu.data.dr6 & 0x00008000u) == 0u ||
                 (cpu.data.dr7 & 0x000003ffu) != 0x000002aau ||
-                TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_IF) ||
+                CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_IF) ||
                 !test_core_machine_fixture_read_linear(fixture.machine,
-                    cpu.data.ss.base + cpu.data.esp, TYPE_REFERENCE_OF(frame),
+                    cpu.data.ss.base + cpu.data.esp, CORE_MACHINE_REFERENCE_OF(frame),
                     sizeof(frame)) || frame[0] != target.eip || frame[1] !=
                     target.cs.selector || frame[2] != target.eflags;
         }
         lib_memory_set(&outgoing, 0, sizeof(outgoing));
         failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
-                &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
+                &outgoing, sizeof(outgoing)) != LIB_STATUS_OK ||
             (nested && (core_machine_memory_read(fixture.machine, TASK_B_BASE,
-                &backlink, sizeof(backlink)) != TYPE_STATUS_OK ||
+                &backlink, sizeof(backlink)) != LIB_STATUS_OK ||
                 backlink != 0x28u)) ||
             (saved_eip = outgoing.eip) != source_bytes ||
             outgoing.cr3 != (paging ? 0x00001000u : 0u) ||
@@ -1473,9 +1474,9 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             outgoing.ss.selector != 0x10u || outgoing.ds.selector != 0x10u ||
             outgoing.fs.selector != 0x10u || outgoing.gs.selector != 0x10u ||
             outgoing.ldtr.selector != 0u || core_machine_memory_read(fixture.machine,
-                GDT_BASE + 0x2du, &busy[0], 1u) != TYPE_STATUS_OK ||
+                GDT_BASE + 0x2du, &busy[0], 1u) != LIB_STATUS_OK ||
             core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
-                &busy[1], 1u) != TYPE_STATUS_OK ||
+                &busy[1], 1u) != LIB_STATUS_OK ||
             busy[0] != (nested ? 0x8bu : 0x89u) ||
             busy[1] != 0x8bu;
         failed |= cpu.data.eip != (pending_irq ? 0x181u : debug_trap ? 0x182u :
@@ -1501,9 +1502,9 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
                 cpu.data.ldtr.selector != target.ldtr.selector ||
                 cpu.data.ldtr.base != 0x0900u || cpu.data.ldtr.limit != 0x17u ||
                 cpu.data.ldtr.sys.type != VCPU_DESC_SYS_TYPE_LDT)) ||
-            !TYPE_GET_BIT(cpu.data.cr0, VCPU_CR0_TS);
+            !CORE_MACHINE_BIT_IS_SET(cpu.data.cr0, VCPU_CR0_TS);
         if (failed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "T329 tss32 result=%u eip=%08x eax=%08x tr=%04x saved=%08x busy=%02x/%02x fault=%u\n",
                 (unsigned)result.reason, cpu.data.eip, cpu.data.eax,
                 cpu.data.tr.selector, saved_eip, busy[0], busy[1],
@@ -1516,7 +1517,7 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
 
 int main(void)
 {
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80286,
         TASK_SWITCH_CASE_SUCCESS);
@@ -1705,16 +1706,16 @@ int main(void)
         TASK_SWITCH_TSS32_REJECTION_NESTED_RETURN, LIB_FALSE, LIB_FALSE,
         LIB_TRUE, LIB_FALSE);
     if (failed) return 1;
-    STD_PRINTF("M5:T261:S2:TASK-SWITCH:OK\n");
-    STD_PRINTF("M5:T261:S3:TASK-SWITCH:CORPUS:OK\n");
-    STD_PRINTF("M5:T261:S5:SS-CACHE:OK\n");
-    STD_PRINTF("M5:T329:S1:TSS16-JMP:OK\n");
-    STD_PRINTF("M5:T329:S2:TSS32-JMP:OK\n");
-    STD_PRINTF("M5:T329:S3:TSS32-IMAGE:OK\n");
-    STD_PRINTF("M5:T329:S4:TSS-CALL-GATE:OK\n");
-    STD_PRINTF("M5:T329:S5:TASK-RETURN:OK\n");
-    STD_PRINTF("M5:T329:S6:TASK-LDT:OK\n");
-    STD_PRINTF("M5:T329:S7:TASK-PAGING-DEBUG:OK\n");
-    STD_PRINTF("M5:T330:S1:TASK-TRANSITION:OK\n");
+    printf("M5:T261:S2:TASK-SWITCH:OK\n");
+    printf("M5:T261:S3:TASK-SWITCH:CORPUS:OK\n");
+    printf("M5:T261:S5:SS-CACHE:OK\n");
+    printf("M5:T329:S1:TSS16-JMP:OK\n");
+    printf("M5:T329:S2:TSS32-JMP:OK\n");
+    printf("M5:T329:S3:TSS32-IMAGE:OK\n");
+    printf("M5:T329:S4:TSS-CALL-GATE:OK\n");
+    printf("M5:T329:S5:TASK-RETURN:OK\n");
+    printf("M5:T329:S6:TASK-LDT:OK\n");
+    printf("M5:T329:S7:TASK-PAGING-DEBUG:OK\n");
+    printf("M5:T330:S1:TASK-TRANSITION:OK\n");
     return 0;
 }

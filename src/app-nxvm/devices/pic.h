@@ -8,7 +8,6 @@ extern "C" {
 #endif
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 #include "app-nxvm/devices/pic_interface.h"
 #include "app-nxvm/devices/port.h"
 
@@ -41,7 +40,7 @@ typedef struct core_machine_pic_irq_source {
     t_pic *master;
     t_pic *slave;
     lib_u8 irq;
-    type_bool asserted;
+    lib_u8 asserted;
 } core_machine_pic_irq_source;
 
 /*
@@ -81,7 +80,7 @@ typedef struct core_machine_pic_irq_source {
 #define VPIC_ICW2_VALID 0xf8 /* A7-A3 of x86 interrupt vector */
 
 /* ICW3 master bits */
-#define VPIC_ICW3_S(id) (1 << (id)) /* C_INT req id has slave (1) or not(0) */
+#define VPIC_ICW3_S(id) (1 << (id)) /* lib_i32 req id has slave (1) or not(0) */
 
 /* ICW4 bits */
 #define VPIC_ICW4_uPM   0x01 /* uPM */
@@ -112,23 +111,23 @@ typedef struct core_machine_pic_irq_source {
 /* POLL bits */
 #define VPIC_POLL_I 0x80 /* must be 1 for poll command */
 
-C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
+void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
     core_machine_pic_topology topology);
-C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave);
-C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave);
-C_VOID core_machine_pic_set_irq_timing(t_pic *master, t_pic *slave,
+void core_machine_pic_reset(t_pic *master, t_pic *slave);
+void core_machine_pic_refresh(t_pic *master, t_pic *slave);
+void core_machine_pic_set_irq_timing(t_pic *master, t_pic *slave,
     const core_machine_pic_irq_timing *timing);
-C_VOID core_machine_pic_advance(t_pic *master, t_pic *slave,
+void core_machine_pic_advance(t_pic *master, t_pic *slave,
     lib_u64 elapsed_ticks);
-type_status core_machine_pic_ticks_until_event(const t_pic *master, const t_pic *slave,
+lib_status core_machine_pic_ticks_until_event(const t_pic *master, const t_pic *slave,
     lib_u64 *out_ticks);
-C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave);
-C_VOID core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
+void core_machine_pic_finalize(t_pic *master, t_pic *slave);
+void core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
     t_pic *master, t_pic *slave, lib_u8 irq_id);
-C_VOID core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source);
-C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source);
-C_VOID core_machine_pic_timer_output(C_VOID *owner, type_bool asserted);
-type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
+void core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source);
+void core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source);
+void core_machine_pic_timer_output(void *owner, lib_u8 asserted);
+lib_u8 core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
 lib_u8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave);
 /* First logical INTA: select the request, transfer it from IRR to ISR, and
  * return the vector reserved for the CPU's following interrupt entry. */

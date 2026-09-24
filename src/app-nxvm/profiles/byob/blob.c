@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/profiles/byob/blob.h"
 
@@ -11,7 +10,7 @@ static lib_u32 vm_profile_byob_sha256_rotate_right(
     return (value >> bits) | (value << (32u - bits));
 }
 
-static C_VOID vm_profile_byob_sha256_block(lib_u32 state[8],
+static void vm_profile_byob_sha256_block(lib_u32 state[8],
     const lib_u8 block[64])
 {
     static const lib_u32 constants[64] = {
@@ -52,7 +51,7 @@ static C_VOID vm_profile_byob_sha256_block(lib_u32 state[8],
     state[4] += e; state[5] += f; state[6] += g; state[7] += h;
 }
 
-static C_VOID vm_profile_byob_sha256(const lib_u8 *bytes,
+static void vm_profile_byob_sha256(const lib_u8 *bytes,
     lib_size byte_count, lib_u8 digest[32])
 {
     lib_u32 state[8] = {0x6a09e667u,0xbb67ae85u,0x3c6ef372u,0xa54ff53au,
@@ -77,15 +76,15 @@ static C_VOID vm_profile_byob_sha256(const lib_u8 *bytes,
     }
 }
 
-static C_INT vm_profile_byob_sha256_matches(const lib_u8 digest[32], const C_CHAR *text)
+static lib_i32 vm_profile_byob_sha256_matches(const lib_u8 digest[32], const char *text)
 {
     lib_size index;
     if (text == LIB_NULL || lib_text_length(text) != 64u) return 0;
     for (index = 0u; index < 32u; ++index) {
-        C_INT high = text[index * 2u] >= '0' && text[index * 2u] <= '9' ? text[index * 2u] - '0' :
+        lib_i32 high = text[index * 2u] >= '0' && text[index * 2u] <= '9' ? text[index * 2u] - '0' :
             text[index * 2u] >= 'a' && text[index * 2u] <= 'f' ? text[index * 2u] - 'a' + 10 :
             text[index * 2u] >= 'A' && text[index * 2u] <= 'F' ? text[index * 2u] - 'A' + 10 : -1;
-        C_INT low = text[index * 2u + 1u] >= '0' && text[index * 2u + 1u] <= '9' ? text[index * 2u + 1u] - '0' :
+        lib_i32 low = text[index * 2u + 1u] >= '0' && text[index * 2u + 1u] <= '9' ? text[index * 2u + 1u] - '0' :
             text[index * 2u + 1u] >= 'a' && text[index * 2u + 1u] <= 'f' ? text[index * 2u + 1u] - 'a' + 10 :
             text[index * 2u + 1u] >= 'A' && text[index * 2u + 1u] <= 'F' ? text[index * 2u + 1u] - 'A' + 10 : -1;
         if (high < 0 || low < 0 || digest[index] != (lib_u8)((high << 4u) | low)) return 0;
@@ -93,13 +92,13 @@ static C_INT vm_profile_byob_sha256_matches(const lib_u8 digest[32], const C_CHA
     return 1;
 }
 
-C_INT vm_profile_byob_blob_is_valid(const vm_profile_byob_blob *blob)
+lib_i32 vm_profile_byob_blob_is_valid(const vm_profile_byob_blob *blob)
 {
     return blob != LIB_NULL && blob->path != LIB_NULL && blob->path[0] != '\0' &&
         (blob->sha256 == LIB_NULL || lib_text_length(blob->sha256) == 64u) && blob->bytes != 0u;
 }
 
-C_INT vm_profile_byob_option_rom_is_valid(const lib_u8 *bytes,
+lib_i32 vm_profile_byob_option_rom_is_valid(const lib_u8 *bytes,
     lib_size byte_count, lib_size maximum_bytes)
 {
     lib_u8 checksum = 0u;
@@ -114,25 +113,25 @@ C_INT vm_profile_byob_option_rom_is_valid(const lib_u8 *bytes,
     return checksum == 0u;
 }
 
-type_status vm_profile_byob_blob_load(const vm_profile_byob_blob *blob,
+lib_status vm_profile_byob_blob_load(const vm_profile_byob_blob *blob,
     lib_u8 *out_bytes)
 {
-    C_VOID *loaded = LIB_NULL;
+    void *loaded = LIB_NULL;
     lib_size count;
     lib_u8 digest[32];
     lib_status status;
 
     if (!vm_profile_byob_blob_is_valid(blob) || out_bytes == LIB_NULL)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     status = lib_storage_file_read_owned(blob->path, blob->bytes, &loaded, &count);
-    if (status == LIB_STATUS_NO_MEMORY) return TYPE_STATUS_NO_MEMORY;
+    if (status == LIB_STATUS_NO_MEMORY) return LIB_STATUS_NO_MEMORY;
     if (status != LIB_STATUS_OK || count != blob->bytes) {
         lib_release(loaded);
-        return TYPE_STATUS_FAULT;
+        return LIB_STATUS_INTERNAL_ERROR;
     }
     lib_memory_copy(out_bytes, loaded, count);
     lib_release(loaded);
-    if (blob->sha256 == LIB_NULL) return TYPE_STATUS_OK;
+    if (blob->sha256 == LIB_NULL) return LIB_STATUS_OK;
     vm_profile_byob_sha256(out_bytes, blob->bytes, digest);
-    return vm_profile_byob_sha256_matches(digest, blob->sha256) ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+    return vm_profile_byob_sha256_matches(digest, blob->sha256) ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }

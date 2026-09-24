@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <ctype.h>
+#include <stdio.h>
 
 #include <windows.h>
 
@@ -28,7 +29,7 @@ static lib_u16 vm_fdc242_fat_get(const lib_u8 *fat, lib_u16 cluster)
     return (cluster & 1u) ? pair >> 4u : pair & 0x0fffu;
 }
 
-static C_VOID vm_fdc242_fat_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
+static void vm_fdc242_fat_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
 {
     lib_u32 offset = cluster + cluster / 2u;
     lib_u16 pair = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8));
@@ -38,7 +39,7 @@ static C_VOID vm_fdc242_fat_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
     fat[offset + 1u] = (lib_u8)(pair >> 8u);
 }
 
-static C_INT vm_fdc242_install(lib_u8 *image, DWORD size)
+static lib_i32 vm_fdc242_install(lib_u8 *image, DWORD size)
 {
     static const lib_u8 program[] = {
         0x1e,0x31,0xc0,0x8e,0xd8,0xb8,0x80,0x02,0xa3,0x38,0x00,
@@ -111,48 +112,48 @@ static C_INT vm_fdc242_install(lib_u8 *image, DWORD size)
     return 1;
 }
 
-static type_status vm_fdc242_install_on_overlay(
-    integration_ini_session *ini_session, C_VOID *opaque)
+static lib_status vm_fdc242_install_on_overlay(
+    integration_ini_session *ini_session, void *opaque)
 {
     lib_u8 *image = LIB_NULL;
     lib_u8 *expected = (lib_u8 *)opaque;
     lib_size size = 0u;
-    C_INT installed;
+    lib_i32 installed;
 
     if (ini_session == LIB_NULL || expected == LIB_NULL ||
         integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_FDD_ID,
-            (C_VOID **)&image, &size) != TYPE_STATUS_OK || size > MAXDWORD) return TYPE_STATUS_FAULT;
+            (void **)&image, &size) != LIB_STATUS_OK || size > MAXDWORD) return LIB_STATUS_INTERNAL_ERROR;
     installed = vm_fdc242_install(image, (DWORD)size) &&
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
-            image, size) == TYPE_STATUS_OK;
+            image, size) == LIB_STATUS_OK;
     if (installed) lib_memory_copy(expected, image, VM_FDC242_TRACK_BYTES);
     lib_release(image);
-    return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+    return installed ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
-static C_INT vm_fdc242_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_fdc242_has_prompt(const core_machine_display_snapshot *snapshot)
 {
     lib_size index;
     if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
     for (index = 0u; index + 3u < 2000u; ++index) {
-        if (STD_ISALPHA(snapshot->characters[index]) && snapshot->characters[index + 1u] == ':' &&
+        if (isalpha(snapshot->characters[index]) && snapshot->characters[index + 1u] == ':' &&
             snapshot->characters[index + 2u] == '\\' && snapshot->characters[index + 3u] == '>') return 1;
     }
     return 0;
 }
 
-static C_INT vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
-    lib_u32 quantum, C_INT require_marker)
+static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
+    lib_u32 quantum, lib_i32 require_marker)
 {
     core_machine_run_budget budget = {quantum, 0u}; core_machine_run_result result;
     core_machine_display_snapshot snapshot; lib_u32 used = 0u;
     while (used < limit) {
-        C_INT advanced = 0;
+        lib_i32 advanced = 0;
 
-        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) return 0;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
-            (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
             !advanced)) return 0;
         used += budget.instructions;
         /* Both the prompt and the test program's marker persist.  Sampling
@@ -161,7 +162,7 @@ static C_INT vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
         if (used < limit && used % VM_FDC242_DISPLAY_OBSERVATION_QUANTUM != 0u)
             continue;
         if (core_machine_capture_display_snapshot(session->core_machine,
-                &snapshot) != TYPE_STATUS_OK) return 0;
+                &snapshot) != LIB_STATUS_OK) return 0;
         if (require_marker ? snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
                 snapshot.characters[VM_FDC242_MARKER_CELL] == 'F' &&
                 snapshot.characters[VM_FDC242_MARKER_CELL + 1u] == 'D' &&
@@ -177,48 +178,48 @@ typedef struct vm_fdc242_result {
     lib_u8 off_result[9];
 } vm_fdc242_result;
 
-static C_INT vm_fdc242_run_case(integration_ini_session *ini_session,
+static lib_i32 vm_fdc242_run_case(integration_ini_session *ini_session,
     lib_u32 quantum, vm_fdc242_result *out_result)
 {
     static const lib_u8 command[] = {0x2bu,0x23u,0x21u,0x1eu,0x25u,0x1eu,0x5au};
     vm_machine *session = LIB_NULL;
     lib_u16 program_cs = 0u;
     lib_size index;
-    C_INT ok = 0;
+    lib_i32 ok = 0;
 
     if (ini_session == LIB_NULL || out_result == LIB_NULL || quantum == 0u ||
-        integration_ini_session_restart(ini_session) != TYPE_STATUS_OK) goto done;
+        integration_ini_session_restart(ini_session) != LIB_STATUS_OK) goto done;
     session = ini_session->session;
     vm_machine_executor_state_start(session->control.state);
     if (!vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_receive_native_byte(
-        session->core_machine, command[index]) != TYPE_STATUS_OK) goto done;
+        session->core_machine, command[index]) != LIB_STATUS_OK) goto done;
     if (!vm_fdc242_run_until(session, VM_FDC242_RUN_BUDGET, quantum, 1) ||
         core_machine_memory_read(session->core_machine, VM_FDC242_DMA_ADDRESS,
-        out_result->bytes, sizeof(out_result->bytes)) != TYPE_STATUS_OK) goto done;
+        out_result->bytes, sizeof(out_result->bytes)) != LIB_STATUS_OK) goto done;
     if (core_machine_memory_read(session->core_machine, 0x003au, &program_cs,
-        sizeof(program_cs)) != TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
+        sizeof(program_cs)) != LIB_STATUS_OK || core_machine_memory_read(session->core_machine,
         ((lib_u32)program_cs << 4u) + VM_FDC242_IRQ_COUNT_OFFSET, out_result->result,
-        sizeof(out_result->result)) != TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
+        sizeof(out_result->result)) != LIB_STATUS_OK || core_machine_memory_read(session->core_machine,
         ((lib_u32)program_cs << 4u) + 0x02b0u, out_result->off_result,
-        sizeof(out_result->off_result)) != TYPE_STATUS_OK) goto done;
+        sizeof(out_result->off_result)) != LIB_STATUS_OK) goto done;
     ok = 1;
 done:
     if (session != LIB_NULL) vm_machine_executor_state_stop(session->control.state);
     return ok;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
     lib_u8 expected[VM_FDC242_TRACK_BYTES];
     vm_fdc242_result one_instruction = {0};
     vm_fdc242_result short_quantum = {0};
-    C_INT passed = 0;
+    lib_i32 passed = 0;
     lib_size first_mismatch = sizeof(expected);
 
     if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_fdc242_install_on_overlay, expected, &ini_session) != TYPE_STATUS_OK) {
+            vm_fdc242_install_on_overlay, expected, &ini_session) != LIB_STATUS_OK) {
         return 77;
     }
     passed = vm_fdc242_run_case(&ini_session, 1u, &one_instruction) &&
@@ -240,7 +241,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 break;
             }
         }
-        STD_FPRINTF(STD_STDERR, "M5:T242:S4:FDC:DOS:FAIL bytes=%d@%zu:%02x/%02x runs=%d result=%d off=%d/%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
+        fprintf(stderr, "M5:T242:S4:FDC:DOS:FAIL bytes=%d@%zu:%02x/%02x runs=%d result=%d off=%d/%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
             lib_memory_compare(expected, one_instruction.bytes, sizeof(expected)) == 0,
             first_mismatch,
             first_mismatch < sizeof(expected) ? expected[first_mismatch] : 0u,
@@ -262,9 +263,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
         integration_ini_session_close(&ini_session); return 1;
     }
     integration_ini_session_close(&ini_session);
-    STD_PRINTF("M5:T268:S3:FDC-MOTOR:DOS:OK\n");
-    STD_PRINTF("M5:T269:S3:DMA-GRANT:DOS:OK\n");
-    STD_PRINTF("M5:T290:S3:FDC:DOS:OK\n");
-    STD_PRINTF("M5:T291:S3:FDC:DOS:OK\n");
-    STD_PRINTF("M5:T242:S4:FDC:DOS:OK\n"); return 0;
+    printf("M5:T268:S3:FDC-MOTOR:DOS:OK\n");
+    printf("M5:T269:S3:DMA-GRANT:DOS:OK\n");
+    printf("M5:T290:S3:FDC:DOS:OK\n");
+    printf("M5:T291:S3:FDC:DOS:OK\n");
+    printf("M5:T242:S4:FDC:DOS:OK\n"); return 0;
 }

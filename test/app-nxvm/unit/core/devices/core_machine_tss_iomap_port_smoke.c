@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -35,36 +36,36 @@ typedef struct iomap_machine {
     iomap_port_state port;
 } iomap_machine;
 
-static C_VOID iomap_reset(C_VOID *opaque)
+static void iomap_reset(void *opaque)
 {
     iomap_machine *state = (iomap_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
-static type_status iomap_port_read(C_VOID *opaque, lib_u16 port,
+static lib_status iomap_port_read(void *opaque, lib_u16 port,
     lib_u32 *out_value)
 {
     iomap_port_state *state = (iomap_port_state *)opaque;
 
-    if (state == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (state == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     *out_value = port == 0x00e0u ? 0x7cu : 0x5du;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status iomap_port_write(C_VOID *opaque, lib_u16 port,
+static lib_status iomap_port_write(void *opaque, lib_u16 port,
     lib_u32 value)
 {
     iomap_port_state *state = (iomap_port_state *)opaque;
 
     if (state == LIB_NULL || (port != 0x00e0u && port != 0x00e1u)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     ++state->writes;
     state->last_write = value;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_execution_provider iomap_execution_provider = {
@@ -75,14 +76,14 @@ static const core_machine_port_provider iomap_port_provider = {
     iomap_port_read, iomap_port_write
 };
 
-static C_INT write_bytes(core_machine *machine, lib_u32 address,
+static lib_i32 write_bytes(core_machine *machine, lib_u32 address,
     const lib_u8 *bytes, lib_size count)
 {
     return core_machine_memory_write(machine, address, bytes, count) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT iomap_prepare(iomap_machine *state, core_machine_cpu_profile profile)
+static lib_i32 iomap_prepare(iomap_machine *state, core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -92,9 +93,9 @@ static C_INT iomap_prepare(iomap_machine *state, core_machine_cpu_profile profil
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 0;
     if (core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e1u,
-            &iomap_port_provider, &state->port) != TYPE_STATUS_OK ||
+            &iomap_port_provider, &state->port) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &iomap_execution_provider, state)) {
         core_machine_destroy(state->machine);
@@ -104,7 +105,7 @@ static C_INT iomap_prepare(iomap_machine *state, core_machine_cpu_profile profil
     return 1;
 }
 
-static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profile,
+static lib_i32 iomap_install(iomap_machine *state, core_machine_cpu_profile profile,
     iomap_case test_case)
 {
     static const lib_u8 gdt_pointer[] = { 0x2fu,0,0,3,0,0 };
@@ -221,31 +222,31 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
         write_bytes(state->machine, USER_CODE_BASE, user_code, user_code_bytes);
 }
 
-static C_INT iomap_run_case(core_machine_cpu_profile profile, iomap_case test_case)
+static lib_i32 iomap_run_case(core_machine_cpu_profile profile, iomap_case test_case)
 {
     iomap_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     lib_u16 marker[3] = {0u, 0u, 0u};
     const core_machine_run_budget budget = { 1024u, 0u };
-    C_INT failed = !iomap_prepare(&state, profile);
-    C_INT denied = test_case == IOMAP_CASE_DENY_IN ||
+    lib_i32 failed = !iomap_prepare(&state, profile);
+    lib_i32 denied = test_case == IOMAP_CASE_DENY_IN ||
         test_case == IOMAP_CASE_DENY_OUT ||
         test_case == IOMAP_CASE_TRUNCATED_WORD;
 
     if (!failed) {
         failed |= !iomap_install(&state, profile, test_case);
-        failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= core_machine_memory_read(state.machine, USER_DATA_BASE, marker,
-            sizeof(marker)) != TYPE_STATUS_OK;
+            sizeof(marker)) != LIB_STATUS_OK;
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         if (denied) {
             failed |= state.port.reads != 0u || state.port.writes != 0u ||
                 marker[2] != 0x3333u || diagnostic.first_fault.valid ||
                 !diagnostic.last_delivered_exception.valid ||
-                !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
                     VCPUINS_EXCEPT_GP) ||
                 diagnostic.last_delivered_exception.exception_code != 0u;
         } else {
@@ -255,7 +256,7 @@ static C_INT iomap_run_case(core_machine_cpu_profile profile, iomap_case test_ca
                 diagnostic.last_delivered_exception.valid;
         }
         if (failed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "T260 case=%u result=%u reads=%u writes=%u marker=%04x/%04x/%04x delivered=%d/%u code=%04x\n",
                 (unsigned)test_case, (unsigned)result.reason,
                 (unsigned)state.port.reads, (unsigned)state.port.writes,
@@ -271,7 +272,7 @@ static C_INT iomap_run_case(core_machine_cpu_profile profile, iomap_case test_ca
 
 int main(void)
 {
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80386, IOMAP_CASE_ALLOW);
     failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80386, IOMAP_CASE_DENY_IN);
@@ -285,6 +286,6 @@ int main(void)
     failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80286,
         IOMAP_CASE_DENY_IN);
     if (failed) return 1;
-    STD_PRINTF("M5:T260:S3:TSS-IOMAP:CORPUS:OK\n");
+    printf("M5:T260:S3:TSS-IOMAP:CORPUS:OK\n");
     return 0;
 }

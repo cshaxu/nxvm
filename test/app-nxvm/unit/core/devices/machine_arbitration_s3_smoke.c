@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -9,7 +9,7 @@ typedef struct arbitration_trace_probe {
     lib_u32 count;
 } arbitration_trace_probe;
 
-static C_VOID arbitration_trace(C_VOID *opaque,
+static void arbitration_trace(void *opaque,
     const core_machine_trace_event *event)
 {
     arbitration_trace_probe *probe = (arbitration_trace_probe *)opaque;
@@ -19,7 +19,7 @@ static C_VOID arbitration_trace(C_VOID *opaque,
     }
 }
 
-static C_INT arbitration_expect_chain(const arbitration_trace_probe *probe)
+static lib_i32 arbitration_expect_chain(const arbitration_trace_probe *probe)
 {
     lib_u32 index;
     lib_u32 selected_tick = 3u;
@@ -49,7 +49,7 @@ static C_INT arbitration_expect_chain(const arbitration_trace_probe *probe)
     return groups != 1u || phase != 0u;
 }
 
-static C_INT arbitration_has_cpu_retire(const arbitration_trace_probe *probe)
+static lib_i32 arbitration_has_cpu_retire(const arbitration_trace_probe *probe)
 {
     lib_u32 index;
 
@@ -59,7 +59,7 @@ static C_INT arbitration_has_cpu_retire(const arbitration_trace_probe *probe)
     return 0;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
     core_machine_config config = { 0 };
@@ -69,35 +69,35 @@ C_INT main(C_VOID)
     arbitration_trace_probe probe = { { { 0 } }, 0u };
     core_machine_trace_provider trace = { arbitration_trace, &probe };
     const lib_u8 nop = 0x90u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     config.ticks_per_instruction = 3u;
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-        0x000ffff0u, 16u) != TYPE_STATUS_OK;
-    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+        0x000ffff0u, 16u) != LIB_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
-        TYPE_STATUS_OK;
-    failed |= core_machine_set_trace_provider(machine, &trace) != TYPE_STATUS_OK;
-    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
+    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
         result.elapsed_ticks != 3u;
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= observation.now != 3u || observation.pending_events != 0u ||
         observation.next_sequence != 0u;
     failed |= probe.count < 5u || !arbitration_has_cpu_retire(&probe) ||
         arbitration_expect_chain(&probe) ||
         probe.events[probe.count - 1u].type != CORE_MACHINE_TRACE_RUN_BOUNDARY;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= observation.now != 0u || observation.pending_events != 0u ||
         observation.next_sequence != 0u;
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T346:S3:ARBITRATION:OK\n");
+    printf("M5:T346:S3:ARBITRATION:OK\n");
     return 0;
 }

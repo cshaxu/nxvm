@@ -13,7 +13,7 @@
 #include "app-nxvm/devices/port_interface.h"
 #include "app-nxvm/devices/pic_interface.h"
 #include "lib/types/types_interface.h"
-#include "type.h"
+
 #include "app-nxvm/devices/trace_interface.h"
 #include "app-nxvm/devices/retirement_observation_interface.h"
 #include "app-nxvm/devices/fdc_observation_interface.h"
@@ -132,9 +132,9 @@ typedef struct core_machine_transaction_contract {
     core_machine_external_access_wait_window external_access_wait_windows[
         CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY];
     lib_u32 dma_cycle_wait_quanta;
-    type_bool dma_cycle_bus_ready_gate_enabled;
-    type_bool cpu_cycle_bus_ready_gate_enabled;
-    type_bool cpu_prefetch_reservation_enabled;
+    lib_u8 dma_cycle_bus_ready_gate_enabled;
+    lib_u8 cpu_cycle_bus_ready_gate_enabled;
+    lib_u8 cpu_prefetch_reservation_enabled;
 } core_machine_transaction_contract;
 
 /* The product selects its keyboard controller once when it freezes the Core
@@ -170,7 +170,7 @@ typedef struct core_machine_config {
     core_machine_fpu_profile fpu_profile;
     /* Original 80386 silicon accepts MOV CR ModR/M forms with MOD other
      * than 11b, using the r/m field as the general-register selector. */
-    type_bool cpu_80386_cr_mov_ignores_mod;
+    lib_u8 cpu_80386_cr_mov_ignores_mod;
     core_machine_a20_wrap_policy a20_wrap_policy;
     /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     lib_u32 ticks_per_instruction;
@@ -200,17 +200,17 @@ typedef struct core_machine_config {
     lib_u8 kbc_command_response_status_polls;
     lib_u32 kbc_serial_delivery_ticks;
     /* Optional product-selected 8254 topology; no output consumer is implied. */
-    type_bool auxiliary_pit_present;
+    lib_u8 auxiliary_pit_present;
     lib_u16 auxiliary_pit_base_port;
     /* False preserves PC/AT AUX; true selects a keyboard-only 8042 topology. */
-    type_bool kbc_aux_absent;
+    lib_u8 kbc_aux_absent;
     /* A board may freeze the electrical 8042 input pins observed by command
      * C0h.  Unconfigured machines retain the controller's AT default. */
-    type_bool kbc_input_port_configured;
+    lib_u8 kbc_input_port_configured;
     lib_u8 kbc_input_port;
     /* Frozen board output-pin state applied whenever the selected 8042 resets.
      * It is an electrical input to the generic controller, not a profile name. */
-    type_bool kbc_reset_output_port_configured;
+    lib_u8 kbc_reset_output_port_configured;
     lib_u8 kbc_reset_output_port;
     core_machine_keyboard_topology keyboard_topology;
     core_machine_xt_ppi_keyboard_config xt_ppi_keyboard;
@@ -307,8 +307,8 @@ typedef struct core_machine_display_port_topology {
 typedef struct core_machine_display_config {
     core_machine_vadp_text_timing text_timing;
     core_machine_vadp_text_glyph_config text_glyphs;
-    type_bool cga_vram_present;
-    type_bool ega_present;
+    lib_u8 cga_vram_present;
+    lib_u8 ega_present;
     core_machine_vadp_ega_personality ega_personality;
     core_machine_vadp_cecg_config cecg;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
@@ -352,7 +352,7 @@ typedef struct core_machine_rtc_cmos_config {
     /* Unit-only synthetic board defaults may ask Core to derive the AT
      * configuration checksum.  A session-provided board seed owns its
      * complete NVRAM image, including 2Eh/2Fh, and clears this flag. */
-    type_bool derive_configuration_checksum;
+    lib_u8 derive_configuration_checksum;
 } core_machine_rtc_cmos_config;
 
 typedef enum core_machine_planar_parity_refresh_status_source {
@@ -375,10 +375,10 @@ typedef struct core_machine_planar_parity_config {
 } core_machine_planar_parity_config;
 
 typedef struct core_machine_planar_parity_observation {
-    C_INT configured;
-    C_INT enabled;
-    C_INT latched;
-    C_INT nmi_signaled;
+    lib_i32 configured;
+    lib_i32 enabled;
+    lib_i32 latched;
+    lib_i32 nmi_signaled;
 } core_machine_planar_parity_observation;
 
 /* DeskPro D4 platform port B.  This is distinct from IBM planar parity even
@@ -389,18 +389,18 @@ typedef struct core_machine_d4_platform_config {
 } core_machine_d4_platform_config;
 
 typedef struct core_machine_d4_platform_observation {
-    C_INT configured;
-    C_INT iochk_enabled;
-    C_INT failsafe_enabled;
-    C_INT iochk_latched;
-    C_INT failsafe_latched;
-    C_INT nmi_signaled;
+    lib_i32 configured;
+    lib_i32 iochk_enabled;
+    lib_i32 failsafe_enabled;
+    lib_i32 iochk_latched;
+    lib_i32 failsafe_latched;
+    lib_i32 nmi_signaled;
 } core_machine_d4_platform_observation;
 
 /* Construction-only input for the selected DeskPro D4 RAM controller.  ROM
  * decoding remains owned by the immutable firmware mapping. */
 typedef struct core_machine_d4_memory_config {
-    type_bool present;
+    lib_u8 present;
     lib_u8 diagnostic_low;
     lib_u8 diagnostic_high;
     lib_u16 ram_setup;
@@ -408,11 +408,11 @@ typedef struct core_machine_d4_memory_config {
 /* Copied logical speaker-line state. The Core owns port-B and PIT sampling;
  * host audio is a separate, optional consumer. */
 typedef struct core_machine_speaker_observation {
-    C_INT configured;
-    C_INT timer_gate;
-    C_INT data_enabled;
-    C_INT timer_output;
-    C_INT output;
+    lib_i32 configured;
+    lib_i32 timer_gate;
+    lib_i32 data_enabled;
+    lib_i32 timer_output;
+    lib_i32 output;
 } core_machine_speaker_observation;
 
 /* A profile-selected, bounded unpopulated memory window. Reads return the
@@ -457,20 +457,20 @@ typedef struct core_machine_plan_topology {
     core_machine_absent_memory_config absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     lib_u8 memory_alias_count;
     core_machine_memory_alias_config memory_alias[CORE_MACHINE_MEMORY_ALIAS_COUNT];
-    type_bool planar_parity_present;
+    lib_u8 planar_parity_present;
     core_machine_planar_parity_config planar_parity;
-    type_bool d4_platform_present;
+    lib_u8 d4_platform_present;
     core_machine_d4_platform_config d4_platform;
-    type_bool display_present;
+    lib_u8 display_present;
     core_machine_display_config display;
-    type_bool dma_present;
+    lib_u8 dma_present;
     core_machine_dma_wiring dma;
-    type_bool rtc_cmos_present;
+    lib_u8 rtc_cmos_present;
     core_machine_rtc_cmos_config rtc_cmos;
-    type_bool fdc_present;
+    lib_u8 fdc_present;
     core_machine_fdc_drive_bindings fdc_drives;
     core_machine_fdc_config fdc;
-    type_bool hdc_present;
+    lib_u8 hdc_present;
     core_machine_media_id hdc_media_id;
     core_machine_media_id hdc_slave_media_id;
     core_machine_hdc_config hdc;
@@ -529,9 +529,9 @@ typedef struct core_machine_time_observation {
     lib_u64 next_deadline_tick;
     lib_u64 pacing_ticks_per_second;
     lib_u64 physical_ticks_per_second;
-    type_bool next_deadline_valid;
-    type_bool pacing_time_available;
-    type_bool physical_time_available;
+    lib_u8 next_deadline_valid;
+    lib_u8 pacing_time_available;
+    lib_u8 physical_time_available;
     core_machine_time_progress_disposition progress_disposition;
 } core_machine_time_observation;
 
@@ -541,92 +541,92 @@ typedef struct core_machine_timeline_observation {
     lib_u32 pending_events;
 } core_machine_timeline_observation;
 
-type_status core_machine_create(
+lib_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine);
 
-type_status core_machine_plan_create(const core_machine_config *configuration,
+lib_status core_machine_plan_create(const core_machine_config *configuration,
     core_machine_plan **out_plan);
-C_VOID core_machine_plan_destroy(core_machine_plan *plan);
-type_status core_machine_plan_set_topology(core_machine_plan *plan,
+void core_machine_plan_destroy(core_machine_plan *plan);
+lib_status core_machine_plan_set_topology(core_machine_plan *plan,
     const core_machine_plan_topology *topology);
-type_status core_machine_plan_set_controller_timing_rules(core_machine_plan *plan,
+lib_status core_machine_plan_set_controller_timing_rules(core_machine_plan *plan,
     const core_machine_controller_timing_rules *rules);
-type_status core_machine_plan_bind_media_registry(core_machine_plan *plan,
+lib_status core_machine_plan_bind_media_registry(core_machine_plan *plan,
     const core_machine_media_registry *registry);
-type_status core_machine_plan_bind_display_provider(core_machine_plan *plan,
+lib_status core_machine_plan_bind_display_provider(core_machine_plan *plan,
     core_machine_display_provider_slot *provider);
-type_status core_machine_plan_bind_fdc_terminal_observation(core_machine_plan *plan,
+lib_status core_machine_plan_bind_fdc_terminal_observation(core_machine_plan *plan,
     core_machine_fdc_terminal_observation_provider provider);
-type_status core_machine_plan_configure_fdc(core_machine_plan *plan,
+lib_status core_machine_plan_configure_fdc(core_machine_plan *plan,
     const core_machine_fdc_drive_bindings *drives,
     const core_machine_fdc_config *config);
-type_status core_machine_plan_configure_hdc(core_machine_plan *plan,
+lib_status core_machine_plan_configure_hdc(core_machine_plan *plan,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
     const core_machine_hdc_config *config);
-type_status core_machine_plan_configure_d4_memory(core_machine_plan *plan,
+lib_status core_machine_plan_configure_d4_memory(core_machine_plan *plan,
     const core_machine_d4_memory_config *config);
-type_status core_machine_create_from_plan(const core_machine_plan *plan,
+lib_status core_machine_create_from_plan(const core_machine_plan *plan,
     core_machine **out_machine);
-type_status core_machine_get_timing_disposition(const core_machine *machine,
+lib_status core_machine_get_timing_disposition(const core_machine *machine,
     core_machine_timing_capability capability,
     core_machine_timing_disposition *out_disposition);
-type_status core_machine_get_timing_declaration(const core_machine *machine,
+lib_status core_machine_get_timing_declaration(const core_machine *machine,
     core_machine_timing_capability capability,
     core_machine_timing_declaration *out_declaration);
 
-type_status core_machine_reset(core_machine *machine);
+lib_status core_machine_reset(core_machine *machine);
 
-type_status core_machine_reconfigure_memory(core_machine *machine,
+lib_status core_machine_reconfigure_memory(core_machine *machine,
     lib_size memory_bytes);
 
-type_status core_machine_get_lifecycle(
+lib_status core_machine_get_lifecycle(
     const core_machine *machine,
     core_machine_lifecycle *out_lifecycle);
 
-type_status core_machine_get_cpu_state(
+lib_status core_machine_get_cpu_state(
     const core_machine *machine,
     core_machine_cpu_state *out_state);
 
-type_status core_machine_get_cpu_profile(
+lib_status core_machine_get_cpu_profile(
     const core_machine *machine, core_machine_cpu_profile *out_profile);
-type_status core_machine_get_fpu_profile(
+lib_status core_machine_get_fpu_profile(
     const core_machine *machine, core_machine_fpu_profile *out_profile);
-type_status core_machine_get_fpu_state(
+lib_status core_machine_get_fpu_state(
     const core_machine *machine, core_machine_fpu_state *out_state);
-type_status core_machine_get_memory_bytes(
+lib_status core_machine_get_memory_bytes(
     const core_machine *machine, lib_size *out_memory_bytes);
-type_status core_machine_get_elapsed_ticks(
+lib_status core_machine_get_elapsed_ticks(
     const core_machine *machine, lib_u64 *out_elapsed_ticks);
-type_status core_machine_capture_time_observation(const core_machine *machine,
+lib_status core_machine_capture_time_observation(const core_machine *machine,
     core_machine_time_observation *out_observation);
 /* Core selects and advances to its next valid guest-observable deadline.
  * A false result means an unqualified owner blocks safe fast advance. */
-type_status core_machine_advance_to_next_deadline(core_machine *machine,
-    type_bool *out_advanced);
+lib_status core_machine_advance_to_next_deadline(core_machine *machine,
+    lib_u8 *out_advanced);
 /* Turbo may request one bounded, Core-owned escape from a copied L1 state.
  * The caller supplies neither a tick count nor a controller selection. */
-type_status core_machine_advance_l1_compatibility(core_machine *machine,
-    type_bool *out_advanced);
-type_status core_machine_get_timeline_observation(const core_machine *machine,
+lib_status core_machine_advance_l1_compatibility(core_machine *machine,
+    lib_u8 *out_advanced);
+lib_status core_machine_get_timeline_observation(const core_machine *machine,
     core_machine_timeline_observation *out_observation);
 
-type_status core_machine_get_cpu_diagnostic(
+lib_status core_machine_get_cpu_diagnostic(
     const core_machine *machine,
     core_machine_cpu_diagnostic *out_diagnostic);
 
-type_status core_machine_run(
+lib_status core_machine_run(
     core_machine *machine,
     core_machine_run_budget budget,
     core_machine_run_result *result);
 
-type_status core_machine_request_stop(core_machine *machine);
+lib_status core_machine_request_stop(core_machine *machine);
 
 /* VM devices may request the architected NMI mask through this operation;
  * they never borrow CPU storage to change it. */
-type_status core_machine_set_nmi_mask(core_machine *machine, C_INT masked);
-type_status core_machine_get_nmi_mask(const core_machine *machine,
-    C_INT *out_masked);
+lib_status core_machine_set_nmi_mask(core_machine *machine, lib_i32 masked);
+lib_status core_machine_get_nmi_mask(const core_machine *machine,
+    lib_i32 *out_masked);
 
 /* A serial byte received from the keyboard attached to this machine's 8042.
  * Product host adapters query the selected scan set before forming this
@@ -636,65 +636,65 @@ typedef enum core_machine_keyboard_scan_set {
     CORE_MACHINE_KEYBOARD_SCAN_SET_2 = 2u
 } core_machine_keyboard_scan_set;
 
-type_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
+lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
     lib_u8 *out_scan_set);
-type_status core_machine_keyboard_receive_native_byte(core_machine *machine,
+lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
     lib_u8 native_byte);
-type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
+lib_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
     const lib_u8 *native_bytes, lib_size count);
-type_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
-    core_machine_xt_ppi_fault_input input, C_INT asserted);
+lib_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
+    core_machine_xt_ppi_fault_input input, lib_i32 asserted);
 /* A relative report received from the machine's attached pointing device. */
-type_status core_machine_mouse_receive_relative(core_machine *machine,
+lib_status core_machine_mouse_receive_relative(core_machine *machine,
     lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons);
 
-type_status core_machine_capture_display_snapshot(const core_machine *machine,
+lib_status core_machine_capture_display_snapshot(const core_machine *machine,
     core_machine_display_snapshot *out_snapshot);
-type_status core_machine_observe_display_snapshot(const core_machine *machine,
-    type_bool acknowledged_generation_valid,
+lib_status core_machine_observe_display_snapshot(const core_machine *machine,
+    lib_u8 acknowledged_generation_valid,
     lib_u64 acknowledged_generation,
     core_machine_display_snapshot_observation *out_observation);
 
-type_status core_machine_configure_display(core_machine *machine,
+lib_status core_machine_configure_display(core_machine *machine,
     const core_machine_display_config *config);
-type_status core_machine_configure_dma(core_machine *machine,
+lib_status core_machine_configure_dma(core_machine *machine,
     const core_machine_dma_wiring *wiring,
     core_machine_dma_request_binding *out_fdc_request);
-type_status core_machine_get_fdc_dma_request_binding(const core_machine *machine,
+lib_status core_machine_get_fdc_dma_request_binding(const core_machine *machine,
     core_machine_dma_request_binding *out_binding);
 /* Selected bus adapters drive this level at deterministic guest-time boundaries. */
-type_status core_machine_set_dma_bus_ready(core_machine *machine, C_INT ready);
-type_status core_machine_set_cpu_bus_ready(core_machine *machine, C_INT ready);
-type_status core_machine_configure_rtc_cmos(core_machine *machine,
+lib_status core_machine_set_dma_bus_ready(core_machine *machine, lib_i32 ready);
+lib_status core_machine_set_cpu_bus_ready(core_machine *machine, lib_i32 ready);
+lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config);
-type_status core_machine_configure_planar_parity(core_machine *machine,
+lib_status core_machine_configure_planar_parity(core_machine *machine,
     const core_machine_planar_parity_config *config);
-type_status core_machine_configure_d4_platform(core_machine *machine,
+lib_status core_machine_configure_d4_platform(core_machine *machine,
     const core_machine_d4_platform_config *config);
-type_status core_machine_configure_absent_memory(core_machine *machine,
+lib_status core_machine_configure_absent_memory(core_machine *machine,
     const core_machine_absent_memory_config *config);
-type_status core_machine_report_planar_parity_fault(core_machine *machine);
-type_status core_machine_clear_d4_iochk_fault(core_machine *machine);
-type_status core_machine_report_d4_iochk_fault(core_machine *machine);
-type_status core_machine_get_planar_parity_observation(const core_machine *machine,
+lib_status core_machine_report_planar_parity_fault(core_machine *machine);
+lib_status core_machine_clear_d4_iochk_fault(core_machine *machine);
+lib_status core_machine_report_d4_iochk_fault(core_machine *machine);
+lib_status core_machine_get_planar_parity_observation(const core_machine *machine,
     core_machine_planar_parity_observation *out_observation);
-type_status core_machine_get_d4_platform_observation(const core_machine *machine,
+lib_status core_machine_get_d4_platform_observation(const core_machine *machine,
     core_machine_d4_platform_observation *out_observation);
-type_status core_machine_get_speaker_observation(const core_machine *machine,
+lib_status core_machine_get_speaker_observation(const core_machine *machine,
     core_machine_speaker_observation *out_observation);
 
-type_status core_machine_report_fault(
+lib_status core_machine_report_fault(
     core_machine *machine,
     lib_u32 detail);
 
-type_status core_machine_capture_observation(
+lib_status core_machine_capture_observation(
     const core_machine *machine, core_machine_observation *out_observation);
 
-type_status core_machine_bind_execution_provider(core_machine *machine,
-    const core_machine_execution_provider *provider, C_VOID *context);
-type_status core_machine_freeze_execution_providers(core_machine *machine);
+lib_status core_machine_bind_execution_provider(core_machine *machine,
+    const core_machine_execution_provider *provider, void *context);
+lib_status core_machine_freeze_execution_providers(core_machine *machine);
 
-C_VOID core_machine_destroy(core_machine *machine);
+void core_machine_destroy(core_machine *machine);
 
 #ifdef __cplusplus
 }

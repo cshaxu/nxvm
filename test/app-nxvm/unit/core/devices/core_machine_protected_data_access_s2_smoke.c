@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -17,35 +18,35 @@ typedef struct pda_machine {
     core_machine *machine;
 } pda_machine;
 
-static C_VOID pda_reset(C_VOID *opaque)
+static void pda_reset(void *opaque)
 {
     pda_machine *state = (pda_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider pda_provider = {
     pda_reset, LIB_NULL
 };
 
-static C_INT pda_write(pda_machine *state, lib_u32 address,
-    const C_VOID *bytes, lib_size byte_count)
+static lib_i32 pda_write(pda_machine *state, lib_u32 address,
+    const void *bytes, lib_size byte_count)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, bytes, byte_count) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT pda_read(pda_machine *state, lib_u32 address,
-    C_VOID *bytes, lib_size byte_count)
+static lib_i32 pda_read(pda_machine *state, lib_u32 address,
+    void *bytes, lib_size byte_count)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_read_physical(&state->machine->executor_memory,
-            address, (type_virtual_address)bytes, byte_count) == TYPE_STATUS_OK;
+            address, (lib_uptr)bytes, byte_count) == LIB_STATUS_OK;
 }
 
-static C_INT pda_prepare(pda_machine *state, core_machine_cpu_profile profile)
+static lib_i32 pda_prepare(pda_machine *state, core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -71,7 +72,7 @@ static C_INT pda_prepare(pda_machine *state, core_machine_cpu_profile profile)
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &pda_provider, state) ||
         !pda_write(state, PDA_GDT_POINTER, gdt_pointer, sizeof(gdt_pointer)) ||
@@ -79,7 +80,7 @@ static C_INT pda_prepare(pda_machine *state, core_machine_cpu_profile profile)
         !pda_write(state, 0u, bootstrap, sizeof(bootstrap)) ||
         !pda_write(state, PDA_CODE_ADDRESS, halt, sizeof(halt)) ||
         core_machine_run(state->machine, (core_machine_run_budget){96u,0u},
-            &result) != TYPE_STATUS_OK ||
+            &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
@@ -88,7 +89,7 @@ static C_INT pda_prepare(pda_machine *state, core_machine_cpu_profile profile)
     return 1;
 }
 
-static C_INT pda_same_cpu(const t_cpu *before, const t_cpu *after)
+static lib_i32 pda_same_cpu(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -108,8 +109,8 @@ static C_INT pda_same_cpu(const t_cpu *before, const t_cpu *after)
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT pda_nonresult_state_same(const t_cpu *before, const t_cpu *after,
-    type_bool eax_changes, type_bool edi_changes)
+static lib_i32 pda_nonresult_state_same(const t_cpu *before, const t_cpu *after,
+    lib_u8 eax_changes, lib_u8 edi_changes)
 {
     return (eax_changes || before->data.eax == after->data.eax) &&
         before->data.ecx == after->data.ecx &&
@@ -128,7 +129,7 @@ static C_INT pda_nonresult_state_same(const t_cpu *before, const t_cpu *after,
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT pda_start(pda_machine *state, const lib_u8 *code,
+static lib_i32 pda_start(pda_machine *state, const lib_u8 *code,
     lib_size code_size, t_cpu *out_before)
 {
     if (!pda_write(state, PDA_CODE_ADDRESS, code, code_size)) return 0;
@@ -137,33 +138,33 @@ static C_INT pda_start(pda_machine *state, const lib_u8 *code,
     return 1;
 }
 
-static C_INT pda_run_halt(pda_machine *state, t_cpu *out_after)
+static lib_i32 pda_run_halt(pda_machine *state, t_cpu *out_after)
 {
     core_machine_run_result result;
 
     if (core_machine_run(state->machine, (core_machine_run_budget){32u,0u},
-        &result) != TYPE_STATUS_OK ||
+        &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) return 0;
     *out_after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
 }
 
-static C_INT pda_expect_fault(pda_machine *state, lib_u32 expected_mask,
+static lib_i32 pda_expect_fault(pda_machine *state, lib_u32 expected_mask,
     t_cpu *out_after)
 {
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
 
     if (core_machine_run(state->machine, (core_machine_run_budget){16u,0u},
-        &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
-        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) != TYPE_STATUS_OK ||
+        &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) != LIB_STATUS_OK ||
         !diagnostic.first_fault.valid ||
         diagnostic.first_fault.exception_mask != expected_mask) return 0;
     *out_after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
 }
 
-static C_INT pda_test_default_access(core_machine_cpu_profile profile)
+static lib_i32 pda_test_default_access(core_machine_cpu_profile profile)
 {
     static const lib_u8 ds_read[] = { 0x8au,0x06u,0x20u,0,0xf4u };
     static const lib_u8 ds_write[] = { 0x88u,0x06u,0x21u,0,0xf4u };
@@ -173,7 +174,7 @@ static C_INT pda_test_default_access(core_machine_cpu_profile profile)
     t_cpu before;
     t_cpu after;
     lib_u8 byte = 0x5au;
-    C_INT failed = !pda_prepare(&state, profile);
+    lib_i32 failed = !pda_prepare(&state, profile);
 
     if (!failed) {
         state.machine->executor_cpu.data.eax = 0xaabbcc44u;
@@ -219,7 +220,7 @@ static C_INT pda_test_default_access(core_machine_cpu_profile profile)
     return !failed;
 }
 
-static C_INT pda_test_386_attributes(C_VOID)
+static lib_i32 pda_test_386_attributes(void)
 {
     static const lib_u8 operand32[] = { 0x66u,0x8bu,0x06u,0x20u,0,0xf4u };
     static const lib_u8 address32_ss[] = { 0x67u,0x8au,0x45u,0,0xf4u };
@@ -230,7 +231,7 @@ static C_INT pda_test_386_attributes(C_VOID)
     t_cpu after;
     lib_u32 value = 0x12345678u;
     lib_u8 byte = 0x4du;
-    C_INT failed = !pda_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !pda_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !pda_write(&state, PDA_DATA_ADDRESS + 0x20u, &value, sizeof(value)) ||
@@ -271,7 +272,7 @@ static C_INT pda_test_386_attributes(C_VOID)
     return !failed;
 }
 
-static C_INT pda_test_fault_atomicity(C_VOID)
+static lib_i32 pda_test_fault_atomicity(void)
 {
     static const lib_u8 read_ds[] = { 0x8au,0x06u,0x20u,0 };
     static const lib_u8 read_ds_expand_down_invalid[] = {
@@ -284,7 +285,7 @@ static C_INT pda_test_fault_atomicity(C_VOID)
     t_cpu before;
     t_cpu after;
     lib_u8 sentinel = 0x5au;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     if (!pda_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 0;
     state.machine->executor_cpu.data.ds.selector = 0u;
@@ -334,14 +335,14 @@ static C_INT pda_test_fault_atomicity(C_VOID)
     return !failed;
 }
 
-static C_INT pda_test_expand_down_success(C_VOID)
+static lib_i32 pda_test_expand_down_success(void)
 {
     static const lib_u8 read_ds[] = { 0x8au,0x06u,0x20u,0,0xf4u };
     pda_machine state;
     t_cpu before;
     t_cpu after;
     lib_u8 byte = 0x3cu;
-    C_INT failed = !pda_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !pda_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         state.machine->executor_cpu.data.ds.limit = 0x1fu;
@@ -357,7 +358,7 @@ static C_INT pda_test_expand_down_success(C_VOID)
     return !failed;
 }
 
-static C_INT pda_test_irq_no_shadow(C_VOID)
+static lib_i32 pda_test_irq_no_shadow(void)
 {
     static const lib_u8 code[] = {
         0x8au,0x06u,0x20u,0,0x90u
@@ -370,7 +371,7 @@ static C_INT pda_test_irq_no_shadow(C_VOID)
     t_cpu after;
     lib_u8 byte = 0x5au;
     lib_u16 frame_ip = 0u;
-    C_INT failed = !pda_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !pda_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         failed |= !pda_write(&state, PDA_DATA_ADDRESS + 0x20u, &byte, sizeof(byte)) ||
@@ -392,7 +393,7 @@ static C_INT pda_test_irq_no_shadow(C_VOID)
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){2u,0u},
-            &result) != TYPE_STATUS_OK ||
+            &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !pda_read(&state, PDA_STACK_ADDRESS +
@@ -400,33 +401,33 @@ static C_INT pda_test_irq_no_shadow(C_VOID)
             after.data.eax != 0xaabbcc5au || after.data.cs.selector != 0x08u ||
             after.data.eip != 0x101u || frame_ip != 4u ||
             after.data.esp != 0x7ffau ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
                 state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!pda_test_default_access(CORE_MACHINE_CPU_PROFILE_80286) ||
         !pda_test_default_access(CORE_MACHINE_CPU_PROFILE_80386)) {
-        STD_PRINTF("PDA stage=default\n");
+        printf("PDA stage=default\n");
         return 1;
     }
     if (!pda_test_386_attributes()) {
-        STD_PRINTF("PDA stage=attributes\n");
+        printf("PDA stage=attributes\n");
         return 1;
     }
     if (!pda_test_fault_atomicity() || !pda_test_expand_down_success()) {
-        STD_PRINTF("PDA stage=boundaries\n");
+        printf("PDA stage=boundaries\n");
         return 1;
     }
     if (!pda_test_irq_no_shadow()) {
-        STD_PRINTF("PDA stage=irq\n");
+        printf("PDA stage=irq\n");
         return 1;
     }
-    STD_PRINTF("M5:T323:S2:PROTECTED-DATA-ACCESS:OK\n");
+    printf("M5:T323:S2:PROTECTED-DATA-ACCESS:OK\n");
     return 0;
 }

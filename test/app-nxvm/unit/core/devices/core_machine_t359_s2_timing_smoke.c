@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -12,7 +12,7 @@ typedef struct t359_s2_timing_state {
     lib_u64 advanced_ticks;
 } t359_s2_timing_state;
 
-typedef C_INT (*t359_s2_setup)(core_machine *machine, C_VOID *opaque);
+typedef lib_i32 (*t359_s2_setup)(core_machine *machine, void *opaque);
 
 typedef struct t359_s2_word_seed {
     lib_u16 ax;
@@ -20,17 +20,17 @@ typedef struct t359_s2_word_seed {
     lib_u16 dx;
     lib_u16 memory;
     lib_u32 memory_address;
-    C_INT write_memory;
+    lib_i32 write_memory;
 } t359_s2_word_seed;
 
-static C_VOID t359_s2_timing_reset(C_VOID *opaque)
+static void t359_s2_timing_reset(void *opaque)
 {
     t359_s2_timing_state *state = (t359_s2_timing_state *)opaque;
 
     if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
-static C_VOID t359_s2_timing_advance(C_VOID *opaque,
+static void t359_s2_timing_advance(void *opaque,
     lib_u64 elapsed_ticks)
 {
     t359_s2_timing_state *state = (t359_s2_timing_state *)opaque;
@@ -43,19 +43,19 @@ static const core_machine_execution_provider t359_s2_timing_provider = {
     t359_s2_timing_advance
 };
 
-static C_INT t359_s2_prepare(core_machine_cpu_profile profile,
+static lib_i32 t359_s2_prepare(core_machine_cpu_profile profile,
     core_machine **out_machine, t359_s2_timing_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T359_S2_RESET_LINEAR, T359_S2_RESET_PHYSICAL,
-            T359_S2_WINDOW_BYTES) != TYPE_STATUS_OK ||
+            T359_S2_WINDOW_BYTES) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00001000u,
-            0x00001000u, T359_S2_WINDOW_BYTES) != TYPE_STATUS_OK ||
+            0x00001000u, T359_S2_WINDOW_BYTES) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &t359_s2_timing_provider, state)) {
         core_machine_destroy(machine);
@@ -65,34 +65,34 @@ static C_INT t359_s2_prepare(core_machine_cpu_profile profile,
     return 1;
 }
 
-static C_INT t359_s2_run_with_setup(core_machine *machine,
+static lib_i32 t359_s2_run_with_setup(core_machine *machine,
     const lib_u8 *program, lib_size program_bytes,
     lib_u64 expected_ticks, t359_s2_timing_state *state,
-    t359_s2_setup setup, C_VOID *opaque)
+    t359_s2_setup setup, void *opaque)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result = { 0 };
-    C_INT passed = machine != LIB_NULL && program != LIB_NULL && state != LIB_NULL &&
-        core_machine_reset(machine) == TYPE_STATUS_OK &&
+    lib_i32 passed = machine != LIB_NULL && program != LIB_NULL && state != LIB_NULL &&
+        core_machine_reset(machine) == LIB_STATUS_OK &&
         (setup == LIB_NULL || setup(machine, opaque)) &&
         core_machine_memory_write(machine, T359_S2_RESET_LINEAR, program,
-            program_bytes) == TYPE_STATUS_OK &&
-        core_machine_run(machine, budget, &result) == TYPE_STATUS_OK &&
+            program_bytes) == LIB_STATUS_OK &&
+        core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
         result.ticks == expected_ticks && result.elapsed_ticks == expected_ticks &&
         state->advanced_ticks == expected_ticks;
 
     if (!passed) {
-        STD_PRINTF("T359 S2 timing expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu opcode=%02x\n",
+        printf("T359 S2 timing expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu opcode=%02x\n",
             (unsigned long long)expected_ticks, (unsigned long long)result.ticks,
-            (unsigned long long)result.executed, (C_INT)result.reason,
+            (unsigned long long)result.executed, (lib_i32)result.reason,
             state == LIB_NULL ? 0ull : (unsigned long long)state->advanced_ticks,
             program == LIB_NULL ? 0u : program[0]);
     }
     return passed;
 }
 
-static C_INT t359_s2_run(core_machine *machine,
+static lib_i32 t359_s2_run(core_machine *machine,
     const lib_u8 *program, lib_size program_bytes,
     lib_u64 expected_ticks, t359_s2_timing_state *state)
 {
@@ -100,7 +100,7 @@ static C_INT t359_s2_run(core_machine *machine,
         expected_ticks, state, LIB_NULL, LIB_NULL);
 }
 
-static C_INT t359_s2_seed_words(core_machine *machine, C_VOID *opaque)
+static lib_i32 t359_s2_seed_words(core_machine *machine, void *opaque)
 {
     const t359_s2_word_seed *seed = (const t359_s2_word_seed *)opaque;
 
@@ -110,10 +110,10 @@ static C_INT t359_s2_seed_words(core_machine *machine, C_VOID *opaque)
     machine->executor_cpu.data.dx = seed->dx;
     return !seed->write_memory || core_machine_memory_write(machine,
         seed->memory_address, &seed->memory, sizeof(seed->memory)) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT t359_s2_test_profile_rows(core_machine_cpu_profile profile,
+static lib_i32 t359_s2_test_profile_rows(core_machine_cpu_profile profile,
     lib_u64 add_register_ticks, lib_u64 add_memory_ticks,
     lib_u64 sub_read_ticks, lib_u64 mov_immediate_ticks,
     lib_u64 lea_ticks, lib_u64 adjust_ticks,
@@ -131,7 +131,7 @@ static C_INT t359_s2_test_profile_rows(core_machine_cpu_profile profile,
     const lib_u16 memory_value = 1u;
     t359_s2_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s2_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s2_prepare(profile, &machine, &state);
 
     if (!failed) {
         failed |= !t359_s2_run(machine, add_register, sizeof(add_register),
@@ -140,12 +140,12 @@ static C_INT t359_s2_test_profile_rows(core_machine_cpu_profile profile,
     if (!failed) {
         machine->executor_cpu.data.cx = 1u;
         failed |= core_machine_memory_write(machine, 0x1000u, &memory_value,
-            sizeof(memory_value)) != TYPE_STATUS_OK || !t359_s2_run(machine,
+            sizeof(memory_value)) != LIB_STATUS_OK || !t359_s2_run(machine,
             add_memory, sizeof(add_memory), add_memory_ticks, &state);
     }
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x1000u, &memory_value,
-            sizeof(memory_value)) != TYPE_STATUS_OK || !t359_s2_run(machine,
+            sizeof(memory_value)) != LIB_STATUS_OK || !t359_s2_run(machine,
             sub_read, sizeof(sub_read), sub_read_ticks, &state);
     }
     if (!failed) {
@@ -165,7 +165,7 @@ static C_INT t359_s2_test_profile_rows(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT t359_s2_test_setcc(C_VOID)
+static lib_i32 t359_s2_test_setcc(void)
 {
     static const lib_u8 set_register[] = { 0x0fu, 0x95u, 0xc0u };
     static const lib_u8 set_memory[] = {
@@ -173,7 +173,7 @@ static C_INT t359_s2_test_setcc(C_VOID)
     };
     t359_s2_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &machine, &state);
 
     if (!failed) {
@@ -188,7 +188,7 @@ static C_INT t359_s2_test_setcc(C_VOID)
     return failed;
 }
 
-static C_INT t359_s2_test_legacy_odd_word_transfers(C_VOID)
+static lib_i32 t359_s2_test_legacy_odd_word_transfers(void)
 {
     static const lib_u8 add_memory[] = {
         0x01u, 0x0eu, 0x01u, 0x10u
@@ -211,15 +211,15 @@ static C_INT t359_s2_test_legacy_odd_word_transfers(C_VOID)
     for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0u]); ++index) {
         t359_s2_timing_state state = { 0u };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !t359_s2_prepare(profiles[index], &machine, &state);
+        lib_i32 failed = !t359_s2_prepare(profiles[index], &machine, &state);
 
         if (!failed) {
             failed |= !t359_s2_run_with_setup(machine, add_memory,
                 sizeof(add_memory), add_ticks[index], &state,
-                t359_s2_seed_words, (C_VOID *)&seed) ||
+                t359_s2_seed_words, (void *)&seed) ||
                 !t359_s2_run_with_setup(machine, sub_read,
                     sizeof(sub_read), read_ticks[index], &state,
-                    t359_s2_seed_words, (C_VOID *)&seed);
+                    t359_s2_seed_words, (void *)&seed);
         }
         core_machine_destroy(machine);
         if (failed) return 1;
@@ -227,7 +227,7 @@ static C_INT t359_s2_test_legacy_odd_word_transfers(C_VOID)
     return 0;
 }
 
-static C_INT t359_s2_test_dynamic_multiply(C_VOID)
+static lib_i32 t359_s2_test_dynamic_multiply(void)
 {
     static const lib_u8 mul_zero[] = { 0xf7u, 0xe1u };
     static const lib_u8 imul_immediate8[] = { 0x6bu, 0xc1u, 0x04u };
@@ -239,7 +239,7 @@ static C_INT t359_s2_test_dynamic_multiply(C_VOID)
     };
     t359_s2_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &machine, &state);
 
     if (!failed) {
@@ -248,13 +248,13 @@ static C_INT t359_s2_test_dynamic_multiply(C_VOID)
                 sizeof(imul_immediate8), 9u, &state) ||
             !t359_s2_run_with_setup(machine, imul_immediate16,
                 sizeof(imul_immediate16), 10u, &state, t359_s2_seed_words,
-                (C_VOID *)&multiplier);
+                (void *)&multiplier);
     }
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT t359_s2_test_group3_rows(C_VOID)
+static lib_i32 t359_s2_test_group3_rows(void)
 {
     static const lib_u8 not_register[] = { 0xf7u, 0xd1u };
     static const lib_u8 neg_memory[] = {
@@ -280,15 +280,15 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
     t359_s2_timing_state state = { 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_8086,
+    lib_i32 failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_8086,
         &machine, &state);
 
     if (!failed) {
         failed |= !t359_s2_run_with_setup(machine, not_register,
             sizeof(not_register), 3u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, neg_memory,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, neg_memory,
             sizeof(neg_memory), 22u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed);
+            (void *)&seed);
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
@@ -298,9 +298,9 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
     if (!failed) {
         failed |= !t359_s2_run_with_setup(machine, not_register,
             sizeof(not_register), 3u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, neg_memory,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, neg_memory,
             sizeof(neg_memory), 3u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed);
+            (void *)&seed);
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
@@ -310,17 +310,17 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
     if (!failed) {
         failed |= !t359_s2_run_with_setup(machine, not_register,
             sizeof(not_register), 2u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, neg_memory,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, neg_memory,
             sizeof(neg_memory), 7u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, mul_register,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, mul_register,
             sizeof(mul_register), 21u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, div_register,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, div_register,
             sizeof(div_register), 22u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, idiv_register,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, idiv_register,
             sizeof(idiv_register), 25u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, imul_immediate,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, imul_immediate,
             sizeof(imul_immediate), 21u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed);
+            (void *)&seed);
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
@@ -330,28 +330,28 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
     if (!failed) {
         failed |= !t359_s2_run_with_setup(machine, not_register,
             sizeof(not_register), 2u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, neg_memory,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, neg_memory,
             sizeof(neg_memory), 6u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, div_register,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, div_register,
             sizeof(div_register), 22u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, idiv_register,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, idiv_register,
             sizeof(idiv_register), 27u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, mul_memory,
+            (void *)&seed) || !t359_s2_run_with_setup(machine, mul_memory,
             sizeof(mul_memory), 12u, &state, t359_s2_seed_words,
-            (C_VOID *)&seed);
+            (void *)&seed);
     }
     if (!failed) {
-        failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
-            !t359_s2_seed_words(machine, (C_VOID *)&seed) ||
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
+            !t359_s2_seed_words(machine, (void *)&seed) ||
             core_machine_memory_write(machine, T359_S2_RESET_LINEAR,
-                idiv_memory, sizeof(idiv_memory)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, insufficient, &result) != TYPE_STATUS_OK ||
+                idiv_memory, sizeof(idiv_memory)) != LIB_STATUS_OK ||
+            core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
             state.advanced_ticks != 0u;
     }
     if (!failed) {
-        failed |= core_machine_run(machine, sufficient, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_run(machine, sufficient, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 46u || result.elapsed_ticks != 46u ||
             state.advanced_ticks != 46u;
@@ -360,7 +360,7 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
     return failed;
 }
 
-static C_INT t359_s2_test_80386_width_prefixes(C_VOID)
+static lib_i32 t359_s2_test_80386_width_prefixes(void)
 {
     static const lib_u8 operand_size_add[] = { 0x66u, 0x01u, 0xc8u };
     static const lib_u8 address_size_add[] = {
@@ -391,7 +391,7 @@ static C_INT t359_s2_test_80386_width_prefixes(C_VOID)
     };
     t359_s2_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &machine, &state);
 
     if (!failed) {
@@ -416,14 +416,14 @@ static C_INT t359_s2_test_80386_width_prefixes(C_VOID)
     return failed;
 }
 
-static C_INT t359_s2_test_legacy_segment_override(C_VOID)
+static lib_i32 t359_s2_test_legacy_segment_override(void)
 {
     static const lib_u8 program[] = {
         0x26u, 0x01u, 0x0eu, 0x00u, 0x10u
     };
     t359_s2_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_8086,
+    lib_i32 failed = !t359_s2_prepare(CORE_MACHINE_CPU_PROFILE_8086,
         &machine, &state);
 
     if (!failed) {
@@ -433,7 +433,7 @@ static C_INT t359_s2_test_legacy_segment_override(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (t359_s2_test_profile_rows(CORE_MACHINE_CPU_PROFILE_8086,
             3u, 22u, 15u, 16u, 13u, 4u, 5u)) return 1;
@@ -449,6 +449,6 @@ C_INT main(C_VOID)
     if (t359_s2_test_group3_rows()) return 8;
     if (t359_s2_test_80386_width_prefixes()) return 9;
     if (t359_s2_test_legacy_segment_override()) return 10;
-    STD_PRINTF("M5:T359:S2:ARITHMETIC-DATA-TIMING:OK\n");
+    printf("M5:T359:S2:ARITHMETIC-DATA-TIMING:OK\n");
     return 0;
 }

@@ -1,34 +1,34 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
 #define CHECKPOINTS 16u
 
-static C_INT timing_checkpoint_run(core_machine *machine,
+static lib_i32 timing_checkpoint_run(core_machine *machine,
     const lib_u8 *program, lib_u8 *statuses)
 {
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     lib_u32 index;
 
-    if (core_machine_reset(machine) != TYPE_STATUS_OK ||
+    if (core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0xfffffff0u, program, CHECKPOINTS) !=
-            TYPE_STATUS_OK) {
-        STD_FPRINTF(STD_STDERR, "T221 setup failed\n");
+            LIB_STATUS_OK) {
+        fprintf(stderr, "T221 setup failed\n");
         return 1;
     }
     for (index = 0u; index < CHECKPOINTS; ++index) {
         lib_u64 ticks = 3u;
         lib_u64 elapsed = (lib_u64)(index + 1u) * 3u;
 
-        if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != ticks || result.elapsed_ticks != elapsed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "T221 run failed index=%u reason=%d executed=%llu ticks=%llu elapsed=%llu\n",
-                index, (C_INT)result.reason, (unsigned long long)result.executed,
+                index, (lib_i32)result.reason, (unsigned long long)result.executed,
                 (unsigned long long)result.ticks,
                 (unsigned long long)result.elapsed_ticks);
             return 1;
@@ -38,27 +38,27 @@ static C_INT timing_checkpoint_run(core_machine *machine,
     return 0;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
     core_machine_config config = { 0 };
     lib_u8 program[CHECKPOINTS];
     lib_u8 first[CHECKPOINTS];
     lib_u8 second[CHECKPOINTS];
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     lib_memory_set(program, 0x90, sizeof(program));
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-        0x000ffff0u, CHECKPOINTS) != TYPE_STATUS_OK;
-    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
+        0x000ffff0u, CHECKPOINTS) != LIB_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= timing_checkpoint_run(machine, program, first);
     failed |= timing_checkpoint_run(machine, program, second);
     failed |= lib_memory_compare(first, second, sizeof(first)) != 0;
 
     if (failed) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T221:S2:TIMING-CHECKPOINT:FAIL first=%u,%u,%u,%u,%u,%u,%u "
             "second=%u,%u,%u,%u,%u,%u,%u\n",
             first[0u], first[15u], 0u, 0u, 0u, 0u, 0u,
@@ -67,6 +67,6 @@ C_INT main(C_VOID)
         return 1;
     }
     core_machine_destroy(machine);
-    STD_PRINTF("M5:T221:S2:TIMING-CHECKPOINT:OK\n");
+    printf("M5:T221:S2:TIMING-CHECKPOINT:OK\n");
     return 0;
 }

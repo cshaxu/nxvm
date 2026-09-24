@@ -1,16 +1,17 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
-static C_VOID imul_s56_reset(C_VOID *owner)
+static void imul_s56_reset(void *owner)
 {
     core_machine *machine = (core_machine *)owner;
 
     if (machine != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(machine);
+        (void)test_core_machine_fixture_reset_real_mode(machine);
 }
 
 static const core_machine_execution_provider imul_s56_execution_provider = {
@@ -18,7 +19,7 @@ static const core_machine_execution_provider imul_s56_execution_provider = {
     LIB_NULL
 };
 
-static C_INT imul_s56_prepare(core_machine **machine,
+static lib_i32 imul_s56_prepare(core_machine **machine,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -27,13 +28,13 @@ static C_INT imul_s56_prepare(core_machine **machine,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
-    return core_machine_create(&config, machine) == TYPE_STATUS_OK &&
+    return core_machine_create(&config, machine) == LIB_STATUS_OK &&
         test_core_machine_fixture_bind_freeze_reset(*machine,
             &imul_s56_execution_provider, *machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(*machine, 0u);
 }
 
-static C_VOID imul_s56_seed(t_cpu *cpu)
+static void imul_s56_seed(t_cpu *cpu)
 {
     cpu->data.eax = 0xa1a10000u;
     cpu->data.ecx = 0xb2b2fffeu;
@@ -46,7 +47,7 @@ static C_VOID imul_s56_seed(t_cpu *cpu)
     cpu->data.eflags = VCPU_EFLAGS_IF | VCPU_EFLAGS_DF | VCPU_EFLAGS_CF;
 }
 
-static C_INT imul_s56_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 imul_s56_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
@@ -62,7 +63,7 @@ static C_INT imul_s56_sregs_same(const t_cpu *before, const t_cpu *after)
             sizeof(before->data.gs)) == 0;
 }
 
-static C_INT imul_s56_nonparticipants_same(const t_cpu *before,
+static lib_i32 imul_s56_nonparticipants_same(const t_cpu *before,
     const t_cpu *after)
 {
     return before->data.ecx == after->data.ecx &&
@@ -74,7 +75,7 @@ static C_INT imul_s56_nonparticipants_same(const t_cpu *before,
         before->data.edi == after->data.edi;
 }
 
-static C_INT imul_s56_nonarithmetic_flags_same(const t_cpu *before,
+static lib_i32 imul_s56_nonarithmetic_flags_same(const t_cpu *before,
     const t_cpu *after)
 {
     const lib_u32 imul_flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
@@ -84,17 +85,17 @@ static C_INT imul_s56_nonarithmetic_flags_same(const t_cpu *before,
         (after->data.eflags & ~imul_flags);
 }
 
-static C_INT imul_s56_run(core_machine_cpu_profile profile,
+static lib_i32 imul_s56_run(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes, lib_u32 source,
-    lib_u32 expected, C_INT overflow, C_INT dword)
+    lib_u32 expected, lib_i32 overflow, lib_i32 dword)
 {
     core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_status status;
-    C_INT failed = !imul_s56_prepare(&machine, profile);
+    lib_status status;
+    lib_i32 failed = !imul_s56_prepare(&machine, profile);
 
     if (!failed) {
         imul_s56_seed(&machine->executor_cpu);
@@ -103,14 +104,14 @@ static C_INT imul_s56_run(core_machine_cpu_profile profile,
             machine->executor_cpu.data.eax = source;
         before = machine->executor_cpu;
         failed = core_machine_memory_write(machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         if (!failed) {
             status = core_machine_run(machine,
                 (core_machine_run_budget){ 1u, 0u }, &result);
             after = test_core_machine_fixture_capture_cpu_after_run(machine);
             failed = core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                TYPE_STATUS_OK;
-            failed |= status != TYPE_STATUS_OK;
+                LIB_STATUS_OK;
+            failed |= status != LIB_STATUS_OK;
             failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
             failed |= diagnostic.first_fault.valid;
             failed |= after.data.eip != bytes;
@@ -124,9 +125,9 @@ static C_INT imul_s56_run(core_machine_cpu_profile profile,
             failed |= dword ? after.data.eax != expected :
                 after.data.eax != ((before.data.eax & 0xffff0000u) |
                     (expected & 0xffffu));
-            failed |= !!TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_CF) !=
+            failed |= !!CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF) !=
                 overflow;
-            failed |= !!TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_OF) !=
+            failed |= !!CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_OF) !=
                 overflow;
             failed |= (after.data.eflags & ~(VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
                 VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF |
@@ -139,7 +140,7 @@ static C_INT imul_s56_run(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT imul_s56_test_defaults(C_VOID)
+static lib_i32 imul_s56_test_defaults(void)
 {
     static const lib_u8 imul_iw[] = { 0x69u, 0xc1u, 0xfeu, 0xffu };
     static const lib_u8 imul_ib[] = { 0x6bu, 0xc1u, 0xfeu };
@@ -170,7 +171,7 @@ static C_INT imul_s56_test_defaults(C_VOID)
     return 1;
 }
 
-static C_INT imul_s56_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 imul_s56_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     core_machine *machine = LIB_NULL;
@@ -178,24 +179,24 @@ static C_INT imul_s56_expect_ud(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !imul_s56_prepare(&machine, profile);
+    lib_i32 failed = !imul_s56_prepare(&machine, profile);
 
     if (!failed) {
         imul_s56_seed(&machine->executor_cpu);
         failed = !test_core_machine_fixture_preflight_real_ud_terminal(machine);
         before = machine->executor_cpu;
         failed |= core_machine_memory_write(machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         if (!failed) {
             failed = core_machine_run(machine,
                 (core_machine_run_budget){ 1u, 0u }, &result) !=
-                TYPE_STATUS_FAULT;
+                LIB_STATUS_INTERNAL_ERROR;
             after = test_core_machine_fixture_capture_cpu_after_run(machine);
             failed |= result.reason != CORE_MACHINE_STOP_FAULT;
             failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             failed |= !diagnostic.first_fault.valid;
-            failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD);
             failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
         }
@@ -204,7 +205,7 @@ static C_INT imul_s56_expect_ud(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT imul_s56_test_attributes_and_rejects(C_VOID)
+static lib_i32 imul_s56_test_attributes_and_rejects(void)
 {
     static const lib_u8 dword_iw[] = {
         0x66u, 0x69u, 0xc1u, 0x00u, 0x00u, 0x00u, 0x40u
@@ -265,7 +266,7 @@ static C_INT imul_s56_test_attributes_and_rejects(C_VOID)
     return 1;
 }
 
-static C_INT imul_s56_test_memory_forms(C_VOID)
+static lib_i32 imul_s56_test_memory_forms(void)
 {
     static const lib_u8 word_iw[] = {
         0x69u, 0x06u, 0x00u, 0x40u, 0xfeu, 0xffu
@@ -306,37 +307,37 @@ static C_INT imul_s56_test_memory_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         lib_u32 source_after = 0u;
-        C_INT dword = form >= 2u;
-        C_INT failed = !imul_s56_prepare(&machine, form < 2u ?
+        lib_i32 dword = form >= 2u;
+        lib_i32 failed = !imul_s56_prepare(&machine, form < 2u ?
             word_profiles[profile_index] : CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             imul_s56_seed(&machine->executor_cpu);
             before = machine->executor_cpu;
             failed = core_machine_memory_write(machine, 0u, codes[form],
-                sizes[form]) != TYPE_STATUS_OK;
+                sizes[form]) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(machine, 0x4000u,
-                dword ? (const C_VOID *)&dword_source : (const C_VOID *)&word_source,
-                dword ? 4u : 2u) != TYPE_STATUS_OK;
+                dword ? (const void *)&dword_source : (const void *)&word_source,
+                dword ? 4u : 2u) != LIB_STATUS_OK;
             if (!failed) {
                 failed = core_machine_run(machine,
                     (core_machine_run_budget){ 1u, 0u }, &result) !=
-                    TYPE_STATUS_OK;
+                    LIB_STATUS_OK;
                 after = test_core_machine_fixture_capture_cpu_after_run(machine);
                 failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
                 failed |= core_machine_get_cpu_diagnostic(machine,
-                    &diagnostic) != TYPE_STATUS_OK;
+                    &diagnostic) != LIB_STATUS_OK;
                 failed |= diagnostic.first_fault.valid;
                 failed |= after.data.eip != sizes[form];
                 failed |= dword ? after.data.eax != 4u : after.data.eax !=
                     ((before.data.eax & 0xffff0000u) | 4u);
                 failed |= !imul_s56_nonparticipants_same(&before, &after);
                 failed |= !imul_s56_sregs_same(&before, &after);
-                failed |= !!TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_CF);
-                failed |= !!TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_OF);
+                failed |= !!CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_CF);
+                failed |= !!CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_OF);
                 failed |= !imul_s56_nonarithmetic_flags_same(&before, &after);
                 failed |= core_machine_memory_read(machine, 0x4000u,
-                    &source_after, dword ? 4u : 2u) != TYPE_STATUS_OK;
+                    &source_after, dword ? 4u : 2u) != LIB_STATUS_OK;
                 failed |= dword ? source_after != dword_source :
                     (lib_u16)source_after != word_source;
             }
@@ -350,7 +351,7 @@ static C_INT imul_s56_test_memory_forms(C_VOID)
     return 1;
 }
 
-static C_INT imul_s56_test_segments(C_VOID)
+static lib_i32 imul_s56_test_segments(void)
 {
     static const lib_u8 codes[][7] = {
         { 0x69u, 0x06u, 0x10u, 0x00u, 0xfeu, 0xffu, 0u },
@@ -374,7 +375,7 @@ static C_INT imul_s56_test_segments(C_VOID)
         lib_u32 address = ((lib_u32)selector << 4u) + 0x10u;
         lib_u32 code_address = 0u;
         const lib_u16 source = 0xfffeu;
-        C_INT failed = !imul_s56_prepare(&machine,
+        lib_i32 failed = !imul_s56_prepare(&machine,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -398,17 +399,17 @@ static C_INT imul_s56_test_segments(C_VOID)
                 machine->executor_cpu.data.ebp = 0x00000010u;
             before = machine->executor_cpu;
             failed = core_machine_memory_write(machine, code_address, codes[form],
-                bytes[form]) != TYPE_STATUS_OK;
+                bytes[form]) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(machine, address, &source,
-                sizeof(source)) != TYPE_STATUS_OK;
+                sizeof(source)) != LIB_STATUS_OK;
             if (!failed) {
                 failed = core_machine_run(machine,
                     (core_machine_run_budget){ 1u, 0u }, &result) !=
-                    TYPE_STATUS_OK;
+                    LIB_STATUS_OK;
                 after = test_core_machine_fixture_capture_cpu_after_run(machine);
                 failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
                 failed |= core_machine_get_cpu_diagnostic(machine,
-                    &diagnostic) != TYPE_STATUS_OK;
+                    &diagnostic) != LIB_STATUS_OK;
                 failed |= diagnostic.first_fault.valid;
                 failed |= after.data.eip != bytes[form];
             failed |= after.data.eax !=
@@ -426,7 +427,7 @@ static C_INT imul_s56_test_segments(C_VOID)
     return 1;
 }
 
-static C_INT imul_s56_test_67_sib_ss(C_VOID)
+static lib_i32 imul_s56_test_67_sib_ss(void)
 {
     static const lib_u8 code[] = {
         0x67u, 0x69u, 0x44u, 0x24u, 0x10u, 0xfeu, 0xffu
@@ -437,7 +438,7 @@ static C_INT imul_s56_test_67_sib_ss(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !imul_s56_prepare(&machine,
+    lib_i32 failed = !imul_s56_prepare(&machine,
         CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -447,16 +448,16 @@ static C_INT imul_s56_test_67_sib_ss(C_VOID)
         machine->executor_cpu.data.esp = 0x00000000u;
         before = machine->executor_cpu;
         failed = core_machine_memory_write(machine, 0u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(machine, 0x20010u, &source,
-            sizeof(source)) != TYPE_STATUS_OK;
+            sizeof(source)) != LIB_STATUS_OK;
         if (!failed) {
             failed = core_machine_run(machine,
-                (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK;
+                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(machine);
             failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
             failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             failed |= diagnostic.first_fault.valid;
             failed |= after.data.eip != sizeof(code);
             failed |= after.data.eax !=
@@ -474,7 +475,7 @@ static C_INT imul_s56_test_67_sib_ss(C_VOID)
     return !failed;
 }
 
-static C_INT imul_s56_test_protected_source_limits(C_VOID)
+static lib_i32 imul_s56_test_protected_source_limits(void)
 {
     static const lib_u8 gdtr[] = { 0x1fu, 0u, 0x00u, 0x03u, 0u, 0u };
     static const lib_u8 gdt[] = {
@@ -497,21 +498,21 @@ static C_INT imul_s56_test_protected_source_limits(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        type_status status;
-        C_INT failed = !imul_s56_prepare(&machine,
+        lib_status status;
+        lib_i32 failed = !imul_s56_prepare(&machine,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             failed = core_machine_memory_write(machine, 0x100u, gdtr,
-                sizeof(gdtr)) != TYPE_STATUS_OK;
+                sizeof(gdtr)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(machine, 0x300u, gdt,
-                sizeof(gdt)) != TYPE_STATUS_OK;
+                sizeof(gdt)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(machine, 0u, boot,
-                sizeof(boot)) != TYPE_STATUS_OK;
+                sizeof(boot)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(machine, 0x2000u, &hlt,
-                sizeof(hlt)) != TYPE_STATUS_OK;
+                sizeof(hlt)) != LIB_STATUS_OK;
             failed |= core_machine_run(machine,
-                (core_machine_run_budget){ 96u, 0u }, &result) != TYPE_STATUS_OK;
+                (core_machine_run_budget){ 96u, 0u }, &result) != LIB_STATUS_OK;
             failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         }
         if (!failed) {
@@ -524,16 +525,16 @@ static C_INT imul_s56_test_protected_source_limits(C_VOID)
             before = machine->executor_cpu;
             failed = core_machine_memory_write(machine, 0x2000u,
                 form ? ss_code : code, form ? sizeof(ss_code) : sizeof(code)) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             status = core_machine_run(machine,
                 (core_machine_run_budget){ 1u, 0u }, &result);
-            failed |= status != TYPE_STATUS_FAULT;
+            failed |= status != LIB_STATUS_INTERNAL_ERROR;
             after = test_core_machine_fixture_capture_cpu_after_run(machine);
             failed |= result.reason != CORE_MACHINE_STOP_FAULT;
             failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             failed |= !diagnostic.first_fault.valid;
-            failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_DF);
             failed |= after.data.eip != 0u;
             failed |= after.data.eax != before.data.eax;
@@ -549,7 +550,7 @@ static C_INT imul_s56_test_protected_source_limits(C_VOID)
     return 1;
 }
 
-static C_INT imul_s56_test_vm86(C_VOID)
+static lib_i32 imul_s56_test_vm86(void)
 {
     static const lib_u8 code[] = { 0x69u, 0xc1u, 0xfeu, 0xffu };
     core_machine *machine = LIB_NULL;
@@ -557,7 +558,7 @@ static C_INT imul_s56_test_vm86(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !imul_s56_prepare(&machine,
+    lib_i32 failed = !imul_s56_prepare(&machine,
         CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -589,14 +590,14 @@ static C_INT imul_s56_test_vm86(C_VOID)
         machine->executor_cpu.data.ss.seg.data.big = LIB_FALSE;
         before = machine->executor_cpu;
         failed = core_machine_memory_write(machine, 0u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         if (!failed) {
             failed = core_machine_run(machine,
-                (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK;
+                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(machine);
             failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
             failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             failed |= diagnostic.first_fault.valid;
             failed |= after.data.eip != sizeof(code);
             failed |= after.data.eax !=
@@ -614,7 +615,7 @@ static C_INT imul_s56_test_vm86(C_VOID)
     return !failed;
 }
 
-static C_INT imul_s56_test_irq_no_shadow(C_VOID)
+static lib_i32 imul_s56_test_irq_no_shadow(void)
 {
     static const lib_u8 register_code[] = {
         0x69u, 0xc1u, 0xfeu, 0xffu, 0x90u
@@ -638,7 +639,7 @@ static C_INT imul_s56_test_irq_no_shadow(C_VOID)
         t_cpu after;
         lib_u16 frame_ip = 0u;
         lib_u16 frame_flags = 0u;
-        C_INT failed = !imul_s56_prepare(&machine,
+        lib_i32 failed = !imul_s56_prepare(&machine,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -649,16 +650,16 @@ static C_INT imul_s56_test_irq_no_shadow(C_VOID)
             before = machine->executor_cpu;
             failed = core_machine_memory_write(machine, 0u, code,
                 form ? sizeof(memory_code) : sizeof(register_code)) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             failed |= core_machine_memory_write(machine, 0x20u * 4u,
-                &vector_offset, sizeof(vector_offset)) != TYPE_STATUS_OK;
+                &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(machine, 0x20u * 4u + 2u,
-                &vector_segment, sizeof(vector_segment)) != TYPE_STATUS_OK;
+                &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(machine, 0x0100u, &hlt,
-                sizeof(hlt)) != TYPE_STATUS_OK;
+                sizeof(hlt)) != LIB_STATUS_OK;
             if (form) {
                 failed |= core_machine_memory_write(machine, 0x4000u, &source,
-                    sizeof(source)) != TYPE_STATUS_OK;
+                    sizeof(source)) != LIB_STATUS_OK;
             }
         }
         if (!failed) {
@@ -669,7 +670,7 @@ static C_INT imul_s56_test_irq_no_shadow(C_VOID)
             core_machine_pic_irq_source_assert(&source_irq);
             core_machine_pic_irq_source_deassert(&source_irq);
             failed = core_machine_run(machine,
-                (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK;
+                (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(machine);
             failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             failed |= after.data.eip != 0x0101u;
@@ -684,11 +685,11 @@ static C_INT imul_s56_test_irq_no_shadow(C_VOID)
             failed |= !imul_s56_sregs_same(&before, &after);
             failed |= core_machine_memory_read_physical(&machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK;
+                (lib_uptr)&frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK;
             failed |= core_machine_memory_read_physical(&machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp + 4u,
-                (type_virtual_address)&frame_flags, sizeof(frame_flags)) !=
-                TYPE_STATUS_OK;
+                (lib_uptr)&frame_flags, sizeof(frame_flags)) !=
+                LIB_STATUS_OK;
             failed |= frame_ip != instruction_bytes;
             failed |= (frame_flags & ~(VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
                 VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF |
@@ -696,11 +697,11 @@ static C_INT imul_s56_test_irq_no_shadow(C_VOID)
                 ~(VCPU_EFLAGS_CF | VCPU_EFLAGS_OF | VCPU_EFLAGS_SF |
                 VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF |
                 VCPU_EFLAGS_RESERVED)) | 0x02u);
-            failed |= TYPE_GET_BIT(frame_flags, VCPU_EFLAGS_CF);
-            failed |= TYPE_GET_BIT(frame_flags, VCPU_EFLAGS_OF);
-            failed |= !TYPE_GET_BIT(machine->shared_pic_master.data.isr,
+            failed |= CORE_MACHINE_BIT_IS_SET(frame_flags, VCPU_EFLAGS_CF);
+            failed |= CORE_MACHINE_BIT_IS_SET(frame_flags, VCPU_EFLAGS_OF);
+            failed |= !CORE_MACHINE_BIT_IS_SET(machine->shared_pic_master.data.isr,
                 VPIC_ISR_IRQ(0u));
-            failed |= TYPE_GET_BIT(machine->shared_pic_master.data.irr,
+            failed |= CORE_MACHINE_BIT_IS_SET(machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
         }
         if (failed) {
@@ -712,7 +713,7 @@ static C_INT imul_s56_test_irq_no_shadow(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!imul_s56_expect_ud(CORE_MACHINE_CPU_PROFILE_8086,
             (const lib_u8[]){ 0x69u, 0xc1u, 0xfeu, 0xffu }, 4u)) {
@@ -731,7 +732,7 @@ C_INT main(C_VOID)
         !imul_s56_test_vm86() || !imul_s56_test_irq_no_shadow()) {
         return 1;
     }
-    STD_PRINTF("M5:T316:S56:IMUL-IMM:OK\n");
-    STD_PRINTF("M5:T401:S30:IMUL-IMMEDIATE-PROFILES:OK\n");
+    printf("M5:T316:S56:IMUL-IMM:OK\n");
+    printf("M5:T401:S30:IMUL-IMMEDIATE-PROFILES:OK\n");
     return 0;
 }

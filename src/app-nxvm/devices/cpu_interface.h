@@ -2,7 +2,6 @@
 #define CORE_MACHINE_CPU_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 /* An external-cycle address is only comparable within its named CPU space.
  * This is shared by profile configuration and the Core CPU lifecycle. */
@@ -20,7 +19,7 @@ typedef enum core_machine_cpu_profile {
     CORE_MACHINE_CPU_PROFILE_80386
 } core_machine_cpu_profile;
 
-static inline C_INT core_machine_cpu_profile_has_8086_semantics(
+static inline lib_i32 core_machine_cpu_profile_has_8086_semantics(
     core_machine_cpu_profile profile)
 {
     return profile == CORE_MACHINE_CPU_PROFILE_8086 ||
@@ -29,7 +28,7 @@ static inline C_INT core_machine_cpu_profile_has_8086_semantics(
 
 #define CORE_MACHINE_CPU_DEVICE_NAME "Intel 8086+"
 
-const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile);
+const char *core_machine_cpu_profile_name(core_machine_cpu_profile profile);
 
 typedef struct core_machine_cpu_state {
     lib_u16 cs;
@@ -52,7 +51,7 @@ typedef struct core_machine_cpu_execution_point {
 } core_machine_cpu_execution_point;
 
 typedef struct core_machine_cpu_fault_snapshot {
-    C_INT valid;
+    lib_i32 valid;
     lib_u32 exception_mask;
     lib_u32 exception_code;
     core_machine_cpu_execution_point point;

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/media_interface.h"
@@ -9,10 +9,10 @@ typedef struct xebec_media {
     lib_u8 bytes[2u * CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
 } xebec_media;
 
-static core_machine_media_result xebec_media_query(C_VOID *opaque,
+static core_machine_media_result xebec_media_query(void *opaque,
     core_machine_media_info *out_info)
 {
-    (C_VOID)opaque;
+    (void)opaque;
     if (out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     *out_info = (core_machine_media_info) {
         .present = LIB_TRUE,
@@ -27,8 +27,8 @@ static core_machine_media_result xebec_media_query(C_VOID *opaque,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result xebec_media_read(C_VOID *opaque,
-    lib_u64 offset, C_VOID *buffer, lib_u32 count)
+static core_machine_media_result xebec_media_read(void *opaque,
+    lib_u64 offset, void *buffer, lib_u32 count)
 {
     xebec_media *media = opaque;
 
@@ -39,8 +39,8 @@ static core_machine_media_result xebec_media_read(C_VOID *opaque,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result xebec_media_write(C_VOID *opaque,
-    lib_u64 offset, const C_VOID *buffer, lib_u32 count)
+static core_machine_media_result xebec_media_write(void *opaque,
+    lib_u64 offset, const void *buffer, lib_u32 count)
 {
     xebec_media *media = opaque;
 
@@ -56,7 +56,7 @@ static const core_machine_media_provider xebec_media_provider = {
     LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL
 };
 
-static C_VOID xebec_configure_dma3(t_port *port, lib_u16 address,
+static void xebec_configure_dma3(t_port *port, lib_u16 address,
     lib_u16 count, lib_u8 mode)
 {
     core_machine_port_write(port, 0x000cu, 0u);
@@ -69,7 +69,7 @@ static C_VOID xebec_configure_dma3(t_port *port, lib_u16 address,
     core_machine_port_write(port, 0x000au, 0x03u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -123,19 +123,19 @@ C_INT main(C_VOID)
     lib_u8 dma_bytes[2u * CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
     lib_u64 due_tick = 0u;
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        core_machine_media_registry_create(&registry) != TYPE_STATUS_OK) failed |= 0x01;
+    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_media_registry_create(&registry) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         for (index = 0u; index < sizeof(media.bytes); ++index)
             media.bytes[index] = (lib_u8)(index < 512u ? index : 0xa5u);
         if (core_machine_media_registry_bind(registry, 1u, &media,
-                &xebec_media_provider) != TYPE_STATUS_OK ||
-            core_machine_media_registry_freeze(registry) != TYPE_STATUS_OK) failed |= 0x02;
+                &xebec_media_provider) != LIB_STATUS_OK ||
+            core_machine_media_registry_freeze(registry) != LIB_STATUS_OK) failed |= 0x02;
         topology.media_registry = registry;
-        if (!failed && (core_machine_configure_dma(machine, &dma, &fdc_binding) != TYPE_STATUS_OK ||
-            core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK)) {
+        if (!failed && (core_machine_configure_dma(machine, &dma, &fdc_binding) != LIB_STATUS_OK ||
+            core_machine_configure_hdc(machine, &topology) != LIB_STATUS_OK)) {
             failed |= 0x04;
         } else if (!core_machine_port_has_read(&machine->executor_port, 0x0320u) ||
             !core_machine_port_has_write(&machine->executor_port, 0x0320u) ||
@@ -163,7 +163,7 @@ C_INT main(C_VOID)
             for (index = 0u; index < sizeof(dcb); ++index)
                 core_machine_port_write(&machine->executor_port, 0x0320u, dcb[index]);
             if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_PENDING_COMMAND ||
-                core_machine_hdc_next_due_tick(&machine->hdc, &due_tick) != TYPE_STATUS_OK ||
+                core_machine_hdc_next_due_tick(&machine->hdc, &due_tick) != LIB_STATUS_OK ||
                 due_tick != machine->hdc.data.elapsed_ticks + 250u ||
                 core_machine_hdc_irq_pending(&machine->hdc)) failed |= 0x80;
             core_machine_hdc_advance(&machine->hdc);
@@ -189,8 +189,8 @@ C_INT main(C_VOID)
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
                     &machine->executor_memory, sizeof(dma_bytes));
                 if (!failed && (core_machine_memory_read_physical(&machine->executor_memory,
-                    0x2200u, (type_virtual_address)dma_bytes, sizeof(dma_bytes)) !=
-                    TYPE_STATUS_OK || dma_bytes[0] != 0u || dma_bytes[511] != 0xffu ||
+                    0x2200u, (lib_uptr)dma_bytes, sizeof(dma_bytes)) !=
+                    LIB_STATUS_OK || dma_bytes[0] != 0u || dma_bytes[511] != 0xffu ||
                     dma_bytes[512] != 0xa5u || dma_bytes[1023] != 0xa5u))
                     failed |= 0x200;
                 if (!failed && (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
@@ -212,8 +212,8 @@ C_INT main(C_VOID)
                 for (index = 0u; index < sizeof(dma_bytes); ++index)
                     dma_bytes[index] = (lib_u8)(0xffu - index);
                 if (core_machine_memory_write_physical(&machine->executor_memory,
-                        0x2400u, (type_virtual_address)dma_bytes,
-                        sizeof(dma_bytes)) != TYPE_STATUS_OK) failed |= 0x1000;
+                        0x2400u, (lib_uptr)dma_bytes,
+                        sizeof(dma_bytes)) != LIB_STATUS_OK) failed |= 0x1000;
                 xebec_configure_dma3(&machine->executor_port, 0x2400u, 511u, 0x8bu);
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(write_dcb); ++index)
@@ -276,7 +276,7 @@ C_INT main(C_VOID)
                     failed |= 0x20000;
                 }
                 dma_provider->terminal_count(&machine->hdc, &machine->shared_dma_latch);
-                (C_VOID)core_machine_port_read(&machine->executor_port, 0x0320u);
+                (void)core_machine_port_read(&machine->executor_port, 0x0320u);
             }
             if (!failed) {
                 core_machine_port_write(&machine->executor_port, 0x0323u, 0x5au);
@@ -303,7 +303,7 @@ C_INT main(C_VOID)
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(registry);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T484:S15:XEBEC-STACK:FAIL bits=%x\n", failed);
+        fprintf(stderr, "M5:T484:S15:XEBEC-STACK:FAIL bits=%x\n", failed);
         return 1;
     }
     puts("M5:T484:S15:XEBEC-STACK:OK");

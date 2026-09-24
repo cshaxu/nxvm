@@ -3,7 +3,6 @@
 #include "lib/types/types_interface.h"
 
 
-#include "type.h"
 
 #define CORE_MACHINE_KEYBOARD_QUEUE_CAPACITY 32u
 #define CORE_MACHINE_TEXT_COLUMNS 80u
@@ -26,16 +25,16 @@ typedef struct core_machine_text_snapshot {
     lib_u64 generation;
 } core_machine_text_snapshot;
 
-C_VOID core_machine_keyboard_queue_initialize(core_machine_keyboard_queue *queue);
-type_status core_machine_keyboard_queue_push(
+void core_machine_keyboard_queue_initialize(core_machine_keyboard_queue *queue);
+lib_status core_machine_keyboard_queue_push(
     core_machine_keyboard_queue *queue, lib_u16 value);
-type_status core_machine_keyboard_queue_pop(
+lib_status core_machine_keyboard_queue_pop(
     core_machine_keyboard_queue *queue, lib_u16 *out_value);
-C_VOID core_machine_text_snapshot_initialize(core_machine_text_snapshot *snapshot);
-type_status core_machine_text_snapshot_write(
+void core_machine_text_snapshot_initialize(core_machine_text_snapshot *snapshot);
+lib_status core_machine_text_snapshot_write(
     core_machine_text_snapshot *snapshot, lib_u16 x, lib_u16 y,
     lib_u8 character, lib_u8 attribute);
-type_status core_machine_text_snapshot_copy(
+lib_status core_machine_text_snapshot_copy(
     const core_machine_text_snapshot *source, core_machine_text_snapshot *destination);
 
 #endif

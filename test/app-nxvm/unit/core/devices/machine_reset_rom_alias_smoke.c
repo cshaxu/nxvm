@@ -1,11 +1,11 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/firmware_interface.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
 
-static type_status reset_rom_configure(C_VOID *opaque,
+static lib_status reset_rom_configure(void *opaque,
     core_machine_firmware_context *firmware)
 {
     static const lib_u8 halt[] = {0xf4u};
@@ -15,26 +15,26 @@ static type_status reset_rom_configure(C_VOID *opaque,
         0x90u, 0x90u, 0x90u, 0x90u
     };
 
-    (C_VOID)opaque;
+    (void)opaque;
     if (core_machine_firmware_register_immutable_rom(firmware, 0x000f0000u,
-            halt, sizeof(halt)) != TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
+            halt, sizeof(halt)) != LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
     return core_machine_firmware_register_immutable_rom(firmware, 0x000ffff0u,
         reset_jump, sizeof(reset_jump));
 }
 
-static type_status reset_rom_reset(C_VOID *opaque,
+static lib_status reset_rom_reset(void *opaque,
     core_machine_firmware_context *firmware)
 {
-    (C_VOID)opaque;
-    (C_VOID)firmware;
-    return TYPE_STATUS_OK;
+    (void)opaque;
+    (void)firmware;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_firmware_provider reset_rom_provider = {
     reset_rom_configure, reset_rom_reset, LIB_NULL, LIB_NULL
 };
 
-static C_INT reset_rom_run(core_machine_cpu_profile profile)
+static lib_i32 reset_rom_run(core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = 0x00100000u,
@@ -49,23 +49,23 @@ static C_INT reset_rom_run(core_machine_cpu_profile profile)
         0x00100000u, 0x00f00000u, 0xffu
     };
     lib_u8 reset_byte = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_configure_absent_memory(machine,
-        &absent_memory) != TYPE_STATUS_OK;
+        &absent_memory) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bind_firmware_provider(machine,
-        &reset_rom_provider, LIB_NULL) != TYPE_STATUS_OK;
+        &reset_rom_provider, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_memory_read_reset_physical(
         &machine->executor_memory,
         profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x00fffff0u : 0xfffffff0u,
-        (type_virtual_address)&reset_byte, 1u) != TYPE_STATUS_OK;
+        (lib_uptr)&reset_byte, 1u) != LIB_STATUS_OK;
     failed |= !failed && reset_byte != 0xeau;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_run(machine, budget, &result) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     if (failed) {
         fprintf(stderr, "reset-rom profile=%d run-reason=%d detail=%08x pc=%08x\n",
@@ -76,7 +76,7 @@ static C_INT reset_rom_run(core_machine_cpu_profile profile)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (reset_rom_run(CORE_MACHINE_CPU_PROFILE_80286) ||
         reset_rom_run(CORE_MACHINE_CPU_PROFILE_80386)) return 1;

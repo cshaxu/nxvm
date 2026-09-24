@@ -11,7 +11,7 @@ static const lib_u32 vm_profile_model40_contract_ids[] = {1u};
  * of Compaq built-in memory is intentionally not reported through standard
  * CMOS size bytes.
  * Core owns each session's writable copy and derives its checksum. */
-C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config)
+void vm_profile_model40_core_config_initialize(core_machine_config *out_config)
 {
     if (out_config == LIB_NULL) return;
     *out_config = (core_machine_config) {
@@ -77,7 +77,7 @@ C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config
     };
 }
 
-type_status vm_profile_model40_values_create(vm_profile_contract_values *out_values)
+lib_status vm_profile_model40_values_create(vm_profile_contract_values *out_values)
 {
     vm_profile_contract_values values = {0};
     const vm_profile_contract_catalog catalog = { vm_profile_model40_contract_ids,
@@ -87,17 +87,17 @@ type_status vm_profile_model40_values_create(vm_profile_contract_values *out_val
     /* This is direct composition, not inheritance: reuse the shared PC/AT
      * electrical grammar, then replace Model-40-specific effective values. */
     if (out_values == LIB_NULL ||
-        vm_profile_ibm_5170_values_create(0u, &values) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        vm_profile_ibm_5170_values_create(0u, &values) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     values.core.id = vm_profile_model40_contract_ids[0];
     vm_profile_model40_core_config_initialize(&values.core.configuration);
     values.firmware_policy = VM_PROFILE_CONTRACT_FIRMWARE_POLICY_BYOB;
     values.media_policy = VM_PROFILE_CONTRACT_MEDIA_POLICY_SESSION;
     values.allowed_session_options = 0u;
-    if (vm_profile_contract_validate(&values, &catalog, 0u) != TYPE_STATUS_OK) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+    if (vm_profile_contract_validate(&values, &catalog, 0u) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_values = values;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }

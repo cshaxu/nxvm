@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -8,7 +8,7 @@
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
 
-static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
+static lib_i32 vm_model_339_clock_contract_is_selected(void)
 {
     const vm_profile_default_pc_at_descriptor *model_339 =
         vm_profile_ibm_5170_model_339_descriptor_get();
@@ -19,10 +19,10 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     };
     vm_machine *session = LIB_NULL;
     core_machine_time_observation time_observation;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     if (model_339 == LIB_NULL || generic == LIB_NULL ||
-        vm_test_ibm_5170_session_create(&config, &session) != TYPE_STATUS_OK ||
+        vm_test_ibm_5170_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
@@ -79,16 +79,16 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         core_machine_timing_disposition disposition;
 
         failed |= core_machine_get_timing_disposition(session->core_machine,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != TYPE_STATUS_OK ||
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != LIB_STATUS_OK ||
             disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
         failed |= core_machine_get_timing_disposition(session->core_machine,
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS, &disposition) !=
-            TYPE_STATUS_OK || disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+            LIB_STATUS_OK || disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
         failed |= core_machine_get_timing_disposition(session->core_machine,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA, &disposition) != TYPE_STATUS_OK ||
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA, &disposition) != LIB_STATUS_OK ||
             disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
         failed |= core_machine_get_timing_disposition(session->core_machine,
-            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != TYPE_STATUS_OK ||
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK ||
             disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     }
     failed |= session->core_machine->kbc_typematic_initial_ticks != 4000000u ||
@@ -98,7 +98,7 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         session->core_machine->shared_kbc.data.typematic_initial_ticks != 4000000u ||
         session->core_machine->shared_kbc.data.typematic_repeat_ticks != 800000u;
     failed |= core_machine_capture_time_observation(session->core_machine,
-        &time_observation) != TYPE_STATUS_OK || !time_observation.pacing_time_available ||
+        &time_observation) != LIB_STATUS_OK || !time_observation.pacing_time_available ||
         time_observation.pacing_ticks_per_second != 8000000u ||
         time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u;
@@ -106,16 +106,16 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (vm_model_339_clock_contract_is_selected()) return 1;
-    STD_PRINTF("M5:T375:S2:MODEL339-CLOCK-CONTRACT:OK\n");
-    STD_PRINTF("M5:T375:S13:MODEL339-CGA-REFERENCE-CONTRACT:OK\n");
-    STD_PRINTF("M5:T375:S22:MODEL339-TYPEMATIC:OK\n");
-    STD_PRINTF("M5:T375:S23:KBC-F3-CADENCE:OK\n");
-    STD_PRINTF("M5:T462:S3:CONTROLLER-PROFILE-SELECTION:OK\n");
-    STD_PRINTF("M5:T462:S3:CONTROLLER-OWNER-CONSUMPTION:OK\n");
-    STD_PRINTF("M5:T469:S3:CORE-DEADLINE-SELECTION:OK\n");
-    STD_PRINTF("M5:T476:S3:IBM5170-ROOT-CUTOVER:OK\n");
+    printf("M5:T375:S2:MODEL339-CLOCK-CONTRACT:OK\n");
+    printf("M5:T375:S13:MODEL339-CGA-REFERENCE-CONTRACT:OK\n");
+    printf("M5:T375:S22:MODEL339-TYPEMATIC:OK\n");
+    printf("M5:T375:S23:KBC-F3-CADENCE:OK\n");
+    printf("M5:T462:S3:CONTROLLER-PROFILE-SELECTION:OK\n");
+    printf("M5:T462:S3:CONTROLLER-OWNER-CONSUMPTION:OK\n");
+    printf("M5:T469:S3:CORE-DEADLINE-SELECTION:OK\n");
+    printf("M5:T476:S3:IBM5170-ROOT-CUTOVER:OK\n");
     return 0;
 }

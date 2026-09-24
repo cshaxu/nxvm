@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,7 +9,7 @@
 
 #define VM_T287_TRACE_BUDGET 2000000u
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     const core_machine_run_budget budget = {1u, 0u};
     integration_ini_session ini_session;
@@ -24,20 +24,20 @@ C_INT main(C_INT argc, C_CHAR **argv)
     lib_u32 read_count = 0u;
     lib_u32 hdd_calls = 0u;
     lib_u32 hdd_returns = 0u;
-    C_INT geometry_ok = 0;
-    C_INT int13_ready = 0;
-    C_INT active = 0;
-    C_INT passed = 0;
+    lib_i32 geometry_ok = 0;
+    lib_i32 int13_ready = 0;
+    lib_i32 active = 0;
+    lib_i32 passed = 0;
 
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
-            &ini_session) != TYPE_STATUS_OK) return 77;
+            &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     for (instruction = 0u; instruction < VM_T287_TRACE_BUDGET; ++instruction) {
         t_cpu *cpu = &session->core_machine->executor_cpu;
-        C_INT returning = 0;
+        lib_i32 returning = 0;
 
         if (!int13_ready && core_machine_memory_read(session->core_machine,
-                0x004cu, int13, sizeof(int13)) == TYPE_STATUS_OK &&
+                0x004cu, int13, sizeof(int13)) == LIB_STATUS_OK &&
             int13[0] != 0u && int13[1] != 0u) {
             int13_linear = (lib_u32)int13[1] * 16u + int13[0];
             int13_ready = 1;
@@ -52,25 +52,25 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (active) {
             if (core_machine_memory_read(session->core_machine,
                     cpu->data.cs.base + cpu->data.eip, &opcode,
-                    sizeof(opcode)) != TYPE_STATUS_OK) {
+                    sizeof(opcode)) != LIB_STATUS_OK) {
                 break;
             }
             returning = opcode == 0xcfu;
         }
         if (core_machine_run(session->core_machine, budget, &result) !=
-                TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
+                LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
             break;
         }
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            C_INT advanced = 0;
+            lib_i32 advanced = 0;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) break;
         }
         cpu = &session->core_machine->executor_cpu;
         if (active && returning) {
             ++hdd_returns;
-            STD_PRINTF("M5:T287:S18:INT13 ah=%02X dl=%02X cf=%u ax=%04X "
+            printf("M5:T287:S18:INT13 ah=%02X dl=%02X cf=%u ax=%04X "
                 "cx=%04X dx=%04X\n", active_ah, active_dl,
                 cpu->data.eflags & 1u, (lib_u16)cpu->data.eax,
                 (lib_u16)cpu->data.ecx, (lib_u16)cpu->data.edx);
@@ -90,12 +90,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
     }
     if (passed) {
-        STD_PRINTF("M5:T287:S18:INT13:OK reads=%u\n", read_count);
+        printf("M5:T287:S18:INT13:OK reads=%u\n", read_count);
     } else {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T287:S18:INT13:FAIL ready=%d calls=%u returns=%u geometry=%d reads=%u\n",
             int13_ready, hdd_calls, hdd_returns, geometry_ok, read_count);
-        STD_FPRINTF(STD_STDERR, "M5:T287:S18:INT13:VECTOR=%04X:%04X linear=%05X pc=%05X\n",
+        fprintf(stderr, "M5:T287:S18:INT13:VECTOR=%04X:%04X linear=%05X pc=%05X\n",
             int13[1], int13[0], int13_linear,
             core_machine_linear_pc(session->core_machine));
     }

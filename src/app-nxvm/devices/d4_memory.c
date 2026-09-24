@@ -9,77 +9,77 @@
  * bank below F00000h.  This is an External-L2 board relation, cross-checked
  * against the selected DeskPro reference model; it deliberately does not
  * attempt to generalize that model's full RAM-card table. */
-static C_INT core_machine_d4_setup_blocks_extension(const core_machine_d4_memory *memory)
+static lib_i32 core_machine_d4_setup_blocks_extension(const core_machine_d4_memory *memory)
 {
     return memory != LIB_NULL && (memory->ram_setup & 0x0fu) == 1u;
 }
 
-static type_status core_machine_d4_setup_read(C_VOID *opaque, lib_u32 physical,
-    type_virtual_address destination, type_native_unsigned bytes)
+static lib_status core_machine_d4_setup_read(void *opaque, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes)
 {
     core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
 
-    (C_VOID)physical;
+    (void)physical;
     if (memory == LIB_NULL || destination == 0u || !core_machine_d4_setup_blocks_extension(memory)) {
-        return TYPE_STATUS_UNSUPPORTED;
+        return LIB_STATUS_UNSUPPORTED;
     }
-    lib_memory_set((C_VOID *)destination, 0xff, bytes);
-    return TYPE_STATUS_OK;
+    lib_memory_set((void *)destination, 0xff, bytes);
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_d4_setup_write(C_VOID *opaque, lib_u32 physical,
-    type_virtual_address source, type_native_unsigned bytes)
+static lib_status core_machine_d4_setup_write(void *opaque, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
 {
     core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
 
-    (C_VOID)physical;
-    (C_VOID)source;
-    (C_VOID)bytes;
-    return core_machine_d4_setup_blocks_extension(memory) ? TYPE_STATUS_OK :
-        TYPE_STATUS_UNSUPPORTED;
+    (void)physical;
+    (void)source;
+    (void)bytes;
+    return core_machine_d4_setup_blocks_extension(memory) ? LIB_STATUS_OK :
+        LIB_STATUS_UNSUPPORTED;
 }
 
-static type_status core_machine_d4_setup_query(C_VOID *opaque, lib_u32 physical,
-    type_native_unsigned bytes, core_machine_memory_access access)
+static lib_status core_machine_d4_setup_query(void *opaque, lib_u32 physical,
+    lib_uptr bytes, core_machine_memory_access access)
 {
     core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
 
-    (C_VOID)physical;
-    (C_VOID)bytes;
-    (C_VOID)access;
-    return core_machine_d4_setup_blocks_extension(memory) ? TYPE_STATUS_OK :
-        TYPE_STATUS_UNSUPPORTED;
+    (void)physical;
+    (void)bytes;
+    (void)access;
+    return core_machine_d4_setup_blocks_extension(memory) ? LIB_STATUS_OK :
+        LIB_STATUS_UNSUPPORTED;
 }
 
-static type_status core_machine_d4_control_read(C_VOID *opaque, lib_u32 physical,
-    type_virtual_address destination, type_native_unsigned bytes)
+static lib_status core_machine_d4_control_read(void *opaque, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes)
 {
     core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
     lib_u32 offset;
 
     if (memory == LIB_NULL || destination == 0u || bytes != 1u ||
-        physical < CORE_MACHINE_D4_CONTROL_PHYSICAL) return TYPE_STATUS_FAULT;
+        physical < CORE_MACHINE_D4_CONTROL_PHYSICAL) return LIB_STATUS_INTERNAL_ERROR;
     offset = physical - CORE_MACHINE_D4_CONTROL_PHYSICAL;
-    if (offset >= CORE_MACHINE_D4_CONTROL_WINDOW_BYTES) return TYPE_STATUS_UNSUPPORTED;
+    if (offset >= CORE_MACHINE_D4_CONTROL_WINDOW_BYTES) return LIB_STATUS_UNSUPPORTED;
     if (offset == 0u) *(lib_u8 *)destination = (lib_u8)(
         memory->diagnostic_low & ~memory->parity_fault_mask);
     else if (offset == 1u) *(lib_u8 *)destination = memory->diagnostic_high;
     else if (offset == 2u) *(lib_u8 *)destination = (lib_u8)memory->ram_setup;
     else if (offset == 3u) *(lib_u8 *)destination = (lib_u8)(memory->ram_setup >> 8u);
     else *(lib_u8 *)destination = 0xffu;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_d4_control_write(C_VOID *opaque, lib_u32 physical,
-    type_virtual_address source, type_native_unsigned bytes)
+static lib_status core_machine_d4_control_write(void *opaque, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
 {
     core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
     lib_u32 offset;
 
     if (memory == LIB_NULL || source == 0u || bytes != 1u ||
-        physical < CORE_MACHINE_D4_CONTROL_PHYSICAL) return TYPE_STATUS_FAULT;
+        physical < CORE_MACHINE_D4_CONTROL_PHYSICAL) return LIB_STATUS_INTERNAL_ERROR;
     offset = physical - CORE_MACHINE_D4_CONTROL_PHYSICAL;
-    if (offset >= CORE_MACHINE_D4_CONTROL_WINDOW_BYTES) return TYPE_STATUS_UNSUPPORTED;
+    if (offset >= CORE_MACHINE_D4_CONTROL_WINDOW_BYTES) return LIB_STATUS_UNSUPPORTED;
     if (offset == 0u) {
         memory->control = *(const lib_u8 *)source | 0xfcu;
         memory->parity_fault_mask = 0u;
@@ -87,57 +87,57 @@ static type_status core_machine_d4_control_write(C_VOID *opaque, lib_u32 physica
         memory->ram_setup = (lib_u16)((memory->ram_setup & 0xff00u) |
             *(const lib_u8 *)source);
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_d4_control_query(C_VOID *opaque, lib_u32 physical,
-    type_native_unsigned bytes, core_machine_memory_access access)
+static lib_status core_machine_d4_control_query(void *opaque, lib_u32 physical,
+    lib_uptr bytes, core_machine_memory_access access)
 {
-    (C_VOID)opaque;
+    (void)opaque;
     if (physical < CORE_MACHINE_D4_CONTROL_PHYSICAL ||
         physical - CORE_MACHINE_D4_CONTROL_PHYSICAL >= CORE_MACHINE_D4_CONTROL_WINDOW_BYTES ||
-        bytes != 1u) return TYPE_STATUS_UNSUPPORTED;
+        bytes != 1u) return LIB_STATUS_UNSUPPORTED;
     return access == CORE_MACHINE_MEMORY_ACCESS_READ || access == CORE_MACHINE_MEMORY_ACCESS_WRITE ?
-        TYPE_STATUS_OK : TYPE_STATUS_UNSUPPORTED;
+        LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
 }
 
-static C_VOID core_machine_d4_parity_fault(C_VOID *opaque, lib_u32 physical)
+static void core_machine_d4_parity_fault(void *opaque, lib_u32 physical)
 {
     core_machine *machine = (core_machine *)opaque;
 
     if (machine == LIB_NULL) return;
     machine->d4_memory.parity_fault_mask |= (lib_u8)(1u << (physical & 3u));
-    (C_VOID)core_machine_report_d4_iochk_fault(machine);
+    (void)core_machine_report_d4_iochk_fault(machine);
 }
 
-static C_VOID core_machine_d4_memory_write_observer(C_VOID *opaque, lib_u32 physical,
-    type_native_unsigned bytes)
+static void core_machine_d4_memory_write_observer(void *opaque, lib_u32 physical,
+    lib_uptr bytes)
 {
     core_machine *machine = (core_machine *)opaque;
 
-    (C_VOID)physical;
-    (C_VOID)bytes;
+    (void)physical;
+    (void)bytes;
     if (machine != LIB_NULL && machine->d4_memory.parity_fault_mask != 0u) {
-        (C_VOID)core_machine_clear_d4_iochk_fault(machine);
+        (void)core_machine_clear_d4_iochk_fault(machine);
     }
 }
 
-C_INT core_machine_d4_memory_config_is_valid(const core_machine_d4_memory_config *config)
+lib_i32 core_machine_d4_memory_config_is_valid(const core_machine_d4_memory_config *config)
 {
     return config != LIB_NULL && config->present == LIB_TRUE;
 }
 
-type_status core_machine_d4_memory_configure(core_machine *machine,
+lib_status core_machine_d4_memory_configure(core_machine *machine,
     const core_machine_d4_memory_config *config)
 {
     static const core_machine_memory_device_callbacks control_callbacks = {
         core_machine_d4_control_read, core_machine_d4_control_write, core_machine_d4_control_query };
     static const core_machine_memory_device_callbacks setup_callbacks = {
         core_machine_d4_setup_read, core_machine_d4_setup_write, core_machine_d4_setup_query };
-    type_status status;
+    lib_status status;
 
     if (machine == LIB_NULL || !core_machine_d4_memory_config_is_valid(config) ||
-        machine->d4_memory.configured) return TYPE_STATUS_INVALID_ARGUMENT;
+        machine->d4_memory.configured) return LIB_STATUS_INVALID_ARGUMENT;
     machine->d4_memory.diagnostic_low = config->diagnostic_low;
     machine->d4_memory.diagnostic_high = config->diagnostic_high;
     machine->d4_memory.reset_ram_setup = config->ram_setup;
@@ -146,18 +146,18 @@ type_status core_machine_d4_memory_configure(core_machine *machine,
     core_machine_d4_memory_reset(machine);
     status = core_machine_register_memory_replacement_device(machine, CORE_MACHINE_D4_SETUP_BANK_START,
         CORE_MACHINE_D4_SETUP_BANK_BYTES, &setup_callbacks, &machine->d4_memory);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) return status;
     status = core_machine_register_memory_replacement_device(machine, CORE_MACHINE_D4_CONTROL_PHYSICAL,
         CORE_MACHINE_D4_CONTROL_WINDOW_BYTES, &control_callbacks, &machine->d4_memory);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) return status;
     status = core_machine_enable_memory_parity(machine, 1024u * 1024u,
         core_machine_d4_parity_fault, machine);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) return status;
     return core_machine_register_memory_write_observer(machine,
         core_machine_d4_memory_write_observer, machine);
 }
 
-C_VOID core_machine_d4_memory_reset(core_machine *machine)
+void core_machine_d4_memory_reset(core_machine *machine)
 {
     if (machine == LIB_NULL || !machine->d4_memory.configured) return;
     machine->d4_memory.control = 0xffu;

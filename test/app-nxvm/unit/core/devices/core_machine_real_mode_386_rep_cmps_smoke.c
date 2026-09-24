@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
@@ -14,7 +14,7 @@
 #define T292_SOURCE 0x00020000u
 #define T292_DESTINATION 0x00030000u
 
-static C_INT t292_prepare(core_machine_cpu_profile profile, core_machine **out_machine)
+static lib_i32 t292_prepare(core_machine_cpu_profile profile, core_machine **out_machine)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -26,13 +26,13 @@ static C_INT t292_prepare(core_machine_cpu_profile profile, core_machine **out_m
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
-            TYPE_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
+            LIB_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
             machine, T292_RESET_LINEAR,
-            T292_RESET_PHYSICAL, T292_RESET_WINDOW) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+            T292_RESET_PHYSICAL, T292_RESET_WINDOW) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, T292_RESET_LINEAR, reset_jump,
-            sizeof(reset_jump)) != TYPE_STATUS_OK) {
+            sizeof(reset_jump)) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 0;
     }
@@ -40,7 +40,7 @@ static C_INT t292_prepare(core_machine_cpu_profile profile, core_machine **out_m
     return 1;
 }
 
-int main(C_VOID)
+int main(void)
 {
     static const lib_u8 program[] = {
         0xb8u, 0u, 0u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
@@ -73,17 +73,17 @@ int main(C_VOID)
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine);
+    lib_i32 failed = !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine);
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
-                TYPE_STATUS_OK || core_machine_memory_write(machine, T292_SOURCE,
-                source, sizeof(source)) != TYPE_STATUS_OK ||
+                LIB_STATUS_OK || core_machine_memory_write(machine, T292_SOURCE,
+                source, sizeof(source)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, T292_DESTINATION, destination,
-                sizeof(destination)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                sizeof(destination)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || machine->executor_cpu.data.ecx != 1u ||
             machine->executor_cpu.data.esi != T292_SOURCE + 2u ||
             machine->executor_cpu.data.edi != T292_DESTINATION + 2u ||
@@ -94,12 +94,12 @@ int main(C_VOID)
     if (!failed) {
         failed |= !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
             core_machine_memory_write(machine, 0u, scas_program,
-                sizeof(scas_program)) != TYPE_STATUS_OK ||
+                sizeof(scas_program)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, T292_SOURCE, scas_bytes,
-                sizeof(scas_bytes)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                sizeof(scas_bytes)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || machine->executor_cpu.data.ecx != 1u ||
             machine->executor_cpu.data.edi != T292_SOURCE + 2u ||
             (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
@@ -109,19 +109,19 @@ int main(C_VOID)
     if (!failed) {
         failed |= !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine) ||
             core_machine_memory_write(machine, 0u, segment_program,
-                sizeof(segment_program)) != TYPE_STATUS_OK ||
+                sizeof(segment_program)) != LIB_STATUS_OK ||
             /* 80386 real mode still limits every segment offset to FFFFh.
              * Keep the CS override inside that architectural bound while
              * retaining a distinct DS default address. */
             core_machine_memory_write(machine, 0x00001000u, segment_source,
-                sizeof(segment_source)) != TYPE_STATUS_OK ||
+                sizeof(segment_source)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x00011000u, segment_default,
-                sizeof(segment_default)) != TYPE_STATUS_OK ||
+                sizeof(segment_default)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, T292_DESTINATION, segment_destination,
-                sizeof(segment_destination)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                sizeof(segment_destination)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || machine->executor_cpu.data.ecx != 0u ||
             machine->executor_cpu.data.esi != 0x00001001u ||
             machine->executor_cpu.data.edi != T292_DESTINATION + 1u ||

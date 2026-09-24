@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/kbc.h"
@@ -12,7 +12,7 @@ static lib_u8 read_port(t_port *port, lib_u16 id)
     return (lib_u8)core_machine_port_read(port, id);
 }
 
-static C_VOID initialize_pic(t_port *port)
+static void initialize_pic(t_port *port)
 {
     core_machine_port_write(port, 0x0020u, 0x11u);
     core_machine_port_write(port, 0x0021u, 0x08u);
@@ -24,7 +24,7 @@ static C_VOID initialize_pic(t_port *port)
     core_machine_port_write(port, 0x00a1u, 0x01u);
 }
 
-static C_INT take_aux_byte(t_port *port, t_pic *master, t_pic *slave,
+static lib_i32 take_aux_byte(t_port *port, t_pic *master, t_pic *slave,
     lib_u8 expected)
 {
     core_machine_pic_refresh(master, slave);
@@ -37,19 +37,19 @@ static C_INT take_aux_byte(t_port *port, t_pic *master, t_pic *slave,
     return 1;
 }
 
-static C_VOID send_aux_command(t_port *port, lib_u8 command)
+static void send_aux_command(t_port *port, lib_u8 command)
 {
     core_machine_port_write(port, 0x0064u, 0xd4u);
     core_machine_port_write(port, 0x0060u, command);
 }
 
-static C_VOID send_aux_parameter(t_port *port, lib_u8 value)
+static void send_aux_parameter(t_port *port, lib_u8 value)
 {
     core_machine_port_write(port, 0x0064u, 0xd4u);
     core_machine_port_write(port, 0x0060u, value);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_kbc kbc;
     t_pic master;
@@ -57,8 +57,8 @@ C_INT main(C_VOID)
     t_ram memory = {0};
     core_machine_cpu_execution_context execution = {0};
     t_port port;
-    C_INT failed = 0;
-    C_INT stage = 1;
+    lib_i32 failed = 0;
+    lib_i32 stage = 1;
     lib_u8 index;
 
     core_machine_port_initialize(&port);
@@ -83,19 +83,19 @@ C_INT main(C_VOID)
     send_aux_command(&port, 0xf4u);
     failed |= !take_aux_byte(&port, &master, &slave, 0xfau);
     failed |= core_machine_kbc_submit_aux_report(&kbc, 5, -3, 0x01u) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !take_aux_byte(&port, &master, &slave, 0x29u);
     failed |= !take_aux_byte(&port, &master, &slave, 0x05u);
     failed |= !take_aux_byte(&port, &master, &slave, 0xfdu);
 
     core_machine_port_write(&port, 0x0064u, 0xa7u);
     failed |= core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) !=
-        TYPE_STATUS_INVALID_STATE;
+        LIB_STATUS_INVALID_STATE;
     core_machine_pic_refresh(&master, &slave);
     failed |= core_machine_pic_scan_interrupt(&master, &slave);
     core_machine_port_write(&port, 0x0064u, 0xa8u);
     failed |= core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !take_aux_byte(&port, &master, &slave, 0x09u);
     failed |= !take_aux_byte(&port, &master, &slave, 0x01u);
     failed |= !take_aux_byte(&port, &master, &slave, 0x01u);
@@ -103,8 +103,8 @@ C_INT main(C_VOID)
     send_aux_command(&port, 0xf5u);
     failed |= !take_aux_byte(&port, &master, &slave, 0xfau);
     failed |= core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0u) !=
-        TYPE_STATUS_INVALID_STATE;
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
+        LIB_STATUS_INVALID_STATE;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     failed |= (read_port(&port, 0x0064u) & VKBC_STATUS_AUX) != 0u;
     core_machine_pic_refresh(&master, &slave);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x09u;
@@ -131,13 +131,13 @@ C_INT main(C_VOID)
     failed |= !take_aux_byte(&port, &master, &slave, 0xfeu);
 
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:CONFIG\n");
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:CONFIG\n");
         return 1;
     }
     stage = 3;
     send_aux_command(&port, 0xe9u);
     failed |= core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !take_aux_byte(&port, &master, &slave, 0xfau);
     failed |= !take_aux_byte(&port, &master, &slave, 0x21u);
     failed |= !take_aux_byte(&port, &master, &slave, 0x03u);
@@ -146,7 +146,7 @@ C_INT main(C_VOID)
     failed |= !take_aux_byte(&port, &master, &slave, 0x01u);
     failed |= !take_aux_byte(&port, &master, &slave, 0x01u);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:E9-ORDER:fifo=%u:delayed=%u/%u:bat=%u\n",
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-ORDER:fifo=%u:delayed=%u/%u:bat=%u\n",
             (unsigned int)kbc.data.fifo_count,
             (unsigned int)kbc.data.delayed_response_count,
             (unsigned int)kbc.data.delayed_response_index,
@@ -160,30 +160,30 @@ C_INT main(C_VOID)
     failed |= !take_aux_byte(&port, &master, &slave, 0x03u);
     failed |= !take_aux_byte(&port, &master, &slave, 200u);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:E9-BUTTONS\n");
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-BUTTONS\n");
         return 1;
     }
     stage = 5;
     send_aux_command(&port, 0xf6u);
     if (!take_aux_byte(&port, &master, &slave, 0xfau)) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:F6\n");
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:F6\n");
         failed = 1;
     }
     send_aux_command(&port, 0xe9u);
     if (!take_aux_byte(&port, &master, &slave, 0xfau)) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:E9-ACK\n");
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-ACK\n");
         failed = 1;
     }
     if (!take_aux_byte(&port, &master, &slave, 0x00u)) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:E9-STATUS\n");
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-STATUS\n");
         failed = 1;
     }
     if (!take_aux_byte(&port, &master, &slave, 0x02u)) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:E9-RESOLUTION\n");
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-RESOLUTION\n");
         failed = 1;
     }
     if (!take_aux_byte(&port, &master, &slave, 100u)) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:E9-RATE\n");
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-RATE\n");
         failed = 1;
     }
 
@@ -210,9 +210,9 @@ C_INT main(C_VOID)
 
     send_aux_command(&port, 0xf4u);
     failed |= !take_aux_byte(&port, &master, &slave, 0xfau) ||
-        core_machine_kbc_submit_aux_report(&kbc, 0, 0, 0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_aux_report(&kbc, 0, 0, 0u) != LIB_STATUS_OK ||
         (read_port(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
-        core_machine_kbc_submit_aux_report(&kbc, 300, -300, 0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_aux_report(&kbc, 300, -300, 0u) != LIB_STATUS_OK ||
         !take_aux_byte(&port, &master, &slave, 0xe8u) ||
         !take_aux_byte(&port, &master, &slave, 0xffu) ||
         !take_aux_byte(&port, &master, &slave, 0x00u);
@@ -228,7 +228,7 @@ C_INT main(C_VOID)
 
     send_aux_command(&port, 0xf4u);
     failed |= !take_aux_byte(&port, &master, &slave, 0xfau) ||
-        core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0u) != LIB_STATUS_OK ||
         !kbc.data.irq12_asserted;
     /* Keyboard scan bytes and AUX packets now have distinct device-side
      * admission queues.  Fill the KBC-visible AUX FIFO independently: 3
@@ -236,18 +236,18 @@ C_INT main(C_VOID)
      * complete packet must be rejected atomically. */
     for (index = 0u; index < (CORE_MACHINE_KBC_FIFO_CAPACITY - 3u) / 3u; ++index) {
         failed |= core_machine_kbc_submit_aux_report(&kbc,
-            (lib_i16)(index + 1u), 0, 0u) != TYPE_STATUS_OK;
+            (lib_i16)(index + 1u), 0, 0u) != LIB_STATUS_OK;
     }
     failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 1u) !=
-        TYPE_STATUS_INVALID_STATE || kbc.data.fifo_count !=
+        LIB_STATUS_INVALID_STATE || kbc.data.fifo_count !=
             CORE_MACHINE_KBC_FIFO_CAPACITY - 1u || kbc.data.aux_button_state != 0u;
 
     /* A saturated KBC output FIFO must not make keyboard serial input look
      * like AUX state.  Its private queue has its own bounded admission. */
     for (index = 0u; index < CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY; ++index) {
-        failed |= core_machine_kbc_submit_native_byte(&kbc, index) != TYPE_STATUS_OK;
+        failed |= core_machine_kbc_submit_native_byte(&kbc, index) != LIB_STATUS_OK;
     }
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0u) != TYPE_STATUS_NO_MEMORY ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0u) != LIB_STATUS_NO_MEMORY ||
         kbc.data.keyboard_serial_count != CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY;
     core_machine_kbc_finalize(&kbc);
     failed |= kbc.data.irq12_asserted;
@@ -255,9 +255,9 @@ C_INT main(C_VOID)
     core_machine_pic_finalize(&master, &slave);
     core_machine_port_finalize(&port);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T267:AUX:PORT:FAIL:STAGE=%d\n", stage);
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:STAGE=%d\n", stage);
         return 1;
     }
-    STD_PRINTF("M5:T267:S1:AUX:PORT:OK\n");
+    printf("M5:T267:S1:AUX:PORT:OK\n");
     return 0;
 }

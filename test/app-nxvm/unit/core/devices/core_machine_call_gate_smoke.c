@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -16,11 +16,11 @@ typedef struct call_gate_machine {
     core_machine *machine;
 } call_gate_machine;
 
-static C_VOID call_gate_reset(C_VOID *opaque)
+static void call_gate_reset(void *opaque)
 {
     call_gate_machine *state = (call_gate_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
@@ -28,7 +28,7 @@ static const core_machine_execution_provider call_gate_provider = {
     call_gate_reset, LIB_NULL
 };
 
-static C_INT call_gate_prepare(call_gate_machine *state)
+static lib_i32 call_gate_prepare(call_gate_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -38,7 +38,7 @@ static C_INT call_gate_prepare(call_gate_machine *state)
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 0;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             &call_gate_provider, state)) {
         core_machine_destroy(state->machine);
@@ -48,14 +48,14 @@ static C_INT call_gate_prepare(call_gate_machine *state)
     return 1;
 }
 
-static C_INT call_gate_write(call_gate_machine *machine, lib_u32 address,
+static lib_i32 call_gate_write(call_gate_machine *machine, lib_u32 address,
     const lib_u8 *bytes, lib_size count)
 {
     return core_machine_memory_write(machine->machine, address, bytes, count) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT call_gate_install(call_gate_machine *state)
+static lib_i32 call_gate_install(call_gate_machine *state)
 {
     static const lib_u8 gdt_pointer[] = {
         0x37u,0x00u,0x00u,0x03u,0x00u,0x00u
@@ -119,21 +119,21 @@ int main(void)
     core_machine_cpu_diagnostic diagnostic;
     lib_u16 markers[2] = {0u, 0u};
     const core_machine_run_budget budget = { 1024u, 0u };
-    C_INT failed = !call_gate_prepare(&state);
+    lib_i32 failed = !call_gate_prepare(&state);
 
     if (!failed) {
         failed |= !call_gate_install(&state);
-        failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET;
         failed |= core_machine_memory_read(state.machine, CALL_GATE_USER_DATA_BASE,
-            markers, sizeof(markers)) != TYPE_STATUS_OK || markers[0] != 0x1111u ||
+            markers, sizeof(markers)) != LIB_STATUS_OK || markers[0] != 0x1111u ||
             markers[1] != 0x2222u;
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            LIB_STATUS_OK || diagnostic.first_fault.valid ||
             diagnostic.last_delivered_exception.valid ||
             diagnostic.delivered_exception_count != 0u;
         if (failed) {
-            STD_FPRINTF(STD_STDERR,
+            fprintf(stderr,
                 "T288 S2 call-gate result=%u markers=%04x/%04x fault=%d mask=%08x code=%08x pc=%04x:%08x cs=%04x sp=%04x\n",
                 (unsigned)result.reason, markers[0], markers[1],
                 diagnostic.first_fault.valid, diagnostic.first_fault.exception_mask,
@@ -147,6 +147,6 @@ int main(void)
     }
     core_machine_destroy(state.machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T288:S2:CALL-GATE-16:OK\n");
+    printf("M5:T288:S2:CALL-GATE-16:OK\n");
     return 0;
 }

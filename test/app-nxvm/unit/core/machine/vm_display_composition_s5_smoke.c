@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/vadp.h"
@@ -10,20 +10,20 @@
 #include "support/rom/session_assets.h"
 #include "app-nxvm/machine/machine_private.h"
 
-static C_VOID vm_display_s5_port_write(vm_machine *session, lib_u16 port,
+static void vm_display_s5_port_write(vm_machine *session, lib_u16 port,
     lib_u8 value)
 {
     core_machine_port_write(&session->core_machine->executor_port, port, value);
 }
 
-static C_INT vm_display_s5_capture(vm_machine *session,
+static lib_i32 vm_display_s5_capture(vm_machine *session,
     core_machine_guest_display_frame *frame, core_machine_display_kind expected_kind)
 {
     return vm_machine_publish_display(session, LIB_TRUE) == expected_kind &&
-        test_vm_machine_capture_presentation(session, frame) == TYPE_STATUS_OK;
+        test_vm_machine_capture_presentation(session, frame) == LIB_STATUS_OK;
 }
 
-static C_INT vm_display_s5_enable_planar(vm_machine *session)
+static lib_i32 vm_display_s5_enable_planar(vm_machine *session)
 {
     vm_display_s5_port_write(session, 0x03c4u, 2u);
     vm_display_s5_port_write(session, 0x03c5u, 0x0fu);
@@ -32,7 +32,7 @@ static C_INT vm_display_s5_enable_planar(vm_machine *session)
     vm_display_s5_port_write(session, 0x03ceu, 6u);
     vm_display_s5_port_write(session, 0x03cfu, 0x05u);
     vm_display_s5_port_write(session, 0x03c2u, 0x01u);
-    (C_VOID)core_machine_port_read(&session->core_machine->executor_port, 0x03dau);
+    (void)core_machine_port_read(&session->core_machine->executor_port, 0x03dau);
     vm_display_s5_port_write(session, 0x03c0u, 0x30u);
     vm_display_s5_port_write(session, 0x03c0u, 0x01u);
     vm_display_s5_port_write(session, 0x03d4u, 0x01u);
@@ -46,7 +46,7 @@ static C_INT vm_display_s5_enable_planar(vm_machine *session)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
     static core_machine_guest_display_frame frame;
@@ -59,9 +59,9 @@ C_INT main(C_VOID)
     lib_u64 text_generation;
     lib_u64 cga_generation;
     lib_u64 ega_snapshot_generation;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) {
         return 1;
     }
@@ -75,10 +75,10 @@ C_INT main(C_VOID)
     vm_display_s5_port_write(session, 0x03d8u, 0x0au);
     vm_display_s5_port_write(session, 0x03d9u, 0x00u);
     failed |= core_machine_memory_write(session->core_machine,
-        CORE_MACHINE_VADP_VIDEO_BASE, &cga_even, sizeof(cga_even)) != TYPE_STATUS_OK ||
+        CORE_MACHINE_VADP_VIDEO_BASE, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
         core_machine_memory_write(session->core_machine,
             CORE_MACHINE_VADP_VIDEO_BASE + 0x2000u, &cga_odd,
-            sizeof(cga_odd)) != TYPE_STATUS_OK;
+            sizeof(cga_odd)) != LIB_STATUS_OK;
     failed |= !vm_display_s5_capture(session, &frame,
         CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4) ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
@@ -89,15 +89,15 @@ C_INT main(C_VOID)
     cga_generation = frame.generation;
     cga_even = 0xffu;
     failed |= core_machine_memory_write(session->core_machine,
-        CORE_MACHINE_VADP_VIDEO_BASE, &cga_even, sizeof(cga_even)) != TYPE_STATUS_OK ||
-        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
+        CORE_MACHINE_VADP_VIDEO_BASE, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation != cga_generation ||
         frame.pixels[0] != 0u || frame.pixels[1] != 1u || frame.pixels[2] != 2u;
 
     failed |= !vm_display_s5_enable_planar(session) ||
         core_machine_memory_write(session->core_machine,
             CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
-            sizeof(ega_pixel)) != TYPE_STATUS_OK ||
+            sizeof(ega_pixel)) != LIB_STATUS_OK ||
         !vm_display_s5_capture(session, &frame,
             CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16) ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
@@ -108,41 +108,41 @@ C_INT main(C_VOID)
     ega_snapshot_generation = session->display_snapshot_generation;
     failed |= !session->display_snapshot_generation_valid ||
         core_machine_observe_display_snapshot(session->core_machine, LIB_TRUE,
-            ega_snapshot_generation, &observation) != TYPE_STATUS_OK ||
+            ega_snapshot_generation, &observation) != LIB_STATUS_OK ||
         !observation.generation_reliable || observation.capture_required ||
         observation.generation != ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
     failed |= vm_machine_publish_display(session, LIB_FALSE) !=
         CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
-        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
         session->display_snapshot_generation != ega_snapshot_generation;
     ega_pixel = 0x5au;
     failed |= core_machine_memory_write(session->core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
-        sizeof(ega_pixel)) != TYPE_STATUS_OK ||
+        sizeof(ega_pixel)) != LIB_STATUS_OK ||
         core_machine_observe_display_snapshot(session->core_machine, LIB_TRUE,
-            ega_snapshot_generation, &observation) != TYPE_STATUS_OK ||
+            ega_snapshot_generation, &observation) != LIB_STATUS_OK ||
         !observation.generation_reliable || !observation.capture_required ||
         observation.generation == ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
     failed |= vm_machine_publish_display(session, LIB_FALSE) !=
         CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
-        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
         frame.pixels[0] != 0u || session->display_snapshot_generation !=
         observation.generation;
 
     vm_machine_reset(session);
     failed |= core_machine_get_timeline_observation(session->core_machine,
-        &timeline) != TYPE_STATUS_OK || timeline.now != 0u ||
+        &timeline) != LIB_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 0u ||
-        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK ||
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
         frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xffffffu ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
-            TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;
+            LIB_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;
 
     failed |= !vm_display_s5_enable_planar(session) ||
         !vm_display_s5_capture(session, &frame,
@@ -152,6 +152,6 @@ C_INT main(C_VOID)
 
     vm_machine_destroy(session);
     if (failed) return 1;
-    STD_PRINTF("M5:T352:S5:DISPLAY-COMPOSITION:OK\n");
+    printf("M5:T352:S5:DISPLAY-COMPOSITION:OK\n");
     return 0;
 }

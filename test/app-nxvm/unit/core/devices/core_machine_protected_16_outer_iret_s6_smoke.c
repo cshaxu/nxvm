@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/pic.h"
 
@@ -11,8 +12,8 @@
 #define S6_TSS_BASE 0x0500u
 #define S6_USER_SP 0x4000u
 
-static C_INT s6_prepare(s3_gate_machine *state, core_machine_cpu_profile profile,
-    type_bool address_prefix)
+static lib_i32 s6_prepare(s3_gate_machine *state, core_machine_cpu_profile profile,
+    lib_u8 address_prefix)
 {
     static const lib_u8 user_data[] = {
         0xffu,0xffu,0,0,0,0xf2u,0,0
@@ -37,7 +38,7 @@ static C_INT s6_prepare(s3_gate_machine *state, core_machine_cpu_profile profile
     return 1;
 }
 
-static C_INT s6_write_frame(s3_gate_machine *state, lib_u16 cs,
+static lib_i32 s6_write_frame(s3_gate_machine *state, lib_u16 cs,
     lib_u16 ss, lib_u16 flags)
 {
     const lib_u16 frame[] = { 0x0010u,cs,flags,S6_USER_SP,ss };
@@ -45,7 +46,7 @@ static C_INT s6_write_frame(s3_gate_machine *state, lib_u16 cs,
     return s3_gate_write(state, S3_STACK_TOP, frame, sizeof(frame));
 }
 
-static C_INT s6_code_cache(const t_cpu_data_sreg *sreg,
+static lib_i32 s6_code_cache(const t_cpu_data_sreg *sreg,
     lib_u16 selector, lib_u8 dpl)
 {
     return sreg->flagValid && sreg->selector == selector && sreg->base ==
@@ -55,7 +56,7 @@ static C_INT s6_code_cache(const t_cpu_data_sreg *sreg,
         !sreg->seg.exec.conform && sreg->seg.exec.readable;
 }
 
-static C_INT s6_stack_cache(const t_cpu_data_sreg *sreg,
+static lib_i32 s6_stack_cache(const t_cpu_data_sreg *sreg,
     lib_u16 selector, lib_u8 dpl)
 {
     return sreg->flagValid && sreg->selector == selector && sreg->base ==
@@ -65,21 +66,21 @@ static C_INT s6_stack_cache(const t_cpu_data_sreg *sreg,
         !sreg->seg.data.expdown && sreg->seg.data.writable;
 }
 
-static C_INT s6_success(core_machine_cpu_profile profile, type_bool address_prefix)
+static lib_i32 s6_success(core_machine_cpu_profile profile, lib_u8 address_prefix)
 {
     s3_gate_machine state;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
     lib_u16 frame_after[5u] = { 0u,0u,0u,0u,0u };
-    C_INT failed = !s6_prepare(&state, profile, address_prefix);
+    lib_i32 failed = !s6_prepare(&state, profile, address_prefix);
 
     if (!failed) {
         failed |= !s6_write_frame(&state, 0x001bu, 0x0023u,
             VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
-            &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET;
+            &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != 0x0010u || !s6_code_cache(&after.data.cs,
             0x001bu, 3u) || !s6_stack_cache(&after.data.ss, 0x0023u, 3u) ||
@@ -100,7 +101,7 @@ static C_INT s6_success(core_machine_cpu_profile profile, type_bool address_pref
     return !failed;
 }
 
-static C_INT s6_same_iret(C_VOID)
+static lib_i32 s6_same_iret(void)
 {
     static const lib_u8 iret[] = { 0xcfu };
     static const lib_u16 frame[] = {
@@ -111,7 +112,7 @@ static C_INT s6_same_iret(C_VOID)
     t_cpu before;
     t_cpu after;
     lib_u16 frame_after[3u] = { 0u,0u,0u };
-    C_INT failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
         LIB_FALSE);
 
     if (!failed) {
@@ -119,7 +120,7 @@ static C_INT s6_same_iret(C_VOID)
             !s3_gate_write(&state, S3_STACK_TOP, frame, sizeof(frame));
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != 0x0010u || !s6_code_cache(&after.data.cs,
@@ -141,7 +142,7 @@ static C_INT s6_same_iret(C_VOID)
     return !failed;
 }
 
-static C_INT s6_same_retf(C_VOID)
+static lib_i32 s6_same_retf(void)
 {
     static const lib_u8 retf[] = { 0xcbu };
     static const lib_u16 frame[] = { 0x0010u,0x0008u };
@@ -150,7 +151,7 @@ static C_INT s6_same_retf(C_VOID)
     t_cpu before;
     t_cpu after;
     lib_u16 frame_after[2u] = { 0u,0u };
-    C_INT failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
         LIB_FALSE);
 
     if (!failed) {
@@ -158,7 +159,7 @@ static C_INT s6_same_retf(C_VOID)
             !s3_gate_write(&state, S3_STACK_TOP, frame, sizeof(frame));
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != 0x0010u || !s6_code_cache(&after.data.cs,
@@ -178,7 +179,7 @@ static C_INT s6_same_retf(C_VOID)
     return !failed;
 }
 
-static C_INT s6_outer_retf(C_VOID)
+static lib_i32 s6_outer_retf(void)
 {
     static const lib_u8 retf[] = { 0xcbu };
     static const lib_u16 frame[] = {
@@ -189,7 +190,7 @@ static C_INT s6_outer_retf(C_VOID)
     t_cpu before;
     t_cpu after;
     lib_u16 frame_after[4u] = { 0u,0u,0u,0u };
-    C_INT failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
         LIB_FALSE);
 
     if (!failed) {
@@ -197,7 +198,7 @@ static C_INT s6_outer_retf(C_VOID)
             !s3_gate_write(&state, S3_STACK_TOP, frame, sizeof(frame));
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != 0x0010u || !s6_code_cache(&after.data.cs,
@@ -217,7 +218,7 @@ static C_INT s6_outer_retf(C_VOID)
     return !failed;
 }
 
-static C_INT s6_outer_retf_immediate(C_VOID)
+static lib_i32 s6_outer_retf_immediate(void)
 {
     static const lib_u8 retf[] = { 0xcau,0x04u,0x00u };
     static const lib_u16 frame[] = {
@@ -228,7 +229,7 @@ static C_INT s6_outer_retf_immediate(C_VOID)
     t_cpu before;
     t_cpu after;
     lib_u16 frame_after[6u] = { 0u,0u,0u,0u,0u,0u };
-    C_INT failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
         LIB_FALSE);
 
     if (!failed) {
@@ -236,7 +237,7 @@ static C_INT s6_outer_retf_immediate(C_VOID)
             !s3_gate_write(&state, S3_STACK_TOP, frame, sizeof(frame));
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != 0x0010u || !s6_code_cache(&after.data.cs,
@@ -256,8 +257,8 @@ static C_INT s6_outer_retf_immediate(C_VOID)
     return !failed;
 }
 
-static C_INT s6_failure(lib_u16 cs, lib_u16 ss,
-    type_bool short_frame)
+static lib_i32 s6_failure(lib_u16 cs, lib_u16 ss,
+    lib_u8 short_frame)
 {
     s3_gate_machine state;
     core_machine_run_result result;
@@ -268,7 +269,7 @@ static C_INT s6_failure(lib_u16 cs, lib_u16 ss,
     lib_u16 frame_after[5u] = { 0u,0u,0u,0u,0u };
     t_cpu before;
     t_cpu after;
-    C_INT failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
         LIB_FALSE);
 
     if (!failed && short_frame) state.machine->executor_cpu.data.ss.limit = 8u;
@@ -277,8 +278,8 @@ static C_INT s6_failure(lib_u16 cs, lib_u16 ss,
             sizeof(frame_before));
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){8u,0u},
-            &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+            &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.first_fault.valid;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !s3_gate_cpu_same(&before, &after) || !s3_gate_read(&state,
@@ -289,7 +290,7 @@ static C_INT s6_failure(lib_u16 cs, lib_u16 ss,
     return !failed;
 }
 
-static C_INT s6_iret_irq(C_VOID)
+static lib_i32 s6_iret_irq(void)
 {
     static const lib_u8 loop[] = { 0xebu,0xfeu };
     lib_u8 tss[8u] = { 0u };
@@ -298,7 +299,7 @@ static C_INT s6_iret_irq(C_VOID)
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     lib_u16 frame[5u] = { 0u,0u,0u,0u,0u };
-    C_INT failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !s6_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286,
         LIB_FALSE);
 
     lib_memory_set(&source, 0, sizeof(source));
@@ -333,14 +334,14 @@ static C_INT s6_iret_irq(C_VOID)
         failed |= !s6_write_frame(&state, 0x001bu, 0x0023u,
             VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL) ||
             core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
-                &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+                &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             state.machine->executor_cpu.data.cs.selector != 0x0008u ||
             state.machine->executor_cpu.data.ss.selector != 0x0010u ||
             state.machine->executor_cpu.data.eip != S3_HANDLER ||
             state.machine->executor_cpu.data.esp != 0x12346ff6u ||
-            TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
             !s3_gate_read(&state, 0x00006ff6u, frame, sizeof(frame)) ||
             frame[0] != 0x0010u || frame[1] != 0x001bu ||
         frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL | 0x02u) ||
@@ -350,9 +351,9 @@ static C_INT s6_iret_irq(C_VOID)
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT failed = !s6_same_iret() || !s6_same_retf() || !s6_outer_retf() ||
+    lib_i32 failed = !s6_same_iret() || !s6_same_retf() || !s6_outer_retf() ||
         !s6_outer_retf_immediate() ||
         !s6_success(CORE_MACHINE_CPU_PROFILE_80286, LIB_FALSE) ||
         !s6_success(CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE) ||
@@ -362,6 +363,6 @@ C_INT main(C_VOID)
         !s6_failure(0x001bu, 0x0023u, LIB_TRUE) || !s6_iret_irq();
 
     if (failed) return 1;
-    STD_PRINTF("M5:T323:S6:PROTECTED-16-OUTER-IRET:OK\n");
+    printf("M5:T323:S6:PROTECTED-16-OUTER-IRET:OK\n");
     return 0;
 }

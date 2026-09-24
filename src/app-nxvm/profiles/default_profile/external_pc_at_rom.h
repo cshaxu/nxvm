@@ -17,6 +17,6 @@ typedef struct vm_profile_external_pc_at_rom_context {
     lib_size video_bytes;
 } vm_profile_external_pc_at_rom_context;
 
-const core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(C_VOID);
+const core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(void);
 
 #endif

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -12,21 +12,21 @@ typedef struct t359_s3_timing_state {
     lib_u64 advanced_ticks;
 } t359_s3_timing_state;
 
-typedef C_INT (*t359_s3_setup)(core_machine *machine, C_VOID *opaque);
+typedef lib_i32 (*t359_s3_setup)(core_machine *machine, void *opaque);
 
 typedef struct t359_s3_interrupt_setup {
     lib_u8 vector;
-    C_INT set_overflow;
+    lib_i32 set_overflow;
 } t359_s3_interrupt_setup;
 
-static C_VOID t359_s3_timing_reset(C_VOID *opaque)
+static void t359_s3_timing_reset(void *opaque)
 {
     t359_s3_timing_state *state = (t359_s3_timing_state *)opaque;
 
     if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
-static C_VOID t359_s3_timing_advance(C_VOID *opaque,
+static void t359_s3_timing_advance(void *opaque,
     lib_u64 elapsed_ticks)
 {
     t359_s3_timing_state *state = (t359_s3_timing_state *)opaque;
@@ -39,19 +39,19 @@ static const core_machine_execution_provider t359_s3_timing_provider = {
     t359_s3_timing_advance
 };
 
-static C_INT t359_s3_prepare(core_machine_cpu_profile profile,
+static lib_i32 t359_s3_prepare(core_machine_cpu_profile profile,
     core_machine **out_machine, t359_s3_timing_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T359_S3_RESET_LINEAR, T359_S3_RESET_PHYSICAL,
-            T359_S3_WINDOW_BYTES) != TYPE_STATUS_OK ||
+            T359_S3_WINDOW_BYTES) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00001000u,
-            0x00001000u, T359_S3_WINDOW_BYTES) != TYPE_STATUS_OK ||
+            0x00001000u, T359_S3_WINDOW_BYTES) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &t359_s3_timing_provider, state)) {
         core_machine_destroy(machine);
@@ -61,61 +61,61 @@ static C_INT t359_s3_prepare(core_machine_cpu_profile profile,
     return 1;
 }
 
-static C_INT t359_s3_run(core_machine *machine,
+static lib_i32 t359_s3_run(core_machine *machine,
     const lib_u8 *program, lib_size program_bytes,
     lib_u64 expected_ticks, t359_s3_timing_state *state,
-    t359_s3_setup setup, C_VOID *opaque)
+    t359_s3_setup setup, void *opaque)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
 
     return machine != LIB_NULL && program != LIB_NULL && state != LIB_NULL &&
-        core_machine_reset(machine) == TYPE_STATUS_OK &&
+        core_machine_reset(machine) == LIB_STATUS_OK &&
         (setup == LIB_NULL || setup(machine, opaque)) &&
         core_machine_memory_write(machine, T359_S3_RESET_LINEAR, program,
-            program_bytes) == TYPE_STATUS_OK &&
-        core_machine_run(machine, budget, &result) == TYPE_STATUS_OK &&
+            program_bytes) == LIB_STATUS_OK &&
+        core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
         result.ticks == expected_ticks && result.elapsed_ticks == expected_ticks &&
         state->advanced_ticks == expected_ticks;
 }
 
-static C_INT t359_s3_seed_pop(core_machine *machine, C_VOID *opaque)
+static lib_i32 t359_s3_seed_pop(core_machine *machine, void *opaque)
 {
     const lib_u16 value = 0x1234u;
 
-    (C_VOID)opaque;
+    (void)opaque;
     if (machine == LIB_NULL) return 0;
     machine->executor_cpu.data.sp = 0x1000u;
     return core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT t359_s3_seed_loop_not_taken(core_machine *machine, C_VOID *opaque)
+static lib_i32 t359_s3_seed_loop_not_taken(core_machine *machine, void *opaque)
 {
-    (C_VOID)opaque;
+    (void)opaque;
     if (machine == LIB_NULL) return 0;
     machine->executor_cpu.data.cx = 1u;
     return 1;
 }
 
-static C_INT t359_s3_seed_transfer(core_machine *machine, C_VOID *opaque)
+static lib_i32 t359_s3_seed_transfer(core_machine *machine, void *opaque)
 {
     const lib_u16 target = 0xfff5u;
     const lib_u8 nop = 0x90u;
 
-    (C_VOID)opaque;
+    (void)opaque;
     if (machine == LIB_NULL) return 0;
     machine->executor_cpu.data.ax = target;
     machine->executor_cpu.data.sp = 0x1020u;
     return core_machine_memory_write(machine, 0x1000u, &target,
-        sizeof(target)) == TYPE_STATUS_OK &&
+        sizeof(target)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, 0x000ffff5u, &nop, sizeof(nop)) ==
-        TYPE_STATUS_OK && core_machine_memory_write(machine, 0x1020u, &target,
-            sizeof(target)) == TYPE_STATUS_OK;
+        LIB_STATUS_OK && core_machine_memory_write(machine, 0x1020u, &target,
+            sizeof(target)) == LIB_STATUS_OK;
 }
 
-static C_INT t359_s3_seed_interrupt(core_machine *machine, C_VOID *opaque)
+static lib_i32 t359_s3_seed_interrupt(core_machine *machine, void *opaque)
 {
     const t359_s3_interrupt_setup *setup =
         (const t359_s3_interrupt_setup *)opaque;
@@ -129,28 +129,28 @@ static C_INT t359_s3_seed_interrupt(core_machine *machine, C_VOID *opaque)
     if (setup->set_overflow) machine->executor_cpu.data.eflags |= VCPU_EFLAGS_OF;
     return
         core_machine_memory_write(machine, vector, &offset,
-            sizeof(offset)) == TYPE_STATUS_OK &&
+            sizeof(offset)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, vector + sizeof(offset), &segment,
-            sizeof(segment)) == TYPE_STATUS_OK &&
+            sizeof(segment)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, 0x000ffff5u, &nop,
-            sizeof(nop)) == TYPE_STATUS_OK;
+            sizeof(nop)) == LIB_STATUS_OK;
 }
 
-static C_INT t359_s3_seed_iret(core_machine *machine, C_VOID *opaque)
+static lib_i32 t359_s3_seed_iret(core_machine *machine, void *opaque)
 {
     const lib_u16 frame[] = { 0xfff5u, 0xf000u, 0x0002u };
     const lib_u8 nop = 0x90u;
 
-    (C_VOID)opaque;
+    (void)opaque;
     if (machine == LIB_NULL) return 0;
     machine->executor_cpu.data.sp = 0x1020u;
     return core_machine_memory_write(machine, 0x1020u, frame,
-        sizeof(frame)) == TYPE_STATUS_OK &&
+        sizeof(frame)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, 0x000ffff5u, &nop,
-            sizeof(nop)) == TYPE_STATUS_OK;
+            sizeof(nop)) == LIB_STATUS_OK;
 }
 
-static C_INT t359_s3_test_profile_rows(core_machine_cpu_profile profile,
+static lib_i32 t359_s3_test_profile_rows(core_machine_cpu_profile profile,
     lib_u64 call_ticks, lib_u64 jmp_ticks,
     lib_u64 push_ticks, lib_u64 pop_ticks,
     lib_u64 loop_ticks, lib_u64 jcxz_ticks,
@@ -169,7 +169,7 @@ static C_INT t359_s3_test_profile_rows(core_machine_cpu_profile profile,
     static const lib_u8 hlt[] = { 0xf4u };
     t359_s3_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s3_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s3_prepare(profile, &machine, &state);
 
     if (!failed) {
         failed |= !t359_s3_run(machine, call_near, sizeof(call_near),
@@ -203,10 +203,10 @@ static C_INT t359_s3_test_profile_rows(core_machine_cpu_profile profile,
         const core_machine_run_budget budget = { 1u, 0u };
         core_machine_run_result result;
 
-        failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, T359_S3_RESET_LINEAR, hlt,
-                sizeof(hlt)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                sizeof(hlt)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             result.ticks != hlt_ticks || state.advanced_ticks != hlt_ticks;
     }
@@ -214,7 +214,7 @@ static C_INT t359_s3_test_profile_rows(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT t359_s3_test_80186_stack_rows(C_VOID)
+static lib_i32 t359_s3_test_80186_stack_rows(void)
 {
     static const lib_u8 pusha[] = { 0x60u };
     static const lib_u8 popa[] = { 0x61u };
@@ -236,7 +236,7 @@ static C_INT t359_s3_test_80186_stack_rows(C_VOID)
     for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0u]); ++index) {
         t359_s3_timing_state state = { 0u };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !t359_s3_prepare(profiles[index], &machine, &state);
+        lib_i32 failed = !t359_s3_prepare(profiles[index], &machine, &state);
 
         if (!failed) {
             failed |= !t359_s3_run(machine, pusha, sizeof(pusha),
@@ -254,7 +254,7 @@ static C_INT t359_s3_test_80186_stack_rows(C_VOID)
     return 0;
 }
 
-static C_INT t359_s3_test_transfer_shapes(core_machine_cpu_profile profile,
+static lib_i32 t359_s3_test_transfer_shapes(core_machine_cpu_profile profile,
     lib_u64 call_register_ticks, lib_u64 call_memory_ticks,
     lib_u64 jmp_register_ticks, lib_u64 jmp_memory_ticks,
     lib_u64 ret_ticks, lib_u64 push_memory_ticks,
@@ -277,7 +277,7 @@ static C_INT t359_s3_test_transfer_shapes(core_machine_cpu_profile profile,
     };
     t359_s3_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s3_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s3_prepare(profile, &machine, &state);
 
     if (!failed) {
         failed |= !t359_s3_run(machine, call_register, sizeof(call_register),
@@ -317,7 +317,7 @@ static C_INT t359_s3_test_transfer_shapes(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT t359_s3_test_far_direct(core_machine_cpu_profile profile,
+static lib_i32 t359_s3_test_far_direct(core_machine_cpu_profile profile,
     lib_u64 call_ticks, lib_u64 jmp_ticks)
 {
     static const lib_u8 call_far[] = {
@@ -328,7 +328,7 @@ static C_INT t359_s3_test_far_direct(core_machine_cpu_profile profile,
     };
     t359_s3_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s3_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s3_prepare(profile, &machine, &state);
 
     if (!failed) {
         failed |= !t359_s3_run(machine, call_far, sizeof(call_far), call_ticks,
@@ -346,7 +346,7 @@ static C_INT t359_s3_test_far_direct(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT t359_s3_test_real_interrupt_rows(core_machine_cpu_profile profile,
+static lib_i32 t359_s3_test_real_interrupt_rows(core_machine_cpu_profile profile,
     lib_u64 int_ticks, lib_u64 into_clear_ticks,
     lib_u64 int3_ticks, lib_u64 into_taken_ticks,
     lib_u64 iret_ticks)
@@ -361,17 +361,17 @@ static C_INT t359_s3_test_real_interrupt_rows(core_machine_cpu_profile profile,
     static const t359_s3_interrupt_setup into_setup = { 0x04u, 1 };
     t359_s3_timing_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t359_s3_prepare(profile, &machine, &state);
+    lib_i32 failed = !t359_s3_prepare(profile, &machine, &state);
 
     if (!failed) {
         failed |= !t359_s3_run(machine, int_immediate, sizeof(int_immediate),
-            int_ticks, &state, t359_s3_seed_interrupt, (C_VOID *)&int_setup) ||
+            int_ticks, &state, t359_s3_seed_interrupt, (void *)&int_setup) ||
             machine->executor_cpu.data.cs.selector != 0xf000u ||
             machine->executor_cpu.data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, int3, sizeof(int3), int3_ticks, &state,
-            t359_s3_seed_interrupt, (C_VOID *)&int3_setup) ||
+            t359_s3_seed_interrupt, (void *)&int3_setup) ||
             machine->executor_cpu.data.cs.selector != 0xf000u ||
             machine->executor_cpu.data.ip != 0xfff5u;
     }
@@ -382,7 +382,7 @@ static C_INT t359_s3_test_real_interrupt_rows(core_machine_cpu_profile profile,
     if (!failed) {
         failed |= !t359_s3_run(machine, into_taken, sizeof(into_taken),
             into_taken_ticks, &state, t359_s3_seed_interrupt,
-            (C_VOID *)&into_setup) ||
+            (void *)&into_setup) ||
             machine->executor_cpu.data.cs.selector != 0xf000u ||
             machine->executor_cpu.data.ip != 0xfff5u;
     }
@@ -396,10 +396,10 @@ static C_INT t359_s3_test_real_interrupt_rows(core_machine_cpu_profile profile,
     return failed;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
-    (C_VOID)argc;
-    (C_VOID)argv;
+    (void)argc;
+    (void)argv;
 
     if (t359_s3_test_profile_rows(CORE_MACHINE_CPU_PROFILE_8086,
             19u, 15u, 11u, 8u, 5u, 6u, 2u)) return 1;
@@ -438,6 +438,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
             24u, 5u, 24u, 25u, 18u)) return 16;
     if (t359_s3_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80386,
             37u, 3u, 33u, 35u, 22u)) return 17;
-    STD_PRINTF("M5:T359:S3:CONTROL-STACK-TIMING:OK\n");
+    printf("M5:T359:S3:CONTROL-STACK-TIMING:OK\n");
     return 0;
 }

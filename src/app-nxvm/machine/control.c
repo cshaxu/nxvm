@@ -6,7 +6,6 @@
  */
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/machine/debug.h"
 
@@ -25,14 +24,14 @@
 
 #include "app-nxvm/machine/display.h"
 
-static type_status vm_machine_control_reset_machine(vm_machine *machine)
+static lib_status vm_machine_control_reset_machine(vm_machine *machine)
 {
-    type_status status;
+    lib_status status;
 
-    if (machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     vm_machine_debug_reset(&machine->debug);
     status = core_machine_reset(machine->core_machine);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         vm_machine_control_stop(&machine->control);
     } else {
         vm_machine_fault_clear(machine);
@@ -40,17 +39,17 @@ static type_status vm_machine_control_reset_machine(vm_machine *machine)
     return status;
 }
 
-static C_VOID vm_machine_control_refresh_machine_debug(
+static void vm_machine_control_refresh_machine_debug(
     vm_machine *machine)
 {
     core_machine_debug_instruction_observation observation;
 
     if (machine == LIB_NULL || core_machine_debug_capture_instruction_observation(
-            machine->core_machine, &observation) != TYPE_STATUS_OK) return;
+            machine->core_machine, &observation) != LIB_STATUS_OK) return;
     vm_machine_debug_refresh(&machine->debug, &observation);
 }
 
-C_VOID vm_machine_control_start(vm_machine_control_state *control) {
+void vm_machine_control_start(vm_machine_control_state *control) {
     vm_machine *machine;
 
     if (control == LIB_NULL) return;
@@ -61,21 +60,21 @@ C_VOID vm_machine_control_start(vm_machine_control_state *control) {
 }
 
 /* Issues resetting signal to device thread */
-type_status vm_machine_control_reset(vm_machine_control_state *control) {
-    if (control == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+lib_status vm_machine_control_reset(vm_machine_control_state *control) {
+    if (control == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (vm_machine_executor_state_is_active(control->state)) {
         vm_machine_executor_state_request_reset(control->state);
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     } else {
-        type_status status = vm_machine_control_reset_machine(control->machine);
+        lib_status status = vm_machine_control_reset_machine(control->machine);
 
-        (C_VOID)vm_machine_executor_state_take_reset(control->state);
+        (void)vm_machine_executor_state_take_reset(control->state);
         return status;
     }
 }
 
 /* Issues stopping signal to device thread */
-C_VOID vm_machine_control_stop(vm_machine_control_state *control)  {
+void vm_machine_control_stop(vm_machine_control_state *control)  {
     vm_machine *machine;
 
     if (control == LIB_NULL) return;
@@ -86,49 +85,49 @@ C_VOID vm_machine_control_stop(vm_machine_control_state *control)  {
     vm_machine_executor_state_stop(control->state);
 }
 
-C_VOID vm_machine_control_fault(vm_machine_control_state *control)
+void vm_machine_control_fault(vm_machine_control_state *control)
 {
     if (control == LIB_NULL) return;
     vm_machine_executor_state_stop(control->state);
 }
 
-type_status vm_machine_control_reset_at_boundary(vm_machine_control_state *control)
+lib_status vm_machine_control_reset_at_boundary(vm_machine_control_state *control)
 {
-    return control == LIB_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+    return control == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
         vm_machine_control_reset_machine(control->machine);
 }
 
-C_VOID vm_machine_control_refresh_debug(vm_machine_control_state *control)
+void vm_machine_control_refresh_debug(vm_machine_control_state *control)
 {
     if (control != LIB_NULL) vm_machine_control_refresh_machine_debug(control->machine);
 }
 
 /* Initializes devices */
-type_status vm_machine_control_initialize(vm_machine_control_state *control,
+lib_status vm_machine_control_initialize(vm_machine_control_state *control,
     vm_machine *machine) {
-    type_status status;
+    lib_status status;
 
     if (control == LIB_NULL || machine == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
-    lib_memory_set((C_VOID *)(control), TYPE_ZERO_8, sizeof(*control));
+    lib_memory_set((void *)(control), 0u, sizeof(*control));
     status = vm_machine_executor_state_create(&control->state);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) return status;
     control->machine = machine;
     vm_machine_debug_initialize(&machine->debug);
     status = vm_machine_devices_initialize_media(machine);
-    if (status == TYPE_STATUS_OK) status = vm_machine_devices_bind_media(machine);
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) status = vm_machine_devices_bind_media(machine);
+    if (status == LIB_STATUS_OK) {
         status = vm_machine_bind_execution_provider(machine);
     }
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         vm_machine_control_stop(control);
     }
     return status;
 }
 
 /* Finalizes devices */
-C_VOID vm_machine_control_finalize(vm_machine_control_state *control,
+void vm_machine_control_finalize(vm_machine_control_state *control,
     vm_machine *machine) {
     if (control == LIB_NULL || machine == LIB_NULL) return;
     vm_machine_devices_finalize(machine);
@@ -137,7 +136,7 @@ C_VOID vm_machine_control_finalize(vm_machine_control_state *control,
     control->state = LIB_NULL;
 }
 
-C_INT vm_machine_control_is_running(const vm_machine_control_state *control)
+lib_i32 vm_machine_control_is_running(const vm_machine_control_state *control)
 {
     return control != LIB_NULL && vm_machine_executor_state_is_active(control->state);
 }

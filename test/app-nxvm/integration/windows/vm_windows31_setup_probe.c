@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include <windows.h>
 
@@ -22,8 +22,8 @@
 #define VM_T287_FAULT_OBSERVATION_MILLISECONDS 60000u
 #define VM_T288_POST_COPY_TIMEOUT_MILLISECONDS 720000u
 
-static C_INT vm_t287_submit_input(vm_machine *session,
-    lib_u16 scan_code, lib_u16 virtual_key, C_INT pressed)
+static lib_i32 vm_t287_submit_input(vm_machine *session,
+    lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
     core_machine_guest_input_event event = { 0 };
 
@@ -32,10 +32,10 @@ static C_INT vm_t287_submit_input(vm_machine *session,
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = pressed != 0;
-    return vm_machine_submit_host_input(session, &event) == TYPE_STATUS_OK;
+    return vm_machine_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
-static C_INT vm_t287_has_text(const vm_machine *session, const C_CHAR *text)
+static lib_i32 vm_t287_has_text(const vm_machine *session, const char *text)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -43,23 +43,23 @@ static C_INT vm_t287_has_text(const vm_machine *session, const C_CHAR *text)
     lib_size length = lib_text_length(text);
 
     if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
-        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK) return 0;
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
-            if (frame.characters[cell + character] != (C_UCHAR)text[character]) break;
+            if (frame.characters[cell + character] != (lib_u8)text[character]) break;
         }
         if (character == length) return 1;
     }
     return 0;
 }
 
-static C_INT vm_t287_has_prompt(const vm_machine *session)
+static lib_i32 vm_t287_has_prompt(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
 
     if (session == LIB_NULL || test_vm_machine_capture_presentation(session,
-            &frame) != TYPE_STATUS_OK) return 0;
+            &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + 1u < VM_T287_TEXT_CELLS; ++cell) {
         if (frame.characters[cell] == 'C' && frame.characters[cell + 1u] == '>') {
             return 1;
@@ -73,7 +73,7 @@ static C_INT vm_t287_has_prompt(const vm_machine *session)
     return 0;
 }
 
-static C_INT vm_t287_wait_for(const vm_machine *session, const C_CHAR *text,
+static lib_i32 vm_t287_wait_for(const vm_machine *session, const char *text,
     DWORD timeout)
 {
     DWORD elapsed;
@@ -89,14 +89,14 @@ static C_INT vm_t287_wait_for(const vm_machine *session, const C_CHAR *text,
     return 0;
 }
 
-static C_INT vm_t287_submit_return(vm_machine *session)
+static lib_i32 vm_t287_submit_return(vm_machine *session)
 {
     if (!vm_t287_submit_input(session, 0x1cu, VK_RETURN, 1)) return 0;
     Sleep(25u);
     return vm_t287_submit_input(session, 0x1cu, VK_RETURN, 0);
 }
 
-static C_INT vm_t287_type_setup(vm_machine *session)
+static lib_i32 vm_t287_type_setup(vm_machine *session)
 {
     static const lib_u8 scan_codes[] = {
         0x2bu, 0x12u, 0x11u, 0x17u, 0x31u, 0x04u, 0x02u, 0x2bu, 0x1fu,
@@ -122,7 +122,7 @@ static C_INT vm_t287_type_setup(vm_machine *session)
     return 1;
 }
 
-static C_INT vm_t288_type_windows(vm_machine *session)
+static lib_i32 vm_t288_type_windows(vm_machine *session)
 {
     static const lib_u8 scan_codes[] = {
         0x11u, 0x17u, 0x31u, 0x20u, 0x18u, 0x11u, 0x1fu, 0x1cu
@@ -146,33 +146,33 @@ static C_INT vm_t288_type_windows(vm_machine *session)
     return 1;
 }
 
-static C_VOID vm_t287_print_frame(const vm_machine *session)
+static void vm_t287_print_frame(const vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_size row;
     lib_size column;
 
     if (session == LIB_NULL || test_vm_machine_capture_presentation(session,
-            &frame) != TYPE_STATUS_OK) return;
+            &frame) != LIB_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
-            C_UCHAR character = frame.characters[row * 80u + column];
+            lib_u8 character = frame.characters[row * 80u + column];
 
-            STD_PRINTF("%c", character == 0u ? ' ' : character);
+            printf("%c", character == 0u ? ' ' : character);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
 }
 
-static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
+static void vm_t287_report_fault(vm_machine *session, const char *stage)
 {
     core_machine_cpu_diagnostic diagnostic = {0};
     t_cpu cpu;
     lib_size index;
 
     if (session == LIB_NULL) return;
-    (C_VOID)core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic);
-    STD_PRINTF("M5:T287:S23:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
+    (void)core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic);
+    printf("M5:T287:S23:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         vm_machine_control_is_running(&session->control),
         session->core_machine->hdc.data.command_count,
@@ -180,14 +180,14 @@ static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
     if (diagnostic.first_fault.valid) {
         const core_machine_cpu_fault_snapshot *fault = &diagnostic.first_fault;
 
-        STD_PRINTF("M5:T288:S1:WINDOWS31:FAULT mask=%08X code=%08X "
+        printf("M5:T288:S1:WINDOWS31:FAULT mask=%08X code=%08X "
             "cs=%04X ip=%08X linear=%08X opcode=", fault->exception_mask,
             fault->exception_code, fault->point.cs, fault->point.eip,
             fault->point.linear_pc);
         for (index = 0u; index < fault->point.byte_count; ++index) {
-            STD_PRINTF("%02X", fault->point.bytes[index]);
+            printf("%02X", fault->point.bytes[index]);
         }
-        STD_PRINTF(" eax=%08X ebx=%08X ecx=%08X edx=%08X esp=%08X ebp=%08X "
+        printf(" eax=%08X ebx=%08X ecx=%08X edx=%08X esp=%08X ebp=%08X "
             "esi=%08X edi=%08X flags=%08X\n",
             fault->eax, fault->ebx, fault->ecx, fault->edx, fault->esp,
             fault->ebp, fault->esi, fault->edi, fault->eflags);
@@ -195,7 +195,7 @@ static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
             const core_machine_cpu_execution_point *point =
                 &diagnostic.recent[index];
 
-            STD_PRINTF("M5:T288:S1:WINDOWS31:RECENT cs=%04X ip=%08X "
+            printf("M5:T288:S1:WINDOWS31:RECENT cs=%04X ip=%08X "
                 "linear=%08X opcode=%02X%02X%02X\n", point->cs, point->eip,
                 point->linear_pc, point->bytes[0], point->bytes[1],
                 point->bytes[2]);
@@ -203,7 +203,7 @@ static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
     }
     cpu = test_core_machine_fixture_capture_cpu_after_run(session->core_machine);
     if (session->core_machine != LIB_NULL) {
-        STD_PRINTF("M5:T287:S23:WINDOWS31:CPU cr0=%08X cr2=%08X cr3=%08X "
+        printf("M5:T287:S23:WINDOWS31:CPU cr0=%08X cr2=%08X cr3=%08X "
             "gdtr=%08X/%04X idtr=%08X/%04X cs=%04X:%08X/%08X ds=%04X:%08X/%08X "
             "ss=%04X:%08X/%08X\n", cpu.data.cr0, cpu.data.cr2, cpu.data.cr3,
             cpu.data.gdtr.base, cpu.data.gdtr.limit, cpu.data.idtr.base,
@@ -215,22 +215,22 @@ static C_VOID vm_t287_report_fault(vm_machine *session, const C_CHAR *stage)
     vm_t287_print_frame(session);
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session = {0};
     vm_machine *session = LIB_NULL;
-    const C_CHAR *stage = "create";
-    C_INT observed_setup_inf = 0;
-    C_INT passed = 0;
-    C_INT advance_steps = argc == 4 ? argv[3][0] - '0' : 0;
-    C_INT date_prompt = 0;
+    const char *stage = "create";
+    lib_i32 observed_setup_inf = 0;
+    lib_i32 passed = 0;
+    lib_i32 advance_steps = argc == 4 ? argv[3][0] - '0' : 0;
+    lib_i32 date_prompt = 0;
     DWORD elapsed;
 
     if ((argc != 3 && argc != 4) || integration_ini_session_open(argv[1], argv[2],
-            &ini_session) != TYPE_STATUS_OK) return 77;
+            &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     if (session == LIB_NULL) goto fail;
-    if (integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto fail;
+    if (integration_ini_session_start(&ini_session) != LIB_STATUS_OK) goto fail;
     stage = "boot";
     for (elapsed = 0u; elapsed < VM_T287_BOOT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         date_prompt = vm_t287_has_text(session, "Enter new date");
@@ -287,7 +287,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 goto done;
             }
             passed = 1;
-            STD_PRINTF("M5:T287:S24:WINDOWS31:SETUP:OK result=welcome\n");
+            printf("M5:T287:S24:WINDOWS31:SETUP:OK result=welcome\n");
             vm_t287_print_frame(session);
             goto done;
         }

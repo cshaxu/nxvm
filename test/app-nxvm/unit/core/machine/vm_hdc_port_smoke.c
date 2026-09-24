@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
@@ -20,24 +20,24 @@
 #define HDC_STATUS_COMMAND_PORT 0x01f7u
 #define HDC_ALT_STATUS_CONTROL_PORT 0x03f6u
 
-static C_INT vm_hdc_write(core_machine *machine, lib_u16 port, lib_u32 value)
+static lib_i32 vm_hdc_write(core_machine *machine, lib_u16 port, lib_u32 value)
 {
-    return core_machine_bus_write(machine, port, value) == TYPE_STATUS_OK;
+    return core_machine_bus_write(machine, port, value) == LIB_STATUS_OK;
 }
 
-static C_INT vm_hdc_read(core_machine *machine, lib_u16 port, lib_u32 *value)
+static lib_i32 vm_hdc_read(core_machine *machine, lib_u16 port, lib_u32 *value)
 {
-    return core_machine_bus_read(machine, port, value) == TYPE_STATUS_OK;
+    return core_machine_bus_read(machine, port, value) == LIB_STATUS_OK;
 }
 
-static C_INT vm_hdc_complete_command(core_machine *machine)
+static lib_i32 vm_hdc_complete_command(core_machine *machine)
 {
     if (machine == LIB_NULL) return 0;
     core_machine_hdc_advance(&machine->hdc);
     return 1;
 }
 
-static C_INT vm_hdc_program_chs(vm_machine *session)
+static lib_i32 vm_hdc_program_chs(vm_machine *session)
 {
     return vm_hdc_write(session->core_machine, HDC_SECTOR_COUNT_PORT, 1u) &&
         vm_hdc_write(session->core_machine, HDC_SECTOR_NUMBER_PORT, 1u) &&
@@ -46,7 +46,7 @@ static C_INT vm_hdc_program_chs(vm_machine *session)
         vm_hdc_write(session->core_machine, HDC_DRIVE_HEAD_PORT, 0u);
 }
 
-static C_INT vm_hdc_program_lba(vm_machine *session, lib_u32 lba,
+static lib_i32 vm_hdc_program_lba(vm_machine *session, lib_u32 lba,
     lib_u8 sector_count)
 {
     return vm_hdc_write(session->core_machine, HDC_SECTOR_COUNT_PORT,
@@ -61,7 +61,7 @@ static C_INT vm_hdc_program_lba(vm_machine *session, lib_u32 lba,
             0x40u | (lib_u8)(lba >> 24u));
 }
 
-static C_INT vm_hdc_drain_data(core_machine *machine, lib_u16 *first_word)
+static lib_i32 vm_hdc_drain_data(core_machine *machine, lib_u16 *first_word)
 {
     lib_size index;
     lib_u32 value;
@@ -74,7 +74,7 @@ static C_INT vm_hdc_drain_data(core_machine *machine, lib_u16 *first_word)
     return 1;
 }
 
-static C_INT vm_hdc_fill_data(core_machine *machine, lib_u16 first_word)
+static lib_i32 vm_hdc_fill_data(core_machine *machine, lib_u16 first_word)
 {
     lib_size index;
 
@@ -86,7 +86,7 @@ static C_INT vm_hdc_fill_data(core_machine *machine, lib_u16 first_word)
     return 1;
 }
 
-static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
+static lib_i32 vm_hdc_profile_contract_is_valid(void)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
@@ -109,7 +109,7 @@ static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
         hdc->bus.task_file.lba28_supported;
 }
 
-static C_INT vm_hdc_progress_probe(vm_machine *session)
+static lib_i32 vm_hdc_progress_probe(vm_machine *session)
 {
     lib_u32 value;
     lib_u16 word;
@@ -146,7 +146,7 @@ static C_INT vm_hdc_progress_probe(vm_machine *session)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine_config config = {0};
     vm_machine *session = LIB_NULL;
@@ -156,16 +156,16 @@ C_INT main(C_VOID)
     lib_u32 value;
     lib_u32 invalid_lba;
     lib_u16 word = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     config.create_hdd_cylinders = 2u;
     if (!vm_hdc_profile_contract_is_valid() ||
-        vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
+        vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->core_machine == LIB_NULL) goto fail;
     invalid_lba = (lib_u32)session->hdd.data.ncyl * session->hdd.data.nhead *
         session->hdd.data.nsector;
     if (core_machine_media_query(session->media_registry, VM_MACHINE_MEDIA_HDD_ID,
-            &media_info, &media_result) != TYPE_STATUS_OK ||
+            &media_info, &media_result) != LIB_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK || !media_info.present ||
         media_info.geometry.cylinders != 2u ||
         session->core_machine->hdc.connect.irq_source.master == LIB_NULL ||
@@ -273,7 +273,7 @@ C_INT main(C_VOID)
     vm_machine_destroy(session);
     session = LIB_NULL;
 
-    if (failed || vm_test_default_pc_at_session_create(LIB_NULL, &no_media) != TYPE_STATUS_OK ||
+    if (failed || vm_test_default_pc_at_session_create(LIB_NULL, &no_media) != LIB_STATUS_OK ||
         no_media == LIB_NULL || !vm_hdc_program_chs(no_media) ||
         !vm_hdc_write(no_media->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
         !vm_hdc_complete_command(no_media->core_machine) ||
@@ -285,8 +285,8 @@ C_INT main(C_VOID)
     }
     vm_machine_destroy(no_media);
     if (failed) return 1;
-    STD_PRINTF("M5:T286:S3:ATA-NIEN:VM-PORT:OK\n");
-    STD_PRINTF("M5:T253:S2:ATA-PIO-PROGRESS:PORT:OK lba=%04X irq=14\n",
+    printf("M5:T286:S3:ATA-NIEN:VM-PORT:OK\n");
+    printf("M5:T253:S2:ATA-PIO-PROGRESS:PORT:OK lba=%04X irq=14\n",
         0x5aa5u);
     return 0;
 

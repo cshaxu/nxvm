@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/port.h"
@@ -10,30 +11,30 @@ typedef struct pic_command_priority_fixture {
     t_port port;
 } pic_command_priority_fixture;
 
-static C_VOID pic_command_priority_program(t_port *port,
+static void pic_command_priority_program(t_port *port,
     lib_u8 master_icw1, lib_u8 master_icw3,
     lib_u8 master_icw4, lib_u8 slave_icw1,
     lib_u8 slave_icw3, lib_u8 slave_icw4)
 {
     core_machine_port_write(port, 0x0020u, master_icw1);
     core_machine_port_write(port, 0x0021u, 0x08u);
-    if (!TYPE_GET_BIT(master_icw1, VPIC_ICW1_SNGL)) {
+    if (!CORE_MACHINE_BIT_IS_SET(master_icw1, VPIC_ICW1_SNGL)) {
         core_machine_port_write(port, 0x0021u, master_icw3);
     }
-    if (TYPE_GET_BIT(master_icw1, VPIC_ICW1_IC4)) {
+    if (CORE_MACHINE_BIT_IS_SET(master_icw1, VPIC_ICW1_IC4)) {
         core_machine_port_write(port, 0x0021u, master_icw4);
     }
     core_machine_port_write(port, 0x00a0u, slave_icw1);
     core_machine_port_write(port, 0x00a1u, 0x70u);
-    if (!TYPE_GET_BIT(slave_icw1, VPIC_ICW1_SNGL)) {
+    if (!CORE_MACHINE_BIT_IS_SET(slave_icw1, VPIC_ICW1_SNGL)) {
         core_machine_port_write(port, 0x00a1u, slave_icw3);
     }
-    if (TYPE_GET_BIT(slave_icw1, VPIC_ICW1_IC4)) {
+    if (CORE_MACHINE_BIT_IS_SET(slave_icw1, VPIC_ICW1_IC4)) {
         core_machine_port_write(port, 0x00a1u, slave_icw4);
     }
 }
 
-static C_VOID pic_command_priority_initialize(pic_command_priority_fixture *fixture,
+static void pic_command_priority_initialize(pic_command_priority_fixture *fixture,
     lib_u8 master_icw4, lib_u8 slave_icw4)
 {
     core_machine_port_initialize(&fixture->port);
@@ -44,13 +45,13 @@ static C_VOID pic_command_priority_initialize(pic_command_priority_fixture *fixt
         0x11u, 0x02u, slave_icw4);
 }
 
-static C_VOID pic_command_priority_finalize(pic_command_priority_fixture *fixture)
+static void pic_command_priority_finalize(pic_command_priority_fixture *fixture)
 {
     core_machine_pic_finalize(&fixture->master, &fixture->slave);
     core_machine_port_finalize(&fixture->port);
 }
 
-static C_VOID pic_command_priority_raise(pic_command_priority_fixture *fixture,
+static void pic_command_priority_raise(pic_command_priority_fixture *fixture,
     core_machine_pic_irq_source *source, lib_u8 irq)
 {
     core_machine_pic_irq_source_bind(source, &fixture->master, &fixture->slave, irq);
@@ -58,11 +59,11 @@ static C_VOID pic_command_priority_raise(pic_command_priority_fixture *fixture,
     core_machine_pic_irq_source_deassert(source);
 }
 
-static C_INT pic_command_priority_test_initialization_and_registers(C_VOID)
+static lib_i32 pic_command_priority_test_initialization_and_registers(void)
 {
     pic_command_priority_fixture fixture;
     core_machine_pic_irq_source irq5;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
     pic_command_priority_raise(&fixture, &irq5, 5u);
@@ -94,13 +95,13 @@ static C_INT pic_command_priority_test_initialization_and_registers(C_VOID)
     return failed;
 }
 
-static C_INT pic_command_priority_test_eoi_and_rotation(C_VOID)
+static lib_i32 pic_command_priority_test_eoi_and_rotation(void)
 {
     pic_command_priority_fixture fixture;
     core_machine_pic_irq_source irq0;
     core_machine_pic_irq_source irq3;
     core_machine_pic_irq_source irq5;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
     pic_command_priority_raise(&fixture, &irq3, 3u);
@@ -132,20 +133,20 @@ static C_INT pic_command_priority_test_eoi_and_rotation(C_VOID)
     pic_command_priority_raise(&fixture, &irq3, 3u);
     failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x0bu;
     core_machine_port_write(&fixture.port, 0x0020u, 0xe5u);
-    failed |= !TYPE_GET_BIT(fixture.master.data.isr, VPIC_ISR_IRQ(3u)) ||
-        TYPE_GET_BIT(fixture.master.data.isr, VPIC_ISR_IRQ(5u)) ||
+    failed |= !CORE_MACHINE_BIT_IS_SET(fixture.master.data.isr, VPIC_ISR_IRQ(3u)) ||
+        CORE_MACHINE_BIT_IS_SET(fixture.master.data.isr, VPIC_ISR_IRQ(5u)) ||
         fixture.master.data.irx != 6u;
     core_machine_port_write(&fixture.port, 0x0020u, 0x63u);
     pic_command_priority_finalize(&fixture);
     return failed;
 }
 
-static C_INT pic_command_priority_test_aeoi(C_VOID)
+static lib_i32 pic_command_priority_test_aeoi(void)
 {
     pic_command_priority_fixture fixture;
     core_machine_pic_irq_source irq1;
     core_machine_pic_irq_source irq4;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pic_command_priority_initialize(&fixture, 0x03u, 0x01u);
     pic_command_priority_raise(&fixture, &irq1, 1u);
@@ -158,13 +159,13 @@ static C_INT pic_command_priority_test_aeoi(C_VOID)
     return failed;
 }
 
-static C_INT pic_command_priority_test_cascade_selection(C_VOID)
+static lib_i32 pic_command_priority_test_cascade_selection(void)
 {
     pic_command_priority_fixture fixture;
     core_machine_pic_irq_source irq3;
     core_machine_pic_irq_source irq14;
     core_machine_pic_irq_source irq15;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
     pic_command_priority_raise(&fixture, &irq14, 14u);
@@ -191,17 +192,17 @@ static C_INT pic_command_priority_test_cascade_selection(C_VOID)
     pic_command_priority_raise(&fixture, &irq3, 3u);
     core_machine_pic_refresh(&fixture.master, &fixture.slave);
     failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x0bu ||
-        TYPE_GET_BIT(fixture.master.data.isr, VPIC_ISR_IRQ(2u));
+        CORE_MACHINE_BIT_IS_SET(fixture.master.data.isr, VPIC_ISR_IRQ(2u));
     core_machine_port_write(&fixture.port, 0x0020u, 0x20u);
     pic_command_priority_finalize(&fixture);
     return failed;
 }
 
-static C_INT pic_command_priority_test_programmed_cascade(C_VOID)
+static lib_i32 pic_command_priority_test_programmed_cascade(void)
 {
     pic_command_priority_fixture fixture;
     core_machine_pic_irq_source irq14;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
     pic_command_priority_raise(&fixture, &irq14, 14u);
@@ -216,8 +217,8 @@ static C_INT pic_command_priority_test_programmed_cascade(C_VOID)
     pic_command_priority_raise(&fixture, &irq14, 14u);
     core_machine_pic_refresh(&fixture.master, &fixture.slave);
     failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x76u ||
-        !TYPE_GET_BIT(fixture.master.data.isr, VPIC_ISR_IRQ(2u)) ||
-        !TYPE_GET_BIT(fixture.slave.data.isr, VPIC_ISR_IRQ(6u));
+        !CORE_MACHINE_BIT_IS_SET(fixture.master.data.isr, VPIC_ISR_IRQ(2u)) ||
+        !CORE_MACHINE_BIT_IS_SET(fixture.slave.data.isr, VPIC_ISR_IRQ(6u));
     pic_command_priority_finalize(&fixture);
 
     pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
@@ -228,8 +229,8 @@ static C_INT pic_command_priority_test_programmed_cascade(C_VOID)
     failed |= fixture.master.data.cascade_irr != VPIC_IRR_IRQ(5u) ||
         core_machine_pic_peek_interrupt(&fixture.master, &fixture.slave) != 0x76u ||
         core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x76u ||
-        !TYPE_GET_BIT(fixture.master.data.isr, VPIC_ISR_IRQ(5u)) ||
-        !TYPE_GET_BIT(fixture.slave.data.isr, VPIC_ISR_IRQ(6u));
+        !CORE_MACHINE_BIT_IS_SET(fixture.master.data.isr, VPIC_ISR_IRQ(5u)) ||
+        !CORE_MACHINE_BIT_IS_SET(fixture.slave.data.isr, VPIC_ISR_IRQ(6u));
     pic_command_priority_finalize(&fixture);
 
     pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
@@ -255,11 +256,11 @@ static C_INT pic_command_priority_test_programmed_cascade(C_VOID)
     return failed;
 }
 
-static C_INT pic_command_priority_test_immediate_cascade(C_VOID)
+static lib_i32 pic_command_priority_test_immediate_cascade(void)
 {
     pic_command_priority_fixture fixture;
     core_machine_pic_irq_source irq14;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
     pic_command_priority_raise(&fixture, &irq14, 14u);
@@ -289,9 +290,9 @@ static C_INT pic_command_priority_test_immediate_cascade(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= pic_command_priority_test_initialization_and_registers();
     failed |= pic_command_priority_test_eoi_and_rotation();
@@ -300,6 +301,6 @@ C_INT main(C_VOID)
     failed |= pic_command_priority_test_programmed_cascade();
     failed |= pic_command_priority_test_immediate_cascade();
     if (failed != 0) return 1;
-    STD_PRINTF("M5:T349:S2:PIC-COMMAND-PRIORITY:OK\n");
+    printf("M5:T349:S2:PIC-COMMAND-PRIORITY:OK\n");
     return 0;
 }

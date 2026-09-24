@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include <windows.h>
 
@@ -7,8 +7,8 @@
 
 #define NXVM_CONSOLE_WAIT_MILLISECONDS 5000u
 
-static C_INT nxvm_console_send_key(HANDLE input, WORD virtual_key,
-    CHAR character, C_INT pressed)
+static lib_i32 nxvm_console_send_key(HANDLE input, WORD virtual_key,
+    CHAR character, lib_i32 pressed)
 {
     INPUT_RECORD record = {0};
     DWORD written = 0u;
@@ -21,7 +21,7 @@ static C_INT nxvm_console_send_key(HANDLE input, WORD virtual_key,
     return WriteConsoleInputA(input, &record, 1u, &written) && written == 1u;
 }
 
-static C_INT nxvm_console_send_text(HANDLE input, const C_CHAR *text)
+static lib_i32 nxvm_console_send_text(HANDLE input, const char *text)
 {
     lib_size index;
 
@@ -36,10 +36,10 @@ static C_INT nxvm_console_send_text(HANDLE input, const C_CHAR *text)
     return 1;
 }
 
-static C_INT nxvm_console_has_text(HANDLE output, const C_CHAR *text)
+static lib_i32 nxvm_console_has_text(HANDLE output, const char *text)
 {
     CONSOLE_SCREEN_BUFFER_INFO info;
-    C_CHAR buffer[4096];
+    char buffer[4096];
     COORD origin = {0};
     DWORD read = 0u;
     DWORD count;
@@ -62,7 +62,7 @@ static C_INT nxvm_console_has_text(HANDLE output, const C_CHAR *text)
     return 0;
 }
 
-static C_INT nxvm_console_wait_for_text(HANDLE output, const C_CHAR *text,
+static lib_i32 nxvm_console_wait_for_text(HANDLE output, const char *text,
     DWORD timeout)
 {
     DWORD deadline = GetTickCount() + timeout;
@@ -74,9 +74,9 @@ static C_INT nxvm_console_wait_for_text(HANDLE output, const C_CHAR *text,
     return 0;
 }
 
-C_INT nxvm_console_process_run(const C_CHAR *executable,
-    const C_CHAR *session_directory, const C_CHAR *profile_file,
-    const C_CHAR *const *commands, const C_CHAR *const *markers,
+lib_i32 nxvm_console_process_run(const char *executable,
+    const char *session_directory, const char *profile_file,
+    const char *const *commands, const char *const *markers,
     lib_size command_count)
 {
     STARTUPINFOA startup = {0};
@@ -84,8 +84,8 @@ C_INT nxvm_console_process_run(const C_CHAR *executable,
     HANDLE input = INVALID_HANDLE_VALUE;
     HANDLE output = INVALID_HANDLE_VALUE;
     lib_size index;
-    C_INT result = 0;
-    const C_CHAR *stage = "validation";
+    lib_i32 result = 0;
+    const char *stage = "validation";
 
     startup.cb = sizeof(startup);
     if (executable == LIB_NULL || session_directory == LIB_NULL ||
@@ -97,7 +97,7 @@ C_INT nxvm_console_process_run(const C_CHAR *executable,
     if (!CreateProcessA(executable, LIB_NULL, LIB_NULL, LIB_NULL, FALSE,
             CREATE_NEW_CONSOLE, LIB_NULL, session_directory, &startup, &process))
         return 0;
-    (C_VOID)FreeConsole();
+    (void)FreeConsole();
     stage = "console attachment";
     for (index = 0u; index < NXVM_CONSOLE_WAIT_MILLISECONDS / 20u; ++index) {
         if (AttachConsole(process.dwProcessId)) break;
@@ -134,16 +134,16 @@ done:
     if (!result) {
         DWORD exit_code = STILL_ACTIVE;
 
-        (C_VOID)GetExitCodeProcess(process.hProcess, &exit_code);
-        STD_FPRINTF(STD_STDERR, "NXVM Console integration failed at %s "
+        (void)GetExitCodeProcess(process.hProcess, &exit_code);
+        fprintf(stderr, "NXVM Console integration failed at %s "
             "(error=%lu exit=%lu).\n", stage, (unsigned long)GetLastError(),
             (unsigned long)exit_code);
-        (C_VOID)TerminateProcess(process.hProcess, 1u);
-        (C_VOID)WaitForSingleObject(process.hProcess, NXVM_CONSOLE_WAIT_MILLISECONDS);
+        (void)TerminateProcess(process.hProcess, 1u);
+        (void)WaitForSingleObject(process.hProcess, NXVM_CONSOLE_WAIT_MILLISECONDS);
     }
     if (input != INVALID_HANDLE_VALUE) CloseHandle(input);
     if (output != INVALID_HANDLE_VALUE) CloseHandle(output);
-    (C_VOID)FreeConsole();
+    (void)FreeConsole();
     CloseHandle(process.hThread);
     CloseHandle(process.hProcess);
     return result;

@@ -3,7 +3,6 @@
 
 #include "app-nxvm/devices/cpu_interface.h"
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,11 +75,11 @@ typedef struct core_machine_retirement_eligibility_key {
     lib_u8 next_lexeme_components;
     core_machine_retirement_repeat_phase repeat_phase;
     lib_u8 cpl;
-    type_bool protected_mode;
-    type_bool virtual_8086_mode;
-    type_bool operand_size_32;
-    type_bool address_size_32;
-    type_bool lock_prefix;
+    lib_u8 protected_mode;
+    lib_u8 virtual_8086_mode;
+    lib_u8 operand_size_32;
+    lib_u8 address_size_32;
+    lib_u8 lock_prefix;
     lib_u8 repeat_prefix;
 } core_machine_retirement_eligibility_key;
 
@@ -112,26 +111,26 @@ typedef struct core_machine_retirement_observation {
     lib_u8 io_bytes;
     lib_u32 io_value;
     lib_u8 cpl;
-    type_bool protected_mode;
-    type_bool virtual_8086_mode;
-    type_bool operand_size_32;
-    type_bool address_size_32;
-    type_bool lock_prefix;
+    lib_u8 protected_mode;
+    lib_u8 virtual_8086_mode;
+    lib_u8 operand_size_32;
+    lib_u8 address_size_32;
+    lib_u8 lock_prefix;
     lib_u8 repeat_prefix;
 } core_machine_retirement_observation;
 
-typedef C_VOID (*core_machine_retirement_observation_callback)(
-    C_VOID *context, const core_machine_retirement_observation *observation);
+typedef void (*core_machine_retirement_observation_callback)(
+    void *context, const core_machine_retirement_observation *observation);
 
 typedef struct core_machine_retirement_observation_provider {
     core_machine_retirement_observation_callback callback;
-    C_VOID *context;
+    void *context;
 } core_machine_retirement_observation_provider;
 
 /* Installs or removes the optional copied retirement observer while stopped or
  * paused. The callback observes only Core-owned copied state and is invoked
  * before physical-contract rejection or elapsed-time publication. */
-type_status core_machine_set_retirement_observation_provider(
+lib_status core_machine_set_retirement_observation_provider(
     core_machine *machine,
     const core_machine_retirement_observation_provider *provider);
 

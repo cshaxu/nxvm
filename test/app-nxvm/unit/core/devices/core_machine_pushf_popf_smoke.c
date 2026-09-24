@@ -1,25 +1,26 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
 typedef struct pushf_machine { core_machine *machine; } pushf_machine;
 
-static C_INT pushf_install_gp_gate(pushf_machine *state);
+static lib_i32 pushf_install_gp_gate(pushf_machine *state);
 
-static C_VOID pushf_reset(C_VOID *opaque)
+static void pushf_reset(void *opaque)
 {
     pushf_machine *state = (pushf_machine *)opaque;
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider pushf_provider = {
     pushf_reset, LIB_NULL
 };
 
-static C_INT pushf_prepare(pushf_machine *state)
+static lib_i32 pushf_prepare(pushf_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -31,25 +32,25 @@ return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &pushf_provider, state, &state->machine);
 }
 
-static C_INT pushf_run(pushf_machine *state, const lib_u8 *code, lib_u8 bytes, t_cpu *after)
+static lib_i32 pushf_run(pushf_machine *state, const lib_u8 *code, lib_u8 bytes, t_cpu *after)
 {
     core_machine_run_result result;
     return test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) &&
-        core_machine_memory_write(state->machine, 0u, code, bytes) == TYPE_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){ 1u, 0u }, &result) == TYPE_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0u, code, bytes) == LIB_STATUS_OK &&
+        core_machine_run(state->machine, (core_machine_run_budget){ 1u, 0u }, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET &&
         ((*after = test_core_machine_fixture_capture_cpu_after_run(state->machine)), 1);
 }
 
-static C_INT pushf_run_vm86(pushf_machine *state, const lib_u8 *code, lib_u8 bytes,
-    lib_u32 eflags, lib_u32 esp, C_INT fault, t_cpu *after,
-    core_machine_cpu_diagnostic *diagnostic, type_status *run_status,
+static lib_i32 pushf_run_vm86(pushf_machine *state, const lib_u8 *code, lib_u8 bytes,
+    lib_u32 eflags, lib_u32 esp, lib_i32 fault, t_cpu *after,
+    core_machine_cpu_diagnostic *diagnostic, lib_status *run_status,
     core_machine_stop_reason *reason)
 {
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     if (!test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) ||
-        core_machine_memory_write(state->machine, 0u, code, bytes) != TYPE_STATUS_OK ||
+        core_machine_memory_write(state->machine, 0u, code, bytes) != LIB_STATUS_OK ||
         !pushf_install_gp_gate(state))
         return 0;
     state->machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
@@ -72,12 +73,12 @@ static C_INT pushf_run_vm86(pushf_machine *state, const lib_u8 *code, lib_u8 byt
     *run_status = status;
     *reason = result.reason;
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == TYPE_STATUS_OK &&
-        status == (fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) &&
+    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == LIB_STATUS_OK &&
+        status == (fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) &&
         result.reason == (fault ? CORE_MACHINE_STOP_FAULT : CORE_MACHINE_STOP_BUDGET);
 }
 
-static C_INT pushf_test_vm86(C_VOID)
+static lib_i32 pushf_test_vm86(void)
 {
     static const lib_u8 pushf[] = { 0x9cu };
     static const lib_u8 popf[] = { 0x9du };
@@ -87,9 +88,9 @@ static C_INT pushf_test_vm86(C_VOID)
         pushf_machine state;
         t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         core_machine_stop_reason reason;
-        C_INT failed = !pushf_prepare(&state);
+        lib_i32 failed = !pushf_prepare(&state);
         if (!failed) {
             state.machine->executor_cpu.data.esp = 0x8000u;
             state.machine->executor_cpu.data.eflags = flags;
@@ -97,10 +98,10 @@ static C_INT pushf_test_vm86(C_VOID)
                 0, &after, &diagnostic, &status, &reason);
             if (pass)
                 failed |= diagnostic.first_fault.valid ||
-                    !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                    !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
                         diagnostic.last_delivered_exception.exception_mask, VCPUINS_EXCEPT_GP) ||
                     after.data.cs.selector != 0x0008u || after.data.ss.selector != 0x0010u ||
-                    after.data.eip != 0x00000100u || TYPE_GET_BIT(after.data.eflags,
+                    after.data.eip != 0x00000100u || CORE_MACHINE_BIT_IS_SET(after.data.eflags,
                         VCPU_EFLAGS_VM);
             else
                 failed |= diagnostic.first_fault.valid || after.data.esp != 0x7ffeu || after.data.eip != 1u;
@@ -115,21 +116,21 @@ static C_INT pushf_test_vm86(C_VOID)
         pushf_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         core_machine_stop_reason reason;
-        C_INT failed = !pushf_prepare(&state);
+        lib_i32 failed = !pushf_prepare(&state);
         if (!failed) {
             state.machine->executor_cpu.data.esp = 0x8000u;
             state.machine->executor_cpu.data.eflags = flags;
-            failed |= core_machine_memory_write(state.machine, 0x8000u, &image, sizeof(image)) != TYPE_STATUS_OK ||
+            failed |= core_machine_memory_write(state.machine, 0x8000u, &image, sizeof(image)) != LIB_STATUS_OK ||
                 !pushf_run_vm86(&state, popf, sizeof(popf), flags, 0x8000u,
                     0, &after, &diagnostic, &status, &reason);
             if (pass)
                 failed |= diagnostic.first_fault.valid ||
-                    !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                    !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
                         diagnostic.last_delivered_exception.exception_mask, VCPUINS_EXCEPT_GP) ||
                     after.data.cs.selector != 0x0008u || after.data.ss.selector != 0x0010u ||
-                    after.data.eip != 0x00000100u || TYPE_GET_BIT(after.data.eflags,
+                    after.data.eip != 0x00000100u || CORE_MACHINE_BIT_IS_SET(after.data.eflags,
                         VCPU_EFLAGS_VM);
             else
                 failed |= diagnostic.first_fault.valid || after.data.esp != 0x8002u || after.data.eip != 1u ||
@@ -148,14 +149,14 @@ static C_INT pushf_test_vm86(C_VOID)
         pushf_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         core_machine_stop_reason reason;
-        C_INT failed = !pushf_prepare(&state);
+        lib_i32 failed = !pushf_prepare(&state);
         if (!failed) {
             failed |= !pushf_run_vm86(&state, pushfd, sizeof(pushfd), flags, 0x8000u,
                 0, &after, &diagnostic, &status, &reason) || diagnostic.first_fault.valid ||
                 after.data.eip != 2u || after.data.esp != 0x7ffcu ||
-                core_machine_memory_read(state.machine, 0x7ffcu, &image, sizeof(image)) != TYPE_STATUS_OK ||
+                core_machine_memory_read(state.machine, 0x7ffcu, &image, sizeof(image)) != LIB_STATUS_OK ||
                 image != expected;
         }
         core_machine_destroy(state.machine);
@@ -164,7 +165,7 @@ static C_INT pushf_test_vm86(C_VOID)
     return 1;
 }
 
-static C_INT pushf_prepare_protected(pushf_machine *state)
+static lib_i32 pushf_prepare_protected(pushf_machine *state)
 {
     static const lib_u8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
     static const lib_u8 gdt[] = {
@@ -179,15 +180,15 @@ static C_INT pushf_prepare_protected(pushf_machine *state)
     static const lib_u8 halt[] = { 0xf4u };
     core_machine_run_result result;
     return pushf_prepare(state) &&
-        core_machine_memory_write(state->machine, 0x0100u, pointer, sizeof(pointer)) == TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0u, bootstrap, sizeof(bootstrap)) == TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0x2000u, halt, sizeof(halt)) == TYPE_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){ 96u, 0u }, &result) == TYPE_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0x0100u, pointer, sizeof(pointer)) == LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0u, bootstrap, sizeof(bootstrap)) == LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0x2000u, halt, sizeof(halt)) == LIB_STATUS_OK &&
+        core_machine_run(state->machine, (core_machine_run_budget){ 96u, 0u }, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT pushf_install_gp_gate(pushf_machine *state)
+static lib_i32 pushf_install_gp_gate(pushf_machine *state)
 {
     static const lib_u8 handler[] = { 0xf4u };
     lib_u8 tss[10] = { 0 };
@@ -237,15 +238,15 @@ static C_INT pushf_install_gp_gate(pushf_machine *state)
     cpu->data.tr.dpl = 0u;
     cpu->data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
     cpu->data.esp = 0x8000u;
-    return core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0x0500u, tss, sizeof(tss)) == TYPE_STATUS_OK &&
+    return core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0x0500u, tss, sizeof(tss)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x0400u + 0x0du * 8u,
-        gate, sizeof(gate)) == TYPE_STATUS_OK &&
+        gate, sizeof(gate)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x2100u, handler,
-            sizeof(handler)) == TYPE_STATUS_OK;
+            sizeof(handler)) == LIB_STATUS_OK;
 }
 
-static C_INT pushf_test_protected_iopl(C_VOID)
+static lib_i32 pushf_test_protected_iopl(void)
 {
     static const lib_u8 popf[] = { 0x9du };
     lib_u8 pass;
@@ -259,14 +260,14 @@ static C_INT pushf_test_protected_iopl(C_VOID)
         pushf_machine state;
         t_cpu after;
         core_machine_run_result result;
-        C_INT failed = !pushf_prepare_protected(&state);
+        lib_i32 failed = !pushf_prepare_protected(&state);
         if (!failed) {
             state.machine->executor_cpu.data.cs.dpl = cpl;
             state.machine->executor_cpu.data.eflags = initial;
-            failed |= core_machine_memory_write(state.machine, 0xc000u, &image, 2u) != TYPE_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x2000u, popf, sizeof(popf)) != TYPE_STATUS_OK;
+            failed |= core_machine_memory_write(state.machine, 0xc000u, &image, 2u) != LIB_STATUS_OK ||
+                core_machine_memory_write(state.machine, 0x2000u, popf, sizeof(popf)) != LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
-            failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK ||
+            failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= (after.data.eflags & VCPU_EFLAGS_IF) != expected_if ||
@@ -279,7 +280,7 @@ static C_INT pushf_test_protected_iopl(C_VOID)
     return 1;
 }
 
-static C_INT pushf_test_stack_faults(C_VOID)
+static lib_i32 pushf_test_stack_faults(void)
 {
     static const lib_u8 pushfw[] = { 0x9cu };
     static const lib_u8 popfd[] = { 0x66u, 0x9du };
@@ -294,8 +295,8 @@ static C_INT pushf_test_stack_faults(C_VOID)
         t_cpu after;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
-        C_INT failed = !pushf_prepare_protected(&state);
+        lib_status status;
+        lib_i32 failed = !pushf_prepare_protected(&state);
         if (!failed) {
             state.machine->executor_cpu.data.esp = 0x8000u;
             state.machine->executor_cpu.data.eflags = flags;
@@ -303,16 +304,16 @@ static C_INT pushf_test_stack_faults(C_VOID)
                 state.machine->executor_cpu.data.ss.limit = 0x7fffu;
             else
                 state.machine->executor_cpu.data.ss.seg.data.writable = LIB_FALSE;
-            failed |= core_machine_memory_write(state.machine, 0xc000u, &image, sizeof(image)) != TYPE_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x2000u, code, bytes) != TYPE_STATUS_OK;
+            failed |= core_machine_memory_write(state.machine, 0xc000u, &image, sizeof(image)) != LIB_STATUS_OK ||
+                core_machine_memory_write(state.machine, 0x2000u, code, bytes) != LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             status = core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u }, &result);
-            failed |= status != TYPE_STATUS_FAULT ||
+            failed |= status != LIB_STATUS_INTERNAL_ERROR ||
                 result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory, 0xc000u,
-                TYPE_REFERENCE_OF(after_image), sizeof(after_image)) != TYPE_STATUS_OK;
+                CORE_MACHINE_REFERENCE_OF(after_image), sizeof(after_image)) != LIB_STATUS_OK;
             failed |= !diagnostic.first_fault.valid || after.data.eip != 0u ||
                 after.data.esp != 0x8000u || after.data.eflags != flags || after_image != image;
         }
@@ -323,7 +324,7 @@ static C_INT pushf_test_stack_faults(C_VOID)
 }
 
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 pushfw[] = { 0x9cu };
     static const lib_u8 pushfd[] = { 0x66u, 0x9cu };
@@ -341,17 +342,17 @@ C_INT main(C_VOID)
         const lib_u32 pushfw_image = (flags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
         const lib_u32 pushfd_image = (flags & ~(VCPU_EFLAGS_RESERVED |
             VCPU_EFLAGS_VM | VCPU_EFLAGS_RF)) | 0x02u;
-        C_INT failed = !pushf_prepare(&state);
+        lib_i32 failed = !pushf_prepare(&state);
         if (!failed) {
             state.machine->executor_cpu.data.esp = 0x8000u;
             state.machine->executor_cpu.data.eflags = flags;
             if (form >= 2u)
                 failed |= core_machine_memory_write(state.machine, 0x8000u, &image,
-                    form == 2u ? 2u : 4u) != TYPE_STATUS_OK;
+                    form == 2u ? 2u : 4u) != LIB_STATUS_OK;
             failed |= !pushf_run(&state, code[form], bytes[form], &after);
             if (form < 2u)
                 failed |= core_machine_memory_read(state.machine, after.data.esp, &image,
-                    form == 0u ? 2u : 4u) != TYPE_STATUS_OK;
+                    form == 0u ? 2u : 4u) != LIB_STATUS_OK;
             failed |= after.data.eip != bytes[form] ||
                 (form == 0u && ((image & 0xffffu) != (pushfw_image & 0xffffu))) ||
                 (form == 0u && after.data.esp != 0x7ffeu) ||
@@ -370,6 +371,6 @@ C_INT main(C_VOID)
         if (failed) return 1;
     }
     if (!pushf_test_protected_iopl() || !pushf_test_stack_faults() || !pushf_test_vm86()) return 1;
-    STD_PRINTF("M5:T316:S21:PUSHF-POPF:OK\n");
+    printf("M5:T316:S21:PUSHF-POPF:OK\n");
     return 0;
 }

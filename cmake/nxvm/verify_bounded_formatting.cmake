@@ -4,7 +4,7 @@ file(GLOB_RECURSE production_sources
 
 foreach(source IN LISTS production_sources)
     file(READ "${source}" contents)
-    if(contents MATCHES "STD_SPRINTF|vsprintf[ \t\r\n]*\\(|sprintf[ \t\r\n]*\\(")
+    if(contents MATCHES "vsprintf[ \t\r\n]*\\(|sprintf[ \t\r\n]*\\(")
         message(FATAL_ERROR "Unbounded formatting vocabulary remains in ${source}")
     endif()
 endforeach()

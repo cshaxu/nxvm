@@ -8,7 +8,6 @@ extern "C" {
 #endif
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/dma.h"
 #include "app-nxvm/devices/media_interface.h"
@@ -38,11 +37,11 @@ typedef struct {
     lib_u8 dir; /* digital input register */
     lib_u8 ccr; /* configuration control register */
 
-    type_unsigned_4 hut; /* head unload STD_TIME */
-    type_unsigned_4 hlt; /* head load STD_TIME */
-    lib_u8 srt; /* step rate STD_TIME */
-    type_bool flagNDMA; /* 0 = dma mode; 1 = non-dma mode */
-    type_bool flagINTR; /* 0 = no intr; 1 = has intr */
+    lib_u8 hut; /* head unload duration */
+    lib_u8 hlt; /* head load duration */
+    lib_u8 srt; /* step rate duration */
+    lib_u8 flagNDMA; /* 0 = dma mode; 1 = non-dma mode */
+    lib_u8 flagINTR; /* 0 = no intr; 1 = has intr */
 
     core_machine_fdc_phase phase;
     lib_u8 command_length;
@@ -55,15 +54,15 @@ typedef struct {
     lib_u8 pending_st0;
     lib_u8 pending_st1;
     lib_u8 pending_st2;
-    type_bool transfer_expect_deleted;
-    type_bool transfer_write_deleted;
+    lib_u8 transfer_expect_deleted;
+    lib_u8 transfer_write_deleted;
     lib_u8 scan_mode;
-    type_bool scan_sector_satisfies;
+    lib_u8 scan_sector_satisfies;
     lib_u16 cylinder;
     lib_u16 drive_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u16 seek_target[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u64 seek_due_tick[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_bool seek_pending[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u8 seek_pending[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_result_st0[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_result_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_result_count;
@@ -79,20 +78,20 @@ typedef struct {
     /* Reset queues the controller's pending Sense-Interrupt drive reports. */
     lib_u8 reset_sense_mask;
     lib_u64 reset_due_tick;
-    type_bool reset_pending;
+    lib_u8 reset_pending;
     lib_u64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_bool media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_bool observed_ready[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_bool initial_media_baseline_pending;
-    type_bool ready_poll_enabled;
-    type_bool dma_byte_gate_pending;
-    type_bool ndma_byte_gate_pending;
+    lib_u8 media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u8 observed_ready[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u8 initial_media_baseline_pending;
+    lib_u8 ready_poll_enabled;
+    lib_u8 dma_byte_gate_pending;
+    lib_u8 ndma_byte_gate_pending;
     lib_u64 elapsed_ticks;
     lib_u64 next_dma_byte_tick;
     lib_u64 next_ndma_byte_tick;
 } core_machine_fdc_data;
 
-typedef C_VOID (*core_machine_fdc_dma_request_operation)(C_VOID *owner,
+typedef void (*core_machine_fdc_dma_request_operation)(void *owner,
     const core_machine_dma_request_binding *binding);
 
 typedef struct {
@@ -101,7 +100,7 @@ typedef struct {
     core_machine_dma_request_binding dma_request;
     core_machine_fdc_dma_request_operation dma_request_assert;
     core_machine_fdc_dma_request_operation dma_request_deassert;
-    C_VOID *dma_request_owner;
+    void *dma_request_owner;
     core_machine_pic_irq_source irq_source;
     t_port *port;
     core_machine_fdc_config config;
@@ -172,9 +171,9 @@ typedef struct {
 #define VFDC_ST3_DS 0x03 /* drive select */
 
 /* fdc command specify bytes */
-#define VFDC_CMD_Specify1_HUT 0x0f /* head unload STD_TIME */
-#define VFDC_CMD_Specify1_SRT 0xf0 /* step rate STD_TIME */
-#define VFDC_CMD_Specify2_HLT 0xfe /* head load STD_TIME */
+#define VFDC_CMD_Specify1_HUT 0x0f /* head unload duration */
+#define VFDC_CMD_Specify1_SRT 0xf0 /* step rate duration */
+#define VFDC_CMD_Specify2_HLT 0xfe /* head load duration */
 #define VFDC_CMD_Specify2_ND  0x01 /* non-dma */
 #define VFDC_GetCMD_Specify1_HUT(cb) ((cb) & VFDC_CMD_Specify1_HUT)
 #define VFDC_GetCMD_Specify1_SRT(cb) (((cb) & VFDC_CMD_Specify1_SRT) >> 4)
@@ -221,33 +220,33 @@ lib_u8 VFDC_GetBPSC(lib_u16 cb); /* convert bps to bps type */
 /* #define VFDC_Get_STP(cbyte) * step */
 /* #define VFDC_GetENRQ(cbyte) ((cbyte) & 0x08) * enable dma and intr */
 /* #define VFDC_GetDS(cbyte)   ((cbyte) & 0x03) * drive select (ds0,ds1) */
-/* #define VFDC_GetHUT(cbyte)  ((cbyte) & 0x0f) * head unload STD_TIME */
-/* #define VFDC_GetSRT(cbyte)  ((cbyte) >> 4)   * step rate STD_TIME */
-/* #define VFDC_GetHLT(cbyte)  ((cbyte) >> 1)   * head load STD_TIME */
+/* #define VFDC_GetHUT(cbyte)  ((cbyte) & 0x0f) * head unload duration */
+/* #define VFDC_GetSRT(cbyte)  ((cbyte) >> 4)   * step rate duration */
+/* #define VFDC_GetHLT(cbyte)  ((cbyte) >> 1)   * head load duration */
 /* #define VFDC_GetNDMA(cbyte) ((cbyte) & 0x01) * non-dma mode */
 /* #define VFDC_GetHDS(cbyte)  (!!((cbyte) & 0x04)) * head select (0 or 1) */
 /* #define VFDC_GetBPS(cbyte)  (0x0080 << (cbyte))  * bytes per sector */
 /* sector size code */
 
-C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
+void core_machine_fdc_connect(core_machine_fdc *fdc,
     const core_machine_media_registry *media_registry,
     const core_machine_fdc_drive_bindings *drives,
     const core_machine_dma_request_binding *dma_request,
     core_machine_fdc_dma_request_operation dma_request_assert,
     core_machine_fdc_dma_request_operation dma_request_deassert,
-    C_VOID *dma_request_owner, t_pic *pic_master, t_pic *pic_slave,
+    void *dma_request_owner, t_pic *pic_master, t_pic *pic_slave,
     t_port *port, const core_machine_fdc_config *config,
     const core_machine_fdc_terminal_observation_provider *observation_provider);
-const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(C_VOID);
-C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc);
-C_VOID core_machine_fdc_reset(core_machine_fdc *fdc);
-C_VOID core_machine_fdc_advance(core_machine_fdc *fdc);
-C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
+const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(void);
+void core_machine_fdc_initialize(core_machine_fdc *fdc);
+void core_machine_fdc_reset(core_machine_fdc *fdc);
+void core_machine_fdc_advance(core_machine_fdc *fdc);
+void core_machine_fdc_advance_at(core_machine_fdc *fdc,
     lib_u64 elapsed_ticks);
-type_status core_machine_fdc_next_due_tick(const core_machine_fdc *fdc,
+lib_status core_machine_fdc_next_due_tick(const core_machine_fdc *fdc,
     lib_u64 *out_due_tick);
-C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc);
-C_VOID core_machine_fdc_finalize(core_machine_fdc *fdc);
+void core_machine_fdc_refresh(core_machine_fdc *fdc);
+void core_machine_fdc_finalize(core_machine_fdc *fdc);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

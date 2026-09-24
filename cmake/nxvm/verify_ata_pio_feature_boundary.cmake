@@ -28,7 +28,7 @@ foreach(required IN ITEMS "core_machine_configure_hdc"
 endforeach()
 
 foreach(forbidden IN ITEMS "core_machine_memory_" "vm_profile_default_firmware"
-    "STD_TIME(" "STD_LOCALTIME(" "GetTickCount" "QueryPerformanceCounter"
+    "time(" "localtime(" "GetTickCount" "QueryPerformanceCounter"
     "core_machine_pic_set_irq" "t_hdd" "pImgBase" "flagDiskExist"
     "flagReadOnly" "vm_machine_hdd_")
     string(FIND "${hdc_source}" "${forbidden}" position)

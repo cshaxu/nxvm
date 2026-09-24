@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -7,15 +8,15 @@
 
 typedef struct shift_machine { core_machine *machine; } shift_machine;
 
-static C_VOID shift_reset(C_VOID *opaque)
+static void shift_reset(void *opaque)
 {
     shift_machine *state=(shift_machine *)opaque;
-    if(state!=LIB_NULL)(C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+    if(state!=LIB_NULL)(void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider shift_provider={shift_reset,LIB_NULL};
 
-static C_INT shift_prepare(core_machine_cpu_profile profile,shift_machine *state)
+static lib_i32 shift_prepare(core_machine_cpu_profile profile,shift_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -24,7 +25,7 @@ static C_INT shift_prepare(core_machine_cpu_profile profile,shift_machine *state
     };
     if(state==LIB_NULL)return 0;
     lib_memory_set(state,0,sizeof(*state));
-    if(core_machine_create(&config,&state->machine)!=TYPE_STATUS_OK||
+    if(core_machine_create(&config,&state->machine)!=LIB_STATUS_OK||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &shift_provider,state)) {
         core_machine_destroy(state->machine);state->machine=LIB_NULL;return 0;
@@ -32,19 +33,19 @@ static C_INT shift_prepare(core_machine_cpu_profile profile,shift_machine *state
     return 1;
 }
 
-static C_INT shift_run_real(shift_machine *state,const lib_u8 *code,lib_size bytes,
-    C_INT fault,t_cpu *out,core_machine_cpu_diagnostic *diagnostic)
+static lib_i32 shift_run_real(shift_machine *state,const lib_u8 *code,lib_size bytes,
+    lib_i32 fault,t_cpu *out,core_machine_cpu_diagnostic *diagnostic)
 {
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     if(state==LIB_NULL||state->machine==LIB_NULL||
         !test_core_machine_fixture_prepare_real_mode_execution(state->machine,0u)||
-        core_machine_memory_write(state->machine,0u,code,bytes)!=TYPE_STATUS_OK)return 0;
+        core_machine_memory_write(state->machine,0u,code,bytes)!=LIB_STATUS_OK)return 0;
     if(fault&&!test_core_machine_fixture_preflight_real_ud_terminal(state->machine))return 0;
     status=core_machine_run(state->machine,(core_machine_run_budget){1u,0u},&result);
-    if(status!=(fault?TYPE_STATUS_FAULT:TYPE_STATUS_OK)||result.reason!=(fault?
+    if(status!=(fault?LIB_STATUS_INTERNAL_ERROR:LIB_STATUS_OK)||result.reason!=(fault?
         CORE_MACHINE_STOP_FAULT:CORE_MACHINE_STOP_BUDGET)||
-        core_machine_get_cpu_diagnostic(state->machine,diagnostic)!=TYPE_STATUS_OK)return 0;
+        core_machine_get_cpu_diagnostic(state->machine,diagnostic)!=LIB_STATUS_OK)return 0;
     *out=test_core_machine_fixture_capture_cpu_after_run(state->machine);return 1;
 }
 
@@ -57,7 +58,7 @@ static lib_u32 shift_parity(lib_u32 value)
 }
 
 static lib_u32 shift_flags(lib_u32 result,lib_u32 destination,lib_u8 count,
-    lib_u8 width,C_INT right)
+    lib_u8 width,lib_i32 right)
 {
     const lib_u32 sign=width==16u?0x8000u:0x80000000u;
     const lib_u32 mask=width==16u?0xffffu:0xffffffffu;
@@ -72,7 +73,7 @@ static lib_u32 shift_flags(lib_u32 result,lib_u32 destination,lib_u8 count,
 }
 
 static lib_u32 shift_result(lib_u32 destination,lib_u32 source,lib_u8 count,
-    lib_u8 width,C_INT right)
+    lib_u8 width,lib_i32 right)
 {
     const lib_u32 mask=width==16u?0xffffu:0xffffffffu;
     destination&=mask;source&=mask;
@@ -80,7 +81,7 @@ static lib_u32 shift_result(lib_u32 destination,lib_u32 source,lib_u8 count,
         ((destination<<count)|(source>>(width-count)))&mask;
 }
 
-static C_INT shift_test_forms(C_VOID)
+static lib_i32 shift_test_forms(void)
 {
     static const lib_u8 immediate_opcodes[]={0xa4u,0xacu};
     static const lib_u8 cl_opcodes[]={0xa5u,0xadu};
@@ -105,7 +106,7 @@ static C_INT shift_test_forms(C_VOID)
             VCPU_EFLAGS_SF|(count==1u?VCPU_EFLAGS_OF:0u);
         shift_machine state;t_cpu after={0};core_machine_cpu_diagnostic diagnostic;
         lib_u32 observed=0u;
-        C_INT failed=!shift_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+        lib_i32 failed=!shift_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
 
         if(address32)code[bytes++]=0x67u;
         if(operand32)code[bytes++]=0x66u;
@@ -121,9 +122,9 @@ static C_INT shift_test_forms(C_VOID)
             state.machine->executor_cpu.data.ecx=source;
             state.machine->executor_cpu.data.esi=0x4000u;
             state.machine->executor_cpu.data.eflags=initial_flags;
-            failed|=memory&&core_machine_memory_write(state.machine,0x4000u,&destination,width?4u:2u)!=TYPE_STATUS_OK;
+            failed|=memory&&core_machine_memory_write(state.machine,0x4000u,&destination,width?4u:2u)!=LIB_STATUS_OK;
             failed|=!shift_run_real(&state,code,bytes,0,&after,&diagnostic)||diagnostic.first_fault.valid;
-            if(memory)failed|=core_machine_memory_read(state.machine,0x4000u,&observed,width?4u:2u)!=TYPE_STATUS_OK;
+            if(memory)failed|=core_machine_memory_read(state.machine,0x4000u,&observed,width?4u:2u)!=LIB_STATUS_OK;
             else observed=after.data.eax;
             failed|=(width?observed:(observed&0xffffu))!=expected||
                 (after.data.eflags&flag_mask)!=(expected_flags&flag_mask)||after.data.eip!=bytes;
@@ -133,7 +134,7 @@ static C_INT shift_test_forms(C_VOID)
     return 1;
 }
 
-static C_INT shift_test_count_zero(C_VOID)
+static lib_i32 shift_test_count_zero(void)
 {
     static const lib_u8 immediate[]={0x66u,0x0fu,0xa4u,0xc8u,0u};
     static const lib_u8 cl[]={0x0fu,0xadu,0xc8u};
@@ -141,7 +142,7 @@ static C_INT shift_test_count_zero(C_VOID)
     lib_u8 index;
     for(index=0u;index<2u;++index) {
         shift_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
-        C_INT failed=!shift_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+        lib_i32 failed=!shift_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
         if(!failed) {
             state.machine->executor_cpu.data.eax=0xaabbccdd;
             state.machine->executor_cpu.data.ecx=0u;
@@ -154,20 +155,20 @@ static C_INT shift_test_count_zero(C_VOID)
     return 1;
 }
 
-static C_INT shift_test_profile(C_VOID)
+static lib_i32 shift_test_profile(void)
 {
     static const lib_u8 code[]={0x0fu,0xa4u,0xc8u,1u};
     core_machine_cpu_profile profiles[]={CORE_MACHINE_CPU_PROFILE_80186,CORE_MACHINE_CPU_PROFILE_80286};
     lib_u8 index;
     for(index=0u;index<2u;++index) {
         shift_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
-        C_INT failed=!shift_prepare(profiles[index],&state);
+        lib_i32 failed=!shift_prepare(profiles[index],&state);
         if(!failed) {
             state.machine->executor_cpu.data.eax=0xaabbccdd;
             state.machine->executor_cpu.data.ecx=0x11223344;
             state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_ZF;
             failed|=!shift_run_real(&state,code,sizeof(code),1,&after,&diagnostic)||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD)||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD)||
                 after.data.eax!=0xaabbccdd||after.data.eflags!=VCPU_EFLAGS_ZF||after.data.eip!=0u;
         }
         core_machine_destroy(state.machine);if(failed)return 0;
@@ -175,7 +176,7 @@ static C_INT shift_test_profile(C_VOID)
     return 1;
 }
 
-static C_INT shift_prepare_protected(C_INT writable,C_INT out_of_limit,
+static lib_i32 shift_prepare_protected(lib_i32 writable,lib_i32 out_of_limit,
     shift_machine *state)
 {
     static const lib_u8 pointer[]={0x1fu,0,0,0x03u,0,0};
@@ -197,15 +198,15 @@ static C_INT shift_prepare_protected(C_INT writable,C_INT out_of_limit,
     gdt[16u]=out_of_limit?0x0fu:0xffu;gdt[17u]=out_of_limit?0u:0xffu;
     gdt[21u]=writable?0x92u:0x90u;
     return shift_prepare(CORE_MACHINE_CPU_PROFILE_80386,state)&&
-        core_machine_memory_write(state->machine,0x0100u,pointer,sizeof(pointer))==TYPE_STATUS_OK&&
-        core_machine_memory_write(state->machine,0x0300u,gdt,sizeof(gdt))==TYPE_STATUS_OK&&
-        core_machine_memory_write(state->machine,0u,bootstrap,sizeof(bootstrap))==TYPE_STATUS_OK&&
-        core_machine_memory_write(state->machine,0x2000u,halt,sizeof(halt))==TYPE_STATUS_OK&&
-        core_machine_run(state->machine,(core_machine_run_budget){96u,0u},&result)==TYPE_STATUS_OK&&
+        core_machine_memory_write(state->machine,0x0100u,pointer,sizeof(pointer))==LIB_STATUS_OK&&
+        core_machine_memory_write(state->machine,0x0300u,gdt,sizeof(gdt))==LIB_STATUS_OK&&
+        core_machine_memory_write(state->machine,0u,bootstrap,sizeof(bootstrap))==LIB_STATUS_OK&&
+        core_machine_memory_write(state->machine,0x2000u,halt,sizeof(halt))==LIB_STATUS_OK&&
+        core_machine_run(state->machine,(core_machine_run_budget){96u,0u},&result)==LIB_STATUS_OK&&
         result.reason==CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT shift_test_access_failure(C_VOID)
+static lib_i32 shift_test_access_failure(void)
 {
     static const lib_u8 shld[]={0x0fu,0xa4u,0x0eu,0x10u,0u,1u};
     static const lib_u8 shrd[]={0x0fu,0xacu,0x0eu,0x10u,0u,1u};
@@ -214,19 +215,19 @@ static C_INT shift_test_access_failure(C_VOID)
     for(pass=0u;pass<2u;++pass) {
         shift_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;lib_u16 before=0x8123u,observed=0u;
-        C_INT failed=!shift_prepare_protected(pass==0u,pass==0u,&state);
+        lib_i32 failed=!shift_prepare_protected(pass==0u,pass==0u,&state);
         if(!failed) {
             state.machine->executor_cpu.data.ecx=0x7654u;
             state.machine->executor_cpu.data.eflags=flags;
-            failed|=core_machine_memory_write(state.machine,0x3010u,&before,2u)!=TYPE_STATUS_OK||
-                core_machine_memory_write(state.machine,0x2000u,pass?shrd:shld,sizeof(shld))!=TYPE_STATUS_OK;
+            failed|=core_machine_memory_write(state.machine,0x3010u,&before,2u)!=LIB_STATUS_OK||
+                core_machine_memory_write(state.machine,0x2000u,pass?shrd:shld,sizeof(shld))!=LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine,0u);
-            failed|=core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result)!=TYPE_STATUS_FAULT||
-                result.reason!=CORE_MACHINE_STOP_FAULT||core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=TYPE_STATUS_OK;
+            failed|=core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result)!=LIB_STATUS_INTERNAL_ERROR||
+                result.reason!=CORE_MACHINE_STOP_FAULT||core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK;
             after=test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed|=!diagnostic.first_fault.valid||!TYPE_GET_BIT(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_DF)||
+            failed|=!diagnostic.first_fault.valid||!CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_DF)||
                 core_machine_memory_read_physical(&state.machine->executor_memory,0x3010u,
-                    TYPE_REFERENCE_OF(observed),sizeof(observed))!=TYPE_STATUS_OK||observed!=before||
+                    CORE_MACHINE_REFERENCE_OF(observed),sizeof(observed))!=LIB_STATUS_OK||observed!=before||
                 after.data.eflags!=flags||after.data.eip!=0u;
         }
         core_machine_destroy(state.machine);if(failed)return 0;
@@ -234,10 +235,10 @@ static C_INT shift_test_access_failure(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if(!shift_test_forms()||!shift_test_count_zero()||!shift_test_profile()||
         !shift_test_access_failure())return 1;
-    STD_PRINTF("M5:T310:S6:DOUBLE-SHIFT:OK\n");
-    STD_PRINTF("M5:T401:S62:DOUBLE-SHIFT-PROFILES:OK\n");return 0;
+    printf("M5:T310:S6:DOUBLE-SHIFT:OK\n");
+    printf("M5:T401:S62:DOUBLE-SHIFT-PROFILES:OK\n");return 0;
 }

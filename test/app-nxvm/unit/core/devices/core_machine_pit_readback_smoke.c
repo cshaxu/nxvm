@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/pit.h"
 #include "app-nxvm/devices/port.h"
 
-static C_VOID core_machine_pit_write_counter(t_port *port, lib_u16 control,
+static void core_machine_pit_write_counter(t_port *port, lib_u16 control,
     lib_u16 count)
 {
     core_machine_port_write(port, 0x0043u, control);
@@ -19,13 +19,13 @@ static lib_u8 core_machine_pit_read_byte(t_port *port, lib_u16 port_id)
     return (lib_u8)core_machine_port_read(port, port_id);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_pit pit;
     t_port port;
     lib_u8 status_before;
     lib_u8 status_after;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_pit_initialize(&pit, &port);
@@ -92,6 +92,6 @@ C_INT main(C_VOID)
     core_machine_pit_finalize(&pit);
     core_machine_port_finalize(&port);
     if (failed) return 1;
-    STD_PRINTF("M5:T191:S2:PIT-READBACK:OK\n");
+    printf("M5:T191:S2:PIT-READBACK:OK\n");
     return 0;
 }

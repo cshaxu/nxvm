@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -11,7 +11,7 @@ typedef struct lifecycle_probe {
     lib_u32 count;
 } lifecycle_probe;
 
-static C_VOID lifecycle_trace(C_VOID *opaque,
+static void lifecycle_trace(void *opaque,
     const core_machine_trace_event *event)
 {
     lifecycle_probe *probe = (lifecycle_probe *)opaque;
@@ -21,7 +21,7 @@ static C_VOID lifecycle_trace(C_VOID *opaque,
     }
 }
 
-static C_INT lifecycle_find_transaction(const lifecycle_probe *probe,
+static lib_i32 lifecycle_find_transaction(const lifecycle_probe *probe,
     core_machine_trace_event_type type, core_machine_transaction_owner owner,
     core_machine_transaction_kind kind, lib_u32 *out_index)
 {
@@ -40,7 +40,7 @@ static C_INT lifecycle_find_transaction(const lifecycle_probe *probe,
     return 0;
 }
 
-static C_INT lifecycle_find_event(const lifecycle_probe *probe,
+static lib_i32 lifecycle_find_event(const lifecycle_probe *probe,
     core_machine_trace_event_type type, lib_u32 *out_index)
 {
     lib_u32 index;
@@ -55,7 +55,7 @@ static C_INT lifecycle_find_event(const lifecycle_probe *probe,
     return 0;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const lib_u8 nop = 0x90u;
     core_machine *machine = LIB_NULL;
@@ -70,22 +70,22 @@ C_INT main(C_VOID)
     lib_u32 cpu_begin = 0u;
     lib_u32 cpu_commit = 0u;
     lib_u32 cpu_retire = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     trace.callback = lifecycle_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-        0x000ffff0u, 16u) != TYPE_STATUS_OK;
-    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-    failed |= core_machine_set_trace_provider(machine, &trace) != TYPE_STATUS_OK;
+        0x000ffff0u, 16u) != LIB_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
     failed |= core_machine_transaction_begin(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_DMA,
         CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, 0x11234u, 1u, 2u) !=
-        TYPE_STATUS_OK;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         machine->transaction.committed_count != 0u ||
         machine->transaction.cancelled_count != 0u;
@@ -101,8 +101,8 @@ C_INT main(C_VOID)
     failed |= begin >= cancel || cancel >= reset;
 
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
-        TYPE_STATUS_OK;
-    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
         result.elapsed_ticks != 3u;
     failed |= !lifecycle_find_transaction(&probe,
@@ -120,6 +120,6 @@ C_INT main(C_VOID)
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T354:S4:TRANSACTION-LIFECYCLE:OK\n");
+    printf("M5:T354:S4:TRANSACTION-LIFECYCLE:OK\n");
     return 0;
 }

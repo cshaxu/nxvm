@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 
 
@@ -8,12 +8,12 @@
 
 typedef struct trace_fixture {
     core_machine_trace_event events[8];
-    C_UINT count;
-    C_UINT port_value;
-    type_status read_status;
+    lib_u32 count;
+    lib_u32 port_value;
+    lib_status read_status;
 } trace_fixture;
 
-static C_VOID trace_callback(C_VOID *context, const core_machine_trace_event *event)
+static void trace_callback(void *context, const core_machine_trace_event *event)
 {
     trace_fixture *fixture = (trace_fixture *)context;
 
@@ -22,62 +22,62 @@ static C_VOID trace_callback(C_VOID *context, const core_machine_trace_event *ev
     }
 }
 
-static type_status port_read(C_VOID *owner, lib_u16 port, lib_u32 *out_value)
+static lib_status port_read(void *owner, lib_u16 port, lib_u32 *out_value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
-    (C_VOID)port;
-    if (fixture->read_status != TYPE_STATUS_OK) return fixture->read_status;
+    (void)port;
+    if (fixture->read_status != LIB_STATUS_OK) return fixture->read_status;
     *out_value = fixture->port_value;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status port_write(C_VOID *owner, lib_u16 port, lib_u32 value)
+static lib_status port_write(void *owner, lib_u16 port, lib_u32 value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
-    (C_VOID)port;
+    (void)port;
     fixture->port_value = value;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_INT expect_status(type_status actual, type_status expected)
+static lib_i32 expect_status(lib_status actual, lib_status expected)
 {
     return actual == expected ? 0 : 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
     core_machine_trace_provider sink;
     core_machine_port_provider port_ops = { port_read, port_write };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    trace_fixture fixture = { { { 0 } }, 0u, 0u, TYPE_STATUS_OK };
+    trace_fixture fixture = { { { 0 } }, 0u, 0u, LIB_STATUS_OK };
     lib_u32 value;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     sink.callback = trace_callback;
     sink.context = &fixture;
     failed |= expect_status(test_core_machine_create_executor(0u, &machine),
-                            TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
     failed |= expect_status(core_machine_set_trace_provider(machine, &sink),
-                            TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
     failed |= expect_status(core_machine_install_port_provider(
                                 machine, 0x3ffu, 0x3ffu, &port_ops, &fixture),
-                            TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
     failed |= expect_status(core_machine_freeze_execution_providers(machine),
-                            TYPE_STATUS_OK);
-    failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), LIB_STATUS_OK);
     failed |= expect_status(core_machine_bus_write(machine, 0x3ffu, 0x55u),
-                            TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
     failed |= expect_status(core_machine_bus_read(machine, 0x3ffu, &value),
-                            TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
     failed |= value != 0x55u;
     failed |= expect_status(core_machine_request_stop(machine),
-                            TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
     failed |= expect_status(core_machine_run(machine, budget, &result),
-                            TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
     failed |= result.reason != CORE_MACHINE_STOP_REQUESTED;
     failed |= fixture.count != 5u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_RESET ||
@@ -89,31 +89,31 @@ C_INT main(C_VOID)
               fixture.events[4].type != CORE_MACHINE_TRACE_STOP ||
               fixture.events[4].detail != CORE_MACHINE_STOP_REQUESTED ||
               fixture.events[4].sequence != 4u;
-    failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), LIB_STATUS_OK);
     fixture.count = 0u;
     failed |= expect_status(core_machine_report_fault(machine, 0x44u),
-                            TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
     failed |= fixture.count != 1u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_FAULT ||
               fixture.events[0].detail != 0x44u;
-    failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), LIB_STATUS_OK);
     fixture.count = 0u;
-    fixture.read_status = TYPE_STATUS_FAULT;
+    fixture.read_status = LIB_STATUS_INTERNAL_ERROR;
     value = 0xdeadbeefu;
     failed |= expect_status(core_machine_bus_read(machine, 0x3ffu, &value),
-                            TYPE_STATUS_FAULT);
+                            LIB_STATUS_INTERNAL_ERROR);
     failed |= value != 0xdeadbeefu || fixture.count != 1u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_PORT_READ ||
               fixture.events[0].address != 0x3ffu ||
               fixture.events[0].value != 0u ||
-              fixture.events[0].detail != TYPE_STATUS_FAULT;
-    fixture.read_status = TYPE_STATUS_OK;
+              fixture.events[0].detail != LIB_STATUS_INTERNAL_ERROR;
+    fixture.read_status = LIB_STATUS_OK;
     failed |= expect_status(core_machine_bus_read(machine, 0x3ffu, &value),
-                            TYPE_STATUS_OK) || fixture.count != 2u ||
-              fixture.events[1].detail != TYPE_STATUS_OK;
+                            LIB_STATUS_OK) || fixture.count != 2u ||
+              fixture.events[1].detail != LIB_STATUS_OK;
     failed |= expect_status(core_machine_set_trace_provider(machine, LIB_NULL),
-                            TYPE_STATUS_OK);
-    failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
+                            LIB_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), LIB_STATUS_OK);
     failed |= fixture.count != 2u;
 
     core_machine_destroy(machine);

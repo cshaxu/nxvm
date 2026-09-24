@@ -11,30 +11,30 @@ typedef struct vm_test_common_machine_state_waiter {
     base_sync_event *event;
 } vm_test_common_machine_state_waiter;
 
-static inline C_VOID vm_test_common_machine_state_changed(C_VOID *context,
+static inline void vm_test_common_machine_state_changed(void *context,
     common_machine_state state, lib_u32 run_generation)
 {
     vm_test_common_machine_state_waiter *waiter = context;
 
-    (C_VOID)state;
-    (C_VOID)run_generation;
-    if (waiter != LIB_NULL) (C_VOID)base_sync_event_signal(waiter->event);
+    (void)state;
+    (void)run_generation;
+    if (waiter != LIB_NULL) (void)base_sync_event_signal(waiter->event);
 }
 
-static inline type_status vm_test_common_machine_state_waiter_initialize(
+static inline lib_status vm_test_common_machine_state_waiter_initialize(
     vm_machine *machine, vm_test_common_machine_state_waiter *waiter)
 {
     if (machine == LIB_NULL || machine->executor == LIB_NULL || waiter == LIB_NULL)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     *waiter = (vm_test_common_machine_state_waiter){0};
     if (base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET, &waiter->event) !=
-            LIB_STATUS_OK) return TYPE_STATUS_FAULT;
+            LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
     common_machine_set_state_sink(machine->executor,
         vm_test_common_machine_state_changed, waiter);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static inline C_VOID vm_test_common_machine_state_waiter_finalize(
+static inline void vm_test_common_machine_state_waiter_finalize(
     vm_test_common_machine_state_waiter *waiter)
 {
     if (waiter == LIB_NULL) return;
@@ -42,7 +42,7 @@ static inline C_VOID vm_test_common_machine_state_waiter_finalize(
     waiter->event = LIB_NULL;
 }
 
-static inline type_bool vm_test_common_machine_wait_state(const vm_machine *machine,
+static inline lib_u8 vm_test_common_machine_wait_state(const vm_machine *machine,
     const vm_test_common_machine_state_waiter *waiter,
     common_machine_state expected, lib_u32 timeout_milliseconds)
 {
@@ -70,28 +70,28 @@ static inline type_bool vm_test_common_machine_wait_state(const vm_machine *mach
     }
 }
 
-static type_status vm_test_common_machine_bind(vm_machine *machine)
+static lib_status vm_test_common_machine_bind(vm_machine *machine)
 {
     common_machine_driver driver;
     common_machine *common_machine = LIB_NULL;
 
-    if (vm_machine_describe_common_driver(machine, &driver) != TYPE_STATUS_OK ||
+    if (vm_machine_describe_common_driver(machine, &driver) != LIB_STATUS_OK ||
         common_machine_create(&common_machine, &driver) != LIB_STATUS_OK ||
-        vm_machine_bind_common_machine(machine, common_machine) != TYPE_STATUS_OK) {
+        vm_machine_bind_common_machine(machine, common_machine) != LIB_STATUS_OK) {
         common_machine_destroy(common_machine);
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_VOID vm_test_common_machine_unbind(vm_machine *machine)
+static void vm_test_common_machine_unbind(vm_machine *machine)
 {
     common_machine *common_machine;
 
     if (machine == LIB_NULL) return;
     common_machine = machine->executor;
     common_machine_destroy(common_machine);
-    (C_VOID)vm_machine_bind_common_machine(machine, LIB_NULL);
+    (void)vm_machine_bind_common_machine(machine, LIB_NULL);
 }
 
 #endif

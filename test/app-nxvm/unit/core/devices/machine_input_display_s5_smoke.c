@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -9,7 +9,7 @@ typedef struct input_display_trace_probe {
     lib_u32 count;
 } input_display_trace_probe;
 
-static C_VOID input_display_trace(C_VOID *opaque,
+static void input_display_trace(void *opaque,
     const core_machine_trace_event *event)
 {
     input_display_trace_probe *probe = (input_display_trace_probe *)opaque;
@@ -31,7 +31,7 @@ static const core_machine_trace_event *input_display_find_event(
     return LIB_NULL;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
     core_machine_config config = { 0 };
@@ -41,25 +41,25 @@ C_INT main(C_VOID)
     input_display_trace_probe probe = { { { 0 } }, 0u };
     core_machine_trace_provider trace = { input_display_trace, &probe };
     const lib_u8 nop = 0x90u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     config.ticks_per_instruction = 1u;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
-        0x00fffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
+        0x00fffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_memory_write(machine, 0x00fffff0u, &nop,
-        sizeof(nop)) != TYPE_STATUS_OK;
+        sizeof(nop)) != LIB_STATUS_OK;
     failed |= !failed && core_machine_set_trace_provider(machine, &trace) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= !failed && core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= !failed && (result.reason != CORE_MACHINE_STOP_BUDGET ||
         result.elapsed_ticks != 3u);
     failed |= !failed && core_machine_get_timeline_observation(machine,
-        &observation) != TYPE_STATUS_OK;
+        &observation) != LIB_STATUS_OK;
     failed |= !failed && (observation.now != 3u || observation.pending_events != 0u ||
         observation.next_sequence != 0u);
     {
@@ -82,14 +82,14 @@ C_INT main(C_VOID)
             vadp->timeline_ticks != 3u || retire->sequence >= kbc->sequence ||
             kbc->sequence >= vadp->sequence || vadp->sequence >= boundary->sequence);
     }
-    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_get_timeline_observation(machine,
-        &observation) != TYPE_STATUS_OK;
+        &observation) != LIB_STATUS_OK;
     failed |= !failed && (observation.now != 0u || observation.pending_events != 0u ||
         observation.next_sequence != 0u);
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T346:S5:INPUT-DISPLAY-TIMELINE:OK\n");
+    printf("M5:T346:S5:INPUT-DISPLAY-TIMELINE:OK\n");
     return 0;
 }

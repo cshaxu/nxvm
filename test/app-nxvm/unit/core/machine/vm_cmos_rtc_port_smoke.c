@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/port.h"
@@ -10,7 +11,7 @@
 #include "app-nxvm/devices/rtc.h"
 #include "support/rom/session_assets.h"
 
-static C_VOID cmos_write(t_port *port, lib_u8 reg, lib_u8 value)
+static void cmos_write(t_port *port, lib_u8 reg, lib_u8 value)
 {
     core_machine_port_write(port, 0x0070u, reg);
     core_machine_port_write(port, 0x0071u, value);
@@ -22,7 +23,7 @@ static lib_u8 cmos_read(t_port *port, lib_u8 reg)
     return (lib_u8)core_machine_port_read(port, 0x0071u);
 }
 
-static C_VOID initialize_pic(t_port *port)
+static void initialize_pic(t_port *port)
 {
     core_machine_port_write(port, 0x0020u, 0x11u);
     core_machine_port_write(port, 0x0021u, 0x08u);
@@ -34,14 +35,14 @@ static C_VOID initialize_pic(t_port *port)
     core_machine_port_write(port, 0x00a1u, 0x01u);
 }
 
-static C_VOID advance_cmos(core_machine_rtc *cmos, lib_u64 elapsed_ticks)
+static void advance_cmos(core_machine_rtc *cmos, lib_u64 elapsed_ticks)
 {
     core_machine_rtc_advance(cmos, elapsed_ticks);
     core_machine_pic_refresh(cmos->irq_source.master,
         cmos->irq_source.slave);
 }
 
-static C_INT default_at_cmos_seed_is_loaded(C_VOID)
+static lib_i32 default_at_cmos_seed_is_loaded(void)
 {
     lib_u8 seed[VM_MACHINE_CMOS_SEED_BYTES] = {0};
     vm_machine_config config = {0};
@@ -49,7 +50,7 @@ static C_INT default_at_cmos_seed_is_loaded(C_VOID)
     vm_machine *session = LIB_NULL;
     lib_u16 checksum = 0u;
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
         seed[index] = (lib_u8)(0xa5u ^ index);
@@ -59,15 +60,15 @@ static C_INT default_at_cmos_seed_is_loaded(C_VOID)
     for (index = 0x10u; index < 0x2eu; ++index) {
         checksum = (lib_u16)(checksum + seed[index]);
     }
-    seed[0x2eu] = TYPE_MASK_UNSIGNED_8(checksum >> 8u);
-    seed[0x2fu] = TYPE_MASK_UNSIGNED_8(checksum);
+    seed[0x2eu] = CORE_MACHINE_MASK_U8(checksum >> 8u);
+    seed[0x2fu] = CORE_MACHINE_MASK_U8(checksum);
     vm_test_default_pc_at_assets(&assets,
         (lib_u8[VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES]) {0});
     /* The helper's ROM array must outlive composition only; session copies it. */
     assets.cmos_seed = (vm_machine_asset_bytes) { seed, sizeof(seed) };
     config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
     config.bios_count = 1u;
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
     if (!failed) {
         t_port *port = &session->core_machine->executor_port;
@@ -80,13 +81,13 @@ static C_INT default_at_cmos_seed_is_loaded(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
     t_port *port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) return 1;
     port = session->core_machine->fdc.connect.port;
     if (!session->active || port == LIB_NULL) failed = 1;
@@ -159,7 +160,7 @@ C_INT main(C_VOID)
 
     failed |= default_at_cmos_seed_is_loaded();
     if (failed) {
-        STD_PRINTF("RTC probe failed=%04x: second=%u hour=%u C=%02x B=%02x IRR=%02x/%02x ISR=%02x/%02x\n", failed,
+        printf("RTC probe failed=%04x: second=%u hour=%u C=%02x B=%02x IRR=%02x/%02x ISR=%02x/%02x\n", failed,
             session->core_machine->shared_rtc.calendar.second,
             session->core_machine->shared_rtc.calendar.hour,
             session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_REG_C],

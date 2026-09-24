@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,19 +10,19 @@ typedef struct lea_machine {
     core_machine *machine;
 } lea_machine;
 
-static C_VOID lea_reset(C_VOID *opaque)
+static void lea_reset(void *opaque)
 {
     lea_machine *state = (lea_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider lea_provider = {
     lea_reset, LIB_NULL
 };
 
-static C_INT lea_prepare(core_machine_cpu_profile profile, lea_machine *state)
+static lib_i32 lea_prepare(core_machine_cpu_profile profile, lea_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -34,23 +35,23 @@ return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &lea_provider, state, &state->machine);
 }
 
-static C_INT lea_run_prepared(lea_machine *state, const lib_u8 *code,
+static lib_i32 lea_run_prepared(lea_machine *state, const lib_u8 *code,
     lib_u8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
-    type_status *status)
+    lib_status *status)
 {
     core_machine_run_result result;
 
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK)
+            LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine,
         (core_machine_run_budget){ 1u, 0u }, &result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_VOID lea_set_registers(lea_machine *state)
+static void lea_set_registers(lea_machine *state)
 {
     state->machine->executor_cpu.data.eax = 0xaabb0000u;
     state->machine->executor_cpu.data.ebx = 0x11112000u;
@@ -59,7 +60,7 @@ static C_VOID lea_set_registers(lea_machine *state)
     state->machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
 }
 
-static C_INT lea_test_real_forms(C_VOID)
+static lib_i32 lea_test_real_forms(void)
 {
     static const lib_u8 code16[] = { 0x8du, 0x40u, 0x10u };
     static const lib_u8 code66[] = { 0x66u, 0x8du, 0x40u, 0x10u };
@@ -88,8 +89,8 @@ static C_INT lea_test_real_forms(C_VOID)
             t_cpu before = {0};
             t_cpu after = {0};
             core_machine_cpu_diagnostic diagnostic = {0};
-            type_status status = TYPE_STATUS_INVALID_STATE;
-            C_INT failed = !lea_prepare(profiles[profile], &state);
+            lib_status status = LIB_STATUS_INVALID_STATE;
+            lib_i32 failed = !lea_prepare(profiles[profile], &state);
 
             if (!failed) {
                 failed |= !test_core_machine_fixture_prepare_real_mode_execution(
@@ -103,7 +104,7 @@ static C_INT lea_test_real_forms(C_VOID)
                 failed |= !lea_run_prepared(&state, codes[form],
                         code_bytes[form], &after, &diagnostic, &status);
                 if (profile == 3u || form == 0u) {
-                    failed |= status != TYPE_STATUS_OK ||
+                    failed |= status != LIB_STATUS_OK ||
                         diagnostic.first_fault.valid ||
                         after.data.eip != code_bytes[form] ||
                         after.data.eax != expected_eax[form] ||
@@ -112,8 +113,8 @@ static C_INT lea_test_real_forms(C_VOID)
                         after.data.eflags != before.data.eflags;
                 }
                 else {
-                    failed |= status != TYPE_STATUS_FAULT ||
-                        !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                    failed |= status != LIB_STATUS_INTERNAL_ERROR ||
+                        !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                             diagnostic.first_fault.exception_mask,
                             VCPUINS_EXCEPT_UD) || after.data.eip != before.data.eip ||
                         after.data.eax != before.data.eax ||
@@ -128,7 +129,7 @@ static C_INT lea_test_real_forms(C_VOID)
     return 1;
 }
 
-static C_INT lea_test_register_direct(C_VOID)
+static lib_i32 lea_test_register_direct(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
@@ -145,8 +146,8 @@ static C_INT lea_test_register_direct(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
-        C_INT failed = !lea_prepare(profiles[profile], &state);
+        lib_status status;
+        lib_i32 failed = !lea_prepare(profiles[profile], &state);
 
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(
@@ -156,8 +157,8 @@ static C_INT lea_test_register_direct(C_VOID)
                 state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !lea_run_prepared(&state, code, sizeof(code), &after,
-                    &diagnostic, &status) || status != TYPE_STATUS_FAULT ||
-                !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                    &diagnostic, &status) || status != LIB_STATUS_INTERNAL_ERROR ||
+                !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                     diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 after.data.eip != before.data.eip ||
                 after.data.eax != before.data.eax ||
@@ -170,15 +171,15 @@ static C_INT lea_test_register_direct(C_VOID)
     return 1;
 }
 
-static C_INT lea_test_lock_ud(C_VOID)
+static lib_i32 lea_test_lock_ud(void)
 {
     static const lib_u8 code[] = { 0xf0u, 0x8du, 0x40u, 0x10u };
     lea_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
-    type_status status;
-    C_INT failed = !lea_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_status status;
+    lib_i32 failed = !lea_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         failed |= !test_core_machine_fixture_prepare_real_mode_execution(
@@ -188,8 +189,8 @@ static C_INT lea_test_lock_ud(C_VOID)
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !lea_run_prepared(&state, code, sizeof(code), &after,
-                &diagnostic, &status) || status != TYPE_STATUS_FAULT ||
-            !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                &diagnostic, &status) || status != LIB_STATUS_INTERNAL_ERROR ||
+            !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             after.data.eip != before.data.eip || after.data.eax != before.data.eax ||
             after.data.eflags != before.data.eflags;
@@ -198,7 +199,7 @@ static C_INT lea_test_lock_ud(C_VOID)
     return !failed;
 }
 
-static C_INT lea_prepare_protected(lea_machine *state)
+static lib_i32 lea_prepare_protected(lea_machine *state)
 {
     static const lib_u8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
     static const lib_u8 gdt[] = {
@@ -217,19 +218,19 @@ static C_INT lea_prepare_protected(lea_machine *state)
 
     return lea_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
         core_machine_memory_write(state->machine, 0x0100u, pointer,
-            sizeof(pointer)) == TYPE_STATUS_OK &&
+            sizeof(pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x0300u, gdt,
-            sizeof(gdt)) == TYPE_STATUS_OK &&
+            sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, bootstrap,
-            sizeof(bootstrap)) == TYPE_STATUS_OK &&
+            sizeof(bootstrap)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x2000u, hlt,
-            sizeof(hlt)) == TYPE_STATUS_OK &&
+            sizeof(hlt)) == LIB_STATUS_OK &&
         core_machine_run(state->machine, (core_machine_run_budget){ 96u, 0u },
-            &result) == TYPE_STATUS_OK &&
+            &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT lea_test_protected(C_VOID)
+static lib_i32 lea_test_protected(void)
 {
     static const lib_u8 code16[] = { 0x8du, 0x40u, 0x10u };
     static const lib_u8 code66[] = { 0x66u, 0x8du, 0x40u, 0x10u };
@@ -249,17 +250,17 @@ static C_INT lea_test_protected(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !lea_prepare_protected(&state);
+        lib_i32 failed = !lea_prepare_protected(&state);
 
         if (!failed) {
             lea_set_registers(&state);
             failed |= core_machine_memory_write(state.machine, 0x2000u,
-                    codes[form], code_bytes[form]) != TYPE_STATUS_OK;
+                    codes[form], code_bytes[form]) != LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_run(state.machine,
                     (core_machine_run_budget){ 1u, 0u }, &result) !=
-                        TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET;
+                        LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= after.data.eip != code_bytes[form] ||
                 after.data.eax != expected_eax[form] ||
@@ -274,25 +275,25 @@ static C_INT lea_test_protected(C_VOID)
     return 1;
 }
 
-static C_INT lea_test_null_ds_no_read(C_VOID)
+static lib_i32 lea_test_null_ds_no_read(void)
 {
     static const lib_u8 code[] = { 0x8du, 0x40u, 0x10u };
     lea_machine state;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !lea_prepare_protected(&state);
+    lib_i32 failed = !lea_prepare_protected(&state);
 
     if (!failed) {
         lea_set_registers(&state);
         state.machine->executor_cpu.data.ds.selector = 0u;
         state.machine->executor_cpu.data.ds.flagValid = LIB_FALSE;
         failed |= core_machine_memory_write(state.machine, 0x2000u, code,
-                sizeof(code)) != TYPE_STATUS_OK;
+                sizeof(code)) != LIB_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != sizeof(code) ||
@@ -306,7 +307,7 @@ static C_INT lea_test_null_ds_no_read(C_VOID)
     return !failed;
 }
 
-static C_INT lea_test_irq_no_shadow(C_VOID)
+static lib_i32 lea_test_irq_no_shadow(void)
 {
     static const lib_u8 code[] = { 0x8du, 0x40u, 0x10u, 0x90u };
     static const lib_u8 hlt = 0xf4u;
@@ -317,19 +318,19 @@ static C_INT lea_test_irq_no_shadow(C_VOID)
     lib_u16 vector_offset = 0x0100u;
     lib_u16 vector_segment = 0u;
     lib_u16 frame_ip = 0u;
-    C_INT failed = !lea_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !lea_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         failed |= !test_core_machine_fixture_prepare_real_mode_execution(
                 state.machine, 0u) ||
             core_machine_memory_write(state.machine, 0u, code,
-                sizeof(code)) != TYPE_STATUS_OK ||
+                sizeof(code)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x20u * 4u,
-                &vector_offset, sizeof(vector_offset)) != TYPE_STATUS_OK ||
+                &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x20u * 4u + 2u,
-                &vector_segment, sizeof(vector_segment)) != TYPE_STATUS_OK ||
+                &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x0100u, &hlt,
-                sizeof(hlt)) != TYPE_STATUS_OK;
+                sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
         lea_set_registers(&state);
@@ -342,28 +343,28 @@ static C_INT lea_test_irq_no_shadow(C_VOID)
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK ||
-            after.data.eip != 0x0101u || !TYPE_GET_BIT(
+                (lib_uptr)&frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
+            after.data.eip != 0x0101u || !CORE_MACHINE_BIT_IS_SET(
                 state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u)) || frame_ip != 3u;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!lea_test_real_forms() || !lea_test_register_direct() ||
             !lea_test_lock_ud() || !lea_test_protected() ||
             !lea_test_null_ds_no_read() || !lea_test_irq_no_shadow())
         return 1;
-    STD_PRINTF("M5:T316:S26:LEA:OK\n");
-    STD_PRINTF("M5:T401:S44:LEA-PROFILES:OK\n");
+    printf("M5:T316:S26:LEA:OK\n");
+    printf("M5:T401:S44:LEA-PROFILES:OK\n");
     return 0;
 }

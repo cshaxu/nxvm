@@ -1,54 +1,54 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_VOID core_machine_vadp_write_crtc(t_port *port, lib_u8 index,
+static void core_machine_vadp_write_crtc(t_port *port, lib_u8 index,
     lib_u8 value)
 {
     core_machine_port_write(port, 0x03d4u, index);
     core_machine_port_write(port, 0x03d5u, value);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_port port;
     t_ram memory;
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
     lib_u8 value;
-    C_INT saw_vertical_retrace = LIB_FALSE;
-    C_INT saw_display_interference = LIB_FALSE;
-    C_INT saw_buffer_access = LIB_FALSE;
+    lib_i32 saw_vertical_retrace = LIB_FALSE;
+    lib_i32 saw_display_interference = LIB_FALSE;
+    lib_i32 saw_buffer_access = LIB_FALSE;
     core_machine_vadp_text_timing timing = { 3u, 2u, 1u };
     core_machine_vadp_text_glyph_config glyphs = {0};
     lib_u8 status;
     lib_size refresh;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     glyphs.present = LIB_TRUE;
     glyphs.bytes['A' * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] = 0x81u;
     failed |= core_machine_vadp_configure_text_glyphs(&vadp, &glyphs) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= core_machine_vadp_configure_text_timing(&vadp, &timing) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     core_machine_vadp_reset(&vadp);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_MODE, 0x0du);
     failed |= core_machine_port_read(&port, 0x03dau) != 0x00u;
     value = 'A';
     failed |= core_machine_memory_write_physical(&memory,
-        CORE_MACHINE_VADP_TEXT_BASE, (type_virtual_address)&value,
-        sizeof(value)) != TYPE_STATUS_OK;
+        CORE_MACHINE_VADP_TEXT_BASE, (lib_uptr)&value,
+        sizeof(value)) != LIB_STATUS_OK;
     value = 0x1fu;
     failed |= core_machine_memory_write_physical(&memory,
-        CORE_MACHINE_VADP_TEXT_BASE + 1u, (type_virtual_address)&value,
-        sizeof(value)) != TYPE_STATUS_OK;
+        CORE_MACHINE_VADP_TEXT_BASE + 1u, (lib_uptr)&value,
+        sizeof(value)) != LIB_STATUS_OK;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.columns != 80u || snapshot.rows != 25u ||
@@ -101,8 +101,8 @@ C_INT main(C_VOID)
 
     value = 'B';
     failed |= core_machine_memory_write_physical(&memory,
-        CORE_MACHINE_VADP_TEXT_BASE + 2u, (type_virtual_address)&value,
-        sizeof(value)) != TYPE_STATUS_OK;
+        CORE_MACHINE_VADP_TEXT_BASE + 2u, (lib_uptr)&value,
+        sizeof(value)) != LIB_STATUS_OK;
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
     failed |= !snapshot.buffer_changed || snapshot.characters[1] != 'B';
 
@@ -115,6 +115,6 @@ C_INT main(C_VOID)
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) return 1;
-    STD_PRINTF("M5:T193:S2:VADP-TEXT:OK\n");
+    printf("M5:T193:S2:VADP-TEXT:OK\n");
     return 0;
 }

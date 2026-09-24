@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -12,8 +12,8 @@
 #define VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET 100000u
 #define VM_NO_MEDIA_TEXT_CELLS (80u * 25u)
 
-static C_INT vm_no_media_snapshot_has_text(
-    const core_machine_display_snapshot *snapshot, const C_CHAR *text)
+static lib_i32 vm_no_media_snapshot_has_text(
+    const core_machine_display_snapshot *snapshot, const char *text)
 {
     lib_size cell;
     lib_size character;
@@ -30,7 +30,7 @@ static C_INT vm_no_media_snapshot_has_text(
     return 0;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
     core_machine_run_budget budget = { 1u, 0u };
@@ -41,22 +41,22 @@ C_INT main(C_VOID)
     lib_u8 functions[256] = {0};
     lib_u16 cursor;
     lib_u64 instruction;
-    C_UINT int10_count = 0u;
-    C_UINT f2_count = 0u;
-    C_INT key_wait_seen = 0;
-    C_INT failed = 0;
+    lib_u32 int10_count = 0u;
+    lib_u32 f2_count = 0u;
+    lib_i32 key_wait_seen = 0;
+    lib_i32 failed = 0;
     t_cpu cpu;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK) return 1;
     if (!session->active || session->core_machine == LIB_NULL) goto fail;
     vm_machine_reset(session);
     for (instruction = 0u; instruction < VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
         if (core_machine_capture_observation(session->core_machine,
-                &observation) != TYPE_STATUS_OK ||
+                &observation) != LIB_STATUS_OK ||
             core_machine_memory_read(session->core_machine,
                 observation.cpu.cs_base + observation.cpu.eip, opcode,
-                sizeof(opcode)) != TYPE_STATUS_OK) {
+                sizeof(opcode)) != LIB_STATUS_OK) {
             failed = 1;
             break;
         }
@@ -69,16 +69,16 @@ C_INT main(C_VOID)
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) ++f2_count;
         if (opcode[0] == 0xb4u && opcode[1] == 0x11u) key_wait_seen = 1;
         if (core_machine_run(session->core_machine, budget, &result) !=
-            TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
+            LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
             failed = 1;
             break;
         }
         if (key_wait_seen) break;
     }
     if (core_machine_memory_read(session->core_machine, 0x0450u, &cursor,
-            sizeof(cursor)) != TYPE_STATUS_OK ||
+            sizeof(cursor)) != LIB_STATUS_OK ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
-            TYPE_STATUS_OK || cursor != 0x0600u || !snapshot.cursor_visible ||
+            LIB_STATUS_OK || cursor != 0x0600u || !snapshot.cursor_visible ||
         snapshot.cursor_x != 0u || snapshot.cursor_y != 6u ||
         int10_count == 0u || f2_count != 0u ||
         !key_wait_seen || !vm_no_media_snapshot_has_text(&snapshot,
@@ -86,12 +86,12 @@ C_INT main(C_VOID)
         failed = 1;
     }
     if (!failed) {
-        STD_PRINTF("M5:T212:S2:VIDEO:ROM:OK INT10=%u F2=%u CURSOR=%04x AH=",
+        printf("M5:T212:S2:VIDEO:ROM:OK INT10=%u F2=%u CURSOR=%04x AH=",
             int10_count, f2_count, cursor);
         for (instruction = 0u; instruction < 256u; ++instruction) {
-            if (functions[instruction]) STD_PRINTF("%02X", (C_UINT)instruction);
+            if (functions[instruction]) printf("%02X", (lib_u32)instruction);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
 
 fail:

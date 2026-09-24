@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #define CORE_MACHINE_TRACE_IMPLEMENTATION 1
 #include "app-nxvm/devices/machine.h"
@@ -11,7 +10,7 @@ static lib_u32 core_machine_trace_linear_pc(const core_machine *machine)
     return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
 }
 
-static C_VOID core_machine_trace_flush(core_machine *machine)
+static void core_machine_trace_flush(core_machine *machine)
 {
     core_machine_trace_state *trace = &machine->trace;
     lib_size index = 0u;
@@ -29,45 +28,45 @@ static C_VOID core_machine_trace_flush(core_machine *machine)
     trace->flushing = 0;
 }
 
-C_VOID core_machine_trace_initialize(core_machine *machine)
+void core_machine_trace_initialize(core_machine *machine)
 {
     if (machine != LIB_NULL) {
         lib_memory_set(&machine->trace, 0, sizeof(machine->trace));
     }
 }
 
-C_VOID core_machine_trace_finalize(core_machine *machine)
+void core_machine_trace_finalize(core_machine *machine)
 {
     if (machine != LIB_NULL) {
         lib_memory_set(&machine->trace, 0, sizeof(machine->trace));
     }
 }
 
-type_status core_machine_set_trace_provider(
+lib_status core_machine_set_trace_provider(
     core_machine *machine,
     const core_machine_trace_provider *provider)
 {
     if (machine == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
 
     if (machine->lifecycle == CORE_MACHINE_RUNNING) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
 
     lib_memory_set(&machine->trace.provider, 0, sizeof(machine->trace.provider));
     if (provider != LIB_NULL) {
         if (provider->callback == LIB_NULL) {
-            return TYPE_STATUS_INVALID_ARGUMENT;
+            return LIB_STATUS_INVALID_ARGUMENT;
         }
         machine->trace.provider = *provider;
     }
     machine->trace.count = 0u;
     machine->trace.flushing = 0;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_trace_record(
+void core_machine_trace_record(
     core_machine *machine,
     core_machine_trace_event_type type,
     lib_u32 address,

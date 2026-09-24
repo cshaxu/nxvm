@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -18,11 +19,11 @@ typedef struct ct_jcc_case {
     lib_u32 flags;
 } ct_jcc_case;
 
-static C_VOID ct_reset(C_VOID *opaque)
+static void ct_reset(void *opaque)
 {
     ct_machine *state = (ct_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
@@ -30,24 +31,24 @@ static const core_machine_execution_provider ct_provider = {
     ct_reset, LIB_NULL
 };
 
-static C_INT ct_write(ct_machine *state, lib_u32 address, const C_VOID *bytes,
+static lib_i32 ct_write(ct_machine *state, lib_u32 address, const void *bytes,
     lib_size byte_count)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, bytes, byte_count) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT ct_read_private(ct_machine *state, lib_u32 address, C_VOID *bytes,
+static lib_i32 ct_read_private(ct_machine *state, lib_u32 address, void *bytes,
     lib_size byte_count)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_read_physical(&state->machine->executor_memory, address,
-            (type_virtual_address)bytes, byte_count) == TYPE_STATUS_OK;
+            (lib_uptr)bytes, byte_count) == LIB_STATUS_OK;
 }
 
-static C_INT ct_prepare(ct_machine *state, core_machine_cpu_profile profile,
-    C_INT code32)
+static lib_i32 ct_prepare(ct_machine *state, core_machine_cpu_profile profile,
+    lib_i32 code32)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -77,16 +78,16 @@ static C_INT ct_prepare(ct_machine *state, core_machine_cpu_profile profile,
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
     gdt[14] = code32 ? 0x40u : 0u;
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
         core_machine_bind_execution_provider(state->machine, &ct_provider,
-            state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK ||
+            state) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
+        core_machine_reset(state->machine) != LIB_STATUS_OK ||
         !ct_write(state, CT_GDT_POINTER, gdt_pointer, sizeof(gdt_pointer)) ||
         !ct_write(state, CT_GDT_ADDRESS, gdt, sizeof(gdt)) ||
         !ct_write(state, 0u, real_code, sizeof(real_code)) ||
         !ct_write(state, CT_CODE_ADDRESS, halt, sizeof(halt)) ||
-        core_machine_run(state->machine, budget, &result) != TYPE_STATUS_OK ||
+        core_machine_run(state->machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
@@ -95,7 +96,7 @@ static C_INT ct_prepare(ct_machine *state, core_machine_cpu_profile profile,
     return 1;
 }
 
-static C_INT ct_prepare_real(ct_machine *state, core_machine_cpu_profile profile)
+static lib_i32 ct_prepare_real(ct_machine *state, core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -106,13 +107,13 @@ static C_INT ct_prepare_real(ct_machine *state, core_machine_cpu_profile profile
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(state->machine,
-            0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK ||
+            0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
+        core_machine_reset(state->machine) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, 0xfffffff0u, reset_jump,
-            sizeof(reset_jump)) != TYPE_STATUS_OK) {
+            sizeof(reset_jump)) != LIB_STATUS_OK) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
         return 0;
@@ -120,83 +121,83 @@ static C_INT ct_prepare_real(ct_machine *state, core_machine_cpu_profile profile
     return 1;
 }
 
-static C_INT ct_run(ct_machine *state, const lib_u8 *code,
+static lib_i32 ct_run(ct_machine *state, const lib_u8 *code,
     lib_size code_size, core_machine_stop_reason expected_reason, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 48u, 0u };
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
 
     if (!ct_write(state, CT_CODE_ADDRESS, code, code_size)) return 0;
     test_core_machine_fixture_resume_after_halt_at(state->machine, 0u);
     status = core_machine_run(state->machine, budget, &result);
-    if ((expected_reason == CORE_MACHINE_STOP_FAULT && status != TYPE_STATUS_FAULT) ||
-        (expected_reason != CORE_MACHINE_STOP_FAULT && status != TYPE_STATUS_OK) ||
+    if ((expected_reason == CORE_MACHINE_STOP_FAULT && status != LIB_STATUS_INTERNAL_ERROR) ||
+        (expected_reason != CORE_MACHINE_STOP_FAULT && status != LIB_STATUS_OK) ||
         result.reason != expected_reason) return 0;
     *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
 }
 
-static C_INT ct_run_real(ct_machine *state, const lib_u8 *code,
+static lib_i32 ct_run_real(ct_machine *state, const lib_u8 *code,
     lib_size code_size, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 48u, 0u };
     core_machine_run_result result;
 
     if (!ct_write(state, 0u, code, code_size) ||
-        core_machine_run(state->machine, budget, &result) != TYPE_STATUS_OK ||
+        core_machine_run(state->machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) return 0;
     *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
 }
 
-static C_INT ct_run_gp(ct_machine *state, const lib_u8 *code,
+static lib_i32 ct_run_gp(ct_machine *state, const lib_u8 *code,
     lib_size code_size, t_cpu *out_cpu)
 {
     core_machine_cpu_diagnostic diagnostic;
 
     return ct_run(state, code, code_size, CORE_MACHINE_STOP_FAULT, out_cpu) &&
-        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == TYPE_STATUS_OK &&
-        diagnostic.first_fault.valid && TYPE_GET_BIT(
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == LIB_STATUS_OK &&
+        diagnostic.first_fault.valid && CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask,
             state->machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
-            TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) ?
+            CORE_MACHINE_BIT_IS_SET(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) ?
                 VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_GP);
 }
 
-static C_INT ct_run_np(ct_machine *state, const lib_u8 *code,
+static lib_i32 ct_run_np(ct_machine *state, const lib_u8 *code,
     lib_size code_size, t_cpu *out_cpu)
 {
     core_machine_cpu_diagnostic diagnostic;
 
     return ct_run(state, code, code_size, CORE_MACHINE_STOP_FAULT, out_cpu) &&
-        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == TYPE_STATUS_OK &&
-        diagnostic.first_fault.valid && TYPE_GET_BIT(
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == LIB_STATUS_OK &&
+        diagnostic.first_fault.valid && CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask,
             state->machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
-            TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) ?
+            CORE_MACHINE_BIT_IS_SET(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) ?
                 VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_NP);
 }
 
-static C_INT ct_run_ud(ct_machine *state, const lib_u8 *code,
+static lib_i32 ct_run_ud(ct_machine *state, const lib_u8 *code,
     lib_size code_size, t_cpu *out_cpu)
 {
     core_machine_cpu_diagnostic diagnostic;
 
     return ct_run(state, code, code_size, CORE_MACHINE_STOP_FAULT, out_cpu) &&
-        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == TYPE_STATUS_OK &&
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == LIB_STATUS_OK &&
         diagnostic.first_fault.valid &&
-        TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD);
+        CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD);
 }
 
-static C_VOID ct_set_stack32(ct_machine *state, lib_u32 esp)
+static void ct_set_stack32(ct_machine *state, lib_u32 esp)
 {
     state->machine->executor_cpu.data.ss.seg.data.big = LIB_TRUE;
     state->machine->executor_cpu.data.ss.limit = 0xffffffffu;
     state->machine->executor_cpu.data.esp = esp;
 }
 
-static C_INT ct_test_jcc_short(C_VOID)
+static lib_i32 ct_test_jcc_short(void)
 {
     static const ct_jcc_case cases[] = {
         {0x70u,VCPU_EFLAGS_OF}, {0x71u,0}, {0x72u,VCPU_EFLAGS_CF}, {0x73u,0},
@@ -211,7 +212,7 @@ static C_INT ct_test_jcc_short(C_VOID)
         ct_machine state;
         t_cpu before;
         t_cpu after = {0};
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
         if (!failed) {
             code[0] = cases[index].opcode;
@@ -229,7 +230,7 @@ static C_INT ct_test_jcc_short(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_near_and_short_jumps(C_VOID)
+static lib_i32 ct_test_near_and_short_jumps(void)
 {
     static const lib_u8 short_jump[] = {0xebu,2,0xb0u,0,0xf4u};
     static const lib_u8 jump32[] = {0xe9u,2,0,0,0,0xb0u,0,0xf4u};
@@ -247,7 +248,7 @@ static C_INT ct_test_near_and_short_jumps(C_VOID)
     for (index = 0u; index < sizeof(programs) / sizeof(programs[0]); ++index) {
         ct_machine state;
         t_cpu after = {0};
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
         if (!failed) {
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_ZF | 0x00000002u;
@@ -262,7 +263,7 @@ static C_INT ct_test_near_and_short_jumps(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_jcc_near_conditions(C_VOID)
+static lib_i32 ct_test_jcc_near_conditions(void)
 {
     static const ct_jcc_case cases[] = {
         {0x80u,VCPU_EFLAGS_OF}, {0x81u,0}, {0x82u,VCPU_EFLAGS_CF}, {0x83u,0},
@@ -277,7 +278,7 @@ static C_INT ct_test_jcc_near_conditions(C_VOID)
         ct_machine state;
         t_cpu before;
         t_cpu after = {0};
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
         if (!failed) {
             code[1] = cases[index].opcode;
@@ -295,7 +296,7 @@ static C_INT ct_test_jcc_near_conditions(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
+static lib_i32 ct_test_16bit_code_and_real_mode(void)
 {
     static const lib_u8 jump16[] = {0xe9u,2,0,0xb0u,0,0xf4u};
     static const lib_u8 jump32[] = {0x66u,0xe9u,2,0,0,0,0xb0u,0,0xf4u};
@@ -311,7 +312,7 @@ static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
     for (index = 0u; index < sizeof(protected_programs) / sizeof(protected_programs[0]); ++index) {
         ct_machine state;
         t_cpu after;
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
 
         if (!failed) {
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_ZF | 0x00000002u;
@@ -328,7 +329,7 @@ static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
         static const lib_u8 loop16[] = {0xe2u,2,0xb0u,0,0xf4u};
         ct_machine state;
         t_cpu after;
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
 
         if (!failed) {
             state.machine->executor_cpu.data.ecx = 0xabcd0002u;
@@ -344,14 +345,14 @@ static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
         t_cpu after;
         const core_machine_run_budget budget = {48u,0u};
         core_machine_run_result result;
-        C_INT failed = !ct_prepare_real(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !ct_prepare_real(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_ZF | 0x00000002u;
             state.machine->executor_cpu.data.eax = 0x123456a5u;
             failed = core_machine_memory_write(state.machine, 0u, real_jz32,
-                sizeof(real_jz32)) != TYPE_STATUS_OK ||
-                core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+                sizeof(real_jz32)) != LIB_STATUS_OK ||
+                core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= after.data.eax != 0x123456a5u;
@@ -362,7 +363,7 @@ static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_loop_jcxz_four_profiles(C_VOID)
+static lib_i32 ct_test_loop_jcxz_four_profiles(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -380,7 +381,7 @@ static C_INT ct_test_loop_jcxz_four_profiles(C_VOID)
         lib_u8 code[sizeof(code_template)];
         const lib_u32 flags = 0x00000002u |
             (opcodes[opcode] == 0xe1u ? VCPU_EFLAGS_ZF : 0u);
-        C_INT failed = !ct_prepare_real(&state, profiles[profile]);
+        lib_i32 failed = !ct_prepare_real(&state, profiles[profile]);
 
         if (!failed) {
             lib_memory_copy(code, code_template, sizeof(code));
@@ -402,7 +403,7 @@ static C_INT ct_test_loop_jcxz_four_profiles(C_VOID)
         lib_u8 code[sizeof(code_template)];
         const lib_u32 flags = 0x00000002u |
             (opcode == 0u ? VCPU_EFLAGS_ZF : 0u);
-        C_INT failed = !ct_prepare_real(&state, profiles[profile]);
+        lib_i32 failed = !ct_prepare_real(&state, profiles[profile]);
 
         if (!failed) {
             lib_memory_copy(code, code_template, sizeof(code));
@@ -421,7 +422,7 @@ static C_INT ct_test_loop_jcxz_four_profiles(C_VOID)
         ct_machine state;
         t_cpu after;
         const lib_u8 code[] = {0xe3u, 2u, 0xb0u, 0u, 0xf4u};
-        C_INT failed = !ct_prepare_real(&state, profiles[profile]);
+        lib_i32 failed = !ct_prepare_real(&state, profiles[profile]);
 
         if (!failed) {
             state.machine->executor_cpu.data.ecx = 0u;
@@ -434,7 +435,7 @@ static C_INT ct_test_loop_jcxz_four_profiles(C_VOID)
     }
     return 1;
 }
-static C_INT ct_test_loop_and_jcxz(C_VOID)
+static lib_i32 ct_test_loop_and_jcxz(void)
 {
     static const lib_u8 loop[] = {0xe2u,2,0xb0u,0,0xf4u};
     static const lib_u8 loopnz[] = {0xe0u,2,0xb0u,0,0xf4u};
@@ -443,7 +444,7 @@ static C_INT ct_test_loop_and_jcxz(C_VOID)
     static const lib_u8 jecxz[] = {0x67u,0xe3u,2,0xb0u,0,0xf4u};
     ct_machine state;
     t_cpu after;
-    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
     if (!failed) {
         state.machine->executor_cpu.data.ecx = 2u;
@@ -500,13 +501,13 @@ static C_INT ct_test_loop_and_jcxz(C_VOID)
     return !failed;
 }
 
-static C_INT ct_test_loop_target_fault_is_atomic(C_VOID)
+static lib_i32 ct_test_loop_target_fault_is_atomic(void)
 {
     static const lib_u8 loop_fault[] = {0xe2u,0x7fu};
     ct_machine state;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
     if (!failed) {
         state.machine->executor_cpu.data.cs.limit = 0x007fu;
@@ -521,14 +522,14 @@ static C_INT ct_test_loop_target_fault_is_atomic(C_VOID)
     return !failed;
 }
 
-static C_INT ct_test_jcc_limit_boundaries(C_VOID)
+static lib_i32 ct_test_jcc_limit_boundaries(void)
 {
     static const lib_u8 taken_fault[] = {0x74u,0x7fu};
     static const lib_u8 not_taken[] = {0x74u,0x7fu,0xf4u};
     ct_machine state;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
     if (!failed) {
         state.machine->executor_cpu.data.cs.limit = 0x007fu;
@@ -550,32 +551,32 @@ static C_INT ct_test_jcc_limit_boundaries(C_VOID)
     return !failed;
 }
 
-static C_INT ct_test_pre386_near_jcc_is_ud(C_VOID)
+static lib_i32 ct_test_pre386_near_jcc_is_ud(void)
 {
     static const lib_u8 near_jcc[] = {0x0fu,0x84u,0,0};
     ct_machine state;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
-    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286, 0);
+    lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286, 0);
 
     if (!failed) {
         failed = !ct_run(&state, near_jcc, sizeof(near_jcc),
             CORE_MACHINE_STOP_FAULT, &after) ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD);
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD);
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
-static C_INT ct_test_ret_target_fault_is_atomic(C_VOID)
+static lib_i32 ct_test_ret_target_fault_is_atomic(void)
 {
     static const lib_u8 ret[] = {0xc3u};
     static const lib_u8 target[] = {0x80u,0,0,0};
     ct_machine state;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
     if (!failed) {
         state.machine->executor_cpu.data.cs.limit = 0x007fu;
@@ -590,7 +591,7 @@ static C_INT ct_test_ret_target_fault_is_atomic(C_VOID)
     return !failed;
 }
 
-static C_INT ct_test_near_call_and_ret_forms(C_VOID)
+static lib_i32 ct_test_near_call_and_ret_forms(void)
 {
     static const lib_u8 code32_call32[] = {0xe8u,3,0,0,0,0xb0u,0xa5u,0xf4u,0xc3u};
     static const lib_u8 code32_call16[] = {0x66u,0xe8u,3,0,0xb0u,0xa5u,0xf4u,0x66u,0xc3u};
@@ -611,7 +612,7 @@ static C_INT ct_test_near_call_and_ret_forms(C_VOID)
         ct_machine state;
         t_cpu before;
         t_cpu after = {0};
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
             index < 2u);
 
         if (!failed) {
@@ -630,7 +631,7 @@ static C_INT ct_test_near_call_and_ret_forms(C_VOID)
         ct_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
         if (!failed) {
             ct_set_stack32(&state, 0x00008000u);
@@ -657,7 +658,7 @@ static C_INT ct_test_near_call_and_ret_forms(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_near_indirect_and_fault_boundaries(C_VOID)
+static lib_i32 ct_test_near_indirect_and_fault_boundaries(void)
 {
     static const lib_u8 call_register[] = {
         0xb8u,10,0,0,0,0xffu,0xd0u,0xb0u,0xa5u,0xf4u,0xc3u
@@ -673,7 +674,7 @@ static C_INT ct_test_near_indirect_and_fault_boundaries(C_VOID)
     ct_machine state;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -734,7 +735,7 @@ static C_INT ct_test_near_indirect_and_fault_boundaries(C_VOID)
     return !failed;
 }
 
-static C_INT ct_test_far_same_cpl_return_validation(C_VOID)
+static lib_i32 ct_test_far_same_cpl_return_validation(void)
 {
     static const lib_u8 retf[] = {0xcbu};
     static const lib_u8 dpl_mismatch[] = {0,0,0,0,0x20u,0,0,0};
@@ -743,7 +744,7 @@ static C_INT ct_test_far_same_cpl_return_validation(C_VOID)
     t_cpu before;
     t_cpu after;
     lib_u8 descriptor_access = 0u;
-    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
     if (!failed) {
         failed = !ct_write(&state, 0x0000c000u, dpl_mismatch,
@@ -753,7 +754,7 @@ static C_INT ct_test_far_same_cpl_return_validation(C_VOID)
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         before.data.eip = 0u;
         if (!failed) {
-            C_INT run_ok = ct_run_gp(&state, retf, sizeof(retf), &after);
+            lib_i32 run_ok = ct_run_gp(&state, retf, sizeof(retf), &after);
             failed = !run_ok || after.data.eip != before.data.eip ||
                 after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
                 after.data.cs.selector != before.data.cs.selector ||
@@ -775,7 +776,7 @@ static C_INT ct_test_far_same_cpl_return_validation(C_VOID)
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         before.data.eip = 0u;
         if (!failed) {
-            C_INT run_ok = ct_run_np(&state, retf, sizeof(retf), &after);
+            lib_i32 run_ok = ct_run_np(&state, retf, sizeof(retf), &after);
             failed = !run_ok || after.data.eip != before.data.eip ||
                 after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
                 after.data.cs.selector != before.data.cs.selector ||
@@ -791,7 +792,7 @@ static C_INT ct_test_far_same_cpl_return_validation(C_VOID)
     return !failed;
 }
 
-static C_INT ct_test_far_immediate_forms(C_VOID)
+static lib_i32 ct_test_far_immediate_forms(void)
 {
     static const lib_u8 jmp32[] = {0xeau,7,0,0,0,8,0,0xf4u};
     static const lib_u8 jmp16[] = {0x66u,0xeau,6,0,8,0,0xf4u};
@@ -811,7 +812,7 @@ static C_INT ct_test_far_immediate_forms(C_VOID)
         ct_machine state;
         t_cpu before;
         t_cpu after = {0};
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
         if (!failed) {
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -828,7 +829,7 @@ static C_INT ct_test_far_immediate_forms(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_far_indirect_forms(C_VOID)
+static lib_i32 ct_test_far_indirect_forms(void)
 {
     static const lib_u8 call32[] = {0xffu,0x1du,0,1,0,0,0xb0u,0xa5u,0xf4u,0xcbu};
     static const lib_u8 call16[] = {0x66u,0xffu,0x1du,0,1,0,0,0xb0u,0xa5u,0xf4u,0x66u,0xcbu};
@@ -848,7 +849,7 @@ static C_INT ct_test_far_indirect_forms(C_VOID)
         ct_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
         if (!failed) {
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed = !ct_write(&state, 0x00003100u, pointers[index], pointer_sizes[index]) ||
@@ -863,7 +864,7 @@ static C_INT ct_test_far_indirect_forms(C_VOID)
         ct_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+        lib_i32 failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
         if (!failed) {
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             before.data.eip = 0u;
@@ -891,7 +892,7 @@ static C_INT ct_test_far_indirect_forms(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
+static lib_i32 ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
 {
     static const lib_u8 jmp[] = {0xeau,0,0,0,1};
     static const lib_u8 call[] = {0x9au,0,0,0,1,0xf4u};
@@ -906,12 +907,12 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
     core_machine_run_result result;
     ct_machine state;
     t_cpu after;
-    C_INT failed = !ct_prepare_real(&state, profile);
+    lib_i32 failed = !ct_prepare_real(&state, profile);
 
     if (!failed) {
         failed = !ct_write(&state, 0u, jmp, sizeof(jmp)) ||
             !ct_write(&state, 0x1000u, halt, sizeof(halt)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.cs.selector != 0x0100u || after.data.cs.base != 0x1000u;
@@ -923,7 +924,7 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
         state.machine->executor_cpu.data.sp = 0x8000u;
         failed = !ct_write(&state, 0u, call, sizeof(call)) ||
             !ct_write(&state, 0x1000u, retf_immediate, sizeof(retf_immediate)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.cs.selector != 0u || after.data.cs.base != 0u ||
@@ -935,7 +936,7 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
     if (!failed) {
         failed = !ct_write(&state, 0u, call, sizeof(call)) ||
             !ct_write(&state, 0x1000u, retf, sizeof(retf)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.cs.selector != 0u || after.data.cs.base != 0u;
@@ -947,7 +948,7 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
         failed = !ct_write(&state, 0u, indirect_jmp, sizeof(indirect_jmp)) ||
             !ct_write(&state, 0x0100u, pointer, sizeof(pointer)) ||
             !ct_write(&state, 0x1000u, halt, sizeof(halt)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.cs.selector != 0x0100u || after.data.cs.base != 0x1000u;
@@ -961,7 +962,7 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
             !ct_write(&state, 0xfffeu, (const lib_u8[]){0u,0u}, 2u) ||
             !ct_write(&state, 0x10000u, (const lib_u8[]){0u,2u}, 2u) ||
             !ct_write(&state, 0x2000u, halt, sizeof(halt)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.cs.selector != 0x0200u || after.data.cs.base != 0x2000u;
@@ -973,7 +974,7 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
         failed = !ct_write(&state, 0u, indirect_call, sizeof(indirect_call)) ||
             !ct_write(&state, 0x0100u, pointer, sizeof(pointer)) ||
             !ct_write(&state, 0x1000u, retf, sizeof(retf)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.cs.selector != 0u || after.data.cs.base != 0u ||
@@ -983,7 +984,7 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
     return !failed;
 }
 
-static C_INT ct_test_far_real_mode(C_VOID)
+static lib_i32 ct_test_far_real_mode(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -997,7 +998,7 @@ static C_INT ct_test_far_real_mode(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_legacy_real_near_control(C_VOID)
+static lib_i32 ct_test_legacy_real_near_control(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -1030,7 +1031,7 @@ static C_INT ct_test_legacy_real_near_control(C_VOID)
         ct_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !ct_prepare_real(&state, profiles[index]);
+        lib_i32 failed = !ct_prepare_real(&state, profiles[index]);
 
         if (!failed) {
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -1112,7 +1113,7 @@ static C_INT ct_test_legacy_real_near_control(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_legacy_ff_reserved(C_VOID)
+static lib_i32 ct_test_legacy_ff_reserved(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -1130,8 +1131,8 @@ static C_INT ct_test_legacy_ff_reserved(C_VOID)
         ct_machine state;
         t_cpu before;
         t_cpu after;
-        type_status status;
-        C_INT failed = !ct_prepare_real(&state, profiles[index]);
+        lib_status status;
+        lib_i32 failed = !ct_prepare_real(&state, profiles[index]);
 
         if (!failed) {
             failed = !test_core_machine_fixture_prepare_real_mode_execution(
@@ -1142,11 +1143,11 @@ static C_INT ct_test_legacy_ff_reserved(C_VOID)
                 failed = !ct_write(&state, 0u, codes[code_index], sizeof(codes[code_index]));
                 status = core_machine_run(state.machine, budget, &result);
                 after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-                failed |= status != TYPE_STATUS_FAULT ||
+                failed |= status != LIB_STATUS_INTERNAL_ERROR ||
                     result.reason != CORE_MACHINE_STOP_FAULT ||
                     core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                        TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-                    !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                        LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+                    !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                         VCPUINS_EXCEPT_UD) || lib_memory_compare(&before.data,
                         &after.data, sizeof(before.data)) != 0;
             }
@@ -1158,7 +1159,7 @@ static C_INT ct_test_legacy_ff_reserved(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!ct_test_jcc_short() || !ct_test_near_and_short_jumps() ||
         !ct_test_jcc_near_conditions() || !ct_test_16bit_code_and_real_mode() ||
@@ -1170,11 +1171,11 @@ C_INT main(C_VOID)
         !ct_test_far_same_cpl_return_validation() || !ct_test_far_immediate_forms() ||
         !ct_test_far_indirect_forms() || !ct_test_far_real_mode() ||
         !ct_test_legacy_real_near_control() || !ct_test_legacy_ff_reserved()) return 1;
-    STD_PRINTF("M5:T303:CONTROL-TRANSFER:OK\n");
-    STD_PRINTF("M5:T401:S10:GROUP5-CONTROL-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S22:NEAR-RETURN-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S23:FAR-RETURN-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S43:LOOP-JCXZ-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S59:NEAR-JCC-PROFILES:OK\n");
+    printf("M5:T303:CONTROL-TRANSFER:OK\n");
+    printf("M5:T401:S10:GROUP5-CONTROL-PROFILES:OK\n");
+    printf("M5:T401:S22:NEAR-RETURN-PROFILES:OK\n");
+    printf("M5:T401:S23:FAR-RETURN-PROFILES:OK\n");
+    printf("M5:T401:S43:LOOP-JCXZ-PROFILES:OK\n");
+    printf("M5:T401:S59:NEAR-JCC-PROFILES:OK\n");
     return 0;
 }

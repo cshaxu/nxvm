@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/xt_keyboard.h"
 
@@ -21,7 +20,7 @@ static lib_u64 core_machine_xt_keyboard_us_to_ticks(
     return (numerator + 999999u) / 1000000u;
 }
 
-static C_VOID core_machine_xt_keyboard_start_serial(core_machine_xt_keyboard *keyboard)
+static void core_machine_xt_keyboard_start_serial(core_machine_xt_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL || keyboard->serial_active || keyboard->bat_active ||
         keyboard->clock_held || keyboard->clear_asserted || keyboard->fifo_count == 0u ||
@@ -34,11 +33,11 @@ static C_VOID core_machine_xt_keyboard_start_serial(core_machine_xt_keyboard *ke
     keyboard->serial_response = LIB_FALSE;
 }
 
-static C_VOID core_machine_xt_keyboard_finish_serial(core_machine_xt_keyboard *keyboard)
+static void core_machine_xt_keyboard_finish_serial(core_machine_xt_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL || !keyboard->serial_active || keyboard->ppi == LIB_NULL ||
         core_machine_xt_ppi_keyboard_receive_device_byte(keyboard->ppi,
-            keyboard->serial_byte) != TYPE_STATUS_OK) return;
+            keyboard->serial_byte) != LIB_STATUS_OK) return;
     if (!keyboard->serial_response) {
         keyboard->fifo_head = (lib_u8)((keyboard->fifo_head + 1u) %
             CORE_MACHINE_XT_KEYBOARD_FIFO_CAPACITY);
@@ -49,19 +48,19 @@ static C_VOID core_machine_xt_keyboard_finish_serial(core_machine_xt_keyboard *k
     keyboard->serial_remaining_ticks = 0u;
 }
 
-type_status core_machine_xt_keyboard_initialize(core_machine_xt_keyboard *keyboard,
+lib_status core_machine_xt_keyboard_initialize(core_machine_xt_keyboard *keyboard,
     core_machine_xt_ppi_keyboard *ppi, lib_u64 ticks_per_second)
 {
     if (keyboard == LIB_NULL || ppi == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     keyboard->ppi = ppi;
     keyboard->ticks_per_second = ticks_per_second;
     core_machine_xt_keyboard_reset(keyboard);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_xt_keyboard_reset(core_machine_xt_keyboard *keyboard)
+void core_machine_xt_keyboard_reset(core_machine_xt_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL) return;
     keyboard->reset_low_ticks = keyboard->ticks_per_second == 0u ? UINT64_MAX :
@@ -81,7 +80,7 @@ C_VOID core_machine_xt_keyboard_reset(core_machine_xt_keyboard *keyboard)
     keyboard->bat_result_pending = LIB_FALSE;
 }
 
-C_VOID core_machine_xt_keyboard_finalize(core_machine_xt_keyboard *keyboard)
+void core_machine_xt_keyboard_finalize(core_machine_xt_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL) return;
     keyboard->ppi = LIB_NULL;
@@ -89,8 +88,8 @@ C_VOID core_machine_xt_keyboard_finalize(core_machine_xt_keyboard *keyboard)
     core_machine_xt_keyboard_reset(keyboard);
 }
 
-C_VOID core_machine_xt_keyboard_observe_ppi_lines(C_VOID *owner,
-    type_bool clock_held, type_bool clear_asserted)
+void core_machine_xt_keyboard_observe_ppi_lines(void *owner,
+    lib_u8 clock_held, lib_u8 clear_asserted)
 {
     core_machine_xt_keyboard *keyboard = (core_machine_xt_keyboard *)owner;
 
@@ -109,19 +108,19 @@ C_VOID core_machine_xt_keyboard_observe_ppi_lines(C_VOID *owner,
     if (!clock_held && !clear_asserted) core_machine_xt_keyboard_start_serial(keyboard);
 }
 
-C_VOID core_machine_xt_keyboard_notify_ppi_byte_released(C_VOID *owner)
+void core_machine_xt_keyboard_notify_ppi_byte_released(void *owner)
 {
     core_machine_xt_keyboard_start_serial((core_machine_xt_keyboard *)owner);
 }
 
-type_status core_machine_xt_keyboard_receive_native_bytes(core_machine_xt_keyboard *keyboard,
+lib_status core_machine_xt_keyboard_receive_native_bytes(core_machine_xt_keyboard *keyboard,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
     lib_u8 tail;
 
     if (keyboard == LIB_NULL || (bytes == LIB_NULL && count != 0u)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     /* The XT reference requires a sequence that cannot fit to be discarded
      * whole and reported as one FF overrun character, replacing the last
@@ -136,7 +135,7 @@ type_status core_machine_xt_keyboard_receive_native_bytes(core_machine_xt_keyboa
         }
         keyboard->fifo[tail] = 0xffu;
         core_machine_xt_keyboard_start_serial(keyboard);
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     for (index = 0u; index < count; ++index) {
         lib_u8 tail = (lib_u8)((keyboard->fifo_head +
@@ -145,10 +144,10 @@ type_status core_machine_xt_keyboard_receive_native_bytes(core_machine_xt_keyboa
         ++keyboard->fifo_count;
     }
     core_machine_xt_keyboard_start_serial(keyboard);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_xt_keyboard_advance(core_machine_xt_keyboard *keyboard,
+void core_machine_xt_keyboard_advance(core_machine_xt_keyboard *keyboard,
     lib_u64 ticks)
 {
     if (keyboard == LIB_NULL || ticks == 0u) return;
@@ -192,12 +191,12 @@ C_VOID core_machine_xt_keyboard_advance(core_machine_xt_keyboard *keyboard,
     }
 }
 
-type_status core_machine_xt_keyboard_ticks_until_event(const core_machine_xt_keyboard *keyboard,
+lib_status core_machine_xt_keyboard_ticks_until_event(const core_machine_xt_keyboard *keyboard,
     lib_u64 *out_ticks)
 {
-    if (keyboard == LIB_NULL || out_ticks == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (keyboard == LIB_NULL || out_ticks == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (keyboard->bat_active) *out_ticks = keyboard->bat_remaining_ticks;
     else if (keyboard->serial_active) *out_ticks = keyboard->serial_remaining_ticks;
-    else return TYPE_STATUS_UNSUPPORTED;
-    return *out_ticks == 0u ? TYPE_STATUS_UNSUPPORTED : TYPE_STATUS_OK;
+    else return LIB_STATUS_UNSUPPORTED;
+    return *out_ticks == 0u ? LIB_STATUS_UNSUPPORTED : LIB_STATUS_OK;
 }

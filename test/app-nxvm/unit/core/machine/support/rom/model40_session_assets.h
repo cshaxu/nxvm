@@ -1,13 +1,13 @@
 #ifndef TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #define TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/device_support.h"
 
-#include "type.h"
 #include "app-nxvm/devices/rtc.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 
-static inline C_VOID vm_model40_fixture_cmos_seed(
+static inline void vm_model40_fixture_cmos_seed(
     lib_u8 bytes[VM_MACHINE_CMOS_SEED_BYTES])
 {
     lib_u16 checksum = 0u;
@@ -23,11 +23,11 @@ static inline C_VOID vm_model40_fixture_cmos_seed(
     bytes[CORE_MACHINE_RTC_EXTMEM_MSB] = 0x04u;
     for (index = 0x10u; index < 0x2eu; ++index) checksum =
         (lib_u16)(checksum + bytes[index]);
-    bytes[0x2eu] = TYPE_MASK_UNSIGNED_8(checksum >> 8u);
-    bytes[0x2fu] = TYPE_MASK_UNSIGNED_8(checksum);
+    bytes[0x2eu] = CORE_MACHINE_MASK_U8(checksum >> 8u);
+    bytes[0x2fu] = CORE_MACHINE_MASK_U8(checksum);
 }
 
-static inline type_status vm_model40_fixture_create_bytes_with_floppy_format(
+static inline lib_status vm_model40_fixture_create_bytes_with_floppy_format(
     const lib_u8 *even_bytes, const lib_u8 *odd_bytes,
     vm_machine_floppy_format floppy_format, vm_machine **out_session)
 {
@@ -48,7 +48,7 @@ static inline type_status vm_model40_fixture_create_bytes_with_floppy_format(
     return vm_machine_create_from_assets(&config, &assets, out_session);
 }
 
-static inline type_status vm_model40_fixture_create_bytes(
+static inline lib_status vm_model40_fixture_create_bytes(
     const lib_u8 *even_bytes, const lib_u8 *odd_bytes,
     vm_machine **out_session)
 {
@@ -56,7 +56,7 @@ static inline type_status vm_model40_fixture_create_bytes(
         VM_MACHINE_FLOPPY_FORMAT_PROFILE_DEFAULT, out_session);
 }
 
-static inline type_status vm_model40_fixture_create(vm_machine **out_session)
+static inline lib_status vm_model40_fixture_create(vm_machine **out_session)
 {
     lib_u8 even_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
     lib_u8 odd_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];

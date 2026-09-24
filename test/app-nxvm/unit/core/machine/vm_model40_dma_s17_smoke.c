@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/dma.h"
 #include "app-nxvm/devices/machine.h"
@@ -9,12 +9,12 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (vm_model40_fixture_create(&session) != TYPE_STATUS_OK ||
+    if (vm_model40_fixture_create(&session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->core_machine->dma_configured ||
         session->core_machine->transaction_contract.dma_cycle_wait_quanta != 1u ||
         !session->core_machine->transaction_contract.dma_cycle_bus_ready_gate_enabled ||
@@ -68,10 +68,10 @@ C_INT main(C_VOID)
 done:
     vm_machine_destroy(session);
     if (failed) return 1;
-    STD_PRINTF("M5:T386:S17:DUAL-DMA-TOPOLOGY:OK\n");
-    STD_PRINTF("M5:T386:S17:DMA-WORD-CASCADE:OK\n");
-    STD_PRINTF("M5:T386:S17:DMA-RESET-BINDING:OK\n");
-    STD_PRINTF("M5:T419:S2:D4-DMA-GRANT-WAIT:OK\n");
-    STD_PRINTF("M5:T419:S3:D4-DMA-BUSRDY:OK\n");
+    printf("M5:T386:S17:DUAL-DMA-TOPOLOGY:OK\n");
+    printf("M5:T386:S17:DMA-WORD-CASCADE:OK\n");
+    printf("M5:T386:S17:DMA-RESET-BINDING:OK\n");
+    printf("M5:T419:S2:D4-DMA-GRANT-WAIT:OK\n");
+    printf("M5:T419:S3:D4-DMA-BUSRDY:OK\n");
     return 0;
 }

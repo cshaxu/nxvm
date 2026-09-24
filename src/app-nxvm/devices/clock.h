@@ -12,13 +12,13 @@ typedef struct core_machine_clock_domain {
     lib_u64 delivered_ticks;
 } core_machine_clock_domain;
 
-C_INT core_machine_clock_ratio_is_valid(const core_machine_clock_ratio *ratio);
-type_status core_machine_clock_domain_initialize(core_machine_clock_domain *domain,
+lib_i32 core_machine_clock_ratio_is_valid(const core_machine_clock_ratio *ratio);
+lib_status core_machine_clock_domain_initialize(core_machine_clock_domain *domain,
     const core_machine_clock_ratio *ratio);
-C_VOID core_machine_clock_domain_reset(core_machine_clock_domain *domain);
+void core_machine_clock_domain_reset(core_machine_clock_domain *domain);
 lib_u64 core_machine_clock_domain_advance(core_machine_clock_domain *domain,
     lib_u64 elapsed_ticks);
-type_status core_machine_clock_domain_source_ticks_until(
+lib_status core_machine_clock_domain_source_ticks_until(
     const core_machine_clock_domain *domain, lib_u64 delivered_ticks,
     lib_u64 *out_source_ticks);
 

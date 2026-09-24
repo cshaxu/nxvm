@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/cpu_instructions.h"
@@ -16,12 +17,12 @@ typedef struct ud_s1_machine {
     core_machine *machine;
 } ud_s1_machine;
 
-static C_VOID ud_s1_reset(C_VOID *opaque)
+static void ud_s1_reset(void *opaque)
 {
     ud_s1_machine *state = (ud_s1_machine *)opaque;
 
     if (state != LIB_NULL) {
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
     }
 }
 
@@ -29,7 +30,7 @@ static const core_machine_execution_provider ud_s1_provider = {
     ud_s1_reset, LIB_NULL
 };
 
-static C_INT ud_s1_prepare(ud_s1_machine *state)
+static lib_i32 ud_s1_prepare(ud_s1_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -46,7 +47,7 @@ static C_INT ud_s1_prepare(ud_s1_machine *state)
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_INT ud_s1_gprs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 ud_s1_gprs_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -57,7 +58,7 @@ static C_INT ud_s1_gprs_same(const t_cpu *before, const t_cpu *after)
         before->data.edi == after->data.edi;
 }
 
-static C_INT ud_s1_data_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 ud_s1_data_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
@@ -71,17 +72,17 @@ static C_INT ud_s1_data_sregs_same(const t_cpu *before, const t_cpu *after)
             sizeof(before->data.gs)) == 0;
 }
 
-static C_INT ud_s1_delivered(const core_machine_cpu_diagnostic *diagnostic)
+static lib_i32 ud_s1_delivered(const core_machine_cpu_diagnostic *diagnostic)
 {
     return !diagnostic->first_fault.valid &&
-        diagnostic->last_delivered_exception.valid && TYPE_GET_BIT(
+        diagnostic->last_delivered_exception.valid && CORE_MACHINE_BIT_IS_SET(
             diagnostic->last_delivered_exception.exception_mask,
             VCPUINS_EXCEPT_UD) &&
         diagnostic->last_delivered_exception.exception_code == 0u;
 }
 
-static C_INT ud_s1_boot_protected(ud_s1_machine *state,
-    const lib_u8 *code, lib_size bytes, type_bool valid_gate)
+static lib_i32 ud_s1_boot_protected(ud_s1_machine *state,
+    const lib_u8 *code, lib_size bytes, lib_u8 valid_gate)
 {
     static const lib_u8 gdt[] = {
         0u,0u,0u,0u,0u,0u,0u,0u,
@@ -101,14 +102,14 @@ static C_INT ud_s1_boot_protected(ud_s1_machine *state,
         idt[6u * 8u + 5u] = 0x8eu;
     }
     if (core_machine_memory_write(state->machine, UD_S1_GDT_BASE, gdt,
-            sizeof(gdt)) != TYPE_STATUS_OK ||
+            sizeof(gdt)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, UD_S1_IDT_BASE, idt,
-            sizeof(idt)) != TYPE_STATUS_OK ||
+            sizeof(idt)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, UD_S1_CODE_BASE, code,
-            bytes) != TYPE_STATUS_OK ||
+            bytes) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine,
             UD_S1_CODE_BASE + UD_S1_HANDLER_OFFSET,
-            (const lib_u8[]){ 0xf4u }, 1u) != TYPE_STATUS_OK) {
+            (const lib_u8[]){ 0xf4u }, 1u) != LIB_STATUS_OK) {
         return 0;
     }
     cpu = &state->machine->executor_cpu;
@@ -146,7 +147,7 @@ static C_INT ud_s1_boot_protected(ud_s1_machine *state,
     return 1;
 }
 
-static C_INT ud_s1_protected_delivery(const lib_u8 *code,
+static lib_i32 ud_s1_protected_delivery(const lib_u8 *code,
     lib_size bytes)
 {
     lib_u32 frame[3u] = { 0u, 0u, 0u };
@@ -155,15 +156,15 @@ static C_INT ud_s1_protected_delivery(const lib_u8 *code,
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !ud_s1_boot_protected(&state, code, bytes, LIB_TRUE);
+    lib_i32 failed = !ud_s1_boot_protected(&state, code, bytes, LIB_TRUE);
 
     if (!failed) {
         before = state.machine->executor_cpu;
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !ud_s1_delivered(&diagnostic) ||
             after.data.eip != UD_S1_HANDLER_OFFSET ||
@@ -172,14 +173,14 @@ static C_INT ud_s1_protected_delivery(const lib_u8 *code,
             !ud_s1_gprs_same(&before, &after) ||
             !ud_s1_data_sregs_same(&before, &after) ||
             !test_core_machine_fixture_read_linear(state.machine,
-                after.data.ss.base + after.data.esp, TYPE_REFERENCE_OF(frame),
+                after.data.ss.base + after.data.esp, CORE_MACHINE_REFERENCE_OF(frame),
                 sizeof(frame)) || frame[0] != 0u ||
             frame[1] != before.data.cs.selector ||
             frame[2] != before.data.eflags;
     }
     if (!failed) {
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             state.machine->executor_cpu.data.eip != UD_S1_HANDLER_OFFSET + 1u;
     }
@@ -187,7 +188,7 @@ static C_INT ud_s1_protected_delivery(const lib_u8 *code,
     return !failed;
 }
 
-static C_INT ud_s1_metadata_and_lexeme(C_VOID)
+static lib_i32 ud_s1_metadata_and_lexeme(void)
 {
     static const lib_u8 reserved[] = { 0x0fu, 0x25u, 0xc0u };
     static const lib_u8 adjacent[][3] = {
@@ -212,7 +213,7 @@ static C_INT ud_s1_metadata_and_lexeme(C_VOID)
     }
     return 1;
 }
-static C_INT ud_s1_lexeme_memory_form_rejection(C_VOID)
+static lib_i32 ud_s1_lexeme_memory_form_rejection(void)
 {
     static const lib_u8 invalid[][3] = {
         { 0x62u, 0xc0u, 0u }, { 0x8du, 0xc0u, 0u },
@@ -243,7 +244,7 @@ static C_INT ud_s1_lexeme_memory_form_rejection(C_VOID)
     }
     return 1;
 }
-static C_INT ud_s1_lexeme_primary_group_rejection(C_VOID)
+static lib_i32 ud_s1_lexeme_primary_group_rejection(void)
 {
     static const lib_u8 invalid[][2] = {
         { 0x8fu, 0xc8u }, { 0xc6u, 0xc8u }, { 0xc7u, 0xc8u },
@@ -275,7 +276,7 @@ static C_INT ud_s1_lexeme_primary_group_rejection(C_VOID)
             6u, CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE, &lexeme)) return 0;
     return 1;
 }
-static C_INT ud_s1_lexeme_8086_pop_cs(C_VOID)
+static lib_i32 ud_s1_lexeme_8086_pop_cs(void)
 {
     static const lib_u8 pop_cs[] = { 0x0fu };
     core_machine_cpu_instruction_lexeme lexeme;
@@ -286,7 +287,7 @@ static C_INT ud_s1_lexeme_8086_pop_cs(C_VOID)
         !core_machine_cpu_instruction_lexeme_scan(pop_cs, sizeof(pop_cs),
             CORE_MACHINE_CPU_PROFILE_80186, LIB_FALSE, &lexeme);
 }
-static C_INT ud_s1_primary_metadata_and_lexeme(C_VOID)
+static lib_i32 ud_s1_primary_metadata_and_lexeme(void)
 {
     static const lib_u8 reserved[] = { 0xf1u };
     core_machine_cpu_instruction_lexeme lexeme;
@@ -311,7 +312,7 @@ static core_machine_cpu_profile ud_s1_primary_expected_minimum(lib_u8 opcode)
     return CORE_MACHINE_CPU_PROFILE_8086;
 }
 
-static C_INT ud_s1_primary_metadata_matrix(C_VOID)
+static lib_i32 ud_s1_primary_metadata_matrix(void)
 {
     lib_u16 value;
 
@@ -320,7 +321,7 @@ static C_INT ud_s1_primary_metadata_matrix(C_VOID)
         core_machine_cpu_instruction_metadata metadata =
             core_machine_cpu_instruction_metadata_get(
                 CORE_MACHINE_CPU_INSTRUCTION_PRIMARY, opcode, 0u);
-        type_bool reserved = opcode == 0xd6u || opcode == 0xf1u;
+        lib_u8 reserved = opcode == 0xd6u || opcode == 0xf1u;
 
         if (metadata.valid == reserved || (!reserved &&
             metadata.minimum_cpu != ud_s1_primary_expected_minimum(opcode))) return 0;
@@ -343,7 +344,7 @@ static core_machine_cpu_profile ud_s1_0f_expected_minimum(lib_u8 opcode)
     return (core_machine_cpu_profile)0xffu;
 }
 
-static C_INT ud_s1_0f_metadata_matrix(C_VOID)
+static lib_i32 ud_s1_0f_metadata_matrix(void)
 {
     lib_u16 value;
 
@@ -363,7 +364,7 @@ static C_INT ud_s1_0f_metadata_matrix(C_VOID)
             CORE_MACHINE_CPU_INSTRUCTION_0F, 0xbau, 0xe0u).valid) return 0;
     return 1;
 }
-static C_INT ud_s1_protected_invalid_gate(C_VOID)
+static lib_i32 ud_s1_protected_invalid_gate(void)
 {
     static const lib_u8 code[] = { 0x0fu, 0x01u, 0xf8u };
     ud_s1_machine state;
@@ -371,17 +372,17 @@ static C_INT ud_s1_protected_invalid_gate(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !ud_s1_boot_protected(&state, code, sizeof(code), LIB_FALSE);
+    lib_i32 failed = !ud_s1_boot_protected(&state, code, sizeof(code), LIB_FALSE);
 
     if (!failed) {
         before = state.machine->executor_cpu;
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_FAULT ||
+            (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
             after.data.eflags != before.data.eflags ||
@@ -392,7 +393,7 @@ static C_INT ud_s1_protected_invalid_gate(C_VOID)
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 invalid_primary[] = { 0xf1u };
     static const lib_u8 reserved_0f[] = { 0x0fu, 0x01u, 0xf8u };
@@ -420,13 +421,13 @@ C_INT main(C_VOID)
         !ud_s1_protected_invalid_gate()) {
         return 1;
     }
-    STD_PRINTF("M5:T326:S1:PROTECTED-UD-DELIVERY:OK\n");
-    STD_PRINTF("M5:T401:S2:0F25-METADATA:OK\n");
-    STD_PRINTF("M5:T401:S3:0F-METADATA-MATRIX:OK\n");
-    STD_PRINTF("M5:T401:S4:F1-METADATA:OK\n");
-    STD_PRINTF("M5:T401:S4:PRIMARY-METADATA-MATRIX:OK\n");
-    STD_PRINTF("M5:T401:S5:LEXEME-8086-POP-CS:OK\n");
-    STD_PRINTF("M5:T401:S5:LEXEME-PRIMARY-GROUPS:OK\n");
-    STD_PRINTF("M5:T401:S5:LEXEME-MEMORY-FORMS:OK\n");
+    printf("M5:T326:S1:PROTECTED-UD-DELIVERY:OK\n");
+    printf("M5:T401:S2:0F25-METADATA:OK\n");
+    printf("M5:T401:S3:0F-METADATA-MATRIX:OK\n");
+    printf("M5:T401:S4:F1-METADATA:OK\n");
+    printf("M5:T401:S4:PRIMARY-METADATA-MATRIX:OK\n");
+    printf("M5:T401:S5:LEXEME-8086-POP-CS:OK\n");
+    printf("M5:T401:S5:LEXEME-PRIMARY-GROUPS:OK\n");
+    printf("M5:T401:S5:LEXEME-MEMORY-FORMS:OK\n");
     return 0;
 }

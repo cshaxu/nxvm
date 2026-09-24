@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "lib/base/sync_interface.h"
 #include "lib/base/clock_interface.h"
@@ -8,11 +7,11 @@
 #include "app-nxvm/machine/waiting.h"
 
 /* Compare positive rational values without cross multiplication overflow. */
-C_INT vm_machine_pacing_ratio_compare(lib_u64 left_numerator,
+lib_i32 vm_machine_pacing_ratio_compare(lib_u64 left_numerator,
     lib_u64 left_denominator, lib_u64 right_numerator,
     lib_u64 right_denominator)
 {
-    C_INT inverted = 0;
+    lib_i32 inverted = 0;
 
     if (left_denominator == 0u || right_denominator == 0u) return 0;
     for (;;) {
@@ -20,7 +19,7 @@ C_INT vm_machine_pacing_ratio_compare(lib_u64 left_numerator,
         lib_u64 right_integer = right_numerator / right_denominator;
         lib_u64 left_remainder;
         lib_u64 right_remainder;
-        C_INT result;
+        lib_i32 result;
 
         if (left_integer != right_integer) {
             result = left_integer < right_integer ? -1 : 1;
@@ -41,7 +40,7 @@ C_INT vm_machine_pacing_ratio_compare(lib_u64 left_numerator,
     }
 }
 
-C_VOID vm_machine_pacing_reset(vm_machine *session)
+void vm_machine_pacing_reset(vm_machine *session)
 {
     if (session == LIB_NULL) return;
     session->pacing_origin_valid = LIB_FALSE;
@@ -50,7 +49,7 @@ C_VOID vm_machine_pacing_reset(vm_machine *session)
     session->pacing_core_origin_ticks = 0u;
 }
 
-static C_INT vm_machine_pacing_waits_at_least_millisecond(
+static lib_i32 vm_machine_pacing_waits_at_least_millisecond(
     const vm_machine *session, const core_machine_time_observation *observation,
     lib_u64 target_tick, lib_u64 host_units)
 {
@@ -67,7 +66,7 @@ static C_INT vm_machine_pacing_waits_at_least_millisecond(
             session->pacing_host_units_per_second) > 0;
 }
 
-static C_INT vm_machine_pacing_target_due(vm_machine *session,
+static lib_i32 vm_machine_pacing_target_due(vm_machine *session,
     const core_machine_time_observation *observation,
     lib_u64 target_tick)
 {
@@ -117,59 +116,59 @@ static C_INT vm_machine_pacing_target_due(vm_machine *session,
     return LIB_TRUE;
 }
 
-type_status vm_machine_pacing_wait(vm_machine *session)
+lib_status vm_machine_pacing_wait(vm_machine *session)
 {
     core_machine_time_observation observation;
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (core_machine_capture_time_observation(session->core_machine,
-            &observation) != TYPE_STATUS_OK || !observation.pacing_time_available ||
-        session->speed != VM_MACHINE_SPEED_STANDARD) return TYPE_STATUS_OK;
-    (C_VOID)vm_machine_pacing_target_due(session, &observation,
+            &observation) != LIB_STATUS_OK || !observation.pacing_time_available ||
+        session->speed != VM_MACHINE_SPEED_STANDARD) return LIB_STATUS_OK;
+    (void)vm_machine_pacing_target_due(session, &observation,
         observation.elapsed_ticks);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status vm_machine_waiting_advance(vm_machine *session,
-    const core_machine_run_result *result, C_INT *out_advanced)
+lib_status vm_machine_waiting_advance(vm_machine *session,
+    const core_machine_run_result *result, lib_i32 *out_advanced)
 {
     core_machine_time_observation observation;
-    type_bool advanced;
-    type_status status;
+    lib_u8 advanced;
+    lib_status status;
 
     if (session == LIB_NULL || result == LIB_NULL || out_advanced == LIB_NULL ||
-        session->core_machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+        session->core_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_advanced = 0;
     if (result->reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         !vm_machine_control_is_running(&session->control)) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     status = core_machine_capture_time_observation(session->core_machine,
         &observation);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) return status;
     if (!observation.next_deadline_valid) {
         if (observation.progress_disposition !=
                 CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY) {
-            return TYPE_STATUS_OK;
+            return LIB_STATUS_OK;
         }
         /* Standard may pace only completed Core progress.  This does not
          * request a guest duration; the following bounded quantum is wholly
          * selected and advanced by Core. */
         if (session->speed == VM_MACHINE_SPEED_STANDARD &&
             !vm_machine_pacing_target_due(session, &observation,
-                observation.elapsed_ticks)) return TYPE_STATUS_OK;
+                observation.elapsed_ticks)) return LIB_STATUS_OK;
         status = core_machine_advance_l1_compatibility(session->core_machine, &advanced);
-        if (status == TYPE_STATUS_OK && advanced) *out_advanced = 1;
+        if (status == LIB_STATUS_OK && advanced) *out_advanced = 1;
         return status;
     }
     if (session->speed == VM_MACHINE_SPEED_STANDARD &&
         !vm_machine_pacing_target_due(session, &observation,
             observation.next_deadline_tick)) {
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     status = core_machine_advance_to_next_deadline(session->core_machine, &advanced);
-    if (status == TYPE_STATUS_OK && advanced) *out_advanced = 1;
+    if (status == LIB_STATUS_OK && advanced) *out_advanced = 1;
     return status;
 }

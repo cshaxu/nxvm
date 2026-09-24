@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/cpu_timing.h"
 
-C_INT core_machine_timing_add_ticks(lib_u64 *value,
+lib_i32 core_machine_timing_add_ticks(lib_u64 *value,
     lib_u64 delta)
 {
     if (value == LIB_NULL || UINT64_MAX - *value < delta) return 0;
@@ -12,7 +12,7 @@ C_INT core_machine_timing_add_ticks(lib_u64 *value,
     return 1;
 }
 
-static C_INT core_machine_instruction_is_prefix(lib_u8 opcode)
+static lib_i32 core_machine_instruction_is_prefix(lib_u8 opcode)
 {
     switch (opcode) {
     case 0xf0u: case 0xf2u: case 0xf3u: case 0x2eu: case 0x36u:
@@ -35,7 +35,7 @@ static lib_u32 core_machine_instruction_prefix_count(const t_cpuins_data *data)
     return count;
 }
 
-static C_INT core_machine_instruction_has_lock_prefix(const t_cpuins_data *data,
+static lib_i32 core_machine_instruction_has_lock_prefix(const t_cpuins_data *data,
     lib_u32 prefixes)
 {
     lib_u32 index;
@@ -47,7 +47,7 @@ static C_INT core_machine_instruction_has_lock_prefix(const t_cpuins_data *data,
     return 0;
 }
 
-static C_INT core_machine_80386_timing_has_source_prefixes(
+static lib_i32 core_machine_80386_timing_has_source_prefixes(
     const t_cpuins_data *data, lib_u32 prefixes)
 {
     lib_u32 index;
@@ -225,7 +225,7 @@ typedef struct core_machine_source_repeat_timing_contract {
 typedef struct core_machine_source_transfer_plan {
     core_machine_source_timing_form form;
     lib_u8 word_transfers;
-    type_bool complete;
+    lib_u8 complete;
 } core_machine_source_transfer_plan;
 
 /* Intel 8086 Family User's Manual, Tables 2-20 and 2-21.  The selected
@@ -528,7 +528,7 @@ static const core_machine_source_repeat_timing_contract
 #define CORE_MACHINE_80386_JCC_TAKEN_TICKS 7u
 #define CORE_MACHINE_SOURCE_UNALLOCATED_TICKS 1u
 
-static C_VOID core_machine_source_timing_mark_unallocated(core_machine *machine,
+static void core_machine_source_timing_mark_unallocated(core_machine *machine,
     lib_u64 *out_ticks)
 {
     if (machine != LIB_NULL) machine->source_timing_unallocated = LIB_TRUE;
@@ -605,9 +605,9 @@ static const core_machine_source_repeat_timing_entry
     *core_machine_source_repeat_timing_lookup(
         const core_machine_source_repeat_timing_contract *contract,
         core_machine_source_timing_form form);
-static C_INT core_machine_source_timing_string_form(lib_u8 opcode,
+static lib_i32 core_machine_source_timing_string_form(lib_u8 opcode,
     core_machine_source_timing_form *out_form);
-static C_INT core_machine_source_timing_string_repeat_is_defined(
+static lib_i32 core_machine_source_timing_string_repeat_is_defined(
     core_machine_source_timing_form form, t_cpuins_data_prefix_rep prefix);
 static core_machine_source_transfer_plan
     core_machine_source_timing_string_transfer_plan(
@@ -617,7 +617,7 @@ static lib_u64 core_machine_source_timing_repeat_string(
     const core_machine_source_repeat_timing_entry *entry,
     const core_machine_source_transfer_plan *transfer_plan);
 
-static C_INT core_machine_80386_timing_uses_permission_map(
+static lib_i32 core_machine_80386_timing_uses_permission_map(
     const t_cpuins_data *data)
 {
     lib_u32 iopl;
@@ -660,11 +660,11 @@ static const core_machine_source_repeat_timing_contract
     }
 }
 
-static C_INT core_machine_80386_source_string_port_entry(
+static lib_i32 core_machine_80386_source_string_port_entry(
     const t_cpuins_data *data, core_machine_source_timing_form form,
     core_machine_source_repeat_timing_entry *out_entry)
 {
-    C_INT permission;
+    lib_i32 permission;
 
     if (data == LIB_NULL || out_entry == LIB_NULL) return 0;
     permission = core_machine_80386_timing_uses_permission_map(data);
@@ -690,7 +690,7 @@ static C_INT core_machine_80386_source_string_port_entry(
     return 0;
 }
 
-C_INT core_machine_string_io_source_instruction_cost(
+lib_i32 core_machine_string_io_source_instruction_cost(
     core_machine *machine, lib_u64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -822,7 +822,7 @@ C_INT core_machine_string_io_source_instruction_cost(
     return 0;
 }
 
-static C_INT core_machine_source_timing_modrm_is_memory(
+static lib_i32 core_machine_source_timing_modrm_is_memory(
     const t_cpuins_data *data, lib_u32 opcode_index)
 {
     return opcode_index + 1u < data->oplen &&
@@ -843,7 +843,7 @@ static const core_machine_source_repeat_timing_entry
     return LIB_NULL;
 }
 
-static C_INT core_machine_source_timing_string_form(lib_u8 opcode,
+static lib_i32 core_machine_source_timing_string_form(lib_u8 opcode,
     core_machine_source_timing_form *out_form)
 {
     if (out_form == LIB_NULL) return 0;
@@ -874,7 +874,7 @@ static C_INT core_machine_source_timing_string_form(lib_u8 opcode,
     }
 }
 
-static C_INT core_machine_source_timing_string_repeat_is_defined(
+static lib_i32 core_machine_source_timing_string_repeat_is_defined(
     core_machine_source_timing_form form, t_cpuins_data_prefix_rep prefix)
 {
     if (prefix == PREFIX_REP_NONE) return 1;
@@ -924,10 +924,10 @@ static lib_u64 core_machine_source_timing_string_modifiers(
     lib_u32 index;
     lib_u8 opcode = 0u;
     lib_u64 modifiers = 0u;
-    C_INT segment_override = 0;
-    C_INT word;
-    C_INT source_transfer;
-    C_INT destination_transfer;
+    lib_i32 segment_override = 0;
+    lib_i32 word;
+    lib_i32 source_transfer;
+    lib_i32 destination_transfer;
     lib_u64 odd_word_ticks;
 
     if (machine == LIB_NULL || data == LIB_NULL ||
@@ -988,10 +988,10 @@ static lib_u64 core_machine_source_timing_repeat_string(
     const core_machine_source_repeat_timing_entry *entry,
     const core_machine_source_transfer_plan *transfer_plan)
 {
-    type_bool operand_size;
-    type_bool address_size;
+    lib_u8 operand_size;
+    lib_u8 address_size;
     lib_u32 count;
-    C_INT continuing;
+    lib_i32 continuing;
     lib_u64 ticks;
 
     if (machine == LIB_NULL || data == LIB_NULL || entry == LIB_NULL) return 0u;
@@ -1037,11 +1037,11 @@ static lib_u64 core_machine_source_timing_repeat_string(
         entry->form, transfer_plan);
 }
 
-static C_INT core_machine_8086_timing_has_segment_override(
+static lib_i32 core_machine_8086_timing_has_segment_override(
     const t_cpuins_data *data, lib_u32 prefixes)
 {
     lib_u32 index;
-    C_INT found = 0;
+    lib_i32 found = 0;
 
     if (data == LIB_NULL) return 0;
     for (index = 0u; index < prefixes; ++index) {
@@ -1097,8 +1097,8 @@ static lib_u64 core_machine_8086_timing_odd_word(
 
 typedef struct core_machine_primary_timing_shape {
     core_machine_source_timing_form form;
-    C_INT memory;
-    C_INT word;
+    lib_i32 memory;
+    lib_i32 word;
 } core_machine_primary_timing_shape;
 
 static lib_u8 core_machine_source_timing_primary_word_transfers(
@@ -1153,15 +1153,15 @@ static core_machine_source_transfer_plan
 /* This is intentionally an encoding classifier, not an instruction-handler
  * classifier.  A shared handler does not make r/m read, r/m write, and
  * register forms one timing row. */
-static C_INT core_machine_source_timing_primary_shape(
+static lib_i32 core_machine_source_timing_primary_shape(
     const t_cpuins_data *data, lib_u32 opcode_index,
     core_machine_primary_timing_shape *out_shape)
 {
     lib_u8 opcode;
     lib_u8 modrm;
     lib_u8 group;
-    C_INT memory;
-    C_INT word;
+    lib_i32 memory;
+    lib_i32 word;
 
     if (data == LIB_NULL || out_shape == LIB_NULL ||
         opcode_index >= data->oplen) return 0;
@@ -1350,7 +1350,7 @@ static C_INT core_machine_source_timing_primary_shape(
 /* Table 2-9 gives the immediate-IMUL rows as ranges.  S1 chose their fixed
  * midpoints, so neither the ModR/M form nor an external model may select an
  * endpoint or constrained value. */
-static C_INT core_machine_80186_immediate_imul_midpoint_cost(
+static lib_i32 core_machine_80186_immediate_imul_midpoint_cost(
     lib_u8 opcode, lib_u64 *out_ticks)
 {
     if (out_ticks == LIB_NULL) return 0;
@@ -1392,7 +1392,7 @@ static lib_u8 core_machine_8086_group3_popcount(
 }
 
 static lib_u64 core_machine_8086_group3_magnitude(
-    lib_u64 value, lib_u8 bits, C_INT *out_negative)
+    lib_u64 value, lib_u8 bits, lib_i32 *out_negative)
 {
     lib_u64 mask = (UINT64_C(1) << bits) - 1u;
     lib_u64 sign = UINT64_C(1) << (bits - 1u);
@@ -1411,10 +1411,10 @@ static lib_u8 core_machine_8086_group3_division_steps(
     lib_u64 top = UINT64_C(1) << (bits - 1u);
     lib_u8 count = 0u;
     lib_u8 index;
-    C_INT carry = 1;
+    lib_i32 carry = 1;
 
     for (index = 0u; index < bits; ++index) {
-        C_INT next_carry = (low & top) != 0u;
+        lib_i32 next_carry = (low & top) != 0u;
 
         low = ((low << 1u) | (lib_u64)carry) & mask;
         carry = (high & top) != 0u;
@@ -1428,15 +1428,15 @@ static lib_u8 core_machine_8086_group3_division_steps(
 }
 
 static lib_u64 core_machine_8086_group3_model_cost(
-    core_machine_source_timing_form form, C_INT word, C_INT memory,
+    core_machine_source_timing_form form, lib_i32 word, lib_i32 memory,
     lib_u64 operand1, lib_u64 operand2)
 {
     lib_u8 bits = word ? 16u : 8u;
     lib_u64 minimum;
     lib_u64 maximum;
     lib_u64 work;
-    C_INT operand1_negative;
-    C_INT operand2_negative;
+    lib_i32 operand1_negative;
+    lib_i32 operand2_negative;
 
     switch (form) {
     case CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL:
@@ -1481,7 +1481,7 @@ static lib_u64 core_machine_8086_group3_model_cost(
 /* The 8086 entries retain their source-manual memory additions.  The selected
  * 80186 reference model already includes effective-address time; Table 1-16
  * still supplies its independent odd-word and segment-prefix terms. */
-C_INT core_machine_l2_dynamic_arithmetic_model_cost(
+lib_i32 core_machine_l2_dynamic_arithmetic_model_cost(
     core_machine *machine, lib_u64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -1489,8 +1489,8 @@ C_INT core_machine_l2_dynamic_arithmetic_model_cost(
     lib_u32 prefixes;
     lib_u8 opcode;
     lib_u64 ticks;
-    C_INT segment_override;
-    C_INT lock_prefix;
+    lib_i32 segment_override;
+    lib_i32 lock_prefix;
 
     if (machine == LIB_NULL || out_ticks == LIB_NULL ||
         (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
@@ -1559,7 +1559,7 @@ C_INT core_machine_l2_dynamic_arithmetic_model_cost(
     return 1;
 }
 
-static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
+static lib_i32 core_machine_legacy_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks,
     const core_machine_legacy_source_timing_contract *contract)
 {
@@ -1567,8 +1567,8 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     lib_u32 prefixes = core_machine_instruction_prefix_count(data);
     lib_u8 opcode;
     lib_u32 fallthrough;
-    C_INT segment_override;
-    C_INT lock_prefix;
+    lib_i32 segment_override;
+    lib_i32 lock_prefix;
 
     if (out_ticks == LIB_NULL || contract == LIB_NULL) return 0;
     if (prefixes >= data->oplen) {
@@ -1591,7 +1591,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_JCC;
-        fallthrough = TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + prefixes + 2u);
+        fallthrough = CORE_MACHINE_MASK_U16(data->oldcpu.data.eip + prefixes + 2u);
         *out_ticks = machine->executor_cpu.data.eip == fallthrough ?
             contract->jcc_not_taken_ticks : contract->jcc_taken_ticks;
         return 1;
@@ -1731,8 +1731,8 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
             count = (opcode == 0xd0u || opcode == 0xd1u) ? 1u :
                 (opcode == 0xd2u || opcode == 0xd3u) ?
-                (TYPE_MASK_UNSIGNED_8(data->oldcpu.data.cx) & 0x1fu) :
-                (TYPE_MASK_UNSIGNED_8(data->cimm) & 0x1fu);
+                (CORE_MACHINE_MASK_U8(data->oldcpu.data.cx) & 0x1fu) :
+                (CORE_MACHINE_MASK_U8(data->cimm) & 0x1fu);
             *out_ticks = data->flagMem ?
                 ((opcode == 0xd0u || opcode == 0xd1u) ? 15u : 17u + count) :
                 ((opcode == 0xd0u || opcode == 0xd1u) ? 2u : 5u + count);
@@ -1749,7 +1749,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         if (opcode == 0xd0u || opcode == 0xd1u) {
             *out_ticks = data->flagMem ? 15u : 2u;
         } else {
-            count = TYPE_MASK_UNSIGNED_8(data->oldcpu.data.cx);
+            count = CORE_MACHINE_MASK_U8(data->oldcpu.data.cx);
             *out_ticks = (data->flagMem ? 20u : 8u) + 4u * count;
         }
         if (data->flagMem) {
@@ -1837,14 +1837,14 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     return 1;
 }
 
-C_INT core_machine_8086_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_8086_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks)
 {
     return core_machine_legacy_source_instruction_cost(machine, out_ticks,
         &core_machine_8086_source_timing_contract);
 }
 
-C_INT core_machine_80186_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_80186_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks)
 {
     return core_machine_legacy_source_instruction_cost(machine, out_ticks,
@@ -1887,20 +1887,20 @@ static lib_u8 core_machine_80286_group2_count(
     const t_cpuins_data *data, lib_u32 prefixes, lib_u8 opcode)
 {
     if (opcode == 0xd2u || opcode == 0xd3u) {
-        return TYPE_MASK_UNSIGNED_8(data->oldcpu.data.cx) & 0x1fu;
+        return CORE_MACHINE_MASK_U8(data->oldcpu.data.cx) & 0x1fu;
     }
     if ((opcode == 0xc0u || opcode == 0xc1u) && prefixes + 2u < data->oplen) {
-        return TYPE_MASK_UNSIGNED_8(data->cimm) & 0x1fu;
+        return CORE_MACHINE_MASK_U8(data->cimm) & 0x1fu;
     }
     return 0u;
 }
 
-static C_INT core_machine_80286_system_source_instruction_cost(
+static lib_i32 core_machine_80286_system_source_instruction_cost(
     core_machine *machine, lib_u64 *out_ticks);
-static C_INT core_machine_control_stack_is_protected(
+static lib_i32 core_machine_control_stack_is_protected(
     const t_cpuins_data *data);
 
-C_INT core_machine_primary_source_instruction_cost(
+lib_i32 core_machine_primary_source_instruction_cost(
     core_machine *machine, lib_u64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -1910,9 +1910,9 @@ C_INT core_machine_primary_source_instruction_cost(
     lib_u64 ticks;
     lib_u8 transfers;
     core_machine_source_transfer_plan transfer_plan;
-    C_INT segment_override;
-    C_INT lock_prefix;
-    C_INT memory;
+    lib_i32 segment_override;
+    lib_i32 lock_prefix;
+    lib_i32 memory;
 
     if (machine == LIB_NULL || out_ticks == LIB_NULL) return 0;
     data = &machine->executor_cpu_instructions.data;
@@ -1999,7 +1999,7 @@ C_INT core_machine_primary_source_instruction_cost(
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
         opcode >= 0x70u && opcode <= 0x7fu) {
         *out_ticks = machine->executor_cpu.data.eip ==
-            TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + 2u) ?
+            CORE_MACHINE_MASK_U16(data->oldcpu.data.eip + 2u) ?
             CORE_MACHINE_80286_JCC_NOT_TAKEN_TICKS :
             CORE_MACHINE_80286_JCC_TAKEN_TICKS;
         return 1;
@@ -2153,7 +2153,7 @@ C_INT core_machine_primary_source_instruction_cost(
         if ((opcode == 0xd0u || opcode == 0xd1u || opcode == 0xd2u ||
             opcode == 0xd3u) && extension != 6u) {
             lib_u64 count = (opcode == 0xd0u || opcode == 0xd1u) ?
-                1u : TYPE_MASK_UNSIGNED_8(data->oldcpu.data.cx);
+                1u : CORE_MACHINE_MASK_U8(data->oldcpu.data.cx);
 
             if (segment_override && !data->flagMem) return 0;
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_GROUP2;
@@ -2615,14 +2615,14 @@ static lib_u64 core_machine_control_stack_source_lookup(
     }
 }
 
-static C_INT core_machine_control_stack_is_protected(
+static lib_i32 core_machine_control_stack_is_protected(
     const t_cpuins_data *data)
 {
     return data != LIB_NULL && (data->oldcpu.data.cr0 & VCPU_CR0_PE) != 0u &&
         (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) == 0u;
 }
 
-static C_INT core_machine_control_stack_next_term(core_machine *machine,
+static lib_i32 core_machine_control_stack_next_term(core_machine *machine,
     lib_u64 *out_ticks)
 {
     core_machine_cpu_instruction_lexeme lexeme;
@@ -2642,11 +2642,11 @@ static C_INT core_machine_control_stack_next_term(core_machine *machine,
     return 1;
 }
 
-static C_INT core_machine_control_stack_prefixes_are_source_backed(
+static lib_i32 core_machine_control_stack_prefixes_are_source_backed(
     const core_machine *machine, const t_cpuins_data *data,
     lib_u32 prefixes)
 {
-    C_INT segment_override;
+    lib_i32 segment_override;
 
     if (machine == LIB_NULL || data == LIB_NULL) return 0;
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
@@ -2659,7 +2659,7 @@ static C_INT core_machine_control_stack_prefixes_are_source_backed(
         core_machine_instruction_has_lock_prefix(data, prefixes);
 }
 
-static C_INT core_machine_control_stack_add_next_term(core_machine *machine,
+static lib_i32 core_machine_control_stack_add_next_term(core_machine *machine,
     lib_u64 base_ticks, lib_u64 *out_ticks)
 {
     lib_u64 next_ticks;
@@ -2758,9 +2758,9 @@ static core_machine_source_transfer_plan
     return plan;
 }
 
-static C_INT core_machine_control_stack_source_result(core_machine *machine,
+static lib_i32 core_machine_control_stack_source_result(core_machine *machine,
     core_machine_source_timing_form form, lib_u64 additions,
-    C_INT include_next_term, lib_u64 *out_ticks)
+    lib_i32 include_next_term, lib_u64 *out_ticks)
 {
     core_machine_source_transfer_plan transfer_plan;
     lib_u64 ticks;
@@ -2779,12 +2779,12 @@ static C_INT core_machine_control_stack_source_result(core_machine *machine,
         ticks, out_ticks) : ((*out_ticks = ticks), 1);
 }
 
-static C_INT core_machine_control_stack_direct_target_is_task_gate(
+static lib_i32 core_machine_control_stack_direct_target_is_task_gate(
     const t_cpuins_data *data, lib_u32 prefixes, const t_cpu *cpu)
 {
     lib_u16 selector;
     lib_u32 selector_index;
-    C_INT operand32;
+    lib_i32 operand32;
 
     if (data == LIB_NULL || cpu == LIB_NULL || prefixes >= data->oplen) {
         return 0;
@@ -2797,12 +2797,12 @@ static C_INT core_machine_control_stack_direct_target_is_task_gate(
     return selector != cpu->data.tr.selector;
 }
 
-static C_INT core_machine_control_stack_direct_target_is_gate(
+static lib_i32 core_machine_control_stack_direct_target_is_gate(
     const t_cpuins_data *data, lib_u32 prefixes, const t_cpu *cpu)
 {
     lib_u16 selector;
     lib_u32 selector_index;
-    C_INT operand32;
+    lib_i32 operand32;
 
     if (data == LIB_NULL || cpu == LIB_NULL || prefixes >= data->oplen) {
         return 0;
@@ -2812,18 +2812,18 @@ static C_INT core_machine_control_stack_direct_target_is_gate(
     if (selector_index + 1u >= data->oplen) return 0;
     selector = (lib_u16)data->opcodes[selector_index] |
         (lib_u16)((lib_u16)data->opcodes[selector_index + 1u] << 8u);
-    return TYPE_MASK_UNSIGNED_16(selector & VCPU_SELECTOR_IDX) !=
-        TYPE_MASK_UNSIGNED_16(cpu->data.cs.selector & VCPU_SELECTOR_IDX);
+    return CORE_MACHINE_MASK_U16(selector & VCPU_SELECTOR_IDX) !=
+        CORE_MACHINE_MASK_U16(cpu->data.cs.selector & VCPU_SELECTOR_IDX);
 }
 
-static C_INT core_machine_control_stack_direct_call_gate_parameters(
+static lib_i32 core_machine_control_stack_direct_call_gate_parameters(
     core_machine *machine, const t_cpuins_data *data, lib_u32 prefixes,
     lib_u8 *out_parameters)
 {
     lib_u16 selector;
     lib_u32 table_base;
     lib_u32 selector_index;
-    C_INT operand32;
+    lib_i32 operand32;
 
     if (machine == LIB_NULL || data == LIB_NULL || out_parameters == LIB_NULL ||
         prefixes >= data->oplen) return 0;
@@ -2836,10 +2836,10 @@ static C_INT core_machine_control_stack_direct_call_gate_parameters(
         data->oldcpu.data.ldtr.base : data->oldcpu.data.gdtr.base;
     return core_machine_memory_read_physical(&machine->executor_memory,
         table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
-        (type_virtual_address)out_parameters, 1u) == TYPE_STATUS_OK;
+        (lib_uptr)out_parameters, 1u) == LIB_STATUS_OK;
 }
 
-static C_INT core_machine_control_stack_call_gate_parameters(core_machine *machine,
+static lib_i32 core_machine_control_stack_call_gate_parameters(core_machine *machine,
     lib_u16 selector, lib_u8 *out_parameters)
 {
     lib_u32 table_base;
@@ -2849,10 +2849,10 @@ static C_INT core_machine_control_stack_call_gate_parameters(core_machine *machi
         machine->executor_cpu.data.ldtr.base : machine->executor_cpu.data.gdtr.base;
     return core_machine_memory_read_physical(&machine->executor_memory,
         table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
-        (type_virtual_address)out_parameters, 1u) == TYPE_STATUS_OK;
+        (lib_uptr)out_parameters, 1u) == LIB_STATUS_OK;
 }
 
-static C_INT core_machine_control_stack_selector_is_task_gate(core_machine *machine,
+static lib_i32 core_machine_control_stack_selector_is_task_gate(core_machine *machine,
     lib_u16 selector)
 {
     lib_u32 table_base;
@@ -2863,21 +2863,21 @@ static C_INT core_machine_control_stack_selector_is_task_gate(core_machine *mach
         machine->executor_cpu.data.ldtr.base : machine->executor_cpu.data.gdtr.base;
     if (core_machine_memory_read_physical(&machine->executor_memory,
             table_base + (selector & VCPU_SELECTOR_IDX) + 5u,
-            (type_virtual_address)&access, 1u) != TYPE_STATUS_OK) return 0;
+            (lib_uptr)&access, 1u) != LIB_STATUS_OK) return 0;
     return (access & 0x0fu) == VCPU_DESC_SYS_TYPE_TASKGATE;
 }
 
-static C_INT core_machine_control_stack_short_branch_taken(
+static lib_i32 core_machine_control_stack_short_branch_taken(
     const t_cpuins_data *data, const core_machine *machine,
-    lib_u32 prefixes, C_INT *out_taken)
+    lib_u32 prefixes, lib_i32 *out_taken)
 {
     if (data == LIB_NULL || machine == LIB_NULL || out_taken == LIB_NULL) return 0;
     *out_taken = machine->executor_cpu.data.eip !=
-        TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + prefixes + 2u);
+        CORE_MACHINE_MASK_U16(data->oldcpu.data.eip + prefixes + 2u);
     return 1;
 }
 
-C_INT core_machine_control_stack_source_instruction_cost(
+lib_i32 core_machine_control_stack_source_instruction_cost(
     core_machine *machine, lib_u64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -2885,13 +2885,13 @@ C_INT core_machine_control_stack_source_instruction_cost(
     lib_u8 opcode;
     lib_u8 extension;
     lib_u64 ticks;
-    C_INT memory;
-    C_INT protected_mode;
-    C_INT operand32;
-    C_INT protected_execution;
-    C_INT same_privilege;
-    C_INT task_switch;
-    C_INT direct_gate;
+    lib_i32 memory;
+    lib_i32 protected_mode;
+    lib_i32 operand32;
+    lib_i32 protected_execution;
+    lib_i32 same_privilege;
+    lib_i32 task_switch;
+    lib_i32 direct_gate;
 
     if (machine == LIB_NULL || out_ticks == LIB_NULL) return 0;
     data = &machine->executor_cpu_instructions.data;
@@ -2926,7 +2926,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
 
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088 &&
         opcode >= 0x70u && opcode <= 0x7fu) {
-        C_INT taken;
+        lib_i32 taken;
 
         if (!core_machine_control_stack_short_branch_taken(data, machine,
                 prefixes, &taken)) return 0;
@@ -2968,7 +2968,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
     case 0x9au:
         if (task_switch) {
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                (void)core_machine_control_stack_source_lookup(machine,
                     CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT);
                 *out_ticks = core_machine_control_stack_direct_target_is_task_gate(
                     data, prefixes, &machine->executor_cpu) ? 401u : 392u;
@@ -2987,7 +2987,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 !core_machine_control_stack_direct_call_gate_parameters(machine,
                     data, prefixes, &parameters)) return 0;
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                (void)core_machine_control_stack_source_lookup(machine,
                     CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT);
                 *out_ticks = same_privilege ? 52u :
                     (parameters == 0u ? 86u : 94u + 4u * parameters);
@@ -3006,7 +3006,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
             protected_mode && same_privilege) {
-            (C_VOID)core_machine_control_stack_source_lookup(machine,
+            (void)core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT);
             return core_machine_control_stack_add_next_term(machine, 34u,
                 out_ticks);
@@ -3020,7 +3020,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
     case 0xeau:
         if (task_switch) {
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                (void)core_machine_control_stack_source_lookup(machine,
                     CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT);
                 *out_ticks = core_machine_control_stack_direct_target_is_task_gate(
                     data, prefixes, &machine->executor_cpu) ? 401u : 392u;
@@ -3034,7 +3034,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (direct_gate && same_privilege) {
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                (void)core_machine_control_stack_source_lookup(machine,
                     CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT);
                 return core_machine_control_stack_add_next_term(machine, 45u,
                     out_ticks);
@@ -3051,7 +3051,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
             protected_mode && same_privilege) {
-            (C_VOID)core_machine_control_stack_source_lookup(machine,
+            (void)core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT);
             return core_machine_control_stack_add_next_term(machine, 27u,
                 out_ticks);
@@ -3078,7 +3078,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
             protected_mode) {
-            (C_VOID)core_machine_control_stack_source_lookup(machine,
+            (void)core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE);
             if (!same_privilege) {
                 *out_ticks = 69u;
@@ -3102,7 +3102,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
             protected_mode) {
-            (C_VOID)core_machine_control_stack_source_lookup(machine,
+            (void)core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_RET_FAR);
             if (!same_privilege) {
                 *out_ticks = 69u;
@@ -3186,7 +3186,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
             CORE_MACHINE_SOURCE_TIMING_LEAVE);
         return machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186;
     case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u: {
-        C_INT taken;
+        lib_i32 taken;
 
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_LOOP;
@@ -3254,7 +3254,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (task_switch) {
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                (void)core_machine_control_stack_source_lookup(machine,
                     opcode == 0xccu ? CORE_MACHINE_SOURCE_TIMING_INT3 :
                     CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE);
                 *out_ticks = 309u;
@@ -3272,7 +3272,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
             protected_execution) {
-            (C_VOID)core_machine_control_stack_source_lookup(machine,
+            (void)core_machine_control_stack_source_lookup(machine,
                 opcode == 0xccu ? CORE_MACHINE_SOURCE_TIMING_INT3 :
                 CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE);
             return core_machine_control_stack_add_next_term(machine,
@@ -3341,7 +3341,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (task_switch) {
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                (void)core_machine_control_stack_source_lookup(machine,
                     CORE_MACHINE_SOURCE_TIMING_IRET);
                 *out_ticks = 275u;
                 return 1;
@@ -3358,7 +3358,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
             protected_mode) {
-            (C_VOID)core_machine_control_stack_source_lookup(machine,
+            (void)core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_IRET);
             if ((machine->executor_cpu.data.eflags & VCPU_EFLAGS_VM) != 0u) {
                 *out_ticks = 60u;
@@ -3392,7 +3392,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         if (extension == 3u || extension == 5u) {
             if (task_switch) {
                 if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-                    (C_VOID)core_machine_control_stack_source_lookup(machine,
+                    (void)core_machine_control_stack_source_lookup(machine,
                         extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
                         CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED);
                     *out_ticks = 397u + (core_machine_control_stack_selector_is_task_gate(
@@ -3419,7 +3419,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 if (extension == 3u && !same_privilege &&
                     !core_machine_control_stack_call_gate_parameters(machine,
                         data->crm, &parameters)) return 0;
-                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                (void)core_machine_control_stack_source_lookup(machine,
                     extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
                     CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED);
                 *out_ticks = extension == 3u ? (same_privilege ? 56u :
@@ -3432,7 +3432,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 *out_ticks = extension == 3u ? 29u : 26u;
             } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
                 protected_mode) {
-                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                (void)core_machine_control_stack_source_lookup(machine,
                     extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
                     CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED);
                 *out_ticks = extension == 3u ? 38u : 31u;
@@ -3496,7 +3496,7 @@ static lib_u64 core_machine_80386_timing_ceiling_log2(
 /* Intel 80386 PRM, IMUL/MUL timing tables: use the underlined optimizing
  * multiplier only.  `crm` and `cimm` are decoder-owned values captured during
  * the real execution; this timing path never rereads a register or memory. */
-C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
+lib_i32 core_machine_80386_dynamic_multiply_cost(core_machine *machine,
     lib_u64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -3508,8 +3508,8 @@ C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
     lib_u64 magnitude;
     lib_u64 scale;
     core_machine_source_timing_form form;
-    C_INT signed_multiplier;
-    C_INT memory_multiplier;
+    lib_i32 signed_multiplier;
+    lib_i32 memory_multiplier;
 
     if (machine == LIB_NULL || out_ticks == LIB_NULL ||
         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
@@ -3572,7 +3572,7 @@ C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
  * both helpers consume the decoder's completed operand capture after the one
  * successful-retirement publisher, never a handler-local timing decision. */
 static lib_u64 core_machine_80386_timing_zero_scan_count(
-    lib_u64 value, lib_u8 operand_bytes, C_INT reverse)
+    lib_u64 value, lib_u8 operand_bytes, lib_i32 reverse)
 {
     lib_u64 mask;
     lib_u64 bit;
@@ -3591,7 +3591,7 @@ static lib_u64 core_machine_80386_timing_zero_scan_count(
     return count;
 }
 
-C_INT core_machine_80386_secondary_source_instruction_cost(
+lib_i32 core_machine_80386_secondary_source_instruction_cost(
     core_machine *machine, lib_u64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -3602,7 +3602,7 @@ C_INT core_machine_80386_secondary_source_instruction_cost(
     lib_u8 extension;
     lib_u8 operand_bytes;
     lib_u32 fallthrough;
-    C_INT memory;
+    lib_i32 memory;
 
     if (machine == LIB_NULL || out_ticks == LIB_NULL ||
         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
@@ -3695,7 +3695,7 @@ C_INT core_machine_80386_secondary_source_instruction_cost(
  * delivery, task switch, or descriptor-dependent outcome.  This keeps the
  * source row at the sole publisher: handlers, decoder, and delivery owners do
  * not acquire a second clock policy. */
-C_INT core_machine_80386_privileged_source_instruction_cost(
+lib_i32 core_machine_80386_privileged_source_instruction_cost(
     core_machine *machine, lib_u64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -3704,10 +3704,10 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
     lib_u8 secondary;
     lib_u8 modrm;
     lib_u8 extension;
-    C_INT memory;
-    C_INT protected_mode;
+    lib_i32 memory;
+    lib_i32 protected_mode;
 
-    C_INT operand32;
+    lib_i32 operand32;
 
     if (machine == LIB_NULL || out_ticks == LIB_NULL ||
         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
@@ -3872,7 +3872,7 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
     }
 }
 
-static C_INT core_machine_80286_system_source_instruction_cost(core_machine *machine,
+static lib_i32 core_machine_80286_system_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
@@ -4008,7 +4008,7 @@ static C_INT core_machine_80286_system_source_instruction_cost(core_machine *mac
     }
 }
 
-C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_80286_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -4024,14 +4024,14 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     return 1;
 }
 
-C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_80386_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
     lib_u32 prefixes = core_machine_instruction_prefix_count(data);
     lib_u8 opcode;
     lib_u8 group2_extension;
-    C_INT group2_memory;
+    lib_i32 group2_memory;
     lib_u32 fallthrough;
     core_machine_cpu_instruction_lexeme lexeme;
 
@@ -4051,7 +4051,7 @@ C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     if ((opcode == 0xc4u || opcode == 0xc5u) &&
         core_machine_control_stack_is_protected(data) &&
         core_machine_source_timing_modrm_is_memory(data, prefixes)) {
-        C_INT operand32 = data->oldcpu.data.cs.seg.exec.defsize;
+        lib_i32 operand32 = data->oldcpu.data.cs.seg.exec.defsize;
 
         if (data->prefix_oprsize) operand32 = !operand32;
         *out_ticks = operand32 ? 28u : 26u;
@@ -4212,7 +4212,7 @@ lib_u64 core_machine_cpu_timing_maximum_ticks(
         timing->io_surcharge + timing->rep_iteration_surcharge;
 }
 
-C_INT core_machine_compatibility_instruction_cost(core_machine *machine,
+lib_i32 core_machine_compatibility_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
@@ -4222,7 +4222,7 @@ C_INT core_machine_compatibility_instruction_cost(core_machine *machine,
     lib_u8 opcode;
     lib_u64 ticks = timing->base_ticks;
     lib_u32 fallthrough;
-    type_bool code32;
+    lib_u8 code32;
 
     if (prefixes >= sizeof(data->opcodes)) return 0;
     /* This retained compatibility recipe has no source-form allocation.  It
@@ -4260,9 +4260,9 @@ C_INT core_machine_compatibility_instruction_cost(core_machine *machine,
     return 1;
 }
 
-C_VOID core_machine_external_cycle_invalidate(core_machine *machine);
+void core_machine_external_cycle_invalidate(core_machine *machine);
 
-C_VOID core_machine_transaction_trace(C_VOID *opaque,
+void core_machine_transaction_trace(void *opaque,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     core_machine_transaction_phase phase, lib_u32 address,
     lib_u32 value, lib_u32 detail)
@@ -4305,7 +4305,7 @@ C_VOID core_machine_transaction_trace(C_VOID *opaque,
         (detail << 16u));
 }
 
-static C_INT core_machine_external_cycle_access_is_chargeable(type_bool write,
+static lib_i32 core_machine_external_cycle_access_is_chargeable(lib_u8 write,
     core_machine_cpu_memory_access_provenance provenance)
 {
     return (!write && (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH ||
@@ -4315,9 +4315,9 @@ static C_INT core_machine_external_cycle_access_is_chargeable(type_bool write,
         provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
 }
 
-static C_INT core_machine_external_cycle_pending_matches(const core_machine *machine,
+static lib_i32 core_machine_external_cycle_pending_matches(const core_machine *machine,
     core_machine_cpu_external_cycle_space space, lib_u32 address,
-    lib_u8 bytes, type_bool write,
+    lib_u8 bytes, lib_u8 write,
     core_machine_cpu_memory_access_provenance provenance)
 {
     return machine != LIB_NULL && machine->external_cycle_pending_valid &&
@@ -4347,7 +4347,7 @@ static lib_u32 core_machine_external_access_wait_ticks(
     return 0u;
 }
 
-C_VOID core_machine_external_cycle_invalidate(core_machine *machine)
+void core_machine_external_cycle_invalidate(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
     machine->external_cycle_page_valid = LIB_FALSE;
@@ -4355,16 +4355,16 @@ C_VOID core_machine_external_cycle_invalidate(core_machine *machine)
     machine->external_cycle_overlap_valid = LIB_FALSE;
 }
 
-C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
+void core_machine_cpu_external_cycle_trace(void *opaque,
     core_machine_cpu_external_cycle_phase phase,
     core_machine_cpu_external_cycle_space space, lib_u32 address,
-    lib_u8 bytes, type_bool write,
+    lib_u8 bytes, lib_u8 write,
     core_machine_cpu_memory_access_provenance provenance)
 {
     core_machine *machine = (core_machine *)opaque;
     core_machine_trace_event_type type;
-    C_INT pending_matches;
-    type_bool page_timing_enabled;
+    lib_i32 pending_matches;
+    lib_u8 page_timing_enabled;
 
     if (machine == LIB_NULL) return;
     page_timing_enabled = space == CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&

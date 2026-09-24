@@ -1,23 +1,23 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/machine/media/fdd_private.h"
 #include "app-nxvm/machine/media/hdd_private.h"
 #include "lib/storage/file_interface.h"
 
-static const C_CHAR vm_media_direct_fdd_path[] = "vm_media_direct_fdd.img";
-static const C_CHAR vm_media_direct_hdd_path[] = "vm_media_direct_hdd.img";
+static const char vm_media_direct_fdd_path[] = "vm_media_direct_fdd.img";
+static const char vm_media_direct_hdd_path[] = "vm_media_direct_hdd.img";
 static lib_u8 vm_media_direct_fdd_bytes[80u * 2u * 18u * 512u];
 static const core_machine_media_geometry vm_media_direct_fdd_geometry = {
     2880u, 512u, 80u, 2u, 18u
 };
 
-static C_INT vm_media_direct_write(const C_CHAR *path, const C_VOID *bytes,
+static lib_i32 vm_media_direct_write(const char *path, const void *bytes,
     lib_size byte_count)
 {
     lib_storage_file_writer *writer = LIB_NULL;
-    C_INT failed = lib_storage_file_writer_open(path,
+    lib_i32 failed = lib_storage_file_writer_open(path,
         LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) != LIB_STATUS_OK ||
         (byte_count != 0u && lib_storage_file_writer_write(writer, bytes,
             byte_count) != LIB_STATUS_OK);
@@ -27,12 +27,12 @@ static C_INT vm_media_direct_write(const C_CHAR *path, const C_VOID *bytes,
     return failed;
 }
 
-static C_INT vm_media_direct_read_first(const C_CHAR *path,
+static lib_i32 vm_media_direct_read_first(const char *path,
     lib_u8 expected)
 {
     lib_storage_file_reader *reader = LIB_NULL;
     lib_u8 value = 0u;
-    C_INT failed = lib_storage_file_reader_open(path, &reader) != LIB_STATUS_OK ||
+    lib_i32 failed = lib_storage_file_reader_open(path, &reader) != LIB_STATUS_OK ||
         lib_storage_file_reader_read(reader, &value, 1u) != LIB_STATUS_OK ||
         value != expected;
 
@@ -41,14 +41,14 @@ static C_INT vm_media_direct_read_first(const C_CHAR *path,
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_fdd fdd;
     t_hdd hdd;
     lib_u8 hdd_bytes[512] = {0x5au};
     lib_u8 direct_value = 0x3cu;
     lib_u8 byte = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     vm_media_direct_fdd_bytes[0u] = 0xa5u;
     if (vm_media_direct_write(vm_media_direct_fdd_path, vm_media_direct_fdd_bytes,
@@ -87,9 +87,9 @@ C_INT main(C_VOID)
         vm_media_direct_read_first(vm_media_direct_hdd_path, direct_value))) failed = 1;
     vm_machine_fdd_finalize(&fdd);
     vm_machine_hdd_finalize(&hdd);
-    (C_VOID)remove(vm_media_direct_fdd_path);
-    (C_VOID)remove(vm_media_direct_hdd_path);
+    (void)remove(vm_media_direct_fdd_path);
+    (void)remove(vm_media_direct_hdd_path);
     if (failed) return 1;
-    STD_PRINTF("M5:T524:S10:MEDIA-DIRECT-READONLY:OK\n");
+    printf("M5:T524:S10:MEDIA-DIRECT-READONLY:OK\n");
     return 0;
 }

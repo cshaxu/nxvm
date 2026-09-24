@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
@@ -10,7 +10,7 @@
 
 #include "support/rom/session_assets.h"
 
-static C_INT pcat_topology_registry_matches_profile(
+static lib_i32 pcat_topology_registry_matches_profile(
     const vm_profile_default_pc_at_descriptor *profile)
 {
     vm_machine *session = LIB_NULL;
@@ -20,9 +20,9 @@ static C_INT pcat_topology_registry_matches_profile(
     const vm_profile_default_pc_at_route *cmos_route;
     const vm_profile_default_pc_at_route *fdc_route;
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->core_machine == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
@@ -87,7 +87,7 @@ static C_INT pcat_topology_registry_matches_profile(
     return failed;
 }
 
-static C_INT pcat_topology_routes_are_explicit(
+static lib_i32 pcat_topology_routes_are_explicit(
     const vm_profile_default_pc_at_descriptor *profile)
 {
     static const vm_profile_default_pc_at_route expected[] = {
@@ -114,7 +114,7 @@ static C_INT pcat_topology_routes_are_explicit(
     return 0;
 }
 
-static C_INT pcat_topology_rejects_before_registration(
+static lib_i32 pcat_topology_rejects_before_registration(
     const vm_profile_default_pc_at_descriptor *source)
 {
     vm_profile_default_pc_at_descriptor invalid = *source;
@@ -130,7 +130,7 @@ static C_INT pcat_topology_rejects_before_registration(
     return vm_profile_default_pc_at_descriptor_is_valid(&invalid) ? 1 : 0;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
@@ -141,6 +141,6 @@ C_INT main(C_VOID)
         pcat_topology_rejects_before_registration(profile) != 0) {
         return 1;
     }
-    STD_PRINTF("M5:T353:S2:PCAT-TOPOLOGY:OK\n");
+    printf("M5:T353:S2:PCAT-TOPOLOGY:OK\n");
     return 0;
 }

@@ -2,7 +2,6 @@
 #define CORE_MACHINE_FPU_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/cpu_interface.h"
 
@@ -32,7 +31,7 @@ typedef struct core_machine_fpu_operation_metadata {
     core_machine_cpu_profile minimum_cpu;
     core_machine_fpu_profile minimum_fpu;
     core_machine_fpu_operation operation;
-    C_INT valid;
+    lib_i32 valid;
 } core_machine_fpu_operation_metadata;
 
 typedef struct core_machine_fpu_state {
@@ -40,7 +39,7 @@ typedef struct core_machine_fpu_state {
     lib_u16 status_word;
     lib_u8 top;
     lib_u8 tags[8];
-    C_INT pending_unmasked_exception;
+    lib_i32 pending_unmasked_exception;
 } core_machine_fpu_state;
 
 core_machine_fpu_operation_metadata core_machine_fpu_operation_metadata_get(

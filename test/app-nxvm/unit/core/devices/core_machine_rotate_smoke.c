@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -7,18 +8,18 @@
 
 typedef struct rotate_machine { core_machine *machine; } rotate_machine;
 
-static C_VOID rotate_reset(C_VOID *opaque)
+static void rotate_reset(void *opaque)
 {
     rotate_machine *state = (rotate_machine *)opaque;
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider rotate_provider = {
     rotate_reset, LIB_NULL
 };
 
-static C_INT rotate_prepare(core_machine_cpu_profile profile, rotate_machine *state)
+static lib_i32 rotate_prepare(core_machine_cpu_profile profile, rotate_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -37,21 +38,21 @@ static C_INT rotate_prepare(core_machine_cpu_profile profile, rotate_machine *st
     return 1;
 }
 
-static C_INT rotate_run_real(rotate_machine *state, const lib_u8 *code, lib_size bytes,
-    C_INT fault, t_cpu *after, core_machine_cpu_diagnostic *diagnostic)
+static lib_i32 rotate_run_real(rotate_machine *state, const lib_u8 *code, lib_size bytes,
+    lib_i32 fault, t_cpu *after, core_machine_cpu_diagnostic *diagnostic)
 {
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     if (state == LIB_NULL || state->machine == LIB_NULL ||
         !test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) ||
-        core_machine_memory_write(state->machine, 0u, code, bytes) != TYPE_STATUS_OK)
+        core_machine_memory_write(state->machine, 0u, code, bytes) != LIB_STATUS_OK)
         return 0;
     if (fault && !test_core_machine_fixture_preflight_real_ud_terminal(
             state->machine)) return 0;
     status = core_machine_run(state->machine, (core_machine_run_budget){ 1u, 0u }, &result);
-    if (status != (fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
+    if (status != (fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
         result.reason != (fault ? CORE_MACHINE_STOP_FAULT : CORE_MACHINE_STOP_BUDGET) ||
-        core_machine_get_cpu_diagnostic(state->machine, diagnostic) != TYPE_STATUS_OK)
+        core_machine_get_cpu_diagnostic(state->machine, diagnostic) != LIB_STATUS_OK)
         return 0;
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
@@ -104,7 +105,7 @@ static lib_u32 rotate_overflow(lib_u8 operation, lib_u8 width, lib_u32 result,
     return msb ^ carry;
 }
 
-static C_INT rotate_test_forms(C_VOID)
+static lib_i32 rotate_test_forms(void)
 {
     const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF | VCPU_EFLAGS_AF |
         VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
@@ -134,7 +135,7 @@ static C_INT rotate_test_forms(C_VOID)
         rotate_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (memory && width == 32u)
             code[bytes++] = 0x67u;
@@ -170,12 +171,12 @@ static C_INT rotate_test_forms(C_VOID)
             state.machine->executor_cpu.data.eflags = flags;
             if (memory)
                 failed |= core_machine_memory_write(state.machine, 0x4000u, &initial,
-                    width == 8u ? 1u : width == 16u ? 2u : 4u) != TYPE_STATUS_OK;
+                    width == 8u ? 1u : width == 16u ? 2u : 4u) != LIB_STATUS_OK;
             failed |= !rotate_run_real(&state, code, bytes, 0, &after, &diagnostic) ||
                 diagnostic.first_fault.valid;
             if (memory) {
                 failed |= core_machine_memory_read(state.machine, 0x4000u, &observed,
-                    width == 8u ? 1u : width == 16u ? 2u : 4u) != TYPE_STATUS_OK;
+                    width == 8u ? 1u : width == 16u ? 2u : 4u) != LIB_STATUS_OK;
             } else
                 observed = after.data.eax;
             failed |= (width == 8u ? (observed & 0xffu) : width == 16u ?
@@ -195,7 +196,7 @@ static C_INT rotate_test_forms(C_VOID)
     return 1;
 }
 
-static C_INT rotate_test_count_zero(C_VOID)
+static lib_i32 rotate_test_count_zero(void)
 {
     const lib_u32 flags = VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF |
         VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
@@ -212,7 +213,7 @@ static C_INT rotate_test_count_zero(C_VOID)
         rotate_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (width == 32u)
             code[bytes++] = 0x66u;
         code[bytes++] = cl ? (width == 8u ? 0xd2u : 0xd3u) : (width == 8u ? 0xc0u : 0xc1u);
@@ -235,7 +236,7 @@ static C_INT rotate_test_count_zero(C_VOID)
     return 1;
 }
 
-static C_INT rotate_test_non_one(C_VOID)
+static lib_i32 rotate_test_non_one(void)
 {
     const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF | VCPU_EFLAGS_AF |
         VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
@@ -260,7 +261,7 @@ static C_INT rotate_test_non_one(C_VOID)
         rotate_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (!failed) {
             state.machine->executor_cpu.data.eax = initial;
             state.machine->executor_cpu.data.eflags = flags;
@@ -280,14 +281,14 @@ static C_INT rotate_test_non_one(C_VOID)
     return 1;
 }
 
-static C_INT rotate_test_profile(C_VOID)
+static lib_i32 rotate_test_profile(void)
 {
     static const lib_u8 legacy[] = { 0xc0u, 0xc0u, 1u };
     static const lib_u8 rejected[] = { 0x66u, 0xd1u, 0xc0u };
     rotate_machine state;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
-    C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80186, &state);
+    lib_i32 failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80186, &state);
     if (!failed) {
         state.machine->executor_cpu.data.eax = 0x11223381u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
@@ -303,7 +304,7 @@ static C_INT rotate_test_profile(C_VOID)
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
         failed |= !rotate_run_real(&state, rejected, sizeof(rejected), 1, &after, &diagnostic) ||
             !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             after.data.eax != 0x11223381u ||
             after.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_OF) || after.data.eip != 0u;
     }
@@ -311,7 +312,7 @@ static C_INT rotate_test_profile(C_VOID)
     return !failed;
 }
 
-static C_INT rotate_prepare_protected(C_INT writable, C_INT out_of_limit, rotate_machine *state)
+static lib_i32 rotate_prepare_protected(lib_i32 writable, lib_i32 out_of_limit, rotate_machine *state)
 {
     static const lib_u8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
     lib_u8 gdt[] = {
@@ -329,15 +330,15 @@ static C_INT rotate_prepare_protected(C_INT writable, C_INT out_of_limit, rotate
     gdt[17u] = out_of_limit ? 0u : 0xffu;
     gdt[21u] = writable ? 0x92u : 0x90u;
     return rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
-        core_machine_memory_write(state->machine, 0x0100u, pointer, sizeof(pointer)) == TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0u, bootstrap, sizeof(bootstrap)) == TYPE_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0x2000u, halt, sizeof(halt)) == TYPE_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){ 96u, 0u }, &result) == TYPE_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0x0100u, pointer, sizeof(pointer)) == LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0x0300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0u, bootstrap, sizeof(bootstrap)) == LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0x2000u, halt, sizeof(halt)) == LIB_STATUS_OK &&
+        core_machine_run(state->machine, (core_machine_run_budget){ 96u, 0u }, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT rotate_test_access_failure(C_VOID)
+static lib_i32 rotate_test_access_failure(void)
 {
     static const lib_u8 code[] = { 0xc1u,0x06u,0x10u,0u,1u };
     const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
@@ -349,19 +350,19 @@ static C_INT rotate_test_access_failure(C_VOID)
         core_machine_run_result result;
         lib_u16 before = 0x8123u;
         lib_u16 observed = 0u;
-        C_INT failed = !rotate_prepare_protected(pass == 0u, pass == 0u, &state);
+        lib_i32 failed = !rotate_prepare_protected(pass == 0u, pass == 0u, &state);
         if (!failed) {
             state.machine->executor_cpu.data.eflags = flags;
-            failed |= core_machine_memory_write(state.machine, 0x3010u, &before, sizeof(before)) != TYPE_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x2000u, code, sizeof(code)) != TYPE_STATUS_OK;
+            failed |= core_machine_memory_write(state.machine, 0x3010u, &before, sizeof(before)) != LIB_STATUS_OK ||
+                core_machine_memory_write(state.machine, 0x2000u, code, sizeof(code)) != LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
-            failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_FAULT ||
+            failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
                 result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !diagnostic.first_fault.valid ||
                 core_machine_memory_read_physical(&state.machine->executor_memory, 0x3010u,
-                    TYPE_REFERENCE_OF(observed), sizeof(observed)) != TYPE_STATUS_OK || observed != before ||
+                    CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) != LIB_STATUS_OK || observed != before ||
                 after.data.eflags != flags || after.data.eip != 0u;
         }
         core_machine_destroy(state.machine);
@@ -401,7 +402,7 @@ static lib_u32 shift_result(lib_u8 operation, lib_u8 width, lib_u32 value,
     return value;
 }
 
-static C_INT rotate_test_cl_count_profile_matrix(C_VOID)
+static lib_i32 rotate_test_cl_count_profile_matrix(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -424,7 +425,7 @@ static C_INT rotate_test_cl_count_profile_matrix(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !rotate_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11223381u;
@@ -446,7 +447,7 @@ static C_INT rotate_test_cl_count_profile_matrix(C_VOID)
                 }
             }
             if (extension == 6u) {
-                failed |= !rotate_run_real(&state, code, sizeof(code), 1, &after, &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) || after.data.eip != 0u || after.data.eax != before.data.eax || after.data.ecx != before.data.ecx || after.data.eflags != before.data.eflags;
+                failed |= !rotate_run_real(&state, code, sizeof(code), 1, &after, &diagnostic) || !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) || after.data.eip != 0u || after.data.eax != before.data.eax || after.data.ecx != before.data.ecx || after.data.eflags != before.data.eflags;
             } else {
                 failed |= !rotate_run_real(&state, code, sizeof(code), 0, &after, &diagnostic) || diagnostic.first_fault.valid || after.data.eip != sizeof(code) || (after.data.eax & 0xffu) != value || after.data.eax != ((before.data.eax & 0xffffff00u) | value) || after.data.ecx != before.data.ecx;
             }
@@ -456,7 +457,7 @@ static C_INT rotate_test_cl_count_profile_matrix(C_VOID)
     }
     return 1;
 }
-static C_INT rotate_test_shift_forms(C_VOID)
+static lib_i32 rotate_test_shift_forms(void)
 {
     const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF | VCPU_EFLAGS_AF |
         VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
@@ -484,7 +485,7 @@ static C_INT rotate_test_shift_forms(C_VOID)
         rotate_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (expected & (1u << (width - 1u))) expected_flags |= VCPU_EFLAGS_SF;
         if ((expected & rotate_mask(width)) == 0u) expected_flags |= VCPU_EFLAGS_ZF;
         expected_flags |= shift_parity(expected);
@@ -512,10 +513,10 @@ static C_INT rotate_test_shift_forms(C_VOID)
             state.machine->executor_cpu.data.esi = 0x4000u;
             state.machine->executor_cpu.data.eflags = flags;
             if (memory) failed |= core_machine_memory_write(state.machine, 0x4000u, &initial,
-                width == 8u ? 1u : width == 16u ? 2u : 4u) != TYPE_STATUS_OK;
+                width == 8u ? 1u : width == 16u ? 2u : 4u) != LIB_STATUS_OK;
             failed |= !rotate_run_real(&state, code, bytes, 0, &after, &diagnostic) || diagnostic.first_fault.valid;
             if (memory) failed |= core_machine_memory_read(state.machine, 0x4000u, &observed,
-                width == 8u ? 1u : width == 16u ? 2u : 4u) != TYPE_STATUS_OK;
+                width == 8u ? 1u : width == 16u ? 2u : 4u) != LIB_STATUS_OK;
             else observed = after.data.eax;
             failed |= (width == 8u ? observed & 0xffu : width == 16u ? observed & 0xffffu : observed) != expected ||
                 (after.data.eflags & flag_mask) != (expected_flags & flag_mask) ||
@@ -528,7 +529,7 @@ static C_INT rotate_test_shift_forms(C_VOID)
     return 1;
 }
 
-static C_INT rotate_test_shift_boundaries(C_VOID)
+static lib_i32 rotate_test_shift_boundaries(void)
 {
     const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF | VCPU_EFLAGS_AF |
         VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
@@ -544,7 +545,7 @@ static C_INT rotate_test_shift_boundaries(C_VOID)
         rotate_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11223381u;
             state.machine->executor_cpu.data.eflags = flags;
@@ -580,12 +581,12 @@ static C_INT rotate_test_shift_boundaries(C_VOID)
         rotate_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11223381u;
             state.machine->executor_cpu.data.eflags = flags;
             failed |= !rotate_run_real(&state, undefined, sizeof(undefined), 1, &after, &diagnostic) ||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 after.data.eax != 0x11223381u || after.data.eflags != flags || after.data.eip != 0u;
         }
         core_machine_destroy(state.machine);
@@ -594,7 +595,7 @@ static C_INT rotate_test_shift_boundaries(C_VOID)
     return 1;
 }
 
-static C_INT rotate_test_shift_profile_and_fault(C_VOID)
+static lib_i32 rotate_test_shift_profile_and_fault(void)
 {
     static const lib_u8 legacy[] = { 0xc0u, 0xe0u, 1u };
     static const lib_u8 rejected[] = { 0x66u, 0xd1u, 0xe0u };
@@ -603,7 +604,7 @@ static C_INT rotate_test_shift_profile_and_fault(C_VOID)
     rotate_machine state;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
     for (group = 0u; group != 3u; ++group) {
         lib_u8 legacy_code[] = {
             legacy[0], (lib_u8)((group == 2u ? 7u : group + 4u) << 3u) | 0xc0u, legacy[2]
@@ -629,7 +630,7 @@ static C_INT rotate_test_shift_profile_and_fault(C_VOID)
             state.machine->executor_cpu.data.eflags = flags;
             failed |= !rotate_run_real(&state, rejected_code, sizeof(rejected_code), 1,
                 &after, &diagnostic) ||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 after.data.eax != 0x11223381u || after.data.eflags != flags ||
                 after.data.eip != 0u;
         }
@@ -648,16 +649,16 @@ static C_INT rotate_test_shift_profile_and_fault(C_VOID)
             failed = !rotate_prepare_protected(pass == 0u, pass == 0u, &state);
             if (!failed) {
                 state.machine->executor_cpu.data.eflags = flags;
-                failed |= core_machine_memory_write(state.machine, 0x3010u, &before, sizeof(before)) != TYPE_STATUS_OK ||
-                    core_machine_memory_write(state.machine, 0x2000u, code, sizeof(code)) != TYPE_STATUS_OK;
+                failed |= core_machine_memory_write(state.machine, 0x3010u, &before, sizeof(before)) != LIB_STATUS_OK ||
+                    core_machine_memory_write(state.machine, 0x2000u, code, sizeof(code)) != LIB_STATUS_OK;
                 test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
-                failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_FAULT ||
+                failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
                     result.reason != CORE_MACHINE_STOP_FAULT ||
-                    core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+                    core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
                 after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                 failed |= !diagnostic.first_fault.valid ||
                     core_machine_memory_read_physical(&state.machine->executor_memory, 0x3010u,
-                        TYPE_REFERENCE_OF(observed), sizeof(observed)) != TYPE_STATUS_OK || observed != before ||
+                        CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) != LIB_STATUS_OK || observed != before ||
                     after.data.eflags != flags || after.data.eip != 0u;
             }
             core_machine_destroy(state.machine);
@@ -667,7 +668,7 @@ static C_INT rotate_test_shift_profile_and_fault(C_VOID)
     return 1;
 }
 
-static C_INT rotate_test_8086_immediate_rejection(C_VOID)
+static lib_i32 rotate_test_8086_immediate_rejection(void)
 {
     lib_u8 width;
     lib_u8 extension;
@@ -680,7 +681,7 @@ static C_INT rotate_test_8086_immediate_rejection(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_8086, &state);
+        lib_i32 failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_8086, &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11223381u;
@@ -688,7 +689,7 @@ static C_INT rotate_test_8086_immediate_rejection(C_VOID)
                 VCPU_EFLAGS_OF | VCPU_EFLAGS_AF;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !rotate_run_real(&state, code, sizeof(code), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                &diagnostic) || !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 after.data.eip != 0u || after.data.eax != before.data.eax ||
                 after.data.ecx != before.data.ecx || after.data.eflags !=
@@ -700,7 +701,7 @@ static C_INT rotate_test_8086_immediate_rejection(C_VOID)
     }
     return 1;
 }
-static C_INT rotate_test_80186_immediate_extensions(C_VOID)
+static lib_i32 rotate_test_80186_immediate_extensions(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
@@ -725,7 +726,7 @@ static C_INT rotate_test_80186_immediate_extensions(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(profiles[profile], &state);
+        lib_i32 failed = !rotate_prepare(profiles[profile], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = initial;
@@ -745,7 +746,7 @@ static C_INT rotate_test_80186_immediate_extensions(C_VOID)
             if (extension == 6u) {
                 failed |= !rotate_run_real(&state, code, sizeof(code), 1,
                     &after, &diagnostic) || !diagnostic.first_fault.valid ||
-                    !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                    !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                         VCPUINS_EXCEPT_UD) || after.data.eip != 0u ||
                     after.data.eax != before.data.eax || after.data.ecx !=
                         before.data.ecx || after.data.edx != before.data.edx ||
@@ -773,7 +774,7 @@ static C_INT rotate_test_80186_immediate_extensions(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!rotate_test_forms() || !rotate_test_count_zero() || !rotate_test_non_one() || !rotate_test_cl_count_profile_matrix() ||
         !rotate_test_shift_forms() ||
@@ -783,9 +784,9 @@ C_INT main(C_VOID)
         !rotate_test_80186_immediate_extensions() ||
         !rotate_test_profile() || !rotate_test_access_failure())
         return 1;
-    STD_PRINTF("M5:T316:S18:ROTATE:OK\n");
-    STD_PRINTF("M5:T316:S19:SHIFT:OK\n");
-    STD_PRINTF("M5:T401:S8:GROUP2-CL-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S21:GROUP2-IMMEDIATE-PROFILES:OK\n");
+    printf("M5:T316:S18:ROTATE:OK\n");
+    printf("M5:T316:S19:SHIFT:OK\n");
+    printf("M5:T401:S8:GROUP2-CL-PROFILES:OK\n");
+    printf("M5:T401:S21:GROUP2-IMMEDIATE-PROFILES:OK\n");
     return 0;
 }

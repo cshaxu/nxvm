@@ -8,7 +8,6 @@ extern "C" {
 #endif
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/port.h"
 
@@ -18,8 +17,8 @@ typedef enum {
     VPIT_STATUS_RW_MSB
 } t_pit_data_status_rw;
 
-typedef C_VOID (*core_machine_pit_output_provider)(C_VOID *owner,
-    type_bool asserted);
+typedef void (*core_machine_pit_output_provider)(void *owner,
+    lib_u8 asserted);
 
 typedef struct {
     /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
@@ -30,15 +29,15 @@ typedef struct {
     lib_u16 latch[3]; /* latch counts */
     lib_u8 status_latch[3]; /* read-back status bytes */
 
-    type_bool flagReady[3]; /* flag of ready */
-    type_bool flagLatch[3]; /* flag of latch status */
-    type_bool flagStatusLatch[3]; /* flag of pending status read-back */
-    type_bool flagOutput[3]; /* retained counter-model OUT state */
-    type_bool flagActive[3]; /* a loaded waveform is currently counting */
-    type_bool flagPulseLow[3]; /* one elapsed-tick low strobe is pending */
-    type_bool flagLoadPending[3]; /* completed CR write awaits CE load */
-    type_bool flagTrigger[3]; /* rising GATE trigger for modes 1/5 */
-    type_bool flagRestart[3]; /* rising GATE reload for modes 2/3 */
+    lib_u8 flagReady[3]; /* flag of ready */
+    lib_u8 flagLatch[3]; /* flag of latch status */
+    lib_u8 flagStatusLatch[3]; /* flag of pending status read-back */
+    lib_u8 flagOutput[3]; /* retained counter-model OUT state */
+    lib_u8 flagActive[3]; /* a loaded waveform is currently counting */
+    lib_u8 flagPulseLow[3]; /* one elapsed-tick low strobe is pending */
+    lib_u8 flagLoadPending[3]; /* completed CR write awaits CE load */
+    lib_u8 flagTrigger[3]; /* rising GATE trigger for modes 1/5 */
+    lib_u8 flagRestart[3]; /* rising GATE reload for modes 2/3 */
 
     lib_u32 reload[3]; /* effective binary/BCD reload; zero is never stored */
     lib_u32 remaining[3]; /* effective count exposed through count[] */
@@ -49,9 +48,9 @@ typedef struct {
 } t_pit_data;
 
 typedef struct {
-    type_bool flagGate[3];  /* current GATE input level */
+    lib_u8 flagGate[3];  /* current GATE input level */
     core_machine_pit_output_provider output[3];
-    C_VOID *output_owner[3];
+    void *output_owner[3];
 } t_pit_connect;
 
 typedef struct {
@@ -92,21 +91,21 @@ typedef struct {
 #define VPIT_SB_NC  0x40 /* null count (1) or count available (0) */
 #define VPIT_SB_OUT 0x80 /* state of out pin high(1) or low(0) */
 
-C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port);
-C_VOID core_machine_pit_initialize_as(t_pit *pit, t_port *port,
+void core_machine_pit_initialize(t_pit *pit, t_port *port);
+void core_machine_pit_initialize_as(t_pit *pit, t_port *port,
     core_machine_pit_personality personality);
 /* One PIT mechanism may be composed at a documented four-port topology. */
-C_VOID core_machine_pit_initialize_at(t_pit *pit, t_port *port,
+void core_machine_pit_initialize_at(t_pit *pit, t_port *port,
     lib_u16 base_port);
-C_VOID core_machine_pit_reset(t_pit *pit);
-C_VOID core_machine_pit_advance(t_pit *pit, lib_u64 elapsed_ticks);
-C_VOID core_machine_pit_finalize(t_pit *pit);
-C_VOID core_machine_pit_set_output(t_pit *pit, lib_u8 id,
-    core_machine_pit_output_provider provider, C_VOID *owner);
-C_VOID core_machine_pit_set_gate(t_pit *pit, lib_u8 id,
-    type_bool asserted);
-type_bool core_machine_pit_get_output(const t_pit *pit, lib_u8 id);
-type_status core_machine_pit_ticks_until_output(const t_pit *pit,
+void core_machine_pit_reset(t_pit *pit);
+void core_machine_pit_advance(t_pit *pit, lib_u64 elapsed_ticks);
+void core_machine_pit_finalize(t_pit *pit);
+void core_machine_pit_set_output(t_pit *pit, lib_u8 id,
+    core_machine_pit_output_provider provider, void *owner);
+void core_machine_pit_set_gate(t_pit *pit, lib_u8 id,
+    lib_u8 asserted);
+lib_u8 core_machine_pit_get_output(const t_pit *pit, lib_u8 id);
+lib_status core_machine_pit_ticks_until_output(const t_pit *pit,
     lib_u8 id, lib_u64 *out_ticks);
 
 #ifdef __cplusplus

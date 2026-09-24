@@ -1,16 +1,16 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/pit.h"
 #include "app-nxvm/devices/port.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_pit pit;
     t_port port;
     lib_u8 control;
     lib_u16 count;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_pit_initialize_as(&pit, &port, CORE_MACHINE_PIT_PERSONALITY_8253);
@@ -28,6 +28,6 @@ C_INT main(C_VOID)
     core_machine_pit_finalize(&pit);
     core_machine_port_finalize(&port);
     if (failed) return 1;
-    STD_PRINTF("M5:T490:S4:8253-PERSONALITY:OK\n");
+    printf("M5:T490:S4:8253-PERSONALITY:OK\n");
     return 0;
 }

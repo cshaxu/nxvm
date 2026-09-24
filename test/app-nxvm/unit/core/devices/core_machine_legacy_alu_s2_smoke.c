@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -39,19 +40,19 @@ static lib_u32 *legacy_alu_register(t_cpu *cpu, lib_u8 index)
     }
 }
 
-static C_VOID legacy_alu_reset(C_VOID *opaque)
+static void legacy_alu_reset(void *opaque)
 {
     legacy_alu_machine *state = (legacy_alu_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider legacy_alu_provider = {
     legacy_alu_reset, LIB_NULL
 };
 
-static C_INT legacy_alu_prepare(core_machine_cpu_profile profile,
+static lib_i32 legacy_alu_prepare(core_machine_cpu_profile profile,
     legacy_alu_machine *state)
 {
     const core_machine_config config = {
@@ -72,27 +73,27 @@ static C_INT legacy_alu_prepare(core_machine_cpu_profile profile,
     return 1;
 }
 
-static C_INT legacy_alu_run(legacy_alu_machine *state,
-    const lib_u8 *code, lib_size bytes, C_INT fault, t_cpu *after,
+static lib_i32 legacy_alu_run(legacy_alu_machine *state,
+    const lib_u8 *code, lib_size bytes, lib_i32 fault, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic)
 {
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
 
     if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
         after == LIB_NULL || diagnostic == LIB_NULL ||
         !test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) ||
-        core_machine_memory_write(state->machine, 0u, code, bytes) != TYPE_STATUS_OK)
+        core_machine_memory_write(state->machine, 0u, code, bytes) != LIB_STATUS_OK)
         return 0;
     if (fault && !test_core_machine_fixture_preflight_real_ud_terminal(
             state->machine))
         return 0;
     status = core_machine_run(state->machine,
         (core_machine_run_budget){ 1u, 0u }, &result);
-    if (status != (fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
+    if (status != (fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) ||
         result.reason != (fault ? CORE_MACHINE_STOP_FAULT :
             CORE_MACHINE_STOP_BUDGET) ||
-        core_machine_get_cpu_diagnostic(state->machine, diagnostic) != TYPE_STATUS_OK)
+        core_machine_get_cpu_diagnostic(state->machine, diagnostic) != LIB_STATUS_OK)
         return 0;
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
@@ -105,7 +106,7 @@ static lib_u32 legacy_alu_mask(lib_u8 width)
 
 static lib_u16 legacy_alu_real_flags_image(lib_u32 flags)
 {
-    lib_u16 image = TYPE_MASK_UNSIGNED_16((flags &
+    lib_u16 image = CORE_MACHINE_MASK_U16((flags &
         ~VCPU_EFLAGS_RESERVED) | 0x02u);
 
     return image;
@@ -119,7 +120,7 @@ static lib_u16 legacy_alu_real_flags_known_mask(
 
 static lib_u32 legacy_alu_parity(lib_u32 value)
 {
-    lib_u8 byte = TYPE_MASK_UNSIGNED_8(value);
+    lib_u8 byte = CORE_MACHINE_MASK_U8(value);
     lib_u8 bit;
     lib_u32 parity = 1u;
 
@@ -170,9 +171,9 @@ static lib_u32 legacy_alu_flags(legacy_alu_operation operation,
     return flags;
 }
 
-static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
+static lib_i32 legacy_alu_binary_case(core_machine_cpu_profile profile,
     legacy_alu_operation operation, lib_u8 encoding,
-    lib_u8 width, C_INT memory)
+    lib_u8 width, lib_i32 memory)
 {
     static const lib_u8 base[] = {
         0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u, 0x38u
@@ -191,7 +192,7 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
     t_cpu after;
     t_cpu before;
     core_machine_cpu_diagnostic diagnostic;
-    C_INT failed = !legacy_alu_prepare(profile, &state);
+    lib_i32 failed = !legacy_alu_prepare(profile, &state);
 
     if (operation == LEGACY_ALU_ADD || operation == LEGACY_ALU_ADC)
         expected = (left + right + carry) & mask;
@@ -210,8 +211,8 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
         (width == 8u ? 2u : 3u)));
     if (memory) {
         code[bytes++] = encoding == 0u ? 0x0eu : 0x06u;
-        code[bytes++] = TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY);
-        code[bytes++] = TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY >> 8u);
+        code[bytes++] = CORE_MACHINE_MASK_U8(LEGACY_ALU_MEMORY);
+        code[bytes++] = CORE_MACHINE_MASK_U8(LEGACY_ALU_MEMORY >> 8u);
     } else
         code[bytes++] = encoding == 0u ? 0xc8u : 0xc1u;
     if (!failed) {
@@ -222,7 +223,7 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
         if (memory)
             failed |= core_machine_memory_write(state.machine, LEGACY_ALU_MEMORY,
                 encoding == 0u ? &left : &right,
-                width == 8u ? 1u : (width == 16u ? 2u : 4u)) != TYPE_STATUS_OK;
+                width == 8u ? 1u : (width == 16u ? 2u : 4u)) != LIB_STATUS_OK;
         before = state.machine->executor_cpu;
         failed |= !legacy_alu_run(&state, code, bytes, 0, &after, &diagnostic) ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
@@ -230,7 +231,7 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
                 width, expected, before.data.eflags);
         if (memory)
             failed |= core_machine_memory_read(state.machine, LEGACY_ALU_MEMORY,
-                &observed, width == 8u ? 1u : (width == 16u ? 2u : 4u)) != TYPE_STATUS_OK ||
+                &observed, width == 8u ? 1u : (width == 16u ? 2u : 4u)) != LIB_STATUS_OK ||
                 observed != (encoding == 0u && operation != LEGACY_ALU_CMP ?
                     expected : (encoding == 0u ? left : right));
         else if (operation != LEGACY_ALU_CMP)
@@ -242,7 +243,7 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT legacy_alu_test_binary_forms(C_VOID)
+static lib_i32 legacy_alu_test_binary_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -273,7 +274,7 @@ static C_INT legacy_alu_test_binary_forms(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
+static lib_i32 legacy_alu_test_accumulator_immediate_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -310,7 +311,7 @@ static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed;
+        lib_i32 failed;
 
         if (width == 32u && profiles[profile_index] != CORE_MACHINE_CPU_PROFILE_80386)
             continue;
@@ -346,9 +347,9 @@ static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_group1_case(core_machine_cpu_profile profile,
+static lib_i32 legacy_alu_group1_case(core_machine_cpu_profile profile,
     legacy_alu_operation operation, lib_u8 width,
-    C_INT sign_extended, C_INT memory)
+    lib_i32 sign_extended, lib_i32 memory)
 {
     const lib_u32 left = width == 8u ? 0x7fu : 0x7fffu;
     const lib_u32 right = sign_extended ? 0xffffu : 0x0001u;
@@ -363,7 +364,7 @@ static C_INT legacy_alu_group1_case(core_machine_cpu_profile profile,
     t_cpu after;
     t_cpu before;
     core_machine_cpu_diagnostic diagnostic;
-    C_INT failed = !legacy_alu_prepare(profile, &state);
+    lib_i32 failed = !legacy_alu_prepare(profile, &state);
 
     if (operation == LEGACY_ALU_ADD || operation == LEGACY_ALU_ADC)
         expected = (left + right + carry) & mask;
@@ -379,8 +380,8 @@ static C_INT legacy_alu_group1_case(core_machine_cpu_profile profile,
     code[bytes++] = width == 8u ? 0x80u : (sign_extended ? 0x83u : 0x81u);
     code[bytes++] = (lib_u8)(operation << 3u) | (memory ? 0x06u : 0xc0u);
     if (memory) {
-        code[bytes++] = TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY);
-        code[bytes++] = TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY >> 8u);
+        code[bytes++] = CORE_MACHINE_MASK_U8(LEGACY_ALU_MEMORY);
+        code[bytes++] = CORE_MACHINE_MASK_U8(LEGACY_ALU_MEMORY >> 8u);
     }
     if (width == 8u || sign_extended)
         code[bytes++] = sign_extended ? 0xffu : 0x01u;
@@ -394,7 +395,7 @@ static C_INT legacy_alu_group1_case(core_machine_cpu_profile profile,
             VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
         if (memory)
             failed |= core_machine_memory_write(state.machine, LEGACY_ALU_MEMORY,
-                &left, width == 8u ? 1u : 2u) != TYPE_STATUS_OK;
+                &left, width == 8u ? 1u : 2u) != LIB_STATUS_OK;
         before = state.machine->executor_cpu;
         failed |= !legacy_alu_run(&state, code, bytes, 0, &after, &diagnostic) ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
@@ -402,7 +403,7 @@ static C_INT legacy_alu_group1_case(core_machine_cpu_profile profile,
                 width, expected, before.data.eflags);
         if (memory)
             failed |= core_machine_memory_read(state.machine, LEGACY_ALU_MEMORY,
-                &observed, width == 8u ? 1u : 2u) != TYPE_STATUS_OK ||
+                &observed, width == 8u ? 1u : 2u) != LIB_STATUS_OK ||
                 observed != (operation == LEGACY_ALU_CMP ? left : expected);
         else if (operation != LEGACY_ALU_CMP)
             failed |= (after.data.eax & mask) != expected;
@@ -413,7 +414,7 @@ static C_INT legacy_alu_group1_case(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT legacy_alu_test_group1_forms(C_VOID)
+static lib_i32 legacy_alu_test_group1_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
@@ -439,7 +440,7 @@ static C_INT legacy_alu_test_group1_forms(C_VOID)
 }
 
 static lib_u32 legacy_alu_jcc_flags(lib_u8 condition,
-    C_INT taken)
+    lib_i32 taken)
 {
     lib_u32 flags = 0u;
 
@@ -465,14 +466,14 @@ static lib_u32 legacy_alu_jcc_flags(lib_u8 condition,
     return flags | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
 }
 
-static C_INT legacy_alu_test_condition_forms(C_VOID)
+static lib_i32 legacy_alu_test_condition_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
     lib_u8 profile_index;
     lib_u8 condition;
-    C_INT taken;
+    lib_i32 taken;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
@@ -484,7 +485,7 @@ static C_INT legacy_alu_test_condition_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11223344u;
@@ -506,14 +507,14 @@ static C_INT legacy_alu_test_condition_forms(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_loop_forms(C_VOID)
+static lib_i32 legacy_alu_test_loop_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
     lib_u8 profile_index;
     lib_u8 operation;
-    C_INT taken;
+    lib_i32 taken;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
@@ -530,7 +531,7 @@ static C_INT legacy_alu_test_loop_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11223344u;
@@ -551,7 +552,7 @@ static C_INT legacy_alu_test_loop_forms(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_test_forms(C_VOID)
+static lib_i32 legacy_alu_test_test_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
@@ -577,7 +578,7 @@ static C_INT legacy_alu_test_test_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0xaabbcc08u;
@@ -600,7 +601,7 @@ static C_INT legacy_alu_test_test_forms(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_adjust_and_xlat_forms(C_VOID)
+static lib_i32 legacy_alu_test_adjust_and_xlat_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -630,7 +631,7 @@ static C_INT legacy_alu_test_adjust_and_xlat_forms(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         lib_u8 table_value = 0xa5u;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = initial_eax;
@@ -640,7 +641,7 @@ static C_INT legacy_alu_test_adjust_and_xlat_forms(C_VOID)
             if (form == 6u)
                 failed |= core_machine_memory_write(state.machine,
                     LEGACY_ALU_MEMORY + 2u, &table_value, sizeof(table_value)) !=
-                    TYPE_STATUS_OK;
+                    LIB_STATUS_OK;
             before = state.machine->executor_cpu;
             failed |= !legacy_alu_run(&state, codes[form], lengths[form], 0,
                 &after, &diagnostic) || diagnostic.first_fault.valid ||
@@ -666,7 +667,7 @@ static C_INT legacy_alu_test_adjust_and_xlat_forms(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_group3_forms(C_VOID)
+static lib_i32 legacy_alu_test_group3_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
@@ -686,7 +687,7 @@ static C_INT legacy_alu_test_group3_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = extension == 7u ?
@@ -723,7 +724,7 @@ static C_INT legacy_alu_test_group3_forms(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_inc_dec_and_shift_extensions(C_VOID)
+static lib_i32 legacy_alu_test_inc_dec_and_shift_extensions(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
@@ -745,7 +746,7 @@ static C_INT legacy_alu_test_inc_dec_and_shift_extensions(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         lib_u32 *reg;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             reg = legacy_alu_register(&state.machine->executor_cpu, register_index);
@@ -772,24 +773,24 @@ static C_INT legacy_alu_test_inc_dec_and_shift_extensions(C_VOID)
         ++profile_index)
     for (decrement = 0u; decrement != 2u; ++decrement) {
         const lib_u8 code[] = { 0xfeu, decrement ? 0x0eu : 0x06u,
-            TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY),
-            TYPE_MASK_UNSIGNED_8(LEGACY_ALU_MEMORY >> 8u) };
+            CORE_MACHINE_MASK_U8(LEGACY_ALU_MEMORY),
+            CORE_MACHINE_MASK_U8(LEGACY_ALU_MEMORY >> 8u) };
         lib_u8 value = decrement ? 0x80u : 0x7fu;
         lib_u8 observed = 0u;
         legacy_alu_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
                 VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
             failed |= core_machine_memory_write(state.machine, LEGACY_ALU_MEMORY,
-                &value, sizeof(value)) != TYPE_STATUS_OK || !legacy_alu_run(&state,
+                &value, sizeof(value)) != LIB_STATUS_OK || !legacy_alu_run(&state,
                 code, sizeof(code), 0, &after, &diagnostic) ||
                 diagnostic.first_fault.valid || after.data.eip != sizeof(code) ||
                 core_machine_memory_read(state.machine, LEGACY_ALU_MEMORY, &observed,
-                sizeof(observed)) != TYPE_STATUS_OK || observed != (decrement ?
+                sizeof(observed)) != LIB_STATUS_OK || observed != (decrement ?
                 0x7fu : 0x80u) || (after.data.eflags & VCPU_EFLAGS_CF) !=
                 VCPU_EFLAGS_CF;
         }
@@ -803,7 +804,7 @@ static C_INT legacy_alu_test_inc_dec_and_shift_extensions(C_VOID)
         legacy_alu_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(CORE_MACHINE_CPU_PROFILE_80186, &state);
+        lib_i32 failed = !legacy_alu_prepare(CORE_MACHINE_CPU_PROFILE_80186, &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11220081u;
@@ -819,7 +820,7 @@ static C_INT legacy_alu_test_inc_dec_and_shift_extensions(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_flags_and_sign_forms(C_VOID)
+static lib_i32 legacy_alu_test_flags_and_sign_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
@@ -841,7 +842,7 @@ static C_INT legacy_alu_test_flags_and_sign_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11223344u;
@@ -864,7 +865,7 @@ static C_INT legacy_alu_test_flags_and_sign_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = form == 0u ? 0x11220080u :
@@ -939,7 +940,7 @@ static lib_u16 legacy_alu_shift_result(lib_u8 extension,
     return value;
 }
 
-static C_INT legacy_alu_test_group2_forms(C_VOID)
+static lib_i32 legacy_alu_test_group2_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
@@ -966,7 +967,7 @@ static C_INT legacy_alu_test_group2_forms(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11228123u;
@@ -977,7 +978,7 @@ static C_INT legacy_alu_test_group2_forms(C_VOID)
             failed |= !legacy_alu_run(&state, code, sizeof(code), extension == 6u,
                 &after, &diagnostic);
             if (extension == 6u)
-                failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                     diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                     after.data.eip != 0u || after.data.eax != before.data.eax ||
                     after.data.ecx != before.data.ecx || after.data.eflags !=
@@ -1000,12 +1001,12 @@ static C_INT legacy_alu_test_group2_forms(C_VOID)
         legacy_alu_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(CORE_MACHINE_CPU_PROFILE_8086, &state);
+        lib_i32 failed = !legacy_alu_prepare(CORE_MACHINE_CPU_PROFILE_8086, &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11228123u;
             failed |= !legacy_alu_run(&state, code, sizeof(code), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                &diagnostic) || !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 after.data.eip != 0u || after.data.eax != 0x11228123u;
         }
@@ -1016,7 +1017,7 @@ static C_INT legacy_alu_test_group2_forms(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_group2_immediate_extensions(C_VOID)
+static lib_i32 legacy_alu_test_group2_immediate_extensions(void)
 {
     lib_u8 extension;
     lib_u8 width_index;
@@ -1034,7 +1035,7 @@ static C_INT legacy_alu_test_group2_immediate_extensions(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(CORE_MACHINE_CPU_PROFILE_80186, &state);
+        lib_i32 failed = !legacy_alu_prepare(CORE_MACHINE_CPU_PROFILE_80186, &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11228123u;
@@ -1044,7 +1045,7 @@ static C_INT legacy_alu_test_group2_immediate_extensions(C_VOID)
             failed |= !legacy_alu_run(&state, code, sizeof(code), extension == 6u,
                 &after, &diagnostic);
             if (extension == 6u)
-                failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                     diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                     after.data.eip != 0u || after.data.eax != before.data.eax ||
                     after.data.eflags != before.data.eflags;
@@ -1064,12 +1065,12 @@ static C_INT legacy_alu_test_group2_immediate_extensions(C_VOID)
         legacy_alu_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(CORE_MACHINE_CPU_PROFILE_8086, &state);
+        lib_i32 failed = !legacy_alu_prepare(CORE_MACHINE_CPU_PROFILE_8086, &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11228123u;
             failed |= !legacy_alu_run(&state, code, sizeof(code), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                &diagnostic) || !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 after.data.eip != 0u || after.data.eax != 0x11228123u;
         }
@@ -1080,7 +1081,7 @@ static C_INT legacy_alu_test_group2_immediate_extensions(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_reserved_and_attribute_rejections(C_VOID)
+static lib_i32 legacy_alu_test_reserved_and_attribute_rejections(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
@@ -1103,7 +1104,7 @@ static C_INT legacy_alu_test_reserved_and_attribute_rejections(C_VOID)
         legacy_alu_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11223344u;
@@ -1112,7 +1113,7 @@ static C_INT legacy_alu_test_reserved_and_attribute_rejections(C_VOID)
                 VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
             failed |= !legacy_alu_run(&state, reserved[form], lengths[form], 1,
                 &after, &diagnostic) || !diagnostic.first_fault.valid ||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 after.data.eip != 0u || after.data.eax != 0x11223344u ||
                 after.data.ecx != 0x55667788u || after.data.eflags !=
                 (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF);
@@ -1127,7 +1128,7 @@ static C_INT legacy_alu_test_reserved_and_attribute_rejections(C_VOID)
         legacy_alu_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11223344u;
@@ -1136,7 +1137,7 @@ static C_INT legacy_alu_test_reserved_and_attribute_rejections(C_VOID)
                 VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
             failed |= !legacy_alu_run(&state, attributes[form],
                 attribute_lengths[form], 1, &after, &diagnostic) ||
-                !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 after.data.eip != 0u || after.data.eax != 0x11223344u ||
                 after.data.ecx != 0x55667788u || after.data.eflags !=
@@ -1149,7 +1150,7 @@ static C_INT legacy_alu_test_reserved_and_attribute_rejections(C_VOID)
     return 1;
 }
 
-static C_INT legacy_alu_test_divide_error_delivery(C_VOID)
+static lib_i32 legacy_alu_test_divide_error_delivery(void)
 {
     static const lib_u8 code[] = { 0xf6u, 0xf1u };
     static const lib_u8 handler[] = { 0xf4u };
@@ -1168,7 +1169,7 @@ static C_INT legacy_alu_test_divide_error_delivery(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         lib_u16 frame[3] = { 0u, 0u, 0u };
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        lib_i32 failed = !legacy_alu_prepare(profiles[profile_index], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = 5u;
@@ -1179,21 +1180,21 @@ static C_INT legacy_alu_test_divide_error_delivery(C_VOID)
                 VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(
                 state.machine, 0u) || core_machine_memory_write(state.machine,
-                code_offset, code, sizeof(code)) != TYPE_STATUS_OK ||
+                code_offset, code, sizeof(code)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0u, &handler_offset,
-                sizeof(handler_offset)) != TYPE_STATUS_OK ||
+                sizeof(handler_offset)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, handler_offset, handler,
-                sizeof(handler)) != TYPE_STATUS_OK;
+                sizeof(handler)) != LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, code_offset);
             before = state.machine->executor_cpu;
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= diagnostic.first_fault.valid ||
-                !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.last_delivered_exception.exception_mask, VCPUINS_EXCEPT_DE) ||
                 after.data.eip != handler_offset || after.data.eax != before.data.eax ||
                 after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
@@ -1203,7 +1204,7 @@ static C_INT legacy_alu_test_divide_error_delivery(C_VOID)
                 (lib_u16)(before.data.esp - 6u)) ||
                 !test_core_machine_fixture_read_linear(state.machine,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                TYPE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] != code_offset ||
+                CORE_MACHINE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] != code_offset ||
                 frame[1] != before.data.cs.selector || (frame[2] &
                 legacy_alu_real_flags_known_mask(profiles[profile_index])) !=
                 (legacy_alu_real_flags_image(before.data.eflags) &
@@ -1217,7 +1218,7 @@ static C_INT legacy_alu_test_divide_error_delivery(C_VOID)
     return 1;
 }
 
-int main(C_VOID)
+int main(void)
 {
     if (!legacy_alu_test_binary_forms() ||
         !legacy_alu_test_accumulator_immediate_forms() || !legacy_alu_test_group1_forms() ||
@@ -1229,10 +1230,10 @@ int main(C_VOID)
         !legacy_alu_test_group2_immediate_extensions() ||
         !legacy_alu_test_reserved_and_attribute_rejections() ||
         !legacy_alu_test_divide_error_delivery()) {
-        STD_FPRINTF(stderr, "M5:T338:S2:LEGACY-ALU:FAILED\n");
+        fprintf(stderr, "M5:T338:S2:LEGACY-ALU:FAILED\n");
         return 1;
     }
-    STD_PRINTF("M5:T338:S2:LEGACY-ALU:OK\n");
-    STD_PRINTF("M5:T401:S34:DECIMAL-ADJUST-PROFILES:OK\n");
+    printf("M5:T338:S2:LEGACY-ALU:OK\n");
+    printf("M5:T401:S34:DECIMAL-ADJUST-PROFILES:OK\n");
     return 0;
 }

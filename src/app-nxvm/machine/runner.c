@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "lib/base/sync_interface.h"
@@ -19,14 +18,14 @@
 #define VM_MACHINE_RUNNER_QUANTUM_INSTRUCTIONS 256u
 #define VM_MACHINE_RUNNER_TURBO_QUANTUM_INSTRUCTIONS 4096u
 
-static C_VOID vm_machine_runner_fail(vm_machine *session)
+static void vm_machine_runner_fail(vm_machine *session)
 {
     if (session == LIB_NULL) return;
     session->runner_failed = LIB_TRUE;
     vm_machine_control_fault(&session->control);
 }
 
-C_VOID vm_machine_runner_run(vm_machine *session)
+void vm_machine_runner_run(vm_machine *session)
 {
     core_machine_run_budget budget;
     core_machine_run_result result;
@@ -39,10 +38,10 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             session->executor_callback(session->executor_callback_context);
         if (!vm_machine_executor_state_is_active(control->state)) break;
         if (vm_machine_executor_state_take_reset(control->state)) {
-            type_status reset_status = vm_machine_control_reset_at_boundary(control);
+            lib_status reset_status = vm_machine_control_reset_at_boundary(control);
 
-            (C_VOID)vm_machine_finish_reset(session, reset_status);
-            if (reset_status != TYPE_STATUS_OK) {
+            (void)vm_machine_finish_reset(session, reset_status);
+            if (reset_status != LIB_STATUS_OK) {
                 vm_machine_runner_fail(session);
                 continue;
             }
@@ -64,16 +63,16 @@ C_VOID vm_machine_runner_run(vm_machine *session)
         budget.ticks = session->speed == VM_MACHINE_SPEED_TURBO ? 0u :
             VM_MACHINE_RUNNER_QUANTUM_INSTRUCTIONS;
         {
-            type_status run_status = core_machine_run(session->core_machine,
+            lib_status run_status = core_machine_run(session->core_machine,
                 budget, &result);
 
-            if (run_status == TYPE_STATUS_FAULT ||
+            if (run_status == LIB_STATUS_INTERNAL_ERROR ||
                 result.reason == CORE_MACHINE_STOP_FAULT) {
                 vm_machine_fault_capture(session, &result);
                 vm_machine_runner_fail(session);
                 continue;
             }
-            if (run_status != TYPE_STATUS_OK) {
+            if (run_status != LIB_STATUS_OK) {
                 vm_machine_runner_fail(session);
                 continue;
             }
@@ -93,12 +92,12 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             session->executor_callback(session->executor_callback_context);
         if (!vm_machine_executor_state_is_active(control->state)) break;
         {
-            if (vm_machine_pacing_wait(session) != TYPE_STATUS_OK) {
+            if (vm_machine_pacing_wait(session) != LIB_STATUS_OK) {
                 vm_machine_runner_fail(session);
                 continue;
             }
         }
-        (C_VOID)vm_machine_publish_display(session, LIB_FALSE);
+        (void)vm_machine_publish_display(session, LIB_FALSE);
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
             /* Core reset the requested processor state before returning. */
             vm_machine_debug_reset(&session->debug);
@@ -107,11 +106,11 @@ C_VOID vm_machine_runner_run(vm_machine *session)
             vm_machine_control_stop(control);
         }
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            C_INT advanced = 0;
-            type_status time_status = vm_machine_waiting_advance(
+            lib_i32 advanced = 0;
+            lib_status time_status = vm_machine_waiting_advance(
                 session, &result, &advanced);
 
-            if (time_status != TYPE_STATUS_OK) vm_machine_runner_fail(session);
+            if (time_status != LIB_STATUS_OK) vm_machine_runner_fail(session);
             else if (!advanced) {
                 /* Core has no source-qualified deadline to advance.  Yielding
                  * gives host input/control a turn without manufacturing guest

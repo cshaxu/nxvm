@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine.h"
 
-static C_INT core_machine_rtc_cmos_config_is_valid(
+static lib_i32 core_machine_rtc_cmos_config_is_valid(
     const core_machine_rtc_cmos_config *config)
 {
     lib_size index;
@@ -33,40 +33,40 @@ static C_INT core_machine_rtc_cmos_config_is_valid(
     return LIB_TRUE;
 }
 
-static type_status core_machine_rtc_cmos_port_read(C_VOID *owner,
+static lib_status core_machine_rtc_cmos_port_read(void *owner,
     lib_u16 port, lib_u32 *out_value)
 {
     core_machine *machine = (core_machine *)owner;
 
     if (machine == LIB_NULL || out_value == LIB_NULL ||
         port != machine->rtc_cmos_config.data_port) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_value = core_machine_rtc_read_selected(&machine->shared_rtc);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_rtc_cmos_port_write(C_VOID *owner,
+static lib_status core_machine_rtc_cmos_port_write(void *owner,
     lib_u16 port, lib_u32 value)
 {
     core_machine *machine = (core_machine *)owner;
 
-    if (machine == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == machine->rtc_cmos_config.index_port) {
-        (C_VOID)core_machine_set_nmi_mask(machine,
+        (void)core_machine_set_nmi_mask(machine,
             (value & machine->rtc_cmos_config.nmi_mask_bit) != 0u ?
             LIB_TRUE : LIB_FALSE);
         core_machine_rtc_select_register(&machine->shared_rtc, (lib_u8)value);
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     if (port == machine->rtc_cmos_config.data_port) {
         core_machine_rtc_write_selected(&machine->shared_rtc, (lib_u8)value);
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
-    return TYPE_STATUS_INVALID_ARGUMENT;
+    return LIB_STATUS_INVALID_ARGUMENT;
 }
 
-static C_VOID core_machine_planar_parity_refresh_nmi(core_machine *machine)
+static void core_machine_planar_parity_refresh_nmi(core_machine *machine)
 {
     if (machine != LIB_NULL && machine->planar_parity_configured &&
         machine->planar_parity_config.memory_bytes != 0u &&
@@ -103,7 +103,7 @@ static lib_u8 core_machine_pc_at_port_b_timer_status(
  * expose its output at port 61h bit 4. The board programs mode 2 with the
  * fixed refresh divider on every cold reset; channel 0 and channel 2 remain
  * firmware-owned timer and speaker resources. */
-static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
+static void core_machine_d4_refresh_output(void *opaque, lib_u8 asserted)
 {
     core_machine *machine = (core_machine *)opaque;
     /* Generic-AT policy: the counter-1 refresh pulse ends CPU-side locality.
@@ -120,10 +120,10 @@ static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
     }
 }
 
-static C_VOID core_machine_dma_refresh_pit_output(C_VOID *owner,
-    type_bool asserted);
+static void core_machine_dma_refresh_pit_output(void *owner,
+    lib_u8 asserted);
 
-static C_VOID core_machine_pc_at_refresh_timer_program(core_machine *machine)
+static void core_machine_pc_at_refresh_timer_program(core_machine *machine)
 {
     lib_u16 count;
 
@@ -146,7 +146,7 @@ static lib_u8 core_machine_speaker_source_value(
     return 0u;
 }
 
-static C_VOID core_machine_speaker_refresh(core_machine *machine)
+static void core_machine_speaker_refresh(core_machine *machine)
 {
     lib_u8 value;
 
@@ -157,16 +157,16 @@ static C_VOID core_machine_speaker_refresh(core_machine *machine)
         core_machine_pit_get_output(&machine->shared_pit, 2u));
 }
 
-static C_VOID core_machine_speaker_timer_output(C_VOID *owner,
-    type_bool asserted)
+static void core_machine_speaker_timer_output(void *owner,
+    lib_u8 asserted)
 {
     core_machine *machine = (core_machine *)owner;
 
-    (C_VOID)asserted;
+    (void)asserted;
     core_machine_speaker_refresh(machine);
 }
 
-static C_VOID core_machine_speaker_set_gate(core_machine *machine,
+static void core_machine_speaker_set_gate(core_machine *machine,
     lib_u8 value)
 {
     if (machine == LIB_NULL) return;
@@ -175,33 +175,33 @@ static C_VOID core_machine_speaker_set_gate(core_machine *machine,
     core_machine_speaker_refresh(machine);
 }
 
-static C_VOID core_machine_planar_parity_memory_fault(C_VOID *owner,
+static void core_machine_planar_parity_memory_fault(void *owner,
     lib_u32 physical)
 {
-    (C_VOID)physical;
-    (C_VOID)core_machine_report_planar_parity_fault((core_machine *)owner);
+    (void)physical;
+    (void)core_machine_report_planar_parity_fault((core_machine *)owner);
 }
 
-static type_status core_machine_planar_parity_port_read(C_VOID *owner,
+static lib_status core_machine_planar_parity_port_read(void *owner,
     lib_u16 port, lib_u32 *out_value)
 {
     core_machine *machine = (core_machine *)owner;
 
     if (machine == LIB_NULL || out_value == LIB_NULL || !machine->planar_parity_configured ||
-        port != machine->planar_parity_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
+        port != machine->planar_parity_config.port) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = (lib_u32)(machine->planar_parity_port_b & 0x0fu) |
         core_machine_pc_at_port_b_timer_status(machine) |
         (machine->planar_parity_latched ? 0x80u : 0u);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_planar_parity_port_write(C_VOID *owner,
+static lib_status core_machine_planar_parity_port_write(void *owner,
     lib_u16 port, lib_u32 value)
 {
     core_machine *machine = (core_machine *)owner;
 
     if (machine == LIB_NULL || !machine->planar_parity_configured ||
-        port != machine->planar_parity_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
+        port != machine->planar_parity_config.port) return LIB_STATUS_INVALID_ARGUMENT;
     machine->planar_parity_port_b = (lib_u8)value & 0x0fu;
     core_machine_speaker_set_gate(machine, machine->planar_parity_port_b);
     if ((machine->planar_parity_port_b & 0x04u) == 0u) {
@@ -210,12 +210,12 @@ static type_status core_machine_planar_parity_port_write(C_VOID *owner,
     } else {
         core_machine_planar_parity_refresh_nmi(machine);
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_VOID core_machine_d4_platform_refresh_nmi(core_machine *machine)
+static void core_machine_d4_platform_refresh_nmi(core_machine *machine)
 {
-    type_bool pending;
+    lib_u8 pending;
 
     if (machine == LIB_NULL || !machine->d4_platform_configured) return;
     pending = ((machine->d4_platform_port_b & 0x08u) == 0u &&
@@ -229,10 +229,10 @@ static C_VOID core_machine_d4_platform_refresh_nmi(core_machine *machine)
     }
 }
 
-static C_VOID core_machine_d4_platform_failsafe_output(C_VOID *owner,
-    type_bool asserted);
+static void core_machine_d4_platform_failsafe_output(void *owner,
+    lib_u8 asserted);
 
-C_VOID core_machine_board_cold_reset(core_machine *machine)
+void core_machine_board_cold_reset(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
     machine->planar_parity_port_b = machine->planar_parity_configured ? 0x04u : 0u;
@@ -247,7 +247,7 @@ C_VOID core_machine_board_cold_reset(core_machine *machine)
     machine->d4_platform_nmi_signaled = LIB_FALSE;
 }
 
-C_VOID core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
+void core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
     machine->xt_ppi_speaker_configured = LIB_TRUE;
@@ -256,8 +256,8 @@ C_VOID core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
     core_machine_board_set_xt_ppi_speaker(machine, LIB_FALSE, LIB_FALSE);
 }
 
-C_VOID core_machine_board_set_xt_ppi_speaker(core_machine *machine,
-    type_bool timer_gate, type_bool data_enabled)
+void core_machine_board_set_xt_ppi_speaker(core_machine *machine,
+    lib_u8 timer_gate, lib_u8 data_enabled)
 {
     if (machine == LIB_NULL || !machine->xt_ppi_speaker_configured) return;
     machine->xt_ppi_speaker_gate = timer_gate;
@@ -266,7 +266,7 @@ C_VOID core_machine_board_set_xt_ppi_speaker(core_machine *machine,
         (timer_gate ? 0x01u : 0u) | (data_enabled ? 0x02u : 0u));
 }
 
-C_VOID core_machine_board_after_pit_reset(core_machine *machine)
+void core_machine_board_after_pit_reset(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
     if (machine->dma_configured && !machine->d4_platform_configured) {
@@ -291,7 +291,7 @@ C_VOID core_machine_board_after_pit_reset(core_machine *machine)
     }
 }
 
-C_VOID core_machine_board_refresh_nmi(core_machine *machine)
+void core_machine_board_refresh_nmi(core_machine *machine)
 {
     if (machine != LIB_NULL && machine->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
@@ -301,8 +301,8 @@ C_VOID core_machine_board_refresh_nmi(core_machine *machine)
     core_machine_d4_platform_refresh_nmi(machine);
 }
 
-static C_VOID core_machine_d4_platform_failsafe_output(C_VOID *owner,
-    type_bool asserted)
+static void core_machine_d4_platform_failsafe_output(void *owner,
+    lib_u8 asserted)
 {
     core_machine *machine = (core_machine *)owner;
 
@@ -311,28 +311,28 @@ static C_VOID core_machine_d4_platform_failsafe_output(C_VOID *owner,
     core_machine_d4_platform_refresh_nmi(machine);
 }
 
-static type_status core_machine_d4_platform_port_read(C_VOID *owner,
+static lib_status core_machine_d4_platform_port_read(void *owner,
     lib_u16 port, lib_u32 *out_value)
 {
     core_machine *machine = (core_machine *)owner;
 
     if (machine == LIB_NULL || out_value == LIB_NULL ||
         !machine->d4_platform_configured ||
-        port != machine->d4_platform_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
+        port != machine->d4_platform_config.port) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = (lib_u32)(machine->d4_platform_port_b & 0x0fu) |
         core_machine_pc_at_port_b_timer_status(machine) |
         (machine->d4_platform_iochk_latched ? 0x40u : 0u) |
         (machine->d4_platform_failsafe_latched ? 0x80u : 0u);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_d4_platform_port_write(C_VOID *owner,
+static lib_status core_machine_d4_platform_port_write(void *owner,
     lib_u16 port, lib_u32 value)
 {
     core_machine *machine = (core_machine *)owner;
 
     if (machine == LIB_NULL || !machine->d4_platform_configured ||
-        port != machine->d4_platform_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
+        port != machine->d4_platform_config.port) return LIB_STATUS_INVALID_ARGUMENT;
     machine->d4_platform_port_b = (lib_u8)value & 0x3fu;
     core_machine_speaker_set_gate(machine, machine->d4_platform_port_b);
     /* DeskPro port 61h bits 3 and 2 disable IOCHK and RAM/fail-safe NMI.
@@ -349,7 +349,7 @@ static type_status core_machine_d4_platform_port_write(C_VOID *owner,
         machine->d4_platform_nmi_signaled = LIB_FALSE;
     }
     core_machine_d4_platform_refresh_nmi(machine);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_port_provider core_machine_d4_platform_port_provider = {
@@ -366,7 +366,7 @@ static const core_machine_port_provider core_machine_rtc_cmos_index_port_provide
     core_machine_rtc_cmos_port_write
 };
 
-static C_VOID core_machine_fdc_dma_request_assert(C_VOID *owner,
+static void core_machine_fdc_dma_request_assert(void *owner,
     const core_machine_dma_request_binding *binding)
 {
     core_machine *machine = owner;
@@ -378,7 +378,7 @@ static C_VOID core_machine_fdc_dma_request_assert(C_VOID *owner,
         &machine->shared_dma_secondary, binding);
 }
 
-static C_VOID core_machine_fdc_dma_request_deassert(C_VOID *owner,
+static void core_machine_fdc_dma_request_deassert(void *owner,
     const core_machine_dma_request_binding *binding)
 {
     core_machine *machine = owner;
@@ -390,7 +390,7 @@ static C_VOID core_machine_fdc_dma_request_deassert(C_VOID *owner,
         &machine->shared_dma_secondary, binding);
 }
 
-static C_VOID core_machine_hdc_dma_request_assert(C_VOID *owner,
+static void core_machine_hdc_dma_request_assert(void *owner,
     const core_machine_dma_request_binding *binding)
 {
     core_machine *machine = owner;
@@ -402,7 +402,7 @@ static C_VOID core_machine_hdc_dma_request_assert(C_VOID *owner,
         &machine->shared_dma_secondary, binding);
 }
 
-static C_VOID core_machine_hdc_dma_request_deassert(C_VOID *owner,
+static void core_machine_hdc_dma_request_deassert(void *owner,
     const core_machine_dma_request_binding *binding)
 {
     core_machine *machine = owner;
@@ -414,7 +414,7 @@ static C_VOID core_machine_hdc_dma_request_deassert(C_VOID *owner,
         &machine->shared_dma_secondary, binding);
 }
 
-static C_VOID core_machine_dma_refresh_pit_output(C_VOID *owner, type_bool asserted)
+static void core_machine_dma_refresh_pit_output(void *owner, lib_u8 asserted)
 {
     core_machine *machine = owner;
 
@@ -432,7 +432,7 @@ static const core_machine_dma_channel_provider core_machine_dma_refresh_provider
     LIB_NULL, LIB_NULL, LIB_NULL
 };
 
-static type_bool core_machine_dma_wiring_is_valid(
+static lib_u8 core_machine_dma_wiring_is_valid(
     const core_machine_dma_wiring *wiring)
 {
     return wiring != LIB_NULL &&
@@ -445,17 +445,17 @@ static type_bool core_machine_dma_wiring_is_valid(
           wiring->fdc_channel != 0u));
 }
 
-type_status core_machine_configure_dma(core_machine *machine,
+lib_status core_machine_configure_dma(core_machine *machine,
     const core_machine_dma_wiring *wiring,
     core_machine_dma_request_binding *out_fdc_request)
 {
-    type_status status;
+    lib_status status;
 
     if (!core_machine_configuration_is_open(machine) || machine->dma_configured) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     if (!core_machine_dma_wiring_is_valid(wiring) || out_fdc_request == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     machine->fdc_dma_request = (core_machine_dma_request_binding) {0};
     if (wiring->fdc_channel != CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND) {
@@ -463,82 +463,82 @@ type_status core_machine_configure_dma(core_machine *machine,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
             wiring->fdc_channel, core_machine_fdc_dma_provider(), &machine->fdc,
             &machine->fdc_dma_request);
-        if (status != TYPE_STATUS_OK) return status;
+        if (status != LIB_STATUS_OK) return status;
     }
     status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary, 0u,
         &core_machine_dma_refresh_provider, machine, &machine->refresh_dma_request);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) return status;
     core_machine_pit_set_output(&machine->shared_pit, 1u,
         core_machine_dma_refresh_pit_output, machine);
     machine->dma_wiring = *wiring;
     machine->dma_configured = LIB_TRUE;
     *out_fdc_request = machine->fdc_dma_request;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_get_fdc_dma_request_binding(const core_machine *machine,
+lib_status core_machine_get_fdc_dma_request_binding(const core_machine *machine,
     core_machine_dma_request_binding *out_binding)
 {
     if (machine == LIB_NULL || out_binding == LIB_NULL || !machine->dma_configured ||
         machine->fdc_dma_request.core_token == 0u) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     *out_binding = machine->fdc_dma_request;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_set_dma_bus_ready(core_machine *machine, C_INT ready)
+lib_status core_machine_set_dma_bus_ready(core_machine *machine, lib_i32 ready)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         !machine->transaction_contract.dma_cycle_bus_ready_gate_enabled) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     machine->dma_cycle_bus_ready = ready ? LIB_TRUE : LIB_FALSE;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
-type_status core_machine_set_cpu_bus_ready(core_machine *machine, C_INT ready)
+lib_status core_machine_set_cpu_bus_ready(core_machine *machine, lib_i32 ready)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         !machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     machine->cpu_cycle_bus_ready = ready ? LIB_TRUE : LIB_FALSE;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
-type_status core_machine_configure_rtc_cmos(core_machine *machine,
+lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config)
 {
     core_machine_rtc_config rtc_config;
     core_machine_port_provider_entry *port_checkpoint;
-    type_status status;
+    lib_status status;
     lib_size index;
 
     if (!core_machine_configuration_is_open(machine) ||
         machine->rtc_cmos_configured) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     if (!core_machine_rtc_cmos_config_is_valid(config)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (core_machine_port_has_write(&machine->executor_port,
             config->index_port) || core_machine_port_has_read(
             &machine->executor_port, config->data_port) ||
         core_machine_port_has_write(&machine->executor_port,
             config->data_port)) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     status = core_machine_install_port_provider(machine, config->index_port,
         config->index_port, &core_machine_rtc_cmos_index_port_provider, machine);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_port_rollback_registration(&machine->executor_port,
             port_checkpoint);
         return status;
     }
     status = core_machine_install_port_provider(machine, config->data_port,
         config->data_port, &core_machine_rtc_cmos_port_provider, machine);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_port_rollback_registration(&machine->executor_port,
             port_checkpoint);
         return status;
@@ -563,32 +563,32 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
                 machine->shared_rtc.registers[index]);
         }
         core_machine_rtc_write_nvram(&machine->shared_rtc, 0x2eu,
-            TYPE_MASK_UNSIGNED_8(checksum >> 8u));
+            CORE_MACHINE_MASK_U8(checksum >> 8u));
         core_machine_rtc_write_nvram(&machine->shared_rtc, 0x2fu,
-            TYPE_MASK_UNSIGNED_8(checksum));
+            CORE_MACHINE_MASK_U8(checksum));
     }
     machine->rtc_cmos_config = *config;
     machine->rtc_cmos_configured = LIB_TRUE;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_enable_memory_parity(core_machine *machine,
-    lib_size bytes, core_machine_memory_parity_fault_observer fault, C_VOID *owner)
+lib_status core_machine_enable_memory_parity(core_machine *machine,
+    lib_size bytes, core_machine_memory_parity_fault_observer fault, void *owner)
 {
-    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
+    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
     return core_machine_memory_enable_parity(&machine->executor_memory, bytes,
         fault, owner);
 }
-type_status core_machine_configure_planar_parity(core_machine *machine,
+lib_status core_machine_configure_planar_parity(core_machine *machine,
     const core_machine_planar_parity_config *config)
 {
     core_machine_port_provider provider = { core_machine_planar_parity_port_read,
         core_machine_planar_parity_port_write };
     core_machine_port_provider_entry *checkpoint;
-    type_status status;
+    lib_status status;
 
     if (!core_machine_configuration_is_open(machine) || machine->planar_parity_configured)
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     if (config == LIB_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
         (config->refresh_status_source !=
                 CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1 &&
@@ -601,11 +601,11 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
             machine->executor_memory.connect.installed_bytes) ||
         core_machine_port_has_read(&machine->executor_port,
             config->port) || core_machine_port_has_write(&machine->executor_port,
-            config->port)) return TYPE_STATUS_INVALID_ARGUMENT;
+            config->port)) return LIB_STATUS_INVALID_ARGUMENT;
     checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     status = core_machine_install_port_provider(machine, config->port, config->port,
         &provider, machine);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
         return status;
     }
@@ -619,34 +619,34 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
     if (config->memory_bytes != 0u) {
         status = core_machine_memory_enable_parity(&machine->executor_memory,
             config->memory_bytes, core_machine_planar_parity_memory_fault, machine);
-        if (status != TYPE_STATUS_OK) {
+        if (status != LIB_STATUS_OK) {
             machine->planar_parity_configured = LIB_FALSE;
             core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
             return status;
         }
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_configure_d4_platform(core_machine *machine,
+lib_status core_machine_configure_d4_platform(core_machine *machine,
     const core_machine_d4_platform_config *config)
 {
     core_machine_port_provider_entry *checkpoint;
-    type_status status;
+    lib_status status;
 
     if (!core_machine_configuration_is_open(machine) ||
-        machine->d4_platform_configured) return TYPE_STATUS_INVALID_STATE;
+        machine->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
     if (config == LIB_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
         config->failsafe_pit_counter >= 3u || !machine->auxiliary_pit_configured ||
         machine->auxiliary_pit.connect.output[config->failsafe_pit_counter] != LIB_NULL ||
         core_machine_port_has_read(&machine->executor_port, config->port) ||
         core_machine_port_has_write(&machine->executor_port, config->port)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     status = core_machine_install_port_provider(machine, config->port, config->port,
         &core_machine_d4_platform_port_provider, machine);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
         return status;
     }
@@ -662,83 +662,83 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
     core_machine_pit_set_output(&machine->auxiliary_pit,
         config->failsafe_pit_counter, core_machine_d4_platform_failsafe_output,
         machine);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
-type_status core_machine_report_planar_parity_fault(core_machine *machine)
+lib_status core_machine_report_planar_parity_fault(core_machine *machine)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         !machine->planar_parity_configured ||
-        machine->planar_parity_config.memory_bytes == 0u) return TYPE_STATUS_INVALID_STATE;
+        machine->planar_parity_config.memory_bytes == 0u) return LIB_STATUS_INVALID_STATE;
     machine->planar_parity_latched = LIB_TRUE;
     core_machine_planar_parity_refresh_nmi(machine);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_absent_memory_read(C_VOID *owner,
-    lib_u32 physical, type_virtual_address destination,
-    type_native_unsigned bytes)
+static lib_status core_machine_absent_memory_read(void *owner,
+    lib_u32 physical, lib_uptr destination,
+    lib_uptr bytes)
 {
     const core_machine_absent_memory *absent =
         (const core_machine_absent_memory *)owner;
 
-    (C_VOID)physical;
+    (void)physical;
     if (absent == LIB_NULL || !absent->configured || destination == 0u ||
-        bytes == 0u) return TYPE_STATUS_FAULT;
-    lib_memory_set((C_VOID *)destination, absent->config.read_value, bytes);
-    return TYPE_STATUS_OK;
+        bytes == 0u) return LIB_STATUS_INTERNAL_ERROR;
+    lib_memory_set((void *)destination, absent->config.read_value, bytes);
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_absent_memory_write(C_VOID *owner,
-    lib_u32 physical, type_virtual_address source,
-    type_native_unsigned bytes)
+static lib_status core_machine_absent_memory_write(void *owner,
+    lib_u32 physical, lib_uptr source,
+    lib_uptr bytes)
 {
     const core_machine_absent_memory *absent =
         (const core_machine_absent_memory *)owner;
 
-    (C_VOID)physical;
+    (void)physical;
     if (absent == LIB_NULL || !absent->configured || source == 0u ||
-        bytes == 0u) return TYPE_STATUS_FAULT;
-    return TYPE_STATUS_OK;
+        bytes == 0u) return LIB_STATUS_INTERNAL_ERROR;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_absent_memory_query(C_VOID *owner,
-    lib_u32 physical, type_native_unsigned bytes,
+static lib_status core_machine_absent_memory_query(void *owner,
+    lib_u32 physical, lib_uptr bytes,
     core_machine_memory_access access)
 {
     const core_machine_absent_memory *absent =
         (const core_machine_absent_memory *)owner;
 
-    (C_VOID)physical;
+    (void)physical;
     if (absent == LIB_NULL || !absent->configured || bytes == 0u ||
         (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
-        access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) return TYPE_STATUS_FAULT;
-    return TYPE_STATUS_OK;
+        access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) return LIB_STATUS_INTERNAL_ERROR;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_clear_d4_iochk_fault(core_machine *machine)
+lib_status core_machine_clear_d4_iochk_fault(core_machine *machine)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->d4_platform_configured) return TYPE_STATUS_INVALID_STATE;
+        !machine->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
     machine->d4_platform_iochk_latched = LIB_FALSE;
     if (!machine->d4_platform_failsafe_latched) machine->d4_platform_nmi_signaled = LIB_FALSE;
     core_machine_d4_platform_refresh_nmi(machine);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_report_d4_iochk_fault(core_machine *machine)
+lib_status core_machine_report_d4_iochk_fault(core_machine *machine)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->d4_platform_configured) return TYPE_STATUS_INVALID_STATE;
+        !machine->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
     machine->d4_platform_iochk_latched = LIB_TRUE;
     core_machine_d4_platform_refresh_nmi(machine);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_get_d4_platform_observation(const core_machine *machine,
+lib_status core_machine_get_d4_platform_observation(const core_machine *machine,
     core_machine_d4_platform_observation *out_observation)
 {
     if (machine == LIB_NULL || out_observation == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     out_observation->configured = machine->d4_platform_configured;
     out_observation->iochk_enabled = (machine->d4_platform_port_b & 0x08u) == 0u;
@@ -747,15 +747,15 @@ type_status core_machine_get_d4_platform_observation(const core_machine *machine
     out_observation->iochk_latched = machine->d4_platform_iochk_latched;
     out_observation->failsafe_latched = machine->d4_platform_failsafe_latched;
     out_observation->nmi_signaled = machine->d4_platform_nmi_signaled;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
-type_status core_machine_get_speaker_observation(const core_machine *machine,
+lib_status core_machine_get_speaker_observation(const core_machine *machine,
     core_machine_speaker_observation *out_observation)
 {
     lib_u8 value;
 
     if (machine == LIB_NULL || out_observation == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     value = core_machine_speaker_source_value(machine);
     out_observation->configured = machine->xt_ppi_speaker_configured ||
@@ -765,20 +765,20 @@ type_status core_machine_get_speaker_observation(const core_machine *machine,
     out_observation->timer_output = core_machine_pit_get_output(
         &machine->shared_pit, 2u);
     out_observation->output = machine->speaker_output;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
-type_status core_machine_configure_absent_memory(core_machine *machine,
+lib_status core_machine_configure_absent_memory(core_machine *machine,
     const core_machine_absent_memory_config *config)
 {
     core_machine_absent_memory *absent;
-    type_status status;
-    type_native_unsigned index;
+    lib_status status;
+    lib_uptr index;
 
-    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
+    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
     if (config == LIB_NULL || config->bytes == 0u ||
         (lib_u64)config->physical_start + config->bytes >
-            (lib_u64)TYPE_MAX_UNSIGNED_32 + 1u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+            (lib_u64)LIB_UINT32_MAX + 1u) {
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     absent = LIB_NULL;
     for (index = 0u; index < CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT; ++index) {
@@ -787,7 +787,7 @@ type_status core_machine_configure_absent_memory(core_machine *machine,
             break;
         }
     }
-    if (absent == LIB_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (absent == LIB_NULL) return LIB_STATUS_INVALID_STATE;
     absent->config = *config;
     absent->configured = LIB_TRUE;
     /* An unpopulated board window is a fallback, not an installed device:
@@ -797,27 +797,27 @@ type_status core_machine_configure_absent_memory(core_machine *machine,
         config->physical_start, config->bytes, core_machine_absent_memory_read,
         core_machine_absent_memory_write, core_machine_absent_memory_query,
         absent);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         lib_memory_set(absent, 0, sizeof(*absent));
         return status;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_get_planar_parity_observation(const core_machine *machine,
+lib_status core_machine_get_planar_parity_observation(const core_machine *machine,
     core_machine_planar_parity_observation *out_observation)
 {
-    if (machine == LIB_NULL || out_observation == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     out_observation->configured = machine->planar_parity_configured &&
         machine->planar_parity_config.memory_bytes != 0u;
     out_observation->enabled = out_observation->configured &&
         (machine->planar_parity_port_b & 0x04u) != 0u;
     out_observation->latched = machine->planar_parity_latched;
     out_observation->nmi_signaled = machine->planar_parity_nmi_signaled;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_INT core_machine_fdc_topology_is_valid(
+static lib_i32 core_machine_fdc_topology_is_valid(
     const core_machine_fdc_topology *topology)
 {
     lib_size first;
@@ -844,7 +844,7 @@ static C_INT core_machine_fdc_topology_is_valid(
     return 1;
 }
 
-static C_INT core_machine_hdc_topology_is_valid(
+static lib_i32 core_machine_hdc_topology_is_valid(
     const core_machine_hdc_topology *topology)
 {
     const core_machine_hdc_config *config;
@@ -917,11 +917,11 @@ static C_INT core_machine_hdc_topology_is_valid(
 
 typedef struct core_machine_port_direction_requirement {
     lib_u16 port;
-    type_bool read;
-    type_bool write;
+    lib_u8 read;
+    lib_u8 write;
 } core_machine_port_direction_requirement;
 
-static C_INT core_machine_controller_ports_are_available(
+static lib_i32 core_machine_controller_ports_are_available(
     const core_machine *machine,
     const core_machine_port_direction_requirement *requirements,
     lib_size count)
@@ -940,7 +940,7 @@ static C_INT core_machine_controller_ports_are_available(
     return 1;
 }
 
-type_status core_machine_configure_fdc(core_machine *machine,
+lib_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology)
 {
     const core_machine_port_direction_requirement ports[] = {
@@ -957,19 +957,19 @@ type_status core_machine_configure_fdc(core_machine *machine,
             LIB_FALSE, topology != LIB_NULL && topology->config.control_port != 0u}
     };
     core_machine_port_provider_entry *port_checkpoint;
-    type_status status;
+    lib_status status;
 
     if (!core_machine_configuration_is_open(machine) || !machine->dma_configured ||
         machine->fdc_configured) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     if (!core_machine_fdc_topology_is_valid(topology) ||
         topology->dma_request.core_token != machine->fdc_dma_request.core_token ||
         topology->dma_request.channel != machine->fdc_dma_request.channel) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (!core_machine_controller_ports_are_available(machine, ports,
-            sizeof(ports) / sizeof(ports[0]))) return TYPE_STATUS_INVALID_STATE;
+            sizeof(ports) / sizeof(ports[0]))) return LIB_STATUS_INVALID_STATE;
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     machine->fdc_topology = *topology;
     core_machine_fdc_connect(&machine->fdc, machine->fdc_topology.media_registry,
@@ -981,42 +981,42 @@ type_status core_machine_configure_fdc(core_machine *machine,
         &machine->fdc_topology.observation_provider);
     core_machine_fdc_initialize(&machine->fdc);
     status = core_machine_port_registration_status(&machine->executor_port);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_port_rollback_registration(&machine->executor_port,
             port_checkpoint);
         core_machine_fdc_finalize(&machine->fdc);
-        lib_memory_set(&machine->fdc_topology, TYPE_ZERO_8,
+        lib_memory_set(&machine->fdc_topology, 0u,
             sizeof(machine->fdc_topology));
         return status;
     }
     machine->fdc_configured = LIB_TRUE;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_configure_hdc(core_machine *machine,
+lib_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology)
 {
     const core_machine_port_provider *provider;
     core_machine_port_direction_requirement ports[9];
     lib_size port_count;
     lib_size index;
-    type_status status;
+    lib_status status;
     core_machine_port_provider_entry *port_checkpoint;
 
     if (!core_machine_configuration_is_open(machine) || machine->hdc_configured) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     if (!core_machine_hdc_topology_is_valid(topology)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB &&
         (!machine->fdc_configured ||
             topology->config.bus.task_file.drive_address_port !=
                 machine->fdc_topology.config.direction_port ||
             !core_machine_port_has_read(&machine->executor_port,
-                topology->config.bus.task_file.drive_address_port))) return TYPE_STATUS_INVALID_STATE;
+                topology->config.bus.task_file.drive_address_port))) return LIB_STATUS_INVALID_STATE;
     if (topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT) {
-        if (!machine->dma_configured) return TYPE_STATUS_INVALID_STATE;
+        if (!machine->dma_configured) return LIB_STATUS_INVALID_STATE;
         ports[0] = (core_machine_port_direction_requirement) {
             topology->config.bus.xebec.data_port, LIB_TRUE, LIB_TRUE};
         ports[1] = (core_machine_port_direction_requirement) {
@@ -1051,10 +1051,10 @@ type_status core_machine_configure_hdc(core_machine *machine,
         port_count = 9u;
     }
     if (!core_machine_controller_ports_are_available(machine, ports, port_count)) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     provider = core_machine_hdc_port_provider();
-    if (provider == LIB_NULL) return TYPE_STATUS_FAULT;
+    if (provider == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     machine->hdc_topology = *topology;
     core_machine_hdc_connect(&machine->hdc, machine->hdc_topology.media_registry,
@@ -1065,16 +1065,16 @@ type_status core_machine_configure_hdc(core_machine *machine,
     for (index = 0u; index < port_count; ++index) {
         if (ports[index].read && (status = core_machine_port_add_read_provider(
                 &machine->executor_port, ports[index].port, provider->read,
-                &machine->hdc)) != TYPE_STATUS_OK) break;
+                &machine->hdc)) != LIB_STATUS_OK) break;
         if (ports[index].write && (status = core_machine_port_add_write_provider(
                 &machine->executor_port, ports[index].port, provider->write,
-                &machine->hdc)) != TYPE_STATUS_OK) break;
+                &machine->hdc)) != LIB_STATUS_OK) break;
     }
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_port_rollback_registration(&machine->executor_port,
             port_checkpoint);
         core_machine_hdc_finalize(&machine->hdc);
-        lib_memory_set(&machine->hdc_topology, TYPE_ZERO_8,
+        lib_memory_set(&machine->hdc_topology, 0u,
             sizeof(machine->hdc_topology));
         return status;
     }
@@ -1082,11 +1082,11 @@ type_status core_machine_configure_hdc(core_machine *machine,
         status = core_machine_port_add_read_wired_or_provider(&machine->executor_port,
             machine->hdc_topology.config.bus.task_file.drive_address_port,
             provider->read, &machine->hdc);
-        if (status != TYPE_STATUS_OK) {
+        if (status != LIB_STATUS_OK) {
             core_machine_port_rollback_registration(&machine->executor_port,
                 port_checkpoint);
             core_machine_hdc_finalize(&machine->hdc);
-            lib_memory_set(&machine->hdc_topology, TYPE_ZERO_8,
+            lib_memory_set(&machine->hdc_topology, 0u,
                 sizeof(machine->hdc_topology));
             return status;
         }
@@ -1096,11 +1096,11 @@ type_status core_machine_configure_hdc(core_machine *machine,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
             machine->hdc_topology.config.bus.xebec.dma_channel,
             core_machine_hdc_dma_provider(), &machine->hdc, &machine->hdc_dma_request);
-        if (status != TYPE_STATUS_OK) {
+        if (status != LIB_STATUS_OK) {
             core_machine_port_rollback_registration(&machine->executor_port,
                 port_checkpoint);
             core_machine_hdc_finalize(&machine->hdc);
-            lib_memory_set(&machine->hdc_topology, TYPE_ZERO_8,
+            lib_memory_set(&machine->hdc_topology, 0u,
                 sizeof(machine->hdc_topology));
             return status;
         }
@@ -1109,5 +1109,5 @@ type_status core_machine_configure_hdc(core_machine *machine,
             machine);
     }
     machine->hdc_configured = LIB_TRUE;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }

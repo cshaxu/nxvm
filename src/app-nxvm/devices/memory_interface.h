@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "type.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,11 +11,11 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
-typedef C_VOID (*core_machine_memory_parity_fault_observer)(C_VOID *owner,
+typedef void (*core_machine_memory_parity_fault_observer)(void *owner,
     lib_u32 physical);
 
-typedef C_VOID (*core_machine_memory_write_observer)(C_VOID *owner,
-    lib_u32 physical, type_native_unsigned bytes);
+typedef void (*core_machine_memory_write_observer)(void *owner,
+    lib_u32 physical, lib_uptr bytes);
 
 typedef enum core_machine_a20_wrap_policy {
     CORE_MACHINE_A20_WRAP_GLOBAL_MASK = 0,
@@ -32,16 +32,16 @@ typedef enum core_machine_memory_route {
 } core_machine_memory_route;
 
 /* A composition-owned device may claim a configured physical range.  Returning
- * TYPE_STATUS_UNSUPPORTED from query leaves the range available to the next
+ * LIB_STATUS_UNSUPPORTED from query leaves the range available to the next
  * registered device or ordinary RAM; other failures are terminal. */
-typedef type_status (*core_machine_memory_device_read)(C_VOID *owner,
-    lib_u32 physical, type_virtual_address destination,
-    type_native_unsigned bytes);
-typedef type_status (*core_machine_memory_device_write)(C_VOID *owner,
-    lib_u32 physical, type_virtual_address source,
-    type_native_unsigned bytes);
-typedef type_status (*core_machine_memory_device_query)(C_VOID *owner,
-    lib_u32 physical, type_native_unsigned bytes,
+typedef lib_status (*core_machine_memory_device_read)(void *owner,
+    lib_u32 physical, lib_uptr destination,
+    lib_uptr bytes);
+typedef lib_status (*core_machine_memory_device_write)(void *owner,
+    lib_u32 physical, lib_uptr source,
+    lib_uptr bytes);
+typedef lib_status (*core_machine_memory_device_query)(void *owner,
+    lib_u32 physical, lib_uptr bytes,
     core_machine_memory_access access);
 
 typedef struct core_machine_memory_device_callbacks {
@@ -52,43 +52,43 @@ typedef struct core_machine_memory_device_callbacks {
 
 /* Configuration-only generic device registration.  Core owns checked routing;
  * the composition-owned callback context supplies all device semantics. */
-type_status core_machine_enable_memory_parity(core_machine *machine,
-    lib_size bytes, core_machine_memory_parity_fault_observer fault, C_VOID *owner);
+lib_status core_machine_enable_memory_parity(core_machine *machine,
+    lib_size bytes, core_machine_memory_parity_fault_observer fault, void *owner);
 
-type_status core_machine_register_memory_write_observer(core_machine *machine,
-    core_machine_memory_write_observer callback, C_VOID *owner);
-type_status core_machine_register_memory_device(core_machine *machine,
+lib_status core_machine_register_memory_write_observer(core_machine *machine,
+    core_machine_memory_write_observer callback, void *owner);
+lib_status core_machine_register_memory_device(core_machine *machine,
     lib_u32 physical_start, lib_size bytes,
-    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner);
+    const core_machine_memory_device_callbacks *callbacks, void *owner);
 /* A board-owned selected decode replaces any lower ROM/RAM provider while its
  * query accepts the access; on decline the ordinary route remains intact. */
-type_status core_machine_register_memory_replacement_device(core_machine *machine,
+lib_status core_machine_register_memory_replacement_device(core_machine *machine,
     lib_u32 physical_start, lib_size bytes,
-    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner);
-type_status core_machine_memory_read(
+    const core_machine_memory_device_callbacks *callbacks, void *owner);
+lib_status core_machine_memory_read(
     const core_machine *machine,
     lib_u32 physical,
-    C_VOID *out_data,
+    void *out_data,
     lib_size size);
 
-type_status core_machine_memory_write(
+lib_status core_machine_memory_write(
     core_machine *machine,
     lib_u32 physical,
-    const C_VOID *data,
+    const void *data,
     lib_size size);
 
 /* Queries one complete physical range without exposing storage or invoking a
  * provider data callback. It is valid only at a stopped or paused boundary. */
-type_status core_machine_memory_query(
+lib_status core_machine_memory_query(
     const core_machine *machine,
     lib_u32 physical,
     lib_size size,
     core_machine_memory_access access,
     core_machine_memory_route *out_route);
 
-type_status core_machine_set_a20(
+lib_status core_machine_set_a20(
     core_machine *machine,
-    C_INT enabled);
+    lib_i32 enabled);
 
 #ifdef __cplusplus
 }

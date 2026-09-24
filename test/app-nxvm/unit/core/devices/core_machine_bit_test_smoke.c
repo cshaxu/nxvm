@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -11,54 +12,54 @@ typedef struct bit_memory_provider {
     lib_u32 reads;
     lib_u32 writes;
     lib_u8 value[4];
-    type_status read_status;
-    type_status write_status;
+    lib_status read_status;
+    lib_status write_status;
 } bit_memory_provider;
 
 typedef struct bit_machine { core_machine *machine; } bit_machine;
 
-static type_status bit_memory_read(C_VOID *owner, lib_u32 physical,
-    type_virtual_address destination, type_native_unsigned bytes)
+static lib_status bit_memory_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes)
 {
     bit_memory_provider *provider=(bit_memory_provider *)owner;
     if(provider==LIB_NULL||physical!=BIT_SOURCE_MEMORY||(bytes!=2u&&bytes!=4u))
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     ++provider->reads;
-    if(provider->read_status!=TYPE_STATUS_OK)return provider->read_status;
-    lib_memory_copy((C_VOID *)destination,provider->value,bytes);
-    return TYPE_STATUS_OK;
+    if(provider->read_status!=LIB_STATUS_OK)return provider->read_status;
+    lib_memory_copy((void *)destination,provider->value,bytes);
+    return LIB_STATUS_OK;
 }
 
-static type_status bit_memory_write(C_VOID *owner, lib_u32 physical,
-    type_virtual_address source, type_native_unsigned bytes)
+static lib_status bit_memory_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
 {
     bit_memory_provider *provider=(bit_memory_provider *)owner;
     if(provider==LIB_NULL||physical!=BIT_SOURCE_MEMORY||(bytes!=2u&&bytes!=4u))
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     ++provider->writes;
-    if(provider->write_status!=TYPE_STATUS_OK)return provider->write_status;
-    lib_memory_copy(provider->value,(const C_VOID *)source,bytes);
-    return TYPE_STATUS_OK;
+    if(provider->write_status!=LIB_STATUS_OK)return provider->write_status;
+    lib_memory_copy(provider->value,(const void *)source,bytes);
+    return LIB_STATUS_OK;
 }
 
-static type_status bit_memory_query(C_VOID *owner, lib_u32 physical,
-    type_native_unsigned bytes, core_machine_memory_access access)
+static lib_status bit_memory_query(void *owner, lib_u32 physical,
+    lib_uptr bytes, core_machine_memory_access access)
 {
-    (C_VOID)owner;
+    (void)owner;
     return physical==BIT_SOURCE_MEMORY&&(bytes==2u||bytes==4u)&&
         (access==CORE_MACHINE_MEMORY_ACCESS_READ||access==CORE_MACHINE_MEMORY_ACCESS_WRITE)?
-        TYPE_STATUS_OK:TYPE_STATUS_UNSUPPORTED;
+        LIB_STATUS_OK:LIB_STATUS_UNSUPPORTED;
 }
 
-static C_VOID bit_reset(C_VOID *opaque)
+static void bit_reset(void *opaque)
 {
     bit_machine *state = (bit_machine *)opaque;
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider bit_provider = {bit_reset,LIB_NULL};
 
-static C_INT bit_prepare(core_machine_cpu_profile profile, bit_memory_provider *provider,
+static lib_i32 bit_prepare(core_machine_cpu_profile profile, bit_memory_provider *provider,
     bit_machine *state)
 {
     const core_machine_config config = {
@@ -68,10 +69,10 @@ static C_INT bit_prepare(core_machine_cpu_profile profile, bit_memory_provider *
     };
     if (state == LIB_NULL) return 0;
     lib_memory_set(state,0,sizeof(*state));
-    if (core_machine_create(&config,&state->machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config,&state->machine) != LIB_STATUS_OK ||
         (provider!=LIB_NULL&&test_core_machine_fixture_register_memory_device_provider(
             state->machine,BIT_SOURCE_MEMORY,4u,bit_memory_read,bit_memory_write,
-            bit_memory_query,provider)!=TYPE_STATUS_OK)||
+            bit_memory_query,provider)!=LIB_STATUS_OK)||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &bit_provider,state)) {
         core_machine_destroy(state->machine); state->machine=LIB_NULL; return 0;
@@ -79,21 +80,21 @@ static C_INT bit_prepare(core_machine_cpu_profile profile, bit_memory_provider *
     return 1;
 }
 
-static C_INT bit_run(bit_machine *state,const lib_u8 *code,lib_size bytes,
-    C_INT fault,t_cpu *out,core_machine_cpu_diagnostic *diagnostic)
+static lib_i32 bit_run(bit_machine *state,const lib_u8 *code,lib_size bytes,
+    lib_i32 fault,t_cpu *out,core_machine_cpu_diagnostic *diagnostic)
 {
     const core_machine_run_budget budget={1u,0u}; core_machine_run_result result;
-    type_status status;
+    lib_status status;
     if (state==LIB_NULL || state->machine==LIB_NULL || !test_core_machine_fixture_prepare_real_mode_execution(state->machine,0u) ||
-        core_machine_memory_write(state->machine,0u,code,bytes)!=TYPE_STATUS_OK) return 0;
+        core_machine_memory_write(state->machine,0u,code,bytes)!=LIB_STATUS_OK) return 0;
     if(fault&&!test_core_machine_fixture_preflight_real_ud_terminal(state->machine))return 0;
     status=core_machine_run(state->machine,budget,&result);
-    if (status!=(fault?TYPE_STATUS_FAULT:TYPE_STATUS_OK) || result.reason!=(fault?CORE_MACHINE_STOP_FAULT:CORE_MACHINE_STOP_BUDGET) ||
-        core_machine_get_cpu_diagnostic(state->machine,diagnostic)!=TYPE_STATUS_OK) return 0;
+    if (status!=(fault?LIB_STATUS_INTERNAL_ERROR:LIB_STATUS_OK) || result.reason!=(fault?CORE_MACHINE_STOP_FAULT:CORE_MACHINE_STOP_BUDGET) ||
+        core_machine_get_cpu_diagnostic(state->machine,diagnostic)!=LIB_STATUS_OK) return 0;
     *out=test_core_machine_fixture_capture_cpu_after_run(state->machine); return 1;
 }
 
-static C_INT bit_test_register_forms(C_VOID)
+static lib_i32 bit_test_register_forms(void)
 {
     static const lib_u8 opcodes[]={0xa3u,0xabu,0xb3u,0xbbu};
     static const lib_u32 expected[]={0x00000002u,0x00000002u,0x00000000u,0x00000000u};
@@ -103,7 +104,7 @@ static C_INT bit_test_register_forms(C_VOID)
         for(operand32=0u;operand32<2u;++operand32) {
             lib_u8 code[]={0x66u,0x0fu,opcodes[index],0xc8u};
             bit_machine state; t_cpu after; core_machine_cpu_diagnostic diagnostic;
-            C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
+            lib_i32 failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
             if (!operand32) { code[0]=0x0fu; code[1]=opcodes[index]; code[2]=0xc8u; }
             if (!failed) {
                 state.machine->executor_cpu.data.eax=operand32?2u:0xaabb0002u;
@@ -111,7 +112,7 @@ static C_INT bit_test_register_forms(C_VOID)
                 state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_ZF|VCPU_EFLAGS_OF;
                 failed|=!bit_run(&state,code,operand32?4u:3u,0,&after,&diagnostic)||diagnostic.first_fault.valid||
                     after.data.eax!=(operand32?expected[index]:(0xaabb0000u|(expected[index]&0xffffu)))||
-                    !!TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_CF)!=1;
+                    !!CORE_MACHINE_BIT_IS_SET(after.data.eflags,VCPU_EFLAGS_CF)!=1;
             }
             core_machine_destroy(state.machine);if(failed)return 0;
         }
@@ -119,19 +120,19 @@ static C_INT bit_test_register_forms(C_VOID)
     return 1;
 }
 
-static C_INT bit_test_immediate_and_memory(C_VOID)
+static lib_i32 bit_test_immediate_and_memory(void)
 {
     static const lib_u8 groups[]={4u,5u,6u,7u};
     lib_u8 group;
     for(group=0u;group<4u;++group) {
         lib_u8 code[]={0x0fu,0xbau,(lib_u8)(0xe1u+(groups[group]-4u)*8u),1u};
         bit_machine state; t_cpu after; core_machine_cpu_diagnostic diagnostic;
-        C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
+        lib_i32 failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
         if(!failed) {
             state.machine->executor_cpu.data.ecx=2u;
             state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_ZF;
             failed|=!bit_run(&state,code,sizeof(code),0,&after,&diagnostic)||diagnostic.first_fault.valid||
-                after.data.ecx!=((group>=2u)?0u:2u)||!TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_CF);
+                after.data.ecx!=((group>=2u)?0u:2u)||!CORE_MACHINE_BIT_IS_SET(after.data.eflags,VCPU_EFLAGS_CF);
         }
         core_machine_destroy(state.machine);if(failed)return 0;
     }
@@ -142,29 +143,29 @@ static C_INT bit_test_immediate_and_memory(C_VOID)
         lib_u16 first=0u,second=0u,read=0u;
         lib_u32 third=0u,fourth=0u;
         bit_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
-        C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
+        lib_i32 failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
         if(!failed) {
             state.machine->executor_cpu.data.ecx=0xffffu;
             state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_ZF;
-            failed|=core_machine_memory_write(state.machine,0x4000u,&first,2u)!=TYPE_STATUS_OK||
-                core_machine_memory_write(state.machine,0x4002u,&second,2u)!=TYPE_STATUS_OK||
+            failed|=core_machine_memory_write(state.machine,0x4000u,&first,2u)!=LIB_STATUS_OK||
+                core_machine_memory_write(state.machine,0x4002u,&second,2u)!=LIB_STATUS_OK||
                 !bit_run(&state,signed_code,sizeof(signed_code),0,&after,&diagnostic)||
-                core_machine_memory_read(state.machine,0x4000u,&read,2u)!=TYPE_STATUS_OK||read!=0x8000u||
-                TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_CF);
+                core_machine_memory_read(state.machine,0x4000u,&read,2u)!=LIB_STATUS_OK||read!=0x8000u||
+                CORE_MACHINE_BIT_IS_SET(after.data.eflags,VCPU_EFLAGS_CF);
         }
         if(!failed) {
             state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_ZF;
             failed|=!bit_run(&state,immediate_code,sizeof(immediate_code),0,&after,&diagnostic)||
-                core_machine_memory_read(state.machine,0x4002u,&read,2u)!=TYPE_STATUS_OK||read!=1u||
-                TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_CF);
+                core_machine_memory_read(state.machine,0x4002u,&read,2u)!=LIB_STATUS_OK||read!=1u||
+                CORE_MACHINE_BIT_IS_SET(after.data.eflags,VCPU_EFLAGS_CF);
         }
         if(!failed) {
             state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_ZF;
-            failed|=core_machine_memory_write(state.machine,0x4008u,&third,4u)!=TYPE_STATUS_OK||
-                core_machine_memory_write(state.machine,0x400cu,&fourth,4u)!=TYPE_STATUS_OK||
+            failed|=core_machine_memory_write(state.machine,0x4008u,&third,4u)!=LIB_STATUS_OK||
+                core_machine_memory_write(state.machine,0x400cu,&fourth,4u)!=LIB_STATUS_OK||
                 !bit_run(&state,immediate32_code,sizeof(immediate32_code),0,&after,&diagnostic)||
-                core_machine_memory_read(state.machine,0x400cu,&fourth,4u)!=TYPE_STATUS_OK||fourth!=2u||
-                TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_CF);
+                core_machine_memory_read(state.machine,0x400cu,&fourth,4u)!=LIB_STATUS_OK||fourth!=2u||
+                CORE_MACHINE_BIT_IS_SET(after.data.eflags,VCPU_EFLAGS_CF);
         }
         core_machine_destroy(state.machine);if(failed)return 0;
     }
@@ -174,28 +175,28 @@ static C_INT bit_test_immediate_and_memory(C_VOID)
         lib_u16 word=2u,read16=0u;
         lib_u32 dword=0u,read32=0u;
         bit_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
-        C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
+        lib_i32 failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
         if(!failed) {
             state.machine->executor_cpu.data.ecx=1u;
-            failed|=core_machine_memory_write(state.machine,0x4000u,&word,2u)!=TYPE_STATUS_OK||
+            failed|=core_machine_memory_write(state.machine,0x4000u,&word,2u)!=LIB_STATUS_OK||
                 !bit_run(&state,memory_bt,sizeof(memory_bt),0,&after,&diagnostic)||
-                core_machine_memory_read(state.machine,0x4000u,&read16,2u)!=TYPE_STATUS_OK||read16!=word||
-                !TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_CF);
+                core_machine_memory_read(state.machine,0x4000u,&read16,2u)!=LIB_STATUS_OK||read16!=word||
+                !CORE_MACHINE_BIT_IS_SET(after.data.eflags,VCPU_EFLAGS_CF);
         }
         if(!failed) {
             state.machine->executor_cpu.data.esi=0x4004u;
             state.machine->executor_cpu.data.ecx=1u;
-            failed|=core_machine_memory_write(state.machine,0x4004u,&dword,4u)!=TYPE_STATUS_OK||
+            failed|=core_machine_memory_write(state.machine,0x4004u,&dword,4u)!=LIB_STATUS_OK||
                 !bit_run(&state,address32_bts,sizeof(address32_bts),0,&after,&diagnostic)||
-                core_machine_memory_read(state.machine,0x4004u,&read32,4u)!=TYPE_STATUS_OK||read32!=2u||
-                TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_CF);
+                core_machine_memory_read(state.machine,0x4004u,&read32,4u)!=LIB_STATUS_OK||read32!=2u||
+                CORE_MACHINE_BIT_IS_SET(after.data.eflags,VCPU_EFLAGS_CF);
         }
         core_machine_destroy(state.machine);if(failed)return 0;
     }
     return 1;
 }
 
-static C_INT bit_test_memory_destination_forms(C_VOID)
+static lib_i32 bit_test_memory_destination_forms(void)
 {
     static const lib_u8 opcodes[]={0xa3u,0xabu,0xb3u,0xbbu};
     lib_u8 form;
@@ -207,21 +208,21 @@ static C_INT bit_test_memory_destination_forms(C_VOID)
         bit_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
+        lib_i32 failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,&state);
 
         if(!failed) {
             state.machine->executor_cpu.data.ecx=1u;
-            failed|=core_machine_memory_write(state.machine,0x4000u,&value,2u)!=TYPE_STATUS_OK||
+            failed|=core_machine_memory_write(state.machine,0x4000u,&value,2u)!=LIB_STATUS_OK||
                 !bit_run(&state,indexed,sizeof(indexed),0,&after,&diagnostic)||
-                core_machine_memory_read(state.machine,0x4000u,&read,2u)!=TYPE_STATUS_OK||
-                read!=((form>=2u)?0u:2u)||!TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_CF);
+                core_machine_memory_read(state.machine,0x4000u,&read,2u)!=LIB_STATUS_OK||
+                read!=((form>=2u)?0u:2u)||!CORE_MACHINE_BIT_IS_SET(after.data.eflags,VCPU_EFLAGS_CF);
         }
         if(!failed) {
             value=2u;
-            failed|=core_machine_memory_write(state.machine,0x4000u,&value,2u)!=TYPE_STATUS_OK||
+            failed|=core_machine_memory_write(state.machine,0x4000u,&value,2u)!=LIB_STATUS_OK||
                 !bit_run(&state,immediate,sizeof(immediate),0,&after,&diagnostic)||
-                core_machine_memory_read(state.machine,0x4000u,&read,2u)!=TYPE_STATUS_OK||
-                read!=((form>=2u)?0u:2u)||!TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_CF);
+                core_machine_memory_read(state.machine,0x4000u,&read,2u)!=LIB_STATUS_OK||
+                read!=((form>=2u)?0u:2u)||!CORE_MACHINE_BIT_IS_SET(after.data.eflags,VCPU_EFLAGS_CF);
         }
         core_machine_destroy(state.machine);
         if(failed)return 0;
@@ -229,7 +230,7 @@ static C_INT bit_test_memory_destination_forms(C_VOID)
     return 1;
 }
 
-static C_INT bit_test_rejection(C_VOID)
+static lib_i32 bit_test_rejection(void)
 {
     static const lib_u8 invalid_ba[]={0x0fu,0xbau,0x06u,0x00u,0x50u,0u};
     static const lib_u8 bt_memory[]={0x0fu,0xa3u,0x0eu,0x00u,0x50u};
@@ -237,19 +238,19 @@ static C_INT bit_test_rejection(C_VOID)
     lib_u8 i;
     for(i=0u;i<2u;++i) {
         bit_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
-        bit_memory_provider provider={0u,0u,{0u,0u,0u,0u},TYPE_STATUS_OK,TYPE_STATUS_OK};
-        C_INT failed=!bit_prepare(profiles[i],&provider,&state);
+        bit_memory_provider provider={0u,0u,{0u,0u,0u,0u},LIB_STATUS_OK,LIB_STATUS_OK};
+        lib_i32 failed=!bit_prepare(profiles[i],&provider,&state);
         if(!failed) { state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_ZF;state.machine->executor_cpu.data.ecx=0xaabbccddu;
-            failed|=!bit_run(&state,bt_memory,sizeof(bt_memory),1,&after,&diagnostic)||!TYPE_GET_BIT(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD)||provider.reads!=0u||provider.writes!=0u||after.data.ecx!=0xaabbccddu||after.data.eflags!=VCPU_EFLAGS_ZF||after.data.eip!=0u; }
+            failed|=!bit_run(&state,bt_memory,sizeof(bt_memory),1,&after,&diagnostic)||!CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD)||provider.reads!=0u||provider.writes!=0u||after.data.ecx!=0xaabbccddu||after.data.eflags!=VCPU_EFLAGS_ZF||after.data.eip!=0u; }
         core_machine_destroy(state.machine);if(failed)return 0;
     }
-    { bit_memory_provider provider={0u,0u,{0u,0u,0u,0u},TYPE_STATUS_OK,TYPE_STATUS_OK};bit_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,&provider,&state);
-      if(!failed){state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_ZF;failed|=!bit_run(&state,invalid_ba,sizeof(invalid_ba),1,&after,&diagnostic)||!TYPE_GET_BIT(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD)||provider.reads!=0u||provider.writes!=0u||after.data.eflags!=VCPU_EFLAGS_ZF||after.data.eip!=0u;}
+    { bit_memory_provider provider={0u,0u,{0u,0u,0u,0u},LIB_STATUS_OK,LIB_STATUS_OK};bit_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;lib_i32 failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,&provider,&state);
+      if(!failed){state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_ZF;failed|=!bit_run(&state,invalid_ba,sizeof(invalid_ba),1,&after,&diagnostic)||!CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD)||provider.reads!=0u||provider.writes!=0u||after.data.eflags!=VCPU_EFLAGS_ZF||after.data.eip!=0u;}
       core_machine_destroy(state.machine);if(failed)return 0; }
     return 1;
 }
 
-static C_INT bit_prepare_protected(C_INT writable, C_INT out_of_limit,
+static lib_i32 bit_prepare_protected(lib_i32 writable, lib_i32 out_of_limit,
     bit_machine *state)
 {
     static const lib_u8 gdt_pointer[]={0x1fu,0,0,0x03u,0,0};
@@ -274,15 +275,15 @@ static C_INT bit_prepare_protected(C_INT writable, C_INT out_of_limit,
     gdt[17u]=out_of_limit?0u:0xffu;
     gdt[21u]=writable?0x92u:0x90u;
     return bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,LIB_NULL,state)&&
-        core_machine_memory_write(state->machine,0x0100u,gdt_pointer,sizeof(gdt_pointer))==TYPE_STATUS_OK&&
-        core_machine_memory_write(state->machine,0x0300u,gdt,sizeof(gdt))==TYPE_STATUS_OK&&
-        core_machine_memory_write(state->machine,0u,bootstrap,sizeof(bootstrap))==TYPE_STATUS_OK&&
-        core_machine_memory_write(state->machine,0x2000u,halt,sizeof(halt))==TYPE_STATUS_OK&&
-        core_machine_run(state->machine,budget,&result)==TYPE_STATUS_OK&&
+        core_machine_memory_write(state->machine,0x0100u,gdt_pointer,sizeof(gdt_pointer))==LIB_STATUS_OK&&
+        core_machine_memory_write(state->machine,0x0300u,gdt,sizeof(gdt))==LIB_STATUS_OK&&
+        core_machine_memory_write(state->machine,0u,bootstrap,sizeof(bootstrap))==LIB_STATUS_OK&&
+        core_machine_memory_write(state->machine,0x2000u,halt,sizeof(halt))==LIB_STATUS_OK&&
+        core_machine_run(state->machine,budget,&result)==LIB_STATUS_OK&&
         result.reason==CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT bit_test_access_failure(C_VOID)
+static lib_i32 bit_test_access_failure(void)
 {
     static const lib_u8 read_code[]={0x0fu,0xa3u,0x0eu,0x10u,0u};
     static const lib_u8 write_code[]={0x0fu,0xabu,0x0eu,0x10u,0u};
@@ -295,22 +296,22 @@ static C_INT bit_test_access_failure(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
         lib_u16 before=2u,after_memory=0u;
-        C_INT failed;
+        lib_i32 failed;
 
         failed=!bit_prepare_protected(pass==0u,pass==0u,&state);
         if(!failed) {
             state.machine->executor_cpu.data.ecx=1u;
             state.machine->executor_cpu.data.eflags=flags;
-            failed|=core_machine_memory_write(state.machine,0x3010u,&before,sizeof(before))!=TYPE_STATUS_OK||
+            failed|=core_machine_memory_write(state.machine,0x3010u,&before,sizeof(before))!=LIB_STATUS_OK||
                 core_machine_memory_write(state.machine,0x2000u,pass==0u?read_code:write_code,
-                    pass==0u?sizeof(read_code):sizeof(write_code))!=TYPE_STATUS_OK;
+                    pass==0u?sizeof(read_code):sizeof(write_code))!=LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine,0u);
-            failed|=core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result)!=TYPE_STATUS_FAULT||
-                result.reason!=CORE_MACHINE_STOP_FAULT||core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=TYPE_STATUS_OK;
+            failed|=core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result)!=LIB_STATUS_INTERNAL_ERROR||
+                result.reason!=CORE_MACHINE_STOP_FAULT||core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=LIB_STATUS_OK;
             after=test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed|=!diagnostic.first_fault.valid||!TYPE_GET_BIT(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_DF)||
+            failed|=!diagnostic.first_fault.valid||!CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_DF)||
                 core_machine_memory_read_physical(&state.machine->executor_memory,0x3010u,
-                    TYPE_REFERENCE_OF(after_memory),sizeof(after_memory))!=TYPE_STATUS_OK||after_memory!=before||
+                    CORE_MACHINE_REFERENCE_OF(after_memory),sizeof(after_memory))!=LIB_STATUS_OK||after_memory!=before||
                 after.data.ecx!=1u||after.data.eflags!=flags||after.data.eip!=0u;
         }
         core_machine_destroy(state.machine);
@@ -319,11 +320,11 @@ static C_INT bit_test_access_failure(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if(!bit_test_register_forms()||!bit_test_immediate_and_memory()||
         !bit_test_memory_destination_forms()||!bit_test_rejection()||
         !bit_test_access_failure())return 1;
-    STD_PRINTF("M5:T310:S5:BIT:OK\n");
-    STD_PRINTF("M5:T401:S61:BIT-TEST-PROFILES:OK\n");return 0;
+    printf("M5:T310:S5:BIT:OK\n");
+    printf("M5:T401:S61:BIT-TEST-PROFILES:OK\n");return 0;
 }

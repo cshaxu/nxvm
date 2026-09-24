@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/entry_plan_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -13,13 +13,13 @@ typedef struct mantle_fixture {
     lib_u8 media_byte;
 } mantle_fixture;
 
-static C_VOID fixture_reset(C_VOID *context)
+static void fixture_reset(void *context)
 {
     mantle_fixture *fixture = (mantle_fixture *)context;
     if (fixture != LIB_NULL) core_machine_rtc_reset(&fixture->rtc);
 }
 
-static C_VOID fixture_advance(C_VOID *context, lib_u64 elapsed_ticks)
+static void fixture_advance(void *context, lib_u64 elapsed_ticks)
 {
     mantle_fixture *fixture = (mantle_fixture *)context;
     if (fixture != LIB_NULL) core_machine_rtc_advance(&fixture->rtc, elapsed_ticks);
@@ -30,7 +30,7 @@ static const core_machine_execution_provider fixture_execution_provider = {
     fixture_advance
 };
 
-static core_machine_media_result fixture_media_query(C_VOID *context,
+static core_machine_media_result fixture_media_query(void *context,
     core_machine_media_info *out_info)
 {
     if (context == LIB_NULL || out_info == LIB_NULL) {
@@ -43,8 +43,8 @@ static core_machine_media_result fixture_media_query(C_VOID *context,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result fixture_media_read(C_VOID *context,
-    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result fixture_media_read(void *context,
+    lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
     if (context == LIB_NULL || buffer == LIB_NULL || offset != 0u || byte_count != 1u) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
@@ -63,7 +63,7 @@ static const core_machine_media_provider fixture_media_provider = {
     LIB_NULL
 };
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 halt[] = { 0xf4u };
     const core_machine_config config = {
@@ -81,21 +81,21 @@ C_INT main(C_VOID)
     core_machine_media_result media_result;
     core_machine *machine = LIB_NULL;
     mantle_fixture fixture = { 0 };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     fixture.media_byte = 0xa5u;
-    if (core_machine_media_registry_create(&fixture.media) != TYPE_STATUS_OK ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
+    if (core_machine_media_registry_create(&fixture.media) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         test_core_machine_fixture_initialize_rtc_with_shared_pic(machine,
             &fixture.rtc, &rtc_config);
         if (core_machine_bind_execution_provider(machine,
-            &fixture_execution_provider, &fixture) != TYPE_STATUS_OK) failed |= 0x02;
+            &fixture_execution_provider, &fixture) != LIB_STATUS_OK) failed |= 0x02;
         if (core_machine_media_registry_bind(fixture.media, 1u,
-            &fixture.media_byte, &fixture_media_provider) != TYPE_STATUS_OK) failed |= 0x04;
-        if (core_machine_media_registry_freeze(fixture.media) != TYPE_STATUS_OK) failed |= 0x08;
-        if (core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK) failed |= 0x10;
-        if (core_machine_reset(machine) != TYPE_STATUS_OK) failed |= 0x20;
+            &fixture.media_byte, &fixture_media_provider) != LIB_STATUS_OK) failed |= 0x04;
+        if (core_machine_media_registry_freeze(fixture.media) != LIB_STATUS_OK) failed |= 0x08;
+        if (core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK) failed |= 0x10;
+        if (core_machine_reset(machine) != LIB_STATUS_OK) failed |= 0x20;
     }
     plan.state.ip = 0x0200u;
     plan.state.sp = 0x1000u;
@@ -105,18 +105,18 @@ C_INT main(C_VOID)
     plan.preloads = &preload;
     plan.preload_count = 1u;
     if (!failed) {
-        if (core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_OK) failed |= 0x40;
-        if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_apply_entry_plan(machine, &plan) != LIB_STATUS_OK) failed |= 0x40;
+        if (core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) failed |= 0x80;
         if (core_machine_media_query(fixture.media, 1u, &media_info,
-            &media_result) != TYPE_STATUS_OK || media_result != CORE_MACHINE_MEDIA_RESULT_OK ||
+            &media_result) != LIB_STATUS_OK || media_result != CORE_MACHINE_MEDIA_RESULT_OK ||
             !media_info.present) failed |= 0x100;
     }
     core_machine_destroy(machine);
     core_machine_rtc_finalize(&fixture.rtc);
     core_machine_media_registry_destroy(fixture.media);
     if (failed) {
-        STD_PRINTF("mantle shape failed=%x reason=%u\n", failed, result.reason);
+        printf("mantle shape failed=%x reason=%u\n", failed, result.reason);
         return 1;
     }
     puts("M5:T274:S2:MANTLE-SHAPE:OK");

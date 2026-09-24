@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/pic.h"
@@ -14,7 +14,7 @@ typedef struct rtc_cmos_s3_fixture {
     core_machine_rtc rtc;
 } rtc_cmos_s3_fixture;
 
-static C_VOID rtc_cmos_s3_initialize_pic(t_port *port)
+static void rtc_cmos_s3_initialize_pic(t_port *port)
 {
     core_machine_port_write(port, 0x0020u, 0x11u);
     core_machine_port_write(port, 0x0021u, 0x08u);
@@ -26,7 +26,7 @@ static C_VOID rtc_cmos_s3_initialize_pic(t_port *port)
     core_machine_port_write(port, 0x00a1u, 0x01u);
 }
 
-static C_VOID rtc_cmos_s3_initialize(rtc_cmos_s3_fixture *fixture)
+static void rtc_cmos_s3_initialize(rtc_cmos_s3_fixture *fixture)
 {
     core_machine_rtc_config config = { .irq = 8u, .ticks_per_second = 4u };
 
@@ -38,14 +38,14 @@ static C_VOID rtc_cmos_s3_initialize(rtc_cmos_s3_fixture *fixture)
         &config);
 }
 
-static C_VOID rtc_cmos_s3_finalize(rtc_cmos_s3_fixture *fixture)
+static void rtc_cmos_s3_finalize(rtc_cmos_s3_fixture *fixture)
 {
     core_machine_rtc_finalize(&fixture->rtc);
     core_machine_pic_finalize(&fixture->master, &fixture->slave);
     core_machine_port_finalize(&fixture->port);
 }
 
-static C_VOID rtc_cmos_s3_write(core_machine_rtc *rtc, lib_u8 index,
+static void rtc_cmos_s3_write(core_machine_rtc *rtc, lib_u8 index,
     lib_u8 value)
 {
     core_machine_rtc_select_register(rtc, index);
@@ -59,11 +59,11 @@ static lib_u8 rtc_cmos_s3_read(core_machine_rtc *rtc,
     return core_machine_rtc_read_selected(rtc);
 }
 
-static C_INT rtc_cmos_s3_test_events_and_irq8(C_VOID)
+static lib_i32 rtc_cmos_s3_test_events_and_irq8(void)
 {
     rtc_cmos_s3_fixture fixture;
     lib_u8 flags;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     rtc_cmos_s3_initialize(&fixture);
     rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_SECOND_ALARM, 0xc0u);
@@ -109,10 +109,10 @@ static C_INT rtc_cmos_s3_test_events_and_irq8(C_VOID)
     return failed;
 }
 
-static C_INT rtc_cmos_s3_test_calendar_and_reset(C_VOID)
+static lib_i32 rtc_cmos_s3_test_calendar_and_reset(void)
 {
     rtc_cmos_s3_fixture fixture;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     rtc_cmos_s3_initialize(&fixture);
     rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_REG_B,
@@ -141,14 +141,14 @@ static C_INT rtc_cmos_s3_test_calendar_and_reset(C_VOID)
     return failed;
 }
 
-static C_INT rtc_cmos_s3_test_cmos_adapter(C_VOID)
+static lib_i32 rtc_cmos_s3_test_cmos_adapter(void)
 {
     core_machine_config config = { 0 };
     core_machine_rtc_cmos_config rtc_config = { 0 };
     core_machine *machine = LIB_NULL;
     lib_u32 value = 0u;
-    C_INT masked = 0;
-    C_INT failed = 0;
+    lib_i32 masked = 0;
+    lib_i32 failed = 0;
 
     config.ticks_per_instruction = 1u;
     rtc_config.index_port = 0x0070u;
@@ -160,37 +160,37 @@ static C_INT rtc_cmos_s3_test_cmos_adapter(C_VOID)
     rtc_config.defaults[0].value = 0x5au;
     rtc_config.default_count = 1u;
     rtc_config.timing.provenance = CORE_MACHINE_RTC_TIMING_L3_SOURCE;
-    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        core_machine_configure_rtc_cmos(machine, &rtc_config) != TYPE_STATUS_INVALID_ARGUMENT) {
+    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_configure_rtc_cmos(machine, &rtc_config) != LIB_STATUS_INVALID_ARGUMENT) {
         failed = 1;
     }
     rtc_config.timing = (core_machine_rtc_timing_plan) {1u, 1u,
         CORE_MACHINE_RTC_TIMING_L3_SOURCE};
     if (failed ||
-        core_machine_configure_rtc_cmos(machine, &rtc_config) != TYPE_STATUS_OK ||
+        core_machine_configure_rtc_cmos(machine, &rtc_config) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-            0x000ffff0u, 16u) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
-        core_machine_bus_write(machine, 0x0070u, 0x94u) != TYPE_STATUS_OK ||
-        core_machine_bus_read(machine, 0x0071u, &value) != TYPE_STATUS_OK ||
+            0x000ffff0u, 16u) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0070u, 0x94u) != LIB_STATUS_OK ||
+        core_machine_bus_read(machine, 0x0071u, &value) != LIB_STATUS_OK ||
         value != 0x5au || core_machine_get_nmi_mask(machine, &masked) !=
-            TYPE_STATUS_OK || !masked ||
+            LIB_STATUS_OK || !masked ||
         core_machine_bus_write(machine, 0x0070u, CORE_MACHINE_RTC_EQUIPMENT) !=
-            TYPE_STATUS_OK || core_machine_get_nmi_mask(machine, &masked) !=
-            TYPE_STATUS_OK || masked) {
+            LIB_STATUS_OK || core_machine_get_nmi_mask(machine, &masked) !=
+            LIB_STATUS_OK || masked) {
         failed = 1;
     }
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT rtc_cmos_s3_test_phase_and_divider(C_VOID)
+static lib_i32 rtc_cmos_s3_test_phase_and_divider(void)
 {
     rtc_cmos_s3_fixture fixture;
     core_machine_rtc_config config = { .irq = 8u, .ticks_per_second = 32768u,
         .timing = {8u, 65u, CORE_MACHINE_RTC_TIMING_L3_SOURCE} };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&fixture.port);
     core_machine_pic_initialize(&fixture.master, &fixture.slave, &fixture.port,
@@ -230,11 +230,11 @@ static C_INT rtc_cmos_s3_test_phase_and_divider(C_VOID)
     return failed;
 }
 
-static C_INT rtc_cmos_s3_test_alarm_deadline(C_VOID)
+static lib_i32 rtc_cmos_s3_test_alarm_deadline(void)
 {
     rtc_cmos_s3_fixture fixture;
     lib_u64 ticks = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     rtc_cmos_s3_initialize(&fixture);
     rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_REG_B,
@@ -243,7 +243,7 @@ static C_INT rtc_cmos_s3_test_alarm_deadline(C_VOID)
     rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_MINUTE_ALARM, 0x00u);
     rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_HOUR_ALARM, 0x00u);
     failed |= core_machine_rtc_ticks_until_irq(&fixture.rtc, &ticks) !=
-        TYPE_STATUS_OK || ticks != 8u;
+        LIB_STATUS_OK || ticks != 8u;
     core_machine_rtc_advance(&fixture.rtc, ticks);
     failed |= (fixture.rtc.registers[CORE_MACHINE_RTC_REG_C] &
         (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_AF)) !=
@@ -253,9 +253,9 @@ static C_INT rtc_cmos_s3_test_alarm_deadline(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= rtc_cmos_s3_test_events_and_irq8();
     failed |= rtc_cmos_s3_test_calendar_and_reset();
@@ -263,6 +263,6 @@ C_INT main(C_VOID)
     failed |= rtc_cmos_s3_test_phase_and_divider();
     failed |= rtc_cmos_s3_test_alarm_deadline();
     if (failed != 0) return 1;
-    STD_PRINTF("M5:T350:S3:RTC-CMOS:OK\n");
+    printf("M5:T350:S3:RTC-CMOS:OK\n");
     return 0;
 }

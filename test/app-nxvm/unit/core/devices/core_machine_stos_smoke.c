@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,19 +10,19 @@ typedef struct stos_machine {
     core_machine *machine;
 } stos_machine;
 
-static C_VOID stos_reset(C_VOID *opaque)
+static void stos_reset(void *opaque)
 {
     stos_machine *state = (stos_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider stos_provider = {
     stos_reset, LIB_NULL
 };
 
-static C_INT stos_prepare(core_machine_cpu_profile profile, stos_machine *state)
+static lib_i32 stos_prepare(core_machine_cpu_profile profile, stos_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -35,7 +36,7 @@ return test_core_machine_fixture_create_bind_freeze_reset(&config,
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_VOID stos_seed(stos_machine *state)
+static void stos_seed(stos_machine *state)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -56,7 +57,7 @@ static C_VOID stos_seed(stos_machine *state)
     cpu->data.fs.base = 0x40000u;
 }
 
-static C_INT stos_boot_protected(stos_machine *state)
+static lib_i32 stos_boot_protected(stos_machine *state)
 {
     static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
     static const lib_u8 gdt[] = {
@@ -73,31 +74,31 @@ static C_INT stos_boot_protected(stos_machine *state)
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
-        sizeof(pointer)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
+        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, boot, sizeof(boot)) ==
-        TYPE_STATUS_OK && core_machine_memory_write(state->machine, 0x2000u,
-        &halt, sizeof(halt)) == TYPE_STATUS_OK && core_machine_run(state->machine,
-        (core_machine_run_budget){96u, 0u}, &result) == TYPE_STATUS_OK &&
+        LIB_STATUS_OK && core_machine_memory_write(state->machine, 0x2000u,
+        &halt, sizeof(halt)) == LIB_STATUS_OK && core_machine_run(state->machine,
+        (core_machine_run_budget){96u, 0u}, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT stos_run(stos_machine *state, const lib_u8 *code, lib_u8 bytes,
-    t_cpu *after, core_machine_cpu_diagnostic *diagnostic, type_status *status)
+static lib_i32 stos_run(stos_machine *state, const lib_u8 *code, lib_u8 bytes,
+    t_cpu *after, core_machine_cpu_diagnostic *diagnostic, lib_status *status)
 {
     core_machine_run_result result;
 
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-        TYPE_STATUS_OK)
+        LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine, (core_machine_run_budget){1u, 0u},
         &result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT stos_nonindexes_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 stos_nonindexes_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -109,20 +110,20 @@ static C_INT stos_nonindexes_same(const t_cpu *before, const t_cpu *after)
         before->data.eflags == after->data.eflags;
 }
 
-static C_INT stos_case(core_machine_cpu_profile profile, const lib_u8 *code,
-    lib_u8 bytes, lib_u8 width, C_INT address32, C_INT decrement,
+static lib_i32 stos_case(core_machine_cpu_profile profile, const lib_u8 *code,
+    lib_u8 bytes, lib_u8 width, lib_i32 address32, lib_i32 decrement,
     lib_u32 destination)
 {
     stos_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
-    type_status status;
+    lib_status status;
     lib_u32 image = 0xa5a5a5a5u;
     lib_u32 expected = width == 1u ? 0xa5a5a544u :
         width == 2u ? 0xa5a53344u : 0xaabb3344u;
     lib_u32 index = address32 ? 0x00001020u : 0x00000020u;
-    C_INT failed = !stos_prepare(profile, &state);
+    lib_i32 failed = !stos_prepare(profile, &state);
 
     if (!failed) {
         stos_seed(&state);
@@ -133,23 +134,23 @@ static C_INT stos_case(core_machine_cpu_profile profile, const lib_u8 *code,
             state.machine->executor_cpu.data.edi =
                 (state.machine->executor_cpu.data.edi & 0xffff0000u) | index;
         failed |= core_machine_memory_write(state.machine, destination, &image,
-            width) != TYPE_STATUS_OK;
+            width) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !stos_run(&state, code, bytes, &after, &diagnostic, &status) ||
-            status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
             after.data.eip != bytes || !stos_nonindexes_same(&before, &after) ||
             after.data.edi != (address32 ? index + (decrement ?
             -(lib_i32)width : width) : ((before.data.edi & 0xffff0000u) |
             (lib_u16)(index + (decrement ? -(lib_i32)width : width)))) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-            destination, TYPE_REFERENCE_OF(image), width) != TYPE_STATUS_OK ||
+            destination, CORE_MACHINE_REFERENCE_OF(image), width) != LIB_STATUS_OK ||
             image != expected;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT stos_test_defaults(C_VOID)
+static lib_i32 stos_test_defaults(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -166,7 +167,7 @@ static C_INT stos_test_defaults(C_VOID)
     return 1;
 }
 
-static C_INT stos_test_386_attributes(C_VOID)
+static lib_i32 stos_test_386_attributes(void)
 {
     static const lib_u8 stosd[] = {0x66u, 0xabu};
     static const lib_u8 address32[] = {0x67u, 0xaau};
@@ -192,21 +193,21 @@ static lib_u32 stos_replace_low(lib_u32 original, lib_u8 width)
     return 0xaabb3344u;
 }
 
-static C_INT stos_rep_case(core_machine_cpu_profile profile, const lib_u8 *code,
-    lib_u8 bytes, lib_u8 width, C_INT address32, lib_u8 count, C_INT decrement)
+static lib_i32 stos_rep_case(core_machine_cpu_profile profile, const lib_u8 *code,
+    lib_u8 bytes, lib_u8 width, lib_i32 address32, lib_u8 count, lib_i32 decrement)
 {
     stos_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
+    lib_status status;
     lib_u32 image = 0xa5a5a5a5u;
     lib_u32 observed;
     lib_u32 index = address32 ? 0x1020u : 0x20u;
     lib_u8 slots = count == 0u ? 1u : count;
     lib_u8 item;
-    C_INT failed = !stos_prepare(profile, &state);
+    lib_i32 failed = !stos_prepare(profile, &state);
 
     if (!failed) {
         stos_seed(&state);
@@ -223,16 +224,16 @@ static C_INT stos_rep_case(core_machine_cpu_profile profile, const lib_u8 *code,
             lib_u32 location = 0x20000u + index - (decrement ?
                 (count - 1u) * width : 0u) + item * width;
             failed |= core_machine_memory_write(state.machine, location, &image,
-                width) != TYPE_STATUS_OK;
+                width) != LIB_STATUS_OK;
         }
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_write(state.machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         status = core_machine_run(state.machine,
             (core_machine_run_budget){count == 0u ? 1u : count, 0u}, &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK || status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            LIB_STATUS_OK || status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
             after.data.eip != bytes || after.data.eax != before.data.eax ||
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
             after.data.esp != before.data.esp || after.data.ebp != before.data.ebp ||
@@ -245,7 +246,7 @@ static C_INT stos_rep_case(core_machine_cpu_profile profile, const lib_u8 *code,
                 (count - 1u) * width : 0u) + item * width;
             observed = image;
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                location, TYPE_REFERENCE_OF(observed), width) != TYPE_STATUS_OK ||
+                location, CORE_MACHINE_REFERENCE_OF(observed), width) != LIB_STATUS_OK ||
                 observed != (count == 0u ? image : stos_replace_low(image, width));
         }
     }
@@ -253,7 +254,7 @@ static C_INT stos_rep_case(core_machine_cpu_profile profile, const lib_u8 *code,
     return !failed;
 }
 
-static C_INT stos_test_rep(C_VOID)
+static lib_i32 stos_test_rep(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -275,7 +276,7 @@ static C_INT stos_test_rep(C_VOID)
         stos_rep_case(CORE_MACHINE_CPU_PROFILE_80386, repw, 2u, 2u, 0, 3u, 1);
 }
 
-static C_INT stos_test_rejections(C_VOID)
+static lib_i32 stos_test_rejections(void)
 {
     static const lib_u8 codes[][5] = {
         {0x66u,0xaau,0,0,0}, {0x67u,0xabu,0,0,0},
@@ -298,9 +299,9 @@ static C_INT stos_test_rejections(C_VOID)
             t_cpu before;
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
-            type_status status;
+            lib_status status;
             lib_u16 image = 0xa5a5u;
-            C_INT failed = !stos_prepare(legacy[profile], &state);
+            lib_i32 failed = !stos_prepare(legacy[profile], &state);
 
             if (!failed) {
                 stos_seed(&state);
@@ -308,15 +309,15 @@ static C_INT stos_test_rejections(C_VOID)
                     state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                 failed |= core_machine_memory_write(state.machine, 0x20020u, &image,
-                    sizeof(image)) != TYPE_STATUS_OK || !stos_run(&state,
+                    sizeof(image)) != LIB_STATUS_OK || !stos_run(&state,
                     codes[form], bytes[form], &after, &diagnostic, &status) ||
-                    status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||
-                    !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                    status != LIB_STATUS_INTERNAL_ERROR || !diagnostic.first_fault.valid ||
+                    !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD) || after.data.eip != 0u ||
                     !stos_nonindexes_same(&before, &after) || after.data.edi !=
                     before.data.edi || core_machine_memory_read_physical(
                     &state.machine->executor_memory, 0x20020u,
-                    TYPE_REFERENCE_OF(image), sizeof(image)) != TYPE_STATUS_OK ||
+                    CORE_MACHINE_REFERENCE_OF(image), sizeof(image)) != LIB_STATUS_OK ||
                     image != 0xa5a5u;
             }
             core_machine_destroy(state.machine);
@@ -329,9 +330,9 @@ static C_INT stos_test_rejections(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         lib_u16 image = 0xa5a5u;
-        C_INT failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
             stos_seed(&state);
@@ -339,15 +340,15 @@ static C_INT stos_test_rejections(C_VOID)
                 state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_write(state.machine, 0x20020u, &image,
-                sizeof(image)) != TYPE_STATUS_OK || !stos_run(&state, codes[form],
+                sizeof(image)) != LIB_STATUS_OK || !stos_run(&state, codes[form],
                 bytes[form], &after, &diagnostic, &status) ||
-                status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                status != LIB_STATUS_INTERNAL_ERROR || !diagnostic.first_fault.valid ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD) || after.data.eip != 0u ||
                 !stos_nonindexes_same(&before, &after) || after.data.edi !=
                 before.data.edi || core_machine_memory_read_physical(
-                &state.machine->executor_memory, 0x20020u, TYPE_REFERENCE_OF(image),
-                sizeof(image)) != TYPE_STATUS_OK || image != 0xa5a5u;
+                &state.machine->executor_memory, 0x20020u, CORE_MACHINE_REFERENCE_OF(image),
+                sizeof(image)) != LIB_STATUS_OK || image != 0xa5a5u;
         }
         core_machine_destroy(state.machine);
         if (failed) return 0;
@@ -355,7 +356,7 @@ static C_INT stos_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT stos_test_protected_single_limit(C_VOID)
+static lib_i32 stos_test_protected_single_limit(void)
 {
     static const lib_u8 codes[][2] = {{0xaau, 0u}, {0x66u, 0xabu}};
     lib_u8 form;
@@ -373,7 +374,7 @@ static C_INT stos_test_protected_single_limit(C_VOID)
         lib_u32 image = 0xa5a5a5a5u;
         lib_u8 bytes = form == 0u ? 1u : 2u;
         lib_u8 width = form == 0u ? 1u : 4u;
-        C_INT failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) failed |= !stos_boot_protected(&state);
         if (!failed) {
@@ -388,22 +389,22 @@ static C_INT stos_test_protected_single_limit(C_VOID)
             state.machine->executor_cpu.data.ss = ss;
             state.machine->executor_cpu.data.edi = 0x10u;
             failed |= core_machine_memory_write(state.machine, 0x3010u, &image,
-                width) != TYPE_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x2000u, codes[form], bytes) != TYPE_STATUS_OK;
+                width) != LIB_STATUS_OK || core_machine_memory_write(
+                state.machine, 0x2000u, codes[form], bytes) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){1u, 0u}, &result) != TYPE_STATUS_FAULT ||
+                (core_machine_run_budget){1u, 0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
                 result.reason != CORE_MACHINE_STOP_FAULT || core_machine_get_cpu_diagnostic(
-                state.machine, &diagnostic) != TYPE_STATUS_OK;
+                state.machine, &diagnostic) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
                 after.data.eip != 0u || !stos_nonindexes_same(&before, &after) ||
                 after.data.edi != before.data.edi || lib_memory_compare(&before.data.es,
                 &after.data.es, sizeof(before.data.es)) != 0 ||
                 core_machine_memory_read_physical(&state.machine->executor_memory,
-                0x3010u, TYPE_REFERENCE_OF(image), width) != TYPE_STATUS_OK ||
+                0x3010u, CORE_MACHINE_REFERENCE_OF(image), width) != LIB_STATUS_OK ||
                 image != 0xa5a5a5a5u;
         }
         core_machine_destroy(state.machine);
@@ -412,7 +413,7 @@ static C_INT stos_test_protected_single_limit(C_VOID)
     return 1;
 }
 
-static C_INT stos_test_protected_rep_limit(C_VOID)
+static lib_i32 stos_test_protected_rep_limit(void)
 {
     static const lib_u8 code[] = {0xf3u, 0xaau};
     stos_machine state;
@@ -426,7 +427,7 @@ static C_INT stos_test_protected_rep_limit(C_VOID)
     t_cpu_data_sreg ss;
     lib_u8 first = 0xa5u;
     lib_u8 second = 0xa5u;
-    C_INT failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) failed |= !stos_boot_protected(&state);
     if (!failed) {
@@ -443,18 +444,18 @@ static C_INT stos_test_protected_rep_limit(C_VOID)
         state.machine->executor_cpu.data.edi = 0x10u;
         state.machine->executor_cpu.data.ecx = 0x11220003u;
         failed |= core_machine_memory_write(state.machine, 0x3010u, &first,
-            sizeof(first)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x3011u, &second, sizeof(second)) != TYPE_STATUS_OK ||
+            sizeof(first)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x3011u, &second, sizeof(second)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x2000u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){2u, 0u}, &result) != TYPE_STATUS_FAULT ||
+            (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || core_machine_get_cpu_diagnostic(
-            state.machine, &diagnostic) != TYPE_STATUS_OK;
+            state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
             after.data.eip != 0u || after.data.eax != before.data.eax ||
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
@@ -463,16 +464,16 @@ static C_INT stos_test_protected_rep_limit(C_VOID)
             after.data.ecx != 0x11220002u || after.data.edi != 0x11u ||
             lib_memory_compare(&before.data.es, &after.data.es, sizeof(before.data.es)) != 0 ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x3010u, TYPE_REFERENCE_OF(first), sizeof(first)) != TYPE_STATUS_OK ||
+            0x3010u, CORE_MACHINE_REFERENCE_OF(first), sizeof(first)) != LIB_STATUS_OK ||
             first != 0x44u || core_machine_memory_read_physical(
-            &state.machine->executor_memory, 0x3011u, TYPE_REFERENCE_OF(second),
-            sizeof(second)) != TYPE_STATUS_OK || second != 0xa5u;
+            &state.machine->executor_memory, 0x3011u, CORE_MACHINE_REFERENCE_OF(second),
+            sizeof(second)) != LIB_STATUS_OK || second != 0xa5u;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT stos_test_irq_no_shadow(C_VOID)
+static lib_i32 stos_test_irq_no_shadow(void)
 {
     static const lib_u8 codes[][2] = {{0xaau, 0x90u}, {0xabu, 0x90u}};
     static const lib_u8 hlt = 0xf4u;
@@ -488,19 +489,19 @@ static C_INT stos_test_irq_no_shadow(C_VOID)
         lib_u16 frame_ip = 0u;
         lib_u16 image = 0xa5a5u;
         lib_u8 width = form == 0u ? 1u : 2u;
-        C_INT failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(
                 state.machine, 0u) || core_machine_memory_write(state.machine,
-                0x20020u, &image, width) != TYPE_STATUS_OK ||
+                0x20020u, &image, width) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0u, codes[form],
-                sizeof(codes[form])) != TYPE_STATUS_OK ||
+                sizeof(codes[form])) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x80u, &offset,
-                sizeof(offset)) != TYPE_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x82u, &segment, sizeof(segment)) != TYPE_STATUS_OK ||
+                sizeof(offset)) != LIB_STATUS_OK || core_machine_memory_write(
+                state.machine, 0x82u, &segment, sizeof(segment)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x100u, &hlt,
-                sizeof(hlt)) != TYPE_STATUS_OK;
+                sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
             stos_seed(&state);
@@ -513,19 +514,19 @@ static C_INT stos_test_irq_no_shadow(C_VOID)
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){2u, 0u}, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
+                CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != 1u ||
-                !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
+                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
                 state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
                 after.data.edi != 0x20u + width || core_machine_memory_read_physical(
-                &state.machine->executor_memory, 0x20020u, TYPE_REFERENCE_OF(image),
-                width) != TYPE_STATUS_OK || image != (form == 0u ? 0xa544u :
+                &state.machine->executor_memory, 0x20020u, CORE_MACHINE_REFERENCE_OF(image),
+                width) != LIB_STATUS_OK || image != (form == 0u ? 0xa544u :
                 0x3344u);
         }
         core_machine_destroy(state.machine);
@@ -534,7 +535,7 @@ static C_INT stos_test_irq_no_shadow(C_VOID)
     return 1;
 }
 
-static C_INT stos_test_irq_rep_restart(C_VOID)
+static lib_i32 stos_test_irq_rep_restart(void)
 {
     static const lib_u8 code[] = {0xf3u, 0xaau, 0x90u};
     static const lib_u8 hlt = 0xf4u;
@@ -546,18 +547,18 @@ static C_INT stos_test_irq_rep_restart(C_VOID)
     lib_u16 segment = 0u;
     lib_u16 frame_ip = 0u;
     lib_u8 image[] = {0xa5u, 0xa5u, 0xa5u};
-    C_INT failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !stos_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
         failed |= !test_core_machine_fixture_prepare_real_mode_execution(
             state.machine, 0u) || core_machine_memory_write(state.machine,
-            0x20020u, image, sizeof(image)) != TYPE_STATUS_OK ||
+            0x20020u, image, sizeof(image)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0u, code, sizeof(code)) !=
-            TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x80u,
-            &offset, sizeof(offset)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x82u, &segment, sizeof(segment)) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x80u,
+            &offset, sizeof(offset)) != LIB_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x82u, &segment, sizeof(segment)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x100u, &hlt,
-            sizeof(hlt)) != TYPE_STATUS_OK;
+            sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
         stos_seed(&state);
@@ -570,60 +571,60 @@ static C_INT stos_test_irq_rep_restart(C_VOID)
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){4u, 0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){4u, 0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (lib_u16)after.data.esp, TYPE_REFERENCE_OF(frame_ip),
-            sizeof(frame_ip)) != TYPE_STATUS_OK || after.data.eip != 0x101u ||
+            after.data.ss.base + (lib_u16)after.data.esp, CORE_MACHINE_REFERENCE_OF(frame_ip),
+            sizeof(frame_ip)) != LIB_STATUS_OK || after.data.eip != 0x101u ||
             frame_ip != 0u || after.data.ecx != 0x11220002u ||
-            after.data.edi != 0x21u || !TYPE_GET_BIT(
+            after.data.edi != 0x21u || !CORE_MACHINE_BIT_IS_SET(
             state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
             VPIC_IRR_IRQ(0u)) || core_machine_memory_read_physical(
-            &state.machine->executor_memory, 0x20020u, (type_virtual_address)image,
-            sizeof(image)) != TYPE_STATUS_OK || image[0] != 0x44u ||
+            &state.machine->executor_memory, 0x20020u, (lib_uptr)image,
+            sizeof(image)) != LIB_STATUS_OK || image[0] != 0x44u ||
             image[1] != 0xa5u || image[2] != 0xa5u;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!stos_test_defaults()) {
-        STD_PRINTF("STOS stage=defaults\n");
+        printf("STOS stage=defaults\n");
         return 1;
     }
     if (!stos_test_386_attributes()) {
-        STD_PRINTF("STOS stage=attributes\n");
+        printf("STOS stage=attributes\n");
         return 1;
     }
     if (!stos_test_rep()) {
-        STD_PRINTF("STOS stage=rep\n");
+        printf("STOS stage=rep\n");
         return 1;
     }
     if (!stos_test_rejections()) {
-        STD_PRINTF("STOS stage=rejections\n");
+        printf("STOS stage=rejections\n");
         return 1;
     }
     if (!stos_test_protected_single_limit()) {
-        STD_PRINTF("STOS stage=protected-single\n");
+        printf("STOS stage=protected-single\n");
         return 1;
     }
     if (!stos_test_protected_rep_limit()) {
-        STD_PRINTF("STOS stage=protected-rep\n");
+        printf("STOS stage=protected-rep\n");
         return 1;
     }
     if (!stos_test_irq_no_shadow()) {
-        STD_PRINTF("STOS stage=irq\n");
+        printf("STOS stage=irq\n");
         return 1;
     }
     if (!stos_test_irq_rep_restart()) {
-        STD_PRINTF("STOS stage=irq-rep\n");
+        printf("STOS stage=irq-rep\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S34:STOS:OK\n");
-    STD_PRINTF("M5:T401:S17:STOS-PROFILES:OK\n");
+    printf("M5:T316:S34:STOS:OK\n");
+    printf("M5:T401:S17:STOS-PROFILES:OK\n");
     return 0;
 }

@@ -3,7 +3,6 @@
 #define CORE_MACHINE_MEDIA_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #define CORE_MACHINE_MEDIA_MAX_DEVICES 4u
 #define CORE_MACHINE_MEDIA_ID_INVALID 0u
@@ -48,25 +47,25 @@ typedef struct core_machine_media_info {
     core_machine_media_id id;
     lib_u64 generation;
     lib_u32 capabilities;
-    type_bool present;
+    lib_u8 present;
     core_machine_media_geometry geometry;
 } core_machine_media_info;
 
 typedef core_machine_media_result (*core_machine_media_query_provider)(
-    C_VOID *context, core_machine_media_info *out_info);
+    void *context, core_machine_media_info *out_info);
 typedef core_machine_media_result (*core_machine_media_read_provider)(
-    C_VOID *context, lib_u64 offset, C_VOID *buffer, lib_u32 byte_count);
+    void *context, lib_u64 offset, void *buffer, lib_u32 byte_count);
 typedef core_machine_media_result (*core_machine_media_write_provider)(
-    C_VOID *context, lib_u64 offset, const C_VOID *buffer, lib_u32 byte_count);
+    void *context, lib_u64 offset, const void *buffer, lib_u32 byte_count);
 typedef core_machine_media_result (*core_machine_media_format_provider)(
-    C_VOID *context, lib_u64 logical_sector, lib_u32 sector_count, lib_u8 fill);
+    void *context, lib_u64 logical_sector, lib_u32 sector_count, lib_u8 fill);
 typedef core_machine_media_result (*core_machine_media_flush_provider)(
-    C_VOID *context);
+    void *context);
 typedef core_machine_media_result (*core_machine_media_get_address_mark_provider)(
-    C_VOID *context, lib_u64 logical_sector,
+    void *context, lib_u64 logical_sector,
     core_machine_media_address_mark *out_mark);
 typedef core_machine_media_result (*core_machine_media_set_address_mark_provider)(
-    C_VOID *context, lib_u64 logical_sector,
+    void *context, lib_u64 logical_sector,
     core_machine_media_address_mark mark);
 
 typedef struct core_machine_media_provider {
@@ -81,37 +80,37 @@ typedef struct core_machine_media_provider {
 
 typedef struct core_machine_media_registry core_machine_media_registry;
 
-type_status core_machine_media_registry_create(core_machine_media_registry **out_registry);
-type_status core_machine_media_registry_bind(core_machine_media_registry *registry,
-    core_machine_media_id id, C_VOID *context,
+lib_status core_machine_media_registry_create(core_machine_media_registry **out_registry);
+lib_status core_machine_media_registry_bind(core_machine_media_registry *registry,
+    core_machine_media_id id, void *context,
     const core_machine_media_provider *provider);
-type_status core_machine_media_registry_freeze(core_machine_media_registry *registry);
-C_VOID core_machine_media_registry_destroy(core_machine_media_registry *registry);
+lib_status core_machine_media_registry_freeze(core_machine_media_registry *registry);
+void core_machine_media_registry_destroy(core_machine_media_registry *registry);
 
-type_status core_machine_media_query(const core_machine_media_registry *registry,
+lib_status core_machine_media_query(const core_machine_media_registry *registry,
     core_machine_media_id id, core_machine_media_info *out_info,
     core_machine_media_result *out_result);
-type_status core_machine_media_read_bytes(const core_machine_media_registry *registry,
-    core_machine_media_id id, lib_u64 offset, C_VOID *buffer, lib_u32 byte_count,
+lib_status core_machine_media_read_bytes(const core_machine_media_registry *registry,
+    core_machine_media_id id, lib_u64 offset, void *buffer, lib_u32 byte_count,
     core_machine_media_result *out_result);
-type_status core_machine_media_write_bytes(const core_machine_media_registry *registry,
-    core_machine_media_id id, lib_u64 offset, const C_VOID *buffer,
+lib_status core_machine_media_write_bytes(const core_machine_media_registry *registry,
+    core_machine_media_id id, lib_u64 offset, const void *buffer,
     lib_u32 byte_count, core_machine_media_result *out_result);
-type_status core_machine_media_read_sectors(const core_machine_media_registry *registry,
+lib_status core_machine_media_read_sectors(const core_machine_media_registry *registry,
     core_machine_media_id id, lib_u64 logical_sector, lib_u32 sector_count,
-    C_VOID *buffer, core_machine_media_result *out_result);
-type_status core_machine_media_write_sectors(const core_machine_media_registry *registry,
+    void *buffer, core_machine_media_result *out_result);
+lib_status core_machine_media_write_sectors(const core_machine_media_registry *registry,
     core_machine_media_id id, lib_u64 logical_sector, lib_u32 sector_count,
-    const C_VOID *buffer, core_machine_media_result *out_result);
-type_status core_machine_media_format_sectors(const core_machine_media_registry *registry,
+    const void *buffer, core_machine_media_result *out_result);
+lib_status core_machine_media_format_sectors(const core_machine_media_registry *registry,
     core_machine_media_id id, lib_u64 logical_sector, lib_u32 sector_count,
     lib_u8 fill, core_machine_media_result *out_result);
-type_status core_machine_media_flush(const core_machine_media_registry *registry,
+lib_status core_machine_media_flush(const core_machine_media_registry *registry,
     core_machine_media_id id, core_machine_media_result *out_result);
-type_status core_machine_media_get_address_mark(const core_machine_media_registry *registry,
+lib_status core_machine_media_get_address_mark(const core_machine_media_registry *registry,
     core_machine_media_id id, lib_u64 logical_sector,
     core_machine_media_address_mark *out_mark, core_machine_media_result *out_result);
-type_status core_machine_media_set_address_mark(const core_machine_media_registry *registry,
+lib_status core_machine_media_set_address_mark(const core_machine_media_registry *registry,
     core_machine_media_id id, lib_u64 logical_sector,
     core_machine_media_address_mark mark, core_machine_media_result *out_result);
 

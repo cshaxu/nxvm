@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 
@@ -37,7 +37,7 @@ static const core_machine_timing_seam plan_expected_seams[
     CORE_MACHINE_TIMING_SEAM_OBSERVATION
 };
 
-static C_INT plan_capability_is_non_guest_time(
+static lib_i32 plan_capability_is_non_guest_time(
     core_machine_timing_capability capability)
 {
     return capability == CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT ||
@@ -50,7 +50,7 @@ static C_INT plan_capability_is_non_guest_time(
         capability == CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG;
 }
 
-static C_INT plan_default_and_copy(C_VOID)
+static lib_i32 plan_default_and_copy(void)
 {
     core_machine_config configuration = { .memory_bytes =
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
@@ -60,9 +60,9 @@ static C_INT plan_default_and_copy(C_VOID)
     core_machine_timing_declaration declaration;
     core_machine_timing_disposition disposition;
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && plan->declaration_count != CORE_MACHINE_TIMING_CAPABILITY_COUNT;
     for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index) {
         const core_machine_timing_declaration *candidate = &plan->declarations[index];
@@ -79,113 +79,113 @@ static C_INT plan_default_and_copy(C_VOID)
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC] =
         plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT];
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT] = temporary;
-    failed |= core_machine_create_from_plan(plan, &machine) != TYPE_STATUS_OK ||
+    failed |= core_machine_create_from_plan(plan, &machine) != LIB_STATUS_OK ||
         machine == LIB_NULL;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC].disposition =
         CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     failed |= !failed && core_machine_get_timing_disposition(machine,
-        CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, &disposition) != TYPE_STATUS_OK;
+        CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, &disposition) != LIB_STATUS_OK;
     failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
     failed |= !failed && core_machine_get_timing_declaration(machine,
         CORE_MACHINE_TIMING_CAPABILITY_TIME_LIFECYCLE, &declaration) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && declaration.seam != CORE_MACHINE_TIMING_SEAM_LIFECYCLE;
     core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
 }
 
-static C_INT plan_rejects_incomplete_or_unavailable(C_VOID)
+static lib_i32 plan_rejects_incomplete_or_unavailable(void)
 {
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = (core_machine *)(type_virtual_address)1u;
+    core_machine *machine = (core_machine *)(lib_uptr)1u;
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     --plan->declaration_count;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
-    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     plan->declarations[1].capability = plan->declarations[0].capability;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
-    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC].disposition =
         CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
-    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT].disposition =
         CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
-    failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC].seam =
         CORE_MACHINE_TIMING_SEAM_TRANSACTION;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index) {
         const core_machine_timing_capability capability =
             (core_machine_timing_capability)index;
 
         core_machine_plan_destroy(plan);
-        failed |= core_machine_plan_create(LIB_NULL, &plan) != TYPE_STATUS_OK;
-        machine = (core_machine *)(type_virtual_address)1u;
+        failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
+        machine = (core_machine *)(lib_uptr)1u;
         plan->declarations[index].disposition =
             plan_capability_is_non_guest_time(capability) ?
             CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK :
             CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
         failed |= core_machine_create_from_plan(plan, &machine) !=
-            TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+            LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     }
     core_machine_plan_destroy(plan);
     return failed;
 }
 
-static C_INT plan_rejects_topology_before_publication(C_VOID)
+static lib_i32 plan_rejects_topology_before_publication(void)
 {
     core_machine_config configuration = { .memory_bytes =
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = (core_machine *)(type_virtual_address)1u;
-    C_INT failed = 0;
+    core_machine *machine = (core_machine *)(lib_uptr)1u;
+    lib_i32 failed = 0;
 
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     plan->topology.fdc_present = LIB_TRUE;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     plan->topology.absent_memory_count = 1u;
     plan->topology.absent_memory[0].physical_start = 0x00100000u;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     return failed;
 }
 
-static C_INT plan_rejects_invalid_transaction_contract_before_publication(C_VOID)
+static lib_i32 plan_rejects_invalid_transaction_contract_before_publication(void)
 {
     core_machine_config configuration = { .memory_bytes =
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = (core_machine *)(type_virtual_address)1u;
-    C_INT failed = 0;
+    core_machine *machine = (core_machine *)(lib_uptr)1u;
+    lib_i32 failed = 0;
 
     configuration.transaction_contract.external_cycle_timing.page_bytes = 3u;
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     return failed;
 }
 
-static C_INT plan_controller_timing_rules_are_copied_and_validated(C_VOID)
+static lib_i32 plan_controller_timing_rules_are_copied_and_validated(void)
 {
     core_machine_config configuration = { .memory_bytes =
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
@@ -199,23 +199,23 @@ static C_INT plan_controller_timing_rules_are_copied_and_validated(C_VOID)
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = LIB_NULL;
     core_machine_timing_disposition disposition;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     configuration.clock_plan.dma = (core_machine_clock_ratio) {3u, 8u, 0u};
     configuration.clock_plan.pit = (core_machine_clock_ratio) {1193182u, 8000000u, 0u};
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
-        &source_rules) != TYPE_STATUS_OK;
+        &source_rules) != LIB_STATUS_OK;
     failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && core_machine_get_timing_disposition(machine,
-        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != TYPE_STATUS_OK;
+        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != LIB_STATUS_OK;
     failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
     failed |= !failed && core_machine_get_timing_disposition(machine,
-        CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA, &disposition) != TYPE_STATUS_OK;
+        CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA, &disposition) != LIB_STATUS_OK;
     failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     failed |= !failed && core_machine_get_timing_disposition(machine,
-        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != TYPE_STATUS_OK;
+        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK;
     failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     failed |= !failed && machine->timing_plan.controller_timing.pit_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
@@ -224,7 +224,7 @@ static C_INT plan_controller_timing_rules_are_copied_and_validated(C_VOID)
     return failed;
 }
 
-static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
+static lib_i32 plan_rejects_invalid_controller_timing_rules(void)
 {
     core_machine_config configuration = { .memory_bytes =
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
@@ -236,38 +236,38 @@ static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK
     };
     core_machine_plan *plan = LIB_NULL;
-    core_machine *machine = (core_machine *)(type_virtual_address)1u;
-    C_INT failed = 0;
+    core_machine *machine = (core_machine *)(lib_uptr)1u;
+    lib_i32 failed = 0;
 
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
-        &rules) != TYPE_STATUS_OK;
+        &rules) != LIB_STATUS_OK;
     failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
     configuration.clock_plan.dma = (core_machine_clock_ratio) {3u, 8u, 0u};
     configuration.clock_plan.pit = (core_machine_clock_ratio) {1u, 4u, 0u};
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     rules.pic_visibility = CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
-        &rules) != TYPE_STATUS_OK;
-    machine = (core_machine *)(type_virtual_address)1u;
+        &rules) != LIB_STATUS_OK;
+    machine = (core_machine *)(lib_uptr)1u;
     failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
     rules.pic_visibility = CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK;
     rules.dma_clock = CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK;
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
-        &rules) != TYPE_STATUS_OK;
-    machine = (core_machine *)(type_virtual_address)1u;
+        &rules) != LIB_STATUS_OK;
+    machine = (core_machine *)(lib_uptr)1u;
     failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
     return failed;
 }
 
-static C_INT plan_selects_single_controller_xt_board(C_VOID)
+static lib_i32 plan_selects_single_controller_xt_board(void)
 {
     core_machine_config configuration = {
         .memory_bytes = 256u * 1024u,
@@ -278,16 +278,16 @@ static C_INT plan_selects_single_controller_xt_board(C_VOID)
     core_machine_plan_topology topology = {0};
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = LIB_NULL;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     topology.dma_present = LIB_TRUE;
     topology.dma = (core_machine_dma_wiring) {
         CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND, 1u, 0u};
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_topology(plan, &topology) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && (!core_machine_port_has_read(&machine->executor_port, 0x0020u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x0000u) ||
         !core_machine_port_has_read(&machine->executor_port, 0x0081u) ||
@@ -302,10 +302,10 @@ static C_INT plan_selects_single_controller_xt_board(C_VOID)
         core_machine_port_has_read(&machine->executor_port, 0x0070u) ||
         core_machine_port_has_write(&machine->executor_port, 0x0071u));
     failed |= !failed && core_machine_get_fdc_dma_request_binding(machine,
-        &(core_machine_dma_request_binding) {0}) != TYPE_STATUS_INVALID_STATE;
+        &(core_machine_dma_request_binding) {0}) != LIB_STATUS_INVALID_STATE;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && (!core_machine_port_has_read(&machine->executor_port, 0x0020u) ||
         core_machine_port_has_read(&machine->executor_port, 0x00a0u) ||
         core_machine_port_has_read(&machine->executor_port, 0x0070u));
@@ -314,7 +314,7 @@ static C_INT plan_selects_single_controller_xt_board(C_VOID)
     return failed;
 }
 
-static C_INT plan_l2_pit_deadline_remains_schedulable(C_VOID)
+static lib_i32 plan_l2_pit_deadline_remains_schedulable(void)
 {
     core_machine_config configuration = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -324,33 +324,33 @@ static C_INT plan_l2_pit_deadline_remains_schedulable(C_VOID)
     core_machine *machine = LIB_NULL;
     core_machine_time_observation observation;
     core_machine_timing_disposition disposition;
-    type_bool advanced = LIB_FALSE;
-    C_INT failed = 0;
+    lib_u8 advanced = LIB_FALSE;
+    lib_i32 failed = 0;
 
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_get_timing_disposition(machine,
-        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != TYPE_STATUS_OK;
+        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK;
     failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
     core_machine_port_write(&machine->executor_port, 0x0043u, 0x34u);
     core_machine_port_write(&machine->executor_port, 0x0040u, 4u);
     core_machine_port_write(&machine->executor_port, 0x0040u, 0u);
     failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && (!observation.next_deadline_valid ||
         observation.next_deadline_tick != 1u ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE);
     failed |= !failed && core_machine_advance_to_next_deadline(machine, &advanced) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && (!advanced || machine->elapsed_ticks != 1u);
     core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
 }
 
-static C_INT plan_source_dma_deadline_is_schedulable(C_VOID)
+static lib_i32 plan_source_dma_deadline_is_schedulable(void)
 {
     static const core_machine_dma_channel_provider provider = {0};
     const core_machine_controller_timing_rules rules = {
@@ -368,30 +368,30 @@ static C_INT plan_source_dma_deadline_is_schedulable(C_VOID)
     core_machine *machine = LIB_NULL;
     core_machine_dma_request_binding binding = {0};
     core_machine_time_observation observation;
-    type_bool advanced = LIB_FALSE;
-    C_INT failed = 0;
+    lib_u8 advanced = LIB_FALSE;
+    lib_i32 failed = 0;
 
-    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
-        &rules) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) != TYPE_STATUS_OK;
+        &rules) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_dma_bind_channel(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u, &provider,
-        LIB_NULL, &binding) != TYPE_STATUS_OK;
+        LIB_NULL, &binding) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     core_machine_port_write(&machine->executor_port, 0x000bu, 0x46u);
     core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
     core_machine_dma_request_assert(&machine->shared_dma_primary,
         &machine->shared_dma_secondary, &binding);
     failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && (!observation.next_deadline_valid ||
         observation.next_deadline_tick != 3u ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE);
     failed |= !failed && core_machine_advance_to_next_deadline(machine, &advanced) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && (!advanced || machine->elapsed_ticks != 3u);
     core_machine_dma_request_deassert(&machine->shared_dma_primary,
         &machine->shared_dma_secondary, &binding);
@@ -400,7 +400,7 @@ static C_INT plan_source_dma_deadline_is_schedulable(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (plan_default_and_copy() || plan_rejects_incomplete_or_unavailable() ||
         plan_rejects_topology_before_publication() ||

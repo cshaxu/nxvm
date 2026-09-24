@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -17,12 +18,12 @@ typedef struct tf_db_s60_machine {
     core_machine *machine;
 } tf_db_s60_machine;
 
-static C_VOID tf_db_s60_reset(C_VOID *opaque)
+static void tf_db_s60_reset(void *opaque)
 {
     tf_db_s60_machine *state = (tf_db_s60_machine *)opaque;
 
     if (state != LIB_NULL) {
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
     }
 }
 
@@ -30,7 +31,7 @@ static const core_machine_execution_provider tf_db_s60_execution_provider = {
     tf_db_s60_reset, LIB_NULL
 };
 
-static C_INT tf_db_s60_prepare(tf_db_s60_machine *state,
+static lib_i32 tf_db_s60_prepare(tf_db_s60_machine *state,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -50,28 +51,28 @@ static C_INT tf_db_s60_prepare(tf_db_s60_machine *state,
     return 1;
 }
 
-static C_INT tf_db_s60_run(tf_db_s60_machine *state,
+static lib_i32 tf_db_s60_run(tf_db_s60_machine *state,
     const lib_u8 *code, lib_size code_bytes, lib_u32 code_address,
     core_machine_run_result *out_result, t_cpu *out_cpu,
     core_machine_cpu_diagnostic *out_diagnostic)
 {
-    type_status status;
+    lib_status status;
 
     if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
         out_result == LIB_NULL || out_cpu == LIB_NULL || out_diagnostic == LIB_NULL ||
         core_machine_memory_write(state->machine, code_address, code,
-            code_bytes) != TYPE_STATUS_OK) return 0;
+            code_bytes) != LIB_STATUS_OK) return 0;
     test_core_machine_fixture_resume_after_halt_at(state->machine, code_address -
         state->machine->executor_cpu.data.cs.base);
     status = core_machine_run(state->machine, (core_machine_run_budget){ 3u, 0u },
         out_result);
     if (core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
-        TYPE_STATUS_OK) return 0;
+        LIB_STATUS_OK) return 0;
     *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return status == TYPE_STATUS_OK;
+    return status == LIB_STATUS_OK;
 }
 
-static C_INT tf_db_s60_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 tf_db_s60_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es, sizeof(before->data.es)) == 0 &&
         lib_memory_compare(&before->data.cs, &after->data.cs, sizeof(before->data.cs)) == 0 &&
@@ -81,37 +82,37 @@ static C_INT tf_db_s60_sregs_same(const t_cpu *before, const t_cpu *after)
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT tf_db_s60_install_real_vector(tf_db_s60_machine *state)
+static lib_i32 tf_db_s60_install_real_vector(tf_db_s60_machine *state)
 {
     static const lib_u8 handler[] = { 0xf4u };
     static const lib_u8 vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
 
     return core_machine_memory_write(state->machine, 4u, vector, sizeof(vector)) ==
-        TYPE_STATUS_OK && core_machine_memory_write(state->machine, 0x0100u,
-            handler, sizeof(handler)) == TYPE_STATUS_OK;
+        LIB_STATUS_OK && core_machine_memory_write(state->machine, 0x0100u,
+            handler, sizeof(handler)) == LIB_STATUS_OK;
 }
 
-static C_INT tf_db_s60_install_real_ud_vector(tf_db_s60_machine *state)
+static lib_i32 tf_db_s60_install_real_ud_vector(tf_db_s60_machine *state)
 {
     static const lib_u8 handler[] = { 0xf4u };
     static const lib_u8 vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
 
     return core_machine_memory_write(state->machine, 0x18u, vector,
-        sizeof(vector)) == TYPE_STATUS_OK && core_machine_memory_write(
-            state->machine, 0x0100u, handler, sizeof(handler)) == TYPE_STATUS_OK;
+        sizeof(vector)) == LIB_STATUS_OK && core_machine_memory_write(
+            state->machine, 0x0100u, handler, sizeof(handler)) == LIB_STATUS_OK;
 }
 
-static C_INT tf_db_s60_install_real_irq0_vector(tf_db_s60_machine *state)
+static lib_i32 tf_db_s60_install_real_irq0_vector(tf_db_s60_machine *state)
 {
     static const lib_u8 handler[] = { 0xf4u };
     static const lib_u8 vector[] = { 0x10u, 0x01u, 0x00u, 0x00u };
 
     return core_machine_memory_write(state->machine, 0x80u, vector,
-        sizeof(vector)) == TYPE_STATUS_OK && core_machine_memory_write(
-            state->machine, 0x0110u, handler, sizeof(handler)) == TYPE_STATUS_OK;
+        sizeof(vector)) == LIB_STATUS_OK && core_machine_memory_write(
+            state->machine, 0x0110u, handler, sizeof(handler)) == LIB_STATUS_OK;
 }
 
-static C_INT tf_db_s60_boot_protected(tf_db_s60_machine *state)
+static lib_i32 tf_db_s60_boot_protected(tf_db_s60_machine *state)
 {
     static const lib_u8 gdt_pointer[] = { 0x17u, 0x00u, 0x00u, 0x03u, 0u, 0u };
     static const lib_u8 gdt[] = {
@@ -131,20 +132,20 @@ static C_INT tf_db_s60_boot_protected(tf_db_s60_machine *state)
 
     if (state == LIB_NULL || state->machine == LIB_NULL ||
         core_machine_memory_write(state->machine, TF_DB_S60_GDT_POINTER,
-            gdt_pointer, sizeof(gdt_pointer)) != TYPE_STATUS_OK ||
+            gdt_pointer, sizeof(gdt_pointer)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, TF_DB_S60_GDT, gdt,
-            sizeof(gdt)) != TYPE_STATUS_OK ||
+            sizeof(gdt)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, 0u, bootstrap,
-            sizeof(bootstrap)) != TYPE_STATUS_OK ||
+            sizeof(bootstrap)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, TF_DB_S60_CODE, halt,
-            sizeof(halt)) != TYPE_STATUS_OK ||
+            sizeof(halt)) != LIB_STATUS_OK ||
         core_machine_run(state->machine, (core_machine_run_budget){ 64u, 0u },
-            &result) != TYPE_STATUS_OK ||
+            &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) return 0;
     return 1;
 }
 
-static C_INT tf_db_s60_install_protected_vector(tf_db_s60_machine *state)
+static lib_i32 tf_db_s60_install_protected_vector(tf_db_s60_machine *state)
 {
     static const lib_u8 handler[] = { 0xf4u };
     lib_u8 gate[8u] = { 0u };
@@ -158,30 +159,30 @@ static C_INT tf_db_s60_install_protected_vector(tf_db_s60_machine *state)
     state->machine->executor_cpu.data.idtr.base = TF_DB_S60_IDT;
     state->machine->executor_cpu.data.idtr.limit = 0x000fu;
     return core_machine_memory_write(state->machine, TF_DB_S60_IDT + 8u, gate,
-        sizeof(gate)) == TYPE_STATUS_OK && core_machine_memory_write(
+        sizeof(gate)) == LIB_STATUS_OK && core_machine_memory_write(
             state->machine, TF_DB_S60_CODE + 0x100u, handler,
-            sizeof(handler)) == TYPE_STATUS_OK;
+            sizeof(handler)) == LIB_STATUS_OK;
 }
 
-static C_INT tf_db_s60_frame_real(tf_db_s60_machine *state, const t_cpu *after,
+static lib_i32 tf_db_s60_frame_real(tf_db_s60_machine *state, const t_cpu *after,
     lib_u16 expected_ip, lib_u16 expected_flags,
     core_machine_cpu_profile profile)
 {
     lib_u16 frame[3u] = { 0u, 0u, 0u };
     const lib_u16 known_mask = profile < CORE_MACHINE_CPU_PROFILE_80286 ?
         0x0fd5u : 0x7fd5u;
-    const lib_u16 expected_image = TYPE_MASK_UNSIGNED_16(
+    const lib_u16 expected_image = CORE_MACHINE_MASK_U16(
         (expected_flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
 
     return core_machine_memory_read_physical(&state->machine->executor_memory,
         after->data.ss.base + (lib_u16)after->data.esp,
-        (type_virtual_address)frame, sizeof(frame)) == TYPE_STATUS_OK &&
+        (lib_uptr)frame, sizeof(frame)) == LIB_STATUS_OK &&
         frame[0] == expected_ip && frame[1] == 0u &&
         (frame[2] & known_mask) == (expected_image & known_mask) &&
         (profile != CORE_MACHINE_CPU_PROFILE_80386 || (frame[2] & 0x8000u) == 0u);
 }
 
-static C_INT tf_db_s60_test_real(C_VOID)
+static lib_i32 tf_db_s60_test_real(void)
 {
     static const lib_u8 code[] = { 0x90u };
     tf_db_s60_machine state;
@@ -189,7 +190,7 @@ static C_INT tf_db_s60_test_real(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) failed = !tf_db_s60_install_real_vector(&state);
     if (!failed) {
@@ -201,8 +202,8 @@ static C_INT tf_db_s60_test_real(C_VOID)
             &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             diagnostic.first_fault.valid || after.data.eip != 0x0101u ||
-            TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_TF) ||
-            TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_IF) ||
+            CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_TF) ||
+            CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) ||
             after.data.eax != before.data.eax || after.data.ecx != before.data.ecx ||
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
@@ -214,12 +215,12 @@ static C_INT tf_db_s60_test_real(C_VOID)
     return failed;
 }
 
-static C_INT tf_db_s60_test_protected_attributes(C_VOID)
+static lib_i32 tf_db_s60_test_protected_attributes(void)
 {
     static const lib_u8 prefixes[][2] = {
         { 0u, 0u }, { 0x66u, 0u }, { 0x67u, 0u }, { 0x66u, 0x67u }
     };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
     lib_size i;
 
     for (i = 0u; i < sizeof(prefixes) / sizeof(prefixes[0]); ++i) {
@@ -246,12 +247,12 @@ static C_INT tf_db_s60_test_protected_attributes(C_VOID)
 
         failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             diagnostic.first_fault.valid || after.data.eip != 0x101u ||
-            TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_TF) ||
-            TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_IF) ||
+            CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_TF) ||
+            CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) ||
             !tf_db_s60_sregs_same(&before, &after) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
+                (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK ||
             frame[0] != length || frame[1] != before.data.cs.selector ||
             frame[2] != before.data.eflags;
 
@@ -260,7 +261,7 @@ static C_INT tf_db_s60_test_protected_attributes(C_VOID)
     return failed;
 }
 
-static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
+static lib_i32 tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_size code_bytes)
 {
     tf_db_s60_machine state;
@@ -268,8 +269,8 @@ static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_status status;
-    C_INT failed = !tf_db_s60_prepare(&state, profile);
+    lib_status status;
+    lib_i32 failed = !tf_db_s60_prepare(&state, profile);
 
     if (!failed) failed = !tf_db_s60_install_real_vector(&state) ||
         !tf_db_s60_install_real_ud_vector(&state);
@@ -278,17 +279,17 @@ static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_TF | VCPU_EFLAGS_IF |
             VCPU_EFLAGS_CF;
         failed |= core_machine_memory_write(state.machine, 0u, code, code_bytes) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         status = core_machine_run(state.machine, (core_machine_run_budget){ 2u, 0u },
             &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK || status != TYPE_STATUS_OK ||
+            LIB_STATUS_OK || status != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
-            !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_UD) || after.data.eip != 0x0101u ||
             after.data.esp != ((before.data.esp & 0xffff0000u) |
                 (lib_u16)(before.data.esp - 6u)) ||
@@ -305,7 +306,7 @@ static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
     return failed;
 }
 
-static C_INT tf_db_s60_test_rejections(C_VOID)
+static lib_i32 tf_db_s60_test_rejections(void)
 {
     static const lib_u8 prefix_66[] = { 0x66u, 0x90u };
     static const lib_u8 prefix_67[] = { 0x67u, 0x90u };
@@ -318,7 +319,7 @@ static C_INT tf_db_s60_test_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
     lib_size i;
 
     for (i = 0u; i < sizeof(legacy) / sizeof(legacy[0]); ++i) {
@@ -340,7 +341,7 @@ static C_INT tf_db_s60_test_rejections(C_VOID)
     return failed;
 }
 
-static C_INT tf_db_s60_test_hardware_real(C_VOID)
+static lib_i32 tf_db_s60_test_hardware_real(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 write[] = {
@@ -353,7 +354,7 @@ static C_INT tf_db_s60_test_hardware_real(C_VOID)
     t_cpu before;
     t_cpu after;
     lib_u8 value = 0u;
-    C_INT failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) failed = !tf_db_s60_install_real_vector(&state);
     if (!failed) {
@@ -393,7 +394,7 @@ static C_INT tf_db_s60_test_hardware_real(C_VOID)
         state.machine->executor_cpu.data.dr7 = 0x00ff0008u;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_write(state.machine, 0x1000u, source,
-                sizeof(source)) != TYPE_STATUS_OK || !tf_db_s60_run(&state,
+                sizeof(source)) != LIB_STATUS_OK || !tf_db_s60_run(&state,
                 read, sizeof(read), 0x0200u, &result, &after, &diagnostic) ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
@@ -424,7 +425,7 @@ static C_INT tf_db_s60_test_hardware_real(C_VOID)
             after.data.eip != 0x0101u || (after.data.dr6 &
                 (1u | 0x00004000u)) != (1u | 0x00004000u) ||
             core_machine_memory_read(state.machine, 0x1000u, &value,
-                sizeof(value)) != TYPE_STATUS_OK || value != 0x5au ||
+                sizeof(value)) != LIB_STATUS_OK || value != 0x5au ||
             !tf_db_s60_frame_real(&state, &after, 0x0200u + sizeof(write),
                 (lib_u16)before.data.eflags, CORE_MACHINE_CPU_PROFILE_80386);
     }
@@ -441,14 +442,14 @@ static C_INT tf_db_s60_test_hardware_real(C_VOID)
             &after, &diagnostic) || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || diagnostic.first_fault.valid ||
             diagnostic.last_delivered_exception.valid || after.data.eip !=
-                sizeof(rf_code) || TYPE_GET_BIT(after.data.eflags,
+                sizeof(rf_code) || CORE_MACHINE_BIT_IS_SET(after.data.eflags,
                     VCPU_EFLAGS_RF) || after.data.dr6 != 0u;
     }
     if (state.machine != LIB_NULL) core_machine_destroy(state.machine);
     return failed;
 }
 
-static C_INT tf_db_s60_test_hardware_protected(C_VOID)
+static lib_i32 tf_db_s60_test_hardware_protected(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     tf_db_s60_machine state;
@@ -457,7 +458,7 @@ static C_INT tf_db_s60_test_hardware_protected(C_VOID)
     t_cpu before;
     t_cpu after;
     lib_u32 frame[3u] = { 0u, 0u, 0u };
-    C_INT failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) failed = !tf_db_s60_boot_protected(&state) ||
         !tf_db_s60_install_protected_vector(&state);
@@ -474,8 +475,8 @@ static C_INT tf_db_s60_test_hardware_protected(C_VOID)
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
             after.data.eip != 0x101u || (after.data.dr6 & 1u) == 0u ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + after.data.esp, (type_virtual_address)frame,
-                sizeof(frame)) != TYPE_STATUS_OK || frame[0] != 0u || frame[1] !=
+                after.data.ss.base + after.data.esp, (lib_uptr)frame,
+                sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u || frame[1] !=
                 before.data.cs.selector || frame[2] != (before.data.eflags |
                     VCPU_EFLAGS_RF);
     }
@@ -483,7 +484,7 @@ static C_INT tf_db_s60_test_hardware_protected(C_VOID)
     return failed;
 }
 
-static C_INT tf_db_s60_test_tf_priority_over_irq(C_VOID)
+static lib_i32 tf_db_s60_test_tf_priority_over_irq(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     tf_db_s60_machine state;
@@ -492,7 +493,7 @@ static C_INT tf_db_s60_test_tf_priority_over_irq(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
     lib_u16 frame[3u] = { 0u, 0u, 0u };
-    C_INT failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_i32 failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) failed = !tf_db_s60_install_real_vector(&state) ||
         !tf_db_s60_install_real_irq0_vector(&state);
@@ -500,7 +501,7 @@ static C_INT tf_db_s60_test_tf_priority_over_irq(C_VOID)
         state.machine->executor_cpu.data.esp = 0x8000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_TF |
             VCPU_EFLAGS_IF;
-        lib_memory_set(&irq, TYPE_ZERO_8, sizeof(irq));
+        lib_memory_set(&irq, 0u, sizeof(irq));
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -511,31 +512,31 @@ static C_INT tf_db_s60_test_tf_priority_over_irq(C_VOID)
             diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
             (after.data.dr6 & 0x00004000u) == 0u || after.data.eip != 0x0101u ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || !TYPE_GET_BIT(
+            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || !CORE_MACHINE_BIT_IS_SET(
                     state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
+                (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK ||
             frame[0] != 1u || frame[1] != 0u;
     }
     if (state.machine != LIB_NULL) core_machine_destroy(state.machine);
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT real = tf_db_s60_test_real();
-    C_INT protected_attributes = tf_db_s60_test_protected_attributes();
-    C_INT rejections = tf_db_s60_test_rejections();
-    C_INT hardware_real = tf_db_s60_test_hardware_real();
-    C_INT hardware_protected = tf_db_s60_test_hardware_protected();
-    C_INT priority = tf_db_s60_test_tf_priority_over_irq();
+    lib_i32 real = tf_db_s60_test_real();
+    lib_i32 protected_attributes = tf_db_s60_test_protected_attributes();
+    lib_i32 rejections = tf_db_s60_test_rejections();
+    lib_i32 hardware_real = tf_db_s60_test_hardware_real();
+    lib_i32 hardware_protected = tf_db_s60_test_hardware_protected();
+    lib_i32 priority = tf_db_s60_test_tf_priority_over_irq();
     if (real || protected_attributes || rejections || hardware_real ||
         hardware_protected || priority) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S60:TF-DB failed real=%d protected=%d reject=%d hardware-real=%d hardware-protected=%d priority=%d\n", real, protected_attributes, rejections, hardware_real, hardware_protected, priority);
+        fprintf(stderr, "M5:T316:S60:TF-DB failed real=%d protected=%d reject=%d hardware-real=%d hardware-protected=%d priority=%d\n", real, protected_attributes, rejections, hardware_real, hardware_protected, priority);
         return 1;
     }
-    STD_PRINTF("M5:T316:S60:TF-DB:OK\n");
+    printf("M5:T316:S60:TF-DB:OK\n");
     return 0;
 }

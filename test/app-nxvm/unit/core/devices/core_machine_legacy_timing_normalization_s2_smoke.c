@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -17,17 +17,17 @@ typedef struct t362_s2_case {
     const lib_u8 *program;
     lib_size program_bytes;
     lib_u64 ticks;
-    C_INT memory;
+    lib_i32 memory;
 } t362_s2_case;
 
-static C_VOID t362_s2_reset(C_VOID *opaque)
+static void t362_s2_reset(void *opaque)
 {
     t362_s2_state *state = (t362_s2_state *)opaque;
 
     if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
-static C_VOID t362_s2_advance(C_VOID *opaque, lib_u64 ticks)
+static void t362_s2_advance(void *opaque, lib_u64 ticks)
 {
     t362_s2_state *state = (t362_s2_state *)opaque;
 
@@ -38,20 +38,20 @@ static const core_machine_execution_provider t362_s2_provider = {
     t362_s2_reset, t362_s2_advance
 };
 
-static C_INT t362_s2_prepare(core_machine_cpu_profile profile,
+static lib_i32 t362_s2_prepare(core_machine_cpu_profile profile,
     core_machine **out_machine, t362_s2_state *state)
 {
     const core_machine_config config = { .cpu_profile = profile };
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T362_S2_RESET_LINEAR, T362_S2_RESET_PHYSICAL, 16u) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T362_S2_OPERAND_LINEAR, T362_S2_OPERAND_LINEAR, 64u) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &t362_s2_provider, state)) {
         core_machine_destroy(machine);
@@ -61,47 +61,47 @@ static C_INT t362_s2_prepare(core_machine_cpu_profile profile,
     return 1;
 }
 
-static C_INT t362_s2_run_case(const t362_s2_case *test_case)
+static lib_i32 t362_s2_run_case(const t362_s2_case *test_case)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u16 operand = 2u;
     core_machine_run_result result;
     t362_s2_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = test_case == LIB_NULL || !t362_s2_prepare(test_case->profile,
-        &machine, &state) || core_machine_reset(machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = test_case == LIB_NULL || !t362_s2_prepare(test_case->profile,
+        &machine, &state) || core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, T362_S2_RESET_LINEAR,
-            test_case->program, test_case->program_bytes) != TYPE_STATUS_OK;
+            test_case->program, test_case->program_bytes) != LIB_STATUS_OK;
 
     if (!failed) {
         machine->executor_cpu.data.ax = 2u;
         machine->executor_cpu.data.cx = 2u;
         machine->executor_cpu.data.dx = 0u;
         failed |= test_case->memory && core_machine_memory_write(machine,
-            T362_S2_OPERAND_LINEAR, &operand, sizeof(operand)) != TYPE_STATUS_OK;
+            T362_S2_OPERAND_LINEAR, &operand, sizeof(operand)) != LIB_STATUS_OK;
         failed |= test_case->memory && core_machine_memory_write(machine,
             T362_S2_OPERAND_LINEAR + 1u, &operand, sizeof(operand)) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
     }
     if (!failed) {
-        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != test_case->ticks ||
             result.elapsed_ticks != test_case->ticks ||
             state.advanced_ticks != test_case->ticks;
     }
     if (failed) {
-        STD_PRINTF("T362 S2 timing profile=%d expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu opcode=%02x\n",
-            (C_INT)test_case->profile, (unsigned long long)test_case->ticks,
+        printf("T362 S2 timing profile=%d expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu opcode=%02x\n",
+            (lib_i32)test_case->profile, (unsigned long long)test_case->ticks,
             (unsigned long long)result.ticks, (unsigned long long)result.executed,
-            (C_INT)result.reason, (unsigned long long)state.advanced_ticks,
+            (lib_i32)result.reason, (unsigned long long)state.advanced_ticks,
             test_case->program[0]);
     }
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT t362_s2_test_8086(C_VOID)
+static lib_i32 t362_s2_test_8086(void)
 {
     static const lib_u8 mul_byte_register[] = { 0xf6u, 0xe1u };
     static const lib_u8 mul_word_register[] = { 0xf7u, 0xe1u };
@@ -145,7 +145,7 @@ static C_INT t362_s2_test_8086(C_VOID)
     return 0;
 }
 
-static C_INT t362_s2_test_80186(C_VOID)
+static lib_i32 t362_s2_test_80186(void)
 {
     static const lib_u8 mul_byte_register[] = { 0xf6u, 0xe1u };
     static const lib_u8 mul_word_register[] = { 0xf7u, 0xe1u };
@@ -226,7 +226,7 @@ static C_INT t362_s2_test_80186(C_VOID)
     return 0;
 }
 
-static C_INT t362_s2_test_fault_nonpublication(C_VOID)
+static lib_i32 t362_s2_test_fault_nonpublication(void)
 {
     static const lib_u8 divide_by_zero[] = { 0xf7u, 0xf1u };
     static const lib_u8 handler[] = { 0xf4u };
@@ -235,28 +235,28 @@ static C_INT t362_s2_test_fault_nonpublication(C_VOID)
     core_machine_run_result result;
     t362_s2_state state = { 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !t362_s2_prepare(CORE_MACHINE_CPU_PROFILE_80186,
-        &machine, &state) || core_machine_reset(machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = !t362_s2_prepare(CORE_MACHINE_CPU_PROFILE_80186,
+        &machine, &state) || core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, T362_S2_RESET_LINEAR,
-            divide_by_zero, sizeof(divide_by_zero)) != TYPE_STATUS_OK ||
+            divide_by_zero, sizeof(divide_by_zero)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0u, vector, sizeof(vector)) !=
-            TYPE_STATUS_OK || core_machine_memory_write(machine, 0x0100u,
-            handler, sizeof(handler)) != TYPE_STATUS_OK;
+            LIB_STATUS_OK || core_machine_memory_write(machine, 0x0100u,
+            handler, sizeof(handler)) != LIB_STATUS_OK;
 
     if (!failed) {
         machine->executor_cpu.data.ax = 2u;
         machine->executor_cpu.data.dx = 0u;
         machine->executor_cpu.data.cx = 0u;
         {
-            type_status status = core_machine_run(machine, budget, &result);
+            lib_status status = core_machine_run(machine, budget, &result);
 
-            failed |= status != TYPE_STATUS_OK ||
+            failed |= status != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
                 result.executed != 0u || result.ticks != 0u ||
                 result.elapsed_ticks != 0u || state.advanced_ticks != 0u ||
                 machine->executor_cpu.data.eip != 0x0100u;
             status = core_machine_run(machine, budget, &result);
-            failed |= status != TYPE_STATUS_OK ||
+            failed |= status != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 result.executed != 1u || result.ticks != 2u ||
                 result.elapsed_ticks != 2u || state.advanced_ticks != 2u ||
@@ -267,11 +267,11 @@ static C_INT t362_s2_test_fault_nonpublication(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (t362_s2_test_8086()) return 1;
     if (t362_s2_test_80186()) return 2;
     if (t362_s2_test_fault_nonpublication()) return 3;
-    STD_PRINTF("M5:T362:S2:LEGACY-TIMING-NORMALIZATION:OK\n");
+    printf("M5:T362:S2:LEGACY-TIMING-NORMALIZATION:OK\n");
     return 0;
 }

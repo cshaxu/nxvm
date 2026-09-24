@@ -18,7 +18,7 @@ endforeach()
 
 foreach(source_text IN ITEMS "${hdd_source}" "${fdd_source}")
     foreach(forbidden IN ITEMS "pImgBase" "lib_storage_file_read_owned"
-        "lib_storage_image" "STD_FOPEN" "STD_FREAD" "STD_FWRITE" "fopen"
+        "lib_storage_image" "fopen"
         "fread" "fwrite")
         string(FIND "${source_text}" "${forbidden}" position)
         if(NOT position EQUAL -1)

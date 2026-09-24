@@ -1,32 +1,32 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_INT core_machine_ega_planar_write(t_ram *memory, lib_u32 physical,
+static lib_i32 core_machine_ega_planar_write(t_ram *memory, lib_u32 physical,
     lib_u8 value)
 {
     return core_machine_memory_write_physical(memory, physical,
-        (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
+        (lib_uptr)&value, sizeof(value)) == LIB_STATUS_OK;
 }
 
-static C_INT core_machine_ega_planar_read(t_ram *memory, lib_u32 physical,
+static lib_i32 core_machine_ega_planar_read(t_ram *memory, lib_u32 physical,
     lib_u8 *value)
 {
     return core_machine_memory_read_physical(memory, physical,
-        (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
+        (lib_uptr)value, sizeof(*value)) == LIB_STATUS_OK;
 }
 
-static C_VOID core_machine_ega_graphics_write(t_port *port, lib_u8 index,
+static void core_machine_ega_graphics_write(t_port *port, lib_u8 index,
     lib_u8 value)
 {
     core_machine_port_write(port, 0x03ceu, index);
     core_machine_port_write(port, 0x03cfu, value);
 }
 
-static C_VOID core_machine_ega_planar_select_mode_d(t_port *port)
+static void core_machine_ega_planar_select_mode_d(t_port *port)
 {
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x27u);
@@ -38,7 +38,7 @@ static C_VOID core_machine_ega_planar_select_mode_d(t_port *port)
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x14u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_vadp_ega_sequencer_config sequencer = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
@@ -62,17 +62,17 @@ C_INT main(C_VOID)
     lib_u8 copied_pixel_two;
     lib_u32 copied_palette_fifteen;
     core_machine_memory_route route;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     failed |= core_machine_vadp_configure_ega_sequencer(&vadp, &memory,
-        &sequencer) != TYPE_STATUS_OK;
+        &sequencer) != LIB_STATUS_OK;
     failed |= core_machine_vadp_configure_ega_controllers(&vadp,
-        &controllers) != TYPE_STATUS_OK;
+        &controllers) != LIB_STATUS_OK;
 
     /* EGA text fallback and planar graphics share the Attribute Controller's
        display-enable state; it is not a renderer-local visibility flag. */
@@ -85,12 +85,12 @@ C_INT main(C_VOID)
         CORE_MACHINE_VADP_TEXT_BASE + 1u, value);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT || snapshot.characters[0] != 'T';
-    (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    (void)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT || snapshot.characters[0] != 0x20u ||
         snapshot.attributes[0] != 0u;
-    (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    (void)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x20u);
     core_machine_ega_planar_select_mode_d(&port);
 
@@ -113,7 +113,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x03ceu, 6u);
     failed |= core_machine_port_read(&port, 0x03cfu) != 0x05u;
     core_machine_port_write(&port, 0x03cfu, 0x05u);
-    (C_VOID)core_machine_port_read(&port, 0x03dau);
+    (void)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x30u);
     core_machine_port_write(&port, 0x03c0u, 0x01u);
     failed |= core_machine_port_read(&port, 0x03c1u) != 0x01u ||
@@ -187,7 +187,7 @@ C_INT main(C_VOID)
         value != 0u;
     core_machine_ega_graphics_write(&port, 5u, 0x04u);
     failed |= core_machine_memory_query_physical(&memory, 0x000a0005u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
+        CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
         !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
@@ -199,7 +199,7 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03c5u) != 0x02u ||
         !core_machine_ega_planar_write(&memory, 0x000a0000u, 0x00u) ||
         core_machine_memory_query_physical(&memory, 0x000a0000u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != TYPE_STATUS_OK ||
+        CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != LIB_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
         !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
@@ -208,7 +208,7 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03c5u) != 0x01u ||
         !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||
         core_machine_memory_query_physical(&memory, 0x000a0000u, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
+        CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
         !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
@@ -218,7 +218,7 @@ C_INT main(C_VOID)
         !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||
         value != 0xa5u || core_machine_memory_query_physical(&memory,
         0x000a0000u, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) !=
-        TYPE_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
+        LIB_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
 
     core_machine_port_write(&port, 0x03c4u, 2u);
     core_machine_port_write(&port, 0x03c5u, 0x02u);
@@ -275,9 +275,9 @@ C_INT main(C_VOID)
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T238:S2:EGA-PLANAR:PORT:FAIL\n");
+        fprintf(stderr, "M5:T238:S2:EGA-PLANAR:PORT:FAIL\n");
         return 1;
     }
-    STD_PRINTF("M5:T238:S2:EGA-PLANAR:PORT:OK\n");
+    printf("M5:T238:S2:EGA-PLANAR:PORT:OK\n");
     return 0;
 }

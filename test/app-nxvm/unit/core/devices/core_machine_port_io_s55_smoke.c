@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
@@ -12,7 +13,7 @@ typedef struct port_io_s55_port {
     lib_u16 last_port;
     lib_u32 reads;
     lib_u32 writes;
-    C_INT fail;
+    lib_i32 fail;
 } port_io_s55_port;
 
 typedef struct port_io_s55_machine {
@@ -20,30 +21,30 @@ typedef struct port_io_s55_machine {
     port_io_s55_port port;
 } port_io_s55_machine;
 
-static type_status port_io_s55_read(C_VOID *owner, lib_u16 port,
+static lib_status port_io_s55_read(void *owner, lib_u16 port,
     lib_u32 *value)
 {
     port_io_s55_port *state = (port_io_s55_port *)owner;
 
     if (state == LIB_NULL || value == LIB_NULL || state->fail)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     state->last_port = port;
     *value = state->input;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status port_io_s55_write(C_VOID *owner, lib_u16 port,
+static lib_status port_io_s55_write(void *owner, lib_u16 port,
     lib_u32 value)
 {
     port_io_s55_port *state = (port_io_s55_port *)owner;
 
     if (state == LIB_NULL || state->fail)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     ++state->writes;
     state->last_port = port;
     state->last_write = value;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_port_provider port_io_s55_provider = {
@@ -51,12 +52,12 @@ static const core_machine_port_provider port_io_s55_provider = {
     port_io_s55_write
 };
 
-static C_VOID port_io_s55_reset(C_VOID *opaque)
+static void port_io_s55_reset(void *opaque)
 {
     port_io_s55_machine *state = (port_io_s55_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider port_io_s55_execution_provider = {
@@ -64,7 +65,7 @@ static const core_machine_execution_provider port_io_s55_execution_provider = {
     LIB_NULL
 };
 
-static C_INT port_io_s55_prepare(port_io_s55_machine *state,
+static lib_i32 port_io_s55_prepare(port_io_s55_machine *state,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -74,18 +75,18 @@ static C_INT port_io_s55_prepare(port_io_s55_machine *state,
     };
 
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
+    return core_machine_create(&config, &state->machine) == LIB_STATUS_OK &&
         core_machine_install_port_provider(state->machine, 0x005au, 0x005au,
-            &port_io_s55_provider, &state->port) == TYPE_STATUS_OK &&
+            &port_io_s55_provider, &state->port) == LIB_STATUS_OK &&
         core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e0u,
-            &port_io_s55_provider, &state->port) == TYPE_STATUS_OK &&
+            &port_io_s55_provider, &state->port) == LIB_STATUS_OK &&
         test_core_machine_fixture_bind_freeze_reset(state->machine,
             &port_io_s55_execution_provider, state) &&
         test_core_machine_fixture_prepare_real_mode_execution(
                 state->machine, 0u);
 }
 
-static C_VOID port_io_s55_seed(t_cpu *cpu)
+static void port_io_s55_seed(t_cpu *cpu)
 {
     cpu->data.eax = 0xa1a1b2b2u;
     cpu->data.ecx = 0xc3c3d4d4u;
@@ -99,7 +100,7 @@ static C_VOID port_io_s55_seed(t_cpu *cpu)
         VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
 }
 
-static C_INT port_io_s55_gprs_same_except_eax(const t_cpu *before,
+static lib_i32 port_io_s55_gprs_same_except_eax(const t_cpu *before,
     const t_cpu *after)
 {
     return before->data.ecx == after->data.ecx &&
@@ -111,7 +112,7 @@ static C_INT port_io_s55_gprs_same_except_eax(const t_cpu *before,
         before->data.edi == after->data.edi;
 }
 
-static C_INT port_io_s55_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 port_io_s55_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
             sizeof(before->data.es)) == 0 &&
@@ -127,8 +128,8 @@ static C_INT port_io_s55_sregs_same(const t_cpu *before, const t_cpu *after)
             sizeof(before->data.gs)) == 0;
 }
 
-static C_INT port_io_s55_success(core_machine_cpu_profile profile,
-    const lib_u8 *code, lib_u8 bytes, C_INT input, lib_u8 width,
+static lib_i32 port_io_s55_success(core_machine_cpu_profile profile,
+    const lib_u8 *code, lib_u8 bytes, lib_i32 input, lib_u8 width,
     lib_u16 port)
 {
     port_io_s55_machine state;
@@ -136,23 +137,23 @@ static C_INT port_io_s55_success(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_status status;
+    lib_status status;
     lib_u32 expected;
-    C_INT failed = !port_io_s55_prepare(&state, profile);
+    lib_i32 failed = !port_io_s55_prepare(&state, profile);
 
     if (!failed) {
         port_io_s55_seed(&state.machine->executor_cpu);
         state.port.input = 0x11223344u;
         before = state.machine->executor_cpu;
         failed = core_machine_memory_write(state.machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         if (!failed) {
             status = core_machine_run(state.machine,
                 (core_machine_run_budget){ 1u, 0u }, &result);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed = core_machine_get_cpu_diagnostic(state.machine,
-                &diagnostic) != TYPE_STATUS_OK;
-            failed |= status != TYPE_STATUS_OK;
+                &diagnostic) != LIB_STATUS_OK;
+            failed |= status != LIB_STATUS_OK;
             failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
             failed |= diagnostic.first_fault.valid;
             failed |= after.data.eip != bytes;
@@ -187,7 +188,7 @@ static C_INT port_io_s55_success(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT port_io_s55_test_default_forms(C_VOID)
+static lib_i32 port_io_s55_test_default_forms(void)
 {
     static const lib_u8 codes[][2] = {
         { 0xe4u, 0x5au }, { 0xe5u, 0x5au }, { 0xe6u, 0x5au },
@@ -211,7 +212,7 @@ static C_INT port_io_s55_test_default_forms(C_VOID)
             if (!port_io_s55_success(profiles[profile], codes[form],
                     form < 4u ? 2u : 1u, input[form], widths[form],
                     form < 4u ? 0x005au : 0x00e0u)) {
-                STD_FPRINTF(STD_STDERR, "S55 default p=%u f=%u\n", profile,
+                fprintf(stderr, "S55 default p=%u f=%u\n", profile,
                     form);
                 return 0;
             }
@@ -220,7 +221,7 @@ static C_INT port_io_s55_test_default_forms(C_VOID)
     return 1;
 }
 
-static C_INT port_io_s55_test_386_attributes(C_VOID)
+static lib_i32 port_io_s55_test_386_attributes(void)
 {
     static const lib_u8 opcodes[] = {
         0xe4u, 0xe5u, 0xe6u, 0xe7u, 0xecu, 0xedu, 0xeeu, 0xefu
@@ -260,7 +261,7 @@ static C_INT port_io_s55_test_386_attributes(C_VOID)
     return 1;
 }
 
-static C_INT port_io_s55_test_provider_error(C_VOID)
+static lib_i32 port_io_s55_test_provider_error(void)
 {
     static const lib_u8 in_code[] = { 0xe4u, 0x5au };
     static const lib_u8 out_code[] = { 0xe7u, 0x5au };
@@ -279,9 +280,9 @@ static C_INT port_io_s55_test_provider_error(C_VOID)
             core_machine_cpu_diagnostic diagnostic;
             t_cpu before;
             t_cpu after;
-            type_status status;
+            lib_status status;
             const lib_u8 *code = form == 0u ? in_code : out_code;
-            C_INT failed = !port_io_s55_prepare(&state,
+            lib_i32 failed = !port_io_s55_prepare(&state,
                 profiles[profile]);
 
             if (!failed) {
@@ -289,15 +290,15 @@ static C_INT port_io_s55_test_provider_error(C_VOID)
                 state.port.fail = 1;
                 before = state.machine->executor_cpu;
                 failed = core_machine_memory_write(state.machine, 0u, code, 2u) !=
-                    TYPE_STATUS_OK;
+                    LIB_STATUS_OK;
                 if (!failed) {
                     status = core_machine_run(state.machine,
                         (core_machine_run_budget){ 1u, 0u }, &result);
                     after = test_core_machine_fixture_capture_cpu_after_run(
                         state.machine);
                     failed = core_machine_get_cpu_diagnostic(state.machine,
-                        &diagnostic) != TYPE_STATUS_OK;
-                    failed |= status != TYPE_STATUS_FAULT;
+                        &diagnostic) != LIB_STATUS_OK;
+                    failed |= status != LIB_STATUS_INTERNAL_ERROR;
                     failed |= result.reason != CORE_MACHINE_STOP_FAULT;
                     failed |= !diagnostic.first_fault.valid;
                     failed |= after.data.eip != before.data.eip;
@@ -316,7 +317,7 @@ static C_INT port_io_s55_test_provider_error(C_VOID)
     return 1;
 }
 
-static C_INT port_io_s55_test_vm86(C_VOID)
+static lib_i32 port_io_s55_test_vm86(void)
 {
     static const lib_u8 code[] = { 0xe4u, 0x5au };
     port_io_s55_machine state;
@@ -324,8 +325,8 @@ static C_INT port_io_s55_test_vm86(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_status status;
-    C_INT failed = !port_io_s55_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_status status;
+    lib_i32 failed = !port_io_s55_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         port_io_s55_seed(&state.machine->executor_cpu);
@@ -336,17 +337,17 @@ static C_INT port_io_s55_test_vm86(C_VOID)
         state.machine->executor_cpu.data.ss.dpl = 3u;
         before = state.machine->executor_cpu;
         failed = core_machine_memory_write(state.machine, 0u, code,
-            sizeof(code)) != TYPE_STATUS_OK;
+            sizeof(code)) != LIB_STATUS_OK;
         if (!failed) {
             status = core_machine_run(state.machine,
                 (core_machine_run_budget){ 1u, 0u }, &result);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed = core_machine_get_cpu_diagnostic(state.machine,
-                &diagnostic) != TYPE_STATUS_OK;
-            failed |= status != TYPE_STATUS_FAULT;
+                &diagnostic) != LIB_STATUS_OK;
+            failed |= status != LIB_STATUS_INTERNAL_ERROR;
             failed |= result.reason != CORE_MACHINE_STOP_FAULT;
             failed |= !diagnostic.first_fault.valid;
-            failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_DF);
             failed |= after.data.eip != before.data.eip;
             failed |= after.data.eax != before.data.eax;
@@ -360,7 +361,7 @@ static C_INT port_io_s55_test_vm86(C_VOID)
     return !failed;
 }
 
-static C_INT port_io_s55_test_tss_iomap(C_VOID)
+static lib_i32 port_io_s55_test_tss_iomap(void)
 {
     static const lib_u8 code[] = { 0xe4u, 0xe0u };
     const lib_u16 iomap_base = 0x0080u;
@@ -372,13 +373,13 @@ static C_INT port_io_s55_test_tss_iomap(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        type_status status;
+        lib_status status;
         lib_u8 bitmap = denied == 1u ? 0x01u : 0u;
-        C_INT code_write;
-        C_INT iomap_write;
-        C_INT bitmap_write;
-        C_INT diagnostic_status;
-        C_INT failed = !port_io_s55_prepare(&state,
+        lib_i32 code_write;
+        lib_i32 iomap_write;
+        lib_i32 bitmap_write;
+        lib_i32 diagnostic_status;
+        lib_i32 failed = !port_io_s55_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -397,11 +398,11 @@ static C_INT port_io_s55_test_tss_iomap(C_VOID)
             state.port.input = 0x11223344u;
             before = state.machine->executor_cpu;
             code_write = core_machine_memory_write(state.machine, 0u, code,
-                sizeof(code)) == TYPE_STATUS_OK;
+                sizeof(code)) == LIB_STATUS_OK;
             iomap_write = core_machine_memory_write(state.machine, 0x0666u,
-                &iomap_base, sizeof(iomap_base)) == TYPE_STATUS_OK;
+                &iomap_base, sizeof(iomap_base)) == LIB_STATUS_OK;
             bitmap_write = core_machine_memory_write(state.machine, 0x069cu,
-                &bitmap, sizeof(bitmap)) == TYPE_STATUS_OK;
+                &bitmap, sizeof(bitmap)) == LIB_STATUS_OK;
             failed = !code_write || !iomap_write || !bitmap_write;
             if (!failed) {
                 status = core_machine_run(state.machine,
@@ -409,13 +410,13 @@ static C_INT port_io_s55_test_tss_iomap(C_VOID)
                 after = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 diagnostic_status = core_machine_get_cpu_diagnostic(
-                    state.machine, &diagnostic) == TYPE_STATUS_OK;
+                    state.machine, &diagnostic) == LIB_STATUS_OK;
                 failed = !diagnostic_status;
                 if (denied == 1u) {
-                    failed |= status != TYPE_STATUS_FAULT;
+                    failed |= status != LIB_STATUS_INTERNAL_ERROR;
                     failed |= result.reason != CORE_MACHINE_STOP_FAULT;
                     failed |= !diagnostic.first_fault.valid;
-                    failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                    failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                         VCPUINS_EXCEPT_DF);
                     failed |= after.data.eip != before.data.eip;
                     failed |= after.data.eax != before.data.eax;
@@ -423,7 +424,7 @@ static C_INT port_io_s55_test_tss_iomap(C_VOID)
                     failed |= state.port.reads != 0u || state.port.writes != 0u;
                 }
                 else {
-                    failed |= status != TYPE_STATUS_OK;
+                    failed |= status != LIB_STATUS_OK;
                     failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
                     failed |= diagnostic.first_fault.valid;
                     failed |= after.data.eip != sizeof(code);
@@ -444,7 +445,7 @@ static C_INT port_io_s55_test_tss_iomap(C_VOID)
     return 1;
 }
 
-static C_INT port_io_s55_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 port_io_s55_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     port_io_s55_machine state;
@@ -452,8 +453,8 @@ static C_INT port_io_s55_expect_ud(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    type_status status;
-    C_INT failed = !port_io_s55_prepare(&state, profile);
+    lib_status status;
+    lib_i32 failed = !port_io_s55_prepare(&state, profile);
 
     if (!failed) {
         port_io_s55_seed(&state.machine->executor_cpu);
@@ -461,17 +462,17 @@ static C_INT port_io_s55_expect_ud(core_machine_cpu_profile profile,
             state.machine);
         before = state.machine->executor_cpu;
         failed |= core_machine_memory_write(state.machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         if (!failed) {
             status = core_machine_run(state.machine,
                 (core_machine_run_budget){ 1u, 0u }, &result);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed = core_machine_get_cpu_diagnostic(state.machine,
-                &diagnostic) != TYPE_STATUS_OK;
-            failed |= status != TYPE_STATUS_FAULT;
+                &diagnostic) != LIB_STATUS_OK;
+            failed |= status != LIB_STATUS_INTERNAL_ERROR;
             failed |= result.reason != CORE_MACHINE_STOP_FAULT;
             failed |= !diagnostic.first_fault.valid;
-            failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD);
             failed |= after.data.eip != before.data.eip;
             failed |= after.data.eax != before.data.eax;
@@ -485,7 +486,7 @@ static C_INT port_io_s55_expect_ud(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT port_io_s55_test_rejections(C_VOID)
+static lib_i32 port_io_s55_test_rejections(void)
 {
     static const lib_u8 opcodes[] = {
         0xe4u, 0xe5u, 0xe6u, 0xe7u, 0xecu, 0xedu, 0xeeu, 0xefu
@@ -535,7 +536,7 @@ static C_INT port_io_s55_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
+static lib_i32 port_io_s55_test_irq_no_shadow(void)
 {
     static const lib_u8 in_code[] = { 0xe4u, 0x5au, 0x90u };
     static const lib_u8 out_code[] = { 0xeeu, 0x90u };
@@ -553,7 +554,7 @@ static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
         lib_u16 frame_ip = 0u;
         const lib_u8 *code = form == 0u ? in_code : out_code;
         lib_u8 bytes = form == 0u ? sizeof(in_code) : sizeof(out_code);
-        C_INT failed = !port_io_s55_prepare(&state,
+        lib_i32 failed = !port_io_s55_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -563,13 +564,13 @@ static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
             state.machine->executor_cpu.data.idtr.limit = 0x017fu;
             before = state.machine->executor_cpu;
             failed = core_machine_memory_write(state.machine, 0u, code,
-                bytes) != TYPE_STATUS_OK;
+                bytes) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(state.machine, 0x20u * 4u,
-                &vector_offset, sizeof(vector_offset)) != TYPE_STATUS_OK;
+                &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(state.machine, 0x20u * 4u + 2u,
-                &vector_segment, sizeof(vector_segment)) != TYPE_STATUS_OK;
+                &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK;
             failed |= core_machine_memory_write(state.machine, 0x0100u, &hlt,
-                sizeof(hlt)) != TYPE_STATUS_OK;
+                sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
             lib_memory_set(&source, 0, sizeof(source));
@@ -580,7 +581,7 @@ static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed = core_machine_run(state.machine,
-                (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK;
+                (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             failed |= after.data.eip != 0x0101u;
@@ -593,12 +594,12 @@ static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
             failed |= !port_io_s55_sregs_same(&before, &after);
             failed |= core_machine_memory_read_physical(
                 &state.machine->executor_memory, after.data.ss.base +
-                (lib_u16)after.data.esp, (type_virtual_address)&frame_ip,
-                sizeof(frame_ip)) != TYPE_STATUS_OK;
+                (lib_u16)after.data.esp, (lib_uptr)&frame_ip,
+                sizeof(frame_ip)) != LIB_STATUS_OK;
             failed |= frame_ip != (form == 0u ? 2u : 1u);
-            failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
                 VPIC_ISR_IRQ(0u));
-            failed |= TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            failed |= CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
             if (form == 0u) {
                 failed |= after.data.eax !=
@@ -618,36 +619,36 @@ static C_INT port_io_s55_test_irq_no_shadow(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!port_io_s55_test_default_forms()) {
-        STD_FPRINTF(STD_STDERR, "S55 default forms failed\n");
+        fprintf(stderr, "S55 default forms failed\n");
         return 1;
     }
     if (!port_io_s55_test_386_attributes()) {
-        STD_FPRINTF(STD_STDERR, "S55 attributes failed\n");
+        fprintf(stderr, "S55 attributes failed\n");
         return 1;
     }
     if (!port_io_s55_test_provider_error()) {
-        STD_FPRINTF(STD_STDERR, "S55 provider error failed\n");
+        fprintf(stderr, "S55 provider error failed\n");
         return 1;
     }
     if (!port_io_s55_test_vm86()) {
-        STD_FPRINTF(STD_STDERR, "S55 VM86 failed\n");
+        fprintf(stderr, "S55 VM86 failed\n");
         return 1;
     }
     if (!port_io_s55_test_tss_iomap()) {
-        STD_FPRINTF(STD_STDERR, "S55 TSS I/O bitmap failed\n");
+        fprintf(stderr, "S55 TSS I/O bitmap failed\n");
         return 1;
     }
     if (!port_io_s55_test_rejections()) {
-        STD_FPRINTF(STD_STDERR, "S55 rejection matrix failed\n");
+        fprintf(stderr, "S55 rejection matrix failed\n");
         return 1;
     }
     if (!port_io_s55_test_irq_no_shadow()) {
-        STD_FPRINTF(STD_STDERR, "S55 PIC no-shadow failed\n");
+        fprintf(stderr, "S55 PIC no-shadow failed\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S55:PORT-IO:OK\n");
+    printf("M5:T316:S55:PORT-IO:OK\n");
     return 0;
 }

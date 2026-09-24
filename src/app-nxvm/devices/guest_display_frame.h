@@ -2,7 +2,6 @@
 #define CORE_MACHINE_GUEST_DISPLAY_FRAME_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 
 #define CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS 80u
@@ -39,10 +38,10 @@ typedef struct core_machine_guest_display_frame {
     /* Copied text coordinates are column then row. */
     lib_u8 cursor_x;
     lib_u8 cursor_y;
-    C_INT cursor_visible;
-    C_INT buffer_changed;
-    C_INT cursor_changed;
-    type_bool text_glyphs_present;
+    lib_i32 cursor_visible;
+    lib_i32 buffer_changed;
+    lib_i32 cursor_changed;
+    lib_u8 text_glyphs_present;
     lib_u8 text_glyphs[CORE_MACHINE_GUEST_DISPLAY_TEXT_GLYPH_BYTES];
     lib_u16 pixel_width;
     lib_u16 pixel_height;

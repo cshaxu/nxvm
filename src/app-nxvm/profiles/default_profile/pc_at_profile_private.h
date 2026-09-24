@@ -2,7 +2,6 @@
 #define VM_PROFILE_DEFAULT_PC_AT_PROFILE_PRIVATE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/cpu_interface.h"
 #include "app-nxvm/devices/fpu_interface.h"
@@ -31,8 +30,8 @@ typedef enum vm_profile_default_pc_at_device_role {
 typedef struct vm_profile_default_pc_at_port_leaf {
     vm_profile_default_pc_at_device_role device;
     lib_u16 port;
-    type_bool read;
-    type_bool write;
+    lib_u8 read;
+    lib_u8 write;
 } vm_profile_default_pc_at_port_leaf;
 
 typedef enum vm_profile_default_pc_at_route_source {
@@ -110,7 +109,7 @@ typedef struct vm_profile_default_pc_at_cpu_contract {
 } vm_profile_default_pc_at_cpu_contract;
 
 typedef struct vm_profile_default_pc_at_descriptor {
-    const C_CHAR *identity;
+    const char *identity;
     lib_u32 compatibility_revision;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
@@ -125,32 +124,32 @@ typedef struct vm_profile_default_pc_at_descriptor {
     lib_u32 kbc_typematic_repeat_ticks;
     lib_u32 kbc_command_response_ticks;
     lib_u8 kbc_command_response_status_polls;
-    type_bool kbc_reset_output_port_configured;
+    lib_u8 kbc_reset_output_port_configured;
     lib_u8 kbc_reset_output_port;
     /* 8042 C0h is a frozen system-board jumper input, not keyboard state. */
-    type_bool kbc_input_port_configured;
+    lib_u8 kbc_input_port_configured;
     lib_u8 kbc_input_port;
     lib_u32 rtc_ticks_per_second;
     core_machine_vadp_text_timing cga_text_timing;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     core_machine_vadp_ega_controller_config ega_controllers;
     lib_size default_memory_bytes;
-    type_bool unpopulated_extended_memory;
+    lib_u8 unpopulated_extended_memory;
     /* 8237A boundary-transfer workspace, expressed as a real-mode segment. */
     lib_u16 fdc_bounce_segment;
     /* Frozen board READY inputs, one bit per physically fitted FDC drive. */
     lib_u8 fdc_ready_mask;
-    type_bool hdc_present;
-    type_bool planar_parity_present;
+    lib_u8 hdc_present;
+    lib_u8 planar_parity_present;
     /* Port 61h bit 4 is a frozen board input.  It is independent of PIT1's
      * DMA-refresh request path, which remains owned by Core. */
     core_machine_planar_parity_refresh_status_source refresh_status_source;
     lib_u32 refresh_status_toggle_ticks;
-    type_bool ega_present;
-    type_bool cga_vram_present;
-    type_bool monochrome_aperture_absent;
+    lib_u8 ega_present;
+    lib_u8 cga_vram_present;
+    lib_u8 monochrome_aperture_absent;
     vm_profile_default_pc_at_firmware_slot firmware_slot;
-    type_bool diskette_drive_a_field_upgrade;
+    lib_u8 diskette_drive_a_field_upgrade;
     vm_profile_default_pc_at_rom_mapping rom;
     vm_profile_default_pc_at_cmos_defaults cmos;
     const vm_profile_default_pc_at_port_leaf *port_leaves;
@@ -200,32 +199,32 @@ typedef struct vm_profile_default_at_request {
 } vm_profile_default_at_request;
 
 const vm_profile_default_pc_at_descriptor *
-vm_profile_default_pc_at_descriptor_get(C_VOID);
+vm_profile_default_pc_at_descriptor_get(void);
 const vm_profile_default_pc_at_descriptor *
-vm_profile_ibm_5170_model_339_descriptor_get(C_VOID);
-C_INT vm_profile_default_pc_at_cpu_contract_select(
+vm_profile_ibm_5170_model_339_descriptor_get(void);
+lib_i32 vm_profile_default_pc_at_cpu_contract_select(
     const vm_profile_default_pc_at_descriptor *descriptor,
     core_machine_cpu_profile requested_cpu,
     core_machine_fpu_profile requested_fpu,
     vm_profile_default_pc_at_cpu_contract *out_contract);
-C_INT vm_profile_default_pc_at_core_config_materialize(
+lib_i32 vm_profile_default_pc_at_core_config_materialize(
     const vm_profile_default_pc_at_descriptor *descriptor,
     const vm_profile_default_pc_at_cpu_contract *contract,
     core_machine_config *out_config,
     core_machine_controller_timing_rules *out_timing_rules);
-type_status vm_profile_default_pc_at_topology_materialize(
+lib_status vm_profile_default_pc_at_topology_materialize(
     const vm_profile_default_pc_at_descriptor *descriptor,
     const core_machine_controller_timing_rules *timing_rules,
     core_machine_plan_topology *out_topology);
-type_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
+lib_status vm_profile_ibm_5170_values_create(lib_size memory_bytes,
     vm_profile_contract_values *out_values);
-type_status vm_profile_ibm_5170_plan_create(
+lib_status vm_profile_ibm_5170_plan_create(
     vm_profile_default_pc_at_plan_snapshot *out_profile);
 /* IBM's 128 KiB conventional-memory option and 512 KiB extended-memory
  * options are selected only while the frozen 5170 profile is constructed. */
-type_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
+lib_status vm_profile_ibm_5170_plan_create_memory(lib_size memory_bytes,
     vm_profile_default_pc_at_plan_snapshot *out_profile);
-type_status vm_profile_default_at_plan_create(
+lib_status vm_profile_default_at_plan_create(
     const vm_profile_default_at_request *request,
     vm_profile_default_pc_at_plan_snapshot *out_profile);
 const vm_profile_default_pc_at_port_leaf *
@@ -239,7 +238,7 @@ vm_profile_default_pc_at_port_leaf_at(
 const vm_profile_default_pc_at_route *vm_profile_default_pc_at_route_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
     vm_profile_default_pc_at_route_source source);
-C_INT vm_profile_default_pc_at_descriptor_is_valid(
+lib_i32 vm_profile_default_pc_at_descriptor_is_valid(
     const vm_profile_default_pc_at_descriptor *descriptor);
 
 #endif

@@ -2,8 +2,8 @@
 
 /* VDMA implements two chips of Direct Memory Access Controller: Intel 8237A (Master+Slave). */
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/device_support.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/memory.h"
 
@@ -13,95 +13,95 @@
 #include "app-nxvm/devices/transaction.h"
 
 /* This only issues opaque binding nonces. It never selects a DMA instance. */
-static STD_ATOMIC_UINTPTR_T core_machine_dma_next_request_token = 1u;
+static lib_atomic_uptr core_machine_dma_next_request_token = 1u;
 
-static type_native_unsigned core_machine_dma_request_token_allocate(C_VOID)
+static lib_uptr core_machine_dma_request_token_allocate(void)
 {
-    type_unsigned_pointer expected = STD_ATOMIC_LOAD(&core_machine_dma_next_request_token);
+    lib_uptr expected = lib_atomic_uptr_load_explicit(&core_machine_dma_next_request_token, LIB_MEMORY_ORDER_ACQUIRE);
 
     while (expected != UINTPTR_MAX) {
-        if (STD_ATOMIC_COMPARE_EXCHANGE_STRONG(
-                &core_machine_dma_next_request_token, &expected, expected + 1u)) {
-            return (type_native_unsigned)expected;
+        if (lib_atomic_uptr_compare_exchange_strong_explicit(
+                &core_machine_dma_next_request_token, &expected, expected + 1u, LIB_MEMORY_ORDER_ACQ_REL, LIB_MEMORY_ORDER_ACQUIRE)) {
+            return (lib_uptr)expected;
         }
     }
     return 0u;
 }
 
-static C_VOID core_machine_dma_controller_reset(t_dma *rdma) {
-    lib_memory_set((C_VOID *)(&rdma->data), TYPE_ZERO_8, sizeof(t_dma_data));
+static void core_machine_dma_controller_reset(t_dma *rdma) {
+    lib_memory_set((void *)(&rdma->data), 0u, sizeof(t_dma_data));
     rdma->data.mask = VDMA_MASK_VALID;
 }
 
-static C_VOID dma_service_begin(t_dma *dma, lib_u8 channel)
+static void dma_service_begin(t_dma *dma, lib_u8 channel)
 {
     VDMA_SetISR(dma->data.isr, channel);
-    TYPE_SET_BIT(dma->data.acknowledged, VDMA_REQUEST_DRQ(channel));
-    dma->data.phase = channel == 0u && TYPE_GET_BIT(dma->data.command,
+    CORE_MACHINE_BIT_SET(dma->data.acknowledged, VDMA_REQUEST_DRQ(channel));
+    dma->data.phase = channel == 0u && CORE_MACHINE_BIT_IS_SET(dma->data.command,
         VDMA_COMMAND_M2M) ? VDMA_PHASE_S11 : VDMA_PHASE_S1;
 }
 
-static C_VOID dma_service_end(t_dma *dma)
+static void dma_service_end(t_dma *dma)
 {
-    if (TYPE_GET_BIT(dma->data.isr, VDMA_ISR_IS)) {
-        TYPE_CLEAR_BIT(dma->data.acknowledged,
+    if (CORE_MACHINE_BIT_IS_SET(dma->data.isr, VDMA_ISR_IS)) {
+        CORE_MACHINE_BIT_CLEAR(dma->data.acknowledged,
             VDMA_REQUEST_DRQ(VDMA_GetISR_ISR(dma->data.isr)));
     }
     dma->data.flagM2MWrite = LIB_FALSE;
     dma->data.phase = VDMA_PHASE_IDLE;
-    dma->data.isr = TYPE_ZERO_8;
+    dma->data.isr = 0u;
 }
 
-static C_VOID dma_read_address(t_dma *dma, t_port *port, lib_u8 channel)
+static void dma_read_address(t_dma *dma, t_port *port, lib_u8 channel)
 {
     port->data.ioByte = !dma->data.flagMSB ?
-        TYPE_MASK_UNSIGNED_8(dma->data.currAddr[channel]) :
-        TYPE_MASK_UNSIGNED_8(dma->data.currAddr[channel] >> 8);
+        CORE_MACHINE_MASK_U8(dma->data.currAddr[channel]) :
+        CORE_MACHINE_MASK_U8(dma->data.currAddr[channel] >> 8);
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static C_VOID dma_read_count(t_dma *dma, t_port *port, lib_u8 channel)
+static void dma_read_count(t_dma *dma, t_port *port, lib_u8 channel)
 {
     port->data.ioByte = !dma->data.flagMSB ?
-        TYPE_MASK_UNSIGNED_8(dma->data.currCount[channel]) :
-        TYPE_MASK_UNSIGNED_8(dma->data.currCount[channel] >> 8);
+        CORE_MACHINE_MASK_U8(dma->data.currCount[channel]) :
+        CORE_MACHINE_MASK_U8(dma->data.currCount[channel] >> 8);
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static C_VOID dma_write_address(t_dma *dma, t_port *port, lib_u8 channel)
+static void dma_write_address(t_dma *dma, t_port *port, lib_u8 channel)
 {
     if (!dma->data.flagMSB) {
-        dma->data.baseAddr[channel] = TYPE_MASK_UNSIGNED_16(port->data.ioByte);
+        dma->data.baseAddr[channel] = CORE_MACHINE_MASK_U16(port->data.ioByte);
     } else {
-        dma->data.baseAddr[channel] |= TYPE_MASK_UNSIGNED_16(port->data.ioByte << 8);
+        dma->data.baseAddr[channel] |= CORE_MACHINE_MASK_U16(port->data.ioByte << 8);
     }
     dma->data.currAddr[channel] = dma->data.baseAddr[channel];
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static C_VOID dma_write_count(t_dma *dma, t_port *port, lib_u8 channel)
+static void dma_write_count(t_dma *dma, t_port *port, lib_u8 channel)
 {
     if (!dma->data.flagMSB) {
-        dma->data.baseCount[channel] = TYPE_MASK_UNSIGNED_16(port->data.ioByte);
+        dma->data.baseCount[channel] = CORE_MACHINE_MASK_U16(port->data.ioByte);
     } else {
-        dma->data.baseCount[channel] |= TYPE_MASK_UNSIGNED_16(port->data.ioByte << 8);
+        dma->data.baseCount[channel] |= CORE_MACHINE_MASK_U16(port->data.ioByte << 8);
     }
     dma->data.currCount[channel] = dma->data.baseCount[channel];
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static C_VOID dma_write_request(t_dma *dma, t_port *port)
+static void dma_write_request(t_dma *dma, t_port *port)
 {
-    TYPE_MAKE_BIT(dma->data.request,
+    CORE_MACHINE_BIT_MAKE(dma->data.request,
         VDMA_REQUEST_DRQ(VDMA_GetREQSC_CS(port->data.ioByte)),
-        TYPE_GET_BIT(port->data.ioByte, VDMA_REQSC_SR));
+        CORE_MACHINE_BIT_IS_SET(port->data.ioByte, VDMA_REQSC_SR));
 }
 
-static C_VOID dma_write_mask(t_dma *dma, t_port *port)
+static void dma_write_mask(t_dma *dma, t_port *port)
 {
-    TYPE_MAKE_BIT(dma->data.mask,
+    CORE_MACHINE_BIT_MAKE(dma->data.mask,
         VDMA_MASK_DRQ(VDMA_GetMASKSC_CS(port->data.ioByte)),
-        TYPE_GET_BIT(port->data.ioByte, VDMA_MASKSC_SM));
+        CORE_MACHINE_BIT_IS_SET(port->data.ioByte, VDMA_MASKSC_SM));
 }
 
 static t_dma *dma_controller(t_dma *primary, lib_u16 port_id)
@@ -134,8 +134,8 @@ static lib_u8 dma_page_spare_index(lib_u16 port_id)
     }
 }
 
-static C_VOID dma_port_read_byte(t_port *port, lib_u16 port_id,
-    C_VOID *owner)
+static void dma_port_read_byte(t_port *port, lib_u16 port_id,
+    void *owner)
 {
     t_dma *primary = (t_dma *)owner;
     t_dma *dma;
@@ -150,7 +150,7 @@ static C_VOID dma_port_read_byte(t_port *port, lib_u16 port_id,
     }
     if (port_id == 0x0008u) {
         port->data.ioByte = primary->data.status;
-        TYPE_CLEAR_BIT(primary->data.status, VDMA_STATUS_TCS);
+        CORE_MACHINE_BIT_CLEAR(primary->data.status, VDMA_STATUS_TCS);
         return;
     }
     if (port_id == 0x000du) {
@@ -178,7 +178,7 @@ static C_VOID dma_port_read_byte(t_port *port, lib_u16 port_id,
     }
     if (port_id == 0x00d0u) {
         port->data.ioByte = primary->connect.peer->data.status;
-        TYPE_CLEAR_BIT(primary->connect.peer->data.status, VDMA_STATUS_TCS);
+        CORE_MACHINE_BIT_CLEAR(primary->connect.peer->data.status, VDMA_STATUS_TCS);
         return;
     }
     if (port_id == 0x00dau) {
@@ -186,8 +186,8 @@ static C_VOID dma_port_read_byte(t_port *port, lib_u16 port_id,
     }
 }
 
-static C_VOID dma_port_write_byte(t_port *port, lib_u16 port_id,
-    C_VOID *owner)
+static void dma_port_write_byte(t_port *port, lib_u16 port_id,
+    void *owner)
 {
     t_dma *primary = (t_dma *)owner;
     t_dma *dma;
@@ -239,13 +239,13 @@ static C_VOID dma_port_write_byte(t_port *port, lib_u16 port_id,
         break;
     case 0x000c: dma->data.flagMSB = LIB_FALSE; break;
     case 0x000d: core_machine_dma_controller_reset(dma); break;
-    case 0x000e: dma->data.mask = TYPE_ZERO_8; break;
+    case 0x000e: dma->data.mask = 0u; break;
     case 0x000f: dma->data.mask = port->data.ioByte & VDMA_MASKAC_VALID; break;
     default: break;
     }
 }
 
-static C_INT dma_page_port_is_byte_lanes(const t_port *port,
+static lib_i32 dma_page_port_is_byte_lanes(const t_port *port,
     lib_u16 port_id)
 {
     return port != LIB_NULL && port->data.access_bytes > 1u &&
@@ -253,7 +253,7 @@ static C_INT dma_page_port_is_byte_lanes(const t_port *port,
         port->data.access_bytes <= 0x0090u;
 }
 
-static C_VOID dma_port_read(t_port *port, lib_u16 port_id, C_VOID *owner)
+static void dma_port_read(t_port *port, lib_u16 port_id, void *owner)
 {
     lib_u32 value = 0u;
     lib_u8 lane;
@@ -274,7 +274,7 @@ static C_VOID dma_port_read(t_port *port, lib_u16 port_id, C_VOID *owner)
     port->data.ioDWord = value;
 }
 
-static C_VOID dma_port_write(t_port *port, lib_u16 port_id, C_VOID *owner)
+static void dma_port_write(t_port *port, lib_u16 port_id, void *owner)
 {
     lib_u32 value;
     lib_u8 lane;
@@ -293,22 +293,22 @@ static C_VOID dma_port_write(t_port *port, lib_u16 port_id, C_VOID *owner)
 
 static lib_u8 GetRegTopId(t_dma *rdma, lib_u8 reg) {
     lib_u8 id = 0;
-    if (reg == TYPE_ZERO_8) {
+    if (reg == 0u) {
         return 0x08;
     }
     reg = (reg << (VDMA_CHANNEL_COUNT - (rdma->data.drx))) | (reg >> (rdma->data.drx));
-    while ((id < VDMA_CHANNEL_COUNT) && !TYPE_MASK_UNSIGNED_1(reg >> id)) {
+    while ((id < VDMA_CHANNEL_COUNT) && !CORE_MACHINE_MASK_U1(reg >> id)) {
         id++;
     }
     return (id + rdma->data.drx) % VDMA_CHANNEL_COUNT;
 }
 
-static type_bool dma_software_request_is_valid(const t_dma *dma,
+static lib_u8 dma_software_request_is_valid(const t_dma *dma,
     lib_u8 channel)
 {
     return VDMA_GetREQUEST_DRQ(dma->data.request, channel) &&
         (VDMA_GetMODE_M(dma->data.mode[channel]) == 0x02u ||
-            (channel == 0u && TYPE_GET_BIT(dma->data.command,
+            (channel == 0u && CORE_MACHINE_BIT_IS_SET(dma->data.command,
                 VDMA_COMMAND_M2M)));
 }
 
@@ -320,21 +320,21 @@ static lib_u8 dma_pending_requests(const t_dma *dma)
 
     for (channel = 0u; channel < VDMA_CHANNEL_COUNT; ++channel) {
         if (dma_software_request_is_valid(dma, channel)) {
-            TYPE_SET_BIT(pending, VDMA_REQUEST_DRQ(channel));
+            CORE_MACHINE_BIT_SET(pending, VDMA_REQUEST_DRQ(channel));
         }
     }
     return pending;
 }
 
-static C_VOID IncreaseCurrAddr(t_dma *rdma, lib_u8 id) {
+static void IncreaseCurrAddr(t_dma *rdma, lib_u8 id) {
     rdma->data.currAddr[id]++;
 }
-static C_VOID DecreaseCurrAddr(t_dma *rdma, lib_u8 id) {
+static void DecreaseCurrAddr(t_dma *rdma, lib_u8 id) {
     rdma->data.currAddr[id]--;
 }
 
 static lib_u32 dma_physical_address(const t_dma *dma,
-    lib_u8 channel, type_bool word)
+    lib_u8 channel, lib_u8 word)
 {
     lib_u8 page = dma->data.page[channel];
     lib_u32 address;
@@ -347,22 +347,22 @@ static lib_u32 dma_physical_address(const t_dma *dma,
     return address;
 }
 
-static type_bool dma_memory_route_is_valid(t_ram *ram,
-    lib_u32 physical, type_native_unsigned bytes,
+static lib_u8 dma_memory_route_is_valid(t_ram *ram,
+    lib_u32 physical, lib_uptr bytes,
     core_machine_memory_access access)
 {
     core_machine_memory_route route;
 
     return core_machine_memory_query_physical(ram, physical, bytes, access,
-        &route) == TYPE_STATUS_OK;
+        &route) == LIB_STATUS_OK;
 }
 
-static type_bool Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
+static lib_u8 Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
     core_machine_transaction_state *transaction, lib_u8 id,
-    type_bool flagWord)
+    lib_u8 flagWord)
 {
     lib_u32 physical = dma_physical_address(rdma, id, flagWord);
-    type_native_unsigned bytes = flagWord ? 2u : 1u;
+    lib_uptr bytes = flagWord ? 2u : 1u;
 
     switch (VDMA_GetMODE_TT(rdma->data.mode[id])) {
     case 0x00:
@@ -373,7 +373,7 @@ static type_bool Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
             rdma->connect.read_provider[id](rdma->connect.device_owner[id], latch);
         }
         rdma->data.currCount[id]--;
-        if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
+        if (CORE_MACHINE_BIT_IS_SET(rdma->data.mode[id], VDMA_MODE_AIDS)) {
             DecreaseCurrAddr(rdma, id);
         } else {
             IncreaseCurrAddr(rdma, id);
@@ -388,22 +388,22 @@ static type_bool Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         if (transaction != LIB_NULL && core_machine_transaction_begin(
                 transaction, CORE_MACHINE_TRANSACTION_OWNER_DMA,
                 CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, physical,
-                (lib_u32)bytes, id) != TYPE_STATUS_OK) {
+                (lib_u32)bytes, id) != LIB_STATUS_OK) {
             return LIB_FALSE;
         }
         if (rdma->connect.read_provider[id] != LIB_NULL) {
             rdma->connect.read_provider[id](rdma->connect.device_owner[id], latch);
         }
         if ((!flagWord && core_machine_memory_write_physical(ram, physical,
-                (type_virtual_address)(&latch->data.byte), 1u) != TYPE_STATUS_OK) ||
+                (lib_uptr)(&latch->data.byte), 1u) != LIB_STATUS_OK) ||
             (flagWord && core_machine_memory_write_physical(ram, physical,
-                (type_virtual_address)(&latch->data.word), 2u) != TYPE_STATUS_OK)) {
+                (lib_uptr)(&latch->data.word), 2u) != LIB_STATUS_OK)) {
             core_machine_transaction_cancel(transaction);
             return LIB_FALSE;
         }
         core_machine_transaction_commit(transaction);
         rdma->data.currCount[id]--;
-        if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
+        if (CORE_MACHINE_BIT_IS_SET(rdma->data.mode[id], VDMA_MODE_AIDS)) {
             DecreaseCurrAddr(rdma, id);
         } else {
             IncreaseCurrAddr(rdma, id);
@@ -418,13 +418,13 @@ static type_bool Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         if (transaction != LIB_NULL && core_machine_transaction_begin(
                 transaction, CORE_MACHINE_TRANSACTION_OWNER_DMA,
                 CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ, physical,
-                (lib_u32)bytes, id) != TYPE_STATUS_OK) {
+                (lib_u32)bytes, id) != LIB_STATUS_OK) {
             return LIB_FALSE;
         }
         if ((!flagWord && core_machine_memory_read_physical(ram, physical,
-                (type_virtual_address)(&latch->data.byte), 1u) != TYPE_STATUS_OK) ||
+                (lib_uptr)(&latch->data.byte), 1u) != LIB_STATUS_OK) ||
             (flagWord && core_machine_memory_read_physical(ram, physical,
-                (type_virtual_address)(&latch->data.word), 2u) != TYPE_STATUS_OK)) {
+                (lib_uptr)(&latch->data.word), 2u) != LIB_STATUS_OK)) {
             core_machine_transaction_cancel(transaction);
             return LIB_FALSE;
         }
@@ -433,7 +433,7 @@ static type_bool Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         }
         core_machine_transaction_commit(transaction);
         rdma->data.currCount[id]--;
-        if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
+        if (CORE_MACHINE_BIT_IS_SET(rdma->data.mode[id], VDMA_MODE_AIDS)) {
             DecreaseCurrAddr(rdma, id);
         } else {
             IncreaseCurrAddr(rdma, id);
@@ -447,8 +447,8 @@ static type_bool Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
     }
 }
 
-static C_VOID dma_complete_transfer(t_dma *dma, t_latch *latch,
-    lib_u8 channel, type_bool memory_to_memory, type_bool terminal_count)
+static void dma_complete_transfer(t_dma *dma, t_latch *latch,
+    lib_u8 channel, lib_u8 memory_to_memory, lib_u8 terminal_count)
 {
     lib_u8 first = memory_to_memory ? 0u : channel;
     lib_u8 last = memory_to_memory ? 1u : channel;
@@ -456,33 +456,33 @@ static C_VOID dma_complete_transfer(t_dma *dma, t_latch *latch,
 
     dma_service_end(dma);
     for (index = first; index <= last; ++index) {
-        TYPE_CLEAR_BIT(dma->data.request, VDMA_REQUEST_DRQ(index));
+        CORE_MACHINE_BIT_CLEAR(dma->data.request, VDMA_REQUEST_DRQ(index));
         if (dma->connect.close_provider[index] != LIB_NULL) {
             dma->connect.close_provider[index](dma->connect.device_owner[index],
                 latch);
         }
-        if (TYPE_GET_BIT(dma->data.mode[index], VDMA_MODE_AI)) {
+        if (CORE_MACHINE_BIT_IS_SET(dma->data.mode[index], VDMA_MODE_AI)) {
             dma->data.currAddr[index] = dma->data.baseAddr[index];
             dma->data.currCount[index] = dma->data.baseCount[index];
-            TYPE_CLEAR_BIT(dma->data.mask, VDMA_MASK_DRQ(index));
+            CORE_MACHINE_BIT_CLEAR(dma->data.mask, VDMA_MASK_DRQ(index));
         } else {
-            TYPE_SET_BIT(dma->data.mask, VDMA_MASK_DRQ(index));
+            CORE_MACHINE_BIT_SET(dma->data.mask, VDMA_MASK_DRQ(index));
         }
     }
     if (terminal_count) {
-        TYPE_SET_BIT(dma->data.status,
+        CORE_MACHINE_BIT_SET(dma->data.status,
             VDMA_STATUS_TC(memory_to_memory ? 1u : channel));
     }
 }
 
-static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
+static void Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
     core_machine_transaction_state *transaction, lib_u8 id,
-    type_bool flagWord) {
-    type_bool flagM2M = ((id == 0) &&
+    lib_u8 flagWord) {
+    lib_u8 flagM2M = ((id == 0) &&
                       VDMA_GetREQUEST_DRQ(rdma->data.request, 0) &&
-                      TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_M2M));
-    type_bool request_asserted = VDMA_GetSTATUS_DRQ(rdma->data.status, id);
-    if (TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_R)) {
+                      CORE_MACHINE_BIT_IS_SET(rdma->data.command, VDMA_COMMAND_M2M));
+    lib_u8 request_asserted = VDMA_GetSTATUS_DRQ(rdma->data.status, id);
+    if (CORE_MACHINE_BIT_IS_SET(rdma->data.command, VDMA_COMMAND_R)) {
         rdma->data.drx = (id + 1) % VDMA_CHANNEL_COUNT;
     }
     if (flagM2M) {
@@ -499,9 +499,9 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
                     (transaction != LIB_NULL && core_machine_transaction_begin(
                         transaction, CORE_MACHINE_TRANSACTION_OWNER_DMA,
                         CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ, source, 1u,
-                        0u) != TYPE_STATUS_OK) ||
+                        0u) != LIB_STATUS_OK) ||
                     core_machine_memory_read_physical(ram, source,
-                        (type_virtual_address)(&rdma->data.temp), 1u) != TYPE_STATUS_OK) {
+                        (lib_uptr)(&rdma->data.temp), 1u) != LIB_STATUS_OK) {
                     core_machine_transaction_cancel(transaction);
                     dma_service_end(rdma);
                     return;
@@ -515,9 +515,9 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
                 (transaction != LIB_NULL && core_machine_transaction_begin(
                     transaction, CORE_MACHINE_TRANSACTION_OWNER_DMA,
                     CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, destination, 1u,
-                    1u) != TYPE_STATUS_OK) ||
+                    1u) != LIB_STATUS_OK) ||
                 core_machine_memory_write_physical(ram, destination,
-                    (type_virtual_address)(&rdma->data.temp), 1u) != TYPE_STATUS_OK) {
+                    (lib_uptr)(&rdma->data.temp), 1u) != LIB_STATUS_OK) {
                 core_machine_transaction_cancel(transaction);
                 dma_service_end(rdma);
                 return;
@@ -525,20 +525,20 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
             core_machine_transaction_commit(transaction);
             rdma->data.flagM2MWrite = LIB_FALSE;
             rdma->data.currCount[1]--;
-            if (TYPE_GET_BIT(rdma->data.mode[1u], VDMA_MODE_AIDS)) {
+            if (CORE_MACHINE_BIT_IS_SET(rdma->data.mode[1u], VDMA_MODE_AIDS)) {
                 DecreaseCurrAddr(rdma, 1u);
             } else {
                 IncreaseCurrAddr(rdma, 1u);
             }
-            if (!TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_C0AD)) {
-                if (TYPE_GET_BIT(rdma->data.mode[0u], VDMA_MODE_AIDS)) {
+            if (!CORE_MACHINE_BIT_IS_SET(rdma->data.command, VDMA_COMMAND_C0AD)) {
+                if (CORE_MACHINE_BIT_IS_SET(rdma->data.mode[0u], VDMA_MODE_AIDS)) {
                     DecreaseCurrAddr(rdma, 0u);
                 } else {
                     IncreaseCurrAddr(rdma, 0u);
                 }
             }
         }
-        if (rdma->data.currCount[1] == TYPE_MAX_UNSIGNED_16) {
+        if (rdma->data.currCount[1] == 0xffffu) {
             rdma->data.flagEOP = LIB_TRUE;
         }
     } else {
@@ -547,7 +547,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
         case 0x00:
             /* demand */
             if (request_asserted && rdma->data.currCount[id] !=
-                TYPE_MAX_UNSIGNED_16 && !rdma->data.flagEOP) {
+                0xffffu && !rdma->data.flagEOP) {
                 if (!Transmission(rdma, latch, ram, transaction, id, flagWord)) {
                     dma_service_end(rdma);
                     return;
@@ -565,7 +565,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
             break;
         case 0x02:
             /* block */
-            if (rdma->data.currCount[id] != TYPE_MAX_UNSIGNED_16 &&
+            if (rdma->data.currCount[id] != 0xffffu &&
                 !rdma->data.flagEOP) {
                 if (!Transmission(rdma, latch, ram, transaction, id, flagWord)) {
                     dma_service_end(rdma);
@@ -582,27 +582,27 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
         default:
             break;
         }
-        if (rdma->data.currCount[id] == TYPE_MAX_UNSIGNED_16) {
+        if (rdma->data.currCount[id] == 0xffffu) {
             rdma->data.flagEOP = LIB_TRUE;
         }
     }
     if (rdma->data.flagEOP) {
         dma_complete_transfer(rdma, latch, id, flagM2M,
-            rdma->data.currCount[flagM2M ? 1u : id] == TYPE_MAX_UNSIGNED_16 ||
-            !TYPE_GET_BIT(rdma->data.mode[flagM2M ? 1u : id], VDMA_MODE_AI));
+            rdma->data.currCount[flagM2M ? 1u : id] == 0xffffu ||
+            !CORE_MACHINE_BIT_IS_SET(rdma->data.mode[flagM2M ? 1u : id], VDMA_MODE_AI));
     }
     rdma->data.flagEOP = LIB_FALSE;
 }
 
-static type_bool dma_address_high_changed(lib_u16 before,
+static lib_u8 dma_address_high_changed(lib_u16 before,
     lib_u16 after)
 {
     return (before & 0xff00u) != (after & 0xff00u);
 }
 
-static C_VOID dma_service_advance(t_dma *dma, t_latch *latch, t_ram *ram,
+static void dma_service_advance(t_dma *dma, t_latch *latch, t_ram *ram,
     core_machine_transaction_state *transaction, lib_u8 channel,
-    type_bool word)
+    lib_u8 word)
 {
     lib_u16 source_before;
     lib_u16 channel_before;
@@ -612,7 +612,7 @@ static C_VOID dma_service_advance(t_dma *dma, t_latch *latch, t_ram *ram,
         dma->data.phase = VDMA_PHASE_S2;
         break;
     case VDMA_PHASE_S2:
-        dma->data.phase = TYPE_GET_BIT(dma->data.command, VDMA_COMMAND_TM) ?
+        dma->data.phase = CORE_MACHINE_BIT_IS_SET(dma->data.command, VDMA_COMMAND_TM) ?
             VDMA_PHASE_S4 : VDMA_PHASE_S3;
         break;
     case VDMA_PHASE_S3:
@@ -621,7 +621,7 @@ static C_VOID dma_service_advance(t_dma *dma, t_latch *latch, t_ram *ram,
     case VDMA_PHASE_S4:
         channel_before = dma->data.currAddr[channel];
         Execute(dma, latch, ram, transaction, channel, word);
-        if (TYPE_GET_BIT(dma->data.isr, VDMA_ISR_IS)) {
+        if (CORE_MACHINE_BIT_IS_SET(dma->data.isr, VDMA_ISR_IS)) {
             dma->data.phase = dma_address_high_changed(channel_before,
                 dma->data.currAddr[channel]) ? VDMA_PHASE_S1 : VDMA_PHASE_S2;
         }
@@ -637,7 +637,7 @@ static C_VOID dma_service_advance(t_dma *dma, t_latch *latch, t_ram *ram,
         break;
     case VDMA_PHASE_S14:
         Execute(dma, latch, ram, transaction, channel, LIB_FALSE);
-        if (TYPE_GET_BIT(dma->data.isr, VDMA_ISR_IS) && dma->data.flagM2MWrite) {
+        if (CORE_MACHINE_BIT_IS_SET(dma->data.isr, VDMA_ISR_IS) && dma->data.flagM2MWrite) {
             dma->data.phase = VDMA_PHASE_S21;
         }
         break;
@@ -653,7 +653,7 @@ static C_VOID dma_service_advance(t_dma *dma, t_latch *latch, t_ram *ram,
     case VDMA_PHASE_S24:
         source_before = dma->data.currAddr[0u];
         Execute(dma, latch, ram, transaction, channel, LIB_FALSE);
-        if (TYPE_GET_BIT(dma->data.isr, VDMA_ISR_IS)) {
+        if (CORE_MACHINE_BIT_IS_SET(dma->data.isr, VDMA_ISR_IS)) {
             dma->data.phase = dma_address_high_changed(source_before,
                 dma->data.currAddr[0u]) ? VDMA_PHASE_S11 : VDMA_PHASE_S12;
         }
@@ -664,8 +664,8 @@ static C_VOID dma_service_advance(t_dma *dma, t_latch *latch, t_ram *ram,
     }
 }
 
-static C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
-    lib_u8 drq_id, type_bool asserted)
+static void core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
+    lib_u8 drq_id, lib_u8 asserted)
 {
     if (primary == LIB_NULL || secondary == LIB_NULL) return;
     switch (drq_id) {
@@ -673,12 +673,12 @@ static C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
     case 1:
     case 2:
     case 3:
-        TYPE_MAKE_BIT(primary->data.status, VDMA_STATUS_DRQ(drq_id), asserted);
+        CORE_MACHINE_BIT_MAKE(primary->data.status, VDMA_STATUS_DRQ(drq_id), asserted);
         break;
     case 5:
     case 6:
     case 7:
-        TYPE_MAKE_BIT(secondary->data.status, VDMA_STATUS_DRQ(drq_id - 4), asserted);
+        CORE_MACHINE_BIT_MAKE(secondary->data.status, VDMA_STATUS_DRQ(drq_id - 4), asserted);
         break;
     case 4:
     default:
@@ -686,9 +686,9 @@ static C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
     }
 }
 
-type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
+lib_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
     t_dma *secondary, lib_u8 drq_id,
-    const core_machine_dma_channel_provider *provider, C_VOID *owner,
+    const core_machine_dma_channel_provider *provider, void *owner,
     core_machine_dma_request_binding *out_binding)
 {
     t_dma *dma;
@@ -696,7 +696,7 @@ type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
 
     if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
         provider == LIB_NULL || out_binding == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (drq_id <= 3u) {
         dma = primary;
@@ -705,13 +705,13 @@ type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
         dma = secondary;
         channel = drq_id - 4u;
     } else {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (dma->connect.latch != latch || dma->connect.peer == LIB_NULL ||
-        dma->connect.device_owner[channel] != LIB_NULL) return TYPE_STATUS_INVALID_STATE;
+        dma->connect.device_owner[channel] != LIB_NULL) return LIB_STATUS_INVALID_STATE;
     if (primary->connect.request_token == 0u) {
         primary->connect.request_token = core_machine_dma_request_token_allocate();
-        if (primary->connect.request_token == 0u) return TYPE_STATUS_FAULT;
+        if (primary->connect.request_token == 0u) return LIB_STATUS_INTERNAL_ERROR;
     }
     dma->connect.read_provider[channel] = provider->read_device;
     dma->connect.write_provider[channel] = provider->write_device;
@@ -719,10 +719,10 @@ type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
     dma->connect.device_owner[channel] = owner;
     out_binding->core_token = primary->connect.request_token;
     out_binding->channel = drq_id;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,
+void core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,
     const core_machine_dma_request_binding *binding)
 {
     if (binding == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
@@ -733,7 +733,7 @@ C_VOID core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,
         binding->channel, LIB_TRUE);
 }
 
-C_VOID core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
+void core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
     const core_machine_dma_request_binding *binding)
 {
     if (binding == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
@@ -744,7 +744,7 @@ C_VOID core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
         binding->channel, LIB_FALSE);
 }
 
-C_VOID core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
+void core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
     const core_machine_dma_request_binding *binding)
 {
     t_dma *dma;
@@ -763,13 +763,13 @@ C_VOID core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
     } else {
         return;
     }
-    if (TYPE_GET_BIT(dma->data.isr, VDMA_ISR_IS) &&
+    if (CORE_MACHINE_BIT_IS_SET(dma->data.isr, VDMA_ISR_IS) &&
         VDMA_GetISR_ISR(dma->data.isr) == channel) {
         dma->data.flagEOP = LIB_TRUE;
     }
 }
 
-C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
+void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port, lib_u8 controller_count)
 {
     static const lib_u16 primary_reads[] = {
@@ -789,13 +789,13 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
         0x00c0, 0x00c2, 0x00c4, 0x00c6, 0x00c8, 0x00ca, 0x00cc, 0x00ce,
         0x00d0, 0x00da
     };
-    type_native_unsigned index;
+    lib_uptr index;
 
     if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
         port == LIB_NULL || (controller_count != 1u && controller_count != 2u)) return;
-    lib_memory_set((C_VOID *)latch, TYPE_ZERO_8, sizeof(*latch));
-    lib_memory_set((C_VOID *)primary, TYPE_ZERO_8, sizeof(*primary));
-    lib_memory_set((C_VOID *)secondary, TYPE_ZERO_8, sizeof(*secondary));
+    lib_memory_set((void *)latch, 0u, sizeof(*latch));
+    lib_memory_set((void *)primary, 0u, sizeof(*primary));
+    lib_memory_set((void *)secondary, 0u, sizeof(*secondary));
     primary->connect.latch = latch;
     primary->connect.peer = secondary;
     secondary->connect.latch = latch;
@@ -844,67 +844,67 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     }
 }
 
-C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
+void core_machine_dma_reset(t_latch *latch, t_dma *primary,
     t_dma *secondary) {
     if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL) return;
-    lib_memory_set((C_VOID *)(&latch->data), TYPE_ZERO_8, sizeof(t_latch_data));
+    lib_memory_set((void *)(&latch->data), 0u, sizeof(t_latch_data));
     core_machine_dma_controller_reset(primary);
     core_machine_dma_controller_reset(secondary);
 }
 
-static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
+static void core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram, core_machine_transaction_state *transaction) {
     lib_u8 id;
     lib_u8 realDRQ1, realDRQ2;
     if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL || ram == LIB_NULL) return;
-    if (TYPE_GET_BIT(secondary->data.command, VDMA_COMMAND_CTRL)) {
+    if (CORE_MACHINE_BIT_IS_SET(secondary->data.command, VDMA_COMMAND_CTRL)) {
         return;
     }
-    if (TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
+    if (CORE_MACHINE_BIT_IS_SET(secondary->data.isr, VDMA_ISR_IS)) {
         if (VDMA_GetISR_ISR(secondary->data.isr)) {
             dma_service_advance(secondary, latch, ram, transaction,
                 VDMA_GetISR_ISR(secondary->data.isr), LIB_TRUE);
             return;
-        } else if (!TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) &&
-            TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+        } else if (!CORE_MACHINE_BIT_IS_SET(primary->data.command, VDMA_COMMAND_CTRL) &&
+            CORE_MACHINE_BIT_IS_SET(primary->data.isr, VDMA_ISR_IS)) {
             dma_service_advance(primary, latch, ram, transaction,
                 VDMA_GetISR_ISR(primary->data.isr), LIB_FALSE);
-            if (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+            if (!CORE_MACHINE_BIT_IS_SET(primary->data.isr, VDMA_ISR_IS)) {
                 dma_service_end(secondary);
             }
         }
         return;
     }
-    if (!TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) &&
-        TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+    if (!CORE_MACHINE_BIT_IS_SET(primary->data.command, VDMA_COMMAND_CTRL) &&
+        CORE_MACHINE_BIT_IS_SET(primary->data.isr, VDMA_ISR_IS)) {
         dma_service_advance(primary, latch, ram, transaction,
             VDMA_GetISR_ISR(primary->data.isr), LIB_FALSE);
         return;
     }
-    if (!TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
-        realDRQ1 = TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) ?
-            TYPE_ZERO_8 : dma_pending_requests(primary);
+    if (!CORE_MACHINE_BIT_IS_SET(secondary->data.isr, VDMA_ISR_IS)) {
+        realDRQ1 = CORE_MACHINE_BIT_IS_SET(primary->data.command, VDMA_COMMAND_CTRL) ?
+            0u : dma_pending_requests(primary);
         realDRQ2 = dma_pending_requests(secondary) &
             (lib_u8)~VDMA_REQUEST_DRQ(0);
-        if (realDRQ1 != TYPE_ZERO_8) {
-            TYPE_SET_BIT(realDRQ2, VDMA_REQUEST_DRQ(0));
+        if (realDRQ1 != 0u) {
+            CORE_MACHINE_BIT_SET(realDRQ2, VDMA_REQUEST_DRQ(0));
         }
-        if (realDRQ2 == TYPE_ZERO_8) {
+        if (realDRQ2 == 0u) {
             return;
         }
         id = GetRegTopId(secondary, realDRQ2);
         if (id == 0) {
-            if (realDRQ1 == TYPE_ZERO_8) {
+            if (realDRQ1 == 0u) {
                 return;
             }
             id = GetRegTopId(primary, realDRQ1);
             dma_service_begin(secondary, 0u);
-            if (TYPE_GET_BIT(secondary->data.command, VDMA_COMMAND_R)) {
+            if (CORE_MACHINE_BIT_IS_SET(secondary->data.command, VDMA_COMMAND_R)) {
                 secondary->data.drx = 1u;
             }
             dma_service_begin(primary, id);
             if (!primary->data.request) {
-                TYPE_CLEAR_BIT(secondary->data.request, VDMA_REQUEST_DRQ(0));
+                CORE_MACHINE_BIT_CLEAR(secondary->data.request, VDMA_REQUEST_DRQ(0));
             }
         } else {
             dma_service_begin(secondary, id);
@@ -913,28 +913,28 @@ static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
     }
 }
 
-C_INT core_machine_dma_has_pending_request(const t_dma *primary,
+lib_i32 core_machine_dma_has_pending_request(const t_dma *primary,
     const t_dma *secondary)
 {
     lib_u8 primary_requests;
     lib_u8 secondary_requests;
 
     if (primary == LIB_NULL || secondary == LIB_NULL ||
-        TYPE_GET_BIT(secondary->data.command, VDMA_COMMAND_CTRL)) return 0;
-    if (TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) return 1;
-    if (!TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) &&
-        TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) return 1;
-    primary_requests = TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) ?
-        TYPE_ZERO_8 : dma_pending_requests(primary);
+        CORE_MACHINE_BIT_IS_SET(secondary->data.command, VDMA_COMMAND_CTRL)) return 0;
+    if (CORE_MACHINE_BIT_IS_SET(secondary->data.isr, VDMA_ISR_IS)) return 1;
+    if (!CORE_MACHINE_BIT_IS_SET(primary->data.command, VDMA_COMMAND_CTRL) &&
+        CORE_MACHINE_BIT_IS_SET(primary->data.isr, VDMA_ISR_IS)) return 1;
+    primary_requests = CORE_MACHINE_BIT_IS_SET(primary->data.command, VDMA_COMMAND_CTRL) ?
+        0u : dma_pending_requests(primary);
     secondary_requests = dma_pending_requests(secondary) &
         (lib_u8)~VDMA_REQUEST_DRQ(0);
-    if (primary_requests != TYPE_ZERO_8) {
-        TYPE_SET_BIT(secondary_requests, VDMA_REQUEST_DRQ(0));
+    if (primary_requests != 0u) {
+        CORE_MACHINE_BIT_SET(secondary_requests, VDMA_REQUEST_DRQ(0));
     }
-    return secondary_requests != TYPE_ZERO_8;
+    return secondary_requests != 0u;
 }
 
-C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
+void core_machine_dma_advance(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram, lib_u64 elapsed_ticks)
 {
     lib_u64 tick;
@@ -950,11 +950,11 @@ C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
         lib_u16 secondary_count[VDMA_CHANNEL_COUNT];
         lib_u8 index;
         lib_u8 phase;
-        type_bool m2m;
-        type_bool m2m_write;
+        lib_u8 m2m;
+        lib_u8 m2m_write;
 
         if (primary == LIB_NULL || secondary == LIB_NULL) return;
-        m2m = TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_M2M) &&
+        m2m = CORE_MACHINE_BIT_IS_SET(primary->data.command, VDMA_COMMAND_M2M) &&
             VDMA_GetREQUEST_DRQ(primary->data.request, 0u);
         m2m_write = primary->data.flagM2MWrite;
         for (index = 0u; index < VDMA_CHANNEL_COUNT; ++index) {
@@ -966,8 +966,8 @@ C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
         for (phase = 0u; phase < 16u; ++phase) {
             core_machine_dma_advance_one(latch, primary, secondary, ram, LIB_NULL);
             if (m2m ? primary->data.flagM2MWrite != m2m_write ||
-                    (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS) &&
-                        !TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) :
+                    (!CORE_MACHINE_BIT_IS_SET(primary->data.isr, VDMA_ISR_IS) &&
+                        !CORE_MACHINE_BIT_IS_SET(secondary->data.isr, VDMA_ISR_IS)) :
                 primary->data.currAddr[0u] != primary_address[0u] ||
                 primary->data.currAddr[1u] != primary_address[1u] ||
                 primary->data.currAddr[2u] != primary_address[2u] ||
@@ -984,15 +984,15 @@ C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
                 secondary->data.currCount[1u] != secondary_count[1u] ||
                 secondary->data.currCount[2u] != secondary_count[2u] ||
                 secondary->data.currCount[3u] != secondary_count[3u] ||
-                (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS) &&
-                    !TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS))) {
+                (!CORE_MACHINE_BIT_IS_SET(primary->data.isr, VDMA_ISR_IS) &&
+                    !CORE_MACHINE_BIT_IS_SET(secondary->data.isr, VDMA_ISR_IS))) {
                 break;
             }
         }
     }
 }
 
-C_VOID core_machine_dma_advance_transaction(t_latch *latch, t_dma *primary,
+void core_machine_dma_advance_transaction(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram, core_machine_transaction_state *transaction,
     lib_u64 elapsed_ticks)
 {
@@ -1004,11 +1004,11 @@ C_VOID core_machine_dma_advance_transaction(t_latch *latch, t_dma *primary,
     }
 }
 
-C_VOID core_machine_dma_finalize(t_latch *latch, t_dma *primary,
+void core_machine_dma_finalize(t_latch *latch, t_dma *primary,
     t_dma *secondary) {
-    (C_VOID)latch;
-    (C_VOID)primary;
-    (C_VOID)secondary;
+    (void)latch;
+    (void)primary;
+    (void)secondary;
 }
 
 /*

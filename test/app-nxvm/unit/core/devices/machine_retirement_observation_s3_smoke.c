@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/cpu_timing.h"
@@ -9,10 +9,10 @@ typedef struct retirement_probe {
     core_machine *machine;
     core_machine_retirement_observation records[3];
     lib_u32 count;
-    type_status set_while_running;
+    lib_status set_while_running;
 } retirement_probe;
 
-static C_VOID retirement_capture(C_VOID *opaque,
+static void retirement_capture(void *opaque,
     const core_machine_retirement_observation *observation)
 {
     retirement_probe *probe = (retirement_probe *)opaque;
@@ -24,22 +24,22 @@ static C_VOID retirement_capture(C_VOID *opaque,
         probe->machine, LIB_NULL);
 }
 
-static C_INT retirement_prepare(core_machine **out_machine,
+static lib_i32 retirement_prepare(core_machine **out_machine,
     const core_machine_config *config, const lib_u8 *code,
     lib_size bytes)
 {
     return out_machine != LIB_NULL &&
-        core_machine_create(config, out_machine) == TYPE_STATUS_OK &&
+        core_machine_create(config, out_machine) == LIB_STATUS_OK &&
         test_core_machine_fixture_register_reset_mapping(*out_machine, 0xfffffff0u,
-            0x000ffff0u, 16u) == TYPE_STATUS_OK &&
-        core_machine_freeze_execution_providers(*out_machine) == TYPE_STATUS_OK &&
-        core_machine_reset(*out_machine) == TYPE_STATUS_OK &&
-        core_machine_set_a20(*out_machine, 1) == TYPE_STATUS_OK &&
+            0x000ffff0u, 16u) == LIB_STATUS_OK &&
+        core_machine_freeze_execution_providers(*out_machine) == LIB_STATUS_OK &&
+        core_machine_reset(*out_machine) == LIB_STATUS_OK &&
+        core_machine_set_a20(*out_machine, 1) == LIB_STATUS_OK &&
         core_machine_memory_write(*out_machine, 0xfffffff0u, code, bytes) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT retirement_control_context_case(lib_u8 opcode,
+static lib_i32 retirement_control_context_case(lib_u8 opcode,
     core_machine_retirement_control_outcome expected_outcome,
     lib_u8 expected_next_components)
 {
@@ -50,17 +50,17 @@ static C_INT retirement_control_context_case(lib_u8 opcode,
     const lib_u8 program[] = { opcode, 0x01u, 0x90u, 0x90u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !retirement_prepare(&machine, &config, program, sizeof(program));
+    lib_i32 failed = !retirement_prepare(&machine, &config, program, sizeof(program));
 
     provider.callback = retirement_capture;
     provider.context = &probe;
     probe.machine = machine;
     if (!failed) {
         failed |= core_machine_set_retirement_observation_provider(machine,
-            &provider) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            &provider) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             probe.count != 1u ||
             probe.records[0].control_outcome != expected_outcome ||
@@ -69,7 +69,7 @@ static C_INT retirement_control_context_case(lib_u8 opcode,
     core_machine_destroy(machine);
     return failed;
 }
-static C_INT retirement_pre_mode_snapshot_case(C_VOID)
+static lib_i32 retirement_pre_mode_snapshot_case(void)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
@@ -78,9 +78,9 @@ static C_INT retirement_pre_mode_snapshot_case(C_VOID)
     const lib_u8 program[] = { 0x0fu, 0x01u, 0xf0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !retirement_prepare(&machine, &config, program, sizeof(program));
+    lib_i32 failed = !retirement_prepare(&machine, &config, program, sizeof(program));
 
     provider.callback = retirement_capture;
     provider.context = &probe;
@@ -88,8 +88,8 @@ static C_INT retirement_pre_mode_snapshot_case(C_VOID)
     if (!failed) {
         machine->executor_cpu.data.eax = 1u;
         failed |= core_machine_set_retirement_observation_provider(machine,
-            &provider) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            &provider) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             probe.count != 1u || probe.records[0].protected_mode ||
             probe.records[0].eligibility_key.protected_mode ||
@@ -98,9 +98,9 @@ static C_INT retirement_pre_mode_snapshot_case(C_VOID)
     core_machine_destroy(machine);
     return failed;
 }
-static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profile,
+static lib_i32 retirement_unallocated_profile_case(core_machine_cpu_profile profile,
     core_machine_retirement_timing_origin expected_origin,
-    const lib_u8 *program, lib_size bytes, C_INT expected_repeat)
+    const lib_u8 *program, lib_size bytes, lib_i32 expected_repeat)
 {
     const core_machine_config physical = {
         .cpu_profile = profile,
@@ -111,19 +111,19 @@ static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profil
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
     core_machine_timeline_observation timeline;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !retirement_prepare(&machine, &physical, program, bytes);
+    lib_i32 failed = !retirement_prepare(&machine, &physical, program, bytes);
 
     provider.callback = retirement_capture;
     provider.context = &probe;
     probe.machine = machine;
     if (!failed) {
         failed |= core_machine_set_retirement_observation_provider(machine,
-            &provider) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+            &provider) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
-            probe.count != 1u || probe.set_while_running != TYPE_STATUS_INVALID_STATE ||
+            probe.count != 1u || probe.set_while_running != LIB_STATUS_INVALID_STATE ||
             probe.records[0].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
             probe.records[0].source_timing_form_id !=
@@ -134,14 +134,14 @@ static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profil
                 CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) != 0u)) ||
             probe.records[0].timing_origin != expected_origin ||
             probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u ||
-            core_machine_get_timeline_observation(machine, &timeline) != TYPE_STATUS_OK ||
+            core_machine_get_timeline_observation(machine, &timeline) != LIB_STATUS_OK ||
             timeline.now != 0u;
     }
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT retirement_8086_context_formula_case(C_VOID)
+static lib_i32 retirement_8086_context_formula_case(void)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
@@ -153,9 +153,9 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
     const lib_u16 value = 0u;
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !retirement_prepare(&machine, &config, segment_movsb,
+    lib_i32 failed = !retirement_prepare(&machine, &config, segment_movsb,
         sizeof(segment_movsb));
 
     provider.callback = retirement_capture;
@@ -163,8 +163,8 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
     probe.machine = machine;
     if (!failed) {
         failed |= core_machine_set_retirement_observation_provider(machine,
-            &provider) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            &provider) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != 1u || probe.count != 1u ||
             probe.records[0].source_ticks != 20u ||
             probe.records[0].timing_disposition !=
@@ -175,14 +175,14 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
                 CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE) == 0u;
     }
     if (!failed) {
-        failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
-            core_machine_set_a20(machine, 1) != TYPE_STATUS_OK ||
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
+            core_machine_set_a20(machine, 1) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0xfffffff0u, lock_add,
-                sizeof(lock_add)) != TYPE_STATUS_OK ||
+                sizeof(lock_add)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x1000u, &value,
-                sizeof(value)) != TYPE_STATUS_OK ||
+                sizeof(value)) != LIB_STATUS_OK ||
             ((machine->executor_cpu.data.ax = 1u), 0) ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != 1u || probe.count != 2u ||
             probe.records[1].source_ticks != 24u ||
             probe.records[1].timing_disposition !=
@@ -200,13 +200,13 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
                 CORE_MACHINE_CPU_TIMING_INPUT_LOCK);
     }
     if (!failed) {
-        failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
-            core_machine_set_a20(machine, 1) != TYPE_STATUS_OK ||
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
+            core_machine_set_a20(machine, 1) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0xfffffff0u, wait,
-                sizeof(wait)) != TYPE_STATUS_OK ||
+                sizeof(wait)) != LIB_STATUS_OK ||
             ((machine->fpu.busy = LIB_TRUE), 0) ||
             ((machine->fpu.completion_remaining_ticks = 3u), 0) ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != 1u || probe.count != 3u ||
             probe.records[2].source_ticks != 6u ||
             probe.records[2].timing_disposition !=
@@ -220,7 +220,7 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
     return failed;
 }
 
-static C_INT retirement_8088_primary_case(const lib_u8 *program,
+static lib_i32 retirement_8088_primary_case(const lib_u8 *program,
     lib_size bytes, lib_u64 expected_ticks,
     core_machine_retirement_timing_origin expected_origin)
 {
@@ -231,19 +231,19 @@ static C_INT retirement_8088_primary_case(const lib_u8 *program,
     const lib_u16 value = 1u;
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
+    lib_i32 failed = !retirement_prepare(&machine, &config, program, bytes);
 
     provider.callback = retirement_capture;
     provider.context = &probe;
     probe.machine = machine;
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x1000u, &value,
-                sizeof(value)) != TYPE_STATUS_OK ||
+                sizeof(value)) != LIB_STATUS_OK ||
             core_machine_set_retirement_observation_provider(machine,
-                &provider) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                &provider) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != 1u || probe.count != 1u ||
             probe.records[0].source_ticks != expected_ticks ||
             probe.records[0].timing_disposition !=
@@ -257,7 +257,7 @@ static C_INT retirement_8088_primary_case(const lib_u8 *program,
     return failed;
 }
 
-static C_INT retirement_8088_branch_case(const lib_u8 *program,
+static lib_i32 retirement_8088_branch_case(const lib_u8 *program,
     lib_size bytes, lib_u16 count, lib_u32 flags,
     lib_u64 expected_ticks)
 {
@@ -267,9 +267,9 @@ static C_INT retirement_8088_branch_case(const lib_u8 *program,
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
+    lib_i32 failed = !retirement_prepare(&machine, &config, program, bytes);
 
     provider.callback = retirement_capture;
     provider.context = &probe;
@@ -278,8 +278,8 @@ static C_INT retirement_8088_branch_case(const lib_u8 *program,
         machine->executor_cpu.data.cx = count;
         machine->executor_cpu.data.eflags = flags;
         failed |= core_machine_set_retirement_observation_provider(machine,
-                &provider) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                &provider) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != 1u || probe.count != 1u ||
             probe.records[0].source_ticks != expected_ticks ||
             probe.records[0].timing_disposition !=
@@ -293,7 +293,7 @@ static C_INT retirement_8088_branch_case(const lib_u8 *program,
     return failed;
 }
 
-static C_INT retirement_8088_iret_case(const lib_u8 *program,
+static lib_i32 retirement_8088_iret_case(const lib_u8 *program,
     lib_size bytes)
 {
     const core_machine_config config = {
@@ -303,9 +303,9 @@ static C_INT retirement_8088_iret_case(const lib_u8 *program,
     const lib_u16 frame[] = { 0u, 0u, 2u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
+    lib_i32 failed = !retirement_prepare(&machine, &config, program, bytes);
 
     provider.callback = retirement_capture;
     provider.context = &probe;
@@ -313,10 +313,10 @@ static C_INT retirement_8088_iret_case(const lib_u8 *program,
     if (!failed) {
         machine->executor_cpu.data.sp = 0x1000u;
         failed |= core_machine_memory_write(machine, 0x1000u, frame,
-                sizeof(frame)) != TYPE_STATUS_OK ||
+                sizeof(frame)) != LIB_STATUS_OK ||
             core_machine_set_retirement_observation_provider(machine,
-                &provider) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                &provider) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != 1u || probe.count != 1u ||
             probe.records[0].source_ticks != 36u ||
             probe.records[0].timing_disposition !=
@@ -330,7 +330,7 @@ static C_INT retirement_8088_iret_case(const lib_u8 *program,
     return failed;
 }
 
-static C_INT retirement_8088_jcc_forms_case(C_VOID)
+static lib_i32 retirement_8088_jcc_forms_case(void)
 {
     static const lib_u32 flags[16][2] = {
         { VCPU_EFLAGS_OF, 0u }, { 0u, VCPU_EFLAGS_OF },
@@ -343,7 +343,7 @@ static C_INT retirement_8088_jcc_forms_case(C_VOID)
         { VCPU_EFLAGS_ZF, 0u }, { 0u, VCPU_EFLAGS_ZF }
     };
     lib_u8 opcode;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     for (opcode = 0x70u; opcode <= 0x7fu; ++opcode) {
         const lib_u8 program[] = { opcode, 0x01u };
@@ -356,7 +356,7 @@ static C_INT retirement_8088_jcc_forms_case(C_VOID)
     return failed;
 }
 
-static C_INT retirement_8088_string_case(const lib_u8 *program,
+static lib_i32 retirement_8088_string_case(const lib_u8 *program,
     lib_size bytes, lib_u16 count, lib_u32 executions,
     lib_u64 first_ticks, lib_u64 next_ticks)
 {
@@ -366,9 +366,9 @@ static C_INT retirement_8088_string_case(const lib_u8 *program,
     const core_machine_run_budget budget = { executions, 0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
+    lib_i32 failed = !retirement_prepare(&machine, &config, program, bytes);
 
     provider.callback = retirement_capture;
     provider.context = &probe;
@@ -376,8 +376,8 @@ static C_INT retirement_8088_string_case(const lib_u8 *program,
     if (!failed) {
         machine->executor_cpu.data.cx = count;
         failed |= core_machine_set_retirement_observation_provider(machine,
-                &provider) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                &provider) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != executions || probe.count != executions ||
             probe.records[0].source_ticks != first_ticks ||
             probe.records[0].timing_disposition !=
@@ -396,7 +396,7 @@ static C_INT retirement_8088_string_case(const lib_u8 *program,
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
     core_machine_config deterministic = { .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386 };
@@ -409,7 +409,7 @@ C_INT main(C_VOID)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_timeline_observation timeline;
-    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    retirement_probe probe = { LIB_NULL, { { 0 } }, 0u, LIB_STATUS_OK };
     lib_size index;
     lib_u8 nop = 0x90u;
     static const lib_u8 scalar_opcodes[] = {
@@ -474,21 +474,21 @@ C_INT main(C_VOID)
     const lib_u8 scasw[] = { 0xafu };
     const lib_u8 segment_movsw[] = { 0x26u, 0xa5u };
     const lib_u8 rep_movsw[] = { 0xf3u, 0xa5u };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     provider.callback = retirement_capture;
     provider.context = &probe;
     failed |= !retirement_prepare(&machine, &deterministic, &nop, 1u);
     probe.machine = machine;
     failed |= core_machine_set_retirement_observation_provider(machine,
-        &provider) != TYPE_STATUS_OK;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-    failed |= core_machine_set_a20(machine, 1) != TYPE_STATUS_OK;
+        &provider) != LIB_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= core_machine_set_a20(machine, 1) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
-        TYPE_STATUS_OK;
-    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-        probe.count != 1u || probe.set_while_running != TYPE_STATUS_INVALID_STATE ||
+        probe.count != 1u || probe.set_while_running != LIB_STATUS_INVALID_STATE ||
         probe.records[0].sequence != 0u ||
         probe.records[0].point.linear_pc != 0xfffffff0u ||
         probe.records[0].point.byte_count != CORE_MACHINE_CPU_DIAGNOSTIC_BYTES ||
@@ -647,26 +647,26 @@ C_INT main(C_VOID)
         retirement_8088_string_case(rep_movsw, sizeof(rep_movsw), 0u, 1u,
             9u, 0u);
     failed |= core_machine_set_retirement_observation_provider(machine, LIB_NULL) !=
-        TYPE_STATUS_OK;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-    failed |= core_machine_set_a20(machine, 1) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+    failed |= core_machine_set_a20(machine, 1) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
-        TYPE_STATUS_OK;
-    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        LIB_STATUS_OK;
+    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || probe.count != 1u;
     core_machine_destroy(machine);
     machine = LIB_NULL;
 
     probe.machine = LIB_NULL;
     probe.count = 0u;
-    probe.set_while_running = TYPE_STATUS_OK;
+    probe.set_while_running = LIB_STATUS_OK;
     failed |= !retirement_prepare(&machine, &physical, rep_nop, sizeof(rep_nop));
     probe.machine = machine;
     failed |= core_machine_set_retirement_observation_provider(machine,
-        &provider) != TYPE_STATUS_OK;
-    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT;
+        &provider) != LIB_STATUS_OK;
+    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR;
     failed |= result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
-        probe.count != 1u || probe.set_while_running != TYPE_STATUS_INVALID_STATE ||
+        probe.count != 1u || probe.set_while_running != LIB_STATUS_INVALID_STATE ||
         probe.records[0].point.byte_count != CORE_MACHINE_CPU_DIAGNOSTIC_BYTES ||
         probe.records[0].point.bytes[0] != rep_nop[0] ||
         probe.records[0].point.bytes[1] != rep_nop[1] ||
@@ -688,11 +688,11 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
         probe.records[0].repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_NONE ||
         probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u;
-    failed |= core_machine_get_timeline_observation(machine, &timeline) != TYPE_STATUS_OK ||
+    failed |= core_machine_get_timeline_observation(machine, &timeline) != LIB_STATUS_OK ||
         timeline.now != 0u;
     core_machine_destroy(machine);
 
     if (failed) return 1;
-    STD_PRINTF("M5:T390:S3:RETIREMENT-OBSERVATION:OK\n");
+    printf("M5:T390:S3:RETIREMENT-OBSERVATION:OK\n");
     return 0;
 }

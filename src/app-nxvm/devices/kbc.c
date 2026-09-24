@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/device_support.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 
@@ -32,17 +32,17 @@
 #define CORE_MACHINE_KBC_AUX_STATUS_REPORTING 0x20u
 #define CORE_MACHINE_KBC_AUX_STATUS_SCALING_2_TO_1 0x10u
 
-static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller);
-static C_VOID core_machine_kbc_refresh_current_irq(t_kbc *controller);
+static void core_machine_kbc_drain_keyboard_serial(t_kbc *controller);
+static void core_machine_kbc_refresh_current_irq(t_kbc *controller);
 
-static C_VOID core_machine_kbc_deassert_irq1(t_kbc *controller)
+static void core_machine_kbc_deassert_irq1(t_kbc *controller)
 {
     if (controller == LIB_NULL || !controller->data.irq1_asserted) return;
     core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
     controller->data.irq1_asserted = LIB_FALSE;
 }
 
-static C_VOID core_machine_kbc_deassert_irq12(t_kbc *controller)
+static void core_machine_kbc_deassert_irq12(t_kbc *controller)
 {
     if (controller == LIB_NULL || !controller->data.irq12_asserted) return;
     core_machine_pic_irq_source_deassert(&controller->connect.irq12_source);
@@ -52,7 +52,7 @@ static C_VOID core_machine_kbc_deassert_irq12(t_kbc *controller)
 /* C0h bit 7 is the board keyboard-inhibit switch.  It gates ordinary scan
  * codes unless command-byte bit 3 overrides the switch; it is not the 8042
  * data line and therefore cannot suppress the keyboard's BAT edge. */
-static type_bool core_machine_kbc_keyboard_scan_delivery_enabled(const t_kbc *controller,
+static lib_u8 core_machine_kbc_keyboard_scan_delivery_enabled(const t_kbc *controller,
     lib_u8 command_byte)
 {
     return controller != LIB_NULL &&
@@ -61,11 +61,11 @@ static type_bool core_machine_kbc_keyboard_scan_delivery_enabled(const t_kbc *co
         (controller->data.input_port & 0x80u) != 0u);
 }
 
-static C_VOID core_machine_kbc_set_command_byte(t_kbc *controller,
+static void core_machine_kbc_set_command_byte(t_kbc *controller,
     lib_u8 value)
 {
     const lib_u8 previous_command_byte = controller->data.command_byte;
-    const type_bool keyboard_clock_was_enabled =
+    const lib_u8 keyboard_clock_was_enabled =
         (previous_command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u;
 
     controller->data.command_byte = value & 0x7du;
@@ -95,7 +95,7 @@ static C_VOID core_machine_kbc_set_command_byte(t_kbc *controller,
     core_machine_kbc_refresh_current_irq(controller);
 }
 
-static C_VOID core_machine_kbc_refresh_current_irq(t_kbc *controller)
+static void core_machine_kbc_refresh_current_irq(t_kbc *controller)
 {
     core_machine_kbc_output_origin origin;
 
@@ -132,7 +132,7 @@ static C_VOID core_machine_kbc_refresh_current_irq(t_kbc *controller)
 
 /* An 8042 self-test starts from an empty output path.  In particular, an
  * older keyboard byte must not be mistaken for the command's 55h result. */
-static C_VOID core_machine_kbc_flush_output(t_kbc *controller)
+static void core_machine_kbc_flush_output(t_kbc *controller)
 {
     if (controller == LIB_NULL) return;
     controller->data.fifo_head = 0u;
@@ -149,14 +149,14 @@ static C_VOID core_machine_kbc_flush_output(t_kbc *controller)
     core_machine_kbc_deassert_irq12(controller);
 }
 
-static type_status core_machine_kbc_enqueue(t_kbc *controller, lib_u8 value,
+static lib_status core_machine_kbc_enqueue(t_kbc *controller, lib_u8 value,
     core_machine_kbc_output_origin origin)
 {
     lib_u8 tail;
 
-    if (controller == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (controller->data.fifo_count >= CORE_MACHINE_KBC_FIFO_CAPACITY) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     tail = (lib_u8)((controller->data.fifo_head +
         controller->data.fifo_count) % CORE_MACHINE_KBC_FIFO_CAPACITY);
@@ -172,10 +172,10 @@ static type_status core_machine_kbc_enqueue(t_kbc *controller, lib_u8 value,
         controller->data.keyboard_has_output = LIB_TRUE;
     }
     core_machine_kbc_refresh_current_irq(controller);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_VOID core_machine_kbc_schedule_response(t_kbc *controller,
+static void core_machine_kbc_schedule_response(t_kbc *controller,
     const lib_u8 *bytes, lib_u8 count, core_machine_kbc_output_origin origin)
 {
     lib_u8 index;
@@ -210,13 +210,13 @@ static C_VOID core_machine_kbc_schedule_response(t_kbc *controller,
     }
 }
 
-static C_VOID core_machine_kbc_schedule_response_byte(t_kbc *controller,
+static void core_machine_kbc_schedule_response_byte(t_kbc *controller,
     lib_u8 value, core_machine_kbc_output_origin origin)
 {
     core_machine_kbc_schedule_response(controller, &value, 1u, origin);
 }
 
-static C_VOID core_machine_kbc_apply_typematic_timing(t_kbc *controller)
+static void core_machine_kbc_apply_typematic_timing(t_kbc *controller)
 {
     lib_u32 delay_factor;
     lib_u32 rate_units;
@@ -233,14 +233,14 @@ static C_VOID core_machine_kbc_apply_typematic_timing(t_kbc *controller)
             rate_units) / CORE_MACHINE_KBC_DEFAULT_RATE_UNITS);
 }
 
-static C_VOID core_machine_kbc_set_typematic(t_kbc *controller, lib_u8 value)
+static void core_machine_kbc_set_typematic(t_kbc *controller, lib_u8 value)
 {
     if (controller == LIB_NULL) return;
     controller->data.typematic = value;
     core_machine_kbc_apply_typematic_timing(controller);
 }
 
-static C_VOID core_machine_kbc_set_defaults(t_kbc *controller)
+static void core_machine_kbc_set_defaults(t_kbc *controller)
 {
     if (controller == LIB_NULL) return;
     /* The selected 101-key AT keyboard emits Set 2; the 8042's command-byte
@@ -258,7 +258,7 @@ static C_VOID core_machine_kbc_set_defaults(t_kbc *controller)
 }
 
 static lib_u8 core_machine_kbc_set2_to_set1(lib_u8 set2,
-    type_bool *out_known)
+    lib_u8 *out_known)
 {
     static const lib_u8 map[0x84] = {
         [0x01] = 0x43u, [0x03] = 0x3fu, [0x04] = 0x3du, [0x05] = 0x3bu,
@@ -290,39 +290,39 @@ static lib_u8 core_machine_kbc_set2_to_set1(lib_u8 set2,
     return *out_known ? map[set2] : set2;
 }
 
-static type_status core_machine_kbc_enqueue_set1_pause(t_kbc *controller)
+static lib_status core_machine_kbc_enqueue_set1_pause(t_kbc *controller)
 {
     static const lib_u8 pause[] = { 0xe1u, 0x1du, 0x45u,
         0xe1u, 0x9du, 0xc5u };
     lib_size index;
 
     if (controller == LIB_NULL || CORE_MACHINE_KBC_FIFO_CAPACITY -
-        controller->data.fifo_count < sizeof(pause)) return TYPE_STATUS_INVALID_STATE;
+        controller->data.fifo_count < sizeof(pause)) return LIB_STATUS_INVALID_STATE;
     for (index = 0u; index < sizeof(pause); ++index) {
-        (C_VOID)core_machine_kbc_enqueue(controller, pause[index],
+        (void)core_machine_kbc_enqueue(controller, pause[index],
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_kbc_translate_set2_byte(t_kbc *controller,
+static lib_status core_machine_kbc_translate_set2_byte(t_kbc *controller,
     lib_u8 native_byte)
 {
     static const lib_u8 pause_set2[] = { 0xe1u, 0x14u, 0x77u,
         0xe1u, 0xf0u, 0x14u, 0xf0u, 0x77u };
-    type_bool known;
+    lib_u8 known;
     lib_u8 translated;
 
-    if (controller == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (controller->data.set2_pause_count != 0u || native_byte == 0xe1u) {
         if (controller->data.set2_pause_count >=
-            sizeof(controller->data.set2_pause_bytes)) return TYPE_STATUS_INVALID_STATE;
+            sizeof(controller->data.set2_pause_bytes)) return LIB_STATUS_INVALID_STATE;
         controller->data.set2_pause_bytes[controller->data.set2_pause_count++] = native_byte;
         if (controller->data.set2_pause_count <
-            sizeof(controller->data.set2_pause_bytes)) return TYPE_STATUS_OK;
+            sizeof(controller->data.set2_pause_bytes)) return LIB_STATUS_OK;
         controller->data.set2_pause_count = 0u;
         if (lib_memory_compare(controller->data.set2_pause_bytes, pause_set2,
-                sizeof(pause_set2)) != 0) return TYPE_STATUS_UNSUPPORTED;
+                sizeof(pause_set2)) != 0) return LIB_STATUS_UNSUPPORTED;
         return core_machine_kbc_enqueue_set1_pause(controller);
     }
     if (native_byte == 0xe0u) {
@@ -332,10 +332,10 @@ static type_status core_machine_kbc_translate_set2_byte(t_kbc *controller,
     }
     if (native_byte == 0xf0u) {
         controller->data.set2_break_pending = LIB_TRUE;
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     translated = core_machine_kbc_set2_to_set1(native_byte, &known);
-    if (!known) return TYPE_STATUS_UNSUPPORTED;
+    if (!known) return LIB_STATUS_UNSUPPORTED;
     if (controller->data.set2_break_pending) translated |= 0x80u;
     controller->data.set2_break_pending = LIB_FALSE;
     controller->data.set2_extended_pending = LIB_FALSE;
@@ -343,10 +343,10 @@ static type_status core_machine_kbc_translate_set2_byte(t_kbc *controller,
         CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
 }
 
-static type_status core_machine_kbc_publish_native_byte(t_kbc *controller,
+static lib_status core_machine_kbc_publish_native_byte(t_kbc *controller,
     lib_u8 native_byte)
 {
-    if (controller == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (controller->data.scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_2 &&
         (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) != 0u) {
         return core_machine_kbc_translate_set2_byte(controller, native_byte);
@@ -355,10 +355,10 @@ static type_status core_machine_kbc_publish_native_byte(t_kbc *controller,
         CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
 }
 
-static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
+static void core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
 {
     lib_u8 native_byte;
-    type_status status;
+    lib_status status;
 
     if (controller == LIB_NULL ||
         controller->data.serial_delivery_remaining_ticks != 0u ||
@@ -374,7 +374,7 @@ static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
         native_byte = controller->data.keyboard_serial[
             controller->data.keyboard_serial_head];
         status = core_machine_kbc_publish_native_byte(controller, native_byte);
-        if (status != TYPE_STATUS_OK && status != TYPE_STATUS_UNSUPPORTED) return;
+        if (status != LIB_STATUS_OK && status != LIB_STATUS_UNSUPPORTED) return;
         controller->data.keyboard_serial_head = (lib_u8)(
             (controller->data.keyboard_serial_head + 1u) %
             CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
@@ -385,7 +385,7 @@ static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
         }
     }
 }
-static type_bool core_machine_kbc_is_typematic_scan_code(lib_u8 scan_code)
+static lib_u8 core_machine_kbc_is_typematic_scan_code(lib_u8 scan_code)
 {
     switch (scan_code) {
     case 0x1du: case 0x2au: case 0x36u: case 0x38u:
@@ -441,7 +441,7 @@ static lib_u8 core_machine_kbc_status(const t_kbc *controller)
     return status;
 }
 
-static C_VOID core_machine_kbc_apply_output_port(t_kbc *controller, lib_u8 value)
+static void core_machine_kbc_apply_output_port(t_kbc *controller, lib_u8 value)
 {
     if (controller == LIB_NULL) return;
     controller->data.output_port = value;
@@ -455,7 +455,7 @@ static C_VOID core_machine_kbc_apply_output_port(t_kbc *controller, lib_u8 value
     }
 }
 
-static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
+static void core_machine_kbc_handle_keyboard_command(t_kbc *controller,
     lib_u8 command)
 {
     lib_u8 identify[] = { CORE_MACHINE_KBC_ACK, CORE_MACHINE_KBC_IDENTIFY_0,
@@ -548,17 +548,17 @@ static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
     }
 }
 
-C_VOID core_machine_kbc_set_input_port(t_kbc *controller, lib_u8 value)
+void core_machine_kbc_set_input_port(t_kbc *controller, lib_u8 value)
 {
     if (controller != LIB_NULL) controller->data.input_port = value;
 }
 
-C_VOID core_machine_kbc_set_test_inputs(t_kbc *controller, lib_u8 value)
+void core_machine_kbc_set_test_inputs(t_kbc *controller, lib_u8 value)
 {
     if (controller != LIB_NULL) controller->data.test_inputs = value & 0x03u;
 }
 
-static C_VOID core_machine_kbc_set_aux_defaults(t_kbc *controller)
+static void core_machine_kbc_set_aux_defaults(t_kbc *controller)
 {
     if (controller == LIB_NULL) return;
     controller->data.aux_reporting_enabled = LIB_FALSE;
@@ -569,7 +569,7 @@ static C_VOID core_machine_kbc_set_aux_defaults(t_kbc *controller)
     controller->data.aux_pending_parameter = CORE_MACHINE_KBC_AUX_PENDING_NONE;
 }
 
-static type_bool core_machine_kbc_is_aux_sample_rate(lib_u8 value)
+static lib_u8 core_machine_kbc_is_aux_sample_rate(lib_u8 value)
 {
     switch (value) {
     case 10u: case 20u: case 40u: case 60u: case 80u: case 100u: case 200u:
@@ -594,7 +594,7 @@ static lib_u8 core_machine_kbc_aux_status(const t_kbc *controller)
     return status;
 }
 
-static C_VOID core_machine_kbc_handle_aux_command(t_kbc *controller,
+static void core_machine_kbc_handle_aux_command(t_kbc *controller,
     lib_u8 command)
 {
     static const lib_u8 identify[] = { CORE_MACHINE_KBC_ACK, 0x00u };
@@ -682,22 +682,22 @@ static C_VOID core_machine_kbc_handle_aux_command(t_kbc *controller,
     }
 }
 
-static C_VOID core_machine_kbc_read_data(t_port *port, lib_u16 port_id,
-    C_VOID *owner)
+static void core_machine_kbc_read_data(t_port *port, lib_u16 port_id,
+    void *owner)
 {
     t_kbc *controller = (t_kbc *)owner;
 
-    (C_VOID)port_id;
+    (void)port_id;
     port->data.ioByte = core_machine_kbc_dequeue(controller);
 }
 
-static C_VOID core_machine_kbc_read_status(t_port *port, lib_u16 port_id,
-    C_VOID *owner)
+static void core_machine_kbc_read_status(t_port *port, lib_u16 port_id,
+    void *owner)
 {
     t_kbc *controller = (t_kbc *)owner;
     lib_u8 status;
 
-    (C_VOID)port_id;
+    (void)port_id;
     status = core_machine_kbc_status(controller);
     if (controller != LIB_NULL && controller->data.delayed_response_count != 0u &&
         controller->data.response_remaining_ticks == 0u &&
@@ -710,13 +710,13 @@ static C_VOID core_machine_kbc_read_status(t_port *port, lib_u16 port_id,
     port->data.ioByte = status;
 }
 
-static C_VOID core_machine_kbc_write_data(t_port *port, lib_u16 port_id,
-    C_VOID *owner)
+static void core_machine_kbc_write_data(t_port *port, lib_u16 port_id,
+    void *owner)
 {
     t_kbc *controller = (t_kbc *)owner;
     lib_u8 value = port->data.ioByte;
 
-    (C_VOID)port_id;
+    (void)port_id;
     if (controller == LIB_NULL) return;
     controller->data.input_buffer_full = LIB_TRUE;
     controller->data.last_write_command = LIB_FALSE;
@@ -775,13 +775,13 @@ static C_VOID core_machine_kbc_write_data(t_port *port, lib_u16 port_id,
     controller->data.last_write_command = LIB_FALSE;
 }
 
-static C_VOID core_machine_kbc_write_command(t_port *port,
-    lib_u16 port_id, C_VOID *owner)
+static void core_machine_kbc_write_command(t_port *port,
+    lib_u16 port_id, void *owner)
 {
     t_kbc *controller = (t_kbc *)owner;
     lib_u8 command = port->data.ioByte;
 
-    (C_VOID)port_id;
+    (void)port_id;
     if (controller == LIB_NULL) return;
     controller->data.input_buffer_full = LIB_TRUE;
     controller->data.last_write_command = LIB_TRUE;
@@ -870,7 +870,7 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
     controller->data.last_write_command = LIB_FALSE;
 }
 
-static C_VOID core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
+static void core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
 {
     core_machine_port_add_read(port, 0x0060,
         core_machine_kbc_read_data, controller);
@@ -882,17 +882,17 @@ static C_VOID core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
         core_machine_kbc_write_command, controller);
 }
 
-C_VOID core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
+void core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
     if (controller == LIB_NULL || port == LIB_NULL) return;
-    lib_memory_set(controller, TYPE_ZERO_8, sizeof(*controller));
+    lib_memory_set(controller, 0u, sizeof(*controller));
     controller->connect.aux_present = LIB_TRUE;
     controller->connect.reset_output_port = CORE_MACHINE_KBC_OUTPUT_RESET;
     core_machine_kbc_register_ports(controller, port);
     core_machine_kbc_reset(controller);
 }
-C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
+void core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
     t_pic *pic_slave, t_ram *memory,
-    core_machine_cpu_execution_context *execution, type_bool aux_present)
+    core_machine_cpu_execution_context *execution, lib_u8 aux_present)
 {
     if (controller == LIB_NULL) return;
     core_machine_pic_irq_source_bind(&controller->connect.irq1_source,
@@ -909,14 +909,14 @@ C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
         core_machine_kbc_deassert_irq12(controller);
     }
 }
-C_VOID core_machine_kbc_set_reset_output_port(t_kbc *controller,
+void core_machine_kbc_set_reset_output_port(t_kbc *controller,
     lib_u8 value)
 {
     if (controller == LIB_NULL) return;
     controller->connect.reset_output_port = value;
     core_machine_kbc_apply_output_port(controller, value);
 }
-C_VOID core_machine_kbc_reset(t_kbc *controller)
+void core_machine_kbc_reset(t_kbc *controller)
 {
     lib_u32 typematic_nominal_initial_ticks;
     lib_u32 typematic_nominal_repeat_ticks;
@@ -931,7 +931,7 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     command_response_status_polls =
         controller->data.command_response_status_polls;
     serial_delivery_ticks = controller->data.serial_delivery_ticks;
-    lib_memory_set(&controller->data, TYPE_ZERO_8, sizeof(controller->data));
+    lib_memory_set(&controller->data, 0u, sizeof(controller->data));
     controller->data.typematic_nominal_initial_ticks = typematic_nominal_initial_ticks;
     controller->data.typematic_nominal_repeat_ticks = typematic_nominal_repeat_ticks;
     controller->data.command_response_ticks = command_response_ticks;
@@ -953,7 +953,7 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     controller->data.input_port = 0x80u;
     core_machine_kbc_apply_output_port(controller, controller->data.output_port);
 }
-C_VOID core_machine_kbc_advance(t_kbc *controller, lib_u64 elapsed_ticks)
+void core_machine_kbc_advance(t_kbc *controller, lib_u64 elapsed_ticks)
 {
     if (controller == LIB_NULL) return;
     if (elapsed_ticks >= controller->data.serial_delivery_remaining_ticks) {
@@ -965,7 +965,7 @@ C_VOID core_machine_kbc_advance(t_kbc *controller, lib_u64 elapsed_ticks)
     if (controller->data.keyboard_bat_pending && controller->data.fifo_count == 0u &&
         controller->data.delayed_response_count == 0u) {
         controller->data.keyboard_bat_pending = LIB_FALSE;
-        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_BAT_OK,
+        (void)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_BAT_OK,
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
     }
     if (controller->data.delayed_response_count != 0u &&
@@ -982,7 +982,7 @@ C_VOID core_machine_kbc_advance(t_kbc *controller, lib_u64 elapsed_ticks)
                 CORE_MACHINE_KBC_FIFO_CAPACITY - controller->data.fifo_count) {
                 while (controller->data.delayed_response_index <
                         controller->data.delayed_response_count) {
-                    (C_VOID)core_machine_kbc_enqueue(controller,
+                    (void)core_machine_kbc_enqueue(controller,
                         controller->data.delayed_response[
                             controller->data.delayed_response_index],
                         controller->data.delayed_response_origin);
@@ -1002,12 +1002,12 @@ C_VOID core_machine_kbc_advance(t_kbc *controller, lib_u64 elapsed_ticks)
     elapsed_ticks -= controller->data.typematic_remaining_ticks;
     controller->data.typematic_remaining_ticks =
         controller->data.typematic_repeat_ticks;
-    (C_VOID)core_machine_kbc_publish_native_byte(controller,
+    (void)core_machine_kbc_publish_native_byte(controller,
         controller->data.typematic_scan_code);
     while (controller->data.typematic_repeat_ticks != 0u &&
         elapsed_ticks >= controller->data.typematic_repeat_ticks) {
         elapsed_ticks -= controller->data.typematic_repeat_ticks;
-        (C_VOID)core_machine_kbc_publish_native_byte(controller,
+        (void)core_machine_kbc_publish_native_byte(controller,
             controller->data.typematic_scan_code);
     }
     if (controller->data.typematic_repeat_ticks != 0u) {
@@ -1015,13 +1015,13 @@ C_VOID core_machine_kbc_advance(t_kbc *controller, lib_u64 elapsed_ticks)
     }
 }
 
-type_status core_machine_kbc_ticks_until_event(const t_kbc *controller,
+lib_status core_machine_kbc_ticks_until_event(const t_kbc *controller,
     lib_u64 *out_ticks)
 {
     lib_u64 ticks = UINT64_MAX;
 
     if (controller == LIB_NULL || out_ticks == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (controller->data.serial_delivery_remaining_ticks != 0u) {
         ticks = controller->data.serial_delivery_remaining_ticks;
@@ -1039,12 +1039,12 @@ type_status core_machine_kbc_ticks_until_event(const t_kbc *controller,
         controller->data.typematic_remaining_ticks < ticks) {
         ticks = controller->data.typematic_remaining_ticks;
     }
-    if (ticks == UINT64_MAX) return TYPE_STATUS_INVALID_STATE;
+    if (ticks == UINT64_MAX) return LIB_STATUS_INVALID_STATE;
     *out_ticks = ticks;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
+void core_machine_kbc_set_typematic_timing(t_kbc *controller,
     lib_u32 initial_ticks, lib_u32 repeat_ticks)
 {
     if (controller == LIB_NULL) return;
@@ -1053,19 +1053,19 @@ C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
     core_machine_kbc_apply_typematic_timing(controller);
 }
 
-C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,
+void core_machine_kbc_set_command_response_timing(t_kbc *controller,
     lib_u32 response_ticks)
 {
     if (controller == LIB_NULL) return;
     controller->data.command_response_ticks = response_ticks;
 }
-C_VOID core_machine_kbc_set_command_response_status_polls(t_kbc *controller,
+void core_machine_kbc_set_command_response_status_polls(t_kbc *controller,
     lib_u8 status_polls)
 {
     if (controller == LIB_NULL) return;
     controller->data.command_response_status_polls = status_polls;
 }
-C_VOID core_machine_kbc_set_serial_delivery_timing(t_kbc *controller,
+void core_machine_kbc_set_serial_delivery_timing(t_kbc *controller,
     lib_u32 delivery_ticks)
 {
     if (controller == LIB_NULL) return;
@@ -1073,7 +1073,7 @@ C_VOID core_machine_kbc_set_serial_delivery_timing(t_kbc *controller,
     controller->data.serial_delivery_remaining_ticks = 0u;
     core_machine_kbc_drain_keyboard_serial(controller);
 }
-C_VOID core_machine_kbc_finalize(t_kbc *controller)
+void core_machine_kbc_finalize(t_kbc *controller)
 {
     if (controller != LIB_NULL) {
         core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
@@ -1082,17 +1082,17 @@ C_VOID core_machine_kbc_finalize(t_kbc *controller)
         controller->data.irq12_asserted = LIB_FALSE;
     }
 }
-static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
+static lib_status core_machine_kbc_admit_native_byte(t_kbc *controller,
     lib_u8 native_byte)
 {
-    type_bool known;
+    lib_u8 known;
     lib_u8 set1;
 
-    if (controller == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (!controller->data.scanning_enabled ||
         !core_machine_kbc_keyboard_scan_delivery_enabled(controller,
             controller->data.command_byte)) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     /* Break-prefix state belongs to the native keyboard stream even while
      * firmware has disabled 8042 translation; typematic must still see it. */
@@ -1134,20 +1134,20 @@ static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
         native_byte != 0xe0u && native_byte != 0xe1u && native_byte != 0xf0u) {
         controller->data.set2_typematic_break_pending = LIB_FALSE;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_kbc_submit_native_byte(t_kbc *controller,
+lib_status core_machine_kbc_submit_native_byte(t_kbc *controller,
     lib_u8 native_byte)
 {
     lib_u8 tail;
-    type_status status;
+    lib_status status;
 
-    if (controller == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (controller->data.keyboard_serial_count >=
-        CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY) return TYPE_STATUS_NO_MEMORY;
+        CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY) return LIB_STATUS_NO_MEMORY;
     status = core_machine_kbc_admit_native_byte(controller, native_byte);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != LIB_STATUS_OK) return status;
     tail = (lib_u8)((controller->data.keyboard_serial_head +
         controller->data.keyboard_serial_count) %
         CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
@@ -1159,27 +1159,27 @@ type_status core_machine_kbc_submit_native_byte(t_kbc *controller,
             controller->data.serial_delivery_ticks;
     }
     core_machine_kbc_drain_keyboard_serial(controller);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
-type_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
+lib_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
     const lib_u8 *native_bytes, lib_size count)
 {
     lib_size index;
 
     if (controller == LIB_NULL || (native_bytes == LIB_NULL && count != 0u)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (!controller->data.scanning_enabled ||
         !core_machine_kbc_keyboard_scan_delivery_enabled(controller,
             controller->data.command_byte)) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     if (count > CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY -
-        controller->data.keyboard_serial_count) return TYPE_STATUS_NO_MEMORY;
+        controller->data.keyboard_serial_count) return LIB_STATUS_NO_MEMORY;
     for (index = 0u; index < count; ++index) {
         lib_u8 tail;
         if (core_machine_kbc_admit_native_byte(controller, native_bytes[index]) !=
-            TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
+            LIB_STATUS_OK) return LIB_STATUS_INVALID_STATE;
         tail = (lib_u8)((controller->data.keyboard_serial_head +
             controller->data.keyboard_serial_count) %
             CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
@@ -1192,10 +1192,10 @@ type_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
             controller->data.serial_delivery_ticks;
     }
     core_machine_kbc_drain_keyboard_serial(controller);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_VOID core_machine_kbc_encode_aux_delta(lib_i16 delta, lib_u8 sign_bit,
+static void core_machine_kbc_encode_aux_delta(lib_i16 delta, lib_u8 sign_bit,
     lib_u8 overflow_bit, lib_u8 *packet_first, lib_u8 *packet_data)
 {
     if (delta > 255) {
@@ -1210,34 +1210,34 @@ static C_VOID core_machine_kbc_encode_aux_delta(lib_i16 delta, lib_u8 sign_bit,
     }
 }
 
-type_status core_machine_kbc_submit_aux_report(t_kbc *controller,
+lib_status core_machine_kbc_submit_aux_report(t_kbc *controller,
     lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons)
 {
     lib_u8 packet[3];
 
-    if (controller == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     buttons &= 0x07u;
     if (!controller->connect.aux_present || !controller->data.aux_enabled ||
         !controller->data.aux_reporting_enabled) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     if (delta_x == 0 && delta_y == 0 && buttons == controller->data.aux_button_state) {
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     if (controller->data.delayed_response_count != 0u ||
         CORE_MACHINE_KBC_FIFO_CAPACITY - controller->data.fifo_count <
-            sizeof(packet)) return TYPE_STATUS_INVALID_STATE;
+            sizeof(packet)) return LIB_STATUS_INVALID_STATE;
     packet[0] = (lib_u8)(0x08u | buttons);
     core_machine_kbc_encode_aux_delta(delta_x, 0x10u, 0x40u,
         &packet[0], &packet[1]);
     core_machine_kbc_encode_aux_delta(delta_y, 0x20u, 0x80u,
         &packet[0], &packet[2]);
-    (C_VOID)core_machine_kbc_enqueue(controller, packet[0],
+    (void)core_machine_kbc_enqueue(controller, packet[0],
         CORE_MACHINE_KBC_OUTPUT_AUX);
-    (C_VOID)core_machine_kbc_enqueue(controller, packet[1],
+    (void)core_machine_kbc_enqueue(controller, packet[1],
         CORE_MACHINE_KBC_OUTPUT_AUX);
-    (C_VOID)core_machine_kbc_enqueue(controller, packet[2],
+    (void)core_machine_kbc_enqueue(controller, packet[2],
         CORE_MACHINE_KBC_OUTPUT_AUX);
     controller->data.aux_button_state = buttons;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }

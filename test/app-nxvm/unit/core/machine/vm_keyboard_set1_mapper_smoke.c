@@ -1,16 +1,16 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/profiles/default_profile/keyboard_mapper.h"
 
-static C_INT vm_keyboard_native_set2_expect(lib_u16 scan, lib_u16 key,
-    C_INT pressed, const lib_u8 *expected, lib_u8 count)
+static lib_i32 vm_keyboard_native_set2_expect(lib_u16 scan, lib_u16 key,
+    lib_i32 pressed, const lib_u8 *expected, lib_u8 count)
 {
     vm_profile_default_keyboard_sequence sequence;
     lib_u8 index;
 
     if (vm_profile_default_keyboard_map_host_key(scan, key, pressed,
-            &sequence) != TYPE_STATUS_OK || sequence.count != count) {
+            &sequence) != LIB_STATUS_OK || sequence.count != count) {
         return 0;
     }
     for (index = 0u; index < count; ++index) {
@@ -19,7 +19,7 @@ static C_INT vm_keyboard_native_set2_expect(lib_u16 scan, lib_u16 key,
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 function_set1[] = { 0x3bu, 0x3cu, 0x3du,
         0x3eu, 0x3fu, 0x40u, 0x41u, 0x42u, 0x43u, 0x44u, 0x57u, 0x58u };
@@ -49,6 +49,6 @@ C_INT main(C_VOID)
         if (!vm_keyboard_native_set2_expect(function_set1[index], 0u, 1,
                 &function_set2[index], 1u)) return 1;
     }
-    STD_PRINTF("M5:T374:S18:HOST-SET1-TO-NATIVE-SET2:OK\n");
+    printf("M5:T374:S18:HOST-SET1-TO-NATIVE-SET2:OK\n");
     return 0;
 }

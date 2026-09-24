@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -24,12 +24,12 @@ static lib_u32 vm_hdc_hdd_boot_partition_lba(const vm_machine *session)
     if (session == LIB_NULL || core_machine_media_read_bytes(session->media_registry,
         VM_MACHINE_MEDIA_HDD_ID, VM_HDC_HDD_PARTITION_TABLE_OFFSET +
         VM_HDC_HDD_PARTITION_LBA_OFFSET, entry, sizeof(entry), &result) !=
-        TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) return 0u;
+        LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) return 0u;
     return (lib_u32)entry[0u] | ((lib_u32)entry[1u] << 8u) |
         ((lib_u32)entry[2u] << 16u) | ((lib_u32)entry[3u] << 24u);
 }
 
-static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_machine *session)
+static lib_i32 vm_hdc_hdd_boot_matches_partition_vbr(const vm_machine *session)
 {
     lib_u8 boot_sector[VM_HDC_HDD_BOOT_BYTES];
     lib_u32 partition_lba;
@@ -40,14 +40,14 @@ static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_machine *session)
     if (session == LIB_NULL || session->core_machine == LIB_NULL ||
         core_machine_debug_read_memory(session->core_machine,
             VM_HDC_HDD_BOOT_ADDRESS, boot_sector, sizeof(boot_sector)) !=
-            TYPE_STATUS_OK) {
+            LIB_STATUS_OK) {
         return 0;
     }
     partition_lba = vm_hdc_hdd_boot_partition_lba(session);
     if (partition_lba == 0u) return 0;
     if (core_machine_media_read_bytes(session->media_registry, VM_MACHINE_MEDIA_HDD_ID,
         (lib_size)partition_lba * VM_HDC_HDD_BOOT_BYTES, image, sizeof(image),
-        &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) return 0;
+        &result) != LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) return 0;
     /* The VBR is already executing when this boundary is observed. Its BPB
        contains boot-time writable fields, so compare its stable identity. */
     for (index = 0u; index < 11u; ++index) {
@@ -58,7 +58,7 @@ static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_machine *session)
     return boot_sector[510] == 0x55u && boot_sector[511] == 0xaau;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
     const core_machine_run_budget budget = {
@@ -67,12 +67,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_machine *session = LIB_NULL;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    type_status run_status;
+    lib_status run_status;
     lib_u32 executed = 0u;
-    C_INT loaded = 0;
+    lib_i32 loaded = 0;
 
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
-            &ini_session) != TYPE_STATUS_OK) return 77;
+            &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     if (!session->hdd.connect.flagDiskExist) goto fail;
     /* The canonical product INI intentionally supplies its normal floppy.
@@ -80,31 +80,31 @@ C_INT main(C_INT argc, C_CHAR **argv)
      * declared removable medium through the production owner and reset before
      * executing.  It is not a second profile or boot-order configuration. */
     if (vm_machine_set_common_media(session, LIB_NULL,
-            LIB_STORAGE_MEDIUM_OVERLAY) != TYPE_STATUS_OK ||
-        vm_machine_reset(session) != TYPE_STATUS_OK) goto fail;
+            LIB_STORAGE_MEDIUM_OVERLAY) != LIB_STATUS_OK ||
+        vm_machine_reset(session) != LIB_STATUS_OK) goto fail;
     while (executed < VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET) {
         run_status = core_machine_run(session->core_machine, budget, &result);
-        if (run_status != TYPE_STATUS_OK ||
+        if (run_status != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) {
             if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
-                TYPE_STATUS_OK && diagnostic.first_fault.valid) {
-                STD_FPRINTF(STD_STDERR,
+                LIB_STATUS_OK && diagnostic.first_fault.valid) {
+                fprintf(stderr,
                     "M5:T213:S3:HDC:SYSTEM-FAULT reason=%u cs=%04X ip=%08X opcode=%02X\n",
-                    (C_UINT)result.reason, diagnostic.first_fault.point.cs,
+                    (lib_u32)result.reason, diagnostic.first_fault.point.cs,
                     diagnostic.first_fault.point.eip,
                     diagnostic.first_fault.point.bytes[0]);
             } else {
-                STD_FPRINTF(STD_STDERR,
+                fprintf(stderr,
                     "M5:T213:S3:HDC:SYSTEM-STOP reason=%u status=%u count=%u\n",
-                    (C_UINT)result.reason, (C_UINT)run_status,
+                    (lib_u32)result.reason, (lib_u32)run_status,
                     session->core_machine->hdc.data.command_count);
             }
             goto fail;
         }
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            C_INT advanced = 0;
+            lib_i32 advanced = 0;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) goto fail;
         }
         executed += result.executed;
@@ -120,12 +120,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         lib_u8 image_bytes[4] = {0};
         core_machine_media_result image_result;
 
-        (C_VOID)core_machine_debug_read_memory(session->core_machine,
+        (void)core_machine_debug_read_memory(session->core_machine,
             VM_HDC_HDD_BOOT_ADDRESS, bytes, sizeof(bytes));
-        (C_VOID)core_machine_media_read_bytes(session->media_registry,
+        (void)core_machine_media_read_bytes(session->media_registry,
             VM_MACHINE_MEDIA_HDD_ID, (lib_size)vm_hdc_hdd_boot_partition_lba(session) *
             VM_HDC_HDD_BOOT_BYTES, image_bytes, sizeof(image_bytes), &image_result);
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T213:S3:HDC:SYSTEM-NO-HANDOFF count=%u command=%02X memory=%02X%02X%02X%02X expected=%02X%02X%02X%02X\n",
             session->core_machine->hdc.data.command_count,
             session->core_machine->hdc.data.last_command,
@@ -133,7 +133,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             image_bytes[0], image_bytes[1], image_bytes[2], image_bytes[3]);
         goto fail;
     }
-    STD_PRINTF("M5:T287:S22:HDD-ONLY-BOOT:OK command=20 reads=%u instructions=%u\n",
+    printf("M5:T287:S22:HDD-ONLY-BOOT:OK command=20 reads=%u instructions=%u\n",
         session->core_machine->hdc.data.command_count, executed);
     integration_ini_session_close(&ini_session);
     return 0;

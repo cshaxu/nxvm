@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -10,19 +11,19 @@ typedef struct push_immediate_machine
     core_machine *machine;
 } push_immediate_machine;
 
-static C_VOID push_immediate_reset(C_VOID *opaque)
+static void push_immediate_reset(void *opaque)
 {
     push_immediate_machine *state = (push_immediate_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider push_immediate_provider = {
     push_immediate_reset, LIB_NULL
 };
 
-static C_INT push_immediate_prepare(core_machine_cpu_profile profile,
+static lib_i32 push_immediate_prepare(core_machine_cpu_profile profile,
     push_immediate_machine *state)
 {
     const core_machine_config config = {
@@ -37,7 +38,7 @@ return test_core_machine_fixture_create_bind_freeze_reset(&config,
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_VOID push_immediate_seed(push_immediate_machine *state)
+static void push_immediate_seed(push_immediate_machine *state)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -53,7 +54,7 @@ static C_VOID push_immediate_seed(push_immediate_machine *state)
         VCPU_EFLAGS_IF;
 }
 
-static C_INT push_immediate_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 push_immediate_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es, sizeof(before->data.es)) == 0 &&
         lib_memory_compare(&before->data.cs, &after->data.cs, sizeof(before->data.cs)) == 0 &&
@@ -63,7 +64,7 @@ static C_INT push_immediate_sregs_same(const t_cpu *before, const t_cpu *after)
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT push_immediate_gprs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 push_immediate_gprs_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax && before->data.ecx == after->data.ecx &&
         before->data.edx == after->data.edx && before->data.ebx == after->data.ebx &&
@@ -71,19 +72,19 @@ static C_INT push_immediate_gprs_same(const t_cpu *before, const t_cpu *after)
         before->data.edi == after->data.edi;
 }
 
-static C_INT push_immediate_run(push_immediate_machine *state, const lib_u8 *code,
+static lib_i32 push_immediate_run(push_immediate_machine *state, const lib_u8 *code,
     lib_u8 bytes, core_machine_run_budget budget, t_cpu *after,
-    core_machine_cpu_diagnostic *diagnostic, type_status *status,
+    core_machine_cpu_diagnostic *diagnostic, lib_status *status,
     core_machine_run_result *result)
 {
-    if (core_machine_memory_write(state->machine, 0u, code, bytes) != TYPE_STATUS_OK)
+    if (core_machine_memory_write(state->machine, 0u, code, bytes) != LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine, budget, result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == TYPE_STATUS_OK;
+    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == LIB_STATUS_OK;
 }
 
-static C_INT push_immediate_test_success(core_machine_cpu_profile profile,
+static lib_i32 push_immediate_test_success(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes, lib_u8 width, lib_u32 expected)
 {
     push_immediate_machine state;
@@ -91,10 +92,10 @@ static C_INT push_immediate_test_success(core_machine_cpu_profile profile,
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_status status;
+    lib_status status;
     lib_u32 observed = 0u;
     lib_u32 stack = 0x8000u - width;
-    C_INT failed = !push_immediate_prepare(profile, &state);
+    lib_i32 failed = !push_immediate_prepare(profile, &state);
 
     if (!failed)
     {
@@ -102,7 +103,7 @@ static C_INT push_immediate_test_success(core_machine_cpu_profile profile,
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !push_immediate_run(&state, code, bytes,
             (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,
-            &result) || status != TYPE_STATUS_OK || result.reason !=
+            &result) || status != LIB_STATUS_OK || result.reason !=
             CORE_MACHINE_STOP_BUDGET || diagnostic.first_fault.valid ||
             after.data.eip != bytes || after.data.esp !=
             ((before.data.esp & 0xffff0000u) | stack) ||
@@ -110,14 +111,14 @@ static C_INT push_immediate_test_success(core_machine_cpu_profile profile,
             !push_immediate_gprs_same(&before, &after) ||
             !push_immediate_sregs_same(&before, &after) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-            stack, TYPE_REFERENCE_OF(observed), width) != TYPE_STATUS_OK ||
+            stack, CORE_MACHINE_REFERENCE_OF(observed), width) != LIB_STATUS_OK ||
             observed != (width == 2u ? (expected & 0xffffu) : expected);
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT push_immediate_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 push_immediate_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_u8 bytes)
 {
     push_immediate_machine state;
@@ -125,37 +126,37 @@ static C_INT push_immediate_expect_ud(core_machine_cpu_profile profile,
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_status status;
+    lib_status status;
     lib_u32 sentinel = 0xdeadbeefu;
     lib_u32 observed = 0u;
-    C_INT failed = !push_immediate_prepare(profile, &state);
+    lib_i32 failed = !push_immediate_prepare(profile, &state);
 
     if (!failed)
     {
         push_immediate_seed(&state);
         failed |= core_machine_memory_write(state.machine, 0x7ffcu, &sentinel,
-            sizeof(sentinel)) != TYPE_STATUS_OK;
+            sizeof(sentinel)) != LIB_STATUS_OK;
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !push_immediate_run(&state, code, bytes,
             (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,
-            &result) || status != TYPE_STATUS_FAULT || result.reason !=
+            &result) || status != LIB_STATUS_INTERNAL_ERROR || result.reason !=
             CORE_MACHINE_STOP_FAULT || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
             after.data.eflags != before.data.eflags ||
             !push_immediate_gprs_same(&before, &after) ||
             !push_immediate_sregs_same(&before, &after) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x7ffcu, TYPE_REFERENCE_OF(observed), sizeof(observed)) !=
-            TYPE_STATUS_OK || observed != sentinel;
+            0x7ffcu, CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) !=
+            LIB_STATUS_OK || observed != sentinel;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT push_immediate_test_defaults(C_VOID)
+static lib_i32 push_immediate_test_defaults(void)
 {
     static const core_machine_cpu_profile supported[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
@@ -179,7 +180,7 @@ static C_INT push_immediate_test_defaults(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, push_ib_8086, sizeof(push_ib_8086));
 }
 
-static C_INT push_immediate_test_attributes_and_lock(C_VOID)
+static lib_i32 push_immediate_test_attributes_and_lock(void)
 {
     static const lib_u8 iw32[] = {0x66u, 0x68u, 0x78u, 0x56u, 0x34u, 0x12u};
     static const lib_u8 ib32[] = {0x66u, 0x6au, 0x80u};
@@ -227,7 +228,7 @@ static C_INT push_immediate_test_attributes_and_lock(C_VOID)
     return 1;
 }
 
-static C_INT push_immediate_boot_protected(push_immediate_machine *state)
+static lib_i32 push_immediate_boot_protected(push_immediate_machine *state)
 {
     static const lib_u8 pointer[] = {0x1fu,0u,0u,0x03u,0u,0u};
     static const lib_u8 gdt[] = {
@@ -245,17 +246,17 @@ static C_INT push_immediate_boot_protected(push_immediate_machine *state)
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
-        sizeof(pointer)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x300u, gdt, sizeof(gdt)) == TYPE_STATUS_OK &&
+        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, bootstrap,
-        sizeof(bootstrap)) == TYPE_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x2000u, &halt, sizeof(halt)) == TYPE_STATUS_OK &&
+        sizeof(bootstrap)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x2000u, &halt, sizeof(halt)) == LIB_STATUS_OK &&
         core_machine_run(state->machine, (core_machine_run_budget){96u,0u},
-        &result) == TYPE_STATUS_OK && result.reason ==
+        &result) == LIB_STATUS_OK && result.reason ==
         CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT push_immediate_test_protected(C_VOID)
+static lib_i32 push_immediate_test_protected(void)
 {
     static const lib_u8 codes[][6] = {{0x68u,0x34u,0x12u},
         {0x66u,0x6au,0x80u}};
@@ -271,7 +272,7 @@ static C_INT push_immediate_test_protected(C_VOID)
         t_cpu after;
         lib_u32 sentinel = 0xdeadbeefu;
         lib_u32 observed = 0u;
-        C_INT failed = !push_immediate_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !push_immediate_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed)
@@ -285,17 +286,17 @@ static C_INT push_immediate_test_protected(C_VOID)
             state.machine->executor_cpu.data.ss.limit = 0xffffu;
             state.machine->executor_cpu.data.ss.seg.data.expdown = LIB_TRUE;
             failed |= core_machine_memory_write(state.machine, stack, &sentinel,
-                width) != TYPE_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x2000u, codes[form], bytes[form]) != TYPE_STATUS_OK;
+                width) != LIB_STATUS_OK || core_machine_memory_write(
+                state.machine, 0x2000u, codes[form], bytes[form]) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_FAULT ||
+                (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
                 result.reason != CORE_MACHINE_STOP_FAULT ||
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
                 after.data.eip != 0u || after.data.eax != before.data.eax ||
                 after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
@@ -304,7 +305,7 @@ static C_INT push_immediate_test_protected(C_VOID)
                 after.data.edi != before.data.edi || after.data.eflags !=
             before.data.eflags || !push_immediate_sregs_same(&before, &after) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-            stack, TYPE_REFERENCE_OF(observed), width) != TYPE_STATUS_OK ||
+            stack, CORE_MACHINE_REFERENCE_OF(observed), width) != LIB_STATUS_OK ||
             observed != (width == 2u ? (sentinel & 0xffffu) : sentinel);
         }
         core_machine_destroy(state.machine);
@@ -314,7 +315,7 @@ static C_INT push_immediate_test_protected(C_VOID)
     return 1;
 }
 
-static C_INT push_immediate_test_irq(C_VOID)
+static lib_i32 push_immediate_test_irq(void)
 {
     static const lib_u8 codes[][5] = {{0x68u,0x34u,0x12u,0x90u},
         {0x6au,0x80u,0x90u}};
@@ -332,18 +333,18 @@ static C_INT push_immediate_test_irq(C_VOID)
         lib_u16 segment = 0u;
         lib_u16 frame_ip = 0u;
         lib_u16 value = 0u;
-        C_INT failed = !push_immediate_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        lib_i32 failed = !push_immediate_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
         if (!failed)
         {
             push_immediate_seed(&state);
             failed |= core_machine_memory_write(state.machine, 0u, codes[form],
-                length[form] + 1u) != TYPE_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x80u, &offset, 2u) != TYPE_STATUS_OK ||
+                length[form] + 1u) != LIB_STATUS_OK || core_machine_memory_write(
+                state.machine, 0x80u, &offset, 2u) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x82u, &segment, 2u) !=
-                TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x100u,
-                &halt, 1u) != TYPE_STATUS_OK;
+                LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x100u,
+                &halt, 1u) != LIB_STATUS_OK;
         }
         if (!failed)
         {
@@ -355,18 +356,18 @@ static C_INT push_immediate_test_irq(C_VOID)
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){2u,0u}, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                TYPE_REFERENCE_OF(frame_ip), 2u) != TYPE_STATUS_OK ||
+                CORE_MACHINE_REFERENCE_OF(frame_ip), 2u) != LIB_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != length[form] ||
-                !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u)) || after.data.esp != 0x12347ff8u ||
                 core_machine_memory_read_physical(&state.machine->executor_memory,
-                0x7ffeu, TYPE_REFERENCE_OF(value), 2u) != TYPE_STATUS_OK ||
+                0x7ffeu, CORE_MACHINE_REFERENCE_OF(value), 2u) != LIB_STATUS_OK ||
                 value != (form == 0u ? 0x1234u : 0xff80u);
         }
         core_machine_destroy(state.machine);
@@ -376,28 +377,28 @@ static C_INT push_immediate_test_irq(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!push_immediate_test_defaults())
     {
-        STD_PRINTF("PUSH-IMMEDIATE stage=defaults\n");
+        printf("PUSH-IMMEDIATE stage=defaults\n");
         return 1;
     }
     if (!push_immediate_test_attributes_and_lock())
     {
-        STD_PRINTF("PUSH-IMMEDIATE stage=attributes-lock\n");
+        printf("PUSH-IMMEDIATE stage=attributes-lock\n");
         return 1;
     }
     if (!push_immediate_test_protected())
     {
-        STD_PRINTF("PUSH-IMMEDIATE stage=protected\n");
+        printf("PUSH-IMMEDIATE stage=protected\n");
         return 1;
     }
     if (!push_immediate_test_irq())
     {
-        STD_PRINTF("PUSH-IMMEDIATE stage=irq\n");
+        printf("PUSH-IMMEDIATE stage=irq\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S45:PUSH-IMMEDIATE:OK\n");
+    printf("M5:T316:S45:PUSH-IMMEDIATE:OK\n");
     return 0;
 }

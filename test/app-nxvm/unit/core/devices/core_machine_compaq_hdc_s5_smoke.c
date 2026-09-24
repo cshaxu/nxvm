@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/hdc.h"
 #include "app-nxvm/devices/media_interface.h"
@@ -10,7 +10,7 @@ typedef struct core_machine_compaq_hdc_media {
     lib_u8 sector[512];
 } core_machine_compaq_hdc_media;
 
-static core_machine_media_result core_machine_compaq_hdc_query(C_VOID *opaque,
+static core_machine_media_result core_machine_compaq_hdc_query(void *opaque,
     core_machine_media_info *out_info)
 {
     if (opaque == LIB_NULL || out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
@@ -25,12 +25,12 @@ static core_machine_media_result core_machine_compaq_hdc_query(C_VOID *opaque,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result core_machine_compaq_hdc_read(C_VOID *opaque,
-    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result core_machine_compaq_hdc_read(void *opaque,
+    lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
     core_machine_compaq_hdc_media *media = opaque;
 
-    (C_VOID)offset;
+    (void)offset;
     if (media == LIB_NULL || buffer == LIB_NULL || byte_count != 512u) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
@@ -38,28 +38,28 @@ static core_machine_media_result core_machine_compaq_hdc_read(C_VOID *opaque,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static core_machine_media_result core_machine_compaq_hdc_write(C_VOID *opaque,
-    lib_u64 offset, const C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result core_machine_compaq_hdc_write(void *opaque,
+    lib_u64 offset, const void *buffer, lib_u32 byte_count)
 {
     core_machine_compaq_hdc_media *media = opaque;
 
-    (C_VOID)offset;
+    (void)offset;
     if (media == LIB_NULL || buffer == LIB_NULL || byte_count != 512u) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
     lib_memory_copy(media->sector, buffer, sizeof(media->sector));
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
-static type_status core_machine_compaq_hdc_fdc_direction(C_VOID *opaque,
+static lib_status core_machine_compaq_hdc_fdc_direction(void *opaque,
     lib_u16 port, lib_u32 *out_value)
 {
-    (C_VOID)opaque;
-    if (port != 0x03f7u || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    (void)opaque;
+    if (port != 0x03f7u || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = 0x80u;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_INT core_machine_compaq_hdc_install(t_port *port, core_machine_hdc *hdc)
+static lib_i32 core_machine_compaq_hdc_install(t_port *port, core_machine_hdc *hdc)
 {
     const core_machine_port_provider *provider = core_machine_hdc_port_provider();
     lib_u16 value;
@@ -67,21 +67,21 @@ static C_INT core_machine_compaq_hdc_install(t_port *port, core_machine_hdc *hdc
     if (port == LIB_NULL || hdc == LIB_NULL || provider == LIB_NULL) return 0;
     for (value = 0x01f0u; value <= 0x01f7u; ++value) {
         if (core_machine_port_add_read_provider(port, value, provider->read, hdc) !=
-                TYPE_STATUS_OK ||
+                LIB_STATUS_OK ||
             core_machine_port_add_write_provider(port, value, provider->write, hdc) !=
-                TYPE_STATUS_OK) return 0;
+                LIB_STATUS_OK) return 0;
     }
     return core_machine_port_add_read_provider(port, 0x03f6u, provider->read, hdc) ==
-            TYPE_STATUS_OK &&
+            LIB_STATUS_OK &&
         core_machine_port_add_write_provider(port, 0x03f6u, provider->write, hdc) ==
-            TYPE_STATUS_OK &&
+            LIB_STATUS_OK &&
         core_machine_port_add_read_provider(port, 0x03f7u,
-            core_machine_compaq_hdc_fdc_direction, LIB_NULL) == TYPE_STATUS_OK &&
+            core_machine_compaq_hdc_fdc_direction, LIB_NULL) == LIB_STATUS_OK &&
         core_machine_port_add_read_wired_or_provider(port, 0x03f7u, provider->read, hdc) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_hdc_config config = {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB, .irq = 14u,
@@ -107,7 +107,7 @@ C_INT main(C_VOID)
     t_pic master = {0};
     t_pic slave = {0};
     lib_u32 value;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     media.sector[0] = 0x34u;
     media.sector[1] = 0x12u;
@@ -115,14 +115,14 @@ C_INT main(C_VOID)
     slave_media.sector[1] = 0x56u;
     core_machine_port_initialize(&port);
     core_machine_pic_initialize(&master, &slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
-    if (core_machine_media_registry_create(&registry) != TYPE_STATUS_OK ||
+    if (core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(registry, 1u, &media, &media_provider) !=
-            TYPE_STATUS_OK) {
+            LIB_STATUS_OK) {
         failed |= 0x01;
     } else if (core_machine_media_registry_bind(registry, 2u, &slave_media, &media_provider) !=
-            TYPE_STATUS_OK) {
+            LIB_STATUS_OK) {
         failed |= 0x02;
-    } else if (core_machine_media_registry_freeze(registry) != TYPE_STATUS_OK) {
+    } else if (core_machine_media_registry_freeze(registry) != LIB_STATUS_OK) {
         failed |= 0x02;
     } else {
         core_machine_hdc_connect(&hdc, registry, 1u, 2u, &master, &slave, &config);
@@ -146,7 +146,7 @@ C_INT main(C_VOID)
             value = core_machine_port_read(&port, 0x01f0u);
             failed |= value != 0x1234u;
             for (lib_u16 index = 1u; index < 256u; ++index) {
-                (C_VOID)core_machine_port_read(&port, 0x01f0u);
+                (void)core_machine_port_read(&port, 0x01f0u);
             }
             core_machine_hdc_advance(&hdc);
             failed |= !core_machine_hdc_irq_pending(&hdc);
@@ -159,7 +159,7 @@ C_INT main(C_VOID)
             value = core_machine_port_read(&port, 0x01f0u);
             failed |= value != 0x5678u;
             for (lib_u16 index = 1u; index < 256u; ++index) {
-                (C_VOID)core_machine_port_read(&port, 0x01f0u);
+                (void)core_machine_port_read(&port, 0x01f0u);
             }
             core_machine_hdc_advance(&hdc);
             failed |= !core_machine_hdc_irq_pending(&hdc);
@@ -210,7 +210,7 @@ C_INT main(C_VOID)
         }
     }
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T386:S5:COMPAQ-HDC-ROUTE:FAIL %x status=%x error=%x phase=%u irq=%u chs=%x:%x:%x\n", failed, hdc.data.status, hdc.data.error, hdc.data.phase, hdc.data.irq_pending, hdc.data.cylinder_high, hdc.data.cylinder_low, hdc.data.sector_number);
+        fprintf(stderr, "M5:T386:S5:COMPAQ-HDC-ROUTE:FAIL %x status=%x error=%x phase=%u irq=%u chs=%x:%x:%x\n", failed, hdc.data.status, hdc.data.error, hdc.data.phase, hdc.data.irq_pending, hdc.data.cylinder_high, hdc.data.cylinder_low, hdc.data.sector_number);
         core_machine_hdc_finalize(&hdc);
         core_machine_media_registry_destroy(registry);
         core_machine_port_finalize(&port);

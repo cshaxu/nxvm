@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
@@ -15,7 +15,7 @@
 
 static lib_u8 vm_fdc_t242_image[VM_FDC_T242_IMAGE_BYTES];
 
-static C_VOID vm_fdc_t242_boot_loop(C_VOID)
+static void vm_fdc_t242_boot_loop(void)
 {
     lib_memory_set(vm_fdc_t242_image, 0, sizeof(vm_fdc_t242_image));
     vm_fdc_t242_image[0] = 0xebu;
@@ -24,7 +24,7 @@ static C_VOID vm_fdc_t242_boot_loop(C_VOID)
     vm_fdc_t242_image[511u] = 0xaau;
 }
 
-static C_VOID vm_fdc_t242_write_dma2(t_port *port)
+static void vm_fdc_t242_write_dma2(t_port *port)
 {
     core_machine_port_write(port, 0x000cu, 0u);
     core_machine_port_write(port, 0x0004u, 0x00u);
@@ -36,7 +36,7 @@ static C_VOID vm_fdc_t242_write_dma2(t_port *port)
     core_machine_port_write(port, 0x000au, 0x02u);
 }
 
-static C_VOID vm_fdc_t242_command(core_machine_fdc *fdc, t_port *port,
+static void vm_fdc_t242_command(core_machine_fdc *fdc, t_port *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -48,7 +48,7 @@ static C_VOID vm_fdc_t242_command(core_machine_fdc *fdc, t_port *port,
     core_machine_fdc_advance(fdc);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const lib_u8 specify_dma[] = {0x03u, 0xdfu, 0x02u};
     static const lib_u8 read_track[] = {
@@ -66,17 +66,17 @@ C_INT main(C_VOID)
     lib_u8 untouched[sizeof(actual)] = {0};
     lib_u8 result[7] = {0};
     lib_size index;
-    C_CHAR stage = '0';
-    C_INT final_intr = 0;
-    C_INT final_phase = 0;
-    C_INT failed = 0;
-    type_bool advanced = LIB_FALSE;
+    char stage = '0';
+    lib_i32 final_intr = 0;
+    lib_i32 final_phase = 0;
+    lib_i32 failed = 0;
+    lib_u8 advanced = LIB_FALSE;
 
     stage = '1';
     vm_fdc_t242_boot_loop();
     {
         vm_machine_config fixture_config = config;
-        if (vm_test_default_pc_at_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
+        if (vm_test_default_pc_at_session_create(&fixture_config, &session) != LIB_STATUS_OK ||
             session == LIB_NULL) goto done;
         if (vm_machine_fdd_replace_bytes(&session->fdd, vm_fdc_t242_image,
                 sizeof(vm_fdc_t242_image)) != 0) goto done;
@@ -105,11 +105,11 @@ C_INT main(C_VOID)
     }
     failed |= result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
     failed |= core_machine_memory_read(session->core_machine, 0x0500u, actual,
-        sizeof(actual)) != TYPE_STATUS_OK || lib_memory_compare(actual, untouched,
+        sizeof(actual)) != LIB_STATUS_OK || lib_memory_compare(actual, untouched,
         sizeof(actual)) != 0;
     vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){0x08u}, 1u);
-    (C_VOID)core_machine_port_read(port, 0x03f5u);
-    (C_VOID)core_machine_port_read(port, 0x03f5u);
+    (void)core_machine_port_read(port, 0x03f5u);
+    (void)core_machine_port_read(port, 0x03f5u);
     failed |= session->core_machine->fdc.data.flagINTR;
     core_machine_port_write(port, 0x03f2u, 0x2cu);
     vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
@@ -119,8 +119,8 @@ C_INT main(C_VOID)
     }
     failed |= result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
     vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){0x08u}, 1u);
-    (C_VOID)core_machine_port_read(port, 0x03f5u);
-    (C_VOID)core_machine_port_read(port, 0x03f5u);
+    (void)core_machine_port_read(port, 0x03f5u);
+    (void)core_machine_port_read(port, 0x03f5u);
     failed |= session->core_machine->fdc.data.flagINTR;
     core_machine_port_write(port, 0x03f2u, 0x1cu);
     vm_fdc_t242_write_dma2(port);
@@ -129,11 +129,11 @@ C_INT main(C_VOID)
     for (index = 0u; index < 1024u && !session->core_machine->fdc.data.flagINTR;
             ++index) {
         if (core_machine_advance_to_next_deadline(session->core_machine,
-                &advanced) != TYPE_STATUS_OK || !advanced) goto done;
+                &advanced) != LIB_STATUS_OK || !advanced) goto done;
     }
     if (!session->core_machine->fdc.data.flagINTR ||
         core_machine_memory_read(session->core_machine, 0x0500u, actual,
-            sizeof(actual)) != TYPE_STATUS_OK) {
+            sizeof(actual)) != LIB_STATUS_OK) {
         goto done;
     }
     failed |= lib_memory_compare(expected, actual, sizeof(expected)) != 0;
@@ -147,8 +147,8 @@ C_INT main(C_VOID)
             result[5] != 0x13u || result[6] != 0x02u;
         vm_fdc_t242_command(&session->core_machine->fdc, port,
             (const lib_u8[]){0x08u}, 1u);
-        (C_VOID)core_machine_port_read(port, 0x03f5u);
-        (C_VOID)core_machine_port_read(port, 0x03f5u);
+        (void)core_machine_port_read(port, 0x03f5u);
+        (void)core_machine_port_read(port, 0x03f5u);
         failed |= session->core_machine->fdc.data.flagINTR;
     } else {
         failed |= session->core_machine->fdc.data.phase != core_machine_fdc_PHASE_COMMAND;
@@ -165,8 +165,8 @@ C_INT main(C_VOID)
     failed |= result[0] != core_machine_fdc_ST0_ABNORMAL ||
         result[1] != 0x04u;
     vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){0x08u}, 1u);
-    (C_VOID)core_machine_port_read(port, 0x03f5u);
-    (C_VOID)core_machine_port_read(port, 0x03f5u);
+    (void)core_machine_port_read(port, 0x03f5u);
+    (void)core_machine_port_read(port, 0x03f5u);
     failed |= session->core_machine->fdc.data.flagINTR;
 
 done:
@@ -176,14 +176,14 @@ done:
     }
     vm_machine_destroy(session);
     if (failed || session == LIB_NULL) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "T242 read-track failed at %c, reason=%d, executed=%llu data=%02x/%02x result=%02x %02x %02x %02x %02x %02x %02x intr=%d phase=%d\n",
             stage, run.reason, (unsigned long long)run.executed, actual[512],
             expected[512], result[0], result[1], result[2], result[3], result[4],
             result[5], result[6], final_intr, final_phase);
         return 1;
     }
-    STD_PRINTF("M5:T268:S1:FDC-MOTOR:PORT:OK\n");
-    STD_PRINTF("M5:T242:S2:FDC:READ-TRACK:OK\n");
+    printf("M5:T268:S1:FDC-MOTOR:PORT:OK\n");
+    printf("M5:T242:S2:FDC:READ-TRACK:OK\n");
     return 0;
 }

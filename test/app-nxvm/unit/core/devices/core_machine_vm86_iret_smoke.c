@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -13,26 +14,26 @@
 
 typedef struct vm86_iret_state { core_machine *machine; } vm86_iret_state;
 
-static C_VOID vm86_iret_reset(C_VOID *opaque)
+static void vm86_iret_reset(void *opaque)
 {
     vm86_iret_state *state = (vm86_iret_state *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider vm86_iret_provider = {
     vm86_iret_reset, LIB_NULL
 };
 
-static C_INT vm86_iret_write_u32(core_machine *machine,
+static lib_i32 vm86_iret_write_u32(core_machine *machine,
     lib_u32 address, lib_u32 value)
 {
     return core_machine_memory_write(machine, address, &value, sizeof(value)) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT vm86_iret_prepare(vm86_iret_state *state,
+static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
     const lib_u8 *instruction, lib_u8 bytes,
     lib_u32 stack_limit)
 {
@@ -49,15 +50,15 @@ static C_INT vm86_iret_prepare(vm86_iret_state *state,
     t_cpu *cpu;
 
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &vm86_iret_provider, state) ||
         core_machine_memory_write(state->machine, VM86_IRET_CODE, instruction,
-            bytes) != TYPE_STATUS_OK ||
+            bytes) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, 0x2010u,
-            (const lib_u8[]){ 0x90u, 0xf4u }, 2u) != TYPE_STATUS_OK ||
+            (const lib_u8[]){ 0x90u, 0xf4u }, 2u) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, VM86_IRET_STACK, frame,
-            sizeof(frame)) != TYPE_STATUS_OK)
+            sizeof(frame)) != LIB_STATUS_OK)
         return 0;
     cpu = &state->machine->executor_cpu;
     cpu->data.cr0 = VCPU_CR0_PE;
@@ -75,7 +76,7 @@ static C_INT vm86_iret_prepare(vm86_iret_state *state,
     return 1;
 }
 
-static C_INT vm86_iret_cache(const t_cpu_data_sreg *sreg,
+static lib_i32 vm86_iret_cache(const t_cpu_data_sreg *sreg,
     lib_u16 selector, lib_u8 kind)
 {
     return sreg->flagValid && sreg->selector == selector &&
@@ -87,18 +88,18 @@ static C_INT vm86_iret_cache(const t_cpu_data_sreg *sreg,
             !sreg->seg.data.expdown && sreg->seg.data.writable);
 }
 
-static C_INT vm86_iret_success(const lib_u8 *instruction,
+static lib_i32 vm86_iret_success(const lib_u8 *instruction,
     lib_u8 bytes)
 {
     vm86_iret_state state; core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic; C_INT failed = !vm86_iret_prepare(
+    core_machine_cpu_diagnostic diagnostic; lib_i32 failed = !vm86_iret_prepare(
         &state, instruction, bytes, 0x0000ffffu);
 
     if (!failed) {
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
             state.machine->executor_cpu.data.eflags !=
                 (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF | 0x02u) ||
@@ -115,15 +116,15 @@ static C_INT vm86_iret_success(const lib_u8 *instruction,
     return !failed;
 }
 
-static C_INT vm86_iret_stack_atomic(C_VOID)
+static lib_i32 vm86_iret_stack_atomic(void)
 {
     vm86_iret_state state; core_machine_run_result result; t_cpu before, after;
-    C_INT failed = !vm86_iret_prepare(&state, (const lib_u8[]){ 0xcfu },
+    lib_i32 failed = !vm86_iret_prepare(&state, (const lib_u8[]){ 0xcfu },
         1u, VM86_IRET_STACK + 31u);
 
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        (C_VOID)core_machine_run(state.machine,
+        (void)core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
@@ -132,12 +133,12 @@ static C_INT vm86_iret_stack_atomic(C_VOID)
     return !failed;
 }
 
-static C_INT vm86_iret_paging_success(C_VOID)
+static lib_i32 vm86_iret_paging_success(void)
 {
     vm86_iret_state state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    C_INT failed = !vm86_iret_prepare(&state, (const lib_u8[]){ 0xcfu },
+    lib_i32 failed = !vm86_iret_prepare(&state, (const lib_u8[]){ 0xcfu },
         1u, 0x0000ffffu);
 
     if (!failed) {
@@ -152,14 +153,14 @@ static C_INT vm86_iret_paging_success(C_VOID)
         state.machine->executor_cpu.data.cr3 = VM86_IRET_PAGE_DIRECTORY;
         state.machine->executor_cpu.data.cr0 |= VCPU_CR0_PG;
         failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK ||
+                (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                LIB_STATUS_OK || diagnostic.first_fault.valid ||
             state.machine->executor_cpu.data.cr3 != VM86_IRET_PAGE_DIRECTORY ||
             state.machine->executor_cpu.data.eip != 0x0011u ||
             state.machine->executor_cpu.data.esp != 0x00001234u ||
-            !TYPE_GET_BIT(state.machine->executor_cpu.data.eflags,
+            !CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags,
                 VCPU_EFLAGS_VM) || !vm86_iret_cache(
                 &state.machine->executor_cpu.data.cs, 0x0200u, SREG_CODE) ||
             !vm86_iret_cache(&state.machine->executor_cpu.data.ss, 0x0300u,
@@ -169,12 +170,12 @@ static C_INT vm86_iret_paging_success(C_VOID)
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!vm86_iret_success((const lib_u8[]){ 0xcfu }, 1u) ||
         !vm86_iret_success((const lib_u8[]){ 0x67u, 0xcfu }, 2u) ||
         !vm86_iret_stack_atomic() || !vm86_iret_paging_success())
         return 1;
-    STD_PRINTF("M5:T320:S2:VM86-IRET:OK\n");
+    printf("M5:T320:S2:VM86-IRET:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/entry_plan_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -27,7 +27,7 @@ static const lib_u8 vm_cga_graphics_program[] = {
         0xebu, 0xfeu               /* jmp $ */
 };
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const vm_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
@@ -46,19 +46,19 @@ C_INT main(C_VOID)
     core_machine_display_snapshot snapshot;
     vm_machine *session = LIB_NULL;
     lib_u32 instruction;
-    C_INT passed = 0;
+    lib_i32 passed = 0;
 
-    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || core_machine_apply_entry_plan(session->core_machine,
-            &plan) != TYPE_STATUS_OK) goto done;
+            &plan) != LIB_STATUS_OK) goto done;
     for (instruction = 0u; instruction < VM_CGA_GRAPHICS_BOOT_BUDGET;
          ++instruction) {
         if (core_machine_run(session->core_machine, budget, &result) !=
-                TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
+                LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
             goto done;
         }
         if (core_machine_capture_display_snapshot(session->core_machine,
-                &snapshot) != TYPE_STATUS_OK ||
+                &snapshot) != LIB_STATUS_OK ||
             snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4) {
             continue;
         }
@@ -75,6 +75,6 @@ C_INT main(C_VOID)
 done:
     vm_machine_destroy(session);
     if (!passed) return 1;
-    STD_PRINTF("M5:T228:S3:CGA:SYSTEM:OK\n");
+    printf("M5:T228:S3:CGA:SYSTEM:OK\n");
     return 0;
 }

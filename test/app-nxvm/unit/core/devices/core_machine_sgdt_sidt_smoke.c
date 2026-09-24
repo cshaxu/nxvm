@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -16,19 +17,19 @@ typedef struct sgdt_sidt_machine {
     core_machine *machine;
 } sgdt_sidt_machine;
 
-static C_VOID sgdt_sidt_reset(C_VOID *opaque)
+static void sgdt_sidt_reset(void *opaque)
 {
     sgdt_sidt_machine *state = (sgdt_sidt_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider sgdt_sidt_provider = {
     sgdt_sidt_reset, LIB_NULL
 };
 
-static C_INT sgdt_sidt_prepare(sgdt_sidt_machine *state,
+static lib_i32 sgdt_sidt_prepare(sgdt_sidt_machine *state,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -43,11 +44,11 @@ static C_INT sgdt_sidt_prepare(sgdt_sidt_machine *state,
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_VOID sgdt_sidt_enter_protected(sgdt_sidt_machine *state, C_INT vm86)
+static void sgdt_sidt_enter_protected(sgdt_sidt_machine *state, lib_i32 vm86)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
-    TYPE_SET_BIT(cpu->data.cr0, VCPU_CR0_PE);
+    CORE_MACHINE_BIT_SET(cpu->data.cr0, VCPU_CR0_PE);
     cpu->data.cs.selector = 0x0008u;
     cpu->data.cs.base = 0u;
     cpu->data.cs.limit = 0xffffu;
@@ -63,10 +64,10 @@ static C_VOID sgdt_sidt_enter_protected(sgdt_sidt_machine *state, C_INT vm86)
     cpu->data.ds.sregtype = SREG_DATA;
     cpu->data.ds.seg.data.writable = LIB_TRUE;
     if (vm86)
-        TYPE_SET_BIT(cpu->data.eflags, VCPU_EFLAGS_VM);
+        CORE_MACHINE_BIT_SET(cpu->data.eflags, VCPU_EFLAGS_VM);
 }
 
-static C_VOID sgdt_sidt_seed(t_cpu *cpu)
+static void sgdt_sidt_seed(t_cpu *cpu)
 {
     cpu->data.eax = 0x11223344u;
     cpu->data.ecx = 0x55667788u;
@@ -79,7 +80,7 @@ static C_VOID sgdt_sidt_seed(t_cpu *cpu)
     cpu->data.eflags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
 }
 
-static C_INT sgdt_sidt_gprs_flags_sregs_same(const t_cpu *before,
+static lib_i32 sgdt_sidt_gprs_flags_sregs_same(const t_cpu *before,
     const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
@@ -99,32 +100,32 @@ static C_INT sgdt_sidt_gprs_flags_sregs_same(const t_cpu *before,
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT sgdt_sidt_run(sgdt_sidt_machine *state,
+static lib_i32 sgdt_sidt_run(sgdt_sidt_machine *state,
     const lib_u8 *code, lib_size bytes, lib_u32 budget,
-    type_status *out_status, core_machine_run_result *out_result,
+    lib_status *out_status, core_machine_run_result *out_result,
     core_machine_cpu_diagnostic *out_diagnostic)
 {
     return core_machine_memory_write(state->machine, 0u, code, bytes) ==
-        TYPE_STATUS_OK && ((*out_status = core_machine_run(state->machine,
-        (core_machine_run_budget){budget, 0u}, out_result)) == TYPE_STATUS_OK ||
-        *out_status == TYPE_STATUS_FAULT) && core_machine_get_cpu_diagnostic(
-        state->machine, out_diagnostic) == TYPE_STATUS_OK;
+        LIB_STATUS_OK && ((*out_status = core_machine_run(state->machine,
+        (core_machine_run_budget){budget, 0u}, out_result)) == LIB_STATUS_OK ||
+        *out_status == LIB_STATUS_INTERNAL_ERROR) && core_machine_get_cpu_diagnostic(
+        state->machine, out_diagnostic) == LIB_STATUS_OK;
 }
 
-static C_VOID sgdt_sidt_expected_image(lib_u8 *image,
-    lib_u16 limit, lib_u32 base, C_INT operand32,
+static void sgdt_sidt_expected_image(lib_u8 *image,
+    lib_u16 limit, lib_u32 base, lib_i32 operand32,
     core_machine_cpu_profile profile)
 {
-    image[0] = TYPE_MASK_UNSIGNED_8(limit);
-    image[1] = TYPE_MASK_UNSIGNED_8(limit >> 8u);
-    image[2] = TYPE_MASK_UNSIGNED_8(base);
-    image[3] = TYPE_MASK_UNSIGNED_8(base >> 8u);
-    image[4] = TYPE_MASK_UNSIGNED_8(base >> 16u);
+    image[0] = CORE_MACHINE_MASK_U8(limit);
+    image[1] = CORE_MACHINE_MASK_U8(limit >> 8u);
+    image[2] = CORE_MACHINE_MASK_U8(base);
+    image[3] = CORE_MACHINE_MASK_U8(base >> 8u);
+    image[4] = CORE_MACHINE_MASK_U8(base >> 16u);
     image[5] = profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0xffu :
-        (operand32 ? TYPE_MASK_UNSIGNED_8(base >> 24u) : 0u);
+        (operand32 ? CORE_MACHINE_MASK_U8(base >> 24u) : 0u);
 }
 
-static C_INT sgdt_sidt_test_profiles_modes_and_attributes(C_VOID)
+static lib_i32 sgdt_sidt_test_profiles_modes_and_attributes(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
@@ -148,10 +149,10 @@ static C_INT sgdt_sidt_test_profiles_modes_and_attributes(C_VOID)
                     core_machine_run_result result;
                     core_machine_cpu_diagnostic diagnostic;
                     lib_u8 code[9], image[SGDT_SIDT_IMAGE_BYTES], expected[SGDT_SIDT_IMAGE_BYTES];
-                    type_status status = TYPE_STATUS_INVALID_STATE;
+                    lib_status status = LIB_STATUS_INVALID_STATE;
                     lib_u32 base = table ? 0x89abcdefu : 0x12345678u;
                     lib_u16 limit = table ? 0x1357u : 0x2468u;
-                    C_INT failed = !sgdt_sidt_prepare(&state, profiles[profile]);
+                    lib_i32 failed = !sgdt_sidt_prepare(&state, profiles[profile]);
 
                     lib_memory_copy(code, forms[form], lengths[form]);
                     code[form == 0u ? 2u : form == 1u ? 3u : form == 2u ? 3u : 4u] |= table << 3u;
@@ -165,19 +166,19 @@ static C_INT sgdt_sidt_test_profiles_modes_and_attributes(C_VOID)
                         state.machine->executor_cpu.data.idtr.limit = 0x1357u;
                         lib_memory_set(image, 0xa5, sizeof(image));
                         failed |= core_machine_memory_write(state.machine,
-                            SGDT_SIDT_DS_ADDRESS, image, sizeof(image)) != TYPE_STATUS_OK;
+                            SGDT_SIDT_DS_ADDRESS, image, sizeof(image)) != LIB_STATUS_OK;
                         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                         failed |= !sgdt_sidt_run(&state, code, lengths[form], 1u,
                             &status, &result, &diagnostic);
                         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                         sgdt_sidt_expected_image(expected, limit, base,
                             form == 1u || form == 3u, profiles[profile]);
-                        failed |= status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                        failed |= status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
                             after.data.eip != lengths[form] || !sgdt_sidt_gprs_flags_sregs_same(
                             &before, &after) || core_machine_memory_read_physical(
                             &state.machine->executor_memory, SGDT_SIDT_DS_ADDRESS,
-                            (type_virtual_address)image, sizeof(image)) != TYPE_STATUS_OK ||
+                            (lib_uptr)image, sizeof(image)) != LIB_STATUS_OK ||
                             lib_memory_compare(image, expected, sizeof(image)) != 0;
                     }
                     core_machine_destroy(state.machine);
@@ -186,7 +187,7 @@ static C_INT sgdt_sidt_test_profiles_modes_and_attributes(C_VOID)
     return 1;
 }
 
-static C_INT sgdt_sidt_test_address_segments_and_vm86(C_VOID)
+static lib_i32 sgdt_sidt_test_address_segments_and_vm86(void)
 {
     const lib_u8 lengths[] = {5u,4u,6u};
     const lib_u32 addresses[] = {0x0200u,
@@ -200,8 +201,8 @@ static C_INT sgdt_sidt_test_address_segments_and_vm86(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         lib_u8 code[6] = {0};
         lib_u8 image[SGDT_SIDT_IMAGE_BYTES], expected[SGDT_SIDT_IMAGE_BYTES];
-        type_status status = TYPE_STATUS_INVALID_STATE;
-        C_INT failed = !sgdt_sidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_status status = LIB_STATUS_INVALID_STATE;
+        lib_i32 failed = !sgdt_sidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed && form == 1u)
             failed |= core_machine_cpu_execution_load_segment(&state.machine->executor_cpu_execution,
@@ -231,7 +232,7 @@ static C_INT sgdt_sidt_test_address_segments_and_vm86(C_VOID)
             }
             lib_memory_set(image, 0x5a, sizeof(image));
             failed |= core_machine_memory_write(state.machine, addresses[form], image,
-                sizeof(image)) != TYPE_STATUS_OK;
+                sizeof(image)) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !sgdt_sidt_run(&state, code, lengths[form], 1u, &status,
                 &result, &diagnostic);
@@ -239,10 +240,10 @@ static C_INT sgdt_sidt_test_address_segments_and_vm86(C_VOID)
             sgdt_sidt_expected_image(expected, table ? 0xabceu : 0x2468u,
                 table ? 0x00c0ffeeu : 0x12345678u, 0,
                 CORE_MACHINE_CPU_PROFILE_80386);
-            failed |= status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            failed |= status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != lengths[form] || !sgdt_sidt_gprs_flags_sregs_same(&before,
                 &after) || core_machine_memory_read_physical(&state.machine->executor_memory,
-                addresses[form], (type_virtual_address)image, sizeof(image)) != TYPE_STATUS_OK ||
+                addresses[form], (lib_uptr)image, sizeof(image)) != LIB_STATUS_OK ||
                 lib_memory_compare(image, expected, sizeof(image)) != 0;
         }
         core_machine_destroy(state.machine);
@@ -253,10 +254,10 @@ static C_INT sgdt_sidt_test_address_segments_and_vm86(C_VOID)
         t_cpu before, after;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status = TYPE_STATUS_INVALID_STATE;
+        lib_status status = LIB_STATUS_INVALID_STATE;
         lib_u8 code[] = {0x0fu,0x01u,0x06u,0x00u,0x02u};
         lib_u8 image[SGDT_SIDT_IMAGE_BYTES], expected[SGDT_SIDT_IMAGE_BYTES];
-        C_INT failed = !sgdt_sidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !sgdt_sidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             sgdt_sidt_seed(&state.machine->executor_cpu);
@@ -270,12 +271,12 @@ static C_INT sgdt_sidt_test_address_segments_and_vm86(C_VOID)
             failed |= !sgdt_sidt_run(&state, code, sizeof(code), 1u, &status,
                 &result, &diagnostic) || core_machine_memory_read_physical(
                 &state.machine->executor_memory, SGDT_SIDT_DS_ADDRESS,
-                (type_virtual_address)image, sizeof(image)) != TYPE_STATUS_OK;
+                (lib_uptr)image, sizeof(image)) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             sgdt_sidt_expected_image(expected, table ? 0xabceu : 0x9876u,
                 table ? 0x00c0ffeeu : 0x12345678u, 0,
                 CORE_MACHINE_CPU_PROFILE_80386);
-            failed |= status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            failed |= status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != sizeof(code) || !sgdt_sidt_gprs_flags_sregs_same(
                 &before, &after) || lib_memory_compare(image, expected, sizeof(image)) != 0;
         }
@@ -285,15 +286,15 @@ static C_INT sgdt_sidt_test_address_segments_and_vm86(C_VOID)
     return 1;
 }
 
-static C_INT sgdt_sidt_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 sgdt_sidt_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_size bytes)
 {
     sgdt_sidt_machine state;
     t_cpu before, after;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    type_status status = TYPE_STATUS_INVALID_STATE;
-    C_INT failed = !sgdt_sidt_prepare(&state, profile);
+    lib_status status = LIB_STATUS_INVALID_STATE;
+    lib_i32 failed = !sgdt_sidt_prepare(&state, profile);
 
     if (!failed) {
         sgdt_sidt_seed(&state.machine->executor_cpu);
@@ -302,15 +303,15 @@ static C_INT sgdt_sidt_expect_ud(core_machine_cpu_profile profile,
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !sgdt_sidt_run(&state, code, bytes, 1u, &status, &result, &diagnostic);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+        failed |= status != LIB_STATUS_INTERNAL_ERROR || !diagnostic.first_fault.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             lib_memory_compare(&before.data, &after.data, sizeof(before.data)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT sgdt_sidt_test_rejections_and_atomicity(C_VOID)
+static lib_i32 sgdt_sidt_test_rejections_and_atomicity(void)
 {
     static const lib_u8 register_form[] = {0x0fu,0x01u,0xc0u};
     static const lib_u8 reserved_form[] = {0x0fu,0x01u,0x2eu,0x00u,0x02u};
@@ -346,8 +347,8 @@ static C_INT sgdt_sidt_test_rejections_and_atomicity(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         lib_u8 code[sizeof(sgdt)];
         lib_u8 image[SGDT_SIDT_IMAGE_BYTES];
-        type_status status = TYPE_STATUS_INVALID_STATE;
-        C_INT failed = !sgdt_sidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_status status = LIB_STATUS_INVALID_STATE;
+        lib_i32 failed = !sgdt_sidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             sgdt_sidt_enter_protected(&state, 0);
@@ -361,15 +362,15 @@ static C_INT sgdt_sidt_test_rejections_and_atomicity(C_VOID)
             code[2] |= table << 3u;
             lib_memory_set(image, 0x3c, sizeof(image));
             failed |= core_machine_memory_write(state.machine, 0x000eu, image,
-                sizeof(image)) != TYPE_STATUS_OK;
+                sizeof(image)) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !sgdt_sidt_run(&state, code, sizeof(code), 1u, &status,
                 &result, &diagnostic);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||
+            failed |= status != LIB_STATUS_INTERNAL_ERROR || !diagnostic.first_fault.valid ||
                 after.data.eip != 0u || !sgdt_sidt_gprs_flags_sregs_same(&before,
                 &after) || core_machine_memory_read_physical(&state.machine->executor_memory,
-                0x000eu, (type_virtual_address)image, sizeof(image)) != TYPE_STATUS_OK ||
+                0x000eu, (lib_uptr)image, sizeof(image)) != LIB_STATUS_OK ||
                 image[0] != 0x3cu || image[1] != 0x3cu || image[2] != 0x3cu ||
                 image[3] != 0x3cu || image[4] != 0x3cu || image[5] != 0x3cu;
         }
@@ -379,7 +380,7 @@ static C_INT sgdt_sidt_test_rejections_and_atomicity(C_VOID)
     return 1;
 }
 
-static C_INT sgdt_sidt_test_pending_pic(C_VOID)
+static lib_i32 sgdt_sidt_test_pending_pic(void)
 {
     static const lib_u8 hlt = 0xf4u;
     lib_u8 table;
@@ -392,9 +393,9 @@ static C_INT sgdt_sidt_test_pending_pic(C_VOID)
         lib_u8 code[] = {0x0fu,0x01u,0x06u,0x00u,0x02u,0x90u};
         lib_u8 image[SGDT_SIDT_IMAGE_BYTES], expected[SGDT_SIDT_IMAGE_BYTES];
         lib_u16 vector_offset = 0x0100u, vector_segment = 0u, frame = 0u;
-        type_status status = TYPE_STATUS_INVALID_STATE;
+        lib_status status = LIB_STATUS_INVALID_STATE;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !sgdt_sidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !sgdt_sidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         sgdt_sidt_seed(&state.machine->executor_cpu);
@@ -404,11 +405,11 @@ static C_INT sgdt_sidt_test_pending_pic(C_VOID)
         state.machine->executor_cpu.data.idtr.base = 0u;
         code[2] |= table << 3u;
         failed |= core_machine_memory_write(state.machine, 0x0080u, &vector_offset,
-            sizeof(vector_offset)) != TYPE_STATUS_OK || core_machine_memory_write(
+            sizeof(vector_offset)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x0082u, &vector_segment, sizeof(vector_segment)) !=
-            TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x0100u, &hlt,
-            sizeof(hlt)) != TYPE_STATUS_OK || core_machine_memory_write(state.machine,
-            0u, code, sizeof(code)) != TYPE_STATUS_OK;
+            LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x0100u, &hlt,
+            sizeof(hlt)) != LIB_STATUS_OK || core_machine_memory_write(state.machine,
+            0u, code, sizeof(code)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         lib_memory_set(&irq, 0, sizeof(irq));
         state.machine->shared_pic_master.data.icw2 = 0x20u;
@@ -417,21 +418,21 @@ static C_INT sgdt_sidt_test_pending_pic(C_VOID)
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         status = core_machine_run(state.machine, (core_machine_run_budget){2u,0u}, &result);
-        failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+        failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            SGDT_SIDT_DS_ADDRESS, (type_virtual_address)image, sizeof(image)) != TYPE_STATUS_OK;
+            SGDT_SIDT_DS_ADDRESS, (lib_uptr)image, sizeof(image)) != LIB_STATUS_OK;
         sgdt_sidt_expected_image(expected, table ? 0x03ffu : 0x2468u,
             table ? 0u : 0x12345678u, 0,
             CORE_MACHINE_CPU_PROFILE_80386);
-        failed |= status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+        failed |= status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || after.data.eip != 0x0101u ||
             after.data.eflags != (before.data.eflags & ~VCPU_EFLAGS_IF) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
             after.data.ss.base + (lib_u16)after.data.esp,
-            TYPE_REFERENCE_OF(frame), sizeof(frame)) != TYPE_STATUS_OK || frame != 5u ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
+            CORE_MACHINE_REFERENCE_OF(frame), sizeof(frame)) != LIB_STATUS_OK || frame != 5u ||
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
             lib_memory_compare(image, expected, sizeof(image)) != 0;
     }
     core_machine_destroy(state.machine);
@@ -443,7 +444,7 @@ static C_INT sgdt_sidt_test_pending_pic(C_VOID)
 /* MS-DOS uses this observable 80286-versus-80386 discriminator: the 80286
  * writes FF to SGDT's sixth byte, whereas the 80386 does not.  Keep the full
  * caller sequence here so the boot diagnosis is not inferred from a helper. */
-static C_INT sgdt_sidt_test_dos_cpu_discriminator(C_VOID)
+static lib_i32 sgdt_sidt_test_dos_cpu_discriminator(void)
 {
     static const lib_u8 code[] = {
         0x9cu, 0x58u,             /* pushf; pop ax */
@@ -472,14 +473,14 @@ static C_INT sgdt_sidt_test_dos_cpu_discriminator(C_VOID)
         sgdt_sidt_machine state;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status = TYPE_STATUS_INVALID_STATE;
-        C_INT failed = !sgdt_sidt_prepare(&state, cases[index].profile);
+        lib_status status = LIB_STATUS_INVALID_STATE;
+        lib_i32 failed = !sgdt_sidt_prepare(&state, cases[index].profile);
 
         if (!failed) {
             state.machine->executor_cpu.data.esp = 0x7000u;
             state.machine->executor_cpu.data.ebp = 0x0200u;
             failed |= !sgdt_sidt_run(&state, code, sizeof(code), 32u, &status,
-                &result, &diagnostic) || status != TYPE_STATUS_OK ||
+                &result, &diagnostic) || status != LIB_STATUS_OK ||
                 diagnostic.first_fault.valid || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 state.machine->executor_cpu.data.dx != cases[index].expected_dx;
@@ -490,23 +491,23 @@ static C_INT sgdt_sidt_test_dos_cpu_discriminator(C_VOID)
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!sgdt_sidt_test_profiles_modes_and_attributes()) {
-        STD_PRINTF("SGDT/SIDT stage=profiles-modes-attributes\n"); return 1;
+        printf("SGDT/SIDT stage=profiles-modes-attributes\n"); return 1;
     }
     if (!sgdt_sidt_test_address_segments_and_vm86()) {
-        STD_PRINTF("SGDT/SIDT stage=address-segments-vm86\n"); return 1;
+        printf("SGDT/SIDT stage=address-segments-vm86\n"); return 1;
     }
     if (!sgdt_sidt_test_rejections_and_atomicity()) {
-        STD_PRINTF("SGDT/SIDT stage=rejections-atomicity\n"); return 1;
+        printf("SGDT/SIDT stage=rejections-atomicity\n"); return 1;
     }
     if (!sgdt_sidt_test_pending_pic()) {
-        STD_PRINTF("SGDT/SIDT stage=pending-pic\n"); return 1;
+        printf("SGDT/SIDT stage=pending-pic\n"); return 1;
     }
     if (!sgdt_sidt_test_dos_cpu_discriminator()) {
-        STD_PRINTF("SGDT/SIDT stage=dos-cpu-discriminator\n"); return 1;
+        printf("SGDT/SIDT stage=dos-cpu-discriminator\n"); return 1;
     }
-    STD_PRINTF("M5:T318:S1:SGDT-SIDT:OK\n");
+    printf("M5:T318:S1:SGDT-SIDT:OK\n");
     return 0;
 }

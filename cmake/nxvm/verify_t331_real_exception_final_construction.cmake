@@ -10,14 +10,14 @@ endif()
 
 file(READ "${project_t331_cpu_source}" project_t331_cpu_text)
 string(FIND "${project_t331_cpu_text}"
-    "static type_bool _e_final_deliver_real_exception(" project_t331_helper)
+    "static lib_u8 _e_final_deliver_real_exception(" project_t331_helper)
 if(project_t331_helper EQUAL -1)
     message(FATAL_ERROR "T331 real final-delivery helper is missing.")
 endif()
 
-string(FIND "${project_t331_cpu_text}" "static C_VOID ExecFinal("
+string(FIND "${project_t331_cpu_text}" "static void ExecFinal("
     project_t331_final_start)
-string(FIND "${project_t331_cpu_text}" "static C_VOID ExecIns("
+string(FIND "${project_t331_cpu_text}" "static void ExecIns("
     project_t331_final_end)
 if(project_t331_final_start EQUAL -1 OR project_t331_final_end EQUAL -1 OR
         project_t331_final_end LESS project_t331_final_start)
@@ -37,8 +37,8 @@ if(NOT project_t331_real_delivery_count EQUAL 4)
 endif()
 
 foreach(project_t331_legacy_fragment IN ITEMS
-        "TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR)"
-        "TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM)")
+        "instruction_state.data.except &= ~VCPUINS_EXCEPT_BR"
+        "instruction_state.data.except &= ~VCPUINS_EXCEPT_NM")
     string(FIND "${project_t331_final_text}" "${project_t331_legacy_fragment}"
         project_t331_legacy_position)
     if(NOT project_t331_legacy_position EQUAL -1)

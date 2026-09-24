@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -12,7 +12,7 @@
 #include "../devices/support/core_machine_cpu_fixture.h"
 #include "support/rom/session_assets.h"
 
-static C_INT vm_pcat_s4_topology_matches(
+static lib_i32 vm_pcat_s4_topology_matches(
     const vm_machine *session,
     const vm_profile_default_pc_at_descriptor *profile)
 {
@@ -22,7 +22,7 @@ static C_INT vm_pcat_s4_topology_matches(
     const vm_profile_default_pc_at_route *cmos_route;
     const vm_profile_default_pc_at_route *fdc_route;
     lib_size index;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL ||
         profile == LIB_NULL) return 1;
@@ -86,27 +86,27 @@ static C_INT vm_pcat_s4_topology_matches(
     return failed;
 }
 
-static C_INT vm_pcat_s4_reset_state_matches(vm_machine *session,
+static lib_i32 vm_pcat_s4_reset_state_matches(vm_machine *session,
     const vm_profile_default_pc_at_descriptor *profile)
 {
     core_machine_timeline_observation timeline;
     vm_machine_reset_vector vector;
-    C_INT nmi_masked = LIB_TRUE;
+    lib_i32 nmi_masked = LIB_TRUE;
 
     return session == LIB_NULL || session->core_machine == LIB_NULL ||
         !session->active ||
-        vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
+        vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u ||
         core_machine_get_timeline_observation(session->core_machine,
-            &timeline) != TYPE_STATUS_OK ||
+            &timeline) != LIB_STATUS_OK ||
         timeline.now != 0u || timeline.pending_events != 0u ||
         timeline.next_sequence != 0u ||
         core_machine_get_nmi_mask(session->core_machine, &nmi_masked) !=
-            TYPE_STATUS_OK || nmi_masked ||
+            LIB_STATUS_OK || nmi_masked ||
         vm_pcat_s4_topology_matches(session, profile) != 0;
 }
 
-static C_INT vm_pcat_s4_reset_rearms_selected_machine(
+static lib_i32 vm_pcat_s4_reset_rearms_selected_machine(
     vm_machine *session,
     const vm_profile_default_pc_at_descriptor *profile)
 {
@@ -114,37 +114,37 @@ static C_INT vm_pcat_s4_reset_rearms_selected_machine(
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_timeline_observation timeline;
-    C_INT nmi_masked = LIB_FALSE;
+    lib_i32 nmi_masked = LIB_FALSE;
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL ||
         !test_core_machine_fixture_prepare_real_mode_execution(
             session->core_machine, 0x1000u) ||
         core_machine_memory_write(session->core_machine, 0x1000u, &nop,
-            sizeof(nop)) != TYPE_STATUS_OK ||
-        core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+            sizeof(nop)) != LIB_STATUS_OK ||
+        core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.elapsed_ticks == 0u ||
         core_machine_get_timeline_observation(session->core_machine,
-            &timeline) != TYPE_STATUS_OK || timeline.now == 0u) {
+            &timeline) != LIB_STATUS_OK || timeline.now == 0u) {
         return 1;
     }
     core_machine_port_write(&session->core_machine->executor_port,
         0x0070u, 0x80u);
     if (core_machine_get_nmi_mask(session->core_machine, &nmi_masked) !=
-            TYPE_STATUS_OK || !nmi_masked) return 1;
+            LIB_STATUS_OK || !nmi_masked) return 1;
     vm_machine_reset(session);
     return vm_pcat_s4_reset_state_matches(session, profile);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
     vm_machine *session = LIB_NULL;
-    C_INT failed;
+    lib_i32 failed;
 
     if (profile == LIB_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
-        vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+        vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
@@ -153,6 +153,6 @@ C_INT main(C_VOID)
         vm_pcat_s4_reset_rearms_selected_machine(session, profile) != 0;
     vm_machine_destroy(session);
     if (failed) return 1;
-    STD_PRINTF("M5:T353:S4:PCAT-COMPOSITION:OK\n");
+    printf("M5:T353:S4:PCAT-COMPOSITION:OK\n");
     return 0;
 }

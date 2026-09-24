@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/pic.h"
 
@@ -11,7 +12,7 @@
 #define S4_TSS_BASE 0x0500u
 #define S4_KERNEL_STACK_TOP 0x7000u
 
-static C_INT s4_prepare_user_stack(s3_gate_machine *state)
+static lib_i32 s4_prepare_user_stack(s3_gate_machine *state)
 {
     static const lib_u8 user_data[] = {
         0xffu,0xffu,0,0,0,0xf2u,0,0
@@ -27,7 +28,7 @@ static C_INT s4_prepare_user_stack(s3_gate_machine *state)
     return 1;
 }
 
-static C_INT s4_prepare_outer_entry(s3_gate_machine *state,
+static lib_i32 s4_prepare_outer_entry(s3_gate_machine *state,
     core_machine_cpu_profile profile, lib_u8 gate_type,
     lib_u8 gate_dpl)
 {
@@ -66,8 +67,8 @@ static C_INT s4_prepare_outer_entry(s3_gate_machine *state,
     return 1;
 }
 
-static C_INT s4_outer_entry(core_machine_cpu_profile profile,
-    lib_u8 gate_type, type_bool software_origin, type_bool nmi)
+static lib_i32 s4_outer_entry(core_machine_cpu_profile profile,
+    lib_u8 gate_type, lib_u8 software_origin, lib_u8 nmi)
 {
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 software[] = { 0xcdu,S3_VECTOR };
@@ -76,10 +77,10 @@ static C_INT s4_outer_entry(core_machine_cpu_profile profile,
     core_machine_run_result result;
     lib_u16 frame[5u] = { 0u,0u,0u,0u,0u };
     lib_u16 expected_ip = software_origin ? 2u : 1u;
-    type_bool expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
-    type_bool frame_read;
-    type_status run_status;
-    C_INT failed = !s4_prepare_outer_entry(&state, profile, gate_type,
+    lib_u8 expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
+    lib_u8 frame_read;
+    lib_status run_status;
+    lib_i32 failed = !s4_prepare_outer_entry(&state, profile, gate_type,
         software_origin ? 3u : 0u);
 
     lib_memory_set(&source, 0, sizeof(source));
@@ -106,7 +107,7 @@ static C_INT s4_outer_entry(core_machine_cpu_profile profile,
             &result);
         frame_read = s3_gate_read(&state, S4_KERNEL_STACK_TOP - sizeof(frame),
             frame, sizeof(frame));
-        failed |= run_status != TYPE_STATUS_OK || result.reason !=
+        failed |= run_status != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_BUDGET ||
             state.machine->executor_cpu.data.eip != S3_HANDLER ||
             state.machine->executor_cpu.data.cs.selector != 0x0008u ||
@@ -114,10 +115,10 @@ static C_INT s4_outer_entry(core_machine_cpu_profile profile,
             state.machine->executor_cpu.data.ss.selector != 0x0010u ||
             state.machine->executor_cpu.data.ss.dpl != 0u ||
             state.machine->executor_cpu.data.sp != S4_KERNEL_STACK_TOP -
-                sizeof(frame) || !TYPE_GET_BIT(state.machine->executor_cpu.data.eflags,
-                VCPU_EFLAGS_CF) || TYPE_GET_BIT(
+                sizeof(frame) || !CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags,
+                VCPU_EFLAGS_CF) || CORE_MACHINE_BIT_IS_SET(
                 state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
-            (TYPE_GET_BIT(state.machine->executor_cpu.data.eflags,
+            (CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags,
                 VCPU_EFLAGS_IF) != expect_if) ||
             !frame_read ||
             frame[0u] != expected_ip || frame[1u] != 0x001bu || frame[2u] !=
@@ -127,8 +128,8 @@ static C_INT s4_outer_entry(core_machine_cpu_profile profile,
         if (!failed && nmi) {
             failed |= state.machine->executor_cpu.data.flagNMI;
         } else if (!failed && !software_origin) {
-            failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
+            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
                 state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
         }
     }
@@ -136,14 +137,14 @@ static C_INT s4_outer_entry(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT s4_outer_software_dpl_error(C_VOID)
+static lib_i32 s4_outer_software_dpl_error(void)
 {
     static const lib_u8 software[] = { 0xcdu,S3_VECTOR };
     s3_gate_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     lib_u16 frame[6u] = { 0u,0u,0u,0u,0u,0u };
-    C_INT failed = !s4_prepare_outer_entry(&state,
+    lib_i32 failed = !s4_prepare_outer_entry(&state,
         CORE_MACHINE_CPU_PROFILE_80286, VCPU_DESC_SYS_TYPE_INTGATE_16, 0u);
 
     if (!failed) {
@@ -153,9 +154,9 @@ static C_INT s4_outer_software_dpl_error(C_VOID)
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE) || !s3_gate_write(
             &state, S3_CODE_BASE, software, sizeof(software)) ||
             core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
-                &result) != TYPE_STATUS_OK || result.reason !=
+                &result) != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_BUDGET || core_machine_get_cpu_diagnostic(
-                state.machine, &diagnostic) != TYPE_STATUS_OK ||
+                state.machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask !=
                 VCPUINS_EXCEPT_GP || state.machine->executor_cpu.data.eip !=
@@ -173,7 +174,7 @@ static C_INT s4_outer_software_dpl_error(C_VOID)
     return !failed;
 }
 
-static C_INT s4_rejected_cpu_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 s4_rejected_cpu_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx && before->data.edx == after->data.edx &&
@@ -189,8 +190,8 @@ static C_INT s4_rejected_cpu_same(const t_cpu *before, const t_cpu *after)
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT s4_external_event(core_machine_cpu_profile profile,
-    lib_u8 gate_type, type_bool nmi)
+static lib_i32 s4_external_event(core_machine_cpu_profile profile,
+    lib_u8 gate_type, lib_u8 nmi)
 {
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 loop[] = { 0xebu,0xfeu };
@@ -198,8 +199,8 @@ static C_INT s4_external_event(core_machine_cpu_profile profile,
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     lib_u16 frame[3u] = { 0u,0u,0u };
-    type_bool expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
-    C_INT failed = !s3_gate_prepare(&state, profile, LIB_TRUE, gate_type, 0u,
+    lib_u8 expect_if = gate_type == VCPU_DESC_SYS_TYPE_TRAPGATE_16;
+    lib_i32 failed = !s3_gate_prepare(&state, profile, LIB_TRUE, gate_type, 0u,
         LIB_TRUE);
 
     lib_memory_set(&source, 0, sizeof(source));
@@ -219,11 +220,11 @@ static C_INT s4_external_event(core_machine_cpu_profile profile,
             core_machine_pic_irq_source_deassert(&source);
         }
         if (core_machine_run(state.machine, (core_machine_run_budget){2u,0u},
-            &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             state.machine->executor_cpu.data.eip != S3_HANDLER ||
             state.machine->executor_cpu.data.esp != S3_STACK_TOP - 6u ||
-            TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
-            (TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) !=
+            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
+            (CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) !=
                 expect_if) || !s3_gate_read(&state, S3_STACK_TOP - 6u, frame,
                 sizeof(frame)) || frame[0] != 1u || frame[1] != 0x001bu ||
             frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF)) {
@@ -232,8 +233,8 @@ static C_INT s4_external_event(core_machine_cpu_profile profile,
         if (!failed && nmi) {
             failed |= state.machine->executor_cpu.data.flagNMI;
         } else if (!failed) {
-            failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
         }
     }
@@ -241,8 +242,8 @@ static C_INT s4_external_event(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT s4_rejected_event(lib_u8 gate_type, type_bool present,
-    type_bool nmi)
+static lib_i32 s4_rejected_event(lib_u8 gate_type, lib_u8 present,
+    lib_u8 nmi)
 {
     static const lib_u8 nop[] = { 0x90u };
     s3_gate_machine state;
@@ -253,7 +254,7 @@ static C_INT s4_rejected_event(lib_u8 gate_type, type_bool present,
     t_cpu after;
     lib_u16 stack_before[3u] = { 0x1357u,0x2468u,0x369cu };
     lib_u16 stack_after[3u] = { 0u,0u,0u };
-    C_INT failed = !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
         LIB_TRUE, gate_type, 0u, present);
 
     lib_memory_set(&source, 0, sizeof(source));
@@ -275,8 +276,8 @@ static C_INT s4_rejected_event(lib_u8 gate_type, type_bool present,
         }
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){8u,0u},
-            &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+            &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.first_fault.valid;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !s4_rejected_cpu_same(&before, &after) ||
@@ -286,8 +287,8 @@ static C_INT s4_rejected_event(lib_u8 gate_type, type_bool present,
         if (!failed && nmi) {
             failed |= !state.machine->executor_cpu.data.flagNMI;
         } else if (!failed) {
-            failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
         }
     }
@@ -295,9 +296,9 @@ static C_INT s4_rejected_event(lib_u8 gate_type, type_bool present,
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT failed = !s4_external_event(CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !s4_external_event(CORE_MACHINE_CPU_PROFILE_80286,
         VCPU_DESC_SYS_TYPE_INTGATE_16, LIB_FALSE) ||
         !s4_external_event(CORE_MACHINE_CPU_PROFILE_80286,
             VCPU_DESC_SYS_TYPE_TRAPGATE_16, LIB_TRUE) ||
@@ -317,6 +318,6 @@ C_INT main(C_VOID)
             LIB_TRUE);
 
     if (failed) return 1;
-    STD_PRINTF("M5:T323:S4:PROTECTED-16-EXTERNAL:OK\n");
+    printf("M5:T323:S4:PROTECTED-16-EXTERNAL:OK\n");
     return 0;
 }

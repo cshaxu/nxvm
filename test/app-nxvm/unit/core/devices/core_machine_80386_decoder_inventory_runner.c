@@ -1,16 +1,16 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/cpu_instructions.h"
 
 /* S8 records the 80386DX lexical decoder universe.  It is audit evidence,
  * not a timing or semantic conformance test. */
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    const C_CHAR *const path = PROJECT_TEST_80386_DECODER_PATH;
-    type_bool primary_seen[0x100] = { LIB_FALSE };
-    type_bool primary_masks[0x100][0x100] = { { LIB_FALSE } };
-    type_bool escaped_masks[0x100][0x100] = { { LIB_FALSE } };
+    const char *const path = PROJECT_TEST_80386_DECODER_PATH;
+    lib_u8 primary_seen[0x100] = { LIB_FALSE };
+    lib_u8 primary_masks[0x100][0x100] = { { LIB_FALSE } };
+    lib_u8 escaped_masks[0x100][0x100] = { { LIB_FALSE } };
     lib_u16 opcode;
     lib_u16 modrm;
     lib_u32 pairs = 0u;
@@ -76,7 +76,7 @@ C_INT main(C_VOID)
     if (fprintf(file, "\n  },\n  \"accepted_0f_modrm_masks\": {") < 0) return 1;
     for (opcode = 0u, escaped_count = 0u; opcode <= 0xffu; ++opcode) {
         lib_u16 byte;
-        type_bool any = LIB_FALSE;
+        lib_u8 any = LIB_FALSE;
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
             if (escaped_masks[opcode][modrm]) any = LIB_TRUE;
         }
@@ -95,6 +95,6 @@ C_INT main(C_VOID)
         ++escaped_count;
     }
     if (fprintf(file, "\n  }\n}\n") < 0 || fclose(file) != 0) return 1;
-    STD_PRINTF("M5:T435:S8:I386-DECODER-LEXEME:%u:%u\n", pairs, primary_count);
+    printf("M5:T435:S8:I386-DECODER-LEXEME:%u:%u\n", pairs, primary_count);
     return 0;
 }

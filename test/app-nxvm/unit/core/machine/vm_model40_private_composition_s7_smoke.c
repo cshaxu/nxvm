@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -8,7 +8,7 @@
 #include "app-nxvm/devices/port.h"
 #include "support/rom/model40_session_assets.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -25,16 +25,16 @@ C_INT main(C_VOID)
     lib_u8 rom_byte = 0u;
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
     lib_u8 fifo_count;
 
     even[0x3ff8u] = 0x26u;
     odd[0x3ff8u] = 0x90u;
 
     failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
-        TYPE_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
-        TYPE_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
+        LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
         session->core_machine->retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         session->core_machine->transaction_contract.external_cycle_timing.page_bytes != 2048u ||
@@ -64,33 +64,33 @@ C_INT main(C_VOID)
         session->core_machine->rtc_clock.numerator != 1u ||
         session->core_machine->rtc_clock.denominator != 1u ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
-            TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+            LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
-            TYPE_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
+            LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_BASEMEM_LSB] != 0x80u ||
         session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_BASEMEM_MSB] != 0x02u ||
         session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_EXTMEM_LSB] != 0u ||
         session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_EXTMEM_MSB] != 0x04u ||
         core_machine_get_d4_platform_observation(session->core_machine, &d4) !=
-            TYPE_STATUS_OK || !d4.configured || d4.iochk_enabled ||
+            LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
         core_machine_bus_read(session->core_machine, 0x07c6u, &value) !=
-            TYPE_STATUS_OK || value != 0u ||
+            LIB_STATUS_OK || value != 0u ||
         core_machine_bus_read(session->core_machine, 0x0bc6u, &value) !=
-            TYPE_STATUS_OK || value != 0x30u ||
+            LIB_STATUS_OK || value != 0x30u ||
         core_machine_bus_read(session->core_machine, 0x0fc6u, &value) !=
-            TYPE_STATUS_OK || value != 0x01u ||
+            LIB_STATUS_OK || value != 0x01u ||
         core_machine_bus_read(session->core_machine, 0x0061u, &value) !=
-            TYPE_STATUS_OK || value != 0x1fu ||
+            LIB_STATUS_OK || value != 0x1fu ||
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
-            sizeof(rom_byte)) != TYPE_STATUS_OK || rom_byte != 0x26u ||
+            sizeof(rom_byte)) != LIB_STATUS_OK || rom_byte != 0x26u ||
         session->core_machine->shared_kbc.connect.aux_present ||
         core_machine_bus_write(session->core_machine, 0x0061u, 0x02u) !=
-            TYPE_STATUS_OK || core_machine_get_speaker_observation(
-            session->core_machine, &speaker) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK || core_machine_get_speaker_observation(
+            session->core_machine, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
         !speaker.output || core_machine_bus_write(session->core_machine, 0x0061u,
-            0x0fu) != TYPE_STATUS_OK ||
+            0x0fu) != LIB_STATUS_OK ||
         session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         session->core_machine->shared_kbc.data.aux_enabled ||
@@ -100,7 +100,7 @@ C_INT main(C_VOID)
         /* Model-40 selects the existing generic-AT 2-tick initial prefetch
          * locality miss in addition to the deterministic base instruction tick. */
         failed |= core_machine_run(session->core_machine, budget, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             result.executed != 1u || result.ticks != 3u ||
             result.elapsed_ticks != 3u;
     }
@@ -112,7 +112,7 @@ C_INT main(C_VOID)
         event.data.relative_mouse.delta_y = 1;
         event.data.relative_mouse.buttons = 1u;
         fifo_count = session->core_machine->shared_kbc.data.fifo_count;
-        failed |= vm_machine_submit_host_input(session, &event) != TYPE_STATUS_OK;
+        failed |= vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK;
         failed |= session->core_machine->shared_kbc.data.fifo_count != fifo_count;
         core_machine_port_write(&session->core_machine->executor_port,
             0x0064u, 0xa8u);
@@ -129,11 +129,11 @@ C_INT main(C_VOID)
             session->core_machine->shared_kbc.data.pending_write !=
                 CORE_MACHINE_KBC_PENDING_NONE;
     }
-    if (!failed) STD_PRINTF("M5:T386:S7:MODEL40-PRIVATE-COMPOSITION:OK\n");
-    if (!failed) STD_PRINTF("M5:T421:S1:MODEL40-SPEAKER-SELECTION:OK\n");
-    if (!failed) STD_PRINTF("M5:T386:S7:EXTERNAL-ROM-GUARD:OK\n");
-    if (!failed) STD_PRINTF("M5:T390:S34:MODEL40-DETERMINISTIC-CONTRACT:OK\n");
-    if (!failed) STD_PRINTF("M5:T477:S3:DESKPRO-SESSION-CUTOVER:OK\n");
+    if (!failed) printf("M5:T386:S7:MODEL40-PRIVATE-COMPOSITION:OK\n");
+    if (!failed) printf("M5:T421:S1:MODEL40-SPEAKER-SELECTION:OK\n");
+    if (!failed) printf("M5:T386:S7:EXTERNAL-ROM-GUARD:OK\n");
+    if (!failed) printf("M5:T390:S34:MODEL40-DETERMINISTIC-CONTRACT:OK\n");
+    if (!failed) printf("M5:T477:S3:DESKPRO-SESSION-CUTOVER:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

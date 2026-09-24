@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -16,12 +17,12 @@ typedef struct verr_verw_s58_machine {
     core_machine *machine;
 } verr_verw_s58_machine;
 
-static C_VOID verr_verw_s58_reset(C_VOID *opaque)
+static void verr_verw_s58_reset(void *opaque)
 {
     verr_verw_s58_machine *state = (verr_verw_s58_machine *)opaque;
 
     if (state != LIB_NULL) {
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
     }
 }
 
@@ -30,7 +31,7 @@ static const core_machine_execution_provider verr_verw_s58_execution_provider = 
     LIB_NULL
 };
 
-static C_INT verr_verw_s58_prepare(verr_verw_s58_machine *state,
+static lib_i32 verr_verw_s58_prepare(verr_verw_s58_machine *state,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -43,7 +44,7 @@ static C_INT verr_verw_s58_prepare(verr_verw_s58_machine *state,
         return 0;
     }
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) {
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) {
         return 0;
     }
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
@@ -55,7 +56,7 @@ static C_INT verr_verw_s58_prepare(verr_verw_s58_machine *state,
     return 1;
 }
 
-static C_INT verr_verw_s58_install_gdt(core_machine *machine)
+static lib_i32 verr_verw_s58_install_gdt(core_machine *machine)
 {
     static const lib_u8 pointer[] = {
         0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
@@ -71,12 +72,12 @@ static C_INT verr_verw_s58_install_gdt(core_machine *machine)
     };
 
     return core_machine_memory_write(machine, VERR_VERW_S58_GDT_POINTER_ADDRESS,
-        pointer, sizeof(pointer)) == TYPE_STATUS_OK &&
+        pointer, sizeof(pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, VERR_VERW_S58_GDT_ADDRESS, gdt,
-            sizeof(gdt)) == TYPE_STATUS_OK;
+            sizeof(gdt)) == LIB_STATUS_OK;
 }
 
-static C_INT verr_verw_s58_boot_protected(verr_verw_s58_machine *state,
+static lib_i32 verr_verw_s58_boot_protected(verr_verw_s58_machine *state,
     t_cpu *out_cpu)
 {
     static const lib_u8 real_code[] = {
@@ -101,16 +102,16 @@ static C_INT verr_verw_s58_boot_protected(verr_verw_s58_machine *state,
     if (state == LIB_NULL || state->machine == LIB_NULL || out_cpu == LIB_NULL ||
         !verr_verw_s58_install_gdt(state->machine) ||
         core_machine_memory_write(state->machine, 0x0110u, idt_pointer,
-            sizeof(idt_pointer)) != TYPE_STATUS_OK ||
+            sizeof(idt_pointer)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, 0x0400u, idt, sizeof(idt)) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, VERR_VERW_S58_CODE_ADDRESS +
-            0x100u, halt, sizeof(halt)) != TYPE_STATUS_OK ||
+            0x100u, halt, sizeof(halt)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, 0u, real_code,
-            sizeof(real_code)) != TYPE_STATUS_OK ||
+            sizeof(real_code)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, VERR_VERW_S58_CODE_ADDRESS,
-            halt, sizeof(halt)) != TYPE_STATUS_OK ||
-        core_machine_run(state->machine, budget, &result) != TYPE_STATUS_OK ||
+            halt, sizeof(halt)) != LIB_STATUS_OK ||
+        core_machine_run(state->machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         return 0;
     }
@@ -118,7 +119,7 @@ static C_INT verr_verw_s58_boot_protected(verr_verw_s58_machine *state,
     return 1;
 }
 
-static C_INT verr_verw_s58_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 verr_verw_s58_sregs_same(const t_cpu *before, const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
         sizeof(before->data.es)) == 0 &&
@@ -134,7 +135,7 @@ static C_INT verr_verw_s58_sregs_same(const t_cpu *before, const t_cpu *after)
             sizeof(before->data.gs)) == 0;
 }
 
-static C_INT verr_verw_s58_non_eax_gprs_same(const t_cpu *before,
+static lib_i32 verr_verw_s58_non_eax_gprs_same(const t_cpu *before,
     const t_cpu *after)
 {
     return before->data.ecx == after->data.ecx &&
@@ -146,7 +147,7 @@ static C_INT verr_verw_s58_non_eax_gprs_same(const t_cpu *before,
         before->data.edi == after->data.edi;
 }
 
-static C_INT verr_verw_s58_run_halt(verr_verw_s58_machine *state,
+static lib_i32 verr_verw_s58_run_halt(verr_verw_s58_machine *state,
     const lib_u8 *code, lib_size code_size, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 16u, 0u };
@@ -154,11 +155,11 @@ static C_INT verr_verw_s58_run_halt(verr_verw_s58_machine *state,
 
     if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
         out_cpu == LIB_NULL || core_machine_memory_write(state->machine,
-            VERR_VERW_S58_CODE_ADDRESS, code, code_size) != TYPE_STATUS_OK) {
+            VERR_VERW_S58_CODE_ADDRESS, code, code_size) != LIB_STATUS_OK) {
         return 0;
     }
     test_core_machine_fixture_resume_after_halt_at(state->machine, 0u);
-    if (core_machine_run(state->machine, budget, &result) != TYPE_STATUS_OK ||
+    if (core_machine_run(state->machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         return 0;
     }
@@ -166,7 +167,7 @@ static C_INT verr_verw_s58_run_halt(verr_verw_s58_machine *state,
     return 1;
 }
 
-static C_INT verr_verw_s58_test_outcomes(C_VOID)
+static lib_i32 verr_verw_s58_test_outcomes(void)
 {
     static const lib_u16 selectors[] = {
         0x0010u, 0x0008u, 0x0020u, 0x0018u, 0x0000u, 0x0013u
@@ -194,7 +195,7 @@ static C_INT verr_verw_s58_test_outcomes(C_VOID)
                 t_cpu after;
                 const lib_u8 expected_zf = query ? expected_verw[selector_index] :
                     expected_verr[selector_index];
-                C_INT failed = !verr_verw_s58_prepare(&state,
+                lib_i32 failed = !verr_verw_s58_prepare(&state,
                     profiles[profile_index]);
 
                 if (!failed) {
@@ -212,7 +213,7 @@ static C_INT verr_verw_s58_test_outcomes(C_VOID)
                         &after);
                     failed |= after.data.eax != (0xa1a10000u |
                         selectors[selector_index]) || after.data.eip != 7u ||
-                        !!TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) !=
+                        !!CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) !=
                             expected_zf ||
                         (after.data.eflags & ~VCPU_EFLAGS_ZF) !=
                             (before.data.eflags & ~VCPU_EFLAGS_ZF) ||
@@ -229,7 +230,7 @@ static C_INT verr_verw_s58_test_outcomes(C_VOID)
     return 1;
 }
 
-static C_INT verr_verw_s58_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 verr_verw_s58_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_size code_size)
 {
     const core_machine_run_budget budget = { 16u, 0u };
@@ -238,7 +239,7 @@ static C_INT verr_verw_s58_expect_ud(core_machine_cpu_profile profile,
     verr_verw_s58_machine state;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !verr_verw_s58_prepare(&state, profile);
+    lib_i32 failed = !verr_verw_s58_prepare(&state, profile);
 
     if (!failed) {
         state.machine->executor_cpu.data.eax = 0xa1a10010u;
@@ -250,13 +251,13 @@ static C_INT verr_verw_s58_expect_ud(core_machine_cpu_profile profile,
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_write(state.machine, 0u, code, code_size) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
         failed |= core_machine_run(state.machine, budget, &result) !=
-            TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+            LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD);
         failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
     }
@@ -264,7 +265,7 @@ static C_INT verr_verw_s58_expect_ud(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT verr_verw_s58_test_prefix_and_rejection(C_VOID)
+static lib_i32 verr_verw_s58_test_prefix_and_rejection(void)
 {
     static const lib_u8 default_verr[] = { 0x0fu, 0x00u, 0xe0u };
     static const lib_u8 default_verw[] = { 0x0fu, 0x00u, 0xe8u };
@@ -334,7 +335,7 @@ static C_INT verr_verw_s58_test_prefix_and_rejection(C_VOID)
             if (!verr_verw_s58_run_halt(&state, code, (lib_size)length + 1u,
                     &after) || after.data.eip != (lib_u32)length + 1u ||
                 after.data.eax != before.data.eax ||
-                !TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) ||
+                !CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) ||
                 (after.data.eflags & ~VCPU_EFLAGS_ZF) !=
                     (before.data.eflags & ~VCPU_EFLAGS_ZF) ||
                 !verr_verw_s58_non_eax_gprs_same(&before, &after) ||
@@ -356,7 +357,7 @@ static C_INT verr_verw_s58_test_prefix_and_rejection(C_VOID)
     }
     return 1;
 }
-static C_INT verr_verw_s58_test_memory_sources(C_VOID)
+static lib_i32 verr_verw_s58_test_memory_sources(void)
 {
     static const lib_u8 verr_codes[][9] = {
         { 0x0fu, 0x00u, 0x26u, 0x10u, 0x00u, 0xf4u },
@@ -381,7 +382,7 @@ static C_INT verr_verw_s58_test_memory_sources(C_VOID)
             t_cpu after;
             lib_u16 selector = 0x0010u;
             const lib_u32 source_address = 0x3010u;
-            C_INT failed = !verr_verw_s58_prepare(&state,
+            lib_i32 failed = !verr_verw_s58_prepare(&state,
                 CORE_MACHINE_CPU_PROFILE_80386);
 
             if (!failed) {
@@ -394,11 +395,11 @@ static C_INT verr_verw_s58_test_memory_sources(C_VOID)
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= core_machine_memory_write(state.machine, source_address,
-                    &selector, sizeof(selector)) != TYPE_STATUS_OK;
+                    &selector, sizeof(selector)) != LIB_STATUS_OK;
                 failed = failed || !verr_verw_s58_run_halt(&state, codes[form],
                     lengths[form], &after);
                 failed |= after.data.eip != lengths[form] ||
-                    !TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) ||
+                    !CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) ||
                     (after.data.eflags & ~VCPU_EFLAGS_ZF) !=
                         (before.data.eflags & ~VCPU_EFLAGS_ZF) ||
                     !verr_verw_s58_non_eax_gprs_same(&before, &after) ||
@@ -412,7 +413,7 @@ static C_INT verr_verw_s58_test_memory_sources(C_VOID)
     }
     return 1;
 }
-static C_INT verr_verw_s58_test_source_limit(C_VOID)
+static lib_i32 verr_verw_s58_test_source_limit(void)
 {
     static const lib_u8 verr_codes[][5] = {
         { 0x0fu, 0x00u, 0x26u, 0x10u, 0x00u },
@@ -437,7 +438,7 @@ static C_INT verr_verw_s58_test_source_limit(C_VOID)
             t_cpu before;
             t_cpu after;
             lib_u16 selector = 0x0010u;
-            C_INT failed = !verr_verw_s58_prepare(&state,
+            lib_i32 failed = !verr_verw_s58_prepare(&state,
                 CORE_MACHINE_CPU_PROFILE_80386);
 
             if (!failed) {
@@ -455,22 +456,22 @@ static C_INT verr_verw_s58_test_source_limit(C_VOID)
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= core_machine_memory_write(state.machine, 0x3010u,
-                    &selector, sizeof(selector)) != TYPE_STATUS_OK;
+                    &selector, sizeof(selector)) != LIB_STATUS_OK;
                 failed |= core_machine_memory_write(state.machine,
                     VERR_VERW_S58_CODE_ADDRESS, codes[form], lengths[form]) !=
-                    TYPE_STATUS_OK;
+                    LIB_STATUS_OK;
                 test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
                 failed |= core_machine_run(state.machine, budget, &result) !=
-                    TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+                    LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT;
                 after = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= core_machine_get_cpu_diagnostic(state.machine,
-                    &diagnostic) != TYPE_STATUS_OK ||
+                    &diagnostic) != LIB_STATUS_OK ||
                     !diagnostic.first_fault.valid ||
-                    !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                    !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                         VCPUINS_EXCEPT_DF);                failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                    0x3010u, (type_virtual_address)&selector, sizeof(selector)) !=
-                    TYPE_STATUS_OK;
+                    0x3010u, (lib_uptr)&selector, sizeof(selector)) !=
+                    LIB_STATUS_OK;
                 failed |= after.data.eip != 0u ||
                     after.data.eax != before.data.eax ||
                     after.data.eflags != before.data.eflags ||
@@ -486,7 +487,7 @@ static C_INT verr_verw_s58_test_source_limit(C_VOID)
     }
     return 1;
 }
-static C_INT verr_verw_s58_test_vm86(C_VOID)
+static lib_i32 verr_verw_s58_test_vm86(void)
 {
     static const lib_u8 codes[][3] = {
         { 0x0fu, 0x00u, VERR_VERW_S58_VERR_MODRM },
@@ -501,7 +502,7 @@ static C_INT verr_verw_s58_test_vm86(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !verr_verw_s58_prepare(&state,
+        lib_i32 failed = !verr_verw_s58_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -521,13 +522,13 @@ static C_INT verr_verw_s58_test_vm86(C_VOID)
             state.machine->executor_cpu.data.eax = 0xa1a10010u;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_write(state.machine, 0u, codes[query],
-                sizeof(codes[query])) != TYPE_STATUS_OK;
+                sizeof(codes[query])) != LIB_STATUS_OK;
             failed |= core_machine_run(state.machine, budget, &result) !=
-                TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+                LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                LIB_STATUS_OK || !diagnostic.first_fault.valid ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
             failed |= after.data.eip != before.data.eip ||
                 after.data.eax != before.data.eax ||
@@ -542,7 +543,7 @@ static C_INT verr_verw_s58_test_vm86(C_VOID)
     }
     return 1;
 }
-static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
+static lib_i32 verr_verw_s58_test_pic_no_shadow(void)
 {
     static const lib_u8 codes[][5] = {
         { 0xfbu, 0x0fu, 0x00u, VERR_VERW_S58_VERR_MODRM, 0x90u },
@@ -557,7 +558,7 @@ static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
         t_cpu before;
         t_cpu after;
         lib_u32 frame[3u] = { 0u };
-        C_INT failed = !verr_verw_s58_prepare(&state,
+        lib_i32 failed = !verr_verw_s58_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -570,7 +571,7 @@ static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_write(state.machine,
                 VERR_VERW_S58_CODE_ADDRESS, codes[query], sizeof(codes[query])) !=
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             lib_memory_set(&source, 0, sizeof(source));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
@@ -579,11 +580,11 @@ static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK;
+                (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
                 after.data.eip != 0x100u || after.data.eax != before.data.eax ||
-                !TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) ||
+                !CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) ||
                 after.data.ecx != before.data.ecx ||
                 after.data.edx != before.data.edx ||
                 after.data.ebx != before.data.ebx ||
@@ -591,15 +592,15 @@ static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
                 after.data.esi != before.data.esi ||
                 after.data.edi != before.data.edi ||
                 !verr_verw_s58_sregs_same(&before, &after) ||
-                !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                    VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
+                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                    VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
                         state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
-                frame[0u] != 4u || !TYPE_GET_BIT(frame[2u], VCPU_EFLAGS_ZF) ||
-                !TYPE_GET_BIT(frame[2u], VCPU_EFLAGS_IF) ||
-                !TYPE_GET_BIT(frame[2u], VCPU_EFLAGS_CF);
+                (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK ||
+                frame[0u] != 4u || !CORE_MACHINE_BIT_IS_SET(frame[2u], VCPU_EFLAGS_ZF) ||
+                !CORE_MACHINE_BIT_IS_SET(frame[2u], VCPU_EFLAGS_IF) ||
+                !CORE_MACHINE_BIT_IS_SET(frame[2u], VCPU_EFLAGS_CF);
         }
         core_machine_destroy(state.machine);
         if (failed) {
@@ -608,7 +609,7 @@ static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
     }
     return 1;
 }
-static C_INT verr_verw_s58_test_ldt_selector(C_VOID)
+static lib_i32 verr_verw_s58_test_ldt_selector(void)
 {
     static const lib_u8 ldt_descriptor[] = {
         0xffu, 0xffu, 0x00u, 0x70u, 0x00u, 0x92u, 0x00u, 0x00u
@@ -624,17 +625,17 @@ static C_INT verr_verw_s58_test_ldt_selector(C_VOID)
     for (query = 0u; query != 2u; ++query) {
         verr_verw_s58_machine state;
         t_cpu after;
-        C_INT failed = !verr_verw_s58_prepare(&state,
+        lib_i32 failed = !verr_verw_s58_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             failed |= core_machine_memory_write(state.machine, 0x0508u,
-                ldt_descriptor, sizeof(ldt_descriptor)) != TYPE_STATUS_OK;
+                ldt_descriptor, sizeof(ldt_descriptor)) != LIB_STATUS_OK;
             failed = failed || !verr_verw_s58_boot_protected(&state, &after);
             failed = failed || !verr_verw_s58_run_halt(&state, codes[query], 13u,
                 &after);
             failed |= after.data.eip != 13u ||
-                !TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) ||
+                !CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) ||
                 !after.data.ldtr.flagValid || after.data.ldtr.selector != 0x0030u;
         }
         core_machine_destroy(state.machine);
@@ -644,7 +645,7 @@ static C_INT verr_verw_s58_test_ldt_selector(C_VOID)
     }
     return 1;
 }
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!verr_verw_s58_test_outcomes() ||
         !verr_verw_s58_test_prefix_and_rejection() ||
@@ -653,9 +654,9 @@ C_INT main(C_VOID)
         !verr_verw_s58_test_vm86() ||
         !verr_verw_s58_test_pic_no_shadow() ||
         !verr_verw_s58_test_ldt_selector()) {
-        STD_FPRINTF(STD_STDERR, "S58 outcomes failed\n");
+        fprintf(stderr, "S58 outcomes failed\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S58:VERR-VERW:OK\n");
+    printf("M5:T316:S58:VERR-VERW:OK\n");
     return 0;
 }

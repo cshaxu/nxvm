@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -11,7 +11,7 @@
 #include "app-nxvm/devices/port.h"
 #include "support/rom/model40_session_assets.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -28,33 +28,33 @@ C_INT main(C_VOID)
     lib_u8 sense_status = 0u;
     lib_u8 sense_cylinder = 0u;
     lib_u8 reset_status[CORE_MACHINE_FDC_DRIVE_COUNT] = {0};
-    C_INT failed = 0;
-    C_INT stage = 0;
+    lib_i32 failed = 0;
+    lib_i32 stage = 0;
     lib_u8 fifo_count;
 
     even[0x3ff8u] = 0xa5u;
 
     failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
-        TYPE_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
+        LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
-        TYPE_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
+        LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
-            TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+            LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
-            TYPE_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
+            LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
         core_machine_get_d4_platform_observation(session->core_machine, &d4) !=
-            TYPE_STATUS_OK || !d4.configured || d4.iochk_enabled ||
+            LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
         core_machine_bus_read(session->core_machine, 0x07c6u, &value) !=
-            TYPE_STATUS_OK || value != 0u ||
+            LIB_STATUS_OK || value != 0u ||
         core_machine_bus_read(session->core_machine, 0x0bc6u, &value) !=
-            TYPE_STATUS_OK || value != 0x30u ||
+            LIB_STATUS_OK || value != 0x30u ||
         core_machine_bus_read(session->core_machine, 0x0fc6u, &value) !=
-            TYPE_STATUS_OK || value != 0x01u ||
+            LIB_STATUS_OK || value != 0x01u ||
         core_machine_bus_read(session->core_machine, 0x0061u, &value) !=
-            TYPE_STATUS_OK || value != 0x1fu ||
+            LIB_STATUS_OK || value != 0x1fu ||
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
-            sizeof(rom_byte)) != TYPE_STATUS_OK || rom_byte != 0xa5u ||
+            sizeof(rom_byte)) != LIB_STATUS_OK || rom_byte != 0xa5u ||
         session->core_machine->shared_kbc.connect.aux_present ||
             session->core_machine->shared_kbc.data.aux_enabled ||
         (session->core_machine->shared_kbc.data.command_byte &
@@ -68,7 +68,7 @@ C_INT main(C_VOID)
         event.data.relative_mouse.delta_y = 1;
         event.data.relative_mouse.buttons = 1u;
         fifo_count = session->core_machine->shared_kbc.data.fifo_count;
-        failed |= vm_machine_submit_host_input(session, &event) != TYPE_STATUS_OK;
+        failed |= vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK;
         failed |= session->core_machine->shared_kbc.data.fifo_count != fifo_count;
         core_machine_port_write(&session->core_machine->executor_port,
             0x0064u, 0xa8u);
@@ -147,7 +147,7 @@ C_INT main(C_VOID)
         core_machine_hdc_advance(&session->core_machine->hdc);
         failed |= session->core_machine->hdc.data.error != 0x01u ||
             !core_machine_hdc_irq_pending(&session->core_machine->hdc);
-        (C_VOID)core_machine_port_read(&session->core_machine->executor_port,
+        (void)core_machine_port_read(&session->core_machine->executor_port,
             0x01f7u);
         failed |= core_machine_hdc_irq_pending(&session->core_machine->hdc);
         core_machine_port_write(&session->core_machine->executor_port,
@@ -160,7 +160,7 @@ C_INT main(C_VOID)
         if (failed) stage = 5;
     }
     if (failed && session != LIB_NULL) {
-        STD_PRINTF("M5:T386:S8:MODEL40-INTEGRATION:FAILED-stage=%u-fdc=%02X/%02X-cmos=%02X-reset=%02X,%02X,%02X,%02X-final=%02X\n",
+        printf("M5:T386:S8:MODEL40-INTEGRATION:FAILED-stage=%u-fdc=%02X/%02X-cmos=%02X-reset=%02X,%02X,%02X,%02X-final=%02X\n",
             (unsigned int)stage,
             (unsigned int)session->core_machine->fdc_topology.drives.installed_mask,
             (unsigned int)session->core_machine->fdc_topology.drives.track_zero_active_low_mask,
@@ -169,8 +169,8 @@ C_INT main(C_VOID)
             (unsigned int)reset_status[1u], (unsigned int)reset_status[2u],
             (unsigned int)reset_status[3u], (unsigned int)sense_status);
     }
-    if (!failed) STD_PRINTF("M5:T386:S8:MODEL40-INTEGRATION:OK\n");
-    if (!failed) STD_PRINTF("M5:T386:S8:MODEL40-CONTROLS:OK\n");
+    if (!failed) printf("M5:T386:S8:MODEL40-INTEGRATION:OK\n");
+    if (!failed) printf("M5:T386:S8:MODEL40-CONTROLS:OK\n");
     vm_machine_destroy(session);
     return failed ? 1 : 0;
 }

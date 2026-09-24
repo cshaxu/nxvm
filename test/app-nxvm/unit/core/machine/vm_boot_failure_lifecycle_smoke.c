@@ -1,15 +1,15 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
 #include "app-nxvm/machine/machine_private.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK) {
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK) {
         vm_machine_destroy(session);
         return 1;
     }
@@ -19,6 +19,6 @@ C_INT main(C_VOID)
         return 1;
     }
     vm_machine_destroy(session);
-    STD_PRINTF("M5:T211:S3:BOOT-FAILURE-LIFECYCLE:OK\n");
+    printf("M5:T211:S3:BOOT-FAILURE-LIFECYCLE:OK\n");
     return 0;
 }

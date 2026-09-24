@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -8,13 +8,13 @@
 #include "app-nxvm/machine/media/hdd.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
-static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)
+static lib_i32 verify(const char *directory, const char *file_name)
 {
     integration_ini_session ini_session;
     vm_machine_reset_vector vector;
     vm_machine *session;
 
-    if (integration_ini_session_open(directory, file_name, &ini_session) != TYPE_STATUS_OK) {
+    if (integration_ini_session_open(directory, file_name, &ini_session) != LIB_STATUS_OK) {
         return -1;
     }
     session = ini_session.session;
@@ -26,7 +26,7 @@ static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)
     vm_machine_reset(session);
     if (vm_machine_fdd_remove_for(&session->fdd) ||
         vm_machine_hdd_remove(&session->hdd) ||
-        vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
+        vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         integration_ini_session_close(&ini_session);
         return 1;
@@ -35,10 +35,10 @@ static C_INT verify(const C_CHAR *directory, const C_CHAR *file_name)
     return 0;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
-    C_INT floppy_result;
-    C_INT fixed_disk_result;
+    lib_i32 floppy_result;
+    lib_i32 fixed_disk_result;
 
     if (argc != 4) return 1;
     floppy_result = verify(argv[1], argv[2]);

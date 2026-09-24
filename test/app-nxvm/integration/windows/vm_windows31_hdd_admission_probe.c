@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include <windows.h>
 
@@ -19,7 +19,7 @@
 
 static lib_u8 vm_t287_probe_fdd[VM_T287_PROBE_FDD_BYTES];
 
-static C_INT vm_t287_probe_build_fdd(lib_u8 **out_bytes, lib_size *out_count)
+static lib_i32 vm_t287_probe_build_fdd(lib_u8 **out_bytes, lib_size *out_count)
 {
     static const lib_u8 boot_code[] = {
         0x31u, 0xc0u,                         /* xor ax,ax */
@@ -68,16 +68,16 @@ static C_INT vm_t287_probe_build_fdd(lib_u8 **out_bytes, lib_size *out_count)
     return 1;
 }
 
-static type_status vm_t287_probe_install_boot_overlay(
-    integration_ini_session *ini_session, C_VOID *opaque)
+static lib_status vm_t287_probe_install_boot_overlay(
+    integration_ini_session *ini_session, void *opaque)
 {
     lib_u8 *bytes;
     lib_size count;
 
-    (C_VOID)opaque;
+    (void)opaque;
     return ini_session != LIB_NULL && vm_t287_probe_build_fdd(&bytes, &count) &&
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
-            bytes, count) == TYPE_STATUS_OK ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+            bytes, count) == LIB_STATUS_OK ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
 static lib_u32 vm_t287_probe_lba(const lib_u8 *entry)
@@ -86,7 +86,7 @@ static lib_u32 vm_t287_probe_lba(const lib_u8 *entry)
         ((lib_u32)entry[10] << 16u) | ((lib_u32)entry[11] << 24u);
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     const core_machine_run_budget budget = {1u, 0u};
     integration_ini_session ini_session = {0};
@@ -114,18 +114,18 @@ C_INT main(C_INT argc, C_CHAR **argv)
     lib_u8 first_cylinder_high = 0u;
     lib_u8 first_drive_head = 0u;
     lib_u32 first_command_count = 0u;
-    C_INT passed = 0;
+    lib_i32 passed = 0;
     lib_size mbr_mismatch = sizeof(guest_mbr);
     lib_size vbr_mismatch = sizeof(guest_vbr);
 
     if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
-            vm_t287_probe_install_boot_overlay, LIB_NULL, &ini_session) != TYPE_STATUS_OK) {
+            vm_t287_probe_install_boot_overlay, LIB_NULL, &ini_session) != LIB_STATUS_OK) {
         return 77;
     }
     session = ini_session.session;
     if (session == LIB_NULL || integration_ini_session_overlay_read(&ini_session,
-            VM_MACHINE_MEDIA_HDD_ID, (C_VOID **)&hdd_overlay, &hdd_overlay_count) !=
-            TYPE_STATUS_OK || hdd_overlay_count < 1024u * 1024u) goto done;
+            VM_MACHINE_MEDIA_HDD_ID, (void **)&hdd_overlay, &hdd_overlay_count) !=
+            LIB_STATUS_OK || hdd_overlay_count < 1024u * 1024u) goto done;
     lib_memory_copy(host_mbr, hdd_overlay, sizeof(host_mbr));
     entry = host_mbr + 446u;
     lba = vm_t287_probe_lba(entry);
@@ -133,16 +133,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
             sizeof(host_vbr) > hdd_overlay_count) goto done;
     lib_memory_copy(host_vbr, hdd_overlay + (lib_size)lba * 512u, sizeof(host_vbr));
     if (core_machine_debug_read_memory(session->core_machine, 0x004cu, int13_vector,
-            sizeof(int13_vector)) != TYPE_STATUS_OK) goto done;
+            sizeof(int13_vector)) != LIB_STATUS_OK) goto done;
     for (instruction = 0u; instruction < VM_T287_PROBE_BUDGET; ++instruction) {
-        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT || core_machine_debug_read_memory(
                 session->core_machine, VM_T287_PROBE_RESULT, values,
-                sizeof(values)) != TYPE_STATUS_OK) goto done;
+                sizeof(values)) != LIB_STATUS_OK) goto done;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            C_INT advanced = 0;
+            lib_i32 advanced = 0;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) goto done;
         }
         if (values[10] != 0u && first_command_count == 0u) {
@@ -155,9 +155,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (values[8] == 0xa55au) break;
     }
     if (values[8] != 0xa55au || core_machine_debug_read_memory(session->core_machine,
-            VM_T287_PROBE_MBR, guest_mbr, sizeof(guest_mbr)) != TYPE_STATUS_OK ||
+            VM_T287_PROBE_MBR, guest_mbr, sizeof(guest_mbr)) != LIB_STATUS_OK ||
         core_machine_debug_read_memory(session->core_machine, VM_T287_PROBE_VBR,
-            guest_vbr, sizeof(guest_vbr)) != TYPE_STATUS_OK) goto done;
+            guest_vbr, sizeof(guest_vbr)) != LIB_STATUS_OK) goto done;
     sectors_per_track = values[1] & 0x3fu;
     heads = (values[2] >> 8u) + 1u;
     if ((values[3] & 1u) != 0u || sectors_per_track == 0u || heads == 0u) goto done;
@@ -179,29 +179,29 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
 done:
     lib_release(hdd_overlay);
-    if (session != LIB_NULL) (C_VOID)core_machine_get_cpu_state(session->core_machine,
+    if (session != LIB_NULL) (void)core_machine_get_cpu_state(session->core_machine,
         &cpu);
     if (passed) {
-        STD_PRINTF("M5:T287:S16:HDD-ADMISSION:OK lba=%u chs=%u/%u/%u spt=%u heads=%u "
+        printf("M5:T287:S16:HDD-ADMISSION:OK lba=%u chs=%u/%u/%u spt=%u heads=%u "
             "ata_commands=%u\n", lba, cylinder, head, sector, sectors_per_track,
             heads, session->core_machine->hdc.data.command_count);
     } else {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T287:S16:HDD-ADMISSION:FAIL done=%04X ah08=%04X/%04X/%04X/%04X "
             "mbr=%04X/%04X vbr=%04X/%04X lba=%u chs=%u/%u/%u type=%02X "
             "mismatch=%u/%u int13=%04X:%04X external_rom=%04X bx=%04X first=%04X/%04X task=%02X/%02X%02X/%02X reads=%u bytes=%02X%02X%02X%02X/%02X%02X%02X%02X/%02X%02X%02X%02X cpu=%04X:%08X halt=%u reason=%u hdc=%u/%u/%02X reads=%u\n", values[8], values[0], values[1], values[2],
             values[3], values[4], values[5], values[6], values[7], lba, cylinder,
-            head, sector, entry == LIB_NULL ? 0u : entry[4], (C_UINT)mbr_mismatch,
-            (C_UINT)vbr_mismatch, int13_vector[1], int13_vector[0],
-            session == LIB_NULL ? 0u : (C_UINT)vm_profile_machine_plan_external_firmware(
+            head, sector, entry == LIB_NULL ? 0u : entry[4], (lib_u32)mbr_mismatch,
+            (lib_u32)vbr_mismatch, int13_vector[1], int13_vector[0],
+            session == LIB_NULL ? 0u : (lib_u32)vm_profile_machine_plan_external_firmware(
                 session->profile_plan), values[9],
             values[10], values[11], first_sector_number,
             first_cylinder_low, first_cylinder_high, first_drive_head, first_command_count,
             guest_mbr[0], guest_mbr[1], guest_mbr[2], guest_mbr[3],
             host_mbr[0], host_mbr[1], host_mbr[2], host_mbr[3], guest_vbr[0], guest_vbr[1],
-            guest_vbr[2], guest_vbr[3], cpu.cs, cpu.eip, cpu.halted, (C_UINT)result.reason,
-            (C_UINT)(session == LIB_NULL ? 0u : session->core_machine->hdc.data.phase),
-            (C_UINT)(session == LIB_NULL ? 0u : session->core_machine->hdc.data.data_index),
+            guest_vbr[2], guest_vbr[3], cpu.cs, cpu.eip, cpu.halted, (lib_u32)result.reason,
+            (lib_u32)(session == LIB_NULL ? 0u : session->core_machine->hdc.data.phase),
+            (lib_u32)(session == LIB_NULL ? 0u : session->core_machine->hdc.data.data_index),
             session == LIB_NULL ? 0u : session->core_machine->hdc.data.status,
             session == LIB_NULL ? 0u : session->core_machine->hdc.data.command_count);
     }

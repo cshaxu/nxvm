@@ -4,15 +4,15 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 
-static type_status test_core_machine_create_executor(
+static lib_status test_core_machine_create_executor(
     lib_size memory_bytes,
     core_machine **out_machine)
 {
     core_machine_config config = { .memory_bytes = memory_bytes };
-    type_status status;
+    lib_status status;
 
     status = core_machine_create(&config, out_machine);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_destroy(*out_machine);
         *out_machine = LIB_NULL;
     }

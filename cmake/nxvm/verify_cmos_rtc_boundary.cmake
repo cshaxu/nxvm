@@ -12,7 +12,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_pro
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
     profile_header)
 
-foreach(forbidden IN ITEMS "STD_TIME(" "STD_LOCALTIME(" "GetSystemTime"
+foreach(forbidden IN ITEMS "time(" "localtime(" "GetSystemTime"
     "GetLocalTime" "GetTickCount" "QueryPerformanceCounter" "Sleep(")
     string(FIND "${rtc_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)

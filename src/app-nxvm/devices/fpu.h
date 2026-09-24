@@ -17,7 +17,7 @@ typedef enum core_machine_fpu_value_kind {
 
 typedef struct core_machine_fpu_value {
     core_machine_fpu_value_kind kind;
-    type_bool negative;
+    lib_u8 negative;
     lib_i16 exponent;
     lib_u32 significand;
 } core_machine_fpu_value;
@@ -29,11 +29,11 @@ struct core_machine_fpu {
     lib_u8 top;
     core_machine_fpu_tag tags[8];
     core_machine_fpu_value registers[8];
-    type_bool pending_unmasked_exception;
+    lib_u8 pending_unmasked_exception;
     /* BUSY and ERROR are independent processor-extension signals.  FPU
      * completion is measured on the sole Core elapsed axis and is never
      * folded into CPU ESC retirement time. */
-    type_bool busy;
+    lib_u8 busy;
     lib_u8 last_escape_opcode;
     lib_u8 last_escape_modrm;
     lib_u32 operation_ticks_min;
@@ -57,32 +57,32 @@ typedef enum core_machine_fpu_execute_result {
     CORE_MACHINE_FPU_EXECUTE_UNSUPPORTED
 } core_machine_fpu_execute_result;
 
-C_VOID core_machine_fpu_initialize(core_machine_fpu *fpu,
+void core_machine_fpu_initialize(core_machine_fpu *fpu,
     core_machine_fpu_profile profile);
-C_VOID core_machine_fpu_reset(core_machine_fpu *fpu);
+void core_machine_fpu_reset(core_machine_fpu *fpu);
 core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
     core_machine_fpu *fpu, core_machine_cpu_profile cpu,
-    C_UCHAR escape_opcode, C_UCHAR modrm);
+    lib_u8 escape_opcode, lib_u8 modrm);
 /* Begin a validated ESC command after any supported local semantic update.
  * The selected interval is a Core-local External-L2 model; it contains no
  * VM/profile callback or host-time dependency. */
-C_VOID core_machine_fpu_begin_command(core_machine_fpu *fpu,
-    C_UCHAR escape_opcode, C_UCHAR modrm);
-C_VOID core_machine_fpu_advance(core_machine_fpu *fpu,
+void core_machine_fpu_begin_command(core_machine_fpu *fpu,
+    lib_u8 escape_opcode, lib_u8 modrm);
+void core_machine_fpu_advance(core_machine_fpu *fpu,
     lib_u64 elapsed_ticks);
-type_status core_machine_fpu_ticks_until_completion(const core_machine_fpu *fpu,
+lib_status core_machine_fpu_ticks_until_completion(const core_machine_fpu *fpu,
     lib_u64 *out_ticks);
-C_VOID core_machine_fpu_get_state(const core_machine_fpu *fpu,
+void core_machine_fpu_get_state(const core_machine_fpu *fpu,
     core_machine_fpu_state *out_state);
 core_machine_fpu_execute_result core_machine_fpu_load_m32(core_machine_fpu *fpu,
     lib_u32 bits);
 core_machine_fpu_execute_result core_machine_fpu_store_m32(core_machine_fpu *fpu,
     lib_u32 *out_bits);
-C_VOID core_machine_fpu_load_control_word(core_machine_fpu *fpu,
+void core_machine_fpu_load_control_word(core_machine_fpu *fpu,
     lib_u16 control_word);
 core_machine_fpu_execute_result core_machine_fpu_binary_st0_sti(core_machine_fpu *fpu,
     core_machine_fpu_operation operation, lib_u8 index);
-type_bool core_machine_fpu_wait_pending(const core_machine_fpu *fpu);
+lib_u8 core_machine_fpu_wait_pending(const core_machine_fpu *fpu);
 lib_u64 core_machine_fpu_complete_wait(core_machine_fpu *fpu);
 lib_u64 core_machine_fpu_last_wait_ticks(const core_machine_fpu *fpu);
 

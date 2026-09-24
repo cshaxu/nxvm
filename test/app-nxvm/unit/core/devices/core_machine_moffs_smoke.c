@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,19 +10,19 @@ typedef struct moffs_machine {
     core_machine *machine;
 } moffs_machine;
 
-static C_VOID moffs_reset(C_VOID *opaque)
+static void moffs_reset(void *opaque)
 {
     moffs_machine *state = (moffs_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider moffs_provider = {
     moffs_reset, LIB_NULL
 };
 
-static C_INT moffs_prepare(core_machine_cpu_profile profile, moffs_machine *state)
+static lib_i32 moffs_prepare(core_machine_cpu_profile profile, moffs_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -34,20 +35,20 @@ return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &moffs_provider, state, &state->machine);
 }
 
-static C_INT moffs_run(moffs_machine *state, const lib_u8 *code, lib_u8 bytes,
-    t_cpu *after, core_machine_cpu_diagnostic *diagnostic, type_status *status)
+static lib_i32 moffs_run(moffs_machine *state, const lib_u8 *code, lib_u8 bytes,
+    t_cpu *after, core_machine_cpu_diagnostic *diagnostic, lib_status *status)
 {
     core_machine_run_result result;
 
-    if (core_machine_memory_write(state->machine, 0u, code, bytes) != TYPE_STATUS_OK)
+    if (core_machine_memory_write(state->machine, 0u, code, bytes) != LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine,
         (core_machine_run_budget){ 1u, 0u }, &result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == TYPE_STATUS_OK;
+    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == LIB_STATUS_OK;
 }
 
-static C_VOID moffs_set_registers(moffs_machine *state)
+static void moffs_set_registers(moffs_machine *state)
 {
     state->machine->executor_cpu.data.eax = 0xaabb3344u;
     state->machine->executor_cpu.data.ecx = 0x11223344u;
@@ -60,7 +61,7 @@ static C_VOID moffs_set_registers(moffs_machine *state)
     state->machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
 }
 
-static C_INT moffs_nonparticipants(const t_cpu *before, const t_cpu *after,
+static lib_i32 moffs_nonparticipants(const t_cpu *before, const t_cpu *after,
     lib_u8 opcode)
 {
     return before->data.ecx == after->data.ecx &&
@@ -72,7 +73,7 @@ static C_INT moffs_nonparticipants(const t_cpu *before, const t_cpu *after,
             before->data.eax == after->data.eax);
 }
 
-static C_INT moffs_test_default(C_VOID)
+static lib_i32 moffs_test_default(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -90,18 +91,18 @@ static C_INT moffs_test_default(C_VOID)
             t_cpu before;
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
-            type_status status;
+            lib_status status;
             lib_u8 code[] = { opcodes[opcode], 0x00u, 0x10u };
             lib_u32 image = opcodes[opcode] == 0xa0u || opcodes[opcode] == 0xa2u ?
                 0x0000005au : 0x0000beefu;
             lib_u32 expected_eax;
-            C_INT failed;
+            lib_i32 failed;
 
             lib_memory_set(&state, 0, sizeof(state));
             lib_memory_set(&before, 0, sizeof(before));
             lib_memory_set(&after, 0, sizeof(after));
             lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-            status = TYPE_STATUS_INVALID_ARGUMENT;
+            status = LIB_STATUS_INVALID_ARGUMENT;
             failed = !moffs_prepare(profiles[profile], &state);
             if (!failed)
             {
@@ -110,12 +111,12 @@ static C_INT moffs_test_default(C_VOID)
                 moffs_set_registers(&state);
                 if (opcodes[opcode] == 0xa0u || opcodes[opcode] == 0xa1u)
                     failed |= core_machine_memory_write(state.machine, 0x1000u,
-                        &image, opcodes[opcode] == 0xa0u ? 1u : 2u) != TYPE_STATUS_OK;
+                        &image, opcodes[opcode] == 0xa0u ? 1u : 2u) != LIB_STATUS_OK;
                 before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                 expected_eax = opcodes[opcode] == 0xa0u ? 0xaabb335au :
                     opcodes[opcode] == 0xa1u ? 0xaabbbeefu : before.data.eax;
                 failed |= !moffs_run(&state, code, sizeof(code), &after,
-                    &diagnostic, &status) || status != TYPE_STATUS_OK ||
+                    &diagnostic, &status) || status != LIB_STATUS_OK ||
                     diagnostic.first_fault.valid || after.data.eip != 3u ||
                     after.data.eax != expected_eax ||
                     !moffs_nonparticipants(&before, &after, opcodes[opcode]);
@@ -123,15 +124,15 @@ static C_INT moffs_test_default(C_VOID)
                 {
                     image = 0u;
                     failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                        0x1000u, (type_virtual_address)&image,
-                        opcodes[opcode] == 0xa2u ? 1u : 2u) != TYPE_STATUS_OK ||
+                        0x1000u, (lib_uptr)&image,
+                        opcodes[opcode] == 0xa2u ? 1u : 2u) != LIB_STATUS_OK ||
                         image != (opcodes[opcode] == 0xa2u ? 0x44u : 0x3344u);
                 }
             }
             core_machine_destroy(state.machine);
             if (failed)
             {
-                STD_PRINTF("MOFFS default profile=%u opcode=%02x\n",
+                printf("MOFFS default profile=%u opcode=%02x\n",
                     profiles[profile], opcodes[opcode]);
                 return 0;
             }
@@ -140,7 +141,7 @@ static C_INT moffs_test_default(C_VOID)
     return 1;
 }
 
-static C_INT moffs_test_386_attributes(C_VOID)
+static lib_i32 moffs_test_386_attributes(void)
 {
     static const lib_u8 read32[] = { 0x66u,0x67u,0xa1u,0x00u,0x00u,0x01u,0x00u };
     static const lib_u8 write32[] = { 0x66u,0x67u,0xa3u,0x00u,0x00u,0x01u,0x00u };
@@ -156,9 +157,9 @@ static C_INT moffs_test_386_attributes(C_VOID)
         moffs_machine state;
         t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic = {0};
-        type_status status = TYPE_STATUS_INVALID_STATE;
+        lib_status status = LIB_STATUS_INVALID_STATE;
         lib_u32 image = 0x1122335au;
-        C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed)
         {
@@ -167,9 +168,9 @@ static C_INT moffs_test_386_attributes(C_VOID)
             moffs_set_registers(&state);
             if (!write[form])
                 failed |= core_machine_memory_write(state.machine, 0x10000u, &image,
-                    widths[form]) != TYPE_STATUS_OK;
+                    widths[form]) != LIB_STATUS_OK;
             failed |= !moffs_run(&state, codes[form], 7u, &after, &diagnostic,
-                &status) || status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                &status) || status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != 7u;
             if (form == 0u) failed |= after.data.eax != 0x1122335au;
             if (form == 2u) failed |= after.data.eax != 0xaabb335au;
@@ -177,7 +178,7 @@ static C_INT moffs_test_386_attributes(C_VOID)
             {
                 image = 0u;
                 failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                    0x10000u, (type_virtual_address)&image, widths[form]) != TYPE_STATUS_OK ||
+                    0x10000u, (lib_uptr)&image, widths[form]) != LIB_STATUS_OK ||
                     image != (form == 1u ? 0xaabb3344u : 0x44u);
             }
         }
@@ -187,7 +188,7 @@ static C_INT moffs_test_386_attributes(C_VOID)
     return 1;
 }
 
-static C_INT moffs_test_386_single_attributes(C_VOID)
+static lib_i32 moffs_test_386_single_attributes(void)
 {
     lib_u8 attribute;
     lib_u8 opcode;
@@ -198,7 +199,7 @@ static C_INT moffs_test_386_single_attributes(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         lib_u8 code[] = {0x66u,0x67u,opcode,0,0x80u,0,0};
         const lib_u8 bytes = attribute == 0u ? 4u :
             attribute == 1u ? 6u : 7u;
@@ -206,7 +207,7 @@ static C_INT moffs_test_386_single_attributes(C_VOID)
         const lib_u8 width = opcode == 0xa0u || opcode == 0xa2u ?
             1u : attribute == 1u ? 2u : 4u;
         lib_u32 image = 0x1122335au;
-        C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
             if (attribute == 0u) {
@@ -219,10 +220,10 @@ static C_INT moffs_test_386_single_attributes(C_VOID)
             moffs_set_registers(&state);
             if (opcode == 0xa0u || opcode == 0xa1u)
                 failed |= core_machine_memory_write(state.machine, address,
-                    &image, width) != TYPE_STATUS_OK;
+                    &image, width) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !moffs_run(&state, code, bytes, &after, &diagnostic,
-                &status) || status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                &status) || status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != bytes || !moffs_nonparticipants(&before,
                 &after, opcode);
             if (opcode == 0xa0u) failed |= after.data.eax != 0xaabb335au;
@@ -231,7 +232,7 @@ static C_INT moffs_test_386_single_attributes(C_VOID)
             if (opcode == 0xa2u || opcode == 0xa3u) {
                 image = 0u;
                 failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                    address, TYPE_REFERENCE_OF(image), width) != TYPE_STATUS_OK ||
+                    address, CORE_MACHINE_REFERENCE_OF(image), width) != LIB_STATUS_OK ||
                     image != (width == 1u ? 0x44u : width == 2u ? 0x3344u :
                     0xaabb3344u);
             }
@@ -242,7 +243,7 @@ static C_INT moffs_test_386_single_attributes(C_VOID)
     return 1;
 }
 
-static C_INT moffs_state_equal(const t_cpu *before, const t_cpu *after)
+static lib_i32 moffs_state_equal(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -252,7 +253,7 @@ static C_INT moffs_state_equal(const t_cpu *before, const t_cpu *after)
         before->data.eip == after->data.eip;
 }
 
-static C_INT moffs_test_reject(C_VOID)
+static lib_i32 moffs_test_reject(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
@@ -272,9 +273,9 @@ static C_INT moffs_test_reject(C_VOID)
         t_cpu before = {0};
         t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic = {0};
-        type_status status = TYPE_STATUS_INVALID_STATE;
+        lib_status status = LIB_STATUS_INVALID_STATE;
         lib_u8 code[] = { prefixes[prefix], opcodes[opcode], 0u, 0x10u };
-        C_INT failed = !moffs_prepare(profiles[profile], &state);
+        lib_i32 failed = !moffs_prepare(profiles[profile], &state);
 
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(state.machine, 0u);
@@ -283,14 +284,14 @@ static C_INT moffs_test_reject(C_VOID)
                 state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !moffs_run(&state, code, sizeof(code), &after, &diagnostic,
-                &status) || status != TYPE_STATUS_FAULT ||
-                !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                &status) || status != LIB_STATUS_INTERNAL_ERROR ||
+                !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                     diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 !moffs_state_equal(&before, &after);
         }
         core_machine_destroy(state.machine);
         if (failed) {
-            STD_PRINTF("MOFFS reject profile=%u prefix=%02x opcode=%02x status=%d fault=%08x\n",
+            printf("MOFFS reject profile=%u prefix=%02x opcode=%02x status=%d fault=%08x\n",
                 profiles[profile], prefixes[prefix], opcodes[opcode], status,
                 diagnostic.first_fault.exception_mask);
             return 0;
@@ -299,7 +300,7 @@ static C_INT moffs_test_reject(C_VOID)
     return 1;
 }
 
-static C_INT moffs_test_lock(C_VOID)
+static lib_i32 moffs_test_lock(void)
 {
     static const lib_u8 opcodes[] = { 0xa0u, 0xa1u, 0xa2u, 0xa3u };
     lib_u8 opcode;
@@ -310,9 +311,9 @@ static C_INT moffs_test_lock(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         lib_u8 code[] = { 0xf0u, opcodes[opcode], 0u, 0x10u };
-        C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(state.machine, 0u);
@@ -321,8 +322,8 @@ static C_INT moffs_test_lock(C_VOID)
                 state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !moffs_run(&state, code, sizeof(code), &after, &diagnostic,
-                &status) || status != TYPE_STATUS_FAULT ||
-                !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                &status) || status != LIB_STATUS_INTERNAL_ERROR ||
+                !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                     diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 !moffs_state_equal(&before, &after);
         }
@@ -332,7 +333,7 @@ static C_INT moffs_test_lock(C_VOID)
     return 1;
 }
 
-static C_INT moffs_test_segment_overrides(C_VOID)
+static lib_i32 moffs_test_segment_overrides(void)
 {
     static const lib_u8 codes[][4] = {
         { 0xa0u, 0x10u, 0x00u, 0u },
@@ -350,9 +351,9 @@ static C_INT moffs_test_segment_overrides(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         lib_u32 address = form == 0u ? 0x10u : (lib_u32)form * 0x100u + 0x10u;
-        C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(state.machine, 0u);
@@ -363,10 +364,10 @@ static C_INT moffs_test_segment_overrides(C_VOID)
             if (form == 3u) failed |= core_machine_cpu_execution_load_segment(
                 &state.machine->executor_cpu_execution, &state.machine->executor_cpu.data.gs, 0x30u) != 0;
             moffs_set_registers(&state);
-            failed |= core_machine_memory_write(state.machine, address, &values[form], 1u) != TYPE_STATUS_OK;
+            failed |= core_machine_memory_write(state.machine, address, &values[form], 1u) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !moffs_run(&state, codes[form], bytes[form], &after, &diagnostic,
-                &status) || status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                &status) || status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != bytes[form] || after.data.eax != (0xaabb3300u | values[form]) ||
                 !moffs_nonparticipants(&before, &after, 0xa0u);
         }
@@ -376,7 +377,7 @@ static C_INT moffs_test_segment_overrides(C_VOID)
     return 1;
 }
 
-static C_INT moffs_test_segment_writes(C_VOID)
+static lib_i32 moffs_test_segment_writes(void)
 {
     static const lib_u8 codes[][4] = {
         { 0xa2u, 0x10u, 0x00u, 0u },
@@ -394,10 +395,10 @@ static C_INT moffs_test_segment_writes(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        lib_status status;
         lib_u32 image = 0u;
         lib_u32 address = form == 0u ? 0x10u : (lib_u32)form * 0x100u + 0x10u;
-        C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(state.machine, 0u);
@@ -406,7 +407,7 @@ static C_INT moffs_test_segment_writes(C_VOID)
             if (form == 3u) failed |= core_machine_cpu_execution_load_segment(&state.machine->executor_cpu_execution, &state.machine->executor_cpu.data.gs, 0x30u) != 0;
             moffs_set_registers(&state);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= !moffs_run(&state, codes[form], bytes[form], &after, &diagnostic, &status) || status != TYPE_STATUS_OK || diagnostic.first_fault.valid || after.data.eip != bytes[form] || !moffs_nonparticipants(&before, &after, 0xa2u) || core_machine_memory_read_physical(&state.machine->executor_memory, address, (type_virtual_address)&image, widths[form]) != TYPE_STATUS_OK || image != (widths[form] == 1u ? 0x44u : 0x3344u);
+            failed |= !moffs_run(&state, codes[form], bytes[form], &after, &diagnostic, &status) || status != LIB_STATUS_OK || diagnostic.first_fault.valid || after.data.eip != bytes[form] || !moffs_nonparticipants(&before, &after, 0xa2u) || core_machine_memory_read_physical(&state.machine->executor_memory, address, (lib_uptr)&image, widths[form]) != LIB_STATUS_OK || image != (widths[form] == 1u ? 0x44u : 0x3344u);
         }
         core_machine_destroy(state.machine);
         if (failed) return 0;
@@ -414,7 +415,7 @@ static C_INT moffs_test_segment_writes(C_VOID)
     return 1;
 }
 
-static C_INT moffs_test_protected_read_limit(C_VOID)
+static lib_i32 moffs_test_protected_read_limit(void)
 {
     static const lib_u8 gdt_pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
     static const lib_u8 gdt[] = {
@@ -446,20 +447,20 @@ static C_INT moffs_test_protected_read_limit(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
         lib_u32 image = 0x11223344u;
-        C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed)
         {
             failed |= core_machine_memory_write(state.machine, 0x0100u,
-                gdt_pointer, sizeof(gdt_pointer)) != TYPE_STATUS_OK ||
+                gdt_pointer, sizeof(gdt_pointer)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x0300u, gdt,
-                    sizeof(gdt)) != TYPE_STATUS_OK ||
+                    sizeof(gdt)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0u, bootstrap,
-                    sizeof(bootstrap)) != TYPE_STATUS_OK ||
+                    sizeof(bootstrap)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x2000u, halt,
-                    sizeof(halt)) != TYPE_STATUS_OK ||
+                    sizeof(halt)) != LIB_STATUS_OK ||
                 core_machine_run(state.machine, (core_machine_run_budget){ 96u, 0u },
-                    &result) != TYPE_STATUS_OK ||
+                    &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         }
         if (!failed)
@@ -467,18 +468,18 @@ static C_INT moffs_test_protected_read_limit(C_VOID)
             moffs_set_registers(&state);
             state.machine->executor_cpu.data.eflags = flags;
             failed |= core_machine_memory_write(state.machine, 0x3010u, &image,
-                sizeof(image)) != TYPE_STATUS_OK ||
+                sizeof(image)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x2000u, codes[form],
-                    bytes[form]) != TYPE_STATUS_OK;
+                    bytes[form]) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_FAULT ||
+                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
                 result.reason != CORE_MACHINE_STOP_FAULT ||
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                    TYPE_STATUS_OK;
+                    LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
                 after.data.eip != 0u || after.data.eax != before.data.eax ||
                 after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
@@ -487,20 +488,20 @@ static C_INT moffs_test_protected_read_limit(C_VOID)
                 after.data.esp != before.data.esp ||
                 after.data.eflags != before.data.eflags ||
                 core_machine_memory_read_physical(&state.machine->executor_memory,
-                    0x3010u, (type_virtual_address)&image, sizeof(image)) !=
-                    TYPE_STATUS_OK || image != 0x11223344u;
+                    0x3010u, (lib_uptr)&image, sizeof(image)) !=
+                    LIB_STATUS_OK || image != 0x11223344u;
         }
         core_machine_destroy(state.machine);
         if (failed)
         {
-            STD_PRINTF("MOFFS protected-limit form=%u\n", form);
+            printf("MOFFS protected-limit form=%u\n", form);
             return 0;
         }
     }
     return 1;
 }
 
-static C_INT moffs_test_irq_no_shadow(C_VOID)
+static lib_i32 moffs_test_irq_no_shadow(void)
 {
     static const lib_u8 codes[][4] = {
         { 0xa0u, 0x00u, 0x10u, 0x90u },
@@ -519,22 +520,22 @@ static C_INT moffs_test_irq_no_shadow(C_VOID)
         lib_u16 vector_segment = 0u;
         lib_u16 frame_ip = 0u;
         lib_u8 image = form == 0u ? 0x5au : 0u;
-        C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed)
         {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(
                     state.machine, 0u) ||
                 core_machine_memory_write(state.machine, 0x1000u, &image,
-                    sizeof(image)) != TYPE_STATUS_OK ||
+                    sizeof(image)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0u, codes[form],
-                    sizeof(codes[form])) != TYPE_STATUS_OK ||
+                    sizeof(codes[form])) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x20u * 4u,
-                    &vector_offset, sizeof(vector_offset)) != TYPE_STATUS_OK ||
+                    &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x20u * 4u + 2u,
-                    &vector_segment, sizeof(vector_segment)) != TYPE_STATUS_OK ||
+                    &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x0100u, &hlt,
-                    sizeof(hlt)) != TYPE_STATUS_OK;
+                    sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed)
         {
@@ -548,76 +549,76 @@ static C_INT moffs_test_irq_no_shadow(C_VOID)
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(state.machine,
-                    (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK ||
+                    (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                     after.data.ss.base + (lib_u16)after.data.esp,
-                    (type_virtual_address)&frame_ip, sizeof(frame_ip)) !=
-                    TYPE_STATUS_OK || after.data.eip != 0x0101u || frame_ip != 3u ||
-                !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                    VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
+                    (lib_uptr)&frame_ip, sizeof(frame_ip)) !=
+                    LIB_STATUS_OK || after.data.eip != 0x0101u || frame_ip != 3u ||
+                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                    VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
                     state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
                 (form == 0u && after.data.eax != 0xaabb335au) ||
                 (form == 1u && (core_machine_memory_read_physical(
                     &state.machine->executor_memory, 0x1000u,
-                    (type_virtual_address)&image, sizeof(image)) != TYPE_STATUS_OK ||
+                    (lib_uptr)&image, sizeof(image)) != LIB_STATUS_OK ||
                     image != 0x44u));
         }
         core_machine_destroy(state.machine);
         if (failed)
         {
-            STD_PRINTF("MOFFS irq form=%u\n", form);
+            printf("MOFFS irq form=%u\n", form);
             return 0;
         }
     }
     return 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!moffs_test_default())
     {
-        STD_PRINTF("MOFFS stage=default\n");
+        printf("MOFFS stage=default\n");
         return 1;
     }
     if (!moffs_test_386_attributes() ||
         !moffs_test_386_single_attributes())
     {
-        STD_PRINTF("MOFFS stage=attributes\n");
+        printf("MOFFS stage=attributes\n");
         return 1;
     }
     if (!moffs_test_reject())
     {
-        STD_PRINTF("MOFFS stage=reject\n");
+        printf("MOFFS stage=reject\n");
         return 1;
     }
     if (!moffs_test_lock())
     {
-        STD_PRINTF("MOFFS stage=lock\n");
+        printf("MOFFS stage=lock\n");
         return 1;
     }
     if (!moffs_test_segment_overrides())
     {
-        STD_PRINTF("MOFFS stage=segment\n");
+        printf("MOFFS stage=segment\n");
         return 1;
     }
     if (!moffs_test_segment_writes())
     {
-        STD_PRINTF("MOFFS stage=segment-write\n");
+        printf("MOFFS stage=segment-write\n");
         return 1;
     }
     if (!moffs_test_protected_read_limit())
     {
-        STD_PRINTF("MOFFS stage=protected-limit\n");
+        printf("MOFFS stage=protected-limit\n");
         return 1;
     }
     if (!moffs_test_irq_no_shadow())
     {
-        STD_PRINTF("MOFFS stage=irq\n");
+        printf("MOFFS stage=irq\n");
         return 1;
     }
-    STD_PRINTF("M5:T316:S30:MOFFS:OK\n");
-    STD_PRINTF("M5:T401:S14:MOFFS-MOV-PROFILES:OK\n");
+    printf("M5:T316:S30:MOFFS:OK\n");
+    printf("M5:T401:S14:MOFFS-MOV-PROFILES:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -23,14 +23,14 @@ typedef struct t359_s5_row {
     lib_u32 memory;
 } t359_s5_row;
 
-static C_VOID t359_s5_reset(C_VOID *opaque)
+static void t359_s5_reset(void *opaque)
 {
     t359_s5_state *state = (t359_s5_state *)opaque;
 
     if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
-static C_VOID t359_s5_advance(C_VOID *opaque, lib_u64 ticks)
+static void t359_s5_advance(void *opaque, lib_u64 ticks)
 {
     t359_s5_state *state = (t359_s5_state *)opaque;
 
@@ -41,7 +41,7 @@ static const core_machine_execution_provider t359_s5_execution = {
     t359_s5_reset, t359_s5_advance
 };
 
-static C_INT t359_s5_prepare(core_machine **out_machine, t359_s5_state *state)
+static lib_i32 t359_s5_prepare(core_machine **out_machine, t359_s5_state *state)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
@@ -49,14 +49,14 @@ static C_INT t359_s5_prepare(core_machine **out_machine, t359_s5_state *state)
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T359_S5_RESET_LINEAR, T359_S5_RESET_PHYSICAL, 16u) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, T359_S5_DATA,
-            T359_S5_DATA, 64u) != TYPE_STATUS_OK ||
+            T359_S5_DATA, 64u) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00002000u,
-            0x00002000u, 64u) != TYPE_STATUS_OK ||
+            0x00002000u, 64u) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &t359_s5_execution, state)) {
         core_machine_destroy(machine);
@@ -66,32 +66,32 @@ static C_INT t359_s5_prepare(core_machine **out_machine, t359_s5_state *state)
     return 1;
 }
 
-static C_INT t359_s5_run(core_machine *machine, t359_s5_state *state,
+static lib_i32 t359_s5_run(core_machine *machine, t359_s5_state *state,
     const t359_s5_row *row)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
 
     if (machine == LIB_NULL || state == LIB_NULL || row == LIB_NULL ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, T359_S5_RESET_LINEAR, row->program,
-            row->program_bytes) != TYPE_STATUS_OK ||
+            row->program_bytes) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, T359_S5_DATA, &row->memory,
-            sizeof(row->memory)) != TYPE_STATUS_OK ||
+            sizeof(row->memory)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x00002000u, &row->memory,
-            sizeof(row->memory)) != TYPE_STATUS_OK) return 0;
+            sizeof(row->memory)) != LIB_STATUS_OK) return 0;
     machine->executor_cpu.data.eflags = row->eflags;
     machine->executor_cpu.data.eax = row->eax;
     machine->executor_cpu.data.ecx = row->ecx;
     machine->executor_cpu.data.esi = row->esi;
     machine->executor_cpu.data.fs.base = T359_S5_DATA;
-    return core_machine_run(machine, budget, &result) == TYPE_STATUS_OK &&
+    return core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
         result.ticks == row->ticks && result.elapsed_ticks == row->ticks &&
         state->advanced_ticks == row->ticks;
 }
 
-static C_INT t359_s5_test_secondary_rows(C_VOID)
+static lib_i32 t359_s5_test_secondary_rows(void)
 {
     static const lib_u8 near_not_taken[] = { 0x0fu, 0x85u, 0u, 0u };
     static const lib_u8 near_taken[] = { 0x0fu, 0x84u, 2u, 0u };
@@ -146,11 +146,11 @@ static C_INT t359_s5_test_secondary_rows(C_VOID)
     t359_s5_state state = { 0u };
     core_machine *machine = LIB_NULL;
     lib_size index;
-    C_INT failed = !t359_s5_prepare(&machine, &state);
+    lib_i32 failed = !t359_s5_prepare(&machine, &state);
 
     for (index = 0u; !failed && index < sizeof(rows) / sizeof(rows[0]); ++index) {
         if (!t359_s5_run(machine, &state, &rows[index])) {
-            STD_FPRINTF(STD_STDERR, "S5 secondary row %u failed\n",
+            fprintf(stderr, "S5 secondary row %u failed\n",
                 (lib_u32)index);
             failed = 1;
         }
@@ -159,7 +159,7 @@ static C_INT t359_s5_test_secondary_rows(C_VOID)
     return failed;
 }
 
-static C_INT t359_s5_test_attributes_and_preflight(C_VOID)
+static lib_i32 t359_s5_test_attributes_and_preflight(void)
 {
     static const lib_u8 operand_size[] = { 0x66u, 0x0fu, 0xb7u, 0xc1u };
     static const lib_u8 address_size[] = { 0x67u, 0x0fu, 0xb6u, 0x06u };
@@ -180,27 +180,27 @@ static C_INT t359_s5_test_attributes_and_preflight(C_VOID)
     t359_s5_state state = { 0u };
     core_machine *machine = LIB_NULL;
     lib_size index;
-    C_INT failed = !t359_s5_prepare(&machine, &state);
+    lib_i32 failed = !t359_s5_prepare(&machine, &state);
 
     for (index = 0u; !failed && index < sizeof(rows) / sizeof(rows[0]); ++index) {
         failed |= !t359_s5_run(machine, &state, &rows[index]);
     }
-    if (!failed && core_machine_reset(machine) == TYPE_STATUS_OK &&
+    if (!failed && core_machine_reset(machine) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, T359_S5_RESET_LINEAR, bsr_zero,
-            sizeof(bsr_zero)) == TYPE_STATUS_OK) {
-        failed |= core_machine_run(machine, insufficient, &result) != TYPE_STATUS_OK ||
+            sizeof(bsr_zero)) == LIB_STATUS_OK) {
+        failed |= core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
             result.executed != 0u || result.ticks != 0u ||
-            core_machine_run(machine, sufficient, &result) != TYPE_STATUS_OK ||
+            core_machine_run(machine, sufficient, &result) != LIB_STATUS_OK ||
             result.executed != 1u || result.ticks != 105u;
     } else {
         failed = 1;
     }
-    if (!failed && core_machine_reset(machine) == TYPE_STATUS_OK &&
+    if (!failed && core_machine_reset(machine) == LIB_STATUS_OK &&
         test_core_machine_fixture_preflight_real_ud_terminal(machine) &&
         core_machine_memory_write(machine, T359_S5_RESET_LINEAR, illegal_lock,
-            sizeof(illegal_lock)) == TYPE_STATUS_OK) {
+            sizeof(illegal_lock)) == LIB_STATUS_OK) {
         failed |= core_machine_run(machine, (core_machine_run_budget){ 1u, 0u },
-            &result) != TYPE_STATUS_FAULT || result.executed != 0u ||
+            &result) != LIB_STATUS_INTERNAL_ERROR || result.executed != 0u ||
             result.ticks != 0u || state.advanced_ticks != 0u;
     } else {
         failed = 1;
@@ -209,10 +209,10 @@ static C_INT t359_s5_test_attributes_and_preflight(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (t359_s5_test_secondary_rows() ||
         t359_s5_test_attributes_and_preflight()) return 1;
-    STD_PRINTF("M5:T359:S5:SECONDARY-INTEGER-TIMING:OK\n");
+    printf("M5:T359:S5:SECONDARY-INTEGER-TIMING:OK\n");
     return 0;
 }

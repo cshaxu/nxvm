@@ -14,10 +14,6 @@ foreach(forbidden IN ITEMS
     "#include \"core/"
     "#include \"vm/"
     "#include \"lib/host/"
-    "STD_FOPEN"
-    "STD_FGETS"
-    "STD_FGETC"
-    "STD_FPUTC"
     "core_debug_target")
     string(FIND "${command_source}\n${interface}\n${command_interface}"
         "${forbidden}" position)

@@ -1,11 +1,11 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_VOID ega_write_crtc(t_port *port, lib_u16 index_port,
+static void ega_write_crtc(t_port *port, lib_u16 index_port,
     lib_u8 index, lib_u8 value)
 {
     core_machine_port_write(port, index_port, index);
@@ -19,7 +19,7 @@ static lib_u8 ega_read_crtc(t_port *port, lib_u16 index_port,
     return core_machine_port_read(port, index_port + 1u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_vadp_ega_sequencer_config sequencer = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
@@ -38,19 +38,19 @@ C_INT main(C_VOID)
     core_machine_display_snapshot_observation observation;
     const lib_u8 chain4_bytes[] = { 0x10u, 0x11u, 0x12u, 0x13u };
     lib_u64 vga_generation;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     failed |= core_machine_vadp_configure_ega_sequencer(&vadp, &memory,
-        &sequencer) != TYPE_STATUS_OK ||
+        &sequencer) != LIB_STATUS_OK ||
         core_machine_vadp_configure_ega_controllers(&vadp, &controllers) !=
-        TYPE_STATUS_OK || core_machine_vadp_configure_ega_personality(&vadp,
-        &port, CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != TYPE_STATUS_OK ||
-        core_machine_vadp_configure_vga(&vadp, &port) != TYPE_STATUS_OK;
+        LIB_STATUS_OK || core_machine_vadp_configure_ega_personality(&vadp,
+        &port, CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != LIB_STATUS_OK ||
+        core_machine_vadp_configure_vga(&vadp, &port) != LIB_STATUS_OK;
     core_machine_vadp_reset(&vadp);
     failed |= !core_machine_port_has_read(&port,
         CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0) ||
@@ -101,12 +101,12 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x40u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-    (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    (void)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x01u);
     failed |= core_machine_memory_write_physical(&memory,
-        CORE_MACHINE_VADP_EGA_APERTURE_BASE, (type_virtual_address)chain4_bytes,
-        sizeof(chain4_bytes)) != TYPE_STATUS_OK;
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE, (lib_uptr)chain4_bytes,
+        sizeof(chain4_bytes)) != LIB_STATUS_OK;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256 ||
@@ -124,7 +124,7 @@ C_INT main(C_VOID)
 
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
     failed |= !vadp.data.attribute_data_phase;
-    (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    (void)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
     failed |= vadp.data.attribute_data_phase;
     core_machine_vadp_reset(&vadp);
     failed |= vadp.data.ega_miscellaneous_output != 0u ||
@@ -137,12 +137,12 @@ C_INT main(C_VOID)
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T466:S2:EGA-EXTERNAL-PORT:FAIL\n");
+        fprintf(stderr, "M5:T466:S2:EGA-EXTERNAL-PORT:FAIL\n");
         return 1;
     }
-    STD_PRINTF("M5:T466:S2:EGA-EXTERNAL-PORT:OK\n");
-    STD_PRINTF("M5:T480:S4:DAC:OK\n");
-    STD_PRINTF("M5:T480:S4:CHAIN4:OK\n");
-    STD_PRINTF("M5:T480:S4:SNAPSHOT:OK\n");
+    printf("M5:T466:S2:EGA-EXTERNAL-PORT:OK\n");
+    printf("M5:T480:S4:DAC:OK\n");
+    printf("M5:T480:S4:CHAIN4:OK\n");
+    printf("M5:T480:S4:SNAPSHOT:OK\n");
     return 0;
 }

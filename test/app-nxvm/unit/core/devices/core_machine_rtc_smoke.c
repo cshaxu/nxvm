@@ -1,11 +1,11 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/rtc.h"
 
-static C_VOID initialize_pic(t_port *port)
+static void initialize_pic(t_port *port)
 {
     core_machine_port_write(port, 0x0020u, 0x11u);
     core_machine_port_write(port, 0x0021u, 0x08u);
@@ -17,14 +17,14 @@ static C_VOID initialize_pic(t_port *port)
     core_machine_port_write(port, 0x00a1u, 0x01u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_port port;
     t_pic master;
     t_pic slave;
     core_machine_rtc rtc;
     core_machine_rtc_config config = { .irq = 8u, .ticks_per_second = 50000u };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_pic_initialize(&master, &slave, &port,

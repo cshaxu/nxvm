@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
@@ -9,7 +9,7 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
 
-static C_INT vm_model_339_cga_topology(C_VOID)
+static lib_i32 vm_model_339_cga_topology(void)
 {
     const vm_machine_config config = {
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339
@@ -17,7 +17,7 @@ static C_INT vm_model_339_cga_topology(C_VOID)
     core_machine_display_snapshot snapshot;
     lib_u8 value = 0x5au;
     vm_machine *session = LIB_NULL;
-    C_INT failed = vm_test_ibm_5170_session_create(&config, &session) != TYPE_STATUS_OK ||
+    lib_i32 failed = vm_test_ibm_5170_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
 
     if (!failed) failed |= (core_machine_port_has_read(
@@ -41,17 +41,17 @@ static C_INT vm_model_339_cga_topology(C_VOID)
             &session->core_machine->executor_memory, &snapshot) ||
             snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT) << 10) |
         (core_machine_memory_write(session->core_machine, 0x000a0000u,
-            &value, sizeof(value)) != TYPE_STATUS_OK) << 11 |
+            &value, sizeof(value)) != LIB_STATUS_OK) << 11 |
         (core_machine_memory_read(session->core_machine, 0x000a0000u,
-            &value, sizeof(value)) != TYPE_STATUS_OK || value != 0xffu) << 12;
+            &value, sizeof(value)) != LIB_STATUS_OK || value != 0xffu) << 12;
     vm_machine_destroy(session);
     return failed;
 }
 
-static C_INT vm_default_ega_topology(C_VOID)
+static lib_i32 vm_default_ega_topology(void)
 {
     vm_machine *session = LIB_NULL;
-    C_INT failed = vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+    lib_i32 failed = vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
 
     if (!failed) failed |= (!core_machine_port_has_write(
@@ -68,10 +68,10 @@ static C_INT vm_default_ega_topology(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (vm_model_339_cga_topology() || vm_default_ega_topology()) return 1;
-    STD_PRINTF("M5:T366:S6:MODEL339-CGA-TOPOLOGY:OK\n");
-    STD_PRINTF("M5:T375:S15:MODEL339-REV3-CGA-DEFAULTS:OK\n");
+    printf("M5:T366:S6:MODEL339-CGA-TOPOLOGY:OK\n");
+    printf("M5:T375:S15:MODEL339-REV3-CGA-DEFAULTS:OK\n");
     return 0;
 }

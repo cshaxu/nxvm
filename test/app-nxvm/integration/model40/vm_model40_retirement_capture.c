@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
@@ -24,8 +24,8 @@
 #define MODEL40_CAPTURE_RESET_HISTORY 4u
 
 typedef struct model40_retirement_capture_form {
-    const C_CHAR *form;
-    const C_CHAR *operand;
+    const char *form;
+    const char *operand;
     lib_u8 opcode;
     lib_u8 escape_opcode;
     lib_u8 group_extension;
@@ -38,11 +38,11 @@ typedef struct model40_retirement_capture_form {
     core_machine_retirement_repeat_phase repeat_phase;
     lib_u64 ticks;
     lib_u8 cpl;
-    type_bool protected_mode;
-    type_bool virtual_8086_mode;
-    type_bool operand_size_32;
-    type_bool address_size_32;
-    type_bool lock_prefix;
+    lib_u8 protected_mode;
+    lib_u8 virtual_8086_mode;
+    lib_u8 operand_size_32;
+    lib_u8 address_size_32;
+    lib_u8 lock_prefix;
     lib_u8 repeat_prefix;
     core_machine_retirement_timing_disposition disposition;
     lib_u32 count;
@@ -55,7 +55,7 @@ typedef struct model40_retirement_capture_key {
 
 typedef struct model40_capture_execution_point {
     lib_u32 linear_pc;
-    type_bool protected_mode;
+    lib_u8 protected_mode;
 } model40_capture_execution_point;
 
 typedef struct model40_capture_port_event {
@@ -63,7 +63,7 @@ typedef struct model40_capture_port_event {
     lib_u32 linear_pc;
     lib_u16 port;
     lib_u8 value;
-    type_bool write;
+    lib_u8 write;
 } model40_capture_port_event;
 
 typedef struct model40_retirement_capture {
@@ -76,53 +76,53 @@ typedef struct model40_retirement_capture {
     lib_u32 unallocated;
     lib_u32 form_count;
     lib_u32 key_count;
-    type_bool c0a_diagnostic;
-    type_bool c0a_collecting;
-    type_bool c1_transfer_diagnostic;
-    type_bool d4_timer_history_enabled;
-    type_bool d4_failsafe_test_seen;
-    type_bool d4_memory_pass_seen;
+    lib_u8 c0a_diagnostic;
+    lib_u8 c0a_collecting;
+    lib_u8 c1_transfer_diagnostic;
+    lib_u8 d4_timer_history_enabled;
+    lib_u8 d4_failsafe_test_seen;
+    lib_u8 d4_memory_pass_seen;
     lib_u32 d4_memory_iteration_count;
     lib_u32 d4_memory_ebp[MODEL40_CAPTURE_D4_MEMORY_HISTORY];
     lib_u32 d4_memory_next_pc[MODEL40_CAPTURE_D4_MEMORY_HISTORY];
     lib_u8 d4_failsafe_port_value;
-    type_bool c1_collecting;
-    type_bool c1_transfer_reached;
-    type_bool fdc_read_data_reached;
-    type_bool fdc_port_seen;
-    type_bool fdc_read_data_baseline_valid;
+    lib_u8 c1_collecting;
+    lib_u8 c1_transfer_reached;
+    lib_u8 fdc_read_data_reached;
+    lib_u8 fdc_port_seen;
+    lib_u8 fdc_read_data_baseline_valid;
     lib_u64 fdc_terminal_sequence_at_c0a;
     lib_u8 terminal_bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
     lib_u8 terminal_byte_count;
-    type_bool checkpoint_reached;
-    type_bool c1_checkpoint_reached;
-    type_bool post_c0_io_seen;
-    type_bool post_c0_io_read;
-    type_bool post_c0_io_port_known;
+    lib_u8 checkpoint_reached;
+    lib_u8 c1_checkpoint_reached;
+    lib_u8 post_c0_io_seen;
+    lib_u8 post_c0_io_read;
+    lib_u8 post_c0_io_port_known;
     lib_u16 post_c0_io_port;
     model40_capture_port_event d4_timer_ports[MODEL40_CAPTURE_D4_TIMER_HISTORY];
     lib_u32 d4_timer_port_count;
-    type_bool observation_seen;
-    type_bool previous_protected_mode;
-    type_bool protected_mode_seen;
-    type_bool form_ini_truncated;
-    type_bool key_limit_reached;
-    type_bool terminal_bytes_available;
-    type_bool iret_frame_seen;
+    lib_u8 observation_seen;
+    lib_u8 previous_protected_mode;
+    lib_u8 protected_mode_seen;
+    lib_u8 form_ini_truncated;
+    lib_u8 key_limit_reached;
+    lib_u8 terminal_bytes_available;
+    lib_u8 iret_frame_seen;
     lib_u32 iret_frame_count;
-    type_bool iret_frame_read;
-    type_bool iret_frame_stopped_read;
+    lib_u8 iret_frame_read;
+    lib_u8 iret_frame_stopped_read;
     lib_u16 iret_ss;
     lib_u16 iret_sp;
     lib_u32 iret_ss_base;
     lib_u16 iret_frame[3];
     lib_u32 iret_frame_address;
     lib_u16 iret_frame_stopped[3];
-    type_bool iret_operand_size_32;
-    type_bool iret_stack_size_32;
-    type_bool nmi_entry_seen;
+    lib_u8 iret_operand_size_32;
+    lib_u8 iret_stack_size_32;
+    lib_u8 nmi_entry_seen;
     lib_u32 nmi_entry_count;
-    type_bool nmi_entry_frame_read;
+    lib_u8 nmi_entry_frame_read;
     lib_u16 nmi_entry_ss;
     lib_u16 nmi_entry_sp;
     lib_u32 nmi_entry_ss_base;
@@ -131,23 +131,23 @@ typedef struct model40_retirement_capture {
     lib_u16 nmi_entry_source_ip;
     lib_u16 nmi_entry_source_flags;
     lib_u32 nmi_entry_source_cr0;
-    type_bool nmi_entry_vector2_read;
+    lib_u8 nmi_entry_vector2_read;
     lib_u16 nmi_entry_vector2[2];
     lib_u32 iret_cr0;
-    type_bool reset_vector2_read;
+    lib_u8 reset_vector2_read;
     lib_u16 reset_vector2[2];
-    type_bool iret_route_seen;
+    lib_u8 iret_route_seen;
     lib_u32 iret_route_trace[32];
     lib_u8 iret_route_opcode[32];
     lib_u8 iret_route_trace_count;
-    type_bool interrupt_handler_entry_seen;
+    lib_u8 interrupt_handler_entry_seen;
     lib_u32 interrupt_handler_entry_count;
-    type_bool interrupt_handler_frame_read;
+    lib_u8 interrupt_handler_frame_read;
     lib_u16 interrupt_handler_ss;
     lib_u16 interrupt_handler_sp;
     lib_u16 interrupt_handler_frame[3];
     lib_u8 interrupt_handler_vector;
-    type_bool interrupt_handler_vector_found;
+    lib_u8 interrupt_handler_vector_found;
     lib_u16 interrupt_handler_source_cs;
     lib_u16 interrupt_handler_source_ip;
     lib_u16 interrupt_handler_source_sp;
@@ -157,15 +157,15 @@ typedef struct model40_retirement_capture {
     lib_u32 interrupt_handler_trace[32];
     lib_u8 interrupt_handler_trace_opcode[32];
     lib_u8 interrupt_handler_trace_count;
-    type_bool interrupt_scan_entry_seen;
+    lib_u8 interrupt_scan_entry_seen;
     lib_u16 interrupt_scan_source_cs;
     lib_u16 interrupt_scan_source_ip;
     lib_u16 interrupt_scan_source_sp;
     lib_u16 interrupt_scan_ss;
     lib_u16 interrupt_scan_sp;
-    type_bool interrupt_service_entry_seen;
+    lib_u8 interrupt_service_entry_seen;
     lib_u32 interrupt_service_entry_count;
-    type_bool interrupt_service_frame_read;
+    lib_u8 interrupt_service_frame_read;
     lib_u16 interrupt_service_ss;
     lib_u16 interrupt_service_sp;
     lib_u16 interrupt_service_source_cs;
@@ -175,55 +175,55 @@ typedef struct model40_retirement_capture {
     lib_u32 interrupt_service_trace[32];
     lib_u8 interrupt_service_trace_opcode[32];
     lib_u8 interrupt_service_trace_count;
-    type_bool low_stack_transition_seen;
+    lib_u8 low_stack_transition_seen;
     lib_u32 low_stack_transition_pc;
     lib_u16 low_stack_transition_before;
     lib_u16 low_stack_transition_after;
     lib_u32 low_stack_transition_trace[32];
     lib_u8 low_stack_transition_trace_opcode[32];
     lib_u8 low_stack_transition_trace_count;
-    type_bool stack_exhaustion_seen;
+    lib_u8 stack_exhaustion_seen;
     lib_u32 stack_exhaustion_pc;
     lib_u16 stack_exhaustion_before;
     lib_u16 stack_exhaustion_after;
     lib_u32 stack_exhaustion_trace[32];
     lib_u8 stack_exhaustion_trace_opcode[32];
     lib_u8 stack_exhaustion_trace_count;
-    type_bool minimum_stack_seen;
+    lib_u8 minimum_stack_seen;
     lib_u16 minimum_stack_value;
     lib_u32 minimum_stack_pc;
     lib_u32 minimum_stack_trace[32];
     lib_u8 minimum_stack_trace_opcode[32];
     lib_u8 minimum_stack_trace_count;
-    type_bool last_io_valid;
+    lib_u8 last_io_valid;
     lib_u32 last_io_pc;
     lib_u16 last_io_port;
     lib_u32 last_io_value;
     lib_u8 last_io_direction;
-    type_bool reset_vector_seen;
+    lib_u8 reset_vector_seen;
     lib_u32 reset_vector_count;
     lib_u8 reset_vector_shutdown_status[MODEL40_CAPTURE_RESET_HISTORY];
     lib_u8 reset_vector_kbc_output_port[MODEL40_CAPTURE_RESET_HISTORY];
-    type_bool reset_vector_io_valid;
+    lib_u8 reset_vector_io_valid;
     lib_u32 reset_vector_io_pc;
     lib_u16 reset_vector_io_port;
     lib_u32 reset_vector_io_value;
     lib_u8 reset_vector_io_direction;
-    type_bool reset_instruction_seen;
+    lib_u8 reset_instruction_seen;
     lib_u8 reset_instruction_port;
     lib_u8 reset_instruction_value;
-    type_bool reset_instruction_state_seen;
+    lib_u8 reset_instruction_state_seen;
     lib_u8 reset_instruction_shutdown_status;
     lib_u8 reset_instruction_kbc_output_port;
-    type_bool last_software_interrupt_valid;
+    lib_u8 last_software_interrupt_valid;
     lib_u32 last_software_interrupt_pc;
     lib_u8 last_software_interrupt_vector;
     lib_u16 last_software_interrupt_ss;
     lib_u16 last_software_interrupt_sp;
     lib_u32 last_software_interrupt_target;
     lib_u8 last_software_interrupt_target_bytes[4];
-    type_bool last_software_interrupt_target_read;
-    type_bool last_software_interrupt_target_stopped_read;
+    lib_u8 last_software_interrupt_target_read;
+    lib_u8 last_software_interrupt_target_stopped_read;
     lib_u8 last_software_interrupt_target_stopped_bytes[4];
     lib_u32 software_interrupt_trace[32];
     lib_u8 software_interrupt_trace_count;
@@ -231,7 +231,7 @@ typedef struct model40_retirement_capture {
     lib_u8 recent_opcode[32];
     lib_u8 recent_count;
     lib_u8 recent_next;
-    type_bool zero_code_seen;
+    lib_u8 zero_code_seen;
     lib_u32 zero_code_trace[32];
     lib_u8 zero_code_opcode[32];
     lib_u8 zero_code_trace_count;
@@ -246,14 +246,14 @@ typedef struct model40_retirement_capture {
     lib_u32 post_c0_last_count;
     model40_capture_port_event post_c0_ports[MODEL40_CAPTURE_POST_C0_HISTORY];
     lib_u8 post_c0_port_count;
-    type_bool post_c0_previous_valid;
+    lib_u8 post_c0_previous_valid;
     model40_capture_execution_point post_c0_previous;
-    type_bool post_c0_non_rom_seen;
+    lib_u8 post_c0_non_rom_seen;
     model40_capture_execution_point post_c0_non_rom_predecessor;
     model40_capture_execution_point post_c0_non_rom;
 } model40_retirement_capture;
 
-static C_VOID model40_capture_record_post_c0_point(
+static void model40_capture_record_post_c0_point(
     model40_retirement_capture *capture,
     const core_machine_retirement_observation *observation)
 {
@@ -284,7 +284,7 @@ static C_VOID model40_capture_record_post_c0_point(
     capture->post_c0_previous_valid = LIB_TRUE;
 }
 
-static C_INT model40_capture_key_matches(
+static lib_i32 model40_capture_key_matches(
     const core_machine_retirement_eligibility_key *left,
     const core_machine_retirement_eligibility_key *right)
 {
@@ -306,7 +306,7 @@ static C_INT model40_capture_key_matches(
         left->repeat_prefix == right->repeat_prefix;
 }
 
-static C_VOID model40_capture_record_key(model40_retirement_capture *capture,
+static void model40_capture_record_key(model40_retirement_capture *capture,
     const core_machine_retirement_eligibility_key *key)
 {
     lib_u32 index;
@@ -326,7 +326,7 @@ static C_VOID model40_capture_record_key(model40_retirement_capture *capture,
     capture->keys[capture->key_count].count = 1u;
     ++capture->key_count;
 }
-static const C_CHAR *model40_capture_form_name(
+static const char *model40_capture_form_name(
     const core_machine_retirement_observation *observation,
     lib_u8 opcode_index)
 {
@@ -412,7 +412,7 @@ static const C_CHAR *model40_capture_form_name(
     }
 }
 
-static const C_CHAR *model40_capture_operand_name(
+static const char *model40_capture_operand_name(
     const core_machine_retirement_observation *observation)
 {
     if (observation == LIB_NULL || observation->point.bytes[0] != 0x8eu) {
@@ -422,7 +422,7 @@ static const C_CHAR *model40_capture_operand_name(
         "register" : "memory";
 }
 
-static C_INT model40_capture_is_prefix(lib_u8 opcode)
+static lib_i32 model40_capture_is_prefix(lib_u8 opcode)
 {
     switch (opcode) {
     case 0x26u: case 0x2eu: case 0x36u: case 0x3eu: case 0x64u: case 0x65u:
@@ -444,7 +444,7 @@ static lib_u8 model40_capture_opcode_index(
     return index;
 }
 
-static type_bool model40_capture_is_coprocessor_escape(
+static lib_u8 model40_capture_is_coprocessor_escape(
     const core_machine_retirement_observation *observation,
     lib_u8 opcode_index)
 {
@@ -473,9 +473,9 @@ static lib_u8 model40_capture_group_extension(
         return 0xffu;
     }
 }
-static C_INT model40_capture_form_matches(
-    const model40_retirement_capture_form *form, const C_CHAR *name,
-    const C_CHAR *operand, lib_u8 opcode, lib_u8 escape_opcode,
+static lib_i32 model40_capture_form_matches(
+    const model40_retirement_capture_form *form, const char *name,
+    const char *operand, lib_u8 opcode, lib_u8 escape_opcode,
     lib_u8 group_extension, lib_u32 source_timing_form_id,
     core_machine_retirement_timing_origin timing_origin,
     const core_machine_retirement_observation *observation)
@@ -501,7 +501,7 @@ static C_INT model40_capture_form_matches(
         form->disposition == observation->timing_disposition;
 }
 
-static C_VOID model40_capture_record_post_c0_io(
+static void model40_capture_record_post_c0_io(
     model40_retirement_capture *capture,
     const core_machine_retirement_observation *observation)
 {
@@ -529,11 +529,11 @@ static C_VOID model40_capture_record_post_c0_io(
 /* The D4 ROM's fail-safe POST loop is meaningful only relative to writes that
  * program the second 8254 and enable its latch.  Keep this as copied probe
  * evidence; it does not alter the guest or manufacture an interrupt. */
-static C_VOID model40_capture_record_d4_timer_io(
+static void model40_capture_record_d4_timer_io(
     model40_retirement_capture *capture,
     const core_machine_retirement_observation *observation)
 {
-    type_bool selected;
+    lib_u8 selected;
 
     if (capture == LIB_NULL || observation == LIB_NULL ||
         !capture->d4_timer_history_enabled ||
@@ -550,7 +550,7 @@ static C_VOID model40_capture_record_d4_timer_io(
     }
 }
 
-static type_bool model40_capture_c0a_reached(
+static lib_u8 model40_capture_c0a_reached(
     const model40_retirement_capture *capture)
 {
     return capture != LIB_NULL && capture->checkpoint_reached &&
@@ -558,7 +558,7 @@ static type_bool model40_capture_c0a_reached(
         capture->post_c0_io_port_known && capture->post_c0_io_port == 0x0061u;
 }
 
-static type_bool model40_capture_has_fdc_read_data(
+static lib_u8 model40_capture_has_fdc_read_data(
     const model40_retirement_capture *capture, const vm_machine *session)
 {
     const core_machine_fdc_terminal_observation *observation;
@@ -573,20 +573,20 @@ static type_bool model40_capture_has_fdc_read_data(
         observation->successful;
 }
 
-static C_VOID model40_capture_observe(C_VOID *opaque,
+static void model40_capture_observe(void *opaque,
     const core_machine_retirement_observation *observation)
 {
     model40_retirement_capture *capture =
         (model40_retirement_capture *)opaque;
-    const C_CHAR *name;
-    const C_CHAR *operand;
+    const char *name;
+    const char *operand;
     lib_u32 index;
     lib_u8 opcode_index;
     lib_u8 opcode;
     lib_u8 escape_opcode = 0xffu;
     lib_u8 group_extension;
-    type_bool aggregate;
-    type_bool zero_code_entry;
+    lib_u8 aggregate;
+    lib_u8 zero_code_entry;
 
     if (capture == LIB_NULL || observation == LIB_NULL) return;
     model40_capture_record_d4_timer_io(capture, observation);
@@ -669,7 +669,7 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
             capture->iret_sp;
         if (core_machine_memory_read(capture->machine,
                 capture->iret_frame_address,
-                capture->iret_frame, sizeof(capture->iret_frame)) == TYPE_STATUS_OK) {
+                capture->iret_frame, sizeof(capture->iret_frame)) == LIB_STATUS_OK) {
             capture->iret_frame_read = LIB_TRUE;
         }
     }
@@ -891,8 +891,8 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
             capture->last_software_interrupt_target_read =
                 core_machine_memory_read_physical(&capture->machine->executor_memory,
                     capture->last_software_interrupt_target,
-                    (type_virtual_address)capture->last_software_interrupt_target_bytes,
-                    sizeof(capture->last_software_interrupt_target_bytes)) == TYPE_STATUS_OK;
+                    (lib_uptr)capture->last_software_interrupt_target_bytes,
+                    sizeof(capture->last_software_interrupt_target_bytes)) == LIB_STATUS_OK;
         }
     }
     if (capture->last_software_interrupt_valid &&
@@ -938,21 +938,21 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
         observation->timing_disposition, 1u };
 }
 
-static C_VOID model40_capture_emit_terminal_bytes(
+static void model40_capture_emit_terminal_bytes(
     const model40_retirement_capture *capture)
 {
     lib_u8 index;
 
     if (capture == LIB_NULL || !capture->terminal_bytes_available) return;
-    STD_PRINTF("T390 terminal-bytes=");
+    printf("T390 terminal-bytes=");
     for (index = 0u; index < capture->terminal_byte_count &&
         index < sizeof(capture->terminal_bytes); ++index) {
-        STD_PRINTF("%02X", (unsigned)capture->terminal_bytes[index]);
+        printf("%02X", (unsigned)capture->terminal_bytes[index]);
     }
-    STD_PRINTF("\n");
+    printf("\n");
 }
 
-static C_VOID model40_capture_emit(const model40_retirement_capture *capture)
+static void model40_capture_emit(const model40_retirement_capture *capture)
 {
     lib_u32 index;
 
@@ -960,7 +960,7 @@ static C_VOID model40_capture_emit(const model40_retirement_capture *capture)
     for (index = 0u; index < capture->form_count; ++index) {
         const model40_retirement_capture_form *form = &capture->forms[index];
 
-        STD_PRINTF("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u source-form=%u origin=%u modrm=%u modrm-ext=%u control=%u next=%u repeat-phase=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
+        printf("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u source-form=%u origin=%u modrm=%u modrm-ext=%u control=%u next=%u repeat-phase=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
             "as32=%u lock=%u rep=%u disposition=%u count=%u\n",
             form->form, form->operand, (unsigned)form->opcode,
             (unsigned)form->escape_opcode, (unsigned)form->group_extension,
@@ -976,7 +976,7 @@ static C_VOID model40_capture_emit(const model40_retirement_capture *capture)
     }
 }
 
-static C_VOID model40_capture_emit_post_c0_history(
+static void model40_capture_emit_post_c0_history(
     const model40_retirement_capture *capture)
 {
     lib_u32 index;
@@ -984,19 +984,19 @@ static C_VOID model40_capture_emit_post_c0_history(
     lib_u32 count;
 
     if (capture == LIB_NULL) return;
-    STD_PRINTF("M5:T498:S5:POST-C0-HISTORY:first=%u last=%u ports=%u\n",
+    printf("M5:T498:S5:POST-C0-HISTORY:first=%u last=%u ports=%u\n",
         (unsigned)capture->post_c0_first_count,
         (unsigned)capture->post_c0_last_count,
         (unsigned)capture->post_c0_port_count);
     if (capture->post_c0_non_rom_seen) {
-        STD_PRINTF("M5:T498:S5:POST-C0-ROM-EXIT:from=%08X-pm=%u-to=%08X-pm=%u\n",
+        printf("M5:T498:S5:POST-C0-ROM-EXIT:from=%08X-pm=%u-to=%08X-pm=%u\n",
             (unsigned)capture->post_c0_non_rom_predecessor.linear_pc,
             (unsigned)capture->post_c0_non_rom_predecessor.protected_mode,
             (unsigned)capture->post_c0_non_rom.linear_pc,
             (unsigned)capture->post_c0_non_rom.protected_mode);
     }
     for (index = 0u; index < capture->post_c0_first_count; ++index) {
-        STD_PRINTF("M5:T498:S5:POST-C0-FIRST:pc=%08X-pm=%u\n",
+        printf("M5:T498:S5:POST-C0-FIRST:pc=%08X-pm=%u\n",
             (unsigned)capture->post_c0_first[index].linear_pc,
             (unsigned)capture->post_c0_first[index].protected_mode);
     }
@@ -1008,38 +1008,38 @@ static C_VOID model40_capture_emit_post_c0_history(
         const model40_capture_execution_point *point = &capture->post_c0_last[
             (start + index) % MODEL40_CAPTURE_POST_C0_HISTORY];
 
-        STD_PRINTF("M5:T498:S5:POST-C0-LAST:pc=%08X-pm=%u\n",
+        printf("M5:T498:S5:POST-C0-LAST:pc=%08X-pm=%u\n",
             (unsigned)point->linear_pc, (unsigned)point->protected_mode);
     }
     for (index = 0u; index < capture->post_c0_port_count; ++index) {
         const model40_capture_port_event *event = &capture->post_c0_ports[index];
 
-        STD_PRINTF("M5:T498:S5:POST-C0-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
+        printf("M5:T498:S5:POST-C0-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
             (unsigned long long)event->sequence, (unsigned)event->linear_pc,
             (unsigned)event->port, event->write ? "write" : "read",
             (unsigned)event->value);
     }
 }
 
-static C_VOID model40_capture_emit_d4_timer_history(
+static void model40_capture_emit_d4_timer_history(
     const model40_retirement_capture *capture)
 {
     lib_u32 index;
 
     if (capture == LIB_NULL || !capture->d4_timer_history_enabled) return;
-    STD_PRINTF("M5:T498:S5:D4-TIMER-HISTORY:ports=%u\n",
+    printf("M5:T498:S5:D4-TIMER-HISTORY:ports=%u\n",
         (unsigned)capture->d4_timer_port_count);
     for (index = 0u; index < capture->d4_timer_port_count; ++index) {
         const model40_capture_port_event *event = &capture->d4_timer_ports[index];
 
-        STD_PRINTF("M5:T498:S5:D4-TIMER-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
+        printf("M5:T498:S5:D4-TIMER-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
             (unsigned long long)event->sequence, (unsigned)event->linear_pc,
             (unsigned)event->port, event->write ? "write" : "read",
             (unsigned)event->value);
     }
 }
 
-static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
+static lib_i32 model40_capture_create_session(lib_i32 argc, char **argv,
     integration_ini_session *out_session)
 {
     if (argv == LIB_NULL || out_session == LIB_NULL ||
@@ -1053,10 +1053,10 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
         lib_c_strcmp(argv[3], "--d4-memory-diagnostic") &&
         lib_c_strcmp(argv[3], "--warm-reset-diagnostic"))))) return 0;
     return integration_ini_session_open(argv[1], argv[2], out_session) ==
-        TYPE_STATUS_OK && out_session->session != LIB_NULL;
+        LIB_STATUS_OK && out_session->session != LIB_NULL;
 }
 
-static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
+static lib_i32 model40_capture_synthetic_c0_smoke(void)
 {
     model40_retirement_capture capture = { 0 };
     core_machine_retirement_observation observation = { 0 };
@@ -1111,13 +1111,13 @@ static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
         capture.classified != 7u || capture.unallocated != 1u ||
         capture.form_count != 8u ||
         lib_c_strcmp(capture.forms[0].form, "mov-immediate")) return 1;
-    STD_PRINTF("M5:T390:S17:M40-C0-CAPTURE:OK\n");
-    STD_PRINTF("M5:T390:S29:M40-C1-DIAGNOSTIC:OK\n");
-    STD_PRINTF("M5:T390:S32:C1-TRANSITION:OK\n");
-    STD_PRINTF("M5:T390:S33:POST-C0-IO:OK\n");
+    printf("M5:T390:S17:M40-C0-CAPTURE:OK\n");
+    printf("M5:T390:S29:M40-C1-DIAGNOSTIC:OK\n");
+    printf("M5:T390:S32:C1-TRANSITION:OK\n");
+    printf("M5:T390:S33:POST-C0-IO:OK\n");
     return 0;
 }
-static C_INT model40_capture_synthetic_key_mapping_smoke(C_VOID)
+static lib_i32 model40_capture_synthetic_key_mapping_smoke(void)
 {
     model40_retirement_capture capture = { 0 };
     core_machine_retirement_observation observation = { 0 };
@@ -1144,10 +1144,10 @@ static C_INT model40_capture_synthetic_key_mapping_smoke(C_VOID)
     model40_capture_observe(&capture, &observation);
     if (capture.key_count != 2u || capture.keys[0].count != 2u ||
         capture.keys[1].count != 1u || capture.key_limit_reached) return 1;
-    STD_PRINTF("M5:T394:S5:C0-KEY-MAPPING:OK\n");
+    printf("M5:T394:S5:C0-KEY-MAPPING:OK\n");
     return 0;
 }
-static C_INT model40_capture_synthetic_c0a_smoke(C_VOID)
+static lib_i32 model40_capture_synthetic_c0a_smoke(void)
 {
     model40_retirement_capture capture = { 0 };
     core_machine_retirement_observation observation = { 0 };
@@ -1184,10 +1184,10 @@ static C_INT model40_capture_synthetic_c0a_smoke(C_VOID)
         capture.post_c0_port_count != 1u || capture.post_c0_ports[0].value != 0x35u ||
         capture.count != 3u || capture.classified != 3u || capture.unallocated != 0u ||
         capture.form_count != 3u) return 1;
-    STD_PRINTF("M5:T391:S2:C0A-CAPTURE:OK\n");
+    printf("M5:T391:S2:C0A-CAPTURE:OK\n");
     return 0;
 }
-static C_INT model40_capture_synthetic_fdc_read_data_smoke(C_VOID)
+static lib_i32 model40_capture_synthetic_fdc_read_data_smoke(void)
 {
     model40_retirement_capture capture = { 0 };
     vm_machine session = { 0 };
@@ -1215,11 +1215,11 @@ static C_INT model40_capture_synthetic_fdc_read_data_smoke(C_VOID)
     if (!model40_capture_has_fdc_read_data(&capture, &session)) return 1;
     session.model40_fdc_terminal_observation_valid = LIB_FALSE;
     if (model40_capture_has_fdc_read_data(&capture, &session)) return 1;
-    STD_PRINTF("M5:T393:S4:FDC-READ-DATA-CAPTURE:OK\n");
+    printf("M5:T393:S4:FDC-READ-DATA-CAPTURE:OK\n");
     return 0;
 }
 
-static C_INT model40_capture_synthetic_c1_transfer_smoke(C_VOID)
+static lib_i32 model40_capture_synthetic_c1_transfer_smoke(void)
 {
     model40_retirement_capture capture = { 0 };
     core_machine_retirement_observation observation = { 0 };
@@ -1248,10 +1248,10 @@ static C_INT model40_capture_synthetic_c1_transfer_smoke(C_VOID)
         !capture.c1_collecting || !capture.c1_transfer_reached ||
         capture.count != 2u || capture.classified != 2u ||
         capture.unallocated != 0u || capture.form_count != 1u) return 1;
-    STD_PRINTF("M5:T391:S5:C1-TRANSFER-CAPTURE:OK\n");
+    printf("M5:T391:S5:C1-TRANSFER-CAPTURE:OK\n");
     return 0;
 }
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     const core_machine_run_budget budget = { MODEL40_CAPTURE_RUN_INSTRUCTIONS, 0u };
     core_machine_retirement_observation_provider provider;
@@ -1260,31 +1260,31 @@ C_INT main(C_INT argc, C_CHAR **argv)
     model40_retirement_capture capture = { 0 };
     integration_ini_session ini_session = {0};
     vm_machine *session;
-    type_status status = TYPE_STATUS_OK;
+    lib_status status = LIB_STATUS_OK;
     lib_u32 index;
     lib_u64 elapsed_before_terminal = 0u;
-    const C_CHAR *terminal = "retirement-budget-exhausted";
-    C_INT emit_terminal_bytes = argc == 4 && argv != LIB_NULL &&
+    const char *terminal = "retirement-budget-exhausted";
+    lib_i32 emit_terminal_bytes = argc == 4 && argv != LIB_NULL &&
         !lib_c_strcmp(argv[3], "--terminal-bytes");
-    C_INT c1_diagnostic = argc == 4 && argv != LIB_NULL &&
+    lib_i32 c1_diagnostic = argc == 4 && argv != LIB_NULL &&
         !lib_c_strcmp(argv[3], "--c1-diagnostic");
-    C_INT post_c0_io_diagnostic = argc == 4 && argv != LIB_NULL &&
+    lib_i32 post_c0_io_diagnostic = argc == 4 && argv != LIB_NULL &&
         !lib_c_strcmp(argv[3], "--post-c0-io-diagnostic");
-    C_INT c0a_diagnostic = argc == 4 && argv != LIB_NULL &&
+    lib_i32 c0a_diagnostic = argc == 4 && argv != LIB_NULL &&
         !lib_c_strcmp(argv[3], "--c0a-diagnostic");
-    C_INT c1_transfer_diagnostic = argc == 4 && argv != LIB_NULL &&
+    lib_i32 c1_transfer_diagnostic = argc == 4 && argv != LIB_NULL &&
         !lib_c_strcmp(argv[3], "--c1-transfer-diagnostic");
-    C_INT fdc_read_data_diagnostic = argc == 4 && argv != LIB_NULL &&
+    lib_i32 fdc_read_data_diagnostic = argc == 4 && argv != LIB_NULL &&
         !lib_c_strcmp(argv[3], "--fdc-read-data-diagnostic");
-    C_INT port_sequence_diagnostic = argc == 4 && argv != LIB_NULL &&
+    lib_i32 port_sequence_diagnostic = argc == 4 && argv != LIB_NULL &&
         !lib_c_strcmp(argv[3], "--port-sequence-diagnostic");
-    C_INT d4_memory_diagnostic = argc == 4 && argv != LIB_NULL &&
+    lib_i32 d4_memory_diagnostic = argc == 4 && argv != LIB_NULL &&
         !lib_c_strcmp(argv[3], "--d4-memory-diagnostic");
-    C_INT warm_reset_diagnostic = argc == 4 && argv != LIB_NULL &&
+    lib_i32 warm_reset_diagnostic = argc == 4 && argv != LIB_NULL &&
         !lib_c_strcmp(argv[3], "--warm-reset-diagnostic");
 
     if (!model40_capture_create_session(argc, argv, &ini_session)) {
-        STD_FPRINTF(STD_STDERR, "usage: capture sessions-directory model40-session.ini "
+        fprintf(stderr, "usage: capture sessions-directory model40-session.ini "
             "[--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic|--c0a-diagnostic|--c1-transfer-diagnostic|--fdc-read-data-diagnostic|--port-sequence-diagnostic|--d4-memory-diagnostic|--warm-reset-diagnostic]\n");
         return 2;
     }
@@ -1297,14 +1297,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
     provider.context = &capture;
     status = core_machine_set_retirement_observation_provider(
         session->core_machine, &provider);
-    if (status == TYPE_STATUS_OK) status = core_machine_reset(session->core_machine);
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) status = core_machine_reset(session->core_machine);
+    if (status == LIB_STATUS_OK) {
         capture.reset_vector2_read = core_machine_memory_read(session->core_machine,
-            8u, capture.reset_vector2, sizeof(capture.reset_vector2)) == TYPE_STATUS_OK;
+            8u, capture.reset_vector2, sizeof(capture.reset_vector2)) == LIB_STATUS_OK;
         session->core_machine->executor_cpu_instructions.data.flagWW = LIB_TRUE;
         session->core_machine->executor_cpu_instructions.data.wwLinear = 0x0000001au;
     }
-    for (index = 0u; status == TYPE_STATUS_OK && index < MODEL40_CAPTURE_RUN_LIMIT &&
+    for (index = 0u; status == LIB_STATUS_OK && index < MODEL40_CAPTURE_RUN_LIMIT &&
         (!capture.checkpoint_reached || (c1_diagnostic && !capture.c1_checkpoint_reached) ||
         (c1_transfer_diagnostic && !capture.c1_transfer_reached) ||
         (fdc_read_data_diagnostic && !capture.fdc_read_data_reached) ||
@@ -1316,12 +1316,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         capture.unallocated == 0u; ++index) {
         elapsed_before_terminal = result.elapsed_ticks;
         status = core_machine_run(session->core_machine, budget, &result);
-        if (status != TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
+        if (status != LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            C_INT advanced = 0;
+            lib_i32 advanced = 0;
 
             status = vm_machine_waiting_advance(session, &result, &advanced);
-            if (status != TYPE_STATUS_OK || !advanced) break;
+            if (status != LIB_STATUS_OK || !advanced) break;
         }
         if (capture.last_software_interrupt_valid &&
             !capture.last_software_interrupt_target_stopped_read) {
@@ -1330,13 +1330,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
                     capture.last_software_interrupt_target,
                     capture.last_software_interrupt_target_stopped_bytes,
                     sizeof(capture.last_software_interrupt_target_stopped_bytes)) ==
-                    TYPE_STATUS_OK;
+                    LIB_STATUS_OK;
         }
         if (capture.iret_frame_seen && !capture.iret_frame_stopped_read) {
             capture.iret_frame_stopped_read = core_machine_memory_read(
                 session->core_machine, capture.iret_frame_address,
                 capture.iret_frame_stopped, sizeof(capture.iret_frame_stopped)) ==
-                TYPE_STATUS_OK;
+                LIB_STATUS_OK;
         }
         if (capture.interrupt_service_entry_seen &&
             !capture.interrupt_service_frame_read) {
@@ -1344,12 +1344,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 session->core_machine, session->core_machine->executor_cpu_instructions.
                 data.oldcpu.data.ss.base + capture.interrupt_service_sp,
                 capture.interrupt_service_frame,
-                sizeof(capture.interrupt_service_frame)) == TYPE_STATUS_OK;
+                sizeof(capture.interrupt_service_frame)) == LIB_STATUS_OK;
         }
         {
             core_machine_cpu_state cpu = {0};
 
-            if (core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK &&
+            if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK &&
                 cpu.cs_base + cpu.eip == 0x000f1bd0u) {
                 capture.nmi_entry_seen = LIB_TRUE;
                 ++capture.nmi_entry_count;
@@ -1368,16 +1368,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
                     executor_cpu_instructions.data.oldcpu.data.cr0;
                 capture.nmi_entry_vector2_read = core_machine_memory_read(
                     session->core_machine, 8u, capture.nmi_entry_vector2,
-                    sizeof(capture.nmi_entry_vector2)) == TYPE_STATUS_OK;
+                    sizeof(capture.nmi_entry_vector2)) == LIB_STATUS_OK;
                 capture.nmi_entry_frame_read = core_machine_memory_read(
                     session->core_machine,
                     session->core_machine->executor_cpu.data.ss.base +
                         capture.nmi_entry_sp,
                     capture.nmi_entry_frame, sizeof(capture.nmi_entry_frame)) ==
-                    TYPE_STATUS_OK;
+                    LIB_STATUS_OK;
             }
             if (!capture.interrupt_handler_entry_seen &&
-                core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK &&
+                core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK &&
                 cpu.cs_base + cpu.eip == 0x000f0060u &&
                 (session->core_machine->executor_cpu_instructions.data.oldcpu.data.cs.base +
                     session->core_machine->executor_cpu_instructions.data.oldcpu.data.eip <
@@ -1413,13 +1413,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 capture.interrupt_handler_frame_read = core_machine_memory_read(
                     session->core_machine, session->core_machine->executor_cpu.data.ss.base +
                     capture.interrupt_handler_sp, capture.interrupt_handler_frame,
-                    sizeof(capture.interrupt_handler_frame)) == TYPE_STATUS_OK;
+                    sizeof(capture.interrupt_handler_frame)) == LIB_STATUS_OK;
                 for (vector = 0u; vector != 0xffu; ++vector) {
                     lib_u16 entry[2] = {0};
 
                     if (core_machine_memory_read(session->core_machine,
                             (lib_u32)vector * 4u, entry, sizeof(entry)) ==
-                            TYPE_STATUS_OK && entry[1u] == 0xf000u && entry[0u] <= 0x0060u) {
+                            LIB_STATUS_OK && entry[1u] == 0xf000u && entry[0u] <= 0x0060u) {
                         if (entry[0u] == 0x0060u) {
                             capture.interrupt_handler_vector = vector;
                             capture.interrupt_handler_vector_found = LIB_TRUE;
@@ -1462,7 +1462,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     else if (c1_diagnostic && capture.c1_checkpoint_reached) terminal = "c1-protected-entry";
     else if (c1_diagnostic && capture.unallocated != 0u) terminal =
         "c1-source-timing-unallocated";
-    else if (status != TYPE_STATUS_OK) terminal = "run-status";
+    else if (status != LIB_STATUS_OK) terminal = "run-status";
     else if (result.reason == CORE_MACHINE_STOP_FAULT) terminal = "fault";
     else if (fdc_read_data_diagnostic) terminal = "fdc-read-data-retirement-budget-exhausted";
     else if (c1_transfer_diagnostic) terminal = "c1-transfer-retirement-budget-exhausted";
@@ -1478,25 +1478,25 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (sample_count > MODEL40_CAPTURE_D4_MEMORY_HISTORY) {
             sample_count = MODEL40_CAPTURE_D4_MEMORY_HISTORY;
         }
-        STD_PRINTF("M5:T498:S5:D4-MEMORY-ITERATIONS:count=%u", (unsigned)
+        printf("M5:T498:S5:D4-MEMORY-ITERATIONS:count=%u", (unsigned)
             capture.d4_memory_iteration_count);
         for (index = 0u; index < sample_count; ++index) {
-            STD_PRINTF("-ebp=%08X-next=%08X", (unsigned)capture.d4_memory_ebp[index],
+            printf("-ebp=%08X-next=%08X", (unsigned)capture.d4_memory_ebp[index],
                 (unsigned)capture.d4_memory_next_pc[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.d4_failsafe_test_seen) {
-        STD_PRINTF("M5:T498:S5:D4-FAILSAFE-TEST:value=%02X\n",
+        printf("M5:T498:S5:D4-FAILSAFE-TEST:value=%02X\n",
             (unsigned)capture.d4_failsafe_port_value);
     }
-    STD_PRINTF("M5:T394:S5:C0-KEY-MAPPING:forms=%u keys=%u key-limit=%u\n",
+    printf("M5:T394:S5:C0-KEY-MAPPING:forms=%u keys=%u key-limit=%u\n",
         (unsigned)capture.form_count, (unsigned)capture.key_count,
         (unsigned)capture.key_limit_reached);
     if (emit_terminal_bytes || capture.unallocated != 0u) {
         model40_capture_emit_terminal_bytes(&capture);
     }
-    STD_PRINTF("M5:T390:S8:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
+    printf("M5:T390:S8:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
         "coprocessor-domain=%u unallocated=%u forms=%u protected=%u checkpoint=%u c1=%u status=%u reason=%u detail=%08X pc=%08X\n", terminal,
         (unsigned)capture.count, (unsigned)capture.classified,
         (unsigned)capture.coprocessor_domain,
@@ -1509,7 +1509,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         lib_u8 bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES] = {0};
         lib_u32 linear_pc = 0u;
 
-        STD_PRINTF("M5:T498:S5:FDC-PREDECESSOR:c0a=%u baseline=%u port=%u read-data=%u "
+        printf("M5:T498:S5:FDC-PREDECESSOR:c0a=%u baseline=%u port=%u read-data=%u "
             "terminal-observation=%u post-c0-io=%u\n",
             (unsigned)model40_capture_c0a_reached(&capture),
             (unsigned)capture.fdc_read_data_baseline_valid,
@@ -1517,19 +1517,19 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned)capture.fdc_read_data_reached,
             (unsigned)session->model40_fdc_terminal_observation_valid,
             (unsigned)capture.post_c0_io_seen);
-        if (core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK) {
+        if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK) {
             linear_pc = cpu.cs_base + cpu.eip;
             if (core_machine_memory_read(session->core_machine, linear_pc, bytes,
-                    sizeof(bytes)) == TYPE_STATUS_OK) {
-                STD_PRINTF("M5:T498:S5:FDC-PREDECESSOR-PC=%08X-bytes=%02X,%02X,%02X,%02X\n",
+                    sizeof(bytes)) == LIB_STATUS_OK) {
+                printf("M5:T498:S5:FDC-PREDECESSOR-PC=%08X-bytes=%02X,%02X,%02X,%02X\n",
                     (unsigned)linear_pc, (unsigned)bytes[0u], (unsigned)bytes[1u],
                     (unsigned)bytes[2u], (unsigned)bytes[3u]);
             }
         }
     }
     if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
-        TYPE_STATUS_OK) {
-        STD_PRINTF("M5:T498:S5:CPU-EXCEPTION-DIAGNOSTIC:fault-valid=%u-fault-mask=%08X-fault-code=%08X-fault-pc=%08X-fault-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-count=%u-first-valid=%u-first-mask=%08X-first-code=%08X-first-pc=%08X-last-valid=%u-last-mask=%08X-last-code=%08X-last-pc=%08X\n",
+        LIB_STATUS_OK) {
+        printf("M5:T498:S5:CPU-EXCEPTION-DIAGNOSTIC:fault-valid=%u-fault-mask=%08X-fault-code=%08X-fault-pc=%08X-fault-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-count=%u-first-valid=%u-first-mask=%08X-first-code=%08X-first-pc=%08X-last-valid=%u-last-mask=%08X-last-code=%08X-last-pc=%08X\n",
             (unsigned)diagnostic.first_fault.valid,
             (unsigned)diagnostic.first_fault.exception_mask,
             (unsigned)diagnostic.first_fault.exception_code,
@@ -1556,8 +1556,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         lib_u8 bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES] = {0};
 
         if (core_machine_memory_read(session->core_machine, result.linear_pc,
-                bytes, sizeof(bytes)) == TYPE_STATUS_OK) {
-            STD_PRINTF("M5:T498:S5:FINAL-PC:pc=%08X-bytes=%02X,%02X,%02X,%02X,%02X,%02X\n",
+                bytes, sizeof(bytes)) == LIB_STATUS_OK) {
+            printf("M5:T498:S5:FINAL-PC:pc=%08X-bytes=%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned)result.linear_pc, (unsigned)bytes[0u],
                 (unsigned)bytes[1u], (unsigned)bytes[2u], (unsigned)bytes[3u],
                 (unsigned)bytes[4u], (unsigned)bytes[5u]);
@@ -1566,14 +1566,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
     {
         core_machine_cpu_state cpu = {0};
 
-        if (core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK) {
-            STD_PRINTF("M5:T498:S5:FINAL-CPU:cs=%04X-base=%08X-eip=%08X-flags=%08X-halted=%u\n",
+        if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK) {
+            printf("M5:T498:S5:FINAL-CPU:cs=%04X-base=%08X-eip=%08X-flags=%08X-halted=%u\n",
                 (unsigned)cpu.cs, (unsigned)cpu.cs_base,
                 (unsigned)cpu.eip, (unsigned)cpu.eflags,
                 (unsigned)cpu.halted);
         }
     }
-    STD_PRINTF("M5:T498:S5:FINAL-INTERNAL-CPU:es=%04X-base=%08X-ds=%04X-base=%08X-ss=%04X-base=%08X-ebx=%08X-eax=%08X-cr0=%08X\n",
+    printf("M5:T498:S5:FINAL-INTERNAL-CPU:es=%04X-base=%08X-ds=%04X-base=%08X-ss=%04X-base=%08X-ebx=%08X-eax=%08X-cr0=%08X\n",
         (unsigned)session->core_machine->executor_cpu.data.es.selector,
         (unsigned)session->core_machine->executor_cpu.data.es.base,
         (unsigned)session->core_machine->executor_cpu.data.ds.selector,
@@ -1584,7 +1584,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         (unsigned)session->core_machine->executor_cpu.data.eax,
         (unsigned)session->core_machine->executor_cpu.data.cr0);
     if (capture.iret_frame_seen) {
-        STD_PRINTF("M5:T498:S5:IRET-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-cr0=%08X-operand32=%u-stack32=%u-ip=%04X-cs=%04X-flags=%04X-stopped-read=%u-stopped-ip=%04X-stopped-cs=%04X-stopped-flags=%04X\n",
+        printf("M5:T498:S5:IRET-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-cr0=%08X-operand32=%u-stack32=%u-ip=%04X-cs=%04X-flags=%04X-stopped-read=%u-stopped-ip=%04X-stopped-cs=%04X-stopped-flags=%04X\n",
             (unsigned)capture.iret_frame_count, (unsigned)capture.iret_frame_read,
             (unsigned)capture.iret_ss, (unsigned)capture.iret_ss_base,
             (unsigned)capture.iret_sp,
@@ -1599,7 +1599,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned)capture.iret_frame_stopped[2u]);
     }
     if (capture.nmi_entry_seen) {
-        STD_PRINTF("M5:T498:S5:NMI-ENTRY-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-vector2-read=%u-vector2-ip=%04X-vector2-cs=%04X-source-cr0=%08X-source-ip=%04X-source-cs=%04X-source-flags=%04X-ip=%04X-cs=%04X-flags=%04X\n",
+        printf("M5:T498:S5:NMI-ENTRY-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-vector2-read=%u-vector2-ip=%04X-vector2-cs=%04X-source-cr0=%08X-source-ip=%04X-source-cs=%04X-source-flags=%04X-ip=%04X-cs=%04X-flags=%04X\n",
             (unsigned)capture.nmi_entry_count, (unsigned)capture.nmi_entry_frame_read,
             (unsigned)capture.nmi_entry_ss, (unsigned)capture.nmi_entry_ss_base,
             (unsigned)capture.nmi_entry_sp,
@@ -1614,11 +1614,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned)capture.nmi_entry_frame[1u],
             (unsigned)capture.nmi_entry_frame[2u]);
     }
-    STD_PRINTF("M5:T498:S5:RESET-VECTOR2:read=%u-ip=%04X-cs=%04X\n",
+    printf("M5:T498:S5:RESET-VECTOR2:read=%u-ip=%04X-cs=%04X\n",
         (unsigned)capture.reset_vector2_read, (unsigned)capture.reset_vector2[0u],
         (unsigned)capture.reset_vector2[1u]);
     if (capture.last_software_interrupt_valid) {
-        STD_PRINTF("M5:T498:S5:LAST-SOFTWARE-INT:pc=%08X-vector=%02X-ss=%04X-sp=%04X-target=%08X-read=%u-bytes=%02X,%02X,%02X,%02X-stopped-read=%u-stopped-bytes=%02X,%02X,%02X,%02X\n",
+        printf("M5:T498:S5:LAST-SOFTWARE-INT:pc=%08X-vector=%02X-ss=%04X-sp=%04X-target=%08X-read=%u-bytes=%02X,%02X,%02X,%02X-stopped-read=%u-stopped-bytes=%02X,%02X,%02X,%02X\n",
             (unsigned)capture.last_software_interrupt_pc,
             (unsigned)capture.last_software_interrupt_vector,
             (unsigned)capture.last_software_interrupt_ss,
@@ -1634,33 +1634,33 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned)capture.last_software_interrupt_target_stopped_bytes[1u],
             (unsigned)capture.last_software_interrupt_target_stopped_bytes[2u],
             (unsigned)capture.last_software_interrupt_target_stopped_bytes[3u]);
-        STD_PRINTF("M5:T498:S5:SOFTWARE-INT-TRACE:count=%u",
+        printf("M5:T498:S5:SOFTWARE-INT-TRACE:count=%u",
             (unsigned)capture.software_interrupt_trace_count);
         for (index = 0u; index < capture.software_interrupt_trace_count; ++index) {
-            STD_PRINTF("-%08X", (unsigned)capture.software_interrupt_trace[index]);
+            printf("-%08X", (unsigned)capture.software_interrupt_trace[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.zero_code_seen) {
-        STD_PRINTF("M5:T498:S5:ZERO-CODE-TRACE:count=%u",
+        printf("M5:T498:S5:ZERO-CODE-TRACE:count=%u",
             (unsigned)capture.zero_code_trace_count);
         for (index = 0u; index < capture.zero_code_trace_count; ++index) {
-            STD_PRINTF("-%08X:%02X", (unsigned)capture.zero_code_trace[index],
+            printf("-%08X:%02X", (unsigned)capture.zero_code_trace[index],
                 (unsigned)capture.zero_code_opcode[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.iret_route_seen) {
-        STD_PRINTF("M5:T498:S5:IRET-ROUTE-TRACE:count=%u",
+        printf("M5:T498:S5:IRET-ROUTE-TRACE:count=%u",
             (unsigned)capture.iret_route_trace_count);
         for (index = 0u; index < capture.iret_route_trace_count; ++index) {
-            STD_PRINTF("-%08X:%02X", (unsigned)capture.iret_route_trace[index],
+            printf("-%08X:%02X", (unsigned)capture.iret_route_trace[index],
                 (unsigned)capture.iret_route_opcode[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.interrupt_handler_entry_seen) {
-        STD_PRINTF("M5:T498:S5:INTERRUPT-HANDLER-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X-vector-found=%u-vector=%02X\n",
+        printf("M5:T498:S5:INTERRUPT-HANDLER-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X-vector-found=%u-vector=%02X\n",
             (unsigned)capture.interrupt_handler_entry_count,
             (unsigned)capture.interrupt_handler_frame_read,
             (unsigned)capture.interrupt_handler_ss,
@@ -1673,23 +1673,23 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned)capture.interrupt_handler_frame[2u],
             (unsigned)capture.interrupt_handler_vector_found,
             (unsigned)capture.interrupt_handler_vector);
-        STD_PRINTF("M5:T498:S5:INTERRUPT-HANDLER-IVT:count=%u",
+        printf("M5:T498:S5:INTERRUPT-HANDLER-IVT:count=%u",
             (unsigned)capture.interrupt_handler_ivt_count);
         for (index = 0u; index < capture.interrupt_handler_ivt_count; ++index) {
-            STD_PRINTF("-%02X:%04X", (unsigned)capture.interrupt_handler_ivt_vectors[index],
+            printf("-%02X:%04X", (unsigned)capture.interrupt_handler_ivt_vectors[index],
                 (unsigned)capture.interrupt_handler_ivt_offsets[index]);
         }
-        STD_PRINTF("\n");
-        STD_PRINTF("M5:T498:S5:INTERRUPT-HANDLER-TRACE:count=%u",
+        printf("\n");
+        printf("M5:T498:S5:INTERRUPT-HANDLER-TRACE:count=%u",
             (unsigned)capture.interrupt_handler_trace_count);
         for (index = 0u; index < capture.interrupt_handler_trace_count; ++index) {
-            STD_PRINTF("-%08X:%02X", (unsigned)capture.interrupt_handler_trace[index],
+            printf("-%08X:%02X", (unsigned)capture.interrupt_handler_trace[index],
                 (unsigned)capture.interrupt_handler_trace_opcode[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.interrupt_scan_entry_seen) {
-        STD_PRINTF("M5:T498:S5:INTERRUPT-SCAN-ENTRY:source-ip=%04X-source-cs=%04X-source-sp=%04X-ss=%04X-sp=%04X\n",
+        printf("M5:T498:S5:INTERRUPT-SCAN-ENTRY:source-ip=%04X-source-cs=%04X-source-sp=%04X-ss=%04X-sp=%04X\n",
             (unsigned)capture.interrupt_scan_source_ip,
             (unsigned)capture.interrupt_scan_source_cs,
             (unsigned)capture.interrupt_scan_source_sp,
@@ -1697,7 +1697,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned)capture.interrupt_scan_sp);
     }
     if (capture.interrupt_service_entry_seen) {
-        STD_PRINTF("M5:T498:S5:INTERRUPT-SERVICE-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X\n",
+        printf("M5:T498:S5:INTERRUPT-SERVICE-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X\n",
             (unsigned)capture.interrupt_service_entry_count,
             (unsigned)capture.interrupt_service_frame_read,
             (unsigned)capture.interrupt_service_ss,
@@ -1708,56 +1708,56 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned)capture.interrupt_service_frame[0u],
             (unsigned)capture.interrupt_service_frame[1u],
             (unsigned)capture.interrupt_service_frame[2u]);
-        STD_PRINTF("M5:T498:S5:INTERRUPT-SERVICE-TRACE:count=%u",
+        printf("M5:T498:S5:INTERRUPT-SERVICE-TRACE:count=%u",
             (unsigned)capture.interrupt_service_trace_count);
         for (index = 0u; index < capture.interrupt_service_trace_count; ++index) {
-            STD_PRINTF("-%08X:%02X", (unsigned)capture.interrupt_service_trace[index],
+            printf("-%08X:%02X", (unsigned)capture.interrupt_service_trace[index],
                 (unsigned)capture.interrupt_service_trace_opcode[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.low_stack_transition_seen) {
-        STD_PRINTF("M5:T498:S5:LOW-STACK-TRANSITION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
+        printf("M5:T498:S5:LOW-STACK-TRANSITION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
             (unsigned)capture.low_stack_transition_pc,
             (unsigned)capture.low_stack_transition_before,
             (unsigned)capture.low_stack_transition_after,
             (unsigned)capture.low_stack_transition_trace_count);
         for (index = 0u; index < capture.low_stack_transition_trace_count; ++index) {
-            STD_PRINTF("-%08X:%02X", (unsigned)capture.low_stack_transition_trace[index],
+            printf("-%08X:%02X", (unsigned)capture.low_stack_transition_trace[index],
                 (unsigned)capture.low_stack_transition_trace_opcode[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.stack_exhaustion_seen) {
-        STD_PRINTF("M5:T498:S5:STACK-EXHAUSTION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
+        printf("M5:T498:S5:STACK-EXHAUSTION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
             (unsigned)capture.stack_exhaustion_pc,
             (unsigned)capture.stack_exhaustion_before,
             (unsigned)capture.stack_exhaustion_after,
             (unsigned)capture.stack_exhaustion_trace_count);
         for (index = 0u; index < capture.stack_exhaustion_trace_count; ++index) {
-            STD_PRINTF("-%08X:%02X", (unsigned)capture.stack_exhaustion_trace[index],
+            printf("-%08X:%02X", (unsigned)capture.stack_exhaustion_trace[index],
                 (unsigned)capture.stack_exhaustion_trace_opcode[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.minimum_stack_seen) {
-        STD_PRINTF("M5:T498:S5:MINIMUM-STACK:pc=%08X-sp=%04X-trace-count=%u",
+        printf("M5:T498:S5:MINIMUM-STACK:pc=%08X-sp=%04X-trace-count=%u",
             (unsigned)capture.minimum_stack_pc,
             (unsigned)capture.minimum_stack_value,
             (unsigned)capture.minimum_stack_trace_count);
         for (index = 0u; index < capture.minimum_stack_trace_count; ++index) {
-            STD_PRINTF("-%08X:%02X", (unsigned)capture.minimum_stack_trace[index],
+            printf("-%08X:%02X", (unsigned)capture.minimum_stack_trace[index],
                 (unsigned)capture.minimum_stack_trace_opcode[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.last_io_valid) {
-        STD_PRINTF("M5:T498:S5:LAST-IO:pc=%08X-direction=%u-port=%04X-value=%08X\n",
+        printf("M5:T498:S5:LAST-IO:pc=%08X-direction=%u-port=%04X-value=%08X\n",
             (unsigned)capture.last_io_pc, (unsigned)capture.last_io_direction,
             (unsigned)capture.last_io_port, (unsigned)capture.last_io_value);
     }
     if (capture.reset_vector_seen) {
-        STD_PRINTF("M5:T498:S5:RESET-VECTOR-PREDECESSOR-IO:valid=%u-pc=%08X-direction=%u-port=%04X-value=%08X\n",
+        printf("M5:T498:S5:RESET-VECTOR-PREDECESSOR-IO:valid=%u-pc=%08X-direction=%u-port=%04X-value=%08X\n",
             (unsigned)capture.reset_vector_io_valid,
             (unsigned)capture.reset_vector_io_pc,
             (unsigned)capture.reset_vector_io_direction,
@@ -1770,43 +1770,43 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (reset_sample_count > MODEL40_CAPTURE_RESET_HISTORY) {
             reset_sample_count = MODEL40_CAPTURE_RESET_HISTORY;
         }
-        STD_PRINTF("M5:T498:S5:WARM-RESET:count=%u", (unsigned)capture.reset_vector_count);
+        printf("M5:T498:S5:WARM-RESET:count=%u", (unsigned)capture.reset_vector_count);
         for (index = 0u; index < reset_sample_count; ++index) {
-            STD_PRINTF("-shutdown=%02X-kbc-output=%02X",
+            printf("-shutdown=%02X-kbc-output=%02X",
                 (unsigned)capture.reset_vector_shutdown_status[index],
                 (unsigned)capture.reset_vector_kbc_output_port[index]);
         }
         if (capture.reset_instruction_state_seen) {
-            STD_PRINTF("-before-pulse-shutdown=%02X-before-pulse-kbc-output=%02X",
+            printf("-before-pulse-shutdown=%02X-before-pulse-kbc-output=%02X",
                 (unsigned)capture.reset_instruction_shutdown_status,
                 (unsigned)capture.reset_instruction_kbc_output_port);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (capture.reset_instruction_seen) {
-        STD_PRINTF("M5:T498:S5:RESET-INSTRUCTION:port=%02X-value=%02X\n",
+        printf("M5:T498:S5:RESET-INSTRUCTION:port=%02X-value=%02X\n",
             (unsigned)capture.reset_instruction_port,
             (unsigned)capture.reset_instruction_value);
     }
     if (capture.iret_io_count != 0u) {
-        STD_PRINTF("M5:T498:S5:IRET-PREDECESSOR-IO:count=%u",
+        printf("M5:T498:S5:IRET-PREDECESSOR-IO:count=%u",
             (unsigned)capture.iret_io_count);
         for (index = 0u; index < capture.iret_io_count; ++index) {
-            STD_PRINTF("-%08X:%u:%04X:%08X", (unsigned)capture.iret_io_pc[index],
+            printf("-%08X:%u:%04X:%08X", (unsigned)capture.iret_io_pc[index],
                 (unsigned)capture.iret_io_direction[index],
                 (unsigned)capture.iret_io_port[index],
                 (unsigned)capture.iret_io_value[index]);
         }
-        STD_PRINTF("\n");
+        printf("\n");
     }
     if (post_c0_io_diagnostic) {
-        STD_PRINTF("M5:T390:S33:POST-C0-IO:terminal=%s port-known=%u port=%04X read=%u "
+        printf("M5:T390:S33:POST-C0-IO:terminal=%s port-known=%u port=%04X read=%u "
             "unallocated=%u status=%u\n", terminal, (unsigned)capture.post_c0_io_port_known,
             (unsigned)capture.post_c0_io_port, (unsigned)capture.post_c0_io_read,
             (unsigned)capture.unallocated, (unsigned)status);
     }
     if (c1_diagnostic) {
-        STD_PRINTF("M5:T390:S29:M40-C1-DIAGNOSTIC:terminal=%s unallocated=%u c1=%u "
+        printf("M5:T390:S29:M40-C1-DIAGNOSTIC:terminal=%s unallocated=%u c1=%u "
             "executed=%u ticks=%llu elapsed-before=%llu elapsed=%llu status=%u\n", terminal,
             (unsigned)capture.unallocated, (unsigned)capture.c1_checkpoint_reached,
             (unsigned)result.executed,
@@ -1818,29 +1818,29 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (port_sequence_diagnostic) {
         return capture.checkpoint_reached && capture.post_c0_port_count ==
             MODEL40_CAPTURE_POST_C0_HISTORY && capture.unallocated == 0u &&
-            status == TYPE_STATUS_OK ? 0 : 1;
+            status == LIB_STATUS_OK ? 0 : 1;
     }
     if (post_c0_io_diagnostic) {
         return capture.checkpoint_reached && capture.post_c0_io_seen &&
             capture.unallocated == 0u &&
-            status == TYPE_STATUS_OK ? 0 : 1;
+            status == LIB_STATUS_OK ? 0 : 1;
     }
     if (fdc_read_data_diagnostic) {
         return model40_capture_c0a_reached(&capture) &&
             capture.fdc_read_data_baseline_valid && capture.fdc_read_data_reached &&
             capture.unallocated == 0u &&
-            status == TYPE_STATUS_OK ? 0 : 1;
+            status == LIB_STATUS_OK ? 0 : 1;
     }
     if (c1_transfer_diagnostic) {
         return capture.checkpoint_reached && capture.post_c0_io_seen &&
             capture.c1_transfer_reached && capture.unallocated == 0u &&
-            status == TYPE_STATUS_OK ? 0 : 1;
+            status == LIB_STATUS_OK ? 0 : 1;
     }
     if (c1_diagnostic) {
         return capture.checkpoint_reached && capture.c1_checkpoint_reached &&
         capture.unallocated == 0u &&
-            status == TYPE_STATUS_OK ? 0 : 1;
+            status == LIB_STATUS_OK ? 0 : 1;
     }
     return capture.checkpoint_reached && capture.unallocated == 0u &&
-        status == TYPE_STATUS_OK ? 0 : 1;
+        status == LIB_STATUS_OK ? 0 : 1;
 }

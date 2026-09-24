@@ -3,7 +3,6 @@
 #include "lib/types/types_interface.h"
 
 
-#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,13 +10,13 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
-typedef type_status (*core_machine_port_read_provider)(
-    C_VOID *owner,
+typedef lib_status (*core_machine_port_read_provider)(
+    void *owner,
     lib_u16 port,
     lib_u32 *out_value);
 
-typedef type_status (*core_machine_port_write_provider)(
-    C_VOID *owner,
+typedef lib_status (*core_machine_port_write_provider)(
+    void *owner,
     lib_u16 port,
     lib_u32 value);
 
@@ -26,19 +25,19 @@ typedef struct core_machine_port_provider {
     core_machine_port_write_provider write;
 } core_machine_port_provider;
 
-type_status core_machine_install_port_provider(
+lib_status core_machine_install_port_provider(
     core_machine *machine,
     lib_u16 first,
     lib_u16 last,
     const core_machine_port_provider *provider,
-    C_VOID *owner);
+    void *owner);
 
-type_status core_machine_bus_read(
+lib_status core_machine_bus_read(
     core_machine *machine,
     lib_u16 port,
     lib_u32 *out_value);
 
-type_status core_machine_bus_write(
+lib_status core_machine_bus_write(
     core_machine *machine,
     lib_u16 port,
     lib_u32 value);

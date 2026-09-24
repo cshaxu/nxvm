@@ -1,18 +1,18 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/pit.h"
 #include "app-nxvm/devices/port.h"
 
 typedef struct {
-    type_bool level[16];
+    lib_u8 level[16];
     lib_u32 count;
     core_machine_pic_irq_source *irq0;
 } core_machine_pit_waveform_probe;
 
-static C_VOID core_machine_pit_waveform_output(C_VOID *owner,
-    type_bool asserted)
+static void core_machine_pit_waveform_output(void *owner,
+    lib_u8 asserted)
 {
     core_machine_pit_waveform_probe *probe =
         (core_machine_pit_waveform_probe *)owner;
@@ -23,7 +23,7 @@ static C_VOID core_machine_pit_waveform_output(C_VOID *owner,
     }
 }
 
-static C_VOID core_machine_pit_waveform_write(t_pit *pit, t_port *port, lib_u8 control,
+static void core_machine_pit_waveform_write(t_pit *pit, t_port *port, lib_u8 control,
     lib_u16 count)
 {
     core_machine_port_write(port, 0x0043u, control);
@@ -32,24 +32,24 @@ static C_VOID core_machine_pit_waveform_write(t_pit *pit, t_port *port, lib_u8 c
     core_machine_pit_advance(pit, 1u);
 }
 
-static C_INT core_machine_pit_waveform_expect(type_bool actual,
-    type_bool expected)
+static lib_i32 core_machine_pit_waveform_expect(lib_u8 actual,
+    lib_u8 expected)
 {
     return actual == expected ? 0 : 1;
 }
 
-static C_INT core_machine_pit_waveform_expect_deadline(const t_pit *pit,
+static lib_i32 core_machine_pit_waveform_expect_deadline(const t_pit *pit,
     lib_u64 expected)
 {
     lib_u64 actual = 0u;
 
     return core_machine_pit_ticks_until_output(pit, 0u, &actual) !=
-        TYPE_STATUS_OK || actual != expected;
+        LIB_STATUS_OK || actual != expected;
 }
 
-static C_INT core_machine_pit_waveform_deadline_cases(t_pit *pit, t_port *port)
+static lib_i32 core_machine_pit_waveform_deadline_cases(t_pit *pit, t_port *port)
 {
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_pit_reset(pit);
     core_machine_pit_waveform_write(pit, port, 0x30u, 3u);
@@ -58,7 +58,7 @@ static C_INT core_machine_pit_waveform_deadline_cases(t_pit *pit, t_port *port)
     failed |= core_machine_pit_waveform_expect_deadline(pit, 2u);
     core_machine_pit_set_gate(pit, 0u, LIB_FALSE);
     failed |= core_machine_pit_ticks_until_output(pit, 0u, &(lib_u64) {0u}) !=
-        TYPE_STATUS_INVALID_STATE;
+        LIB_STATUS_INVALID_STATE;
 
     core_machine_pit_reset(pit);
     core_machine_pit_set_gate(pit, 0u, LIB_FALSE);
@@ -94,7 +94,7 @@ static C_INT core_machine_pit_waveform_deadline_cases(t_pit *pit, t_port *port)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     t_pit pit;
     t_port port;
@@ -102,7 +102,7 @@ C_INT main(C_VOID)
     t_pic slave;
     core_machine_pic_irq_source irq0;
     core_machine_pit_waveform_probe probe;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(&probe, 0, sizeof(probe));
     core_machine_port_initialize(&port);
@@ -334,6 +334,6 @@ C_INT main(C_VOID)
     core_machine_pic_finalize(&master, &slave);
     core_machine_port_finalize(&port);
     if (failed) return 1;
-    STD_PRINTF("M5:T222:S1:PIT-WAVEFORM:OK\n");
+    printf("M5:T222:S1:PIT-WAVEFORM:OK\n");
     return 0;
 }

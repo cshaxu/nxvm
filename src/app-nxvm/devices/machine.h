@@ -2,7 +2,6 @@
 #define CORE_MACHINE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 
 
@@ -88,7 +87,7 @@ typedef struct core_machine_trace_state {
     core_machine_trace_event events[CORE_MACHINE_TRACE_CAPACITY];
     lib_u64 next_sequence;
     lib_size count;
-    C_INT flushing;
+    lib_i32 flushing;
 } core_machine_trace_state;
 
 typedef struct core_machine_cpu_diagnostic_state {
@@ -100,36 +99,36 @@ typedef struct core_machine_retirement_observation_state {
     core_machine_retirement_observation_provider provider;
     core_machine_retirement_observation pending_observation;
     lib_u64 next_sequence;
-    type_bool pending;
+    lib_u8 pending;
 } core_machine_retirement_observation_state;
 typedef struct core_machine_immutable_rom_mapping {
     lib_u32 physical_start;
     lib_size bytes;
     lib_u8 *image;
-    type_bool owns_image;
+    lib_u8 owns_image;
 } core_machine_immutable_rom_mapping;
 
 typedef struct core_machine_absent_memory {
     core_machine_absent_memory_config config;
-    type_bool configured;
+    lib_u8 configured;
 } core_machine_absent_memory;
 
 struct core_machine_firmware_context {
     core_machine *machine;
-    type_status operation_status;
-    C_INT track_operation_failures;
-    C_INT active;
-    C_INT configuring;
+    lib_status operation_status;
+    lib_i32 track_operation_failures;
+    lib_i32 active;
+    lib_i32 configuring;
 };
 
 struct core_machine {
     core_machine_lifecycle lifecycle;
-    STD_ATOMIC_BOOL stop_requested;
+    lib_atomic_i32 stop_requested;
     lib_u32 fault_detail;
     lib_u64 elapsed_ticks;
     core_machine_timeline timeline;
     core_machine_plan timing_plan;
-    type_bool timing_plan_copied;
+    lib_u8 timing_plan_copied;
     core_machine_d4_memory d4_memory;
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
@@ -139,37 +138,37 @@ struct core_machine {
     lib_u64 cpu_retirement_wait_ticks;
     lib_u64 cpu_retirement_completion_ticks;
     lib_u64 cpu_retirement_source_ticks;
-    type_bool external_cycle_page_valid;
-    type_bool external_cycle_pending_valid;
+    lib_u8 external_cycle_page_valid;
+    lib_u8 external_cycle_pending_valid;
     core_machine_cpu_external_cycle_space external_cycle_pending_space;
     lib_u32 external_cycle_pending_physical;
     lib_u8 external_cycle_pending_bytes;
-    type_bool external_cycle_pending_write;
+    lib_u8 external_cycle_pending_write;
     core_machine_cpu_memory_access_provenance external_cycle_pending_provenance;
-    type_bool external_cycle_overlap_valid;
+    lib_u8 external_cycle_overlap_valid;
     lib_u32 external_cycle_overlap_next_physical;
-    type_bool external_cycle_round_overflow;
-    type_bool cpu_retirement_wait_pending;
+    lib_u8 external_cycle_round_overflow;
+    lib_u8 cpu_retirement_wait_pending;
     lib_u64 maximum_instruction_ticks;
     core_machine_retirement_time_contract retirement_time_contract;
-    type_bool source_timing_unallocated;
+    lib_u8 source_timing_unallocated;
     core_machine_retirement_timing_origin source_timing_origin;
     lib_u32 source_timing_form_id;
     lib_u32 source_timing_key_id;
     lib_u32 source_timing_formula_inputs;
     core_machine_retirement_repeat_phase source_timing_repeat_phase;
     core_machine_retirement_eligibility_key retirement_eligibility_key;
-    type_bool retirement_eligibility_key_valid;
+    lib_u8 retirement_eligibility_key_valid;
     core_machine_retirement_eligibility_key retirement_qualification[
         CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY];
     lib_size retirement_qualification_count;
-    type_bool source_repeat_active;
+    lib_u8 source_repeat_active;
     lib_u16 source_repeat_cs;
     lib_u32 source_repeat_eip;
     lib_u8 source_repeat_opcode;
     lib_u8 source_repeat_prefix;
-    type_bool source_repeat_operand_size;
-    type_bool source_repeat_address_size;
+    lib_u8 source_repeat_operand_size;
+    lib_u8 source_repeat_address_size;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain auxiliary_pit_clock;
@@ -184,47 +183,47 @@ struct core_machine {
     lib_u32 kbc_command_response_ticks;
     lib_u8 kbc_command_response_status_polls;
     lib_u32 kbc_serial_delivery_ticks;
-    type_bool kbc_input_port_configured;
+    lib_u8 kbc_input_port_configured;
     lib_u8 kbc_input_port;
     core_machine_keyboard_topology keyboard_topology;
     core_machine_display_port_topology display_ports;
-    type_bool display_configured;
+    lib_u8 display_configured;
     core_machine_dma_wiring dma_wiring;
     core_machine_dma_request_binding fdc_dma_request;
     core_machine_dma_request_binding hdc_dma_request;
     core_machine_dma_request_binding refresh_dma_request;
-    type_bool dma_configured;
+    lib_u8 dma_configured;
     core_machine_rtc_cmos_config rtc_cmos_config;
-    type_bool rtc_cmos_configured;
+    lib_u8 rtc_cmos_configured;
     core_machine_planar_parity_config planar_parity_config;
     lib_u8 planar_parity_port_b;
-    type_bool planar_parity_configured;
-    type_bool planar_parity_latched;
-    type_bool planar_parity_nmi_signaled;
-    type_bool xt_ppi_speaker_configured;
-    type_bool xt_ppi_speaker_gate;
-    type_bool xt_ppi_speaker_data_enabled;
-    type_bool speaker_output;
+    lib_u8 planar_parity_configured;
+    lib_u8 planar_parity_latched;
+    lib_u8 planar_parity_nmi_signaled;
+    lib_u8 xt_ppi_speaker_configured;
+    lib_u8 xt_ppi_speaker_gate;
+    lib_u8 xt_ppi_speaker_data_enabled;
+    lib_u8 speaker_output;
     core_machine_d4_platform_config d4_platform_config;
     lib_u8 d4_platform_port_b;
-    type_bool d4_platform_configured;
-    type_bool d4_platform_iochk_latched;
-    type_bool d4_platform_failsafe_latched;
-    type_bool d4_platform_nmi_signaled;
+    lib_u8 d4_platform_configured;
+    lib_u8 d4_platform_iochk_latched;
+    lib_u8 d4_platform_failsafe_latched;
+    lib_u8 d4_platform_nmi_signaled;
     core_machine_absent_memory absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     core_machine_fdc_topology fdc_topology;
-    type_bool fdc_configured;
+    lib_u8 fdc_configured;
     core_machine_hdc_topology hdc_topology;
-    type_bool hdc_configured;
+    lib_u8 hdc_configured;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
     core_machine_retirement_observation_state retirement_observation;
     core_machine_immutable_rom_mapping
         immutable_rom_mappings[CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY];
     lib_size immutable_rom_mapping_count;
-    type_bool entry_plan_applied;
+    lib_u8 entry_plan_applied;
     core_machine_cpu_profile cpu_profile;
-    type_bool cpu_80386_cr_mov_ignores_mod;
+    lib_u8 cpu_80386_cr_mov_ignores_mod;
     core_machine_fpu fpu;
     t_cpu executor_cpu;
     t_cpuins executor_cpu_instructions;
@@ -236,7 +235,7 @@ struct core_machine {
     core_machine_pic_irq_source shared_pit_irq0_source;
     t_pit shared_pit;
     t_pit auxiliary_pit;
-    type_bool auxiliary_pit_configured;
+    lib_u8 auxiliary_pit_configured;
     t_latch shared_dma_latch;
     t_dma shared_dma_primary;
     t_dma shared_dma_secondary;
@@ -248,92 +247,92 @@ struct core_machine {
     core_machine_xt_keyboard xt_keyboard;
     t_vadp shared_vadp;
     const core_machine_firmware_provider *firmware_provider;
-    C_VOID *firmware_provider_context;
+    void *firmware_provider_context;
     core_machine_firmware_context firmware_context;
-    C_INT firmware_operation_active;
+    lib_i32 firmware_operation_active;
     const core_machine_execution_provider *execution_provider;
-    C_VOID *execution_provider_context;
-    C_INT execution_provider_frozen;
+    void *execution_provider_context;
+    lib_i32 execution_provider_frozen;
     /* Append-only scheduler state keeps existing internal offsets stable. */
     lib_u32 dma_cycle_wait_remaining;
-    type_bool dma_cycle_bus_ready;
-    type_bool cpu_cycle_bus_ready;
+    lib_u8 dma_cycle_bus_ready;
+    lib_u8 cpu_cycle_bus_ready;
     /* D4 refresh request state; it is serviced at the shared arbitration point. */
-    type_bool d4_refresh_hold_pending;
-    type_bool d4_refresh_pulse_active;
+    lib_u8 d4_refresh_hold_pending;
+    lib_u8 d4_refresh_pulse_active;
     lib_u8 d4_refresh_address;
 };
 
-type_status core_machine_bus_initialize(core_machine *machine);
-C_VOID core_machine_bus_finalize(core_machine *machine);
+lib_status core_machine_bus_initialize(core_machine *machine);
+void core_machine_bus_finalize(core_machine *machine);
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED || defined(CORE_MACHINE_TRACE_IMPLEMENTATION)
-C_VOID core_machine_trace_initialize(core_machine *machine);
-C_VOID core_machine_trace_finalize(core_machine *machine);
-C_VOID core_machine_trace_record(
+void core_machine_trace_initialize(core_machine *machine);
+void core_machine_trace_finalize(core_machine *machine);
+void core_machine_trace_record(
     core_machine *machine,
     core_machine_trace_event_type type,
     lib_u32 address,
     lib_u32 value,
     lib_u32 detail);
 #else
-#define core_machine_trace_initialize(machine) ((C_VOID)(machine))
-#define core_machine_trace_finalize(machine) ((C_VOID)(machine))
+#define core_machine_trace_initialize(machine) ((void)(machine))
+#define core_machine_trace_finalize(machine) ((void)(machine))
 #define core_machine_trace_record(machine, type, address, value, detail) \
     do { \
-        (C_VOID)sizeof(machine); \
-        (C_VOID)sizeof(type); \
-        (C_VOID)sizeof(address); \
-        (C_VOID)sizeof(value); \
-        (C_VOID)sizeof(detail); \
+        (void)sizeof(machine); \
+        (void)sizeof(type); \
+        (void)sizeof(address); \
+        (void)sizeof(value); \
+        (void)sizeof(detail); \
     } while (0)
 #endif
-C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
-C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
-C_VOID core_machine_retirement_observation_initialize(core_machine *machine);
-C_VOID core_machine_retirement_observation_reset(core_machine *machine);
-C_VOID core_machine_retirement_observation_capture_instruction(core_machine *machine,
+void core_machine_cpu_diagnostic_initialize(core_machine *machine);
+void core_machine_cpu_diagnostic_reset(core_machine *machine);
+void core_machine_retirement_observation_initialize(core_machine *machine);
+void core_machine_retirement_observation_reset(core_machine *machine);
+void core_machine_retirement_observation_capture_instruction(core_machine *machine,
     const t_cpu *cpu, const t_cpuins *instructions);
-C_VOID core_machine_retirement_observation_capture_eligibility_key(
+void core_machine_retirement_observation_capture_eligibility_key(
     core_machine *machine);
-C_VOID core_machine_retirement_observation_publish(core_machine *machine,
+void core_machine_retirement_observation_publish(core_machine *machine,
     lib_u64 source_ticks);
-C_INT core_machine_configuration_is_open(const core_machine *machine);
-type_status core_machine_register_reset_rom_alias(core_machine *machine);
-C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine);
-type_status core_machine_register_immutable_rom_mapping_from_firmware(
+lib_i32 core_machine_configuration_is_open(const core_machine *machine);
+lib_status core_machine_register_reset_rom_alias(core_machine *machine);
+lib_i32 core_machine_mutable_operation_is_allowed(const core_machine *machine);
+lib_status core_machine_register_immutable_rom_mapping_from_firmware(
     core_machine *machine, lib_u32 physical_start, const lib_u8 *image,
     lib_size bytes);
-type_status core_machine_register_immutable_rom_mapping_alias_from_firmware(
+lib_status core_machine_register_immutable_rom_mapping_alias_from_firmware(
     core_machine *machine, lib_u32 source_start,
     lib_u32 physical_start, lib_size bytes);
-C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
+void core_machine_rollback_immutable_rom_mappings(core_machine *machine,
     lib_size mapping_count);
 /* Private test-only create seam; the public create contract remains unchanged. */
-type_status core_machine_create_with_test_memory_allocation(
+lib_status core_machine_create_with_test_memory_allocation(
     const core_machine_config *config, core_machine **out_machine,
     core_machine_memory_test_allocation *test_allocation);
-type_status core_machine_create_with_test_port_allocation(
+lib_status core_machine_create_with_test_port_allocation(
     const core_machine_config *config, core_machine **out_machine,
     core_machine_port_test_allocation *test_allocation);
-type_status core_machine_configure_fdc(core_machine *machine,
+lib_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology);
-type_status core_machine_configure_hdc(core_machine *machine,
+lib_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology);
 lib_u32 core_machine_linear_pc(const core_machine *machine);
-C_VOID core_machine_external_cycle_invalidate(core_machine *machine);
-C_VOID core_machine_transaction_trace(C_VOID *opaque,
+void core_machine_external_cycle_invalidate(core_machine *machine);
+void core_machine_transaction_trace(void *opaque,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     core_machine_transaction_phase phase, lib_u32 address,
     lib_u32 value, lib_u32 detail);
-C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
+void core_machine_cpu_external_cycle_trace(void *opaque,
     core_machine_cpu_external_cycle_phase phase,
     core_machine_cpu_external_cycle_space space, lib_u32 address,
-    lib_u8 bytes, type_bool write,
+    lib_u8 bytes, lib_u8 write,
     core_machine_cpu_memory_access_provenance provenance);
-C_VOID core_machine_cpu_diagnostic_capture(const core_machine *machine,
+void core_machine_cpu_diagnostic_capture(const core_machine *machine,
     core_machine_cpu_diagnostic *out_diagnostic);
-C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
-C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
+void core_machine_cpu_diagnostic_initialize(core_machine *machine);
+void core_machine_cpu_diagnostic_reset(core_machine *machine);
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_diagnostic_provider;
 /* Production always retains fault and delivered-exception snapshots for the
@@ -341,12 +340,12 @@ extern const core_machine_cpu_execution_diagnostic_provider
  * observer or a physical retirement contract actually needs it. */
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
-C_VOID core_machine_board_cold_reset(core_machine *machine);
-C_VOID core_machine_board_after_pit_reset(core_machine *machine);
-C_VOID core_machine_board_refresh_nmi(core_machine *machine);
-C_VOID core_machine_board_configure_xt_ppi_speaker(core_machine *machine);
-C_VOID core_machine_board_set_xt_ppi_speaker(core_machine *machine,
-    type_bool timer_gate, type_bool data_enabled);
+void core_machine_board_cold_reset(core_machine *machine);
+void core_machine_board_after_pit_reset(core_machine *machine);
+void core_machine_board_refresh_nmi(core_machine *machine);
+void core_machine_board_configure_xt_ppi_speaker(core_machine *machine);
+void core_machine_board_set_xt_ppi_speaker(core_machine *machine,
+    lib_u8 timer_gate, lib_u8 data_enabled);
 typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT,
     CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT,
@@ -354,34 +353,34 @@ typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_DETERMINISTIC_ADVANCE,
     CORE_MACHINE_TIME_PUBLICATION_L1_COMPATIBILITY
 } core_machine_time_publication_origin;
-type_status core_machine_publish_elapsed_ticks(core_machine *machine,
+lib_status core_machine_publish_elapsed_ticks(core_machine *machine,
     lib_u64 elapsed_ticks, core_machine_time_publication_origin origin);
 /* Deterministic Core-test helper. Product composition advances only through
  * CPU retirement or core_machine_advance_to_next_deadline(). */
-type_status core_machine_advance_time(core_machine *machine,
+lib_status core_machine_advance_time(core_machine *machine,
     lib_u64 source_ticks);
-C_VOID core_machine_capture_time_observation_private(const core_machine *machine,
+void core_machine_capture_time_observation_private(const core_machine *machine,
     core_machine_time_observation *out_observation);
-type_status core_machine_firmware_invoke(core_machine *machine,
-    C_INT configuring, C_INT track_operation_failures,
-    type_status (*callback)(C_VOID *, core_machine_firmware_context *));
-type_status core_machine_firmware_handle_software_interrupt(C_VOID *opaque,
+lib_status core_machine_firmware_invoke(core_machine *machine,
+    lib_i32 configuring, lib_i32 track_operation_failures,
+    lib_status (*callback)(void *, core_machine_firmware_context *));
+lib_status core_machine_firmware_handle_software_interrupt(void *opaque,
     lib_u8 vector, const core_machine_firmware_interrupt_frame *frame,
-    core_machine_firmware_interrupt_result *result, type_bool *out_handled);
-type_status core_machine_plan_validate(const core_machine_plan *plan);
-type_status core_machine_plan_apply_topology(core_machine *machine,
+    core_machine_firmware_interrupt_result *result, lib_u8 *out_handled);
+lib_status core_machine_plan_validate(const core_machine_plan *plan);
+lib_status core_machine_plan_apply_topology(core_machine *machine,
     const core_machine_plan *plan);
-C_INT core_machine_retirement_time_contract_is_valid(
+lib_i32 core_machine_retirement_time_contract_is_valid(
     core_machine_retirement_time_contract contract);
-C_INT core_machine_timing_capability_is_valid(
+lib_i32 core_machine_timing_capability_is_valid(
     core_machine_timing_capability capability);
-C_INT core_machine_external_cycle_timing_is_valid(
+lib_i32 core_machine_external_cycle_timing_is_valid(
     const core_machine_external_cycle_timing *timing);
-C_INT core_machine_external_access_wait_windows_are_valid(
+lib_i32 core_machine_external_access_wait_windows_are_valid(
     const core_machine_external_access_wait_window *windows);
-C_INT core_machine_transaction_contract_is_valid(
+lib_i32 core_machine_transaction_contract_is_valid(
     const core_machine_transaction_contract *contract);
-C_INT core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
+lib_i32 core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 const core_machine_timing_declaration *core_machine_plan_declaration_find(
     const core_machine_plan *plan, core_machine_timing_capability capability);
 #endif

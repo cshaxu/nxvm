@@ -2,7 +2,6 @@
 #define CORE_MACHINE_CONTROLLER_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/media_interface.h"
 
@@ -22,7 +21,7 @@ typedef enum core_machine_pit_personality {
  * registers, guest memory, a controller implementation pointer, or an address.
  * Core validates it against the receiving machine's private DMA state. */
 typedef struct core_machine_dma_request_binding {
-    type_native_unsigned core_token;
+    lib_uptr core_token;
     lib_u8 channel;
 } core_machine_dma_request_binding;
 
@@ -91,7 +90,7 @@ typedef struct core_machine_hdc_task_file_config {
     lib_u16 status_command_port;
     lib_u16 alternate_status_device_control_port;
     lib_u16 drive_address_port;
-    type_bool lba28_supported;
+    lib_u8 lba28_supported;
     /* Required only by IBM WD1003: selected Core axis rate for its manual
      * step-rate selector, never a host clock or HDC-owned time axis. */
     lib_u32 clock_ticks_per_second;

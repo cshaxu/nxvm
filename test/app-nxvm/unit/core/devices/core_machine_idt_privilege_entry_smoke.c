@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -17,11 +18,11 @@ typedef struct privilege_entry_machine {
     core_machine *machine;
 } privilege_entry_machine;
 
-static C_VOID pe_reset(C_VOID *opaque)
+static void pe_reset(void *opaque)
 {
     privilege_entry_machine *state = (privilege_entry_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
@@ -29,24 +30,24 @@ static const core_machine_execution_provider pe_provider = {
     pe_reset, LIB_NULL
 };
 
-static C_INT pe_write(privilege_entry_machine *state, lib_u32 address,
-    const C_VOID *data, lib_size bytes)
+static lib_i32 pe_write(privilege_entry_machine *state, lib_u32 address,
+    const void *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, data, bytes) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT pe_read(privilege_entry_machine *state, lib_u32 address,
-    C_VOID *data, lib_size bytes)
+static lib_i32 pe_read(privilege_entry_machine *state, lib_u32 address,
+    void *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_read_physical(&state->machine->executor_memory,
-            address, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
+            address, (lib_uptr)data, bytes) == LIB_STATUS_OK;
 }
 
-static C_INT pe_prepare(privilege_entry_machine *state, lib_u8 gate_access,
-    lib_u8 stack_access, C_INT stack_big)
+static lib_i32 pe_prepare(privilege_entry_machine *state, lib_u8 gate_access,
+    lib_u8 stack_access, lib_i32 stack_big)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -78,7 +79,7 @@ static C_INT pe_prepare(privilege_entry_machine *state, lib_u8 gate_access,
     idt[PE_VECTOR * 8u + 5u] = gate_access;
     lib_memory_copy(&tss[4], &esp0, sizeof(esp0));
     lib_memory_copy(&tss[8], &ss0, sizeof(ss0));
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &pe_provider, state) ||
         !pe_write(state, PE_GDT_BASE, gdt, sizeof(gdt)) ||
@@ -134,30 +135,30 @@ static C_INT pe_prepare(privilege_entry_machine *state, lib_u8 gate_access,
     return 1;
 }
 
-static C_INT pe_run(privilege_entry_machine *state, C_INT expect_fault,
+static lib_i32 pe_run(privilege_entry_machine *state, lib_i32 expect_fault,
     t_cpu *out_cpu, core_machine_cpu_diagnostic *out_diagnostic)
 {
     const core_machine_run_budget budget = {32u, 0u};
     core_machine_run_result result;
-    type_status status = core_machine_run(state->machine, budget, &result);
+    lib_status status = core_machine_run(state->machine, budget, &result);
 
     if (core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
-        TYPE_STATUS_OK) return 0;
+        LIB_STATUS_OK) return 0;
     *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return status == (expect_fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) &&
+    return status == (expect_fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) &&
         result.reason == (expect_fault ? CORE_MACHINE_STOP_FAULT :
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
 }
 
-static C_INT pe_fault_is(const core_machine_cpu_diagnostic *diagnostic,
+static lib_i32 pe_fault_is(const core_machine_cpu_diagnostic *diagnostic,
     lib_u32 mask, lib_u32 code)
 {
-    return diagnostic->first_fault.valid && TYPE_GET_BIT(
+    return diagnostic->first_fault.valid && CORE_MACHINE_BIT_IS_SET(
         diagnostic->first_fault.exception_mask, mask) &&
         diagnostic->first_fault.exception_code == code;
 }
 
-static C_INT pe_test_success(lib_u8 gate_access, C_INT expect_if)
+static lib_i32 pe_test_success(lib_u8 gate_access, lib_i32 expect_if)
 {
     privilege_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -165,7 +166,7 @@ static C_INT pe_test_success(lib_u8 gate_access, C_INT expect_if)
     lib_u32 frame[5] = {0u,0u,0u,0u,0u};
     lib_u8 cs_access = 0u;
     lib_u8 ss_access = 0u;
-    C_INT failed = !pe_prepare(&state, gate_access, 0x92u, 1);
+    lib_i32 failed = !pe_prepare(&state, gate_access, 0x92u, 1);
 
     if (!failed) {
         failed |= !pe_run(&state, 0, &after, &diagnostic) ||
@@ -173,8 +174,8 @@ static C_INT pe_test_success(lib_u8 gate_access, C_INT expect_if)
             after.data.cs.dpl != 0u || after.data.eip != PE_HANDLER_OFFSET + 1u ||
             after.data.ss.selector != 0x0010u || after.data.ss.dpl != 0u ||
             after.data.esp != 0x00008fecu ||
-            TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_TF) ||
-            (TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_IF) != expect_if) ||
+            CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_TF) ||
+            (CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) != expect_if) ||
             !pe_read(&state, 0x00008fecu, frame, sizeof(frame)) ||
             frame[0] != 2u || frame[1] != 0x0000001bu ||
             frame[2] != 0x00000302u || frame[3] != 0x00008800u ||
@@ -187,13 +188,13 @@ static C_INT pe_test_success(lib_u8 gate_access, C_INT expect_if)
     return !failed;
 }
 
-static C_INT pe_test_16bit_target_stack(C_VOID)
+static lib_i32 pe_test_16bit_target_stack(void)
 {
     privilege_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
     lib_u32 frame[5] = {0u,0u,0u,0u,0u};
-    C_INT failed = !pe_prepare(&state, 0xeeu, 0x92u, 0);
+    lib_i32 failed = !pe_prepare(&state, 0xeeu, 0x92u, 0);
 
     if (!failed) {
         failed |= !pe_run(&state, 0, &after, &diagnostic) ||
@@ -208,14 +209,14 @@ static C_INT pe_test_16bit_target_stack(C_VOID)
     return !failed;
 }
 
-static C_INT pe_test_external_bypasses_software_dpl(C_VOID)
+static lib_i32 pe_test_external_bypasses_software_dpl(void)
 {
     privilege_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_pic_irq_source source;
     t_cpu after;
     static const lib_u8 program[] = {0x90u};
-    C_INT failed = !pe_prepare(&state, 0x8eu, 0x92u, 1);
+    lib_i32 failed = !pe_prepare(&state, 0x8eu, 0x92u, 1);
 
     if (!failed) {
         lib_memory_set(&source, 0, sizeof(source));
@@ -229,15 +230,15 @@ static C_INT pe_test_external_bypasses_software_dpl(C_VOID)
             !pe_run(&state, 0, &after, &diagnostic) || diagnostic.first_fault.valid ||
             after.data.cs.selector != 0x0008u || after.data.cs.dpl != 0u ||
             after.data.ss.selector != 0x0010u || after.data.esp != 0x00008fecu ||
-            TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_IF) ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, 1u) ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, 1u);
+            CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) ||
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, 1u) ||
+            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, 1u);
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT pe_test_software_dpl_atomic(C_VOID)
+static lib_i32 pe_test_software_dpl_atomic(void)
 {
     privilege_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -245,7 +246,7 @@ static C_INT pe_test_software_dpl_atomic(C_VOID)
     t_cpu after;
     lib_u8 cs_before = 0u, cs_after = 0u;
     lib_u8 ss_before = 0u, ss_after = 0u;
-    C_INT failed = !pe_prepare(&state, 0x8eu, 0x92u, 1);
+    lib_i32 failed = !pe_prepare(&state, 0x8eu, 0x92u, 1);
 
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -265,7 +266,7 @@ static C_INT pe_test_software_dpl_atomic(C_VOID)
     return !failed;
 }
 
-static C_INT pe_test_stack_failure_atomic(C_VOID)
+static lib_i32 pe_test_stack_failure_atomic(void)
 {
     privilege_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -273,7 +274,7 @@ static C_INT pe_test_stack_failure_atomic(C_VOID)
     t_cpu after;
     lib_u8 cs_before = 0u, cs_after = 0u;
     lib_u8 ss_before = 0u, ss_after = 0u;
-    C_INT failed = !pe_prepare(&state, 0xeeu, 0x12u, 1);
+    lib_i32 failed = !pe_prepare(&state, 0xeeu, 0x12u, 1);
 
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -293,7 +294,7 @@ static C_INT pe_test_stack_failure_atomic(C_VOID)
     return !failed;
 }
 
-static C_INT pe_test_code_failure_atomic(C_VOID)
+static lib_i32 pe_test_code_failure_atomic(void)
 {
     privilege_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -302,7 +303,7 @@ static C_INT pe_test_code_failure_atomic(C_VOID)
     lib_u8 code_access = 0x1au;
     lib_u8 cs_before = 0u, cs_after = 0u;
     lib_u8 ss_before = 0u, ss_after = 0u;
-    C_INT failed = !pe_prepare(&state, 0xeeu, 0x92u, 1);
+    lib_i32 failed = !pe_prepare(&state, 0xeeu, 0x92u, 1);
 
     if (!failed) {
         failed |= !pe_write(&state, PE_GDT_BASE + 13u, &code_access,
@@ -326,12 +327,12 @@ static C_INT pe_test_code_failure_atomic(C_VOID)
 
 int main(void)
 {
-    C_INT failed = !pe_test_success(0xeeu, 0) || !pe_test_success(0xefu, 1) ||
+    lib_i32 failed = !pe_test_success(0xeeu, 0) || !pe_test_success(0xefu, 1) ||
         !pe_test_16bit_target_stack() || !pe_test_external_bypasses_software_dpl() ||
         !pe_test_software_dpl_atomic() || !pe_test_stack_failure_atomic() ||
         !pe_test_code_failure_atomic();
 
     if (failed) return 1;
-    STD_PRINTF("M5:T307:IDT-PRIVILEGE-ENTRY:OK\n");
+    printf("M5:T307:IDT-PRIVILEGE-ENTRY:OK\n");
     return 0;
 }

@@ -2,7 +2,6 @@
 #define CORE_MACHINE_CPU_TIMING_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/retirement_observation_interface.h"
@@ -21,7 +20,7 @@ typedef struct core_machine_cpu_timing_result {
     lib_u32 key_id;
     lib_u32 formula_inputs;
     core_machine_retirement_timing_origin retirement_origin;
-    type_bool source_timing_unallocated;
+    lib_u8 source_timing_unallocated;
 } core_machine_cpu_timing_result;
 
 #define CORE_MACHINE_CPU_TIMING_INPUT_MODRM      (1u << 0)
@@ -38,10 +37,10 @@ typedef struct core_machine_cpu_timing_result {
 #define CORE_MACHINE_CPU_TIMING_INPUT_WAIT_TICKS      (1u << 11)
 
 /* B0's only successful-retirement CPU timing selection entry. */
-C_INT core_machine_cpu_timing_select(core_machine *machine,
+lib_i32 core_machine_cpu_timing_select(core_machine *machine,
     core_machine_cpu_timing_result *out_result);
 /* Shared checked accumulation for timing selection and the retained run loop. */
-C_INT core_machine_timing_add_ticks(lib_u64 *value,
+lib_i32 core_machine_timing_add_ticks(lib_u64 *value,
     lib_u64 delta);
 lib_u64 core_machine_cpu_timing_maximum_ticks(
     core_machine_cpu_profile profile,
@@ -50,29 +49,29 @@ lib_u64 core_machine_cpu_timing_maximum_ticks(
 /* Legacy rule evaluators remain private to Core. They calculate a candidate
  * only; origin assignment and result publication belong exclusively to the
  * selector above. */
-C_INT core_machine_string_io_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_string_io_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
+lib_i32 core_machine_80386_dynamic_multiply_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_l2_dynamic_arithmetic_model_cost(core_machine *machine,
+lib_i32 core_machine_l2_dynamic_arithmetic_model_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_80386_secondary_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_80386_secondary_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_80386_privileged_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_80386_privileged_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_primary_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_primary_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_control_stack_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_control_stack_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_8086_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_8086_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_80186_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_80186_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_80286_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
+lib_i32 core_machine_80386_source_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
-C_INT core_machine_compatibility_instruction_cost(core_machine *machine,
+lib_i32 core_machine_compatibility_instruction_cost(core_machine *machine,
     lib_u64 *out_ticks);
 
 #ifdef __cplusplus

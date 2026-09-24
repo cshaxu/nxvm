@@ -1,32 +1,31 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/display_interface.h"
 
 struct core_machine_display_provider_slot {
-    C_VOID *mode_context;
+    void *mode_context;
     core_machine_display_provider mode_provider;
-    C_VOID *snapshot_context;
+    void *snapshot_context;
     core_machine_display_snapshot_provider snapshot_provider;
-    C_INT frozen;
+    lib_i32 frozen;
 };
 
-type_status core_machine_display_provider_slot_create(
+lib_status core_machine_display_provider_slot_create(
     core_machine_display_provider_slot **out_slot)
 {
     core_machine_display_provider_slot *slot;
 
-    if (out_slot == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_slot == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_slot = LIB_NULL;
     slot = (core_machine_display_provider_slot *)lib_allocate_zero(1u, sizeof(*slot));
-    if (slot == LIB_NULL) return TYPE_STATUS_NO_MEMORY;
+    if (slot == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     *out_slot = slot;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_display_provider_slot_bind(
-    core_machine_display_provider_slot *slot, C_VOID *mode_context,
-    core_machine_display_provider mode_provider, C_VOID *snapshot_context,
+void core_machine_display_provider_slot_bind(
+    core_machine_display_provider_slot *slot, void *mode_context,
+    core_machine_display_provider mode_provider, void *snapshot_context,
     core_machine_display_snapshot_provider snapshot_provider)
 {
     if (slot == LIB_NULL || slot->frozen) return;
@@ -36,19 +35,19 @@ C_VOID core_machine_display_provider_slot_bind(
     slot->snapshot_provider = snapshot_provider;
 }
 
-C_VOID core_machine_display_provider_slot_freeze(
+void core_machine_display_provider_slot_freeze(
     core_machine_display_provider_slot *slot)
 {
     if (slot != LIB_NULL) slot->frozen = 1;
 }
 
-C_VOID core_machine_display_provider_slot_destroy(
+void core_machine_display_provider_slot_destroy(
     core_machine_display_provider_slot *slot)
 {
     lib_release(slot);
 }
 
-C_INT core_machine_display_capture_snapshot_from(
+lib_i32 core_machine_display_capture_snapshot_from(
     const core_machine_display_provider_slot *slot,
     core_machine_display_snapshot *out_snapshot)
 {

@@ -2,14 +2,13 @@
 #define VM_APP_CONFIG_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/product/request_interface.h"
 
 /* Combine an INI runtime request with the one generated build Profile binding.
  * The App validates user policy; Profiles alone interpret board construction. */
-type_status vm_app_configure_machine(const vm_session_request *request,
+lib_status vm_app_configure_machine(const vm_session_request *request,
     vm_machine_config *out_config);
 
 #endif

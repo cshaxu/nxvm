@@ -1,20 +1,20 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 
-static C_INT t386_s11_query_route(t_ram *memory, core_machine_memory_route expected)
+static lib_i32 t386_s11_query_route(t_ram *memory, core_machine_memory_route expected)
 {
     core_machine_memory_route route;
 
     return core_machine_memory_query_physical(memory,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, 1u,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &route) == TYPE_STATUS_OK && route == expected;
+        CORE_MACHINE_MEMORY_ACCESS_READ, &route) == LIB_STATUS_OK && route == expected;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_vadp_cecg_config config = {
         0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
@@ -36,30 +36,30 @@ C_INT main(C_VOID)
           0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
           0x01u, 0x00u, 0x0fu, 0x00u, 0x00u }
     };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
     core_machine_port_initialize(&generic_port);
     failed |= core_machine_memory_initialize_for(&memory,
-        16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+        16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_memory_initialize_for(&generic_memory,
-        16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+        16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_initialize(&generic_vadp, &generic_port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&generic_vadp, &generic_port);
     failed |= core_machine_vadp_configure_ega_personality(&vadp, &port,
-        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != TYPE_STATUS_OK ||
-        core_machine_vadp_configure_cecg(&vadp, &config) != TYPE_STATUS_OK ||
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK ||
+        core_machine_vadp_configure_cecg(&vadp, &config) != LIB_STATUS_OK ||
         core_machine_vadp_configure_ega_sequencer(&vadp, &memory, &sequencer) !=
-            TYPE_STATUS_OK || core_machine_vadp_configure_ega_controllers(&vadp,
-            &controllers) != TYPE_STATUS_OK;
+            LIB_STATUS_OK || core_machine_vadp_configure_ega_controllers(&vadp,
+            &controllers) != LIB_STATUS_OK;
     failed |= core_machine_vadp_configure_ega_personality(&generic_vadp,
-        &generic_port, CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != TYPE_STATUS_OK ||
+        &generic_port, CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != LIB_STATUS_OK ||
         core_machine_vadp_configure_ega_sequencer(&generic_vadp, &generic_memory,
-            &sequencer) != TYPE_STATUS_OK ||
+            &sequencer) != LIB_STATUS_OK ||
         core_machine_vadp_configure_ega_controllers(&generic_vadp, &controllers) !=
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
     core_machine_port_write(&generic_port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
@@ -87,9 +87,9 @@ C_INT main(C_VOID)
     core_machine_port_finalize(&generic_port);
     core_machine_port_finalize(&port);
     if (!failed) {
-        STD_PRINTF("M5:T386:S11:CECG-CPU-VIDEO-GATE:OK\n");
+        printf("M5:T386:S11:CECG-CPU-VIDEO-GATE:OK\n");
         return 0;
     }
-    STD_FPRINTF(STD_STDERR, "M5:T386:S11:CECG-CPU-VIDEO-GATE:FAIL\n");
+    fprintf(stderr, "M5:T386:S11:CECG-CPU-VIDEO-GATE:FAIL\n");
     return 1;
 }

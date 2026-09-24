@@ -3,7 +3,6 @@
 #define CORE_MACHINE_DISPLAY_INTERFACE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 
 #define CORE_MACHINE_DISPLAY_MAX_COLUMNS 80u
@@ -32,7 +31,7 @@ typedef struct core_machine_vadp_text_timing {
 /* A construction-time character generator is normalized by VM composition;
  * VADP thereafter owns the copied 8x16 glyph state exposed to presenters. */
 typedef struct core_machine_vadp_text_glyph_config {
-    type_bool present;
+    lib_u8 present;
     lib_u8 bytes[CORE_MACHINE_DISPLAY_TEXT_GLYPH_BYTES];
 } core_machine_vadp_text_glyph_config;
 
@@ -43,7 +42,7 @@ typedef struct core_machine_vadp_ega_sequencer_config {
     lib_u8 clocking_mode;
     lib_u8 map_mask;
     lib_u8 memory_mode;
-    type_bool planar_ega;
+    lib_u8 planar_ega;
 } core_machine_vadp_ega_sequencer_config;
 
 typedef enum core_machine_vadp_ega_personality {
@@ -58,14 +57,14 @@ typedef struct core_machine_vadp_cecg_config {
     lib_u8 environment;
     lib_u8 display_type;
     lib_u8 initial_mode;
-    type_bool lightpen_switch_open;
-    type_bool cpu_video_memory_disabled;
-    type_bool color_io_base;
+    lib_u8 lightpen_switch_open;
+    lib_u8 cpu_video_memory_disabled;
+    lib_u8 color_io_base;
     lib_u8 sw1_closed_mask;
     lib_u8 clock_switch_select;
-    type_bool special_features_present;
-    type_bool vertical_retrace_irq_enabled;
-    type_bool odd_even_high_page;
+    lib_u8 special_features_present;
+    lib_u8 vertical_retrace_irq_enabled;
+    lib_u8 odd_even_high_page;
 } core_machine_vadp_cecg_config;
 
 typedef struct core_machine_vadp_ega_controller_config {
@@ -83,7 +82,7 @@ typedef enum core_machine_display_kind {
     CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256
 } core_machine_display_kind;
 
-typedef C_VOID (*core_machine_display_provider)(C_VOID *context);
+typedef void (*core_machine_display_provider)(void *context);
 
 typedef struct core_machine_display_snapshot {
     core_machine_display_kind kind;
@@ -96,10 +95,10 @@ typedef struct core_machine_display_snapshot {
     /* Text coordinates are column then row, relative to display start. */
     lib_u8 cursor_x;
     lib_u8 cursor_y;
-    C_INT cursor_visible;
-    C_INT buffer_changed;
-    C_INT cursor_changed;
-    type_bool text_glyphs_present;
+    lib_i32 cursor_visible;
+    lib_i32 buffer_changed;
+    lib_i32 cursor_changed;
+    lib_u8 text_glyphs_present;
     lib_u8 text_glyphs[CORE_MACHINE_DISPLAY_TEXT_GLYPH_BYTES];
     lib_u8 characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
     lib_u8 attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
@@ -115,26 +114,26 @@ typedef struct core_machine_display_snapshot {
  * Other display paths retain normal capture. */
 typedef struct core_machine_display_snapshot_observation {
     lib_u64 generation;
-    type_bool generation_reliable;
-    type_bool capture_required;
+    lib_u8 generation_reliable;
+    lib_u8 capture_required;
 } core_machine_display_snapshot_observation;
 
-typedef C_INT (*core_machine_display_snapshot_provider)(C_VOID *context,
+typedef lib_i32 (*core_machine_display_snapshot_provider)(void *context,
     core_machine_display_snapshot *out_snapshot);
 
 typedef struct core_machine_display_provider_slot core_machine_display_provider_slot;
 
-type_status core_machine_display_provider_slot_create(
+lib_status core_machine_display_provider_slot_create(
     core_machine_display_provider_slot **out_slot);
-C_VOID core_machine_display_provider_slot_bind(
-    core_machine_display_provider_slot *slot, C_VOID *mode_context,
-    core_machine_display_provider mode_provider, C_VOID *snapshot_context,
+void core_machine_display_provider_slot_bind(
+    core_machine_display_provider_slot *slot, void *mode_context,
+    core_machine_display_provider mode_provider, void *snapshot_context,
     core_machine_display_snapshot_provider snapshot_provider);
-C_VOID core_machine_display_provider_slot_freeze(
+void core_machine_display_provider_slot_freeze(
     core_machine_display_provider_slot *slot);
-C_VOID core_machine_display_provider_slot_destroy(
+void core_machine_display_provider_slot_destroy(
     core_machine_display_provider_slot *slot);
-C_INT core_machine_display_capture_snapshot_from(
+lib_i32 core_machine_display_capture_snapshot_from(
     const core_machine_display_provider_slot *slot,
     core_machine_display_snapshot *out_snapshot);
 

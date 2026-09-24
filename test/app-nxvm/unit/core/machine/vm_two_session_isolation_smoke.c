@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 #include "app-nxvm/machine/machine_private.h"
 
 
@@ -10,14 +10,14 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *first = LIB_NULL;
     vm_machine *second = LIB_NULL;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &first) != TYPE_STATUS_OK ||
-        vm_test_default_pc_at_session_create(LIB_NULL, &second) != TYPE_STATUS_OK) failed = 1;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &first) != LIB_STATUS_OK ||
+        vm_test_default_pc_at_session_create(LIB_NULL, &second) != LIB_STATUS_OK) failed = 1;
 
     if (!failed) {
         failed |= first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;

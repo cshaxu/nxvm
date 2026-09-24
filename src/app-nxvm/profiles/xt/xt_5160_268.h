@@ -13,11 +13,11 @@
 #define VM_PROFILE_XT_5160_268_XEBEC_ROM_PHYSICAL_START 0x000c8000u
 
 typedef struct vm_profile_xt_5160_268_byob_manifest {
-    const C_CHAR *system_path;
-    const C_CHAR *system_sha256;
-    const C_CHAR *xebec_path;
-    const C_CHAR *xebec_sha256;
-    const C_CHAR *provenance;
+    const char *system_path;
+    const char *system_sha256;
+    const char *xebec_path;
+    const char *xebec_sha256;
+    const char *provenance;
 } vm_profile_xt_5160_268_byob_manifest;
 
 typedef struct vm_profile_xt_5160_268_external_rom {
@@ -25,7 +25,7 @@ typedef struct vm_profile_xt_5160_268_external_rom {
     const lib_u8 *xebec_bytes;
     const lib_u8 *video_bytes;
     lib_size video_byte_count;
-    type_bool xebec_present;
+    lib_u8 xebec_present;
 } vm_profile_xt_5160_268_external_rom;
 
 /* This is a construction-only snapshot.  The copied Core topology records
@@ -36,22 +36,22 @@ typedef struct vm_profile_xt_5160_268_plan_snapshot {
     core_machine_plan_topology topology;
 } vm_profile_xt_5160_268_plan_snapshot;
 
-type_status vm_profile_xt_5160_268_values_create(
+lib_status vm_profile_xt_5160_268_values_create(
     vm_profile_contract_values *out_values);
-type_status vm_profile_xt_5160_268_plan_create(
+lib_status vm_profile_xt_5160_268_plan_create(
     vm_profile_xt_5160_268_plan_snapshot *out_profile,
-    type_bool xebec_rom_present);
-C_INT vm_profile_xt_5160_268_byob_manifest_is_valid(
+    lib_u8 xebec_rom_present);
+lib_i32 vm_profile_xt_5160_268_byob_manifest_is_valid(
     const vm_profile_xt_5160_268_byob_manifest *manifest);
-type_status vm_profile_xt_5160_268_byob_manifest_load(
+lib_status vm_profile_xt_5160_268_byob_manifest_load(
     const vm_profile_xt_5160_268_byob_manifest *manifest,
     lib_u8 *system_bytes, lib_u8 *xebec_bytes,
     vm_profile_xt_5160_268_external_rom *out_rom);
-type_status vm_profile_xt_5160_268_external_rom_create(
+lib_status vm_profile_xt_5160_268_external_rom_create(
     const lib_u8 *system, lib_size system_bytes,
     const lib_u8 *xebec, lib_size xebec_bytes,
     const lib_u8 *video, lib_size video_bytes,
     vm_profile_xt_5160_268_external_rom *out_rom);
-const core_machine_firmware_provider *vm_profile_xt_5160_268_firmware_provider(C_VOID);
+const core_machine_firmware_provider *vm_profile_xt_5160_268_firmware_provider(void);
 
 #endif

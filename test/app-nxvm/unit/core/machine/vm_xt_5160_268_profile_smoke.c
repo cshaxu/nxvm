@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -8,12 +8,12 @@
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
 
-static core_machine_media_result vm_xt_5160_268_fdd_query(C_VOID *context,
+static core_machine_media_result vm_xt_5160_268_fdd_query(void *context,
     core_machine_media_info *out_info)
 {
-    (C_VOID)context;
+    (void)context;
     if (out_info == LIB_NULL) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    lib_memory_set(out_info, TYPE_ZERO_8, sizeof(*out_info));
+    lib_memory_set(out_info, 0u, sizeof(*out_info));
     out_info->generation = 1u;
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
         CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN;
@@ -27,12 +27,12 @@ static const core_machine_media_provider vm_xt_5160_268_fdd_provider = {
     vm_xt_5160_268_fdd_query, LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL,
     LIB_NULL, LIB_NULL};
 
-static C_INT vm_xt_5160_268_contract_is_fixed(C_VOID)
+static lib_i32 vm_xt_5160_268_contract_is_fixed(void)
 {
     vm_profile_xt_5160_268_plan_snapshot profile;
 
-    if (vm_profile_xt_5160_268_values_create(&profile.values) != TYPE_STATUS_OK ||
-        vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != TYPE_STATUS_OK ||
+    if (vm_profile_xt_5160_268_values_create(&profile.values) != LIB_STATUS_OK ||
+        vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != LIB_STATUS_OK ||
         profile.values.core.configuration.memory_bytes != 256u * 1024u ||
         profile.values.core.configuration.cpu_profile !=
             CORE_MACHINE_CPU_PROFILE_8088 ||
@@ -115,7 +115,7 @@ static C_INT vm_xt_5160_268_contract_is_fixed(C_VOID)
     return 0;
 }
 
-static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
+static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
 {
     vm_profile_xt_5160_268_plan_snapshot profile;
     core_machine_plan *plan = LIB_NULL;
@@ -125,23 +125,23 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
     core_machine_display_snapshot snapshot = {0};
     const lib_u8 cells[] = { 'X', 0x1fu };
     lib_u8 open_bus_byte = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    failed |= vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != TYPE_STATUS_OK;
+    failed |= vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_create(
-        &profile.values.core.configuration, &plan) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_media_registry_create(&media) != TYPE_STATUS_OK;
+        &profile.values.core.configuration, &plan) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_media_registry_create(&media) != LIB_STATUS_OK;
     failed |= !failed && core_machine_media_registry_bind(media,
         VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, LIB_NULL,
-        &vm_xt_5160_268_fdd_provider) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_media_registry_freeze(media) != TYPE_STATUS_OK;
+        &vm_xt_5160_268_fdd_provider) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_media_registry_freeze(media) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_bind_media_registry(plan, media) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_topology(plan, &profile.topology) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_get_fdc_dma_request_binding(machine, &binding) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && (binding.core_token == 0u || binding.channel != 2u ||
         machine->fdc.connect.config.irq != 6u ||
         machine->fdc.connect.config.dma_channel != 2u ||
@@ -171,16 +171,16 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
         core_machine_port_has_read(&machine->executor_port, 0x0323u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x0323u));
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && (core_machine_memory_read(machine, 0x000c8000u,
-        &open_bus_byte, sizeof(open_bus_byte)) != TYPE_STATUS_OK ||
+        &open_bus_byte, sizeof(open_bus_byte)) != LIB_STATUS_OK ||
         open_bus_byte != 0xffu);
     core_machine_port_write(&machine->executor_port, 0x03d8u, 0x0du);
     failed |= !failed && core_machine_memory_write(machine, 0x000b8000u,
-        cells, sizeof(cells)) != TYPE_STATUS_OK;
+        cells, sizeof(cells)) != LIB_STATUS_OK;
     failed |= !failed && core_machine_capture_display_snapshot(machine, &snapshot) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     failed |= !failed && (snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
         snapshot.characters[0] != 'X' || snapshot.attributes[0] != 0x1fu);
     core_machine_destroy(machine);
@@ -189,7 +189,7 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
     return failed;
 }
 
-static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
+static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
 {
     static lib_u8 system[VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES];
     static lib_u8 xebec[VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES];
@@ -204,26 +204,26 @@ static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
     vm_machine *session = LIB_NULL;
     vm_machine_reset_vector vector;
     lib_u8 observed[2] = {0};
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= lib_c_strcmp(vm_profile_name(config.profile_kind),
         "ibm-5160-model-268") != 0;
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
-    failed |= !failed && vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK;
+    failed |= !failed && vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK;
     failed |= !failed && (core_machine_memory_read(session->core_machine, 0x000c0000u,
-        observed, sizeof(observed)) != TYPE_STATUS_OK || observed[0u] != 0x55u ||
+        observed, sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x55u ||
         observed[1u] != 0xaau);
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.bios_count = 2u;
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != TYPE_STATUS_OK ||
+    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
     failed |= vm_machine_create_from_assets(&config, &assets, &session) !=
-        TYPE_STATUS_INVALID_ARGUMENT;
+        LIB_STATUS_INVALID_ARGUMENT;
     return failed;
 }
 
@@ -232,13 +232,13 @@ int main(void)
     if (vm_xt_5160_268_contract_is_fixed() ||
         vm_xt_5160_268_topology_constructs_one_xt_route() ||
         vm_xt_5160_268_byob_session_uses_one_xt_route()) return 1;
-    STD_PRINTF("M5:T484:S3:XT-FIXED-PROFILE:OK\n");
-    STD_PRINTF("M5:T484:S5:XT-B2-SHARED-TOPOLOGY:OK\n");
-    STD_PRINTF("M5:T484:S10:XT-FDC-PLAN:OK\n");
-    STD_PRINTF("M5:T484:S10:XT-NO-AT-FDC-ALIAS:OK\n");
-    STD_PRINTF("M5:T484:S11:XT-CGA-PLAN:OK\n");
-    STD_PRINTF("M5:T484:S11:XT-NO-VIDEO-ALIAS:OK\n");
-    STD_PRINTF("M5:T484:S16:XT-TYPE2:OK\n");
-    STD_PRINTF("M5:T484:S21:XT-B6-BYOB-SESSION:OK\n");
+    printf("M5:T484:S3:XT-FIXED-PROFILE:OK\n");
+    printf("M5:T484:S5:XT-B2-SHARED-TOPOLOGY:OK\n");
+    printf("M5:T484:S10:XT-FDC-PLAN:OK\n");
+    printf("M5:T484:S10:XT-NO-AT-FDC-ALIAS:OK\n");
+    printf("M5:T484:S11:XT-CGA-PLAN:OK\n");
+    printf("M5:T484:S11:XT-NO-VIDEO-ALIAS:OK\n");
+    printf("M5:T484:S16:XT-TYPE2:OK\n");
+    printf("M5:T484:S21:XT-B6-BYOB-SESSION:OK\n");
     return 0;
 }

@@ -2,7 +2,6 @@
 #define CORE_MACHINE_TRANSACTION_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,7 +41,7 @@ typedef enum core_machine_transaction_phase {
     CORE_MACHINE_TRANSACTION_PHASE_HOLD_RELEASE
 } core_machine_transaction_phase;
 
-typedef C_VOID (*core_machine_transaction_trace_callback)(C_VOID *context,
+typedef void (*core_machine_transaction_trace_callback)(void *context,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     core_machine_transaction_phase phase, lib_u32 address,
     lib_u32 value, lib_u32 detail);
@@ -57,28 +56,28 @@ typedef struct core_machine_transaction_state {
     lib_u64 cancelled_count;
     core_machine_transaction_owner hold_owner;
     lib_u32 hold_detail;
-    type_bool hold_acknowledged;
+    lib_u8 hold_acknowledged;
     core_machine_transaction_trace_callback trace;
-    C_VOID *trace_context;
+    void *trace_context;
 } core_machine_transaction_state;
 
-C_VOID core_machine_transaction_initialize(core_machine_transaction_state *state);
-C_VOID core_machine_transaction_reset(core_machine_transaction_state *state);
-C_VOID core_machine_transaction_bind_trace(core_machine_transaction_state *state,
-    core_machine_transaction_trace_callback callback, C_VOID *context);
-type_status core_machine_transaction_begin(core_machine_transaction_state *state,
+void core_machine_transaction_initialize(core_machine_transaction_state *state);
+void core_machine_transaction_reset(core_machine_transaction_state *state);
+void core_machine_transaction_bind_trace(core_machine_transaction_state *state,
+    core_machine_transaction_trace_callback callback, void *context);
+lib_status core_machine_transaction_begin(core_machine_transaction_state *state,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     lib_u32 address, lib_u32 value, lib_u32 detail);
-C_VOID core_machine_transaction_set_value(core_machine_transaction_state *state,
+void core_machine_transaction_set_value(core_machine_transaction_state *state,
     lib_u32 value);
-C_VOID core_machine_transaction_commit(core_machine_transaction_state *state);
-C_VOID core_machine_transaction_cancel(core_machine_transaction_state *state);
-type_status core_machine_transaction_hold_request(
+void core_machine_transaction_commit(core_machine_transaction_state *state);
+void core_machine_transaction_cancel(core_machine_transaction_state *state);
+lib_status core_machine_transaction_hold_request(
     core_machine_transaction_state *state, core_machine_transaction_owner owner,
     lib_u32 detail);
-type_status core_machine_transaction_hold_acknowledge(
+lib_status core_machine_transaction_hold_acknowledge(
     core_machine_transaction_state *state, core_machine_transaction_owner owner);
-C_VOID core_machine_transaction_hold_release(
+void core_machine_transaction_hold_release(
     core_machine_transaction_state *state, core_machine_transaction_owner owner);
 
 #ifdef __cplusplus

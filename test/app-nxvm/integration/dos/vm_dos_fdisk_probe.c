@@ -1,7 +1,7 @@
 #include <windows.h>
+#include <stdio.h>
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "app-nxvm/machine/control.h"
@@ -11,13 +11,13 @@
 
 #define VM_T287_FDISK_CELLS (80u * 25u)
 
-static DWORD WINAPI vm_t287_fdisk_run(C_VOID *opaque)
+static DWORD WINAPI vm_t287_fdisk_run(void *opaque)
 {
     vm_machine_control_start(&((vm_machine *)opaque)->control);
     return 0u;
 }
 
-static C_INT vm_t287_fdisk_has_text(const vm_machine *session, const C_CHAR *text)
+static lib_i32 vm_t287_fdisk_has_text(const vm_machine *session, const char *text)
 {
     core_machine_guest_display_frame frame;
     lib_size cell;
@@ -25,7 +25,7 @@ static C_INT vm_t287_fdisk_has_text(const vm_machine *session, const C_CHAR *tex
     lib_size length = lib_text_length(text);
 
     if (session == LIB_NULL || text == LIB_NULL || length == 0u ||
-        test_vm_machine_capture_presentation(session, &frame) != TYPE_STATUS_OK) return 0;
+        test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_FDISK_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (lib_u8)text[character]) break;
@@ -35,7 +35,7 @@ static C_INT vm_t287_fdisk_has_text(const vm_machine *session, const C_CHAR *tex
     return 0;
 }
 
-static C_INT vm_t287_fdisk_wait(const vm_machine *session, const C_CHAR *text,
+static lib_i32 vm_t287_fdisk_wait(const vm_machine *session, const char *text,
     DWORD timeout)
 {
     DWORD elapsed;
@@ -50,7 +50,7 @@ static C_INT vm_t287_fdisk_wait(const vm_machine *session, const C_CHAR *text,
     return 0;
 }
 
-static C_INT vm_t287_fdisk_submit(const vm_machine *session, const lib_u8 *codes,
+static lib_i32 vm_t287_fdisk_submit(const vm_machine *session, const lib_u8 *codes,
     lib_size count)
 {
     lib_size index;
@@ -58,12 +58,12 @@ static C_INT vm_t287_fdisk_submit(const vm_machine *session, const lib_u8 *codes
     if (session == LIB_NULL || codes == LIB_NULL) return 0;
     for (index = 0u; index < count; ++index) {
         if (core_machine_keyboard_receive_native_byte(session->core_machine,
-                codes[index]) != TYPE_STATUS_OK) return 0;
+                codes[index]) != LIB_STATUS_OK) return 0;
     }
     return 1;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
     const lib_u8 enter[] = {0x5au};
@@ -73,10 +73,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
         0x43u, 0xf0u, 0x43u, 0x1bu, 0xf0u, 0x1bu, 0x42u, 0xf0u, 0x42u, 0x5au};
     HANDLE thread = LIB_NULL;
     vm_machine *session = LIB_NULL;
-    C_INT passed = 0;
+    lib_i32 passed = 0;
 
     if (argc != 3 || integration_ini_session_open(argv[1], argv[2],
-            &ini_session) != TYPE_STATUS_OK) return 77;
+            &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     if ((thread = CreateThread(LIB_NULL, 0u,
             vm_t287_fdisk_run, session, 0u, LIB_NULL)) == LIB_NULL) goto done;
@@ -107,6 +107,6 @@ done:
     }
     integration_ini_session_close(&ini_session);
     if (!passed) return 1;
-    STD_PRINTF("M5:T287:S21:FDISK:OPTION4:EXTERNAL:OK\n");
+    printf("M5:T287:S21:FDISK:OPTION4:EXTERNAL:OK\n");
     return 0;
 }

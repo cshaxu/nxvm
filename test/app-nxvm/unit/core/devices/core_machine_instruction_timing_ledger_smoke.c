@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -15,29 +15,29 @@ typedef struct timing_ledger_state {
     lib_u64 advanced_ticks;
 } timing_ledger_state;
 
-static type_status timing_ledger_port_read(C_VOID *owner,
+static lib_status timing_ledger_port_read(void *owner,
     lib_u16 port, lib_u32 *out_value)
 {
     timing_ledger_state *state = (timing_ledger_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     ++state->reads;
     *out_value = 0x5au;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status timing_ledger_port_write(C_VOID *owner,
+static lib_status timing_ledger_port_write(void *owner,
     lib_u16 port, lib_u32 value)
 {
     timing_ledger_state *state = (timing_ledger_state *)owner;
 
     if (state == LIB_NULL || port != 0x00e0u || value > 0xffu) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     ++state->writes;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_port_provider timing_ledger_port_provider = {
@@ -45,14 +45,14 @@ static const core_machine_port_provider timing_ledger_port_provider = {
     timing_ledger_port_write
 };
 
-static C_VOID timing_ledger_execution_reset(C_VOID *opaque)
+static void timing_ledger_execution_reset(void *opaque)
 {
     timing_ledger_state *state = (timing_ledger_state *)opaque;
 
     if (state != LIB_NULL) state->advanced_ticks = 0u;
 }
 
-static C_VOID timing_ledger_execution_advance(C_VOID *opaque,
+static void timing_ledger_execution_advance(void *opaque,
     lib_u64 elapsed_ticks)
 {
     timing_ledger_state *state = (timing_ledger_state *)opaque;
@@ -67,10 +67,10 @@ static const core_machine_execution_provider timing_ledger_execution_provider = 
 
 typedef struct timing_ledger_qualification_probe {
     core_machine_retirement_eligibility_key key;
-    type_bool captured;
+    lib_u8 captured;
 } timing_ledger_qualification_probe;
 
-static C_VOID timing_ledger_qualification_record(C_VOID *context,
+static void timing_ledger_qualification_record(void *context,
     const core_machine_retirement_observation *observation)
 {
     timing_ledger_qualification_probe *probe =
@@ -81,7 +81,7 @@ static C_VOID timing_ledger_qualification_record(C_VOID *context,
         probe->captured = LIB_TRUE;
     }
 }
-static C_INT timing_ledger_prepare(core_machine **out_machine,
+static lib_i32 timing_ledger_prepare(core_machine **out_machine,
     timing_ledger_state *state)
 {
     const core_machine_config config = {
@@ -90,12 +90,12 @@ static C_INT timing_ledger_prepare(core_machine **out_machine,
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
-            TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
+            TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
-            &timing_ledger_port_provider, state) != TYPE_STATUS_OK ||
+            &timing_ledger_port_provider, state) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_ledger_execution_provider, state)) {
         core_machine_destroy(machine);
@@ -105,16 +105,16 @@ static C_INT timing_ledger_prepare(core_machine **out_machine,
     return 1;
 }
 
-static C_INT timing_ledger_load(core_machine *machine,
+static lib_i32 timing_ledger_load(core_machine *machine,
     const lib_u8 *program, lib_size program_bytes)
 {
     return machine != LIB_NULL && program != LIB_NULL &&
-        core_machine_reset(machine) == TYPE_STATUS_OK &&
+        core_machine_reset(machine) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR, program,
-            program_bytes) == TYPE_STATUS_OK;
+            program_bytes) == LIB_STATUS_OK;
 }
 
-static C_INT timing_ledger_execute(core_machine *machine,
+static lib_i32 timing_ledger_execute(core_machine *machine,
     lib_u64 instructions, lib_u64 expected_ticks,
     timing_ledger_state *state)
 {
@@ -122,20 +122,20 @@ static C_INT timing_ledger_execute(core_machine *machine,
     core_machine_run_result result;
 
     return machine != LIB_NULL && state != LIB_NULL &&
-        core_machine_run(machine, budget, &result) == TYPE_STATUS_OK &&
+        core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET &&
         result.executed == instructions && result.ticks == expected_ticks &&
         result.elapsed_ticks == expected_ticks &&
         state->advanced_ticks == expected_ticks;
 }
 
-static C_INT timing_ledger_case(const lib_u8 *program,
+static lib_i32 timing_ledger_case(const lib_u8 *program,
     lib_size program_bytes, lib_u64 instructions,
     lib_u64 expected_ticks)
 {
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_ledger_prepare(&machine, &state) ||
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state) ||
         !timing_ledger_load(machine, program, program_bytes) ||
         !timing_ledger_execute(machine, instructions, expected_ticks, &state);
 
@@ -143,7 +143,7 @@ static C_INT timing_ledger_case(const lib_u8 *program,
     return failed;
 }
 
-static C_INT timing_ledger_test_baseline(C_VOID)
+static lib_i32 timing_ledger_test_baseline(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     static const lib_u8 clc[] = { 0xf8u };
@@ -176,7 +176,7 @@ static C_INT timing_ledger_test_baseline(C_VOID)
         !timing_ledger_case(mov_register, sizeof(mov_register), 1u, 2u);
 }
 
-static C_INT timing_ledger_capture_qualification(const lib_u8 *program,
+static lib_i32 timing_ledger_capture_qualification(const lib_u8 *program,
     lib_size program_bytes, core_machine_retirement_eligibility_key *out_key)
 {
     timing_ledger_state state = { 0u, 0u, 0u };
@@ -187,10 +187,10 @@ static C_INT timing_ledger_capture_qualification(const lib_u8 *program,
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = out_key == LIB_NULL || !timing_ledger_prepare(&machine, &state) ||
+    lib_i32 failed = out_key == LIB_NULL || !timing_ledger_prepare(&machine, &state) ||
         core_machine_set_retirement_observation_provider(machine, &provider) !=
-            TYPE_STATUS_OK || !timing_ledger_load(machine, program, program_bytes) ||
-        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK || !timing_ledger_load(machine, program, program_bytes) ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
         !probe.captured;
 
@@ -199,8 +199,8 @@ static C_INT timing_ledger_capture_qualification(const lib_u8 *program,
     return failed;
 }
 
-static C_INT timing_ledger_physical_case(const lib_u8 *program,
-    lib_size program_bytes, type_status expected_status,
+static lib_i32 timing_ledger_physical_case(const lib_u8 *program,
+    lib_size program_bytes, lib_status expected_status,
     lib_u64 expected_ticks)
 {
     core_machine_retirement_eligibility_key entry = { 0 };
@@ -216,28 +216,28 @@ static C_INT timing_ledger_physical_case(const lib_u8 *program,
     core_machine_run_result result;
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (expected_status == TYPE_STATUS_OK) {
+    if (expected_status == LIB_STATUS_OK) {
         failed = timing_ledger_capture_qualification(program, program_bytes, &entry);
         config.retirement_qualification = &qualification;
     }
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
-            TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
+            TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_ledger_execution_provider, &state) ||
         !timing_ledger_load(machine, program, program_bytes) ||
         core_machine_run(machine, budget, &result) != expected_status;
 
-    if (!failed && expected_status == TYPE_STATUS_OK) {
+    if (!failed && expected_status == LIB_STATUS_OK) {
         failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
             result.executed != 1u || result.ticks != expected_ticks ||
             result.elapsed_ticks != expected_ticks ||
             state.advanced_ticks != expected_ticks;
     }
-    if (!failed && expected_status == TYPE_STATUS_FAULT) {
+    if (!failed && expected_status == LIB_STATUS_INTERNAL_ERROR) {
         failed |= result.reason != CORE_MACHINE_STOP_FAULT ||
             result.executed != 0u || result.ticks != 0u ||
             result.elapsed_ticks != 0u || state.advanced_ticks != 0u;
@@ -245,7 +245,7 @@ static C_INT timing_ledger_physical_case(const lib_u8 *program,
     core_machine_destroy(machine);
     return failed;
 }
-static C_INT timing_ledger_physical_protected_mov_sreg_memory(C_VOID)
+static lib_i32 timing_ledger_physical_protected_mov_sreg_memory(void)
 {
     static const lib_u8 gdt_pointer[] = { 0x3fu, 0u, 0u, 0x03u, 0u, 0u };
     static const lib_u8 gdt[] = {
@@ -276,33 +276,33 @@ static C_INT timing_ledger_physical_protected_mov_sreg_memory(C_VOID)
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
     lib_u64 elapsed_before = 0u;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_ledger_execution_provider, &state) ||
         !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u) ||
         core_machine_memory_write(machine, 0x0100u, gdt_pointer,
-            sizeof(gdt_pointer)) != TYPE_STATUS_OK ||
+            sizeof(gdt_pointer)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0u, boot, sizeof(boot)) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x2000u, halt, sizeof(halt)) !=
-            TYPE_STATUS_OK ||
+            LIB_STATUS_OK ||
         core_machine_run(machine, (core_machine_run_budget){96u, 0u},
-            &result) != TYPE_STATUS_OK || result.reason !=
+            &result) != LIB_STATUS_OK || result.reason !=
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x4000u, selector,
-            sizeof(selector)) != TYPE_STATUS_OK ||
+            sizeof(selector)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x2000u, program,
-                sizeof(program)) != TYPE_STATUS_OK;
+                sizeof(program)) != LIB_STATUS_OK;
     }
     if (!failed) {
         test_core_machine_fixture_resume_after_halt_at(machine, 0u);
         elapsed_before = machine->elapsed_ticks;
         state.advanced_ticks = 0u;
-        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 19u || result.elapsed_ticks != elapsed_before + 19u ||
             state.advanced_ticks != 19u;
@@ -310,7 +310,7 @@ static C_INT timing_ledger_physical_protected_mov_sreg_memory(C_VOID)
     core_machine_destroy(machine);
     return failed;
 }
-static C_INT timing_ledger_physical_far_jmp_memory(C_INT protected_mode)
+static lib_i32 timing_ledger_physical_far_jmp_memory(lib_i32 protected_mode)
 {
     static const lib_u8 instruction[] = {
         0x2eu, 0xffu, 0x2eu, 0xf6u, 0xffu
@@ -326,21 +326,21 @@ static C_INT timing_ledger_physical_far_jmp_memory(C_INT protected_mode)
     core_machine_run_result result;
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
-            TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
+            TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_ledger_execution_provider, &state) ||
         !timing_ledger_load(machine, instruction, sizeof(instruction)) ||
         core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR + 6u,
-            pointer, sizeof(pointer)) != TYPE_STATUS_OK ||
+            pointer, sizeof(pointer)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR + 14u,
-            target, sizeof(target)) != TYPE_STATUS_OK;
+            target, sizeof(target)) != LIB_STATUS_OK;
 
     if (!failed && protected_mode) machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
     if (!failed) {
-        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
             state.advanced_ticks != 0u;
@@ -348,7 +348,7 @@ static C_INT timing_ledger_physical_far_jmp_memory(C_INT protected_mode)
     core_machine_destroy(machine);
     return failed;
 }
-static C_INT timing_ledger_physical_protected_far_jmp_memory(C_VOID)
+static lib_i32 timing_ledger_physical_protected_far_jmp_memory(void)
 {
     static const lib_u8 gdt_pointer[] = { 0x17u, 0u, 0u, 0x03u, 0u, 0u };
     static const lib_u8 gdt[] = {
@@ -379,32 +379,32 @@ static C_INT timing_ledger_physical_protected_far_jmp_memory(C_VOID)
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
     lib_u64 elapsed_before = 0u;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_ledger_execution_provider, &state) ||
         !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u) ||
         core_machine_memory_write(machine, 0x0100u, gdt_pointer,
-            sizeof(gdt_pointer)) != TYPE_STATUS_OK ||
+            sizeof(gdt_pointer)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) !=
-            TYPE_STATUS_OK || core_machine_memory_write(machine, 0u, real_code,
-            sizeof(real_code)) != TYPE_STATUS_OK ||
+            LIB_STATUS_OK || core_machine_memory_write(machine, 0u, real_code,
+            sizeof(real_code)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x2000u, halt, sizeof(halt)) !=
-            TYPE_STATUS_OK || core_machine_run(machine, setup_budget, &result) !=
-            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+            LIB_STATUS_OK || core_machine_run(machine, setup_budget, &result) !=
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     if (!failed) {
         failed |= core_machine_memory_write(machine, 0x2000u, instruction,
-            sizeof(instruction)) != TYPE_STATUS_OK ||
+            sizeof(instruction)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x201fu, pointer,
-                sizeof(pointer)) != TYPE_STATUS_OK ||
+                sizeof(pointer)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x2028u, target,
-                sizeof(target)) != TYPE_STATUS_OK;
+                sizeof(target)) != LIB_STATUS_OK;
     }
     if (!failed) {
         test_core_machine_fixture_resume_after_halt_at(machine, 0u);
         machine->retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
         elapsed_before = machine->elapsed_ticks;
         state.advanced_ticks = 0u;
-        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != elapsed_before ||
             state.advanced_ticks != 0u;
@@ -412,7 +412,7 @@ static C_INT timing_ledger_physical_protected_far_jmp_memory(C_VOID)
     core_machine_destroy(machine);
     return failed;
 }
-static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
+static lib_i32 timing_ledger_test_physical_classifier_boundary(void)
 {
     static const lib_u8 cli[] = { 0xfau };
     static const lib_u8 cld[] = { 0xfcu };
@@ -438,39 +438,39 @@ static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
         0x8eu, 0x1eu, 0x00u, 0x10u
     };
 
-    return timing_ledger_physical_case(cli, sizeof(cli), TYPE_STATUS_OK, 3u) ||
-        timing_ledger_physical_case(cld, sizeof(cld), TYPE_STATUS_OK, 2u) ||
+    return timing_ledger_physical_case(cli, sizeof(cli), LIB_STATUS_OK, 3u) ||
+        timing_ledger_physical_case(cld, sizeof(cld), LIB_STATUS_OK, 2u) ||
         timing_ledger_physical_case(prefixed_cld, sizeof(prefixed_cld),
-            TYPE_STATUS_FAULT, 0u) ||
+            LIB_STATUS_INTERNAL_ERROR, 0u) ||
         timing_ledger_physical_case(sal_register_one, sizeof(sal_register_one),
-            TYPE_STATUS_OK, 3u) ||
+            LIB_STATUS_OK, 3u) ||
         timing_ledger_physical_case(sal_memory_one, sizeof(sal_memory_one),
-            TYPE_STATUS_FAULT, 0u) ||
+            LIB_STATUS_INTERNAL_ERROR, 0u) ||
         timing_ledger_physical_case(rcl_register_one_32,
-            sizeof(rcl_register_one_32), TYPE_STATUS_OK, 9u) ||
+            sizeof(rcl_register_one_32), LIB_STATUS_OK, 9u) ||
         timing_ledger_physical_case(rcl_register_one_16,
-            sizeof(rcl_register_one_16), TYPE_STATUS_FAULT, 0u) ||
+            sizeof(rcl_register_one_16), LIB_STATUS_INTERNAL_ERROR, 0u) ||
         timing_ledger_physical_case(rcl_memory_one_32,
-            sizeof(rcl_memory_one_32), TYPE_STATUS_FAULT, 0u) ||
+            sizeof(rcl_memory_one_32), LIB_STATUS_INTERNAL_ERROR, 0u) ||
         timing_ledger_physical_case(rcl_register_cl_32,
-            sizeof(rcl_register_cl_32), TYPE_STATUS_OK, 9u) ||
+            sizeof(rcl_register_cl_32), LIB_STATUS_OK, 9u) ||
         timing_ledger_physical_case(rcl_memory_cl_32,
-            sizeof(rcl_memory_cl_32), TYPE_STATUS_FAULT, 0u) ||
-        timing_ledger_physical_case(lahf, sizeof(lahf), TYPE_STATUS_OK, 2u) ||
+            sizeof(rcl_memory_cl_32), LIB_STATUS_INTERNAL_ERROR, 0u) ||
+        timing_ledger_physical_case(lahf, sizeof(lahf), LIB_STATUS_OK, 2u) ||
         timing_ledger_physical_case(prefixed_lahf, sizeof(prefixed_lahf),
-            TYPE_STATUS_FAULT, 0u) ||
-        timing_ledger_physical_case(sahf, sizeof(sahf), TYPE_STATUS_OK, 3u) ||
+            LIB_STATUS_INTERNAL_ERROR, 0u) ||
+        timing_ledger_physical_case(sahf, sizeof(sahf), LIB_STATUS_OK, 3u) ||
         timing_ledger_physical_case(mov_sreg_register,
-            sizeof(mov_sreg_register), TYPE_STATUS_OK, 2u) ||
+            sizeof(mov_sreg_register), LIB_STATUS_OK, 2u) ||
         timing_ledger_physical_case(mov_sreg_memory,
-            sizeof(mov_sreg_memory), TYPE_STATUS_OK, 5u) ||
+            sizeof(mov_sreg_memory), LIB_STATUS_OK, 5u) ||
         timing_ledger_physical_protected_mov_sreg_memory() ||
         timing_ledger_physical_far_jmp_memory(0) ||
         timing_ledger_physical_far_jmp_memory(1) ||
         timing_ledger_physical_protected_far_jmp_memory();
 }
 
-static C_INT timing_ledger_test_memory(C_VOID)
+static lib_i32 timing_ledger_test_memory(void)
 {
     static const lib_u8 mov_read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
     static const lib_u8 mov_write[] = { 0x89u, 0x0eu, 0x00u, 0x10u };
@@ -479,12 +479,12 @@ static C_INT timing_ledger_test_memory(C_VOID)
     const lib_u16 value = 0x5aa5u;
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_ledger_prepare(&machine, &state);
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state);
 
     if (!failed) {
         failed |= !timing_ledger_load(machine, mov_read, sizeof(mov_read)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
-                TYPE_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
+                LIB_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
             machine->executor_cpu.data.cx != value;
     }
     if (!failed) {
@@ -495,7 +495,7 @@ static C_INT timing_ledger_test_memory(C_VOID)
     if (!failed) {
         failed |= !timing_ledger_load(machine, moffs_read, sizeof(moffs_read)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
-                TYPE_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
+                LIB_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
             machine->executor_cpu.data.ax != value;
     }
     if (!failed) {
@@ -507,7 +507,7 @@ static C_INT timing_ledger_test_memory(C_VOID)
     return failed;
 }
 
-static C_INT timing_ledger_test_ports(C_VOID)
+static lib_i32 timing_ledger_test_ports(void)
 {
     static const lib_u8 in_immediate[] = { 0xe4u, 0xe0u };
     static const lib_u8 out_immediate[] = { 0xe6u, 0xe0u };
@@ -515,7 +515,7 @@ static C_INT timing_ledger_test_ports(C_VOID)
     static const lib_u8 out_dx[] = { 0xeeu };
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_ledger_prepare(&machine, &state);
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state);
 
     if (!failed) {
         failed |= !timing_ledger_load(machine, in_immediate, sizeof(in_immediate)) ||
@@ -540,7 +540,7 @@ static C_INT timing_ledger_test_ports(C_VOID)
     return failed;
 }
 
-static C_INT timing_ledger_test_jcc_and_repeat(C_VOID)
+static lib_i32 timing_ledger_test_jcc_and_repeat(void)
 {
     static const lib_u8 taken[] = { 0x74u, 0x01u, 0x90u, 0x90u };
     static const lib_u8 not_taken[] = { 0x75u, 0x01u, 0x90u, 0x90u };
@@ -548,7 +548,7 @@ static C_INT timing_ledger_test_jcc_and_repeat(C_VOID)
     static const lib_u8 source[] = { 0x11u, 0x22u, 0x33u };
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_ledger_prepare(&machine, &state);
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state);
 
     if (!failed) {
         failed |= !timing_ledger_load(machine, taken, sizeof(taken)) ||
@@ -563,7 +563,7 @@ static C_INT timing_ledger_test_jcc_and_repeat(C_VOID)
     if (!failed) {
         failed |= !timing_ledger_load(machine, rep_movsb, sizeof(rep_movsb)) ||
             core_machine_memory_write(machine, 0x1000u, source, sizeof(source)) !=
-                TYPE_STATUS_OK ||
+                LIB_STATUS_OK ||
             ((machine->executor_cpu.data.cx = 3u),
                 (machine->executor_cpu.data.si = 0x1000u),
                 (machine->executor_cpu.data.di = 0x1100u), 0) ||
@@ -573,7 +573,7 @@ static C_INT timing_ledger_test_jcc_and_repeat(C_VOID)
     return failed;
 }
 
-static C_INT timing_ledger_test_unavailable_and_fault(C_VOID)
+static lib_i32 timing_ledger_test_unavailable_and_fault(void)
 {
     static const lib_u8 rol_register_one[] = { 0xd0u, 0xc0u };
     static const lib_u8 fault[] = { 0xf0u, 0x90u };
@@ -581,7 +581,7 @@ static C_INT timing_ledger_test_unavailable_and_fault(C_VOID)
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_ledger_prepare(&machine, &state);
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state);
 
     if (!failed) {
         failed |= !timing_ledger_load(machine, rol_register_one,
@@ -591,7 +591,7 @@ static C_INT timing_ledger_test_unavailable_and_fault(C_VOID)
     if (!failed) {
         failed |= !timing_ledger_load(machine, fault, sizeof(fault)) ||
             !test_core_machine_fixture_preflight_real_ud_terminal(machine) ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
             state.advanced_ticks != 0u;
@@ -600,7 +600,7 @@ static C_INT timing_ledger_test_unavailable_and_fault(C_VOID)
     return failed;
 }
 
-static C_INT timing_ledger_test_budget_overflow_and_reset(C_VOID)
+static lib_i32 timing_ledger_test_budget_overflow_and_reset(void)
 {
     static const lib_u8 nop[] = { 0x90u };
     const core_machine_run_budget insufficient = { 1u, 105u };
@@ -608,22 +608,22 @@ static C_INT timing_ledger_test_budget_overflow_and_reset(C_VOID)
     core_machine_run_result result;
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_ledger_prepare(&machine, &state) ||
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state) ||
         !timing_ledger_load(machine, nop, sizeof(nop));
 
     if (!failed) {
-        failed |= core_machine_run(machine, insufficient, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
             machine->executor_cpu.data.eip != 0xfff0u || state.advanced_ticks != 0u;
     }
     if (!failed) {
-        failed |= core_machine_run(machine, sufficient, &result) != TYPE_STATUS_OK ||
+        failed |= core_machine_run(machine, sufficient, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 3u || result.elapsed_ticks != 3u ||
-            state.advanced_ticks != 3u || core_machine_reset(machine) != TYPE_STATUS_OK ||
+            state.advanced_ticks != 3u || core_machine_reset(machine) != LIB_STATUS_OK ||
             core_machine_get_elapsed_ticks(machine, &result.elapsed_ticks) !=
-                TYPE_STATUS_OK || result.elapsed_ticks != 0u ||
+                LIB_STATUS_OK || result.elapsed_ticks != 0u ||
             !timing_ledger_load(machine, nop, sizeof(nop)) ||
             !timing_ledger_execute(machine, 1u, 3u, &state);
     }
@@ -631,7 +631,7 @@ static C_INT timing_ledger_test_budget_overflow_and_reset(C_VOID)
         failed |= !timing_ledger_load(machine, nop, sizeof(nop));
         machine->elapsed_ticks = UINT64_MAX - 2u;
         state.advanced_ticks = 0u;
-        failed |= core_machine_run(machine, sufficient, &result) != TYPE_STATUS_FAULT ||
+        failed |= core_machine_run(machine, sufficient, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != UINT64_MAX - 2u ||
             machine->elapsed_ticks != UINT64_MAX - 2u || state.advanced_ticks != 0u;
@@ -640,7 +640,7 @@ static C_INT timing_ledger_test_budget_overflow_and_reset(C_VOID)
     return failed;
 }
 
-static C_INT timing_ledger_test_compatibility_is_not_source_truth(C_VOID)
+static lib_i32 timing_ledger_test_compatibility_is_not_source_truth(void)
 {
     static const lib_u8 prefixed_nop[] = { 0x26u, 0x90u };
     const core_machine_config config = {
@@ -651,15 +651,15 @@ static C_INT timing_ledger_test_compatibility_is_not_source_truth(C_VOID)
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
-            TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
+            TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR,
-            prefixed_nop, sizeof(prefixed_nop)) != TYPE_STATUS_OK ||
-        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            prefixed_nop, sizeof(prefixed_nop)) != LIB_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
         result.ticks != 3u || result.elapsed_ticks != 3u;
 
@@ -667,7 +667,7 @@ static C_INT timing_ledger_test_compatibility_is_not_source_truth(C_VOID)
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!timing_ledger_test_baseline()) return 1;
     if (timing_ledger_test_memory()) return 2;
@@ -677,6 +677,6 @@ C_INT main(C_VOID)
     if (timing_ledger_test_budget_overflow_and_reset()) return 6;
     if (timing_ledger_test_compatibility_is_not_source_truth()) return 7;
     if (timing_ledger_test_physical_classifier_boundary()) return 8;
-    STD_PRINTF("M5:T357:S3:INSTRUCTION-TIMING-LEDGER:OK\n");
+    printf("M5:T357:S3:INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

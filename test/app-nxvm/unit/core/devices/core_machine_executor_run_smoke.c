@@ -1,19 +1,19 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     core_machine_config config = { .memory_bytes = 0u };
     core_machine_run_budget budget = {1u, 0u};
     const core_machine_run_budget alu_budget = {2u, 0u};
     core_machine_run_result result;
     core_machine_observation observation;
-    type_status status;
+    lib_status status;
     core_machine *machine = LIB_NULL;
     const lib_u8 program[] = {0x90u, 0xf4u};
     const lib_u8 register_or_program[] = {
@@ -22,49 +22,49 @@ C_INT main(C_VOID)
         0xf4u
     };
 
-    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) {
+    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
     if (test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-            0x000ffff0u, 16u) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK) {
+            0x000ffff0u, 16u) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
     if (core_machine_memory_write(machine, 0xfffffff0u, program, sizeof(program)) !=
-        TYPE_STATUS_OK) {
+        LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
     status = core_machine_run(machine, budget, &result);
-    if (status != TYPE_STATUS_OK || result.executed != 1u ||
+    if (status != LIB_STATUS_OK || result.executed != 1u ||
         result.reason != CORE_MACHINE_STOP_BUDGET) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T198:S1:CORE-EXECUTOR-RUN:FAIL status=%d executed=%llu reason=%d\n",
-            (C_INT)status,
-            (unsigned long long)result.executed, (C_INT)result.reason);
+            (lib_i32)status,
+            (unsigned long long)result.executed, (lib_i32)result.reason);
         core_machine_destroy(machine);
         return 1;
     }
-    if (core_machine_reset(machine) != TYPE_STATUS_OK ||
+    if (core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0xfffffff0u, register_or_program,
-            sizeof(register_or_program)) != TYPE_STATUS_OK ||
-        core_machine_run(machine, alu_budget, &result) != TYPE_STATUS_OK ||
+            sizeof(register_or_program)) != LIB_STATUS_OK ||
+        core_machine_run(machine, alu_budget, &result) != LIB_STATUS_OK ||
         result.executed != 2u || result.reason != CORE_MACHINE_STOP_BUDGET ||
-        core_machine_capture_observation(machine, &observation) != TYPE_STATUS_OK ||
+        core_machine_capture_observation(machine, &observation) != LIB_STATUS_OK ||
         observation.cpu.eip != 0x0000fff5u) {
         core_machine_destroy(machine);
         return 1;
     }
     status = core_machine_run(machine, budget, &result);
-    if (status != TYPE_STATUS_OK ||
+    if (status != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-        STD_FPRINTF(STD_STDERR,
+        fprintf(stderr,
             "M5:T198:S1:CORE-EXECUTOR-WAIT:FAIL status=%d executed=%llu reason=%d\n",
-            (C_INT)status, (unsigned long long)result.executed,
-            (C_INT)result.reason);
+            (lib_i32)status, (unsigned long long)result.executed,
+            (lib_i32)result.reason);
         core_machine_destroy(machine);
         return 1;
     }

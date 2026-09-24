@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -7,7 +7,7 @@
 #include "app-nxvm/machine/lifecycle.h"
 #include "support/rom/session_assets.h"
 
-static C_INT verify(C_VOID)
+static lib_i32 verify(void)
 {
     vm_machine_config config = {
         .create_fdd = 1,
@@ -18,9 +18,9 @@ static C_INT verify(C_VOID)
     vm_machine_reset_vector vector;
     vm_machine *session = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session->core_machine == LIB_NULL ||
-        vm_machine_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
+        vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         vm_machine_destroy(session);
         return 1;
@@ -29,7 +29,7 @@ static C_INT verify(C_VOID)
     return 0;
 }
 
-static C_INT verify_created(C_VOID)
+static lib_i32 verify_created(void)
 {
     vm_machine_config config = {
         .create_fdd = 1,
@@ -40,8 +40,8 @@ static C_INT verify_created(C_VOID)
     vm_machine_information information;
     vm_machine *session = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
-        vm_machine_get_information(session, &information) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
+        vm_machine_get_information(session, &information) != LIB_STATUS_OK ||
         !information.floppy_media_inserted || !information.fixed_disk_media_connected ||
         information.fixed_disk_cylinders != 1u || !information.fixed_disk_present ||
         information.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
@@ -53,7 +53,7 @@ static C_INT verify_created(C_VOID)
     return 0;
 }
 
-static C_INT verify_selected_cpu_uses_the_resolved_topology(C_VOID)
+static lib_i32 verify_selected_cpu_uses_the_resolved_topology(void)
 {
     const vm_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
@@ -62,8 +62,8 @@ static C_INT verify_selected_cpu_uses_the_resolved_topology(C_VOID)
     core_machine_cpu_profile profile;
     vm_machine *session = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
-        core_machine_get_cpu_profile(session->core_machine, &profile) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
+        core_machine_get_cpu_profile(session->core_machine, &profile) != LIB_STATUS_OK ||
         profile != CORE_MACHINE_CPU_PROFILE_80286) {
         vm_machine_destroy(session);
         return 1;
@@ -72,13 +72,13 @@ static C_INT verify_selected_cpu_uses_the_resolved_topology(C_VOID)
     return 0;
 }
 
-static C_INT verify_initialize_once(C_VOID)
+static lib_i32 verify_initialize_once(void)
 {
     vm_machine *session = LIB_NULL;
     core_machine *core_machine;
     vm_machine_control_state *control;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->active) {
         vm_machine_destroy(session);
         return 1;
@@ -95,22 +95,22 @@ static C_INT verify_initialize_once(C_VOID)
     return 0;
 }
 
-static C_INT verify_rejects_unattached_media_slots(C_VOID)
+static lib_i32 verify_rejects_unattached_media_slots(void)
 {
     vm_machine_config second_disk = { .fixed_disk_image = { LIB_NULL, "disk.img" } };
     vm_machine_config second_floppy = { .floppy_image = { LIB_NULL, "disk.img" } };
     vm_machine *session = LIB_NULL;
 
-    if (vm_test_default_pc_at_session_create(&second_disk, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
+    if (vm_test_default_pc_at_session_create(&second_disk, &session) != LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL || vm_test_default_pc_at_session_create(&second_floppy, &session) !=
-        TYPE_STATUS_INVALID_ARGUMENT || session != LIB_NULL) return 1;
+        LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL) return 1;
     return 0;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
-    (C_VOID)argc;
-    (C_VOID)argv;
+    (void)argc;
+    (void)argv;
     if (verify() != 0 || verify_created() != 0 ||
         verify_selected_cpu_uses_the_resolved_topology() != 0 ||
         verify_initialize_once() != 0 || verify_rejects_unattached_media_slots() != 0)

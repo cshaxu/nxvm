@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/machine/machine_private.h"
 
@@ -15,12 +15,12 @@
 #include "app-nxvm/devices/fdc.h"
 #include "support/rom/session_assets.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session;
     const vm_machine *machine;
 
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) return 1;
     machine = session;
     if (machine == LIB_NULL ||

@@ -24,7 +24,7 @@ t435_require_count("${machine_text}" "core_machine_cpu_timing_select\\(" 1
     "machine.c must have one CPU timing call")
 t435_require_count("${machine_text}" "core_machine_retirement_observation_publish\\(" 1
     "machine.c must have one raw retirement publication")
-t435_require_count("${timing_text}" "C_INT core_machine_cpu_timing_select\\(" 1
+t435_require_count("${timing_text}" "lib_i32 core_machine_cpu_timing_select\\(" 1
     "cpu_timing.c must own one selector")
 t435_require_count("${timing_text}" "machine->source_timing_origin =" 2
     "cpu_timing.c must reset and assign origin once")

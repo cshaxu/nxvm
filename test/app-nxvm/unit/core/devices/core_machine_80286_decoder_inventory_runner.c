@@ -1,16 +1,16 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/cpu_instructions.h"
 
 /* S7 records the actual lexical decoder universe before comparing it with the
  * 80286 manual ledger.  It is an audit producer, not a timing test. */
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    const C_CHAR *const path = PROJECT_TEST_80286_DECODER_PATH;
-    type_bool opcode_seen[0x100] = { LIB_FALSE };
-    type_bool modrm_seen[0x100][0x100] = { { LIB_FALSE } };
-    type_bool escaped_modrm_seen[5][0x100] = { { LIB_FALSE } };
+    const char *const path = PROJECT_TEST_80286_DECODER_PATH;
+    lib_u8 opcode_seen[0x100] = { LIB_FALSE };
+    lib_u8 modrm_seen[0x100][0x100] = { { LIB_FALSE } };
+    lib_u8 escaped_modrm_seen[5][0x100] = { { LIB_FALSE } };
     const lib_u8 escaped_opcodes[5] = { 0x00u, 0x01u, 0x02u,
         0x03u, 0x06u };
     lib_u16 opcode;
@@ -137,7 +137,7 @@ C_INT main(C_VOID)
     if (fprintf(file,
             "\n  },\n  \"semantic_only_prefixes\": [\"F0\"]\n}\n") < 0 ||
         fclose(file) != 0) return 1;
-    STD_PRINTF("M5:T435:S7:I286-DECODER-LEXEME:%u:%u\n", accepted_pairs,
+    printf("M5:T435:S7:I286-DECODER-LEXEME:%u:%u\n", accepted_pairs,
         accepted_opcodes);
     return 0;
 }

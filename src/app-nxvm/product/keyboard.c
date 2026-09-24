@@ -1,15 +1,22 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/product/keyboard.h"
 #include "app-nxvm/machine/machine_interface.h"
 
-static C_VOID vm_app_keyboard_clear_result(common_session_command_result *result)
+static void vm_app_keyboard_clear_result(common_session_command_result *result)
 {
     if (result != LIB_NULL) *result = (common_session_command_result){0};
 }
 
-static C_VOID vm_app_keyboard_submit_chord(vm_machine *machine, C_INT cad)
+static lib_bool vm_app_keyboard_text_equal(const lib_u8 *left, const char *right)
+{
+    while (*left != '\0' && *right != '\0') {
+        if (*left++ != (lib_u8)*right++) return LIB_FALSE;
+    }
+    return *left == '\0' && *right == '\0';
+}
+
+static void vm_app_keyboard_submit_chord(vm_machine *machine, lib_i32 cad)
 {
     const lib_u16 scan[] = { cad ? 0x1du : 0x38u, 0x38u,
         cad ? 0x153u : 0u };
@@ -25,7 +32,7 @@ static C_VOID vm_app_keyboard_submit_chord(vm_machine *machine, C_INT cad)
         input.data.key_event.scan_code = scan[index];
         input.data.key_event.virtual_key = key[index];
         input.data.key_event.pressed = LIB_TRUE;
-        (C_VOID)vm_machine_submit_input(machine, &input);
+        (void)vm_machine_submit_input(machine, &input);
     }
     for (index = count; index-- != 0u;) {
         vm_machine_input input = {0};
@@ -33,41 +40,43 @@ static C_VOID vm_app_keyboard_submit_chord(vm_machine *machine, C_INT cad)
         input.data.key_event.scan_code = scan[index];
         input.data.key_event.virtual_key = key[index];
         input.data.key_event.pressed = LIB_FALSE;
-        (C_VOID)vm_machine_submit_input(machine, &input);
+        (void)vm_machine_submit_input(machine, &input);
     }
 }
 
-C_VOID vm_app_keyboard_register_hotkeys(kvm_hotkey_registry *registry)
+void vm_app_keyboard_register_hotkeys(kvm_hotkey_registry *registry)
 {
     if (registry == LIB_NULL) return;
     kvm_hotkey_registry_initialize(registry);
-    (C_VOID)kvm_hotkey_registry_register(registry, 'P',
+    (void)kvm_hotkey_registry_register(registry, 'P',
         KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "pause");
-    (C_VOID)kvm_hotkey_registry_register(registry, 'D',
+    (void)kvm_hotkey_registry_register(registry, 'D',
         KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "cad");
-    (C_VOID)kvm_hotkey_registry_register(registry, 'F',
+    (void)kvm_hotkey_registry_register(registry, 'F',
         KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "alt-enter");
-    (C_VOID)kvm_hotkey_registry_register(registry, 'M',
+    (void)kvm_hotkey_registry_register(registry, 'M',
         KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT, "release-mouse");
 }
 
 lib_bool vm_app_keyboard_handle_hotkey(vm_machine *machine,
-    common_session_machine_state state, const C_CHAR *identifier,
+    common_session_machine_state state, const lib_u8 *identifier,
     common_session_command_result *result)
 {
     vm_app_keyboard_clear_result(result);
     if (identifier == LIB_NULL || result == LIB_NULL) return LIB_FALSE;
-    if (!lib_c_strcmp(identifier, "pause")) {
+    if (vm_app_keyboard_text_equal(identifier, "pause")) {
         result->request = state == COMMON_SESSION_MACHINE_RUNNING ?
             COMMON_SESSION_REQUEST_PAUSE : COMMON_SESSION_REQUEST_RESUME;
         return LIB_TRUE;
     }
-    if (!lib_c_strcmp(identifier, "release-mouse")) {
+    if (vm_app_keyboard_text_equal(identifier, "release-mouse")) {
         result->release_window_mouse = LIB_TRUE;
         return LIB_TRUE;
     }
-    if (!lib_c_strcmp(identifier, "cad") || !lib_c_strcmp(identifier, "alt-enter")) {
-        vm_app_keyboard_submit_chord(machine, !lib_c_strcmp(identifier, "cad"));
+    if (vm_app_keyboard_text_equal(identifier, "cad") ||
+        vm_app_keyboard_text_equal(identifier, "alt-enter")) {
+        vm_app_keyboard_submit_chord(machine,
+            vm_app_keyboard_text_equal(identifier, "cad"));
         return LIB_TRUE;
     }
     return LIB_FALSE;

@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/dma.h"
@@ -19,32 +18,32 @@
 #define CORE_MACHINE_HDC_IBM_RESTORE_STEP_LIMIT 1023u
 #define CORE_MACHINE_XEBEC_MASK_DMA_ENABLE 0x01u
 #define CORE_MACHINE_XEBEC_MASK_IRQ_ENABLE 0x02u
-static C_INT core_machine_hdc_is_compaq_wd_40mb(const core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_is_compaq_wd_40mb(const core_machine_hdc *hdc)
 {
     return hdc != LIB_NULL && hdc->connect.config.protocol ==
         CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB;
 }
 
-static C_INT core_machine_hdc_is_ibm_wd1003(const core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_is_ibm_wd1003(const core_machine_hdc *hdc)
 {
     return hdc != LIB_NULL && hdc->connect.config.protocol ==
         CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506;
 }
 
-static C_INT core_machine_hdc_is_xebec_xt(const core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_is_xebec_xt(const core_machine_hdc *hdc)
 {
     return hdc != LIB_NULL && hdc->connect.config.protocol ==
         CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT;
 }
 
-static C_INT core_machine_hdc_task_file_is_writable(const core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_task_file_is_writable(const core_machine_hdc *hdc)
 {
     return hdc != LIB_NULL && (core_machine_hdc_is_compaq_wd_40mb(hdc) ||
         (hdc->data.status & (CORE_MACHINE_HDC_STATUS_BSY |
             CORE_MACHINE_HDC_STATUS_DRQ)) == 0u);
 }
 
-static C_INT core_machine_hdc_selected_master(const core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_selected_master(const core_machine_hdc *hdc)
 {
     return hdc != LIB_NULL && (hdc->data.drive_head & 0x10u) == 0u;
 }
@@ -59,7 +58,7 @@ static lib_u8 core_machine_hdc_current_head(const core_machine_hdc *hdc)
     return hdc->data.drive_head & 0x0fu;
 }
 
-static C_VOID core_machine_hdc_set_current_head(core_machine_hdc *hdc,
+static void core_machine_hdc_set_current_head(core_machine_hdc *hdc,
     lib_u8 head)
 {
     if (hdc == LIB_NULL) return;
@@ -73,14 +72,14 @@ static C_VOID core_machine_hdc_set_current_head(core_machine_hdc *hdc,
     hdc->data.drive_head = (lib_u8)((hdc->data.drive_head & 0xf0u) | head);
 }
 
-static C_INT core_machine_hdc_lba_mode(const core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_lba_mode(const core_machine_hdc *hdc)
 {
     return hdc != LIB_NULL && !core_machine_hdc_is_compaq_wd_40mb(hdc) &&
         hdc->connect.config.bus.task_file.lba28_supported &&
         (hdc->data.drive_head & 0x40u) != 0u;
 }
 
-static C_INT core_machine_hdc_command_is_read(const core_machine_hdc *hdc,
+static lib_i32 core_machine_hdc_command_is_read(const core_machine_hdc *hdc,
     lib_u8 command)
 {
     if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
@@ -92,7 +91,7 @@ static C_INT core_machine_hdc_command_is_read(const core_machine_hdc *hdc,
     return command == CORE_MACHINE_HDC_COMMAND_READ_SECTORS;
 }
 
-static C_INT core_machine_hdc_command_is_write(const core_machine_hdc *hdc,
+static lib_i32 core_machine_hdc_command_is_write(const core_machine_hdc *hdc,
     lib_u8 command)
 {
     if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
@@ -104,7 +103,7 @@ static C_INT core_machine_hdc_command_is_write(const core_machine_hdc *hdc,
     return command == CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS;
 }
 
-static C_VOID core_machine_hdc_select_ibm_step_rate(core_machine_hdc *hdc,
+static void core_machine_hdc_select_ibm_step_rate(core_machine_hdc *hdc,
     lib_u8 selector, lib_u16 pulse_limit)
 {
     lib_u32 ticks_per_second;
@@ -118,7 +117,7 @@ static C_VOID core_machine_hdc_select_ibm_step_rate(core_machine_hdc *hdc,
         (ticks_per_second / 2000u) * selector;
 }
 
-static C_VOID core_machine_hdc_sync_irq(core_machine_hdc *hdc)
+static void core_machine_hdc_sync_irq(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     if (hdc->data.irq_pending &&
@@ -129,14 +128,14 @@ static C_VOID core_machine_hdc_sync_irq(core_machine_hdc *hdc)
     }
 }
 
-static C_VOID core_machine_hdc_clear_irq(core_machine_hdc *hdc)
+static void core_machine_hdc_clear_irq(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     hdc->data.irq_pending = LIB_FALSE;
     core_machine_hdc_sync_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_raise_irq(core_machine_hdc *hdc)
+static void core_machine_hdc_raise_irq(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     hdc->data.irq_pending = LIB_TRUE;
@@ -157,17 +156,17 @@ static core_machine_media_id core_machine_hdc_selected_media_id(const core_machi
         hdc->connect.slave_media_id : hdc->connect.media_id;
 }
 
-static C_INT core_machine_hdc_media_info(const core_machine_hdc *hdc,
+static lib_i32 core_machine_hdc_media_info(const core_machine_hdc *hdc,
     core_machine_media_info *out_info, core_machine_media_result *out_result)
 {
     return hdc != LIB_NULL && hdc->connect.media_registry != LIB_NULL &&
         core_machine_hdc_selected_media_id(hdc) != CORE_MACHINE_MEDIA_ID_INVALID &&
         core_machine_media_query(hdc->connect.media_registry,
-            core_machine_hdc_selected_media_id(hdc), out_info, out_result) == TYPE_STATUS_OK &&
+            core_machine_hdc_selected_media_id(hdc), out_info, out_result) == LIB_STATUS_OK &&
         *out_result == CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static C_VOID core_machine_hdc_refresh_compaq_selection_status(core_machine_hdc *hdc)
+static void core_machine_hdc_refresh_compaq_selection_status(core_machine_hdc *hdc)
 {
     if (!core_machine_hdc_is_compaq_wd_40mb(hdc) ||
         hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE) return;
@@ -186,7 +185,7 @@ static lib_size core_machine_hdc_sector_capacity(
         (lib_size)info->geometry.logical_sector_count;
 }
 
-static C_VOID core_machine_hdc_complete(core_machine_hdc *hdc)
+static void core_machine_hdc_complete(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
@@ -196,7 +195,7 @@ static C_VOID core_machine_hdc_complete(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, lib_u8 error)
+static void core_machine_hdc_fail(core_machine_hdc *hdc, lib_u8 error)
 {
     if (hdc == LIB_NULL) return;
     hdc->data.error = error;
@@ -207,8 +206,8 @@ static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, lib_u8 error)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_INT core_machine_hdc_resolve_sector(core_machine_hdc *hdc,
-    type_bool write_to_media, lib_size *out_offset)
+static lib_i32 core_machine_hdc_resolve_sector(core_machine_hdc *hdc,
+    lib_u8 write_to_media, lib_size *out_offset)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
@@ -250,7 +249,7 @@ static C_INT core_machine_hdc_resolve_sector(core_machine_hdc *hdc,
     return 1;
 }
 
-static C_INT core_machine_hdc_load_sector(core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_load_sector(core_machine_hdc *hdc)
 {
     core_machine_media_result media_result;
     lib_size offset;
@@ -258,7 +257,7 @@ static C_INT core_machine_hdc_load_sector(core_machine_hdc *hdc)
     if (!core_machine_hdc_resolve_sector(hdc, LIB_FALSE, &offset)) return 0;
     if (core_machine_media_read_bytes(hdc->connect.media_registry,
         core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
-            &media_result) != TYPE_STATUS_OK ||
+            &media_result) != LIB_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
             CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
@@ -267,7 +266,7 @@ static C_INT core_machine_hdc_load_sector(core_machine_hdc *hdc)
     return 1;
 }
 
-static C_INT core_machine_hdc_store_sector(core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_store_sector(core_machine_hdc *hdc)
 {
     core_machine_media_result media_result;
     lib_size offset;
@@ -275,7 +274,7 @@ static C_INT core_machine_hdc_store_sector(core_machine_hdc *hdc)
     if (!core_machine_hdc_resolve_sector(hdc, LIB_TRUE, &offset)) return 0;
     if (core_machine_media_write_bytes(hdc->connect.media_registry,
             core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
-            &media_result) != TYPE_STATUS_OK ||
+            &media_result) != LIB_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
             CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
@@ -284,7 +283,7 @@ static C_INT core_machine_hdc_store_sector(core_machine_hdc *hdc)
     return 1;
 }
 
-static C_VOID core_machine_hdc_identify(core_machine_hdc *hdc)
+static void core_machine_hdc_identify(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
@@ -319,7 +318,7 @@ static C_VOID core_machine_hdc_identify(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_INT core_machine_hdc_advance_chs(core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_advance_chs(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
@@ -355,7 +354,7 @@ static C_INT core_machine_hdc_advance_chs(core_machine_hdc *hdc)
     return 1;
 }
 
-static C_INT core_machine_hdc_advance_lba(core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_advance_lba(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
@@ -379,20 +378,20 @@ static C_INT core_machine_hdc_advance_lba(core_machine_hdc *hdc)
     return 1;
 }
 
-static C_INT core_machine_hdc_advance_sector(core_machine_hdc *hdc)
+static lib_i32 core_machine_hdc_advance_sector(core_machine_hdc *hdc)
 {
     return core_machine_hdc_lba_mode(hdc) ? core_machine_hdc_advance_lba(hdc) :
         core_machine_hdc_advance_chs(hdc);
 }
 
-static C_VOID core_machine_hdc_complete_data_sector(core_machine_hdc *hdc)
+static void core_machine_hdc_complete_data_sector(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL || hdc->data.sectors_remaining == 0u) return;
     --hdc->data.sectors_remaining;
     --hdc->data.sector_count;
 }
 
-static C_VOID core_machine_hdc_next_read_sector(core_machine_hdc *hdc)
+static void core_machine_hdc_next_read_sector(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     core_machine_hdc_complete_data_sector(hdc);
@@ -410,7 +409,7 @@ static C_VOID core_machine_hdc_next_read_sector(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
+static void core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     if (!core_machine_hdc_store_sector(hdc)) return;
@@ -428,7 +427,7 @@ static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_schedule_service(core_machine_hdc *hdc,
+static void core_machine_hdc_schedule_service(core_machine_hdc *hdc,
     lib_u32 service_ticks)
 {
     if (hdc == LIB_NULL) return;
@@ -436,7 +435,7 @@ static C_VOID core_machine_hdc_schedule_service(core_machine_hdc *hdc,
         hdc->data.elapsed_ticks + service_ticks;
 }
 
-static C_VOID core_machine_hdc_capture_command(core_machine_hdc *hdc,
+static void core_machine_hdc_capture_command(core_machine_hdc *hdc,
     lib_u8 command)
 {
     if (hdc == LIB_NULL || hdc->data.reset_asserted ||
@@ -455,7 +454,7 @@ static C_VOID core_machine_hdc_capture_command(core_machine_hdc *hdc,
     core_machine_hdc_schedule_service(hdc, hdc->connect.config.service.command_ticks);
 }
 
-static C_VOID core_machine_hdc_begin_read(core_machine_hdc *hdc)
+static void core_machine_hdc_begin_read(core_machine_hdc *hdc)
 {
     if (!core_machine_hdc_load_sector(hdc)) return;
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_READ;
@@ -467,7 +466,7 @@ static C_VOID core_machine_hdc_begin_read(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_begin_write(core_machine_hdc *hdc)
+static void core_machine_hdc_begin_write(core_machine_hdc *hdc)
 {
     lib_size offset;
 
@@ -481,7 +480,7 @@ static C_VOID core_machine_hdc_begin_write(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, lib_u8 command)
+static void core_machine_hdc_execute_command(core_machine_hdc *hdc, lib_u8 command)
 {
     lib_u16 cylinder;
 
@@ -554,7 +553,7 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, lib_u8 com
     }
 }
 
-static C_VOID core_machine_xebec_reset(core_machine_hdc *hdc)
+static void core_machine_xebec_reset(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     if (hdc->connect.dma_request_deassert != LIB_NULL) {
@@ -566,7 +565,7 @@ static C_VOID core_machine_xebec_reset(core_machine_hdc *hdc)
     core_machine_hdc_clear_irq(hdc);
 }
 
-static C_VOID core_machine_xebec_response(core_machine_hdc *hdc,
+static void core_machine_xebec_response(core_machine_hdc *hdc,
     lib_u8 status, const lib_u8 *sense)
 {
     lib_u8 drive;
@@ -585,7 +584,7 @@ static C_VOID core_machine_xebec_response(core_machine_hdc *hdc,
     }
 }
 
-static C_VOID core_machine_xebec_request_dma(core_machine_hdc *hdc)
+static void core_machine_xebec_request_dma(core_machine_hdc *hdc)
 {
     if (hdc != LIB_NULL && hdc->connect.dma_request_assert != LIB_NULL) {
         hdc->connect.dma_request_assert(hdc->connect.dma_request_owner,
@@ -593,7 +592,7 @@ static C_VOID core_machine_xebec_request_dma(core_machine_hdc *hdc)
     }
 }
 
-static C_VOID core_machine_xebec_release_dma(core_machine_hdc *hdc)
+static void core_machine_xebec_release_dma(core_machine_hdc *hdc)
 {
     if (hdc != LIB_NULL && hdc->connect.dma_request_deassert != LIB_NULL) {
         hdc->connect.dma_request_deassert(hdc->connect.dma_request_owner,
@@ -601,7 +600,7 @@ static C_VOID core_machine_xebec_release_dma(core_machine_hdc *hdc)
     }
 }
 
-static C_VOID core_machine_xebec_sync_dma_request(core_machine_hdc *hdc)
+static void core_machine_xebec_sync_dma_request(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     if ((hdc->xebec.mask_pattern & CORE_MACHINE_XEBEC_MASK_DMA_ENABLE) != 0u &&
@@ -613,7 +612,7 @@ static C_VOID core_machine_xebec_sync_dma_request(core_machine_hdc *hdc)
     }
 }
 
-static C_INT core_machine_xebec_media_info(const core_machine_hdc *hdc,
+static lib_i32 core_machine_xebec_media_info(const core_machine_hdc *hdc,
     core_machine_media_info *out_info, core_machine_media_result *out_result)
 {
     core_machine_media_id media_id;
@@ -625,7 +624,7 @@ static C_INT core_machine_xebec_media_info(const core_machine_hdc *hdc,
     media_id = hdc->connect.media_id;
     if (media_id == CORE_MACHINE_MEDIA_ID_INVALID ||
         core_machine_media_query(hdc->connect.media_registry, media_id, out_info,
-            out_result) != TYPE_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK ||
+            out_result) != LIB_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !out_info->present || (out_info->capabilities &
             CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN) == 0u) return 0;
     expected = &hdc->connect.config.bus.xebec.expected_media_geometry;
@@ -636,7 +635,7 @@ static C_INT core_machine_xebec_media_info(const core_machine_hdc *hdc,
         out_info->geometry.sectors_per_track == expected->sectors_per_track;
 }
 
-static C_INT core_machine_xebec_sector(const core_machine_hdc *hdc,
+static lib_i32 core_machine_xebec_sector(const core_machine_hdc *hdc,
     lib_u64 *out_sector)
 {
     const core_machine_media_geometry *geometry;
@@ -657,13 +656,13 @@ static C_INT core_machine_xebec_sector(const core_machine_hdc *hdc,
     return 1;
 }
 
-static C_INT core_machine_xebec_transfer_sector(core_machine_hdc *hdc,
-    type_bool write_to_media)
+static lib_i32 core_machine_xebec_transfer_sector(core_machine_hdc *hdc,
+    lib_u8 write_to_media)
 {
     core_machine_media_info info;
     core_machine_media_result result;
     lib_u64 sector;
-    type_status status;
+    lib_status status;
 
     if (!core_machine_xebec_media_info(hdc, &info, &result) ||
         !core_machine_xebec_sector(hdc, &sector) ||
@@ -677,11 +676,11 @@ static C_INT core_machine_xebec_transfer_sector(core_machine_hdc *hdc,
         status = core_machine_media_read_sectors(hdc->connect.media_registry,
             hdc->connect.media_id, sector, 1u, hdc->data.data, &result);
     }
-    return status == TYPE_STATUS_OK && result == CORE_MACHINE_MEDIA_RESULT_OK;
+    return status == LIB_STATUS_OK && result == CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static C_INT core_machine_xebec_can_transfer(const core_machine_hdc *hdc,
-    type_bool write_to_media)
+static lib_i32 core_machine_xebec_can_transfer(const core_machine_hdc *hdc,
+    lib_u8 write_to_media)
 {
     core_machine_media_info info;
     core_machine_media_result result;
@@ -693,7 +692,7 @@ static C_INT core_machine_xebec_can_transfer(const core_machine_hdc *hdc,
             (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) == 0u);
 }
 
-static C_INT core_machine_xebec_next_sector(core_machine_hdc *hdc)
+static lib_i32 core_machine_xebec_next_sector(core_machine_hdc *hdc)
 {
     const core_machine_media_geometry *geometry;
     lib_u16 cylinder;
@@ -721,7 +720,7 @@ static C_INT core_machine_xebec_next_sector(core_machine_hdc *hdc)
     return 1;
 }
 
-static C_VOID core_machine_xebec_start_transfer(core_machine_hdc *hdc)
+static void core_machine_xebec_start_transfer(core_machine_hdc *hdc)
 {
     lib_u8 sense[4] = {0x04u, 0u, 0u, 0u};
 
@@ -750,14 +749,14 @@ static C_VOID core_machine_xebec_start_transfer(core_machine_hdc *hdc)
     core_machine_xebec_sync_dma_request(hdc);
 }
 
-static C_INT core_machine_xebec_command_is_defined(lib_u8 command)
+static lib_i32 core_machine_xebec_command_is_defined(lib_u8 command)
 {
     return (command <= 0x01u || (command >= 0x03u && command <= 0x08u) ||
         (command >= 0x0au && command <= 0x0fu) || command == 0xe0u ||
         (command >= 0xe3u && command <= 0xe6u));
 }
 
-static C_VOID core_machine_xebec_complete_dcb(core_machine_hdc *hdc)
+static void core_machine_xebec_complete_dcb(core_machine_hdc *hdc)
 {
     lib_u8 sense[4] = {0u, 0u, 0u, 0u};
 
@@ -789,20 +788,20 @@ static C_VOID core_machine_xebec_complete_dcb(core_machine_hdc *hdc)
     core_machine_xebec_response(hdc, 0x02u, sense);
 }
 
-static C_VOID core_machine_xebec_schedule_dcb_completion(core_machine_hdc *hdc)
+static void core_machine_xebec_schedule_dcb_completion(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_PENDING_COMMAND;
     core_machine_hdc_schedule_service(hdc, hdc->connect.config.service.command_ticks);
 }
 
-static type_status core_machine_xebec_port_read(core_machine_hdc *hdc,
+static lib_status core_machine_xebec_port_read(core_machine_hdc *hdc,
     lib_u16 port, lib_u32 *out_value)
 {
-    if (hdc == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (hdc == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == hdc->connect.config.bus.xebec.data_port) {
         if (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
-            hdc->xebec.response_index >= hdc->xebec.response_count) return TYPE_STATUS_OK;
+            hdc->xebec.response_index >= hdc->xebec.response_count) return LIB_STATUS_OK;
         *out_value = hdc->xebec.response[hdc->xebec.response_index++];
         core_machine_hdc_clear_irq(hdc);
         if (hdc->xebec.response_index == hdc->xebec.response_count) {
@@ -811,33 +810,33 @@ static type_status core_machine_xebec_port_read(core_machine_hdc *hdc,
             hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_IDLE;
             hdc->xebec.dcb_count = 0u;
         }
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
-    return TYPE_STATUS_UNSUPPORTED;
+    return LIB_STATUS_UNSUPPORTED;
 }
 
-static type_status core_machine_xebec_port_write(core_machine_hdc *hdc,
+static lib_status core_machine_xebec_port_write(core_machine_hdc *hdc,
     lib_u16 port, lib_u32 value)
 {
-    if (hdc == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (hdc == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (port == hdc->connect.config.bus.xebec.hardware_status_reset_port) {
         core_machine_xebec_reset(hdc);
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     if (port == hdc->connect.config.bus.xebec.dma_irq_mask_port) {
         hdc->xebec.mask_pattern = (lib_u8)value;
         core_machine_xebec_sync_dma_request(hdc);
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     if (port == hdc->connect.config.bus.xebec.jumpers_select_port) {
         hdc->xebec.dcb_count = 0u;
         hdc->xebec.initialize_count = 0u;
         hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_DCB;
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     if (port != hdc->connect.config.bus.xebec.data_port ||
         hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_IDLE ||
-        hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_RESPONSE) return TYPE_STATUS_OK;
+        hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_RESPONSE) return LIB_STATUS_OK;
     if (hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_DCB) {
         hdc->xebec.dcb[hdc->xebec.dcb_count++] = (lib_u8)value;
         if (hdc->xebec.dcb_count == sizeof(hdc->xebec.dcb)) {
@@ -849,22 +848,22 @@ static type_status core_machine_xebec_port_write(core_machine_hdc *hdc,
         if (hdc->xebec.initialize_count == sizeof(hdc->xebec.initialize))
             core_machine_xebec_schedule_dcb_completion(hdc);
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_hdc_port_read(C_VOID *opaque, lib_u16 port,
+static lib_status core_machine_hdc_port_read(void *opaque, lib_u16 port,
     lib_u32 *out_value)
 {
     core_machine_hdc *hdc = (core_machine_hdc *)opaque;
     lib_u16 word;
 
-    if (hdc == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (hdc == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = 0u;
     if (core_machine_hdc_is_xebec_xt(hdc)) return core_machine_xebec_port_read(hdc, port, out_value);
     if (port == hdc->connect.config.bus.task_file.data_port) {
         if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
             hdc->data.data_index >= sizeof(hdc->data.data)) {
-            return TYPE_STATUS_OK;
+            return LIB_STATUS_OK;
         }
         lib_memory_copy(&word, &hdc->data.data[hdc->data.data_index], sizeof(word));
         *out_value = word;
@@ -875,7 +874,7 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, lib_u16 port,
             core_machine_hdc_schedule_service(hdc,
                 hdc->connect.config.service.next_sector_ticks);
         }
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     if (port == hdc->connect.config.bus.task_file.error_features_port) {
         *out_value = hdc->data.error;
@@ -893,29 +892,29 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, lib_u16 port,
         *out_value = hdc->data.status;
         core_machine_hdc_clear_irq(hdc);
     } else if (port == hdc->connect.config.bus.task_file.alternate_status_device_control_port) {
-        if (core_machine_hdc_is_ibm_wd1003(hdc)) return TYPE_STATUS_UNSUPPORTED;
+        if (core_machine_hdc_is_ibm_wd1003(hdc)) return LIB_STATUS_UNSUPPORTED;
         *out_value = hdc->data.status;
     } else if (port == hdc->connect.config.bus.task_file.drive_address_port &&
         core_machine_hdc_is_compaq_wd_40mb(hdc)) {
         *out_value = hdc->data.drive_head & 0x1fu;
     } else {
-        return TYPE_STATUS_UNSUPPORTED;
+        return LIB_STATUS_UNSUPPORTED;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status core_machine_hdc_port_write(C_VOID *opaque, lib_u16 port,
+static lib_status core_machine_hdc_port_write(void *opaque, lib_u16 port,
     lib_u32 value)
 {
     core_machine_hdc *hdc = (core_machine_hdc *)opaque;
 
-    if (hdc == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (hdc == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (core_machine_hdc_is_xebec_xt(hdc)) return core_machine_xebec_port_write(hdc, port, value);
     if (port == hdc->connect.config.bus.task_file.data_port) {
         lib_u16 word = (lib_u16)value;
         if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
             hdc->data.data_index >= sizeof(hdc->data.data)) {
-            return TYPE_STATUS_OK;
+            return LIB_STATUS_OK;
         }
         lib_memory_copy(&hdc->data.data[hdc->data.data_index], &word, sizeof(word));
         hdc->data.data_index = (lib_u16)(hdc->data.data_index + sizeof(word));
@@ -925,7 +924,7 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, lib_u16 port,
             core_machine_hdc_schedule_service(hdc,
                 hdc->connect.config.service.next_sector_ticks);
         }
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     if (!core_machine_hdc_task_file_is_writable(hdc) &&
         (port == hdc->connect.config.bus.task_file.error_features_port ||
@@ -933,7 +932,7 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, lib_u16 port,
             port == hdc->connect.config.bus.task_file.sector_number_port ||
             port == hdc->connect.config.bus.task_file.cylinder_low_port ||
             port == hdc->connect.config.bus.task_file.cylinder_high_port ||
-            port == hdc->connect.config.bus.task_file.drive_head_port)) return TYPE_STATUS_OK;
+            port == hdc->connect.config.bus.task_file.drive_head_port)) return LIB_STATUS_OK;
     if (port == hdc->connect.config.bus.task_file.error_features_port) {
         hdc->data.features = (lib_u8)value;
     } else if (port == hdc->connect.config.bus.task_file.sector_count_port) {
@@ -954,7 +953,7 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, lib_u16 port,
         hdc->data.fixed_disk_register = (lib_u8)value & 0x08u;
     } else if (port == hdc->connect.config.bus.task_file.alternate_status_device_control_port) {
         lib_u8 device_control = (lib_u8)value;
-        type_bool reset_asserted = (device_control &
+        lib_u8 reset_asserted = (device_control &
             CORE_MACHINE_HDC_DEVICE_CONTROL_SRST) != 0u;
 
         hdc->data.device_control = device_control;
@@ -972,9 +971,9 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, lib_u16 port,
             hdc->data.device_control = device_control;
         }
     } else {
-        return TYPE_STATUS_UNSUPPORTED;
+        return LIB_STATUS_UNSUPPORTED;
     }
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 static const core_machine_port_provider core_machine_hdc_ports = {
@@ -982,7 +981,7 @@ static const core_machine_port_provider core_machine_hdc_ports = {
     core_machine_hdc_port_write
 };
 
-static C_VOID core_machine_xebec_dma_read(C_VOID *owner, t_latch *latch)
+static void core_machine_xebec_dma_read(void *owner, t_latch *latch)
 {
     core_machine_hdc *hdc = owner;
     lib_u8 sense[4] = {0x04u, 0u, 0u, 0u};
@@ -1006,7 +1005,7 @@ static C_VOID core_machine_xebec_dma_read(C_VOID *owner, t_latch *latch)
     }
 }
 
-static C_VOID core_machine_xebec_dma_write(C_VOID *owner, t_latch *latch)
+static void core_machine_xebec_dma_write(void *owner, t_latch *latch)
 {
     core_machine_hdc *hdc = owner;
     lib_u8 sense[4] = {0x04u, 0u, 0u, 0u};
@@ -1039,12 +1038,12 @@ static C_VOID core_machine_xebec_dma_write(C_VOID *owner, t_latch *latch)
     hdc->xebec.byte_index = 0u;
 }
 
-static C_VOID core_machine_xebec_dma_terminal(C_VOID *owner, t_latch *latch)
+static void core_machine_xebec_dma_terminal(void *owner, t_latch *latch)
 {
     core_machine_hdc *hdc = owner;
     lib_u8 sense[4] = {0x04u, 0u, 0u, 0u};
 
-    (C_VOID)latch;
+    (void)latch;
     if (hdc == LIB_NULL || (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ &&
         hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_WRITE)) return;
     sense[1] = hdc->xebec.dcb[1] & 0x20u;
@@ -1059,7 +1058,7 @@ static const core_machine_dma_channel_provider core_machine_hdc_dma_channel = {
     core_machine_xebec_dma_terminal
 };
 
-C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
+void core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
     t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config)
@@ -1073,12 +1072,12 @@ C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
     hdc->connect.config = *config;
 }
 
-C_VOID core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
+void core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
     const core_machine_dma_request_binding *binding,
-    C_VOID (*request_assert)(C_VOID *owner,
+    void (*request_assert)(void *owner,
         const core_machine_dma_request_binding *binding),
-    C_VOID (*request_deassert)(C_VOID *owner,
-        const core_machine_dma_request_binding *binding), C_VOID *owner)
+    void (*request_deassert)(void *owner,
+        const core_machine_dma_request_binding *binding), void *owner)
 {
     if (hdc == LIB_NULL || binding == LIB_NULL || request_assert == LIB_NULL ||
         request_deassert == LIB_NULL || owner == LIB_NULL) return;
@@ -1088,7 +1087,7 @@ C_VOID core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
     hdc->connect.dma_request_owner = owner;
 }
 
-C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc)
+void core_machine_hdc_initialize(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     lib_memory_set(&hdc->data, 0, sizeof(hdc->data));
@@ -1098,7 +1097,7 @@ C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc)
     core_machine_hdc_reset(hdc);
 }
 
-C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
+void core_machine_hdc_reset(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     lib_memory_set(&hdc->data, 0, sizeof(hdc->data));
@@ -1110,7 +1109,7 @@ C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
     hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
 }
 
-C_VOID core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
+void core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
     lib_u64 elapsed_ticks)
 {
     if (hdc == LIB_NULL || elapsed_ticks == 0u || UINT64_MAX -
@@ -1137,7 +1136,7 @@ C_VOID core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
     }
 }
 
-C_VOID core_machine_hdc_advance(core_machine_hdc *hdc)
+void core_machine_hdc_advance(core_machine_hdc *hdc)
 {
     lib_u64 ticks = 1u;
 
@@ -1148,22 +1147,22 @@ C_VOID core_machine_hdc_advance(core_machine_hdc *hdc)
     core_machine_hdc_advance_elapsed(hdc, ticks);
 }
 
-type_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
+lib_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
     lib_u64 *out_due_tick)
 {
     if (hdc == LIB_NULL || out_due_tick == LIB_NULL ||
-        hdc->data.next_service_tick == 0u) return TYPE_STATUS_INVALID_STATE;
+        hdc->data.next_service_tick == 0u) return LIB_STATUS_INVALID_STATE;
     if (core_machine_hdc_is_xebec_xt(hdc)) {
         if (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_PENDING_COMMAND)
-            return TYPE_STATUS_INVALID_STATE;
+            return LIB_STATUS_INVALID_STATE;
     } else if (hdc->data.phase == CORE_MACHINE_HDC_PHASE_IDLE) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     *out_due_tick = hdc->data.next_service_tick;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc)
+void core_machine_hdc_finalize(core_machine_hdc *hdc)
 {
     if (hdc == LIB_NULL) return;
     core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
@@ -1172,17 +1171,17 @@ C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc)
     lib_memory_set(&hdc->connect, 0, sizeof(hdc->connect));
 }
 
-const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID)
+const core_machine_port_provider *core_machine_hdc_port_provider(void)
 {
     return &core_machine_hdc_ports;
 }
 
-const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(C_VOID)
+const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(void)
 {
     return &core_machine_hdc_dma_channel;
 }
 
-type_bool core_machine_hdc_irq_pending(const core_machine_hdc *hdc)
+lib_u8 core_machine_hdc_irq_pending(const core_machine_hdc *hdc)
 {
     return hdc != LIB_NULL && hdc->data.irq_pending &&
         (hdc->data.device_control & CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) == 0u;

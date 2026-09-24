@@ -2,12 +2,14 @@
 
 /* VFDD implements profile-configured floppy media. */
 #include "lib/types/types_interface.h"
-
-#include "type.h"
-
 #include "app-nxvm/machine/media/fdd_private.h"
 
-static core_machine_media_result vm_machine_fdd_media_query(C_VOID *context,
+static lib_u8 *vm_machine_fdd_address_marks(const t_fdd *fdd)
+{
+    return (lib_u8 *)lib_uptr_to_pointer(fdd->connect.pAddressMarks);
+}
+
+static core_machine_media_result vm_machine_fdd_media_query(void *context,
     core_machine_media_info *out_info)
 {
     const t_fdd *fdd = (const t_fdd *)context;
@@ -32,8 +34,8 @@ static core_machine_media_result vm_machine_fdd_media_query(C_VOID *context,
         CORE_MACHINE_MEDIA_RESULT_ABSENT;
 }
 
-static core_machine_media_result vm_machine_fdd_media_read(C_VOID *context,
-    lib_u64 offset, C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result vm_machine_fdd_media_read(void *context,
+    lib_u64 offset, void *buffer, lib_u32 byte_count)
 {
     const t_fdd *fdd = (const t_fdd *)context;
     lib_size image_size;
@@ -50,8 +52,8 @@ static core_machine_media_result vm_machine_fdd_media_read(C_VOID *context,
         CORE_MACHINE_MEDIA_RESULT_PERMANENT;
 }
 
-static core_machine_media_result vm_machine_fdd_media_write(C_VOID *context,
-    lib_u64 offset, const C_VOID *buffer, lib_u32 byte_count)
+static core_machine_media_result vm_machine_fdd_media_write(void *context,
+    lib_u64 offset, const void *buffer, lib_u32 byte_count)
 {
     t_fdd *fdd = (t_fdd *)context;
     lib_size image_size;
@@ -69,7 +71,7 @@ static core_machine_media_result vm_machine_fdd_media_write(C_VOID *context,
         CORE_MACHINE_MEDIA_RESULT_PERMANENT;
 }
 
-static core_machine_media_result vm_machine_fdd_media_format(C_VOID *context,
+static core_machine_media_result vm_machine_fdd_media_format(void *context,
     lib_u64 logical_sector, lib_u32 sector_count, lib_u8 fill)
 {
     t_fdd *fdd = (t_fdd *)context;
@@ -92,7 +94,7 @@ static core_machine_media_result vm_machine_fdd_media_format(C_VOID *context,
 }
 
 static core_machine_media_result vm_machine_fdd_media_get_address_mark(
-    C_VOID *context, lib_u64 logical_sector,
+    void *context, lib_u64 logical_sector,
     core_machine_media_address_mark *out_mark)
 {
     const t_fdd *fdd = (const t_fdd *)context;
@@ -100,17 +102,17 @@ static core_machine_media_result vm_machine_fdd_media_get_address_mark(
 
     if (fdd == LIB_NULL || !fdd->connect.flagDiskExist)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
-    if (out_mark == LIB_NULL || fdd->connect.pAddressMarks == (type_virtual_address)LIB_NULL)
+    if (out_mark == LIB_NULL || fdd->connect.pAddressMarks == (lib_uptr)LIB_NULL)
         return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     sector_total = (lib_u64)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
     if (logical_sector >= sector_total) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    *out_mark = TYPE_DEREFERENCE_UNSIGNED_8(fdd->connect.pAddressMarks + (lib_size)logical_sector) ?
+    *out_mark = vm_machine_fdd_address_marks(fdd)[logical_sector] ?
         CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA : CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result vm_machine_fdd_media_set_address_mark(
-    C_VOID *context, lib_u64 logical_sector,
+    void *context, lib_u64 logical_sector,
     core_machine_media_address_mark mark)
 {
     t_fdd *fdd = (t_fdd *)context;
@@ -119,18 +121,18 @@ static core_machine_media_result vm_machine_fdd_media_set_address_mark(
     if (fdd == LIB_NULL || !fdd->connect.flagDiskExist)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (fdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
-    if (fdd->connect.pAddressMarks == (type_virtual_address)LIB_NULL)
+    if (fdd->connect.pAddressMarks == (lib_uptr)LIB_NULL)
         return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     sector_total = (lib_u64)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
     if (logical_sector >= sector_total || (mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA &&
         mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA))
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    TYPE_DEREFERENCE_UNSIGNED_8(fdd->connect.pAddressMarks + (lib_size)logical_sector) =
+    vm_machine_fdd_address_marks(fdd)[logical_sector] =
         mark == CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID)
+const core_machine_media_provider *vm_machine_fdd_media_provider(void)
 {
     static const core_machine_media_provider provider = {
         vm_machine_fdd_media_query,
@@ -144,7 +146,7 @@ const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID)
     return &provider;
 }
 
-static C_INT vm_machine_fdd_geometry_is_valid(
+static lib_i32 vm_machine_fdd_geometry_is_valid(
     const core_machine_media_geometry *geometry)
 {
     lib_size sector_count;
@@ -164,7 +166,7 @@ static C_INT vm_machine_fdd_geometry_is_valid(
         geometry->bytes_per_sector <= (lib_size)-1 / sector_count;
 }
 
-static C_VOID vm_machine_fdd_apply_geometry(t_fdd *fdd)
+static void vm_machine_fdd_apply_geometry(t_fdd *fdd)
 {
     fdd->data.ncyl = fdd->geometry.cylinders;
     fdd->data.nhead = fdd->geometry.heads;
@@ -177,16 +179,16 @@ lib_size vm_machine_fdd_image_size(const t_fdd *fdd)
         fdd->data.ncyl;
 }
 
-C_INT vm_machine_fdd_has_media(const t_fdd *fdd)
+lib_i32 vm_machine_fdd_has_media(const t_fdd *fdd)
 {
     return fdd != LIB_NULL && fdd->connect.flagDiskExist;
 }
 
-static C_VOID vm_machine_fdd_install_medium(t_fdd *fdd,
-    lib_storage_medium *candidate, type_virtual_address marks)
+static void vm_machine_fdd_install_medium(t_fdd *fdd,
+    lib_storage_medium *candidate, lib_uptr marks)
 {
     lib_storage_medium *old_medium = LIB_NULL;
-    type_virtual_address old_marks = fdd->connect.pAddressMarks;
+    lib_uptr old_marks = fdd->connect.pAddressMarks;
 
     if (lib_storage_medium_replace(&fdd->connect.medium, candidate, &old_medium) !=
         LIB_STATUS_OK) return;
@@ -194,25 +196,25 @@ static C_VOID vm_machine_fdd_install_medium(t_fdd *fdd,
     fdd->connect.flagDiskExist = LIB_TRUE;
     ++fdd->connect.media_generation;
     lib_storage_medium_destroy(&old_medium);
-    if (old_marks != (type_virtual_address)LIB_NULL) {
-        lib_release((C_VOID *)old_marks);
+    if (old_marks != (lib_uptr)LIB_NULL) {
+        lib_release((void *)old_marks);
     }
 }
 
-C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
+lib_i32 vm_machine_fdd_replace_bytes(t_fdd *fdd, const void *bytes,
     lib_size byte_count)
 {
     lib_size image_size;
     lib_storage_medium *candidate = LIB_NULL;
-    type_virtual_address marks = (type_virtual_address)LIB_NULL;
+    lib_uptr marks = (lib_uptr)LIB_NULL;
 
     if (fdd == LIB_NULL || bytes == LIB_NULL ||
         byte_count != (image_size = vm_machine_fdd_image_size(fdd)) ||
         lib_storage_medium_create_overlay(bytes, image_size, &candidate) !=
-            TYPE_STATUS_OK ||
-        (marks = (type_virtual_address)lib_allocate_zero((lib_size)fdd->data.ncyl *
+            LIB_STATUS_OK ||
+        (marks = (lib_uptr)lib_allocate_zero((lib_size)fdd->data.ncyl *
             fdd->data.nhead * fdd->data.nsector, sizeof(lib_u8))) ==
-            (type_virtual_address)LIB_NULL) {
+            (lib_uptr)LIB_NULL) {
         lib_storage_medium_destroy(&candidate);
         return LIB_TRUE;
     }
@@ -228,7 +230,7 @@ static lib_size vm_machine_fdd_byte_offset(const t_fdd *fdd,
         fdd->data.nsector + (sector - 1u)) * fdd->data.nbyte) + offset;
 }
 
-C_INT vm_machine_fdd_chs_valid(const t_fdd *fdd, lib_u16 cylinder,
+lib_i32 vm_machine_fdd_chs_valid(const t_fdd *fdd, lib_u16 cylinder,
     lib_u16 head, lib_u16 sector, lib_u16 bytes)
 {
     return fdd != LIB_NULL && fdd->connect.flagDiskExist &&
@@ -237,7 +239,7 @@ C_INT vm_machine_fdd_chs_valid(const t_fdd *fdd, lib_u16 cylinder,
         sector <= fdd->data.nsector && bytes == fdd->data.nbyte;
 }
 
-C_INT vm_machine_fdd_read_byte(const t_fdd *fdd, lib_u16 cylinder,
+lib_i32 vm_machine_fdd_read_byte(const t_fdd *fdd, lib_u16 cylinder,
     lib_u16 head, lib_u16 sector, lib_u16 offset,
     lib_u8 *out_byte)
 {
@@ -249,7 +251,7 @@ C_INT vm_machine_fdd_read_byte(const t_fdd *fdd, lib_u16 cylinder,
         1u) == LIB_STATUS_OK ? LIB_FALSE : LIB_TRUE;
 }
 
-C_INT vm_machine_fdd_write_byte(t_fdd *fdd, lib_u16 cylinder,
+lib_i32 vm_machine_fdd_write_byte(t_fdd *fdd, lib_u16 cylinder,
     lib_u16 head, lib_u16 sector, lib_u16 offset,
     lib_u8 value)
 {
@@ -262,7 +264,7 @@ C_INT vm_machine_fdd_write_byte(t_fdd *fdd, lib_u16 cylinder,
         1u) == LIB_STATUS_OK ? LIB_FALSE : LIB_TRUE;
 }
 
-C_INT vm_machine_fdd_format_sector(t_fdd *fdd, lib_u16 cylinder,
+lib_i32 vm_machine_fdd_format_sector(t_fdd *fdd, lib_u16 cylinder,
     lib_u16 head, lib_u16 sector, lib_u8 fill_byte)
 {
     if (fdd == LIB_NULL || fdd->connect.flagReadOnly || !vm_machine_fdd_chs_valid(
@@ -274,7 +276,7 @@ C_INT vm_machine_fdd_format_sector(t_fdd *fdd, lib_u16 cylinder,
     return LIB_FALSE;
 }
 
-C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
+lib_i32 vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
     const core_machine_media_geometry *geometry)
 {
     lib_size sector_count;
@@ -282,64 +284,64 @@ C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
     if (fdd == LIB_NULL || !vm_machine_fdd_geometry_is_valid(geometry)) {
         return LIB_TRUE;
     }
-    lib_memory_set((C_VOID *)fdd, TYPE_ZERO_8, sizeof(*fdd));
+    lib_memory_set((void *)fdd, 0u, sizeof(*fdd));
     fdd->geometry = *geometry;
     vm_machine_fdd_reset(fdd);
     sector_count = (lib_size)fdd->data.ncyl * fdd->data.nhead *
         fdd->data.nsector;
     if (lib_storage_medium_create_zero_overlay(vm_machine_fdd_image_size(fdd),
-            &fdd->connect.medium) != TYPE_STATUS_OK) {
+            &fdd->connect.medium) != LIB_STATUS_OK) {
         fdd->connect.medium = LIB_NULL;
     }
-    fdd->connect.pAddressMarks = (type_virtual_address)lib_allocate_zero(sector_count,
+    fdd->connect.pAddressMarks = (lib_uptr)lib_allocate_zero(sector_count,
         sizeof(lib_u8));
     if (fdd->connect.medium == LIB_NULL || fdd->connect.pAddressMarks ==
-        (type_virtual_address)LIB_NULL) {
+        (lib_uptr)LIB_NULL) {
         vm_machine_fdd_finalize(fdd);
         return LIB_TRUE;
     }
     return LIB_FALSE;
 }
 
-C_VOID vm_machine_fdd_reset(t_fdd *fdd)
+void vm_machine_fdd_reset(t_fdd *fdd)
 {
     if (fdd == LIB_NULL) return;
-    lib_memory_set((C_VOID *)&fdd->data, TYPE_ZERO_8, sizeof(fdd->data));
+    lib_memory_set((void *)&fdd->data, 0u, sizeof(fdd->data));
     vm_machine_fdd_apply_geometry(fdd);
 }
 
 
-C_VOID vm_machine_fdd_finalize(t_fdd *fdd)
+void vm_machine_fdd_finalize(t_fdd *fdd)
 {
     if (fdd != LIB_NULL) lib_storage_medium_destroy(&fdd->connect.medium);
     if (fdd != LIB_NULL && fdd->connect.pAddressMarks)
-        lib_release((C_VOID *)fdd->connect.pAddressMarks);
-    if (fdd != LIB_NULL) fdd->connect.pAddressMarks = (type_virtual_address)LIB_NULL;
+        lib_release((void *)fdd->connect.pAddressMarks);
+    if (fdd != LIB_NULL) fdd->connect.pAddressMarks = (lib_uptr)LIB_NULL;
 }
 
-C_VOID vm_machine_fdd_create_for(t_fdd *fdd)
+void vm_machine_fdd_create_for(t_fdd *fdd)
 {
     if (fdd != LIB_NULL && fdd->connect.medium != LIB_NULL &&
-        fdd->connect.pAddressMarks != (type_virtual_address)LIB_NULL) {
+        fdd->connect.pAddressMarks != (lib_uptr)LIB_NULL) {
         fdd->connect.flagDiskExist = LIB_TRUE;
         fdd->connect.media_generation++;
     }
 }
 
-static C_INT vm_machine_fdd_insert_medium_for(t_fdd *fdd, const C_CHAR *file_name,
+static lib_i32 vm_machine_fdd_insert_medium_for(t_fdd *fdd, const char *file_name,
     lib_storage_medium_mode mode)
 {
     lib_size image_size;
     lib_storage_medium *candidate = LIB_NULL;
-    type_virtual_address marks = (type_virtual_address)LIB_NULL;
+    lib_uptr marks = (lib_uptr)LIB_NULL;
 
     if (fdd == LIB_NULL || file_name == LIB_NULL ||
         lib_storage_medium_open(file_name, mode, &candidate) != LIB_STATUS_OK) return LIB_TRUE;
     image_size = vm_machine_fdd_image_size(fdd);
     if (lib_storage_medium_byte_count(candidate) != image_size ||
-        (marks = (type_virtual_address)lib_allocate_zero((lib_size)fdd->data.ncyl *
+        (marks = (lib_uptr)lib_allocate_zero((lib_size)fdd->data.ncyl *
             fdd->data.nhead * fdd->data.nsector, sizeof(lib_u8))) ==
-            (type_virtual_address)LIB_NULL) {
+            (lib_uptr)LIB_NULL) {
         lib_storage_medium_destroy(&candidate);
         return LIB_TRUE;
     }
@@ -348,22 +350,22 @@ static C_INT vm_machine_fdd_insert_medium_for(t_fdd *fdd, const C_CHAR *file_nam
     return LIB_FALSE;
 }
 
-C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name,
+lib_i32 vm_machine_fdd_insert_for(t_fdd *fdd, const char *file_name,
     lib_storage_medium_mode mode)
 {
     return mode <= LIB_STORAGE_MEDIUM_OVERLAY ?
         vm_machine_fdd_insert_medium_for(fdd, file_name, mode) : LIB_TRUE;
 }
 
-C_INT vm_machine_fdd_remove_for(t_fdd *fdd)
+lib_i32 vm_machine_fdd_remove_for(t_fdd *fdd)
 {
     if (fdd == LIB_NULL) return LIB_TRUE;
     lib_storage_medium_destroy(&fdd->connect.medium);
     fdd->connect.flagDiskExist = LIB_FALSE;
     fdd->connect.flagReadOnly = LIB_FALSE;
     fdd->connect.media_generation++;
-    if (fdd->connect.pAddressMarks != (type_virtual_address)LIB_NULL) {
-        lib_memory_set((C_VOID *)fdd->connect.pAddressMarks, TYPE_ZERO_8,
+    if (fdd->connect.pAddressMarks != (lib_uptr)LIB_NULL) {
+        lib_memory_set((void *)fdd->connect.pAddressMarks, 0u,
             (lib_size)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector);
     }
     return LIB_FALSE;

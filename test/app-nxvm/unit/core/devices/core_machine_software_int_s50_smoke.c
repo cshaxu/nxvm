@@ -1,4 +1,6 @@
 #include "lib/types/types_interface.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #define main cli_sti_s22_main
 #include "core_machine_cli_sti_smoke.c"
 #undef main
@@ -11,10 +13,10 @@ typedef struct software_int_form {
     lib_u8 vector;
     lib_u8 opcode[2];
     lib_u8 bytes;
-    C_INT requires_overflow;
+    lib_i32 requires_overflow;
 } software_int_form;
 
-static C_INT software_int_s50_gprs_same(const t_cpu *before,
+static lib_i32 software_int_s50_gprs_same(const t_cpu *before,
     const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
@@ -27,7 +29,7 @@ static C_INT software_int_s50_gprs_same(const t_cpu *before,
         before->data.edi == after->data.edi;
 }
 
-static C_INT software_int_s50_sregs_same(const t_cpu *before,
+static lib_i32 software_int_s50_sregs_same(const t_cpu *before,
     const t_cpu *after)
 {
     return lib_memory_compare(&before->data.es, &after->data.es,
@@ -44,7 +46,7 @@ static C_INT software_int_s50_sregs_same(const t_cpu *before,
             sizeof(before->data.gs)) == 0;
 }
 
-static C_VOID software_int_s50_seed(cli_sti_machine *state, lib_u32 flags)
+static void software_int_s50_seed(cli_sti_machine *state, lib_u32 flags)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
@@ -73,7 +75,7 @@ static lib_u16 software_int_s50_real_flags_known_mask(
     return 0x7fd5u;
 }
 
-static C_INT software_int_s50_prepare_real(cli_sti_machine *state,
+static lib_i32 software_int_s50_prepare_real(cli_sti_machine *state,
     core_machine_cpu_profile profile, const software_int_form *form,
     const lib_u8 *prefix, lib_u8 prefix_bytes)
 {
@@ -87,15 +89,15 @@ static C_INT software_int_s50_prepare_real(cli_sti_machine *state,
     return cli_sti_prepare(profile, state) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) &&
         core_machine_memory_write(state->machine, form->vector * 4u, &offset,
-            sizeof(offset)) == TYPE_STATUS_OK &&
+            sizeof(offset)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, form->vector * 4u + 2u,
-            &segment, sizeof(segment)) == TYPE_STATUS_OK &&
+            &segment, sizeof(segment)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, offset, &hlt, sizeof(hlt)) ==
-            TYPE_STATUS_OK && core_machine_memory_write(state->machine, 0u,
-            code, prefix_bytes + form->bytes) == TYPE_STATUS_OK;
+            LIB_STATUS_OK && core_machine_memory_write(state->machine, 0u,
+            code, prefix_bytes + form->bytes) == LIB_STATUS_OK;
 }
 
-static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
+static lib_i32 software_int_s50_check_real_frame(cli_sti_machine *state,
     const t_cpu *before, const t_cpu *after, lib_u32 return_ip,
     lib_u8 width, core_machine_cpu_profile profile)
 {
@@ -104,7 +106,7 @@ static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
 
         return core_machine_memory_read_physical(&state->machine->executor_memory,
                 after->data.ss.base + (lib_u16)after->data.esp,
-                (type_virtual_address)frame, sizeof(frame)) == TYPE_STATUS_OK &&
+                (lib_uptr)frame, sizeof(frame)) == LIB_STATUS_OK &&
             frame[0] == return_ip && frame[1] == before->data.cs.selector &&
             (frame[2] & software_int_s50_real_flags_known_mask(profile)) ==
             (software_int_s50_real_flags_image(profile,
@@ -118,7 +120,7 @@ static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
 
         return core_machine_memory_read_physical(&state->machine->executor_memory,
                 after->data.ss.base + after->data.esp,
-                (type_virtual_address)frame, sizeof(frame)) == TYPE_STATUS_OK &&
+                (lib_uptr)frame, sizeof(frame)) == LIB_STATUS_OK &&
             frame[0] == return_ip && frame[1] == before->data.cs.selector &&
             (frame[2] & software_int_s50_real_flags_known_mask(profile)) ==
             (software_int_s50_real_flags_image(profile,
@@ -129,7 +131,7 @@ static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
     }
 }
 
-static C_INT software_int_s50_real_transfer(core_machine_cpu_profile profile,
+static lib_i32 software_int_s50_real_transfer(core_machine_cpu_profile profile,
     const software_int_form *form, const lib_u8 *prefix, lib_u8 prefix_bytes)
 {
     const lib_u32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_IF |
@@ -140,9 +142,9 @@ static C_INT software_int_s50_real_transfer(core_machine_cpu_profile profile,
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_status status;
+    lib_status status;
     lib_u32 return_ip = prefix_bytes + form->bytes;
-    C_INT failed = !software_int_s50_prepare_real(&state, profile, form, prefix,
+    lib_i32 failed = !software_int_s50_prepare_real(&state, profile, form, prefix,
         prefix_bytes);
 
     if (!failed) {
@@ -152,8 +154,8 @@ static C_INT software_int_s50_real_transfer(core_machine_cpu_profile profile,
             (core_machine_run_budget){ 2u, 0u }, &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK;
-        failed |= status != TYPE_STATUS_OK;
+            LIB_STATUS_OK;
+        failed |= status != LIB_STATUS_OK;
         failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= diagnostic.first_fault.valid;
         failed |= after.data.eip != 0x0101u;
@@ -176,7 +178,7 @@ static C_INT software_int_s50_real_transfer(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT software_int_s50_real_into_clear(core_machine_cpu_profile profile,
+static lib_i32 software_int_s50_real_into_clear(core_machine_cpu_profile profile,
     const lib_u8 *prefix, lib_u8 prefix_bytes)
 {
     const software_int_form into = { 0x04u, { 0xceu, 0u }, 1u, 1 };
@@ -188,9 +190,9 @@ static C_INT software_int_s50_real_into_clear(core_machine_cpu_profile profile,
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    type_status status;
+    lib_status status;
     lib_u8 code[5] = { 0u };
-    C_INT failed = !cli_sti_prepare(profile, &state);
+    lib_i32 failed = !cli_sti_prepare(profile, &state);
 
     if (!failed) {
         lib_memory_copy(code, prefix, prefix_bytes);
@@ -199,7 +201,7 @@ static C_INT software_int_s50_real_into_clear(core_machine_cpu_profile profile,
         failed = !test_core_machine_fixture_prepare_real_mode_execution(
             state.machine, 0u);
         failed |= core_machine_memory_write(state.machine, 0u, code,
-            prefix_bytes + 2u) != TYPE_STATUS_OK;
+            prefix_bytes + 2u) != LIB_STATUS_OK;
     }
     if (!failed) {
         software_int_s50_seed(&state, flags);
@@ -208,8 +210,8 @@ static C_INT software_int_s50_real_into_clear(core_machine_cpu_profile profile,
             (core_machine_run_budget){ 2u, 0u }, &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK;
-        failed |= status != TYPE_STATUS_OK;
+            LIB_STATUS_OK;
+        failed |= status != LIB_STATUS_OK;
         failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= diagnostic.first_fault.valid;
         failed |= after.data.eip != prefix_bytes + 2u;
@@ -222,7 +224,7 @@ static C_INT software_int_s50_real_into_clear(core_machine_cpu_profile profile,
     return !failed;
 }
 
-static C_INT software_int_s50_test_real_forms(C_VOID)
+static lib_i32 software_int_s50_test_real_forms(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
@@ -273,7 +275,7 @@ static C_INT software_int_s50_test_real_forms(C_VOID)
     return 1;
 }
 
-static C_INT software_int_s50_test_rejections(C_VOID)
+static lib_i32 software_int_s50_test_rejections(void)
 {
     static const software_int_form forms[] = {
         { 0x03u, { 0xccu, 0u }, 1u, 0 },
@@ -307,12 +309,12 @@ static C_INT software_int_s50_test_rejections(C_VOID)
                 core_machine_run_result result;
                 t_cpu before;
                 t_cpu after;
-                type_status status;
+                lib_status status;
                 lib_u8 code[5] = { 0u };
                 lib_u8 prefix_bytes = prefix == 2u ? 2u : 1u;
                 lib_u8 stack_before[16] = { 0u };
                 lib_u8 stack_after[16] = { 0u };
-                C_INT failed = !cli_sti_prepare(legacy[profile], &state);
+                lib_i32 failed = !cli_sti_prepare(legacy[profile], &state);
 
                 lib_memory_copy(code, prefixes[prefix], prefix_bytes);
                 lib_memory_copy(code + prefix_bytes, forms[form].opcode,
@@ -321,9 +323,9 @@ static C_INT software_int_s50_test_rejections(C_VOID)
                     failed = !test_core_machine_fixture_prepare_real_mode_execution(
                         state.machine, 0u);
                     failed |= core_machine_memory_write(state.machine, 0u, code,
-                        prefix_bytes + forms[form].bytes) != TYPE_STATUS_OK;
+                        prefix_bytes + forms[form].bytes) != LIB_STATUS_OK;
                     failed |= core_machine_memory_write(state.machine, 0x7ff0u,
-                        stack_before, sizeof(stack_before)) != TYPE_STATUS_OK;
+                        stack_before, sizeof(stack_before)) != LIB_STATUS_OK;
                 }
                 if (!failed) {
                     software_int_s50_seed(&state, VCPU_EFLAGS_OF |
@@ -337,17 +339,17 @@ static C_INT software_int_s50_test_rejections(C_VOID)
                     after = test_core_machine_fixture_capture_cpu_after_run(
                         state.machine);
                     failed |= core_machine_get_cpu_diagnostic(state.machine,
-                        &diagnostic) != TYPE_STATUS_OK;
-                    failed |= status != TYPE_STATUS_FAULT;
+                        &diagnostic) != LIB_STATUS_OK;
+                    failed |= status != LIB_STATUS_INTERNAL_ERROR;
                     failed |= result.reason != CORE_MACHINE_STOP_FAULT;
                     failed |= !diagnostic.first_fault.valid;
-                    failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                    failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                         VCPUINS_EXCEPT_UD);
                     failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
                     failed |= core_machine_memory_read_physical(
                         &state.machine->executor_memory, 0x7ff0u,
-                        (type_virtual_address)stack_after,
-                        sizeof(stack_after)) != TYPE_STATUS_OK;
+                        (lib_uptr)stack_after,
+                        sizeof(stack_after)) != LIB_STATUS_OK;
                     failed |= lib_memory_compare(stack_before, stack_after,
                         sizeof(stack_before)) != 0;
                 }
@@ -366,14 +368,14 @@ static C_INT software_int_s50_test_rejections(C_VOID)
             core_machine_run_result result;
             t_cpu before;
             t_cpu after;
-            type_status status;
+            lib_status status;
             lib_u8 code[] = { 0xf0u, 0u, 0u, 0u, 0u };
             lib_u8 prefix_bytes = profile == 0u ? 0u :
                 profile == 3u ? 2u : 1u;
             lib_u8 bytes;
             lib_u8 stack_before[16] = { 0u };
             lib_u8 stack_after[16] = { 0u };
-            C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+            lib_i32 failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
             if (profile != 0u)
@@ -385,9 +387,9 @@ static C_INT software_int_s50_test_rejections(C_VOID)
                 failed = !test_core_machine_fixture_prepare_real_mode_execution(
                     state.machine, 0u);
                 failed |= core_machine_memory_write(state.machine, 0u, code,
-                    bytes) != TYPE_STATUS_OK;
+                    bytes) != LIB_STATUS_OK;
                 failed |= core_machine_memory_write(state.machine, 0x7ff0u,
-                    stack_before, sizeof(stack_before)) != TYPE_STATUS_OK;
+                    stack_before, sizeof(stack_before)) != LIB_STATUS_OK;
             }
             if (!failed) {
                 software_int_s50_seed(&state, VCPU_EFLAGS_OF |
@@ -401,17 +403,17 @@ static C_INT software_int_s50_test_rejections(C_VOID)
                 after = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= core_machine_get_cpu_diagnostic(state.machine,
-                    &diagnostic) != TYPE_STATUS_OK;
-                failed |= status != TYPE_STATUS_FAULT;
+                    &diagnostic) != LIB_STATUS_OK;
+                failed |= status != LIB_STATUS_INTERNAL_ERROR;
                 failed |= result.reason != CORE_MACHINE_STOP_FAULT;
                 failed |= !diagnostic.first_fault.valid;
-                failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                failed |= !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
                 failed |= lib_memory_compare(&before, &after, sizeof(before)) != 0;
                 failed |= core_machine_memory_read_physical(
                     &state.machine->executor_memory, 0x7ff0u,
-                    (type_virtual_address)stack_after,
-                    sizeof(stack_after)) != TYPE_STATUS_OK;
+                    (lib_uptr)stack_after,
+                    sizeof(stack_after)) != LIB_STATUS_OK;
                 failed |= lib_memory_compare(stack_before, stack_after,
                     sizeof(stack_before)) != 0;
             }
@@ -423,7 +425,7 @@ static C_INT software_int_s50_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT software_int_s50_test_protected(C_VOID)
+static lib_i32 software_int_s50_test_protected(void)
 {
     static const software_int_form forms[] = {
         { 0x03u, { 0xccu, 0u }, 1u, 0 },
@@ -440,7 +442,7 @@ static C_INT software_int_s50_test_protected(C_VOID)
         lib_u8 code[2] = { forms[form].opcode[0], forms[form].opcode[1] };
         lib_u32 flags = 0x00000302u |
             (forms[form].requires_overflow ? VCPU_EFLAGS_OF : 0u);
-        C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
+        lib_i32 failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
             VCPU_DESC_SYS_TYPE_INTGATE_32);
 
         if (!failed) {
@@ -454,8 +456,8 @@ static C_INT software_int_s50_test_protected(C_VOID)
             failed |= after.data.cs.selector != 0x0008u;
             failed |= after.data.eip != IE_HANDLER_OFFSET + 1u;
             failed |= after.data.esp != IE_STACK_BASE - 12u;
-            failed |= TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_IF);
-            failed |= TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_TF);
+            failed |= CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF);
+            failed |= CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_TF);
             failed |= !ie_read(&state, IE_STACK_BASE - 12u, frame,
                 sizeof(frame));
             failed |= frame[0] != forms[form].bytes;
@@ -472,7 +474,7 @@ static C_INT software_int_s50_test_protected(C_VOID)
         t_cpu before;
         t_cpu after;
         lib_u8 code[2] = { forms[form].opcode[0], forms[form].opcode[1] };
-        C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
+        lib_i32 failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
             VCPU_DESC_SYS_TYPE_INTGATE_32);
 
         if (!failed) {
@@ -496,14 +498,14 @@ static C_INT software_int_s50_test_protected(C_VOID)
     return 1;
 }
 
-static C_INT software_int_s50_test_protected_faults_and_vm86(C_VOID)
+static lib_i32 software_int_s50_test_protected_faults_and_vm86(void)
 {
     interrupt_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
     lib_u8 target_access = 0x92u;
-    C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_IDT_LIMIT,
+    lib_i32 failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_IDT_LIMIT,
         VCPU_DESC_SYS_TYPE_INTGATE_32);
 
     if (!failed) {
@@ -545,7 +547,7 @@ static C_INT software_int_s50_test_protected_faults_and_vm86(C_VOID)
     return !failed;
 }
 
-static C_INT software_int_s50_test_pic_boundary(C_VOID)
+static lib_i32 software_int_s50_test_pic_boundary(void)
 {
     const software_int_form form = { 0x31u, { 0xcdu, 0x31u }, 2u, 0 };
     const lib_u32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF;
@@ -553,7 +555,7 @@ static C_INT software_int_s50_test_pic_boundary(C_VOID)
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     t_cpu after;
-    C_INT failed = !software_int_s50_prepare_real(&state,
+    lib_i32 failed = !software_int_s50_prepare_real(&state,
         CORE_MACHINE_CPU_PROFILE_80386, &form, (const lib_u8[]){ 0u }, 0u);
 
     if (!failed) {
@@ -566,22 +568,22 @@ static C_INT software_int_s50_test_pic_boundary(C_VOID)
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed = core_machine_run(state.machine,
-            (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK;
+            (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK;
         failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != 0x0101u;
         failed |= !after.data.flagHalt;
-        failed |= TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_IF);
-        failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+        failed |= CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF);
+        failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
             VPIC_IRR_IRQ(0u));
-        failed |= TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
+        failed |= CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
             VPIC_ISR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!software_int_s50_test_real_forms())
         return 1;
@@ -593,8 +595,8 @@ C_INT main(C_VOID)
         return 1;
     if (!software_int_s50_test_pic_boundary())
         return 1;
-    STD_PRINTF("M5:T316:S50:SOFTWARE-INT:OK\n");
-    STD_PRINTF("M5:T401:S25:INT-IMMEDIATE-PROFILES:OK\n");
-    STD_PRINTF("M5:T401:S26:INT3-INTO-PROFILES:OK\n");
+    printf("M5:T316:S50:SOFTWARE-INT:OK\n");
+    printf("M5:T401:S25:INT-IMMEDIATE-PROFILES:OK\n");
+    printf("M5:T401:S26:INT3-INTO-PROFILES:OK\n");
     return 0;
 }

@@ -1,16 +1,15 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/timeline.h"
 
-static C_INT core_machine_timeline_precedes(const core_machine_timeline_event *left,
+static lib_i32 core_machine_timeline_precedes(const core_machine_timeline_event *left,
     const core_machine_timeline_event *right)
 {
     return left->due_tick < right->due_tick ||
         (left->due_tick == right->due_tick && left->sequence < right->sequence);
 }
 
-static C_VOID core_machine_timeline_heap_swap(core_machine_timeline *timeline,
+static void core_machine_timeline_heap_swap(core_machine_timeline *timeline,
     lib_u32 left, lib_u32 right)
 {
     lib_u32 slot = timeline->heap[left];
@@ -21,7 +20,7 @@ static C_VOID core_machine_timeline_heap_swap(core_machine_timeline *timeline,
     timeline->events[timeline->heap[right]].heap_index = right;
 }
 
-static C_VOID core_machine_timeline_heap_up(core_machine_timeline *timeline,
+static void core_machine_timeline_heap_up(core_machine_timeline *timeline,
     lib_u32 index)
 {
     while (index != 0u) {
@@ -34,7 +33,7 @@ static C_VOID core_machine_timeline_heap_up(core_machine_timeline *timeline,
     }
 }
 
-static C_VOID core_machine_timeline_heap_down(core_machine_timeline *timeline,
+static void core_machine_timeline_heap_down(core_machine_timeline *timeline,
     lib_u32 index)
 {
     for (;;) {
@@ -54,7 +53,7 @@ static C_VOID core_machine_timeline_heap_down(core_machine_timeline *timeline,
     }
 }
 
-static C_VOID core_machine_timeline_heap_remove(core_machine_timeline *timeline,
+static void core_machine_timeline_heap_remove(core_machine_timeline *timeline,
     lib_u32 index)
 {
     lib_u32 last;
@@ -73,27 +72,27 @@ static C_VOID core_machine_timeline_heap_remove(core_machine_timeline *timeline,
     }
 }
 
-type_status core_machine_timeline_initialize(core_machine_timeline *timeline)
+lib_status core_machine_timeline_initialize(core_machine_timeline *timeline)
 {
-    if (timeline == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (timeline == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     core_machine_timeline_reset(timeline);
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID core_machine_timeline_reset(core_machine_timeline *timeline)
+void core_machine_timeline_reset(core_machine_timeline *timeline)
 {
     if (timeline != LIB_NULL) lib_memory_set(timeline, 0, sizeof(*timeline));
 }
 
-type_status core_machine_timeline_schedule(core_machine_timeline *timeline,
+lib_status core_machine_timeline_schedule(core_machine_timeline *timeline,
     lib_u64 due_tick, core_machine_timeline_callback callback,
-    C_VOID *context, core_machine_timeline_token *out_token)
+    void *context, core_machine_timeline_token *out_token)
 {
     lib_u32 slot;
 
     if (timeline == LIB_NULL || callback == LIB_NULL || out_token == LIB_NULL ||
         due_tick < timeline->now || timeline->next_sequence == UINT64_MAX) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     for (slot = 0u; slot < CORE_MACHINE_TIMELINE_EVENT_CAPACITY; ++slot) {
         if (!timeline->events[slot].active) {
@@ -109,37 +108,37 @@ type_status core_machine_timeline_schedule(core_machine_timeline *timeline,
             core_machine_timeline_heap_up(timeline, event->heap_index);
             out_token->slot = slot;
             out_token->sequence = event->sequence;
-            return TYPE_STATUS_OK;
+            return LIB_STATUS_OK;
         }
     }
-    return TYPE_STATUS_NO_MEMORY;
+    return LIB_STATUS_NO_MEMORY;
 }
 
-type_status core_machine_timeline_cancel(core_machine_timeline *timeline,
+lib_status core_machine_timeline_cancel(core_machine_timeline *timeline,
     const core_machine_timeline_token *token)
 {
     core_machine_timeline_event *event;
 
     if (timeline == LIB_NULL || token == LIB_NULL ||
         token->slot >= CORE_MACHINE_TIMELINE_EVENT_CAPACITY) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     event = &timeline->events[token->slot];
     if (!event->active || event->sequence != token->sequence) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     core_machine_timeline_heap_remove(timeline, event->heap_index);
     event->active = LIB_FALSE;
     event->callback = LIB_NULL;
     event->context = LIB_NULL;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_timeline_advance(core_machine_timeline *timeline,
+lib_status core_machine_timeline_advance(core_machine_timeline *timeline,
     lib_u64 target_tick)
 {
     if (timeline == LIB_NULL || target_tick < timeline->now) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     for (;;) {
         core_machine_timeline_event *next;
@@ -149,7 +148,7 @@ type_status core_machine_timeline_advance(core_machine_timeline *timeline,
         if (next->due_tick > target_tick) break;
         {
             core_machine_timeline_callback callback = next->callback;
-            C_VOID *context = next->context;
+            void *context = next->context;
             lib_u64 due_tick = next->due_tick;
 
             core_machine_timeline_heap_remove(timeline, 0u);
@@ -161,18 +160,18 @@ type_status core_machine_timeline_advance(core_machine_timeline *timeline,
         }
     }
     timeline->now = target_tick;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status core_machine_timeline_next_due(const core_machine_timeline *timeline,
+lib_status core_machine_timeline_next_due(const core_machine_timeline *timeline,
     lib_u64 *out_due_tick)
 {
     if (timeline == LIB_NULL || out_due_tick == LIB_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (timeline->heap_size == 0u) return TYPE_STATUS_INVALID_STATE;
+    if (timeline->heap_size == 0u) return LIB_STATUS_INVALID_STATE;
     *out_due_tick = timeline->events[timeline->heap[0]].due_tick;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
 lib_u32 core_machine_timeline_pending_count(

@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -16,19 +17,19 @@ typedef struct lgdt_lidt_machine {
     core_machine *machine;
 } lgdt_lidt_machine;
 
-static C_VOID lgdt_lidt_reset(C_VOID *opaque)
+static void lgdt_lidt_reset(void *opaque)
 {
     lgdt_lidt_machine *state = (lgdt_lidt_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider lgdt_lidt_provider = {
     lgdt_lidt_reset, LIB_NULL
 };
 
-static C_INT lgdt_lidt_prepare(lgdt_lidt_machine *state,
+static lib_i32 lgdt_lidt_prepare(lgdt_lidt_machine *state,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
@@ -43,12 +44,12 @@ static C_INT lgdt_lidt_prepare(lgdt_lidt_machine *state,
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
-static C_VOID lgdt_lidt_enter_protected(lgdt_lidt_machine *state,
+static void lgdt_lidt_enter_protected(lgdt_lidt_machine *state,
     lib_u8 cpl)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
-    TYPE_SET_BIT(cpu->data.cr0, VCPU_CR0_PE);
+    CORE_MACHINE_BIT_SET(cpu->data.cr0, VCPU_CR0_PE);
     cpu->data.cs.selector = (lib_u16)(0x0008u | cpl);
     cpu->data.cs.base = 0u;
     cpu->data.cs.limit = 0xffffu;
@@ -67,7 +68,7 @@ static C_VOID lgdt_lidt_enter_protected(lgdt_lidt_machine *state,
     cpu->data.ss.sregtype = SREG_STACK;
 }
 
-static C_VOID lgdt_lidt_seed(t_cpu *cpu)
+static void lgdt_lidt_seed(t_cpu *cpu)
 {
     cpu->data.eax = 0x11223344u;
     cpu->data.ecx = 0x55667788u;
@@ -80,7 +81,7 @@ static C_VOID lgdt_lidt_seed(t_cpu *cpu)
     cpu->data.eflags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
 }
 
-static C_INT lgdt_lidt_cpu_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 lgdt_lidt_cpu_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx &&
@@ -99,30 +100,30 @@ static C_INT lgdt_lidt_cpu_same(const t_cpu *before, const t_cpu *after)
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_VOID lgdt_lidt_write_image(lib_u8 *image,
+static void lgdt_lidt_write_image(lib_u8 *image,
     lib_u16 limit, lib_u32 base)
 {
-    image[0] = TYPE_MASK_UNSIGNED_8(limit);
-    image[1] = TYPE_MASK_UNSIGNED_8(limit >> 8u);
-    image[2] = TYPE_MASK_UNSIGNED_8(base);
-    image[3] = TYPE_MASK_UNSIGNED_8(base >> 8u);
-    image[4] = TYPE_MASK_UNSIGNED_8(base >> 16u);
-    image[5] = TYPE_MASK_UNSIGNED_8(base >> 24u);
+    image[0] = CORE_MACHINE_MASK_U8(limit);
+    image[1] = CORE_MACHINE_MASK_U8(limit >> 8u);
+    image[2] = CORE_MACHINE_MASK_U8(base);
+    image[3] = CORE_MACHINE_MASK_U8(base >> 8u);
+    image[4] = CORE_MACHINE_MASK_U8(base >> 16u);
+    image[5] = CORE_MACHINE_MASK_U8(base >> 24u);
 }
 
-static C_INT lgdt_lidt_run(lgdt_lidt_machine *state,
+static lib_i32 lgdt_lidt_run(lgdt_lidt_machine *state,
     const lib_u8 *code, lib_size bytes, lib_u32 budget,
-    type_status *status, core_machine_run_result *result,
+    lib_status *status, core_machine_run_result *result,
     core_machine_cpu_diagnostic *diagnostic)
 {
     return core_machine_memory_write(state->machine, 0u, code, bytes) ==
-        TYPE_STATUS_OK && ((*status = core_machine_run(state->machine,
-        (core_machine_run_budget){budget, 0u}, result)) == TYPE_STATUS_OK ||
-        *status == TYPE_STATUS_FAULT) && core_machine_get_cpu_diagnostic(
-        state->machine, diagnostic) == TYPE_STATUS_OK;
+        LIB_STATUS_OK && ((*status = core_machine_run(state->machine,
+        (core_machine_run_budget){budget, 0u}, result)) == LIB_STATUS_OK ||
+        *status == LIB_STATUS_INTERNAL_ERROR) && core_machine_get_cpu_diagnostic(
+        state->machine, diagnostic) == LIB_STATUS_OK;
 }
 
-static C_INT lgdt_lidt_test_success(C_VOID)
+static lib_i32 lgdt_lidt_test_success(void)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
@@ -139,14 +140,14 @@ static C_INT lgdt_lidt_test_success(C_VOID)
                     t_cpu before, after;
                     core_machine_run_result result;
                     core_machine_cpu_diagnostic diagnostic;
-                    type_status status = TYPE_STATUS_INVALID_STATE;
+                    lib_status status = LIB_STATUS_INVALID_STATE;
                     lib_u8 code[9] = {0u};
                     lib_u8 image[6];
                     lib_u32 expected_base = opcode == 2u ?
                         0x00123456u : 0x00abcdefu;
                     lib_u16 expected_limit = opcode == 2u ? 0x2468u : 0x1357u;
                     lib_size bytes;
-                    C_INT failed = !lgdt_lidt_prepare(&state, profiles[profile]);
+                    lib_i32 failed = !lgdt_lidt_prepare(&state, profiles[profile]);
 
                     if (!failed && mode) lgdt_lidt_enter_protected(&state, 0u);
                     if (!failed) {
@@ -170,20 +171,20 @@ static C_INT lgdt_lidt_test_success(C_VOID)
                             code[5] = 0x00u; code[6] = 0x02u; bytes = 9u;
                         }
                         failed |= core_machine_memory_write(state.machine, LGDT_LIDT_SOURCE,
-                            image, sizeof(image)) != TYPE_STATUS_OK;
+                            image, sizeof(image)) != LIB_STATUS_OK;
                         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                         failed |= !lgdt_lidt_run(&state, code, bytes, 1u, &status,
                             &result, &diagnostic);
                         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-                        failed |= status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                        failed |= status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
                             after.data.eip != bytes || !lgdt_lidt_cpu_same(&before, &after) ||
                             (opcode == 2u && (after.data.gdtr.limit != expected_limit ||
                             after.data.gdtr.base != (form == 1u || form == 3u ? expected_base :
-                            TYPE_MASK_UNSIGNED_24(expected_base)))) ||
+                            CORE_MACHINE_MASK_U24(expected_base)))) ||
                             (opcode == 3u && (after.data.idtr.limit != expected_limit ||
                             after.data.idtr.base != (form == 1u || form == 3u ? expected_base :
-                            TYPE_MASK_UNSIGNED_24(expected_base))));
+                            CORE_MACHINE_MASK_U24(expected_base))));
                     }
                     core_machine_destroy(state.machine);
                     if (failed) return 0;
@@ -191,15 +192,15 @@ static C_INT lgdt_lidt_test_success(C_VOID)
     return 1;
 }
 
-static C_INT lgdt_lidt_expect_ud(core_machine_cpu_profile profile,
+static lib_i32 lgdt_lidt_expect_ud(core_machine_cpu_profile profile,
     const lib_u8 *code, lib_size bytes)
 {
     lgdt_lidt_machine state;
     t_cpu before, after;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    type_status status = TYPE_STATUS_INVALID_STATE;
-    C_INT failed = !lgdt_lidt_prepare(&state, profile);
+    lib_status status = LIB_STATUS_INVALID_STATE;
+    lib_i32 failed = !lgdt_lidt_prepare(&state, profile);
 
     if (!failed) {
         lgdt_lidt_seed(&state.machine->executor_cpu);
@@ -208,15 +209,15 @@ static C_INT lgdt_lidt_expect_ud(core_machine_cpu_profile profile,
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !lgdt_lidt_run(&state, code, bytes, 1u, &status, &result, &diagnostic);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+        failed |= status != LIB_STATUS_INTERNAL_ERROR || !diagnostic.first_fault.valid ||
+            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
             lib_memory_compare(&before.data, &after.data, sizeof(before.data)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
-static C_INT lgdt_lidt_test_rejections(C_VOID)
+static lib_i32 lgdt_lidt_test_rejections(void)
 {
     static const lib_u8 low[] = {0x0fu,0x01u,0x16u,0x00u,0x02u};
     static const lib_u8 register_form[] = {0x0fu,0x01u,0xd0u};
@@ -251,7 +252,7 @@ static C_INT lgdt_lidt_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT lgdt_lidt_test_segments(C_VOID)
+static lib_i32 lgdt_lidt_test_segments(void)
 {
     static const lib_u8 code[][6] = {
         {0x0fu,0x01u,0x56u,0x10u,0u,0u},
@@ -264,10 +265,10 @@ static C_INT lgdt_lidt_test_segments(C_VOID)
         lib_u8 image[6];
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status = TYPE_STATUS_INVALID_STATE;
+        lib_status status = LIB_STATUS_INVALID_STATE;
         lib_u32 address = form == 0u ? LGDT_LIDT_SS_BASE * 16u + 0x0030u :
             LGDT_LIDT_ES_BASE * 16u + 0x0300u;
-        C_INT failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_i32 failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         if (!failed) {
             if (form == 0u)
                 failed |= core_machine_cpu_execution_load_segment(&state.machine->executor_cpu_execution,
@@ -278,13 +279,13 @@ static C_INT lgdt_lidt_test_segments(C_VOID)
             lgdt_lidt_seed(&state.machine->executor_cpu);
             state.machine->executor_cpu.data.ebp = 0x0020u;
             lgdt_lidt_write_image(image, 0x1357u, 0x00abcdefu);
-            failed |= core_machine_memory_write(state.machine, address, image, sizeof(image)) != TYPE_STATUS_OK;
+            failed |= core_machine_memory_write(state.machine, address, image, sizeof(image)) != LIB_STATUS_OK;
             {
                 lib_u8 local[sizeof(code[0])];
                 lib_memory_copy(local, code[form], sizeof(local));
                 local[form == 0u ? 2u : 3u] |= opcode << 3u;
                 failed |= !lgdt_lidt_run(&state, local, form == 0u ? 4u : 6u, 1u,
-                    &status, &result, &diagnostic) || status != TYPE_STATUS_OK ||
+                    &status, &result, &diagnostic) || status != LIB_STATUS_OK ||
                     diagnostic.first_fault.valid;
             }
         }
@@ -294,7 +295,7 @@ static C_INT lgdt_lidt_test_segments(C_VOID)
     return 1;
 }
 
-static C_INT lgdt_lidt_test_source_limit(C_VOID)
+static lib_i32 lgdt_lidt_test_source_limit(void)
 {
     lib_u8 opcode;
 
@@ -305,8 +306,8 @@ static C_INT lgdt_lidt_test_source_limit(C_VOID)
         t_cpu before, after;
         lib_u8 code[] = {0x0fu,0x01u,0x16u,0x00u,0x02u};
         lib_u8 source[6];
-        type_status status = TYPE_STATUS_INVALID_STATE;
-        C_INT failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_status status = LIB_STATUS_INVALID_STATE;
+        lib_i32 failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             lgdt_lidt_enter_protected(&state, 0u);
@@ -319,13 +320,13 @@ static C_INT lgdt_lidt_test_source_limit(C_VOID)
             state.machine->executor_cpu.data.idtr.base = 0u;
             state.machine->executor_cpu.data.idtr.limit = 0u;
             failed |= core_machine_memory_write(state.machine, LGDT_LIDT_SOURCE,
-                source, sizeof(source)) != TYPE_STATUS_OK;
+                source, sizeof(source)) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !lgdt_lidt_run(&state, code, sizeof(code), 1u, &status,
                 &result, &diagnostic);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||
-                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+            failed |= status != LIB_STATUS_INTERNAL_ERROR || !diagnostic.first_fault.valid ||
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
                 after.data.eip != 0u || !lgdt_lidt_cpu_same(&before, &after) ||
                 after.data.gdtr.base != before.data.gdtr.base ||
                 after.data.gdtr.limit != before.data.gdtr.limit ||
@@ -338,7 +339,7 @@ static C_INT lgdt_lidt_test_source_limit(C_VOID)
     return 1;
 }
 
-static C_INT lgdt_lidt_test_gdtr_consumer(C_VOID)
+static lib_i32 lgdt_lidt_test_gdtr_consumer(void)
 {
     static const lib_u8 code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x02u, 0x8eu, 0xd8u
@@ -351,8 +352,8 @@ static C_INT lgdt_lidt_test_gdtr_consumer(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before, after;
     lib_u8 image[6];
-    type_status status = TYPE_STATUS_INVALID_STATE;
-    C_INT failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    lib_status status = LIB_STATUS_INVALID_STATE;
+    lib_i32 failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
         lgdt_lidt_enter_protected(&state, 0u);
@@ -360,14 +361,14 @@ static C_INT lgdt_lidt_test_gdtr_consumer(C_VOID)
         state.machine->executor_cpu.data.eax = 0x11220008u;
         lgdt_lidt_write_image(image, 0x000fu, 0x00000500u);
         failed |= core_machine_memory_write(state.machine, LGDT_LIDT_SOURCE,
-            image, sizeof(image)) != TYPE_STATUS_OK ||
+            image, sizeof(image)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x0508u, data_descriptor,
-            sizeof(data_descriptor)) != TYPE_STATUS_OK;
+            sizeof(data_descriptor)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !lgdt_lidt_run(&state, code, sizeof(code), 2u, &status,
             &result, &diagnostic);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+        failed |= status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 2u ||
             after.data.eip != sizeof(code) || after.data.gdtr.limit != 0x000fu ||
             after.data.gdtr.base != 0x00000500u || after.data.ds.selector != 0x0008u ||
@@ -388,7 +389,7 @@ static C_INT lgdt_lidt_test_gdtr_consumer(C_VOID)
     return !failed;
 }
 
-static C_INT lgdt_lidt_test_pending_pic(C_VOID)
+static lib_i32 lgdt_lidt_test_pending_pic(void)
 {
     static const lib_u8 hlt = 0xf4u;
     lib_u8 opcode;
@@ -402,8 +403,8 @@ static C_INT lgdt_lidt_test_pending_pic(C_VOID)
         lib_u8 code[] = {0x0fu,0x01u,0x16u,0x00u,0x02u,0x90u};
         lib_u8 image[6];
         lib_u16 vector_offset = 0x0100u, vector_segment = 0u, frame = 0u;
-        type_status status = TYPE_STATUS_INVALID_STATE;
-        C_INT failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        lib_status status = LIB_STATUS_INVALID_STATE;
+        lib_i32 failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             code[2] = (lib_u8)(0x06u | (opcode << 3u));
@@ -411,14 +412,14 @@ static C_INT lgdt_lidt_test_pending_pic(C_VOID)
             lgdt_lidt_write_image(image, opcode == 2u ? 0x2468u : 0x03ffu,
                 opcode == 2u ? 0x00123456u : 0u);
             failed |= core_machine_memory_write(state.machine, LGDT_LIDT_SOURCE,
-                image, sizeof(image)) != TYPE_STATUS_OK ||
+                image, sizeof(image)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x0080u, &vector_offset,
-                sizeof(vector_offset)) != TYPE_STATUS_OK ||
+                sizeof(vector_offset)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x0082u, &vector_segment,
-                sizeof(vector_segment)) != TYPE_STATUS_OK ||
+                sizeof(vector_segment)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x0100u, &hlt,
-                sizeof(hlt)) != TYPE_STATUS_OK || core_machine_memory_write(
-                state.machine, 0u, code, sizeof(code)) != TYPE_STATUS_OK;
+                sizeof(hlt)) != LIB_STATUS_OK || core_machine_memory_write(
+                state.machine, 0u, code, sizeof(code)) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             lib_memory_set(&irq, 0, sizeof(irq));
             state.machine->shared_pic_master.data.icw2 = 0x20u;
@@ -430,15 +431,15 @@ static C_INT lgdt_lidt_test_pending_pic(C_VOID)
                 &result);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK || status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                LIB_STATUS_OK || status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 after.data.eip != 0x0101u || after.data.eflags !=
                 (before.data.eflags & ~VCPU_EFLAGS_IF) ||
                 core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
-                TYPE_REFERENCE_OF(frame), sizeof(frame)) != TYPE_STATUS_OK || frame != 5u ||
-                !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+                CORE_MACHINE_REFERENCE_OF(frame), sizeof(frame)) != LIB_STATUS_OK || frame != 5u ||
+                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                 VPIC_IRR_IRQ(0u));
         }
         core_machine_destroy(state.machine);
@@ -446,7 +447,7 @@ static C_INT lgdt_lidt_test_pending_pic(C_VOID)
     }
     return 1;
 }
-static C_INT lgdt_lidt_boot_protected(lgdt_lidt_machine *state,
+static lib_i32 lgdt_lidt_boot_protected(lgdt_lidt_machine *state,
     core_machine_cpu_profile profile)
 {
     static const lib_u8 gdt_pointer[] = {
@@ -496,25 +497,25 @@ static C_INT lgdt_lidt_boot_protected(lgdt_lidt_machine *state,
         0x86u : 0xeeu;
     return lgdt_lidt_prepare(state, profile) &&
         core_machine_memory_write(state->machine, 0x0100u, gdt_pointer,
-            sizeof(gdt_pointer)) == TYPE_STATUS_OK &&
+            sizeof(gdt_pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, LGDT_LIDT_GDT_BASE, gdt,
-            sizeof(gdt)) == TYPE_STATUS_OK &&
+            sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x0110u, idt_pointer,
-            sizeof(idt_pointer)) == TYPE_STATUS_OK &&
+            sizeof(idt_pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, LGDT_LIDT_IDT_BASE, idt,
-            sizeof(idt)) == TYPE_STATUS_OK &&
+            sizeof(idt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, real_code,
-            real_code_bytes) == TYPE_STATUS_OK &&
+            real_code_bytes) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x2100u,
-            (const lib_u8[]){0x90u}, 1u) == TYPE_STATUS_OK &&
+            (const lib_u8[]){0x90u}, 1u) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x2000u,
-            (const lib_u8[]){0xf4u}, 1u) == TYPE_STATUS_OK &&
+            (const lib_u8[]){0xf4u}, 1u) == LIB_STATUS_OK &&
         core_machine_run(state->machine, (core_machine_run_budget){64u,0u},
-            &result) == TYPE_STATUS_OK &&
+            &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_INT lgdt_lidt_test_protected_cpl_reject(C_VOID)
+static lib_i32 lgdt_lidt_test_protected_cpl_reject(void)
 {
     static const lib_u8 forms[][5] = {
         {0x0fu,0x01u,0x16u,0x00u,0x04u},
@@ -533,7 +534,7 @@ static C_INT lgdt_lidt_test_protected_cpl_reject(C_VOID)
         t_cpu before, after;
         lib_u8 source[6] = {0x5au,0x5au,0x5au,0x5au,0x5au,0x5au};
         lib_u8 observed[6];
-        C_INT failed = !lgdt_lidt_boot_protected(&state, profiles[profile]);
+        lib_i32 failed = !lgdt_lidt_boot_protected(&state, profiles[profile]);
 
         if (!failed) {
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
@@ -546,29 +547,29 @@ static C_INT lgdt_lidt_test_protected_cpl_reject(C_VOID)
             state.machine->executor_cpu.data.cs.seg.executable = LIB_TRUE;
             lgdt_lidt_seed(&state.machine->executor_cpu);
             failed |= core_machine_memory_write(state.machine, 0x2000u, forms[opcode],
-                sizeof(forms[opcode])) != TYPE_STATUS_OK;
+                sizeof(forms[opcode])) != LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_write(state.machine, 0x3400u, source,
-                sizeof(source)) != TYPE_STATUS_OK;
+                sizeof(source)) != LIB_STATUS_OK;
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK;
+                (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= result.reason != CORE_MACHINE_STOP_BUDGET || after.data.eip != 0x0100u;
             failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){1u,0u}, &handler_result) != TYPE_STATUS_OK;
+                (core_machine_run_budget){1u,0u}, &handler_result) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= handler_result.reason != CORE_MACHINE_STOP_BUDGET;
             failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                LIB_STATUS_OK || diagnostic.first_fault.valid ||
                 !diagnostic.last_delivered_exception.valid ||
-                !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                !CORE_MACHINE_BIT_IS_SET(diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_GP) || diagnostic.last_delivered_exception.point.eip != 0u ||
                 after.data.eip != 0x0101u || after.data.gdtr.base != before.data.gdtr.base ||
                 after.data.gdtr.limit != before.data.gdtr.limit ||
                 after.data.idtr.base != before.data.idtr.base ||
                 after.data.idtr.limit != before.data.idtr.limit ||
                 core_machine_memory_read_physical(&state.machine->executor_memory,
-                0x3400u, (type_virtual_address)observed, sizeof(observed)) != TYPE_STATUS_OK ||
+                0x3400u, (lib_uptr)observed, sizeof(observed)) != LIB_STATUS_OK ||
                 lib_memory_compare(source, observed, sizeof(source)) != 0;
         }
         if (failed) {
@@ -579,29 +580,29 @@ static C_INT lgdt_lidt_test_protected_cpl_reject(C_VOID)
     }
     return 1;
 }
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!lgdt_lidt_test_success()) {
-        STD_PRINTF("LGDT/LIDT stage=success\n"); return 1;
+        printf("LGDT/LIDT stage=success\n"); return 1;
     }
     if (!lgdt_lidt_test_rejections()) {
-        STD_PRINTF("LGDT/LIDT stage=rejections\n"); return 1;
+        printf("LGDT/LIDT stage=rejections\n"); return 1;
     }
     if (!lgdt_lidt_test_segments()) {
-        STD_PRINTF("LGDT/LIDT stage=segments\n"); return 1;
+        printf("LGDT/LIDT stage=segments\n"); return 1;
     }
     if (!lgdt_lidt_test_pending_pic()) {
-        STD_PRINTF("LGDT/LIDT stage=pending-pic\n"); return 1;
+        printf("LGDT/LIDT stage=pending-pic\n"); return 1;
     }
     if (!lgdt_lidt_test_source_limit()) {
-        STD_PRINTF("LGDT/LIDT stage=source-limit\n"); return 1;
+        printf("LGDT/LIDT stage=source-limit\n"); return 1;
     }
     if (!lgdt_lidt_test_gdtr_consumer()) {
-        STD_PRINTF("LGDT/LIDT stage=gdtr-consumer\n"); return 1;
+        printf("LGDT/LIDT stage=gdtr-consumer\n"); return 1;
     }
     if (!lgdt_lidt_test_protected_cpl_reject()) {
-        STD_PRINTF("LGDT/LIDT stage=protected-cpl-reject\n"); return 1;
+        printf("LGDT/LIDT stage=protected-cpl-reject\n"); return 1;
     }
-    STD_PRINTF("M5:T319:S1:LGDT-LIDT:OK\n");
+    printf("M5:T319:S1:LGDT-LIDT:OK\n");
     return 0;
 }

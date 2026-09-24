@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <ctype.h>
+#include <stdio.h>
 
 #include <windows.h>
 
@@ -18,27 +19,27 @@ typedef struct vm_mouse_dos_program {
     lib_u16 length;
 } vm_mouse_dos_program;
 
-static C_INT vm_mouse_dos_put(vm_mouse_dos_program *program, lib_u8 value)
+static lib_i32 vm_mouse_dos_put(vm_mouse_dos_program *program, lib_u8 value)
 {
     if (program == LIB_NULL || program->length >= sizeof(program->bytes)) return 0;
     program->bytes[program->length++] = value;
     return 1;
 }
 
-static C_INT vm_mouse_dos_word(vm_mouse_dos_program *program, lib_u16 value)
+static lib_i32 vm_mouse_dos_word(vm_mouse_dos_program *program, lib_u16 value)
 {
     return vm_mouse_dos_put(program, (lib_u8)value) &&
         vm_mouse_dos_put(program, (lib_u8)(value >> 8));
 }
 
-static C_VOID vm_mouse_dos_patch_word(vm_mouse_dos_program *program,
+static void vm_mouse_dos_patch_word(vm_mouse_dos_program *program,
     lib_u16 position, lib_u16 value)
 {
     program->bytes[position] = (lib_u8)value;
     program->bytes[position + 1u] = (lib_u8)(value >> 8);
 }
 
-static C_INT vm_mouse_dos_fat12_get(const lib_u8 *fat, lib_u16 cluster)
+static lib_i32 vm_mouse_dos_fat12_get(const lib_u8 *fat, lib_u16 cluster)
 {
     lib_u32 offset = cluster + cluster / 2u;
     lib_u16 value = (lib_u16)(fat[offset] | ((lib_u16)fat[offset + 1u] << 8));
@@ -46,7 +47,7 @@ static C_INT vm_mouse_dos_fat12_get(const lib_u8 *fat, lib_u16 cluster)
     return (cluster & 1u) != 0u ? value >> 4 : value & 0x0fffu;
 }
 
-static C_VOID vm_mouse_dos_fat12_set(lib_u8 *fat, lib_u16 cluster,
+static void vm_mouse_dos_fat12_set(lib_u8 *fat, lib_u16 cluster,
     lib_u16 value)
 {
     lib_u32 offset = cluster + cluster / 2u;
@@ -58,7 +59,7 @@ static C_VOID vm_mouse_dos_fat12_set(lib_u8 *fat, lib_u16 cluster,
     fat[offset + 1u] = (lib_u8)(pair >> 8);
 }
 
-static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program,
+static lib_i32 vm_mouse_dos_build_program(vm_mouse_dos_program *program,
     lib_u16 *out_bytes_offset)
 {
     lib_u16 handler_patch;
@@ -166,7 +167,7 @@ static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program,
     return 1;
 }
 
-static C_INT vm_mouse_dos_install_program(lib_u8 *image, DWORD image_size,
+static lib_i32 vm_mouse_dos_install_program(lib_u8 *image, DWORD image_size,
     lib_u16 *out_bytes_offset)
 {
     vm_mouse_dos_program program;
@@ -226,33 +227,33 @@ static C_INT vm_mouse_dos_install_program(lib_u8 *image, DWORD image_size,
     return 1;
 }
 
-static type_status vm_mouse_dos_install_on_overlay(
-    integration_ini_session *ini_session, C_VOID *opaque)
+static lib_status vm_mouse_dos_install_on_overlay(
+    integration_ini_session *ini_session, void *opaque)
 {
     lib_u8 *image = LIB_NULL;
     lib_size image_size = 0u;
     lib_u16 *bytes_offset = (lib_u16 *)opaque;
-    C_INT installed;
+    lib_i32 installed;
 
     if (ini_session == LIB_NULL || bytes_offset == LIB_NULL ||
         integration_ini_session_overlay_read(ini_session, VM_MACHINE_MEDIA_FDD_ID,
-            (C_VOID **)&image, &image_size) != TYPE_STATUS_OK || image_size > MAXDWORD) {
-        return TYPE_STATUS_FAULT;
+            (void **)&image, &image_size) != LIB_STATUS_OK || image_size > MAXDWORD) {
+        return LIB_STATUS_INTERNAL_ERROR;
     }
     installed = vm_mouse_dos_install_program(image, (DWORD)image_size, bytes_offset) &&
         integration_ini_session_overlay_write(ini_session, VM_MACHINE_MEDIA_FDD_ID,
-            image, image_size) == TYPE_STATUS_OK;
+            image, image_size) == LIB_STATUS_OK;
     lib_release(image);
-    return installed ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+    return installed ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
-static C_INT vm_mouse_dos_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_mouse_dos_has_prompt(const core_machine_display_snapshot *snapshot)
 {
     lib_size cell;
 
     if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < 80u * 25u; ++cell) {
-        if (STD_ISALPHA(snapshot->characters[cell]) &&
+        if (isalpha(snapshot->characters[cell]) &&
             snapshot->characters[cell + 1u] == ':' &&
             snapshot->characters[cell + 2u] == '\\' &&
             snapshot->characters[cell + 3u] == '>') return 1;
@@ -260,7 +261,7 @@ static C_INT vm_mouse_dos_has_prompt(const core_machine_display_snapshot *snapsh
     return 0;
 }
 
-static C_INT vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
+static lib_i32 vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
     lib_u8 wanted)
 {
     core_machine_run_budget budget = { 128u, 0u };
@@ -269,14 +270,14 @@ static C_INT vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
     lib_u32 executed = 0u;
 
     while (executed < limit) {
-        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->core_machine,
-                &snapshot) != TYPE_STATUS_OK) return 0;
+                &snapshot) != LIB_STATUS_OK) return 0;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            C_INT advanced = 0;
+            lib_i32 advanced = 0;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
         if (wanted == 0u ? vm_mouse_dos_has_prompt(&snapshot) :
@@ -287,7 +288,7 @@ static C_INT vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
     return 0;
 }
 
-static C_INT vm_mouse_dos_run_until_packet(vm_machine *session,
+static lib_i32 vm_mouse_dos_run_until_packet(vm_machine *session,
     lib_u32 buffer_address, const lib_u8 expected[17])
 {
     core_machine_run_budget budget = { 1u, 0u };
@@ -297,14 +298,14 @@ static C_INT vm_mouse_dos_run_until_packet(vm_machine *session,
 
     if (session == LIB_NULL || expected == LIB_NULL) return 0;
     for (executed = 0u; executed < VM_MOUSE_DOS_RUN_BUDGET; ++executed) {
-        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_memory_read(session->core_machine, buffer_address,
-                actual, sizeof(actual)) != TYPE_STATUS_OK) return 0;
+                actual, sizeof(actual)) != LIB_STATUS_OK) return 0;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            C_INT advanced = 0;
+            lib_i32 advanced = 0;
 
-            if (vm_machine_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
         if (lib_memory_compare(actual, expected, sizeof(actual)) == 0) return 1;
@@ -312,7 +313,7 @@ static C_INT vm_mouse_dos_run_until_packet(vm_machine *session,
     return 0;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     static const lib_u8 command[] = { 0x3au, 0x44u, 0x3cu, 0x1bu, 0x24u,
         0x1eu, 0x25u, 0x16u, 0x5au };
@@ -328,13 +329,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
     lib_u16 bytes_offset = 0u;
     lib_u32 bytes_address;
     lib_size index;
-    C_INT passed = 0;
-    C_INT stage = 0;
+    lib_i32 passed = 0;
+    lib_i32 stage = 0;
 
     stage = 1;
     if (argc != 3 || integration_ini_session_open_with_overlay_transform(argv[1], argv[2],
             vm_mouse_dos_install_on_overlay, &bytes_offset, &ini_session) !=
-        TYPE_STATUS_OK) return 77;
+        LIB_STATUS_OK) return 77;
     stage = 2;
     session = ini_session.session;
     stage = 3;
@@ -342,11 +343,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     stage = 4;
     for (index = 0u; index < sizeof(command); ++index) {
         if (core_machine_keyboard_receive_native_byte(session->core_machine,
-                command[index]) != TYPE_STATUS_OK) goto done;
+                command[index]) != LIB_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_RUN_BUDGET, 'S')) goto done;
     if (core_machine_capture_observation(session->core_machine, &observation) !=
-        TYPE_STATUS_OK) goto done;
+        LIB_STATUS_OK) goto done;
     bytes_address = ((lib_u32)observation.cpu.cs << 4) + bytes_offset;
     stage = 5;
     {
@@ -356,11 +357,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;
         if (vm_machine_submit_host_input(session, &event) !=
-            TYPE_STATUS_OK) goto done;
+            LIB_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
-            TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
+            LIB_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
         snapshot.characters[VM_MOUSE_DOS_MARKER_CELL] == 'O') goto done;
     stage = 6;
     passed = vm_mouse_dos_run_until(session, VM_MOUSE_DOS_RUN_BUDGET, 'O');
@@ -368,9 +369,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
         core_machine_display_snapshot snapshot;
 
         if (core_machine_capture_display_snapshot(session->core_machine,
-                &snapshot) == TYPE_STATUS_OK &&
+                &snapshot) == LIB_STATUS_OK &&
             snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT) {
-            STD_FPRINTF(STD_STDERR, "M5:T241:MOUSE-DRIVER:MARKER=%02X\n",
+            fprintf(stderr, "M5:T241:MOUSE-DRIVER:MARKER=%02X\n",
                 snapshot.characters[VM_MOUSE_DOS_MARKER_CELL]);
         }
     }
@@ -378,9 +379,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
 done:
     integration_ini_session_close(&ini_session);
     if (!passed) {
-        STD_FPRINTF(STD_STDERR, "M5:T241:MOUSE-DRIVER:DOS:FAIL:STAGE=%d\n", stage);
+        fprintf(stderr, "M5:T241:MOUSE-DRIVER:DOS:FAIL:STAGE=%d\n", stage);
         return 1;
     }
-    STD_PRINTF("M5:T267:S3:AUX:DOS:OK\n");
+    printf("M5:T267:S3:AUX:DOS:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
@@ -9,14 +9,14 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
     t_port *port;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=
-        TYPE_STATUS_OK || session == LIB_NULL;
+        LIB_STATUS_OK || session == LIB_NULL;
     if (!failed) {
         port = &session->core_machine->executor_port;
         failed |= core_machine_port_read(port,
@@ -34,9 +34,9 @@ C_INT main(C_VOID)
     }
     vm_machine_destroy(session);
     if (!failed) {
-        STD_PRINTF("M5:T386:S13:MODEL40-INPUT-STATUS-0:OK\n");
+        printf("M5:T386:S13:MODEL40-INPUT-STATUS-0:OK\n");
         return 0;
     }
-    STD_FPRINTF(STD_STDERR, "M5:T386:S13:MODEL40-INPUT-STATUS-0:FAIL\n");
+    fprintf(stderr, "M5:T386:S13:MODEL40-INPUT-STATUS-0:FAIL\n");
     return 1;
 }

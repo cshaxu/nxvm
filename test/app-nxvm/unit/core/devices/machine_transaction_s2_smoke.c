@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/dma.h"
@@ -27,7 +27,7 @@ typedef struct transaction_state_probe {
     core_machine_transaction_kind kind;
 } transaction_state_probe;
 
-static C_VOID transaction_trace(C_VOID *opaque,
+static void transaction_trace(void *opaque,
     const core_machine_trace_event *event)
 {
     transaction_probe *probe = (transaction_probe *)opaque;
@@ -37,29 +37,29 @@ static C_VOID transaction_trace(C_VOID *opaque,
     }
 }
 
-static type_status transaction_port_read(C_VOID *opaque,
+static lib_status transaction_port_read(void *opaque,
     lib_u16 port, lib_u32 *out_value)
 {
     transaction_probe *probe = (transaction_probe *)opaque;
 
-    (C_VOID)port;
-    if (probe == LIB_NULL || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    (void)port;
+    if (probe == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = probe->port_value;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status transaction_port_write(C_VOID *opaque,
+static lib_status transaction_port_write(void *opaque,
     lib_u16 port, lib_u32 value)
 {
     transaction_probe *probe = (transaction_probe *)opaque;
 
-    (C_VOID)port;
-    if (probe == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    (void)port;
+    if (probe == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     probe->port_value = value;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static C_VOID transaction_dma_read(C_VOID *opaque, t_latch *latch)
+static void transaction_dma_read(void *opaque, t_latch *latch)
 {
     dma_source *source = (dma_source *)opaque;
 
@@ -68,16 +68,16 @@ static C_VOID transaction_dma_read(C_VOID *opaque, t_latch *latch)
     }
 }
 
-static C_VOID transaction_state_trace(C_VOID *opaque,
+static void transaction_state_trace(void *opaque,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     core_machine_transaction_phase phase, lib_u32 address,
     lib_u32 value, lib_u32 detail)
 {
     transaction_state_probe *probe = (transaction_state_probe *)opaque;
 
-    (C_VOID)address;
-    (C_VOID)value;
-    (C_VOID)detail;
+    (void)address;
+    (void)value;
+    (void)detail;
     if (probe == LIB_NULL) return;
     probe->owner = owner;
     probe->kind = kind;
@@ -86,7 +86,7 @@ static C_VOID transaction_state_trace(C_VOID *opaque,
     if (phase == CORE_MACHINE_TRANSACTION_PHASE_CANCEL) ++probe->cancel_count;
 }
 
-static C_INT transaction_has_pair(const transaction_probe *probe,
+static lib_i32 transaction_has_pair(const transaction_probe *probe,
     core_machine_trace_event_type begin_type,
     core_machine_trace_event_type end_type, lib_u8 owner,
     lib_u8 kind)
@@ -104,7 +104,7 @@ static C_INT transaction_has_pair(const transaction_probe *probe,
     return 0;
 }
 
-static C_INT transaction_has_provenance_pair(const transaction_probe *probe,
+static lib_i32 transaction_has_provenance_pair(const transaction_probe *probe,
     core_machine_cpu_memory_access_provenance provenance)
 {
     lib_u32 index;
@@ -120,7 +120,7 @@ static C_INT transaction_has_provenance_pair(const transaction_probe *probe,
     return 0;
 }
 
-static C_INT transaction_has_port_write_value(const transaction_probe *probe,
+static lib_i32 transaction_has_port_write_value(const transaction_probe *probe,
     lib_u16 port, lib_u8 value)
 {
     lib_u32 index;
@@ -138,7 +138,7 @@ static C_INT transaction_has_port_write_value(const transaction_probe *probe,
     return 0;
 }
 
-static C_INT transaction_find_external_cycle(const transaction_probe *probe,
+static lib_i32 transaction_find_external_cycle(const transaction_probe *probe,
     core_machine_trace_event_type type,
     core_machine_cpu_memory_access_provenance provenance,
     lib_u32 *out_index)
@@ -170,7 +170,7 @@ static lib_u32 transaction_count_external_cycles(
     return count;
 }
 
-static C_VOID transaction_dma_program_channel2(t_port *port)
+static void transaction_dma_program_channel2(t_port *port)
 {
     core_machine_port_write(port, 0x000cu, 0u);
     core_machine_port_write(port, 0x0004u, 0x34u);
@@ -182,7 +182,7 @@ static C_VOID transaction_dma_program_channel2(t_port *port)
     core_machine_port_write(port, 0x000au, 0x02u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const core_machine_port_provider port_provider = {
         transaction_port_read, transaction_port_write
@@ -215,22 +215,22 @@ C_INT main(C_VOID)
     dma_source source = {0xa5u};
     lib_u32 external_begin = 0u;
     lib_u32 external_commit = 0u;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     trace.callback = transaction_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-        0x000ffff0u, 16u) != TYPE_STATUS_OK;
+        0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
-        &port_provider, &probe) != TYPE_STATUS_OK;
-    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+        &port_provider, &probe) != LIB_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
-        TYPE_STATUS_OK;
-    failed |= core_machine_memory_write(machine, 0x10u, &data, 1u) != TYPE_STATUS_OK;
-    failed |= core_machine_set_trace_provider(machine, &trace) != TYPE_STATUS_OK;
-    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+        LIB_STATUS_OK;
+    failed |= core_machine_memory_write(machine, 0x10u, &data, 1u) != LIB_STATUS_OK;
+    failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
+    failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     failed |= probe.port_value != 0x5au;
     failed |= !transaction_has_pair(&probe, CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
@@ -266,11 +266,11 @@ C_INT main(C_VOID)
         CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
 
     probe.count = 0u;
-    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0x000ffff0u, reset_code,
-        sizeof(reset_code)) != TYPE_STATUS_OK;
+        sizeof(reset_code)) != LIB_STATUS_OK;
     failed |= core_machine_run(machine, (core_machine_run_budget){3u, 0u},
-        &result) != TYPE_STATUS_OK;
+        &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     failed |= probe.port_value != 0x6cu;
     failed |= transaction_count_external_cycles(&probe,
@@ -282,7 +282,7 @@ C_INT main(C_VOID)
     failed |= core_machine_transaction_begin(&transaction,
         CORE_MACHINE_TRANSACTION_OWNER_DMA,
         CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, 0x11234u, 1u, 2u) !=
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
     core_machine_transaction_reset(&transaction);
     failed |= transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         transaction.committed_count != 0u || transaction.cancelled_count != 0u;
@@ -293,11 +293,11 @@ C_INT main(C_VOID)
 
     core_machine_port_initialize(&port);
     failed |= core_machine_memory_initialize_for(&memory, 2u * 1024u * 1024u,
-        LIB_NULL) != TYPE_STATUS_OK;
+        LIB_NULL) != LIB_STATUS_OK;
     core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u);
     core_machine_dma_reset(&latch, &primary, &secondary);
     failed |= core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,
-        &dma_provider, &source, &binding) != TYPE_STATUS_OK;
+        &dma_provider, &source, &binding) != LIB_STATUS_OK;
     transaction_dma_program_channel2(&port);
     core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_transaction_initialize(&transaction);
@@ -315,15 +315,15 @@ C_INT main(C_VOID)
         state_probe.owner != CORE_MACHINE_TRANSACTION_OWNER_DMA ||
         state_probe.kind != CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE;
     failed |= core_machine_memory_read_physical(&memory, 0x11234u,
-        (type_virtual_address)&data, 1u) != TYPE_STATUS_OK || data != 0xa5u;
+        (lib_uptr)&data, 1u) != LIB_STATUS_OK || data != 0xa5u;
 
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     core_machine_destroy(machine);
     if (failed != 0) return 1;
-    STD_PRINTF("M5:T354:S2:TRANSACTION:OK\n");
-    STD_PRINTF("M5:T409:S1:CPU-MEMORY-PROVENANCE:OK\n");
-    STD_PRINTF("M5:T410:S1:CPU-EXTERNAL-CYCLE:OK\n");
-    STD_PRINTF("M5:T411:S1:CPU-PREFETCH-WINDOW:OK\n");
+    printf("M5:T354:S2:TRANSACTION:OK\n");
+    printf("M5:T409:S1:CPU-MEMORY-PROVENANCE:OK\n");
+    printf("M5:T410:S1:CPU-EXTERNAL-CYCLE:OK\n");
+    printf("M5:T411:S1:CPU-PREFETCH-WINDOW:OK\n");
     return 0;
 }

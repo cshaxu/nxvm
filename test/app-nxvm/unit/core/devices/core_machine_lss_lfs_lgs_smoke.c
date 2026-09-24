@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -9,19 +10,19 @@ typedef struct lfg_machine {
     core_machine *machine;
 } lfg_machine;
 
-static C_VOID lfg_reset(C_VOID *opaque)
+static void lfg_reset(void *opaque)
 {
     lfg_machine *state = (lfg_machine *)opaque;
 
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider lfg_provider = {
     lfg_reset, LIB_NULL
 };
 
-static C_INT lfg_prepare(core_machine_cpu_profile profile, lfg_machine *state)
+static lib_i32 lfg_prepare(core_machine_cpu_profile profile, lfg_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -34,22 +35,22 @@ return test_core_machine_fixture_create_bind_freeze_reset(&config,
         &lfg_provider, state, &state->machine);
 }
 
-static C_INT lfg_run_prepared(lfg_machine *state, const lib_u8 *code,
+static lib_i32 lfg_run_prepared(lfg_machine *state, const lib_u8 *code,
     lib_u8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
-    type_status *status)
+    lib_status *status)
 {
     core_machine_run_result result;
 
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK)
+            LIB_STATUS_OK)
         return 0;
     *status = core_machine_run(state->machine,
         (core_machine_run_budget){ 1u, 0u }, &result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
-static C_INT lfg_test_real(C_VOID)
+static lib_i32 lfg_test_real(void)
 {
     static const lib_u8 op[] = { 0xb2u, 0xb4u, 0xb5u };
     lib_u8 i;
@@ -60,11 +61,11 @@ static C_INT lfg_test_real(C_VOID)
             lfg_machine s;
             t_cpu a = {0};
             core_machine_cpu_diagnostic d = {0};
-            type_status st = TYPE_STATUS_INVALID_STATE;
+            lib_status st = LIB_STATUS_INVALID_STATE;
             lib_u8 c[] = { 0x0fu, op[i], 0x06u, 0, 0x10u, 0 };
             lib_u8 p16[] = { 0x44u, 0x33u, 0x34u, 0x12u };
             lib_u8 p32[] = { 0x44u, 0x33u, 0x22u, 0x11u, 0x34u, 0x12u };
-            C_INT f = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &s);
+            lib_i32 f = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &s);
 
             if (z) {
                 c[0] = 0x66u;
@@ -80,9 +81,9 @@ static C_INT lfg_test_real(C_VOID)
                 s.machine->executor_cpu.data.eflags =
                     VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
                 f |= core_machine_memory_write(s.machine, 0x1000u, z ? p32 :
-                        p16, z ? 6u : 4u) != TYPE_STATUS_OK ||
+                        p16, z ? 6u : 4u) != LIB_STATUS_OK ||
                     !lfg_run_prepared(&s, c, z ? 6u : 5u, &a, &d, &st) ||
-                    st != TYPE_STATUS_OK || d.first_fault.valid ||
+                    st != LIB_STATUS_OK || d.first_fault.valid ||
                     a.data.eip != (z ? 6u : 5u) ||
                     a.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF) ||
                     (z ? a.data.eax : a.data.ax) !=
@@ -95,7 +96,7 @@ static C_INT lfg_test_real(C_VOID)
                     f |= a.data.gs.selector != 0x1234u;
             }
             if (f) {
-                STD_PRINTF("LFG real op=%02x size=%u status=%d eip=%08x eax=%08x ss=%04x fs=%04x gs=%04x flags=%08x first=%u mask=%08x\n",
+                printf("LFG real op=%02x size=%u status=%d eip=%08x eax=%08x ss=%04x fs=%04x gs=%04x flags=%08x first=%u mask=%08x\n",
                     op[i], z, st, a.data.eip, a.data.eax, a.data.ss.selector,
                     a.data.fs.selector, a.data.gs.selector, a.data.eflags,
                     d.first_fault.valid, d.first_fault.exception_mask);
@@ -107,7 +108,7 @@ static C_INT lfg_test_real(C_VOID)
     }
     return 1;
 }
-static C_INT lfg_test_reg_direct_80386(C_VOID)
+static lib_i32 lfg_test_reg_direct_80386(void)
 {
     static const lib_u8 op[] = { 0xb2u, 0xb4u, 0xb5u };
     lib_u8 i;
@@ -117,9 +118,9 @@ static C_INT lfg_test_reg_direct_80386(C_VOID)
         t_cpu a;
         t_cpu b;
         core_machine_cpu_diagnostic d;
-        type_status st;
+        lib_status st;
         lib_u8 c[] = { 0x0fu, op[i], 0xc0u };
-        C_INT f = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &s);
+        lib_i32 f = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &s);
 
         if (!f) {
             f |= !test_core_machine_fixture_prepare_real_mode_execution(
@@ -130,8 +131,8 @@ static C_INT lfg_test_reg_direct_80386(C_VOID)
             f |= !test_core_machine_fixture_preflight_real_ud_terminal(s.machine);
             b = test_core_machine_fixture_capture_cpu_after_run(s.machine);
             f |= !lfg_run_prepared(&s, c, 3u, &a, &d, &st) ||
-                st != TYPE_STATUS_FAULT || !d.first_fault.valid ||
-                !TYPE_GET_BIT(d.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                st != LIB_STATUS_INTERNAL_ERROR || !d.first_fault.valid ||
+                !CORE_MACHINE_BIT_IS_SET(d.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                 a.data.eip != b.data.eip || a.data.eax != b.data.eax ||
                 a.data.eflags != b.data.eflags ||
                 (i == 0u ? a.data.ss.selector : i == 1u ?
@@ -146,7 +147,7 @@ static C_INT lfg_test_reg_direct_80386(C_VOID)
     return 1;
 }
 
-static C_INT lfg_test_80286_memory(C_VOID)
+static lib_i32 lfg_test_80286_memory(void)
 {
     static const lib_u8 op[] = { 0xb2u, 0xb4u, 0xb5u };
     lib_u8 i;
@@ -158,9 +159,9 @@ static C_INT lfg_test_80286_memory(C_VOID)
             t_cpu a;
             t_cpu b;
             core_machine_cpu_diagnostic d;
-            type_status st;
+            lib_status st;
             lib_u8 c[] = { 0x0fu, op[i], 0x06u, 0, 0x10u, 0 };
-            C_INT f = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80286, &s);
+            lib_i32 f = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80286, &s);
 
             if (z) {
                 c[0] = 0x66u;
@@ -179,8 +180,8 @@ static C_INT lfg_test_80286_memory(C_VOID)
                 f |= !test_core_machine_fixture_preflight_real_ud_terminal(s.machine);
                 b = test_core_machine_fixture_capture_cpu_after_run(s.machine);
                 f |= !lfg_run_prepared(&s, c, z ? 6u : 5u, &a, &d, &st) ||
-                    st != TYPE_STATUS_FAULT || !d.first_fault.valid ||
-                    !TYPE_GET_BIT(d.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                    st != LIB_STATUS_INTERNAL_ERROR || !d.first_fault.valid ||
+                    !CORE_MACHINE_BIT_IS_SET(d.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
                     a.data.eip != b.data.eip || a.data.eax != b.data.eax ||
                     a.data.eflags != b.data.eflags ||
                     a.data.fs.selector != b.data.fs.selector ||
@@ -197,7 +198,7 @@ static C_INT lfg_test_80286_memory(C_VOID)
     }
     return 1;
 }
-static C_INT lfg_prepare_protected(lfg_machine *state)
+static lib_i32 lfg_prepare_protected(lfg_machine *state)
 {
     static const lib_u8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
     static const lib_u8 gdt[] = {
@@ -216,18 +217,18 @@ static C_INT lfg_prepare_protected(lfg_machine *state)
 
     return lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
         core_machine_memory_write(state->machine, 0x0100u, pointer,
-            sizeof(pointer)) == TYPE_STATUS_OK &&
+            sizeof(pointer)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x0300u, gdt,
-            sizeof(gdt)) == TYPE_STATUS_OK &&
+            sizeof(gdt)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, bootstrap,
-            sizeof(bootstrap)) == TYPE_STATUS_OK &&
+            sizeof(bootstrap)) == LIB_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x2000u, hlt,
-            sizeof(hlt)) == TYPE_STATUS_OK &&
+            sizeof(hlt)) == LIB_STATUS_OK &&
         core_machine_run(state->machine, (core_machine_run_budget){ 96u, 0u },
-            &result) == TYPE_STATUS_OK &&
+            &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
-static C_INT lfg_test_protected(C_VOID)
+static lib_i32 lfg_test_protected(void)
 {
     static const lib_u8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
     static const lib_u8 pointer16[] = { 0x44u, 0x33u, 0x10u, 0x00u };
@@ -245,7 +246,7 @@ static C_INT lfg_test_protected(C_VOID)
             lib_u8 code_bytes = operand32 ? 6u : 5u;
             lib_u8 pointer_bytes = operand32 ? 6u : 4u;
             lib_u32 expected_offset = operand32 ? 0x11223344u : 0x3344u;
-            C_INT failed = !lfg_prepare_protected(&state);
+            lib_i32 failed = !lfg_prepare_protected(&state);
 
             if (!failed && operand32) {
                 code[0] = 0x66u;
@@ -261,12 +262,12 @@ static C_INT lfg_test_protected(C_VOID)
                 state.machine->executor_cpu.data.gs.selector = 0x2222u;
                 state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
                 failed |= core_machine_memory_write(state.machine, 0x1000u, pointer,
-                        pointer_bytes) != TYPE_STATUS_OK ||
+                        pointer_bytes) != LIB_STATUS_OK ||
                     core_machine_memory_write(state.machine, 0x2000u, code,
-                        code_bytes) != TYPE_STATUS_OK;
+                        code_bytes) != LIB_STATUS_OK;
                 test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
                 failed |= core_machine_run(state.machine,
-                        (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK ||
+                        (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
                     result.reason != CORE_MACHINE_STOP_BUDGET;
                 after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                 failed |= after.data.eip != code_bytes ||
@@ -282,7 +283,7 @@ static C_INT lfg_test_protected(C_VOID)
     }
     return 1;
 }
-static C_INT lfg_test_source_fault_atomicity(C_VOID)
+static lib_i32 lfg_test_source_fault_atomicity(void)
 {
     static const lib_u8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
     lib_u8 opcode;
@@ -294,7 +295,7 @@ static C_INT lfg_test_source_fault_atomicity(C_VOID)
         t_cpu before = {0};
         t_cpu after = {0};
         lib_u8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u };
-        C_INT failed = !lfg_prepare_protected(&state);
+        lib_i32 failed = !lfg_prepare_protected(&state);
 
         if (!failed) {
             state.machine->executor_cpu.data.ds.limit = 0x1001u;
@@ -304,15 +305,15 @@ static C_INT lfg_test_source_fault_atomicity(C_VOID)
             state.machine->executor_cpu.data.gs.selector = 0x2222u;
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
             failed |= core_machine_memory_write(state.machine, 0x2000u, code,
-                    sizeof(code)) != TYPE_STATUS_OK;
+                    sizeof(code)) != LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_run(state.machine,
-                    (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_FAULT ||
+                    (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
                 result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                     diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
                 after.data.eip != before.data.eip || after.data.eax != before.data.eax ||
                 after.data.eflags != before.data.eflags ||
@@ -322,7 +323,7 @@ static C_INT lfg_test_source_fault_atomicity(C_VOID)
                         before.data.fs.selector : before.data.gs.selector);
         }
         if (failed)
-            STD_PRINTF("LFG source-fault op=%02x reason=%d first=%u mask=%08x eip=%08x/%08x eax=%08x/%08x flags=%08x/%08x\n",
+            printf("LFG source-fault op=%02x reason=%d first=%u mask=%08x eip=%08x/%08x eax=%08x/%08x flags=%08x/%08x\n",
                 opcodes[opcode], result.reason, diagnostic.first_fault.valid,
                 diagnostic.first_fault.exception_mask, before.data.eip, after.data.eip,
                 before.data.eax, after.data.eax, before.data.eflags, after.data.eflags);
@@ -332,7 +333,7 @@ static C_INT lfg_test_source_fault_atomicity(C_VOID)
     }
     return 1;
 }
-static C_INT lfg_test_irq_shadow(C_VOID)
+static lib_i32 lfg_test_irq_shadow(void)
 {
     static const lib_u8 opcodes[] = { 0xb2u, 0xb4u, 0xb5u };
     static const lib_u8 pointer[] = { 0x44u, 0x33u, 0x00u, 0x00u };
@@ -348,21 +349,21 @@ static C_INT lfg_test_irq_shadow(C_VOID)
         lib_u16 vector_offset = 0x0100u;
         lib_u16 vector_segment = 0u;
         lib_u16 frame_ip = 0u;
-        C_INT failed = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        lib_i32 failed = !lfg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(
                     state.machine, 0u) ||
                 core_machine_memory_write(state.machine, 0x1000u, pointer,
-                    sizeof(pointer)) != TYPE_STATUS_OK ||
+                    sizeof(pointer)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0u, code,
-                    sizeof(code)) != TYPE_STATUS_OK ||
+                    sizeof(code)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x20u * 4u,
-                    &vector_offset, sizeof(vector_offset)) != TYPE_STATUS_OK ||
+                    &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x20u * 4u + 2u,
-                    &vector_segment, sizeof(vector_segment)) != TYPE_STATUS_OK ||
+                    &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x0100u, &hlt,
-                    sizeof(hlt)) != TYPE_STATUS_OK;
+                    sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
@@ -373,20 +374,20 @@ static C_INT lfg_test_irq_shadow(C_VOID)
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(state.machine,
-                    (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK ||
+                    (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
                 result.reason != (opcode == 0u ? CORE_MACHINE_STOP_BUDGET :
                     CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                     after.data.ss.base + (lib_u16)after.data.esp,
-                    (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK ||
-                after.data.eip != (opcode == 0u ? 0x0100u : 0x0101u) || !TYPE_GET_BIT(
+                    (lib_uptr)&frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
+                after.data.eip != (opcode == 0u ? 0x0100u : 0x0101u) || !CORE_MACHINE_BIT_IS_SET(
                     state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-                TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+                CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
                     VPIC_IRR_IRQ(0u)) || frame_ip != (opcode == 0u ? 6u : 5u);
         }
         if (failed)
-            STD_PRINTF("LFG irq op=%02x eip=%08x esp=%08x irr=%02x isr=%02x frame=%04x\n",
+            printf("LFG irq op=%02x eip=%08x esp=%08x irr=%02x isr=%02x frame=%04x\n",
                 opcodes[opcode], after.data.eip, after.data.esp,
                 state.machine->shared_pic_master.data.irr,
                 state.machine->shared_pic_master.data.isr, frame_ip);
@@ -396,28 +397,28 @@ static C_INT lfg_test_irq_shadow(C_VOID)
     }
     return 1;
 }
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!lfg_test_real()) {
-        STD_PRINTF("LFG stage=real\n");
+        printf("LFG stage=real\n");
         return 1;
     }
     if (!lfg_test_reg_direct_80386()) {
-        STD_PRINTF("LFG stage=regdirect\n");
+        printf("LFG stage=regdirect\n");
         return 1;
     }
     if (!lfg_test_80286_memory()) {
-        STD_PRINTF("LFG stage=80286\n");
+        printf("LFG stage=80286\n");
         return 1;
     }
     if (!lfg_test_protected()) {
-        STD_PRINTF("LFG stage=protected\n");
+        printf("LFG stage=protected\n");
         return 1;
     }
     if (!lfg_test_source_fault_atomicity())
         return 1;
     if (!lfg_test_irq_shadow())
         return 1;
-    STD_PRINTF("M5:T316:S24:LSS-LFS-LGS:OK\n");
+    printf("M5:T316:S24:LSS-LFS-LGS:OK\n");
     return 0;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
@@ -10,7 +10,7 @@
 _Static_assert(T314_CRTC_ADJACENT_INDEX < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT,
     "T314 adjacent CRTC test index must fit the VADP CRTC register bank");
 
-static C_VOID core_machine_ega_crtc_write(t_port *port, lib_u8 index,
+static void core_machine_ega_crtc_write(t_port *port, lib_u8 index,
     lib_u8 value)
 {
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, index);
@@ -23,7 +23,7 @@ static lib_u8 core_machine_ega_crtc_read(t_port *port, lib_u8 index)
     return core_machine_port_read(port, CORE_MACHINE_VADP_PORT_CRTC_DATA);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const core_machine_vadp_ega_sequencer_config sequencer = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
@@ -48,23 +48,23 @@ C_INT main(C_VOID)
         0xffu, 0x3fu, 0xffu, 0xffu, 0x1fu, 0xffu, 0x1fu, 0xffu,
         0xffu
     };
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     core_machine_vadp_initialize(&vadp, &port);
     core_machine_vadp_configure_ega_ports(&vadp, &port);
     failed |= core_machine_vadp_configure_ega_sequencer(&vadp, &memory,
-        &sequencer) != TYPE_STATUS_OK;
+        &sequencer) != LIB_STATUS_OK;
     failed |= core_machine_vadp_configure_ega_controllers(&vadp,
-        &controllers) != TYPE_STATUS_OK;
+        &controllers) != LIB_STATUS_OK;
 
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX, 2u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA, 0x0fu);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-    (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    (void)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x01u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_MODE, 0x1au);
@@ -113,9 +113,9 @@ C_INT main(C_VOID)
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T314:S2:EGA-CRTC-BOUNDARY:FAIL\n");
+        fprintf(stderr, "M5:T314:S2:EGA-CRTC-BOUNDARY:FAIL\n");
         return 1;
     }
-    STD_PRINTF("M5:T314:S2:EGA-CRTC-BOUNDARY:OK\n");
+    printf("M5:T314:S2:EGA-CRTC-BOUNDARY:OK\n");
     return 0;
 }

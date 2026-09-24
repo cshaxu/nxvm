@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/display_interface.h"
 #include "app-nxvm/devices/machine.h"
@@ -11,14 +11,14 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
-static C_INT t386_s28_session_write(vm_machine *session, lib_u8 value)
+static lib_i32 t386_s28_session_write(vm_machine *session, lib_u8 value)
 {
     return core_machine_memory_write_physical(&session->core_machine->executor_memory,
-        CORE_MACHINE_VADP_EGA_APERTURE_BASE, (type_virtual_address)&value,
-        sizeof(value)) == TYPE_STATUS_OK;
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE, (lib_uptr)&value,
+        sizeof(value)) == LIB_STATUS_OK;
 }
 
-static C_VOID t386_s28_select_ega_320(vm_machine *session)
+static void t386_s28_select_ega_320(vm_machine *session)
 {
     core_machine_port_write(&session->core_machine->executor_port,
         CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
@@ -38,15 +38,15 @@ static C_VOID t386_s28_select_ega_320(vm_machine *session)
         CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x14u);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
     core_machine_display_snapshot snapshot;
     core_machine_display_snapshot_observation observation;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=
-        TYPE_STATUS_OK || session == LIB_NULL;
+        LIB_STATUS_OK || session == LIB_NULL;
     if (!failed) {
         t386_s28_select_ega_320(session);
         core_machine_port_write(&session->core_machine->executor_port,
@@ -62,16 +62,16 @@ C_INT main(C_VOID)
             !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 0u ||
             core_machine_observe_display_snapshot(session->core_machine,
-                LIB_FALSE, 0u, &observation) != TYPE_STATUS_OK ||
+                LIB_FALSE, 0u, &observation) != LIB_STATUS_OK ||
             !observation.generation_reliable;
         if (!failed) {
             /* The selected high page remains VADP-owned, so a Core write must
              * publish a fresh copied-frame generation. */
             failed |= core_machine_memory_write(session->core_machine,
                 CORE_MACHINE_VADP_EGA_APERTURE_BASE, &(lib_u8){0x5au},
-                sizeof(lib_u8)) != TYPE_STATUS_OK ||
+                sizeof(lib_u8)) != LIB_STATUS_OK ||
                 core_machine_observe_display_snapshot(session->core_machine,
-                    LIB_TRUE, observation.generation, &observation) != TYPE_STATUS_OK ||
+                    LIB_TRUE, observation.generation, &observation) != LIB_STATUS_OK ||
                 !observation.generation_reliable || !observation.capture_required;
         }
     }
@@ -87,9 +87,9 @@ C_INT main(C_VOID)
     }
     vm_machine_destroy(session);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T386:S28:MODEL40-CECG-ODD-EVEN:FAIL\n");
+        fprintf(stderr, "M5:T386:S28:MODEL40-CECG-ODD-EVEN:FAIL\n");
         return 1;
     }
-    STD_PRINTF("M5:T386:S28:MODEL40-CECG-ODD-EVEN:OK\n");
+    printf("M5:T386:S28:MODEL40-CECG-ODD-EVEN:OK\n");
     return 0;
 }

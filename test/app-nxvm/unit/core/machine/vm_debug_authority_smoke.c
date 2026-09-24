@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 #include "app-nxvm/machine/machine_private.h"
 
 
@@ -11,7 +11,7 @@
 
 #include "app-nxvm/machine/debug.h"
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session;
     vm_machine *machine;

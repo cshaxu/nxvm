@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include "lib/types/file.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/cpu_timing.h"
@@ -35,11 +36,11 @@
  * recipe set must never write the final result document: the result verifier
  * accepts every observed canonical key. */
 typedef struct timing_80286_manifest_record {
-    const C_CHAR *key_id;
-    const C_CHAR *profile;
-    const C_CHAR *level;
-    const C_CHAR *source_rule;
-    const C_CHAR *context;
+    const char *key_id;
+    const char *profile;
+    const char *level;
+    const char *source_rule;
+    const char *context;
 } timing_80286_manifest_record;
 
 typedef struct timing_80286_manifest_capture {
@@ -48,7 +49,7 @@ typedef struct timing_80286_manifest_capture {
 } timing_80286_manifest_capture;
 
 typedef struct timing_80286_manifest_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 program[16];
     lib_size bytes;
     lib_u64 ticks;
@@ -56,14 +57,14 @@ typedef struct timing_80286_manifest_recipe {
 } timing_80286_manifest_recipe;
 
 typedef struct timing_80286_manifest_control_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 opcode;
     lib_u32 eflags;
     lib_u64 ticks;
 } timing_80286_manifest_control_recipe;
 
 typedef struct timing_80286_manifest_repeat_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 prefix;
     lib_u8 opcode;
     lib_u64 first_ticks;
@@ -74,40 +75,40 @@ typedef struct timing_80286_manifest_repeat_recipe {
 static const timing_80286_manifest_record timing_80286_manifest_records[] = {
 #include "cpu_timing_manifest_metadata_catalog.inc"
 };
-static C_INT timing_80286_manifest_observed[
+static lib_i32 timing_80286_manifest_observed[
     sizeof(timing_80286_manifest_records) / sizeof(timing_80286_manifest_records[0])];
 static core_machine_retirement_observation timing_80286_manifest_results[
     sizeof(timing_80286_manifest_records) / sizeof(timing_80286_manifest_records[0])];
-static C_INT timing_80286_manifest_current_index = -1;
-static C_INT timing_80286_manifest_base_index = -1;
-static C_INT timing_80286_manifest_flags_active = 0;
+static lib_i32 timing_80286_manifest_current_index = -1;
+static lib_i32 timing_80286_manifest_base_index = -1;
+static lib_i32 timing_80286_manifest_flags_active = 0;
 static lib_u32 timing_80286_manifest_eflags;
 
-static type_status timing_80286_manifest_port_read(C_VOID *owner,
+static lib_status timing_80286_manifest_port_read(void *owner,
     lib_u16 port, lib_u32 *out_value)
 {
-    (C_VOID)owner;
-    if (port != 0x00e0u || out_value == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    (void)owner;
+    if (port != 0x00e0u || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = 0x5au;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status timing_80286_manifest_port_write(C_VOID *owner,
+static lib_status timing_80286_manifest_port_write(void *owner,
     lib_u16 port, lib_u32 value)
 {
-    (C_VOID)owner;
-    return port == 0x00e0u && value <= 0xffffu ? TYPE_STATUS_OK :
-        TYPE_STATUS_INVALID_ARGUMENT;
+    (void)owner;
+    return port == 0x00e0u && value <= 0xffffu ? LIB_STATUS_OK :
+        LIB_STATUS_INVALID_ARGUMENT;
 }
 
 static const core_machine_port_provider timing_80286_manifest_ports = {
     timing_80286_manifest_port_read, timing_80286_manifest_port_write
 };
 
-static C_INT timing_80286_manifest_key_has_prefix(const C_CHAR *key,
-    const C_CHAR *prefix);
+static lib_i32 timing_80286_manifest_key_has_prefix(const char *key,
+    const char *prefix);
 
-static C_INT timing_80286_manifest_is_dx_port(const C_CHAR *key_id)
+static lib_i32 timing_80286_manifest_is_dx_port(const char *key_id)
 {
     return key_id != LIB_NULL && (lib_c_strcmp(key_id, "I286-IN-DX-B") == 0 ||
         lib_c_strcmp(key_id, "I286-IN-DX-W") == 0 ||
@@ -115,9 +116,9 @@ static C_INT timing_80286_manifest_is_dx_port(const C_CHAR *key_id)
         lib_c_strcmp(key_id, "I286-OUT-DX-W") == 0);
 }
 
-static C_INT timing_80286_manifest_is_interrupt(const C_CHAR *key_id)
+static lib_i32 timing_80286_manifest_is_interrupt(const char *key_id)
 {
-    static const C_CHAR *const keys[] = {
+    static const char *const keys[] = {
         "I286-INT3-REAL-NEXT-BYTE-1", "I286-INT3-REAL-NEXT-BYTE-2",
         "I286-INT3-REAL-NEXT-BYTE-3", "I286-INT3-REAL-NEXT-BYTE-4",
         "I286-INT3-REAL-NEXT-BYTE-5", "I286-INT3-REAL-NEXT-BYTE-6",
@@ -137,9 +138,9 @@ static C_INT timing_80286_manifest_is_interrupt(const C_CHAR *key_id)
     return 0;
 }
 
-static C_INT timing_80286_manifest_uses_stack(const C_CHAR *key_id)
+static lib_i32 timing_80286_manifest_uses_stack(const char *key_id)
 {
-    static const C_CHAR *const stack_keys[] = {
+    static const char *const stack_keys[] = {
         "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1", "I286-CALL-NEAR-RM-SEGMENT",
         "I286-CALL-NEAR-RM-EA-BID", "I286-STACK-PUSH-M",
         "I286-STACK-POP-M", "I286-STACK-PUSH-M-ODD-WORD",
@@ -167,16 +168,16 @@ static C_INT timing_80286_manifest_uses_stack(const C_CHAR *key_id)
     return 0;
 }
 
-static C_INT timing_80286_manifest_uses_far_target(const C_CHAR *key_id)
+static lib_i32 timing_80286_manifest_uses_far_target(const char *key_id)
 {
     return key_id != LIB_NULL && (lib_c_strcmp(key_id,
         "I286-JMP-FAR-REAL-NEXT-BYTE-2") == 0 || lib_c_strcmp(key_id,
         "I286-RET-NEAR-NEXT-BYTE-1") == 0);
 }
 
-static C_INT timing_80286_manifest_is_ret_near_next_byte(const C_CHAR *key_id)
+static lib_i32 timing_80286_manifest_is_ret_near_next_byte(const char *key_id)
 {
-    static const C_CHAR *const keys[] = {
+    static const char *const keys[] = {
         "I286-RET-NEAR-NEXT-BYTE-1", "I286-RET-NEAR-NEXT-BYTE-2",
         "I286-RET-NEAR-NEXT-BYTE-3", "I286-RET-NEAR-NEXT-BYTE-4",
         "I286-RET-NEAR-NEXT-BYTE-5", "I286-RET-NEAR-NEXT-BYTE-6"
@@ -190,14 +191,14 @@ static C_INT timing_80286_manifest_is_ret_near_next_byte(const C_CHAR *key_id)
     return 0;
 }
 
-static C_INT timing_80286_manifest_is_bound(const C_CHAR *key_id)
+static lib_i32 timing_80286_manifest_is_bound(const char *key_id)
 {
     return key_id != LIB_NULL && lib_c_strcmp(key_id, "I286-BOUND") == 0;
 }
 
-static C_INT timing_80286_manifest_uses_odd_memory_operand(const C_CHAR *key_id)
+static lib_i32 timing_80286_manifest_uses_odd_memory_operand(const char *key_id)
 {
-    static const C_CHAR *const keys[] = {
+    static const char *const keys[] = {
         "I286-MUL-M16-ODD-WORD", "I286-IMUL-M16-ODD-WORD",
         "I286-DIV-M16-ODD-WORD", "I286-IDIV-M16-ODD-WORD",
         "I286-IMUL-IMM-IMM16-M-ODD-WORD", "I286-MOV-RM-ODD-WORD",
@@ -229,7 +230,7 @@ static C_INT timing_80286_manifest_uses_odd_memory_operand(const C_CHAR *key_id)
     return 0;
 }
 
-static lib_u16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
+static lib_u16 timing_80286_manifest_control_cx(const char *key_id)
 {
     if (key_id == LIB_NULL) return 2u;
     if (lib_c_strcmp(key_id, "I286-JCXZ-TAKEN") == 0) return 0u;
@@ -249,7 +250,7 @@ timing_80286_manifest_control_origin(lib_u8 opcode)
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK;
 }
 
-static C_INT timing_80286_manifest_is_i286(
+static lib_i32 timing_80286_manifest_is_i286(
     const timing_80286_manifest_record *record)
 {
     return record != LIB_NULL && record->key_id[0] == 'I' &&
@@ -258,7 +259,7 @@ static C_INT timing_80286_manifest_is_i286(
 }
 
 static const timing_80286_manifest_record *timing_80286_manifest_find(
-    const C_CHAR *key_id)
+    const char *key_id)
 {
     lib_size index;
 
@@ -267,27 +268,27 @@ static const timing_80286_manifest_record *timing_80286_manifest_find(
     for (index = 0u; index < sizeof(timing_80286_manifest_records) /
             sizeof(timing_80286_manifest_records[0]); ++index) {
         if (lib_c_strcmp(timing_80286_manifest_records[index].key_id, key_id) == 0) {
-            timing_80286_manifest_current_index = (C_INT)index;
+            timing_80286_manifest_current_index = (lib_i32)index;
             break;
         }
     }
     if (timing_80286_manifest_current_index < 0) return LIB_NULL;
     for (index = 0u; index < sizeof(timing_80286_manifest_records) /
             sizeof(timing_80286_manifest_records[0]); ++index) {
-        const C_CHAR *base = timing_80286_manifest_records[index].key_id;
+        const char *base = timing_80286_manifest_records[index].key_id;
         lib_size length = 0u;
 
         while (base[length] != '\0' && key_id[length] == base[length]) ++length;
         if (base[length] == '\0' && lib_c_strcmp(key_id + length,
                 "-NEXT-BYTE-1") == 0) {
-            timing_80286_manifest_base_index = (C_INT)index;
+            timing_80286_manifest_base_index = (lib_i32)index;
             break;
         }
     }
     return &timing_80286_manifest_records[timing_80286_manifest_current_index];
 }
 
-static C_VOID timing_80286_manifest_capture_retirement(C_VOID *opaque,
+static void timing_80286_manifest_capture_retirement(void *opaque,
     const core_machine_retirement_observation *observation)
 {
     timing_80286_manifest_capture *capture =
@@ -312,7 +313,7 @@ static C_VOID timing_80286_manifest_capture_retirement(C_VOID *opaque,
     ++capture->count;
 }
 
-static C_INT timing_80286_manifest_results_complete(C_VOID)
+static lib_i32 timing_80286_manifest_results_complete(void)
 {
     lib_size index;
     lib_size observed = 0u;
@@ -330,7 +331,7 @@ static C_INT timing_80286_manifest_results_complete(C_VOID)
     return expected != 0u && observed == expected;
 }
 
-static lib_u32 timing_80286_manifest_observed_count(C_VOID)
+static lib_u32 timing_80286_manifest_observed_count(void)
 {
     lib_size index;
     lib_u32 observed = 0u;
@@ -345,7 +346,7 @@ static lib_u32 timing_80286_manifest_observed_count(C_VOID)
     return observed;
 }
 
-static lib_u32 timing_80286_manifest_expected_count(C_VOID)
+static lib_u32 timing_80286_manifest_expected_count(void)
 {
     lib_size index;
     lib_u32 expected = 0u;
@@ -359,8 +360,8 @@ static lib_u32 timing_80286_manifest_expected_count(C_VOID)
     return expected;
 }
 
-static C_INT timing_80286_manifest_key_has_prefix(const C_CHAR *key,
-    const C_CHAR *prefix)
+static lib_i32 timing_80286_manifest_key_has_prefix(const char *key,
+    const char *prefix)
 {
     lib_size index;
 
@@ -371,8 +372,8 @@ static C_INT timing_80286_manifest_key_has_prefix(const C_CHAR *key,
     return 1;
 }
 
-static C_INT timing_80286_manifest_key_has_token(const C_CHAR *key,
-    const C_CHAR *token)
+static lib_i32 timing_80286_manifest_key_has_token(const char *key,
+    const char *token)
 {
     lib_size key_index;
 
@@ -384,10 +385,10 @@ static C_INT timing_80286_manifest_key_has_token(const C_CHAR *key,
 }
 
 /* Kept byte-for-byte aligned with the S1 partition's later-S boundaries. */
-static C_INT timing_80286_manifest_is_s3(
+static lib_i32 timing_80286_manifest_is_s3(
     const timing_80286_manifest_record *record)
 {
-    const C_CHAR *key = record != LIB_NULL ? record->key_id : LIB_NULL;
+    const char *key = record != LIB_NULL ? record->key_id : LIB_NULL;
 
     if (!timing_80286_manifest_is_i286(record)) return 0;
     if (timing_80286_manifest_key_has_prefix(key, "I286-STRING-") ||
@@ -414,7 +415,7 @@ static C_INT timing_80286_manifest_is_s3(
     return 1;
 }
 
-static lib_u32 timing_80286_manifest_s3_observed_count(C_VOID)
+static lib_u32 timing_80286_manifest_s3_observed_count(void)
 {
     lib_size index;
     lib_u32 observed = 0u;
@@ -429,7 +430,7 @@ static lib_u32 timing_80286_manifest_s3_observed_count(C_VOID)
     return observed;
 }
 
-static lib_u32 timing_80286_manifest_s3_expected_count(C_VOID)
+static lib_u32 timing_80286_manifest_s3_expected_count(void)
 {
     lib_size index;
     lib_u32 expected = 0u;
@@ -443,7 +444,7 @@ static lib_u32 timing_80286_manifest_s3_expected_count(C_VOID)
     return expected;
 }
 
-static C_INT timing_80286_manifest_s3_results_complete(C_VOID)
+static lib_i32 timing_80286_manifest_s3_results_complete(void)
 {
     lib_size index;
 
@@ -479,20 +480,20 @@ static C_INT timing_80286_manifest_s3_results_complete(C_VOID)
         timing_80286_manifest_s3_expected_count();
 }
 
-static C_INT timing_80286_manifest_is_s4(
+static lib_i32 timing_80286_manifest_is_s4(
     const timing_80286_manifest_record *record)
 {
-    const C_CHAR *key = record != LIB_NULL ? record->key_id : LIB_NULL;
+    const char *key = record != LIB_NULL ? record->key_id : LIB_NULL;
 
     return timing_80286_manifest_is_i286(record) &&
         (timing_80286_manifest_key_has_prefix(key, "I286-STRING-") ||
          timing_80286_manifest_key_has_prefix(key, "I286-REP-"));
 }
 
-static C_INT timing_80286_manifest_is_s5(
+static lib_i32 timing_80286_manifest_is_s5(
     const timing_80286_manifest_record *record)
 {
-    const C_CHAR *key = record != LIB_NULL ? record->key_id : LIB_NULL;
+    const char *key = record != LIB_NULL ? record->key_id : LIB_NULL;
 
     return timing_80286_manifest_is_i286(record) &&
         (timing_80286_manifest_key_has_prefix(key, "I286-JCC-") ||
@@ -501,10 +502,10 @@ static C_INT timing_80286_manifest_is_s5(
          timing_80286_manifest_key_has_prefix(key, "I286-INTO-"));
 }
 
-static C_INT timing_80286_manifest_is_s6(
+static lib_i32 timing_80286_manifest_is_s6(
     const timing_80286_manifest_record *record)
 {
-    const C_CHAR *key = record != LIB_NULL ? record->key_id : LIB_NULL;
+    const char *key = record != LIB_NULL ? record->key_id : LIB_NULL;
 
     return timing_80286_manifest_is_i286(record) &&
         (timing_80286_manifest_key_has_prefix(key, "I286-CALL-") ||
@@ -519,7 +520,7 @@ static C_INT timing_80286_manifest_is_s6(
 /* S1 assigns every remaining 80286 manifest record to S7.  Expressing this
  * as the disjoint complement keeps the executable partition tied to the
  * earlier S3--S6 ownership predicates. */
-static C_INT timing_80286_manifest_is_s7(
+static lib_i32 timing_80286_manifest_is_s7(
     const timing_80286_manifest_record *record)
 {
     return timing_80286_manifest_is_i286(record) &&
@@ -529,7 +530,7 @@ static C_INT timing_80286_manifest_is_s7(
         !timing_80286_manifest_is_s6(record);
 }
 
-static lib_u32 timing_80286_manifest_s5_observed_count(C_VOID)
+static lib_u32 timing_80286_manifest_s5_observed_count(void)
 {
     lib_size index;
     lib_u32 observed = 0u;
@@ -544,7 +545,7 @@ static lib_u32 timing_80286_manifest_s5_observed_count(C_VOID)
     return observed;
 }
 
-static lib_u32 timing_80286_manifest_s6_observed_count(C_VOID)
+static lib_u32 timing_80286_manifest_s6_observed_count(void)
 {
     lib_size index;
     lib_u32 observed = 0u;
@@ -559,7 +560,7 @@ static lib_u32 timing_80286_manifest_s6_observed_count(C_VOID)
     return observed;
 }
 
-static lib_u32 timing_80286_manifest_s7_observed_count(C_VOID)
+static lib_u32 timing_80286_manifest_s7_observed_count(void)
 {
     lib_size index;
     lib_u32 observed = 0u;
@@ -574,7 +575,7 @@ static lib_u32 timing_80286_manifest_s7_observed_count(C_VOID)
     return observed;
 }
 
-static lib_u32 timing_80286_manifest_s5_expected_count(C_VOID)
+static lib_u32 timing_80286_manifest_s5_expected_count(void)
 {
     lib_size index;
     lib_u32 expected = 0u;
@@ -588,7 +589,7 @@ static lib_u32 timing_80286_manifest_s5_expected_count(C_VOID)
     return expected;
 }
 
-static C_INT timing_80286_manifest_s5_results_complete(C_VOID)
+static lib_i32 timing_80286_manifest_s5_results_complete(void)
 {
     lib_size index;
 
@@ -621,7 +622,7 @@ static C_INT timing_80286_manifest_s5_results_complete(C_VOID)
         timing_80286_manifest_s5_expected_count();
 }
 
-static lib_u32 timing_80286_manifest_s6_expected_count(C_VOID)
+static lib_u32 timing_80286_manifest_s6_expected_count(void)
 {
     lib_size index;
     lib_u32 expected = 0u;
@@ -635,7 +636,7 @@ static lib_u32 timing_80286_manifest_s6_expected_count(C_VOID)
     return expected;
 }
 
-static lib_u32 timing_80286_manifest_s7_expected_count(C_VOID)
+static lib_u32 timing_80286_manifest_s7_expected_count(void)
 {
     lib_size index;
     lib_u32 expected = 0u;
@@ -649,7 +650,7 @@ static lib_u32 timing_80286_manifest_s7_expected_count(C_VOID)
     return expected;
 }
 
-static C_INT timing_80286_manifest_s6_results_complete(C_VOID)
+static lib_i32 timing_80286_manifest_s6_results_complete(void)
 {
     lib_size index;
 
@@ -685,7 +686,7 @@ static C_INT timing_80286_manifest_s6_results_complete(C_VOID)
         timing_80286_manifest_s6_expected_count();
 }
 
-static C_INT timing_80286_manifest_s7_results_complete(C_VOID)
+static lib_i32 timing_80286_manifest_s7_results_complete(void)
 {
     lib_size index;
 
@@ -724,7 +725,7 @@ static C_INT timing_80286_manifest_s7_results_complete(C_VOID)
         timing_80286_manifest_s7_expected_count();
 }
 
-static lib_u32 timing_80286_manifest_s4_observed_count(C_VOID)
+static lib_u32 timing_80286_manifest_s4_observed_count(void)
 {
     lib_size index;
     lib_u32 observed = 0u;
@@ -739,7 +740,7 @@ static lib_u32 timing_80286_manifest_s4_observed_count(C_VOID)
     return observed;
 }
 
-static lib_u32 timing_80286_manifest_s4_expected_count(C_VOID)
+static lib_u32 timing_80286_manifest_s4_expected_count(void)
 {
     lib_size index;
     lib_u32 expected = 0u;
@@ -753,7 +754,7 @@ static lib_u32 timing_80286_manifest_s4_expected_count(C_VOID)
     return expected;
 }
 
-static C_INT timing_80286_manifest_s4_results_complete(C_VOID)
+static lib_i32 timing_80286_manifest_s4_results_complete(void)
 {
     lib_size index;
 
@@ -791,8 +792,8 @@ static C_INT timing_80286_manifest_s4_results_complete(C_VOID)
 /* This writer is intentionally unavailable to a partial or pre-S8 runner.
  * S3--S7 may add real recipes, but only the final closure packet can publish
  * the all-key artifact after every canonical record was observed. */
-static C_INT timing_80286_manifest_write_results(const C_CHAR *path,
-    C_INT final_results_authorized)
+static lib_i32 timing_80286_manifest_write_results(const char *path,
+    lib_i32 final_results_authorized)
 {
     FILE *file;
     lib_size index;
@@ -838,18 +839,18 @@ static C_INT timing_80286_manifest_write_results(const C_CHAR *path,
     return written == timing_80286_manifest_expected_count() ? 0 : 1;
 }
 
-static C_VOID timing_80286_manifest_execution_reset(C_VOID *opaque)
+static void timing_80286_manifest_execution_reset(void *opaque)
 {
-    (C_VOID)opaque;
+    (void)opaque;
 }
 
 static const core_machine_execution_provider timing_80286_manifest_execution = {
     timing_80286_manifest_execution_reset, LIB_NULL
 };
 
-static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
+static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
     timing_80286_manifest_capture *capture,
-    const C_CHAR *key_id, const lib_u8 *program, lib_size bytes)
+    const char *key_id, const lib_u8 *program, lib_size bytes)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
@@ -860,25 +861,25 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         timing_80286_manifest_capture_retirement, capture
     };
     core_machine *machine = LIB_NULL;
-    type_status status;
+    lib_status status;
 
     if (out_machine == LIB_NULL || capture == LIB_NULL || key_id == LIB_NULL ||
         program == LIB_NULL || bytes == 0u) return 0;
     status = core_machine_create(&config, &machine);
-    if (status == TYPE_STATUS_OK) status =
+    if (status == LIB_STATUS_OK) status =
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_80286_MANIFEST_RESET_LINEAR,
             TIMING_80286_MANIFEST_RESET_PHYSICAL,
             TIMING_80286_MANIFEST_WINDOW_BYTES);
-    if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
+    if (status == LIB_STATUS_OK) status = core_machine_install_port_provider(
         machine, 0x00e0u, 0x00e0u, &timing_80286_manifest_ports, LIB_NULL);
-    if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
+    if (status == LIB_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80286_manifest_execution, LIB_NULL);
-    if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
-    if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
-    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+    if (status == LIB_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
+    if (status == LIB_STATUS_OK) status = core_machine_reset(machine);
+    if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         TIMING_80286_MANIFEST_RESET_PHYSICAL, program, bytes);
-    if (status == TYPE_STATUS_OK && timing_80286_manifest_is_interrupt(key_id)) {
+    if (status == LIB_STATUS_OK && timing_80286_manifest_is_interrupt(key_id)) {
         const lib_u16 handler[] = { 0xfff5u, 0xf000u };
         const lib_u8 handler_code[] = { 0x00u, 0xc0u };
 
@@ -886,14 +887,14 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
             TIMING_80286_MANIFEST_STACK_BYTES;
         status = core_machine_memory_write(machine, 3u * 4u, handler,
             sizeof(handler));
-        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             4u * 4u, handler, sizeof(handler));
-        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x60u * 4u, handler, sizeof(handler));
-        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x000ffff5u, handler_code, sizeof(handler_code));
     }
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         const lib_u16 operand = 1u;
 
         machine->executor_cpu.data.eax = 1u;
@@ -906,23 +907,23 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         }
         status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
-        if (status == TYPE_STATUS_OK &&
+        if (status == LIB_STATUS_OK &&
             timing_80286_manifest_uses_odd_memory_operand(key_id)) {
             status = core_machine_memory_write(machine, 0x1001u, &operand,
                 sizeof(operand));
         }
     }
-    if (status == TYPE_STATUS_OK && timing_80286_manifest_is_bound(key_id)) {
+    if (status == LIB_STATUS_OK && timing_80286_manifest_is_bound(key_id)) {
         const lib_u16 bounds[] = { 0u, 2u };
 
         status = core_machine_memory_write(machine, 0x1000u, bounds,
             sizeof(bounds));
     }
-    if (status == TYPE_STATUS_OK && timing_80286_manifest_uses_stack(key_id)) {
+    if (status == LIB_STATUS_OK && timing_80286_manifest_uses_stack(key_id)) {
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
     }
-    if (status == TYPE_STATUS_OK &&
+    if (status == LIB_STATUS_OK &&
         timing_80286_manifest_is_ret_near_next_byte(key_id)) {
         const lib_u16 return_ip = 0xfff5u;
 
@@ -930,14 +931,14 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         status = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, &return_ip, sizeof(return_ip));
     }
-    if (status == TYPE_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
             "I286-STACK-LEAVE") == 0) {
         machine->executor_cpu.data.ebp = TIMING_80286_MANIFEST_STACK_LINEAR;
     }
-    if (status == TYPE_STATUS_OK && timing_80286_manifest_uses_far_target(key_id)) {
+    if (status == LIB_STATUS_OK && timing_80286_manifest_uses_far_target(key_id)) {
         static const lib_u8 one_byte_target[] = { 0x90u };
         static const lib_u8 two_byte_target[] = { 0x00u, 0xc0u };
-        const C_VOID *target_code = lib_c_strcmp(key_id,
+        const void *target_code = lib_c_strcmp(key_id,
             "I286-RET-NEAR-NEXT-BYTE-1") == 0 ? one_byte_target :
             two_byte_target;
         lib_size target_bytes = target_code == one_byte_target ?
@@ -946,10 +947,10 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         status = core_machine_memory_write(machine, 0x000ffff5u, target_code,
             target_bytes);
     }
-    if (status == TYPE_STATUS_OK && timing_80286_manifest_flags_active) {
+    if (status == LIB_STATUS_OK && timing_80286_manifest_flags_active) {
         machine->executor_cpu.data.eflags = timing_80286_manifest_eflags;
     }
-    if (status == TYPE_STATUS_OK && (lib_c_strcmp(key_id, "I286-XLAT") == 0 ||
+    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id, "I286-XLAT") == 0 ||
             lib_c_strcmp(key_id, "I286-XLAT-SEGMENT") == 0)) {
         static const lib_u8 value[] = { 0x5au };
 
@@ -957,9 +958,9 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.eax = 1u;
         status = core_machine_memory_write(machine, 0x1001u, value, sizeof(value));
     }
-    if (status == TYPE_STATUS_OK) status =
+    if (status == LIB_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &provider);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 0;
     }
@@ -970,9 +971,9 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
 /* System descriptor instructions must execute after the 80286's protected
  * transition.  Bootstrap runs without the observer; the observer therefore
  * records only the canonical target retirement. */
-static C_INT timing_80286_manifest_prepare_protected_system(
+static lib_i32 timing_80286_manifest_prepare_protected_system(
     core_machine **out_machine, timing_80286_manifest_capture *capture,
-    const C_CHAR *key_id, const lib_u8 *program, lib_size bytes)
+    const char *key_id, const lib_u8 *program, lib_size bytes)
 {
     static const lib_u8 gdt_pointer[] = { 0x37u, 0u, 0u, 0x03u,
         0u, 0u };
@@ -1003,36 +1004,36 @@ static C_INT timing_80286_manifest_prepare_protected_system(
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
     lib_u16 operand = 0x0010u;
-    type_status status;
+    lib_status status;
 
     if (out_machine == LIB_NULL || capture == LIB_NULL || key_id == LIB_NULL ||
         program == LIB_NULL || bytes == 0u) return 0;
     status = core_machine_create(&config, &machine);
-    if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
+    if (status == LIB_STATUS_OK) status = core_machine_install_port_provider(
         machine, 0x00e0u, 0x00e0u, &timing_80286_manifest_ports, LIB_NULL);
-    if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
+    if (status == LIB_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80286_manifest_execution, LIB_NULL);
-    if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
-    if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
+    if (status == LIB_STATUS_OK) status = core_machine_reset(machine);
+    if (status == LIB_STATUS_OK) {
         machine->executor_cpu.data.cr0 = 0u;
         status = test_core_machine_fixture_reset_real_mode(machine) ?
-            TYPE_STATUS_OK : TYPE_STATUS_INVALID_ARGUMENT;
+            LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+    if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         0x100u, gdt_pointer, sizeof(gdt_pointer));
-    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+    if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         0x300u, gdt, sizeof(gdt));
-    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+    if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         0u, boot, sizeof(boot));
-    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+    if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         0x2000u, halt, sizeof(halt));
-    if (status == TYPE_STATUS_OK && (core_machine_run(machine,
-            (core_machine_run_budget){64u, 0u}, &run) != TYPE_STATUS_OK ||
+    if (status == LIB_STATUS_OK && (core_machine_run(machine,
+            (core_machine_run_budget){64u, 0u}, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)) {
-        status = TYPE_STATUS_INVALID_ARGUMENT;
+        status = LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+    if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         0x2000u, program, bytes);
     if (lib_c_strcmp(key_id, "I286-SYSTEM-LLDT-R") == 0 ||
         lib_c_strcmp(key_id, "I286-SYSTEM-LLDT-M") == 0 ||
@@ -1045,9 +1046,9 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         lib_c_strcmp(key_id, "I286-SYSTEM-LTR-M-SEGMENT") == 0) {
         operand = 0x0030u;
     }
-    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+    if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         0x4000u, &operand, sizeof(operand));
-    if (status == TYPE_STATUS_OK && (lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id,
             "I286-LDS-M-PM") == 0 || lib_c_strcmp(key_id,
             "I286-LES-M-PM") == 0 || lib_c_strcmp(key_id,
             "I286-LDS-M-PM-SEGMENT") == 0 || lib_c_strcmp(key_id,
@@ -1059,7 +1060,7 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x4000u, pointer,
             sizeof(pointer));
     }
-    if (status == TYPE_STATUS_OK && (lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id,
             "I286-LDS-M-PM-EA-BID-ODD-WORD") == 0 || lib_c_strcmp(key_id,
             "I286-LES-M-PM-EA-BID-ODD-WORD") == 0)) {
         const lib_u16 pointer[] = { 1u, 0x0010u };
@@ -1067,7 +1068,7 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x4001u, pointer,
             sizeof(pointer));
     }
-    if (status == TYPE_STATUS_OK && (lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id,
             "I286-LDS-M-PM-ODD-WORD") == 0 || lib_c_strcmp(key_id,
             "I286-LES-M-PM-ODD-WORD") == 0)) {
         const lib_u16 pointer[] = { 1u, 0x0010u };
@@ -1075,21 +1076,21 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x4001u, pointer,
             sizeof(pointer));
     }
-    if (status == TYPE_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
             "I286-MOV-SREG-LOAD-PM-ODD-WORD") == 0) {
         const lib_u16 selector = 0x0010u;
 
         status = core_machine_memory_write(machine, 0x4001u, &selector,
             sizeof(selector));
     }
-    if (status == TYPE_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
             "I286-MOV-SREG-LOAD-PM-EA-BID-ODD-WORD") == 0) {
         const lib_u16 selector = 0x0010u;
 
         status = core_machine_memory_write(machine, 0x4001u, &selector,
             sizeof(selector));
     }
-    if (status == TYPE_STATUS_OK && (lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id,
             "I286-SYSTEM-LGDT-M-EA-BID") == 0 || lib_c_strcmp(key_id,
             "I286-SYSTEM-LIDT-M-EA-BID") == 0 || lib_c_strcmp(key_id,
             "I286-SYSTEM-LGDT-M-SEGMENT") == 0 || lib_c_strcmp(key_id,
@@ -1097,7 +1098,7 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x4000u, table_pointer,
             sizeof(table_pointer));
     }
-    if (status == TYPE_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
             "I286-STACK-POP-SEG-PM") == 0) {
         const lib_u16 selector = 0x0010u;
 
@@ -1105,7 +1106,7 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x4000u, &selector,
             sizeof(selector));
     }
-    if (status == TYPE_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
             "I286-RET-FAR-SAME-NEXT-BYTE-2") == 0) {
         const lib_u16 return_frame[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
@@ -1113,10 +1114,10 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         machine->executor_cpu.data.sp = 0x1000u;
         status = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame));
-        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x2010u, target, sizeof(target));
     }
-    if (status == TYPE_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
             "I286-RET-IRET-NORMAL-NEXT-BYTE-2") == 0) {
         const lib_u16 return_frame[] = { 0x0010u, 0x0008u, 0x0002u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
@@ -1124,10 +1125,10 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         machine->executor_cpu.data.sp = 0x1000u;
         status = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame));
-        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x2010u, target, sizeof(target));
     }
-    if (status == TYPE_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
             "I286-CALL-FAR-DIRECT-PM-NEXT-BYTE-2") == 0) {
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
@@ -1135,18 +1136,18 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x2010u, target,
             sizeof(target));
     }
-    if (status == TYPE_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
             "I286-JMP-FAR-PM-NEXT-BYTE-2") == 0) {
         const lib_u16 pointer[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
         status = core_machine_memory_write(machine, 0x4000u, pointer,
             sizeof(pointer));
-        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x2010u, target,
             sizeof(target));
     }
-    if (status == TYPE_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
             "I286-CALL-FAR-M-PM-NEXT-BYTE-2") == 0) {
         const lib_u16 pointer[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
@@ -1154,19 +1155,19 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         machine->executor_cpu.data.sp = 0x1000u;
         status = core_machine_memory_write(machine, 0x4000u, pointer,
             sizeof(pointer));
-        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x2010u, target, sizeof(target));
     }
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         machine->executor_cpu.data.eax = operand;
         machine->executor_cpu.data.ebp = 0x0800u;
         machine->executor_cpu.data.esi = 0x0800u;
         machine->elapsed_ticks = 0u;
         test_core_machine_fixture_resume_after_halt_at(machine, 0u);
     }
-    if (status == TYPE_STATUS_OK) status =
+    if (status == LIB_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &provider);
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 0;
     }
@@ -1174,7 +1175,7 @@ static C_INT timing_80286_manifest_prepare_protected_system(
     return 1;
 }
 
-static C_INT timing_80286_manifest_run(
+static lib_i32 timing_80286_manifest_run(
     const timing_80286_manifest_recipe *recipe)
 {
     const core_machine_run_budget budget = { 1u, 0u };
@@ -1182,7 +1183,7 @@ static C_INT timing_80286_manifest_run(
     const timing_80286_manifest_record *record;
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_INT failed;
+    lib_i32 failed;
 
     if (recipe == LIB_NULL) return 1;
     record = timing_80286_manifest_find(recipe->key_id);
@@ -1191,7 +1192,7 @@ static C_INT timing_80286_manifest_run(
         !timing_80286_manifest_prepare(&machine, &capture, recipe->key_id,
             recipe->program, recipe->bytes);
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != recipe->ticks || capture.count != 1u ||
             capture.observation.source_ticks != recipe->ticks ||
@@ -1200,7 +1201,7 @@ static C_INT timing_80286_manifest_run(
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
     if (failed) {
-        STD_PRINTF("M5:T435:S10:I286-MANIFEST-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
+        printf("M5:T435:S10:I286-MANIFEST-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
             recipe->key_id, recipe->ticks, run.ticks,
             capture.observation.source_ticks, capture.count,
             (lib_u32)capture.observation.timing_origin,
@@ -1210,8 +1211,8 @@ static C_INT timing_80286_manifest_run(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_repeat_step(core_machine *machine,
-    timing_80286_manifest_capture *capture, const C_CHAR *key_id,
+static lib_i32 timing_80286_manifest_run_repeat_step(core_machine *machine,
+    timing_80286_manifest_capture *capture, const char *key_id,
     core_machine_retirement_repeat_phase expected_phase,
     lib_u64 expected_ticks, lib_u32 required_inputs)
 {
@@ -1222,7 +1223,7 @@ static C_INT timing_80286_manifest_run_repeat_step(core_machine *machine,
         timing_80286_manifest_find(key_id) == LIB_NULL) return 1;
     capture->count = 0u;
     lib_memory_set(&capture->observation, 0, sizeof(capture->observation));
-    return core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+    return core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
         run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
         run.ticks != expected_ticks || capture->count != 1u ||
         capture->observation.source_ticks != expected_ticks ||
@@ -1238,22 +1239,22 @@ static C_INT timing_80286_manifest_run_repeat_step(core_machine *machine,
              CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE | required_inputs);
 }
 
-static C_INT timing_80286_manifest_run_repeat_recipe(
-    const timing_80286_manifest_repeat_recipe *recipe, C_INT odd_word)
+static lib_i32 timing_80286_manifest_run_repeat_recipe(
+    const timing_80286_manifest_repeat_recipe *recipe, lib_i32 odd_word)
 {
     lib_u8 program[2] = { 0u, 0u };
     const lib_u16 source = 1u;
     lib_u16 destination;
-    C_CHAR first_key[96];
-    C_CHAR continuation_key[96];
-    C_CHAR zero_key[96];
+    char first_key[96];
+    char continuation_key[96];
+    char zero_key[96];
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine *machine = LIB_NULL;
     lib_u32 required_inputs = odd_word ?
         CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD : 0u;
     lib_u64 odd_ticks = odd_word ? 2u : 0u;
-    C_INT source_odd;
-    C_INT failed;
+    lib_i32 source_odd;
+    lib_i32 failed;
 
     if (recipe == LIB_NULL) return 1;
     program[0] = recipe->prefix;
@@ -1261,12 +1262,12 @@ static C_INT timing_80286_manifest_run_repeat_recipe(
     source_odd = odd_word && (recipe->opcode == 0xa5u ||
         recipe->opcode == 0xa7u || recipe->opcode == 0xadu ||
         recipe->opcode == 0x6fu);
-    if (STD_SNPRINTF(first_key, sizeof(first_key), "%s%s-REP-PHASE-FIRST",
+    if (lib_c_snprintf(first_key, sizeof(first_key), "%s%s-REP-PHASE-FIRST",
             recipe->key_id, odd_word ? "-ODD-WORD" : "") < 0 ||
-        STD_SNPRINTF(continuation_key, sizeof(continuation_key),
+        lib_c_snprintf(continuation_key, sizeof(continuation_key),
             "%s%s-REP-PHASE-CONTINUE", recipe->key_id,
             odd_word ? "-ODD-WORD" : "") < 0 ||
-        STD_SNPRINTF(zero_key, sizeof(zero_key), "%s%s-REP-PHASE-ZERO",
+        lib_c_snprintf(zero_key, sizeof(zero_key), "%s%s-REP-PHASE-ZERO",
             recipe->key_id, odd_word ? "-ODD-WORD" : "") < 0) return 1;
     failed = !timing_80286_manifest_prepare(&machine, &capture, first_key,
         program, sizeof(program));
@@ -1281,16 +1282,16 @@ static C_INT timing_80286_manifest_run_repeat_recipe(
         machine->executor_cpu.data.cx = 2u;
         destination = recipe->prefix == 0xf3u ? source : 0u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
-            &source, sizeof(source)) != TYPE_STATUS_OK ||
+            &source, sizeof(source)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, source_odd ? 0x1100u :
                 odd_word ? 0x1101u : 0x1100u, &destination,
-                sizeof(destination)) != TYPE_STATUS_OK;
+                sizeof(destination)) != LIB_STATUS_OK;
     }
     if (!failed) {
         failed = timing_80286_manifest_run_repeat_step(machine, &capture,
             first_key, CORE_MACHINE_RETIREMENT_REPEAT_FIRST,
             recipe->first_ticks + odd_ticks, required_inputs);
-        if (failed) STD_PRINTF("M5:T435:S10:I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
+        if (failed) printf("M5:T435:S10:I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
             first_key, recipe->first_ticks + odd_ticks,
             capture.observation.source_ticks,
             (lib_u32)capture.observation.repeat_phase,
@@ -1299,7 +1300,7 @@ static C_INT timing_80286_manifest_run_repeat_recipe(
             failed = timing_80286_manifest_run_repeat_step(machine, &capture,
                 continuation_key, CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION,
                 recipe->continuation_ticks + odd_ticks, required_inputs);
-            if (failed) STD_PRINTF("M5:T435:S10:I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
+            if (failed) printf("M5:T435:S10:I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
                 continuation_key, recipe->continuation_ticks + odd_ticks,
                 capture.observation.source_ticks,
                 (lib_u32)capture.observation.repeat_phase,
@@ -1321,21 +1322,21 @@ static C_INT timing_80286_manifest_run_repeat_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_string_recipe(
-    const timing_80286_manifest_recipe *recipe, C_INT odd_word)
+static lib_i32 timing_80286_manifest_run_string_recipe(
+    const timing_80286_manifest_recipe *recipe, lib_i32 odd_word)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u16 value = 1u;
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
+    char key_id[96];
     lib_u64 expected_ticks;
-    C_INT source_odd;
-    C_INT failed;
+    lib_i32 source_odd;
+    lib_i32 failed;
 
     if (recipe == LIB_NULL) return 1;
-    if (STD_SNPRINTF(key_id, sizeof(key_id), "%s%s", recipe->key_id,
+    if (lib_c_snprintf(key_id, sizeof(key_id), "%s%s", recipe->key_id,
             odd_word ? "-ODD-WORD" : "") < 0) return 1;
     expected_ticks = recipe->ticks + (odd_word ? 2u : 0u);
     source_odd = odd_word && (recipe->program[0] == 0xa5u ||
@@ -1353,12 +1354,12 @@ static C_INT timing_80286_manifest_run_string_recipe(
         machine->executor_cpu.data.ax = value;
         machine->executor_cpu.data.edx = 0x00e0u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
-            &value, sizeof(value)) != TYPE_STATUS_OK || core_machine_memory_write(
+            &value, sizeof(value)) != LIB_STATUS_OK || core_machine_memory_write(
             machine, source_odd ? 0x1100u : odd_word ? 0x1101u : 0x1100u,
-            &value, sizeof(value)) != TYPE_STATUS_OK;
+            &value, sizeof(value)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != expected_ticks || capture.count != 1u ||
             capture.observation.source_ticks != expected_ticks ||
@@ -1369,27 +1370,27 @@ static C_INT timing_80286_manifest_run_string_recipe(
             (odd_word && (capture.observation.formula_inputs &
                 CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u);
     }
-    if (failed) STD_PRINTF("M5:T435:S10:I286-STRING-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u\n",
+    if (failed) printf("M5:T435:S10:I286-STRING-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u\n",
         key_id, expected_ticks, run.ticks,
         capture.observation.source_ticks, capture.count);
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_hlt_recipe(C_VOID)
+static lib_i32 timing_80286_manifest_run_hlt_recipe(void)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u8 program[] = { 0xf4u };
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_INT failed;
+    lib_i32 failed;
 
     failed = timing_80286_manifest_find("I286-HLT") == LIB_NULL ||
         !timing_80286_manifest_prepare(&machine, &capture, "I286-HLT",
             program, sizeof(program));
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             run.executed != 1u || run.ticks != 2u || capture.count != 1u ||
             capture.observation.source_ticks != 2u ||
@@ -1398,21 +1399,21 @@ static C_INT timing_80286_manifest_run_hlt_recipe(C_VOID)
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
-    if (failed) STD_PRINTF("M5:T435:S10:I286-HLT-DETAIL:run=%llu:source=%llu:count=%u:reason=%u\n",
+    if (failed) printf("M5:T435:S10:I286-HLT-DETAIL:run=%llu:source=%llu:count=%u:reason=%u\n",
         run.ticks, capture.observation.source_ticks, capture.count,
         (lib_u32)run.reason);
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_lock_ea_recipe(
+static lib_i32 timing_80286_manifest_run_lock_ea_recipe(
     const timing_80286_manifest_recipe *base_recipe)
 {
     timing_80286_manifest_recipe recipe;
-    C_CHAR key_id[96];
+    char key_id[96];
 
     if (base_recipe == LIB_NULL || base_recipe->bytes < 5u ||
-        STD_SNPRINTF(key_id, sizeof(key_id), "%s-EA-BID", base_recipe->key_id) < 0 ||
+        lib_c_snprintf(key_id, sizeof(key_id), "%s-EA-BID", base_recipe->key_id) < 0 ||
         timing_80286_manifest_find(key_id) == LIB_NULL) return 1;
     recipe = *base_recipe;
     /* All LOCK base recipes are direct disp16 memory forms.  Re-select the
@@ -1425,20 +1426,20 @@ static C_INT timing_80286_manifest_run_lock_ea_recipe(
     return timing_80286_manifest_run(&recipe);
 }
 
-static C_INT timing_80286_manifest_run_repeat_base_recipe(
-    const timing_80286_manifest_repeat_recipe *recipe, C_INT odd_word)
+static lib_i32 timing_80286_manifest_run_repeat_base_recipe(
+    const timing_80286_manifest_repeat_recipe *recipe, lib_i32 odd_word)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     lib_u8 program[2];
     const lib_u16 value = 1u;
-    C_CHAR key_id[96];
+    char key_id[96];
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_INT source_odd;
-    C_INT failed;
+    lib_i32 source_odd;
+    lib_i32 failed;
 
-    if (recipe == LIB_NULL || STD_SNPRINTF(key_id, sizeof(key_id), "%s%s",
+    if (recipe == LIB_NULL || lib_c_snprintf(key_id, sizeof(key_id), "%s%s",
             recipe->key_id, odd_word ? "-ODD-WORD" : "") < 0) return 1;
     program[0] = recipe->prefix;
     program[1] = recipe->opcode;
@@ -1457,13 +1458,13 @@ static C_INT timing_80286_manifest_run_repeat_base_recipe(
         machine->executor_cpu.data.edx = 0x00e0u;
         machine->executor_cpu.data.cx = 1u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
-            &value, sizeof(value)) != TYPE_STATUS_OK ||
+            &value, sizeof(value)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, source_odd ? 0x1100u :
                 odd_word ? 0x1101u : 0x1100u,
-                &value, sizeof(value)) != TYPE_STATUS_OK;
+                &value, sizeof(value)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != recipe->first_ticks + (odd_word ? 2u : 0u) ||
             capture.count != 1u ||
@@ -1476,14 +1477,14 @@ static C_INT timing_80286_manifest_run_repeat_base_recipe(
             (odd_word && (capture.observation.formula_inputs &
                 CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u);
     }
-    if (failed) STD_PRINTF("M5:T435:S10:I286-REP-ODD-DETAIL:%s:expected=%llu:run=%llu:source=%llu:inputs=%u\n",
+    if (failed) printf("M5:T435:S10:I286-REP-ODD-DETAIL:%s:expected=%llu:run=%llu:source=%llu:inputs=%u\n",
             key_id, recipe->first_ticks + (odd_word ? 2u : 0u), run.ticks,
         capture.observation.source_ticks, capture.observation.formula_inputs);
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_jmp_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_jmp_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1499,11 +1500,11 @@ static C_INT timing_80286_manifest_run_jmp_next_byte_recipe(
         LIB_NULL, { 0xebu, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u,
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK
     };
-    C_CHAR key_id[96];
+    char key_id[96];
     lib_size index;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id), "I286-JMP-NEAR-NEXT-BYTE-%u",
+        lib_c_snprintf(key_id, sizeof(key_id), "I286-JMP-NEAR-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     recipe.key_id = key_id;
     recipe.bytes = (lib_size)next_bytes + 2u;
@@ -1514,7 +1515,7 @@ static C_INT timing_80286_manifest_run_jmp_next_byte_recipe(
     return timing_80286_manifest_run(&recipe);
 }
 
-static C_INT timing_80286_manifest_run_call_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_call_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1530,11 +1531,11 @@ static C_INT timing_80286_manifest_run_call_next_byte_recipe(
         LIB_NULL, { 0xe8u, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u,
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK
     };
-    C_CHAR key_id[96];
+    char key_id[96];
     lib_size index;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-CALL-NEAR-DIRECT-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     recipe.key_id = key_id;
@@ -1546,7 +1547,7 @@ static C_INT timing_80286_manifest_run_call_next_byte_recipe(
     return timing_80286_manifest_run(&recipe);
 }
 
-static C_INT timing_80286_manifest_run_ret_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_ret_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1563,19 +1564,19 @@ static C_INT timing_80286_manifest_run_ret_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id), "I286-RET-NEAR-NEXT-BYTE-%u",
+        lib_c_snprintf(key_id, sizeof(key_id), "I286-RET-NEAR-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) failed = core_machine_memory_write(machine, 0x000ffff5u,
-        target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+        target[next_bytes], next_bytes) != LIB_STATUS_OK;
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
@@ -1588,7 +1589,7 @@ static C_INT timing_80286_manifest_run_ret_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_far_jmp_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_far_jmp_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1605,20 +1606,20 @@ static C_INT timing_80286_manifest_run_far_jmp_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-JMP-FAR-REAL-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) failed = core_machine_memory_write(machine, 0x000ffff5u,
-        target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+        target[next_bytes], next_bytes) != LIB_STATUS_OK;
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
@@ -1631,7 +1632,7 @@ static C_INT timing_80286_manifest_run_far_jmp_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_ret_imm_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_ret_imm_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1649,11 +1650,11 @@ static C_INT timing_80286_manifest_run_ret_imm_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id), "I286-RET-NEAR-IMM-NEXT-BYTE-%u",
+        lib_c_snprintf(key_id, sizeof(key_id), "I286-RET-NEAR-IMM-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
@@ -1661,12 +1662,12 @@ static C_INT timing_80286_manifest_run_ret_imm_next_byte_recipe(
     if (!failed) {
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
         failed = core_machine_memory_write(machine, TIMING_80286_MANIFEST_STACK_LINEAR,
-            &return_ip, sizeof(return_ip)) != TYPE_STATUS_OK ||
+            &return_ip, sizeof(return_ip)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x000ffff5u, target[next_bytes],
-                next_bytes) != TYPE_STATUS_OK;
+                next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
@@ -1679,8 +1680,8 @@ static C_INT timing_80286_manifest_run_ret_imm_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_interrupt_next_byte_recipe(
-    C_INT immediate, lib_u8 next_bytes)
+static lib_i32 timing_80286_manifest_run_interrupt_next_byte_recipe(
+    lib_i32 immediate, lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
         { 0u,0u,0u,0u,0u,0u },
@@ -1700,20 +1701,20 @@ static C_INT timing_80286_manifest_run_interrupt_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id), "I286-%s-NEXT-BYTE-%u",
+        lib_c_snprintf(key_id, sizeof(key_id), "I286-%s-NEXT-BYTE-%u",
             immediate ? "INT-IMM-REAL" : "INT3-REAL",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, program_bytes);
     if (!failed) failed = core_machine_memory_write(machine, 0x000ffff5u,
-        target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+        target[next_bytes], next_bytes) != LIB_STATUS_OK;
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 23u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 23u + next_bytes ||
@@ -1726,8 +1727,8 @@ static C_INT timing_80286_manifest_run_interrupt_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_into_next_byte_recipe(C_INT taken,
-    lib_u8 next_bytes, const C_CHAR *key_id)
+static lib_i32 timing_80286_manifest_run_into_next_byte_recipe(lib_i32 taken,
+    lib_u8 next_bytes, const char *key_id)
 {
     static const lib_u8 target[][6] = {
         { 0u,0u,0u,0u,0u,0u },
@@ -1743,7 +1744,7 @@ static C_INT timing_80286_manifest_run_into_next_byte_recipe(C_INT taken,
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_INT failed;
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
         key_id == LIB_NULL) return 1;
@@ -1760,9 +1761,9 @@ static C_INT timing_80286_manifest_run_into_next_byte_recipe(C_INT taken,
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, taken ? 1u : 1u + next_bytes);
     if (!failed && taken) failed = core_machine_memory_write(machine, 0x000ffff5u,
-        target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+        target[next_bytes], next_bytes) != LIB_STATUS_OK;
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != (taken ? 24u : 3u) + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks !=
@@ -1774,7 +1775,7 @@ static C_INT timing_80286_manifest_run_into_next_byte_recipe(C_INT taken,
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
     if (failed) {
-        STD_PRINTF("M5:T436:S5:I286-INTO-DETAIL:%s:taken=%u:bytes=%u:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
+        printf("M5:T436:S5:I286-INTO-DETAIL:%s:taken=%u:bytes=%u:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
             key_id, (lib_u32)taken, (lib_u32)next_bytes,
             run.ticks, capture.observation.source_ticks, capture.count,
             (lib_u32)capture.observation.timing_origin,
@@ -1785,7 +1786,7 @@ static C_INT timing_80286_manifest_run_into_next_byte_recipe(C_INT taken,
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_indirect_jmp_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_indirect_jmp_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1803,21 +1804,21 @@ static C_INT timing_80286_manifest_run_indirect_jmp_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id), "I286-JMP-RM-NEXT-BYTE-%u",
+        lib_c_snprintf(key_id, sizeof(key_id), "I286-JMP-RM-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) failed = core_machine_memory_write(machine, 0x1000u,
-        &target_ip, sizeof(target_ip)) != TYPE_STATUS_OK ||
+        &target_ip, sizeof(target_ip)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x000ffff5u, target[next_bytes],
-            next_bytes) != TYPE_STATUS_OK;
+            next_bytes) != LIB_STATUS_OK;
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
@@ -1830,7 +1831,7 @@ static C_INT timing_80286_manifest_run_indirect_jmp_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_indirect_call_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_indirect_call_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1848,11 +1849,11 @@ static C_INT timing_80286_manifest_run_indirect_call_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id), "I286-CALL-NEAR-RM-NEXT-BYTE-%u",
+        lib_c_snprintf(key_id, sizeof(key_id), "I286-CALL-NEAR-RM-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
@@ -1861,11 +1862,11 @@ static C_INT timing_80286_manifest_run_indirect_call_next_byte_recipe(
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
         failed = core_machine_memory_write(machine, 0x1000u, &target_ip,
-            sizeof(target_ip)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
-            0x000ffff5u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            sizeof(target_ip)) != LIB_STATUS_OK || core_machine_memory_write(machine,
+            0x000ffff5u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 11u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 11u + next_bytes ||
@@ -1878,7 +1879,7 @@ static C_INT timing_80286_manifest_run_indirect_call_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_far_call_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_far_call_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1895,11 +1896,11 @@ static C_INT timing_80286_manifest_run_far_call_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-CALL-FAR-DIRECT-REAL-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
@@ -1909,10 +1910,10 @@ static C_INT timing_80286_manifest_run_far_call_next_byte_recipe(
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
         failed = core_machine_memory_write(machine, 0x000ffff5u,
-            target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 13u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 13u + next_bytes ||
@@ -1925,7 +1926,7 @@ static C_INT timing_80286_manifest_run_far_call_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1943,11 +1944,11 @@ static C_INT timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-CALL-FAR-M-REAL-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
@@ -1957,11 +1958,11 @@ static C_INT timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
         failed = core_machine_memory_write(machine, 0x1000u, far_pointer,
-            sizeof(far_pointer)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
-            0x000ffff5u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            sizeof(far_pointer)) != LIB_STATUS_OK || core_machine_memory_write(machine,
+            0x000ffff5u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 16u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 16u + next_bytes ||
@@ -1974,7 +1975,7 @@ static C_INT timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_far_ret_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_far_ret_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -1992,11 +1993,11 @@ static C_INT timing_80286_manifest_run_far_ret_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-RET-FAR-SAME-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
@@ -2006,11 +2007,11 @@ static C_INT timing_80286_manifest_run_far_ret_next_byte_recipe(
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
         failed = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, return_frame,
-            sizeof(return_frame)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
-            0x000ffff5u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
+            0x000ffff5u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 15u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 15u + next_bytes ||
@@ -2023,7 +2024,7 @@ static C_INT timing_80286_manifest_run_far_ret_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_iret_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_iret_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -2041,11 +2042,11 @@ static C_INT timing_80286_manifest_run_iret_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-RET-IRET-NORMAL-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
@@ -2055,11 +2056,11 @@ static C_INT timing_80286_manifest_run_iret_next_byte_recipe(
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
         failed = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, return_frame,
-            sizeof(return_frame)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
-            0x000ffff5u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
+            0x000ffff5u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 17u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 17u + next_bytes ||
@@ -2072,7 +2073,7 @@ static C_INT timing_80286_manifest_run_iret_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_far_memory_call_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_protected_far_memory_call_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -2090,11 +2091,11 @@ static C_INT timing_80286_manifest_run_protected_far_memory_call_next_byte_recip
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-CALL-FAR-M-PM-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
@@ -2103,11 +2104,11 @@ static C_INT timing_80286_manifest_run_protected_far_memory_call_next_byte_recip
     if (!failed) {
         machine->executor_cpu.data.sp = 0x1000u;
         failed = core_machine_memory_write(machine, 0x4000u, pointer,
-            sizeof(pointer)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
-            0x2010u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            sizeof(pointer)) != LIB_STATUS_OK || core_machine_memory_write(machine,
+            0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 29u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 29u + next_bytes ||
@@ -2120,7 +2121,7 @@ static C_INT timing_80286_manifest_run_protected_far_memory_call_next_byte_recip
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_far_call_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_protected_far_call_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -2137,11 +2138,11 @@ static C_INT timing_80286_manifest_run_protected_far_call_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-CALL-FAR-DIRECT-PM-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
@@ -2150,10 +2151,10 @@ static C_INT timing_80286_manifest_run_protected_far_call_next_byte_recipe(
     if (!failed) {
         machine->executor_cpu.data.sp = 0x1000u;
         failed = core_machine_memory_write(machine, 0x2010u,
-            target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 26u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 26u + next_bytes ||
@@ -2166,7 +2167,7 @@ static C_INT timing_80286_manifest_run_protected_far_call_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_far_memory_jmp_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_protected_far_memory_jmp_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -2184,11 +2185,11 @@ static C_INT timing_80286_manifest_run_protected_far_memory_jmp_next_byte_recipe
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-JMP-FAR-PM-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
@@ -2196,11 +2197,11 @@ static C_INT timing_80286_manifest_run_protected_far_memory_jmp_next_byte_recipe
             key_id, program, sizeof(program));
     if (!failed) {
         failed = core_machine_memory_write(machine, 0x4000u, pointer,
-            sizeof(pointer)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
-            0x2010u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            sizeof(pointer)) != LIB_STATUS_OK || core_machine_memory_write(machine,
+            0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 26u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 26u + next_bytes ||
@@ -2213,7 +2214,7 @@ static C_INT timing_80286_manifest_run_protected_far_memory_jmp_next_byte_recipe
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -2231,11 +2232,11 @@ static C_INT timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-RET-FAR-SAME-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
@@ -2244,11 +2245,11 @@ static C_INT timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
     if (!failed) {
         machine->executor_cpu.data.sp = 0x1000u;
         failed = core_machine_memory_write(machine, 0x4000u, return_frame,
-            sizeof(return_frame)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
-            0x2010u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
+            0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 25u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 25u + next_bytes ||
@@ -2261,7 +2262,7 @@ static C_INT timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_iret_next_byte_recipe(
+static lib_i32 timing_80286_manifest_run_protected_iret_next_byte_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -2279,11 +2280,11 @@ static C_INT timing_80286_manifest_run_protected_iret_next_byte_recipe(
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_CHAR key_id[96];
-    C_INT failed;
+    char key_id[96];
+    lib_i32 failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-RET-IRET-NORMAL-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
@@ -2292,11 +2293,11 @@ static C_INT timing_80286_manifest_run_protected_iret_next_byte_recipe(
     if (!failed) {
         machine->executor_cpu.data.sp = 0x1000u;
         failed = core_machine_memory_write(machine, 0x4000u, return_frame,
-            sizeof(return_frame)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
-            0x2010u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+            sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
+            0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 31u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 31u + next_bytes ||
@@ -2309,7 +2310,7 @@ static C_INT timing_80286_manifest_run_protected_iret_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(
+static lib_i32 timing_80286_manifest_run_protected_outer_ret_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -2331,12 +2332,12 @@ static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(
     const timing_80286_manifest_record *record;
     core_machine_run_result run = { 0 };
     s3_gate_machine state;
-    C_INT failed;
+    lib_i32 failed;
 
-    C_CHAR key_id[96];
+    char key_id[96];
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id), "I286-RET-FAR-LESS-NEXT-BYTE-%u",
+        lib_c_snprintf(key_id, sizeof(key_id), "I286-RET-FAR-LESS-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     record = timing_80286_manifest_find(key_id);
     failed = record == LIB_NULL || !timing_80286_manifest_is_i286(record) ||
@@ -2352,10 +2353,10 @@ static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(
         state.machine->executor_cpu.data.esp = 0x12348000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
         if (!failed) failed = core_machine_set_retirement_observation_provider(
-            state.machine, &capture_provider) != TYPE_STATUS_OK;
+            state.machine, &capture_provider) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(state.machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(state.machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 55u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 55u + next_bytes ||
@@ -2368,7 +2369,7 @@ static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_outer_iret_recipe(
+static lib_i32 timing_80286_manifest_run_protected_outer_iret_recipe(
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -2391,12 +2392,12 @@ static C_INT timing_80286_manifest_run_protected_outer_iret_recipe(
     const timing_80286_manifest_record *record;
     core_machine_run_result run = { 0 };
     s3_gate_machine state;
-    C_INT failed;
+    lib_i32 failed;
 
-    C_CHAR key_id[96];
+    char key_id[96];
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id),
+        lib_c_snprintf(key_id, sizeof(key_id),
             "I286-RET-IRET-PRIVILEGE-NEXT-BYTE-%u",
             (lib_u32)next_bytes) < 0) return 1;
     record = timing_80286_manifest_find(key_id);
@@ -2413,10 +2414,10 @@ static C_INT timing_80286_manifest_run_protected_outer_iret_recipe(
         state.machine->executor_cpu.data.esp = 0x12348000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
         if (!failed) failed = core_machine_set_retirement_observation_provider(
-            state.machine, &provider) != TYPE_STATUS_OK;
+            state.machine, &provider) != LIB_STATUS_OK;
     }
     if (!failed) {
-        failed = core_machine_run(state.machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(state.machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != 55u + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks != 55u + next_bytes ||
@@ -2429,8 +2430,8 @@ static C_INT timing_80286_manifest_run_protected_outer_iret_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_task_transfer_recipe(
-    task_switch_case task_case, const C_CHAR *key_id,
+static lib_i32 timing_80286_manifest_run_task_transfer_recipe(
+    task_switch_case task_case, const char *key_id,
     lib_u8 next_bytes, lib_u64 base_ticks)
 {
     static const lib_u8 target[][6] = {
@@ -2446,7 +2447,7 @@ static C_INT timing_80286_manifest_run_task_transfer_recipe(
     };
     core_machine_run_result run = { 0 };
     task_switch_fixture fixture;
-    C_INT failed;
+    lib_i32 failed;
     lib_u32 steps;
     static const lib_u8 idt_task_gate[] = {
         0u,0u,0x30u,0u,0u,0x85u,0u,0u
@@ -2466,11 +2467,11 @@ static C_INT timing_80286_manifest_run_task_transfer_recipe(
         fixture.machine->executor_cpu.data.idtr.limit = 0x001fu;
     }
     if (!failed) failed = core_machine_memory_write(fixture.machine,
-        KERNEL_BASE + 0x100u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+        KERNEL_BASE + 0x100u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     for (steps = 0u; !failed && steps < 32u &&
             (fixture.machine->executor_cpu.data.cs.selector != 0x0008u ||
             fixture.machine->executor_cpu.data.eip != 3u); ++steps) {
-        failed = core_machine_run(fixture.machine, step, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(fixture.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u;
     }
     if (!failed && (fixture.machine->executor_cpu.data.cs.selector != 0x0008u ||
@@ -2478,9 +2479,9 @@ static C_INT timing_80286_manifest_run_task_transfer_recipe(
     if (!failed && key_id != LIB_NULL) failed =
         timing_80286_manifest_find(key_id) == LIB_NULL ||
         core_machine_set_retirement_observation_provider(fixture.machine,
-            &provider) != TYPE_STATUS_OK;
+            &provider) != LIB_STATUS_OK;
     if (!failed) failed = core_machine_run(fixture.machine, step, &run) !=
-        TYPE_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
+        LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || run.ticks != base_ticks + next_bytes ||
         fixture.machine->executor_cpu.data.tr.selector != 0x0030u;
     if (!failed && key_id != LIB_NULL) failed = capture.count != 1u ||
@@ -2490,20 +2491,20 @@ static C_INT timing_80286_manifest_run_task_transfer_recipe(
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     if (failed) {
-        STD_PRINTF("M5:T436:S6:I286-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x\n",
+        printf("M5:T436:S6:I286-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x\n",
             key_id != LIB_NULL ? key_id : "task-gate", run.ticks,
             capture.observation.source_ticks, capture.count,
             fixture.machine != LIB_NULL ? fixture.machine->executor_cpu.data.tr.selector : 0u);
     } else {
-        STD_PRINTF("M5:T436:S6:I286-TASK-OBSERVED:%s:ticks=%llu\n",
+        printf("M5:T436:S6:I286-TASK-OBSERVED:%s:ticks=%llu\n",
             key_id != LIB_NULL ? key_id : "task-gate", run.ticks);
     }
     core_machine_destroy(fixture.machine);
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_call_gate_recipe(const C_CHAR *key_id,
-    lib_u8 opcode, C_INT same_privilege, lib_u8 next_bytes,
+static lib_i32 timing_80286_manifest_run_call_gate_recipe(const char *key_id,
+    lib_u8 opcode, lib_i32 same_privilege, lib_u8 next_bytes,
     lib_u64 base_ticks)
 {
     static const lib_u8 target[][6] = {
@@ -2521,7 +2522,7 @@ static C_INT timing_80286_manifest_run_call_gate_recipe(const C_CHAR *key_id,
     core_machine_run_result run = { 0 };
     call_gate_machine state = { 0 };
     lib_u32 steps;
-    C_INT failed;
+    lib_i32 failed;
 
     if (key_id == LIB_NULL || (opcode != 0x9au && opcode != 0xeau) ||
         next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0])) {
@@ -2533,7 +2534,7 @@ static C_INT timing_80286_manifest_run_call_gate_recipe(const C_CHAR *key_id,
     for (steps = 0u; !failed && steps < 48u &&
             (state.machine->executor_cpu.data.cs.selector != 0x001bu ||
             state.machine->executor_cpu.data.eip != 0u); ++steps) {
-        failed = core_machine_run(state.machine, step, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(state.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u;
     }
     if (!failed && (state.machine->executor_cpu.data.cs.selector != 0x001bu ||
@@ -2545,9 +2546,9 @@ static C_INT timing_80286_manifest_run_call_gate_recipe(const C_CHAR *key_id,
         (same_privilege ? CALL_GATE_USER_CODE_BASE : CALL_GATE_KERNEL_BASE) + 0x100u,
         target[next_bytes], next_bytes) ||
         core_machine_set_retirement_observation_provider(state.machine,
-            &provider) != TYPE_STATUS_OK;
+            &provider) != LIB_STATUS_OK;
     if (!failed) failed = core_machine_run(state.machine, step, &run) !=
-        TYPE_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
+        LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || run.ticks != base_ticks + next_bytes ||
         capture.count != 1u || capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
@@ -2561,8 +2562,8 @@ static C_INT timing_80286_manifest_run_call_gate_recipe(const C_CHAR *key_id,
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_int_same_recipe(
-    const C_CHAR *key_id, lib_u8 next_bytes)
+static lib_i32 timing_80286_manifest_run_protected_int_same_recipe(
+    const char *key_id, lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
         {0,0,0,0,0,0},{0x90u,0,0,0,0,0},{0,0xc0u,0,0,0,0},
@@ -2577,7 +2578,7 @@ static C_INT timing_80286_manifest_run_protected_int_same_recipe(
     };
     core_machine_run_result run = { 0 };
     s3_gate_machine state = { 0 };
-    C_INT failed;
+    lib_i32 failed;
 
     if (key_id == LIB_NULL || next_bytes == 0u ||
         next_bytes >= sizeof(target) / sizeof(target[0])) return 1;
@@ -2588,9 +2589,9 @@ static C_INT timing_80286_manifest_run_protected_int_same_recipe(
         sizeof(interrupt)) || !s3_gate_write(&state, S3_CODE_BASE + S3_HANDLER,
         target[next_bytes], next_bytes) ||
         core_machine_set_retirement_observation_provider(state.machine,
-            &provider) != TYPE_STATUS_OK;
+            &provider) != LIB_STATUS_OK;
     if (!failed) failed = core_machine_run(state.machine, budget, &run) !=
-        TYPE_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
+        LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || run.ticks != 40u + next_bytes ||
         capture.count != 1u || capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
@@ -2603,8 +2604,8 @@ static C_INT timing_80286_manifest_run_protected_int_same_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_int_more_recipe(
-    const C_CHAR *key_id, lib_u8 next_bytes)
+static lib_i32 timing_80286_manifest_run_protected_int_more_recipe(
+    const char *key_id, lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
         {0,0,0,0,0,0},{0x90u,0,0,0,0,0},{0,0xc0u,0,0,0,0},
@@ -2621,7 +2622,7 @@ static C_INT timing_80286_manifest_run_protected_int_more_recipe(
     core_machine_run_result run = { 0 };
     call_gate_machine state = { 0 };
     lib_u32 steps;
-    C_INT failed;
+    lib_i32 failed;
 
     if (key_id == LIB_NULL || next_bytes == 0u ||
         next_bytes >= sizeof(target) / sizeof(target[0])) return 1;
@@ -2634,7 +2635,7 @@ static C_INT timing_80286_manifest_run_protected_int_more_recipe(
     for (steps = 0u; !failed && steps < 48u &&
             (state.machine->executor_cpu.data.cs.selector != 0x001bu ||
             state.machine->executor_cpu.data.eip != 0u); ++steps) {
-        failed = core_machine_run(state.machine, step, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(state.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u;
     }
     if (!failed && (state.machine->executor_cpu.data.cs.selector != 0x001bu ||
@@ -2649,10 +2650,10 @@ static C_INT timing_80286_manifest_run_protected_int_more_recipe(
         state.machine->executor_cpu.data.idtr.base = 0x0400u;
         state.machine->executor_cpu.data.idtr.limit = 0x0307u;
         failed = core_machine_set_retirement_observation_provider(state.machine,
-            &provider) != TYPE_STATUS_OK;
+            &provider) != LIB_STATUS_OK;
     }
     if (!failed) failed = core_machine_run(state.machine, step, &run) !=
-        TYPE_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
+        LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || run.ticks != 78u + next_bytes ||
         capture.count != 1u || capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
@@ -2665,7 +2666,7 @@ static C_INT timing_80286_manifest_run_protected_int_more_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_task_iret_recipe(const C_CHAR *key_id,
+static lib_i32 timing_80286_manifest_run_task_iret_recipe(const char *key_id,
     lib_u8 next_bytes)
 {
     static const lib_u8 target[][6] = {
@@ -2682,7 +2683,7 @@ static C_INT timing_80286_manifest_run_task_iret_recipe(const C_CHAR *key_id,
     core_machine_run_result run = { 0 };
     task_switch_fixture fixture;
     lib_u32 steps;
-    C_INT failed;
+    lib_i32 failed;
 
     if (key_id == LIB_NULL || next_bytes == 0u ||
         next_bytes >= sizeof(target) / sizeof(target[0])) return 1;
@@ -2692,7 +2693,7 @@ static C_INT timing_80286_manifest_run_task_iret_recipe(const C_CHAR *key_id,
     for (steps = 0u; !failed && steps < 32u &&
             (fixture.machine->executor_cpu.data.tr.selector != 0x0030u ||
             fixture.machine->executor_cpu.data.eip != 0x0100u); ++steps) {
-        failed = core_machine_run(fixture.machine, step, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(fixture.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u;
     }
     if (!failed && (fixture.machine->executor_cpu.data.tr.selector != 0x0030u ||
@@ -2701,9 +2702,9 @@ static C_INT timing_80286_manifest_run_task_iret_recipe(const C_CHAR *key_id,
         iret, sizeof(iret)) || !write_bytes(fixture.machine, KERNEL_BASE + 8u,
         target[next_bytes], next_bytes) ||
         core_machine_set_retirement_observation_provider(fixture.machine,
-            &provider) != TYPE_STATUS_OK;
+            &provider) != LIB_STATUS_OK;
     if (!failed) failed = core_machine_run(fixture.machine, step, &run) !=
-        TYPE_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
+        LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || run.ticks != 169u + next_bytes ||
         capture.count != 1u || capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
@@ -2713,7 +2714,7 @@ static C_INT timing_80286_manifest_run_task_iret_recipe(const C_CHAR *key_id,
         fixture.machine->executor_cpu.data.tr.selector != 0x0028u ||
         fixture.machine->executor_cpu.data.eip != 8u;
     if (failed) {
-        STD_PRINTF("M5:T436:S6:I286-IRET-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x:eip=%04x\n",
+        printf("M5:T436:S6:I286-IRET-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x:eip=%04x\n",
             key_id, run.ticks, capture.observation.source_ticks, capture.count,
             fixture.machine != LIB_NULL ? fixture.machine->executor_cpu.data.tr.selector : 0u,
             fixture.machine != LIB_NULL ? fixture.machine->executor_cpu.data.eip : 0u);
@@ -2722,7 +2723,7 @@ static C_INT timing_80286_manifest_run_task_iret_recipe(const C_CHAR *key_id,
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_system(
+static lib_i32 timing_80286_manifest_run_protected_system(
     const timing_80286_manifest_recipe *recipe)
 {
     const core_machine_run_budget budget = { 1u, 0u };
@@ -2730,7 +2731,7 @@ static C_INT timing_80286_manifest_run_protected_system(
     const timing_80286_manifest_record *record;
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_INT failed;
+    lib_i32 failed;
 
     if (recipe == LIB_NULL) return 1;
     record = timing_80286_manifest_find(recipe->key_id);
@@ -2739,7 +2740,7 @@ static C_INT timing_80286_manifest_run_protected_system(
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             recipe->key_id, recipe->program, recipe->bytes);
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != recipe->ticks || capture.count != 1u ||
             capture.observation.source_ticks != recipe->ticks ||
@@ -2748,7 +2749,7 @@ static C_INT timing_80286_manifest_run_protected_system(
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
     if (failed) {
-        STD_PRINTF("M5:T435:S10:I286-PROTECTED-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
+        printf("M5:T435:S10:I286-PROTECTED-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
             recipe->key_id, recipe->ticks, run.ticks,
             capture.observation.source_ticks, capture.count,
             (lib_u32)capture.observation.timing_origin,
@@ -2758,7 +2759,7 @@ static C_INT timing_80286_manifest_run_protected_system(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_control(
+static lib_i32 timing_80286_manifest_run_control(
     const timing_80286_manifest_control_recipe *recipe)
 {
     const core_machine_run_budget budget = { 1u, 0u };
@@ -2767,7 +2768,7 @@ static C_INT timing_80286_manifest_run_control(
     const timing_80286_manifest_record *record;
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_INT failed;
+    lib_i32 failed;
 
     if (recipe == LIB_NULL) return 1;
     program[0] = recipe->opcode;
@@ -2785,7 +2786,7 @@ static C_INT timing_80286_manifest_run_control(
     if (!failed) {
         machine->executor_cpu.data.ecx = timing_80286_manifest_control_cx(
             recipe->key_id);
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != recipe->ticks || capture.count != 1u ||
             capture.observation.source_ticks != recipe->ticks ||
@@ -2799,7 +2800,7 @@ static C_INT timing_80286_manifest_run_control(
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
     if (failed) {
-        STD_PRINTF("M5:T435:S10:I286-CONTROL-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\\n",
+        printf("M5:T435:S10:I286-CONTROL-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\\n",
             recipe->key_id, recipe->ticks, run.ticks,
             capture.observation.source_ticks, capture.count,
             (lib_u32)capture.observation.timing_origin,
@@ -2810,7 +2811,7 @@ static C_INT timing_80286_manifest_run_control(
     return failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     static const timing_80286_manifest_recipe recipes[] = {
         { "I286-ADJ-AAA", { 0x37u }, 1u, 3u,
@@ -3567,7 +3568,7 @@ C_INT main(C_VOID)
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         if (timing_80286_manifest_run(&recipes[index])) {
-            STD_PRINTF("M5:T435:S10:I286-MANIFEST-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-MANIFEST-RECIPE:FAIL:%s\n",
                 recipes[index].key_id);
             return 1;
         }
@@ -3575,14 +3576,14 @@ C_INT main(C_VOID)
     for (index = 0u; index < sizeof(control_recipes) / sizeof(control_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_control(&control_recipes[index])) {
-            STD_PRINTF("M5:T435:S10:I286-CONTROL-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-CONTROL-RECIPE:FAIL:%s\n",
                 control_recipes[index].key_id);
             return 1;
         }
     }
     for (index = 2u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_jmp_next_byte_recipe((lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3591,7 +3592,7 @@ C_INT main(C_VOID)
         if (index == 2u) continue;
         if (timing_80286_manifest_run_far_jmp_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-FAR-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-FAR-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3599,7 +3600,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-FAR-INDIRECT-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-FAR-INDIRECT-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3607,7 +3608,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_far_ret_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-FAR-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-FAR-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3615,7 +3616,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_iret_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-IRET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-IRET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3623,7 +3624,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_far_call_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-FAR-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-FAR-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3631,7 +3632,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_ret_imm_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-RET-IMM-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-RET-IMM-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3639,7 +3640,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_indirect_call_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-INDIRECT-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-INDIRECT-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3647,36 +3648,36 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_indirect_jmp_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-INDIRECT-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-INDIRECT-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     for (index = 1u; index <= 6u; ++index) {
-        C_CHAR taken_key[96];
-        C_CHAR not_key[96];
+        char taken_key[96];
+        char not_key[96];
 
-        if (STD_SNPRINTF(taken_key, sizeof(taken_key),
+        if (lib_c_snprintf(taken_key, sizeof(taken_key),
                 "I286-INTO-TAKEN-NEXT-BYTE-%u", (lib_u32)index) < 0 ||
-            STD_SNPRINTF(not_key, sizeof(not_key),
+            lib_c_snprintf(not_key, sizeof(not_key),
                 "I286-INTO-NOT-NEXT-BYTE-%u", (lib_u32)index) < 0 ||
             (index != 2u && timing_80286_manifest_run_into_next_byte_recipe(1,
                 (lib_u8)index, taken_key)) ||
             timing_80286_manifest_run_into_next_byte_recipe(0,
                 (lib_u8)index, not_key)) {
-            STD_PRINTF("M5:T435:S10:I286-INTO-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-INTO-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     if (timing_80286_manifest_run_into_next_byte_recipe(1, 1u,
             "I286-INTO-TAKEN")) {
-        STD_PRINTF("M5:T436:S5:I286-INTO-BASE-RECIPE:FAIL\n");
+        printf("M5:T436:S5:I286-INTO-BASE-RECIPE:FAIL\n");
         return 1;
     }
     if (timing_80286_manifest_run_into_next_byte_recipe(0, 1u,
             "I286-INTO-NOT")) {
-        STD_PRINTF("M5:T436:S5:I286-INTO-NOT-BASE-RECIPE:FAIL\n");
+        printf("M5:T436:S5:I286-INTO-NOT-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
@@ -3685,21 +3686,21 @@ C_INT main(C_VOID)
                 (lib_u8)index) ||
             timing_80286_manifest_run_interrupt_next_byte_recipe(1,
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-INT-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-INT-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     for (index = 2u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_ret_next_byte_recipe((lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     for (index = 2u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_call_next_byte_recipe((lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3707,7 +3708,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_far_memory_call_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-PROTECTED-FAR-MEMORY-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-PROTECTED-FAR-MEMORY-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3715,7 +3716,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_far_call_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-PROTECTED-FAR-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-PROTECTED-FAR-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3723,7 +3724,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_far_memory_jmp_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-PROTECTED-FAR-MEMORY-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-PROTECTED-FAR-MEMORY-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3731,7 +3732,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-PROTECTED-FAR-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-PROTECTED-FAR-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3739,7 +3740,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_iret_next_byte_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-PROTECTED-IRET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-PROTECTED-IRET-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3747,7 +3748,7 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_outer_ret_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-PROTECTED-OUTER-RET-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-PROTECTED-OUTER-RET-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3755,18 +3756,18 @@ C_INT main(C_VOID)
     for (index = 1u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_protected_outer_iret_recipe(
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T435:S10:I286-PROTECTED-OUTER-IRET-RECIPE:FAIL:%u\n",
+            printf("M5:T435:S10:I286-PROTECTED-OUTER-IRET-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     for (index = 1u; index <= 6u; ++index) {
-        C_CHAR call_key[64];
-        C_CHAR jmp_key[64];
+        char call_key[64];
+        char jmp_key[64];
 
-        if (STD_SNPRINTF(call_key, sizeof(call_key),
+        if (lib_c_snprintf(call_key, sizeof(call_key),
                 "I286-CALL-TASK-NEXT-BYTE-%u", (lib_u32)index) < 0 ||
-            STD_SNPRINTF(jmp_key, sizeof(jmp_key),
+            lib_c_snprintf(jmp_key, sizeof(jmp_key),
                 "I286-JMP-TASK-NEXT-BYTE-%u", (lib_u32)index) < 0 ||
             timing_80286_manifest_run_task_transfer_recipe(
                 TASK_SWITCH_CASE_CALL_SUCCESS, call_key, (lib_u8)index,
@@ -3774,7 +3775,7 @@ C_INT main(C_VOID)
             timing_80286_manifest_run_task_transfer_recipe(
                 TASK_SWITCH_CASE_SUCCESS, jmp_key, (lib_u8)index,
                 175u)) {
-            STD_PRINTF("M5:T436:S6:I286-TASK-NEXT-BYTE-RECIPE:FAIL:%u\n",
+            printf("M5:T436:S6:I286-TASK-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3785,40 +3786,40 @@ C_INT main(C_VOID)
             TASK_SWITCH_CASE_SUCCESS, "I286-JMP-TASK", 1u, 175u) ||
         timing_80286_manifest_run_task_transfer_recipe(
             TASK_SWITCH_CASE_TASK_GATE_SUCCESS, LIB_NULL, 1u, 182u)) {
-        STD_PRINTF("M5:T436:S6:I286-TASK-BASE-RECIPE:FAIL\n");
+        printf("M5:T436:S6:I286-TASK-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
-        C_CHAR call_key[64];
+        char call_key[64];
 
-        if (STD_SNPRINTF(call_key, sizeof(call_key),
+        if (lib_c_snprintf(call_key, sizeof(call_key),
                 "I286-CALL-GATE-MORE-NEXT-BYTE-%u",
                 (lib_u32)index) < 0 ||
             timing_80286_manifest_run_call_gate_recipe(call_key, 0x9au,
                 LIB_FALSE, (lib_u8)index, 82u)) {
-            STD_PRINTF("M5:T436:S6:I286-MORE-GATE-RECIPE:FAIL:%u\n",
+            printf("M5:T436:S6:I286-MORE-GATE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     if (timing_80286_manifest_run_call_gate_recipe("I286-CALL-GATE-MORE",
             0x9au, LIB_FALSE, 1u, 82u)) {
-        STD_PRINTF("M5:T436:S6:I286-MORE-GATE-BASE-RECIPE:FAIL\n");
+        printf("M5:T436:S6:I286-MORE-GATE-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
-        C_CHAR call_key[64];
-        C_CHAR jmp_key[64];
+        char call_key[64];
+        char jmp_key[64];
 
-        if (STD_SNPRINTF(call_key, sizeof(call_key),
+        if (lib_c_snprintf(call_key, sizeof(call_key),
                 "I286-CALL-GATE-SAME-NEXT-BYTE-%u", (lib_u32)index) <
-                0 || STD_SNPRINTF(jmp_key, sizeof(jmp_key),
+                0 || lib_c_snprintf(jmp_key, sizeof(jmp_key),
                 "I286-JMP-GATE-NEXT-BYTE-%u", (lib_u32)index) < 0 ||
             timing_80286_manifest_run_call_gate_recipe(call_key, 0x9au,
                 LIB_TRUE, (lib_u8)index, 41u) ||
             timing_80286_manifest_run_call_gate_recipe(jmp_key, 0xeau,
                 LIB_TRUE, (lib_u8)index, 38u)) {
-            STD_PRINTF("M5:T436:S6:I286-SAME-GATE-RECIPE:FAIL:%u\n",
+            printf("M5:T436:S6:I286-SAME-GATE-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3827,22 +3828,22 @@ C_INT main(C_VOID)
             0x9au, LIB_TRUE, 1u, 41u) ||
         timing_80286_manifest_run_call_gate_recipe("I286-JMP-GATE", 0xeau,
             LIB_TRUE, 1u, 38u)) {
-        STD_PRINTF("M5:T436:S6:I286-SAME-GATE-BASE-RECIPE:FAIL\n");
+        printf("M5:T436:S6:I286-SAME-GATE-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
-        C_CHAR same_key[64];
-        C_CHAR more_key[64];
+        char same_key[64];
+        char more_key[64];
 
-        if (STD_SNPRINTF(same_key, sizeof(same_key),
+        if (lib_c_snprintf(same_key, sizeof(same_key),
                 "I286-INT-PM-SAME-NEXT-BYTE-%u", (lib_u32)index) < 0 ||
-            STD_SNPRINTF(more_key, sizeof(more_key),
+            lib_c_snprintf(more_key, sizeof(more_key),
                 "I286-INT-PM-MORE-NEXT-BYTE-%u", (lib_u32)index) < 0 ||
             timing_80286_manifest_run_protected_int_same_recipe(same_key,
                 (lib_u8)index) ||
             timing_80286_manifest_run_protected_int_more_recipe(more_key,
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T436:S6:I286-PROTECTED-INT-RECIPE:FAIL:%u\n",
+            printf("M5:T436:S6:I286-PROTECTED-INT-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
@@ -3850,48 +3851,48 @@ C_INT main(C_VOID)
     if (timing_80286_manifest_run_protected_int_same_recipe("I286-INT-PM-SAME",
             1u) || timing_80286_manifest_run_protected_int_more_recipe(
             "I286-INT-PM-MORE", 1u)) {
-        STD_PRINTF("M5:T436:S6:I286-PROTECTED-INT-BASE-RECIPE:FAIL\n");
+        printf("M5:T436:S6:I286-PROTECTED-INT-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
-        C_CHAR key_id[64];
+        char key_id[64];
 
-        if (STD_SNPRINTF(key_id, sizeof(key_id),
+        if (lib_c_snprintf(key_id, sizeof(key_id),
                 "I286-INT-TASK-NEXT-BYTE-%u", (lib_u32)index) < 0 ||
             timing_80286_manifest_run_task_transfer_recipe(
                 TASK_SWITCH_CASE_IDT_TASK_GATE, key_id, (lib_u8)index,
                 167u)) {
-            STD_PRINTF("M5:T436:S6:I286-INT-TASK-RECIPE:FAIL:%u\n",
+            printf("M5:T436:S6:I286-INT-TASK-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     if (timing_80286_manifest_run_task_transfer_recipe(
             TASK_SWITCH_CASE_IDT_TASK_GATE, "I286-INT-TASK", 1u, 167u)) {
-        STD_PRINTF("M5:T436:S6:I286-INT-TASK-BASE-RECIPE:FAIL\n");
+        printf("M5:T436:S6:I286-INT-TASK-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
-        C_CHAR key_id[64];
+        char key_id[64];
 
-        if (STD_SNPRINTF(key_id, sizeof(key_id),
+        if (lib_c_snprintf(key_id, sizeof(key_id),
                 "I286-RET-IRET-TASK-NEXT-BYTE-%u", (lib_u32)index) <
                 0 || timing_80286_manifest_run_task_iret_recipe(key_id,
                 (lib_u8)index)) {
-            STD_PRINTF("M5:T436:S6:I286-IRET-TASK-RECIPE:FAIL:%u\n",
+            printf("M5:T436:S6:I286-IRET-TASK-RECIPE:FAIL:%u\n",
                 (lib_u32)index);
             return 1;
         }
     }
     if (timing_80286_manifest_run_task_iret_recipe("I286-RET-IRET-TASK", 1u)) {
-        STD_PRINTF("M5:T436:S6:I286-IRET-TASK-BASE-RECIPE:FAIL\n");
+        printf("M5:T436:S6:I286-IRET-TASK-BASE-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 0u; index < sizeof(protected_system_recipes) /
         sizeof(protected_system_recipes[0]); ++index) {
         if (timing_80286_manifest_run_protected_system(
                 &protected_system_recipes[index])) {
-            STD_PRINTF("M5:T435:S10:I286-PROTECTED-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-PROTECTED-RECIPE:FAIL:%s\n",
                 protected_system_recipes[index].key_id);
             return 1;
         }
@@ -3899,14 +3900,14 @@ C_INT main(C_VOID)
     for (index = 0u; index < sizeof(segment_recipes) / sizeof(segment_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run(&segment_recipes[index])) {
-            STD_PRINTF("M5:T435:S10:I286-SEGMENT-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-SEGMENT-RECIPE:FAIL:%s\n",
                 segment_recipes[index].key_id);
             return 1;
         }
     }
     for (index = 0u; index < sizeof(ea_recipes) / sizeof(ea_recipes[0]); ++index) {
         if (timing_80286_manifest_run(&ea_recipes[index])) {
-            STD_PRINTF("M5:T435:S10:I286-EA-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-EA-RECIPE:FAIL:%s\n",
                 ea_recipes[index].key_id);
             return 1;
         }
@@ -3914,7 +3915,7 @@ C_INT main(C_VOID)
     for (index = 0u; index < sizeof(odd_word_recipes) /
         sizeof(odd_word_recipes[0]); ++index) {
         if (timing_80286_manifest_run(&odd_word_recipes[index])) {
-            STD_PRINTF("M5:T435:S10:I286-ODD-WORD-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-ODD-WORD-RECIPE:FAIL:%s\n",
                 odd_word_recipes[index].key_id);
             return 1;
         }
@@ -3922,7 +3923,7 @@ C_INT main(C_VOID)
     for (index = 0u; index < sizeof(ea_odd_word_recipes) /
         sizeof(ea_odd_word_recipes[0]); ++index) {
         if (timing_80286_manifest_run(&ea_odd_word_recipes[index])) {
-            STD_PRINTF("M5:T436:S3:I286-EA-ODD-WORD-RECIPE:FAIL:%s\n",
+            printf("M5:T436:S3:I286-EA-ODD-WORD-RECIPE:FAIL:%s\n",
                 ea_odd_word_recipes[index].key_id);
             return 1;
         }
@@ -3930,44 +3931,44 @@ C_INT main(C_VOID)
     for (index = 0u; index < sizeof(string_recipes) / sizeof(string_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_string_recipe(&string_recipes[index], 0)) {
-            STD_PRINTF("M5:T435:S10:I286-STRING-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-STRING-RECIPE:FAIL:%s\n",
                 string_recipes[index].key_id);
             return 1;
         }
         if ((string_recipes[index].program[0] & 1u) != 0u &&
             timing_80286_manifest_run_string_recipe(&string_recipes[index], 1)) {
-            STD_PRINTF("M5:T435:S10:I286-STRING-ODD-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-STRING-ODD-RECIPE:FAIL:%s\n",
                 string_recipes[index].key_id);
             return 1;
         }
     }
     if (timing_80286_manifest_run_hlt_recipe()) {
-        STD_PRINTF("M5:T435:S10:I286-HLT-RECIPE:FAIL\n");
+        printf("M5:T435:S10:I286-HLT-RECIPE:FAIL\n");
         return 1;
     }
     for (index = 0u; index < sizeof(repeat_recipes) / sizeof(repeat_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_repeat_recipe(&repeat_recipes[index], 0)) {
-            STD_PRINTF("M5:T435:S10:I286-REP-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-REP-RECIPE:FAIL:%s\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
         if ((repeat_recipes[index].opcode & 1u) != 0u &&
             timing_80286_manifest_run_repeat_recipe(&repeat_recipes[index], 1)) {
-            STD_PRINTF("M5:T435:S10:I286-REP-ODD-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-REP-ODD-RECIPE:FAIL:%s\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
         if ((repeat_recipes[index].opcode & 1u) != 0u &&
             timing_80286_manifest_run_repeat_base_recipe(
                 &repeat_recipes[index], 1)) {
-            STD_PRINTF("M5:T436:S4:I286-REP-ODD-BASE-RECIPE:FAIL:%s\n",
+            printf("M5:T436:S4:I286-REP-ODD-BASE-RECIPE:FAIL:%s\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
         if (timing_80286_manifest_run_repeat_base_recipe(
                 &repeat_recipes[index], 0)) {
-            STD_PRINTF("M5:T436:S4:I286-REP-BASE-RECIPE:FAIL:%s\n",
+            printf("M5:T436:S4:I286-REP-BASE-RECIPE:FAIL:%s\n",
                 repeat_recipes[index].key_id);
             return 1;
         }
@@ -3975,7 +3976,7 @@ C_INT main(C_VOID)
     for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run(&lock_recipes[index])) {
-            STD_PRINTF("M5:T435:S10:I286-LOCK-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-LOCK-RECIPE:FAIL:%s\n",
                 lock_recipes[index].key_id);
             return 1;
         }
@@ -3983,7 +3984,7 @@ C_INT main(C_VOID)
     for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_lock_ea_recipe(&lock_recipes[index])) {
-            STD_PRINTF("M5:T435:S10:I286-LOCK-EA-RECIPE:FAIL:%s\n",
+            printf("M5:T435:S10:I286-LOCK-EA-RECIPE:FAIL:%s\n",
                 lock_recipes[index].key_id);
             return 1;
         }
@@ -4023,7 +4024,7 @@ C_INT main(C_VOID)
             !timing_80286_manifest_s5_results_complete() ||
             !timing_80286_manifest_s6_results_complete() ||
             !timing_80286_manifest_s7_results_complete()) {
-            STD_PRINTF("M5:T436:S7:I286-GATE-DETAIL:captured=%u:probes=%u:s3=%u:s4=%u:s5=%u:s6=%u:s7=%u:s7expected=%u\n",
+            printf("M5:T436:S7:I286-GATE-DETAIL:captured=%u:probes=%u:s3=%u:s4=%u:s5=%u:s6=%u:s7=%u:s7expected=%u\n",
                 captured, probes, s3_captured, s4_captured, s5_captured,
                 s6_captured, s7_captured,
                 timing_80286_manifest_s7_expected_count());
@@ -4032,7 +4033,7 @@ C_INT main(C_VOID)
                 if (timing_80286_manifest_is_s7(
                         &timing_80286_manifest_records[index]) &&
                     !timing_80286_manifest_observed[index]) {
-                    STD_PRINTF("M5:T436:S7:I286-SYSTEM-MISSING:%s\n",
+                    printf("M5:T436:S7:I286-SYSTEM-MISSING:%s\n",
                         timing_80286_manifest_records[index].key_id);
                 }
             }
@@ -4042,37 +4043,37 @@ C_INT main(C_VOID)
                 PROJECT_TEST_80286_RESULTS_PATH, 1) != 0) {
             return 1;
         }
-        STD_PRINTF("M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
+        printf("M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
             captured, timing_80286_manifest_expected_count());
-        STD_PRINTF("M5:T436:S8:I286-RESULT-CLOSURE:PASS:canonical=%u\n",
+        printf("M5:T436:S8:I286-RESULT-CLOSURE:PASS:canonical=%u\n",
             timing_80286_manifest_expected_count());
-        STD_PRINTF("M5:T436:S3:I286-NONCONTROL-OBSERVED:%u\n", s3_captured);
-        STD_PRINTF("M5:T436:S3:I286-NONCONTROL-COVERAGE:PASS:canonical=%u\n",
+        printf("M5:T436:S3:I286-NONCONTROL-OBSERVED:%u\n", s3_captured);
+        printf("M5:T436:S3:I286-NONCONTROL-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s3_expected_count());
-        STD_PRINTF("M5:T436:S3:I286-MEMORY-INPUTS:PASS\n");
-        STD_PRINTF("M5:T436:S4:I286-STRING-OBSERVED:%u\n", s4_captured);
-        STD_PRINTF("M5:T436:S4:I286-STRING-COVERAGE:PASS:canonical=%u\n",
+        printf("M5:T436:S3:I286-MEMORY-INPUTS:PASS\n");
+        printf("M5:T436:S4:I286-STRING-OBSERVED:%u\n", s4_captured);
+        printf("M5:T436:S4:I286-STRING-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s4_expected_count());
-        STD_PRINTF("M5:T436:S4:I286-REPEAT-INPUTS:PASS\n");
-        STD_PRINTF("M5:T436:S5:I286-CONDITIONAL-OBSERVED:%u\n", s5_captured);
-        STD_PRINTF("M5:T436:S5:I286-CONDITIONAL-COVERAGE:PASS:canonical=%u\n",
+        printf("M5:T436:S4:I286-REPEAT-INPUTS:PASS\n");
+        printf("M5:T436:S5:I286-CONDITIONAL-OBSERVED:%u\n", s5_captured);
+        printf("M5:T436:S5:I286-CONDITIONAL-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s5_expected_count());
-        STD_PRINTF("M5:T436:S5:I286-OUTCOME-NEXT-BYTE:PASS\n");
-        STD_PRINTF("M5:T436:S6:I286-TRANSFER-OBSERVED:%u:canonical=%u\n",
+        printf("M5:T436:S5:I286-OUTCOME-NEXT-BYTE:PASS\n");
+        printf("M5:T436:S6:I286-TRANSFER-OBSERVED:%u:canonical=%u\n",
             s6_captured, timing_80286_manifest_s6_expected_count());
-        STD_PRINTF("M5:T436:S6:I286-TRANSFER-COVERAGE:PASS:canonical=%u\n",
+        printf("M5:T436:S6:I286-TRANSFER-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s6_expected_count());
-        STD_PRINTF("M5:T436:S6:I286-PROTECTED-PATHS:PASS\n");
-        STD_PRINTF("M5:T436:S7:I286-SYSTEM-OBSERVED:%u:canonical=%u\n",
+        printf("M5:T436:S6:I286-PROTECTED-PATHS:PASS\n");
+        printf("M5:T436:S7:I286-SYSTEM-OBSERVED:%u:canonical=%u\n",
             s7_captured, timing_80286_manifest_s7_expected_count());
-        STD_PRINTF("M5:T436:S7:I286-SYSTEM-COVERAGE:PASS:canonical=%u\n",
+        printf("M5:T436:S7:I286-SYSTEM-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s7_expected_count());
-        STD_PRINTF("M5:T436:S7:I286-SEGMENT-DESCRIPTOR-PATHS:PASS\n");
+        printf("M5:T436:S7:I286-SEGMENT-DESCRIPTOR-PATHS:PASS\n");
         for (index = 0u; index < sizeof(timing_80286_manifest_records) /
                 sizeof(timing_80286_manifest_records[0]); ++index) {
             if (timing_80286_manifest_is_s6(&timing_80286_manifest_records[index]) &&
                 !timing_80286_manifest_observed[index]) {
-                STD_PRINTF("M5:T436:S6:I286-TRANSFER-MISSING:%s\n",
+                printf("M5:T436:S6:I286-TRANSFER-MISSING:%s\n",
                     timing_80286_manifest_records[index].key_id);
             }
         }
@@ -4080,11 +4081,11 @@ C_INT main(C_VOID)
                 sizeof(timing_80286_manifest_records[0]); ++index) {
             if (timing_80286_manifest_is_s7(&timing_80286_manifest_records[index]) &&
                 !timing_80286_manifest_observed[index]) {
-                STD_PRINTF("M5:T436:S7:I286-SYSTEM-MISSING:%s\n",
+                printf("M5:T436:S7:I286-SYSTEM-MISSING:%s\n",
                     timing_80286_manifest_records[index].key_id);
             }
         }
-        STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
+        printf("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
             captured);
     }
     return 0;

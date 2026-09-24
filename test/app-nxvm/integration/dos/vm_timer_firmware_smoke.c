@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include <windows.h>
 
@@ -10,7 +10,7 @@
 #define VM_TIMER_BDA_ROLLOVER 0x0470u
 #define VM_TIMER_DAILY_LIMIT 0x001800b0u
 
-static C_INT vm_timer_debug_execute(integration_ini_session *session,
+static lib_i32 vm_timer_debug_execute(integration_ini_session *session,
     const x86_debug_request *request, x86_debug_response *out_response)
 {
     common_machine_debug_lease lease;
@@ -25,7 +25,7 @@ static C_INT vm_timer_debug_execute(integration_ini_session *session,
     return 1;
 }
 
-static C_INT vm_timer_debug_break_real(integration_ini_session *session,
+static lib_i32 vm_timer_debug_break_real(integration_ini_session *session,
     lib_u32 linear)
 {
     x86_debug_request request = {
@@ -36,14 +36,14 @@ static C_INT vm_timer_debug_break_real(integration_ini_session *session,
     x86_debug_response response;
 
     if (!vm_timer_debug_execute(session, &request, &response) ||
-        integration_ini_session_resume(session, 2000u) != TYPE_STATUS_OK ||
+        integration_ini_session_resume(session, 2000u) != LIB_STATUS_OK ||
         !integration_ini_session_wait_for_state(session, COMMON_MACHINE_PAUSED,
             2000u)) return 0;
     request = (x86_debug_request) { .operation = X86_DEBUG_GET_EXECUTION_RESULT };
     return vm_timer_debug_execute(session, &request, &response) && response.enabled;
 }
 
-static C_INT vm_timer_debug_write_real(integration_ini_session *session,
+static lib_i32 vm_timer_debug_write_real(integration_ini_session *session,
     lib_u16 segment, lib_u16 offset, const lib_u8 *data,
     lib_u8 bytes)
 {
@@ -58,7 +58,7 @@ static C_INT vm_timer_debug_write_real(integration_ini_session *session,
     return vm_timer_debug_execute(session, &request, &response);
 }
 
-static C_INT vm_timer_debug_write_register(integration_ini_session *session,
+static lib_i32 vm_timer_debug_write_register(integration_ini_session *session,
     x86_debug_register register_id, lib_u32 value)
 {
     x86_debug_request request = {
@@ -70,7 +70,7 @@ static C_INT vm_timer_debug_write_register(integration_ini_session *session,
     return vm_timer_debug_execute(session, &request, &response);
 }
 
-static C_INT vm_timer_debug_read_register(integration_ini_session *session,
+static lib_i32 vm_timer_debug_read_register(integration_ini_session *session,
     x86_debug_register register_id, lib_u32 *out_value)
 {
     x86_debug_request request = {
@@ -84,7 +84,7 @@ static C_INT vm_timer_debug_read_register(integration_ini_session *session,
     return 1;
 }
 
-C_INT main(C_INT argc, C_CHAR **argv)
+lib_i32 main(lib_i32 argc, char **argv)
 {
     integration_ini_session ini_session;
     DWORD elapsed;
@@ -95,7 +95,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     lib_u32 rollover_seed = VM_TIMER_DAILY_LIMIT - 1u;
     lib_u8 rollover_byte = 0u;
     lib_u32 register_value;
-    C_INT stage = 0;
+    lib_i32 stage = 0;
     static const lib_u8 int1a_program[] = { 0xb4u, 0x00u, 0xcdu, 0x1au, 0xf4u };
     static const lib_u8 rollover_program[] = {
         0xcdu, 0x08u, 0xb4u, 0x00u, 0xcdu, 0x1au, 0xf4u
@@ -103,16 +103,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
     stage = 1;
     if (argc != 3) goto fail;
-    if (integration_ini_session_open(argv[1], argv[2], &ini_session) != TYPE_STATUS_OK) {
+    if (integration_ini_session_open(argv[1], argv[2], &ini_session) != LIB_STATUS_OK) {
         return 77;
     }
     stage = 2;
-    if (integration_ini_session_start(&ini_session) != TYPE_STATUS_OK) goto fail;
+    if (integration_ini_session_start(&ini_session) != LIB_STATUS_OK) goto fail;
     stage = 3;
     /* Host time is only a bounded startup watchdog; guest time remains core-owned. */
     for (elapsed = 0u; elapsed < 1000u; elapsed += 10u) Sleep(10u);
     stage = 4;
-    if (integration_ini_session_pause(&ini_session, 2000u) != TYPE_STATUS_OK) goto fail;
+    if (integration_ini_session_pause(&ini_session, 2000u) != LIB_STATUS_OK) goto fail;
     {
         x86_debug_request request = {
             .operation = X86_DEBUG_READ_REAL, .offset = VM_TIMER_BDA_TICKS,
@@ -163,11 +163,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (!vm_timer_debug_read_register(&ini_session, X86_DEBUG_EAX, &register_value) ||
         int1a_ticks != 0u || (register_value & 0xffu) != 1u) goto fail;
     integration_ini_session_close(&ini_session);
-    STD_PRINTF("M5:T225:S4:IRQ0-BDA-INT1A-ROLLOVER:DOS:OK\n");
+    printf("M5:T225:S4:IRQ0-BDA-INT1A-ROLLOVER:DOS:OK\n");
     return 0;
 
 fail:
-    STD_FPRINTF(STD_STDERR, "M5:T225:S3:TIMER:FAIL:%d:%u\n", stage, bda_ticks);
+    fprintf(stderr, "M5:T225:S3:TIMER:FAIL:%d:%u\n", stage, bda_ticks);
     integration_ini_session_close(&ini_session);
     return 1;
 }

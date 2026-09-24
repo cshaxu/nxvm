@@ -1,23 +1,23 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
 typedef struct eflags_machine { core_machine *machine; } eflags_machine;
 
-static C_VOID eflags_reset(C_VOID *opaque)
+static void eflags_reset(void *opaque)
 {
     eflags_machine *state = (eflags_machine *)opaque;
     if (state != LIB_NULL)
-        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+        (void)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
 static const core_machine_execution_provider eflags_provider = {
     eflags_reset, LIB_NULL
 };
 
-static C_INT eflags_prepare_profile(core_machine_cpu_profile profile, eflags_machine *state)
+static lib_i32 eflags_prepare_profile(core_machine_cpu_profile profile, eflags_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -29,22 +29,22 @@ static C_INT eflags_prepare_profile(core_machine_cpu_profile profile, eflags_mac
         &eflags_provider, state, &state->machine);
 }
 
-static C_INT eflags_prepare(eflags_machine *state)
+static lib_i32 eflags_prepare(eflags_machine *state)
 {
     return eflags_prepare_profile(CORE_MACHINE_CPU_PROFILE_80386, state);
 }
 
-static C_INT eflags_run(eflags_machine *state, lib_u8 opcode, t_cpu *after)
+static lib_i32 eflags_run(eflags_machine *state, lib_u8 opcode, t_cpu *after)
 {
     core_machine_run_result result;
     return test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) &&
-        core_machine_memory_write(state->machine, 0u, &opcode, 1u) == TYPE_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){ 1u, 0u }, &result) == TYPE_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0u, &opcode, 1u) == LIB_STATUS_OK &&
+        core_machine_run(state->machine, (core_machine_run_budget){ 1u, 0u }, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET &&
         ((*after = test_core_machine_fixture_capture_cpu_after_run(state->machine)), 1);
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     const lib_u32 saved = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
         VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_IF |
@@ -55,7 +55,7 @@ C_INT main(C_VOID)
     for (op = 0u; op != 2u; ++op) {
         eflags_machine state;
         t_cpu after;
-        C_INT failed = !eflags_prepare(&state);
+        lib_i32 failed = !eflags_prepare(&state);
         if (!failed) {
             state.machine->executor_cpu.data.eax = op ? 0x1122ff00u : 0x11220000u;
             state.machine->executor_cpu.data.eflags = saved;
@@ -71,7 +71,7 @@ C_INT main(C_VOID)
     {
         eflags_machine state;
         t_cpu after;
-        C_INT failed = !eflags_prepare(&state);
+        lib_i32 failed = !eflags_prepare(&state);
         if (!failed) {
             state.machine->executor_cpu.data.eax = 0x11220000u;
             state.machine->executor_cpu.data.eflags = saved;
@@ -90,7 +90,7 @@ C_INT main(C_VOID)
             t_cpu after;
             lib_u32 initial = saved;
             lib_u32 expected = saved;
-            C_INT failed = !eflags_prepare(&state);
+            lib_i32 failed = !eflags_prepare(&state);
             if (opcodes[index] == 0xf5u)
                 initial = index == 0u ? saved & ~VCPU_EFLAGS_CF : saved;
             if (opcodes[index] == 0xf5u)
@@ -120,7 +120,7 @@ C_INT main(C_VOID)
         for (index = 0u; index != sizeof(opcodes); ++index) {
             eflags_machine state;
             t_cpu after;
-            C_INT failed = !eflags_prepare_profile(profiles[profile], &state);
+            lib_i32 failed = !eflags_prepare_profile(profiles[profile], &state);
             if (!failed) {
                 state.machine->executor_cpu.data.eax = 0x1122ff00u;
                 state.machine->executor_cpu.data.eflags = saved;
@@ -131,6 +131,6 @@ C_INT main(C_VOID)
         }
         }
     }
-    STD_PRINTF("M5:T316:S20:EFLAGS-LOCAL:OK\n");
+    printf("M5:T316:S20:EFLAGS-LOCAL:OK\n");
     return 0;
 }

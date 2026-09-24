@@ -2,7 +2,6 @@
 #define VM_PROFILE_MODEL40_PRIVATE_H
 #include "lib/types/types_interface.h"
 
-#include "type.h"
 #include "app-nxvm/devices/firmware_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/profiles/model40/model40.h"
@@ -30,19 +29,19 @@ typedef struct vm_profile_model40_external_rom {
     lib_size video_byte_count;
 } vm_profile_model40_external_rom;
 
-C_INT vm_profile_model40_external_rom_is_valid(
+lib_i32 vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom);
-type_status vm_profile_model40_external_rom_create(
+lib_status vm_profile_model40_external_rom_create(
     const lib_u8 *even, lib_size even_bytes,
     const lib_u8 *odd, lib_size odd_bytes,
     const lib_u8 *video, lib_size video_bytes,
     vm_profile_model40_external_rom *out_rom);
-C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config);
-type_status vm_profile_model40_values_create(vm_profile_contract_values *out_values);
-type_status vm_profile_model40_byob_manifest_load(
+void vm_profile_model40_core_config_initialize(core_machine_config *out_config);
+lib_status vm_profile_model40_values_create(vm_profile_contract_values *out_values);
+lib_status vm_profile_model40_byob_manifest_load(
     const vm_profile_model40_byob_manifest *manifest,
     lib_u8 *even_bytes, lib_u8 *odd_bytes,
     lib_u8 *video_bytes,
     vm_profile_model40_external_rom *out_rom);
-const core_machine_firmware_provider *vm_profile_model40_firmware_provider(C_VOID);
+const core_machine_firmware_provider *vm_profile_model40_firmware_provider(void);
 #endif

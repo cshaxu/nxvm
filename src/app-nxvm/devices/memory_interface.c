@@ -1,61 +1,60 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/machine.h"
 
 
 
 
-type_status core_machine_register_memory_write_observer(core_machine *machine,
-    core_machine_memory_write_observer callback, C_VOID *owner)
+lib_status core_machine_register_memory_write_observer(core_machine *machine,
+    core_machine_memory_write_observer callback, void *owner)
 {
-    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
+    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
     return core_machine_memory_register_write_observer(&machine->executor_memory,
         callback, owner);
 }
-type_status core_machine_register_memory_device(core_machine *machine,
+lib_status core_machine_register_memory_device(core_machine *machine,
     lib_u32 physical_start, lib_size bytes,
-    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner)
+    const core_machine_memory_device_callbacks *callbacks, void *owner)
 {
-    if (callbacks == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
+    if (callbacks == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
     return core_machine_memory_register_overlay_device_provider(&machine->executor_memory,
         physical_start, bytes, callbacks->read, callbacks->write, callbacks->query,
         owner);
 }
 
-type_status core_machine_register_memory_replacement_device(core_machine *machine,
+lib_status core_machine_register_memory_replacement_device(core_machine *machine,
     lib_u32 physical_start, lib_size bytes,
-    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner)
+    const core_machine_memory_device_callbacks *callbacks, void *owner)
 {
-    if (callbacks == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
+    if (callbacks == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
     return core_machine_memory_register_replacement_device_provider(
         &machine->executor_memory, physical_start, bytes, callbacks->read,
         callbacks->write, callbacks->query, owner);
 }
-type_status core_machine_memory_read(
+lib_status core_machine_memory_read(
     const core_machine *machine,
     lib_u32 physical,
-    C_VOID *out_data,
+    void *out_data,
     lib_size size)
 {
     if (machine == LIB_NULL || out_data == LIB_NULL || size == 0u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
 
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
 
     if (machine->executor_memory.connect.backing == 0u) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     {
-        type_status status = core_machine_memory_read_physical(
+        lib_status status = core_machine_memory_read_physical(
             (t_ram *)&machine->executor_memory, physical,
-            (type_virtual_address)out_data, size);
+            (lib_uptr)out_data, size);
 
         core_machine_trace_record((core_machine *)machine,
             CORE_MACHINE_TRACE_MEMORY_READ, physical, (lib_u32)size,
@@ -64,30 +63,30 @@ type_status core_machine_memory_read(
     }
 }
 
-type_status core_machine_memory_write(
+lib_status core_machine_memory_write(
     core_machine *machine,
     lib_u32 physical,
-    const C_VOID *data,
+    const void *data,
     lib_size size)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         data == LIB_NULL || size == 0u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
 
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
 
     if (machine->executor_memory.connect.backing == 0u) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     {
-        type_status status = core_machine_memory_write_physical(
-            &machine->executor_memory, physical, (type_virtual_address)data, size);
+        lib_status status = core_machine_memory_write_physical(
+            &machine->executor_memory, physical, (lib_uptr)data, size);
 
-        if (status == TYPE_STATUS_OK) {
+        if (status == LIB_STATUS_OK) {
             core_machine_cpu_execution_invalidate_prefetch(
                 &machine->executor_cpu_execution);
         }
@@ -97,7 +96,7 @@ type_status core_machine_memory_write(
     }
 }
 
-type_status core_machine_memory_query(
+lib_status core_machine_memory_query(
     const core_machine *machine,
     lib_u32 physical,
     lib_size size,
@@ -107,35 +106,35 @@ type_status core_machine_memory_query(
     if (machine == LIB_NULL || out_route == LIB_NULL || size == 0u ||
         (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
          access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     if (machine->executor_memory.connect.backing == 0u) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     return core_machine_memory_query_physical(&machine->executor_memory, physical,
         size, access, out_route);
 }
 
-type_status core_machine_set_a20(
+lib_status core_machine_set_a20(
     core_machine *machine,
-    C_INT enabled)
+    lib_i32 enabled)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     }
 
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
 
     if (machine->executor_memory.connect.backing == 0u) {
-        return TYPE_STATUS_INVALID_STATE;
+        return LIB_STATUS_INVALID_STATE;
     }
     machine->executor_memory.data.flagA20 = enabled != 0;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/machine/lifecycle.h"
@@ -8,7 +8,7 @@
 #include "app-nxvm/devices/rtc.h"
 #include "support/rom/session_assets.h"
 
-static C_INT vm_default_pc_at_fdd_format_is_valid(
+static lib_i32 vm_default_pc_at_fdd_format_is_valid(
     vm_machine_floppy_format format, lib_u16 cylinders,
     lib_u16 sectors, lib_u8 cmos_type)
 {
@@ -22,13 +22,13 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
 
     config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
     config.floppy_format = format;
-    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL ||
         session->fdd.data.ncyl != cylinders || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != sectors || session->fdd.data.nbyte != 512u ||
         session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_TYPE_DISK_FLOPPY] !=
             cmos_type) {
-        STD_PRINTF("FDD setup format=%u cmos=%02x expected=%02x\n",
+        printf("FDD setup format=%u cmos=%02x expected=%02x\n",
             (unsigned int)format, (unsigned int)session->core_machine->
             shared_rtc.registers[CORE_MACHINE_RTC_TYPE_DISK_FLOPPY],
             (unsigned int)cmos_type);
@@ -47,14 +47,14 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
         return 0;
     }
     if (core_machine_bus_read(session->core_machine, 0x0061u, &port_b) !=
-        TYPE_STATUS_OK) {
+        LIB_STATUS_OK) {
         vm_machine_destroy(session);
         return 0;
     }
     for (tick = 0u; tick < 200u; ++tick) {
-        if (core_machine_advance_time(session->core_machine, 1u) != TYPE_STATUS_OK ||
+        if (core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK ||
             core_machine_bus_read(session->core_machine, 0x0061u, &next_port_b) !=
-                TYPE_STATUS_OK) {
+                LIB_STATUS_OK) {
             vm_machine_destroy(session);
             return 0;
         }
@@ -68,7 +68,7 @@ static C_INT vm_default_pc_at_fdd_format_is_valid(
     return 1;
 }
 
-static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
+static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
 {
     static const lib_u8 program[] = {
         0xb4u, 0x10u, 0xe4u, 0x61u, 0x24u, 0x10u,
@@ -82,22 +82,22 @@ static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
     core_machine_run_result result = {0};
     lib_u32 port_b;
     lib_u32 tick;
-    C_INT failed = 0;
+    lib_i32 failed = 0;
 
-    if (vm_test_default_pc_at_session_create(&config, &session) != TYPE_STATUS_OK ||
+    if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) {
         return 0;
     }
     for (tick = 0u; tick < 200u; ++tick) {
         if (core_machine_bus_read(session->core_machine, 0x0061u, &port_b) !=
-                TYPE_STATUS_OK || (port_b & 0x10u) == 0u) break;
-        if (core_machine_advance_time(session->core_machine, 1u) != TYPE_STATUS_OK) {
+                LIB_STATUS_OK || (port_b & 0x10u) == 0u) break;
+        if (core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK) {
             failed = 1;
             break;
         }
     }
     if (!failed && (tick == 200u || core_machine_memory_write(session->core_machine,
-            0x0500u, program, sizeof(program)) != TYPE_STATUS_OK)) {
+            0x0500u, program, sizeof(program)) != LIB_STATUS_OK)) {
         failed = 1;
     }
     if (!failed) {
@@ -113,17 +113,17 @@ static C_INT vm_default_pc_at_80186_refresh_polling_is_live(C_VOID)
         session->core_machine->executor_cpu.data.sp = 0xfffeu;
         session->core_machine->executor_cpu.data.flagHalt = LIB_FALSE;
         failed = core_machine_run(session->core_machine,
-            (core_machine_run_budget) {1000u, 0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget) {1000u, 0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     }
     vm_machine_destroy(session);
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK) return 1;
     if (!session->active || session->profile_plan == LIB_NULL ||
         session->core_machine->fdc.connect.config.dor_port != 0x03f2u ||
         session->core_machine->fdc.connect.config.status_port != 0x03f4u ||

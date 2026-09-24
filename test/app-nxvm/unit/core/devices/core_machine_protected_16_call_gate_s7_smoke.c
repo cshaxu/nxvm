@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/pic.h"
 
@@ -20,7 +21,7 @@
 #define S7_REJECT_STACK 0x10u
 #define S7_REJECT_PARAMETER_SOURCE 0x20u
 
-static C_INT s7_prepare_user_stack(s3_gate_machine *state)
+static lib_i32 s7_prepare_user_stack(s3_gate_machine *state)
 {
     static const lib_u8 user_data[] = {
         0xffu,0xffu,0,0,0,0xf2u,0,0
@@ -36,8 +37,8 @@ static C_INT s7_prepare_user_stack(s3_gate_machine *state)
     return 1;
 }
 
-static C_INT s7_prepare_outer(s3_gate_machine *state,
-    core_machine_cpu_profile profile, type_bool tss32)
+static lib_i32 s7_prepare_outer(s3_gate_machine *state,
+    core_machine_cpu_profile profile, lib_u8 tss32)
 {
     static const lib_u8 loop[] = { 0xebu,0xfeu };
     lib_u8 tss[16u] = { 0u };
@@ -84,8 +85,8 @@ static C_INT s7_prepare_outer(s3_gate_machine *state,
     return 1;
 }
 
-static C_INT s7_install_call_gate(s3_gate_machine *state,
-    lib_u8 dpl, lib_u8 parameter_count, type_bool present)
+static lib_i32 s7_install_call_gate(s3_gate_machine *state,
+    lib_u8 dpl, lib_u8 parameter_count, lib_u8 present)
 {
     lib_u8 descriptor[8u] = { 0u };
 
@@ -100,7 +101,7 @@ static C_INT s7_install_call_gate(s3_gate_machine *state,
         sizeof(descriptor));
 }
 
-static C_INT s7_write_call(s3_gate_machine *state, lib_u16 selector)
+static lib_i32 s7_write_call(s3_gate_machine *state, lib_u16 selector)
 {
     lib_u8 call[] = { 0x9au,S7_CALL_TARGET & 0xffu,S7_CALL_TARGET >> 8u,
         selector & 0xffu,selector >> 8u };
@@ -108,7 +109,7 @@ static C_INT s7_write_call(s3_gate_machine *state, lib_u16 selector)
     return s3_gate_write(state, S3_CODE_BASE, call, sizeof(call));
 }
 
-static C_INT s7_cpu_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 s7_cpu_same(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
         before->data.ecx == after->data.ecx && before->data.edx == after->data.edx &&
@@ -124,14 +125,14 @@ static C_INT s7_cpu_same(const t_cpu *before, const t_cpu *after)
         lib_memory_compare(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
-static C_INT s7_outer_success(core_machine_cpu_profile profile, type_bool tss32)
+static lib_i32 s7_outer_success(core_machine_cpu_profile profile, lib_u8 tss32)
 {
     s3_gate_machine state;
     core_machine_run_result result;
     lib_u16 parameters[S7_PARAMETER_COUNT] = { 0x1234u,0xabcdu };
     lib_u16 frame[4u + S7_PARAMETER_COUNT] = { 0u };
     t_cpu before;
-    C_INT failed = !s7_prepare_outer(&state, profile, tss32);
+    lib_i32 failed = !s7_prepare_outer(&state, profile, tss32);
 
     if (!failed) {
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
@@ -142,7 +143,7 @@ static C_INT s7_outer_success(core_machine_cpu_profile profile, type_bool tss32)
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             state.machine->executor_cpu.data.eip != S7_CALL_TARGET ||
             state.machine->executor_cpu.data.cs.selector != 0x0008u ||
@@ -168,13 +169,13 @@ static C_INT s7_outer_success(core_machine_cpu_profile profile, type_bool tss32)
     return !failed;
 }
 
-static C_INT s7_same_cpl(C_VOID)
+static lib_i32 s7_same_cpl(void)
 {
     s3_gate_machine state;
     core_machine_run_result result;
     lib_u16 frame[2u] = { 0u,0u };
     t_cpu before;
-    C_INT failed = !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
         LIB_FALSE, VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
 
     if (!failed) {
@@ -185,7 +186,7 @@ static C_INT s7_same_cpl(C_VOID)
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             state.machine->executor_cpu.data.eip != S7_CALL_TARGET ||
             state.machine->executor_cpu.data.cs.selector != 0x0008u ||
@@ -201,7 +202,7 @@ static C_INT s7_same_cpl(C_VOID)
     return !failed;
 }
 
-static C_INT s7_reject(lib_u8 condition)
+static lib_i32 s7_reject(lib_u8 condition)
 {
     s3_gate_machine state;
     core_machine_run_result result;
@@ -210,7 +211,7 @@ static C_INT s7_reject(lib_u8 condition)
     lib_u16 zero = 0u;
     lib_u32 bad_stack = 1u;
     lib_u8 data_access = 0x92u;
-    C_INT failed = !s7_prepare_outer(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !s7_prepare_outer(&state, CORE_MACHINE_CPU_PROFILE_80386,
         LIB_TRUE);
 
     if (!failed) {
@@ -234,7 +235,7 @@ static C_INT s7_reject(lib_u8 condition)
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_FAULT ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !s7_cpu_same(&before, &after);
@@ -243,13 +244,13 @@ static C_INT s7_reject(lib_u8 condition)
     return !failed;
 }
 
-static C_INT s7_outer_preflight_priority(C_VOID)
+static lib_i32 s7_outer_preflight_priority(void)
 {
     s3_gate_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     lib_u16 zero = 0u;
-    C_INT failed = !s7_prepare_outer(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !s7_prepare_outer(&state, CORE_MACHINE_CPU_PROFILE_80386,
         LIB_TRUE);
 
     if (!failed) {
@@ -263,10 +264,10 @@ static C_INT s7_outer_preflight_priority(C_VOID)
     }
     if (!failed) {
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                LIB_STATUS_OK || diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.delivered_exception_count != 1u ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_TS ||
@@ -280,7 +281,7 @@ static C_INT s7_outer_preflight_priority(C_VOID)
     return !failed;
 }
 
-static C_INT s7_irq_no_shadow(C_VOID)
+static lib_i32 s7_irq_no_shadow(void)
 {
     s3_gate_machine state;
     core_machine_pic_irq_source source;
@@ -293,7 +294,7 @@ static C_INT s7_irq_no_shadow(C_VOID)
         S7_CALL_GATE_SELECTOR & 0xffu,S7_CALL_GATE_SELECTOR >> 8u,0x90u
     };
     static const lib_u8 hlt[] = { 0xf4u };
-    C_INT failed = !s7_prepare_outer(&state, CORE_MACHINE_CPU_PROFILE_80386,
+    lib_i32 failed = !s7_prepare_outer(&state, CORE_MACHINE_CPU_PROFILE_80386,
         LIB_TRUE);
 
     lib_memory_set(&source, 0, sizeof(source));
@@ -308,9 +309,9 @@ static C_INT s7_irq_no_shadow(C_VOID)
     }
     if (!failed) {
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){1u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
-            state.machine->executor_cpu.data.eip != 1u || !TYPE_GET_BIT(
+            state.machine->executor_cpu.data.eip != 1u || !CORE_MACHINE_BIT_IS_SET(
                 state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF);
         state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
@@ -320,13 +321,13 @@ static C_INT s7_irq_no_shadow(C_VOID)
     }
     if (!failed) {
         failed |= core_machine_run(state.machine,
-            (core_machine_run_budget){2u,0u}, &result) != TYPE_STATUS_OK ||
+            (core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             state.machine->executor_cpu.data.eip != S7_CALL_TARGET + 1u ||
             state.machine->executor_cpu.data.sp != S7_KERNEL_STACK_TOP - 18u ||
-            TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
-            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
+            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
             !s3_gate_read(&state, S7_KERNEL_STACK_TOP - sizeof(call_frame),
                 call_frame, sizeof(call_frame)) || call_frame[0] != 6u ||
             call_frame[1] != 0x001bu || call_frame[2] != parameters[0] ||
@@ -341,9 +342,9 @@ static C_INT s7_irq_no_shadow(C_VOID)
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
-    C_INT failed = !s7_outer_success(CORE_MACHINE_CPU_PROFILE_80286,
+    lib_i32 failed = !s7_outer_success(CORE_MACHINE_CPU_PROFILE_80286,
         LIB_FALSE) || !s7_outer_success(CORE_MACHINE_CPU_PROFILE_80386,
         LIB_FALSE) || !s7_outer_success(CORE_MACHINE_CPU_PROFILE_80386,
         LIB_TRUE) || !s7_same_cpl() || !s7_reject(S7_REJECT_INVALID_TR) ||
@@ -354,6 +355,6 @@ C_INT main(C_VOID)
         !s7_irq_no_shadow();
 
     if (failed) return 1;
-    STD_PRINTF("M5:T323:S7:PROTECTED-16-CALL-GATE:OK\n");
+    printf("M5:T323:S7:PROTECTED-16-CALL-GATE:OK\n");
     return 0;
 }

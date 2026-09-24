@@ -1,5 +1,7 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include "lib/types/file.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/cpu.h"
@@ -28,11 +30,11 @@
  * has a real recipe.  Its generated metadata prevents handwritten provenance
  * from drifting from the T435 S2 manifest. */
 typedef struct timing_manifest_record {
-    const C_CHAR *key_id;
-    const C_CHAR *profile;
-    const C_CHAR *level;
-    const C_CHAR *source_rule;
-    const C_CHAR *context;
+    const char *key_id;
+    const char *profile;
+    const char *level;
+    const char *source_rule;
+    const char *context;
 } timing_manifest_record;
 
 typedef struct timing_manifest_capture {
@@ -41,40 +43,40 @@ typedef struct timing_manifest_capture {
 } timing_manifest_capture;
 
 typedef struct timing_manifest_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 program[8];
     lib_u8 program_bytes;
     lib_u64 expected_ticks;
     core_machine_retirement_timing_origin expected_origin;
 } timing_manifest_recipe;
 
-static C_INT timing_manifest_text_contains(const C_CHAR *text,
-    const C_CHAR *needle);
+static lib_i32 timing_manifest_text_contains(const char *text,
+    const char *needle);
 
-static C_VOID timing_manifest_execution_reset(C_VOID *opaque)
+static void timing_manifest_execution_reset(void *opaque)
 {
-    (C_VOID)opaque;
+    (void)opaque;
 }
 
 static const core_machine_execution_provider timing_manifest_execution_provider = {
     timing_manifest_execution_reset, LIB_NULL
 };
 
-static type_status timing_manifest_port_read(C_VOID *owner, lib_u16 port,
+static lib_status timing_manifest_port_read(void *owner, lib_u16 port,
     lib_u32 *out_value)
 {
-    (C_VOID)owner;
-    if (out_value == LIB_NULL || port != 0x00e0u) return TYPE_STATUS_INVALID_ARGUMENT;
+    (void)owner;
+    if (out_value == LIB_NULL || port != 0x00e0u) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = 0x5au;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-static type_status timing_manifest_port_write(C_VOID *owner, lib_u16 port,
+static lib_status timing_manifest_port_write(void *owner, lib_u16 port,
     lib_u32 value)
 {
-    (C_VOID)owner;
-    return port == 0x00e0u && value <= 0xffffu ? TYPE_STATUS_OK :
-        TYPE_STATUS_INVALID_ARGUMENT;
+    (void)owner;
+    return port == 0x00e0u && value <= 0xffffu ? LIB_STATUS_OK :
+        LIB_STATUS_INVALID_ARGUMENT;
 }
 
 static const core_machine_port_provider timing_manifest_port_provider = {
@@ -84,15 +86,15 @@ static const core_machine_port_provider timing_manifest_port_provider = {
 static const timing_manifest_record timing_manifest_records[] = {
 #include "cpu_timing_manifest_metadata_catalog.inc"
 };
-static C_INT timing_manifest_covered[sizeof(timing_manifest_records) /
+static lib_i32 timing_manifest_covered[sizeof(timing_manifest_records) /
     sizeof(timing_manifest_records[0])];
 static core_machine_retirement_observation timing_manifest_results[
     sizeof(timing_manifest_records) / sizeof(timing_manifest_records[0])];
-static C_INT timing_manifest_observed[sizeof(timing_manifest_records) /
+static lib_i32 timing_manifest_observed[sizeof(timing_manifest_records) /
     sizeof(timing_manifest_records[0])];
-static C_INT timing_manifest_current_index = -1;
+static lib_i32 timing_manifest_current_index = -1;
 
-static C_INT timing_manifest_has_prefix(const C_CHAR *text, const C_CHAR *prefix)
+static lib_i32 timing_manifest_has_prefix(const char *text, const char *prefix)
 {
     lib_size index = 0u;
 
@@ -104,7 +106,7 @@ static C_INT timing_manifest_has_prefix(const C_CHAR *text, const C_CHAR *prefix
     return 1;
 }
 
-static C_INT timing_manifest_is_active(const timing_manifest_record *record)
+static lib_i32 timing_manifest_is_active(const timing_manifest_record *record)
 {
     return record != LIB_NULL && timing_manifest_has_prefix(record->key_id,
         PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX);
@@ -125,14 +127,14 @@ static lib_u32 timing_manifest_required_inputs_for_profile(
  * each form's word-transfer plan.  That plan is verified by the dedicated
  * 8088 result contract; this shared executor must not duplicate it beside
  * the sole Core timing owner. */
-static C_INT timing_manifest_ticks_match(lib_u64 actual,
+static lib_i32 timing_manifest_ticks_match(lib_u64 actual,
     lib_u64 expected)
 {
     return PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ==
         CORE_MACHINE_CPU_PROFILE_8088 || actual == expected;
 }
 
-static C_INT timing_manifest_origin_match(
+static lib_i32 timing_manifest_origin_match(
     core_machine_retirement_timing_origin actual,
     core_machine_retirement_timing_origin expected)
 {
@@ -141,13 +143,13 @@ static C_INT timing_manifest_origin_match(
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED : actual == expected;
 }
 
-static C_INT timing_manifest_requires_classified(
+static lib_i32 timing_manifest_requires_classified(
     const timing_manifest_record *record)
 {
     return record != LIB_NULL;
 }
 
-static C_INT timing_manifest_disposition_matches(
+static lib_i32 timing_manifest_disposition_matches(
     const timing_manifest_record *record,
     core_machine_retirement_timing_disposition disposition)
 {
@@ -156,15 +158,15 @@ static C_INT timing_manifest_disposition_matches(
         CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED);
 }
 
-static const timing_manifest_record *timing_manifest_find(const C_CHAR *key_id)
+static const timing_manifest_record *timing_manifest_find(const char *key_id)
 {
-    C_CHAR active_key[160];
+    char active_key[160];
     lib_size index;
 
     timing_manifest_current_index = -1;
     if (key_id == LIB_NULL) return LIB_NULL;
     if (!timing_manifest_has_prefix(key_id, "I86-") ||
-        STD_SNPRINTF(active_key, sizeof(active_key), "%s%s",
+        lib_c_snprintf(active_key, sizeof(active_key), "%s%s",
             PROJECT_TEST_TIMING_MANIFEST_KEY_PREFIX, key_id + 4u) < 0) {
         return LIB_NULL;
     }
@@ -174,14 +176,14 @@ static const timing_manifest_record *timing_manifest_find(const C_CHAR *key_id)
 
         if (lib_c_strcmp(record->key_id, active_key) == 0) {
             timing_manifest_covered[index] = 1;
-            timing_manifest_current_index = (C_INT)index;
+            timing_manifest_current_index = (lib_i32)index;
             return record;
         }
     }
     return LIB_NULL;
 }
 
-static C_VOID timing_manifest_capture_retirement(C_VOID *opaque,
+static void timing_manifest_capture_retirement(void *opaque,
     const core_machine_retirement_observation *observation)
 {
     timing_manifest_capture *capture = (timing_manifest_capture *)opaque;
@@ -202,7 +204,7 @@ static C_VOID timing_manifest_capture_retirement(C_VOID *opaque,
     ++capture->count;
 }
 
-static C_INT timing_manifest_prepare(core_machine **out_machine,
+static lib_i32 timing_manifest_prepare(core_machine **out_machine,
     timing_manifest_capture *capture, const lib_u8 *program,
     lib_size program_bytes)
 {
@@ -215,40 +217,40 @@ static C_INT timing_manifest_prepare(core_machine **out_machine,
         timing_manifest_capture_retirement, capture
     };
     core_machine *machine = LIB_NULL;
-    type_status status = TYPE_STATUS_OK;
+    lib_status status = LIB_STATUS_OK;
 
     if (out_machine == LIB_NULL || capture == LIB_NULL || program == LIB_NULL) return 0;
     status = core_machine_create(&config, &machine);
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         status = test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_MANIFEST_RESET_LINEAR, TIMING_MANIFEST_RESET_PHYSICAL,
             TIMING_MANIFEST_WINDOW_BYTES);
     }
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         status = core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &timing_manifest_port_provider, LIB_NULL);
     }
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         status = core_machine_bind_execution_provider(machine,
             &timing_manifest_execution_provider, LIB_NULL);
     }
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         status = core_machine_freeze_execution_providers(machine);
     }
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         status = core_machine_reset(machine);
     }
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         status = core_machine_set_a20(machine, 1);
     }
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         status = core_machine_memory_write(machine, TIMING_MANIFEST_RESET_LINEAR,
             program, program_bytes);
     }
-    if (status == TYPE_STATUS_OK) {
+    if (status == LIB_STATUS_OK) {
         status = core_machine_set_retirement_observation_provider(machine, &provider);
     }
-    if (status != TYPE_STATUS_OK) {
+    if (status != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 0;
     }
@@ -259,8 +261,8 @@ static C_INT timing_manifest_prepare(core_machine **out_machine,
 /* Each S1 base instruction gains one 8086 LOCK context.  Callers invoke this
  * after proving their unprefixed recipe so the companion is a second real
  * retirement, never a synthesized result. */
-static C_INT timing_manifest_run_lock_companion(
-    const timing_manifest_record *base_record, const C_CHAR *base_key,
+static lib_i32 timing_manifest_run_lock_companion(
+    const timing_manifest_record *base_record, const char *base_key,
     const lib_u8 *program, lib_u8 program_bytes,
     lib_u64 expected_ticks,
     core_machine_retirement_timing_origin expected_origin,
@@ -269,18 +271,18 @@ static C_INT timing_manifest_run_lock_companion(
     core_machine_retirement_control_outcome expected_control_outcome)
 {
     const core_machine_run_budget budget = { 1u, 0u };
-    C_CHAR key[160];
+    char key[160];
     lib_u8 locked_program[9];
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     const timing_manifest_record *record;
     core_machine *machine = LIB_NULL;
-    C_INT failed;
+    lib_i32 failed;
 
     if (base_record == LIB_NULL || base_key == LIB_NULL || program == LIB_NULL ||
         lib_c_strcmp(base_record->context, "BASE") != 0) return 0;
     if (program_bytes == 0u || program_bytes >= sizeof(locked_program) ||
-        STD_SNPRINTF(key, sizeof(key), "%s-LOCK", base_key) < 0) return 1;
+        lib_c_snprintf(key, sizeof(key), "%s-LOCK", base_key) < 0) return 1;
     locked_program[0] = 0xf0u;
     lib_memory_copy(locked_program + 1u, program, program_bytes);
     record = timing_manifest_find(key);
@@ -291,7 +293,7 @@ static C_INT timing_manifest_run_lock_companion(
         machine->executor_cpu.data.eflags = initial_eflags;
         machine->executor_cpu.data.cx = initial_cx;
         machine->executor_cpu.data.dx = initial_dx;
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, expected_ticks + 2u) || capture.count != 1u ||
             !timing_manifest_ticks_match(capture.observation.source_ticks, expected_ticks + 2u) ||
@@ -307,16 +309,16 @@ static C_INT timing_manifest_run_lock_companion(
     }
     core_machine_destroy(machine);
     if (failed) {
-        STD_PRINTF("I86 LOCK result ticks=%llu source=%llu origin=%d inputs=%u control=%d count=%u\n",
+        printf("I86 LOCK result ticks=%llu source=%llu origin=%d inputs=%u control=%d count=%u\n",
             run.ticks, capture.observation.source_ticks,
             capture.observation.timing_origin, capture.observation.formula_inputs,
             capture.observation.control_outcome, capture.count);
-        STD_PRINTF("M5:T435:S5:I86-LOCK-COMPANION:FAIL:%s\n", key);
+        printf("M5:T435:S5:I86-LOCK-COMPANION:FAIL:%s\n", key);
     }
     return failed;
 }
 
-static C_INT timing_manifest_run_exact_recipe_with_inputs_and_formula(
+static lib_i32 timing_manifest_run_exact_recipe_with_inputs_and_formula(
     const timing_manifest_recipe *recipe, lib_u32 initial_eflags,
     lib_u16 initial_cx, lib_u16 initial_dx,
     lib_u32 required_formula_inputs,
@@ -328,9 +330,9 @@ static C_INT timing_manifest_run_exact_recipe_with_inputs_and_formula(
     core_machine_run_result run;
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine *machine = LIB_NULL;
-    C_INT prepared = recipe != LIB_NULL && timing_manifest_prepare(&machine,
+    lib_i32 prepared = recipe != LIB_NULL && timing_manifest_prepare(&machine,
         &capture, recipe->program, recipe->program_bytes);
-    C_INT failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
         lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
         lib_c_strcmp(record->level, "L3") != 0 ||
         record->source_rule[0] == '\0' ||
@@ -340,9 +342,9 @@ static C_INT timing_manifest_run_exact_recipe_with_inputs_and_formula(
         machine->executor_cpu.data.eflags = initial_eflags;
         machine->executor_cpu.data.cx = initial_cx;
         machine->executor_cpu.data.dx = initial_dx;
-        type_status status = core_machine_run(machine, budget, &run);
+        lib_status status = core_machine_run(machine, budget, &run);
 
-        failed |= status != TYPE_STATUS_OK ||
+        failed |= status != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
             capture.observation.cpu_profile != PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE ||
@@ -365,14 +367,14 @@ static C_INT timing_manifest_run_exact_recipe_with_inputs_and_formula(
                 expected_control_outcome;
     }
     if (failed) {
-        STD_PRINTF("I86 result ticks=%llu source=%llu origin=%d form=%u key=%u count=%u control=%d disposition=%d\n",
+        printf("I86 result ticks=%llu source=%llu origin=%d form=%u key=%u count=%u control=%d disposition=%d\n",
             run.ticks, capture.observation.source_ticks,
             capture.observation.timing_origin,
             capture.observation.source_timing_form_id,
             capture.observation.timing_key_id, capture.count,
             capture.observation.control_outcome,
             capture.observation.timing_disposition);
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+        printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
     }
     if (!failed && timing_manifest_run_lock_companion(record, recipe->key_id,
             recipe->program, recipe->program_bytes, recipe->expected_ticks,
@@ -384,7 +386,7 @@ static C_INT timing_manifest_run_exact_recipe_with_inputs_and_formula(
     return failed;
 }
 
-static C_INT timing_manifest_run_exact_recipe_with_inputs(
+static lib_i32 timing_manifest_run_exact_recipe_with_inputs(
     const timing_manifest_recipe *recipe, lib_u32 initial_eflags,
     lib_u16 initial_cx, lib_u16 initial_dx,
     core_machine_retirement_control_outcome expected_control_outcome)
@@ -393,7 +395,7 @@ static C_INT timing_manifest_run_exact_recipe_with_inputs(
         initial_eflags, initial_cx, initial_dx, 0u, expected_control_outcome);
 }
 
-static C_INT timing_manifest_run_exact_recipe_with_control(
+static lib_i32 timing_manifest_run_exact_recipe_with_control(
     const timing_manifest_recipe *recipe, lib_u32 initial_eflags,
     lib_u16 initial_cx,
     core_machine_retirement_control_outcome expected_control_outcome)
@@ -402,7 +404,7 @@ static C_INT timing_manifest_run_exact_recipe_with_control(
         initial_cx, 0u, expected_control_outcome);
 }
 
-static C_INT timing_manifest_run_exact_recipe(
+static lib_i32 timing_manifest_run_exact_recipe(
     const timing_manifest_recipe *recipe)
 {
     return timing_manifest_run_exact_recipe_with_control(recipe, 0u, 0u,
@@ -410,7 +412,7 @@ static C_INT timing_manifest_run_exact_recipe(
 }
 
 typedef struct timing_manifest_memory_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 program[9];
     lib_u8 program_bytes;
     lib_u64 expected_ticks;
@@ -423,41 +425,41 @@ typedef struct timing_manifest_memory_recipe {
     lib_u16 expected_memory_value;
 } timing_manifest_memory_recipe;
 
-static C_INT timing_manifest_lock_key_for_context(const timing_manifest_record *record,
-    const C_CHAR *base_key, C_CHAR *out_key, lib_size out_size)
+static lib_i32 timing_manifest_lock_key_for_context(const timing_manifest_record *record,
+    const char *base_key, char *out_key, lib_size out_size)
 {
-    static const C_CHAR segment[] = "-SEGMENT";
-    static const C_CHAR odd[] = "-ODD-WORD";
-    static const C_CHAR segment_odd[] = "-SEGMENT-ODD-WORD";
+    static const char segment[] = "-SEGMENT";
+    static const char odd[] = "-ODD-WORD";
+    static const char segment_odd[] = "-SEGMENT-ODD-WORD";
     lib_size base_length;
 
     if (record == LIB_NULL || base_key == LIB_NULL || out_key == LIB_NULL ||
         timing_manifest_text_contains(record->context, "LOCK")) return 0;
     if (lib_c_strcmp(record->context, "BASE") == 0) {
-        return STD_SNPRINTF(out_key, out_size, "%s-LOCK", base_key) >= 0;
+        return lib_c_snprintf(out_key, out_size, "%s-LOCK", base_key) >= 0;
     }
     base_length = lib_text_length(base_key);
     if (lib_c_strcmp(record->context, "SEGMENT") == 0 &&
         base_length > lib_text_length(segment)) {
-        return STD_SNPRINTF(out_key, out_size, "%.*s-LOCK-SEGMENT",
-            (C_INT)(base_length - lib_text_length(segment)), base_key) >= 0;
+        return lib_c_snprintf(out_key, out_size, "%.*s-LOCK-SEGMENT",
+            (lib_i32)(base_length - lib_text_length(segment)), base_key) >= 0;
     }
     if (lib_c_strcmp(record->context, "ODD-WORD") == 0 &&
         base_length > lib_text_length(odd)) {
-        return STD_SNPRINTF(out_key, out_size, "%.*s-LOCK-ODD-WORD",
-            (C_INT)(base_length - lib_text_length(odd)), base_key) >= 0;
+        return lib_c_snprintf(out_key, out_size, "%.*s-LOCK-ODD-WORD",
+            (lib_i32)(base_length - lib_text_length(odd)), base_key) >= 0;
     }
     if (lib_c_strcmp(record->context, "SEGMENT-ODD-WORD") == 0 &&
         base_length > lib_text_length(segment_odd)) {
-        return STD_SNPRINTF(out_key, out_size, "%.*s-LOCK-SEGMENT-ODD-WORD",
-            (C_INT)(base_length - lib_text_length(segment_odd)), base_key) >= 0;
+        return lib_c_snprintf(out_key, out_size, "%.*s-LOCK-SEGMENT-ODD-WORD",
+            (lib_i32)(base_length - lib_text_length(segment_odd)), base_key) >= 0;
     }
     return 0;
 }
 
-static C_INT timing_manifest_run_l3_memory_recipe_with_inputs_internal(
+static lib_i32 timing_manifest_run_l3_memory_recipe_with_inputs_internal(
     const timing_manifest_memory_recipe *recipe, lib_u32 extra_required_inputs,
-    C_INT run_lock_companion)
+    lib_i32 run_lock_companion)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     const timing_manifest_record *record = recipe == LIB_NULL ? LIB_NULL :
@@ -470,7 +472,7 @@ static C_INT timing_manifest_run_l3_memory_recipe_with_inputs_internal(
     lib_u8 opcode = recipe == LIB_NULL ? 0u : recipe->program[0];
     lib_u8 opcode_index = 0u;
     lib_u32 memory_linear;
-    C_INT failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
         lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
         lib_c_strcmp(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
         !timing_manifest_prepare(&machine, &capture, recipe->program,
@@ -501,12 +503,12 @@ static C_INT timing_manifest_run_l3_memory_recipe_with_inputs_internal(
         machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
         machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
         failed = core_machine_memory_write(machine, memory_linear, &recipe->memory_value,
-            sizeof(recipe->memory_value)) != TYPE_STATUS_OK;
+            sizeof(recipe->memory_value)) != LIB_STATUS_OK;
     }
     if (!failed) {
         machine->executor_cpu.data.ax = recipe->initial_ax;
         machine->executor_cpu.data.cx = recipe->initial_cx;
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
             !timing_manifest_ticks_match(capture.observation.source_ticks, recipe->expected_ticks) ||
@@ -521,23 +523,23 @@ static C_INT timing_manifest_run_l3_memory_recipe_with_inputs_internal(
             machine->executor_cpu.data.ax != recipe->expected_ax ||
             machine->executor_cpu.data.cx != recipe->expected_cx ||
             core_machine_memory_read(machine, memory_linear, &memory_value,
-                sizeof(memory_value)) != TYPE_STATUS_OK ||
+                sizeof(memory_value)) != LIB_STATUS_OK ||
             memory_value != recipe->expected_memory_value;
     }
     if (failed) {
-        STD_PRINTF("I86 memory ticks=%llu source=%llu origin=%d inputs=%u ax=%u cx=%u mem=%u count=%u\n",
+        printf("I86 memory ticks=%llu source=%llu origin=%d inputs=%u ax=%u cx=%u mem=%u count=%u\n",
             run.ticks, capture.observation.source_ticks,
             capture.observation.timing_origin, capture.observation.formula_inputs,
             machine == LIB_NULL ? 0u : machine->executor_cpu.data.ax,
             machine == LIB_NULL ? 0u : machine->executor_cpu.data.cx,
             memory_value, capture.count);
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+        printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
     }
     core_machine_destroy(machine);
     if (!failed && run_lock_companion && record != LIB_NULL &&
         !timing_manifest_text_contains(record->context, "LOCK")) {
         timing_manifest_memory_recipe locked = *recipe;
-        C_CHAR key[160];
+        char key[160];
         lib_size index;
 
         if (locked.program_bytes >= sizeof(locked.program) ||
@@ -558,22 +560,22 @@ static C_INT timing_manifest_run_l3_memory_recipe_with_inputs_internal(
     return failed;
 }
 
-static C_INT timing_manifest_run_l3_memory_recipe_with_inputs(
+static lib_i32 timing_manifest_run_l3_memory_recipe_with_inputs(
     const timing_manifest_memory_recipe *recipe, lib_u32 extra_required_inputs)
 {
     return timing_manifest_run_l3_memory_recipe_with_inputs_internal(recipe,
         extra_required_inputs, 1);
 }
 
-static C_INT timing_manifest_run_l3_memory_recipe(
+static lib_i32 timing_manifest_run_l3_memory_recipe(
     const timing_manifest_memory_recipe *recipe)
 {
     return timing_manifest_run_l3_memory_recipe_with_inputs(recipe, 0u);
 }
 
-static C_INT timing_manifest_run_lock_memory_context(
-    const timing_manifest_memory_recipe *base_recipe, const C_CHAR *key_id,
-    C_INT segment_override, C_INT odd_word)
+static lib_i32 timing_manifest_run_lock_memory_context(
+    const timing_manifest_memory_recipe *base_recipe, const char *key_id,
+    lib_i32 segment_override, lib_i32 odd_word)
 {
     timing_manifest_memory_recipe recipe = *base_recipe;
     lib_size index;
@@ -598,15 +600,15 @@ static C_INT timing_manifest_run_lock_memory_context(
 }
 
 typedef struct timing_manifest_string_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 opcode;
     lib_u64 expected_ticks;
 } timing_manifest_string_recipe;
 
-static C_INT timing_manifest_run_string_primitive_with_prefix_internal(
+static lib_i32 timing_manifest_run_string_primitive_with_prefix_internal(
     const timing_manifest_string_recipe *recipe, lib_u8 prefix,
-    C_INT odd_addresses, lib_u32 extra_required_inputs,
-    C_INT run_lock_companion, C_INT lock_prefix)
+    lib_i32 odd_addresses, lib_u32 extra_required_inputs,
+    lib_i32 run_lock_companion, lib_i32 lock_prefix)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     const timing_manifest_record *record = recipe == LIB_NULL ? LIB_NULL :
@@ -620,11 +622,11 @@ static C_INT timing_manifest_run_string_primitive_with_prefix_internal(
     lib_u8 program_bytes = 0u;
     const lib_u32 source_linear = odd_addresses ? 0x1001u : 0x1000u;
     const lib_u32 destination_linear = odd_addresses ? 0x1101u : 0x1100u;
-    C_INT word = recipe != LIB_NULL && (recipe->opcode & 1u) != 0u;
+    lib_i32 word = recipe != LIB_NULL && (recipe->opcode & 1u) != 0u;
     if (lock_prefix) program[program_bytes++] = 0xf0u;
     if (prefix != 0u) program[program_bytes++] = prefix;
     program[program_bytes++] = recipe == LIB_NULL ? 0u : recipe->opcode;
-    C_INT failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
         lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
         lib_c_strcmp(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
         !timing_manifest_prepare(&machine, &capture, program, program_bytes);
@@ -633,13 +635,13 @@ static C_INT timing_manifest_run_string_primitive_with_prefix_internal(
         machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
         machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
         failed = core_machine_memory_write(machine, source_linear, &source_word,
-            sizeof(source_word)) != TYPE_STATUS_OK;
+            sizeof(source_word)) != LIB_STATUS_OK;
     }
     if (!failed) {
         machine->executor_cpu.data.si = (lib_u16)source_linear;
         machine->executor_cpu.data.di = (lib_u16)destination_linear;
         machine->executor_cpu.data.ax = 0x1234u;
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
             !timing_manifest_ticks_match(capture.observation.source_ticks, recipe->expected_ticks) ||
@@ -657,7 +659,7 @@ static C_INT timing_manifest_run_string_primitive_with_prefix_internal(
             recipe->opcode == 0xaau || recipe->opcode == 0xabu)) {
             failed = core_machine_memory_read(machine, destination_linear,
                 &destination_word,
-                sizeof(destination_word)) != TYPE_STATUS_OK ||
+                sizeof(destination_word)) != LIB_STATUS_OK ||
                 destination_word != (recipe->opcode == 0xa4u ?
                     (source_word & 0x00ffu) : recipe->opcode == 0xa5u ?
                     source_word : recipe->opcode == 0xaau ? 0x0034u : 0x1234u);
@@ -680,19 +682,19 @@ static C_INT timing_manifest_run_string_primitive_with_prefix_internal(
         }
     }
     if (failed) {
-        STD_PRINTF("I86 string ticks=%llu source=%llu inputs=%u phase=%d ax=%u si=%u di=%u\n",
+        printf("I86 string ticks=%llu source=%llu inputs=%u phase=%d ax=%u si=%u di=%u\n",
             run.ticks, capture.observation.source_ticks,
             capture.observation.formula_inputs, capture.observation.repeat_phase,
             machine == LIB_NULL ? 0u : machine->executor_cpu.data.ax,
             machine == LIB_NULL ? 0u : machine->executor_cpu.data.si,
             machine == LIB_NULL ? 0u : machine->executor_cpu.data.di);
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+        printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
     }
     core_machine_destroy(machine);
     if (!failed && run_lock_companion && record != LIB_NULL &&
         !timing_manifest_text_contains(record->context, "LOCK")) {
         timing_manifest_string_recipe locked = *recipe;
-        C_CHAR key[160];
+        char key[160];
 
         if (!timing_manifest_lock_key_for_context(record, recipe->key_id, key,
                 sizeof(key))) {
@@ -707,15 +709,15 @@ static C_INT timing_manifest_run_string_primitive_with_prefix_internal(
     return failed;
 }
 
-static C_INT timing_manifest_run_string_primitive_with_prefix(
+static lib_i32 timing_manifest_run_string_primitive_with_prefix(
     const timing_manifest_string_recipe *recipe, lib_u8 prefix,
-    C_INT odd_addresses, lib_u32 extra_required_inputs)
+    lib_i32 odd_addresses, lib_u32 extra_required_inputs)
 {
     return timing_manifest_run_string_primitive_with_prefix_internal(recipe, prefix,
         odd_addresses, extra_required_inputs, 1, 0);
 }
 
-static C_INT timing_manifest_run_string_primitive(
+static lib_i32 timing_manifest_run_string_primitive(
     const timing_manifest_string_recipe *recipe)
 {
     return timing_manifest_run_string_primitive_with_prefix(recipe, 0u, 0,
@@ -723,30 +725,30 @@ static C_INT timing_manifest_run_string_primitive(
 }
 
 typedef struct timing_manifest_repeat_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 prefix;
     lib_u8 opcode;
     lib_u64 first_ticks;
     lib_u64 continuation_ticks;
     lib_u64 zero_ticks;
     lib_u8 segment_prefix;
-    C_INT odd_addresses;
+    lib_i32 odd_addresses;
     lib_u32 required_formula_inputs;
 } timing_manifest_repeat_recipe;
 
-static C_INT timing_manifest_run_repeat_step(core_machine *machine,
+static lib_i32 timing_manifest_run_repeat_step(core_machine *machine,
     timing_manifest_capture *capture, const timing_manifest_repeat_recipe *recipe,
     core_machine_retirement_repeat_phase expected_phase,
     lib_u64 expected_ticks)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run = { 0 };
-    C_INT failed;
+    lib_i32 failed;
 
     if (machine == LIB_NULL || capture == LIB_NULL || recipe == LIB_NULL) return 1;
     capture->count = 0u;
     lib_memory_set(&capture->observation, 0, sizeof(capture->observation));
-    failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+    failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
         run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
         !timing_manifest_ticks_match(run.ticks, expected_ticks) || capture->count != 1u ||
         !timing_manifest_ticks_match(capture->observation.source_ticks, expected_ticks) ||
@@ -760,14 +762,14 @@ static C_INT timing_manifest_run_repeat_step(core_machine *machine,
             (CORE_MACHINE_CPU_TIMING_INPUT_REPEAT |
              CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE);
     if (failed) {
-        STD_PRINTF("I86 repeat ticks=%llu expected=%llu phase=%d expected_phase=%d inputs=%u\n",
+        printf("I86 repeat ticks=%llu expected=%llu phase=%d expected_phase=%d inputs=%u\n",
             run.ticks, expected_ticks, capture->observation.repeat_phase,
             expected_phase, capture->observation.formula_inputs);
     }
     return failed;
 }
 
-static C_INT timing_manifest_run_repeat_recipe(
+static lib_i32 timing_manifest_run_repeat_recipe(
     const timing_manifest_repeat_recipe *recipe)
 {
     const timing_manifest_record *record = recipe == LIB_NULL ? LIB_NULL :
@@ -779,7 +781,7 @@ static C_INT timing_manifest_run_repeat_recipe(
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine *machine = LIB_NULL;
     lib_u32 required_formula_inputs;
-    C_INT failed;
+    lib_i32 failed;
 
     if (recipe == LIB_NULL) return 1;
     required_formula_inputs = timing_manifest_required_inputs_for_profile(
@@ -801,19 +803,19 @@ static C_INT timing_manifest_run_repeat_recipe(
         machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
         failed = core_machine_memory_write(machine, recipe->odd_addresses ? 0x1001u :
             0x1000u, &source_word,
-            sizeof(source_word)) != TYPE_STATUS_OK;
+            sizeof(source_word)) != LIB_STATUS_OK;
     }
     if (!failed && (recipe->opcode == 0xa6u || recipe->opcode == 0xa7u)) {
         destination_word = recipe->prefix == 0xf3u ? source_word : 0u;
         failed = core_machine_memory_write(machine, recipe->odd_addresses ? 0x1101u :
             0x1100u, &destination_word,
-            sizeof(destination_word)) != TYPE_STATUS_OK;
+            sizeof(destination_word)) != LIB_STATUS_OK;
     }
     if (!failed && (recipe->opcode == 0xaeu || recipe->opcode == 0xafu)) {
         destination_word = recipe->prefix == 0xf3u ? 0x1234u : 0u;
         failed = core_machine_memory_write(machine, recipe->odd_addresses ? 0x1101u :
             0x1100u, &destination_word,
-            sizeof(destination_word)) != TYPE_STATUS_OK;
+            sizeof(destination_word)) != LIB_STATUS_OK;
     }
     if (!failed) {
         machine->executor_cpu.data.si = recipe->odd_addresses ? 0x1001u : 0x1000u;
@@ -840,7 +842,7 @@ static C_INT timing_manifest_run_repeat_recipe(
             CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks);
     }
     if (failed) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+        printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
     }
     core_machine_destroy(machine);
     return failed;
@@ -849,15 +851,15 @@ static C_INT timing_manifest_run_repeat_recipe(
 /* This is only a scanner smoke: an opcode without ModRM is intentionally
  * accepted once for each filler byte, so its count is not an instruction-form
  * cardinality and must never be used as a closure denominator. */
-static C_INT timing_manifest_probe_decoder_lexeme_candidates(C_VOID)
+static lib_i32 timing_manifest_probe_decoder_lexeme_candidates(void)
 {
-    const C_CHAR *const path = PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH;
+    const char *const path = PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH;
     lib_u16 opcode;
     lib_u16 modrm;
     lib_u32 accepted = 0u;
     lib_u32 accepted_pairs;
     lib_u32 accepted_opcodes = 0u;
-    type_bool opcode_seen[0x100] = { LIB_FALSE };
+    lib_u8 opcode_seen[0x100] = { LIB_FALSE };
     FILE *file;
 
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
@@ -903,12 +905,12 @@ static C_INT timing_manifest_probe_decoder_lexeme_candidates(C_VOID)
     }
     if (fprintf(file, "],\n  \"semantic_only_prefixes\": "
             "[\"F0\"]\n}\n") < 0 || fclose(file) != 0) return 1;
-    STD_PRINTF("M5:T435:S5:I86-DECODER-LEXEME-CANDIDATES:%u:%u\n", accepted,
+    printf("M5:T435:S5:I86-DECODER-LEXEME-CANDIDATES:%u:%u\n", accepted,
         accepted_opcodes);
     return 0;
 }
 
-static C_INT timing_manifest_probe_decoder_form_rejections(C_VOID)
+static lib_i32 timing_manifest_probe_decoder_form_rejections(void)
 {
     static const lib_u8 invalid_forms[][2] = {
         { 0xd0u, 0xf0u }, { 0x8cu, 0xe0u }, { 0x8eu, 0xc8u }
@@ -933,7 +935,7 @@ static C_INT timing_manifest_probe_decoder_form_rejections(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_xlat_function(C_VOID)
+static lib_i32 timing_manifest_probe_xlat_function(void)
 {
     static const lib_u8 program[] = { 0xd7u };
     const timing_manifest_record *record = timing_manifest_find("I86-XLAT");
@@ -942,27 +944,27 @@ static C_INT timing_manifest_probe_xlat_function(C_VOID)
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run;
     core_machine *machine = LIB_NULL;
-    C_INT failed = record == LIB_NULL || !timing_manifest_prepare(&machine,
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_prepare(&machine,
         &capture, program, sizeof(program));
 
     if (!failed) {
         machine->executor_cpu.data.bx = 0x0010u;
         machine->executor_cpu.data.al = 0x0004u;
         failed = core_machine_memory_write(machine, 0x0014u, &expected_value,
-                sizeof(expected_value)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+                sizeof(expected_value)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, 11u) || capture.count != 1u ||
             machine->executor_cpu.data.al != expected_value ||
             !timing_manifest_ticks_match(capture.observation.source_ticks, 11u) ||
             !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
-    if (failed) STD_PRINTF("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-XLAT-FUNCTION\n");
+    if (failed) printf("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-XLAT-FUNCTION\n");
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT timing_manifest_probe_pop_cs_function(C_VOID)
+static lib_i32 timing_manifest_probe_pop_cs_function(void)
 {
     static const lib_u8 program[] = { 0x0fu };
     static const lib_u8 new_cs[] = { 0x34u, 0x12u };
@@ -971,15 +973,15 @@ static C_INT timing_manifest_probe_pop_cs_function(C_VOID)
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run;
     core_machine *machine = LIB_NULL;
-    C_INT failed = record == LIB_NULL || !timing_manifest_prepare(&machine,
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_prepare(&machine,
         &capture, program, sizeof(program));
 
     if (!failed) {
         machine->executor_cpu.data.sp = 0x0200u;
         failed = core_machine_memory_write(machine,
                 machine->executor_cpu.data.ss.base + 0x0200u, new_cs,
-                sizeof(new_cs)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+                sizeof(new_cs)) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, 8u) || capture.count != 1u ||
             machine->executor_cpu.data.cs.selector != 0x1234u ||
@@ -988,7 +990,7 @@ static C_INT timing_manifest_probe_pop_cs_function(C_VOID)
             !timing_manifest_ticks_match(capture.observation.source_ticks, 8u) ||
             !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
-    if (failed) STD_PRINTF("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-POP-SEG-CS-FUNCTION\n");
+    if (failed) printf("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-POP-SEG-CS-FUNCTION\n");
     core_machine_destroy(machine);
     return failed;
 }
@@ -996,7 +998,7 @@ static C_INT timing_manifest_probe_pop_cs_function(C_VOID)
 /* Functional predicates are deliberately separate from the timing recipes:
  * a classified retirement alone cannot establish the 8086 architectural
  * result. These are the first semantic family checks in the S5 runner. */
-static C_INT timing_manifest_probe_alu_function(C_VOID)
+static lib_i32 timing_manifest_probe_alu_function(void)
 {
     typedef struct timing_manifest_alu_function_recipe {
         lib_u8 program[2];
@@ -1025,14 +1027,14 @@ static C_INT timing_manifest_probe_alu_function(C_VOID)
         core_machine *machine = LIB_NULL;
         const lib_u32 observed_mask = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
             VCPU_EFLAGS_SF;
-        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
             recipes[index].program, sizeof(recipes[index].program));
 
         if (!failed) {
             machine->executor_cpu.data.ax = recipes[index].ax;
             machine->executor_cpu.data.bx = recipes[index].bx;
             machine->executor_cpu.data.eflags = recipes[index].eflags;
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.executed != 1u || machine->executor_cpu.data.ax !=
                     recipes[index].expected_ax ||
                 (machine->executor_cpu.data.eflags & observed_mask) !=
@@ -1040,14 +1042,14 @@ static C_INT timing_manifest_probe_alu_function(C_VOID)
         }
         core_machine_destroy(machine);
         if (failed) {
-            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:ALU:%u\n", (unsigned)index);
+            printf("M5:T435:S5:I86-FUNCTION:FAIL:ALU:%u\n", (unsigned)index);
             return 1;
         }
     }
     return 0;
 }
 
-static C_INT timing_manifest_probe_adjustment_function(C_VOID)
+static lib_i32 timing_manifest_probe_adjustment_function(void)
 {
     typedef struct timing_manifest_adjustment_function_recipe {
         lib_u8 program[2];
@@ -1079,12 +1081,12 @@ static C_INT timing_manifest_probe_adjustment_function(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
             recipes[index].program, recipes[index].bytes);
 
         if (!failed) {
             machine->executor_cpu.data.ax = recipes[index].ax;
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.executed != 1u || machine->executor_cpu.data.ax !=
                     recipes[index].expected_ax || machine->executor_cpu.data.dx !=
                     recipes[index].expected_dx ||
@@ -1093,14 +1095,14 @@ static C_INT timing_manifest_probe_adjustment_function(C_VOID)
         }
         core_machine_destroy(machine);
         if (failed) {
-            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:ADJUST:%u\n", (unsigned)index);
+            printf("M5:T435:S5:I86-FUNCTION:FAIL:ADJUST:%u\n", (unsigned)index);
             return 1;
         }
     }
     return 0;
 }
 
-static C_INT timing_manifest_probe_data_stack_function(C_VOID)
+static lib_i32 timing_manifest_probe_data_stack_function(void)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u8 mov[] = { 0xb8u, 0x34u, 0x12u };
@@ -1112,10 +1114,10 @@ static C_INT timing_manifest_probe_data_stack_function(C_VOID)
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
     lib_u16 observed = 0u;
-    C_INT failed = !timing_manifest_prepare(&machine, &capture, mov, sizeof(mov));
+    lib_i32 failed = !timing_manifest_prepare(&machine, &capture, mov, sizeof(mov));
 
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             machine->executor_cpu.data.ax != 0x1234u;
     }
     core_machine_destroy(machine);
@@ -1123,7 +1125,7 @@ static C_INT timing_manifest_probe_data_stack_function(C_VOID)
     if (!failed && timing_manifest_prepare(&machine, &capture, xchg, sizeof(xchg))) {
         machine->executor_cpu.data.ax = 0x1234u;
         machine->executor_cpu.data.bx = 0x5678u;
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             machine->executor_cpu.data.ax != 0x5678u ||
             machine->executor_cpu.data.bx != 0x1234u;
     } else if (!failed) failed = 1;
@@ -1132,26 +1134,26 @@ static C_INT timing_manifest_probe_data_stack_function(C_VOID)
     if (!failed && timing_manifest_prepare(&machine, &capture, push, sizeof(push))) {
         machine->executor_cpu.data.ax = pushed;
         machine->executor_cpu.data.sp = 0x8000u;
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             machine->executor_cpu.data.sp != 0x7ffeu ||
             core_machine_memory_read(machine, 0x7ffeu, &observed, sizeof(observed)) !=
-                TYPE_STATUS_OK || observed != pushed;
+                LIB_STATUS_OK || observed != pushed;
     } else if (!failed) failed = 1;
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed && timing_manifest_prepare(&machine, &capture, pop, sizeof(pop))) {
         machine->executor_cpu.data.sp = 0x8000u;
         failed = core_machine_memory_write(machine, 0x8000u, &pushed, sizeof(pushed)) !=
-                TYPE_STATUS_OK || core_machine_run(machine, budget, &run) !=
-                TYPE_STATUS_OK || machine->executor_cpu.data.bx != pushed ||
+                LIB_STATUS_OK || core_machine_run(machine, budget, &run) !=
+                LIB_STATUS_OK || machine->executor_cpu.data.bx != pushed ||
             machine->executor_cpu.data.sp != 0x8002u;
     } else if (!failed) failed = 1;
     core_machine_destroy(machine);
-    if (failed) STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:DATA-STACK\n");
+    if (failed) printf("M5:T435:S5:I86-FUNCTION:FAIL:DATA-STACK\n");
     return failed;
 }
 
-static C_INT timing_manifest_probe_group3_function(C_VOID)
+static lib_i32 timing_manifest_probe_group3_function(void)
 {
     typedef struct timing_manifest_group3_function_recipe {
         lib_u8 program[2];
@@ -1177,7 +1179,7 @@ static C_INT timing_manifest_probe_group3_function(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
             recipes[index].program, sizeof(recipes[index].program));
 
         if (!failed) {
@@ -1185,21 +1187,21 @@ static C_INT timing_manifest_probe_group3_function(C_VOID)
             machine->executor_cpu.data.bx = recipes[index].bx;
             machine->executor_cpu.data.dx = recipes[index].program[0] == 0xf7u &&
                 recipes[index].program[1] == 0xfbu ? 0xffffu : 0u;
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.executed != 1u || machine->executor_cpu.data.ax !=
                     recipes[index].expected_ax || machine->executor_cpu.data.dx !=
                     recipes[index].expected_dx;
         }
         core_machine_destroy(machine);
         if (failed) {
-            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:GROUP3:%u\n", (unsigned)index);
+            printf("M5:T435:S5:I86-FUNCTION:FAIL:GROUP3:%u\n", (unsigned)index);
             return 1;
         }
     }
     return 0;
 }
 
-static C_INT timing_manifest_probe_branch_function(C_VOID)
+static lib_i32 timing_manifest_probe_branch_function(void)
 {
     typedef struct timing_manifest_branch_function_recipe {
         lib_u8 program[2];
@@ -1222,19 +1224,19 @@ static C_INT timing_manifest_probe_branch_function(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
             recipes[index].program, sizeof(recipes[index].program));
 
         if (!failed) {
             machine->executor_cpu.data.cx = recipes[index].cx;
             machine->executor_cpu.data.eflags = recipes[index].eflags;
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.executed != 1u || machine->executor_cpu.data.ip !=
                     recipes[index].expected_ip || machine->executor_cpu.data.cx !=
                     recipes[index].expected_cx;
         }
         if (failed) {
-            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:BRANCH:%u:ip=%u:cx=%u\n",
+            printf("M5:T435:S5:I86-FUNCTION:FAIL:BRANCH:%u:ip=%u:cx=%u\n",
                 (unsigned)index, machine == LIB_NULL ? 0u : machine->executor_cpu.data.ip,
                 machine == LIB_NULL ? 0u : machine->executor_cpu.data.cx);
             core_machine_destroy(machine);
@@ -1245,7 +1247,7 @@ static C_INT timing_manifest_probe_branch_function(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_flag_function(C_VOID)
+static lib_i32 timing_manifest_probe_flag_function(void)
 {
     typedef struct timing_manifest_flag_function_recipe {
         lib_u8 opcode;
@@ -1270,25 +1272,25 @@ static C_INT timing_manifest_probe_flag_function(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
             &recipes[index].opcode, 1u);
 
         if (!failed) {
             machine->executor_cpu.data.eflags = recipes[index].initial_flags;
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.executed != 1u || (machine->executor_cpu.data.eflags & observed) !=
                     recipes[index].expected_flags;
         }
         core_machine_destroy(machine);
         if (failed) {
-            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:FLAGS:%u\n", (unsigned)index);
+            printf("M5:T435:S5:I86-FUNCTION:FAIL:FLAGS:%u\n", (unsigned)index);
             return 1;
         }
     }
     return 0;
 }
 
-static C_INT timing_manifest_probe_compare_function(C_VOID)
+static lib_i32 timing_manifest_probe_compare_function(void)
 {
     typedef struct timing_manifest_compare_function_recipe {
         lib_u8 program[2];
@@ -1310,13 +1312,13 @@ static C_INT timing_manifest_probe_compare_function(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
             recipes[index].program, sizeof(recipes[index].program));
 
         if (!failed) {
             machine->executor_cpu.data.ax = recipes[index].ax;
             machine->executor_cpu.data.bx = recipes[index].bx;
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.executed != 1u || machine->executor_cpu.data.ax !=
                     recipes[index].ax || (machine->executor_cpu.data.eflags & observed) !=
                     recipes[index].expected_flags;
@@ -1327,7 +1329,7 @@ static C_INT timing_manifest_probe_compare_function(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_unary_function(C_VOID)
+static lib_i32 timing_manifest_probe_unary_function(void)
 {
     typedef struct timing_manifest_unary_function_recipe {
         lib_u8 program[2];
@@ -1351,13 +1353,13 @@ static C_INT timing_manifest_probe_unary_function(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
             recipes[index].program, recipes[index].program[1] == 0u ? 1u : 2u);
 
         if (!failed) {
             machine->executor_cpu.data.ax = recipes[index].ax;
             machine->executor_cpu.data.eflags = recipes[index].initial_flags;
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 machine->executor_cpu.data.ax != recipes[index].expected_ax ||
                 (machine->executor_cpu.data.eflags & observed) != recipes[index].expected_flags;
         }
@@ -1367,7 +1369,7 @@ static C_INT timing_manifest_probe_unary_function(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_lahf_sahf_function(C_VOID)
+static lib_i32 timing_manifest_probe_lahf_sahf_function(void)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u8 lahf = 0x9fu;
@@ -1377,19 +1379,19 @@ static C_INT timing_manifest_probe_lahf_sahf_function(C_VOID)
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_INT failed = !timing_manifest_prepare(&machine, &capture, &lahf, 1u);
+    lib_i32 failed = !timing_manifest_prepare(&machine, &capture, &lahf, 1u);
 
     if (!failed) {
         machine->executor_cpu.data.ax = 0x1200u;
         machine->executor_cpu.data.eflags = flags;
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             machine->executor_cpu.data.ax != 0xd700u;
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed && timing_manifest_prepare(&machine, &capture, &sahf, 1u)) {
         machine->executor_cpu.data.ax = 0xd700u;
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             (machine->executor_cpu.data.eflags & flags) != flags;
     } else if (!failed) failed = 1;
     core_machine_destroy(machine);
@@ -1399,7 +1401,7 @@ static C_INT timing_manifest_probe_lahf_sahf_function(C_VOID)
 /* LOCK is an 8086 prefix, not an RMW-form whitelist.  These representatives
  * deliberately cross the legacy, primary, control-stack and string owners;
  * each must retire once with the documented two-clock additive term. */
-static C_INT timing_manifest_probe_general_lock_prefix(C_VOID)
+static lib_i32 timing_manifest_probe_general_lock_prefix(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "LOCK-NOP", { 0xf0u, 0x90u }, 2u, 5u,
@@ -1425,11 +1427,11 @@ static C_INT timing_manifest_probe_general_lock_prefix(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+        lib_i32 failed = !timing_manifest_prepare(&machine, &capture,
             recipes[index].program, recipes[index].program_bytes);
 
         if (!failed) {
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipes[index].expected_ticks) || capture.count != 1u ||
                 !timing_manifest_ticks_match(capture.observation.source_ticks, recipes[index].expected_ticks) ||
@@ -1441,7 +1443,7 @@ static C_INT timing_manifest_probe_general_lock_prefix(C_VOID)
         }
         core_machine_destroy(machine);
         if (failed) {
-            STD_PRINTF("M5:T435:S5:I86-LOCK-GENERAL:FAIL:%s\n",
+            printf("M5:T435:S5:I86-LOCK-GENERAL:FAIL:%s\n",
                 recipes[index].key_id);
             return 1;
         }
@@ -1449,7 +1451,7 @@ static C_INT timing_manifest_probe_general_lock_prefix(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_adjustments(C_VOID)
+static lib_i32 timing_manifest_probe_adjustments(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-ADJ-AAA", { 0x37u, 0u }, 1u, 4u,
@@ -1495,7 +1497,7 @@ static C_INT timing_manifest_probe_adjustments(C_VOID)
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         if (timing_manifest_run_exact_recipe(&recipes[index])) {
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:%s\n",
+            printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:%s\n",
                 recipes[index].key_id);
             return 1;
         }
@@ -1524,19 +1526,19 @@ static C_INT timing_manifest_probe_adjustments(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_alu_register_forms(C_VOID)
+static lib_i32 timing_manifest_probe_alu_register_forms(void)
 {
-    static const C_CHAR *const rr_keys[] = {
+    static const char *const rr_keys[] = {
         "I86-ALU-ADD-RR", "I86-ALU-OR-RR", "I86-ALU-ADC-RR",
         "I86-ALU-SBB-RR", "I86-ALU-AND-RR", "I86-ALU-SUB-RR",
         "I86-ALU-XOR-RR"
     };
-    static const C_CHAR *const ri_keys[] = {
+    static const char *const ri_keys[] = {
         "I86-ALU-ADD-RI", "I86-ALU-OR-RI", "I86-ALU-ADC-RI",
         "I86-ALU-SBB-RI", "I86-ALU-AND-RI", "I86-ALU-SUB-RI",
         "I86-ALU-XOR-RI"
     };
-    static const C_CHAR *const ai_keys[] = {
+    static const char *const ai_keys[] = {
         "I86-ALU-ADD-AI", "I86-ALU-OR-AI", "I86-ALU-ADC-AI",
         "I86-ALU-SBB-AI", "I86-ALU-AND-AI", "I86-ALU-SUB-AI",
         "I86-ALU-XOR-AI"
@@ -1571,7 +1573,7 @@ static C_INT timing_manifest_probe_alu_register_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_compare_and_test_register_forms(C_VOID)
+static lib_i32 timing_manifest_probe_compare_and_test_register_forms(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-CMP-RR", { 0x3bu, 0xc1u }, 2u, 3u,
@@ -1597,7 +1599,7 @@ static C_INT timing_manifest_probe_compare_and_test_register_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_register_data_forms(C_VOID)
+static lib_i32 timing_manifest_probe_register_data_forms(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-INC-R16", { 0x40u, 0u }, 1u, 2u,
@@ -1629,7 +1631,7 @@ static C_INT timing_manifest_probe_register_data_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_stack_register_forms(C_VOID)
+static lib_i32 timing_manifest_probe_stack_register_forms(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-PUSH-R", { 0x50u, 0u }, 1u, 11u,
@@ -1665,9 +1667,9 @@ static C_INT timing_manifest_probe_stack_register_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_conditional_branches(C_VOID)
+static lib_i32 timing_manifest_probe_conditional_branches(void)
 {
-    static const C_CHAR *const taken_keys[] = {
+    static const char *const taken_keys[] = {
         "I86-JCC-JO-TAKEN", "I86-JCC-JNO-TAKEN", "I86-JCC-JB-TAKEN",
         "I86-JCC-JAE-TAKEN", "I86-JCC-JE-TAKEN", "I86-JCC-JNE-TAKEN",
         "I86-JCC-JBE-TAKEN", "I86-JCC-JA-TAKEN", "I86-JCC-JS-TAKEN",
@@ -1675,7 +1677,7 @@ static C_INT timing_manifest_probe_conditional_branches(C_VOID)
         "I86-JCC-JL-TAKEN", "I86-JCC-JGE-TAKEN", "I86-JCC-JLE-TAKEN",
         "I86-JCC-JG-TAKEN"
     };
-    static const C_CHAR *const not_keys[] = {
+    static const char *const not_keys[] = {
         "I86-JCC-JO-NOT", "I86-JCC-JNO-NOT", "I86-JCC-JB-NOT",
         "I86-JCC-JAE-NOT", "I86-JCC-JE-NOT", "I86-JCC-JNE-NOT",
         "I86-JCC-JBE-NOT", "I86-JCC-JA-NOT", "I86-JCC-JS-NOT",
@@ -1715,7 +1717,7 @@ static C_INT timing_manifest_probe_conditional_branches(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_counted_branches(C_VOID)
+static lib_i32 timing_manifest_probe_counted_branches(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-JCXZ-TAKEN", { 0xe3u, 0x01u }, 2u, 18u,
@@ -1760,7 +1762,7 @@ static C_INT timing_manifest_probe_counted_branches(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_wait_and_escape(C_VOID)
+static lib_i32 timing_manifest_probe_wait_and_escape(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-WAIT", { 0x9bu, 0u }, 1u, 3u,
@@ -1776,7 +1778,7 @@ static C_INT timing_manifest_probe_wait_and_escape(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_escape_memory_forms(C_VOID)
+static lib_i32 timing_manifest_probe_escape_memory_forms(void)
 {
     static const timing_manifest_memory_recipe recipes[] = {
         { "I86-ESC-M", { 0xd8u, 0x06u, 0u, 0x10u }, 4u, 14u,
@@ -1796,9 +1798,9 @@ static C_INT timing_manifest_probe_escape_memory_forms(C_VOID)
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE);
 }
 
-static C_INT timing_manifest_probe_group2_register_one(C_VOID)
+static lib_i32 timing_manifest_probe_group2_register_one(void)
 {
-    static const C_CHAR *const keys[] = {
+    static const char *const keys[] = {
         "I86-ROL-R1", "I86-ROR-R1", "I86-RCL-R1", "I86-RCR-R1",
         "I86-SHL-R1", "I86-SHR-R1", "I86-SAR-R1"
     };
@@ -1817,9 +1819,9 @@ static C_INT timing_manifest_probe_group2_register_one(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_group2_register_cl(C_VOID)
+static lib_i32 timing_manifest_probe_group2_register_cl(void)
 {
-    static const C_CHAR *const keys[] = {
+    static const char *const keys[] = {
         "I86-ROL-RCL", "I86-ROR-RCL", "I86-RCL-RCL", "I86-RCR-RCL",
         "I86-SHL-RCL", "I86-SHR-RCL", "I86-SAR-RCL"
     };
@@ -1839,7 +1841,7 @@ static C_INT timing_manifest_probe_group2_register_cl(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_immediate_port_io(C_VOID)
+static lib_i32 timing_manifest_probe_immediate_port_io(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-IN-IMM", { 0xe4u, 0xe0u }, 2u, 10u,
@@ -1855,7 +1857,7 @@ static C_INT timing_manifest_probe_immediate_port_io(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_dx_port_io(C_VOID)
+static lib_i32 timing_manifest_probe_dx_port_io(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-IN-DX", { 0xecu, 0u }, 1u, 8u,
@@ -1872,7 +1874,7 @@ static C_INT timing_manifest_probe_dx_port_io(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_near_control_transfers(C_VOID)
+static lib_i32 timing_manifest_probe_near_control_transfers(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-CALL-NEAR", { 0xe8u, 0u, 0u }, 3u, 19u,
@@ -1888,7 +1890,7 @@ static C_INT timing_manifest_probe_near_control_transfers(C_VOID)
 /* Group 3 is deliberately a named L2 model, not an L3 value.  Keep its
  * verification separate so this runner can require the ledger's exact model
  * identity and still exercise the instruction's arithmetic result. */
-static C_INT timing_manifest_probe_group3_l2(C_VOID)
+static lib_i32 timing_manifest_probe_group3_l2(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-MUL-R8", { 0xf6u, 0xe3u }, 2u, 71u,
@@ -1908,7 +1910,7 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
         { "I86-IDIV-R16", { 0xf7u, 0xfbu }, 2u, 175u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC }
     };
-    static const C_CHAR *const memory_keys[] = {
+    static const char *const memory_keys[] = {
         "I86-MUL-M8", "I86-MUL-M16", "I86-IMUL-M8", "I86-IMUL-M16",
         "I86-DIV-M8", "I86-DIV-M16", "I86-IDIV-M8", "I86-IDIV-M16"
     };
@@ -1930,9 +1932,9 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT memory_operand = index >= sizeof(recipes) / sizeof(recipes[0]);
-        C_INT division = (index >= 4u && index < 8u) || index >= 12u;
-        C_INT failed;
+        lib_i32 memory_operand = index >= sizeof(recipes) / sizeof(recipes[0]);
+        lib_i32 division = (index >= 4u && index < 8u) || index >= 12u;
+        lib_i32 failed;
 
         if (memory_operand) {
             lib_size memory_index = index - sizeof(recipes) / sizeof(recipes[0]);
@@ -1959,9 +1961,9 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
                 recipe.program_bytes);
         if (!failed && memory_operand) {
             failed = core_machine_memory_write(machine, 0x1000u,
-                (index & 1u) != 0u ? (const C_VOID *)&operand16 :
-                (const C_VOID *)&operand8, (index & 1u) != 0u ?
-                sizeof(operand16) : sizeof(operand8)) != TYPE_STATUS_OK;
+                (index & 1u) != 0u ? (const void *)&operand16 :
+                (const void *)&operand8, (index & 1u) != 0u ?
+                sizeof(operand16) : sizeof(operand8)) != LIB_STATUS_OK;
         }
         if (!failed) {
             machine->executor_cpu.data.ax = 2u;
@@ -1970,7 +1972,7 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
             if (division) {
                 machine->executor_cpu.data.ax = 6u;
             }
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe.expected_ticks) || capture.count != 1u ||
                 machine->executor_cpu.data.ax != (division ? 2u : 6u) ||
@@ -1983,13 +1985,13 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
                      CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS)) == 0u);
         }
         if (failed) {
-            STD_PRINTF("I86 G3 ticks=%llu source=%llu origin=%d inputs=%u ax=%u dx=%u count=%u\n",
+            printf("I86 G3 ticks=%llu source=%llu origin=%d inputs=%u ax=%u dx=%u count=%u\n",
                 run.ticks, capture.observation.source_ticks,
                 capture.observation.timing_origin, capture.observation.formula_inputs,
                 machine == LIB_NULL ? 0u : machine->executor_cpu.data.ax,
                 machine == LIB_NULL ? 0u : machine->executor_cpu.data.dx,
                 capture.count);
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe.key_id);
+            printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe.key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -2000,15 +2002,15 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(memory_keys) / sizeof(memory_keys[0]); ++index) {
         timing_manifest_recipe recipe;
-        C_CHAR key[160];
+        char key[160];
         const timing_manifest_record *record;
         const core_machine_run_budget budget = { 1u, 0u };
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT memory_operand = index >= sizeof(recipes) / sizeof(recipes[0]);
-        C_INT division = (index >= 4u && index < 8u) || index >= 12u;
-        C_INT failed;
+        lib_i32 memory_operand = index >= sizeof(recipes) / sizeof(recipes[0]);
+        lib_i32 division = (index >= 4u && index < 8u) || index >= 12u;
+        lib_i32 failed;
 
         if (memory_operand) {
             lib_size memory_index = index - sizeof(recipes) / sizeof(recipes[0]);
@@ -2027,7 +2029,7 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
             recipe = recipes[index];
         }
         if (recipe.program_bytes >= sizeof(recipe.program) ||
-            STD_SNPRINTF(key, sizeof(key), "%s-LOCK", recipe.key_id) < 0) {
+            lib_c_snprintf(key, sizeof(key), "%s-LOCK", recipe.key_id) < 0) {
             return 1;
         }
         {
@@ -2048,15 +2050,15 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
                 recipe.program_bytes);
         if (!failed && memory_operand) {
             failed = core_machine_memory_write(machine, 0x1000u,
-                (index & 1u) != 0u ? (const C_VOID *)&operand16 :
-                (const C_VOID *)&operand8, (index & 1u) != 0u ?
-                sizeof(operand16) : sizeof(operand8)) != TYPE_STATUS_OK;
+                (index & 1u) != 0u ? (const void *)&operand16 :
+                (const void *)&operand8, (index & 1u) != 0u ?
+                sizeof(operand16) : sizeof(operand8)) != LIB_STATUS_OK;
         }
         if (!failed) {
             machine->executor_cpu.data.ax = division ? 6u : 2u;
             machine->executor_cpu.data.bx = 3u;
             machine->executor_cpu.data.dx = 0u;
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe.expected_ticks) || capture.count != 1u ||
                 machine->executor_cpu.data.ax != (division ? 2u : 6u) ||
@@ -2070,23 +2072,23 @@ static C_INT timing_manifest_probe_group3_l2(C_VOID)
         }
         core_machine_destroy(machine);
         if (failed) {
-            STD_PRINTF("M5:T435:S5:I86-G3-LOCK:FAIL:%s\n", recipe.key_id);
+            printf("M5:T435:S5:I86-G3-LOCK:FAIL:%s\n", recipe.key_id);
             return 1;
         }
     }
     return 0;
 }
 
-static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_group3_memory_contexts(void)
 {
     typedef struct timing_manifest_group3_context_recipe {
-        const C_CHAR *key_id;
+        const char *key_id;
         lib_u8 extension;
         lib_u8 word;
         lib_u8 prefix;
         lib_u16 address;
         lib_u64 expected_ticks;
-        C_INT division;
+        lib_i32 division;
         lib_u32 required_formula_inputs;
     } timing_manifest_group3_context_recipe;
     static const timing_manifest_group3_context_recipe recipes[] = {
@@ -2139,12 +2141,12 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed;
+        lib_i32 failed;
 
         program[0] = recipe->word ? 0xf7u : 0xf6u;
         program[1] = (lib_u8)(0x06u | (recipe->extension << 3u));
-        program[2] = TYPE_MASK_UNSIGNED_8(recipe->address);
-        program[3] = TYPE_MASK_UNSIGNED_8(recipe->address >> 8u);
+        program[2] = CORE_MACHINE_MASK_U8(recipe->address);
+        program[3] = CORE_MACHINE_MASK_U8(recipe->address >> 8u);
         if (recipe->prefix != 0u) {
             program[4] = program[3]; program[3] = program[2]; program[2] = program[1];
             program[1] = program[0]; program[0] = recipe->prefix;
@@ -2156,13 +2158,13 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
                 recipe->prefix == 0u ? 4u : 5u);
         if (!failed) {
             failed = core_machine_memory_write(machine, recipe->address,
-                recipe->word ? (const C_VOID *)&operand16 : (const C_VOID *)&operand8,
-                recipe->word ? sizeof(operand16) : sizeof(operand8)) != TYPE_STATUS_OK;
+                recipe->word ? (const void *)&operand16 : (const void *)&operand8,
+                recipe->word ? sizeof(operand16) : sizeof(operand8)) != LIB_STATUS_OK;
         }
         if (!failed) {
             machine->executor_cpu.data.ax = recipe->division ? 6u : 2u;
             machine->executor_cpu.data.dx = 0u;
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
                 machine->executor_cpu.data.ax != (recipe->division ? 2u : 6u) ||
@@ -2178,7 +2180,7 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
                      recipe->required_formula_inputs);
         }
         if (failed) {
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -2186,13 +2188,13 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
         {
             const timing_manifest_record *base_record =
                 timing_manifest_find(recipe->key_id);
-            C_CHAR key[160];
+            char key[160];
             lib_u8 locked_program[6];
             lib_u8 locked_bytes = 0u;
             timing_manifest_capture locked_capture = { { 0 }, 0u };
             core_machine_run_result locked_run = { 0 };
             core_machine *locked_machine = LIB_NULL;
-            C_INT locked_failed = base_record == LIB_NULL ||
+            lib_i32 locked_failed = base_record == LIB_NULL ||
                 !timing_manifest_lock_key_for_context(base_record, recipe->key_id,
                     key, sizeof(key));
 
@@ -2202,23 +2204,23 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
                 locked_program[locked_bytes++] = recipe->word ? 0xf7u : 0xf6u;
                 locked_program[locked_bytes++] = (lib_u8)(0x06u |
                     (recipe->extension << 3u));
-                locked_program[locked_bytes++] = TYPE_MASK_UNSIGNED_8(recipe->address);
-                locked_program[locked_bytes++] = TYPE_MASK_UNSIGNED_8(recipe->address >> 8u);
+                locked_program[locked_bytes++] = CORE_MACHINE_MASK_U8(recipe->address);
+                locked_program[locked_bytes++] = CORE_MACHINE_MASK_U8(recipe->address >> 8u);
                 locked_failed = timing_manifest_find(key) == LIB_NULL ||
                     !timing_manifest_prepare(&locked_machine,
                     &locked_capture, locked_program, locked_bytes);
             }
             if (!locked_failed) {
                 locked_failed = core_machine_memory_write(locked_machine, recipe->address,
-                    recipe->word ? (const C_VOID *)&operand16 :
-                    (const C_VOID *)&operand8, recipe->word ? sizeof(operand16) :
-                    sizeof(operand8)) != TYPE_STATUS_OK;
+                    recipe->word ? (const void *)&operand16 :
+                    (const void *)&operand8, recipe->word ? sizeof(operand16) :
+                    sizeof(operand8)) != LIB_STATUS_OK;
             }
             if (!locked_failed) {
                 locked_machine->executor_cpu.data.ax = recipe->division ? 6u : 2u;
                 locked_machine->executor_cpu.data.dx = 0u;
                 locked_failed = core_machine_run(locked_machine, budget, &locked_run) !=
-                        TYPE_STATUS_OK ||
+                        LIB_STATUS_OK ||
                     locked_run.reason != CORE_MACHINE_STOP_BUDGET ||
                     locked_run.executed != 1u ||
                     !timing_manifest_ticks_match(locked_run.ticks,
@@ -2241,7 +2243,7 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
             }
             core_machine_destroy(locked_machine);
             if (locked_failed) {
-                STD_PRINTF("M5:T435:S5:I86-G3-CONTEXT-LOCK:FAIL:%s\n", key);
+                printf("M5:T435:S5:I86-G3-CONTEXT-LOCK:FAIL:%s\n", key);
                 return 1;
             }
         }
@@ -2249,19 +2251,19 @@ static C_INT timing_manifest_probe_group3_memory_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_alu_memory_forms(C_VOID)
+static lib_i32 timing_manifest_probe_alu_memory_forms(void)
 {
-    static const C_CHAR *const rm_keys[] = {
+    static const char *const rm_keys[] = {
         "I86-ALU-ADD-RM", "I86-ALU-OR-RM", "I86-ALU-ADC-RM",
         "I86-ALU-SBB-RM", "I86-ALU-AND-RM", "I86-ALU-SUB-RM",
         "I86-ALU-XOR-RM"
     };
-    static const C_CHAR *const mr_keys[] = {
+    static const char *const mr_keys[] = {
         "I86-ALU-ADD-MR", "I86-ALU-OR-MR", "I86-ALU-ADC-MR",
         "I86-ALU-SBB-MR", "I86-ALU-AND-MR", "I86-ALU-SUB-MR",
         "I86-ALU-XOR-MR"
     };
-    static const C_CHAR *const mi_keys[] = {
+    static const char *const mi_keys[] = {
         "I86-ALU-ADD-MI", "I86-ALU-OR-MI", "I86-ALU-ADC-MI",
         "I86-ALU-SBB-MI", "I86-ALU-AND-MI", "I86-ALU-SUB-MI",
         "I86-ALU-XOR-MI"
@@ -2307,7 +2309,7 @@ static C_INT timing_manifest_probe_alu_memory_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_primary_memory_forms(C_VOID)
+static lib_i32 timing_manifest_probe_primary_memory_forms(void)
 {
     static const timing_manifest_memory_recipe recipes[] = {
         { "I86-CMP-RM", { 0x3bu, 0x0eu, 0u, 0x10u }, 4u, 15u,
@@ -2356,7 +2358,7 @@ static C_INT timing_manifest_probe_primary_memory_forms(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
             1u, 0u, 2u, 1u, 0u, 1u }
     };
-    static const C_CHAR *const segment_keys[] = {
+    static const char *const segment_keys[] = {
         "I86-CMP-RM-SEGMENT", "I86-CMP-MR-SEGMENT", "I86-CMP-MI-SEGMENT",
         "I86-TEST-RM-SEGMENT", "I86-TEST-MI-SEGMENT", "I86-INC-M-SEGMENT",
         "I86-DEC-M-SEGMENT", "I86-NOT-M-SEGMENT", "I86-NEG-M-SEGMENT",
@@ -2364,7 +2366,7 @@ static C_INT timing_manifest_probe_primary_memory_forms(C_VOID)
         "I86-MOV-MI-SEGMENT", "I86-MOV-MOFFS-W-SEGMENT",
         "I86-MOV-MOFFS-R-SEGMENT"
     };
-    static const C_CHAR *const odd_keys[] = {
+    static const char *const odd_keys[] = {
         "I86-CMP-RM-ODD-WORD", "I86-CMP-MR-ODD-WORD", "I86-CMP-MI-ODD-WORD",
         "I86-TEST-RM-ODD-WORD", "I86-TEST-MI-ODD-WORD", "I86-INC-M-ODD-WORD",
         "I86-DEC-M-ODD-WORD", "I86-NOT-M-ODD-WORD", "I86-NEG-M-ODD-WORD",
@@ -2372,7 +2374,7 @@ static C_INT timing_manifest_probe_primary_memory_forms(C_VOID)
         "I86-MOV-MI-ODD-WORD", "I86-MOV-MOFFS-W-ODD-WORD",
         "I86-MOV-MOFFS-R-ODD-WORD"
     };
-    static const C_CHAR *const combined_keys[] = {
+    static const char *const combined_keys[] = {
         "I86-CMP-RM-SEGMENT-ODD-WORD", "I86-CMP-MR-SEGMENT-ODD-WORD",
         "I86-CMP-MI-SEGMENT-ODD-WORD", "I86-TEST-RM-SEGMENT-ODD-WORD",
         "I86-TEST-MI-SEGMENT-ODD-WORD", "I86-INC-M-SEGMENT-ODD-WORD",
@@ -2388,7 +2390,7 @@ static C_INT timing_manifest_probe_primary_memory_forms(C_VOID)
         if (timing_manifest_run_l3_memory_recipe(&recipes[index])) return 1;
     }
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
-        const C_CHAR *const keys[] = { segment_keys[index], odd_keys[index],
+        const char *const keys[] = { segment_keys[index], odd_keys[index],
             combined_keys[index] };
         lib_size context;
 
@@ -2396,8 +2398,8 @@ static C_INT timing_manifest_probe_primary_memory_forms(C_VOID)
             timing_manifest_memory_recipe recipe;
             lib_u8 opcode_index;
             lib_u8 address_index;
-            C_INT segment = context == 0u || context == 2u;
-            C_INT odd = context == 1u || context == 2u;
+            lib_i32 segment = context == 0u || context == 2u;
+            lib_i32 odd = context == 1u || context == 2u;
             lib_u64 odd_ticks = index >= 5u && index <= 8u ? 8u : 4u;
 
             if (keys[context] == LIB_NULL) continue;
@@ -2430,21 +2432,21 @@ static C_INT timing_manifest_probe_primary_memory_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_alu_segment_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_alu_segment_contexts(void)
 {
-    static const C_CHAR *const rm_keys[] = {
+    static const char *const rm_keys[] = {
         "I86-ALU-ADD-RM-SEGMENT", "I86-ALU-OR-RM-SEGMENT",
         "I86-ALU-ADC-RM-SEGMENT", "I86-ALU-SBB-RM-SEGMENT",
         "I86-ALU-AND-RM-SEGMENT", "I86-ALU-SUB-RM-SEGMENT",
         "I86-ALU-XOR-RM-SEGMENT"
     };
-    static const C_CHAR *const mr_keys[] = {
+    static const char *const mr_keys[] = {
         "I86-ALU-ADD-MR-SEGMENT", "I86-ALU-OR-MR-SEGMENT",
         "I86-ALU-ADC-MR-SEGMENT", "I86-ALU-SBB-MR-SEGMENT",
         "I86-ALU-AND-MR-SEGMENT", "I86-ALU-SUB-MR-SEGMENT",
         "I86-ALU-XOR-MR-SEGMENT"
     };
-    static const C_CHAR *const mi_keys[] = {
+    static const char *const mi_keys[] = {
         "I86-ALU-ADD-MI-SEGMENT", "I86-ALU-OR-MI-SEGMENT",
         "I86-ALU-ADC-MI-SEGMENT", "I86-ALU-SBB-MI-SEGMENT",
         "I86-ALU-AND-MI-SEGMENT", "I86-ALU-SUB-MI-SEGMENT",
@@ -2491,21 +2493,21 @@ static C_INT timing_manifest_probe_alu_segment_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_alu_odd_word_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_alu_odd_word_contexts(void)
 {
-    static const C_CHAR *const rm_keys[] = {
+    static const char *const rm_keys[] = {
         "I86-ALU-ADD-RM-ODD-WORD", "I86-ALU-OR-RM-ODD-WORD",
         "I86-ALU-ADC-RM-ODD-WORD", "I86-ALU-SBB-RM-ODD-WORD",
         "I86-ALU-AND-RM-ODD-WORD", "I86-ALU-SUB-RM-ODD-WORD",
         "I86-ALU-XOR-RM-ODD-WORD"
     };
-    static const C_CHAR *const mr_keys[] = {
+    static const char *const mr_keys[] = {
         "I86-ALU-ADD-MR-ODD-WORD", "I86-ALU-OR-MR-ODD-WORD",
         "I86-ALU-ADC-MR-ODD-WORD", "I86-ALU-SBB-MR-ODD-WORD",
         "I86-ALU-AND-MR-ODD-WORD", "I86-ALU-SUB-MR-ODD-WORD",
         "I86-ALU-XOR-MR-ODD-WORD"
     };
-    static const C_CHAR *const mi_keys[] = {
+    static const char *const mi_keys[] = {
         "I86-ALU-ADD-MI-ODD-WORD", "I86-ALU-OR-MI-ODD-WORD",
         "I86-ALU-ADC-MI-ODD-WORD", "I86-ALU-SBB-MI-ODD-WORD",
         "I86-ALU-AND-MI-ODD-WORD", "I86-ALU-SUB-MI-ODD-WORD",
@@ -2555,21 +2557,21 @@ static C_INT timing_manifest_probe_alu_odd_word_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_lock_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_lock_contexts(void)
 {
-    static const C_CHAR *const mr_keys[] = {
+    static const char *const mr_keys[] = {
         "I86-ALU-ADD-MR-LOCK", "I86-ALU-OR-MR-LOCK",
         "I86-ALU-ADC-MR-LOCK", "I86-ALU-SBB-MR-LOCK",
         "I86-ALU-AND-MR-LOCK", "I86-ALU-SUB-MR-LOCK",
         "I86-ALU-XOR-MR-LOCK"
     };
-    static const C_CHAR *const mi_keys[] = {
+    static const char *const mi_keys[] = {
         "I86-ALU-ADD-MI-LOCK", "I86-ALU-OR-MI-LOCK",
         "I86-ALU-ADC-MI-LOCK", "I86-ALU-SBB-MI-LOCK",
         "I86-ALU-AND-MI-LOCK", "I86-ALU-SUB-MI-LOCK",
         "I86-ALU-XOR-MI-LOCK"
     };
-    static const C_CHAR *const mr_context_keys[][7] = {
+    static const char *const mr_context_keys[][7] = {
         { "I86-ALU-ADD-MR-LOCK-SEGMENT", "I86-ALU-OR-MR-LOCK-SEGMENT",
             "I86-ALU-ADC-MR-LOCK-SEGMENT", "I86-ALU-SBB-MR-LOCK-SEGMENT",
             "I86-ALU-AND-MR-LOCK-SEGMENT", "I86-ALU-SUB-MR-LOCK-SEGMENT",
@@ -2586,7 +2588,7 @@ static C_INT timing_manifest_probe_lock_contexts(C_VOID)
             "I86-ALU-SUB-MR-LOCK-SEGMENT-ODD-WORD",
             "I86-ALU-XOR-MR-LOCK-SEGMENT-ODD-WORD" }
     };
-    static const C_CHAR *const mi_context_keys[][7] = {
+    static const char *const mi_context_keys[][7] = {
         { "I86-ALU-ADD-MI-LOCK-SEGMENT", "I86-ALU-OR-MI-LOCK-SEGMENT",
             "I86-ALU-ADC-MI-LOCK-SEGMENT", "I86-ALU-SBB-MI-LOCK-SEGMENT",
             "I86-ALU-AND-MI-LOCK-SEGMENT", "I86-ALU-SUB-MI-LOCK-SEGMENT",
@@ -2603,7 +2605,7 @@ static C_INT timing_manifest_probe_lock_contexts(C_VOID)
             "I86-ALU-SUB-MI-LOCK-SEGMENT-ODD-WORD",
             "I86-ALU-XOR-MI-LOCK-SEGMENT-ODD-WORD" }
     };
-    static const C_CHAR *const scalar_context_keys[][4] = {
+    static const char *const scalar_context_keys[][4] = {
         { "I86-INC-M-LOCK-SEGMENT", "I86-DEC-M-LOCK-SEGMENT",
             "I86-NOT-M-LOCK-SEGMENT", "I86-NEG-M-LOCK-SEGMENT" },
         { "I86-INC-M-LOCK-ODD-WORD", "I86-DEC-M-LOCK-ODD-WORD",
@@ -2681,8 +2683,8 @@ static C_INT timing_manifest_probe_lock_contexts(C_VOID)
         mi_recipe.expected_ticks = 25u;
         mi_recipe.expected_cx = 1u;
         for (context = 0u; context < 3u; ++context) {
-            C_INT segment_override = context == 0u || context == 2u;
-            C_INT odd_word = context == 1u || context == 2u;
+            lib_i32 segment_override = context == 0u || context == 2u;
+            lib_i32 odd_word = context == 1u || context == 2u;
 
             if (timing_manifest_run_lock_memory_context(&mr_recipe,
                     mr_context_keys[context][index], segment_override,
@@ -2696,8 +2698,8 @@ static C_INT timing_manifest_probe_lock_contexts(C_VOID)
         lib_size context;
 
         for (context = 0u; context < 3u; ++context) {
-            C_INT segment_override = context == 0u || context == 2u;
-            C_INT odd_word = context == 1u || context == 2u;
+            lib_i32 segment_override = context == 0u || context == 2u;
+            lib_i32 odd_word = context == 1u || context == 2u;
 
             if (timing_manifest_run_lock_memory_context(&scalar_recipes[index],
                     scalar_context_keys[context][index], segment_override,
@@ -2707,9 +2709,9 @@ static C_INT timing_manifest_probe_lock_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_alu_segment_odd_word_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_alu_segment_odd_word_contexts(void)
 {
-    static const C_CHAR *const rm_keys[] = {
+    static const char *const rm_keys[] = {
         "I86-ALU-ADD-RM-SEGMENT-ODD-WORD",
         "I86-ALU-OR-RM-SEGMENT-ODD-WORD",
         "I86-ALU-ADC-RM-SEGMENT-ODD-WORD",
@@ -2718,7 +2720,7 @@ static C_INT timing_manifest_probe_alu_segment_odd_word_contexts(C_VOID)
         "I86-ALU-SUB-RM-SEGMENT-ODD-WORD",
         "I86-ALU-XOR-RM-SEGMENT-ODD-WORD"
     };
-    static const C_CHAR *const mr_keys[] = {
+    static const char *const mr_keys[] = {
         "I86-ALU-ADD-MR-SEGMENT-ODD-WORD",
         "I86-ALU-OR-MR-SEGMENT-ODD-WORD",
         "I86-ALU-ADC-MR-SEGMENT-ODD-WORD",
@@ -2727,7 +2729,7 @@ static C_INT timing_manifest_probe_alu_segment_odd_word_contexts(C_VOID)
         "I86-ALU-SUB-MR-SEGMENT-ODD-WORD",
         "I86-ALU-XOR-MR-SEGMENT-ODD-WORD"
     };
-    static const C_CHAR *const mi_keys[] = {
+    static const char *const mi_keys[] = {
         "I86-ALU-ADD-MI-SEGMENT-ODD-WORD",
         "I86-ALU-OR-MI-SEGMENT-ODD-WORD",
         "I86-ALU-ADC-MI-SEGMENT-ODD-WORD",
@@ -2780,13 +2782,13 @@ static C_INT timing_manifest_probe_alu_segment_odd_word_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_group2_memory_forms(C_VOID)
+static lib_i32 timing_manifest_probe_group2_memory_forms(void)
 {
-    static const C_CHAR *const one_keys[] = {
+    static const char *const one_keys[] = {
         "I86-ROL-M1", "I86-ROR-M1", "I86-RCL-M1", "I86-RCR-M1",
         "I86-SHL-M1", "I86-SHR-M1", "I86-SAR-M1"
     };
-    static const C_CHAR *const cl_keys[] = {
+    static const char *const cl_keys[] = {
         "I86-ROL-MCL", "I86-ROR-MCL", "I86-RCL-MCL", "I86-RCR-MCL",
         "I86-SHL-MCL", "I86-SHR-MCL", "I86-SAR-MCL"
     };
@@ -2819,15 +2821,15 @@ static C_INT timing_manifest_probe_group2_memory_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_group2_segment_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_group2_segment_contexts(void)
 {
-    static const C_CHAR *const one_keys[] = {
+    static const char *const one_keys[] = {
         "I86-ROL-M1-SEGMENT", "I86-ROR-M1-SEGMENT",
         "I86-RCL-M1-SEGMENT", "I86-RCR-M1-SEGMENT",
         "I86-SHL-M1-SEGMENT", "I86-SHR-M1-SEGMENT",
         "I86-SAR-M1-SEGMENT"
     };
-    static const C_CHAR *const cl_keys[] = {
+    static const char *const cl_keys[] = {
         "I86-ROL-MCL-SEGMENT", "I86-ROR-MCL-SEGMENT",
         "I86-RCL-MCL-SEGMENT", "I86-RCR-MCL-SEGMENT",
         "I86-SHL-MCL-SEGMENT", "I86-SHR-MCL-SEGMENT",
@@ -2862,15 +2864,15 @@ static C_INT timing_manifest_probe_group2_segment_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_group2_odd_word_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_group2_odd_word_contexts(void)
 {
-    static const C_CHAR *const one_keys[] = {
+    static const char *const one_keys[] = {
         "I86-ROL-M1-ODD-WORD", "I86-ROR-M1-ODD-WORD",
         "I86-RCL-M1-ODD-WORD", "I86-RCR-M1-ODD-WORD",
         "I86-SHL-M1-ODD-WORD", "I86-SHR-M1-ODD-WORD",
         "I86-SAR-M1-ODD-WORD"
     };
-    static const C_CHAR *const cl_keys[] = {
+    static const char *const cl_keys[] = {
         "I86-ROL-MCL-ODD-WORD", "I86-ROR-MCL-ODD-WORD",
         "I86-RCL-MCL-ODD-WORD", "I86-RCR-MCL-ODD-WORD",
         "I86-SHL-MCL-ODD-WORD", "I86-SHR-MCL-ODD-WORD",
@@ -2907,15 +2909,15 @@ static C_INT timing_manifest_probe_group2_odd_word_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_group2_segment_odd_word_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_group2_segment_odd_word_contexts(void)
 {
-    static const C_CHAR *const one_keys[] = {
+    static const char *const one_keys[] = {
         "I86-ROL-M1-SEGMENT-ODD-WORD", "I86-ROR-M1-SEGMENT-ODD-WORD",
         "I86-RCL-M1-SEGMENT-ODD-WORD", "I86-RCR-M1-SEGMENT-ODD-WORD",
         "I86-SHL-M1-SEGMENT-ODD-WORD", "I86-SHR-M1-SEGMENT-ODD-WORD",
         "I86-SAR-M1-SEGMENT-ODD-WORD"
     };
-    static const C_CHAR *const cl_keys[] = {
+    static const char *const cl_keys[] = {
         "I86-ROL-MCL-SEGMENT-ODD-WORD", "I86-ROR-MCL-SEGMENT-ODD-WORD",
         "I86-RCL-MCL-SEGMENT-ODD-WORD", "I86-RCR-MCL-SEGMENT-ODD-WORD",
         "I86-SHL-MCL-SEGMENT-ODD-WORD", "I86-SHR-MCL-SEGMENT-ODD-WORD",
@@ -2952,7 +2954,7 @@ static C_INT timing_manifest_probe_group2_segment_odd_word_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_string_primitives(C_VOID)
+static lib_i32 timing_manifest_probe_string_primitives(void)
 {
     static const timing_manifest_string_recipe recipes[] = {
         { "I86-STRING-MOVS-B-NONE", 0xa4u, 18u },
@@ -2974,7 +2976,7 @@ static C_INT timing_manifest_probe_string_primitives(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_repeat_base_forms(C_VOID)
+static lib_i32 timing_manifest_probe_repeat_base_forms(void)
 {
     static const timing_manifest_repeat_recipe recipes[] = {
         { "I86-REP-MOVS-B", 0xf3u, 0xa4u, 26u, 17u, 9u, 0u, 0, 0u },
@@ -3000,7 +3002,7 @@ static C_INT timing_manifest_probe_repeat_base_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_text_contains(const C_CHAR *text, const C_CHAR *needle)
+static lib_i32 timing_manifest_text_contains(const char *text, const char *needle)
 {
     lib_size offset;
     lib_size index;
@@ -3014,7 +3016,7 @@ static C_INT timing_manifest_text_contains(const C_CHAR *text, const C_CHAR *nee
     return 0;
 }
 
-static C_INT timing_manifest_probe_repeat_manifest_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_repeat_manifest_contexts(void)
 {
     lib_size index;
 
@@ -3023,8 +3025,8 @@ static C_INT timing_manifest_probe_repeat_manifest_contexts(C_VOID)
         const timing_manifest_record *record = &timing_manifest_records[index];
         timing_manifest_repeat_recipe recipe = { 0 };
         lib_u64 odd_addition = 0u;
-        C_INT segment;
-        C_INT odd;
+        lib_i32 segment;
+        lib_i32 odd;
 
         if (!timing_manifest_text_contains(record->key_id, "I86-REP-")) continue;
         recipe.key_id = record->key_id;
@@ -3065,7 +3067,7 @@ static C_INT timing_manifest_probe_repeat_manifest_contexts(C_VOID)
             recipe.opcode = 0xafu; recipe.first_ticks = 24u;
             recipe.continuation_ticks = 15u; recipe.zero_ticks = 9u; odd_addition = 4u;
         } else {
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:UNMAPPED-REP:%s\n",
+            printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:UNMAPPED-REP:%s\n",
                 record->key_id);
             return 1;
         }
@@ -3096,7 +3098,7 @@ static C_INT timing_manifest_probe_repeat_manifest_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_string_segment_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_string_segment_contexts(void)
 {
     static const timing_manifest_string_recipe recipes[] = {
         { "I86-STRING-MOVS-B-NONE-SEGMENT", 0xa4u, 20u },
@@ -3115,7 +3117,7 @@ static C_INT timing_manifest_probe_string_segment_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_string_odd_word_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_string_odd_word_contexts(void)
 {
     static const timing_manifest_string_recipe recipes[] = {
         { "I86-STRING-MOVS-W-NONE-ODD-WORD", 0xa5u, 26u },
@@ -3133,7 +3135,7 @@ static C_INT timing_manifest_probe_string_odd_word_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_string_segment_odd_word_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_string_segment_odd_word_contexts(void)
 {
     static const timing_manifest_string_recipe recipes[] = {
         { "I86-STRING-MOVS-W-NONE-SEGMENT-ODD-WORD", 0xa5u, 28u },
@@ -3150,10 +3152,10 @@ static C_INT timing_manifest_probe_string_segment_odd_word_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_pointer_load_forms(C_VOID)
+static lib_i32 timing_manifest_probe_pointer_load_forms(void)
 {
     typedef struct timing_manifest_pointer_recipe {
-        const C_CHAR *key_id;
+        const char *key_id;
         lib_u8 opcode;
         lib_u8 prefix;
         lib_u16 pointer_address;
@@ -3244,11 +3246,11 @@ static C_INT timing_manifest_probe_pointer_load_forms(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed = record == LIB_NULL || lib_c_strcmp(record->level, "L3") != 0 ||
+        lib_i32 failed = record == LIB_NULL || lib_c_strcmp(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, program, sizeof(program));
 
         if (!failed) {
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, 8u) || capture.count != 1u ||
                 !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
@@ -3260,7 +3262,7 @@ static C_INT timing_manifest_probe_pointer_load_forms(C_VOID)
                 machine->executor_cpu.data.bx != 0x1000u;
         }
         if (failed) {
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-LEA-M\n");
+            printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-LEA-M\n");
             core_machine_destroy(machine);
             return 1;
         }
@@ -3280,13 +3282,13 @@ static C_INT timing_manifest_probe_pointer_load_forms(C_VOID)
         const timing_manifest_pointer_recipe *recipe = &recipes[index];
         const timing_manifest_record *record = timing_manifest_find(recipe->key_id);
         lib_u8 program[] = { recipe->opcode, 0x1eu,
-            TYPE_MASK_UNSIGNED_8(recipe->pointer_address),
-            TYPE_MASK_UNSIGNED_8(recipe->pointer_address >> 8u), 0u, 0u };
+            CORE_MACHINE_MASK_U8(recipe->pointer_address),
+            CORE_MACHINE_MASK_U8(recipe->pointer_address >> 8u), 0u, 0u };
         lib_size program_bytes = 4u;
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed;
+        lib_i32 failed;
 
         if (recipe->prefix != 0u) {
             program[4] = program[3]; program[3] = program[2]; program[2] = program[1];
@@ -3306,10 +3308,10 @@ static C_INT timing_manifest_probe_pointer_load_forms(C_VOID)
                         program_bytes + 2u : program_bytes + 1u));
         if (!failed) {
             failed = core_machine_memory_write(machine, recipe->pointer_address, pointer,
-                sizeof(pointer)) != TYPE_STATUS_OK;
+                sizeof(pointer)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
                 !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
@@ -3322,7 +3324,7 @@ static C_INT timing_manifest_probe_pointer_load_forms(C_VOID)
                     machine->executor_cpu.data.es.selector != 0x0800u);
         }
         if (failed) {
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -3331,7 +3333,7 @@ static C_INT timing_manifest_probe_pointer_load_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_segment_mov_forms(C_VOID)
+static lib_i32 timing_manifest_probe_segment_mov_forms(void)
 {
     static const timing_manifest_recipe register_recipes[] = {
         { "I86-MOV-SREG-TO-R", { 0x8cu, 0xc0u }, 2u, 2u,
@@ -3347,7 +3349,7 @@ static C_INT timing_manifest_probe_segment_mov_forms(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
             0u, 0u, 0u, 0u, 0u, 0u }
     };
-    static const C_CHAR *const context_keys[][2] = {
+    static const char *const context_keys[][2] = {
         { "I86-MOV-SREG-TO-M-SEGMENT", "I86-MOV-SREG-FROM-M-SEGMENT" },
         { "I86-MOV-SREG-TO-M-ODD-WORD", "I86-MOV-SREG-FROM-M-ODD-WORD" },
         { "I86-MOV-SREG-TO-M-SEGMENT-ODD-WORD",
@@ -3364,8 +3366,8 @@ static C_INT timing_manifest_probe_segment_mov_forms(C_VOID)
         if (timing_manifest_run_l3_memory_recipe(&memory_recipes[index])) return 1;
     }
     for (index = 0u; index < 3u; ++index) {
-        C_INT segment_override = index == 0u || index == 2u;
-        C_INT odd_word = index == 1u || index == 2u;
+        lib_i32 segment_override = index == 0u || index == 2u;
+        lib_i32 odd_word = index == 1u || index == 2u;
         lib_size recipe_index;
 
         for (recipe_index = 0u; recipe_index < sizeof(memory_recipes) /
@@ -3394,7 +3396,7 @@ static C_INT timing_manifest_probe_segment_mov_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_far_direct_control_transfers(C_VOID)
+static lib_i32 timing_manifest_probe_far_direct_control_transfers(void)
 {
     static const timing_manifest_recipe recipes[] = {
         { "I86-CALL-FAR", { 0x9au, 0u, 0u, 0u, 0u }, 5u, 28u,
@@ -3409,7 +3411,7 @@ static C_INT timing_manifest_probe_far_direct_control_transfers(C_VOID)
 }
 
 typedef struct timing_manifest_indirect_control_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 program[8];
     lib_u8 program_bytes;
     lib_u64 expected_ticks;
@@ -3417,22 +3419,22 @@ typedef struct timing_manifest_indirect_control_recipe {
     lib_u16 target_cs;
     lib_u16 expected_sp;
     lib_u16 pointer_address;
-    C_INT pointer_is_far;
+    lib_i32 pointer_is_far;
     lib_u32 required_formula_inputs;
 } timing_manifest_indirect_control_recipe;
 
-static C_INT timing_manifest_write_word(core_machine *machine,
+static lib_i32 timing_manifest_write_word(core_machine *machine,
     lib_u32 address, lib_u16 value)
 {
     lib_u8 bytes[2];
 
-    bytes[0] = TYPE_MASK_UNSIGNED_8(value);
-    bytes[1] = TYPE_MASK_UNSIGNED_8(value >> 8u);
+    bytes[0] = CORE_MACHINE_MASK_U8(value);
+    bytes[1] = CORE_MACHINE_MASK_U8(value >> 8u);
     return core_machine_memory_write(machine, address, bytes, sizeof(bytes)) ==
-        TYPE_STATUS_OK;
+        LIB_STATUS_OK;
 }
 
-static C_INT timing_manifest_run_indirect_control_recipe(
+static lib_i32 timing_manifest_run_indirect_control_recipe(
     const timing_manifest_indirect_control_recipe *recipe)
 {
     const core_machine_run_budget budget = { 1u, 0u };
@@ -3441,7 +3443,7 @@ static C_INT timing_manifest_run_indirect_control_recipe(
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_INT failed = recipe == LIB_NULL || record == LIB_NULL ||
+    lib_i32 failed = recipe == LIB_NULL || record == LIB_NULL ||
         !timing_manifest_is_active(record) || lib_c_strcmp(record->level, "L3") != 0 ||
         !timing_manifest_prepare(&machine, &capture, recipe->program,
             recipe->program_bytes);
@@ -3459,7 +3461,7 @@ static C_INT timing_manifest_run_indirect_control_recipe(
         }
     }
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
             capture.observation.timing_disposition !=
@@ -3479,20 +3481,20 @@ static C_INT timing_manifest_run_indirect_control_recipe(
             machine->executor_cpu.data.sp != recipe->expected_sp;
     }
     if (failed) {
-        STD_PRINTF("I86 indirect ticks=%llu origin=%d ip=%u cs=%u sp=%u form=%u key=%u\n",
+        printf("I86 indirect ticks=%llu origin=%d ip=%u cs=%u sp=%u form=%u key=%u\n",
             run.ticks, capture.observation.timing_origin,
             machine == LIB_NULL ? 0u : machine->executor_cpu.data.eip,
             machine == LIB_NULL ? 0u : machine->executor_cpu.data.cs.selector,
             machine == LIB_NULL ? 0u : machine->executor_cpu.data.sp,
             capture.observation.source_timing_form_id,
             capture.observation.timing_key_id);
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+        printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
     }
     core_machine_destroy(machine);
     return failed;
 }
 
-static C_INT timing_manifest_probe_indirect_control_transfers(C_VOID)
+static lib_i32 timing_manifest_probe_indirect_control_transfers(void)
 {
     static const timing_manifest_indirect_control_recipe recipes[] = {
         { "I86-CALL-RM16", { 0xffu, 0xd0u }, 2u, 16u, 0x0200u, 0u, 0x7ffeu,
@@ -3580,7 +3582,7 @@ static C_INT timing_manifest_probe_indirect_control_transfers(C_VOID)
             timing_manifest_indirect_control_recipe locked = recipes[index];
             const timing_manifest_record *base_record =
                 timing_manifest_find(locked.key_id);
-            C_CHAR key[160];
+            char key[160];
             lib_size byte_index;
 
             if (base_record != LIB_NULL &&
@@ -3605,7 +3607,7 @@ static C_INT timing_manifest_probe_indirect_control_transfers(C_VOID)
 }
 
 typedef struct timing_manifest_return_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 program[4];
     lib_u8 program_bytes;
     lib_u64 expected_ticks;
@@ -3617,7 +3619,7 @@ typedef struct timing_manifest_return_recipe {
     core_machine_retirement_timing_origin expected_origin;
 } timing_manifest_return_recipe;
 
-static C_INT timing_manifest_probe_return_forms(C_VOID)
+static lib_i32 timing_manifest_probe_return_forms(void)
 {
     static const timing_manifest_return_recipe recipes[] = {
         { "I86-RET-NEAR", { 0xc3u }, 1u, 8u, 0x0200u, 0u, 0x8002u,
@@ -3661,7 +3663,7 @@ static C_INT timing_manifest_probe_return_forms(C_VOID)
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
         lib_u8 word_index;
-        C_INT failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+        lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
             lib_c_strcmp(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe->program,
                 recipe->program_bytes);
@@ -3675,7 +3677,7 @@ static C_INT timing_manifest_probe_return_forms(C_VOID)
             }
         }
         if (!failed) {
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
                 capture.observation.timing_disposition !=
@@ -3691,14 +3693,14 @@ static C_INT timing_manifest_probe_return_forms(C_VOID)
                 machine->executor_cpu.data.sp != recipe->expected_sp;
         }
         if (failed) {
-            STD_PRINTF("I86 return ticks=%llu origin=%d ip=%u cs=%u sp=%u form=%u key=%u\n",
+            printf("I86 return ticks=%llu origin=%d ip=%u cs=%u sp=%u form=%u key=%u\n",
                 run.ticks, capture.observation.timing_origin,
                 machine == LIB_NULL ? 0u : machine->executor_cpu.data.eip,
                 machine == LIB_NULL ? 0u : machine->executor_cpu.data.cs.selector,
                 machine == LIB_NULL ? 0u : machine->executor_cpu.data.sp,
                 capture.observation.source_timing_form_id,
                 capture.observation.timing_key_id);
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -3708,7 +3710,7 @@ static C_INT timing_manifest_probe_return_forms(C_VOID)
 }
 
 typedef struct timing_manifest_interrupt_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 program[3];
     lib_u8 program_bytes;
     lib_u32 initial_eflags;
@@ -3718,7 +3720,7 @@ typedef struct timing_manifest_interrupt_recipe {
     lib_u16 expected_sp;
 } timing_manifest_interrupt_recipe;
 
-static C_INT timing_manifest_probe_software_interrupt_forms(C_VOID)
+static lib_i32 timing_manifest_probe_software_interrupt_forms(void)
 {
     static const timing_manifest_interrupt_recipe recipes[] = {
         { "I86-INT3", { 0xccu, 0u }, 1u, 0u, 3u, 52u, 0x0200u, 0x7ffau },
@@ -3744,7 +3746,7 @@ static C_INT timing_manifest_probe_software_interrupt_forms(C_VOID)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        C_INT failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+        lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
             lib_c_strcmp(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe->program,
                 recipe->program_bytes);
@@ -3760,7 +3762,7 @@ static C_INT timing_manifest_probe_software_interrupt_forms(C_VOID)
             }
         }
         if (!failed) {
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
                 capture.observation.timing_disposition !=
@@ -3776,7 +3778,7 @@ static C_INT timing_manifest_probe_software_interrupt_forms(C_VOID)
                     machine->executor_cpu.data.cs.selector != 0xf000u);
         }
         if (failed) {
-            STD_PRINTF("I86 int ticks=%llu origin=%d ip=%u cs=%u sp=%u control=%d form=%u key=%u\n",
+            printf("I86 int ticks=%llu origin=%d ip=%u cs=%u sp=%u control=%d form=%u key=%u\n",
                 run.ticks, capture.observation.timing_origin,
                 machine == LIB_NULL ? 0u : machine->executor_cpu.data.eip,
                 machine == LIB_NULL ? 0u : machine->executor_cpu.data.cs.selector,
@@ -3784,7 +3786,7 @@ static C_INT timing_manifest_probe_software_interrupt_forms(C_VOID)
                 capture.observation.control_outcome,
                 capture.observation.source_timing_form_id,
                 capture.observation.timing_key_id);
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -3794,16 +3796,16 @@ static C_INT timing_manifest_probe_software_interrupt_forms(C_VOID)
 }
 
 typedef struct timing_manifest_memory_stack_recipe {
-    const C_CHAR *key_id;
+    const char *key_id;
     lib_u8 program[6];
     lib_u8 program_bytes;
     lib_u16 memory_address;
     lib_u64 expected_ticks;
-    C_INT push;
+    lib_i32 push;
     lib_u32 required_formula_inputs;
 } timing_manifest_memory_stack_recipe;
 
-static C_INT timing_manifest_probe_memory_stack_forms(C_VOID)
+static lib_i32 timing_manifest_probe_memory_stack_forms(void)
 {
     static const timing_manifest_memory_stack_recipe recipes[] = {
         { "I86-PUSH-M", { 0xffu, 0x36u, 0u, 0x10u }, 4u, 0x1000u, 22u, 1,
@@ -3890,7 +3892,7 @@ static C_INT timing_manifest_probe_memory_stack_forms(C_VOID)
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
         lib_u16 observed = 0u;
-        C_INT failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+        lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
             lib_c_strcmp(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe->program,
                 recipe->program_bytes);
@@ -3901,7 +3903,7 @@ static C_INT timing_manifest_probe_memory_stack_forms(C_VOID)
                 recipe->push ? recipe->memory_address : 0x8000u, transfer_word);
         }
         if (!failed) {
-            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
                 capture.observation.timing_disposition !=
@@ -3912,11 +3914,11 @@ static C_INT timing_manifest_probe_memory_stack_forms(C_VOID)
                 machine->executor_cpu.data.sp != (recipe->push ? 0x7ffeu : 0x8002u) ||
                 core_machine_memory_read(machine,
                     recipe->push ? 0x7ffeu : recipe->memory_address,
-                    &observed, sizeof(observed)) != TYPE_STATUS_OK ||
+                    &observed, sizeof(observed)) != LIB_STATUS_OK ||
                 observed != transfer_word;
         }
         if (failed) {
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
+            printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
             core_machine_destroy(machine);
             return 1;
         }
@@ -3925,7 +3927,7 @@ static C_INT timing_manifest_probe_memory_stack_forms(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_probe_hlt(C_VOID)
+static lib_i32 timing_manifest_probe_hlt(void)
 {
     const timing_manifest_record *record = timing_manifest_find("I86-FLAG-HLT");
     const lib_u8 program[] = { 0xf4u };
@@ -3933,12 +3935,12 @@ static C_INT timing_manifest_probe_hlt(C_VOID)
     timing_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
-    C_INT failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
+    lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
         lib_c_strcmp(record->level, "L3") != 0 ||
         !timing_manifest_prepare(&machine, &capture, program, sizeof(program));
 
     if (!failed) {
-        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             run.executed != 1u || !timing_manifest_ticks_match(run.ticks, 2u) || capture.count != 1u ||
             capture.observation.timing_disposition !=
@@ -3946,7 +3948,7 @@ static C_INT timing_manifest_probe_hlt(C_VOID)
             !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
             !machine->executor_cpu.data.flagHalt;
     }
-    if (failed) STD_PRINTF("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT\n");
+    if (failed) printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT\n");
     core_machine_destroy(machine);
     if (failed) return 1;
     {
@@ -3956,13 +3958,13 @@ static C_INT timing_manifest_probe_hlt(C_VOID)
         timing_manifest_capture locked_capture = { { 0 }, 0u };
         core_machine_run_result locked_run = { 0 };
         core_machine *locked_machine = LIB_NULL;
-        C_INT locked_failed = locked_record == LIB_NULL ||
+        lib_i32 locked_failed = locked_record == LIB_NULL ||
             !timing_manifest_prepare(&locked_machine, &locked_capture,
                 locked_program, sizeof(locked_program));
 
         if (!locked_failed) {
             locked_failed = core_machine_run(locked_machine, budget, &locked_run) !=
-                    TYPE_STATUS_OK ||
+                    LIB_STATUS_OK ||
                 locked_run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 locked_run.executed != 1u || !timing_manifest_ticks_match(locked_run.ticks, 4u) ||
                 locked_capture.count != 1u ||
@@ -3975,13 +3977,13 @@ static C_INT timing_manifest_probe_hlt(C_VOID)
         }
         core_machine_destroy(locked_machine);
         if (locked_failed) {
-            STD_PRINTF("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT-LOCK\n");
+            printf("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT-LOCK\n");
         }
         return locked_failed;
     }
 }
 
-static C_INT timing_manifest_probe_xchg_memory_contexts(C_VOID)
+static lib_i32 timing_manifest_probe_xchg_memory_contexts(void)
 {
     static const timing_manifest_memory_recipe recipes[] = {
         { "I86-XCHG-MR-SEGMENT", { 0x26u, 0x87u, 0x0eu, 0u, 0x10u }, 5u,
@@ -4026,9 +4028,9 @@ static C_INT timing_manifest_probe_xchg_memory_contexts(C_VOID)
     return 0;
 }
 
-static C_INT timing_manifest_write_results(C_VOID)
+static lib_i32 timing_manifest_write_results(void)
 {
-    const C_CHAR *const path = PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH;
+    const char *const path = PROJECT_TEST_TIMING_MANIFEST_RESULTS_PATH;
     FILE *file = fopen(path, "wb");
     lib_size index;
     lib_size written = 0u;
@@ -4074,7 +4076,7 @@ static C_INT timing_manifest_write_results(C_VOID)
     return written == 1053u ? 0 : 1;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     lib_size index;
     lib_size i86_count = 0u;
@@ -4105,163 +4107,163 @@ C_INT main(C_VOID)
             timing_manifest_probe_general_lock_prefix() ||
             timing_manifest_probe_adjustments()) return 1;
     if (timing_manifest_probe_alu_register_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-REGISTER\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-REGISTER\n");
         return 1;
     }
     if (timing_manifest_probe_compare_and_test_register_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:CMP-TEST-REGISTER\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:CMP-TEST-REGISTER\n");
         return 1;
     }
     if (timing_manifest_probe_register_data_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REGISTER-DATA\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REGISTER-DATA\n");
         return 1;
     }
     if (timing_manifest_probe_stack_register_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STACK-REGISTER\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STACK-REGISTER\n");
         return 1;
     }
     if (timing_manifest_probe_conditional_branches()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:JCC\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:JCC\n");
         return 1;
     }
     if (timing_manifest_probe_counted_branches()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:LOOP\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:LOOP\n");
         return 1;
     }
     if (timing_manifest_probe_wait_and_escape()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:WAIT-ESC\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:WAIT-ESC\n");
         return 1;
     }
     if (timing_manifest_probe_escape_memory_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ESC-MEMORY\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ESC-MEMORY\n");
         return 1;
     }
     if (timing_manifest_probe_group2_register_one()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-R1\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-R1\n");
         return 1;
     }
     if (timing_manifest_probe_group2_register_cl()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-RCL\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-RCL\n");
         return 1;
     }
     if (timing_manifest_probe_immediate_port_io()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PORT-IMM\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PORT-IMM\n");
         return 1;
     }
     if (timing_manifest_probe_dx_port_io()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PORT-DX\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PORT-DX\n");
         return 1;
     }
     if (timing_manifest_probe_near_control_transfers()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:NEAR-CONTROL\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:NEAR-CONTROL\n");
         return 1;
     }
     if (timing_manifest_probe_group3_l2()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP3-L2\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP3-L2\n");
         return 1;
     }
     if (timing_manifest_probe_group3_memory_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP3-CONTEXT\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP3-CONTEXT\n");
         return 1;
     }
     if (timing_manifest_probe_alu_memory_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-MEMORY\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-MEMORY\n");
         return 1;
     }
     if (timing_manifest_probe_primary_memory_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PRIMARY-MEMORY\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:PRIMARY-MEMORY\n");
         return 1;
     }
     if (timing_manifest_probe_alu_segment_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT\n");
         return 1;
     }
     if (timing_manifest_probe_alu_odd_word_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-ODD-WORD\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-ODD-WORD\n");
         return 1;
     }
     if (timing_manifest_probe_lock_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:LOCK\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:LOCK\n");
         return 1;
     }
     if (timing_manifest_probe_alu_segment_odd_word_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT-ODD-WORD\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-SEGMENT-ODD-WORD\n");
         return 1;
     }
     if (timing_manifest_probe_group2_memory_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-MEMORY\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-MEMORY\n");
         return 1;
     }
     if (timing_manifest_probe_group2_segment_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT\n");
         return 1;
     }
     if (timing_manifest_probe_group2_odd_word_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-ODD-WORD\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-ODD-WORD\n");
         return 1;
     }
     if (timing_manifest_probe_group2_segment_odd_word_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT-ODD\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:GROUP2-SEGMENT-ODD\n");
         return 1;
     }
     if (timing_manifest_probe_string_primitives()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-PRIMITIVE\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-PRIMITIVE\n");
         return 1;
     }
     if (timing_manifest_probe_repeat_base_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REP-BASE\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REP-BASE\n");
         return 1;
     }
     if (timing_manifest_probe_repeat_manifest_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REP-CONTEXT\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:REP-CONTEXT\n");
         return 1;
     }
     if (timing_manifest_probe_string_segment_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT\n");
         return 1;
     }
     if (timing_manifest_probe_string_odd_word_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-ODD-WORD\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-ODD-WORD\n");
         return 1;
     }
     if (timing_manifest_probe_string_segment_odd_word_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT-ODD\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:STRING-SEGMENT-ODD\n");
         return 1;
     }
     if (timing_manifest_probe_pointer_load_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:POINTER-LOAD\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:POINTER-LOAD\n");
         return 1;
     }
     if (timing_manifest_probe_segment_mov_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:MOV-SREG\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:MOV-SREG\n");
         return 1;
     }
     if (timing_manifest_probe_far_direct_control_transfers()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:FAR-DIRECT\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:FAR-DIRECT\n");
         return 1;
     }
     if (timing_manifest_probe_indirect_control_transfers()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:INDIRECT-CONTROL\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:INDIRECT-CONTROL\n");
         return 1;
     }
     if (timing_manifest_probe_return_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:RETURN\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:RETURN\n");
         return 1;
     }
     if (timing_manifest_probe_software_interrupt_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:SOFTWARE-INT\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:SOFTWARE-INT\n");
         return 1;
     }
     if (timing_manifest_probe_memory_stack_forms()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:MEMORY-STACK\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:MEMORY-STACK\n");
         return 1;
     }
     if (timing_manifest_probe_hlt()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:HLT\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:HLT\n");
         return 1;
     }
     if (timing_manifest_probe_xchg_memory_contexts()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:XCHG-CONTEXT\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:XCHG-CONTEXT\n");
         return 1;
     }
     for (index = 0u; index < sizeof(timing_manifest_records) /
@@ -4269,20 +4271,20 @@ C_INT main(C_VOID)
         if (timing_manifest_is_active(&timing_manifest_records[index]) &&
                 timing_manifest_covered[index]) ++covered_count;
         else if (timing_manifest_is_active(&timing_manifest_records[index])) {
-            STD_PRINTF("M5:T435:S4:I86-MANIFEST-MISSING:%s\n",
+            printf("M5:T435:S4:I86-MANIFEST-MISSING:%s\n",
                 timing_manifest_records[index].key_id);
         }
     }
     if (covered_count != i86_count) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:PARTIAL:%u/%u\n",
-            covered_count, i86_count);
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:PARTIAL:%llu/%llu\n",
+            (unsigned long long)covered_count, (unsigned long long)i86_count);
         return 1;
     }
     if (timing_manifest_write_results()) {
-        STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:RESULTS\n");
+        printf("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:RESULTS\n");
         return 1;
     }
-    STD_PRINTF("M5:T435:S5:I86-MANIFEST-PROBE:PASS:%u/%u\n", covered_count,
-        i86_count);
+    printf("M5:T435:S5:I86-MANIFEST-PROBE:PASS:%llu/%llu\n", (unsigned long long)covered_count,
+        (unsigned long long)i86_count);
     return 0;
 }

@@ -1,12 +1,12 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/machine/debug.h"
 
-C_VOID vm_machine_debug_initialize(t_debug *debug)
+void vm_machine_debug_initialize(t_debug *debug)
 {
     if (debug != LIB_NULL) lib_memory_set(debug, 0, sizeof(*debug));
 }
 
-C_VOID vm_machine_debug_reset(t_debug *debug)
+void vm_machine_debug_reset(t_debug *debug)
 {
     if (debug == LIB_NULL) return;
     lib_memory_set(&debug->plan, 0, sizeof(debug->plan));
@@ -14,7 +14,7 @@ C_VOID vm_machine_debug_reset(t_debug *debug)
     debug->observation_valid = LIB_FALSE;
 }
 
-C_VOID vm_machine_debug_refresh(t_debug *debug,
+void vm_machine_debug_refresh(t_debug *debug,
     const core_machine_debug_instruction_observation *observation)
 {
     if (debug == LIB_NULL || observation == LIB_NULL) return;
@@ -22,30 +22,30 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
     debug->observation_valid = LIB_TRUE;
 }
 
-C_VOID vm_machine_debug_finalize(t_debug *debug)
+void vm_machine_debug_finalize(t_debug *debug)
 {
-    (C_VOID)debug;
+    (void)debug;
 }
 
-type_status vm_machine_debug_set_execution_plan(t_debug *debug,
+lib_status vm_machine_debug_set_execution_plan(t_debug *debug,
     const x86_debug_request *request)
 {
-    if (debug == LIB_NULL || request == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (debug == LIB_NULL || request == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (request->execution_kind != X86_DEBUG_EXECUTION_TRACE &&
         request->execution_kind != X86_DEBUG_EXECUTION_BREAK_REAL &&
         request->execution_kind != X86_DEBUG_EXECUTION_BREAK_LINEAR)
-        return TYPE_STATUS_INVALID_ARGUMENT;
+        return LIB_STATUS_INVALID_ARGUMENT;
     if (request->execution_kind == X86_DEBUG_EXECUTION_TRACE &&
-        request->instruction_count == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+        request->instruction_count == 0u) return LIB_STATUS_INVALID_ARGUMENT;
     debug->plan = (t_debug_execution_plan) {
         .kind = request->execution_kind,
         .remaining = request->instruction_count,
         .breakpoint_linear = request->address
     };
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-C_VOID vm_machine_debug_clear_execution_plan(t_debug *debug)
+void vm_machine_debug_clear_execution_plan(t_debug *debug)
 {
     if (debug != LIB_NULL) lib_memory_set(&debug->plan, 0, sizeof(debug->plan));
 }
@@ -62,7 +62,7 @@ lib_u64 vm_machine_debug_limit_instruction_budget(
     return requested;
 }
 
-C_INT vm_machine_debug_breakpoint_due(const t_debug *debug)
+lib_i32 vm_machine_debug_breakpoint_due(const t_debug *debug)
 {
     if (debug == LIB_NULL || !debug->observation_valid ||
         (debug->plan.kind != X86_DEBUG_EXECUTION_BREAK_REAL &&
@@ -71,7 +71,7 @@ C_INT vm_machine_debug_breakpoint_due(const t_debug *debug)
         debug->plan.breakpoint_linear;
 }
 
-C_VOID vm_machine_debug_complete_breakpoint(t_debug *debug)
+void vm_machine_debug_complete_breakpoint(t_debug *debug)
 {
     if (debug == LIB_NULL || (debug->plan.kind !=
         X86_DEBUG_EXECUTION_BREAK_REAL && debug->plan.kind !=
@@ -82,7 +82,7 @@ C_VOID vm_machine_debug_complete_breakpoint(t_debug *debug)
     debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
 
-C_VOID vm_machine_debug_complete_watchpoint(t_debug *debug)
+void vm_machine_debug_complete_watchpoint(t_debug *debug)
 {
     lib_u64 executed;
 
@@ -96,7 +96,7 @@ C_VOID vm_machine_debug_complete_watchpoint(t_debug *debug)
     };
 }
 
-C_VOID vm_machine_debug_complete_run(t_debug *debug, lib_u64 executed)
+void vm_machine_debug_complete_run(t_debug *debug, lib_u64 executed)
 {
     if (debug == LIB_NULL || executed == 0u) return;
     if (debug->plan.kind == X86_DEBUG_EXECUTION_BREAK_REAL ||
@@ -116,7 +116,7 @@ C_VOID vm_machine_debug_complete_run(t_debug *debug, lib_u64 executed)
     debug->plan.kind = X86_DEBUG_EXECUTION_NONE;
 }
 
-C_INT vm_machine_debug_completion_pending(const t_debug *debug,
+lib_i32 vm_machine_debug_completion_pending(const t_debug *debug,
     vm_machine_debug_stop_reason *out_reason)
 {
     if (debug == LIB_NULL || out_reason == LIB_NULL ||
@@ -125,7 +125,7 @@ C_INT vm_machine_debug_completion_pending(const t_debug *debug,
     return LIB_TRUE;
 }
 
-C_INT vm_machine_debug_take_completion(t_debug *debug,
+lib_i32 vm_machine_debug_take_completion(t_debug *debug,
     vm_machine_debug_stop_reason *out_reason, lib_u64 *out_executed)
 {
     if (debug == LIB_NULL || out_reason == LIB_NULL || out_executed == LIB_NULL ||

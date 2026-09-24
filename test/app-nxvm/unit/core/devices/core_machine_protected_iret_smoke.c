@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
+#include <stdio.h>
+#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -23,11 +24,11 @@ typedef struct iret_machine {
     core_machine *machine;
 } iret_machine;
 
-static C_VOID iret_reset(C_VOID *opaque)
+static void iret_reset(void *opaque)
 {
     iret_machine *state = (iret_machine *)opaque;
 
-    if (state != LIB_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
         state->machine);
 }
 
@@ -35,16 +36,16 @@ static const core_machine_execution_provider iret_provider = {
     iret_reset, LIB_NULL
 };
 
-static C_INT iret_write(iret_machine *state, lib_u32 address,
-    const C_VOID *data, lib_size bytes)
+static lib_i32 iret_write(iret_machine *state, lib_u32 address,
+    const void *data, lib_size bytes)
 {
     return state != LIB_NULL && state->machine != LIB_NULL &&
         core_machine_memory_write(state->machine, address, data, bytes) ==
-            TYPE_STATUS_OK;
+            LIB_STATUS_OK;
 }
 
-static C_INT iret_prepare(iret_machine *state, iret_negative negative,
-    C_INT small_stack, C_INT conforming, C_INT user_cpl)
+static lib_i32 iret_prepare(iret_machine *state, iret_negative negative,
+    lib_i32 small_stack, lib_i32 conforming, lib_i32 user_cpl)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -115,31 +116,31 @@ static C_INT iret_prepare(iret_machine *state, iret_negative negative,
     return 1;
 }
 
-static C_INT iret_fault_is(const core_machine_cpu_diagnostic *diagnostic,
+static lib_i32 iret_fault_is(const core_machine_cpu_diagnostic *diagnostic,
     lib_u32 mask, lib_u32 code)
 {
-    return diagnostic->first_fault.valid && TYPE_GET_BIT(
+    return diagnostic->first_fault.valid && CORE_MACHINE_BIT_IS_SET(
         diagnostic->first_fault.exception_mask, mask) &&
         diagnostic->first_fault.exception_code == code;
 }
 
-static C_INT iret_run(iret_machine *state, C_INT expect_fault, t_cpu *after,
+static lib_i32 iret_run(iret_machine *state, lib_i32 expect_fault, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic)
 {
     const core_machine_run_budget budget = {16u, 0u};
     core_machine_run_result result;
-    type_status status = core_machine_run(state->machine, budget, &result);
+    lib_status status = core_machine_run(state->machine, budget, &result);
 
     if (core_machine_get_cpu_diagnostic(state->machine, diagnostic) !=
-        TYPE_STATUS_OK) return 0;
+        LIB_STATUS_OK) return 0;
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return status == (expect_fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) &&
+    return status == (expect_fault ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK) &&
         result.reason == (expect_fault ? CORE_MACHINE_STOP_FAULT :
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
 }
 
-static C_INT iret_test_success(lib_u8 prefix, C_INT operand16,
-    C_INT small_stack, C_INT conforming)
+static lib_i32 iret_test_success(lib_u8 prefix, lib_i32 operand16,
+    lib_i32 small_stack, lib_i32 conforming)
 {
     iret_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -150,14 +151,14 @@ static C_INT iret_test_success(lib_u8 prefix, C_INT operand16,
     lib_u32 expected_esp = small_stack ?
         (operand16 ? 0x00018006u : 0x0001800cu) :
         (operand16 ? IRET_STACK + 6u : IRET_STACK + 12u);
-    C_INT failed = !iret_prepare(&state, IRET_NEGATIVE_NONE, small_stack,
+    lib_i32 failed = !iret_prepare(&state, IRET_NEGATIVE_NONE, small_stack,
         conforming, 0);
 
     if (!failed) {
         failed |= !iret_write(&state, IRET_CODE_BASE, prefix ? code : code + 1u,
                 prefix ? sizeof(code) : sizeof(code) - 1u) ||
-            !iret_write(&state, IRET_STACK, operand16 ? (const C_VOID *)frame16 :
-                (const C_VOID *)frame32, operand16 ? sizeof(frame16) : sizeof(frame32)) ||
+            !iret_write(&state, IRET_STACK, operand16 ? (const void *)frame16 :
+                (const void *)frame32, operand16 ? sizeof(frame16) : sizeof(frame32)) ||
             !iret_run(&state, 0, &after, &diagnostic) || diagnostic.first_fault.valid ||
             after.data.eip != (prefix ? 3u : 2u) || after.data.esp != expected_esp ||
             after.data.cs.selector != 0x0008u || after.data.eflags != 0x00000203u;
@@ -166,7 +167,7 @@ static C_INT iret_test_success(lib_u8 prefix, C_INT operand16,
     return !failed;
 }
 
-static C_INT iret_test_failure(iret_negative negative, lib_u32 mask,
+static lib_i32 iret_test_failure(iret_negative negative, lib_u32 mask,
     lib_u32 code)
 {
     iret_machine state;
@@ -178,18 +179,18 @@ static C_INT iret_test_failure(iret_negative negative, lib_u32 mask,
         0x0008u, 0x00000203u };
     lib_u8 access_before = 0u;
     lib_u8 access_after = 0u;
-    C_INT failed = !iret_prepare(&state, negative, 0, 0, 0);
+    lib_i32 failed = !iret_prepare(&state, negative, 0, 0, 0);
 
     if (!failed) {
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !iret_write(&state, IRET_CODE_BASE, program, sizeof(program)) ||
             !iret_write(&state, IRET_STACK, frame, sizeof(frame)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                IRET_CODE_ACCESS, TYPE_REFERENCE_OF(access_before), 1u) != TYPE_STATUS_OK ||
+                IRET_CODE_ACCESS, CORE_MACHINE_REFERENCE_OF(access_before), 1u) != LIB_STATUS_OK ||
             !iret_run(&state, 1, &after, &diagnostic) ||
             !iret_fault_is(&diagnostic, mask, code) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                IRET_CODE_ACCESS, TYPE_REFERENCE_OF(access_after), 1u) != TYPE_STATUS_OK ||
+                IRET_CODE_ACCESS, CORE_MACHINE_REFERENCE_OF(access_after), 1u) != LIB_STATUS_OK ||
             after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
             after.data.eflags != before.data.eflags ||
             lib_memory_compare(&after.data.cs, &before.data.cs, sizeof(before.data.cs)) != 0 ||
@@ -200,7 +201,7 @@ static C_INT iret_test_failure(iret_negative negative, lib_u32 mask,
     return !failed;
 }
 
-static C_INT iret_test_user_flags(C_VOID)
+static lib_i32 iret_test_user_flags(void)
 {
     const core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
@@ -209,14 +210,14 @@ static C_INT iret_test_user_flags(C_VOID)
     t_cpu after;
     lib_u8 program[] = {0xcfu,0x90u};
     lib_u32 frame[] = {1u,0x000bu,0x00013203u};
-    C_INT failed = !iret_prepare(&state, IRET_NEGATIVE_NONE, 0, 0, 1);
+    lib_i32 failed = !iret_prepare(&state, IRET_NEGATIVE_NONE, 0, 0, 1);
 
     if (!failed) {
         failed |= !iret_write(&state, IRET_CODE_BASE, program, sizeof(program)) ||
             !iret_write(&state, IRET_STACK, frame, sizeof(frame)) ||
-            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
-            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= diagnostic.first_fault.valid || after.data.eip != 1u ||
             after.data.esp != IRET_STACK + 12u || after.data.cs.selector != 0x000bu ||
@@ -226,7 +227,7 @@ static C_INT iret_test_user_flags(C_VOID)
     return !failed;
 }
 
-C_INT main(C_VOID)
+lib_i32 main(void)
 {
     if (!iret_test_success(0u, 0, 0, 0) || !iret_test_success(0x66u, 1, 0, 0) ||
         !iret_test_success(0x67u, 0, 0, 0) || !iret_test_success(0x66u, 1, 1, 0) ||
@@ -237,6 +238,6 @@ C_INT main(C_VOID)
         !iret_test_failure(IRET_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_DF, 0u) ||
         !iret_test_failure(IRET_NEGATIVE_CODE_DPL, VCPUINS_EXCEPT_DF, 0u) ||
         !iret_test_failure(IRET_NEGATIVE_STACK_LIMIT, VCPUINS_EXCEPT_DF, 0u)) return 1;
-    STD_PRINTF("M5:T306:S2:SAME-CPL-IRET:OK\n");
+    printf("M5:T306:S2:SAME-CPL-IRET:OK\n");
     return 0;
 }

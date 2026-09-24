@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "type.h"
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/keyboard_mapper.h"
@@ -30,7 +29,7 @@ static lib_u8 vm_profile_default_keyboard_map_ascii(lib_u16 value)
 }
 
 static lib_u8 vm_profile_default_keyboard_set1_to_set2(
-    lib_u8 set1, type_bool *out_known)
+    lib_u8 set1, lib_u8 *out_known)
 {
     static const lib_u8 map[0x59] = {
         [0x01] = 0x76u, [0x02] = 0x16u, [0x03] = 0x1eu, [0x04] = 0x26u,
@@ -62,26 +61,26 @@ static lib_u8 vm_profile_default_keyboard_set1_to_set2(
     return *out_known ? map[set1] : 0u;
 }
 
-type_status vm_profile_default_keyboard_map_host_key_for_scan_set(
+lib_status vm_profile_default_keyboard_map_host_key_for_scan_set(
     lib_u16 host_scan_code, lib_u16 host_virtual_key,
-    C_INT pressed, lib_u8 native_scan_set,
+    lib_i32 pressed, lib_u8 native_scan_set,
     vm_profile_default_keyboard_sequence *out_sequence)
 {
-    type_bool known;
+    lib_u8 known;
     lib_u8 scan_code;
 
-    if (out_sequence == LIB_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_sequence == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     out_sequence->count = 0u;
     /* Win32 identifies Pause by virtual key. */
     if (host_virtual_key == 0x13u) {
-        if (!pressed) return TYPE_STATUS_OK;
+        if (!pressed) return LIB_STATUS_OK;
         if (native_scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_1) {
             static const lib_u8 pause_set1[] = {
                 0xe1u, 0x1du, 0x45u, 0xe1u, 0x9du, 0xc5u
             };
             lib_memory_copy(out_sequence->bytes, pause_set1, sizeof(pause_set1));
             out_sequence->count = sizeof(pause_set1);
-            return TYPE_STATUS_OK;
+            return LIB_STATUS_OK;
         }
         out_sequence->bytes[0] = 0xe1u;
         out_sequence->bytes[1] = 0x14u;
@@ -92,14 +91,14 @@ type_status vm_profile_default_keyboard_map_host_key_for_scan_set(
         out_sequence->bytes[6] = 0xf0u;
         out_sequence->bytes[7] = 0x77u;
         out_sequence->count = 8u;
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     if ((host_scan_code & 0xffu) > 0u &&
         (host_scan_code & 0xffu) <= 0x58u) {
         scan_code = (lib_u8)(host_scan_code & 0xffu);
     } else {
         scan_code = vm_profile_default_keyboard_map_ascii(host_virtual_key);
-        if (scan_code == 0u) return TYPE_STATUS_UNSUPPORTED;
+        if (scan_code == 0u) return LIB_STATUS_UNSUPPORTED;
     }
     if (native_scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_1) {
         if (!pressed) scan_code |= 0x80u;
@@ -107,21 +106,21 @@ type_status vm_profile_default_keyboard_map_host_key_for_scan_set(
             out_sequence->bytes[out_sequence->count++] = 0xe0u;
         }
         out_sequence->bytes[out_sequence->count++] = scan_code;
-        return TYPE_STATUS_OK;
+        return LIB_STATUS_OK;
     }
     scan_code = vm_profile_default_keyboard_set1_to_set2(scan_code, &known);
-    if (!known) return TYPE_STATUS_UNSUPPORTED;
+    if (!known) return LIB_STATUS_UNSUPPORTED;
     /* Windows scan-code bit 8 identifies the E0-prefixed key variant. */
     if ((host_scan_code & 0x0100u) != 0u) {
         out_sequence->bytes[out_sequence->count++] = 0xe0u;
     }
     if (!pressed) out_sequence->bytes[out_sequence->count++] = 0xf0u;
     out_sequence->bytes[out_sequence->count++] = scan_code;
-    return TYPE_STATUS_OK;
+    return LIB_STATUS_OK;
 }
 
-type_status vm_profile_default_keyboard_map_host_key(lib_u16 host_scan_code,
-    lib_u16 host_virtual_key, C_INT pressed,
+lib_status vm_profile_default_keyboard_map_host_key(lib_u16 host_scan_code,
+    lib_u16 host_virtual_key, lib_i32 pressed,
     vm_profile_default_keyboard_sequence *out_sequence)
 {
     return vm_profile_default_keyboard_map_host_key_for_scan_set(host_scan_code,
