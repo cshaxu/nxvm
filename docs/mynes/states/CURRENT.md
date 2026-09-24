@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**No active MyNES subtask. M6 T41 S10 cross-product artifact-root rename is completed pending its shared commit.**
+**No active MyNES subtask. M6 T41 S10 cross-product artifact-root rename closed in `3184bff0e`.**
 ## M6 T41 Progress
 
 | S | Result |

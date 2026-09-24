@@ -2,7 +2,7 @@
 
 ## Current Work
 
-### M6 T41 S10 Product Artifact-Root Rename (Completed Pending Commit)
+### M6 T41 S10 Product Artifact-Root Rename (Closed)
 
 | Field | Required record |
 | --- | --- |
