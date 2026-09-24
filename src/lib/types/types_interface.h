@@ -8,11 +8,6 @@
 #include <string.h>
 #include <ctype.h>
 
-typedef char lib_char;
-typedef unsigned char lib_uchar;
-typedef int lib_int;
-typedef unsigned int lib_uint;
-typedef double lib_f64;
 typedef uint8_t lib_u8;
 typedef uint16_t lib_u16;
 typedef uint32_t lib_u32;
@@ -97,10 +92,10 @@ static inline lib_size lib_text_length(const char *text)
 #define lib_c_strstr strstr
 #define lib_c_strtok strtok
 
-static inline lib_bool lib_c_isalpha(lib_char value)
+static inline lib_bool lib_c_isalpha(lib_i32 value)
 { return isalpha((unsigned char)value) != 0 ? LIB_TRUE : LIB_FALSE; }
 
-static inline lib_bool lib_c_isspace(lib_char value)
+static inline lib_bool lib_c_isspace(lib_i32 value)
 { return isspace((unsigned char)value) != 0 ? LIB_TRUE : LIB_FALSE; }
 
 static inline void *lib_allocate(lib_size byte_count)

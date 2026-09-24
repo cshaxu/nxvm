@@ -50,11 +50,17 @@ normalization belongs to kvm-base and Window key-state queries to kvm-window.
 There is no runtime layer or zero-result
 fallback pretending to implement another platform's input query.
 
-The common scalar vocabulary includes character and integer aliases, `lib_f64`,
-`lib_iptr`, and `lib_uptr`. `void` remains direct ISO C because it has no
-representation or platform contract to abstract. `lib_uptr` has an explicit
-object-pointer round trip and an atomic counterpart for identity tokens and
-lock-free publication. `types` does not define a product pointer policy.
+The common scalar vocabulary is fixed-width signed and unsigned integers,
+`lib_size`, `lib_iptr`, and `lib_uptr`. C language scalar keywords remain
+direct ISO C at their actual C or SDK boundary; Types does not rename `char`,
+`unsigned char`, `int`, `unsigned int`, `float`, or `double`. `lib_uptr` has
+an explicit object-pointer round trip and an atomic counterpart for identity
+tokens and lock-free publication. `types` does not define a product pointer
+policy.
+
+`lib_f32` and `lib_f64` are intentionally absent. A future floating-point
+alias requires an explicit IEEE binary format contract and compile-time proof;
+it must not merely rename C `float` or `double`.
 
 Every public status is a portable outcome: invalid argument or state,
 unsupported operation, allocation failure, I/O failure, internal error, or a

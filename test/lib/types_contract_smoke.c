@@ -2,7 +2,6 @@
 
 _Static_assert(sizeof(lib_i8) == 1u, "lib_i8 must remain one byte");
 _Static_assert(sizeof(lib_u8) == 1u, "lib_u8 must remain one byte");
-_Static_assert(sizeof(lib_uchar) == 1u, "lib_uchar must remain one byte");
 _Static_assert(sizeof(lib_uptr) == sizeof(void *),
     "lib_uptr must preserve every object-pointer bit");
 #include "lib/base/clock_interface.h"
