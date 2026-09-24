@@ -49,3 +49,15 @@ unit gates execute it successfully. No speculative Common change was made.
 The restricted sandbox stalled while launching the x86 compiler ABI probe; the
 same configuration and complete test suite succeeded in the normal host
 environment. This is a sandbox execution limitation, not a product failure.
+
+## T41 closure verification
+
+After the owner accepted S13, the current x64 build tree was rebuilt in full
+before the T-level integration gate. This matters because the pre-rebuild
+matrix executable still contained retired `YAML/CATALOG` diagnostic text and
+failed before it reached current INI code. The current-source rebuild replaced
+that stale executable; `ctest --test-dir build/mingw-gcc-x64-release -L
+integration --output-on-failure -j 4` then passed **20/20** in 14.13 seconds.
+No source or test repair was required. The dual-architecture unit, manifest,
+corpus and documentation results above remain the T41 repository-only gate
+evidence.

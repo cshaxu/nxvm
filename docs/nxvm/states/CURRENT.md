@@ -2,7 +2,10 @@
 
 ## Current Work
 
-### M6 T41 S13 SoftPC Raw-CRT Repair and Six-Corpus Reconciliation
+No NXVM implementation task is active. M6 T41 is closed below; the ordered
+candidate work remains in [Queue](QUEUE.md).
+
+## M6 T41 Closure Packet (Historical)
 
 | Field | Required record |
 | --- | --- |
@@ -33,6 +36,14 @@
 | S10 | Completed pending commit: versioned artifacts moved to ssets/nxvm and ssets/mynes; live CMake, delivery, documentation and ignore authorities changed with a dedicated root gate. Existing owner worktree changes are included. [Evidence](../etc/evidence/m6-t41-s10-product-artifact-root-rename.md) |
 | S12 | Delivered in Shared `4faf19eb7` and pending NXVM evidence P2: canonical SoftPC `df9d1cf8` WASAPI audio is imported with unchanged public ABI; x64/x86 audio checks, manifests, static ownership sweeps and complete repository-only units pass. [Evidence](../etc/evidence/m6-t41-s12-canonical-audio-refresh.md) |
 | S13 | Closed in Shared `b94ea4ffe` and NXVM `f3a681422`: the Raw-CRT x86 negative probe now tests raw `memcpy`, the Lib audio ownership description is synchronized, and the six-component reconciliation is complete. [Evidence](../etc/evidence/m6-t41-s13-softpc-raw-crt-reconciliation.md) |
+
+
+## Closed M6 Tasks
+
+| Task | Closure |
+| --- | --- |
+| T41 | Closed on 2026-09-24 by owner acceptance. Shared P1 `b94ea4ffe`, NXVM evidence P2 `f3a681422`, and S13 closure P3 `6a548c43b` complete the six-corpus Raw-CRT reconciliation. The current-source x64 rebuild and full integration gate pass 20/20; S13 evidence records complete x64/x86 repository-only unit suites, six-manifest verification, the x86 corpus gate, and documentation governance. [Closure evidence](../etc/evidence/m6-t41-s13-softpc-raw-crt-reconciliation.md). |
+
 ## M6 T41 S4 Shared Closure
 
 Shared S4 closed at `9d7f6ba6c`: Lib now has the approved neutral Types
