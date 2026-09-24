@@ -13,7 +13,7 @@ shared rules instead of duplicating an authority.
 | `docs/nxvm/` | NXVM | NXVM design, task state, proposals, history, evidence, and source policy. |
 | `docs/mynes/` | MyNES | MyNES design, task state, proposals, history, evidence, and source policy. |
 | `src/{lib,common,x86}` and matching `test/` roots | Repository | Neutral shared implementation and tests. |
-| `src/app-<product>` and matching `test/`, `tools/`, `assets/binary-<product>` roots | Product | Product implementation, tests, tools, and versioned artifacts. |
+| `src/app-<product>` and matching `test/`, `tools/`, `assets/<product>` roots | Product | Product implementation, tests, tools, and versioned artifacts. |
 
 There is one active packet per product, in
 `docs/<product>/states/CURRENT.md`. A packet may declare NXVM, MyNES and/or

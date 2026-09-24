@@ -9,7 +9,7 @@ actual hardware and firmware. No machine is replaced or gated on Standard select
 
 The completed cutover establishes four product bindings: one selected Profile and external
 BYOB asset root at build time, one adjacent NXVM.ini for runtime media and
-presentation, and deployment only in `assets/binary-nxvm/<profile>/`. This task
+presentation, and deployment only in `assets/nxvm/<profile>/`. This task
 extends that exact production route; it does not use retired YAML/catalog
 construction or manufacture firmware/CMOS/media substitutes.
 

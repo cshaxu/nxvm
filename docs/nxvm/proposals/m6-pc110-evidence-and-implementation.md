@@ -10,7 +10,7 @@ through the existing Core and Common runtime.
 PC110 is a later fifth build-selected product, not a runtime option of XT, AT,
 DeskPro or default PC/AT. It must follow the established product contract: one Profile
 composition, a lawful external BYOB asset root, one adjacent NXVM.ini for
-runtime media/presentation, and sole `assets/binary-nxvm/<profile>/` deployment.
+runtime media/presentation, and sole `assets/nxvm/<profile>/` deployment.
 Nothing here claims that the current four-product sources or assets implement
 PC110 yet.
 

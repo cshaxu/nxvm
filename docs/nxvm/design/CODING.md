@@ -41,7 +41,7 @@ in `nxvm-assets/manuals/`. CMake receives the untracked absolute
 configuration header/source containing that root. It neither copies ROM
 bytes into the source/build output nor permits an unconfigured generic root.
 Documentation changes do not move assets. Each versioned product EXE and its
-adjacent NXVM.ini live only in `assets/binary-nxvm/<profile>/`; relative
+adjacent NXVM.ini live only in `assets/nxvm/<profile>/`; relative
 runtime-media paths resolve from that file. It has no firmware/CMOS/font asset
 path keys. NXVM.ini is the sole
 product runtime configuration route; repository-only tests do not load it.

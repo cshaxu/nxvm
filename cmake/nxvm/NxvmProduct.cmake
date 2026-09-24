@@ -2382,7 +2382,7 @@ endfunction()
 function(project_add_t515_ini_boot_case session_file)
     string(REGEX REPLACE "\\.ini$" "/NXVM.ini"
         project_t515_session_path "${session_file}")
-    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/assets/binary-nxvm/${project_t515_session_path}")
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/assets/nxvm/${project_t515_session_path}")
         message(FATAL_ERROR "T515 INI boot session is missing: ${session_file}")
     endif()
     set(project_t515_test_suffix "vm-profile-floppy-boot-matrix.${session_file}")
@@ -2406,7 +2406,7 @@ function(project_add_t515_ini_boot_case session_file)
     file(MAKE_DIRECTORY "${project_t515_workspace}")
     add_test(NAME "${project_t515_test}"
         COMMAND "$<TARGET_FILE:vm-profile-floppy-boot-matrix>"
-            "${CMAKE_SOURCE_DIR}/assets/binary-nxvm" "${project_t515_session_path}")
+            "${CMAKE_SOURCE_DIR}/assets/nxvm" "${project_t515_session_path}")
     set_tests_properties("${project_t515_test}" PROPERTIES
         LABELS integration
         SKIP_RETURN_CODE 77
@@ -2422,12 +2422,12 @@ function(project_add_t515_ini_integration_test target session_file)
     string(REGEX REPLACE "\\.ini$" "/NXVM.ini"
         project_t515_session_path "${session_file}")
     if(NOT EXISTS
-       "${CMAKE_SOURCE_DIR}/assets/binary-nxvm/${project_t515_session_path}")
+       "${CMAKE_SOURCE_DIR}/assets/nxvm/${project_t515_session_path}")
         message(FATAL_ERROR
             "T515 INI integration session is missing: ${session_file}")
     endif()
     file(MAKE_DIRECTORY "${project_t515_workspace}")
-    project_add_test(${target} integration "${CMAKE_SOURCE_DIR}/assets/binary-nxvm"
+    project_add_test(${target} integration "${CMAKE_SOURCE_DIR}/assets/nxvm"
         "${project_t515_session_path}" ${ARGN})
     set_tests_properties("${project_t515_test}" PROPERTIES
         SKIP_RETURN_CODE 77
@@ -2534,7 +2534,7 @@ endif()
 
 set(PROJECT_CURRENT_VM_RUNTIME_PATH
     "${CMAKE_BINARY_DIR}/vm-0-5-0535.exe")
-configure_file("${CMAKE_SOURCE_DIR}/assets/binary-nxvm/${NXVM_PRODUCT_PROFILE}/NXVM.ini"
+configure_file("${CMAKE_SOURCE_DIR}/assets/nxvm/${NXVM_PRODUCT_PROFILE}/NXVM.ini"
     "${CMAKE_BINARY_DIR}/NXVM.ini" COPYONLY)
 function(project_add_t533_console_integration_test target)
     set(project_t533_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/integration.${target}")
@@ -2619,6 +2619,12 @@ add_custom_target(verify-t533-integration-ini-boundary
         -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
         -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_t533_integration_ini_boundary.cmake"
     COMMENT "Verifying integration sessions use the INI provider boundary"
+    VERBATIM)
+add_custom_target(verify-product-artifact-roots
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_product_artifact_roots.cmake"
+    COMMENT "Verifying product artifact roots"
     VERBATIM)
 
 if(POWERSHELL_EXECUTABLE)
@@ -2730,7 +2736,7 @@ function(add_current_vm_artifact target version)
                 -DPROJECT_ARTIFACT_ARCHITECTURE:STRING=${PROJECT_ARTIFACT_ARCHITECTURE}
                 -DPROJECT_ARTIFACT_FILENAME:STRING=${task_artifact_filename}
                 -DPROJECT_PRODUCT_PROFILE:STRING=${NXVM_PRODUCT_PROFILE}
-                -DPROJECT_RUNTIME_INI_SOURCE_PATH:FILEPATH=${CMAKE_SOURCE_DIR}/assets/binary-nxvm/${NXVM_PRODUCT_PROFILE}/NXVM.ini
+                -DPROJECT_RUNTIME_INI_SOURCE_PATH:FILEPATH=${CMAKE_SOURCE_DIR}/assets/nxvm/${NXVM_PRODUCT_PROFILE}/NXVM.ini
                 -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
                 -DPROJECT_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
                 -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/deploy_current_artifact.cmake")
@@ -3204,6 +3210,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-vm-machine-lifecycle
     verify-t344-unit-registration
     verify-t533-integration-ini-boundary
+    verify-product-artifact-roots
     verify-t382-unit-aggregate
     verify-fpu-boundary
     verify-core-cpu-pic-authority

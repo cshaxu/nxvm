@@ -2,8 +2,7 @@
 
 ## Current Work
 
-**No active MyNES subtask. M6 T41 S8 corrects the Shared hotkey byte boundary
-left by the accepted S7 delivery.**
+**No active MyNES subtask. M6 T41 S10 cross-product artifact-root rename is completed pending its shared commit.**
 ## M6 T41 Progress
 
 | S | Result |
@@ -39,7 +38,7 @@ left by the accepted S7 delivery.**
 
 - Product: MyNes; MIT. M0--M5 and M6 T36 are closed.
 - Delivery kind: `product-execution`; T41 S1 publishes `mynes-0-0-0041`; its
-  artifacts are `assets/binary-mynes/mynes_0_0_0041_x64.exe` and
+  artifacts are `assets/mynes/mynes_0_0_0041_x64.exe` and
   `mynes_0_0_0041_x86.exe`. The one editable `mynes.ini` is adjacent; no
   generated manifest participates in the delivery path.
 - MyNes snapshots are private versioned `MNS1` state images. App owns command/file

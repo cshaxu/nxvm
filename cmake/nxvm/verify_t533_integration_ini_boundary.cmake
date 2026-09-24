@@ -51,12 +51,12 @@ if(cmake_text MATCHES "project_add_test\\([^\\n]*integration[^\\n]*(PROJECT_FDD_
     message(FATAL_ERROR
         "T533 integration must be registered through the INI helper, not a media path.")
 endif()
-file(GLOB session_documents "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/*/NXVM.ini")
+file(GLOB session_documents "${PROJECT_SOURCE_DIR}/assets/nxvm/*/NXVM.ini")
 set(expected_session_documents
-    "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/ibm-5160-model-268-360k/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/ibm-5170-model-339-1200k/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/compaq-deskpro-386-model-40-1200k/NXVM.ini"
-    "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/default-pc-at-80386-1440k-hdd/NXVM.ini")
+    "${PROJECT_SOURCE_DIR}/assets/nxvm/ibm-5160-model-268-360k/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/nxvm/ibm-5170-model-339-1200k/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/nxvm/compaq-deskpro-386-model-40-1200k/NXVM.ini"
+    "${PROJECT_SOURCE_DIR}/assets/nxvm/default-pc-at-80386-1440k-hdd/NXVM.ini")
 list(LENGTH session_documents session_document_count)
 if(NOT session_document_count EQUAL 4)
     message(FATAL_ERROR
@@ -68,7 +68,7 @@ foreach(expected_session_document IN LISTS expected_session_documents)
             "T533 canonical INI is missing: ${expected_session_document}")
     endif()
 endforeach()
-file(GLOB legacy_session_documents "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/*/*.yaml")
+file(GLOB legacy_session_documents "${PROJECT_SOURCE_DIR}/assets/nxvm/*/*.yaml")
 if(NOT legacy_session_documents STREQUAL "")
     message(FATAL_ERROR "T533 must not retain YAML product-session variants.")
 endif()

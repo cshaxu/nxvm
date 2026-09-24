@@ -136,7 +136,7 @@ Omitted values use selected-profile defaults; explicit unsupported values fail
 clearly rather than selecting another board or silently changing hardware.
 
 Each selected product deploys once to the versioned
-`assets/binary-nxvm/<profile>/` directory, alongside its generated `NXVM.ini`.
+`assets/nxvm/<profile>/` directory, alongside its generated `NXVM.ini`.
 That is the only current executable location; `build/` remains compiler state
 apart from historical evidence. The tracked executable/INI pair is adjacent
 and updated only for the selected profile.

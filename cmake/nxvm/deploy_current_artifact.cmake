@@ -14,7 +14,7 @@ set(project_runtime_ini_contents "")
 file(READ "${PROJECT_RUNTIME_INI_SOURCE_PATH}" project_runtime_ini_contents)
 
 set(project_artifact_directory
-    "${PROJECT_SOURCE_DIR}/assets/binary-nxvm/${PROJECT_PRODUCT_PROFILE}")
+    "${PROJECT_SOURCE_DIR}/assets/nxvm/${PROJECT_PRODUCT_PROFILE}")
 file(MAKE_DIRECTORY "${project_artifact_directory}")
 file(COPY_FILE "${PROJECT_ARTIFACT_PATH}"
     "${project_artifact_directory}/${PROJECT_ARTIFACT_FILENAME}"

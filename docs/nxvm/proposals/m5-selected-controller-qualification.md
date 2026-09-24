@@ -11,7 +11,7 @@ RTC, keyboard, video or storage chip identity.
 The completed fixed-product cutover selects one Profile per implemented XT, AT, DeskPro and
 default product. Controller work starts from that construction: external BYOB
 firmware is resolved by the selected Profile, NXVM.ini supplies only runtime
-media/presentation, and deployment is only `assets/binary-nxvm/<profile>/`. A repair
+media/presentation, and deployment is only `assets/nxvm/<profile>/`. A repair
 must not recreate a YAML/catalog machine selector or board-specific second
 execution path.
 

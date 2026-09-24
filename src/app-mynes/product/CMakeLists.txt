@@ -18,9 +18,9 @@ if(MINGW)
         COMMAND ${CMAKE_STRIP} --strip-all $<TARGET_FILE:mynes-0-0-0041>)
 endif()
 mynes_enable_strict_warnings(mynes-0-0-0041)
-# assets/binary-mynes owns the sole editable startup configuration.  Copy it beside
+# assets/mynes owns the sole editable startup configuration.  Copy it beside
 # a build-tree executable for local runs without creating a second template.
-configure_file(${CMAKE_SOURCE_DIR}/assets/binary-mynes/mynes.ini
+configure_file(${CMAKE_SOURCE_DIR}/assets/mynes/mynes.ini
     ${CMAKE_CURRENT_BINARY_DIR}/mynes.ini COPYONLY)
 
 if(WIN32)
@@ -31,11 +31,11 @@ if(WIN32)
     endif()
     # Versioned runnable artifacts are a product deliverable.  ROMs remain
     # owner-local, but the paired executable and editable startup template are
-    # intentionally retained beneath assets/binary-mynes.
-    set(mynes_artifact_directory ${CMAKE_SOURCE_DIR}/assets/binary-mynes)
+    # intentionally retained beneath assets/mynes.
+    set(mynes_artifact_directory ${CMAKE_SOURCE_DIR}/assets/mynes)
     set(mynes_artifact_name mynes_0_0_0041_${mynes_artifact_arch}.exe)
     # The executable reads the single editable template already retained beside
-    # the versioned deliverable under assets/binary-mynes.
+    # the versioned deliverable under assets/mynes.
     add_custom_command(TARGET mynes-0-0-0041 POST_BUILD
         ${mynes_post_link_commands}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${mynes_artifact_directory}

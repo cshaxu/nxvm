@@ -25,7 +25,7 @@ documented fixed profiles through `NXVM_PRODUCT_PROFILE`; CMake validates the
 matching manifest, hashes and firmware slots before it builds.
 
 The resulting versioned executable and its adjacent `NXVM.ini` are emitted
-only below `assets/binary-nxvm/<profile>/`.  Runtime media paths in that INI
+only below `assets/nxvm/<profile>/`.  Runtime media paths in that INI
 refer to the external `nxvm-assets/media-nxvm` archive; no protected asset is
 copied into this repository.
 
