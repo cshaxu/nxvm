@@ -4,11 +4,10 @@
 
 **No active NXVM subtask.**
 
-M6 T41 S5 corrective Shared Types cleanup closed at `aa4a483c0`: `lib_void`
-is removed, the active design no longer proposes it, and the dual-architecture
-Types checks, Lib integrity gates, and documentation governance passed. The
-next NXVM data-migration packet must decide whether the remaining plain C
-scalar aliases should be used at all; they are not silently adopted.
+M6 T41 S6 closed at `710cf697b`: Lib Types now rejects C scalar synonym
+aliases and has an explicit binary-floating-point admission rule. x64/x86
+Types verification and all Shared integrity gates passed. Product caller
+migration remains a separate admitted step; [evidence](../etc/evidence/m6-t41-s6-fixed-width-types-contract.md).
 
 ## M6 T41 S4 Shared Closure
 

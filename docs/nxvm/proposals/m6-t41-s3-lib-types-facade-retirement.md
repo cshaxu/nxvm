@@ -18,7 +18,7 @@ test corpus contains 439 root-header callers and these material families:
 
 | Family | Evidence | Design receiver |
 | --- | ---: | --- |
-| `C_INT`, `C_VOID`, `C_CHAR`, `C_UCHAR`, `C_UINT` | 9,366 direct uses | New minimal Lib scalar spelling, or direct ISO C where no public alias is needed. |
+| `C_INT`, `C_VOID`, `C_CHAR`, `C_UCHAR`, `C_UINT` | 9,366 direct uses | Fixed-width Lib integer or semantic type for internal representation; direct ISO C only at a C/SDK text or callback boundary. |
 | `type_bool` | 770 uses | `lib_u8`; it preserves the one-byte field and pointer ABI. `lib_bool` remains only for logical local results. |
 | host/pointer widths | 568 uses of `type_virtual_address`/`type_native_unsigned` plus one pointer alias | New `lib_uptr` and explicit pointer conversion helpers. |
 | outcome algebra | 1,221 `type_status`, 6,986 status constants | Remove Console-only `NOT_CURRENT`; add the general `LIB_STATUS_INTERNAL_ERROR`; migrate source semantics after proving status values are not serialized or numerically ordered. |
@@ -36,16 +36,10 @@ implementation must produce a zero-reference scan for each retired family.
 
 ### Scalar and address contract
 
-`types_interface.h` gains only the aliases that replace an actual public
-facade contract:
+`types_interface.h` gains only the pointer-width alias that replaces an actual
+public facade contract:
 
 ```c
-typedef char lib_char;
-typedef unsigned char lib_uchar;
-typedef int lib_int;
-typedef unsigned int lib_uint;
-typedef float lib_f32;
-typedef double lib_f64;
 typedef uintptr_t lib_uptr;
 
 _Static_assert(sizeof(lib_uptr) == sizeof(void *),
@@ -58,11 +52,16 @@ static inline void *lib_uptr_to_pointer(lib_uptr value);
 ```
 
 `C_VOID` migrates directly to C `void`: it is a language keyword, not a Lib
-contract. `lib_uptr` replaces the legacy native unsigned, virtual address and
-unsigned pointer aliases. `lib_iptr` already exists and replaces the signed form.
-Callers whose value is a guest physical or linear address remain `lib_u32`;
-the migration must not widen guest architectural addresses merely because a
-host pointer is present elsewhere.
+contract. `C_CHAR` and C's non-fixed-width integer aliases do not receive Lib
+synonyms; internal machine values migrate to fixed-width or semantic Types,
+while actual C text and SDK callback boundaries retain their native signature.
+`lib_f32`/`lib_f64` are not aliases for `float`/`double`; either requires a
+separate IEEE binary-format contract and compile-time proof. `lib_uptr`
+replaces the legacy native unsigned, virtual address and unsigned pointer
+aliases. `lib_iptr` already exists and replaces the signed form. Callers whose
+value is a guest physical or linear address remain `lib_u32`; the migration
+must not widen guest architectural addresses merely because a host pointer is
+present elsewhere.
 
 `type_bool` becomes `lib_u8` at stored ABI boundaries.  `lib_bool` stays an
 `int` and is reserved for predicates, conditions and atomic API returns.
