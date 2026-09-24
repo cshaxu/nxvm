@@ -3408,6 +3408,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/rtc.c|machine-executor"
     "vm-app|src/app-nxvm/product/command.c|console-product"
     "vm-app|src/app-nxvm/product/keyboard.c|keyboard-product"
+    "vm-app|src/app-nxvm/product/startup.c|session-startup"
     "vm-machine|src/app-nxvm/machine/frame.c|display-adaptation"
     "vm-app|src/app-nxvm/product/ini.c|session-ini"
     "vm-app|src/app-nxvm/product/composition.c|session-composition"

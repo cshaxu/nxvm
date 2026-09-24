@@ -2,26 +2,26 @@
 
 ## Current Work
 
-### M6 T41 S10 Product Artifact-Root Rename (Closed)
+### M6 T41 S12 Canonical SoftPC Audio Refresh
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner admitted M6 T41 S10 on 2026-09-23: rename `assets/binary-nxvm` to `assets/nxvm` and `assets/binary-mynes` to `assets/mynes`, move the directories, update governing documents and gates, and include every currently uncommitted worktree item in this delivery. |
-| Objective | Make `assets/nxvm/` and `assets/mynes/` the sole versioned product artifact roots, with their adjacent editable INIs and all CMake, test, documentation, deployment, ignore and verification paths aligned. |
-| Non-goals | Do not change EXE names, profile names, artifact versions, runtime behavior, or external BYOB asset paths. |
-| Reference Baseline | S9 commit `d485a54e7` publishes the current fixed artifacts beneath the former roots. The worktree also has owner-requested uncommitted INIs, snapshot, ignore and workflow changes. |
-| Candidate Proposal | Direct structural continuation of T41: one `git mv` per product root, then exact reference sweep and governing gate update. |
-| Files And ABI Surface | `assets/`, CMake deployment/test gates, `.gitignore`, product/shared current documentation and rules, workflow deletion, MyNES snapshot, existing generated EXEs, and all direct textual references. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, NXVM/MyNES source-layout authorities and governing checks. Owner explicitly authorizes the required shared-rule edit and inclusion of all current worktree changes. |
-| Verification | No tracked current path names `assets/binary-nxvm` or `assets/binary-mynes`; CMake configure/build path gates and documentation governance pass for both products; artifact paths and adjacent INIs are verified after the move; actual-diff review and clean staged scope pass. |
-| Expected Markers | `assets/nxvm/` and `assets/mynes/` exist; former roots are absent; CMake deployment, INI discovery, integration boundaries, ignore rules and current documentation name only the new roots. |
-| Asset Needs | Move existing checked-in EXEs and editable INIs in place. Include the current MyNES snapshot and preserve all owner changes rather than discarding them. |
-| Reporting Requirements | Report the rename map, every included owner change, source/test/governance diff counts, gates, artifact links, commit and push. |
-| Stop Conditions | Any reference is historical evidence where replacement would falsify its original record, or a required tool hardcodes an external contract rather than a repository path. Record it as historical rather than rewriting it. |
-| Exit Criteria | All live code, tests, deployment gates, ignore entries and current authorities use the new roots; current uncommitted work is included; move-aware verification and documentation governance pass; one reviewed commit is pushed. |
-| Original Owner Request | "准入s10：assets/binary-nxvm assets/binary-mynes一起改名去掉binary-前缀 请移动目录 治理文档和门禁" followed by "当前未提交的也一起提交了吧". |
-| Similar-Issue Sweep | Search tracked current CMake, tools, assets, rules, design, state and product documentation for the former roots; classify historical mentions as retained evidence and migrate every live reference. |
+| Admission And Approval | Owner admitted M6 T41 S12 on 2026-09-24: import the audited canonical SoftPC `lib/audio` implementation unchanged, including its required Lib Types boundary, and prove coding quality plus complete Lib Types coverage. |
+| Objective | Replace the legacy Shared Windows `waveOut` audio backend with SoftPC commit `df9d1cf8`'s event-driven WASAPI audio slice while preserving the public `lib_audio_stream` contract exactly. |
+| Non-goals | Do not enable NXVM guest audio, add a speaker route, change NXVM or MyNES product code, change public audio API semantics, add a Linux backend, import SoftPC App code, alter firmware/media/assets, or publish product artifacts. |
+| Reference Baseline | NXVM `660e6fb68`; audited clean SoftPC commit `df9d1cf8`. The current public `src/lib/audio/stream_interface.h` already equals SoftPC byte-for-byte; the current Windows backend remains the obsolete `waveOut` implementation. |
+| Candidate Proposal | [M5 T535 canonical SoftPC six-component refresh](../history/M5-T535-canonical-softpc-six-component-refresh-proposal.md), narrowed by the owner-approved 2026-09-23 audio audit to one self-contained Lib slice. |
+| Files And ABI Surface | Shared P1 may change only `src/lib/audio/`, `src/lib/types/win32/audio.h`, `src/lib/CMakeLists.txt`, `src/lib/MANIFEST.sha256`, `test/lib` audio tests/CMake/manifest. NXVM P2 may change this packet, NXVM import provenance and S12 evidence, plus the pre-existing repository-only unit-gate repairs directly preventing S12 verification: `tools/nxvm/VerifySessionReadiness.ps1` must use its co-located inventory; `src/app-nxvm/product/banner.h` must not include a C runtime header; the NXVM artifact and integration-classification verifier scripts must read the live `cmake/nxvm/NxvmProduct.cmake` declaration rather than the root dispatcher; `Verify-CFacadeHeaders.ps1` must inspect header ABI surfaces rather than product/test implementation `.c` leaves; and the existing T345 residual ledger must classify `vm-app|src/app-nxvm/product/startup.c`. The public `lib_audio_stream` interface is a no-diff preservation surface; affected consumers are NXVM and MyNES without product-source changes. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, `DOCUMENT.md`; NXVM `ARCHITECTURE.md`, `CODING.md`, and `etc/operations/policy/source-policy.md`. Shared stays platform-neutral above its platform leaf, owns one audio stream path, exposes no raw platform API, and uses Lib Types rather than local/SDK aliases. The owner-approved SoftPC source is project-owned MIT corpus; record commit, exact paths, unchanged public ABI, and verification in provenance/evidence. |
+| Verification | Prove byte-for-byte equality to SoftPC `df9d1cf8` for the admitted source/test files; prove `stream_interface.h` remains equal; verify Lib and test manifests plus component-dependency gates; build the Lib audio target and both audio smoke targets for x64 and x86; run the complete repository-only unit suite on both architectures; run static sweeps for residual `waveOut` vocabulary and for direct Windows SDK types/includes outside `src/lib/types/win32/audio.h`; run NXVM and MyNES documentation governance. |
+| Expected Markers | Windows audio uses one worker-attached WASAPI render endpoint and event readiness; Lib's only Win32 audio SDK exposure remains `types/win32/audio.h`; `audio_win32_platform_smoke.c` and waveOut registration are absent; `audio_stream_smoke` supplies worker attach/detach fakes; `audio_native_smoke` supplies the canonical loopback probe. |
+| Asset Needs | None. No firmware, media, audio sample, product binary or external runtime asset is imported. |
+| Reporting Requirements | Report exact upstream commit and copied paths, source/test added/removed/net lines, retained public API equality, Types/SDK ownership sweep, x64/x86 results, any native-endpoint skip condition, manifests, provenance/evidence, per-target commits and pushes. |
+| Stop Conditions | Stop before copying if any admitted upstream file has an independent notice, the required Types ABI or link contract needs NXVM-local divergence, public `stream_interface.h` differs, a non-audio Shared dependency is required, or a consumer requires product behavior change. Record the blocker rather than creating a compatibility path. |
+| Exit Criteria | The admitted audio slice is byte-identical to `df9d1cf8`; all required Types, CMake and test ownership changes form one clean Shared path; no waveOut path/test remains; no raw Win32 audio API leaks outside Types; manifests and full dual-architecture repository-only unit gates pass; provenance/evidence is complete; each target-specific P is reviewed, pushed, and the worktree is clean. |
+| Original Owner Request | "准入一个新的s任务原版导入softpc的lib audio 导入后确保符合代码质量规范和lib types引用覆盖". |
+| Similar-Issue Sweep | Search all tracked Shared production/test/build paths for `waveOut`, `WAVEHDR`, `HWAVEOUT`, `mmsystem.h`, `winmm`, `IAudioClient`, `IMMDevice`, `audioclient.h`, `mmdeviceapi.h`, and direct SDK type names. Classify every hit as the canonical Types leaf, canonical audio backend/test, or remove it; separately scan all product trees to prove no product code uses a raw platform audio API. |
 ## M6 T41 Progress
 
 | S | Result |
@@ -31,6 +31,7 @@
 | S8 | Accepted NXVM root-facade retirement in `bee033f59`: `type.h`, `type.c`, and `type-facade` are deleted; x64/x86 complete suites pass 336/336. [Evidence](../etc/evidence/m6-t41-s8-root-types-facade-retirement.md) |
 | S9 | Completed pending S9 P: all six Shared source/test trees use the enforced Lib vocabulary; the x86 DEBUG facade is deleted, MyNES and all four NXVM profile x64/x86 artifacts are rebuilt, and the retained native test boundaries are individually recorded. [Evidence](../etc/evidence/m6-t41-s9-shared-six-component-type-convergence.md) |
 | S10 | Completed pending commit: versioned artifacts moved to ssets/nxvm and ssets/mynes; live CMake, delivery, documentation and ignore authorities changed with a dedicated root gate. Existing owner worktree changes are included. [Evidence](../etc/evidence/m6-t41-s10-product-artifact-root-rename.md) |
+| S12 | Delivered in Shared `4faf19eb7` and pending NXVM evidence P2: canonical SoftPC `df9d1cf8` WASAPI audio is imported with unchanged public ABI; x64/x86 audio checks, manifests, static ownership sweeps and complete repository-only units pass. [Evidence](../etc/evidence/m6-t41-s12-canonical-audio-refresh.md) |
 ## M6 T41 S4 Shared Closure
 
 Shared S4 closed at `9d7f6ba6c`: Lib now has the approved neutral Types

@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" project_cmake)
+file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" project_cmake)
 file(READ "${PROJECT_SOURCE_DIR}/src/lib/CMakeLists.txt" library_cmake)
 
 foreach(forbidden "VM_RUNTIME_SOURCES")

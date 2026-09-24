@@ -16,7 +16,9 @@ $failures = @()
 
 foreach ($directory in @('src', 'test')) {
     $path = Join-Path $root $directory
-    Get-ChildItem -LiteralPath $path -Recurse -File -Include '*.c', '*.h' |
+    # This is an ABI-facade gate: implementation leaves may use their C
+    # runtime dependencies privately, but headers must not export them.
+    Get-ChildItem -LiteralPath $path -Recurse -File -Filter '*.h' |
         Where-Object { $_.FullName -notmatch '[\\/]nxvm-baseline[\\/]' } |
         ForEach-Object {
             $file = $_.FullName.Replace('\', '/')

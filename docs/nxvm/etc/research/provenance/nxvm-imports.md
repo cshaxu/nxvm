@@ -53,3 +53,13 @@ App/MVDM code, firmware, binaries and the unrelated dirty media worktree.
 The 97-file Lib adds the neutral PCM audio component, Common corrects one
 presentation-state rule, and x86 is unchanged. The exact inventory and
 verification are recorded in [T535 S2 evidence](../../evidence/t535-s2-canonical-six-component-import.md).
+
+M6 T41 S12 updates only the canonical audio slice from clean SoftPC commit
+`df9d1cf8`: `src/lib/audio/{stream.c,stream.h,linux/stream.c,win32/stream.c}`,
+`src/lib/types/win32/audio.h`, and
+`test/lib/{audio_stream_smoke.c,audio_native_smoke.c}`. The pre-existing public
+`stream_interface.h` is retained byte-for-byte. This is project-owned MIT code
+with no independent notice; it excludes every SoftPC App, test outside the two
+listed conformance tests, firmware, media, binary, or product asset. The exact
+parity, platform-boundary, manifest and dual-architecture unit evidence is in
+[T41 S12 canonical audio refresh](../../evidence/m6-t41-s12-canonical-audio-refresh.md).

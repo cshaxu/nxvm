@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
+file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" cmake_source)
 file(READ "${PROJECT_SOURCE_DIR}/CMakePresets.json" presets_source)
 
 foreach(forbidden "add_vm_task_artifact" "add_vm_version_artifact")

@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
+file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" cmake_source)
 
 foreach(required
     "set(PROJECT_INTEGRATION_FDD_TARGETS"

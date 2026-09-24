@@ -1,7 +1,6 @@
 #ifndef NXVM_BANNER_H
 #define NXVM_BANNER_H
 #include "lib/types/types_interface.h"
-#include <stdio.h>
 
 
 #ifndef PRODUCT_BUILD_VERSION

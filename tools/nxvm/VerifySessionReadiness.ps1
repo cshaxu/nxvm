@@ -4,7 +4,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $root = (Resolve-Path -LiteralPath $RepositoryRoot).Path
-$inventoryPath = Join-Path $root 'tools/session-readiness-state.tsv'
+$inventoryPath = Join-Path $root 'tools/nxvm/session-readiness-state.tsv'
 $inventory = @{}
 
 Get-Content -LiteralPath $inventoryPath | ForEach-Object {
