@@ -28,3 +28,16 @@ reviews every non-Types row, runs the six-root gates and full MyNES x64/x86
 unit suites, and delivers the versioned 0043 x64/x86 pair. It changes no Shared
 source/test code. Any violation becomes the finite input for a later,
 owner-approved repair S; T43 cannot close while such a receiver remains open.
+
+## S3 Corrective Batch
+
+The owner admitted the post-S2 residual batch: ten Win32 pointer spellings in
+four Lib tests, plus the verifier's incomplete rejection set. Use existing
+Types records with explicit pointers, preserving const and callback signatures.
+Prove every reported spelling is rejected by an isolated negative test and
+that valid Types pointers pass. Normalize relative scan roots and reject empty
+inputs so a zero-file scan cannot claim compliance. Update the Lib test
+manifest, run both complete configured architectures and refresh the 0043 pair.
+The pointer batch needs no new aliases. The same-class sweep also covers raw
+scalar/constants/functions: add only their missing one-to-one Types vocabulary,
+preserve behavior, and include each newly found spelling in the rejection tests.
