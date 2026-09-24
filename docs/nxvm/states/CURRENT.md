@@ -2,46 +2,14 @@
 
 ## Current Work
 
-**Shared M6 T41 S7 is active.**
+**No active NXVM subtask. Shared M6 T41 S7 hotkey text adapter is closed.**
 
-| Field | Required record |
+## M6 T41 Progress
+
+| S | Result |
 | --- | --- |
-| Identifier Mode | Corrective |
-| Admission And Approval | The owner approved the fixed-width Types program and MyNES T41 S7 continuation on 2026-09-23. The current Shared S6 implementation leaves one direct `lib_u8` hotkey-text to `char *` callback boundary unadapted; this narrow corrective S is necessary to validate the active MyNES task. Commit and push to `master` are permanently authorized. |
-| Objective | Restore the explicit C-string ABI adapters at the three observed Shared hotkey boundaries so the established internal `lib_u8` text representation compiles and preserves callback/test behavior. |
-| Non-goals | No Lib API change, no type representation reversal, no MyNES/NXVM product source change, no UX, asset, INI, artifact or callback-contract change. |
-| Reference Baseline | Shared T41 S6 P2 `948627378`, the S6 fixed-width rule, and the MyNES S7 x64 strict build failure in `common/session/session.c`. |
-| Candidate Proposal | [M6 T41 S3 Lib Types facade-retirement design](../proposals/m6-t41-s3-lib-types-facade-retirement.md), S6 consumer-audit amendment. |
-| Files And ABI Surface | `src/common/session/session.c`, `test/common/control_reconciler_integration_smoke.c`, `test/lib/win32_presentation_smoke.c`, `test/lib/win32_keyboard_smoke.c`, required manifests/evidence/status only. Existing Common callback signatures retain `const char *`; Lib event storage retains `lib_u8`. |
-| Applicable Rules | Internal KVM event text remains `lib_u8`; a cast occurs only at the direct Common callback or CRT assertion boundary. No change may alter event bytes, lifetime, terminator, callback dispatch or public ABI. |
-| Verification | Scan every `data.hotkey.identifier` consumer; build/run x64/x86 Lib and Common suites, MyNES suite after the shared repair, static/manifests and documentation governance; actual-diff review. |
-| Expected Markers | Every hotkey identifier consumer either uses byte storage directly or contains an explicit C-string adapter at its direct ABI call. No compiler pointer-sign error remains. |
-| Asset Needs | None. Preserve owner-local MyNES and NXVM INIs unchanged and unstaged. |
-| Reporting Requirements | Report the four consumer dispositions, source/test add/remove/net, x64/x86 results, MyNES-unblock outcome, commit/push and the active MyNES S7 handoff. |
-| Stop Conditions | Any candidate requires changing a public callback type, KVM event layout, text encoding or data lifetime; retain the boundary and transfer rather than widen this correction. |
-| Exit Criteria | All identified Shared consumers build with their explicit adapters; complete Shared and unblocked MyNES verification passes; one Shared implementation P and governance P are pushed. |
-| Original Owner Request | Complete MyNES Lib Types cleanup and NXVM Types retirement. The Shared repair is admitted only because the completed Shared fixed-width contract otherwise blocks MyNES verification. |
-| Similar-Issue Sweep | Scan `src`, `test/lib` and `test/common` for every `data.hotkey.identifier` use and classify direct byte use, C callback adapter, CRT test adapter or defect. |
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Closed continuation |
-| Admission And Approval | Owner reopened S6 on 2026-09-23 and approved the complete three-product consumer audit, proposal amendment, and cleanup of the shared Lib, Common and x86 corpora. Accepted implementation P2 `948627378`; this governance record is P3. |
-| Objective | Completed: establish a consumer-proven Lib Types surface, make Lib, Common and x86 internal values use fixed-width or semantic Types, and confine native C/SDK scalar spelling to exact ABI boundaries. |
-| Non-goals | No MyNES, NXVM App, or SoftPC source migration; no `type.h`/`type.c` deletion; no public floating-point alias; no change to C/SDK ABI signatures, artifact, asset, or INI. |
-| Reference Baseline | [S6 fixed-width contract evidence](../etc/evidence/m6-t41-s6-fixed-width-types-contract.md), current `src/lib` corpus, and the owner-approved boundary rule: internal data uses Lib Types; C/SDK signatures remain native only at their boundary. |
-| Candidate Proposal | [M6 T41 S3 Lib Types facade-retirement design](../proposals/m6-t41-s3-lib-types-facade-retirement.md), extended by this enforcement packet. |
-| Files And ABI Surface | `src/lib`, `src/common`, `src/x86`, `test/lib`, `test/common`, `test/x86`, their CMake/manifests as required, and NXVM governance evidence/status. Existing product text interfaces remain explicit adapter boundaries; no product source is allowed. |
-| Applicable Rules | Fixed-width integers own machine/data representation; `lib_size`, pointer-width and semantic types retain their roles; text bytes use `lib_u8` internally; native C/SDK types may appear only in direct declaration adapters; no blind replacement may change ABI or ctype/string semantics. |
-| Verification | Complete consumer ledger across NXVM, MyNES and SoftPC production paths; static gates distinguish boundary adapters from internal implementation; x64/x86 Lib 36/36 (excluding the pre-existing capture-contract crash), Common 14/14 and x86 6/6 suites; manifests, dependency/layout, documentation governance and actual-diff review pass. |
-| Expected Markers | Every retained Lib Types symbol has a current consumer or a named legacy-facade migration receiver; no unclassified plain scalar remains in `src/{lib,common,x86}` or `test/{lib,common,x86}` internal logic; shared text/data storage uses `lib_u8` and `lib_size` where no established product ABI requires an adapter; every permitted native type is in a named C/SDK boundary declaration or a direct ABI probe. |
-| Asset Needs | None. Owner-local `assets/binary-mynes/mynes.ini` and `assets/binary-nxvm/**/NXVM.ini` remain untouched. |
-| Reporting Requirements | Report the three-product consumer ledger and dispositions, Lib/Common/x86 source/test add/remove/net counts, enforcement-gate behavior, x64/x86 outcomes, commit/push and the MyNES/NXVM/SoftPC handoff. |
-| Stop Conditions | A candidate migration would alter a public C/SDK ABI, C string literal compatibility, integer promotion semantics, or an existing product contract; retain one explicit adapter boundary and record its later receiver instead of forcing a change. |
-| Exit Criteria | Met. The consumer ledger is exhausted or transferred; Lib/Common/x86 internal representations conform, zero-consumer entries are disposed by owner decision or named receiver, enforcement is tested, and P2 plus this P3 closure record prepare S7. |
-| Original Owner Request | Audit all current Lib Types consumers across NXVM, MyNES and SoftPC; record zero-consumer and nonconforming entries; write the result into the T41 proposal; then clean Lib, Common and x86 under the fixed-width/text-boundary rule. S7 cleans MyNES; S8 cleans NXVM. |
-| Similar-Issue Sweep | Scan every Lib Types symbol and every `src/{lib,common,x86}` and `test/{lib,common,x86}` header/source for consumer use, plain C scalar declarations, casts, fields, parameters and returns; classify each as fixed-width/semantic conversion, permitted C runtime/SDK boundary, direct ABI probe, legacy-facade receiver, or defect. |
-
+| S6 | Accepted Shared fixed-width enforcement in `948627378` with closure `9341c723d`. |
+| S7 | Accepted: Shared `1d914db89` adapts the Common C-string callback and CRT test boundaries while retaining `lib_u8` event storage. x64/x86 focused Shared regressions and the unblocked MyNES 53/53 suites pass. [Evidence](../etc/evidence/m6-t41-s7-shared-hotkey-text-adapter.md) |
 ## M6 T41 S4 Shared Closure
 
 Shared S4 closed at `9d7f6ba6c`: Lib now has the approved neutral Types
