@@ -108,3 +108,48 @@ test-side 75 direct external-header rows are a bounded, complete repair batch;
 they prevent T43 from claiming six-component compliance. The owner must
 approve the receiver policy before a later S changes Shared tests or expands
 `lib/types`.
+
+## S2 Repair And Verification
+
+S2 resolves the complete S1 test receiver rather than making a test-only
+exception. `lib/types/test.h` owns the neutral assertion vocabulary and the
+Win32/Linux test aggregates collect the exact platform declaration groups used
+by tests. The owner groups also gained only the missing neutral aliases for
+the existing test uses (including Win32 scalar, pointer, callback, memory and
+message declarations, plus Linux memory declarations). No product behavior,
+platform implementation, or test expectation changed.
+
+All ordinary C/H sources below `test/{lib,common,x86}` now consume that Types
+vocabulary. Deliberately invalid source inputs below `test/lib/fixtures/` stay
+outside the rule: they are data for negative static-gate tests, never compiled
+as Shared corpus source. `library.test-types-boundary` enforces this scope;
+each of `src/lib`, `test/lib`, `test/common`, and `test/x86` now has manifest
+revision `shared-m6-t43-s2-p1`.
+
+One white-box failure-path test intentionally intercepts two Types-owned
+Win32 functions. It captures the original Types aliases before installing its
+test macros, so its own rescue and observation paths continue to use the
+official Types declaration rather than restoring a raw native bypass.
+
+| Check | Result |
+| --- | --- |
+| Test source external-header scan, excluding deliberate fixture inputs | 0 rows |
+| Shared test Types boundary gate | Pass |
+| Types declaration layout gate | Pass |
+| `src/lib`, `test/lib`, `test/common`, `test/x86` manifest gates | 4/4 pass |
+| Shared x64 unit selection, serial | 76/76 passed |
+| Shared x86 unit selection, serial | 76/76 passed |
+| MyNES x64 repository-only unit suite | 53/53 passed |
+| MyNES x86 repository-only unit suite | 53/53 passed |
+| Documentation governance | Pass |
+| Diff whitespace check | Pass |
+
+The Shared selection is deliberately serial: existing negative verifier tests
+create temporary fixture files and are not concurrency-isolated. Serial
+execution proves the full suite without accepting a timing-dependent fixture
+collision as a product failure.
+
+| Artifact | Result |
+| --- | --- |
+| `assets/mynes/mynes_0_0_0043_x64.exe` | PE x86-64; SHA-256 `0FF46E1958EFCDD9D3AFBB2F94386F22ADD648E7FB71B82329D27EACE70F6796` |
+| `assets/mynes/mynes_0_0_0043_x86.exe` | PE i386; SHA-256 `CB0927B5DEB92871884FAA063FDD6C99185D42BA0E9969C810E83F20867010D4` |
