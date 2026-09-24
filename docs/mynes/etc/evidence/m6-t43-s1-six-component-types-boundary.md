@@ -1,6 +1,6 @@
 # M6 T43 S1: Six-Component Types Boundary Ledger
 
-Date: 2026-09-24  
+Date: 2026-09-24
 Scope: `src/{lib,common,x86}` and `test/{lib,common,x86}`.
 
 ## Rule Applied
