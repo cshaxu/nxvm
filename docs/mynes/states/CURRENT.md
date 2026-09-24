@@ -2,7 +2,13 @@
 
 ## Current Work
 
-**No active MyNES subtask. M6 T41 S10 cross-product artifact-root rename closed in `3184bff0e`.**
+**No active MyNES subtask. M6 T41 S11 repaired all six Shared corpus manifests.**
+
+| Field | Required record |
+| --- | --- |
+| Most Recent Closure | M6 T41 S11 |
+| Result | Exhaustive validation repaired 28 stale Shared manifest hashes; all six manifests, dependency checks and 56 Shared tests pass without source or ABI change. |
+| Evidence | [S11 Shared manifest repair](../etc/evidence/m6-t41-s11-shared-manifest-repair.md). |
 ## M6 T41 Progress
 
 | S | Result |
