@@ -14,7 +14,7 @@ static void *allocate_bytes(size_t count)
 {
     ++allocation_attempts;
     last_allocation = count;
-    void *bytes = reject_allocation || allocation_attempts == fail_allocation_at ? NULL : malloc(count);
+    void *bytes = reject_allocation || allocation_attempts == fail_allocation_at ? NULL : lib_allocate(count);
     if (bytes != NULL) { ++allocations; ++live_allocations; }
     return bytes;
 }
@@ -28,7 +28,7 @@ static void *allocate_zero(size_t count, size_t size)
 static void release_bytes(void *bytes)
 {
     if (bytes != NULL) { assert(live_allocations != 0u); --live_allocations; }
-    free(bytes);
+    lib_release(bytes);
 }
 #undef lib_allocate
 #undef lib_allocate_zero
@@ -152,18 +152,18 @@ static void overlay_index(const char *path)
     fail_allocation_at = 0u;
     assert(lib_storage_medium_create_overlay(source, sizeof(source), &medium) == LIB_STATUS_OK);
     assert(lib_storage_medium_read_at(medium, 0, actual, sizeof(actual)) == LIB_STATUS_OK);
-    assert(memcmp(actual, source, sizeof(actual)) == 0);
+    assert(lib_memory_compare(actual, source, sizeof(actual)) == 0);
     lib_u32 before = allocations;
     assert(lib_storage_medium_write_at(medium, 4094u, source, 12u) == LIB_STATUS_OK);
     assert(allocations == before); /* Existing pages are reused. */
     assert(lib_storage_medium_read_at(medium, 4094u, actual, 12u) == LIB_STATUS_OK);
-    assert(memcmp(actual, source, 12u) == 0);
+    assert(lib_memory_compare(actual, source, 12u) == 0);
     assert(lib_storage_medium_read_at(medium, sizeof(source), actual, 1u) == LIB_STATUS_INVALID_ARGUMENT);
     flush_calls = 0;
     assert(lib_storage_medium_fill_at(medium, 4094u, sizeof(source) - 4094u, 0x3a) == LIB_STATUS_OK);
     assert(flush_calls == 0u);
     assert(lib_storage_medium_read_at(medium, 0u, actual, sizeof(actual)) == LIB_STATUS_OK);
-    assert(memcmp(actual, source, 4094u) == 0);
+    assert(lib_memory_compare(actual, source, 4094u) == 0);
     for (size_t i = 4094u; i < sizeof(actual); ++i) assert(actual[i] == 0x3a);
     assert(lib_storage_medium_destroy(&medium) == LIB_STATUS_OK);
 
@@ -272,7 +272,7 @@ int main(void)
         assert(flush_calls == (mode == LIB_STORAGE_MEDIUM_DIRECT ? 1u : 0u));
         assert(lib_storage_medium_read_at(medium, 0u, actual, sizeof(actual)) == LIB_STATUS_OK);
         assert(actual[0] == payload[0] && actual[3] == payload[3]);
-        if (mode == LIB_STORAGE_MEDIUM_READONLY) assert(memcmp(actual, payload, sizeof(payload)) == 0);
+        if (mode == LIB_STORAGE_MEDIUM_READONLY) assert(lib_memory_compare(actual, payload, sizeof(payload)) == 0);
         else assert(actual[1] == 'F' && actual[2] == 'F');
         if (mode == LIB_STORAGE_MEDIUM_DIRECT)
             assert(lib_storage_medium_write_at(medium, 0u, payload, sizeof(payload)) == LIB_STATUS_OK);

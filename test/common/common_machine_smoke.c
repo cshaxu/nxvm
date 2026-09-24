@@ -1,7 +1,6 @@
 #include "machine_fixture.h"
 
 #include <assert.h>
-#include <string.h>
 
 typedef struct state_transfer {
     lib_u8 byte;
@@ -35,9 +34,9 @@ static lib_status execute_token(void *context, const void *bytes, lib_size size,
     lib_u32 token;
     (void)context;
     assert(size == sizeof(token) && capacity == sizeof(token));
-    memcpy(&token, bytes, sizeof(token));
+    lib_memory_copy(&token, bytes, sizeof(token));
     ++token;
-    memcpy(response, &token, sizeof(token));
+    lib_memory_copy(response, &token, sizeof(token));
     *response_size = sizeof(token);
     return LIB_STATUS_OK;
 }
@@ -105,7 +104,7 @@ int main(void)
     assert(WaitForSingleObject(fake.frame, 5000u) == WAIT_OBJECT_0);
     assert(InterlockedCompareExchange(&fake.resets, 0, 0) == 1);
     generation = common_machine_run_generation(machine);
-    memset(&frame.window, 0xa5, sizeof(frame.window));
+    lib_memory_set(&frame.window, 0xa5, sizeof(frame.window));
     assert(common_machine_copy_published_frame(machine, &frame, generation));
     assert(frame.window.valid == 1u && generation == common_machine_run_generation(machine));
     assert(!frame.window.graphics);
@@ -135,15 +134,15 @@ int main(void)
     assert(common_machine_set_removable_media(machine, "Mixed-Case.img",
         LIB_STORAGE_MEDIUM_DIRECT));
     assert(fake.media_calls == 1 && fake.media_mode == LIB_STORAGE_MEDIUM_DIRECT &&
-        !strcmp(fake.media_path, "Mixed-Case.img"));
+        !lib_text_compare(fake.media_path, "Mixed-Case.img"));
     assert(common_machine_set_removable_media(machine, "ReadOnly.img",
         LIB_STORAGE_MEDIUM_READONLY));
     assert(fake.media_calls == 2 && fake.media_mode == LIB_STORAGE_MEDIUM_READONLY &&
-        !strcmp(fake.media_path, "ReadOnly.img"));
+        !lib_text_compare(fake.media_path, "ReadOnly.img"));
     assert(common_machine_set_removable_media(machine, "Overlay.img",
         LIB_STORAGE_MEDIUM_OVERLAY));
     assert(fake.media_calls == 3 && fake.media_mode == LIB_STORAGE_MEDIUM_OVERLAY &&
-        !strcmp(fake.media_path, "Overlay.img"));
+        !lib_text_compare(fake.media_path, "Overlay.img"));
     assert(common_machine_set_removable_media(machine, NULL,
         LIB_STORAGE_MEDIUM_OVERLAY));
     assert(fake.media_calls == 4 && fake.media_mode == LIB_STORAGE_MEDIUM_OVERLAY &&

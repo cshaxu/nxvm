@@ -137,12 +137,12 @@
     {
       "name": "mynes-current-x64",
       "configurePreset": "mynes-gcc-x64-release",
-      "targets": ["mynes-0-1-0011"]
+      "targets": ["mynes-0-0-0041"]
     },
     {
       "name": "mynes-current-x86",
       "configurePreset": "mynes-gcc-x86-release",
-      "targets": ["mynes-0-1-0011"]
+      "targets": ["mynes-0-0-0041"]
     },
     {
       "name": "mynes-tests-x64",

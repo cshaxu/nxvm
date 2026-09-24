@@ -110,7 +110,7 @@ static const core_machine_execution_provider timing_80386_manifest_execution = {
 static lib_i32 timing_80386_manifest_is_i386(
     const timing_80386_manifest_record *record)
 {
-    return record != LIB_NULL && lib_c_strcmp(record->profile, "80386DX") == 0;
+    return record != LIB_NULL && lib_text_compare(record->profile, "80386DX") == 0;
 }
 
 static const timing_80386_manifest_record *timing_80386_manifest_find(
@@ -121,7 +121,7 @@ static const timing_80386_manifest_record *timing_80386_manifest_find(
     timing_80386_manifest_current_index = -1;
     for (index = 0u; index < sizeof(timing_80386_manifest_records) /
             sizeof(timing_80386_manifest_records[0]); ++index) {
-        if (lib_c_strcmp(timing_80386_manifest_records[index].key_id, key_id) == 0) {
+        if (lib_text_compare(timing_80386_manifest_records[index].key_id, key_id) == 0) {
             timing_80386_manifest_current_index = (lib_i32)index;
             return &timing_80386_manifest_records[index];
         }
@@ -136,7 +136,7 @@ static lib_i32 timing_80386_manifest_key_has_suffix(const char *key_id,
 
     if (key_id == LIB_NULL || suffix == LIB_NULL) return 0;
     for (index = 0u; key_id[index] != '\0'; ++index) {
-        if (lib_c_strcmp(key_id + index, suffix) == 0) return 1;
+        if (lib_text_compare(key_id + index, suffix) == 0) return 1;
     }
     return 0;
 }
@@ -159,7 +159,7 @@ static lib_i32 timing_80386_manifest_key_is_s3(const char *key_id)
     /* The 80386 manual delegates ESC execution clocks to the selected MCP;
      * S3 verifies its CPU/FPU handoff separately instead of inventing a
      * scalar observation for this manifest key. */
-    if (lib_c_strcmp(key_id, "I386-ESC") == 0) return 0;
+    if (lib_text_compare(key_id, "I386-ESC") == 0) return 0;
     if (timing_80386_manifest_key_has_prefix(key_id, "I386-STRING-") ||
         timing_80386_manifest_key_has_prefix(key_id, "I386-REP-") ||
         timing_80386_manifest_key_has_prefix(key_id, "I386-IN-") ||
@@ -172,9 +172,9 @@ static lib_i32 timing_80386_manifest_key_is_s3(const char *key_id)
           timing_80386_manifest_key_has_prefix(key_id, "I386-RET-")) &&
          (timing_80386_manifest_key_has_suffix(key_id, "-NEAR") ||
           timing_80386_manifest_key_has_suffix(key_id, "-FAR-REAL"))) ||
-        lib_c_strcmp(key_id, "I386-INT3-REAL") == 0 ||
-        lib_c_strcmp(key_id, "I386-INT-IMM-REAL") == 0 ||
-        lib_c_strcmp(key_id, "I386-INTO-REAL") == 0) return 0;
+        lib_text_compare(key_id, "I386-INT3-REAL") == 0 ||
+        lib_text_compare(key_id, "I386-INT-IMM-REAL") == 0 ||
+        lib_text_compare(key_id, "I386-INTO-REAL") == 0) return 0;
     if (timing_80386_manifest_key_has_prefix(key_id, "I386-CALL-") ||
         timing_80386_manifest_key_has_prefix(key_id, "I386-JMP-") ||
         timing_80386_manifest_key_has_prefix(key_id, "I386-RET-") ||
@@ -319,7 +319,7 @@ static lib_i32 timing_80386_manifest_is_esc(
     const timing_80386_manifest_record *record)
 {
     return timing_80386_manifest_is_i386(record) &&
-        lib_c_strcmp(record->key_id, "I386-ESC") == 0;
+        lib_text_compare(record->key_id, "I386-ESC") == 0;
 }
 
 static lib_u32 timing_80386_manifest_s3_count(lib_i32 observed_only)
@@ -525,11 +525,11 @@ static lib_i32 timing_80386_manifest_key_is_s5_real_control(const char *key_id)
         timing_80386_manifest_key_has_prefix(key_id, "I386-JMP-FAR-REAL") ||
         timing_80386_manifest_key_has_prefix(key_id, "I386-RET-NEAR") ||
         timing_80386_manifest_key_has_prefix(key_id, "I386-RET-FAR-REAL") ||
-        lib_c_strcmp(key_id, "I386-IRET-REAL") == 0 ||
-        lib_c_strcmp(key_id, "I386-INT3-REAL") == 0 ||
-        lib_c_strcmp(key_id, "I386-INT-IMM-REAL") == 0 ||
-        lib_c_strcmp(key_id, "I386-INTO-REAL") == 0 ||
-        lib_c_strcmp(key_id, "I386-INTO-NOT") == 0);
+        lib_text_compare(key_id, "I386-IRET-REAL") == 0 ||
+        lib_text_compare(key_id, "I386-INT3-REAL") == 0 ||
+        lib_text_compare(key_id, "I386-INT-IMM-REAL") == 0 ||
+        lib_text_compare(key_id, "I386-INTO-REAL") == 0 ||
+        lib_text_compare(key_id, "I386-INTO-NOT") == 0);
 }
 
 static lib_status timing_80386_manifest_prepare_recipe_machine(
@@ -742,7 +742,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
     record = timing_80386_manifest_find(key_id);
     if (record == LIB_NULL || !timing_80386_manifest_is_i386(record) ||
         program == LIB_NULL || program_bytes == 0u) return 1;
-    halt_recipe = lib_c_strcmp(key_id, "I386-HLT") == 0;
+    halt_recipe = lib_text_compare(key_id, "I386-HLT") == 0;
     active_provider.context = &capture;
     status = core_machine_create(&config, &machine);
     if (status == LIB_STATUS_OK) status =
@@ -891,7 +891,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-LOOPE-") &&
             taken) machine->executor_cpu.data.eflags = VCPU_EFLAGS_ZF;
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id, "I386-INTO-REAL") == 0) {
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id, "I386-INTO-REAL") == 0) {
         machine->executor_cpu.data.eflags = VCPU_EFLAGS_OF;
     }
     if (status == LIB_STATUS_OK) status =
@@ -1508,12 +1508,12 @@ static lib_i32 timing_80386_manifest_run_s4_repeat_continuation(
 
         machine->executor_cpu.data.esp = 0x00001000u;
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-RET-") ||
-            lib_c_strcmp(key_id, "I386-IRET-REAL") == 0) {
+            lib_text_compare(key_id, "I386-IRET-REAL") == 0) {
             status = core_machine_memory_write(machine, 0x1000u, return_frame,
                 sizeof(return_frame));
         }
         if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
-                "I386-INT") || lib_c_strcmp(key_id, "I386-INTO-REAL") == 0)) {
+                "I386-INT") || lib_text_compare(key_id, "I386-INTO-REAL") == 0)) {
             status = core_machine_memory_write(machine, 3u * 4u, handler,
                 sizeof(handler));
             if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
@@ -3149,17 +3149,17 @@ lib_i32 main(void)
 
             if (lib_c_snprintf(key_id, sizeof(key_id), "I386-ALU-%s-%s",
                     alu_operations[index].op, form) < 0) return 1;
-            if (lib_c_strcmp(form, "RM") == 0) {
+            if (lib_text_compare(form, "RM") == 0) {
                 program[program_bytes++] = alu_operations[index].opcode_base + 3u;
                 program[program_bytes++] = 0x06u;
                 program[program_bytes++] = 0x00u;
                 program[program_bytes++] = 0x10u;
-            } else if (lib_c_strcmp(form, "MR") == 0) {
+            } else if (lib_text_compare(form, "MR") == 0) {
                 program[program_bytes++] = alu_operations[index].opcode_base + 1u;
                 program[program_bytes++] = 0x0eu;
                 program[program_bytes++] = 0x00u;
                 program[program_bytes++] = 0x10u;
-            } else if (lib_c_strcmp(form, "AI") == 0) {
+            } else if (lib_text_compare(form, "AI") == 0) {
                 program[program_bytes++] = alu_operations[index].opcode_base + 5u;
                 program[program_bytes++] = 1u;
                 program[program_bytes++] = 0u;
@@ -3583,18 +3583,18 @@ lib_i32 main(void)
             }
             program[program_bytes++] = 0x26u;
             if (segment_alu_operations[index].test_operation) {
-                if (lib_c_strcmp(forms[form_index], "RMI") == 0) {
+                if (lib_text_compare(forms[form_index], "RMI") == 0) {
                     program[program_bytes++] = 0xf7u;
                     program[program_bytes++] = 0x06u;
                 } else {
                     program[program_bytes++] = 0x85u;
                     program[program_bytes++] = 0x06u;
                 }
-            } else if (lib_c_strcmp(forms[form_index], "RM") == 0) {
+            } else if (lib_text_compare(forms[form_index], "RM") == 0) {
                 program[program_bytes++] =
                     segment_alu_operations[index].opcode_base + 3u;
                 program[program_bytes++] = 0x06u;
-            } else if (lib_c_strcmp(forms[form_index], "MR") == 0) {
+            } else if (lib_text_compare(forms[form_index], "MR") == 0) {
                 program[program_bytes++] =
                     segment_alu_operations[index].opcode_base + 1u;
                 program[program_bytes++] = 0x0eu;
@@ -3605,7 +3605,7 @@ lib_i32 main(void)
             }
             program[program_bytes++] = 0u;
             program[program_bytes++] = 0x10u;
-            if (lib_c_strcmp(forms[form_index], "RMI") == 0) {
+            if (lib_text_compare(forms[form_index], "RMI") == 0) {
                 program[program_bytes++] = 1u;
                 program[program_bytes++] = 0u;
             }

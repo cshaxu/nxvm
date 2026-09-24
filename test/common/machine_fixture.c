@@ -1,8 +1,6 @@
 #include "machine_fixture.h"
 
 #include <assert.h>
-#include <string.h>
-
 static lib_bool fake_reset(void *opaque)
 {
     machine_fake *fake = (machine_fake *)opaque;
@@ -56,8 +54,8 @@ static lib_bool fake_set_media(void *opaque, const char *path,
     fake->media_mode = mode;
     if (path == NULL) fake->media_path[0] = '\0';
     else {
-        assert(strlen(path) < sizeof(fake->media_path));
-        memcpy(fake->media_path, path, strlen(path) + 1u);
+        assert(lib_text_length(path) < sizeof(fake->media_path));
+        lib_memory_copy(fake->media_path, path, lib_text_length(path) + 1u);
     }
     return LIB_TRUE;
 }
@@ -82,7 +80,7 @@ static lib_status fake_copy_frame(void *opaque, common_machine_frame *frame)
     machine_fake *fake = opaque;
     if (InterlockedCompareExchange(&fake->fail_frame, 0, 0))
         return LIB_STATUS_IO_ERROR;
-    memset(frame, 0, sizeof(*frame));
+    lib_memory_set(frame, 0, sizeof(*frame));
     frame->window.valid = 1u;
     frame->window.text.base.text_columns = KVM_TEXT_COLUMNS;
     frame->window.text.base.text_rows = KVM_TEXT_ROWS;

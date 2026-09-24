@@ -87,12 +87,31 @@ static inline const void *lib_memory_find(const void *bytes, lib_i32 value,
 static inline lib_size lib_text_length(const char *text)
 { return strlen(text); }
 
-#define lib_c_strcmp strcmp
-#define lib_c_strchr strchr
-/* Product test text still crosses a native C-string adapter.  S7 migrates
- * that MyNES-only caller before this forwarding alias is retired. */
-#define lib_c_strstr strstr
-#define lib_c_strtok strtok
+static inline lib_i32 lib_text_compare(const char *left, const char *right)
+{
+    int result = strcmp(left, right);
+    return result < 0 ? -1 : result > 0 ? 1 : 0;
+}
+
+static inline lib_i32 lib_text_compare_n(const char *left, const char *right,
+    lib_size byte_count)
+{
+    int result = strncmp(left, right, byte_count);
+    return result < 0 ? -1 : result > 0 ? 1 : 0;
+}
+
+static inline char *lib_text_find_character(const char *text, lib_i32 value)
+{ return (char *)strchr(text, (int)value); }
+
+static inline char *lib_text_token(char *text, const char *delimiters)
+{ return strtok(text, delimiters); }
+
+static inline char *lib_text_find_substring(const char *text,
+    const char *needle)
+{ return (char *)strstr(text, needle); }
+
+static inline char *lib_text_copy(char *destination, const char *source)
+{ return strcpy(destination, source); }
 
 static inline void *lib_allocate(lib_size byte_count)
 { return malloc(byte_count); }

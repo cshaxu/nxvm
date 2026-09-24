@@ -16,19 +16,19 @@ int main(void)
         "display = console # presentation\n";
 
     assert(app_config_load_text(valid, sizeof(valid) - 1u, &config));
-    assert(lib_c_strcmp((const char *)config.rom_path, "fixture.nes") == 0);
+    assert(lib_text_compare((const char *)config.rom_path, "fixture.nes") == 0);
     assert(config.text_output);
     assert(app_config_load_text(window, sizeof(window) - 1u, &config));
-    assert(lib_c_strcmp((const char *)config.rom_path, "fixture.nes") == 0 && !config.text_output);
+    assert(lib_text_compare((const char *)config.rom_path, "fixture.nes") == 0 && !config.text_output);
     assert(app_config_load_text(default_window, sizeof(default_window) - 1u, &config));
-    assert(lib_c_strcmp((const char *)config.rom_path, "fixture.nes") == 0 && !config.text_output);
+    assert(lib_text_compare((const char *)config.rom_path, "fixture.nes") == 0 && !config.text_output);
     assert(!app_config_load_text(invalid_display, sizeof(invalid_display) - 1u, &config));
     assert(!app_config_load_text(retired_video, sizeof(retired_video) - 1u, &config));
-    assert(lib_c_strcmp((const char *)config.rom_path, "fixture.nes") == 0 && !config.text_output);
+    assert(lib_text_compare((const char *)config.rom_path, "fixture.nes") == 0 && !config.text_output);
     assert(!app_config_load_text(invalid_key, sizeof(invalid_key) - 1u, &config));
-    assert(lib_c_strcmp((const char *)config.rom_path, "fixture.nes") == 0 && !config.text_output);
+    assert(lib_text_compare((const char *)config.rom_path, "fixture.nes") == 0 && !config.text_output);
     assert(app_config_load_text(quoted_with_comment, sizeof(quoted_with_comment) - 1u,
         &config));
-    assert(lib_c_strcmp((const char *)config.rom_path, "fixture game.nes") == 0 && config.text_output);
+    assert(lib_text_compare((const char *)config.rom_path, "fixture game.nes") == 0 && config.text_output);
     return 0;
 }

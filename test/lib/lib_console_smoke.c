@@ -2,7 +2,6 @@
 #include "lib/console/binding_interface.h"
 
 #include <assert.h>
-#include <string.h>
 
 typedef struct console_probe {
     lib_console_event event;
@@ -24,7 +23,7 @@ static lib_status console_probe_output(void *context, const char *text,
 {
     console_probe *probe = (console_probe *)context;
     if (length >= sizeof(probe->output)) return LIB_STATUS_LIMIT_EXCEEDED;
-    memcpy(probe->output, text, length);
+    lib_memory_copy(probe->output, text, length);
     probe->output[length] = '\0';
     probe->output_length = length;
     return LIB_STATUS_OK;
@@ -108,12 +107,12 @@ int main(void)
         *value = 0;
     }
     assert(probe.output_length == 5u);
-    assert(strcmp(probe.output, "hello") == 0);
+    assert(lib_text_compare(probe.output, "hello") == 0);
     assert(lib_console_set_output_binding(console, &binding) == LIB_STATUS_OK);
     assert(lib_console_write_text(console, "next", 4u) == LIB_STATUS_OK);
     assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_OK);
-    assert(next.frames == 1u && strcmp(next.output, "next") == 0);
-    assert(probe.frames == 1u && strcmp(probe.output, "hello") == 0);
+    assert(next.frames == 1u && lib_text_compare(next.output, "next") == 0);
+    assert(probe.frames == 1u && lib_text_compare(probe.output, "hello") == 0);
     assert(lib_console_set_output_binding(console, NULL) == LIB_STATUS_OK);
     assert(lib_console_write_text(console, "x", 1u) == LIB_STATUS_OK);
     assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_OK);

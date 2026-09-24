@@ -507,14 +507,14 @@ int main(int argc, char **argv)
 
     if ((argc < 3 || argc > 6) ||
         (argc >= 4 && !boot_timeout_parse(argv[3], &timeout)) ||
-        (argc >= 5 && lib_c_strcmp(argv[4], "trace") != 0 &&
-            lib_c_strcmp(argv[4], "standard") != 0) ||
-        (argc == 6 && (lib_c_strcmp(argv[4], "trace") != 0 ||
-            lib_c_strcmp(argv[5], "standard") != 0))) {
+        (argc >= 5 && lib_text_compare(argv[4], "trace") != 0 &&
+            lib_text_compare(argv[4], "standard") != 0) ||
+        (argc == 6 && (lib_text_compare(argv[4], "trace") != 0 ||
+            lib_text_compare(argv[5], "standard") != 0))) {
         return 1;
     }
-    trace_enabled = argc >= 5 && !lib_c_strcmp(argv[4], "trace");
-    standard_speed = (argc == 5 && !lib_c_strcmp(argv[4], "standard")) || argc == 6;
+    trace_enabled = argc >= 5 && !lib_text_compare(argv[4], "trace");
+    standard_speed = (argc == 5 && !lib_text_compare(argv[4], "standard")) || argc == 6;
     if (integration_ini_session_open(argv[1], argv[2], &ini_session) ==
         LIB_STATUS_UNSUPPORTED) {
         printf("T515:INI-BOOT:%s:UNAVAILABLE\n", argv[2]);

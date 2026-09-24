@@ -206,7 +206,7 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     lib_u8 observed[2] = {0};
     lib_i32 failed = 0;
 
-    failed |= lib_c_strcmp(vm_profile_name(config.profile_kind),
+    failed |= lib_text_compare(vm_profile_name(config.profile_kind),
         "ibm-5160-model-268") != 0;
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;

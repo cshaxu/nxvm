@@ -18,7 +18,7 @@ lib_i32 main(void)
     core_machine_controller_timing_rules timing_rules;
 
     if (profile == LIB_NULL ||
-        lib_c_strcmp(profile->identity, "default-pc-at") != 0 ||
+        lib_text_compare(profile->identity, "default-pc-at") != 0 ||
         profile->rom.linear_start != 0xfffffff0u ||
         profile->rom.physical_start != 0x000ffff0u ||
         profile->rom.bytes != 16u ||

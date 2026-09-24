@@ -148,7 +148,7 @@ static inline lib_bool lib_atomic_u64_compare_exchange_weak_explicit(
 static inline void lib_atomic_uptr_initialize(lib_atomic_uptr *object,
     lib_uptr value)
 {
-    *object = (intptr_t)value;
+    *object = (lib_iptr)value;
 }
 
 static inline lib_uptr lib_atomic_uptr_load_explicit(const lib_atomic_uptr *object,

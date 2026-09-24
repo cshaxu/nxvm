@@ -184,7 +184,7 @@ static void wait_for_title(HWND window, const char *expected)
     do {
         char title[128];
         GetWindowTextA(window, title, (int)sizeof(title));
-        if (lib_c_strcmp(title, expected) == 0) return;
+        if (lib_text_compare(title, expected) == 0) return;
         Sleep(10u);
     } while (GetTickCount() - started < 3000u);
     assert(!"Window did not reach its expected title");

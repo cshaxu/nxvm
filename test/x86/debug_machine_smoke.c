@@ -2,7 +2,6 @@
 #include "x86/debug/debug_interface.h"
 
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
 
 typedef struct debug_fake {
@@ -30,8 +29,8 @@ static lib_status fake_execute_x86(void *opaque,
         assert(address + request->bytes <= sizeof(fake->memory));
         if (request->operation == X86_DEBUG_WRITE_REAL ||
             request->operation == X86_DEBUG_WRITE_LINEAR)
-            memcpy(fake->memory + address, request->data, request->bytes);
-        else memcpy(result->data, fake->memory + address, request->bytes);
+            lib_memory_copy(fake->memory + address, request->data, request->bytes);
+        else lib_memory_copy(result->data, fake->memory + address, request->bytes);
         return LIB_STATUS_OK;
     }
     if (fake->register_fixture) {
@@ -44,11 +43,11 @@ static lib_status fake_execute_x86(void *opaque,
             break;
         case X86_DEBUG_READ_REAL:
             ++fake->real_reads;
-            memset(result->data, 0x90, sizeof(result->data));
+            lib_memory_set(result->data, 0x90, sizeof(result->data));
             break;
         case X86_DEBUG_READ_LINEAR:
             ++fake->linear_reads;
-            memset(result->data, 0x90, sizeof(result->data));
+            lib_memory_set(result->data, 0x90, sizeof(result->data));
             break;
         case X86_DEBUG_GET_CODE_BASE:
             result->value = 0x10000000u;
@@ -74,10 +73,10 @@ static lib_status fake_execute_debug(void *opaque, const void *bytes, lib_size s
     x86_debug_response result;
     lib_status status;
     assert(size == sizeof(request) && capacity == sizeof(result));
-    memcpy(&request, bytes, size);
+    lib_memory_copy(&request, bytes, size);
     status = fake_execute_x86(opaque, &request, &result);
     if (status == LIB_STATUS_OK) {
-        memcpy(response, &result, sizeof(result));
+        lib_memory_copy(response, &result, sizeof(result));
         *response_size = sizeof(result);
     }
     return status;
@@ -117,20 +116,20 @@ static void extended_registers(x86_debug *debug, debug_fake *fake)
             assert(x86_debug_observe_machine(debug, X86_DEBUG_MACHINE_PAUSED,
                 LIB_STATUS_OK, &result) == LIB_STATUS_OK);
         }
-        assert(strstr(result.text, expected) != NULL);
-        assert(strstr(result.text, "L22340008 90") != NULL);
+        assert(lib_text_find_substring(result.text, expected) != NULL);
+        assert(lib_text_find_substring(result.text, "L22340008 90") != NULL);
         assert(fake->real_reads == 0u && fake->linear_reads == 1u);
     }
     fake->registers[X86_DEBUG_EFLAGS] = 2u;
     assert(x86_debug_submit_line(debug, "xr", &result) == LIB_STATUS_OK);
-    assert(strstr(result.text,
+    assert(lib_text_find_substring(result.text,
         "EFL=00000002: vm rf nt IOPL=0 of df if tf sf zf af pf cf \n") != NULL);
     fake->real_reads = fake->linear_reads = 0u;
     assert(x86_debug_submit_line(debug, "r", &result) == LIB_STATUS_OK);
-    assert(strncmp(result.text, "AX=0000  BX=0003", 15u) == 0);
-    assert(strstr(result.text, "EAX=") == NULL && fake->linear_reads == 0u &&
+    assert(lib_text_compare_n(result.text, "AX=0000  BX=0003", 15u) == 0);
+    assert(lib_text_find_substring(result.text, "EAX=") == NULL && fake->linear_reads == 0u &&
         fake->real_reads == 1u);
-    assert(strstr(result.text, "0000:0008 90") != NULL);
+    assert(lib_text_find_substring(result.text, "0000:0008 90") != NULL);
     /* Each original XR register continuation reads and writes the full value. */
     for (index = 0; index < 10u; ++index) {
         char line[32];
@@ -138,12 +137,12 @@ static void extended_registers(x86_debug *debug, debug_fake *fake)
         snprintf(line, sizeof(line), "xr %s", names[index]);
         snprintf(value, sizeof(value), "%08X", fake->registers[index]);
         assert(x86_debug_submit_line(debug, line, &result) == LIB_STATUS_OK);
-        assert(strstr(result.text, value) != NULL);
+        assert(lib_text_find_substring(result.text, value) != NULL);
         assert(x86_debug_submit_line(debug, "89abcdef", &result) == LIB_STATUS_OK);
         assert(fake->registers[index] == 0x89abcdefu);
     }
     assert(x86_debug_submit_line(debug, "xsreg", &result) == LIB_STATUS_OK);
-    assert(strstr(result.text, "Data, e, rw, big") != NULL);
+    assert(lib_text_find_substring(result.text, "Data, e, rw, big") != NULL);
     fake->register_fixture = LIB_FALSE;
 }
 static void transcript(x86_debug *debug, const char *line,
@@ -151,8 +150,8 @@ static void transcript(x86_debug *debug, const char *line,
 {
     x86_debug_result result;
     assert(x86_debug_submit_line(debug, line, &result) == LIB_STATUS_OK);
-    assert(strcmp(result.text, text) == 0);
-    assert(result.prompt_ready && strcmp(result.prompt, prompt) == 0);
+    assert(lib_text_compare(result.text, text) == 0);
+    assert(result.prompt_ready && lib_text_compare(result.prompt, prompt) == 0);
     assert(result.lifecycle_request == X86_DEBUG_LIFECYCLE_NONE);
 }
 
@@ -161,8 +160,8 @@ static void original_cli(x86_debug *debug, debug_fake *fake)
     x86_debug_result result;
     const char *names[] = { "ax", "cx", "dx", "bx", "sp", "bp", "si", "di", "ip" };
     fake->register_fixture = fake->memory_fixture = LIB_TRUE;
-    memset(fake->registers, 0, sizeof(fake->registers));
-    memset(fake->memory, 0, sizeof(fake->memory));
+    lib_memory_set(fake->registers, 0, sizeof(fake->registers));
+    lib_memory_set(fake->memory, 0, sizeof(fake->memory));
     transcript(debug, "h 1 2", "0003  FFFF\n", "-");
     transcript(debug, "", "", "-");
     transcript(debug, " \t ", "", "-");
@@ -206,50 +205,50 @@ static void original_cli(x86_debug *debug, debug_fake *fake)
     transcript(debug, "xa 520", "", "L00000520 ");
     transcript(debug, "nop", "", "L00000521 ");
     assert(x86_debug_submit_line(debug, "not_an_instruction", &result) == LIB_STATUS_OK);
-    assert(strstr(result.text, "^ Error\n") && strcmp(result.prompt, "L00000521 ") == 0);
+    assert(lib_text_find_substring(result.text, "^ Error\n") && lib_text_compare(result.prompt, "L00000521 ") == 0);
     transcript(debug, "clc", "", "L00000522 ");
     transcript(debug, "", "", "-");
     transcript(debug, "xa", "", "L00000522 ");
     transcript(debug, "", "", "-");
     assert(fake->memory[0x520] == 0x90 && fake->memory[0x521] == 0xf8);
-    memset(fake->memory + 0x540, 0x66, 14u);
+    lib_memory_set(fake->memory + 0x540, 0x66, 14u);
     fake->memory[0x54e] = 0x90;
     assert(x86_debug_submit_line(debug, "xu 540 1", &result) == LIB_STATUS_OK);
-    assert(strstr(result.text, "<ERROR>") == NULL);
+    assert(lib_text_find_substring(result.text, "<ERROR>") == NULL);
     assert(x86_debug_submit_line(debug, "xu", &result) == LIB_STATUS_OK);
-    assert(strncmp(result.text, "L0000054F", 9) == 0);
+    assert(lib_text_compare_n(result.text, "L0000054F", 9) == 0);
     assert(x86_debug_submit_line(debug, "u 0:540 54e", &result) == LIB_STATUS_OK);
-    assert(strstr(result.text, "<ERROR>") == NULL);
+    assert(lib_text_find_substring(result.text, "<ERROR>") == NULL);
     transcript(debug, "r zz", "br Error\n", "-");
     transcript(debug, "t 0", "", "-");
     transcript(debug, "xt 0", "", "-");
     transcript(debug, "xg 500 0", "", "-");
     /* Original dump formatting, all 256 rows, including its backspace dash.
      * This exceeds both old copied buffers; no prefix/tail may disappear. */
-    memset(fake->memory, 'A', sizeof(fake->memory));
+    lib_memory_set(fake->memory, 'A', sizeof(fake->memory));
     assert(x86_debug_submit_line(debug, "xd 0 1000", &result) == LIB_STATUS_OK);
     const char *cursor = result.text;
     for (lib_u32 address = 0; address < 0x1000; address += 16) {
         char row[128];
         snprintf(row, sizeof(row), "L%08X  41 41 41 41 41 41 41 41 \b-41 41 41 41 41 41 41 41   AAAAAAAAAAAAAAAA\n", address);
-        assert(strncmp(cursor, row, strlen(row)) == 0);
-        cursor += strlen(row);
+        assert(lib_text_compare_n(cursor, row, lib_text_length(row)) == 0);
+        cursor += lib_text_length(row);
     }
-    assert(*cursor == '\0' && strlen(result.text) > 16384u);
+    assert(*cursor == '\0' && lib_text_length(result.text) > 16384u);
     assert(x86_debug_submit_line(debug, "xd", &result) == LIB_STATUS_OK);
-    assert(strncmp(result.text, "L00001000", 9) == 0);
+    assert(lib_text_compare_n(result.text, "L00001000", 9) == 0);
     fake->memory_fixture = LIB_FALSE;
     assert(x86_debug_submit_line(debug, "g", &result) == LIB_STATUS_OK);
     assert(result.lifecycle_request == X86_DEBUG_LIFECYCLE_RESUME);
     assert(x86_debug_observe_machine(debug, X86_DEBUG_MACHINE_PAUSED,
         LIB_STATUS_OK, &result) == LIB_STATUS_OK);
-    assert(strstr(result.text, "AX=") && !strstr(result.text, "EAX="));
+    assert(lib_text_find_substring(result.text, "AX=") && !lib_text_find_substring(result.text, "EAX="));
     for (lib_u32 linear = 0; linear < 2u; ++linear) {
         assert(x86_debug_submit_line(debug, linear ? "xt 2" : "t 2", &result) == LIB_STATUS_OK);
         for (lib_u32 step = 0; step < 2u; ++step) {
             assert(x86_debug_observe_machine(debug, X86_DEBUG_MACHINE_PAUSED,
                 LIB_STATUS_OK, &result) == LIB_STATUS_OK);
-            lib_size length = strlen(result.text);
+            lib_size length = lib_text_length(result.text);
             assert(length >= 2u && result.text[length - 1u] == '\n');
             assert((result.text[length - 2u] == '\n') == (step == 0u));
             assert(result.lifecycle_request == (step == 0u ?
@@ -281,13 +280,13 @@ int main(void)
     assert(x86_debug_submit_line(debug, "?", &debug_command_result) == LIB_STATUS_OK);
     assert(debug_command_result.keep_active && fake.debug_calls == 0);
     assert(x86_debug_submit_line(debug, "h 1 2", &debug_command_result) == LIB_STATUS_OK);
-    assert(strstr(debug_command_result.text, "0003") != NULL && fake.debug_calls == 0);
+    assert(lib_text_find_substring(debug_command_result.text, "0003") != NULL && fake.debug_calls == 0);
     assert(x86_debug_submit_line(debug, "r", &debug_command_result) == LIB_STATUS_OK);
-    assert(strstr(debug_command_result.text, "must be paused") != NULL && fake.debug_calls == 0);
+    assert(lib_text_find_substring(debug_command_result.text, "must be paused") != NULL && fake.debug_calls == 0);
     assert(common_machine_start(machine));
     assert(WaitForSingleObject(fake.running, 5000u) == WAIT_OBJECT_0);
     assert(x86_debug_submit_line(debug, "d", &debug_command_result) == LIB_STATUS_OK);
-    assert(strstr(debug_command_result.text, "must be paused") != NULL);
+    assert(lib_text_find_substring(debug_command_result.text, "must be paused") != NULL);
     assert(x86_debug_submit_line(debug, "q", &debug_command_result) == LIB_STATUS_OK);
     assert(!debug_command_result.keep_active);
     assert(common_machine_state_get(machine) == COMMON_MACHINE_RUNNING);
@@ -307,7 +306,7 @@ int main(void)
     assert(fake.debug_calls == 1);
     assert(x86_debug_submit_line(debug, "?", &debug_command_result) ==
         LIB_STATUS_OK);
-    assert(strstr(debug_command_result.text, "assemble") != NULL);
+    assert(lib_text_find_substring(debug_command_result.text, "assemble") != NULL);
     extended_registers(debug, &protocol);
     original_cli(debug, &protocol);
     x86_debug_close(debug);

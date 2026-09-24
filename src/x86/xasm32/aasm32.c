@@ -213,14 +213,12 @@ typedef struct
 } t_aasm_oprinfo;
 /* global variables */
 
-typedef lib_u8 t_aasm_prefix;
-
 typedef struct aasm32_context
 {
     lib_u8 defsize;
-    t_aasm_prefix prefix_oprsizeg, prefix_addrsizeg;
-    t_aasm_prefix prefix_oprsize, prefix_addrsize;
-    t_aasm_prefix prefix_lock, prefix_repz, prefix_repnz;
+    lib_u8 prefix_oprsizeg, prefix_addrsizeg;
+    lib_u8 prefix_oprsize, prefix_addrsize;
+    lib_u8 prefix_lock, prefix_repz, prefix_repnz;
     lib_u8 acode[15];
     lib_u8 iop;
     char *rop, *ropr1, *ropr2, *ropr3;
@@ -9269,12 +9267,12 @@ static lib_i32 is_space(aasm32_context *aasmContext, char c)
 }
 static lib_i32 is_prefix(aasm32_context *aasmContext)
 {
-    if (!lib_c_strcmp(rop, "es:") || !lib_c_strcmp(rop, "cs:") ||
-        !lib_c_strcmp(rop, "ss:") || !lib_c_strcmp(rop, "ds:") ||
-        !lib_c_strcmp(rop, "fs:") || !lib_c_strcmp(rop, "gs:") ||
-        !lib_c_strcmp(rop, "lock:") || !lib_c_strcmp(rop, "rep:") ||
-        !lib_c_strcmp(rop, "repne:") || !lib_c_strcmp(rop, "repnz:") ||
-        !lib_c_strcmp(rop, "repe:") || !lib_c_strcmp(rop, "repz:"))
+    if (!lib_text_compare(rop, "es:") || !lib_text_compare(rop, "cs:") ||
+        !lib_text_compare(rop, "ss:") || !lib_text_compare(rop, "ds:") ||
+        !lib_text_compare(rop, "fs:") || !lib_text_compare(rop, "gs:") ||
+        !lib_text_compare(rop, "lock:") || !lib_text_compare(rop, "rep:") ||
+        !lib_text_compare(rop, "repne:") || !lib_text_compare(rop, "repnz:") ||
+        !lib_text_compare(rop, "repe:") || !lib_text_compare(rop, "repz:"))
     {
         return 1;
     }
@@ -9289,433 +9287,433 @@ static void exec(aasm32_context *aasmContext)
     XASM32_TRACE_CALL_BEGIN("exec");
     if (!rop || is_end(aasmContext, rop[0]))
         ;
-    else if (!lib_c_strcmp(rop, "add"))
+    else if (!lib_text_compare(rop, "add"))
         ADD(aasmContext);
-    else if (!lib_c_strcmp(rop, "push"))
+    else if (!lib_text_compare(rop, "push"))
         PUSH(aasmContext);
-    else if (!lib_c_strcmp(rop, "pop"))
+    else if (!lib_text_compare(rop, "pop"))
         POP(aasmContext);
-    else if (!lib_c_strcmp(rop, "or"))
+    else if (!lib_text_compare(rop, "or"))
         OR(aasmContext);
-    else if (!lib_c_strcmp(rop, "adc"))
+    else if (!lib_text_compare(rop, "adc"))
         ADC(aasmContext);
-    else if (!lib_c_strcmp(rop, "sbb"))
+    else if (!lib_text_compare(rop, "sbb"))
         SBB(aasmContext);
-    else if (!lib_c_strcmp(rop, "and"))
+    else if (!lib_text_compare(rop, "and"))
         AND(aasmContext);
-    else if (!lib_c_strcmp(rop, "es:"))
+    else if (!lib_text_compare(rop, "es:"))
         PREFIX_ES(aasmContext);
-    else if (!lib_c_strcmp(rop, "daa"))
+    else if (!lib_text_compare(rop, "daa"))
         DAA(aasmContext);
-    else if (!lib_c_strcmp(rop, "sub"))
+    else if (!lib_text_compare(rop, "sub"))
         SUB(aasmContext);
-    else if (!lib_c_strcmp(rop, "cs:"))
+    else if (!lib_text_compare(rop, "cs:"))
         PREFIX_CS(aasmContext);
-    else if (!lib_c_strcmp(rop, "das"))
+    else if (!lib_text_compare(rop, "das"))
         DAS(aasmContext);
-    else if (!lib_c_strcmp(rop, "xor"))
+    else if (!lib_text_compare(rop, "xor"))
         XOR(aasmContext);
-    else if (!lib_c_strcmp(rop, "ss:"))
+    else if (!lib_text_compare(rop, "ss:"))
         PREFIX_SS(aasmContext);
-    else if (!lib_c_strcmp(rop, "aaa"))
+    else if (!lib_text_compare(rop, "aaa"))
         AAA(aasmContext);
-    else if (!lib_c_strcmp(rop, "cmp"))
+    else if (!lib_text_compare(rop, "cmp"))
         CMP(aasmContext);
-    else if (!lib_c_strcmp(rop, "ds:"))
+    else if (!lib_text_compare(rop, "ds:"))
         PREFIX_DS(aasmContext);
-    else if (!lib_c_strcmp(rop, "aas"))
+    else if (!lib_text_compare(rop, "aas"))
         AAS(aasmContext);
-    else if (!lib_c_strcmp(rop, "inc"))
+    else if (!lib_text_compare(rop, "inc"))
         INC(aasmContext);
-    else if (!lib_c_strcmp(rop, "dec"))
+    else if (!lib_text_compare(rop, "dec"))
         DEC(aasmContext);
-    else if (!lib_c_strcmp(rop, "pusha"))
+    else if (!lib_text_compare(rop, "pusha"))
         PUSHA(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "pushad"))
+    else if (!lib_text_compare(rop, "pushad"))
         PUSHA(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "popa"))
+    else if (!lib_text_compare(rop, "popa"))
         POPA(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "popad"))
+    else if (!lib_text_compare(rop, "popad"))
         POPA(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "bound"))
+    else if (!lib_text_compare(rop, "bound"))
         BOUND(aasmContext);
-    else if (!lib_c_strcmp(rop, "arpl"))
+    else if (!lib_text_compare(rop, "arpl"))
         ARPL_RM16_R16(aasmContext);
-    else if (!lib_c_strcmp(rop, "fs:"))
+    else if (!lib_text_compare(rop, "fs:"))
         PREFIX_FS(aasmContext);
-    else if (!lib_c_strcmp(rop, "gs:"))
+    else if (!lib_text_compare(rop, "gs:"))
         PREFIX_GS(aasmContext);
-    else if (!lib_c_strcmp(rop, "op+:"))
+    else if (!lib_text_compare(rop, "op+:"))
         PREFIX_OprSize(aasmContext);
-    else if (!lib_c_strcmp(rop, "az+:"))
+    else if (!lib_text_compare(rop, "az+:"))
         PREFIX_AddrSize(aasmContext);
-    else if (!lib_c_strcmp(rop, "imul"))
+    else if (!lib_text_compare(rop, "imul"))
         IMUL(aasmContext);
-    else if (!lib_c_strcmp(rop, "ins"))
+    else if (!lib_text_compare(rop, "ins"))
         INS(aasmContext);
-    else if (!lib_c_strcmp(rop, "insb"))
+    else if (!lib_text_compare(rop, "insb"))
         INSB(aasmContext);
-    else if (!lib_c_strcmp(rop, "insw"))
+    else if (!lib_text_compare(rop, "insw"))
         INSW(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "insd"))
+    else if (!lib_text_compare(rop, "insd"))
         INSW(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "outs"))
+    else if (!lib_text_compare(rop, "outs"))
         OUTS(aasmContext);
-    else if (!lib_c_strcmp(rop, "outsb"))
+    else if (!lib_text_compare(rop, "outsb"))
         OUTSB(aasmContext);
-    else if (!lib_c_strcmp(rop, "outsw"))
+    else if (!lib_text_compare(rop, "outsw"))
         OUTSW(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "outsd"))
+    else if (!lib_text_compare(rop, "outsd"))
         OUTSW(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "jo"))
+    else if (!lib_text_compare(rop, "jo"))
         JCC_REL(aasmContext, 0x70);
-    else if (!lib_c_strcmp(rop, "jno"))
+    else if (!lib_text_compare(rop, "jno"))
         JCC_REL(aasmContext, 0x71);
-    else if (!lib_c_strcmp(rop, "jb"))
+    else if (!lib_text_compare(rop, "jb"))
         JCC_REL(aasmContext, 0x72);
-    else if (!lib_c_strcmp(rop, "jc"))
+    else if (!lib_text_compare(rop, "jc"))
         JCC_REL(aasmContext, 0x72);
-    else if (!lib_c_strcmp(rop, "jnae"))
+    else if (!lib_text_compare(rop, "jnae"))
         JCC_REL(aasmContext, 0x72);
-    else if (!lib_c_strcmp(rop, "jae"))
+    else if (!lib_text_compare(rop, "jae"))
         JCC_REL(aasmContext, 0x73);
-    else if (!lib_c_strcmp(rop, "jnb"))
+    else if (!lib_text_compare(rop, "jnb"))
         JCC_REL(aasmContext, 0x73);
-    else if (!lib_c_strcmp(rop, "jnc"))
+    else if (!lib_text_compare(rop, "jnc"))
         JCC_REL(aasmContext, 0x73);
-    else if (!lib_c_strcmp(rop, "je"))
+    else if (!lib_text_compare(rop, "je"))
         JCC_REL(aasmContext, 0x74);
-    else if (!lib_c_strcmp(rop, "jz"))
+    else if (!lib_text_compare(rop, "jz"))
         JCC_REL(aasmContext, 0x74);
-    else if (!lib_c_strcmp(rop, "jne"))
+    else if (!lib_text_compare(rop, "jne"))
         JCC_REL(aasmContext, 0x75);
-    else if (!lib_c_strcmp(rop, "jnz"))
+    else if (!lib_text_compare(rop, "jnz"))
         JCC_REL(aasmContext, 0x75);
-    else if (!lib_c_strcmp(rop, "jbe"))
+    else if (!lib_text_compare(rop, "jbe"))
         JCC_REL(aasmContext, 0x76);
-    else if (!lib_c_strcmp(rop, "jna"))
+    else if (!lib_text_compare(rop, "jna"))
         JCC_REL(aasmContext, 0x76);
-    else if (!lib_c_strcmp(rop, "ja"))
+    else if (!lib_text_compare(rop, "ja"))
         JCC_REL(aasmContext, 0x77);
-    else if (!lib_c_strcmp(rop, "jnbe"))
+    else if (!lib_text_compare(rop, "jnbe"))
         JCC_REL(aasmContext, 0x77);
-    else if (!lib_c_strcmp(rop, "js"))
+    else if (!lib_text_compare(rop, "js"))
         JCC_REL(aasmContext, 0x78);
-    else if (!lib_c_strcmp(rop, "jns"))
+    else if (!lib_text_compare(rop, "jns"))
         JCC_REL(aasmContext, 0x79);
-    else if (!lib_c_strcmp(rop, "jp"))
+    else if (!lib_text_compare(rop, "jp"))
         JCC_REL(aasmContext, 0x7a);
-    else if (!lib_c_strcmp(rop, "jpe"))
+    else if (!lib_text_compare(rop, "jpe"))
         JCC_REL(aasmContext, 0x7a);
-    else if (!lib_c_strcmp(rop, "jnp"))
+    else if (!lib_text_compare(rop, "jnp"))
         JCC_REL(aasmContext, 0x7b);
-    else if (!lib_c_strcmp(rop, "jpo"))
+    else if (!lib_text_compare(rop, "jpo"))
         JCC_REL(aasmContext, 0x7b);
-    else if (!lib_c_strcmp(rop, "jl"))
+    else if (!lib_text_compare(rop, "jl"))
         JCC_REL(aasmContext, 0x7c);
-    else if (!lib_c_strcmp(rop, "jnge"))
+    else if (!lib_text_compare(rop, "jnge"))
         JCC_REL(aasmContext, 0x7c);
-    else if (!lib_c_strcmp(rop, "jge"))
+    else if (!lib_text_compare(rop, "jge"))
         JCC_REL(aasmContext, 0x7d);
-    else if (!lib_c_strcmp(rop, "jnl"))
+    else if (!lib_text_compare(rop, "jnl"))
         JCC_REL(aasmContext, 0x7d);
-    else if (!lib_c_strcmp(rop, "jle"))
+    else if (!lib_text_compare(rop, "jle"))
         JCC_REL(aasmContext, 0x7e);
-    else if (!lib_c_strcmp(rop, "jng"))
+    else if (!lib_text_compare(rop, "jng"))
         JCC_REL(aasmContext, 0x7e);
-    else if (!lib_c_strcmp(rop, "jg"))
+    else if (!lib_text_compare(rop, "jg"))
         JCC_REL(aasmContext, 0x7f);
-    else if (!lib_c_strcmp(rop, "jnle"))
+    else if (!lib_text_compare(rop, "jnle"))
         JCC_REL(aasmContext, 0x7f);
-    else if (!lib_c_strcmp(rop, "test"))
+    else if (!lib_text_compare(rop, "test"))
         TEST(aasmContext);
-    else if (!lib_c_strcmp(rop, "xchg"))
+    else if (!lib_text_compare(rop, "xchg"))
         XCHG(aasmContext);
-    else if (!lib_c_strcmp(rop, "mov"))
+    else if (!lib_text_compare(rop, "mov"))
         MOV(aasmContext);
-    else if (!lib_c_strcmp(rop, "lea"))
+    else if (!lib_text_compare(rop, "lea"))
         LEA(aasmContext);
-    else if (!lib_c_strcmp(rop, "nop"))
+    else if (!lib_text_compare(rop, "nop"))
         NOP(aasmContext);
-    else if (!lib_c_strcmp(rop, "cbw"))
+    else if (!lib_text_compare(rop, "cbw"))
         CBW(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "cwde"))
+    else if (!lib_text_compare(rop, "cwde"))
         CBW(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "cwd"))
+    else if (!lib_text_compare(rop, "cwd"))
         CWD(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "cdq"))
+    else if (!lib_text_compare(rop, "cdq"))
         CWD(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "call"))
+    else if (!lib_text_compare(rop, "call"))
         CALL(aasmContext);
-    else if (!lib_c_strcmp(rop, "wait"))
+    else if (!lib_text_compare(rop, "wait"))
         WAIT(aasmContext);
-    else if (!lib_c_strcmp(rop, "pushf"))
+    else if (!lib_text_compare(rop, "pushf"))
         PUSHF(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "pushfd"))
+    else if (!lib_text_compare(rop, "pushfd"))
         PUSHF(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "popf"))
+    else if (!lib_text_compare(rop, "popf"))
         POPF(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "popfd"))
+    else if (!lib_text_compare(rop, "popfd"))
         POPF(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "sahf"))
+    else if (!lib_text_compare(rop, "sahf"))
         SAHF(aasmContext);
-    else if (!lib_c_strcmp(rop, "lahf"))
+    else if (!lib_text_compare(rop, "lahf"))
         LAHF(aasmContext);
-    else if (!lib_c_strcmp(rop, "movs"))
+    else if (!lib_text_compare(rop, "movs"))
         MOVS(aasmContext);
-    else if (!lib_c_strcmp(rop, "movsb"))
+    else if (!lib_text_compare(rop, "movsb"))
         MOVSB(aasmContext);
-    else if (!lib_c_strcmp(rop, "movsw"))
+    else if (!lib_text_compare(rop, "movsw"))
         MOVSW(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "movsd"))
+    else if (!lib_text_compare(rop, "movsd"))
         MOVSW(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "cmps"))
+    else if (!lib_text_compare(rop, "cmps"))
         CMPS(aasmContext);
-    else if (!lib_c_strcmp(rop, "cmpsb"))
+    else if (!lib_text_compare(rop, "cmpsb"))
         CMPSB(aasmContext);
-    else if (!lib_c_strcmp(rop, "cmpsw"))
+    else if (!lib_text_compare(rop, "cmpsw"))
         CMPSW(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "cmpsd"))
+    else if (!lib_text_compare(rop, "cmpsd"))
         CMPSW(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "stos"))
+    else if (!lib_text_compare(rop, "stos"))
         STOS(aasmContext);
-    else if (!lib_c_strcmp(rop, "stosb"))
+    else if (!lib_text_compare(rop, "stosb"))
         STOSB(aasmContext);
-    else if (!lib_c_strcmp(rop, "stosw"))
+    else if (!lib_text_compare(rop, "stosw"))
         STOSW(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "stosd"))
+    else if (!lib_text_compare(rop, "stosd"))
         STOSW(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "lods"))
+    else if (!lib_text_compare(rop, "lods"))
         LODS(aasmContext);
-    else if (!lib_c_strcmp(rop, "lodsb"))
+    else if (!lib_text_compare(rop, "lodsb"))
         LODSB(aasmContext);
-    else if (!lib_c_strcmp(rop, "lodsw"))
+    else if (!lib_text_compare(rop, "lodsw"))
         LODSW(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "lodsd"))
+    else if (!lib_text_compare(rop, "lodsd"))
         LODSW(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "scas"))
+    else if (!lib_text_compare(rop, "scas"))
         SCAS(aasmContext);
-    else if (!lib_c_strcmp(rop, "scasb"))
+    else if (!lib_text_compare(rop, "scasb"))
         SCASB(aasmContext);
-    else if (!lib_c_strcmp(rop, "scasw"))
+    else if (!lib_text_compare(rop, "scasw"))
         SCASW(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "scasd"))
+    else if (!lib_text_compare(rop, "scasd"))
         SCASW(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "ret"))
+    else if (!lib_text_compare(rop, "ret"))
         RET(aasmContext);
-    else if (!lib_c_strcmp(rop, "les"))
+    else if (!lib_text_compare(rop, "les"))
         LES(aasmContext);
-    else if (!lib_c_strcmp(rop, "lds"))
+    else if (!lib_text_compare(rop, "lds"))
         LDS(aasmContext);
-    else if (!lib_c_strcmp(rop, "enter"))
+    else if (!lib_text_compare(rop, "enter"))
         ENTER(aasmContext);
-    else if (!lib_c_strcmp(rop, "leave"))
+    else if (!lib_text_compare(rop, "leave"))
         LEAVE(aasmContext);
-    else if (!lib_c_strcmp(rop, "retf"))
+    else if (!lib_text_compare(rop, "retf"))
         RETF(aasmContext);
-    else if (!lib_c_strcmp(rop, "int"))
+    else if (!lib_text_compare(rop, "int"))
         INT(aasmContext);
-    else if (!lib_c_strcmp(rop, "into"))
+    else if (!lib_text_compare(rop, "into"))
         INTO(aasmContext);
-    else if (!lib_c_strcmp(rop, "iret"))
+    else if (!lib_text_compare(rop, "iret"))
         IRET(aasmContext, 2);
-    else if (!lib_c_strcmp(rop, "iretd"))
+    else if (!lib_text_compare(rop, "iretd"))
         IRET(aasmContext, 4);
-    else if (!lib_c_strcmp(rop, "rol"))
+    else if (!lib_text_compare(rop, "rol"))
         ROL(aasmContext);
-    else if (!lib_c_strcmp(rop, "ror"))
+    else if (!lib_text_compare(rop, "ror"))
         ROR(aasmContext);
-    else if (!lib_c_strcmp(rop, "rcl"))
+    else if (!lib_text_compare(rop, "rcl"))
         RCL(aasmContext);
-    else if (!lib_c_strcmp(rop, "rcr"))
+    else if (!lib_text_compare(rop, "rcr"))
         RCR(aasmContext);
-    else if (!lib_c_strcmp(rop, "shl"))
+    else if (!lib_text_compare(rop, "shl"))
         SHL(aasmContext);
-    else if (!lib_c_strcmp(rop, "shr"))
+    else if (!lib_text_compare(rop, "shr"))
         SHR(aasmContext);
-    else if (!lib_c_strcmp(rop, "sal"))
+    else if (!lib_text_compare(rop, "sal"))
         SAL(aasmContext);
-    else if (!lib_c_strcmp(rop, "sar"))
+    else if (!lib_text_compare(rop, "sar"))
         SAR(aasmContext);
-    else if (!lib_c_strcmp(rop, "aam"))
+    else if (!lib_text_compare(rop, "aam"))
         AAM(aasmContext);
-    else if (!lib_c_strcmp(rop, "aad"))
+    else if (!lib_text_compare(rop, "aad"))
         AAD(aasmContext);
-    else if (!lib_c_strcmp(rop, "xlat"))
+    else if (!lib_text_compare(rop, "xlat"))
         XLAT(aasmContext);
-    else if (!lib_c_strcmp(rop, "xlatb"))
+    else if (!lib_text_compare(rop, "xlatb"))
         XLATB(aasmContext);
-    else if (!lib_c_strcmp(rop, "loopne"))
+    else if (!lib_text_compare(rop, "loopne"))
         JCC_REL(aasmContext, 0xe0);
-    else if (!lib_c_strcmp(rop, "loopnz"))
+    else if (!lib_text_compare(rop, "loopnz"))
         JCC_REL(aasmContext, 0xe0);
-    else if (!lib_c_strcmp(rop, "loope"))
+    else if (!lib_text_compare(rop, "loope"))
         JCC_REL(aasmContext, 0xe1);
-    else if (!lib_c_strcmp(rop, "loopz"))
+    else if (!lib_text_compare(rop, "loopz"))
         JCC_REL(aasmContext, 0xe1);
-    else if (!lib_c_strcmp(rop, "loop"))
+    else if (!lib_text_compare(rop, "loop"))
         JCC_REL(aasmContext, 0xe2);
-    else if (!lib_c_strcmp(rop, "jcxz"))
+    else if (!lib_text_compare(rop, "jcxz"))
         JCC_REL(aasmContext, 0xe3);
-    else if (!lib_c_strcmp(rop, "in"))
+    else if (!lib_text_compare(rop, "in"))
         IN(aasmContext);
-    else if (!lib_c_strcmp(rop, "out"))
+    else if (!lib_text_compare(rop, "out"))
         OUT(aasmContext);
-    else if (!lib_c_strcmp(rop, "jmp"))
+    else if (!lib_text_compare(rop, "jmp"))
         JMP(aasmContext);
-    else if (!lib_c_strcmp(rop, "lock"))
+    else if (!lib_text_compare(rop, "lock"))
         PREFIX_LOCK(aasmContext);
-    else if (!lib_c_strcmp(rop, "repne:"))
+    else if (!lib_text_compare(rop, "repne:"))
         PREFIX_REPNZ(aasmContext);
-    else if (!lib_c_strcmp(rop, "repnz:"))
+    else if (!lib_text_compare(rop, "repnz:"))
         PREFIX_REPNZ(aasmContext);
-    else if (!lib_c_strcmp(rop, "rep:"))
+    else if (!lib_text_compare(rop, "rep:"))
         PREFIX_REPZ(aasmContext);
-    else if (!lib_c_strcmp(rop, "repe:"))
+    else if (!lib_text_compare(rop, "repe:"))
         PREFIX_REPZ(aasmContext);
-    else if (!lib_c_strcmp(rop, "repz:"))
+    else if (!lib_text_compare(rop, "repz:"))
         PREFIX_REPZ(aasmContext);
-    else if (!lib_c_strcmp(rop, "hlt"))
+    else if (!lib_text_compare(rop, "hlt"))
         HLT(aasmContext);
-    else if (!lib_c_strcmp(rop, "cmc"))
+    else if (!lib_text_compare(rop, "cmc"))
         CMC(aasmContext);
-    else if (!lib_c_strcmp(rop, "not"))
+    else if (!lib_text_compare(rop, "not"))
         NOT(aasmContext);
-    else if (!lib_c_strcmp(rop, "neg"))
+    else if (!lib_text_compare(rop, "neg"))
         NEG(aasmContext);
-    else if (!lib_c_strcmp(rop, "mul"))
+    else if (!lib_text_compare(rop, "mul"))
         MUL(aasmContext);
-    else if (!lib_c_strcmp(rop, "div"))
+    else if (!lib_text_compare(rop, "div"))
         DIV(aasmContext);
-    else if (!lib_c_strcmp(rop, "idiv"))
+    else if (!lib_text_compare(rop, "idiv"))
         IDIV(aasmContext);
-    else if (!lib_c_strcmp(rop, "clc"))
+    else if (!lib_text_compare(rop, "clc"))
         CLC(aasmContext);
-    else if (!lib_c_strcmp(rop, "stc"))
+    else if (!lib_text_compare(rop, "stc"))
         STC(aasmContext);
-    else if (!lib_c_strcmp(rop, "cli"))
+    else if (!lib_text_compare(rop, "cli"))
         CLI(aasmContext);
-    else if (!lib_c_strcmp(rop, "sti"))
+    else if (!lib_text_compare(rop, "sti"))
         STI(aasmContext);
-    else if (!lib_c_strcmp(rop, "cld"))
+    else if (!lib_text_compare(rop, "cld"))
         CLD(aasmContext);
-    else if (!lib_c_strcmp(rop, "std"))
+    else if (!lib_text_compare(rop, "std"))
         STD(aasmContext);
-    else if (!lib_c_strcmp(rop, "sldt"))
+    else if (!lib_text_compare(rop, "sldt"))
         SLDT(aasmContext);
-    else if (!lib_c_strcmp(rop, "str"))
+    else if (!lib_text_compare(rop, "str"))
         STR(aasmContext);
-    else if (!lib_c_strcmp(rop, "lldt"))
+    else if (!lib_text_compare(rop, "lldt"))
         LLDT(aasmContext);
-    else if (!lib_c_strcmp(rop, "ltr"))
+    else if (!lib_text_compare(rop, "ltr"))
         LTR(aasmContext);
-    else if (!lib_c_strcmp(rop, "verr"))
+    else if (!lib_text_compare(rop, "verr"))
         VERR(aasmContext);
-    else if (!lib_c_strcmp(rop, "verw"))
+    else if (!lib_text_compare(rop, "verw"))
         VERW(aasmContext);
-    else if (!lib_c_strcmp(rop, "sgdt"))
+    else if (!lib_text_compare(rop, "sgdt"))
         SGDT(aasmContext);
-    else if (!lib_c_strcmp(rop, "sidt"))
+    else if (!lib_text_compare(rop, "sidt"))
         SIDT(aasmContext);
-    else if (!lib_c_strcmp(rop, "lgdt"))
+    else if (!lib_text_compare(rop, "lgdt"))
         LGDT(aasmContext);
-    else if (!lib_c_strcmp(rop, "lidt"))
+    else if (!lib_text_compare(rop, "lidt"))
         LIDT(aasmContext);
-    else if (!lib_c_strcmp(rop, "smsw"))
+    else if (!lib_text_compare(rop, "smsw"))
         SMSW(aasmContext);
-    else if (!lib_c_strcmp(rop, "lmsw"))
+    else if (!lib_text_compare(rop, "lmsw"))
         LMSW(aasmContext);
-    else if (!lib_c_strcmp(rop, "lar"))
+    else if (!lib_text_compare(rop, "lar"))
         LAR(aasmContext);
-    else if (!lib_c_strcmp(rop, "lsl"))
+    else if (!lib_text_compare(rop, "lsl"))
         LSL(aasmContext);
-    else if (!lib_c_strcmp(rop, "clts"))
+    else if (!lib_text_compare(rop, "clts"))
         CLTS(aasmContext);
-    else if (!lib_c_strcmp(rop, "seto"))
+    else if (!lib_text_compare(rop, "seto"))
         SETCC_RM8(aasmContext, 0x90);
-    else if (!lib_c_strcmp(rop, "setno"))
+    else if (!lib_text_compare(rop, "setno"))
         SETCC_RM8(aasmContext, 0x91);
-    else if (!lib_c_strcmp(rop, "setb"))
+    else if (!lib_text_compare(rop, "setb"))
         SETCC_RM8(aasmContext, 0x92);
-    else if (!lib_c_strcmp(rop, "setc"))
+    else if (!lib_text_compare(rop, "setc"))
         SETCC_RM8(aasmContext, 0x92);
-    else if (!lib_c_strcmp(rop, "setnae"))
+    else if (!lib_text_compare(rop, "setnae"))
         SETCC_RM8(aasmContext, 0x92);
-    else if (!lib_c_strcmp(rop, "setae"))
+    else if (!lib_text_compare(rop, "setae"))
         SETCC_RM8(aasmContext, 0x93);
-    else if (!lib_c_strcmp(rop, "setnb"))
+    else if (!lib_text_compare(rop, "setnb"))
         SETCC_RM8(aasmContext, 0x93);
-    else if (!lib_c_strcmp(rop, "setnc"))
+    else if (!lib_text_compare(rop, "setnc"))
         SETCC_RM8(aasmContext, 0x93);
-    else if (!lib_c_strcmp(rop, "sete"))
+    else if (!lib_text_compare(rop, "sete"))
         SETCC_RM8(aasmContext, 0x94);
-    else if (!lib_c_strcmp(rop, "setz"))
+    else if (!lib_text_compare(rop, "setz"))
         SETCC_RM8(aasmContext, 0x94);
-    else if (!lib_c_strcmp(rop, "setne"))
+    else if (!lib_text_compare(rop, "setne"))
         SETCC_RM8(aasmContext, 0x95);
-    else if (!lib_c_strcmp(rop, "setnz"))
+    else if (!lib_text_compare(rop, "setnz"))
         SETCC_RM8(aasmContext, 0x95);
-    else if (!lib_c_strcmp(rop, "setbe"))
+    else if (!lib_text_compare(rop, "setbe"))
         SETCC_RM8(aasmContext, 0x96);
-    else if (!lib_c_strcmp(rop, "setna"))
+    else if (!lib_text_compare(rop, "setna"))
         SETCC_RM8(aasmContext, 0x96);
-    else if (!lib_c_strcmp(rop, "seta"))
+    else if (!lib_text_compare(rop, "seta"))
         SETCC_RM8(aasmContext, 0x97);
-    else if (!lib_c_strcmp(rop, "setnbe"))
+    else if (!lib_text_compare(rop, "setnbe"))
         SETCC_RM8(aasmContext, 0x97);
-    else if (!lib_c_strcmp(rop, "sets"))
+    else if (!lib_text_compare(rop, "sets"))
         SETCC_RM8(aasmContext, 0x98);
-    else if (!lib_c_strcmp(rop, "setns"))
+    else if (!lib_text_compare(rop, "setns"))
         SETCC_RM8(aasmContext, 0x99);
-    else if (!lib_c_strcmp(rop, "setp"))
+    else if (!lib_text_compare(rop, "setp"))
         SETCC_RM8(aasmContext, 0x9a);
-    else if (!lib_c_strcmp(rop, "setpe"))
+    else if (!lib_text_compare(rop, "setpe"))
         SETCC_RM8(aasmContext, 0x9a);
-    else if (!lib_c_strcmp(rop, "setnp"))
+    else if (!lib_text_compare(rop, "setnp"))
         SETCC_RM8(aasmContext, 0x9b);
-    else if (!lib_c_strcmp(rop, "setpo"))
+    else if (!lib_text_compare(rop, "setpo"))
         SETCC_RM8(aasmContext, 0x9b);
-    else if (!lib_c_strcmp(rop, "setl"))
+    else if (!lib_text_compare(rop, "setl"))
         SETCC_RM8(aasmContext, 0x9c);
-    else if (!lib_c_strcmp(rop, "setnge"))
+    else if (!lib_text_compare(rop, "setnge"))
         SETCC_RM8(aasmContext, 0x9c);
-    else if (!lib_c_strcmp(rop, "setge"))
+    else if (!lib_text_compare(rop, "setge"))
         SETCC_RM8(aasmContext, 0x9d);
-    else if (!lib_c_strcmp(rop, "setnl"))
+    else if (!lib_text_compare(rop, "setnl"))
         SETCC_RM8(aasmContext, 0x9d);
-    else if (!lib_c_strcmp(rop, "setle"))
+    else if (!lib_text_compare(rop, "setle"))
         SETCC_RM8(aasmContext, 0x9e);
-    else if (!lib_c_strcmp(rop, "setng"))
+    else if (!lib_text_compare(rop, "setng"))
         SETCC_RM8(aasmContext, 0x9e);
-    else if (!lib_c_strcmp(rop, "setg"))
+    else if (!lib_text_compare(rop, "setg"))
         SETCC_RM8(aasmContext, 0x9f);
-    else if (!lib_c_strcmp(rop, "setnle"))
+    else if (!lib_text_compare(rop, "setnle"))
         SETCC_RM8(aasmContext, 0x9f);
-    else if (!lib_c_strcmp(rop, "bt"))
+    else if (!lib_text_compare(rop, "bt"))
         BT(aasmContext);
-    else if (!lib_c_strcmp(rop, "shld"))
+    else if (!lib_text_compare(rop, "shld"))
         SHLD(aasmContext);
-    else if (!lib_c_strcmp(rop, "bts"))
+    else if (!lib_text_compare(rop, "bts"))
         BTS(aasmContext);
-    else if (!lib_c_strcmp(rop, "shrd"))
+    else if (!lib_text_compare(rop, "shrd"))
         SHRD(aasmContext);
-    else if (!lib_c_strcmp(rop, "lss"))
+    else if (!lib_text_compare(rop, "lss"))
         LSS(aasmContext);
-    else if (!lib_c_strcmp(rop, "btr"))
+    else if (!lib_text_compare(rop, "btr"))
         BTR(aasmContext);
-    else if (!lib_c_strcmp(rop, "lfs"))
+    else if (!lib_text_compare(rop, "lfs"))
         LFS(aasmContext);
-    else if (!lib_c_strcmp(rop, "lgs"))
+    else if (!lib_text_compare(rop, "lgs"))
         LGS(aasmContext);
-    else if (!lib_c_strcmp(rop, "movzx"))
+    else if (!lib_text_compare(rop, "movzx"))
         MOVZX(aasmContext);
-    else if (!lib_c_strcmp(rop, "btc"))
+    else if (!lib_text_compare(rop, "btc"))
         BTC(aasmContext);
-    else if (!lib_c_strcmp(rop, "bsf"))
+    else if (!lib_text_compare(rop, "bsf"))
         BSF(aasmContext);
-    else if (!lib_c_strcmp(rop, "bsr"))
+    else if (!lib_text_compare(rop, "bsr"))
         BSR(aasmContext);
-    else if (!lib_c_strcmp(rop, "movsx"))
+    else if (!lib_text_compare(rop, "movsx"))
         MOVSX(aasmContext);
     else
         _ser_;
@@ -10022,8 +10020,8 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
     default:
         return;
     }
-    if (!lib_c_strcmp(rinstr->op_str, "loopne") || !lib_c_strcmp(rinstr->op_str, "loopnz") || !lib_c_strcmp(rinstr->op_str, "loope") ||
-        !lib_c_strcmp(rinstr->op_str, "loopz") || !lib_c_strcmp(rinstr->op_str, "loop") || !lib_c_strcmp(rinstr->op_str, "jcxz"))
+    if (!lib_text_compare(rinstr->op_str, "loopne") || !lib_text_compare(rinstr->op_str, "loopnz") || !lib_text_compare(rinstr->op_str, "loope") ||
+        !lib_text_compare(rinstr->op_str, "loopz") || !lib_text_compare(rinstr->op_str, "loop") || !lib_text_compare(rinstr->op_str, "jcxz"))
     {
         switch (rinstr->ptr)
         {
@@ -10037,16 +10035,16 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
             return;
         }
     }
-    if (!lib_c_strcmp(rinstr->op_str, "jo") || !lib_c_strcmp(rinstr->op_str, "jno") || !lib_c_strcmp(rinstr->op_str, "jb") ||
-        !lib_c_strcmp(rinstr->op_str, "jc") || !lib_c_strcmp(rinstr->op_str, "jnae") || !lib_c_strcmp(rinstr->op_str, "jae") ||
-        !lib_c_strcmp(rinstr->op_str, "jnb") || !lib_c_strcmp(rinstr->op_str, "jnc") || !lib_c_strcmp(rinstr->op_str, "je") ||
-        !lib_c_strcmp(rinstr->op_str, "jz") || !lib_c_strcmp(rinstr->op_str, "jne") || !lib_c_strcmp(rinstr->op_str, "jnz") ||
-        !lib_c_strcmp(rinstr->op_str, "jbe") || !lib_c_strcmp(rinstr->op_str, "jna") || !lib_c_strcmp(rinstr->op_str, "ja") ||
-        !lib_c_strcmp(rinstr->op_str, "jnbe") || !lib_c_strcmp(rinstr->op_str, "js") || !lib_c_strcmp(rinstr->op_str, "jns") ||
-        !lib_c_strcmp(rinstr->op_str, "jp") || !lib_c_strcmp(rinstr->op_str, "jpe") || !lib_c_strcmp(rinstr->op_str, "jnp") ||
-        !lib_c_strcmp(rinstr->op_str, "jpo") || !lib_c_strcmp(rinstr->op_str, "jl") || !lib_c_strcmp(rinstr->op_str, "jnge") ||
-        !lib_c_strcmp(rinstr->op_str, "jge") || !lib_c_strcmp(rinstr->op_str, "jnl") || !lib_c_strcmp(rinstr->op_str, "jle") ||
-        !lib_c_strcmp(rinstr->op_str, "jng") || !lib_c_strcmp(rinstr->op_str, "jg") || !lib_c_strcmp(rinstr->op_str, "jnle"))
+    if (!lib_text_compare(rinstr->op_str, "jo") || !lib_text_compare(rinstr->op_str, "jno") || !lib_text_compare(rinstr->op_str, "jb") ||
+        !lib_text_compare(rinstr->op_str, "jc") || !lib_text_compare(rinstr->op_str, "jnae") || !lib_text_compare(rinstr->op_str, "jae") ||
+        !lib_text_compare(rinstr->op_str, "jnb") || !lib_text_compare(rinstr->op_str, "jnc") || !lib_text_compare(rinstr->op_str, "je") ||
+        !lib_text_compare(rinstr->op_str, "jz") || !lib_text_compare(rinstr->op_str, "jne") || !lib_text_compare(rinstr->op_str, "jnz") ||
+        !lib_text_compare(rinstr->op_str, "jbe") || !lib_text_compare(rinstr->op_str, "jna") || !lib_text_compare(rinstr->op_str, "ja") ||
+        !lib_text_compare(rinstr->op_str, "jnbe") || !lib_text_compare(rinstr->op_str, "js") || !lib_text_compare(rinstr->op_str, "jns") ||
+        !lib_text_compare(rinstr->op_str, "jp") || !lib_text_compare(rinstr->op_str, "jpe") || !lib_text_compare(rinstr->op_str, "jnp") ||
+        !lib_text_compare(rinstr->op_str, "jpo") || !lib_text_compare(rinstr->op_str, "jl") || !lib_text_compare(rinstr->op_str, "jnge") ||
+        !lib_text_compare(rinstr->op_str, "jge") || !lib_text_compare(rinstr->op_str, "jnl") || !lib_text_compare(rinstr->op_str, "jle") ||
+        !lib_text_compare(rinstr->op_str, "jng") || !lib_text_compare(rinstr->op_str, "jg") || !lib_text_compare(rinstr->op_str, "jnle"))
     {
         switch (rinstr->ptr)
         {
@@ -10063,7 +10061,7 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
             return;
         }
     }
-    if (!lib_c_strcmp(rinstr->op_str, "jmp"))
+    if (!lib_text_compare(rinstr->op_str, "jmp"))
     {
         switch (rinstr->ptr)
         {
@@ -10080,7 +10078,7 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
             return;
         }
     }
-    if (!lib_c_strcmp(rinstr->op_str, "call"))
+    if (!lib_text_compare(rinstr->op_str, "call"))
     {
         switch (rinstr->ptr)
         {
@@ -10232,7 +10230,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
         {
             for (j = i - 1; j >= 0; --j)
             {
-                if (instr[j].flag_has_label && !lib_c_strcmp(instr[j].label_str, instr[i].label_str))
+                if (instr[j].flag_has_label && !lib_text_compare(instr[j].label_str, instr[i].label_str))
                 {
                     if (instr[j].flag_is_label)
                     {
@@ -10313,7 +10311,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
         {
             for (j = i + 1; j < count; ++j)
             {
-                if (instr[j].flag_has_label && !lib_c_strcmp(instr[j].label_str, instr[i].label_str))
+                if (instr[j].flag_has_label && !lib_text_compare(instr[j].label_str, instr[i].label_str))
                 {
                     if (instr[j].flag_is_label)
                     {

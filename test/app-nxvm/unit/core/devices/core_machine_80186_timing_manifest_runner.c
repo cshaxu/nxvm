@@ -92,29 +92,29 @@ static lib_i32 timing_80186_manifest_is_i186(
 
 static lib_i32 timing_80186_manifest_is_return_recipe(const char *key_id)
 {
-    return key_id != LIB_NULL && (lib_c_strcmp(key_id, "I186-RET-NEAR") == 0 ||
-        lib_c_strcmp(key_id, "I186-RET-NEAR-IMM") == 0 ||
-        lib_c_strcmp(key_id, "I186-RET-FAR") == 0 ||
-        lib_c_strcmp(key_id, "I186-RET-FAR-IMM") == 0 ||
-        lib_c_strcmp(key_id, "I186-RET-IRET") == 0);
+    return key_id != LIB_NULL && (lib_text_compare(key_id, "I186-RET-NEAR") == 0 ||
+        lib_text_compare(key_id, "I186-RET-NEAR-IMM") == 0 ||
+        lib_text_compare(key_id, "I186-RET-FAR") == 0 ||
+        lib_text_compare(key_id, "I186-RET-FAR-IMM") == 0 ||
+        lib_text_compare(key_id, "I186-RET-IRET") == 0);
 }
 
 static lib_i32 timing_80186_manifest_is_interrupt_recipe(const char *key_id)
 {
-    return key_id != LIB_NULL && (lib_c_strcmp(key_id, "I186-INT3") == 0 ||
-        lib_c_strcmp(key_id, "I186-INT-IMM") == 0 ||
-        lib_c_strcmp(key_id, "I186-INTO-TAKEN") == 0 ||
-        lib_c_strcmp(key_id, "I186-INTO-NOT") == 0);
+    return key_id != LIB_NULL && (lib_text_compare(key_id, "I186-INT3") == 0 ||
+        lib_text_compare(key_id, "I186-INT-IMM") == 0 ||
+        lib_text_compare(key_id, "I186-INTO-TAKEN") == 0 ||
+        lib_text_compare(key_id, "I186-INTO-NOT") == 0);
 }
 
 static lib_i32 timing_80186_manifest_is_halt_recipe(const char *key_id)
 {
-    return key_id != LIB_NULL && lib_c_strcmp(key_id, "I186-HLT") == 0;
+    return key_id != LIB_NULL && lib_text_compare(key_id, "I186-HLT") == 0;
 }
 
 static lib_i32 timing_80186_manifest_is_bound_recipe(const char *key_id)
 {
-    return key_id != LIB_NULL && lib_c_strcmp(key_id, "I186-BOUND") == 0;
+    return key_id != LIB_NULL && lib_text_compare(key_id, "I186-BOUND") == 0;
 }
 
 static lib_i32 timing_80186_manifest_is_repeat_phase_context(
@@ -139,7 +139,7 @@ static const timing_80186_manifest_record *timing_80186_manifest_find(
         const timing_80186_manifest_record *record =
             &timing_80186_manifest_records[index];
 
-        if (lib_c_strcmp(record->key_id, key_id) == 0) {
+        if (lib_text_compare(record->key_id, key_id) == 0) {
             timing_80186_manifest_current_index = (lib_i32)index;
             return record;
         }
@@ -241,7 +241,7 @@ static const timing_80186_manifest_inputs *timing_80186_manifest_inputs_find(
     lib_size index;
 
     for (index = 0u; index < sizeof(inputs) / sizeof(inputs[0]); ++index) {
-        if (lib_c_strcmp(inputs[index].key_id, key_id) == 0) return &inputs[index];
+        if (lib_text_compare(inputs[index].key_id, key_id) == 0) return &inputs[index];
     }
     return LIB_NULL;
 }
@@ -373,7 +373,7 @@ static lib_i32 timing_80186_manifest_run_recipe_with_inputs(
     }
     record = timing_80186_manifest_find(recipe->key_id);
     failed = record == LIB_NULL || !timing_80186_manifest_is_i186(record) ||
-        lib_c_strcmp(record->profile, "80186") != 0 ||
+        lib_text_compare(record->profile, "80186") != 0 ||
         !timing_80186_manifest_prepare(&machine, &capture, recipe->program,
             recipe->bytes, inputs, recipe->key_id);
     if (!failed) {
@@ -406,8 +406,8 @@ static lib_i32 timing_80186_manifest_run_segment_recipe(
     lib_size offset;
 
     if (base_recipe == LIB_NULL || base_recipe->bytes >= sizeof(recipe.program) ||
-        lib_c_strcmp(base_recipe->key_id, "I186-CALL-RM16") == 0 ||
-        lib_c_strcmp(base_recipe->key_id, "I186-JMP-RM16") == 0 ||
+        lib_text_compare(base_recipe->key_id, "I186-CALL-RM16") == 0 ||
+        lib_text_compare(base_recipe->key_id, "I186-JMP-RM16") == 0 ||
         lib_c_snprintf(key_id, sizeof(key_id), "%s-SEGMENT",
             base_recipe->key_id) < 0 || timing_80186_manifest_find(key_id) == LIB_NULL)
         return 0;
@@ -452,11 +452,11 @@ static lib_u8 timing_80186_manifest_odd_word_transfers(
     if (key_id == LIB_NULL) return 0u;
     for (index = 0u; index < sizeof(read_modify_write) /
             sizeof(read_modify_write[0]); ++index) {
-        if (lib_c_strcmp(key_id, read_modify_write[index]) == 0) return 2u;
+        if (lib_text_compare(key_id, read_modify_write[index]) == 0) return 2u;
     }
     for (index = 0u; index < sizeof(double_word_read) /
             sizeof(double_word_read[0]); ++index) {
-        if (lib_c_strcmp(key_id, double_word_read[index]) == 0) return 2u;
+        if (lib_text_compare(key_id, double_word_read[index]) == 0) return 2u;
     }
     return 1u;
 }
@@ -569,7 +569,7 @@ static lib_i32 timing_80186_manifest_run_repeat_recipe(
             recipe->key_id) < 0) return 1;
     record = timing_80186_manifest_find(recipe->key_id);
     failed = record == LIB_NULL || !timing_80186_manifest_is_i186(record) ||
-        lib_c_strcmp(record->profile, "80186") != 0 ||
+        lib_text_compare(record->profile, "80186") != 0 ||
         !timing_80186_manifest_prepare(&machine, &capture, program,
             sizeof(program), LIB_NULL, recipe->key_id);
     if (!failed) {
@@ -1754,7 +1754,7 @@ lib_i32 main(void)
             &timing_80186_manifest_records[index];
 
         if (!timing_80186_manifest_is_i186(record) ||
-            lib_c_strcmp(record->context, "BASE") != 0) continue;
+            lib_text_compare(record->context, "BASE") != 0) continue;
         if (!timing_80186_manifest_observed[index]) return 1;
         ++base_records;
     }
@@ -1774,7 +1774,7 @@ lib_i32 main(void)
             &timing_80186_manifest_records[index];
 
         if (!timing_80186_manifest_is_i186(record) ||
-            lib_c_strcmp(record->context, "LOCK") != 0) continue;
+            lib_text_compare(record->context, "LOCK") != 0) continue;
         if (!timing_80186_manifest_observed[index]) return 1;
         ++lock_records;
     }
@@ -1784,7 +1784,7 @@ lib_i32 main(void)
             &timing_80186_manifest_records[index];
 
         if (!timing_80186_manifest_is_i186(record) ||
-            lib_c_strcmp(record->context, "LOCK-SEGMENT") != 0) continue;
+            lib_text_compare(record->context, "LOCK-SEGMENT") != 0) continue;
         if (!timing_80186_manifest_observed[index]) return 1;
         ++lock_segment_records;
     }
@@ -1794,7 +1794,7 @@ lib_i32 main(void)
             &timing_80186_manifest_records[index];
 
         if (!timing_80186_manifest_is_i186(record) ||
-            lib_c_strcmp(record->context, "ODD-WORD") != 0) continue;
+            lib_text_compare(record->context, "ODD-WORD") != 0) continue;
         if (timing_80186_manifest_observed[index]) ++odd_word_records;
         else printf("M5:T435:S9:I186-MANIFEST-ODD-WORD-MISSING:%s\n",
             record->key_id);
@@ -1805,7 +1805,7 @@ lib_i32 main(void)
             &timing_80186_manifest_records[index];
 
         if (!timing_80186_manifest_is_i186(record) ||
-            lib_c_strcmp(record->context, "SEGMENT") != 0) continue;
+            lib_text_compare(record->context, "SEGMENT") != 0) continue;
         if (timing_80186_manifest_observed[index]) ++segment_records;
         else printf("M5:T435:S9:I186-MANIFEST-SEGMENT-MISSING:%s\n",
             record->key_id);
@@ -1814,15 +1814,15 @@ lib_i32 main(void)
             sizeof(timing_80186_manifest_records[0]); ++index) {
         const timing_80186_manifest_record *record =
             &timing_80186_manifest_records[index];
-        lib_i32 repeat_combination = lib_c_strcmp(record->context,
-            "SEGMENT-REP-PHASE-FIRST") == 0 || lib_c_strcmp(record->context,
-            "SEGMENT-REP-PHASE-CONTINUE") == 0 || lib_c_strcmp(record->context,
-            "SEGMENT-REP-PHASE-ZERO") == 0 || lib_c_strcmp(record->context,
-            "ODD-WORD-REP-PHASE-FIRST") == 0 || lib_c_strcmp(record->context,
-            "ODD-WORD-REP-PHASE-CONTINUE") == 0 || lib_c_strcmp(record->context,
-            "ODD-WORD-REP-PHASE-ZERO") == 0 || lib_c_strcmp(record->context,
-            "SEGMENT-ODD-WORD-REP-PHASE-FIRST") == 0 || lib_c_strcmp(record->context,
-            "SEGMENT-ODD-WORD-REP-PHASE-CONTINUE") == 0 || lib_c_strcmp(record->context,
+        lib_i32 repeat_combination = lib_text_compare(record->context,
+            "SEGMENT-REP-PHASE-FIRST") == 0 || lib_text_compare(record->context,
+            "SEGMENT-REP-PHASE-CONTINUE") == 0 || lib_text_compare(record->context,
+            "SEGMENT-REP-PHASE-ZERO") == 0 || lib_text_compare(record->context,
+            "ODD-WORD-REP-PHASE-FIRST") == 0 || lib_text_compare(record->context,
+            "ODD-WORD-REP-PHASE-CONTINUE") == 0 || lib_text_compare(record->context,
+            "ODD-WORD-REP-PHASE-ZERO") == 0 || lib_text_compare(record->context,
+            "SEGMENT-ODD-WORD-REP-PHASE-FIRST") == 0 || lib_text_compare(record->context,
+            "SEGMENT-ODD-WORD-REP-PHASE-CONTINUE") == 0 || lib_text_compare(record->context,
             "SEGMENT-ODD-WORD-REP-PHASE-ZERO") == 0;
 
         if (!timing_80186_manifest_is_i186(record) || !repeat_combination) continue;
@@ -1833,19 +1833,19 @@ lib_i32 main(void)
             sizeof(timing_80186_manifest_records[0]); ++index) {
         const timing_80186_manifest_record *record =
             &timing_80186_manifest_records[index];
-        lib_i32 combined = lib_c_strcmp(record->context, "LOCK-SEGMENT") == 0 ||
-            lib_c_strcmp(record->context, "SEGMENT-ODD-WORD") == 0 ||
-            lib_c_strcmp(record->context, "SEGMENT-REP-PHASE-FIRST") == 0 ||
-            lib_c_strcmp(record->context, "SEGMENT-REP-PHASE-CONTINUE") == 0 ||
-            lib_c_strcmp(record->context, "SEGMENT-REP-PHASE-ZERO") == 0 ||
-            lib_c_strcmp(record->context, "ODD-WORD-REP-PHASE-FIRST") == 0 ||
-            lib_c_strcmp(record->context, "ODD-WORD-REP-PHASE-CONTINUE") == 0 ||
-            lib_c_strcmp(record->context, "ODD-WORD-REP-PHASE-ZERO") == 0 ||
-            lib_c_strcmp(record->context,
+        lib_i32 combined = lib_text_compare(record->context, "LOCK-SEGMENT") == 0 ||
+            lib_text_compare(record->context, "SEGMENT-ODD-WORD") == 0 ||
+            lib_text_compare(record->context, "SEGMENT-REP-PHASE-FIRST") == 0 ||
+            lib_text_compare(record->context, "SEGMENT-REP-PHASE-CONTINUE") == 0 ||
+            lib_text_compare(record->context, "SEGMENT-REP-PHASE-ZERO") == 0 ||
+            lib_text_compare(record->context, "ODD-WORD-REP-PHASE-FIRST") == 0 ||
+            lib_text_compare(record->context, "ODD-WORD-REP-PHASE-CONTINUE") == 0 ||
+            lib_text_compare(record->context, "ODD-WORD-REP-PHASE-ZERO") == 0 ||
+            lib_text_compare(record->context,
                 "SEGMENT-ODD-WORD-REP-PHASE-FIRST") == 0 ||
-            lib_c_strcmp(record->context,
+            lib_text_compare(record->context,
                 "SEGMENT-ODD-WORD-REP-PHASE-CONTINUE") == 0 ||
-            lib_c_strcmp(record->context,
+            lib_text_compare(record->context,
                 "SEGMENT-ODD-WORD-REP-PHASE-ZERO") == 0;
 
         if (!timing_80186_manifest_is_i186(record) || !combined) continue;

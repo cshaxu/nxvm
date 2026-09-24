@@ -106,10 +106,10 @@ int main(void)
     assert(result.text[0] == '\0' && !result.arm_prompt);
     app_command_note_monitor_current(&context, LIB_TRUE, &result);
     assert(result.text[0] == '\0' && result.arm_prompt);
-    assert(lib_c_strcmp(result.prompt, "MyNes> ") == 0);
+    assert(lib_text_compare(result.prompt, "MyNes> ") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "", &result);
     assert(result.text[0] == '\0' && result.arm_prompt &&
-        lib_c_strcmp(result.prompt, "MyNes> ") == 0);
+        lib_text_compare(result.prompt, "MyNes> ") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "start", &result);
     assert(app_command_output_compare(result.text, "Insert a cartridge before starting.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "save", &result);

@@ -1717,13 +1717,13 @@ int main(lib_i32 argc, char **argv)
     while (argc > 1) {
         const char *option = argv[argc - 1];
 
-        if (!lib_c_strcmp(option, "--first-exception")) stop_at_first_exception = 1;
-        else if (!lib_c_strcmp(option, "--short")) short_budget = 1;
-        else if (!lib_c_strcmp(option, "--trace")) trace_enabled = 1;
-        else if (!lib_c_strcmp(option, "--no-retirement-observation"))
+        if (!lib_text_compare(option, "--first-exception")) stop_at_first_exception = 1;
+        else if (!lib_text_compare(option, "--short")) short_budget = 1;
+        else if (!lib_text_compare(option, "--trace")) trace_enabled = 1;
+        else if (!lib_text_compare(option, "--no-retirement-observation"))
             no_retirement_observation = 1;
-        else if (!lib_c_strcmp(option, "--resume-f1")) press_resume_f1 = 1;
-        else if (!lib_c_strcmp(option, "--turbo")) turbo = 1;
+        else if (!lib_text_compare(option, "--resume-f1")) press_resume_f1 = 1;
+        else if (!lib_text_compare(option, "--turbo")) turbo = 1;
         else break;
         --argc;
     }

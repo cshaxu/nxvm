@@ -13,8 +13,8 @@ typedef struct { lib_i32 alive; } lib_linux_pthread_cond_t;
 typedef struct { lib_i32 alive, clock; } lib_linux_pthread_condattr_t;
 typedef lib_i32 lib_linux_pthread_once_t;
 typedef lib_i32 lib_linux_pthread_t;
-typedef long lib_linux_time_t;
-typedef struct { lib_linux_time_t tv_sec; long tv_nsec; } lib_linux_timespec;
+typedef lib_i64 lib_linux_time_t;
+typedef struct { lib_linux_time_t tv_sec; lib_i64 tv_nsec; } lib_linux_timespec;
 #define LIB_LINUX_PTHREAD_MUTEX_INITIALIZER { 1, 0 }
 #define LIB_LINUX_PTHREAD_ONCE_INIT 0
 #define LIB_LINUX_CLOCK_MONOTONIC 1
@@ -76,7 +76,7 @@ static inline lib_i32 lib_linux_clock_gettime(lib_i32 clock, lib_linux_timespec 
 {
     assert(clock == LIB_LINUX_CLOCK_MONOTONIC);
     if (clock_failure) return 1;
-    *value = (lib_linux_timespec){ 100 + wait_calls, 900000000L };
+    *value = (lib_linux_timespec){ 100 + wait_calls, 900000000 };
     return 0;
 }
 static inline lib_i32 lib_linux_nanosleep(const lib_linux_timespec *duration, lib_linux_timespec *remaining)

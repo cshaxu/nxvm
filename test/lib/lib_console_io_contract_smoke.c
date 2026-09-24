@@ -2,7 +2,6 @@
 #include "lib/types/win32/sync.h"
 #include "lib/console/binding_interface.h"
 #include <assert.h>
-#include <string.h>
 
 static const char *input;
 static lib_u32 chunk = 7, reads, cancel_at;
@@ -31,7 +30,7 @@ static WORD first_attribute;
 static COORD buffer_size={80,25};
 static SMALL_RECT viewport={0,0,79,24};
 static BOOL WINAPI screen_info(HANDLE h, PCONSOLE_SCREEN_BUFFER_INFO p)
-{ (void)h; memset(p, 0, sizeof(*p)); p->dwSize=buffer_size; p->srWindow=viewport; return TRUE; }
+{ (void)h; lib_memory_set(p, 0, sizeof(*p)); p->dwSize=buffer_size; p->srWindow=viewport; return TRUE; }
 static BOOL WINAPI set_viewport(HANDLE h,BOOL absolute,const SMALL_RECT *rect)
 { (void)h; assert(absolute); viewport=*rect; return TRUE; }
 static BOOL WINAPI resize_buffer(HANDLE h,COORD size)
@@ -138,7 +137,7 @@ int main(void)
     b.generation=1; b.mode=CONSOLE_BROKER_COOKED_LINES;
     stop=b.stop_event=CreateEventA(NULL,TRUE,FALSE,NULL); assert(stop);
     for (lib_u32 n=1022;n<=1024;++n) {
-        memset(line,'x',n); strcpy(line+n,"\r\nhelp\r\n"); input=line;
+        lib_memory_set(line,'x',n); lib_text_copy(line+n,"\r\nhelp\r\n"); input=line;
         for (chunk=1;chunk<=1023;chunk+=1022) {
             input=line; delivered=0;
             console_broker_reader(&b);
@@ -147,10 +146,10 @@ int main(void)
             assert(received.value.line.length==(n>1023 ? 0 : n));
             console_broker_reader(&b);
             assert(delivered==2 && received.kind==LIB_CONSOLE_EVENT_COOKED_LINE);
-            assert(strcmp(received.value.line.text,"help")==0);
+            assert(lib_text_compare(received.value.line.text,"help")==0);
         }
     }
-    memset(line,'x',2048);strcpy(line+2048,"\r\n");input=line;
+    lib_memory_set(line,'x',2048);lib_text_copy(line+2048,"\r\n");input=line;
     reads=0;cancel_at=2;chunk=7;delivered=0;
     console_broker_reader(&b);assert(delivered==0);ResetEvent(stop);cancel_at=0;
     assert(base_sync_mutex_create(&b.output_lock)==LIB_STATUS_OK);
@@ -227,7 +226,7 @@ int main(void)
     base_sync_mutex_destroy(b.transaction_lock);base_sync_mutex_destroy(b.output_lock);CloseHandle(stop);lib_console_release(b.console);
     cooked_restore();
     /* Disposal must not restore native mode a second time. */
-    console_broker_backend *disposed=calloc(1,sizeof(*disposed));
+    console_broker_backend *disposed=lib_allocate_zero(1,sizeof(*disposed));
     disposed->input=disposed->output=INVALID_HANDLE_VALUE;
     assert(base_sync_mutex_create(&disposed->output_lock)==LIB_STATUS_OK);
     assert(base_sync_mutex_create(&disposed->transaction_lock)==LIB_STATUS_OK);

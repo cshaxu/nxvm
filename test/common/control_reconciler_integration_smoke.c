@@ -1,6 +1,5 @@
 #include "common/session/control.h"
 #include <assert.h>
-#include <string.h>
 
 /* These stubs keep the test at the application control boundary while making
  * the paused guest-injection barrier observable. */

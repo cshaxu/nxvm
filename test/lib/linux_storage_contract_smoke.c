@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #define LIB_TYPES_LINUX_FILE_H
-typedef long lib_linux_off_t;
+typedef lib_i64 lib_linux_off_t;
 #define LIB_LINUX_LOCK_SH 1
 #define LIB_LINUX_LOCK_EX 2
 #define LIB_LINUX_LOCK_NB 4

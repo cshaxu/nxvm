@@ -1,7 +1,6 @@
 #include "common/machine/input_queue.h"
 
 #include <assert.h>
-#include <string.h>
 
 int main(void)
 {
@@ -20,9 +19,9 @@ int main(void)
     assert(common_machine_input_queue_push(queue, &first));
     assert(common_machine_input_queue_push(queue, &second));
     assert(common_machine_input_queue_pop(queue, &actual));
-    assert(memcmp(&actual, &first, sizeof(actual)) == 0);
+    assert(lib_memory_compare(&actual, &first, sizeof(actual)) == 0);
     assert(common_machine_input_queue_pop(queue, &actual));
-    assert(memcmp(&actual, &second, sizeof(actual)) == 0);
+    assert(lib_memory_compare(&actual, &second, sizeof(actual)) == 0);
     assert(!common_machine_input_queue_pending(queue));
     common_machine_input_queue_dispose(queue);
     return 0;

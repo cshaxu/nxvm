@@ -1,7 +1,6 @@
 #include "lib/types/win32/console.h"
 #include "lib/types/win32/sync.h"
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
 #include "lib/base/sync_interface.h"
 
@@ -93,7 +92,7 @@ static void snapshot(display_snapshot *s)
     COORD size = {120, 30}, origin = {0, 0};
     SMALL_RECT region = {0, 0, 119, 29};
     assert(output != INVALID_HANDLE_VALUE);
-    memset(s, 0, sizeof(*s));
+    lib_memory_set(s, 0, sizeof(*s));
     s->info.cbSize = sizeof(s->info);
     assert(GetConsoleScreenBufferInfoEx(output, &s->info));
     assert(GetConsoleCursorInfo(output, &s->cursor));
@@ -109,7 +108,7 @@ static void expect_display(const display_snapshot *expected)
     static lib_u32 checkpoint;
     snapshot(&actual);
     ++checkpoint;
-    if (memcmp(&actual, expected, sizeof(actual)) != 0) {
+    if (lib_memory_compare(&actual, expected, sizeof(actual)) != 0) {
         fprintf(stderr, "display checkpoint %u: size %d,%d/%d,%d cursor %d,%d/%d,%d viewport %d,%d,%d,%d/%d,%d,%d,%d cells=%d palette=%d cursor-style=%d mode=%lu/%lu\n",
             checkpoint, actual.info.dwSize.X, actual.info.dwSize.Y,
             expected->info.dwSize.X, expected->info.dwSize.Y,
@@ -117,11 +116,11 @@ static void expect_display(const display_snapshot *expected)
             expected->info.dwCursorPosition.X, expected->info.dwCursorPosition.Y,
             actual.info.srWindow.Left, actual.info.srWindow.Top, actual.info.srWindow.Right, actual.info.srWindow.Bottom,
             expected->info.srWindow.Left, expected->info.srWindow.Top, expected->info.srWindow.Right, expected->info.srWindow.Bottom,
-            memcmp(actual.cells, expected->cells, sizeof(actual.cells)),
-            memcmp(actual.info.ColorTable, expected->info.ColorTable, sizeof(actual.info.ColorTable)),
-            memcmp(&actual.cursor, &expected->cursor, sizeof(actual.cursor)), actual.mode, expected->mode);
+            lib_memory_compare(actual.cells, expected->cells, sizeof(actual.cells)),
+            lib_memory_compare(actual.info.ColorTable, expected->info.ColorTable, sizeof(actual.info.ColorTable)),
+            lib_memory_compare(&actual.cursor, &expected->cursor, sizeof(actual.cursor)), actual.mode, expected->mode);
     }
-    assert(memcmp(&actual, expected, sizeof(actual)) == 0);
+    assert(lib_memory_compare(&actual, expected, sizeof(actual)) == 0);
 }
 
 static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
@@ -184,12 +183,12 @@ static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
             fprintf(stderr, "extent %d,%d round %d: restored %d,%d expected %d,%d\n",
                 columns, rows, round, actual.dwSize.X, actual.dwSize.Y, before.dwSize.X, before.dwSize.Y);
         assert(actual.dwSize.X == before.dwSize.X && actual.dwSize.Y == before.dwSize.Y);
-        if (memcmp(&actual.srWindow, &before.srWindow, sizeof(actual.srWindow)) != 0)
+        if (lib_memory_compare(&actual.srWindow, &before.srWindow, sizeof(actual.srWindow)) != 0)
             fprintf(stderr, "viewport %d,%d round %d: %d,%d,%d,%d expected %d,%d,%d,%d\n",
                 columns, rows, round, actual.srWindow.Left, actual.srWindow.Top,
                 actual.srWindow.Right, actual.srWindow.Bottom, before.srWindow.Left,
                 before.srWindow.Top, before.srWindow.Right, before.srWindow.Bottom);
-        assert(memcmp(&actual.srWindow, &before.srWindow, sizeof(actual.srWindow)) == 0);
+        assert(lib_memory_compare(&actual.srWindow, &before.srWindow, sizeof(actual.srWindow)) == 0);
     }
     assert(console_broker_destroy(broker) == 0);
     lib_console_release(raw); lib_console_release(cooked);

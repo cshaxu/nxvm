@@ -55,7 +55,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             &ini_session) != LIB_STATUS_OK) return 77;
     session = ini_session.session;
     turbo = argc == 4;
-    if ((turbo && lib_c_strcmp(argv[3], "turbo")) ||
+    if ((turbo && lib_text_compare(argv[3], "turbo")) ||
         (turbo && vm_machine_set_speed(session, VM_MACHINE_SPEED_TURBO) != LIB_STATUS_OK)) {
         goto fail;
     }

@@ -107,19 +107,17 @@ endif()
 
 set(project_t317_checked_files 0)
 foreach(project_t317_file IN LISTS project_t317_code_files)
-    # src/lib is an independently buildable shared corpus with its own
-    # base facade and manifest; it must not inherit NXVM's type vocabulary.
-    if(project_t317_file MATCHES "^(src|test)/lib/")
-        continue()
-    endif()
     set(project_t317_path "${PROJECT_T317_TYPE_SOURCE_DIR}/${project_t317_file}")
     if(NOT EXISTS "${project_t317_path}")
         continue()
     endif()
     file(READ "${project_t317_path}" project_t317_content)
-    if(project_t317_file STREQUAL "src/lib/types/types_interface.h")
-        project_t317_type_facade_is_foundational("${project_t317_content}"
-            project_t317_forbidden_found)
+    if(project_t317_file STREQUAL "src/lib/types/types_interface.h" OR
+            project_t317_file STREQUAL "src/lib/types/atomic.h" OR
+            project_t317_file STREQUAL "test/lib/types_layout_selftest.cmake")
+        # These are the only Lib-owned C/compiler type adapters.  All other
+        # source and test consumers are checked below.
+        set(project_t317_forbidden_found FALSE)
     else()
         project_t317_content_has_forbidden("${project_t317_content}"
             project_t317_forbidden_found)

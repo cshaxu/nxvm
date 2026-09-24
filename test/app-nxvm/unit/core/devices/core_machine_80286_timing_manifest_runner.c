@@ -110,10 +110,10 @@ static lib_i32 timing_80286_manifest_key_has_prefix(const char *key,
 
 static lib_i32 timing_80286_manifest_is_dx_port(const char *key_id)
 {
-    return key_id != LIB_NULL && (lib_c_strcmp(key_id, "I286-IN-DX-B") == 0 ||
-        lib_c_strcmp(key_id, "I286-IN-DX-W") == 0 ||
-        lib_c_strcmp(key_id, "I286-OUT-DX-B") == 0 ||
-        lib_c_strcmp(key_id, "I286-OUT-DX-W") == 0);
+    return key_id != LIB_NULL && (lib_text_compare(key_id, "I286-IN-DX-B") == 0 ||
+        lib_text_compare(key_id, "I286-IN-DX-W") == 0 ||
+        lib_text_compare(key_id, "I286-OUT-DX-B") == 0 ||
+        lib_text_compare(key_id, "I286-OUT-DX-W") == 0);
 }
 
 static lib_i32 timing_80286_manifest_is_interrupt(const char *key_id)
@@ -133,7 +133,7 @@ static lib_i32 timing_80286_manifest_is_interrupt(const char *key_id)
         return 1;
     }
     for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
-        if (lib_c_strcmp(key_id, keys[index]) == 0) return 1;
+        if (lib_text_compare(key_id, keys[index]) == 0) return 1;
     }
     return 0;
 }
@@ -163,15 +163,15 @@ static lib_i32 timing_80286_manifest_uses_stack(const char *key_id)
 
     if (key_id == LIB_NULL) return 0;
     for (index = 0u; index < sizeof(stack_keys) / sizeof(stack_keys[0]); ++index) {
-        if (lib_c_strcmp(key_id, stack_keys[index]) == 0) return 1;
+        if (lib_text_compare(key_id, stack_keys[index]) == 0) return 1;
     }
     return 0;
 }
 
 static lib_i32 timing_80286_manifest_uses_far_target(const char *key_id)
 {
-    return key_id != LIB_NULL && (lib_c_strcmp(key_id,
-        "I286-JMP-FAR-REAL-NEXT-BYTE-2") == 0 || lib_c_strcmp(key_id,
+    return key_id != LIB_NULL && (lib_text_compare(key_id,
+        "I286-JMP-FAR-REAL-NEXT-BYTE-2") == 0 || lib_text_compare(key_id,
         "I286-RET-NEAR-NEXT-BYTE-1") == 0);
 }
 
@@ -186,14 +186,14 @@ static lib_i32 timing_80286_manifest_is_ret_near_next_byte(const char *key_id)
 
     if (key_id == LIB_NULL) return 0;
     for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
-        if (lib_c_strcmp(key_id, keys[index]) == 0) return 1;
+        if (lib_text_compare(key_id, keys[index]) == 0) return 1;
     }
     return 0;
 }
 
 static lib_i32 timing_80286_manifest_is_bound(const char *key_id)
 {
-    return key_id != LIB_NULL && lib_c_strcmp(key_id, "I286-BOUND") == 0;
+    return key_id != LIB_NULL && lib_text_compare(key_id, "I286-BOUND") == 0;
 }
 
 static lib_i32 timing_80286_manifest_uses_odd_memory_operand(const char *key_id)
@@ -225,7 +225,7 @@ static lib_i32 timing_80286_manifest_uses_odd_memory_operand(const char *key_id)
 
     if (key_id == LIB_NULL) return 0;
     for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
-        if (lib_c_strcmp(key_id, keys[index]) == 0) return 1;
+        if (lib_text_compare(key_id, keys[index]) == 0) return 1;
     }
     return 0;
 }
@@ -233,9 +233,9 @@ static lib_i32 timing_80286_manifest_uses_odd_memory_operand(const char *key_id)
 static lib_u16 timing_80286_manifest_control_cx(const char *key_id)
 {
     if (key_id == LIB_NULL) return 2u;
-    if (lib_c_strcmp(key_id, "I286-JCXZ-TAKEN") == 0) return 0u;
-    if (lib_c_strcmp(key_id, "I286-JCXZ-NOT") == 0 ||
-        lib_c_strcmp(key_id, "I286-LOOP-NOT") == 0) return 1u;
+    if (lib_text_compare(key_id, "I286-JCXZ-TAKEN") == 0) return 0u;
+    if (lib_text_compare(key_id, "I286-JCXZ-NOT") == 0 ||
+        lib_text_compare(key_id, "I286-LOOP-NOT") == 0) return 1u;
     return 2u;
 }
 
@@ -267,7 +267,7 @@ static const timing_80286_manifest_record *timing_80286_manifest_find(
     timing_80286_manifest_base_index = -1;
     for (index = 0u; index < sizeof(timing_80286_manifest_records) /
             sizeof(timing_80286_manifest_records[0]); ++index) {
-        if (lib_c_strcmp(timing_80286_manifest_records[index].key_id, key_id) == 0) {
+        if (lib_text_compare(timing_80286_manifest_records[index].key_id, key_id) == 0) {
             timing_80286_manifest_current_index = (lib_i32)index;
             break;
         }
@@ -279,7 +279,7 @@ static const timing_80286_manifest_record *timing_80286_manifest_find(
         lib_size length = 0u;
 
         while (base[length] != '\0' && key_id[length] == base[length]) ++length;
-        if (base[length] == '\0' && lib_c_strcmp(key_id + length,
+        if (base[length] == '\0' && lib_text_compare(key_id + length,
                 "-NEXT-BYTE-1") == 0) {
             timing_80286_manifest_base_index = (lib_i32)index;
             break;
@@ -931,14 +931,14 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
         status = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, &return_ip, sizeof(return_ip));
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-STACK-LEAVE") == 0) {
         machine->executor_cpu.data.ebp = TIMING_80286_MANIFEST_STACK_LINEAR;
     }
     if (status == LIB_STATUS_OK && timing_80286_manifest_uses_far_target(key_id)) {
         static const lib_u8 one_byte_target[] = { 0x90u };
         static const lib_u8 two_byte_target[] = { 0x00u, 0xc0u };
-        const void *target_code = lib_c_strcmp(key_id,
+        const void *target_code = lib_text_compare(key_id,
             "I286-RET-NEAR-NEXT-BYTE-1") == 0 ? one_byte_target :
             two_byte_target;
         lib_size target_bytes = target_code == one_byte_target ?
@@ -950,8 +950,8 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
     if (status == LIB_STATUS_OK && timing_80286_manifest_flags_active) {
         machine->executor_cpu.data.eflags = timing_80286_manifest_eflags;
     }
-    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id, "I286-XLAT") == 0 ||
-            lib_c_strcmp(key_id, "I286-XLAT-SEGMENT") == 0)) {
+    if (status == LIB_STATUS_OK && (lib_text_compare(key_id, "I286-XLAT") == 0 ||
+            lib_text_compare(key_id, "I286-XLAT-SEGMENT") == 0)) {
         static const lib_u8 value[] = { 0x5au };
 
         machine->executor_cpu.data.ebx = 0x1000u;
@@ -1035,70 +1035,70 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
     }
     if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         0x2000u, program, bytes);
-    if (lib_c_strcmp(key_id, "I286-SYSTEM-LLDT-R") == 0 ||
-        lib_c_strcmp(key_id, "I286-SYSTEM-LLDT-M") == 0 ||
-        lib_c_strcmp(key_id, "I286-SYSTEM-LLDT-M-EA-BID") == 0 ||
-        lib_c_strcmp(key_id, "I286-SYSTEM-LLDT-M-SEGMENT") == 0) {
+    if (lib_text_compare(key_id, "I286-SYSTEM-LLDT-R") == 0 ||
+        lib_text_compare(key_id, "I286-SYSTEM-LLDT-M") == 0 ||
+        lib_text_compare(key_id, "I286-SYSTEM-LLDT-M-EA-BID") == 0 ||
+        lib_text_compare(key_id, "I286-SYSTEM-LLDT-M-SEGMENT") == 0) {
         operand = 0x0028u;
-    } else if (lib_c_strcmp(key_id, "I286-SYSTEM-LTR-R") == 0 ||
-        lib_c_strcmp(key_id, "I286-SYSTEM-LTR-M") == 0 ||
-        lib_c_strcmp(key_id, "I286-SYSTEM-LTR-M-EA-BID") == 0 ||
-        lib_c_strcmp(key_id, "I286-SYSTEM-LTR-M-SEGMENT") == 0) {
+    } else if (lib_text_compare(key_id, "I286-SYSTEM-LTR-R") == 0 ||
+        lib_text_compare(key_id, "I286-SYSTEM-LTR-M") == 0 ||
+        lib_text_compare(key_id, "I286-SYSTEM-LTR-M-EA-BID") == 0 ||
+        lib_text_compare(key_id, "I286-SYSTEM-LTR-M-SEGMENT") == 0) {
         operand = 0x0030u;
     }
     if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
         0x4000u, &operand, sizeof(operand));
-    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id,
-            "I286-LDS-M-PM") == 0 || lib_c_strcmp(key_id,
-            "I286-LES-M-PM") == 0 || lib_c_strcmp(key_id,
-            "I286-LDS-M-PM-SEGMENT") == 0 || lib_c_strcmp(key_id,
-            "I286-LES-M-PM-SEGMENT") == 0 || lib_c_strcmp(key_id,
-            "I286-LDS-M-PM-EA-BID") == 0 || lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && (lib_text_compare(key_id,
+            "I286-LDS-M-PM") == 0 || lib_text_compare(key_id,
+            "I286-LES-M-PM") == 0 || lib_text_compare(key_id,
+            "I286-LDS-M-PM-SEGMENT") == 0 || lib_text_compare(key_id,
+            "I286-LES-M-PM-SEGMENT") == 0 || lib_text_compare(key_id,
+            "I286-LDS-M-PM-EA-BID") == 0 || lib_text_compare(key_id,
             "I286-LES-M-PM-EA-BID") == 0)) {
         const lib_u16 pointer[] = { 1u, 0x0010u };
 
         status = core_machine_memory_write(machine, 0x4000u, pointer,
             sizeof(pointer));
     }
-    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id,
-            "I286-LDS-M-PM-EA-BID-ODD-WORD") == 0 || lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && (lib_text_compare(key_id,
+            "I286-LDS-M-PM-EA-BID-ODD-WORD") == 0 || lib_text_compare(key_id,
             "I286-LES-M-PM-EA-BID-ODD-WORD") == 0)) {
         const lib_u16 pointer[] = { 1u, 0x0010u };
 
         status = core_machine_memory_write(machine, 0x4001u, pointer,
             sizeof(pointer));
     }
-    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id,
-            "I286-LDS-M-PM-ODD-WORD") == 0 || lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && (lib_text_compare(key_id,
+            "I286-LDS-M-PM-ODD-WORD") == 0 || lib_text_compare(key_id,
             "I286-LES-M-PM-ODD-WORD") == 0)) {
         const lib_u16 pointer[] = { 1u, 0x0010u };
 
         status = core_machine_memory_write(machine, 0x4001u, pointer,
             sizeof(pointer));
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-MOV-SREG-LOAD-PM-ODD-WORD") == 0) {
         const lib_u16 selector = 0x0010u;
 
         status = core_machine_memory_write(machine, 0x4001u, &selector,
             sizeof(selector));
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-MOV-SREG-LOAD-PM-EA-BID-ODD-WORD") == 0) {
         const lib_u16 selector = 0x0010u;
 
         status = core_machine_memory_write(machine, 0x4001u, &selector,
             sizeof(selector));
     }
-    if (status == LIB_STATUS_OK && (lib_c_strcmp(key_id,
-            "I286-SYSTEM-LGDT-M-EA-BID") == 0 || lib_c_strcmp(key_id,
-            "I286-SYSTEM-LIDT-M-EA-BID") == 0 || lib_c_strcmp(key_id,
-            "I286-SYSTEM-LGDT-M-SEGMENT") == 0 || lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && (lib_text_compare(key_id,
+            "I286-SYSTEM-LGDT-M-EA-BID") == 0 || lib_text_compare(key_id,
+            "I286-SYSTEM-LIDT-M-EA-BID") == 0 || lib_text_compare(key_id,
+            "I286-SYSTEM-LGDT-M-SEGMENT") == 0 || lib_text_compare(key_id,
             "I286-SYSTEM-LIDT-M-SEGMENT") == 0)) {
         status = core_machine_memory_write(machine, 0x4000u, table_pointer,
             sizeof(table_pointer));
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-STACK-POP-SEG-PM") == 0) {
         const lib_u16 selector = 0x0010u;
 
@@ -1106,7 +1106,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x4000u, &selector,
             sizeof(selector));
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-RET-FAR-SAME-NEXT-BYTE-2") == 0) {
         const lib_u16 return_frame[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
@@ -1117,7 +1117,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x2010u, target, sizeof(target));
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-RET-IRET-NORMAL-NEXT-BYTE-2") == 0) {
         const lib_u16 return_frame[] = { 0x0010u, 0x0008u, 0x0002u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
@@ -1128,7 +1128,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x2010u, target, sizeof(target));
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-CALL-FAR-DIRECT-PM-NEXT-BYTE-2") == 0) {
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
@@ -1136,7 +1136,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x2010u, target,
             sizeof(target));
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-JMP-FAR-PM-NEXT-BYTE-2") == 0) {
         const lib_u16 pointer[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
@@ -1147,7 +1147,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
             0x2010u, target,
             sizeof(target));
     }
-    if (status == LIB_STATUS_OK && lib_c_strcmp(key_id,
+    if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-CALL-FAR-M-PM-NEXT-BYTE-2") == 0) {
         const lib_u16 pointer[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
@@ -1188,7 +1188,7 @@ static lib_i32 timing_80286_manifest_run(
     if (recipe == LIB_NULL) return 1;
     record = timing_80286_manifest_find(recipe->key_id);
     failed = record == LIB_NULL || !timing_80286_manifest_is_i286(record) ||
-        lib_c_strcmp(record->profile, "80286") != 0 ||
+        lib_text_compare(record->profile, "80286") != 0 ||
         !timing_80286_manifest_prepare(&machine, &capture, recipe->key_id,
             recipe->program, recipe->bytes);
     if (!failed) {
@@ -2736,7 +2736,7 @@ static lib_i32 timing_80286_manifest_run_protected_system(
     if (recipe == LIB_NULL) return 1;
     record = timing_80286_manifest_find(recipe->key_id);
     failed = record == LIB_NULL || !timing_80286_manifest_is_i286(record) ||
-        lib_c_strcmp(record->profile, "80286") != 0 ||
+        lib_text_compare(record->profile, "80286") != 0 ||
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             recipe->key_id, recipe->program, recipe->bytes);
     if (!failed) {
@@ -2780,7 +2780,7 @@ static lib_i32 timing_80286_manifest_run_control(
     timing_80286_manifest_flags_active = 1;
     record = timing_80286_manifest_find(recipe->key_id);
     failed = record == LIB_NULL || !timing_80286_manifest_is_i286(record) ||
-        lib_c_strcmp(record->profile, "80286") != 0 ||
+        lib_text_compare(record->profile, "80286") != 0 ||
         !timing_80286_manifest_prepare(&machine, &capture, recipe->key_id,
             program, sizeof(program));
     if (!failed) {

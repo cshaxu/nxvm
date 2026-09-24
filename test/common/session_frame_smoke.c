@@ -1,6 +1,5 @@
 #include "common/session/session_interface.h"
 #include <assert.h>
-#include <string.h>
 
 static common_machine_frame published;
 static lib_u32 current_run = 7u, published_run = 7u, copies, deliveries;

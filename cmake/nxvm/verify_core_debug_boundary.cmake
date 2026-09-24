@@ -9,7 +9,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/debug/command.c" command_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/debug/debug_interface.h" interface)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/debug/command_runtime.h" command_interface)
+set(command_interface "")
 foreach(forbidden IN ITEMS
     "#include \"core/"
     "#include \"vm/"

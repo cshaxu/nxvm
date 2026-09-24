@@ -89,7 +89,7 @@ lib_i32 nxvm_console_process_run(const char *executable,
 
     startup.cb = sizeof(startup);
     if (executable == LIB_NULL || session_directory == LIB_NULL ||
-        profile_file == LIB_NULL || lib_c_strcmp(profile_file, "NXVM.ini") ||
+        profile_file == LIB_NULL || lib_text_compare(profile_file, "NXVM.ini") ||
         (command_count != 0u && (commands == LIB_NULL || markers == LIB_NULL))) return 0;
     startup.dwFlags = STARTF_USESHOWWINDOW;
     startup.wShowWindow = SW_HIDE;

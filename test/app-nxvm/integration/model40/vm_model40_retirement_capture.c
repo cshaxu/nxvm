@@ -481,7 +481,7 @@ static lib_i32 model40_capture_form_matches(
     const core_machine_retirement_observation *observation)
 {
     return form != LIB_NULL && observation != LIB_NULL &&
-        !lib_c_strcmp(form->form, name) && !lib_c_strcmp(form->operand, operand) &&
+        !lib_text_compare(form->form, name) && !lib_text_compare(form->operand, operand) &&
         form->opcode == opcode && form->escape_opcode == escape_opcode &&
         form->group_extension == group_extension &&
         form->source_timing_form_id == source_timing_form_id &&
@@ -1043,15 +1043,15 @@ static lib_i32 model40_capture_create_session(lib_i32 argc, char **argv,
     integration_ini_session *out_session)
 {
     if (argv == LIB_NULL || out_session == LIB_NULL ||
-        (argc != 3 && (argc != 4 || (lib_c_strcmp(argv[3], "--terminal-bytes") &&
-        lib_c_strcmp(argv[3], "--c1-diagnostic") &&
-        lib_c_strcmp(argv[3], "--post-c0-io-diagnostic") &&
-        lib_c_strcmp(argv[3], "--c0a-diagnostic") &&
-        lib_c_strcmp(argv[3], "--c1-transfer-diagnostic") &&
-        lib_c_strcmp(argv[3], "--fdc-read-data-diagnostic") &&
-        lib_c_strcmp(argv[3], "--port-sequence-diagnostic") &&
-        lib_c_strcmp(argv[3], "--d4-memory-diagnostic") &&
-        lib_c_strcmp(argv[3], "--warm-reset-diagnostic"))))) return 0;
+        (argc != 3 && (argc != 4 || (lib_text_compare(argv[3], "--terminal-bytes") &&
+        lib_text_compare(argv[3], "--c1-diagnostic") &&
+        lib_text_compare(argv[3], "--post-c0-io-diagnostic") &&
+        lib_text_compare(argv[3], "--c0a-diagnostic") &&
+        lib_text_compare(argv[3], "--c1-transfer-diagnostic") &&
+        lib_text_compare(argv[3], "--fdc-read-data-diagnostic") &&
+        lib_text_compare(argv[3], "--port-sequence-diagnostic") &&
+        lib_text_compare(argv[3], "--d4-memory-diagnostic") &&
+        lib_text_compare(argv[3], "--warm-reset-diagnostic"))))) return 0;
     return integration_ini_session_open(argv[1], argv[2], out_session) ==
         LIB_STATUS_OK && out_session->session != LIB_NULL;
 }
@@ -1110,7 +1110,7 @@ static lib_i32 model40_capture_synthetic_c0_smoke(void)
         capture.post_c0_io_port != 0x0084u || capture.count != 8u ||
         capture.classified != 7u || capture.unallocated != 1u ||
         capture.form_count != 8u ||
-        lib_c_strcmp(capture.forms[0].form, "mov-immediate")) return 1;
+        lib_text_compare(capture.forms[0].form, "mov-immediate")) return 1;
     printf("M5:T390:S17:M40-C0-CAPTURE:OK\n");
     printf("M5:T390:S29:M40-C1-DIAGNOSTIC:OK\n");
     printf("M5:T390:S32:C1-TRANSITION:OK\n");
@@ -1265,23 +1265,23 @@ lib_i32 main(lib_i32 argc, char **argv)
     lib_u64 elapsed_before_terminal = 0u;
     const char *terminal = "retirement-budget-exhausted";
     lib_i32 emit_terminal_bytes = argc == 4 && argv != LIB_NULL &&
-        !lib_c_strcmp(argv[3], "--terminal-bytes");
+        !lib_text_compare(argv[3], "--terminal-bytes");
     lib_i32 c1_diagnostic = argc == 4 && argv != LIB_NULL &&
-        !lib_c_strcmp(argv[3], "--c1-diagnostic");
+        !lib_text_compare(argv[3], "--c1-diagnostic");
     lib_i32 post_c0_io_diagnostic = argc == 4 && argv != LIB_NULL &&
-        !lib_c_strcmp(argv[3], "--post-c0-io-diagnostic");
+        !lib_text_compare(argv[3], "--post-c0-io-diagnostic");
     lib_i32 c0a_diagnostic = argc == 4 && argv != LIB_NULL &&
-        !lib_c_strcmp(argv[3], "--c0a-diagnostic");
+        !lib_text_compare(argv[3], "--c0a-diagnostic");
     lib_i32 c1_transfer_diagnostic = argc == 4 && argv != LIB_NULL &&
-        !lib_c_strcmp(argv[3], "--c1-transfer-diagnostic");
+        !lib_text_compare(argv[3], "--c1-transfer-diagnostic");
     lib_i32 fdc_read_data_diagnostic = argc == 4 && argv != LIB_NULL &&
-        !lib_c_strcmp(argv[3], "--fdc-read-data-diagnostic");
+        !lib_text_compare(argv[3], "--fdc-read-data-diagnostic");
     lib_i32 port_sequence_diagnostic = argc == 4 && argv != LIB_NULL &&
-        !lib_c_strcmp(argv[3], "--port-sequence-diagnostic");
+        !lib_text_compare(argv[3], "--port-sequence-diagnostic");
     lib_i32 d4_memory_diagnostic = argc == 4 && argv != LIB_NULL &&
-        !lib_c_strcmp(argv[3], "--d4-memory-diagnostic");
+        !lib_text_compare(argv[3], "--d4-memory-diagnostic");
     lib_i32 warm_reset_diagnostic = argc == 4 && argv != LIB_NULL &&
-        !lib_c_strcmp(argv[3], "--warm-reset-diagnostic");
+        !lib_text_compare(argv[3], "--warm-reset-diagnostic");
 
     if (!model40_capture_create_session(argc, argv, &ini_session)) {
         fprintf(stderr, "usage: capture sessions-directory model40-session.ini "

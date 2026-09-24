@@ -174,7 +174,7 @@ static const timing_manifest_record *timing_manifest_find(const char *key_id)
             sizeof(timing_manifest_records[0]); ++index) {
         const timing_manifest_record *record = &timing_manifest_records[index];
 
-        if (lib_c_strcmp(record->key_id, active_key) == 0) {
+        if (lib_text_compare(record->key_id, active_key) == 0) {
             timing_manifest_covered[index] = 1;
             timing_manifest_current_index = (lib_i32)index;
             return record;
@@ -280,7 +280,7 @@ static lib_i32 timing_manifest_run_lock_companion(
     lib_i32 failed;
 
     if (base_record == LIB_NULL || base_key == LIB_NULL || program == LIB_NULL ||
-        lib_c_strcmp(base_record->context, "BASE") != 0) return 0;
+        lib_text_compare(base_record->context, "BASE") != 0) return 0;
     if (program_bytes == 0u || program_bytes >= sizeof(locked_program) ||
         lib_c_snprintf(key, sizeof(key), "%s-LOCK", base_key) < 0) return 1;
     locked_program[0] = 0xf0u;
@@ -333,8 +333,8 @@ static lib_i32 timing_manifest_run_exact_recipe_with_inputs_and_formula(
     lib_i32 prepared = recipe != LIB_NULL && timing_manifest_prepare(&machine,
         &capture, recipe->program, recipe->program_bytes);
     lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-        lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
-        lib_c_strcmp(record->level, "L3") != 0 ||
+        lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+        lib_text_compare(record->level, "L3") != 0 ||
         record->source_rule[0] == '\0' ||
         !prepared;
 
@@ -435,21 +435,21 @@ static lib_i32 timing_manifest_lock_key_for_context(const timing_manifest_record
 
     if (record == LIB_NULL || base_key == LIB_NULL || out_key == LIB_NULL ||
         timing_manifest_text_contains(record->context, "LOCK")) return 0;
-    if (lib_c_strcmp(record->context, "BASE") == 0) {
+    if (lib_text_compare(record->context, "BASE") == 0) {
         return lib_c_snprintf(out_key, out_size, "%s-LOCK", base_key) >= 0;
     }
     base_length = lib_text_length(base_key);
-    if (lib_c_strcmp(record->context, "SEGMENT") == 0 &&
+    if (lib_text_compare(record->context, "SEGMENT") == 0 &&
         base_length > lib_text_length(segment)) {
         return lib_c_snprintf(out_key, out_size, "%.*s-LOCK-SEGMENT",
             (lib_i32)(base_length - lib_text_length(segment)), base_key) >= 0;
     }
-    if (lib_c_strcmp(record->context, "ODD-WORD") == 0 &&
+    if (lib_text_compare(record->context, "ODD-WORD") == 0 &&
         base_length > lib_text_length(odd)) {
         return lib_c_snprintf(out_key, out_size, "%.*s-LOCK-ODD-WORD",
             (lib_i32)(base_length - lib_text_length(odd)), base_key) >= 0;
     }
-    if (lib_c_strcmp(record->context, "SEGMENT-ODD-WORD") == 0 &&
+    if (lib_text_compare(record->context, "SEGMENT-ODD-WORD") == 0 &&
         base_length > lib_text_length(segment_odd)) {
         return lib_c_snprintf(out_key, out_size, "%.*s-LOCK-SEGMENT-ODD-WORD",
             (lib_i32)(base_length - lib_text_length(segment_odd)), base_key) >= 0;
@@ -473,8 +473,8 @@ static lib_i32 timing_manifest_run_l3_memory_recipe_with_inputs_internal(
     lib_u8 opcode_index = 0u;
     lib_u32 memory_linear;
     lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-        lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
-        lib_c_strcmp(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
+        lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+        lib_text_compare(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
         !timing_manifest_prepare(&machine, &capture, recipe->program,
             recipe->program_bytes);
 
@@ -627,8 +627,8 @@ static lib_i32 timing_manifest_run_string_primitive_with_prefix_internal(
     if (prefix != 0u) program[program_bytes++] = prefix;
     program[program_bytes++] = recipe == LIB_NULL ? 0u : recipe->opcode;
     lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-        lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
-        lib_c_strcmp(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
+        lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+        lib_text_compare(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
         !timing_manifest_prepare(&machine, &capture, program, program_bytes);
 
     if (!failed) {
@@ -794,8 +794,8 @@ static lib_i32 timing_manifest_run_repeat_recipe(
     program[program_bytes++] = recipe->prefix;
     program[program_bytes++] = recipe->opcode;
     failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-        lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
-        lib_c_strcmp(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
+        lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+        lib_text_compare(record->level, "L3") != 0 || record->source_rule[0] == '\0' ||
         !timing_manifest_prepare(&machine, &capture, program, program_bytes);
 
     if (!failed) {
@@ -1954,9 +1954,9 @@ static lib_i32 timing_manifest_probe_group3_l2(void)
         }
         record = timing_manifest_find(recipe.key_id);
         failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-            lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
-            lib_c_strcmp(record->level, "L2:G3") != 0 ||
-            lib_c_strcmp(record->source_rule, "S1:L2-86BOX-8086-G3 bounds") != 0 ||
+            lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+            lib_text_compare(record->level, "L2:G3") != 0 ||
+            lib_text_compare(record->source_rule, "S1:L2-86BOX-8086-G3 bounds") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe.program,
                 recipe.program_bytes);
         if (!failed && memory_operand) {
@@ -2044,8 +2044,8 @@ static lib_i32 timing_manifest_probe_group3_l2(void)
         recipe.key_id = key;
         record = timing_manifest_find(recipe.key_id);
         failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-            lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
-            lib_c_strcmp(record->level, "L2:G3") != 0 ||
+            lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+            lib_text_compare(record->level, "L2:G3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe.program,
                 recipe.program_bytes);
         if (!failed && memory_operand) {
@@ -2152,8 +2152,8 @@ static lib_i32 timing_manifest_probe_group3_memory_contexts(void)
             program[1] = program[0]; program[0] = recipe->prefix;
         }
         failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-            lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
-            lib_c_strcmp(record->level, "L2:G3") != 0 || record->source_rule[0] == '\0' ||
+            lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+            lib_text_compare(record->level, "L2:G3") != 0 || record->source_rule[0] == '\0' ||
             !timing_manifest_prepare(&machine, &capture, program,
                 recipe->prefix == 0u ? 4u : 5u);
         if (!failed) {
@@ -3246,7 +3246,7 @@ static lib_i32 timing_manifest_probe_pointer_load_forms(void)
         timing_manifest_capture capture = { { 0 }, 0u };
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
-        lib_i32 failed = record == LIB_NULL || lib_c_strcmp(record->level, "L3") != 0 ||
+        lib_i32 failed = record == LIB_NULL || lib_text_compare(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, program, sizeof(program));
 
         if (!failed) {
@@ -3294,14 +3294,14 @@ static lib_i32 timing_manifest_probe_pointer_load_forms(void)
             program[4] = program[3]; program[3] = program[2]; program[2] = program[1];
             program[1] = program[0]; program[0] = recipe->prefix;
         }
-        if (lib_c_strcmp(recipe->key_id, "I86-LDS-M-LOCK-SEGMENT") == 0 ||
-            lib_c_strcmp(recipe->key_id, "I86-LES-M-LOCK-SEGMENT") == 0 ||
-            lib_c_strcmp(recipe->key_id, "I86-LDS-M-LOCK-SEGMENT-ODD-WORD") == 0 ||
-            lib_c_strcmp(recipe->key_id, "I86-LES-M-LOCK-SEGMENT-ODD-WORD") == 0) {
+        if (lib_text_compare(recipe->key_id, "I86-LDS-M-LOCK-SEGMENT") == 0 ||
+            lib_text_compare(recipe->key_id, "I86-LES-M-LOCK-SEGMENT") == 0 ||
+            lib_text_compare(recipe->key_id, "I86-LDS-M-LOCK-SEGMENT-ODD-WORD") == 0 ||
+            lib_text_compare(recipe->key_id, "I86-LES-M-LOCK-SEGMENT-ODD-WORD") == 0) {
             program[5] = program[4]; program[4] = program[3]; program[3] = program[2];
             program[2] = program[1]; program[1] = program[0]; program[0] = 0xf0u;
         }
-        failed = record == LIB_NULL || lib_c_strcmp(record->level, "L3") != 0 ||
+        failed = record == LIB_NULL || lib_text_compare(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, program,
                 recipe->prefix == 0u ? program_bytes :
                     (timing_manifest_text_contains(recipe->key_id, "-LOCK-SEGMENT") ?
@@ -3444,7 +3444,7 @@ static lib_i32 timing_manifest_run_indirect_control_recipe(
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
     lib_i32 failed = recipe == LIB_NULL || record == LIB_NULL ||
-        !timing_manifest_is_active(record) || lib_c_strcmp(record->level, "L3") != 0 ||
+        !timing_manifest_is_active(record) || lib_text_compare(record->level, "L3") != 0 ||
         !timing_manifest_prepare(&machine, &capture, recipe->program,
             recipe->program_bytes);
 
@@ -3664,7 +3664,7 @@ static lib_i32 timing_manifest_probe_return_forms(void)
         core_machine *machine = LIB_NULL;
         lib_u8 word_index;
         lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-            lib_c_strcmp(record->level, "L3") != 0 ||
+            lib_text_compare(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe->program,
                 recipe->program_bytes);
 
@@ -3747,7 +3747,7 @@ static lib_i32 timing_manifest_probe_software_interrupt_forms(void)
         core_machine_run_result run = { 0 };
         core_machine *machine = LIB_NULL;
         lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-            lib_c_strcmp(record->level, "L3") != 0 ||
+            lib_text_compare(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe->program,
                 recipe->program_bytes);
 
@@ -3893,7 +3893,7 @@ static lib_i32 timing_manifest_probe_memory_stack_forms(void)
         core_machine *machine = LIB_NULL;
         lib_u16 observed = 0u;
         lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-            lib_c_strcmp(record->level, "L3") != 0 ||
+            lib_text_compare(record->level, "L3") != 0 ||
             !timing_manifest_prepare(&machine, &capture, recipe->program,
                 recipe->program_bytes);
 
@@ -3936,7 +3936,7 @@ static lib_i32 timing_manifest_probe_hlt(void)
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
     lib_i32 failed = record == LIB_NULL || !timing_manifest_is_active(record) ||
-        lib_c_strcmp(record->level, "L3") != 0 ||
+        lib_text_compare(record->level, "L3") != 0 ||
         !timing_manifest_prepare(&machine, &capture, program, sizeof(program));
 
     if (!failed) {
@@ -4087,7 +4087,7 @@ lib_i32 main(void)
         const timing_manifest_record *record = &timing_manifest_records[index];
 
         if (!timing_manifest_is_active(record)) continue;
-        if (lib_c_strcmp(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
+        if (lib_text_compare(record->profile, PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME) != 0 ||
             record->level[0] == '\0' || record->source_rule[0] == '\0' ||
             record->context[0] == '\0') return 1;
         ++i86_count;

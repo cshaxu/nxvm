@@ -868,7 +868,7 @@ lib_bool app_command_handle_hotkey(void *opaque, common_session_machine_state st
     if (context == LIB_NULL || identifier == LIB_NULL || out_result == LIB_NULL ||
         context->session.transition_pending) return LIB_FALSE;
     app_command_result(out_result, LIB_NULL);
-    if (lib_c_strcmp((const char *)identifier, "pause-toggle") == 0) {
+    if (lib_text_compare((const char *)identifier, "pause-toggle") == 0) {
         if (state == COMMON_SESSION_MACHINE_RUNNING)
             app_command_request(context, out_result, COMMON_SESSION_REQUEST_PAUSE);
         else if (state == COMMON_SESSION_MACHINE_PAUSED && context->cartridge_present)

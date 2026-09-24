@@ -4,7 +4,6 @@
 #include "lib/kvm-window/window_interface.h"
 #include "lib/kvm-console/console_interface.h"
 #include <assert.h>
-#include <string.h>
 
 static lib_u32 status_builds, unfreezes, freezes, console_frames, window_frames;
 static lib_u32 received, received_run;
@@ -20,7 +19,7 @@ static void counted_release(void *memory)
 static void *counted_set(void *destination, lib_i32 value, lib_size size)
 {
     if (size == sizeof(kvm_console_text_frame)) ++status_builds;
-    return memset(destination, value, size);
+    return lib_memory_set(destination, value, size);
 }
 #define lib_memory_set counted_set
 #define lib_release counted_release
@@ -203,7 +202,7 @@ int main(void)
     assert(status_builds == 1u && console_frames == 1u && window_frames == 2u);
     sequence = 3u;
     frame.graphics = 0u;
-    memset(&frame.text, 0, sizeof(frame.text));
+    lib_memory_set(&frame.text, 0, sizeof(frame.text));
     frame.text.base.text_columns = 80u; frame.text.base.text_rows = 25u;
     characters.primary['T'] = 0x263au;
     characters.secondary['T'] = 0x2665u;

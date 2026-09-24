@@ -180,15 +180,15 @@ lib_i32 main(lib_i32 argc, char **argv)
     boot_text = vm_t287_wait_for_text(session, "Enter new date", "A:\\>",
         VM_T287_BOOT_TIMEOUT_MILLISECONDS);
     if (boot_text == LIB_NULL) goto fail;
-    if (lib_c_strcmp(boot_text, "A:\\>") != 0) {
+    if (lib_text_compare(boot_text, "A:\\>") != 0) {
         vm_t287_submit_key(session, 0x1cu, VK_RETURN);
     }
     stage = "time";
-    if (lib_c_strcmp(boot_text, "A:\\>") != 0) {
+    if (lib_text_compare(boot_text, "A:\\>") != 0) {
         boot_text = vm_t287_wait_for_text(session, "Enter new time", "A:\\>",
             VM_T287_BOOT_TIMEOUT_MILLISECONDS);
         if (boot_text == LIB_NULL) goto fail;
-        if (lib_c_strcmp(boot_text, "A:\\>") != 0) {
+        if (lib_text_compare(boot_text, "A:\\>") != 0) {
             vm_t287_submit_key(session, 0x1cu, VK_RETURN);
         }
     }
@@ -204,7 +204,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     stage = "c-drive";
     drive_result = vm_t287_wait_for_text(session, "C:\\>",
         "Invalid drive specification", VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
-    c_present = drive_result != LIB_NULL && !lib_c_strcmp(drive_result, "C:\\>");
+    c_present = drive_result != LIB_NULL && !lib_text_compare(drive_result, "C:\\>");
     if (!c_present) goto fail;
     stage = "c-dir";
     vm_t287_submit_key(session, 0x20u, 'D');

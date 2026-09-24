@@ -15,8 +15,8 @@ static lib_i32 app_command_output_compare(const char *actual, const char *expect
         actual[length + 1u] != '\0';
 }
 
-#undef lib_c_strcmp
-#define lib_c_strcmp app_command_output_compare
+#undef lib_text_compare
+#define lib_text_compare app_command_output_compare
 
 static void make_fixture(lib_u8 *bytes)
 {
@@ -77,34 +77,34 @@ int main(void)
         COMMON_SESSION_DISPLAY_WINDOW);
 
     submit(&command, "debug REGS", &result);
-    assert(lib_c_strcmp(result.text, "A=00 X=00 Y=00 S=FD P=24 PC=8000 cycles=7 instructions=0\n") == 0);
+    assert(lib_text_compare(result.text, "A=00 X=00 Y=00 S=FD P=24 PC=8000 cycles=7 instructions=0\n") == 0);
     submit(&command, "debug PoKe $10 $55 170", &result);
-    assert(lib_c_strcmp(result.text, "Memory updated.\n") == 0);
+    assert(lib_text_compare(result.text, "Memory updated.\n") == 0);
     submit(&command, "debug mem 16 2", &result);
-    assert(lib_c_strcmp(result.text, "0010: 55 AA\n") == 0);
+    assert(lib_text_compare(result.text, "0010: 55 AA\n") == 0);
     submit(&command, "set mem.count 2", &result);
-    assert(lib_c_strcmp(result.text, "Unknown command.\n") == 0);
+    assert(lib_text_compare(result.text, "Unknown command.\n") == 0);
     submit(&command, "debug mem 16 2", &result);
-    assert(lib_c_strcmp(result.text, "0010: 55 AA\n") == 0);
+    assert(lib_text_compare(result.text, "0010: 55 AA\n") == 0);
     submit(&command, "set disasm.count 3", &result);
-    assert(lib_c_strcmp(result.text, "Unknown command.\n") == 0);
+    assert(lib_text_compare(result.text, "Unknown command.\n") == 0);
     submit(&command, "debug disasm $8000 3", &result);
-    assert(lib_c_strcmp(result.text,
+    assert(lib_text_compare(result.text,
         "8000: A9 2A    LDA #$2A\n"
         "8002: EA       NOP\n"
         "8003: 4C 02 80 JMP $8002\n") == 0);
     submit(&command, "debug step", &result);
-    assert(lib_c_strcmp(result.text, "Stepped 1 instruction(s), 2 cycle(s); PC=8002.\n") == 0);
+    assert(lib_text_compare(result.text, "Stepped 1 instruction(s), 2 cycle(s); PC=8002.\n") == 0);
     submit(&command, "debug break $8002", &result);
-    assert(lib_c_strcmp(result.text, "Set breakpoint 8002.\n") == 0);
+    assert(lib_text_compare(result.text, "Set breakpoint 8002.\n") == 0);
     submit(&command, "debug breaks", &result);
-    assert(lib_c_strcmp(result.text, "Breakpoints: 8002\n") == 0);
+    assert(lib_text_compare(result.text, "Breakpoints: 8002\n") == 0);
     submit(&command, "debug delete 32770", &result);
-    assert(lib_c_strcmp(result.text, "Removed breakpoint 8002.\n") == 0);
+    assert(lib_text_compare(result.text, "Removed breakpoint 8002.\n") == 0);
     submit(&command, "debug reset", &result);
-    assert(lib_c_strcmp(result.text, "Soft reset complete; machine paused.\n") == 0);
+    assert(lib_text_compare(result.text, "Soft reset complete; machine paused.\n") == 0);
     app_command_submit_line(&command, COMMON_SESSION_MACHINE_RUNNING, "debug regs", &result);
-    assert(lib_c_strcmp(result.text, "Pause with a cartridge before debugging.\n") == 0);
+    assert(lib_text_compare(result.text, "Pause with a cartridge before debugging.\n") == 0);
 
     assert(common_machine_shutdown(machine) == LIB_STATUS_OK);
     assert(common_machine_destroy(machine) == LIB_STATUS_OK);

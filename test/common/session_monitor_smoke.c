@@ -1,7 +1,6 @@
 #include "common/session/session_interface.h"
 #include "common/session/control.h"
 #include <assert.h>
-#include <string.h>
 
 static lib_u32 requests, prompts, notices, callbacks, cancellations, commands;
 static lib_bool completed, fail_cancel, fail_request, exit_on_request;
@@ -46,12 +45,12 @@ lib_status common_ui_write_monitor(common_ui *ui, const char *text)
     (void)ui;
     if (collect) {
         if (++writes == fail_write) return LIB_STATUS_IO_ERROR;
-        assert(output_used + strlen(text) < sizeof(output));
-        memcpy(output + output_used, text, strlen(text) + 1u);
-        output_used += strlen(text);
+        assert(output_used + lib_text_length(text) < sizeof(output));
+        lib_memory_copy(output + output_used, text, lib_text_length(text) + 1u);
+        output_used += lib_text_length(text);
     }
-    if (strcmp(text, "> ") == 0) ++prompts;
-    else if (strcmp(text, "notice") == 0) ++notices;
+    if (lib_text_compare(text, "> ") == 0) ++prompts;
+    else if (lib_text_compare(text, "notice") == 0) ++notices;
     return LIB_STATUS_OK;
 }
 lib_status common_ui_request_monitor_line(common_ui *ui)
@@ -59,7 +58,7 @@ lib_status common_ui_request_monitor_line(common_ui *ui)
     (void)ui; ++requests;
     if (exit_on_request) {
         lib_console_line line = {0};
-        memcpy(line.text, "exit", 5); line.length = 4;
+        lib_memory_copy(line.text, "exit", 5); line.length = 4;
         assert(common_session_queue_push_monitor_line(&active->queue, &line, 0));
     }
     return fail_request ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
@@ -81,28 +80,28 @@ static void monitor(void *p, lib_bool current, common_session_command_result *ou
     (void)p; (void)current; ++callbacks;
     /* Even an eager provider cannot create two outstanding monitor turns. */
     out->arm_prompt = LIB_TRUE;
-    memcpy(out->prompt, "> ", 3);
+    lib_memory_copy(out->prompt, "> ", 3);
 }
 static void opened(void *p, common_session_command_result *out) { (void)p; (void)out; }
 static void rejected(void *p, common_session_command_result *out)
 {
     (void)p;
     assert(!active->pending_line);
-    memcpy(out->text, "rejected", 9);
+    lib_memory_copy(out->text, "rejected", 9);
     exit_on_request = LIB_TRUE;
 }
 static void submitted(void *p, common_session_machine_state state, const char *line,
     common_session_command_result *out)
 {
     (void)p; (void)state;
-    assert(!active->pending_line && strcmp(line, "exit") == 0);
+    assert(!active->pending_line && lib_text_compare(line, "exit") == 0);
     out->exit_requested = LIB_TRUE;
 }
 static void runtime(void *p, common_session_machine_state a,
     common_session_machine_state b, common_session_command_result *out)
 {
     (void)p; (void)a; (void)b;
-    memcpy(out->text, "notice", 7);
+    lib_memory_copy(out->text, "notice", 7);
     out->request = COMMON_SESSION_REQUEST_PAUSE;
 }
 int main(void)
@@ -133,7 +132,7 @@ int main(void)
     assert(callbacks == before && requests == 1);
     /* Notification cancels the editing fragment before writing. Provider
      * readiness admits the next prompt without storing a second prompt. */
-    memcpy(notice.text, "notice", 7);
+    lib_memory_copy(notice.text, "notice", 7);
     assert(common_session_apply_result(&s, &notice));
     assert(cancellations == 1 && notices == 1 && !s.pending_line);
     assert(common_session_arm_if_ready(&s) && requests == 2 && prompts == 2);
@@ -175,7 +174,7 @@ int main(void)
     {
         static char text[20001], expected[40000];
         lib_size end = 0u;
-        memset(text, 'x', sizeof(text) - 1u);
+        lib_memory_set(text, 'x', sizeof(text) - 1u);
         for (lib_size i = 1020u; i + 1u < sizeof(text) - 1u; i += 1022u) {
             text[i] = '\r'; text[i + 1u] = '\n';
         }
@@ -188,14 +187,14 @@ int main(void)
         common_session_command_result large = { .detail = text };
         collect = LIB_TRUE;
         assert(common_session_apply_result(&s, &large));
-        assert(strcmp(output, expected) == 0 && writes > 1u);
+        assert(lib_text_compare(output, expected) == 0 && writes > 1u);
         assert(!s.pending_line);
         output_used = writes = 0u; output[0] = '\0';
         s.pending_line = LIB_TRUE;
         before = cancellations;
         assert(common_session_apply_result(&s, &large));
         assert(cancellations == before + 1u && !s.pending_line);
-        assert(strncmp(output, "\r\n", 2u) == 0 && strcmp(output + 2, expected) == 0);
+        assert(lib_text_compare_n(output, "\r\n", 2u) == 0 && lib_text_compare(output + 2, expected) == 0);
         output_used = writes = 0u; output[0] = '\0'; fail_write = 2u;
         assert(!common_session_apply_result(&s, &large) && writes == 2u);
         fail_write = 0u; output_used = writes = 0u;

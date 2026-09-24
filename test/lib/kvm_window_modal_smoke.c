@@ -1,6 +1,5 @@
 #include <windows.h>
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
 #include "lib/kvm-window/window_interface.h"
 
@@ -77,7 +76,7 @@ int main(void)
         assert(kvm_window_set_title(w, "modal-after") == LIB_STATUS_OK);
         assert(SendMessageTimeoutW(target, WM_NULL, 0, 0, SMTO_ABORTIFHUNG, 3000, &result));
         GetWindowTextA(target, title, sizeof(title));
-        assert(strcmp(title, "modal-after") == 0);
+        assert(lib_text_compare(title, "modal-after") == 0);
         /* STOP must unwind the nested loop without an external cancel/Enter. */
         assert(kvm_window_destroy(w)==LIB_STATUS_OK);
         assert(WaitForSingleObject(exited, 0) == WAIT_OBJECT_0);

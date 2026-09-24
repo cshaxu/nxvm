@@ -1,7 +1,6 @@
 #include "lib/kvm-base/worker_interface.h"
 
 #include <assert.h>
-#include <string.h>
 
 typedef struct component_probe {
     lib_u32 input_count;
@@ -21,7 +20,7 @@ static lib_i32 component_probe_input(void *opaque, const kvm_input_event *event)
     probe->last_identity = event->source_identity;
     probe->last_type = event->type;
     if (event->type == KVM_EVENT_HOTKEY)
-        memcpy(probe->last_hotkey, event->data.hotkey.identifier,
+        lib_memory_copy(probe->last_hotkey, event->data.hotkey.identifier,
             sizeof(probe->last_hotkey));
     return 1;
 }
@@ -100,7 +99,7 @@ int main(void)
     for (index = 0u; index < sizeof(control.payload); ++index)
         control.payload[index] = (lib_u8)index;
     assert(kvm_component_enqueue_control(&second, &control) == LIB_STATUS_OK);
-    memset(control.payload, 0xff, sizeof(control.payload));
+    lib_memory_set(control.payload, 0xff, sizeof(control.payload));
     assert(kvm_component_mailboxes_take_control(&second.mailboxes, &taken));
     assert(taken.kind == LIB_UINT32_MAX);
     for (index = 0u; index < sizeof(taken.payload); ++index)
@@ -161,7 +160,7 @@ int main(void)
     assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
         &probe, LIB_TRUE));
     assert(probe.input_count == 1u && probe.last_type == KVM_EVENT_HOTKEY);
-    assert(strcmp(probe.last_hotkey, "pause-toggle") == 0);
+    assert(lib_text_compare(probe.last_hotkey, "pause-toggle") == 0);
     assert(probe.last_identity == first.source_identity);
     event.data.key.key = 'X';
     event.data.key.scan_code = 0x2du;

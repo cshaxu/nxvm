@@ -3,7 +3,6 @@
 #endif
 #include "x86/xasm32/xasm32_interface.h"
 #include <assert.h>
-#include <string.h>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -15,17 +14,17 @@ static void check_decode(lib_u8 *code, lib_i32 flag32, lib_bool valid)
 {
     char text[256], before[256];
     lib_size text_bytes = 37u, code_bytes = 19u;
-    memset(text, 0xa5, sizeof(text));
-    memcpy(before, text, sizeof(text));
+    lib_memory_set(text, 0xa5, sizeof(text));
+    lib_memory_copy(before, text, sizeof(text));
     lib_status status = x86_xasm32_disassemble(code, 15u, text, sizeof(text),
         &text_bytes, &code_bytes, flag32);
     if (valid) {
         assert(status == LIB_STATUS_OK && code_bytes == 15u);
-        assert(strcmp(text, "NOP     ") == 0 && text_bytes == 8u);
+        assert(lib_text_compare(text, "NOP     ") == 0 && text_bytes == 8u);
     } else {
         assert(status == LIB_STATUS_UNSUPPORTED);
         assert(text_bytes == 37u && code_bytes == 19u);
-        assert(memcmp(text, before, sizeof(text)) == 0);
+        assert(lib_memory_compare(text, before, sizeof(text)) == 0);
     }
 }
 
@@ -64,10 +63,10 @@ int main(void)
     };
     for (lib_i32 mode = 0; mode <= 1; ++mode) {
         for (lib_size p = 0; p < sizeof(prefixes); ++p) {
-            memset(code, prefixes[p], 15u);
+            lib_memory_set(code, prefixes[p], 15u);
             check_decode(code, mode, LIB_FALSE);
         }
-        memset(code, 0x66, 14u);
+        lib_memory_set(code, 0x66, 14u);
         code[14] = 0x90;
         check_decode(code, mode, LIB_TRUE);
         code[0] = 0xf1; /* No implemented handler: reject, never call NULL. */
@@ -76,9 +75,9 @@ int main(void)
             lib_size length = tails[t].length;
             /* Address-size override makes SIB/disp32 meaningful in 16-bit mode. */
             for (lib_size available = 1; available < length; ++available) {
-                memset(code, 0x2e, 15u);
+                lib_memory_set(code, 0x2e, 15u);
                 if (!mode) code[0] = (t >= 2u) ? 0x67 : 0x66;
-                memcpy(code + 15u - available, tails[t].bytes, available);
+                lib_memory_copy(code + 15u - available, tails[t].bytes, available);
                 check_decode(code, mode, LIB_FALSE);
             }
         }
@@ -87,19 +86,19 @@ int main(void)
             for (lib_u32 opcode = 0; opcode < 256u; ++opcode) {
                 char text[256];
                 lib_size text_bytes, code_bytes;
-                memset(code, 0x2e, 15u - remaining);
-                memset(code + 15u - remaining, 0, remaining);
+                lib_memory_set(code, 0x2e, 15u - remaining);
+                lib_memory_set(code + 15u - remaining, 0, remaining);
                 code[15u - remaining] = (lib_u8)opcode;
                 lib_status status = x86_xasm32_disassemble(code, 15u, text, sizeof(text),
                     &text_bytes, &code_bytes, mode);
                 assert(status == LIB_STATUS_UNSUPPORTED || (status == LIB_STATUS_OK &&
-                    code_bytes > 0u && code_bytes <= 15u && text_bytes == strlen(text)));
+                    code_bytes > 0u && code_bytes <= 15u && text_bytes == lib_text_length(text)));
                 code[15u - remaining] = 0x0f;
                 if (remaining > 1u) code[16u - remaining] = (lib_u8)opcode;
                 status = x86_xasm32_disassemble(code, 15u, text, sizeof(text),
                     &text_bytes, &code_bytes, mode);
                 assert(status == LIB_STATUS_UNSUPPORTED || (status == LIB_STATUS_OK &&
-                    code_bytes > 0u && code_bytes <= 15u && text_bytes == strlen(text)));
+                    code_bytes > 0u && code_bytes <= 15u && text_bytes == lib_text_length(text)));
             }
         }
     }

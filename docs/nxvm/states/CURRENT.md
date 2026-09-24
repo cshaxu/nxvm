@@ -2,7 +2,26 @@
 
 ## Current Work
 
-No active NXVM subtask. M6 T41 S8 closed at `bee033f59`; its source/test/CMake deletion proof and x64/x86 336/336 suite results are in [S8 evidence](../etc/evidence/m6-t41-s8-root-types-facade-retirement.md).
+### M6 T41 S9 Shared Six-Component Type-System Convergence
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner explicitly admitted M6 T41 S9 on 2026-09-23 without a new T: repair the complete Lib/Common/x86 source-and-test type system, then build, test, commit and push MyNES plus all four NXVM profiles for x64 and x86. The only retained native forms are the Lib-owned C/SDK adapter layer, the C executable `int main(void)` ABI, and the xasm32 guard-page probe; every other available Lib type or function must be adopted. |
+| Objective | Make `src/{lib,common,x86}` and `test/{lib,common,x86}` use the single Lib type and runtime vocabulary wherever it exists; remove duplicate scalar/CRT facades and direct native test mechanisms that Lib already owns; add a durable six-component enforcement gate. |
+| Non-goals | No product App/Core behavior change; no firmware, ROM, snapshot or INI content change; no new generic host abstraction solely for a test-only guard-page probe; no broad rewrite of x86 DEBUG command semantics. |
+| Reference Baseline | T41 S8 retired NXVM's root Types facade at `bee033f59`; the S9 audit found the x86 DEBUG `command_runtime.h` second facade, duplicate scalar aliases, Common Win32 fixture leakage, raw test CRT/native calls, two Linux fake `long` aliases, a stale `lib_c_strstr`, and a T317 verifier that skips Lib. |
+| Candidate Proposal | [M6 T41 S3 Lib Types facade-retirement design](../proposals/m6-t41-s3-lib-types-facade-retirement.md), amended by the owner-approved S9 rule that test code adopts Lib whenever an equivalent exists. |
+| Files And ABI Surface | `src/lib`, `src/common`, `src/x86`, `test/lib`, `test/common`, `test/x86`, direct MyNES/NXVM consumer migrations required to retire a removed Lib spelling, their CMake/verifier fixtures, `CMakePresets.json`, `docs/nxvm` evidence/state, and generated MyNES/NXVM artifacts only. Public Lib Types may gain only exact C/SDK adapter spellings needed by current shared consumers. |
+| Applicable Rules | `docs/rules/CODING.md`, `ARCHITECTURE.md`, and `EXECUTION.md`: fixed-width vocabulary, one type/function owner, no duplicate facade, inward dependencies, minimal public surface, test code follows the same vocabulary, actual-diff review, and one complete pushed P. The retained native exceptions are enumerated in evidence and must not widen silently. |
+| Verification | New verifier covers all six source/test trees; zero unapproved raw scalar/CRT/platform findings; focused Lib/Common/x86 suites on x64 and x86; MyNES x64/x86 build/tests; NXVM default, XT, 5170 and Model 40 each built/tested x64/x86; documentation and actual-diff governance checks. |
+| Expected Markers | `command_runtime.h` deleted; `C_*`, `STD_*`, `TYPE_*`, `type_unsigned_*`, `t_aasm_prefix`, `t_dasm_prefix`, stale `lib_c_strstr`, test fake raw `long`, and avoidable Common C-runtime calls are gone; enforcement records every retained native boundary by file and reason. |
+| Asset Needs | Existing tracked build delivery locations only. Preserve owner-modified INIs, MyNES snapshot directory, `.gitignore`, and workflow deletion; never stage them. |
+| Reporting Requirements | Report tracked source/test add/remove/net counts, changed components/files and retained owner path, every approved exception, MyNES x64/x86 and all eight NXVM profile artifacts as clickable links, tests/gates, commit and push. |
+| Stop Conditions | A needed replacement changes native ABI, platform callback signature, fixed-width representation, or requires a new non-test host capability; record it as a specific exception rather than inventing a facade. |
+| Exit Criteria | The full six-component audit has no unclassified type/function/platform finding; all avoidable uses are migrated; exceptions are individually evidenced; required builds/tests and governance pass; one reviewable P is committed and pushed. |
+| Original Owner Request | "不需要T，准入一个S任务完成上述所有6组件的类型系统修复，完成后，将mynes/nxvm 4profile 的全部双exe编译测试提交推送后给我汇报。" |
+| Similar-Issue Sweep | Search all six component C/H files, tests, CMake checks and fixtures for raw scalar aliases, local facades, C runtime forwarding, direct platform headers/types/calls, duplicate function wrappers and missing Lib Types coverage; classify each as migrated or one of the three approved native exceptions. |
 
 ## M6 T41 Progress
 
@@ -11,6 +30,7 @@ No active NXVM subtask. M6 T41 S8 closed at `bee033f59`; its source/test/CMake d
 | S6 | Accepted Shared fixed-width enforcement in `948627378` with closure `9341c723d`. |
 | S7 | Accepted: Shared `1d914db89` adapts the Common C-string callback and CRT test boundaries while retaining `lib_u8` event storage. x64/x86 focused Shared regressions and the unblocked MyNES 53/53 suites pass. [Evidence](../etc/evidence/m6-t41-s7-shared-hotkey-text-adapter.md) |
 | S8 | Accepted NXVM root-facade retirement in `bee033f59`: `type.h`, `type.c`, and `type-facade` are deleted; x64/x86 complete suites pass 336/336. [Evidence](../etc/evidence/m6-t41-s8-root-types-facade-retirement.md) |
+| S9 | Completed pending S9 P: all six Shared source/test trees use the enforced Lib vocabulary; the x86 DEBUG facade is deleted, MyNES and all four NXVM profile x64/x86 artifacts are rebuilt, and the retained native test boundaries are individually recorded. [Evidence](../etc/evidence/m6-t41-s9-shared-six-component-type-convergence.md) |
 ## M6 T41 S4 Shared Closure
 
 Shared S4 closed at `9d7f6ba6c`: Lib now has the approved neutral Types

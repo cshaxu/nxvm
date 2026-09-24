@@ -3,8 +3,6 @@
 #include "x86/xasm32/dasm32.h"
 #include "x86/xasm32/xasm32_interface.h"
 
-typedef lib_u8 t_dasm_prefix;
-
 typedef struct dasm32_context dasm32_context;
 
 typedef void (*dasm32_handler)(dasm32_context *);
@@ -21,7 +19,7 @@ struct dasm32_context
     char dmovsreg[0x100], doverds[0x100], doverss[0x100];
     char dimmoff8[0x100], dimmoff16[0x100], dimmsign[0x100];
     lib_u8 flagmem, flaglock;
-    t_dasm_prefix prefix_oprsize, prefix_addrsize;
+    lib_u8 prefix_oprsize, prefix_addrsize;
     lib_u8 cr;
     lib_u64 cimm;
     lib_u8 iop;
