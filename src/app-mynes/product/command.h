@@ -47,7 +47,7 @@ void app_command_submit_line(void *context, common_session_machine_state state,
 lib_bool app_command_begin_external(void *context, common_session_machine_state state,
     common_session_request request);
 lib_bool app_command_handle_hotkey(void *context, common_session_machine_state state,
-    const char *identifier, common_session_command_result *out_result);
+    const lib_u8 *identifier, common_session_command_result *out_result);
 void app_command_note_runtime(void *context, common_session_machine_state prior,
     common_session_machine_state completed, common_session_command_result *out_result);
 void app_command_note_broker(void *context, common_session_machine_state state,

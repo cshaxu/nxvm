@@ -316,7 +316,7 @@ static lib_bool vm_app_console_begin_external(C_VOID *opaque,
 }
 
 static lib_bool vm_app_console_hotkey(C_VOID *opaque,
-    common_session_machine_state state, const C_CHAR *identifier,
+    common_session_machine_state state, const lib_u8 *identifier,
     common_session_command_result *result)
 {
     vm_app_console_context *context = opaque;

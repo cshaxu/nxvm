@@ -87,7 +87,7 @@ typedef struct common_session_command_provider {
     /* Product-owned hotkeys may request a neutral lifecycle action, release
      * Window capture, or inject product input through their own adapter. */
     lib_bool (*handle_hotkey)(void *context, common_session_machine_state state,
-        const char *identifier, common_session_command_result *out_result);
+        const lib_u8 *identifier, common_session_command_result *out_result);
 } common_session_command_provider;
 
 typedef struct common_session_options {

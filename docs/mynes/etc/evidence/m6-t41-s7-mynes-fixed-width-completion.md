@@ -9,8 +9,10 @@ and crosses to `char *` only at the direct `snprintf` varargs boundary.
 
 Common Session command text, Lib file/Base path APIs and Win32 probes retain
 their declared C-string signatures.  Every MyNES conversion to such a
-signature is local and explicit.  The C entry-point signature remains the
-required ISO C `int main(int, char **)` adapter.
+signature is local and explicit.  The KVM hotkey callback statement below was
+superseded by the fixed-width correction in
+[S8 evidence](m6-t41-s8-hotkey-byte-boundary-corrective.md).  The C entry-point
+signature remains the required ISO C `int main(int, char **)` adapter.
 
 ## Sweep disposition
 

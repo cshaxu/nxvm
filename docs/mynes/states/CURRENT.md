@@ -2,13 +2,15 @@
 
 ## Current Work
 
-**No active MyNES subtask. M6 T41 S7 fixed-width completion is closed.**
+**No active MyNES subtask. M6 T41 S8 corrects the Shared hotkey byte boundary
+left by the accepted S7 delivery.**
 ## M6 T41 Progress
 
 | S | Result |
 | --- | --- |
 | S1 | Accepted: Shared `343edeb64` and `74a069246` add the required neutral Types vocabulary and declaration ownership; MyNES `3d81d2277` removes its admitted direct vocabulary, passes x64/x86 Lib and 53/53 MyNES suites, and publishes the verified `0_0_0041` pair. [Evidence](../etc/evidence/m6-t41-s1-types-mynes-cleanup.md) |
 | S7 | Accepted: `f63c6cea3` converts MyNES internal configuration, path, delayed-message and opcode text storage to `lib_u8`, removes its final `lib_c_strstr` receiver, and publishes verified `0_0_0041` x64/x86 artifacts. [Evidence](../etc/evidence/m6-t41-s7-mynes-fixed-width-completion.md) |
+| S8 | Corrective: Common's KVM hotkey callback and both product consumers now retain `const lib_u8 *` end-to-end.  This supersedes S7's temporary Common C-string cast; fresh MyNES x64/x86 rebuilds and full 53/53 suites are the required closure proof. [Evidence](../etc/evidence/m6-t41-s8-hotkey-byte-boundary-corrective.md) |
 
 ## M6 T40 Progress
 

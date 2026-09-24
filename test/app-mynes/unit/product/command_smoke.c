@@ -22,6 +22,8 @@ static lib_bool app_command_contains(const char *text, const char *needle)
 
 int main(void)
 {
+    static const lib_u8 pause_toggle[] = "pause-toggle";
+    static const lib_u8 unknown_hotkey[] = "unknown";
     app_command_context context;
     app_command_context startup_context;
     app_command_context loaded_context;
@@ -131,21 +133,21 @@ int main(void)
     app_command_initialize(&loaded_context, 0, LIB_TRUE, LIB_FALSE,
         COMMON_SESSION_DISPLAY_WINDOW);
     assert(app_command_handle_hotkey(&loaded_context, COMMON_SESSION_MACHINE_PAUSED,
-        "pause-toggle", &result));
+        pause_toggle, &result));
     assert(result.request == COMMON_SESSION_REQUEST_RESUME);
     assert(!app_command_handle_hotkey(&loaded_context, COMMON_SESSION_MACHINE_RUNNING,
-        "pause-toggle", &result));
+        pause_toggle, &result));
     loaded_context.session.transition_pending = LIB_FALSE;
     assert(app_command_handle_hotkey(&loaded_context, COMMON_SESSION_MACHINE_RUNNING,
-        "pause-toggle", &result));
+        pause_toggle, &result));
     assert(result.request == COMMON_SESSION_REQUEST_PAUSE);
     loaded_context.session.transition_pending = LIB_FALSE;
     assert(!app_command_handle_hotkey(&loaded_context, COMMON_SESSION_MACHINE_STOPPED,
-        "pause-toggle", &result));
+        pause_toggle, &result));
     assert(!app_command_handle_hotkey(&loaded_context, COMMON_SESSION_MACHINE_ERROR,
-        "pause-toggle", &result));
+        pause_toggle, &result));
     assert(!app_command_handle_hotkey(&loaded_context, COMMON_SESSION_MACHINE_RUNNING,
-        "unknown", &result));
+        unknown_hotkey, &result));
     app_command_submit_line(&loaded_context, COMMON_SESSION_MACHINE_STOPPED, "start", &result);
     assert(result.request == COMMON_SESSION_REQUEST_RESET && !result.arm_prompt);
     app_command_submit_line(&loaded_context, COMMON_SESSION_MACHINE_STOPPED, "start", &result);
