@@ -5,7 +5,7 @@
 
 lib_status lib_storage_file_close(lib_storage_file *file)
 {
-    int result;
+    lib_i32 result;
     if (file == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (file->stream == LIB_NULL) return LIB_STATUS_OK;
     result = lib_c_fclose(file->stream);

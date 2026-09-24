@@ -12,10 +12,10 @@ typedef struct shared_keyboard_capture {
     uint8_t modifiers[16];
     lib_u32 identities[16];
     lib_u32 flags[16];
-    unsigned int count;
+    lib_u32 count;
 } shared_keyboard_capture;
 
-static int capture_key(void *context, const kvm_input_event *event)
+static lib_i32 capture_key(void *context, const kvm_input_event *event)
 {
     shared_keyboard_capture *capture = (shared_keyboard_capture *)context;
     if (event == NULL || event->type != KVM_EVENT_KEY ||
@@ -31,10 +31,10 @@ static int capture_key(void *context, const kvm_input_event *event)
 typedef struct shared_hotkey_capture {
     kvm_hotkey_matcher matcher;
     kvm_input_event events[8];
-    unsigned int count;
+    lib_u32 count;
 } shared_hotkey_capture;
 
-static int capture_hotkey(void *context, const kvm_input_event *event)
+static lib_i32 capture_hotkey(void *context, const kvm_input_event *event)
 {
     shared_hotkey_capture *capture = (shared_hotkey_capture *)context;
     if (capture == NULL || event == NULL || capture->count == 8u) return 0;
@@ -42,7 +42,7 @@ static int capture_hotkey(void *context, const kvm_input_event *event)
     return 1;
 }
 
-static int normalize_and_match(void *context, const kvm_input_event *event)
+static lib_i32 normalize_and_match(void *context, const kvm_input_event *event)
 {
     shared_hotkey_capture *capture = (shared_hotkey_capture *)context;
     return capture != NULL && kvm_hotkey_matcher_submit(&capture->matcher,

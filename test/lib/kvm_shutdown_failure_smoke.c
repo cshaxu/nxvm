@@ -4,7 +4,7 @@
 #include <assert.h>
 
 static HANDLE asleep;
-static unsigned attempts, retired, failures, joins;
+static lib_u32 attempts, retired, failures, joins;
 static BOOL WINAPI reject_signal(HANDLE h) { (void)h; ++attempts; return FALSE; }
 #undef lib_win32_set_event
 #define lib_win32_set_event reject_signal
@@ -24,7 +24,7 @@ static DWORD WINAPI bounded_join(HANDLE h,DWORD timeout)
 #include "lib/kvm-console/win32/component.c"
 #undef base_sync_event_wait
 
-static int input(void *p,const kvm_input_event *e)
+static lib_i32 input(void *p,const kvm_input_event *e)
 { (void)p; assert(e->type==KVM_EVENT_SOURCE_RETIRED); ++retired; return 1; }
 static void failure(void *p,lib_u64 id,lib_status s)
 { (void)p; assert(id && s==LIB_STATUS_IO_ERROR); ++failures; }
@@ -32,7 +32,7 @@ int main(void)
 {
     assert(kvm_console_destroy(NULL)==LIB_STATUS_OK);
     assert(base_sync_event_signal(NULL)==LIB_STATUS_INVALID_ARGUMENT);
-    for(unsigned mode=0;mode<4;++mode) {
+    for(lib_u32 mode=0;mode<4;++mode) {
         kvm_console_options o={0}; kvm_console *c=NULL;
         asleep=CreateEventA(NULL,TRUE,FALSE,NULL);
         attempts=retired=failures=joins=0;

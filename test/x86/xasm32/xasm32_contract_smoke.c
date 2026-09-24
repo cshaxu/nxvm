@@ -1,7 +1,7 @@
 #include "x86/xasm32/xasm32_interface.h"
 #include "x86/xasm32/aasm32.c"
 
-static int assembly_writes_are_bounded(void)
+static lib_i32 assembly_writes_are_bounded(void)
 {
     aasm32_context context;
     aasm32_context *aasmContext = &context;
@@ -25,7 +25,7 @@ static int assembly_writes_are_bounded(void)
     return LIB_TRUE;
 }
 
-static int xasm_output_is_unchanged(const lib_u8 *code,
+static lib_i32 xasm_output_is_unchanged(const lib_u8 *code,
     lib_size code_bytes, lib_u8 expected, lib_size output_bytes,
     lib_size expected_bytes)
 {

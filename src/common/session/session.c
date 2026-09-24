@@ -30,13 +30,13 @@ static void common_session_clear_result(common_session_command_result *result)
     if (result != NULL) *result = (common_session_command_result) { 0 };
 }
 
-static int common_session_deliver_machine_input(void *context,
+static lib_i32 common_session_deliver_machine_input(void *context,
     const kvm_input_event *event)
 {
     return common_machine_enqueue_input((common_machine *)context, event) != 0;
 }
 
-static int common_session_dispatch_request(common_session *session,
+static lib_i32 common_session_dispatch_request(common_session *session,
     common_session_request request)
 {
     if (request == COMMON_SESSION_REQUEST_NONE) return 1;
@@ -51,7 +51,7 @@ static int common_session_dispatch_request(common_session *session,
     }
 }
 
-static int common_session_write_text(common_session *session, const char *text)
+static lib_i32 common_session_write_text(common_session *session, const char *text)
 {
     char chunk[1024];
     lib_size used = 0u;
@@ -71,7 +71,7 @@ static int common_session_write_text(common_session *session, const char *text)
     return used == 0u || common_ui_write_monitor(session->ui, chunk) == LIB_STATUS_OK;
 }
 
-static int common_session_apply_result(common_session *session,
+static lib_i32 common_session_apply_result(common_session *session,
     const common_session_command_result *result)
 {
     if (result->release_window_mouse &&
@@ -98,7 +98,7 @@ static int common_session_apply_result(common_session *session,
     return 1;
 }
 
-static int common_session_arm_if_ready(common_session *session)
+static lib_i32 common_session_arm_if_ready(common_session *session)
 {
     common_session_command_result result;
     if (session == NULL || session->command.note_monitor_current == NULL) return 0;
@@ -108,7 +108,7 @@ static int common_session_arm_if_ready(common_session *session)
     return common_session_apply_result(session, &result);
 }
 
-static int common_session_drive(common_session *session)
+static lib_i32 common_session_drive(common_session *session)
 {
     common_ui_action action;
     lib_bool console_status_surface;
@@ -134,7 +134,7 @@ static int common_session_drive(common_session *session)
         console_status_surface) == LIB_STATUS_OK;
 }
 
-static int common_session_handle_kvm_input(common_session *session,
+static lib_i32 common_session_handle_kvm_input(common_session *session,
     const kvm_input_event *event)
 {
     common_session_command_result result;
@@ -161,7 +161,7 @@ static int common_session_handle_kvm_input(common_session *session,
         common_session_deliver_machine_input, session->machine);
 }
 
-static int common_session_process_completed(common_session *session,
+static lib_i32 common_session_process_completed(common_session *session,
     const common_session_event *event)
 {
     common_session_command_result result;
@@ -257,7 +257,7 @@ lib_status common_session_destroy(common_session *session)
     return LIB_STATUS_OK;
 }
 
-int common_session_enqueue_ui_event(void *context, const common_ui_event *event)
+lib_i32 common_session_enqueue_ui_event(void *context, const common_ui_event *event)
 {
     common_session *session = (common_session *)context;
     if (session == NULL || event == NULL) return 0;
@@ -287,21 +287,21 @@ int common_session_enqueue_ui_event(void *context, const common_ui_event *event)
     return 0;
 }
 
-int common_session_enqueue_runtime_completed(common_session *session,
+lib_i32 common_session_enqueue_runtime_completed(common_session *session,
     common_session_machine_state state, lib_u32 run_generation)
 {
     return session != NULL && common_session_queue_push_runtime_completed(&session->queue,
         state, run_generation);
 }
 
-int common_session_enqueue_frame_completed(common_session *session,
+lib_i32 common_session_enqueue_frame_completed(common_session *session,
     lib_u32 sequence, lib_bool graphics, lib_u32 run_generation)
 {
     return session != NULL && common_session_queue_push_frame_completed(&session->queue,
         sequence, graphics, run_generation);
 }
 
-int common_session_run(common_session *session)
+lib_i32 common_session_run(common_session *session)
 {
     common_session_command_result result;
     char line[COMMON_SESSION_TEXT_CAPACITY];

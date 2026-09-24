@@ -51,7 +51,7 @@ base_sync_wait_result base_sync_wait_any(base_sync_event *const *events,
 lib_status base_sync_task_create(base_sync_task_entry entry, void *context,
     base_sync_task **out_task);
 lib_status base_sync_task_request_cancel(base_sync_task *task);
-int base_sync_task_cancelled(const base_sync_task *task);
+lib_bool base_sync_task_cancelled(const base_sync_task *task);
 base_sync_wait_result base_sync_task_wait_cancel(const base_sync_task *task,
     lib_u32 timeout_milliseconds);
 /* The owner serializes join/destroy; neither may run on this task itself.

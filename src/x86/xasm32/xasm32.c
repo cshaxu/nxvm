@@ -4,7 +4,7 @@
 #include "x86/xasm32/dasm32.h"
 
 static lib_status x86_xasm32_validate_statement(const char *statement,
-    lib_size statement_bytes, int paragraph)
+    lib_size statement_bytes, lib_bool paragraph)
 {
     lib_size index;
     lib_size line_bytes = 0u;
@@ -23,7 +23,7 @@ static lib_status x86_xasm32_validate_statement(const char *statement,
 }
 
 lib_status x86_xasm32_assemble(const char *statement, lib_size statement_bytes,
-    lib_u8 *code, lib_size code_capacity, lib_size *out_code_bytes, int flag32)
+    lib_u8 *code, lib_size code_capacity, lib_size *out_code_bytes, lib_bool flag32)
 {
     char local_statement[X86_XASM32_MAX_STATEMENT_BYTES + 1u];
     lib_u8 local_code[X86_XASM32_MAX_CODE_BYTES];
@@ -46,7 +46,7 @@ lib_status x86_xasm32_assemble(const char *statement, lib_size statement_bytes,
 
 lib_status x86_xasm32_assemble_paragraph(const char *statement,
     lib_size statement_bytes, lib_u8 *code, lib_size code_capacity,
-    lib_size *out_code_bytes, int flag32)
+    lib_size *out_code_bytes, lib_bool flag32)
 {
     char *local_statement;
     lib_status status;
@@ -67,7 +67,7 @@ lib_status x86_xasm32_assemble_paragraph(const char *statement,
 
 lib_status x86_xasm32_disassemble(const lib_u8 *code, lib_size code_bytes,
     char *statement, lib_size statement_capacity, lib_size *out_statement_bytes,
-    lib_size *out_code_bytes, int flag32)
+    lib_size *out_code_bytes, lib_bool flag32)
 {
     char local_statement[X86_XASM32_MAX_STATEMENT_BYTES + 1u];
     lib_u8 decoded_bytes;

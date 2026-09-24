@@ -71,7 +71,7 @@ struct dasm32_context
 /* Every disassembly field is an owned fixed array in dasm32_context or local scope. */
 #define DASM_FORMAT_ARRAY(buffer, ...)                                             \
     do {                                                                            \
-        int dasm_format_result = lib_c_snprintf((buffer), sizeof(buffer),          \
+        lib_i32 dasm_format_result = lib_c_snprintf((buffer), sizeof(buffer),          \
             __VA_ARGS__);                                                           \
         if (dasm_format_result < 0 ||                                               \
             (lib_size)dasm_format_result >= sizeof(buffer)) {                     \
@@ -83,7 +83,7 @@ struct dasm32_context
  * arrays, `sizeof(str)` there is only pointer width. */
 #define DASM_FORMAT_CONTEXT_TEXT(buffer, ...)                                      \
     do {                                                                            \
-        int dasm_format_result = lib_c_snprintf((buffer), XASM32_TEXT_CAPACITY,          \
+        lib_i32 dasm_format_result = lib_c_snprintf((buffer), XASM32_TEXT_CAPACITY,          \
             __VA_ARGS__);                                                           \
         if (dasm_format_result < 0 ||                                               \
             (lib_size)dasm_format_result >= XASM32_TEXT_CAPACITY) {                \
@@ -6771,7 +6771,7 @@ static dasm32_handler const dtable_0f[0x100] = {
     [0xff] = UndefinedOpcode,
 };
 
-static lib_u8 dasm32_execute(dasm32_context *dasmContext, char *stmt, lib_u8 *rcode, int flag32)
+static lib_u8 dasm32_execute(dasm32_context *dasmContext, char *stmt, lib_u8 *rcode, lib_bool flag32)
 {
     lib_size i;
     lib_u8 opcode, oldiop;
@@ -6817,7 +6817,7 @@ static lib_u8 dasm32_execute(dasm32_context *dasmContext, char *stmt, lib_u8 *rc
     return iop;
 }
 
-lib_u8 dasm32(char *stmt, lib_u8 *rcode, int flag32)
+lib_u8 dasm32(char *stmt, lib_u8 *rcode, lib_bool flag32)
 {
     dasm32_context local_context;
 

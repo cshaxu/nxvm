@@ -2,7 +2,7 @@
 #include "lib/types/win32/sync.h"
 #include "lib/kvm-window/win32/geometry.h"
 
-static int kvm_win32_window_decoration(lib_win32_hwnd window, int *width, int *height)
+static lib_i32 kvm_win32_window_decoration(lib_win32_hwnd window, lib_i32 *width, lib_i32 *height)
 {
     lib_win32_rect outer;
     lib_win32_rect client;
@@ -19,10 +19,10 @@ lib_status kvm_win32_enforce_client_aspect(lib_win32_hwnd window, lib_u32 source
     lib_u32 source_height)
 {
     lib_win32_rect client;
-    int decoration_width;
-    int decoration_height;
-    int target_width;
-    int target_height;
+    lib_i32 decoration_width;
+    lib_i32 decoration_height;
+    lib_i32 target_width;
+    lib_i32 target_height;
 
     if (window == LIB_NULL || !lib_win32_get_client_rect(window, &client)) return LIB_STATUS_IO_ERROR;
     if (client.right <= client.left || client.bottom <= client.top) return LIB_STATUS_OK;
@@ -43,14 +43,14 @@ lib_status kvm_win32_maximize_client(lib_win32_hwnd window, lib_u32 source_width
 {
     lib_win32_monitorinfo monitor_info;
     lib_win32_hmonitor monitor;
-    int decoration_width;
-    int decoration_height;
-    int client_width;
-    int client_height;
-    int outer_width;
-    int outer_height;
-    int available_width;
-    int available_height;
+    lib_i32 decoration_width;
+    lib_i32 decoration_height;
+    lib_i32 client_width;
+    lib_i32 client_height;
+    lib_i32 outer_width;
+    lib_i32 outer_height;
+    lib_i32 available_width;
+    lib_i32 available_height;
 
     if (window == LIB_NULL || source_width == 0u || source_height == 0u ||
         !kvm_win32_window_decoration(window, &decoration_width,
@@ -85,7 +85,7 @@ lib_status kvm_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
     lib_win32_dword extended_style;
 
     if (window == LIB_NULL || width == 0u || height == 0u) return LIB_STATUS_IO_ERROR;
-    lib_win32_set_rect(&outer, 0, 0, (int)width, (int)height);
+    lib_win32_set_rect(&outer, 0, 0, (lib_i32)width, (lib_i32)height);
     style = (lib_win32_dword)lib_win32_get_window_long_ptr_a(window, LIB_WIN32_GWL_STYLE);
     extended_style = (lib_win32_dword)lib_win32_get_window_long_ptr_a(window, LIB_WIN32_GWL_EXSTYLE);
     if (!lib_win32_adjust_window_rect_ex(&outer, style, LIB_WIN32_FALSE, extended_style)) return LIB_STATUS_IO_ERROR;
@@ -93,13 +93,13 @@ lib_status kvm_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
     lib_win32_zero_memory(&monitor_info, sizeof(monitor_info));
     monitor_info.cbSize = sizeof(monitor_info);
     if (monitor != LIB_NULL && lib_win32_get_monitor_info_a(monitor, &monitor_info)) {
-        int decoration_width = (outer.right - outer.left) - (int)width;
-        int decoration_height = (outer.bottom - outer.top) - (int)height;
-        int fitted_width;
-        int fitted_height;
+        lib_i32 decoration_width = (outer.right - outer.left) - (lib_i32)width;
+        lib_i32 decoration_height = (outer.bottom - outer.top) - (lib_i32)height;
+        lib_i32 fitted_width;
+        lib_i32 fitted_height;
         kvm_window_rect work = kvm_win32_rect_value(&monitor_info.rcWork);
         if (kvm_window_fit_client_size(&work, decoration_width,
-                decoration_height, (int)width, (int)height, &fitted_width,
+                decoration_height, (lib_i32)width, (lib_i32)height, &fitted_width,
                 &fitted_height))
             lib_win32_set_rect(&outer, 0, 0, fitted_width + decoration_width,
                 fitted_height + decoration_height);
@@ -112,7 +112,7 @@ lib_status kvm_win32_resize_client(lib_win32_hwnd window, lib_u32 width,
 lib_status kvm_win32_constrain_sizing(lib_win32_hwnd window, lib_win32_wparam edge,
     lib_win32_rect *outer, lib_u32 source_width, lib_u32 source_height)
 {
-    int frame_width, frame_height;
+    lib_i32 frame_width, frame_height;
     kvm_window_edge direction;
     kvm_window_rect value;
     if (source_width == 0u || source_height == 0u) return LIB_STATUS_OK;

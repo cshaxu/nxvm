@@ -2,12 +2,26 @@
 
 ## Current Work
 
-**No active NXVM subtask.**
+**Active: NXVM M6 T41 S6 Shared fixed-width enforcement.**
 
-M6 T41 S6 closed at `710cf697b`: Lib Types now rejects C scalar synonym
-aliases and has an explicit binary-floating-point admission rule. x64/x86
-Types verification and all Shared integrity gates passed. Product caller
-migration remains a separate admitted step; [evidence](../etc/evidence/m6-t41-s6-fixed-width-types-contract.md).
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Owner-directed continuation |
+| Admission And Approval | Owner reopened S6 on 2026-09-23; on 2026-09-23 the owner further approved the complete three-product consumer audit, the proposal amendment, and cleanup of the shared Lib, Common and x86 corpora under the resulting fixed-width/text boundary rule. |
+| Objective | Establish a consumer-proven Lib Types surface, make Lib, Common and x86 internal values use fixed-width or semantic Types, and confine native C/SDK scalar spelling to exact ABI boundaries. |
+| Non-goals | No MyNES, NXVM App, or SoftPC source migration; no `type.h`/`type.c` deletion; no public floating-point alias; no change to C/SDK ABI signatures, artifact, asset, or INI. |
+| Reference Baseline | [S6 fixed-width contract evidence](../etc/evidence/m6-t41-s6-fixed-width-types-contract.md), current `src/lib` corpus, and the owner-approved boundary rule: internal data uses Lib Types; C/SDK signatures remain native only at their boundary. |
+| Candidate Proposal | [M6 T41 S3 Lib Types facade-retirement design](../proposals/m6-t41-s3-lib-types-facade-retirement.md), extended by this enforcement packet. |
+| Files And ABI Surface | `src/lib`, `src/common`, `src/x86`, `test/lib`, `test/common`, `test/x86`, their CMake/manifests as required, and NXVM governance evidence/status. Existing product text interfaces remain explicit adapter boundaries; no product source is allowed. |
+| Applicable Rules | Fixed-width integers own machine/data representation; `lib_size`, pointer-width and semantic types retain their roles; text bytes use `lib_u8` internally; native C/SDK types may appear only in direct declaration adapters; no blind replacement may change ABI or ctype/string semantics. |
+| Verification | Complete consumer ledger across NXVM, MyNES and SoftPC production paths; static gates distinguish boundary adapters from internal implementation; focused x64/x86 Lib, Common and x86 tests/layout self-tests; manifests, dependency/layout, documentation governance and actual-diff review. |
+| Expected Markers | Every retained Lib Types symbol has a current consumer or a named legacy-facade migration receiver; no unclassified plain scalar remains in `src/{lib,common,x86}` or `test/{lib,common,x86}` internal logic; shared text/data storage uses `lib_u8` and `lib_size` where no established product ABI requires an adapter; every permitted native type is in a named C/SDK boundary declaration or a direct ABI probe. |
+| Asset Needs | None. Owner-local `assets/binary-mynes/mynes.ini` and `assets/binary-nxvm/**/NXVM.ini` remain untouched. |
+| Reporting Requirements | Report the three-product consumer ledger and dispositions, Lib/Common/x86 source/test add/remove/net counts, enforcement-gate behavior, x64/x86 outcomes, commit/push and the MyNES/NXVM/SoftPC handoff. |
+| Stop Conditions | A candidate migration would alter a public C/SDK ABI, C string literal compatibility, integer promotion semantics, or an existing product contract; retain one explicit adapter boundary and record its later receiver instead of forcing a change. |
+| Exit Criteria | The consumer ledger is exhausted or transferred; Lib/Common/x86 internal representations conform, zero-consumer entries are disposed by owner decision or named receiver, enforcement is tested, and one pushed implementation P plus closure record prepares S7. |
+| Original Owner Request | Audit all current Lib Types consumers across NXVM, MyNES and SoftPC; record zero-consumer and nonconforming entries; write the result into the T41 proposal; then clean Lib, Common and x86 under the fixed-width/text-boundary rule. S7 cleans MyNES; S8 cleans NXVM. |
+| Similar-Issue Sweep | Scan every Lib Types symbol and every `src/{lib,common,x86}` and `test/{lib,common,x86}` header/source for consumer use, plain C scalar declarations, casts, fields, parameters and returns; classify each as fixed-width/semantic conversion, permitted C runtime/SDK boundary, direct ABI probe, legacy-facade receiver, or defect. |
 
 ## M6 T41 S4 Shared Closure
 

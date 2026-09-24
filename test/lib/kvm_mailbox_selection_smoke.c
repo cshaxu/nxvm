@@ -1,16 +1,16 @@
 #include "lib/kvm-base/mailbox_interface.h"
 #include <assert.h>
 
-static unsigned mutex_creates, reject_mutex;
+static lib_u32 mutex_creates, reject_mutex;
 static lib_status create_mutex(base_sync_mutex **out)
 {
     if (++mutex_creates == reject_mutex) { *out = NULL; return LIB_STATUS_NO_MEMORY; }
     return base_sync_mutex_create(out);
 }
 /* Count actual wake requests at the platform boundary, including failures. */
-static unsigned creates, destroys, signals, notifications;
+static lib_u32 creates, destroys, signals, notifications;
 static lib_status allocation = LIB_STATUS_NO_MEMORY;
-static int token;
+static lib_i32 token;
 lib_status create_event(base_sync_event_mode mode, base_sync_event **out)
 {
     assert(mode == BASE_SYNC_EVENT_AUTO_RESET);

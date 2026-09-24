@@ -29,11 +29,6 @@ typedef enum lib_memory_order
 
 #define LIB_ATOMIC_FLAG_INITIALIZER 0L
 
-static inline void lib_atomic_flag_clear(lib_atomic_flag *object)
-{
-    (void)_InterlockedExchange(object, 0L);
-}
-
 static inline int lib_atomic_flag_test_and_set_explicit(lib_atomic_flag *object,
                                                         lib_memory_order order)
 {
@@ -113,13 +108,6 @@ static inline void lib_atomic_u32_store_explicit(lib_atomic_u32 *object,
     (void)_InterlockedExchange(object, (long)value);
 }
 
-static inline lib_u32 lib_atomic_u32_exchange_explicit(lib_atomic_u32 *object,
-    lib_u32 value, lib_memory_order order)
-{
-    (void)order;
-    return (lib_u32)_InterlockedExchange(object, (long)value);
-}
-
 static inline lib_u32 lib_atomic_u32_fetch_add_explicit(lib_atomic_u32 *object,
                                                         lib_u32 value, lib_memory_order order)
 {
@@ -132,11 +120,6 @@ static inline lib_u32 lib_atomic_u32_fetch_sub_explicit(lib_atomic_u32 *object,
 {
     (void)order;
     return (lib_u32)_InterlockedExchangeAdd(object, -(long)value);
-}
-
-static inline void lib_atomic_u64_initialize(lib_atomic_u64 *object, lib_u64 value)
-{
-    *object = (long long)value;
 }
 
 static inline lib_u64 lib_atomic_u64_load_explicit(const lib_atomic_u64 *object,
@@ -205,7 +188,7 @@ static inline lib_bool lib_atomic_uptr_compare_exchange_strong_explicit(
 typedef atomic_flag lib_atomic_flag;
 typedef atomic_int lib_atomic_i32;
 typedef atomic_uint lib_atomic_u32;
-typedef atomic_uint_fast64_t lib_atomic_u64;
+typedef _Atomic(lib_u64) lib_atomic_u64;
 typedef atomic_uintptr_t lib_atomic_uptr;
 typedef memory_order lib_memory_order;
 
@@ -217,7 +200,6 @@ typedef memory_order lib_memory_order;
 #define LIB_MEMORY_ORDER_ACQ_REL memory_order_acq_rel
 #define LIB_MEMORY_ORDER_SEQ_CST memory_order_seq_cst
 
-#define lib_atomic_flag_clear atomic_flag_clear
 #define lib_atomic_flag_test_and_set_explicit atomic_flag_test_and_set_explicit
 #define lib_atomic_flag_clear_explicit atomic_flag_clear_explicit
 #define lib_atomic_i32_initialize atomic_init
@@ -229,10 +211,8 @@ typedef memory_order lib_memory_order;
 #define lib_atomic_u32_initialize atomic_init
 #define lib_atomic_u32_load_explicit atomic_load_explicit
 #define lib_atomic_u32_store_explicit atomic_store_explicit
-#define lib_atomic_u32_exchange_explicit atomic_exchange_explicit
 #define lib_atomic_u32_fetch_add_explicit atomic_fetch_add_explicit
 #define lib_atomic_u32_fetch_sub_explicit atomic_fetch_sub_explicit
-#define lib_atomic_u64_initialize atomic_init
 #define lib_atomic_u64_load_explicit atomic_load_explicit
 #define lib_atomic_u64_compare_exchange_weak_explicit \
     atomic_compare_exchange_weak_explicit

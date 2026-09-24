@@ -10,9 +10,9 @@ static lib_win32_mmresult write_result = LIB_WIN32_MMSYSERR_NOERROR;
 static lib_win32_mmresult reset_result = LIB_WIN32_MMSYSERR_NOERROR;
 static lib_win32_mmresult unprepare_result = LIB_WIN32_MMSYSERR_NOERROR;
 static lib_win32_mmresult close_result = LIB_WIN32_MMSYSERR_NOERROR;
-static unsigned open_calls, prepare_calls, write_calls, reset_calls;
-static unsigned unprepare_calls, close_calls;
-static unsigned create_event_calls, set_event_calls, reset_event_calls, close_handle_calls;
+static lib_u32 open_calls, prepare_calls, write_calls, reset_calls;
+static lib_u32 unprepare_calls, close_calls;
+static lib_u32 create_event_calls, set_event_calls, reset_event_calls, close_handle_calls;
 static lib_win32_dword_ptr open_callback, open_instance;
 static lib_win32_dword wait_result = LIB_WIN32_WAIT_OBJECT_0;
 

@@ -3,7 +3,7 @@
 #include <assert.h>
 
 static kvm_input_event received;
-static int capture(void *context, const kvm_input_event *event)
+static lib_i32 capture(void *context, const kvm_input_event *event)
 { (void)context; received = *event; return 1; }
 int main(void)
 {

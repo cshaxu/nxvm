@@ -9,7 +9,7 @@ extern "C" {
 
 #include "lib/types/types_interface.h"
 
-lib_u8 dasm32(char *stmt, lib_u8 *rcode, int flag32);
+lib_u8 dasm32(char *stmt, lib_u8 *rcode, lib_bool flag32);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

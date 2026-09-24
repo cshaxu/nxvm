@@ -1,8 +1,8 @@
 #include "common/session/control.h"
 #include <assert.h>
 
-static int fail_allocation, fail_mutex, fail_event;
-static unsigned blocks, mutexes, events;
+static lib_i32 fail_allocation, fail_mutex, fail_event;
+static lib_u32 blocks, mutexes, events;
 static void *allocate(lib_size count, lib_size size)
 {
     void *p = fail_allocation ? NULL : lib_allocate_zero(count, size);
@@ -51,7 +51,7 @@ int main(void)
     common_session_queue storage = { 0 }, *queue = &storage;
     common_session_event event;
     kvm_input_event key = { 0 };
-    unsigned int i, round;
+    lib_u32 i, round;
     assert(!common_session_queue_initialize(NULL));
     common_session_queue_dispose(NULL);
     for (i = 0u; i < 3u; ++i) {

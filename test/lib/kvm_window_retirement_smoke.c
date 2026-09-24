@@ -5,13 +5,13 @@
 
 static HANDLE waiting, proceed;
 static HWND created;
-static int scenario, retired, failures, ordinary, closes;
+static lib_i32 scenario, retired, failures, ordinary, closes;
 static void input_scenario(void);
 static void paint_scenario(void);
-static unsigned paint_ends;
-static int inject_output_failure;
-static unsigned notification_attempts;
-static int reject_join;
+static lib_u32 paint_ends;
+static lib_i32 inject_output_failure;
+static lib_u32 notification_attempts;
+static lib_i32 reject_join;
 static BOOL WINAPI startup_signal(HANDLE h)
 { return scenario==19 ? FALSE : SetEvent(h); }
 static BOOL WINAPI set_title(HWND w, LPCSTR title)
@@ -39,7 +39,7 @@ static BOOL WINAPI notify(HWND w, UINT m, WPARAM a, LPARAM b)
 }
 static BOOL WINAPI invalidate(HWND w,const RECT *r,BOOL erase)
 { return inject_output_failure && scenario==9 ? FALSE : InvalidateRect(w,r,erase); }
-static BOOL WINAPI blit(HDC d,int x,int y,int w,int h,HDC s,int sx,int sy,int sw,int sh,DWORD op)
+static BOOL WINAPI blit(HDC d,lib_i32 x,lib_i32 y,lib_i32 w,lib_i32 h,HDC s,lib_i32 sx,lib_i32 sy,lib_i32 sw,lib_i32 sh,DWORD op)
 { return scenario==10 ? FALSE : StretchBlt(d,x,y,w,h,s,sx,sy,sw,sh,op); }
 static BOOL WINAPI invert(HDC d,const RECT *r)
 { return scenario==11 ? FALSE : InvertRect(d,r); }
@@ -49,10 +49,10 @@ static BOOL WINAPI end(HWND w,const PAINTSTRUCT *p)
 { ++paint_ends; BOOL result=EndPaint(w,p); return scenario==20 && inject_output_failure ? FALSE : result; }
 static BOOL WINAPI dispose_cursor(HCURSOR cursor)
 { return scenario==21 ? FALSE : DestroyCursor(cursor); }
-static HCURSOR WINAPI make_cursor(HINSTANCE i,int x,int y,int w,int h,const void *a,const void *b)
+static HCURSOR WINAPI make_cursor(HINSTANCE i,lib_i32 x,lib_i32 y,lib_i32 w,lib_i32 h,const void *a,const void *b)
 { return scenario==13 ? NULL : CreateCursor(i,x,y,w,h,a,b); }
 static HWND WINAPI create_window(DWORD ex, LPCWSTR klass, LPCWSTR title,
-    DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu,
+    DWORD style, lib_i32 x, lib_i32 y, lib_i32 width, lib_i32 height, HWND parent, HMENU menu,
     HINSTANCE instance, LPVOID param)
 {
     created = CreateWindowExW(ex, klass, title, style, x, y, width, height,
@@ -60,7 +60,7 @@ static HWND WINAPI create_window(DWORD ex, LPCWSTR klass, LPCWSTR title,
     assert(created == NULL || IsWindowUnicode(created));
     return created;
 }
-static BOOL WINAPI hide_window(HWND window, int command)
+static BOOL WINAPI hide_window(HWND window, lib_i32 command)
 { (void)command; return ShowWindow(window, SW_HIDE); }
 static BOOL WINAPI no_foreground(HWND window) { (void)window; return TRUE; }
 static HWND WINAPI no_focus(HWND window) { return window; }
@@ -135,7 +135,7 @@ static void checked_fail(kvm_component *component, lib_status status)
 #include "lib/kvm-window/win32/component.c"
 #undef kvm_component_fail
 
-static int input(void *context, const kvm_input_event *event)
+static lib_i32 input(void *context, const kvm_input_event *event)
 {
     (void)context;
     if (scenario == 7 && event->type == KVM_EVENT_KEY) { ++ordinary; return 0; }

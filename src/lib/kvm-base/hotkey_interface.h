@@ -17,7 +17,7 @@ enum {
 typedef struct kvm_hotkey_registration {
     kvm_key key;
     lib_u8 modifiers;
-    char identifier[KVM_HOTKEY_IDENTIFIER_CAPACITY];
+    lib_u8 identifier[KVM_HOTKEY_IDENTIFIER_CAPACITY];
 } kvm_hotkey_registration;
 
 typedef struct kvm_hotkey_registry {
@@ -57,7 +57,7 @@ void kvm_hotkey_matcher_initialize(kvm_hotkey_matcher *matcher,
  * allow_replay is captured on the first make, not refreshed by repeats.
  * False suppresses only delayed ordinary make replay, never chord matching
  * or later releases. Initialize once; discard releases held storage. */
-int kvm_hotkey_matcher_submit(kvm_hotkey_matcher *matcher,
+lib_bool kvm_hotkey_matcher_submit(kvm_hotkey_matcher *matcher,
     const kvm_input_event *event, kvm_input_sink sink, void *context,
     lib_bool allow_replay);
 void kvm_hotkey_matcher_discard(kvm_hotkey_matcher *matcher);

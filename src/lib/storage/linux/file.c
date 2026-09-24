@@ -25,7 +25,7 @@ lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
 }
 
 lib_status storage_file_platform_seek(const lib_storage_file *file, lib_i64 offset,
-    int origin)
+    lib_i32 origin)
 { return lib_linux_fseeko(file->stream, (lib_linux_off_t)offset, origin) == 0 ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR; }
 
 lib_i64 storage_file_platform_tell(const lib_storage_file *file)

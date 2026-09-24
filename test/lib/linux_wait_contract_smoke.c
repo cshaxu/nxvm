@@ -1,5 +1,5 @@
 #include "linux_wait_fakes.h"
-static unsigned allocations, releases;
+static lib_u32 allocations, releases;
 static void *allocate(lib_size count, lib_size size)
 { ++allocations; return lib_allocate_zero(count, size); }
 static void *allocate_plain(lib_size size)
@@ -33,7 +33,7 @@ int main(void)
     base_sync_event *events[2];
     lib_bool signaled;
     lib_u32 index;
-    int failure;
+    lib_i32 failure;
     console_broker_backend *backend = (void *)1;
     base_sync_mutex *mutex = (void *)1;
 
@@ -135,7 +135,7 @@ int main(void)
     assert(console_broker_backend_request_cooked_line(NULL) == LIB_STATUS_UNSUPPORTED);
     {
         base_sync_task *task;
-        unsigned before = allocations;
+        lib_u32 before = allocations;
         assert(base_sync_task_create(task_entry, &task, &task) == LIB_STATUS_OK);
         assert(allocations == before + 2); /* Task + existing cancellation Event. */
         assert(!base_sync_task_cancelled(task));

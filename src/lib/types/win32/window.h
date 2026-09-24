@@ -104,7 +104,6 @@ typedef BITMAPINFO lib_win32_bitmapinfo;
 #define lib_win32_translate_message TranslateMessage
 #define lib_win32_update_window UpdateWindow
 #define lib_win32_rgb RGB
-#define lib_win32_hiword HIWORD
 #define lib_win32_loword LOWORD
 #define lib_win32_zero_memory ZeroMemory
 #define LIB_WIN32_CALLBACK CALLBACK

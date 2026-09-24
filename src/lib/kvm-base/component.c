@@ -60,27 +60,27 @@ lib_status kvm_component_initialize(kvm_component *component,
     return kvm_component_mailboxes_create(&component->mailboxes, frame_storage, frame_capacity);
 }
 
-int kvm_component_emit_to(kvm_component *component, const kvm_input_event *event,
+lib_bool kvm_component_emit_to(kvm_component *component, const kvm_input_event *event,
     kvm_input_sink delivery_sink, void *delivery_context, lib_bool allow_replay)
 {
     kvm_input_event copied;
     if (component == LIB_NULL || event == LIB_NULL || delivery_sink == LIB_NULL ||
         lib_atomic_i32_load_explicit(&component->stopping,
-            LIB_MEMORY_ORDER_ACQUIRE) != 0) return 0;
+            LIB_MEMORY_ORDER_ACQUIRE) != 0) return LIB_FALSE;
     copied = *event;
     kvm_input_event_set_source(&copied, component, component->source_identity);
     if (!kvm_hotkey_matcher_submit(&component->hotkey_matcher, &copied,
             delivery_sink, delivery_context, allow_replay)) {
         kvm_hotkey_matcher_discard(&component->hotkey_matcher);
         kvm_component_fail(component, LIB_STATUS_IO_ERROR);
-        return 0;
+        return LIB_FALSE;
     }
-    return 1;
+    return LIB_TRUE;
 }
 
-int kvm_component_emit(kvm_component *component, const kvm_input_event *event)
+lib_bool kvm_component_emit(kvm_component *component, const kvm_input_event *event)
 {
-    if (component == LIB_NULL) return 0;
+    if (component == LIB_NULL) return LIB_FALSE;
     return kvm_component_emit_to(component, event, component->input_sink,
         component->input_context, LIB_TRUE);
 }

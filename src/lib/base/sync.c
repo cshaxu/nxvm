@@ -113,7 +113,7 @@ lib_status base_sync_task_request_cancel(base_sync_task *task)
         base_sync_event_signal(task->cancellation);
 }
 
-int base_sync_task_cancelled(const base_sync_task *task)
+lib_bool base_sync_task_cancelled(const base_sync_task *task)
 {
     const base_sync_event *events[1];
     lib_bool signaled = LIB_FALSE;

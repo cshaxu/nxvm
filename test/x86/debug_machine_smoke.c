@@ -8,7 +8,7 @@
 typedef struct debug_fake {
     lib_bool register_fixture;
     lib_u32 registers[X86_DEBUG_REGISTER_COUNT];
-    unsigned real_reads, linear_reads;
+    lib_u32 real_reads, linear_reads;
     lib_bool memory_fixture;
     lib_u8 memory[8192];
 } debug_fake;
@@ -104,7 +104,7 @@ static void extended_registers(x86_debug *debug, debug_fake *fake)
         "EAX=12340000 EBX=12340003 ECX=12340001 EDX=12340002\n"
         "ESP=12340004 EBP=12340005 ESI=12340006 EDI=12340007\n"
         "EIP=12340008 EFL=00037FD7: VM RF NT IOPL=3 OF DF IF TF SF ZF AF PF CF \n";
-    unsigned index;
+    lib_u32 index;
     fake->register_fixture = LIB_TRUE;
     for (index = 0; index < 10u; ++index)
         fake->registers[index] = 0x12340000u + index;
@@ -167,7 +167,7 @@ static void original_cli(x86_debug *debug, debug_fake *fake)
     transcript(debug, "", "", "-");
     transcript(debug, " \t ", "", "-");
     /* All original low-word assignments must retain their 32-bit aliases. */
-    for (unsigned i = 0; i < 9u; ++i) {
+    for (lib_u32 i = 0; i < 9u; ++i) {
         char line[16], expected[32];
         fake->registers[i] = 0x89abcdefu;
         snprintf(line, sizeof(line), "r%s", names[i]);
@@ -229,7 +229,7 @@ static void original_cli(x86_debug *debug, debug_fake *fake)
     memset(fake->memory, 'A', sizeof(fake->memory));
     assert(x86_debug_submit_line(debug, "xd 0 1000", &result) == LIB_STATUS_OK);
     const char *cursor = result.text;
-    for (unsigned address = 0; address < 0x1000; address += 16) {
+    for (lib_u32 address = 0; address < 0x1000; address += 16) {
         char row[128];
         snprintf(row, sizeof(row), "L%08X  41 41 41 41 41 41 41 41 \b-41 41 41 41 41 41 41 41   AAAAAAAAAAAAAAAA\n", address);
         assert(strncmp(cursor, row, strlen(row)) == 0);
@@ -244,9 +244,9 @@ static void original_cli(x86_debug *debug, debug_fake *fake)
     assert(x86_debug_observe_machine(debug, X86_DEBUG_MACHINE_PAUSED,
         LIB_STATUS_OK, &result) == LIB_STATUS_OK);
     assert(strstr(result.text, "AX=") && !strstr(result.text, "EAX="));
-    for (unsigned linear = 0; linear < 2u; ++linear) {
+    for (lib_u32 linear = 0; linear < 2u; ++linear) {
         assert(x86_debug_submit_line(debug, linear ? "xt 2" : "t 2", &result) == LIB_STATUS_OK);
-        for (unsigned step = 0; step < 2u; ++step) {
+        for (lib_u32 step = 0; step < 2u; ++step) {
             assert(x86_debug_observe_machine(debug, X86_DEBUG_MACHINE_PAUSED,
                 LIB_STATUS_OK, &result) == LIB_STATUS_OK);
             lib_size length = strlen(result.text);

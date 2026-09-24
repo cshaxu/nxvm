@@ -48,7 +48,7 @@ struct base_sync_linux_task {
 static lib_linux_pthread_mutex_t base_sync_lock = LIB_LINUX_PTHREAD_MUTEX_INITIALIZER;
 static lib_linux_pthread_cond_t base_sync_changed;
 static lib_linux_pthread_once_t base_sync_once = LIB_LINUX_PTHREAD_ONCE_INIT;
-static int base_sync_init_status = -1;
+static lib_i32 base_sync_init_status = -1;
 
 static void base_sync_initialize(void)
 {
@@ -108,7 +108,7 @@ void base_sync_platform_event_destroy(base_sync_event *event)
 }
 lib_status base_sync_platform_event_signal(base_sync_event *event)
 {
-    int result;
+    lib_i32 result;
     if (lib_linux_pthread_mutex_lock(&base_sync_lock) != 0) return LIB_STATUS_IO_ERROR;
     event->signaled = LIB_TRUE;
     result = lib_linux_pthread_cond_broadcast(&base_sync_changed);
@@ -130,7 +130,7 @@ lib_status base_sync_platform_event_wait_many(
 {
     lib_u32 index;
     lib_linux_timespec deadline;
-    int result = 0;
+    lib_i32 result = 0;
     if (events == LIB_NULL || event_count == 0u || out_signaled == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_signaled = LIB_FALSE;

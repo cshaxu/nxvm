@@ -8,10 +8,10 @@ static lib_bool completed, fail_cancel, fail_request, exit_on_request;
 static lib_bool collect;
 static char output[40000];
 static lib_size output_used;
-static unsigned writes, fail_write;
+static lib_u32 writes, fail_write;
 static lib_u32 waits;
 static lib_bool fail_wait;
-static int take_event(common_session_queue *queue, common_session_event *event,
+static lib_i32 take_event(common_session_queue *queue, common_session_event *event,
     lib_u32 timeout_ms)
 {
     assert(timeout_ms == LIB_UINT32_MAX);
@@ -25,7 +25,7 @@ static int take_event(common_session_queue *queue, common_session_event *event,
 static lib_u32 run(const common_machine *m) { (void)m; return 1; }
 static lib_bool copy_frame(common_machine *m, common_machine_frame *f, lib_u32 g)
 { (void)m; (void)f; (void)g; return LIB_FALSE; }
-static int machine_request(common_machine *m) { (void)m; ++commands; return 1; }
+static lib_i32 machine_request(common_machine *m) { (void)m; ++commands; return 1; }
 #define common_machine_run_generation run
 #define common_machine_copy_published_frame copy_frame
 #define common_machine_start machine_request
@@ -122,7 +122,7 @@ int main(void)
     common_session_state_note_runtime(&s.state, COMMON_SESSION_MACHINE_RUNNING);
     common_session_state_note_window(&s.state, 1);
     assert(common_session_arm_if_ready(&s) && requests == 1 && prompts == 1);
-    for (int i = 0; i < 10; ++i) assert(common_session_arm_if_ready(&s));
+    for (lib_i32 i = 0; i < 10; ++i) assert(common_session_arm_if_ready(&s));
     assert(requests == 1 && prompts == 1);
     lib_u32 before = callbacks;
     event.kind = COMMON_SESSION_EVENT_FRAME_COMPLETED; event.run_generation = 1;

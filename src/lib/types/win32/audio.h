@@ -19,7 +19,6 @@ typedef void (CALLBACK *lib_win32_wave_callback)(lib_win32_wave_output output,
 #define lib_win32_wave_out_reset waveOutReset
 #define lib_win32_wave_out_unprepare_header waveOutUnprepareHeader
 #define lib_win32_wave_out_write waveOutWrite
-#define LIB_WIN32_CALLBACK_NULL CALLBACK_NULL
 #define LIB_WIN32_CALLBACK_FUNCTION CALLBACK_FUNCTION
 #define LIB_WIN32_MMSYSERR_NOERROR MMSYSERR_NOERROR
 #define LIB_WIN32_WOM_DONE WOM_DONE

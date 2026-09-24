@@ -15,7 +15,7 @@ int main(void)
 {
     common_machine_input_queue queue = { 0 };
     kvm_input_event input = { 0 }, output;
-    unsigned int i;
+    lib_u32 i;
     assert(common_machine_input_queue_initialize(NULL) == LIB_STATUS_INVALID_ARGUMENT);
     fail_mutex = LIB_TRUE;
     assert(common_machine_input_queue_initialize(&queue) == LIB_STATUS_NO_MEMORY);

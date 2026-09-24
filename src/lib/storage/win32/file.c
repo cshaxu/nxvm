@@ -11,7 +11,7 @@ lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
     lib_storage_file *file)
 {
     lib_win32_handle handle;
-    int descriptor;
+    lib_i32 descriptor;
     lib_win32_dword access_flags = readwrite != LIB_FALSE ?
         LIB_WIN32_GENERIC_READ | LIB_WIN32_GENERIC_WRITE : LIB_WIN32_GENERIC_READ;
     lib_win32_dword share = readwrite != LIB_FALSE ? 0u : LIB_WIN32_FILE_SHARE_READ;
@@ -35,7 +35,7 @@ lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
 }
 
 lib_status storage_file_platform_seek(const lib_storage_file *file, lib_i64 offset,
-    int origin)
+    lib_i32 origin)
 { return lib_win32_fseeki64(file->stream, offset, origin) == 0 ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR; }
 
 lib_i64 storage_file_platform_tell(const lib_storage_file *file)

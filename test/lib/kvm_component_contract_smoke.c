@@ -4,16 +4,16 @@
 #include <string.h>
 
 typedef struct component_probe {
-    unsigned int input_count;
-    unsigned int failure_count;
+    lib_u32 input_count;
+    lib_u32 failure_count;
     lib_u64 last_identity;
     lib_status last_failure;
     kvm_event_type last_type;
     char last_hotkey[KVM_HOTKEY_IDENTIFIER_CAPACITY];
-    int accept_input;
+    lib_i32 accept_input;
 } component_probe;
 
-static int component_probe_input(void *opaque, const kvm_input_event *event)
+static lib_i32 component_probe_input(void *opaque, const kvm_input_event *event)
 {
     component_probe *probe = (component_probe *)opaque;
     if (probe == LIB_NULL || event == LIB_NULL || !probe->accept_input) return 0;
@@ -29,7 +29,7 @@ static int component_probe_input(void *opaque, const kvm_input_event *event)
 /* Leaf policy belongs after kvm-base attribution and matching. This test probe
  * models frozen Window delivery: regular matcher output succeeds but does not
  * enter the application sink; registered hotkeys still do. */
-static int component_probe_hotkeys_only(void *opaque, const kvm_input_event *event)
+static lib_i32 component_probe_hotkeys_only(void *opaque, const kvm_input_event *event)
 {
     return event != LIB_NULL && event->type != KVM_EVENT_HOTKEY ? 1 :
         component_probe_input(opaque, event);
@@ -66,7 +66,7 @@ int main(void)
     lib_atomic_u64 identity_next;
     kvm_hotkey_registry hotkeys;
     lib_u64 identity;
-    unsigned int index;
+    lib_u32 index;
 
     probe.accept_input = 1;
     kvm_hotkey_registry_initialize(&hotkeys);
@@ -109,7 +109,7 @@ int main(void)
 
     /* Source identity is a single non-repeating epoch: issuing the final
        representable value permanently exhausts it instead of wrapping. */
-    lib_atomic_u64_initialize(&identity_next, LIB_UINT64_MAX - 1u);
+    identity_next = LIB_UINT64_MAX - 1u;
     assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==
         LIB_STATUS_OK && identity == LIB_UINT64_MAX - 1u);
     assert(kvm_component_allocate_source_identity(&identity_next, &identity) ==

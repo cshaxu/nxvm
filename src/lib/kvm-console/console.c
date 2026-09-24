@@ -1,9 +1,9 @@
 #include "lib/kvm-console/console.h"
 
-static int kvm_console_emit_normalized(void *context, const kvm_input_event *event)
+static lib_bool kvm_console_emit_normalized(void *context, const kvm_input_event *event)
 {
     kvm_console *console = context;
-    return console == LIB_NULL ? 0 : kvm_component_emit(&console->base, event);
+    return console == LIB_NULL ? LIB_FALSE : kvm_component_emit(&console->base, event);
 }
 
 static lib_u8 kvm_console_hotkey_modifiers(lib_u8 modifiers)
@@ -32,7 +32,7 @@ void kvm_console_receive_event(void *context,
     if (event->kind == LIB_CONSOLE_EVENT_INPUT_RESET) {
         kvm_hotkey_matcher_discard(&console->base.hotkey_matcher);
         lib_memory_set(&console->keyboard, 0, sizeof(console->keyboard));
-        console->previous_mouse_valid = 0;
+        console->previous_mouse_valid = LIB_FALSE;
     } else if (event->kind == LIB_CONSOLE_EVENT_ACTIVATED) {
         lib_status status = kvm_component_mailboxes_notify(&console->base.mailboxes);
         if (status != LIB_STATUS_OK) kvm_component_fail(&console->base, status);
@@ -60,7 +60,7 @@ void kvm_console_receive_event(void *context,
         }
         console->previous_mouse_x = mouse->delta_x;
         console->previous_mouse_y = mouse->delta_y;
-        console->previous_mouse_valid = 1;
+        console->previous_mouse_valid = LIB_TRUE;
         input.data.mouse.buttons = kvm_console_mouse_buttons(mouse->buttons);
         (void)kvm_console_emit_normalized(console, &input);
     }

@@ -3,8 +3,8 @@
 #include "lib/base/sync_interface.h"
 #include <assert.h>
 
-static unsigned allocations, releases, joins, allocation_attempts, fail_allocation;
-static int fail_create, fail_signal, fail_reset, fail_thread, fail_join;
+static lib_u32 allocations, releases, joins, allocation_attempts, fail_allocation;
+static lib_i32 fail_create, fail_signal, fail_reset, fail_thread, fail_join;
 static lib_iptr observed_identity;
 static HANDLE WINAPI create_event(LPSECURITY_ATTRIBUTES attributes, BOOL manual,
     BOOL initial, LPCSTR name)
@@ -44,7 +44,7 @@ static HANDLE WINAPI create_thread(LPSECURITY_ATTRIBUTES a, SIZE_T size,
 
 static void task_entry(void *context, const base_sync_task *task)
 {
-    unsigned *completed = context;
+    lib_u32 *completed = context;
     observed_identity = (lib_iptr)task;
     assert(base_sync_task_wait_cancel(task, LIB_UINT32_MAX) == BASE_SYNC_WAIT_CANCELLED);
     *completed = 1;
@@ -52,7 +52,7 @@ static void task_entry(void *context, const base_sync_task *task)
 static void immediate_entry(void *context, const base_sync_task *task)
 {
     observed_identity = (lib_iptr)task;
-    *(unsigned *)context = 2;
+    *(lib_u32 *)context = 2;
 }
 
 int main(void)
@@ -60,7 +60,7 @@ int main(void)
     base_sync_event *event;
     base_sync_task *task;
     lib_iptr identity;
-    unsigned completed = 0;
+    lib_u32 completed = 0;
     assert(base_sync_event_create(BASE_SYNC_EVENT_MANUAL_RESET, &event) == LIB_STATUS_OK);
     assert(allocations == 1);
     assert(base_sync_event_signal(event) == LIB_STATUS_OK);
@@ -76,7 +76,7 @@ int main(void)
     assert(base_sync_task_destroy(task) == LIB_STATUS_OK);
     assert(observed_identity == identity && completed && joins == 1 && allocations == releases);
     /* Count both common and platform allocation sites, including failed create. */
-    for (unsigned failure = 1; failure <= 2; ++failure) {
+    for (lib_u32 failure = 1; failure <= 2; ++failure) {
         fail_allocation = allocation_attempts + failure;
         task = (void *)1;
         assert(base_sync_task_create(task_entry, &completed, &task) == LIB_STATUS_NO_MEMORY);
@@ -101,7 +101,7 @@ int main(void)
     assert(observed_identity == identity && completed == 2 && joins == 2 && allocations == releases);
     assert(base_sync_task_create(task_entry, &completed, &task) == LIB_STATUS_OK);
     {
-        unsigned before = releases;
+        lib_u32 before = releases;
         fail_signal = 1;
         assert(base_sync_task_destroy(task) == LIB_STATUS_IO_ERROR);
         assert(releases == before && joins == 2);

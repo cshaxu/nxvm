@@ -7,10 +7,10 @@
 
 typedef struct kvm_capture {
     kvm_input_event events[128];
-    unsigned int count;
+    lib_u32 count;
 } kvm_capture;
 
-static int kvm_capture_event(void *opaque, const kvm_input_event *event)
+static lib_i32 kvm_capture_event(void *opaque, const kvm_input_event *event)
 {
     kvm_capture *capture = (kvm_capture *)opaque;
     if (capture == NULL || event == NULL || capture->count == 128u) return 0;
@@ -159,7 +159,7 @@ int main(void)
     kvm_hotkey_matcher_initialize(&matcher, &registry);
     event.data.key.key = KVM_KEY_CONTROL; event.data.key.scan_code = 0x1d;
     event.data.key.modifiers = 1;
-    for (unsigned i = 0; i != 100; ++i)
+    for (lib_u32 i = 0; i != 100; ++i)
         assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     assert(matcher.held_count == 1 && capture.count == 0);
     event.data.key.key = KVM_KEY_ALT; event.data.key.scan_code = 0x38;
@@ -174,13 +174,13 @@ int main(void)
     kvm_hotkey_matcher_initialize(&matcher, &registry);
     event.data.key.key = 'P';
     event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT;
-    for (unsigned i = 0; i < 64; ++i) {
+    for (lib_u32 i = 0; i < 64; ++i) {
         event.data.key.scan_code = (lib_u16)(i + 1);
         assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     }
     assert(matcher.held_count == 64 && capture.count == 64);
     event.data.key.pressed = 0;
-    for (unsigned i = 0; i < 64; ++i) {
+    for (lib_u32 i = 0; i < 64; ++i) {
         event.data.key.scan_code = (lib_u16)(i + 1);
         assert(kvm_hotkey_matcher_submit(&matcher, &event, kvm_capture_event, &capture, LIB_TRUE));
     }

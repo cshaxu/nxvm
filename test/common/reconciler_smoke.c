@@ -2,8 +2,8 @@
 
 #include <assert.h>
 
-static void check_close_lifetime(common_session_display display, int control,
-    int restart)
+static void check_close_lifetime(common_session_display display, lib_i32 control,
+    lib_i32 restart)
 {
     common_session_state state;
     common_session_state_initialize(&state, display, control);
@@ -36,7 +36,7 @@ static void check_close_lifetime(common_session_display display, int control,
 int main(void)
 {
     common_session_state state;
-    int control, restart;
+    lib_i32 control, restart;
 
     for (control = 0; control != 2; ++control)
         for (restart = 0; restart != 2; ++restart) {

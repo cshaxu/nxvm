@@ -34,7 +34,7 @@ static void check_validation(void)
     text.base = source.text.base; /* Console does not own bitmap bounds. */
     assert(kvm_console_text_frame_validate(&text) == LIB_STATUS_OK);
     source.text.base.font_height = 0u;
-    for (unsigned field = 0; field < 3; ++field) {
+    for (lib_u32 field = 0; field < 3; ++field) {
         lib_u8 *value = field == 0 ? &source.text.base.cells[1999].foreground :
             field == 1 ? &source.text.base.cells[1999].background : &source.text.base.cells[1999].glyph_bank;
         *value = field == 2 ? 1 : 15;

@@ -10,7 +10,7 @@ int main(void)
 {
     char path[] = "library-lock-XXXXXX";
     char alias[64];
-    int descriptor = mkstemp(path);
+    lib_i32 descriptor = mkstemp(path);
     lib_storage_file first = {0}, second = {0}, denied = {0};
     assert(descriptor >= 0 && close(descriptor) == 0);
     assert(snprintf(alias,sizeof(alias),"%s-link",path) > 0);

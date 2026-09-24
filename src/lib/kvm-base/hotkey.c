@@ -42,20 +42,20 @@ static lib_bool kvm_hotkey_same_key(const kvm_input_event *a,
     return a->data.key.key == b->data.key.key;
 }
 
-static int kvm_hotkey_flush_pending(kvm_hotkey_matcher *matcher,
+static lib_bool kvm_hotkey_flush_pending(kvm_hotkey_matcher *matcher,
     kvm_input_sink sink, void *context)
 {
     lib_size i;
     for (i = 0u; i < matcher->held_count; ++i) {
         kvm_hotkey_held_key *key = &matcher->held[i];
         if (key->state != KVM_HOTKEY_PENDING) continue;
-        if (key->allow_replay && !sink(context, &key->make)) return 0;
+        if (key->allow_replay && !sink(context, &key->make)) return LIB_FALSE;
         key->state = KVM_HOTKEY_DELIVERED;
     }
-    return 1;
+    return LIB_TRUE;
 }
 
-static int kvm_hotkey_transition(kvm_hotkey_matcher *matcher,
+static lib_bool kvm_hotkey_transition(kvm_hotkey_matcher *matcher,
     const kvm_input_event *event, kvm_input_sink sink, void *context,
     lib_bool allow_replay)
 {
@@ -80,20 +80,20 @@ static int kvm_hotkey_transition(kvm_hotkey_matcher *matcher,
             return kvm_hotkey_flush_pending(matcher, sink, context) && sink(context, event);
         if (matcher->held[index].state != KVM_HOTKEY_CONSUMED &&
             (!kvm_hotkey_flush_pending(matcher, sink, context) || !sink(context, event)))
-            return 0;
+            return LIB_FALSE;
         --matcher->held_count;
         lib_memory_move(&matcher->held[index], &matcher->held[index + 1u],
             (matcher->held_count - index) * sizeof(*matcher->held));
-        return 1;
+        return LIB_TRUE;
     }
     if (index == matcher->held_count) {
         if (matcher->held_count == matcher->held_capacity) {
             lib_size capacity = matcher->held_capacity ? matcher->held_capacity * 2u : 8u;
             kvm_hotkey_held_key *held;
             if (capacity < matcher->held_capacity ||
-                capacity > LIB_SIZE_MAX / sizeof(*held)) return 0;
+                capacity > LIB_SIZE_MAX / sizeof(*held)) return LIB_FALSE;
             held = lib_reallocate(matcher->held, capacity * sizeof(*held));
-            if (held == LIB_NULL) return 0;
+            if (held == LIB_NULL) return LIB_FALSE;
             matcher->held = held;
             matcher->held_capacity = capacity;
         }
@@ -120,9 +120,9 @@ static int kvm_hotkey_transition(kvm_hotkey_matcher *matcher,
             sizeof(hotkey.data.hotkey.identifier));
         return sink(context, &hotkey);
     }
-    if (key->state == KVM_HOTKEY_CONSUMED) return 1;
+    if (key->state == KVM_HOTKEY_CONSUMED) return LIB_TRUE;
     if (modifier != 0u && kvm_hotkey_registry_has_modifier(&matcher->registry, modifier))
-        return 1;
+        return LIB_TRUE;
     /* The new ordinary make is already pending in insertion order. */
     return kvm_hotkey_flush_pending(matcher, sink, context);
 }
@@ -136,7 +136,7 @@ lib_status kvm_hotkey_registry_register(kvm_hotkey_registry *registry,
     kvm_key key, lib_u8 modifiers, const char *identifier)
 {
     lib_u32 index;
-    const char *end;
+    const void *end;
 
     if (registry == LIB_NULL || key == 0u || identifier == LIB_NULL ||
         (end = lib_memory_find(identifier, '\0', KVM_HOTKEY_IDENTIFIER_CAPACITY)) == LIB_NULL)
@@ -150,7 +150,7 @@ lib_status kvm_hotkey_registry_register(kvm_hotkey_registry *registry,
     registry->entries[registry->count] = (kvm_hotkey_registration) { key, modifiers,
         { 0 } };
     lib_memory_copy(registry->entries[registry->count].identifier, identifier,
-        (lib_size)(end - identifier) + 1u);
+        (lib_size)((const char *)end - identifier) + 1u);
     ++registry->count;
     return LIB_STATUS_OK;
 }
@@ -163,13 +163,13 @@ void kvm_hotkey_matcher_initialize(kvm_hotkey_matcher *matcher,
     if (registry != LIB_NULL) matcher->registry = *registry;
 }
 
-int kvm_hotkey_matcher_submit(kvm_hotkey_matcher *matcher,
+lib_bool kvm_hotkey_matcher_submit(kvm_hotkey_matcher *matcher,
     const kvm_input_event *event, kvm_input_sink sink, void *context,
     lib_bool allow_replay)
 {
-    int delivered;
+    lib_bool delivered;
     if (matcher == LIB_NULL || event == LIB_NULL || sink == LIB_NULL ||
-        matcher->failed) return 0;
+        matcher->failed) return LIB_FALSE;
     if (event->type == KVM_EVENT_KEY)
         delivered = kvm_hotkey_transition(matcher, event, sink, context, allow_replay);
     else

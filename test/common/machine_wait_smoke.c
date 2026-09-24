@@ -5,17 +5,17 @@
 /* Run the real worker synchronously; only its scheduling waits are scripted. */
 static common_machine *active;
 static base_sync_wait_result wait_result;
-static unsigned idle_waits, paused_waits, resets, stops, cleanups, facts;
-static unsigned action;
+static lib_u32 idle_waits, paused_waits, resets, stops, cleanups, facts;
+static lib_u32 action;
 static lib_bool heartbeat;
 static common_machine_executor_callback executor;
 static void *executor_context;
 static common_machine_state observed[8];
 static lib_bool reject_destroy;
 static lib_status frame_status;
-static unsigned pending_kind;
+static lib_u32 pending_kind;
 static lib_bool terminate_before_submit;
-static unsigned debug_wait_action, debug_calls, debug_cancels;
+static lib_u32 debug_wait_action, debug_calls, debug_cancels;
 static lib_u8 *debug_source;
 static lib_status debug_status;
 static lib_bool debug_oversize;
@@ -204,7 +204,7 @@ static void state(void *context, common_machine_state value, lib_u32 generation)
 static void completed_task(void *context, const base_sync_task *task)
 { (void)context; (void)task; }
 
-static void check(base_sync_wait_result result, unsigned requested_action)
+static void check(base_sync_wait_result result, lib_u32 requested_action)
 {
     common_machine_driver driver = {0};
     wait_result = result; action = requested_action;
@@ -328,7 +328,7 @@ static void check_publication(void)
     candidate.window.text.base.cursor_column = 1;
     assert(common_machine_publish(active) == LIB_STATUS_OK);
     assert(common_machine_published_frame_sequence(active) == 5);
-    for (unsigned field = 0; field < 5; ++field) {
+    for (lib_u32 field = 0; field < 5; ++field) {
         if (field == 0) candidate.window.text.base.cells[0].foreground = 1;
         if (field == 1) candidate.window.text.base.cells[0].background = 2;
         if (field == 2) candidate.window.text.base.cells[0].glyph_bank = 1;
@@ -400,7 +400,7 @@ static void check_debug(void)
     common_machine_debug_cancel(active);
     assert(common_machine_debug_execute_with_lease(active, &lease, NULL, 0,
         NULL, 0, &size) == LIB_STATUS_OK && size == 0 && debug_cancels == 1);
-    unsigned calls = debug_calls;
+    lib_u32 calls = debug_calls;
     const struct { const void *request; lib_size size; void *response; lib_size capacity;
         lib_status expected; } invalid[] = {
         {NULL, 1, response, 1, LIB_STATUS_INVALID_ARGUMENT},
@@ -408,7 +408,7 @@ static void check_debug(void)
         {request, sizeof(request) + 1u, response, 1, LIB_STATUS_UNSUPPORTED},
         {request, 1, response, sizeof(response) + 1u, LIB_STATUS_UNSUPPORTED}
     };
-    for (unsigned i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
+    for (lib_u32 i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
         size = 99; response[0] = 0x55;
         assert(common_machine_debug_execute_with_lease(active, &lease,
             invalid[i].request, invalid[i].size, invalid[i].response, invalid[i].capacity,
@@ -417,7 +417,7 @@ static void check_debug(void)
     }
     assert(common_machine_debug_execute_with_lease(active, &lease, request, 1,
         response, 1, NULL) == LIB_STATUS_INVALID_ARGUMENT && debug_calls == calls);
-    for (unsigned scenario = 0; scenario < 6; ++scenario) {
+    for (lib_u32 scenario = 0; scenario < 6; ++scenario) {
         debug_status = scenario == 0 ? LIB_STATUS_UNSUPPORTED : LIB_STATUS_OK;
         debug_oversize = scenario == 1;
         debug_wait_action = scenario >= 3 ? scenario - 2u : 0u;

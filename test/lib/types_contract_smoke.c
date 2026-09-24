@@ -30,10 +30,6 @@ int main(void)
     lib_release(copy);
     CHECK(lib_pointer_to_uptr(bytes) != 0u);
     CHECK(lib_uptr_to_pointer(lib_pointer_to_uptr(bytes)) == bytes);
-    CHECK(lib_c_isalpha('A') == LIB_TRUE);
-    CHECK(lib_c_isalpha('1') == LIB_FALSE);
-    CHECK(lib_c_isspace('\t') == LIB_TRUE);
-    CHECK(lib_c_isspace('A') == LIB_FALSE);
     CHECK(LIB_STATUS_OK == 0 && LIB_STATUS_INVALID_ARGUMENT == 1 &&
         LIB_STATUS_INVALID_STATE == 2 && LIB_STATUS_UNSUPPORTED == 3 &&
         LIB_STATUS_NO_MEMORY == 4 && LIB_STATUS_IO_ERROR == 5 &&
@@ -43,7 +39,6 @@ int main(void)
     CHECK(lib_atomic_flag_test_and_set_explicit(&lock, LIB_MEMORY_ORDER_ACQUIRE));
     lib_atomic_flag_clear_explicit(&lock, LIB_MEMORY_ORDER_RELEASE);
     CHECK(!lib_atomic_flag_test_and_set_explicit(&lock, LIB_MEMORY_ORDER_ACQUIRE));
-    lib_atomic_flag_clear(&lock);
     lib_atomic_i32_initialize(&state, -1);
     CHECK(lib_atomic_i32_load_explicit(&state, LIB_MEMORY_ORDER_RELAXED) == -1);
     lib_atomic_i32_store_explicit(&state, 9, LIB_MEMORY_ORDER_RELEASE);
@@ -52,11 +47,9 @@ int main(void)
     CHECK(lib_atomic_u32_load_explicit(&references, LIB_MEMORY_ORDER_RELAXED) == 1u);
     lib_atomic_u32_store_explicit(&references, LIB_UINT32_MAX,
         LIB_MEMORY_ORDER_RELEASE);
-    CHECK(lib_atomic_u32_exchange_explicit(&references, 1u,
-        LIB_MEMORY_ORDER_ACQ_REL) == LIB_UINT32_MAX);
-    CHECK(lib_atomic_u32_fetch_add_explicit(&references, 2u, LIB_MEMORY_ORDER_RELAXED) == 1u);
-    CHECK(lib_atomic_u32_fetch_sub_explicit(&references, 1u, LIB_MEMORY_ORDER_ACQ_REL) == 3u);
-    lib_atomic_u64_initialize(&identity, 0x100000001ULL);
+    CHECK(lib_atomic_u32_fetch_add_explicit(&references, 2u, LIB_MEMORY_ORDER_RELAXED) == LIB_UINT32_MAX);
+    CHECK(lib_atomic_u32_fetch_sub_explicit(&references, 1u, LIB_MEMORY_ORDER_ACQ_REL) == 1u);
+    identity = 0x100000001ULL;
     expected = 0u;
     CHECK(!lib_atomic_u64_compare_exchange_weak_explicit(&identity, &expected,
         7u, LIB_MEMORY_ORDER_RELAXED, LIB_MEMORY_ORDER_RELAXED));

@@ -12,7 +12,7 @@ struct kvm_console {
     void *worker_state;
     kvm_keyboard_normalizer keyboard;
     lib_i32 previous_mouse_x, previous_mouse_y;
-    int previous_mouse_valid;
+    lib_bool previous_mouse_valid;
 };
 
 lib_status kvm_console_publish_text_frame(kvm_console *console, const kvm_console_text_frame *frame);

@@ -172,7 +172,7 @@ int main(void)
     assert(copies == before + 1u && session.frame.sequence == 1u);
     assert(session.state.observed_frame_sequence == 1u && delivered_sequence == 1u);
     const lib_u32 stale[] = { LIB_UINT32_MAX - 1u, LIB_UINT32_MAX, 0u, 1u };
-    for (unsigned i = 0u; i < sizeof(stale) / sizeof(stale[0]); ++i) {
+    for (lib_u32 i = 0u; i < sizeof(stale) / sizeof(stale[0]); ++i) {
         event.value.frame.sequence = stale[i];
         assert(common_session_process_completed(&session, &event));
         assert(copies == before + 1u && session.frame.sequence == 1u);

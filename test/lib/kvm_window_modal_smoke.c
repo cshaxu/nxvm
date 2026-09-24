@@ -27,7 +27,7 @@ static BOOL CALLBACK find_window(HWND w, LPARAM unused)
         target = w;
     return TRUE;
 }
-static int input(void *p, const kvm_input_event *e)
+static lib_i32 input(void *p, const kvm_input_event *e)
 {
     (void)p;
     if (e->type == KVM_EVENT_SOURCE_RETIRED) {
@@ -55,7 +55,7 @@ int main(void)
     ticked = CreateEventA(NULL, TRUE, FALSE, NULL);
     HANDLE guard = CreateThread(NULL, 0, watchdog, NULL, 0, NULL);
     assert(entered && exited && retired && done && ticked && guard);
-    for (unsigned i = 0; i < sizeof(commands)/sizeof(commands[0]); ++i) {
+    for (lib_u32 i = 0; i < sizeof(commands)/sizeof(commands[0]); ++i) {
         kvm_window *w = NULL;
         kvm_window_options o = { 0 };
         char title[128];

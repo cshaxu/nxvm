@@ -6,10 +6,10 @@
 
 typedef struct console_probe {
     lib_console_event event;
-    unsigned int events;
+    lib_u32 events;
     char output[32];
     lib_size output_length;
-    unsigned int frames;
+    lib_u32 frames;
 } console_probe;
 
 static void console_probe_event(void *context, const lib_console_event *event)
@@ -100,7 +100,7 @@ int main(void)
     assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_INVALID_ARGUMENT);
     assert(probe.frames == 1u);
     frame.text[1999] = 0u;
-    for (unsigned field = 0; field < 2; ++field) {
+    for (lib_u32 field = 0; field < 2; ++field) {
         lib_u8 *value = field == 0 ? &frame.foreground[1999] : &frame.background[1999];
         *value = 16;
         assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_INVALID_ARGUMENT);

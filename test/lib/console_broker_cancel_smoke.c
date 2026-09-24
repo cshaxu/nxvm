@@ -5,7 +5,7 @@
 #include <string.h>
 
 static HANDLE entered, finish_read, delivered;
-static unsigned lines, flushes;
+static lib_u32 lines, flushes;
 static BOOL WINAPI read_line(HANDLE h, LPVOID bytes, DWORD capacity, LPDWORD count, LPVOID p)
 {
     (void)h; (void)p;

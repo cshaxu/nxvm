@@ -23,7 +23,7 @@ static lib_status mouse_registration(lib_win32_raw_input_device *mouse)
     return received == (lib_win32_uint)-1 ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK;
 }
 
-static int same_bounds(const lib_win32_rect *a, const lib_win32_rect *b)
+static lib_i32 same_bounds(const lib_win32_rect *a, const lib_win32_rect *b)
 {
     return a->left == b->left && a->top == b->top &&
         a->right == b->right && a->bottom == b->bottom;
@@ -63,7 +63,7 @@ lib_status kvm_win32_mouse_release(kvm_win32_mouse *mouse)
     return status;
 }
 
-int kvm_win32_mouse_refresh_bounds(kvm_win32_mouse *mouse)
+lib_i32 kvm_win32_mouse_refresh_bounds(kvm_win32_mouse *mouse)
 {
     lib_win32_rect client, bounds;
     lib_win32_point upper_left, lower_right;
@@ -110,15 +110,15 @@ lib_status kvm_win32_mouse_capture(kvm_win32_mouse *mouse,
     return LIB_STATUS_OK;
 }
 
-int kvm_win32_mouse_move(kvm_win32_mouse *mouse,
-    lib_win32_lparam record, int client_width, int client_height,
-    unsigned int content_width, unsigned int content_height, int *dx, int *dy)
+lib_i32 kvm_win32_mouse_move(kvm_win32_mouse *mouse,
+    lib_win32_lparam record, lib_i32 client_width, lib_i32 client_height,
+    lib_u32 content_width, lib_u32 content_height, lib_i32 *dx, lib_i32 *dy)
 {
     lib_win32_raw_input input;
     lib_win32_uint size = sizeof(input), received;
     lib_win32_rect clipped;
     lib_win32_word flags;
-    int width = 0, height = 0;
+    lib_i32 width = 0, height = 0;
     if (mouse == LIB_NULL || dx == LIB_NULL || dy == LIB_NULL) return 0;
     *dx = *dy = 0;
     if (!mouse->captured || lib_win32_get_capture() != mouse->window ||
@@ -149,8 +149,8 @@ int kvm_win32_mouse_move(kvm_win32_mouse *mouse,
     mouse->desktop_width = width; mouse->desktop_height = height;
     if (flags & LIB_WIN32_MOUSE_MOVE_ABSOLUTE) {
         /* Desktop origin cancels in differences; do not mix client coordinates. */
-        int x = (int)((lib_i64)input.data.mouse.lLastX * width / 65535);
-        int y = (int)((lib_i64)input.data.mouse.lLastY * height / 65535);
+        lib_i32 x = (lib_i32)((lib_i64)input.data.mouse.lLastX * width / 65535);
+        lib_i32 y = (lib_i32)((lib_i64)input.data.mouse.lLastY * height / 65535);
         return kvm_window_motion_move(&mouse->motion, x, y, client_width, client_height,
             content_width, content_height, dx, dy);
     }
@@ -159,7 +159,7 @@ int kvm_win32_mouse_move(kvm_win32_mouse *mouse,
         client_width, client_height, content_width, content_height, dx, dy);
 }
 
-int kvm_win32_mouse_captured(const kvm_win32_mouse *mouse)
+lib_i32 kvm_win32_mouse_captured(const kvm_win32_mouse *mouse)
 {
     return mouse != LIB_NULL && mouse->captured;
 }

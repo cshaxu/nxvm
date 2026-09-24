@@ -54,7 +54,7 @@ static lib_win32_colorref console_broker_colorref_from_rgb(lib_u32 rgb)
     return lib_win32_rgb((rgb >> 16u) & 0xffu, (rgb >> 8u) & 0xffu, rgb & 0xffu);
 }
 
-static int console_broker_ensure_text_surface(console_broker_backend *backend)
+static lib_bool console_broker_ensure_text_surface(console_broker_backend *backend)
 {
     lib_win32_handle output = backend->output;
     lib_win32_console_screen_buffer_info info;

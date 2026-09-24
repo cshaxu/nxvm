@@ -9,7 +9,7 @@ struct common_machine {
     common_machine_frame *frame_buffers[2];
     base_sync_mutex *frame_lock;
     base_sync_mutex *request_lock;
-    int published_frame_index;
+    lib_i32 published_frame_index;
     lib_u32 published_frame_sequence;
     lib_u32 published_frame_run_generation;
     base_sync_event *command_event;
@@ -109,7 +109,7 @@ static lib_status common_machine_publish(common_machine *machine)
 {
     lib_status status;
     common_machine_frame *frame;
-    int staging_index;
+    lib_i32 staging_index;
     common_machine_frame_sink sink = NULL;
     void *sink_context = NULL;
     lib_u32 sequence = 0u;

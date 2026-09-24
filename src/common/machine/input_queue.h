@@ -9,8 +9,8 @@
 typedef struct common_machine_input_queue {
     base_sync_mutex *lock;
     kvm_input_event entries[COMMON_MACHINE_INPUT_QUEUE_CAPACITY];
-    unsigned int head;
-    unsigned int tail;
+    lib_size head;
+    lib_size tail;
 } common_machine_input_queue;
 
 /* KVM producers publish copied events; the sole machine executor consumes them.

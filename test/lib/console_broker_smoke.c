@@ -19,15 +19,15 @@ struct console_broker_backend {
 #endif
 };
 
-static int console_broker_fail_next_activation;
+static lib_i32 console_broker_fail_next_activation;
 static const lib_console_text_frame output_frame = { .columns = 80u, .rows = 25u };
-static int console_broker_fail_next_prepare;
-static int console_broker_fail_next_retirement;
-static int console_broker_prepare_saw_active;
-static int console_broker_wait_for_callback;
-static unsigned activations;
-static unsigned deactivations, disposals;
-static unsigned input_resets, activation_attempts;
+static lib_i32 console_broker_fail_next_prepare;
+static lib_i32 console_broker_fail_next_retirement;
+static lib_i32 console_broker_prepare_saw_active;
+static lib_i32 console_broker_wait_for_callback;
+static lib_u32 activations;
+static lib_u32 deactivations, disposals;
+static lib_u32 input_resets, activation_attempts;
 static lib_console *reset_console;
 static lib_u32 reset_generation;
 static console_broker_backend *test_backend;
@@ -216,7 +216,7 @@ static lib_status tracked_output_binding(lib_console *console,
 void console_broker_backend_lock_transaction(console_broker_backend *backend)
 {
     if (GetCurrentThreadId() == (DWORD)InterlockedCompareExchange(&challenger, 0, 0)) {
-        int entered = TryEnterCriticalSection(&backend->transaction);
+        lib_i32 entered = TryEnterCriticalSection(&backend->transaction);
         InterlockedExchange(&observed_busy, !entered);
         SetEvent(replacement_attempted);
         if (entered) return;
@@ -339,7 +339,7 @@ int main(void)
        retirement cancellation may already have disturbed the old reader, so
        the broker fails closed: neither old nor next is advertised Current. */
     console_broker_fail_next_retirement = 1;
-    unsigned resets_before_failure = input_resets;
+    lib_u32 resets_before_failure = input_resets;
     assert(console_broker_replace(broker, second, first,
         CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_IO_ERROR);
     assert(lib_console_write_text(second, "b", 1u) == LIB_STATUS_OK);

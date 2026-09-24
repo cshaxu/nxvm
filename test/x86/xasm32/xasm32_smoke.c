@@ -9,11 +9,11 @@ static lib_u32 dispatch_digest(void)
     lib_u32 hash = 2166136261u;
     lib_u8 code[16];
     char statement[X86_XASM32_MAX_STATEMENT_BYTES + 1u];
-    for (unsigned opcode = 0; opcode < 256; ++opcode) {
-        for (unsigned map = 0; map < 2; ++map) {
-            for (unsigned prefix = 0; prefix < sizeof(prefixes); ++prefix) {
-                for (unsigned addr = 0; addr < sizeof(addressing); ++addr) {
-                    for (int mode = 0; mode < 2; ++mode) {
+    for (lib_u32 opcode = 0; opcode < 256; ++opcode) {
+        for (lib_u32 map = 0; map < 2; ++map) {
+            for (lib_u32 prefix = 0; prefix < sizeof(prefixes); ++prefix) {
+                for (lib_u32 addr = 0; addr < sizeof(addressing); ++addr) {
+                    for (lib_i32 mode = 0; mode < 2; ++mode) {
                         lib_size length = 0, text_length = 0, at = 0;
                         lib_status status;
                         lib_memory_set(code, 0xa5, sizeof(code));
@@ -64,9 +64,9 @@ int main(void)
     if (x86_xasm32_assemble("mov dr0,eax", 11u, code, sizeof(code), &length,
             LIB_TRUE) != LIB_STATUS_OK) return 14;
     if (length != 4u || code[0] != 0x67u) return 141;
-    if (code[1] != 0x0fu) return (int)code[1];
-    if (code[2] != 0x23u) return (int)code[2];
-    if (code[3] != 0xc0u) return (int)code[3];
+    if (code[1] != 0x0fu) return (lib_i32)code[1];
+    if (code[2] != 0x23u) return (lib_i32)code[2];
+    if (code[3] != 0xc0u) return (lib_i32)code[3];
     if (x86_xasm32_assemble("mov eax,dr0", 11u, code, sizeof(code), &length,
             LIB_TRUE) != LIB_STATUS_OK || length != 4u || code[0] != 0x67u ||
         code[1] != 0x0fu || code[2] != 0x21u || code[3] != 0xc0u) return 15;
@@ -79,11 +79,11 @@ int main(void)
 
     /* Cover every ModRM/SIB path; non-SIB addressing must not use SIB state. */
     code[0] = 0x8bu; /* MOV r32,r/m32 */
-    for (unsigned modrm = 0; modrm < 256; ++modrm) {
-        unsigned mod = modrm >> 6, rm = modrm & 7;
-        int has_sib = mod != 3 && rm == 4;
+    for (lib_u32 modrm = 0; modrm < 256; ++modrm) {
+        lib_u32 mod = modrm >> 6, rm = modrm & 7;
+        lib_i32 has_sib = mod != 3 && rm == 4;
         code[1] = (lib_u8)modrm;
-        for (unsigned sib = 0; sib < (has_sib ? 256u : 1u); ++sib) {
+        for (lib_u32 sib = 0; sib < (has_sib ? 256u : 1u); ++sib) {
             lib_size expected = 2u + has_sib;
             lib_memory_set(code + 2, 0, sizeof(code) - 2);
             code[2] = (lib_u8)sib;

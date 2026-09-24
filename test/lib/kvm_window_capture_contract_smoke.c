@@ -8,10 +8,10 @@ static RECT client = {0,0,640,480}, clipped;
 static POINT origin = {100,200};
 static RAWINPUT raw_record;
 static RAWINPUTDEVICE raw_binding;
-static unsigned raw_reads, raw_registrations, raw_removals;
-static int raw_read_ok=1, raw_register_ok=1, raw_query_ok=1, raw_remove_ok=1;
+static lib_u32 raw_reads, raw_registrations, raw_removals;
+static lib_i32 raw_read_ok=1, raw_register_ok=1, raw_query_ok=1, raw_remove_ok=1;
 static UINT raw_size=sizeof(RAWINPUT);
-static int desktop_width=65535, desktop_height=65535;
+static lib_i32 desktop_width=65535, desktop_height=65535;
 static UINT WINAPI query_raw(PRAWINPUTDEVICE d,PUINT count,UINT size)
 {
     assert(size==sizeof(*d));
@@ -43,45 +43,45 @@ static UINT WINAPI read_raw(HRAWINPUT h,UINT command,LPVOID data,PUINT size,UINT
     if (!raw_read_ok) return (UINT)-1;
     *(RAWINPUT *)data=raw_record; return raw_size;
 }
-static int WINAPI metrics(int index)
+static lib_i32 WINAPI metrics(lib_i32 index)
 {
     assert(index==SM_CXSCREEN || index==SM_CYSCREEN ||
         index==SM_CXVIRTUALSCREEN || index==SM_CYVIRTUALSCREEN);
     return index==SM_CXSCREEN || index==SM_CXVIRTUALSCREEN ? desktop_width : desktop_height;
 }
 static BOOL WINAPI get_clip(RECT *r) { *r=clipped; return TRUE; }
-static unsigned releases, clips, events;
-static int reject_input;
-static int release_ok=1;
-static unsigned focus_requests, foreground_requests;
-static int clip_ok = 1, resize_ok = 1, title_ok = 1, client_ok = 1;
+static lib_u32 releases, clips, events;
+static lib_i32 reject_input;
+static lib_i32 release_ok=1;
+static lib_u32 focus_requests, foreground_requests;
+static lib_i32 clip_ok = 1, resize_ok = 1, title_ok = 1, client_ok = 1;
 static DWORD ticks;
-static unsigned timer_starts, timer_stops;
-static int timer_ok = 1;
+static lib_u32 timer_starts, timer_stops;
+static lib_i32 timer_ok = 1;
 static UINT_PTR WINAPI start_timer(HWND w,UINT_PTR id,UINT ms,TIMERPROC fn)
 { (void)w; assert(id==1 && ms==250 && !fn); ++timer_starts; return timer_ok ? id : 0; }
 static BOOL WINAPI stop_timer(HWND w,UINT_PTR id)
 { (void)w; assert(id==1); ++timer_stops; return timer_ok; }
-static int selection_ok;
-static unsigned selections, deleted_bitmaps, deleted_dcs;
+static lib_i32 selection_ok;
+static lib_u32 selections, deleted_bitmaps, deleted_dcs;
 static lib_u32 surface_bits[64];
 static HDC WINAPI surface_dc(HWND w) { (void)w; return (HDC)1; }
 static HDC WINAPI compatible_dc(HDC d) { (void)d; return (HDC)2; }
 static HBITMAP WINAPI bitmap(HDC d,const BITMAPINFO *i,UINT u,void **p,HANDLE s,DWORD o)
 { (void)d;(void)i;(void)u;(void)s;(void)o;*p=surface_bits;return (HBITMAP)3; }
-static int WINAPI release_dc(HWND w,HDC d) { (void)w;(void)d;return 1; }
+static lib_i32 WINAPI release_dc(HWND w,HDC d) { (void)w;(void)d;return 1; }
 static HGDIOBJ WINAPI select_bitmap(HDC d,HGDIOBJ o)
 { (void)d;assert(o==(HGDIOBJ)3 || o==(HGDIOBJ)4);++selections;return selection_ok ? (HGDIOBJ)4 : NULL; }
 static BOOL WINAPI delete_bitmap(HGDIOBJ o) { assert(o==(HGDIOBJ)3);++deleted_bitmaps;return TRUE; }
 static BOOL WINAPI delete_dc(HDC d) { assert(d==(HDC)2);++deleted_dcs;return TRUE; }
 static DWORD WINAPI clock_tick(void) { return ticks; }
-static unsigned invalidations;
+static lib_u32 invalidations;
 static RECT invalidated, previous_invalidated;
 static BOOL WINAPI invalidate(HWND w,const RECT *r,BOOL erase)
 { (void)w;assert(!erase);++invalidations;previous_invalidated=invalidated;if(r)invalidated=*r;return TRUE; }
 static void *context;
 static void notify_loss(void);
-static int reenter_title;
+static lib_i32 reenter_title;
 static void title_notification(void);
 static HWND WINAPI get_capture(void) { return owner; }
 static HWND WINAPI set_capture(HWND w) { HWND old=owner; owner=w; return old; }
@@ -97,9 +97,9 @@ static BOOL WINAPI get_client(HWND w, RECT *r)
 static BOOL WINAPI to_screen(HWND w, POINT *p)
 { (void)w; p->x+=origin.x; p->y+=origin.y; return TRUE; }
 static HCURSOR WINAPI cursor(HCURSOR c) { return c; }
-static LONG_PTR WINAPI get_context(HWND w, int index)
+static LONG_PTR WINAPI get_context(HWND w, lib_i32 index)
 { (void)w; return index==GWLP_USERDATA ? (LONG_PTR)context : 0; }
-static BOOL WINAPI resize(HWND w, HWND after, int x,int y,int cx,int cy,UINT f)
+static BOOL WINAPI resize(HWND w, HWND after, lib_i32 x,lib_i32 y,lib_i32 cx,lib_i32 cy,UINT f)
 { (void)w;(void)after;(void)x;(void)y;(void)cx;(void)cy;(void)f;return resize_ok; }
 static BOOL WINAPI title(HWND w,LPCSTR text)
 { (void)w;(void)text; if(reenter_title) title_notification(); return title_ok; }
@@ -176,14 +176,14 @@ static void title_notification(void)
     assert(kvm_window_unfreeze(c->component)==0);
     assert(c->frozen); /* Nested notification must not drain ahead of this control. */
 }
-static int input(void *p,const kvm_input_event *e)
+static lib_i32 input(void *p,const kvm_input_event *e)
 { (void)p; assert(e->type==KVM_EVENT_MOUSE); ++events; return !reject_input; }
 static void failure(void *p,lib_u64 id,lib_status status)
 { (void)p;(void)id;(void)status; }
 static lib_status join(kvm_component *p, lib_u32 timeout_ms)
 { (void)p; (void)timeout_ms; return LIB_STATUS_OK; }
 static void dispose(kvm_component *p) { kvm_component_mailboxes_destroy(&p->mailboxes); }
-static unsigned control_failures;
+static lib_u32 control_failures;
 static void invalid_control_failure(void *p, lib_u64 id, lib_status status)
 { (void)p; assert(id && status==LIB_STATUS_INVALID_ARGUMENT); ++control_failures; }
 static void check_invalid_controls(void)
@@ -191,7 +191,7 @@ static void check_invalid_controls(void)
     static kvm_window window;
     static kvm_win32_window_context c;
     kvm_component_options options={.input_sink=input,.failure_sink=invalid_control_failure};
-    for(unsigned i=0;i<3;++i) {
+    for(lib_u32 i=0;i<3;++i) {
         kvm_component_control command={.kind=LIB_UINT32_MAX};
         assert(kvm_component_initialize(&window.base, &options, join, dispose,
         &window.pending_frame, sizeof(window.pending_frame))==0);
@@ -226,7 +226,7 @@ static void check_surface_damage(void)
     assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((HWND)1,&c);
     assert(c.surface_valid && invalidated.right==8 && invalidated.bottom==8);
-    unsigned before=invalidations;
+    lib_u32 before=invalidations;
     /* Two updates before WM_PAINT must each invalidate, not replace the first. */
     frame.image.pixels[0]=1;
     assert(kvm_window_publish_frame(&window,&frame)==0);
@@ -353,7 +353,7 @@ int main(void)
     assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1) == LIB_STATUS_OK);
     clip_ok=0; win32_window_proc((HWND)1,WM_MOVE,0,0);
     assert(!c.mouse.captured && releases==2);
-    unsigned previous=clips;
+    lib_u32 previous=clips;
     win32_window_proc((HWND)1,WM_MOVE,0,0); assert(clips==previous);
     resize_ok=0;
     win32_window_resize_client((HWND)1,&c,640,480);
@@ -373,7 +373,7 @@ int main(void)
     clip_ok=1;
     assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==LIB_STATUS_OK);
     focus_requests=foreground_requests=0;
-    unsigned releases_before_freeze=releases;
+    lib_u32 releases_before_freeze=releases;
     assert(kvm_window_freeze(&window)==LIB_STATUS_OK);
     assert(c.mouse.captured && !c.frozen);
     assert(win32_window_consume_mailboxes((HWND)1,&c));
@@ -401,7 +401,7 @@ int main(void)
     /* Delayed delivery preserves phase against the original 250ms grid. */
     c.cursor_blink_due=250; c.cursor_blink_visible=1;
     const DWORD delayed[]={260,500,750,1000};
-    for (unsigned i=0;i<4;++i) {
+    for (lib_u32 i=0;i<4;++i) {
         ticks=delayed[i];
         win32_window_proc((HWND)1,WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0);
         assert(c.cursor_blink_visible == (i % 2 != 0));
@@ -409,7 +409,7 @@ int main(void)
     }
     c.cursor_blink_visible=0; c.cursor_blink_due=500;
     /* A repeated unfreeze must not restart the native timer or reset phase. */
-    unsigned starts_before=timer_starts, stops_before=timer_stops;
+    lib_u32 starts_before=timer_starts, stops_before=timer_stops;
     for (ticks=300;ticks<500;ticks+=50) {
         assert(kvm_window_unfreeze(&window)==LIB_STATUS_OK);
         assert(win32_window_consume_mailboxes((HWND)1,&c));
@@ -472,13 +472,13 @@ int main(void)
     assert(window.base.failure==LIB_STATUS_IO_ERROR && window.base.stopping);
     assert(!c.mouse.captured);
     assert(kvm_component_destroy(&window.base)==LIB_STATUS_OK);
-    for (unsigned edge=KVM_WINDOW_EDGE_LEFT;edge<=KVM_WINDOW_EDGE_BOTTOMRIGHT;++edge) {
+    for (lib_u32 edge=KVM_WINDOW_EDGE_LEFT;edge<=KVM_WINDOW_EDGE_BOTTOMRIGHT;++edge) {
         kvm_window_rect r={10,20,826,749};
         kvm_window_constrain_sizing(&r,(kvm_window_edge)edge,16,29,640,480);
-        int w=r.right-r.left-16,h=r.bottom-r.top-29;
+        lib_i32 w=r.right-r.left-16,h=r.bottom-r.top-29;
         assert((edge==KVM_WINDOW_EDGE_LEFT || edge==KVM_WINDOW_EDGE_RIGHT) ?
             (w==800 && h==600) : (w==934 && h==700));
-        int fitted_w,fitted_h;
+        lib_i32 fitted_w,fitted_h;
         assert(kvm_window_fit_aspect_size(w,h,640,480,&fitted_w,&fitted_h));
         assert(fitted_w==w && fitted_h==h);
         assert((edge==KVM_WINDOW_EDGE_LEFT || edge==KVM_WINDOW_EDGE_TOPLEFT || edge==KVM_WINDOW_EDGE_BOTTOMLEFT) ? r.right==826 : r.left==10);
@@ -495,17 +495,17 @@ int main(void)
     raw_record.header.hDevice=(HANDLE)1;
     assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==0);
     assert(raw_registrations>0 && raw_binding.hwndTarget==(HWND)1);
-    int dx,dy, total=0;
-    for(unsigned i=0;i<100;++i) {
+    lib_i32 dx,dy, total=0;
+    for(lib_u32 i=0;i<100;++i) {
         raw_record.data.mouse.lLastX=20; raw_record.data.mouse.lLastY=-10;
         assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy));
         assert(dx==20 && dy==-10); total+=dx;
     }
     assert(total==2000);
     raw_record.data.mouse.lLastX=1; raw_record.data.mouse.lLastY=0;
-    for(unsigned i=0;i<2;++i) {
+    for(lib_u32 i=0;i<2;++i) {
         assert(kvm_win32_mouse_move(&c.mouse,1,1280,960,640,480,&dx,&dy));
-        assert(dx==(int)i && dy==0);
+        assert(dx==(lib_i32)i && dy==0);
     }
     raw_record.data.mouse.lLastX=-1;
     assert(kvm_win32_mouse_move(&c.mouse,1,1280,960,640,480,&dx,&dy) && dx==0);
@@ -546,7 +546,7 @@ int main(void)
     raw_record.data.mouse.usFlags=0; raw_record.data.mouse.lLastX=4; raw_record.data.mouse.lLastY=-2;
     assert(kvm_win32_mouse_move(&c.mouse,1,640,480,640,480,&dx,&dy) && dx==4 && dy==-2);
     /* Legacy coordinates never deliver motion; WM_INPUT is the one entry. */
-    unsigned before=events, reads_before=raw_reads;
+    lib_u32 before=events, reads_before=raw_reads;
     win32_window_proc((HWND)1,WM_MOUSEMOVE,0,MAKELPARAM(32767,32767));
     assert(events==before && raw_reads==reads_before);
     win32_window_proc((HWND)1,WM_INPUT,0,1);
@@ -582,7 +582,7 @@ int main(void)
     assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==LIB_STATUS_IO_ERROR && !c.mouse.captured);
     raw_query_ok=1;
     raw_binding=(RAWINPUTDEVICE){1,2,0,(HWND)2};
-    unsigned registrations_before=raw_registrations;
+    lib_u32 registrations_before=raw_registrations;
     assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==LIB_STATUS_INVALID_STATE);
     assert(raw_binding.hwndTarget==(HWND)2 && raw_registrations==registrations_before);
     raw_binding=(RAWINPUTDEVICE){0};
@@ -591,7 +591,7 @@ int main(void)
     raw_register_ok=1;
     assert(kvm_win32_mouse_capture(&c.mouse,(HWND)1)==0);
     raw_binding.hwndTarget=(HWND)2;
-    unsigned removals_before=raw_removals;
+    lib_u32 removals_before=raw_removals;
     assert(kvm_win32_mouse_release(&c.mouse)==0);
     assert(raw_binding.hwndTarget==(HWND)2 && raw_removals==removals_before);
     raw_binding=(RAWINPUTDEVICE){0};

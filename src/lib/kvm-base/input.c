@@ -1,16 +1,16 @@
 #include "lib/kvm-base/input.h"
 #include "lib/kvm-base/hotkey_interface.h"
 
-static int kvm_keyboard_emit(void *context, kvm_input_sink sink,
+static lib_bool kvm_keyboard_emit(void *context, kvm_input_sink sink,
     lib_u16 scan, lib_u32 key, lib_u8 record_flags,
-    lib_u8 hotkey_modifiers, int pressed)
+    lib_u8 hotkey_modifiers, lib_bool pressed)
 {
     kvm_input_event event;
 
-    if (sink == LIB_NULL || key == 0u) return 0;
+    if (sink == LIB_NULL || key == 0u) return LIB_FALSE;
     lib_memory_set(&event, 0, sizeof(event));
     event.type = KVM_EVENT_KEY;
-    event.data.key.pressed = pressed != 0;
+    event.data.key.pressed = pressed;
     event.data.key.key = key;
     event.data.key.scan_code = scan;
     event.data.key.flags = (record_flags & KVM_INPUT_FLAG_EXTENDED) != 0u ?
@@ -19,7 +19,7 @@ static int kvm_keyboard_emit(void *context, kvm_input_sink sink,
     return sink(context, &event);
 }
 
-static int kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_keys,
+static lib_bool kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_keys,
     void *context, kvm_input_sink sink, lib_u32 scalar)
 {
     static const kvm_key modifier_keys[] = { KVM_KEY_CONTROL, KVM_KEY_ALT, KVM_KEY_SHIFT };
@@ -31,14 +31,14 @@ static int kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_keys,
     lib_u8 modifiers, active = 0u;
 
     if (scalar == 0u || scalar > 0x10ffffu ||
-        (scalar >= 0xd800u && scalar <= 0xdfffu)) return 0;
+        (scalar >= 0xd800u && scalar <= 0xdfffu)) return LIB_FALSE;
     if (!kvm_keyboard_platform_map_scalar(scalar, &virtual_key, &modifiers) ||
         !kvm_keyboard_platform_transition(0u, virtual_key, &scan, &key)) {
         kvm_input_event event = { .type = KVM_EVENT_TEXT };
         event.data.text.scalar = scalar;
         return sink != LIB_NULL && sink(context, &event);
     }
-    if (sink == LIB_NULL) return 0;
+    if (sink == LIB_NULL) return LIB_FALSE;
     /* Snapshot before any delivery can grow the shared ledger. This local
      * chord owns only the keys it adds; it is not a second held-key table. */
     for (i = 0u; i < 4u; ++i) {
@@ -65,7 +65,7 @@ static int kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_keys,
         }
         keys[i].data.key.pressed = LIB_TRUE;
         keys[i].data.key.modifiers = active;
-        if (!sink(context, &keys[i])) return 0;
+        if (!sink(context, &keys[i])) return LIB_FALSE;
     }
     while (count != 0u) {
         --count;
@@ -75,19 +75,19 @@ static int kvm_keyboard_submit_character(const kvm_hotkey_matcher *held_keys,
         if (keys[count].data.key.key == KVM_KEY_ALT) active &= (lib_u8)~KVM_INPUT_MODIFIER_ALT;
         if (keys[count].data.key.key == KVM_KEY_SHIFT) active &= (lib_u8)~KVM_INPUT_MODIFIER_SHIFT;
         keys[count].data.key.modifiers = active;
-        if (!sink(context, &keys[count])) return 0;
+        if (!sink(context, &keys[count])) return LIB_FALSE;
     }
-    return 1;
+    return LIB_TRUE;
 }
 
-static int kvm_keyboard_submit_utf16(kvm_keyboard_normalizer *state,
+static lib_bool kvm_keyboard_submit_utf16(kvm_keyboard_normalizer *state,
     const kvm_hotkey_matcher *held_keys, void *context, kvm_input_sink sink,
     lib_u16 code_unit, lib_u16 repeat_count)
 {
     lib_u32 scalar = code_unit;
     lib_u16 high, prior_count;
 
-    if (state == LIB_NULL) return 0;
+    if (state == LIB_NULL) return LIB_FALSE;
     if (repeat_count == 0u) repeat_count = 1u;
     high = state->pending_high_surrogate;
     prior_count = state->pending_repeat_count;
@@ -97,21 +97,21 @@ static int kvm_keyboard_submit_utf16(kvm_keyboard_normalizer *state,
         /* A new high replaces a malformed unfinished prefix. */
         state->pending_high_surrogate = code_unit;
         state->pending_repeat_count = repeat_count;
-        return 1;
+        return LIB_TRUE;
     }
     if (code_unit >= 0xdc00u && code_unit <= 0xdfffu) {
-        if (high == 0u || prior_count != repeat_count) return 0;
+        if (high == 0u || prior_count != repeat_count) return LIB_FALSE;
         scalar = 0x10000u + (((lib_u32)high - 0xd800u) << 10u) +
             ((lib_u32)code_unit - 0xdc00u);
     }
     /* A valid BMP unit survives a malformed prefix. Expand complete scalars,
      * stopping immediately on delivery failure, never retrying a partial batch. */
     while (repeat_count-- != 0u)
-        if (!kvm_keyboard_submit_character(held_keys, context, sink, scalar)) return 0;
-    return 1;
+        if (!kvm_keyboard_submit_character(held_keys, context, sink, scalar)) return LIB_FALSE;
+    return LIB_TRUE;
 }
 
-int kvm_keyboard_submit_record(kvm_keyboard_normalizer *state,
+lib_i32 kvm_keyboard_submit_record(kvm_keyboard_normalizer *state,
     const kvm_hotkey_matcher *held_keys, void *context,
     kvm_input_sink sink, const kvm_keyboard_record *record)
 {

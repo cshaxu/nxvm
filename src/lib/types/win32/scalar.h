@@ -12,7 +12,6 @@ typedef LONG_PTR lib_win32_long_ptr;
 typedef UINT lib_win32_uint;
 typedef WORD lib_win32_word;
 typedef SHORT lib_win32_short;
-typedef CHAR lib_win32_char;
 typedef WCHAR lib_win32_wchar;
 
 #endif

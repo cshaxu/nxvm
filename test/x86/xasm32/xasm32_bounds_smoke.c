@@ -11,7 +11,7 @@
 #include <unistd.h>
 #endif
 
-static void check_decode(lib_u8 *code, int flag32, lib_bool valid)
+static void check_decode(lib_u8 *code, lib_i32 flag32, lib_bool valid)
 {
     char text[256], before[256];
     lib_size text_bytes = 37u, code_bytes = 19u;
@@ -62,7 +62,7 @@ int main(void)
         {{0x8b, 0x04, 0x00}, 3},           /* SIB */
         {{0x8b, 0x85, 1, 2, 3, 4}, 6}     /* displacement */
     };
-    for (int mode = 0; mode <= 1; ++mode) {
+    for (lib_i32 mode = 0; mode <= 1; ++mode) {
         for (lib_size p = 0; p < sizeof(prefixes); ++p) {
             memset(code, prefixes[p], 15u);
             check_decode(code, mode, LIB_FALSE);
@@ -84,7 +84,7 @@ int main(void)
         }
         /* Exhaust both opcode maps at every possible remaining-byte count. */
         for (lib_size remaining = 1; remaining <= 15u; ++remaining) {
-            for (unsigned opcode = 0; opcode < 256u; ++opcode) {
+            for (lib_u32 opcode = 0; opcode < 256u; ++opcode) {
                 char text[256];
                 lib_size text_bytes, code_bytes;
                 memset(code, 0x2e, 15u - remaining);

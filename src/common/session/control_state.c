@@ -1,7 +1,7 @@
 #include "common/session/control_state.h"
 
 void common_session_state_initialize(common_session_state *state,
-    common_session_display display, int console_control)
+    common_session_display display, lib_i32 console_control)
 {
     if (state == NULL) return;
     *state = (common_session_state) { 0 };
@@ -50,8 +50,8 @@ void common_session_state_note_runtime(common_session_state *state,
     }
 }
 
-int common_session_state_note_frame(common_session_state *state, lib_u32 sequence,
-    int graphics)
+lib_i32 common_session_state_note_frame(common_session_state *state, lib_u32 sequence,
+    lib_i32 graphics)
 {
     if (state == NULL || !common_session_frame_is_newer(sequence,
             state->observed_frame_sequence)) return 0;
@@ -61,7 +61,7 @@ int common_session_state_note_frame(common_session_state *state, lib_u32 sequenc
     return 1;
 }
 
-void common_session_state_note_window(common_session_state *state, int exists)
+void common_session_state_note_window(common_session_state *state, lib_i32 exists)
 {
     if (state == NULL) return;
     state->window_actual = exists != 0;
@@ -71,7 +71,7 @@ void common_session_state_note_window(common_session_state *state, int exists)
 }
 
 void common_session_state_note_vm_console(common_session_state *state,
-    int exists)
+    lib_i32 exists)
 {
     if (state == NULL) return;
     state->vm_console_actual = exists != 0;
@@ -81,7 +81,7 @@ void common_session_state_note_vm_console(common_session_state *state,
 }
 
 void common_session_state_note_current_console(common_session_state *state,
-    int vm_console_current)
+    lib_i32 vm_console_current)
 {
     common_session_console_actual current = vm_console_current ?
         COMMON_SESSION_CONSOLE_VM : COMMON_SESSION_CONSOLE_MONITOR;
@@ -104,7 +104,7 @@ common_ui_action common_session_state_take_action(common_session_state *state)
     return action;
 }
 
-int common_session_state_monitor_is_current(const common_session_state *state)
+lib_i32 common_session_state_monitor_is_current(const common_session_state *state)
 {
     common_session_presentation_plan desired;
     if (state == NULL) return 0;
@@ -115,7 +115,7 @@ int common_session_state_monitor_is_current(const common_session_state *state)
         state->in_flight != COMMON_UI_ACTION_BIND_VM_CONSOLE;
 }
 
-int common_session_state_monitor_is_running_graphics_surface(
+lib_i32 common_session_state_monitor_is_running_graphics_surface(
     const common_session_state *state)
 {
     return state != NULL &&
@@ -125,7 +125,7 @@ int common_session_state_monitor_is_running_graphics_surface(
         common_session_state_monitor_is_current(state);
 }
 
-int common_session_state_frame_targets_ready(const common_session_state *state)
+lib_i32 common_session_state_frame_targets_ready(const common_session_state *state)
 {
     common_session_presentation_plan desired;
     if (state == NULL) return 0;

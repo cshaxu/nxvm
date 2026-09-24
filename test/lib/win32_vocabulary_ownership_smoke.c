@@ -4,10 +4,10 @@
 #include "lib/types/win32/input.h"
 #include "lib/types/types_interface.h"
 
-static int counter_ok = 1, frequency_ok = 1;
+static lib_i32 counter_ok = 1, frequency_ok = 1;
 static LONGLONG counter_value = 123, frequency_value = 1000;
-static unsigned query_count;
-static unsigned pressed;
+static lib_u32 query_count;
+static lib_u32 pressed;
 static SHORT layout_result;
 static SHORT fake_key_scan(WCHAR scalar)
 { (void)scalar; return layout_result; }
@@ -16,9 +16,9 @@ static BOOL fake_counter(lib_win32_counter *out)
 { ++query_count; out->QuadPart = counter_value; return counter_ok; }
 static BOOL fake_frequency(lib_win32_counter *out)
 { ++query_count; out->QuadPart = frequency_value; return frequency_ok; }
-static lib_win32_key_state fake_key_state(int key)
+static lib_win32_key_state fake_key_state(lib_i32 key)
 {
-    unsigned bit = key == VK_CONTROL ? 1u : key == VK_MENU ? 2u : key == VK_SHIFT ? 4u : 0u;
+    lib_u32 bit = key == VK_CONTROL ? 1u : key == VK_MENU ? 2u : key == VK_SHIFT ? 4u : 0u;
     return (lib_win32_key_state)((pressed & bit) != 0u ? 0x8000u : 0u);
 }
 
@@ -37,8 +37,8 @@ static lib_win32_key_state fake_key_state(int key)
 #include "lib/kvm-base/hotkey.c"
 
 static kvm_input_event emitted[8];
-static unsigned emitted_count;
-static int capture(void *context, const kvm_input_event *event)
+static lib_u32 emitted_count;
+static lib_i32 capture(void *context, const kvm_input_event *event)
 {
     (void)context;
     if (emitted_count == 8u) return 0;
@@ -77,10 +77,10 @@ int main(void)
     }
     /* VkKeyScan uses a DIFFERENT mask from GetKeyState/KVM modifiers.
      * Exercise all raw combinations and the actual emitted make/break path. */
-    for (unsigned raw = 0u; raw != 8u; ++raw) {
+    for (lib_u32 raw = 0u; raw != 8u; ++raw) {
         lib_u16 key;
         lib_u8 modifiers, expected = 0u;
-        unsigned count = 0u;
+        lib_u32 count = 0u;
         kvm_keyboard_normalizer state = { 0 };
         if (raw & 1u) { expected |= KVM_INPUT_MODIFIER_SHIFT; ++count; }
         if (raw & 2u) { expected |= KVM_INPUT_MODIFIER_CONTROL; ++count; }
@@ -94,7 +94,7 @@ int main(void)
         CHECK(emitted_count == count * 2u + 2u);
         CHECK(emitted[count].data.key.key == 'A');
         CHECK(emitted[count].data.key.modifiers == expected);
-        for (unsigned i = 0u; i != count; ++i) {
+        for (lib_u32 i = 0u; i != count; ++i) {
             CHECK(emitted[i].data.key.pressed);
             CHECK(!emitted[emitted_count - 1u - i].data.key.pressed);
             CHECK(emitted[i].data.key.key == emitted[emitted_count - 1u - i].data.key.key);
@@ -112,7 +112,7 @@ int main(void)
         CHECK(kvm_keyboard_submit_record(&state, NULL, NULL, capture,
         &(kvm_keyboard_record){ .kind=KVM_KEYBOARD_CHARACTER, .utf16='<', .repeat_count=3 }));
         CHECK(emitted_count == 3);
-        for (unsigned i = 0; i < emitted_count; ++i)
+        for (lib_u32 i = 0; i < emitted_count; ++i)
             CHECK(emitted[i].type == KVM_EVENT_TEXT && emitted[i].data.text.scalar == '<');
     }
     return 0;

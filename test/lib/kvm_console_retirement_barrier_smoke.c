@@ -42,7 +42,7 @@ typedef struct destroy_context {
     HANDLE done;
 } destroy_context;
 
-static int retirement_input(void *opaque, const kvm_input_event *event)
+static lib_i32 retirement_input(void *opaque, const kvm_input_event *event)
 {
     retirement_probe *probe = (retirement_probe *)opaque;
     LONG index;
@@ -90,7 +90,7 @@ static DWORD WINAPI retirement_destroy(void *opaque)
     return 0u;
 }
 
-static void check_retirement(int fault)
+static void check_retirement(lib_i32 fault)
 {
     retirement_probe probe = { 0 };
     kvm_console_options options = { 0 };
@@ -168,7 +168,7 @@ static lib_status failing_frame(void *context, const lib_console_text_frame *fra
     SetEvent(write_called);
     return write_result;
 }
-static void check_io_failure(int reader, lib_status output_status)
+static void check_io_failure(lib_i32 reader, lib_status output_status)
 {
     retirement_probe probe = { 0 };
     kvm_console_options options = { 0 };
@@ -202,9 +202,9 @@ static void check_io_failure(int reader, lib_status output_status)
     CloseHandle(probe.retired); CloseHandle(write_called);
 }
 
-static unsigned frame_writes;
+static lib_u32 frame_writes;
 static char last_frame_text;
-static int stop_after_publication;
+static lib_i32 stop_after_publication;
 static kvm_console *publishing_console;
 static kvm_console_text_frame next_frame;
 static lib_status activation_frame(void *opaque, const lib_console_text_frame *frame)
@@ -270,7 +270,7 @@ static void check_activation_frame(void)
         rejected.base.text_rows=25; rejected.characters.secondary[255]=0xd800;
         assert(kvm_console_publish_frame(c,&rejected)==LIB_STATUS_INVALID_ARGUMENT);
         rejected.characters.secondary[255]=0;
-        for (unsigned field=0;field<3;++field) {
+        for (lib_u32 field=0;field<3;++field) {
             lib_u8 *value=field==0 ? &rejected.base.cells[1999].foreground :
                 field==1 ? &rejected.base.cells[1999].background : &rejected.base.cells[1999].glyph_bank;
             *value=field==2 ? 2 : 16;
@@ -306,8 +306,8 @@ static void check_activation_frame(void)
 }
 
 static kvm_input_event reset_events[16];
-static unsigned reset_event_count;
-static int reset_input(void *opaque, const kvm_input_event *event)
+static lib_u32 reset_event_count;
+static lib_i32 reset_input(void *opaque, const kvm_input_event *event)
 {
     (void)opaque;
     assert(reset_event_count < 16);
@@ -426,8 +426,8 @@ static void check_character_banks(void)
     frame.characters.secondary[65] = 0x03a9;
     assert(kvm_console_publish_text_frame(&console, &frame) == LIB_STATUS_OK);
     assert(captured.text[1] == 0x03a9);
-    for (unsigned enabled=0;enabled<2;++enabled) {
-        for (unsigned attribute=0;attribute<256;++attribute) {
+    for (lib_u32 enabled=0;enabled<2;++enabled) {
+        for (lib_u32 attribute=0;attribute<256;++attribute) {
             frame.base.cells[1].foreground=attribute & 15u;
             frame.base.cells[1].background=attribute >> 4;
             frame.base.cells[1].glyph_bank=enabled && (attribute & 8u);
@@ -449,11 +449,11 @@ static void check_character_banks(void)
     assert(captured.text[80] == 0x2500 && captured.foreground[80] == 3 && captured.background[80] == 4);
     assert(captured.text[81] == 0x2588 && captured.foreground[81] == 5 && captured.background[81] == 6);
     /* KVM scanlines are normalized before the independent Console boundary. */
-    const struct { unsigned height, top, bottom, visible, out_bottom; } cases[] = {
+    const struct { lib_u32 height, top, bottom, visible, out_bottom; } cases[] = {
         {0,14,15,1,15}, {16,20,21,0,15}, {16,14,31,1,15},
         {16,4,7,1,7}, {8,7,255,1,7}, {16,9,8,1,8}
     };
-    for (unsigned i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
+    for (lib_u32 i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
         frame.base.font_height = cases[i].height;
         frame.base.cursor_top = cases[i].top;
         frame.base.cursor_bottom = cases[i].bottom;

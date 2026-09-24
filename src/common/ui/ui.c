@@ -25,7 +25,7 @@ struct common_ui {
     common_ui_input_context console_input;
 };
 
-static int common_ui_emit(common_ui *ui, const common_ui_event *event)
+static lib_i32 common_ui_emit(common_ui *ui, const common_ui_event *event)
 {
     return ui != NULL && ui->options.event_sink != NULL &&
         ui->options.event_sink(ui->options.event_context, event);
@@ -44,7 +44,7 @@ static void common_ui_delivery_failed(void *opaque, lib_u64 source_identity,
     (void)common_ui_emit(ui, &event);
 }
 
-static int common_ui_input(void *opaque, const kvm_input_event *input)
+static lib_i32 common_ui_input(void *opaque, const kvm_input_event *input)
 {
     common_ui_input_context *context = (common_ui_input_context *)opaque;
     common_ui *ui = context == NULL ? NULL : context->ui;

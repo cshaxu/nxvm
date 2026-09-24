@@ -11,6 +11,40 @@ their actual owners.
 This is a design record.  It authorizes no source migration or deletion until
 the owner reviews it.
 
+## S6 Consumer Audit Amendment
+
+The owner approved a three-product production-consumer audit before deleting
+or retaining any Lib Types entry.  A Type is retained only when it conforms to
+the fixed-width or semantic-type rule and has either a production consumer in
+Lib, Common, x86, NXVM, MyNES or SoftPC, or a named legacy-facade migration
+receiver.  Tests do not establish a consumer.  Native C and SDK spellings are
+permitted only at their direct ABI adapter; internal data, fields, parameters,
+returns and text storage use Lib Types.
+
+The audit identifies these dispositions:
+
+| Family | Disposition | Reason and receiver |
+| --- | --- | --- |
+| `lib_uptr`, pointer conversions and `lib_atomic_uptr` | Retain and migrate | NXVM's live `type_native_unsigned`, `type_virtual_address`, pointer-reference macros and DMA `atomic_uintptr_t` are the explicit receiver. Pointer width is an approved semantic contract, not a substitute for guest addresses or counts. |
+| `LIB_STATUS_INTERNAL_ERROR` | Retain pending semantic mapping | Live `TYPE_STATUS_FAULT` callers require a per-site outcome mapping. It is retained only for genuine completed-operation internal failures; it is not a catchall. |
+| `lib_memory_order` | Retain | It is part of the signature of live explicit atomic operations even where callers do not declare a variable of that type. |
+| `lib_c_isalpha`, `lib_c_isspace` | Do not retain | Legacy parsers can migrate to owner-local deterministic ASCII byte checks. Locale-sensitive CRT classification is not a shared internal text contract. |
+| `lib_c_stdout`, `lib_c_stderr`, `lib_c_fprintf`, `lib_c_vfprintf` | Do not retain | The old root facade uses them for output policy. Its receiver is the App/Console output owner, not Lib Types. |
+| `lib_c_strstr` | Transfer to S7, then delete | It has no production receiver, but one MyNES-only test still crosses a native C-string adapter. S7 migrates that test before removing the alias. |
+| `lib_atomic_flag_clear`, `lib_atomic_u32_exchange_explicit`, `lib_atomic_u64_initialize` | Delete | No current or legacy production receiver requires these redundant operation variants. |
+| `LIB_LINUX_CLOCK_REALTIME`, `lib_linux_pthread_cond_destroy`, `lib_linux_pthread_cond_signal` | Delete | No production receiver exists. A future wall-clock or synchronization need must be designed by Base, not pre-reserved in Types. |
+| `LIB_WIN32_CALLBACK_NULL`, `lib_win32_char`, `lib_win32_hiword`, `lib_win32_initialize_critical_section` | Delete | No Lib consumer or named migration receiver exists; `lib_win32_char` also violates the fixed-width text rule. |
+
+Lib's own `lib_bool` and `lib_status` use `lib_i32`; its generic atomic-64
+storage must preserve exactly the `lib_u64` representation.  `int`, `long`,
+`char` and related C spellings remain only inside direct CRT, compiler, Win32
+or POSIX adapters.  S6 applies this to all six shared component trees:
+`src/{lib,common,x86}` and `test/{lib,common,x86}`. Tests obey the same rule;
+only a direct CRT/SDK ABI probe may retain the native spelling it verifies. S7
+applies it to MyNES; S8 applies it to NXVM and retires its root facade. Product
+text contracts cross a temporary explicit adapter boundary until their owning
+product S is admitted.
+
 ## Evidence baseline
 
 S2 exhausted every exact existing Lib equivalent.  The remaining source and

@@ -101,7 +101,7 @@ static C_INT command_copy_text_checked(C_CHAR *destination,
 static C_INT command_printf(command_context *command, const char *format, ...)
 {
     lib_c_va_list args, measure;
-    int count;
+    lib_i32 count;
     lib_size needed, capacity;
     char *expanded;
     if (command == STD_NULL || command->result == STD_NULL) return -1;

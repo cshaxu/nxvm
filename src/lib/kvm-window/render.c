@@ -1,6 +1,6 @@
 #include "lib/kvm-window/render.h"
 
-int kvm_window_frame_size(const kvm_window_frame *frame, lib_u32 *width, lib_u32 *height)
+lib_i32 kvm_window_frame_size(const kvm_window_frame *frame, lib_u32 *width, lib_u32 *height)
 {
     if (kvm_window_frame_validate(frame) != LIB_STATUS_OK || !width || !height) return 0;
     *width = frame->graphics ? frame->image.width : frame->text.base.text_columns * 8u;
@@ -10,7 +10,7 @@ int kvm_window_frame_size(const kvm_window_frame *frame, lib_u32 *width, lib_u32
 }
 
 static inline void kvm_window_update_pixel(lib_u32 *destination, lib_u32 colour,
-    lib_u32 x, lib_u32 y, int valid, kvm_window_rect *damage)
+    lib_u32 x, lib_u32 y, lib_i32 valid, kvm_window_rect *damage)
 {
     if (valid && *destination == colour) return;
     *destination = colour;
@@ -20,8 +20,8 @@ static inline void kvm_window_update_pixel(lib_u32 *destination, lib_u32 colour,
     if ((lib_i32)y + 1 > damage->bottom) damage->bottom = (lib_i32)y + 1;
 }
 
-int kvm_window_render_frame(const kvm_window_frame *frame, lib_u32 *pixels,
-    lib_u32 width, lib_u32 height, int *valid, kvm_window_rect *changed)
+lib_i32 kvm_window_render_frame(const kvm_window_frame *frame, lib_u32 *pixels,
+    lib_u32 width, lib_u32 height, lib_i32 *valid, kvm_window_rect *changed)
 {
     kvm_window_rect damage = {(lib_i32)width, (lib_i32)height, 0, 0};
     lib_u32 row;

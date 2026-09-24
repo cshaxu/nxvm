@@ -6,16 +6,12 @@
 #include <stdarg.h>
 
 typedef FILE lib_c_file;
-#define lib_c_stdout stdout
-#define lib_c_stderr stderr
 #define lib_c_fopen fopen
 #define lib_c_fclose fclose
 #define lib_c_fread fread
 #define lib_c_fwrite fwrite
 #define lib_c_ferror ferror
 #define lib_c_fflush fflush
-#define lib_c_fprintf fprintf
-#define lib_c_vfprintf vfprintf
 #define lib_c_snprintf snprintf
 #define lib_c_vsnprintf vsnprintf
 typedef va_list lib_c_va_list;

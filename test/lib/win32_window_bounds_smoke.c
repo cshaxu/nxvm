@@ -15,10 +15,10 @@ static void check_stable_fit(void)
     static const lib_u32 sizes[][2] = {
         {640,480}, {720,400}, {1920,1080}, {480,640}, {1,4096}, {4096,1}
     };
-    for (unsigned i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
-        for (int w = 1; w <= 1100; w += 7) {
-            for (int h = 1; h <= 800; h += 11) {
-                int fw, fh, again_w, again_h;
+    for (lib_u32 i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
+        for (lib_i32 w = 1; w <= 1100; w += 7) {
+            for (lib_i32 h = 1; h <= 800; h += 11) {
+                lib_i32 fw, fh, again_w, again_h;
                 assert(kvm_window_fit_aspect_size(w,h,sizes[i][0],sizes[i][1],&fw,&fh));
                 assert(fw > 0 && fw <= w && fh > 0 && fh <= h);
                 assert(kvm_window_fit_aspect_size(fw,fh,sizes[i][0],sizes[i][1],&again_w,&again_h));
@@ -26,16 +26,16 @@ static void check_stable_fit(void)
             }
         }
     }
-    for (int edge = KVM_WINDOW_EDGE_LEFT; edge <= KVM_WINDOW_EDGE_BOTTOMRIGHT; ++edge) {
+    for (lib_i32 edge = KVM_WINDOW_EDGE_LEFT; edge <= KVM_WINDOW_EDGE_BOTTOMRIGHT; ++edge) {
         kvm_window_rect rect = {10,20,1027,810};
-        int w,h;
+        lib_i32 w,h;
         kvm_window_constrain_sizing(&rect,(kvm_window_edge)edge,16,39,640,480);
         assert(kvm_window_fit_aspect_size(rect.right-rect.left-16,
             rect.bottom-rect.top-39,640,480,&w,&h));
         assert(w == rect.right-rect.left-16 && h == rect.bottom-rect.top-39);
     }
     {
-        int w,h;
+        lib_i32 w,h;
         assert(kvm_window_fit_aspect_size(1001,751,640,480,&w,&h));
         assert(w == 1001 && h == 751);
         assert(!kvm_window_fit_aspect_size(0,751,640,480,&w,&h));
@@ -75,8 +75,8 @@ int main(void)
     work_area.right = 600;
     work_area.bottom = 500;
     {
-        int client_width;
-        int client_height;
+        lib_i32 client_width;
+        lib_i32 client_height;
         assert(kvm_window_fit_client_size(&work_area, 16, 39, 640, 480,
             &client_width, &client_height));
         assert(client_width == 584);
@@ -85,8 +85,8 @@ int main(void)
         assert(client_height + 39 <= work_area.bottom - work_area.top);
     }
     {
-        int client_width;
-        int client_height;
+        lib_i32 client_width;
+        lib_i32 client_height;
 
         assert(kvm_window_fit_aspect_size(1920, 1041, 640, 480,
             &client_width, &client_height));

@@ -18,8 +18,8 @@ static kvm_window window;
 static kvm_win32_window_context context;
 static kvm_window_frame frame;
 static kvm_input_event delivered[32];
-static unsigned count, attempts, reject_at, failures;
-static int sink(void *opaque, const kvm_input_event *event)
+static lib_u32 count, attempts, reject_at, failures;
+static lib_i32 sink(void *opaque, const kvm_input_event *event)
 {
     (void)opaque;
     if (++attempts == reject_at) return 0;
@@ -48,7 +48,7 @@ static void initialize(void)
     count = attempts = reject_at = failures = 0;
     frame.valid = 1; frame.text.base.text_columns = 80; frame.text.base.text_rows = 25;
 }
-static int key(kvm_key key, lib_u16 scan, int down, lib_u8 modifiers)
+static lib_i32 key(kvm_key key, lib_u16 scan, lib_i32 down, lib_u8 modifiers)
 {
     kvm_input_event event = { 0 };
     event.type = KVM_EVENT_KEY;
@@ -68,8 +68,8 @@ static void frozen_prefix_replay(void)
 {
     /* All ordinary flush causes share the same permission captured at make.
      * Repeats after unfreeze must not upgrade a frozen-origin prefix. */
-    for (unsigned frozen = 0; frozen < 2; ++frozen)
-    for (unsigned cause = 0; cause < 3; ++cause) {
+    for (lib_u32 frozen = 0; frozen < 2; ++frozen)
+    for (lib_u32 cause = 0; cause < 3; ++cause) {
         kvm_input_event text = { .type = KVM_EVENT_TEXT };
         text.data.text.scalar = 0x1f600;
         initialize();
@@ -93,7 +93,7 @@ static void frozen_prefix_replay(void)
         assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     }
     /* Neither freezing direction may disable an otherwise matched hotkey. */
-    for (unsigned frozen = 0; frozen < 2; ++frozen) {
+    for (lib_u32 frozen = 0; frozen < 2; ++frozen) {
         initialize();
         set_frozen(frozen);
         assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
@@ -108,7 +108,7 @@ static void frozen_prefix_replay(void)
         assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     }
     /* Owner explicitly retains per-event filtering, not make/break balancing. */
-    for (unsigned frozen = 0; frozen < 2; ++frozen) {
+    for (lib_u32 frozen = 0; frozen < 2; ++frozen) {
         initialize();
         set_frozen(frozen);
         assert(key('A', 0x1e, 1, 0));
@@ -217,7 +217,7 @@ int main(void)
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     /* Either producer may win the admission lock, but no publish may commit
      * after STOP's boundary. Repeat the public concurrent paths without Sleep. */
-    for (unsigned i = 0; i != 32; ++i) {
+    for (lib_u32 i = 0; i != 32; ++i) {
         initialize();
         start_race = CreateEventA(NULL, TRUE, FALSE, NULL);
         HANDLE thread = CreateThread(NULL, 0, publish, NULL, 0, NULL);

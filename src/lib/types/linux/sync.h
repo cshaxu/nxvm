@@ -22,8 +22,6 @@ typedef pthread_once_t lib_linux_pthread_once_t;
 #define lib_linux_pthread_mutex_lock pthread_mutex_lock
 #define lib_linux_pthread_mutex_unlock pthread_mutex_unlock
 #define lib_linux_pthread_cond_init pthread_cond_init
-#define lib_linux_pthread_cond_destroy pthread_cond_destroy
-#define lib_linux_pthread_cond_signal pthread_cond_signal
 #define lib_linux_pthread_cond_broadcast pthread_cond_broadcast
 #define lib_linux_pthread_cond_wait pthread_cond_wait
 #define lib_linux_pthread_cond_timedwait pthread_cond_timedwait

@@ -6,7 +6,6 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 typedef uint8_t lib_u8;
 typedef uint16_t lib_u16;
@@ -19,9 +18,8 @@ typedef int64_t lib_i64;
 typedef size_t lib_size;
 typedef intptr_t lib_iptr;
 typedef uintptr_t lib_uptr;
-typedef int lib_bool;
-
-typedef int lib_status;
+typedef lib_i32 lib_bool;
+typedef lib_i32 lib_status;
 
 
 enum {
@@ -40,7 +38,6 @@ enum {
 #define LIB_NULL NULL
 #define LIB_INT32_MAX INT32_MAX
 #define LIB_INT32_MIN INT32_MIN
-#define LIB_UINT_MAX UINT_MAX
 #define LIB_UINT32_MAX UINT32_MAX
 #define LIB_UINT64_MAX UINT64_MAX
 #define LIB_SIZE_MAX SIZE_MAX
@@ -64,9 +61,9 @@ static inline void *lib_uptr_to_pointer(lib_uptr value)
 
 /* Cross-platform C runtime vocabulary.  These functions deliberately expose
  * no platform handle, product state, or I/O policy. */
-static inline void *lib_memory_set(void *destination, int value,
+static inline void *lib_memory_set(void *destination, lib_i32 value,
     lib_size byte_count)
-{ return memset(destination, value, byte_count); }
+{ return memset(destination, (int)value, byte_count); }
 
 static inline void *lib_memory_copy(void *destination, const void *source,
     lib_size byte_count)
@@ -76,27 +73,26 @@ static inline void *lib_memory_move(void *destination, const void *source,
     lib_size byte_count)
 { return memmove(destination, source, byte_count); }
 
-static inline int lib_memory_compare(const void *left, const void *right,
+static inline lib_i32 lib_memory_compare(const void *left, const void *right,
     lib_size byte_count)
-{ return memcmp(left, right, byte_count); }
+{
+    int result = memcmp(left, right, byte_count);
+    return result < 0 ? -1 : result > 0 ? 1 : 0;
+}
 
-static inline const void *lib_memory_find(const void *bytes, int value,
+static inline const void *lib_memory_find(const void *bytes, lib_i32 value,
     lib_size byte_count)
-{ return memchr(bytes, value, byte_count); }
+{ return memchr(bytes, (int)value, byte_count); }
 
 static inline lib_size lib_text_length(const char *text)
 { return strlen(text); }
 
 #define lib_c_strcmp strcmp
 #define lib_c_strchr strchr
+/* Product test text still crosses a native C-string adapter.  S7 migrates
+ * that MyNES-only caller before this forwarding alias is retired. */
 #define lib_c_strstr strstr
 #define lib_c_strtok strtok
-
-static inline lib_bool lib_c_isalpha(lib_i32 value)
-{ return isalpha((unsigned char)value) != 0 ? LIB_TRUE : LIB_FALSE; }
-
-static inline lib_bool lib_c_isspace(lib_i32 value)
-{ return isspace((unsigned char)value) != 0 ? LIB_TRUE : LIB_FALSE; }
 
 static inline void *lib_allocate(lib_size byte_count)
 { return malloc(byte_count); }

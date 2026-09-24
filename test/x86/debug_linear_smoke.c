@@ -5,7 +5,7 @@
 static lib_u8 memory[0x110000];
 static lib_u32 memory_base;
 static lib_u16 code_segment, data_segment;
-static unsigned reads, writes;
+static lib_u32 reads, writes;
 static lib_bool short_response;
 static lib_status acquire(common_machine *m, common_machine_debug_lease *lease)
 { (void)m; *lease = (common_machine_debug_lease){0}; return LIB_STATUS_OK; }

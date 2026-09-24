@@ -7,8 +7,8 @@ static BOOL WINAPI failed_read(HANDLE input, LPVOID bytes, DWORD length,
     LPDWORD read, LPVOID reserved)
 { (void)input; (void)bytes; (void)length; (void)read; (void)reserved; return FALSE; }
 static INPUT_RECORD records[5];
-static unsigned record_count, record_index, raw_count;
-static unsigned raw_unicode[16], raw_repeat[16];
+static lib_u32 record_count, record_index, raw_count;
+static lib_u32 raw_unicode[16], raw_repeat[16];
 static BOOL WINAPI read_wide(HANDLE input, PINPUT_RECORD record, DWORD length, LPDWORD read)
 {
     (void)input; assert(length == 1 && record_index < record_count);
@@ -25,7 +25,7 @@ static DWORD WINAPI failed_wait(DWORD count, const HANDLE *handles, BOOL all, DW
 #define lib_win32_wait_for_multiple_objects failed_wait
 #include "lib/console-broker/win32/console.c"
 
-static int failures;
+static lib_i32 failures;
 static void receive(void *context, const lib_console_event *event)
 {
     (void)context;
@@ -47,7 +47,7 @@ int main(void)
     backend.generation = 1u;
     backend.stop_event = CreateEventA(NULL, TRUE, FALSE, NULL);
     assert(backend.stop_event);
-    for (int mode = 0; mode != 2; ++mode) {
+    for (lib_i32 mode = 0; mode != 2; ++mode) {
         backend.mode = mode == 0 ? CONSOLE_BROKER_RAW_EVENTS : CONSOLE_BROKER_COOKED_LINES;
         ResetEvent(backend.stop_event);
         console_broker_reader(&backend);
@@ -63,7 +63,7 @@ int main(void)
     backend.generation = 1u;
     backend.mode = CONSOLE_BROKER_RAW_EVENTS;
     record_count = 5;
-    for (unsigned i = 0; i < record_count; ++i) {
+    for (lib_u32 i = 0; i < record_count; ++i) {
         records[i].EventType = KEY_EVENT;
         records[i].Event.KeyEvent.bKeyDown = TRUE;
         records[i].Event.KeyEvent.wRepeatCount = i == 0 ? 5 : 1;

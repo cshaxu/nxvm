@@ -11,13 +11,13 @@ static lib_u32 received, received_run;
 static lib_status publish_status = LIB_STATUS_OK;
 static kvm_console_text_frame last_console;
 static common_ui *tracked_ui;
-static unsigned released_ui, destroy_failure, broker_destroys, window_destroys, console_destroys;
+static lib_u32 released_ui, destroy_failure, broker_destroys, window_destroys, console_destroys;
 static void counted_release(void *memory)
 {
     if (memory == tracked_ui) ++released_ui;
     lib_release(memory);
 }
-static void *counted_set(void *destination, int value, lib_size size)
+static void *counted_set(void *destination, lib_i32 value, lib_size size)
 {
     if (size == sizeof(kvm_console_text_frame)) ++status_builds;
     return memset(destination, value, size);
@@ -89,7 +89,7 @@ lib_status console_broker_cancel_cooked_line(console_broker *broker,
     lib_console *expected, lib_bool *out_completed)
 { assert(broker->current == expected); *out_completed = LIB_FALSE; return LIB_STATUS_OK; }
 
-static int receive(void *context, const common_ui_event *event)
+static lib_i32 receive(void *context, const common_ui_event *event)
 {
     (void)context;
     assert(event->run_generation == 11u || event->run_generation == 12u ||
@@ -109,7 +109,7 @@ static void input_worker(void *context, const base_sync_task *task)
     options->failure_sink(options->failure_context, 1u, LIB_STATUS_IO_ERROR);
 }
 
-static void check_destroy(const common_ui_options *options, unsigned failure, int raw)
+static void check_destroy(const common_ui_options *options, lib_u32 failure, lib_i32 raw)
 {
     common_ui *ui;
     assert(common_ui_create(&ui, options) == LIB_STATUS_OK);
@@ -187,11 +187,11 @@ int main(void)
     assert(last_console.base.text_columns == 80u);
     assert(last_console.base.text_palette[7] == 0xc0c0c0u &&
         last_console.base.text_palette[0] == 0u);
-    for (unsigned i = 0; i < 13u; ++i)
+    for (lib_u32 i = 0; i < 13u; ++i)
         assert(last_console.base.cells[i].glyph_index == "Window active"[i]);
-    for (unsigned i = 0; i < 7u; ++i)
+    for (lib_u32 i = 0; i < 7u; ++i)
         assert(last_console.base.cells[KVM_TEXT_COLUMNS * 2u + i].glyph_index == "Hotkeys"[i]);
-    for (unsigned i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i) {
+    for (lib_u32 i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i) {
         assert(last_console.base.cells[i].foreground == 7u);
         assert(last_console.base.cells[i].background == 0u && last_console.base.cells[i].glyph_bank == 0u);
     }
@@ -254,9 +254,9 @@ int main(void)
     assert(status_builds == 4u && console_frames == 7u && window_frames == 5u);
     /* UI deduplication needs equality only, including wrap and recreation. */
     frame.graphics = 0u;
-    for (unsigned i = 0u; i < 2u; ++i) {
+    for (lib_u32 i = 0u; i < 2u; ++i) {
         sequence = i == 0u ? LIB_UINT32_MAX : 1u;
-        unsigned wc = window_frames, cc = console_frames;
+        lib_u32 wc = window_frames, cc = console_frames;
         assert(common_ui_publish_frame(ui, &frame, &characters, sequence, 1, 1, 0) == LIB_STATUS_OK);
         assert(window_frames == wc + 1u && console_frames == cc + 1u);
         assert(common_ui_publish_frame(ui, &frame, &characters, sequence, 1, 1, 0) == LIB_STATUS_OK);
@@ -266,11 +266,11 @@ int main(void)
         COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
     assert(common_ui_apply_action(ui, COMMON_UI_ACTION_CREATE_WINDOW,
         COMMON_UI_STATE_RUNNING) == LIB_STATUS_OK);
-    unsigned wc = window_frames;
+    lib_u32 wc = window_frames;
     assert(common_ui_publish_frame(ui, &frame, &characters, sequence, 1, 1, 0) == LIB_STATUS_OK);
     assert(window_frames == wc + 1u); /* Same serial, fresh presenter. */
     /* Real concurrent callback/control access uses the one existing atomic. */
-    for (int source = 0; source < 2; ++source) {
+    for (lib_i32 source = 0; source < 2; ++source) {
         kvm_component_options *component = source ? &console_fake.options :
             &window_fake.options.component;
         lib_u32 prior = received;
@@ -312,8 +312,8 @@ int main(void)
         assert(received == prior + 5u);
     }
     assert(common_ui_destroy(ui) == LIB_STATUS_OK);
-    for (unsigned failure = 1u; failure <= 3u; ++failure)
-        for (int raw = 0; raw <= 1; ++raw) check_destroy(&options, failure, raw);
+    for (lib_u32 failure = 1u; failure <= 3u; ++failure)
+        for (lib_i32 raw = 0; raw <= 1; ++raw) check_destroy(&options, failure, raw);
     assert(common_ui_destroy(NULL) == LIB_STATUS_OK);
     return 0;
 }

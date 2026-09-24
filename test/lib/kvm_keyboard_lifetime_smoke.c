@@ -5,7 +5,7 @@
 #include "lib/kvm-window/win32/input.h"
 #include <assert.h>
 
-static int allocation_failure;
+static lib_i32 allocation_failure;
 static void *test_reallocate(void *memory, lib_size size)
 { return allocation_failure ? NULL : lib_reallocate(memory, size); }
 #define lib_reallocate test_reallocate
@@ -17,12 +17,12 @@ static void *test_reallocate(void *memory, lib_size size)
 static lib_u8 fixture_modifiers(void) { return 0u; }
 #define kvm_window_modifiers_from_key_state fixture_modifiers
 static void *window_context;
-static unsigned translations;
+static lib_u32 translations;
 static BOOL WINAPI translate_unmapped(const MSG *message)
 { assert(message->wParam == VK_PACKET); ++translations; return TRUE; }
 #undef lib_win32_translate_message
 #define lib_win32_translate_message translate_unmapped
-static LONG_PTR WINAPI context_pointer(HWND window, int index)
+static LONG_PTR WINAPI context_pointer(HWND window, lib_i32 index)
 { (void)window; (void)index; return (LONG_PTR)window_context; }
 #undef lib_win32_get_window_long_ptr_a
 #define lib_win32_get_window_long_ptr_a context_pointer
@@ -31,9 +31,9 @@ static LONG_PTR WINAPI context_pointer(HWND window, int index)
 
 typedef struct capture {
     kvm_input_event events[256];
-    unsigned count, attempts, reject_at;
+    lib_u32 count, attempts, reject_at;
 } capture;
-static int capture_event(void *opaque, const kvm_input_event *event)
+static lib_i32 capture_event(void *opaque, const kvm_input_event *event)
 {
     capture *c = opaque;
     if (++c->attempts == c->reject_at) return 0;
@@ -43,8 +43,8 @@ static int capture_event(void *opaque, const kvm_input_event *event)
     c->events[c->count++].source_identity = 0;
     return 1;
 }
-static int submit(kvm_hotkey_matcher *m, capture *c, kvm_key key, unsigned scan,
-    unsigned flags, unsigned mods, int down)
+static lib_i32 submit(kvm_hotkey_matcher *m, capture *c, kvm_key key, lib_u32 scan,
+    lib_u32 flags, lib_u32 mods, lib_i32 down)
 {
     kvm_input_event e = { .type = KVM_EVENT_KEY };
     e.data.key.key = key; e.data.key.scan_code = scan;
@@ -55,7 +55,7 @@ static int submit(kvm_hotkey_matcher *m, capture *c, kvm_key key, unsigned scan,
 static void same_input(const capture *left, const capture *right)
 {
     assert(left->count == right->count);
-    for (unsigned i = 0; i < left->count; ++i) {
+    for (lib_u32 i = 0; i < left->count; ++i) {
         const kvm_input_event *a = &left->events[i], *b = &right->events[i];
         assert(a->source == b->source && a->source_identity == b->source_identity);
         assert(a->type == b->type);
@@ -73,40 +73,40 @@ static void same_input(const capture *left, const capture *right)
 }
 static void permutations(void)
 {
-    const unsigned orders[6][3] = {{0,1,2},{0,2,1},{1,0,2},{1,2,0},{2,0,1},{2,1,0}};
+    const lib_u32 orders[6][3] = {{0,1,2},{0,2,1},{1,0,2},{1,2,0},{2,0,1},{2,1,0}};
     const kvm_key triggers[3] = {'P','D','F'};
-    for (unsigned t = 0; t < 3; ++t)
-    for (unsigned side = 0; side < 4; ++side)
-    for (unsigned a = 0; a < 6; ++a)
-    for (unsigned b = 0; b < 6; ++b) {
+    for (lib_u32 t = 0; t < 3; ++t)
+    for (lib_u32 side = 0; side < 4; ++side)
+    for (lib_u32 a = 0; a < 6; ++a)
+    for (lib_u32 b = 0; b < 6; ++b) {
         kvm_key keys[3] = {KVM_KEY_CONTROL, KVM_KEY_ALT, triggers[t]};
-        unsigned scans[3] = {0x1d, 0x38, 0x19};
-        unsigned flags[3] = {side & 1, (side >> 1) & 1, 0};
-        unsigned mods = 0, hotkeys = 0, down[3] = {0};
+        lib_u32 scans[3] = {0x1d, 0x38, 0x19};
+        lib_u32 flags[3] = {side & 1, (side >> 1) & 1, 0};
+        lib_u32 mods = 0, hotkeys = 0, down[3] = {0};
         kvm_hotkey_registry registry = {0};
         kvm_hotkey_matcher matcher;
         capture c = {0};
         assert(kvm_hotkey_registry_register(&registry, triggers[t], 3, "action") == LIB_STATUS_OK);
         kvm_hotkey_matcher_initialize(&matcher, &registry);
-        for (unsigned n = 0; n < 3; ++n) {
-            unsigned k = orders[a][n];
+        for (lib_u32 n = 0; n < 3; ++n) {
+            lib_u32 k = orders[a][n];
             if (k < 2) mods |= 1u << k;
             assert(submit(&matcher, &c, keys[k], scans[k], flags[k], mods, 1));
         }
         /* Repeat after modifiers arrive must not consume an earlier ordinary make. */
-        for (unsigned n = 0; n < 16; ++n)
+        for (lib_u32 n = 0; n < 16; ++n)
             assert(submit(&matcher, &c, keys[2], scans[2], 0, mods, 1));
         assert(matcher.held_count == 3);
-        for (unsigned n = 0; n < 3; ++n) {
-            unsigned k = orders[b][n];
+        for (lib_u32 n = 0; n < 3; ++n) {
+            lib_u32 k = orders[b][n];
             if (k < 2) mods &= ~(1u << k);
             assert(submit(&matcher, &c, keys[k], scans[k], flags[k], mods, 0));
         }
-        for (unsigned n = 0; n < c.count; ++n) {
+        for (lib_u32 n = 0; n < c.count; ++n) {
             kvm_input_event *e = &c.events[n];
             if (e->type == KVM_EVENT_HOTKEY) { ++hotkeys; continue; }
             assert(e->type == KVM_EVENT_KEY);
-            unsigned k = e->data.key.key == keys[0] ? 0 : e->data.key.key == keys[1] ? 1 : 2;
+            lib_u32 k = e->data.key.key == keys[0] ? 0 : e->data.key.key == keys[1] ? 1 : 2;
             if (e->data.key.pressed) down[k] = 1;
             else { assert(down[k]); down[k] = 0; }
         }
@@ -142,8 +142,8 @@ static lib_status no_join(kvm_component *component, lib_u32 timeout_ms)
 { (void)component; (void)timeout_ms; return LIB_STATUS_OK; }
 static void no_dispose(kvm_component *component)
 { kvm_component_mailboxes_destroy(&component->mailboxes); }
-static void console_record(kvm_console *console, unsigned key, unsigned scan,
-    unsigned text, int down, unsigned repeat)
+static void console_record(kvm_console *console, lib_u32 key, lib_u32 scan,
+    lib_u32 text, lib_i32 down, lib_u32 repeat)
 {
     lib_console_event e = { .kind = LIB_CONSOLE_EVENT_RAW_KEY };
     e.value.raw_key.key = key; e.value.raw_key.scan_code = scan;
@@ -151,7 +151,7 @@ static void console_record(kvm_console *console, unsigned key, unsigned scan,
     e.value.raw_key.repeat_count = repeat;
     kvm_console_receive_event(console, &e);
 }
-static void adapter_equivalence(unsigned scan)
+static void adapter_equivalence(lib_u32 scan)
 {
     static kvm_window window;
     static kvm_console console;
@@ -197,8 +197,8 @@ static void adapter_equivalence(unsigned scan)
     translations = 0;
     same_input(&w, &c);
     w.count = w.attempts = c.count = c.attempts = 0;
-    for (unsigned i = 0; i < 2; ++i) {
-        unsigned unit = i ? 0xde00 : 0xd83d;
+    for (lib_u32 i = 0; i < 2; ++i) {
+        lib_u32 unit = i ? 0xde00 : 0xd83d;
         win32_window_proc(handle, WM_CHAR, unit, 0);
         console_record(&console, 0, 0, unit, 1, 0);
         console_record(&console, 0, 0, unit, 0, 0);
@@ -226,7 +226,7 @@ static void adapter_equivalence(unsigned scan)
      * Expected scalars use supplementary characters, independent of keyboard layout. */
     {
         static const struct {
-            unsigned units[4], repeats[4], length, expected, scalar;
+            lib_u32 units[4], repeats[4], length, expected, scalar;
         } cases[] = {
             {{0xd83d,0xde00}, {2,2}, 2,2,0x1f600},
             {{0xd83d,0xde00,0xd83d,0xde00}, {1,1,1,1}, 4,2,0x1f600},
@@ -236,16 +236,16 @@ static void adapter_equivalence(unsigned scan)
             {{0xd83d,0xde00}, {0,0}, 2,1,0x1f600},
             {{0xd800,'a'}, {2,2}, 2,4,0} /* physical 'a' pairs after bad prefix */
         };
-        for (unsigned n = 0; n < sizeof(cases)/sizeof(cases[0]); ++n) {
+        for (lib_u32 n = 0; n < sizeof(cases)/sizeof(cases[0]); ++n) {
             w.count = w.attempts = c.count = c.attempts = 0;
-            for (unsigned i = 0; i < cases[n].length; ++i) {
+            for (lib_u32 i = 0; i < cases[n].length; ++i) {
                 win32_window_proc(handle, WM_CHAR, cases[n].units[i], cases[n].repeats[i]);
                 console_record(&console, 0, 0, cases[n].units[i], 1, cases[n].repeats[i]);
                 console_record(&console, 0, 0, cases[n].units[i], 0, cases[n].repeats[i]);
             }
             assert(w.count == cases[n].expected && c.count == w.count);
             same_input(&w, &c);
-            for (unsigned i = 0; i < w.count; ++i) {
+            for (lib_u32 i = 0; i < w.count; ++i) {
                 if (cases[n].scalar)
                     assert(w.events[i].type == KVM_EVENT_TEXT &&
                         w.events[i].data.text.scalar == cases[n].scalar);
@@ -278,8 +278,8 @@ static void adapter_equivalence(unsigned scan)
     console_record(&console, 0, 0, 0xdc00, 1, 0);
     assert(w.count == 1 && c.count == 1);
     w.reject_at = c.reject_at = 3;
-    for (unsigned i = 0; i < 2; ++i) {
-        unsigned unit = i ? 0xde00 : 0xd83d;
+    for (lib_u32 i = 0; i < 2; ++i) {
+        lib_u32 unit = i ? 0xde00 : 0xd83d;
         win32_window_proc(handle, WM_CHAR, unit, 4);
         console_record(&console, 0, 0, unit, 1, 4);
     }
@@ -311,7 +311,7 @@ static void repeat_delivery_failure(void)
     assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
 }
 
-static int match_normalized(void *opaque, const kvm_input_event *event)
+static lib_i32 match_normalized(void *opaque, const kvm_input_event *event)
 {
     void **pair = opaque;
     return kvm_hotkey_matcher_submit(pair[0], event, capture_event, pair[1], LIB_TRUE);
@@ -320,40 +320,40 @@ static void synthesis_lifetimes(void)
 {
     /* Reuse the one physical ledger for both sides of all modifiers and an
      * already-held trigger. Synthesis must release only keys it introduces. */
-    for (unsigned mask = 0; mask < 8; ++mask)
-    for (unsigned side = 0; side < 8; ++side)
-    for (unsigned trigger = 0; trigger < 2; ++trigger) {
+    for (lib_u32 mask = 0; mask < 8; ++mask)
+    for (lib_u32 side = 0; side < 8; ++side)
+    for (lib_u32 trigger = 0; trigger < 2; ++trigger) {
         kvm_hotkey_matcher m;
         kvm_keyboard_normalizer n = {0};
         capture c = {0};
         void *pair[] = { &m, &c };
         const kvm_key keys[] = { KVM_KEY_CONTROL, KVM_KEY_ALT, KVM_KEY_SHIFT, 'A' };
-        const unsigned scans[] = {0x1d, 0x38, side & 4 ? 0x36 : 0x2a, 0x1e};
-        unsigned flags[] = {side & 1, (side >> 1) & 1, 0, 0};
-        unsigned held = 0;
+        const lib_u32 scans[] = {0x1d, 0x38, side & 4 ? 0x36 : 0x2a, 0x1e};
+        lib_u32 flags[] = {side & 1, (side >> 1) & 1, 0, 0};
+        lib_u32 held = 0;
         kvm_hotkey_matcher_initialize(&m, NULL);
-        for (unsigned i = 0; i < 4; ++i)
+        for (lib_u32 i = 0; i < 4; ++i)
             if (i == 3 ? trigger : (mask & (1u << i))) {
                 assert(submit(&m, &c, keys[i], scans[i], flags[i], mask, 1));
                 ++held;
             }
-        unsigned first = c.count;
+        lib_u32 first = c.count;
         kvm_keyboard_record text = { .kind = KVM_KEYBOARD_CHARACTER, .utf16 = 'A', .pressed = 1 };
-        for (unsigned repeat = 0; repeat < 3; ++repeat)
+        for (lib_u32 repeat = 0; repeat < 3; ++repeat)
             assert(kvm_keyboard_submit_record(&n, &m, pair, match_normalized, &text));
         assert(m.held_count == held);
-        for (unsigned j = first; j < c.count; ++j)
+        for (lib_u32 j = first; j < c.count; ++j)
             if (c.events[j].type == KVM_EVENT_KEY && !c.events[j].data.key.pressed)
-                for (unsigned i = 0; i < 4; ++i)
+                for (lib_u32 i = 0; i < 4; ++i)
                     if (i == 3 ? trigger : (mask & (1u << i)))
                         assert(c.events[j].data.key.key != keys[i]);
-        for (unsigned i = 0; i < 4; ++i)
+        for (lib_u32 i = 0; i < 4; ++i)
             if (i == 3 ? trigger : (mask & (1u << i)))
                 assert(submit(&m, &c, keys[i], scans[i], flags[i], 0, 0));
         assert(m.held_count == 0);
         kvm_hotkey_matcher_discard(&m);
     }
-    for (unsigned reject = 1; reject <= 4; ++reject) {
+    for (lib_u32 reject = 1; reject <= 4; ++reject) {
         kvm_hotkey_matcher m;
         kvm_keyboard_normalizer n = {0};
         capture c = { .reject_at = reject };

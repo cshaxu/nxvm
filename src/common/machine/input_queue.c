@@ -17,7 +17,7 @@ void common_machine_input_queue_dispose(common_machine_input_queue *queue)
 lib_bool common_machine_input_queue_push(common_machine_input_queue *queue,
     const kvm_input_event *event)
 {
-    unsigned int next;
+    lib_size next;
     if (queue == NULL || event == NULL) return LIB_FALSE;
     base_sync_mutex_lock(queue->lock);
     next = (queue->head + 1u) % COMMON_MACHINE_INPUT_QUEUE_CAPACITY;

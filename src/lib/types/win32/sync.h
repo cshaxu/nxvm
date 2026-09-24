@@ -13,7 +13,6 @@ typedef CRITICAL_SECTION lib_win32_critical_section;
 #define lib_win32_reset_event ResetEvent
 #define lib_win32_close_handle CloseHandle
 #define lib_win32_sleep Sleep
-#define lib_win32_initialize_critical_section InitializeCriticalSection
 #define lib_win32_initialize_critical_section_and_spin_count InitializeCriticalSectionAndSpinCount
 #define lib_win32_delete_critical_section DeleteCriticalSection
 #define lib_win32_enter_critical_section EnterCriticalSection

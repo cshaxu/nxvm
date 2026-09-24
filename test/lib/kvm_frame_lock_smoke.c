@@ -18,7 +18,7 @@ static void tracked_lock(base_sync_mutex *mutex)
 
 static kvm_component_mailboxes mailbox;
 static lib_u32 frame = 80u, copy, storage;
-static int operation;
+static lib_i32 operation;
 static DWORD WINAPI compete(void *unused)
 {
     lib_u32 generation;

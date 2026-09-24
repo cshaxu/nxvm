@@ -8,7 +8,7 @@
  * vocabulary while using the Lib Types C-runtime definitions. */
 typedef void C_VOID;
 typedef char C_CHAR;
-typedef int C_INT;
+typedef lib_i32 C_INT;
 typedef lib_size STD_SIZE_T;
 
 typedef lib_u8 type_unsigned_8;
@@ -48,8 +48,8 @@ static inline void command_string_lower(char *text)
     }
 }
 
-static inline int command_format_append_result(char **cursor,
-    STD_SIZE_T *remaining, int written)
+static inline lib_i32 command_format_append_result(char **cursor,
+    STD_SIZE_T *remaining, lib_i32 written)
 {
     if (cursor == STD_NULL || *cursor == STD_NULL || remaining == STD_NULL ||
         *remaining == 0u) return -1;

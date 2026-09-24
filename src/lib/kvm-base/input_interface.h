@@ -49,7 +49,7 @@ typedef struct kvm_keyboard_record {
     lib_u16 repeat_count;
 } kvm_keyboard_record;
 
-int kvm_keyboard_submit_record(kvm_keyboard_normalizer *state,
+lib_i32 kvm_keyboard_submit_record(kvm_keyboard_normalizer *state,
     const kvm_hotkey_matcher *held_keys, void *context,
     kvm_input_sink sink, const kvm_keyboard_record *record);
 

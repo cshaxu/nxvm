@@ -4,7 +4,7 @@
 
 static HANDLE entered, release_gate, blocked;
 static LONG contender;
-static unsigned mutex_creates, fail_mutex, live_mutexes;
+static lib_u32 mutex_creates, fail_mutex, live_mutexes;
 static lib_status tracked_create(base_sync_mutex **out)
 {
     if (++mutex_creates == fail_mutex) {
@@ -39,8 +39,8 @@ static void tracked_enter(base_sync_mutex *mutex)
 
 static lib_console *object;
 static console_broker_backend backend;
-static int mode;
-static int replacement_calls;
+static lib_i32 mode;
+static lib_i32 replacement_calls;
 static lib_console_text_frame frame = { .columns = 80u, .rows = 25u };
 static lib_status output(void *opaque, const char *text, lib_size count)
 {

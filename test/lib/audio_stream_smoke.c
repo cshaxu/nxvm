@@ -17,8 +17,8 @@ static lib_status cancel_status = LIB_STATUS_OK;
 static lib_status clear_status = LIB_STATUS_OK;
 static lib_status destroy_status = LIB_STATUS_OK;
 static lib_u32 accepted_limit = AUDIO_STREAM_PLAY_BATCH;
-static unsigned create_calls, enqueue_calls, clear_calls;
-static unsigned wait_calls, cancel_calls;
+static lib_u32 create_calls, enqueue_calls, clear_calls;
+static lib_u32 wait_calls, cancel_calls;
 static lib_u32 last_enqueued_frames;
 static base_sync_event *native_wait_entered;
 static base_sync_event *native_wait_release;
@@ -96,7 +96,7 @@ int main(void)
     lib_i16 samples[6] = { -1, 1, -2, 2, -3, 3 };
     lib_i16 submission[LIB_AUDIO_STREAM_MAX_FRAMES_PER_SUBMISSION * 2u] = { 0 };
     lib_u32 accepted = 99u, queued = 99u, writable = 99u;
-    unsigned before_destroy_enqueue_calls;
+    lib_u32 before_destroy_enqueue_calls;
 
     assert(lib_audio_stream_create(LIB_NULL, &stream) == LIB_STATUS_INVALID_ARGUMENT);
     options.sample_rate = 8000u;

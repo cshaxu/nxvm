@@ -17,7 +17,7 @@ typedef struct lib_storage_file {
 lib_status storage_file_platform_open(const char *path, lib_bool readwrite,
     lib_storage_file *file);
 lib_status storage_file_platform_seek(const lib_storage_file *file,
-    lib_i64 offset, int origin);
+    lib_i64 offset, lib_i32 origin);
 lib_i64 storage_file_platform_tell(const lib_storage_file *file);
 
 lib_status lib_storage_file_read_exact(const lib_storage_file *file, void *bytes,

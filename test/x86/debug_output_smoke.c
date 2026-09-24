@@ -3,7 +3,7 @@
 #include <string.h>
 
 static lib_bool fail_allocation;
-static unsigned allocations;
+static lib_u32 allocations;
 static void *allocate(lib_size count, lib_size size)
 { ++allocations; return lib_allocate_zero(count, size); }
 static void *grow(void *memory, lib_size bytes)
@@ -46,7 +46,7 @@ int main(void)
        split command prefix and trailing sentinel. Parsing stays original. */
     command->command_buffer[0] = 'x';
     command->command_buffer[1] = '0';
-    for (unsigned i = 2u; i < sizeof(command->command_buffer) - 1u; ++i)
+    for (lib_u32 i = 2u; i < sizeof(command->command_buffer) - 1u; ++i)
         command->command_buffer[i] = i % 2u ? 'a' : ' ';
     command->command_buffer[255] = '\0';
     parse(command);
@@ -58,7 +58,7 @@ int main(void)
     assert(x86_debug_submit_line(command, "?", &result) == LIB_STATUS_INVALID_ARGUMENT);
     assert(x86_debug_open(command, (common_machine *)command) == LIB_STATUS_OK);
     assert(allocations == 1u && command->argument_count == 0u);
-    for (unsigned i = 0u; i < DEBUG_MAXNARG; ++i) assert(command->arguments[i] == NULL);
+    for (lib_u32 i = 0u; i < DEBUG_MAXNARG; ++i) assert(command->arguments[i] == NULL);
     assert(x86_debug_submit_line(command, "?", &result) == LIB_STATUS_OK);
     assert(strstr(result.text, "assemble") && strcmp(result.prompt, "-") == 0);
     x86_debug_destroy(command);

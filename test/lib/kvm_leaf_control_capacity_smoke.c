@@ -4,11 +4,11 @@
 #include <assert.h>
 
 typedef struct leaf_probe {
-    unsigned int failures;
+    lib_u32 failures;
     lib_status last_failure;
 } leaf_probe;
 
-static int leaf_input(void *opaque, const kvm_input_event *event)
+static lib_i32 leaf_input(void *opaque, const kvm_input_event *event)
 { (void)opaque; (void)event; return 1; }
 
 static void leaf_failure(void *opaque, lib_u64 identity, lib_status status)
@@ -29,7 +29,7 @@ static void leaf_dispose(kvm_component *component)
 static void leaf_drain(kvm_component *component, lib_u32 kind)
 {
     kvm_component_control control;
-    unsigned int count = 0u;
+    lib_u32 count = 0u;
 
     while (kvm_component_mailboxes_take_control(&component->mailboxes, &control)) {
         assert(control.kind == kind);
@@ -49,7 +49,7 @@ int main(void)
     kvm_component_control title = { KVM_WINDOW_CONTROL_SET_TITLE, { 0 } };
     leaf_probe window_probe = { 0 };
     leaf_probe console_probe = { 0 };
-    unsigned int index;
+    lib_u32 index;
 
     options.input_sink = leaf_input;
     options.failure_sink = leaf_failure;

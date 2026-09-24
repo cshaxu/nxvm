@@ -136,12 +136,12 @@ typedef struct kvm_input_event {
             lib_u8 relative;
         } mouse;
         struct {
-            char identifier[KVM_HOTKEY_IDENTIFIER_CAPACITY];
+            lib_u8 identifier[KVM_HOTKEY_IDENTIFIER_CAPACITY];
         } hotkey;
     } data;
 } kvm_input_event;
 
-typedef int (*kvm_input_sink)(void *context, const kvm_input_event *event);
+typedef lib_bool (*kvm_input_sink)(void *context, const kvm_input_event *event);
 
 static inline void kvm_input_event_set_source(kvm_input_event *event,
     const void *source, lib_u64 source_identity)

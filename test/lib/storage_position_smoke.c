@@ -1,9 +1,9 @@
 #include "lib/storage/file.h"
 #include <assert.h>
 
-static unsigned operation, fail_at;
+static lib_u32 operation, fail_at;
 static lib_i64 position, length;
-static lib_status seek_position(const lib_storage_file *file, lib_i64 offset, int origin)
+static lib_status seek_position(const lib_storage_file *file, lib_i64 offset, lib_i32 origin)
 {
     (void)file;
     if (++operation == fail_at) return LIB_STATUS_IO_ERROR;

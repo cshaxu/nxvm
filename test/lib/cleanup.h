@@ -8,7 +8,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
-static int shared_test_remove_file(const char *path)
+static lib_i32 shared_test_remove_file(const char *path)
 {
     DWORD deadline = GetTickCount() + 1000u;
     do {
@@ -18,7 +18,7 @@ static int shared_test_remove_file(const char *path)
     return 0;
 }
 #else
-static int shared_test_remove_file(const char *path)
+static lib_i32 shared_test_remove_file(const char *path)
 {
     return remove(path) == 0;
 }

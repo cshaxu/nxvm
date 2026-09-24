@@ -35,12 +35,12 @@ lib_status kvm_component_publish_frame(kvm_component *component,
  * sentinel, rather than the beginning of a second allocation epoch. */
 lib_status kvm_component_allocate_source_identity(lib_atomic_u64 *next,
     lib_u64 *out_identity);
-int kvm_component_emit(kvm_component *component, const kvm_input_event *event);
+lib_bool kvm_component_emit(kvm_component *component, const kvm_input_event *event);
 /* Uses the component's normal source attribution and source-local matcher,
  * but lets a leaf choose how to deliver matcher output.  This is internal:
  * leaves may filter delivery but never replace matching semantics.
  * allow_replay tags this make's eligibility for later ordinary replay. */
-int kvm_component_emit_to(kvm_component *component, const kvm_input_event *event,
+lib_bool kvm_component_emit_to(kvm_component *component, const kvm_input_event *event,
     kvm_input_sink delivery_sink, void *delivery_context, lib_bool allow_replay);
 lib_status kvm_component_enqueue_control(kvm_component *component,
     const kvm_component_control *control);

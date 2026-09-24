@@ -2,10 +2,10 @@
 #include <assert.h>
 
 typedef struct capture {
-    unsigned makes, breaks, extended_breaks;
+    lib_u32 makes, breaks, extended_breaks;
 } capture;
 
-static int receive(void *context, const kvm_input_event *event)
+static lib_i32 receive(void *context, const kvm_input_event *event)
 {
     capture *c = context;
     assert(event->type == KVM_EVENT_KEY);
@@ -23,7 +23,7 @@ static void dispatch(common_session_queue *q, kvm_input_event *event, capture *c
         receive, c));
 }
 
-static void check(kvm_key key, lib_u16 scan, int release_first, int extended_first)
+static void check(kvm_key key, lib_u16 scan, lib_i32 release_first, lib_i32 extended_first)
 {
     common_session_queue storage = { 0 }, *q = &storage;
     kvm_input_event event = { 0 };
@@ -46,7 +46,7 @@ static void check(kvm_key key, lib_u16 scan, int release_first, int extended_fir
     event.type = KVM_EVENT_SOURCE_RETIRED;
     event.source_identity = 2;
     dispatch(q, &event, &c); /* Another source cannot release either key. */
-    assert(c.breaks == (unsigned)release_first);
+    assert(c.breaks == (lib_u32)release_first);
     event.source_identity = 1;
     dispatch(q, &event, &c);
     assert(c.makes == 3 && c.breaks == 2 && c.extended_breaks == 1);
@@ -74,7 +74,7 @@ static void check_sources(common_session_machine_state retirement_state)
     event.source_identity = 1;
     assert(common_session_dispatch_input(q, &event, retirement_state, receive, &c));
     assert(c.breaks == (retirement_state == COMMON_SESSION_MACHINE_RUNNING ? 1u : 0u));
-    unsigned before = c.breaks;
+    lib_u32 before = c.breaks;
     dispatch(q, &event, &c); /* Retired while paused must not leave a delayed break. */
     assert(c.breaks == before);
     event.source_identity = 2;
@@ -83,9 +83,9 @@ static void check_sources(common_session_machine_state retirement_state)
     common_session_queue_dispose(q);
 }
 
-static int receive_text(void *context, const kvm_input_event *event)
+static lib_i32 receive_text(void *context, const kvm_input_event *event)
 {
-    unsigned *calls = context;
+    lib_u32 *calls = context;
     assert(event->type == KVM_EVENT_TEXT && event->data.text.scalar == 0x4e2du);
     assert(event->source_identity == 17u);
     return ++*calls == 1u;
@@ -95,7 +95,7 @@ static void check_text(void)
 {
     common_session_queue q = { 0 };
     kvm_input_event event = { 0 };
-    unsigned calls = 0u;
+    lib_u32 calls = 0u;
     event.type = KVM_EVENT_TEXT;
     event.source_identity = 17u;
     event.data.text.scalar = 0x4e2du;
@@ -112,14 +112,14 @@ static void check_capacity(void)
     common_session_queue q = { 0 };
     kvm_input_event event = { 0 };
     capture c = { 0 };
-    const unsigned capacity = COMMON_SESSION_EVENT_PRESSED_CAPACITY;
+    const lib_u32 capacity = COMMON_SESSION_EVENT_PRESSED_CAPACITY;
     assert(common_session_queue_initialize(&q));
     event.type = KVM_EVENT_KEY;
     event.data.key.key = KVM_KEY_CONTROL;
     event.data.key.scan_code = 0x1d;
     event.data.key.pressed = 1u;
     /* Same physical key on distinct sources must occupy distinct entries. */
-    for (unsigned i = 1u; i <= capacity; ++i) {
+    for (lib_u32 i = 1u; i <= capacity; ++i) {
         event.source_identity = i;
         dispatch(&q, &event, &c);
         assert(q.pressed_count == i && c.makes == i);
@@ -128,7 +128,7 @@ static void check_capacity(void)
     dispatch(&q, &event, &c); /* Repeat at capacity still succeeds. */
     assert(q.pressed_count == capacity && c.makes == capacity + 1u);
     /* Neither a new physical key nor a new source may bypass the ledger. */
-    for (unsigned i = 0u; i < 2u; ++i) {
+    for (lib_u32 i = 0u; i < 2u; ++i) {
         event.source_identity = i == 0u ? 1u : capacity + 1u;
         event.data.key.flags = i == 0u ? KVM_KEY_FLAG_EXTENDED : 0u;
         assert(!common_session_dispatch_input(&q, &event,
@@ -148,13 +148,13 @@ static void check_capacity(void)
     dispatch(&q, &event, &c); /* Freed slot admits the formerly rejected key. */
     assert(q.pressed_count == capacity && c.makes == capacity + 2u);
     event.type = KVM_EVENT_SOURCE_RETIRED;
-    for (unsigned i = 1u; i <= capacity + 1u; ++i) {
+    for (lib_u32 i = 1u; i <= capacity + 1u; ++i) {
         event.source_identity = i;
         dispatch(&q, &event, &c);
     }
     assert(q.pressed_count == 0u && c.breaks == capacity + 1u);
     assert(c.extended_breaks == 0u); /* Rejected extended key was never stored. */
-    for (unsigned i = 1u; i <= capacity + 1u; ++i) {
+    for (lib_u32 i = 1u; i <= capacity + 1u; ++i) {
         event.source_identity = i;
         dispatch(&q, &event, &c);
     }
@@ -164,7 +164,7 @@ static void check_capacity(void)
 
 int main(void)
 {
-    int release_first, extended_first;
+    lib_i32 release_first, extended_first;
     for (release_first = 0; release_first <= 1; ++release_first)
         for (extended_first = 0; extended_first <= 1; ++extended_first) {
             check(KVM_KEY_CONTROL, 0x1d, release_first, extended_first);

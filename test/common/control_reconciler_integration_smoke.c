@@ -4,8 +4,8 @@
 
 /* These stubs keep the test at the application control boundary while making
  * the paused guest-injection barrier observable. */
-static unsigned int delivered_guest_input;
-static int deliver_input(void *context, const kvm_input_event *event)
+static lib_u32 delivered_guest_input;
+static lib_i32 deliver_input(void *context, const kvm_input_event *event)
 { (void)context; (void)event; ++delivered_guest_input; return 1; }
 
 static void take(common_session_queue *queue, common_session_event *event)

@@ -111,7 +111,7 @@ int main(void)
     assert(!frame.window.graphics);
     for (lib_size i = kvm_window_frame_size_bytes(&frame.window);
             i < sizeof(frame.window); ++i)
-        assert(((const unsigned char *)&frame.window)[i] == 0xa5);
+        assert(((const lib_u8 *)&frame.window)[i] == 0xa5);
     {
         lib_u32 sequence = frame.sequence;
         assert(!common_machine_copy_published_frame(machine, &frame, generation + 1u));
@@ -209,7 +209,7 @@ int main(void)
     common_machine_shutdown(machine);
     assert(!common_machine_start(machine));
     common_machine_destroy(machine);
-    for (int paused = 0; paused != 2; ++paused) {
+    for (lib_i32 paused = 0; paused != 2; ++paused) {
         ResetEvent(fake.running); ResetEvent(fake.reset_completed);
         assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);
         common_machine_set_state_sink(machine, machine_fake_note_state, &fake);
@@ -222,7 +222,7 @@ int main(void)
     common_machine_shutdown(NULL);
     /* Public synchronous calls must return after frame failure (before save
      * admission or restored pause) and after an armed save loses its executor. */
-    for (unsigned scenario = 0; scenario < 3u; ++scenario) {
+    for (lib_u32 scenario = 0; scenario < 3u; ++scenario) {
         ResetEvent(fake.running); ResetEvent(fake.frame);
         fake.fail_frame = fake.fail_run = fake.state_read_ready = 0;
         assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);

@@ -197,7 +197,7 @@ typedef struct
     t_aasm_oprcreg creg;
     t_aasm_oprdreg dreg;
     t_aasm_oprtreg treg;
-    lib_u8 imms; /* if imm is int */
+    lib_u8 imms; /* if imm is lib_i32 */
     lib_u8 immn; /* if imm is negative */
     lib_u8 imm8;
     lib_u16 imm16;
@@ -9257,17 +9257,17 @@ static void MOVSX(aasm32_context *aasmContext)
 }
 
 /* main routines */
-static int is_end(aasm32_context *aasmContext, char c)
+static lib_i32 is_end(aasm32_context *aasmContext, char c)
 {
     (void)aasmContext;
     return (!c || c == '\n' || c == ';');
 }
-static int is_space(aasm32_context *aasmContext, char c)
+static lib_i32 is_space(aasm32_context *aasmContext, char c)
 {
     (void)aasmContext;
     return (c == ' ' || c == '\t');
 }
-static int is_prefix(aasm32_context *aasmContext)
+static lib_i32 is_prefix(aasm32_context *aasmContext)
 {
     if (!lib_c_strcmp(rop, "es:") || !lib_c_strcmp(rop, "cs:") ||
         !lib_c_strcmp(rop, "ss:") || !lib_c_strcmp(rop, "ds:") ||
@@ -9761,7 +9761,7 @@ static char *take_arg(aasm32_context *aasmContext, char *s)
     *(rend + 1) = 0;
     return rresult;
 }
-static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_u8 *rcode, int flag32)
+static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_u8 *rcode, lib_bool flag32)
 {
     lib_u8 len;
     char astmt[0x100];
@@ -9910,7 +9910,7 @@ static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_
     return len;
 }
 
-lib_u8 aasm32(const char *stmt, lib_u8 *rcode, int flag32)
+lib_u8 aasm32(const char *stmt, lib_u8 *rcode, lib_bool flag32)
 {
     aasm32_context local_context;
 
@@ -10097,7 +10097,7 @@ static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
 }
 static lib_status aasm32x_execute(aasm32_context *aasmContext,
     const char *stmt, lib_size code_capacity, lib_u8 *rcode,
-    lib_size *out_code_bytes, int flag32)
+    lib_size *out_code_bytes, lib_bool flag32)
 {
     lib_i32 i, j, k, count;
     lib_size len;
@@ -10408,7 +10408,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
 }
 
 lib_status aasm32x(const char *stmt, lib_size code_capacity,
-    lib_u8 *rcode, lib_size *out_code_bytes, int flag32)
+    lib_u8 *rcode, lib_size *out_code_bytes, lib_bool flag32)
 {
     aasm32_context local_context;
 

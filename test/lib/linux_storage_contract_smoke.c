@@ -11,8 +11,8 @@ typedef long lib_linux_off_t;
 #define LIB_LINUX_LOCK_NB 4
 #define lib_linux_fseeko fseek
 #define lib_linux_ftello ftell
-static int reject_lock, reject_open, expected_lock;
-static unsigned closes;
+static lib_i32 reject_lock, reject_open, expected_lock;
+static lib_u32 closes;
 static FILE *open_stream(const char *path, const char *mode)
 {
     assert(path != NULL);
@@ -20,9 +20,9 @@ static FILE *open_stream(const char *path, const char *mode)
     assert(mode[2] == (expected_lock == LIB_LINUX_LOCK_EX ? '+' : '\0'));
     return reject_open ? NULL : tmpfile();
 }
-static int close_stream(FILE *stream) { ++closes; return fclose(stream); }
-static int descriptor(FILE *stream) { assert(stream != NULL); return 7; }
-static int lock_stream(int fd, int operation)
+static lib_i32 close_stream(FILE *stream) { ++closes; return fclose(stream); }
+static lib_i32 descriptor(FILE *stream) { assert(stream != NULL); return 7; }
+static lib_i32 lock_stream(lib_i32 fd, lib_i32 operation)
 {
     assert(fd == 7 && operation == (expected_lock | LIB_LINUX_LOCK_NB));
     return reject_lock ? -1 : 0;
@@ -38,10 +38,10 @@ static int lock_stream(int fd, int operation)
 
 int main(void)
 {
-    for (int write = 0; write != 2; ++write) {
+    for (lib_i32 write = 0; write != 2; ++write) {
         for (reject_lock = 0; reject_lock != 2; ++reject_lock) {
             lib_storage_file file = { 0 };
-            unsigned before = closes;
+            lib_u32 before = closes;
             expected_lock = write ? LIB_LINUX_LOCK_EX : LIB_LINUX_LOCK_SH;
             lib_status status = storage_file_platform_open("fixture", write, &file);
             assert(status == (reject_lock ? LIB_STATUS_IO_ERROR : LIB_STATUS_OK));
