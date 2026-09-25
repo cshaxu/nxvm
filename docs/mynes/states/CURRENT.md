@@ -2,32 +2,32 @@
 
 ## Current Work
 
-M6 T43 S4 is active again by explicit owner instruction to perform the audited
-unchanged import in S4. Earlier audit commits remain immutable; P numbering
-continues at P3. This owner-directed S reuse overrides the usual next-S rule.
+M6 T43 S5 is admitted for the native-audio failure reported by S4. S4 import
+delivery is preserved; its non-green result is the input to this corrective S.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation of S4 by explicit owner exception to closed-S allocation; no new T. |
-| Admission And Approval | Owner on 2026-09-25 requests unchanged import and audit within S4, then explicitly directs commit/push with the reported audio failure retained; no audio repair or green-suite waiver is authorized. |
-| Objective | Adopt the audited SoftPC six roots verbatim and verify their boundaries and use by MyNES/NXVM. |
-| Non-goals | No NXVM 43/50-row hardware implementation, sibling changes, Shared local patches, INI/media changes or T closure. |
-| Reference Baseline | Receiver `33874cfe1`; source `dc9c34ce3fa2794840762e26c26801cd098c41ab`; S4 audit `87a45b7dd`. |
-| Candidate Proposal | [T43 S4](../proposals/m6-t43-six-component-types-boundary-audit.md). |
-| Files And ABI Surface | Shared: six src/test roots only. MyNES: task records and refreshed 0043 dual EXEs. Both products consume enlarged text records; rebuild dependencies together. |
-| Applicable Rules | Shared Execution, Architecture, Coding, Documentation; MyNES source policy and guide; architecture/coding governance skills. Exact import and Types ownership preserved. |
-| Verification | Compare every imported byte to committed source; six manifests; full Shared and MyNES tests on x64/x86; receiving NXVM unit regressions where configured; documentation governance and actual-diff review. |
-| Expected Markers | Zero source-pin mismatches, passing six-root gates/tests, no lost canonical capability, complete regenerated MyNES pair. |
+| Identifier Mode | Continuation: next unused S5 in open T43; P1 begins this S. |
+| Admission And Approval | Owner on 2026-09-25 explicitly admits a new S to repair the NXVM repository audio failure reported by S4. Shared audio/test repair and both consumers' verification are in scope; sibling repositories remain read-only. |
+| Objective | Correct the test boundary: deterministic units verify PCM submission and native adapter semantics without physical endpoint/mute dependence. Remove the physical loopback test, with no opt-in mode. |
+| Non-goals | No unrelated UX/device changes, product audio redesign, sibling writes, global sound-setting changes or T closure. |
+| Reference Baseline | `f67eaefed`; Shared import `83022ea9f`. Native loopback fails on x64/x86 while all other S4 tests pass. |
+| Candidate Proposal | [T43 S5](../proposals/m6-t43-six-component-types-boundary-audit.md). |
+| Files And ABI Surface | Shared test/lib test, registration and manifest; MyNES task records and verification of unchanged 0043 dual artifacts. No production source or public ABI changes. NXVM is a receiving regression consumer. |
+| Applicable Rules | Shared Execution, Architecture, Coding, Documentation; MyNES source policy and guide; architecture/coding governance skills. Imported production bytes and Types ownership preserved; approved test-only correction intentionally differs from SoftPC. |
+| Verification | Deterministic WASAPI adapter tests cover PCM format/bytes/order, wait/cancel, cleanup and failures on x64/x86; complete Shared/MyNES suites and NXVM units, six manifests, Types and documentation gates. Confirm no loopback registration or switch remains. |
+| Expected Markers | Unit results do not depend on device availability, mute or physical output; sample equality catches silent/corrupt/reordered submissions; no production audio or ABI change. |
 | Asset Needs | No new external asset or changed user configuration. |
-| Reporting Requirements | Source identity, code-quality findings, manifest/Types results, dual-width tests, artifacts and target-separated pushed commits. |
-| Stop Conditions | Report a Shared defect or incompatible consumer requiring expansion; preserve original source instead of silently fixing the import. |
-| Exit Criteria | Verbatim import, required checks and review complete, evidence and binaries pushed; S4 closed with T43 open. |
-| Original Owner Request | Complete the six-component unchanged import in S4, then audit code quality, manifests and six-component tests and report. |
-| Similar-Issue Sweep | Recheck all imported changes and both products' text capacity versus active geometry, ownership and failure handling; retain the audit's NXVM 25-row limitation. |
+| Reporting Requirements | Root cause, exact fix and scope, native/repository-only results, code-size delta, artifacts and target-separated pushed commits. |
+| Stop Conditions | Report a required public ABI/product expansion or host change before performing it; no silent skip or relaxed acceptance. |
+| Exit Criteria | Cause fixed with regression proof, complete required verification and actual-diff review, manifests/evidence and dual artifacts pushed; T43 stays open. |
+| Original Owner Request | Admit an S task to fix the NXVM repository audio problem. |
+| Similar-Issue Sweep | Inspect capture packet wait/drain/release, worker render/queue completion and repeated start/reuse; retain one audio owner and check native and deterministic probes. |
 
 | Task | Progress |
 | --- | --- |
-| T43 S4 | Exact import delivered in Shared P3 `83022ea9f`; MyNES P4 delivers evidence and both EXEs by owner direction. Shared tests 76/77 and MyNES 53/53 per width; NXVM unit 334/335 per width. Audio failure remains recorded; no repair admitted, S/T not closed. |
+| T43 S4 | Exact import delivered in Shared P3 `83022ea9f` and MyNES P4 `f67eaefed`. Non-green native-audio qualification is transferred to S5; the import remains unchanged. |
+| T43 S5 | Deterministic WASAPI replacement complete; Shared/MyNES 130/130 and NXVM unit 335/335 pass on both widths. Executor delivery pending coordinator acceptance. [Evidence](../etc/evidence/m6-t43-s5-native-audio.md). |
 
 Proposal: [six-component Types boundary audit](../proposals/m6-t43-six-component-types-boundary-audit.md).
 Evidence: [T43 ledger and S3 correction](../etc/evidence/m6-t43-s1-six-component-types-boundary.md).

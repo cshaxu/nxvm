@@ -61,3 +61,18 @@ After reviewing the native-audio failure, the owner directs commit/push of the
 unchanged import, evidence and rebuilt pair without adding audio repair. Keep
 the failure visible; delivery is not a claim of all-green qualification or T
 closure.
+
+## S5 Native Audio Correction
+
+Owner admits repair of S4's native-audio failure. Diagnose the render and
+loopback paths before changing semantics; correct the responsible shared owner
+or test and cover repeated delivery. Verify exact submitted PCM bytes; do not
+alter host settings. Verify x64/x86 Shared/MyNES suites and NXVM units, update
+manifests, rebuild the 0043 pair and deliver target-separated commits. T43 stays
+open. A genuine external host prerequisite must be reported, not hidden.
+
+Owner clarification: unit acceptance must not depend on host mute or physical
+signals. Exercise the production WASAPI adapter with deterministic OS-boundary
+doubles; remove real loopback entirely, without an opt-in switch, as the owner
+further directs. Do not modify host volume or production audio merely to make
+a loopback assertion pass.
