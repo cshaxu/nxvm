@@ -9,6 +9,8 @@ principal documents named in [the NXVM documentation guide](../README.md).
 
 S7 receiving evidence: [T43 Shared repair artifacts](evidence/m6-t43-s7-receiving-artifacts.md); eight current NXVM binaries, hashes and complete dual-width unit proof.
 
+S8 receiving evidence: [T43 quality-repair artifacts](evidence/m6-t43-s8-receiving-artifacts.md); rebuilt boolean-layout receivers and pending owner INI spelling decision.
+
 | Current category | Owner | Purpose |
 | --- | --- | --- |
 | `architecture/` | Architecture owner | Supporting detailed rationale; each record explicitly states whether it is current or historical. |
