@@ -2,6 +2,10 @@
 
 ## Current Work
 
+MyNES-hosted T43 S6 refreshes this product's eight current 0535 receiving
+artifacts after the Shared import; [delivery evidence](../etc/evidence/m6-t43-s6-receiving-artifacts.md)
+owns the new hashes, without opening a separate NXVM task or changing INI.
+
 No NXVM implementation task is active. M6 T41 is closed below; the ordered
 candidate work remains in [Queue](QUEUE.md).
 
