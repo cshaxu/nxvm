@@ -199,8 +199,8 @@ lib_status vm_app_ini_parse(const lib_u8 *directory, const lib_u8 *name,
         } else if (vm_app_ini_text_equal(section, "presentation") &&
             vm_app_ini_text_equal(key, "console_control")) {
             if (console_control_seen) return LIB_STATUS_INVALID_ARGUMENT;
-            if (vm_app_ini_text_equal(value, "true")) request.console_control = 1;
-            else if (vm_app_ini_text_equal(value, "false")) request.console_control = 0;
+            if (vm_app_ini_text_equal(value, "1")) request.console_control = LIB_TRUE;
+            else if (vm_app_ini_text_equal(value, "0")) request.console_control = LIB_FALSE;
             else return LIB_STATUS_INVALID_ARGUMENT;
             console_control_seen = 1;
         } else if (vm_app_ini_text_equal(section, "media") && vm_app_ini_text_equal(key, "floppy0")) {

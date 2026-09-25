@@ -23,7 +23,7 @@ lib_i32 main(void)
 {
     static lib_u8 valid[] =
         "[machine]\nmemory_kib=640\n[presentation]\ndisplay=window\n"
-        "console_control=true\n[media]\nfloppy0=boot.img|overlay\n"
+        "console_control=1\n[media]\nfloppy0=boot.img|overlay\n"
         "floppy1=C:/owner/second.img|readonly\nfixed_disk0=disk.img|direct\n";
     static lib_u8 duplicate[] = "[media]\nfloppy0=one.img|overlay\nfloppy0=two.img|overlay\n";
     static lib_u8 sparse[] = "[media]\nfloppy1=two.img|overlay\n";
@@ -37,6 +37,20 @@ lib_i32 main(void)
     lib_u8 executable_ini_path[1024];
     lib_u8 rejected_path[] = "unchanged";
     lib_size executable_ini_length;
+
+    static const char *const boolean_values[] = {
+        "0", "1", "true", "false", "TRUE", "FALSE", "2", "-1", "01", "", "yes", "on"
+    };
+    for (lib_size i = 0u; i < sizeof(boolean_values) / sizeof(boolean_values[0]); ++i) {
+        lib_u8 text[80];
+        snprintf((char *)text, sizeof(text), "[presentation]\nconsole_control=%s\n",
+            boolean_values[i]);
+        lib_memory_set(&request, 0xff, sizeof(request));
+        if (i < 2u) {
+            if (!parse(text, &request) || request.console_control != (i == 1u)) return 1;
+        } else if (parse(text, &request) ||
+            lib_memory_compare(&request, &cleared_request, sizeof(request))) return 1;
+    }
 
     lib_memory_set(&request, 0xff, sizeof(request));
     if (vm_app_ini_load(LIB_NULL, &request) != LIB_STATUS_INVALID_ARGUMENT ||

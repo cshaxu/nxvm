@@ -4,29 +4,37 @@ MyNES-hosted Shared S8 migrates actual predicates/copied boolean fields and
 matching tests, removes dead references and flattens small duplicate paths.
 Shared implementation is pinned at bfcbd31b2 (S8 P1).
 The eight NXVM receivers are rebuilt together; mixing pre-S8 frame layouts
-with this source is unsupported. No NXVM product-source change is needed.
+with this source is unsupported. The subsequent owner-approved S8 P4 correction
+also changes the existing INI parser to accept only 0/1 boolean values.
 
-Complete repository-only unit suites pass: x64 335/335 (31.83 seconds), x86
-335/335 (70.81 seconds). Four fixed-profile vm-0-5-0535 targets were built in
+After that correction, complete repository-only unit suites pass: x64 335/335
+(22.70 seconds), x86 335/335 (24.00 seconds). Four fixed-profile vm-0-5-0535 targets were built in
 both optimized Release widths. PE architecture and absence of debug sections
 were verified with PE headers/objdump; identities remain 0.5.0535. No new
 external-ROM integration or manual boot acceptance is claimed.
 
 | Profile / architecture | Bytes | SHA-256 |
 | --- | ---: | --- |
-| default / x64 | 1248588 | 7DEB4B2AC4A19EFDF3A8FA514099D571D04295D328A833F356A87D17CD4CB4DB |
-| default / x86 | 1417140 | D67D90A96FFC8AC630A39BE851FA418F7C5FE08AABB94FC8D7C3351E837553E2 |
-| XT / x64 | 1248588 | F69336CEE60D84CC9C072504A58E385F3730569384BBE1C8C7BE6337895541E6 |
-| XT / x86 | 1417140 | 74E2D90DCBCAA5508AC2E35E289092931A9AA69A694DACA4B35108603A562996 |
-| AT / x64 | 1249100 | 8142F7C7E96B29A3628418323F615EC2188429E789EF8821727FB6C92AAF218B |
-| AT / x86 | 1417652 | D54E9B7428E9042CD3223A879000BA10CB55A36A02F87CE8901CDB686BFCE24F |
-| Model 40 / x64 | 1249100 | 7E95A07D4FA1B8DE867C1F5C7D49F132BEF558448061733B9DF4829A782F102D |
-| Model 40 / x86 | 1417652 | F9F5C32ABCEE6C5184D288B2E2B14B9FEDDCCE8D33ACA7C4BCE3F7CD322B0B16 |
+| default / x64 | 1248588 | 26877BDB465DD4AC145AF64CD4B6045BDF8EF50888E44B7F10816BD468EBE6D2 |
+| default / x86 | 1416628 | 3826F618137B280281BCB7EAFC9F96E19B646E95C77BBEF115ED34B6767C9672 |
+| XT / x64 | 1248588 | 099583C504ED3A0DFA156CF9A105C5E51C7405318857167F0C0DFDF52185FEC6 |
+| XT / x86 | 1416628 | 4D7BAC31D53DD4F21DFF066D40844A2665F635D59DA794577575A9C1A9AA2A9C |
+| AT / x64 | 1249100 | 8571DD6336348F4EF3A703C6F45B1A0D1A75C7EB495E901230C3812A60B2063D |
+| AT / x86 | 1417140 | 56BE35550B10BAA4E361EB01E2AE482079EAF2427105DDC599D34DDD7CC15404 |
+| Model 40 / x64 | 1249100 | 22CF40637676A49BFDA6B94FA9B9CF0D3C7FA55F210694302B6C5DFC738F68CC |
+| Model 40 / x86 | 1417652 | 04B6208411B99629668799DCB8AE66DA0B3B6769905BA39DECCEC28D84C2AE69 |
 
 Outputs remain under assets/nxvm/<profile> with existing filenames. Reusable
-t41-s8-nxvm build trees are restored to default selection. The owner's default
-NXVM.ini edit console_control=0 fails the current true/false-only parser and
-remains pending an explicit spelling/grammar decision, not a validated change.
+t41-s8-nxvm build trees are restored to default selection. All four supplied
+NXVM INIs now use console_control=0; the owner's existing default edit is
+preserved. A table-driven repository-only regression accepts 0/1 and rejects
+true/false, uppercase variants, 2, -1, 01, empty, yes and on, with cleared
+failure output. No compatibility parser or alternate loading path is added.
+Source/test delta is +17/-3 (net +14), counted with git diff --numstat over
+ini.c and nxvm_ini_smoke.c; the added lines are the rejection matrix.
+The sweep used git ls-files '*.ini' and rg -n console_control across product,
+tests, assets, tools and cmake. NXVM has this one boolean INI key; MyNES's sole
+INI defines rom/display, not boolean values, so requires no modification.
 No protected BYOB inputs or machine-local paths are committed.
 
 [Shared audit and repair evidence](../../../mynes/etc/evidence/m6-t43-s8-six-corpus-quality-audit.md)

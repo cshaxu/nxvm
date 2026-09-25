@@ -13,6 +13,8 @@ CMOS seed, video ROM and font derive only from the build-fixed Profile and its
 build-provided BYOB asset root. Follow SoftPC's
 simple INI and existing console_control behavior, not a new configuration
 framework. Absolute paths work; relative paths resolve from the INI directory.
+INI boolean values accept only `0` (false) or `1` (true), including
+`console_control`; textual true/false and other numeric values are rejected.
 INI does not choose a machine, startup action or boot order. BIOS/CMOS remain
 responsible for boot. CPU tables remain a Core capability, not an unrestricted
 replacement menu. Preserve physical media-slot order, not DOS drive letters.
