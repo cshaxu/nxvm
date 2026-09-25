@@ -92,3 +92,28 @@ rules distinguish necessary artifact refresh from test-only churn, all receiving
 profiles are accounted for, hashes/PE results and final complete suites are
 recorded, target commits are separate, and the native-test risk has a named
 receiver. S6 is closed; T43 remains open with no active implementation packet.
+
+## S7 Shared Quality Repair Acceptance
+
+Owner approved the bounded assembler, Audio, Common synchronous-request and
+corpus consistency repairs, including existing cancellation/join on completion
+failure. Shared P1 `38ed0f26f`, NXVM P2 `6db4a9298` and MyNES P3 `6682a341c`
+are pushed. Coordinator actual-diff review confirms one target per commit,
+unchanged public API, no product-source or INI edits, original assembler tables,
+one FIFO/worker owner, and error paths/tests matching the approved design.
+
+Final frozen-source verification: Shared/MyNES 130/130 on x64 and x86
+(156.83/158.36 seconds); NXVM units 335/335 (61.40/61.15 seconds). Six manifests,
+Types boundaries, documentation and whitespace pass. All ten affected EXEs are
+rebuilt, architecture/stripping checked, hashed and committed. Source/test count
+is +350/-99, net +251; the increase is failure handling and regression coverage.
+[Evidence](../etc/evidence/m6-t43-s7-shared-quality-repairs.md) maps every batch
+member and the retained native synchronization failure boundary.
+
+Similar asynchronous wake/control-completion failure contracts are recorded in
+TODO for owner-reviewed Shared admission, not silently described as solved.
+No new external-ROM NXVM integration or owner manual acceptance is claimed.
+Prevention: retain injected failure/partial-delivery regressions and require
+receiving product-target builds rather than test-only rebuilds. Reusable build
+trees remain for open T43; only the unrelated pre-existing default INI edit is
+left uncommitted. S7 is accepted and closed; T43 stays open awaiting the owner.
