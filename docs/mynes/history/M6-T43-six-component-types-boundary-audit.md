@@ -188,3 +188,9 @@ registration copy. Source/test delta is +41/-22, net +19, primarily test
 synchronization. [S10 evidence](../etc/evidence/m6-t43-s10-registration-byte-bool.md)
 records failed attempts, receiver hashes and the extra common transfer input.
 Delivery awaits owner manual acceptance. T43 remains open.
+
+Owner subsequently reports verification passed and authorizes S10 closure.
+Coordinator accepts P1 75099c178, P2 c5b17f671 and P3 057d8c9aa after actual-diff
+and evidence review. S10 is closed; its active packet is removed. T43 stays
+open with no successor admitted. This governance-only closure changes no build
+input, so the verified artifacts remain current without rebuilding.

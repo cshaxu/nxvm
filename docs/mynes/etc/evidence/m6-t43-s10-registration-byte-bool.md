@@ -63,8 +63,9 @@ NXVM +2/-2, MyNES +21/-5. The positive delta is a type assertion and explicit
 test completion synchronization, not new production machinery.
 
 Both product documentation gates and `git diff --check` pass. Build trees/logs
-are retained for active T43 verification. T43 stays open; S10 delivery awaits
-owner manual acceptance. External-ROM integration is not a claimed T closure.
+are retained for active T43 verification. Owner verification subsequently passed
+and S10 closure was approved. T43 stays open; external-ROM integration is not a
+claimed T closure. Governance-only closure requires no artifact rebuild.
 
 Shared P1 `75099c178` and NXVM P2 `c5b17f671` are pushed. The latter records
 the eight rebuilt 0535 EXEs and their hashes in NXVM's receiving evidence.
