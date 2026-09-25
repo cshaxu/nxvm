@@ -53,7 +53,7 @@ target_sources(lib-test-linux_input_contract PRIVATE
     "${LIB_ROOT}/kvm-base/hotkey.c")
 
 if(WIN32)
-    lib_test(audio_native audio)
+    lib_test(audio_win32_platform types base)
     lib_test(lib_console_event_gate console)
     lib_test(kvm_frame_lock kvm-base)
     lib_test(console_broker console)
