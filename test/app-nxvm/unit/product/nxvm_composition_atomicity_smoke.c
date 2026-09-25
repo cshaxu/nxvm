@@ -180,7 +180,7 @@ lib_status common_session_destroy(common_session *session)
     return LIB_STATUS_OK;
 }
 
-lib_i32 common_session_enqueue_runtime_completed(common_session *session,
+lib_bool common_session_enqueue_runtime_completed(common_session *session,
     common_session_machine_state state, lib_u32 generation)
 {
     (void)session;
@@ -189,7 +189,7 @@ lib_i32 common_session_enqueue_runtime_completed(common_session *session,
     return LIB_TRUE;
 }
 
-lib_i32 common_session_enqueue_frame_completed(common_session *session,
+lib_bool common_session_enqueue_frame_completed(common_session *session,
     lib_u32 sequence, lib_bool graphics, lib_u32 generation)
 {
     (void)session;

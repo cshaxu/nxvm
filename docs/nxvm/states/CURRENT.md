@@ -2,8 +2,8 @@
 
 ## Current Work
 
-MyNES-hosted T43 S7 refreshes this product's eight current 0535 receiving
-artifacts after the Shared repairs; [delivery evidence](../etc/evidence/m6-t43-s7-receiving-artifacts.md)
+MyNES-hosted T43 S10 refreshes this product's eight current 0535 receiving
+artifacts after the Shared byte-boolean change; [delivery evidence](../etc/evidence/m6-t43-s10-receiving-artifacts.md)
 owns the new hashes, without opening a separate NXVM task or changing INI.
 
 No NXVM implementation task is active. M6 T41 is closed below; the ordered
