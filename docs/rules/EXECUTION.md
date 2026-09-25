@@ -15,8 +15,9 @@ identifier mode, admission and owner approval, objective, non-goals, reference
 baseline, candidate proposal, files/ABI surface, applicable rules, exact
 verification, expected markers, asset needs, reporting requirements, stop
 conditions, exit criteria, original owner request, and the similar-issue sweep.
-The gate rejects a packet missing a field, its fixed table shape, or an empty
-record value. The rules review names each applicable invariant, its planned
+Coordinator admission and closure review reject packets with missing fields,
+incorrect table shape, or empty record values. The structural script does
+not perform this packet review. The rules review names each applicable invariant, its planned
 evidence, and any requested owner-approved exception; a task may mark a rule
 not applicable only with a short reason.
 
@@ -391,19 +392,21 @@ Historical records and any historical discontinuity do not become reusable
 capacity. Later identifiers continue from the latest used identifier and never
 fill a historical gap.
 
-Git commit subjects prove the immutable `P` history and the highest used `S`.
+Git commit subjects prove the immutable `P` history. The coordinator reconciles
+that history with the selected product's packet and task records before allocating
+its next identifier; a commit's target prefix is not its task-sequence owner.
 `states/CURRENT.md` task-level rows determine whether the latest numeric task is
 closed: a `| T<n> |` row is closed; a `| T<n> S<m> |` row is retained progress
-for the one latest open numeric task. The governance gate combines only those
-machine-readable forms. It never infers task state from free prose or from the
-mere existence of an implementation commit.
+for the one latest open numeric task. This is a required manual review, not an
+implemented Git/status check in the structural script. Historical cross-product
+identifiers retain their recorded hosting context; do not renumber old commits.
 
 The packet's `Identifier Mode` explicitly declares `New`, `Continuation`,
 `Corrective`, `Owner-Reopen`, or `Governance` so allocation is inspectable before code changes
 begin:
 
 - `New` requires the latest numeric task to have a task-level closure row (or
-  no numeric history), allocates the next global `T`, and starts at `S1`.
+  no numeric history), allocates the selected product's next `T`, and starts at `S1`.
 - `Continuation` requires retained progress for the latest open numeric task,
   uses that same `T`, and allocates exactly its next unused `S`.
 - `Corrective` requires no open numeric task and may use only the most recently
@@ -457,8 +460,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/shared/Verify-Document
 ```
 
 The shared structural check validates the root rules plus the selected product's
-reading-set links, principal files and product-local state topology.
-Failure blocks closure. Passing this gate proves structural consistency only;
+reading-set links, required files and absence of product-private rules. It also
+rejects unordered Queue bullets; it does not validate packet fields, identifier
+allocation, all links, or semantic consistency. Failure blocks closure.
+Coordinator review separately checks those facts against the packet, Git history,
+Queue/proposal dispositions and current evidence; record the result explicitly. Passing this gate proves structural consistency only;
 it does not prove that Queue, history, baseline, evidence, and current runnable
 source truthfully agree. Coordinator closure review must inspect the actual
 changes and apply the [Documentation Rules](DOCUMENT.md) authority matrix and
