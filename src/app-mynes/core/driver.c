@@ -427,6 +427,10 @@ lib_status core_driver_write_state(void *context,
         reader->read == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = core_snapshot_read(driver->machine, core_driver_snapshot_read, (void *)reader);
     if (status == LIB_STATUS_OK) {
+        /* Restore starts a new run without reset: retire the previous run's
+         * stop latch and frame cache only after the image has committed. */
+        lib_atomic_i32_store_explicit(&driver->stop_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
+        driver->published_frame_revision = 0u;
         core_driver_clear_staged_audio(driver);
         if (driver->audio != LIB_NULL) (void)lib_audio_stream_clear(driver->audio);
         core_driver_reset_pacing(driver);

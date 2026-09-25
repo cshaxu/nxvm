@@ -3,6 +3,8 @@
 These records support the principal authorities and do not define a competing
 architecture, rule set or current task state.
 
+- `evidence/m6-t43-s9-snapshot-resume.md`: [S9 snapshot resume](evidence/m6-t43-s9-snapshot-resume.md); driver stop-latch/frame-cache correction and actual guest progress regression.
+
 - `evidence/m6-t43-s8-six-corpus-quality-audit.md`: [S8 six-corpus quality audit](evidence/m6-t43-s8-six-corpus-quality-audit.md); approved A-F repairs, layout compatibility, dual-width verification and owner-edit review.
 
 - `evidence/m6-t43-s7-shared-quality-repairs.md`: [S7 Shared quality repairs](evidence/m6-t43-s7-shared-quality-repairs.md); finite repair ledger, failure boundaries, dual-width verification and receiving artifacts.

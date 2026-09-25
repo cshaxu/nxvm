@@ -149,3 +149,21 @@ T43 remains open. Prevention is the exact accepted/rejected spelling matrix.
 Owner subsequently accepts S8 and explicitly admits S9 for snapshot resume
 freezing while the reported machine state is Running. S8 is closed on that
 acceptance; T43 remains open. The new symptom is not waived by S8 tests.
+
+## S9 Snapshot Resume Delivery
+
+The new regression reproduces Running without guest cycle advancement after
+stop/load/resume. Successful restore now clears the MyNES driver's prior-run
+stop latch and invalidates its frame publication cache. Common lifecycle,
+snapshot bytes, INI and NXVM remain unchanged. The existing product integration
+test covers graphics/text, save/resume, repeated restore, equal-revision first
+frame, actual cycles/frames/input, failed load and reset/shutdown.
+
+Full configured suites pass x64 130/130 (116.09 seconds), x86 130/130 (127.71
+seconds). The strengthened regression also passed ten consecutive x64 runs.
+Both 0043 artifacts are rebuilt and verified; source/test delta +166/-10, net
++156, with only four production lines. Documentation and whitespace gates pass.
+The [S9 evidence](../etc/evidence/m6-t43-s9-snapshot-resume.md) records reproduction,
+fixture corrections, similar-case review and hashes. Actual-diff review retains
+one executor and successful-load transaction boundary. S9 awaits owner gameplay
+verification; T43 is not closed.

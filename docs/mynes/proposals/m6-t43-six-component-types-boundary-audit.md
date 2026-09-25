@@ -1,5 +1,20 @@
 # M6 T43 Six-Component Types Boundary Audit
 
+## S9 Snapshot Resume Correction
+
+Owner admits this receiving-product defect after accepting S8. Reproduce the
+Running-but-frozen condition through the real snapshot/lifecycle path before
+repair. MyNES owns guest snapshot state and its driver execution latches;
+Common remains the single executor/lifecycle owner. Inspect save/resume and
+stop/load/resume, repeated restores, reset/media restart and pacing/input/frame
+state. Fix the owning mechanism without a second run flag, thread or snapshot
+format. Shared edits require owner review before implementation.
+
+Exit proof requires actual CPU/frame/controller progress after resume, bounded
+pause/stop, failed-load state preservation, both full configured MyNES suites
+and rebuilt stripped 0043 x64/x86 artifacts. Commit/push the reviewed MyNES
+delivery and await owner gameplay verification; do not close T43.
+
 ## S7 Shared Quality Repairs
 
 Owner approves the post-S6 audit repair batch: preserve assembler tables and
