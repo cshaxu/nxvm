@@ -83,3 +83,9 @@ or T closure is claimed.
 | --- | ---: | --- |
 | assets/mynes/mynes_0_0_0043_x64.exe | 248334 | 8C8516C27E2BA6A653D98EF3859DA90455B5F002C2E14953A5AC67993007FED7 |
 | assets/mynes/mynes_0_0_0043_x86.exe | 242190 | A3DE2C05A6CEADA3A7B4125D34FE537F49E29ACB8DB789CED1D46DDBE0CE05AC |
+
+Implementation P1 d92bccd7d is committed and pushed. The coordinator then
+reviewed its actual source/test/document/artifact diff, verified the five-item
+disposition against the original request and confirmed no Shared/NXVM changes.
+S12 is accepted and closed; this governance-only closure changes no executable
+input. Owner gameplay verification is pending and T43 remains open.

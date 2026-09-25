@@ -225,3 +225,10 @@ Atomic file replacement for battery and snapshot destinations is explicitly
 deferred to MyNES TODO. The [S12 evidence](../etc/evidence/m6-t43-s12-production-quality.md)
 maps all findings, same-class checks and verification. Only MyNES changes are
 admitted, including the current dual-width 0043 artifacts; T43 remains open.
+
+P1 d92bccd7d is pushed. Coordinator actual-change review accepts the finite
+batch against the original audit and owner-approved atomic-replacement deferral.
+Both full configured suites pass 132/132, both artifacts match the evidence,
+and Shared/NXVM are unchanged. S12 is closed; T43 remains open with no successor
+admitted and owner gameplay verification pending. The prevention action is the
+explicit scalar-span gate plus malformed-state and persistence-failure tests.
