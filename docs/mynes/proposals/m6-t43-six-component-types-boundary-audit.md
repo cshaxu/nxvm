@@ -1,5 +1,21 @@
 # M6 T43 Six-Component Types Boundary Audit
 
+## S7 Shared Quality Repairs
+
+Owner approves the post-S6 audit repair batch: preserve assembler tables and
+existing label loops, track successful materialization in one temporary flag,
+and reject unresolved references before output. Audio preserves every accepted
+prefix and consumes clear cancellation before acknowledgement; tests synchronize
+at actual FIFO completion, not a platform callback midpoint. Common request
+admission must propagate event failures without leaving an accepted request.
+The owner also approves completion-failure termination through the existing
+task cancellation and join, with admission/claim serialized by the request lock.
+Dispatch reset failures must terminate rather than spin. Concurrent loss of
+both native notification paths or failed join is not claimed recoverable.
+Correct the README audio dependency and duplicate test include. No public API
+expansion or polling workaround is admitted. Verify all six corpora and both
+receiving Apps on both widths; preserve configuration and keep T43 open.
+
 ## Goal
 
 Prove that the Shared six-component corpus has one external-vocabulary owner:

@@ -3,6 +3,8 @@
 These records support the principal authorities and do not define a competing
 architecture, rule set or current task state.
 
+- `evidence/m6-t43-s7-shared-quality-repairs.md`: [S7 Shared quality repairs](evidence/m6-t43-s7-shared-quality-repairs.md); finite repair ledger, failure boundaries, dual-width verification and receiving artifacts.
+
 - `operations/policy/source-policy.md`: [source and research procedure](operations/policy/source-policy.md).
 - `provenance/nxvm-governance.md`: [governance import provenance](provenance/nxvm-governance.md).
 - `provenance/mynes-cmake-import.md`: [MyNES CMake import provenance](provenance/mynes-cmake-import.md).
