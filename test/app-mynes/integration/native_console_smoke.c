@@ -12,7 +12,8 @@
 #define CONSOLE_COLUMNS 80
 #define CONSOLE_ROWS 25
 
-typedef struct native_console_fixture {
+typedef struct native_console_fixture
+{
     core_driver *driver;
     common_machine *machine;
     common_session *session;
@@ -22,7 +23,8 @@ typedef struct native_console_fixture {
     lib_i32 session_result;
 } native_console_fixture;
 
-typedef struct console_image {
+typedef struct console_image
+{
     CHAR_INFO cells[CONSOLE_COLUMNS * CONSOLE_ROWS];
 } console_image;
 
@@ -48,17 +50,19 @@ static void write_fixture(void)
         0xadu, 0x16u, 0x40u, 0x29u, 1u, 0xf0u, 4u,
         0xa9u, 0x2au, 0xd0u, 2u, 0xa9u, 0x21u, 0x85u, 0u,
         0xa9u, 0x3fu, 0x8du, 6u, 0x20u, 0xa9u, 1u, 0x8du, 6u, 0x20u,
-        0xa5u, 0u, 0x8du, 7u, 0x20u, 0x4cu, 0x79u, 0x80u
-    };
+        0xa5u, 0u, 0x8du, 7u, 0x20u, 0x4cu, 0x79u, 0x80u};
 
     lib_memory_set(bytes, 0, sizeof(bytes));
-    bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
+    bytes[0] = 'N';
+    bytes[1] = 'E';
+    bytes[2] = 'S';
+    bytes[3] = 0x1au;
     bytes[4] = 1u;
     lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0u;
     bytes[16u + 0x3ffdu] = 0x80u;
     assert(lib_storage_file_writer_open(FIXTURE_PATH,
-        LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
+                                        LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
     assert(lib_storage_file_writer_write(writer, bytes, sizeof(bytes)) == LIB_STATUS_OK);
     assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
 }
@@ -68,25 +72,36 @@ static void state_sink(void *opaque, common_machine_state state, lib_u32 generat
     native_console_fixture *fixture = opaque;
     common_session_machine_state session_state = COMMON_SESSION_MACHINE_ERROR;
 
-    switch (state) {
-    case COMMON_MACHINE_STOPPED: session_state = COMMON_SESSION_MACHINE_STOPPED; break;
-    case COMMON_MACHINE_RUNNING: session_state = COMMON_SESSION_MACHINE_RUNNING; break;
-    case COMMON_MACHINE_PAUSED: session_state = COMMON_SESSION_MACHINE_PAUSED; break;
+    switch (state)
+    {
+    case COMMON_MACHINE_STOPPED:
+        session_state = COMMON_SESSION_MACHINE_STOPPED;
+        break;
+    case COMMON_MACHINE_RUNNING:
+        session_state = COMMON_SESSION_MACHINE_RUNNING;
+        break;
+    case COMMON_MACHINE_PAUSED:
+        session_state = COMMON_SESSION_MACHINE_PAUSED;
+        break;
     case COMMON_MACHINE_RESET_COMPLETED:
-        session_state = COMMON_SESSION_MACHINE_RESET_COMPLETED; break;
-    case COMMON_MACHINE_STARTING: session_state = COMMON_SESSION_MACHINE_INIT; break;
-    case COMMON_MACHINE_ERROR: break;
+        session_state = COMMON_SESSION_MACHINE_RESET_COMPLETED;
+        break;
+    case COMMON_MACHINE_STARTING:
+        session_state = COMMON_SESSION_MACHINE_INIT;
+        break;
+    case COMMON_MACHINE_ERROR:
+        break;
     }
     assert(common_session_enqueue_runtime_completed(fixture->session, session_state,
-        generation));
+                                                    generation));
 }
 
 static void frame_sink(void *opaque, lib_u32 sequence, lib_bool graphics,
-    lib_u32 generation)
+                       lib_u32 generation)
 {
     native_console_fixture *fixture = opaque;
     assert(common_session_enqueue_frame_completed(fixture->session, sequence,
-        graphics, generation));
+                                                  graphics, generation));
 }
 
 static DWORD WINAPI run_session(void *opaque)
@@ -97,11 +112,13 @@ static DWORD WINAPI run_session(void *opaque)
 }
 
 static void wait_for_machine_state(common_machine *machine,
-    common_machine_state expected)
+                                   common_machine_state expected)
 {
     DWORD started = GetTickCount();
-    do {
-        if (common_machine_state_get(machine) == expected) return;
+    do
+    {
+        if (common_machine_state_get(machine) == expected)
+            return;
         Sleep(10u);
     } while (GetTickCount() - started < 10000u);
     assert(!"machine did not reach the expected lifecycle state");
@@ -109,7 +126,7 @@ static void wait_for_machine_state(common_machine *machine,
 
 static void submit_line(native_console_fixture *fixture, const char *text)
 {
-    common_ui_event event = { 0 };
+    common_ui_event event = {0};
     lib_size length = lib_text_length(text);
     assert(length < sizeof(event.value.line.text));
     event.kind = COMMON_UI_EVENT_MONITOR_LINE;
@@ -120,7 +137,7 @@ static void submit_line(native_console_fixture *fixture, const char *text)
 
 static void send_key_state(HANDLE input, WORD key, BOOL pressed)
 {
-    INPUT_RECORD record = { 0 };
+    INPUT_RECORD record = {0};
     DWORD written = 0u;
 
     record.EventType = KEY_EVENT;
@@ -128,7 +145,7 @@ static void send_key_state(HANDLE input, WORD key, BOOL pressed)
     record.Event.KeyEvent.wRepeatCount = 1u;
     record.Event.KeyEvent.wVirtualKeyCode = key;
     record.Event.KeyEvent.wVirtualScanCode = (WORD)MapVirtualKeyW(key,
-        MAPVK_VK_TO_VSC);
+                                                                  MAPVK_VK_TO_VSC);
     record.Event.KeyEvent.uChar.UnicodeChar = (WCHAR)key;
     assert(WriteConsoleInputW(input, &record, 1u, &written));
     assert(written == 1u);
@@ -138,8 +155,10 @@ static void pause_with_escape(HANDLE input, common_machine *machine)
 {
     DWORD started = GetTickCount();
 
-    do {
-        if (common_machine_state_get(machine) == COMMON_MACHINE_PAUSED) return;
+    do
+    {
+        if (common_machine_state_get(machine) == COMMON_MACHINE_PAUSED)
+            return;
         /* Resume reports RUNNING before the raw Console reader has completed
          * its broker takeover. Retry the physical Esc cycle until that reader
          * owns input, rather than assuming an arbitrary scheduling delay. */
@@ -152,9 +171,9 @@ static void pause_with_escape(HANDLE input, common_machine *machine)
 
 static void capture_console(HANDLE output, console_image *image)
 {
-    COORD size = { CONSOLE_COLUMNS, CONSOLE_ROWS };
-    COORD origin = { 0, 0 };
-    SMALL_RECT area = { 0, 0, CONSOLE_COLUMNS - 1, CONSOLE_ROWS - 1 };
+    COORD size = {CONSOLE_COLUMNS, CONSOLE_ROWS};
+    COORD origin = {0, 0};
+    SMALL_RECT area = {0, 0, CONSOLE_COLUMNS - 1, CONSOLE_ROWS - 1};
     assert(ReadConsoleOutputW(output, image->cells, size, origin, &area));
 }
 
@@ -166,8 +185,10 @@ static lib_bool image_differs(const console_image *left, const console_image *ri
 static void wait_for_frame(common_machine *machine, HANDLE output, console_image *image)
 {
     DWORD started = GetTickCount();
-    do {
-        if (common_machine_published_frame_sequence(machine) != 0u) {
+    do
+    {
+        if (common_machine_published_frame_sequence(machine) != 0u)
+        {
             capture_console(output, image);
             return;
         }
@@ -177,18 +198,21 @@ static void wait_for_frame(common_machine *machine, HANDLE output, console_image
 }
 
 static void wait_for_changed_image(HANDLE input, HANDLE output,
-    const console_image *before)
+                                   const console_image *before)
 {
     console_image after;
     DWORD started = GetTickCount();
     DWORD last_input = started;
-    do {
+    do
+    {
         capture_console(output, &after);
-        if (image_differs(before, &after)) return;
+        if (image_differs(before, &after))
+            return;
         /* The native reader may complete its raw-input cutover after the first
          * record.  Reissue a physical press cycle until a guest frame consumes
          * it; the 100 ms held interval exceeds the fixture's pad polling loop. */
-        if (GetTickCount() - last_input >= 100u) {
+        if (GetTickCount() - last_input >= 100u)
+        {
             send_key_state(input, 'K', FALSE);
             send_key_state(input, 'K', TRUE);
             last_input = GetTickCount();
@@ -200,7 +224,7 @@ static void wait_for_changed_image(HANDLE input, HANDLE output,
 
 int main(void)
 {
-    native_console_fixture fixture = { 0 };
+    native_console_fixture fixture = {0};
     common_machine_driver driver;
     common_session_options session_options;
     common_ui_options ui_options;
@@ -211,43 +235,38 @@ int main(void)
 
     (void)FreeConsole();
     assert(AllocConsole());
-    if (GetConsoleWindow() != NULL) ShowWindow(GetConsoleWindow(), SW_HIDE);
+    if (GetConsoleWindow() != NULL)
+        ShowWindow(GetConsoleWindow(), SW_HIDE);
     input = CreateFileA("CONIN$", GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0u, NULL);
+                        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0u, NULL);
     output = INVALID_HANDLE_VALUE;
     assert(input != INVALID_HANDLE_VALUE);
     write_fixture();
-    assert(core_driver_create(&fixture.driver, &(core_driver_options) {
-        .text_output = LIB_TRUE }) == LIB_STATUS_OK);
+    assert(core_driver_create(&fixture.driver, &(core_driver_options){
+                                                   .text_output = LIB_TRUE}) == LIB_STATUS_OK);
     assert(core_driver_make_driver(fixture.driver, &driver) == LIB_STATUS_OK);
     assert(common_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
     assert(common_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
-        LIB_STORAGE_MEDIUM_READONLY));
+                                              LIB_STORAGE_MEDIUM_READONLY));
     app_command_initialize(&fixture.command, fixture.machine, LIB_TRUE, LIB_TRUE,
-        COMMON_SESSION_DISPLAY_CONSOLE);
-    session_options = (common_session_options) {
+                           COMMON_SESSION_DISPLAY_CONSOLE);
+    session_options = (common_session_options){
         .display = COMMON_SESSION_DISPLAY_CONSOLE,
         .console_control = LIB_TRUE,
         .machine = fixture.machine,
-        .command = { .context = &fixture.command, .open = app_command_open,
-            .reject_line = app_command_reject_line, .submit_line = app_command_submit_line,
-            .begin_external = app_command_begin_external,
-            .handle_hotkey = app_command_handle_hotkey,
-            .note_runtime = app_command_note_runtime,
-            .note_broker = app_command_note_broker,
-            .note_monitor_current = app_command_note_monitor_current }
-    };
+        .command = {.context = &fixture.command, .open = app_command_open, .reject_line = app_command_reject_line, .submit_line = app_command_submit_line, .begin_external = app_command_begin_external, .handle_hotkey = app_command_handle_hotkey, .note_runtime = app_command_note_runtime, .note_broker = app_command_note_broker, .note_monitor_current = app_command_note_monitor_current}};
     assert(common_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
     common_machine_set_state_sink(fixture.machine, state_sink, &fixture);
     common_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);
     kvm_hotkey_registry_initialize(&hotkeys);
     assert(kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
-        "pause-toggle") == LIB_STATUS_OK);
-    ui_options = (common_ui_options) { .event_context = fixture.session,
-        .event_sink = common_session_enqueue_ui_event, .hotkeys = hotkeys,
-        .running_window_title = "MyNes native Console smoke",
-        .paused_window_title = "MyNes native Console smoke (paused)",
-        .graphics_console_status_text = "NES video requires a window." };
+                                        "pause-toggle") == LIB_STATUS_OK);
+    ui_options = (common_ui_options){.event_context = fixture.session,
+                                     .event_sink = common_session_enqueue_ui_event,
+                                     .hotkeys = hotkeys,
+                                     .running_window_title = "MyNes native Console smoke (Running)",
+                                     .paused_window_title = "MyNes native Console smoke (Paused)",
+                                     .graphics_console_status_text = "NES video requires a window."};
     assert(common_ui_create(&fixture.ui, &ui_options) == LIB_STATUS_OK);
     assert(common_session_bind_ui(fixture.session, fixture.ui) == LIB_STATUS_OK);
     fixture.session_thread = CreateThread(NULL, 0u, run_session, &fixture, 0u, NULL);
@@ -261,7 +280,7 @@ int main(void)
        binding has just selected its private buffer, so open after the
        cutover rather than observing the original cooked monitor buffer. */
     output = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0u, NULL);
+                         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0u, NULL);
     assert(output != INVALID_HANDLE_VALUE);
     wait_for_frame(fixture.machine, output, &idle);
     assert(FlushConsoleInputBuffer(input));

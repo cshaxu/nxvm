@@ -18,6 +18,20 @@ receiving Apps on both widths; preserve configuration and keep T43 open.
 
 ## Goal
 
+S8 extends the owner's quality review to boolean vocabulary, unused references,
+comment accuracy and owner-local flattening/duplication across the six roots.
+Freeze a complete file inventory and classify findings before implementation.
+Native/serialized ABI, atomics, counters, bitsets and deliberately invalid test
+fixtures are not automatic boolean violations. Preserve original xasm tables.
+Report concrete proposed changes for individual owner discussion; no source
+repair is authorized by a regex hit. Approved repairs later require all affected
+receiving products, dual-width tests/artifacts and refreshed manifests.
+
+Owner subsequently approves all reported S8 repairs, including the copied-value
+boolean layout changes, local flattening and shared test-registration cleanup.
+Review and deliver the owner's additional MyNES composition/native-test and
+NXVM.ini changes with target-separated commits. Preserve T43 open after S8.
+
 Prove that the Shared six-component corpus has one external-vocabulary owner:
 `src/lib/types/`. The audit covers `src/{lib,common,x86}` and
 `test/{lib,common,x86}` equally.

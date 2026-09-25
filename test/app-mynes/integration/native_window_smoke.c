@@ -10,7 +10,8 @@
 
 #define FIXTURE_PATH "mynes-native-window-fixture.nes"
 
-typedef struct native_window_fixture {
+typedef struct native_window_fixture
+{
     core_driver *driver;
     common_machine *machine;
     common_session *session;
@@ -60,17 +61,19 @@ static void write_fixture(void)
         0xa9u, 0x3fu, 0x8du, 6u, 0x20u,
         0xa9u, 1u, 0x8du, 6u, 0x20u,
         0xa5u, 0u, 0x8du, 7u, 0x20u,
-        0x4cu, 0x79u, 0x80u
-    };
+        0x4cu, 0x79u, 0x80u};
 
     lib_memory_set(bytes, 0, sizeof(bytes));
-    bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1au;
+    bytes[0] = 'N';
+    bytes[1] = 'E';
+    bytes[2] = 'S';
+    bytes[3] = 0x1au;
     bytes[4] = 1u;
     lib_memory_copy(bytes + 16u, program, sizeof(program));
     bytes[16u + 0x3ffcu] = 0u;
     bytes[16u + 0x3ffdu] = 0x80u;
     assert(lib_storage_file_writer_open(FIXTURE_PATH,
-        LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
+                                        LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
     assert(lib_storage_file_writer_write(writer, bytes, sizeof(bytes)) == LIB_STATUS_OK);
     assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
 }
@@ -80,30 +83,43 @@ static void state_sink(void *opaque, common_machine_state state, lib_u32 generat
     native_window_fixture *fixture = opaque;
     common_session_machine_state session_state = COMMON_SESSION_MACHINE_ERROR;
 
-    switch (state) {
-    case COMMON_MACHINE_STOPPED: session_state = COMMON_SESSION_MACHINE_STOPPED; break;
-    case COMMON_MACHINE_RUNNING: session_state = COMMON_SESSION_MACHINE_RUNNING; break;
-    case COMMON_MACHINE_PAUSED: session_state = COMMON_SESSION_MACHINE_PAUSED; break;
+    switch (state)
+    {
+    case COMMON_MACHINE_STOPPED:
+        session_state = COMMON_SESSION_MACHINE_STOPPED;
+        break;
+    case COMMON_MACHINE_RUNNING:
+        session_state = COMMON_SESSION_MACHINE_RUNNING;
+        break;
+    case COMMON_MACHINE_PAUSED:
+        session_state = COMMON_SESSION_MACHINE_PAUSED;
+        break;
     case COMMON_MACHINE_RESET_COMPLETED:
-        if (fixture->command.suppress_window_after_reset) {
+        if (fixture->command.suppress_window_after_reset)
+        {
             fixture->command.suppress_window_after_reset = LIB_FALSE;
             fixture->command.report_suppressed_reset = LIB_TRUE;
             session_state = COMMON_SESSION_MACHINE_PAUSED;
-        } else session_state = COMMON_SESSION_MACHINE_RESET_COMPLETED;
+        }
+        else
+            session_state = COMMON_SESSION_MACHINE_RESET_COMPLETED;
         break;
-    case COMMON_MACHINE_STARTING: session_state = COMMON_SESSION_MACHINE_INIT; break;
-    case COMMON_MACHINE_ERROR: break;
+    case COMMON_MACHINE_STARTING:
+        session_state = COMMON_SESSION_MACHINE_INIT;
+        break;
+    case COMMON_MACHINE_ERROR:
+        break;
     }
     assert(common_session_enqueue_runtime_completed(fixture->session, session_state,
-        generation));
+                                                    generation));
 }
 
 static void frame_sink(void *opaque, lib_u32 sequence, lib_bool graphics,
-    lib_u32 generation)
+                       lib_u32 generation)
 {
     native_window_fixture *fixture = opaque;
     assert(common_session_enqueue_frame_completed(fixture->session, sequence,
-        graphics, generation));
+                                                  graphics, generation));
 }
 
 static DWORD WINAPI run_session(void *opaque)
@@ -130,10 +146,12 @@ static BOOL CALLBACK find_mynes_window(HWND window, LPARAM unused)
 static HWND wait_for_window(void)
 {
     DWORD started = GetTickCount();
-    do {
+    do
+    {
         window_handle = NULL;
         EnumWindows(find_mynes_window, 0);
-        if (window_handle != NULL) return window_handle;
+        if (window_handle != NULL)
+            return window_handle;
         Sleep(10u);
     } while (GetTickCount() - started < 3000u);
     return NULL;
@@ -147,11 +165,13 @@ static void assert_no_window(void)
 }
 
 static void wait_for_machine_state(common_machine *machine,
-    common_machine_state expected)
+                                   common_machine_state expected)
 {
     DWORD started = GetTickCount();
-    do {
-        if (common_machine_state_get(machine) == expected) return;
+    do
+    {
+        if (common_machine_state_get(machine) == expected)
+            return;
         Sleep(10u);
     } while (GetTickCount() - started < 3000u);
     assert(!"machine did not reach the expected lifecycle state");
@@ -160,19 +180,22 @@ static void wait_for_machine_state(common_machine *machine,
 static COLORREF wait_for_pixel(HWND window, COLORREF previous)
 {
     DWORD started = GetTickCount();
-    do {
+    do
+    {
         RECT client;
         HDC dc = GetDC(window);
         COLORREF pixel = CLR_INVALID;
         if (dc != NULL && GetClientRect(window, &client))
             pixel = GetPixel(dc, (client.right - client.left) / 2,
-                (client.bottom - client.top) / 2);
-        if (dc != NULL) ReleaseDC(window, dc);
+                             (client.bottom - client.top) / 2);
+        if (dc != NULL)
+            ReleaseDC(window, dc);
         /* A newly created native client area is black before its first Core
          * frame is painted.  It proves only window creation, not gameplay
          * presentation, so wait for the fixture's nonblack first frame. */
         if (pixel != CLR_INVALID && pixel != previous &&
-            (previous != CLR_INVALID || pixel != RGB(0u, 0u, 0u))) return pixel;
+            (previous != CLR_INVALID || pixel != RGB(0u, 0u, 0u)))
+            return pixel;
         Sleep(10u);
     } while (GetTickCount() - started < 3000u);
     return CLR_INVALID;
@@ -181,10 +204,12 @@ static COLORREF wait_for_pixel(HWND window, COLORREF previous)
 static void wait_for_title(HWND window, const char *expected)
 {
     DWORD started = GetTickCount();
-    do {
+    do
+    {
         char title[128];
         GetWindowTextA(window, title, (int)sizeof(title));
-        if (lib_text_compare(title, expected) == 0) return;
+        if (lib_text_compare(title, expected) == 0)
+            return;
         Sleep(10u);
     } while (GetTickCount() - started < 3000u);
     assert(!"Window did not reach its expected title");
@@ -199,8 +224,10 @@ static void send_hotkey(HWND window, WPARAM key)
 static void wait_for_window_retirement(HWND window)
 {
     DWORD started = GetTickCount();
-    do {
-        if (!IsWindow(window)) return;
+    do
+    {
+        if (!IsWindow(window))
+            return;
         Sleep(10u);
     } while (GetTickCount() - started < 3000u);
     assert(!"Window close did not retire the native receiver");
@@ -208,7 +235,7 @@ static void wait_for_window_retirement(HWND window)
 
 static void submit_line(native_window_fixture *fixture, const char *text)
 {
-    common_ui_event event = { 0 };
+    common_ui_event event = {0};
     lib_size length = lib_text_length(text);
     assert(length < sizeof(event.value.line.text));
     event.kind = COMMON_UI_EVENT_MONITOR_LINE;
@@ -219,7 +246,7 @@ static void submit_line(native_window_fixture *fixture, const char *text)
 
 int main(void)
 {
-    native_window_fixture fixture = { 0 };
+    native_window_fixture fixture = {0};
     common_machine_driver driver;
     common_session_options session_options;
     common_ui_options ui_options;
@@ -229,14 +256,14 @@ int main(void)
     COLORREF active;
 
     write_fixture();
-    assert(core_driver_create(&fixture.driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
+    assert(core_driver_create(&fixture.driver, &(core_driver_options){0}) == LIB_STATUS_OK);
     assert(core_driver_make_driver(fixture.driver, &driver) == LIB_STATUS_OK);
     assert(common_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
     assert(common_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
-        LIB_STORAGE_MEDIUM_READONLY));
+                                              LIB_STORAGE_MEDIUM_READONLY));
     app_command_initialize(&fixture.command, fixture.machine, LIB_TRUE, LIB_TRUE,
-        COMMON_SESSION_DISPLAY_WINDOW);
-    session_options = (common_session_options) {
+                           COMMON_SESSION_DISPLAY_WINDOW);
+    session_options = (common_session_options){
         .display = COMMON_SESSION_DISPLAY_WINDOW,
         .console_control = LIB_TRUE,
         .machine = fixture.machine,
@@ -249,23 +276,20 @@ int main(void)
             .handle_hotkey = app_command_handle_hotkey,
             .note_runtime = app_command_note_runtime,
             .note_broker = app_command_note_broker,
-            .note_monitor_current = app_command_note_monitor_current
-        }
-    };
+            .note_monitor_current = app_command_note_monitor_current}};
     assert(common_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
     common_machine_set_state_sink(fixture.machine, state_sink, &fixture);
     common_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);
     kvm_hotkey_registry_initialize(&hotkeys);
     assert(kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
-        "pause-toggle") == LIB_STATUS_OK);
-    ui_options = (common_ui_options) {
+                                        "pause-toggle") == LIB_STATUS_OK);
+    ui_options = (common_ui_options){
         .event_context = fixture.session,
         .event_sink = common_session_enqueue_ui_event,
         .hotkeys = hotkeys,
-        .running_window_title = "MyNes native smoke",
-        .paused_window_title = "MyNes native smoke (paused)",
-        .graphics_console_status_text = "NES video requires a window."
-    };
+        .running_window_title = "MyNes native smoke (Running)",
+        .paused_window_title = "MyNes native smoke (Paused)",
+        .graphics_console_status_text = "NES video requires a window."};
     assert(common_ui_create(&fixture.ui, &ui_options) == LIB_STATUS_OK);
     assert(common_session_bind_ui(fixture.session, fixture.ui) == LIB_STATUS_OK);
     fixture.session_thread = CreateThread(NULL, 0u, run_session, &fixture, 0u, NULL);
@@ -285,16 +309,16 @@ int main(void)
     assert(idle != CLR_INVALID && idle != RGB(0u, 0u, 0u));
     send_hotkey(window, VK_ESCAPE);
     wait_for_machine_state(fixture.machine, COMMON_MACHINE_PAUSED);
-    wait_for_title(window, "MyNes native smoke (paused)");
+    wait_for_title(window, "MyNes native smoke (Paused)");
     send_hotkey(window, VK_ESCAPE);
     wait_for_machine_state(fixture.machine, COMMON_MACHINE_RUNNING);
-    wait_for_title(window, "MyNes native smoke");
+    wait_for_title(window, "MyNes native smoke (Running)");
     send_hotkey(window, VK_ESCAPE);
     wait_for_machine_state(fixture.machine, COMMON_MACHINE_PAUSED);
-    wait_for_title(window, "MyNes native smoke (paused)");
+    wait_for_title(window, "MyNes native smoke (Paused)");
     send_hotkey(window, VK_ESCAPE);
     wait_for_machine_state(fixture.machine, COMMON_MACHINE_RUNNING);
-    wait_for_title(window, "MyNes native smoke");
+    wait_for_title(window, "MyNes native smoke (Running)");
     assert(PostMessageW(window, WM_KEYDOWN, 'K', 0));
     active = wait_for_pixel(window, idle);
     assert(active != CLR_INVALID && active != idle);

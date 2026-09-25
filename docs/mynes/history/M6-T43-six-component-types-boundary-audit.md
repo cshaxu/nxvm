@@ -117,3 +117,25 @@ Prevention: retain injected failure/partial-delivery regressions and require
 receiving product-target builds rather than test-only rebuilds. Reusable build
 trees remain for open T43; only the unrelated pre-existing default INI edit is
 left uncommitted. S7 is accepted and closed; T43 stays open awaiting the owner.
+
+## S8 Quality Repair Delivery
+
+Owner approved the complete audited A-F batch, including public boolean layout
+changes, small owner-local simplification and test registration reuse, plus
+review/submission of the owner's MyNES and NXVM.ini edits. Shared P1 bfcbd31b2
+and NXVM P2 14403bf51 are pushed. Actual-diff review confirms unchanged assembler
+tables/command flow, retained native numeric contracts and sole queue/resource
+owners. Shared code delta is +706/-776 (net -70), including the new helper.
+
+All configured Shared/MyNES tests pass 130/130 on both widths; NXVM units pass
+335/335 on both. Independent Shared suites pass 49/49, 18/18 and 10/10. Six
+manifests, Types, DAG, corpus, documentation and whitespace checks pass. Ten
+optimized stripped artifacts are rebuilt and hashed. The owner's MyNES title
+and formatting edits are preserved and tested. See the
+[repair and receiving ledger](../etc/evidence/m6-t43-s8-six-corpus-quality-audit.md).
+
+The owner's default INI uses console_control=0, but NXVM currently accepts only
+true/false. This is a real failed validation, not a Shared regression. The owner
+was asked whether to accept numeric aliases in the existing parser or restore
+false. Until that decision, the INI is untouched/uncommitted and S8 remains open;
+no clean-worktree, owner hand-test, S acceptance or T closure is claimed.
