@@ -8,7 +8,6 @@
 #include "lib/types/win32/test.h"
 #else
 #include "lib/types/linux/test.h"
-#include "lib/types/linux/test.h"
 #endif
 
 static void check_decode(lib_u8 *code, lib_i32 flag32, lib_bool valid)

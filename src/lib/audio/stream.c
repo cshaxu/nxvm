@@ -46,6 +46,7 @@ static void audio_stream_worker(void *context, const base_sync_task *task)
         lib_bool have_batch = LIB_FALSE;
         lib_u32 batch_count = 0u;
         lib_u32 generation = 0u;
+        lib_u32 accepted = 0u;
         lib_status status;
 
         base_sync_mutex_lock(stream->lock);
@@ -81,36 +82,28 @@ static void audio_stream_worker(void *context, const base_sync_task *task)
         if (base_sync_task_cancelled(task)) break;
         if (status == LIB_STATUS_LIMIT_EXCEEDED) continue;
         if (status == LIB_STATUS_OK) {
-            lib_u32 accepted = 0u;
             status = audio_stream_platform_enqueue(stream->platform, batch,
                 batch_count, &accepted);
-            if (status == LIB_STATUS_OK && accepted != batch_count)
+            if (accepted > batch_count) {
+                accepted = 0u;
+                status = LIB_STATUS_IO_ERROR;
+            } else if (status == LIB_STATUS_OK && accepted != batch_count)
                 status = LIB_STATUS_IO_ERROR;
         }
-        if (status == LIB_STATUS_LIMIT_EXCEEDED) continue;
-        if (status != LIB_STATUS_OK) {
-            base_sync_mutex_lock(stream->lock);
-            audio_stream_fail_locked(stream, status);
-            if (stream->control == AUDIO_STREAM_CONTROL_FLUSH) {
-                stream->control = AUDIO_STREAM_CONTROL_NONE;
-                (void)base_sync_event_signal(stream->control_done);
-            }
-            base_sync_mutex_unlock(stream->lock);
-            (void)base_sync_event_signal(stream->space);
-            continue;
-        }
         base_sync_mutex_lock(stream->lock);
-        if (stream->generation == generation &&
-            stream->count >= batch_count) {
-            stream->head = (stream->head + batch_count) %
-                AUDIO_STREAM_QUEUE_CAPACITY;
-            stream->count -= batch_count;
-            (void)base_sync_event_signal(stream->space);
-            if (stream->control == AUDIO_STREAM_CONTROL_FLUSH && stream->count == 0u) {
-                stream->control = AUDIO_STREAM_CONTROL_NONE;
-                (void)base_sync_event_signal(stream->control_done);
-            }
+        if (stream->generation == generation && stream->count >= accepted) {
+            stream->head = (stream->head + accepted) % AUDIO_STREAM_QUEUE_CAPACITY;
+            stream->count -= accepted;
         }
+        if (status != LIB_STATUS_OK && status != LIB_STATUS_LIMIT_EXCEEDED)
+            audio_stream_fail_locked(stream, status);
+        if (stream->control == AUDIO_STREAM_CONTROL_FLUSH &&
+            (stream->failure != LIB_STATUS_OK || stream->count == 0u)) {
+            stream->control = AUDIO_STREAM_CONTROL_NONE;
+            (void)base_sync_event_signal(stream->control_done);
+        }
+        if (accepted != 0u || stream->failure != LIB_STATUS_OK)
+            (void)base_sync_event_signal(stream->space);
         base_sync_mutex_unlock(stream->lock);
     }
     audio_stream_platform_worker_detach(stream->platform);
@@ -260,13 +253,15 @@ lib_status lib_audio_stream_clear(lib_audio_stream *stream)
         base_sync_mutex_unlock(stream->lock);
         return LIB_STATUS_IO_ERROR;
     }
+    if (audio_stream_platform_cancel_wait(stream->platform) != LIB_STATUS_OK) {
+        base_sync_mutex_unlock(stream->lock);
+        return LIB_STATUS_IO_ERROR;
+    }
     stream->head = 0u;
     stream->count = 0u;
     ++stream->generation;
     stream->control = AUDIO_STREAM_CONTROL_CLEAR;
     base_sync_mutex_unlock(stream->lock);
-    if (audio_stream_platform_cancel_wait(stream->platform) != LIB_STATUS_OK)
-        return LIB_STATUS_IO_ERROR;
     if (base_sync_event_signal(stream->wake) != LIB_STATUS_OK) return LIB_STATUS_IO_ERROR;
     result = base_sync_event_wait(stream->control_done, LIB_UINT32_MAX);
     if (result != BASE_SYNC_WAIT_SIGNALED) return LIB_STATUS_IO_ERROR;
@@ -348,6 +343,10 @@ lib_status lib_audio_stream_destroy(lib_audio_stream **stream)
         }
     }
     (void)lib_audio_stream_cancel_wait(*stream);
+    if ((*stream)->worker != LIB_NULL) {
+        status = base_sync_task_request_cancel((*stream)->worker);
+        if (status != LIB_STATUS_OK) return status;
+    }
     (void)audio_stream_platform_cancel_wait((*stream)->platform);
     (void)base_sync_event_signal((*stream)->wake);
     status = base_sync_task_destroy((*stream)->worker);

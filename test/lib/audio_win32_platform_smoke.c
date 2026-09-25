@@ -13,6 +13,7 @@ static lib_u32 started, stopped, reset, waits, padding;
 static lib_u32 events_created;
 static lib_u32 fail_at, calls;
 static lib_win32_dword wait_result;
+static lib_bool interrupted;
 
 static lib_win32_hresult result(void)
 { return ++calls == fail_at ? (lib_win32_hresult)-1 : 0; }
@@ -74,6 +75,7 @@ static lib_win32_hresult release_buffer(lib_win32_uint32 frames, lib_win32_dword
         lib_memory_copy(delivered + delivered_samples, native_buffer,
             frames * channels * sizeof(*delivered));
         delivered_samples += frames * channels;
+        padding += frames;
     } else lib_test_assert(flags == 0 || flags == LIB_WIN32_AUDIO_BUFFER_FLAGS_SILENT);
     pending_frames = 0;
     return status;
@@ -86,6 +88,10 @@ static lib_win32_dword wait_events(lib_win32_dword count,
     lib_test_assert(events[0] == &objects[5] && events[1] == &objects[4]);
     lib_test_assert(all == LIB_WIN32_FALSE && timeout == LIB_WIN32_INFINITE);
     ++waits;
+    if (interrupted) {
+        interrupted = LIB_FALSE;
+        return LIB_WIN32_WAIT_OBJECT_0 + 1;
+    }
     padding = 0;
     return wait_result;
 }
@@ -133,9 +139,9 @@ static lib_win32_dword wait_events(lib_win32_dword count,
 #undef lib_win32_close_handle
 #define lib_win32_close_handle(h) ((void)(h),++closed,LIB_WIN32_TRUE)
 #undef lib_win32_set_event
-#define lib_win32_set_event(h) ((void)(h),LIB_WIN32_TRUE)
+#define lib_win32_set_event(h) ((void)(h),interrupted = LIB_TRUE,LIB_WIN32_TRUE)
 #undef lib_win32_reset_event
-#define lib_win32_reset_event(h) ((void)(h),LIB_WIN32_TRUE)
+#define lib_win32_reset_event(h) ((h) == &objects[4] ? (interrupted = LIB_FALSE) : LIB_FALSE,LIB_WIN32_TRUE)
 #undef lib_win32_wait_for_multiple_objects
 #define lib_win32_wait_for_multiple_objects wait_events
 #include "lib/audio/win32/stream.c"
@@ -145,6 +151,7 @@ static void clear_probe(void)
     calls = fail_at = acquired = released = initialized = uninitialized = closed = 0;
     started = stopped = reset = waits = padding = pending_frames = delivered_samples = 0;
     events_created = 0;
+    interrupted = LIB_FALSE;
     wait_result = LIB_WIN32_WAIT_OBJECT_0;
 }
 
@@ -190,10 +197,21 @@ int main(void)
             lib_test_assert(accepted == 1 && delivered_samples == channels);
             lib_test_assert(lib_memory_compare(samples, delivered, channels * sizeof(*samples)) == 0);
         }
+        /* A pending interruption may arrive after a prefix was committed. */
+        padding = 0; delivered_samples = 0; wait_result = LIB_WIN32_WAIT_OBJECT_0;
         lib_test_assert(audio_stream_platform_cancel_wait(platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_stream_platform_enqueue(platform, samples, 9, &accepted) == LIB_STATUS_LIMIT_EXCEEDED);
+        lib_test_assert(accepted == 4 && delivered_samples == 4 * channels);
+        lib_test_assert(audio_stream_platform_enqueue(platform, samples + accepted * channels,
+            9 - accepted, &accepted) == LIB_STATUS_OK);
+        lib_test_assert(accepted == 5 && delivered_samples == 9 * channels);
+        lib_test_assert(lib_memory_compare(samples, delivered, delivered_samples * sizeof(*samples)) == 0);
+        /* Clear also consumes cancellation when no native wait observed it. */
+        lib_test_assert(audio_stream_platform_cancel_wait(platform) == LIB_STATUS_OK);
+        lib_test_assert(audio_stream_platform_clear(platform) == LIB_STATUS_OK && !interrupted);
         audio_stream_platform_worker_detach(platform);
         lib_test_assert(acquired == released && initialized == uninitialized);
-        lib_test_assert(started == 3 && stopped == 3 && reset == 3);
+        lib_test_assert(started == 4 && stopped == 4 && reset == 4);
         lib_test_assert(audio_stream_platform_destroy(&platform) == LIB_STATUS_OK && platform == LIB_NULL);
         lib_test_assert(closed == events_created && closed == 2);
     }

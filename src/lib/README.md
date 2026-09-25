@@ -51,7 +51,7 @@ component on the left:
 
 ```text
 types -> base + console + console-broker + storage + audio + kvm-base + kvm-window + kvm-console
-base -> console + console-broker + kvm-base + kvm-console
+base -> console + console-broker + audio + kvm-base + kvm-console
 console -> console-broker + kvm-console
 kvm-base -> kvm-window + kvm-console
 ```

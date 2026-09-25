@@ -70,9 +70,14 @@ operations. Protocol vocabulary belongs to the requesting frontend and product
 adapter, which use aligned typed copies.
 Driver execution validates protocol-specific sizes and access constraints.
 Failures return zero response length without changing caller output bytes.
-An unsuccessful completion wait is not proof of quiescence: shut down before
-reusing the slot. Existing cancellation clears product plans, not in-flight
-requests. Common builds only its three neutral components; products separately
+Request admission and executor claiming share one lock. Failed completion reset
+or command wake rejects admission without executing the request. Completion
+notification failure permanently faults the executor; synchronous callers also
+wait on its independent task cancellation and join before returning an error.
+Commands are never replayed. Concurrent failure of native completion and task
+cancellation, or inability to prove thread exit, is outside recoverable operation:
+retain all callback/stream contexts until successful shutdown. Debug cancellation
+clears product plans, not in-flight requests. Common builds only its three neutral components; products separately
 select any architecture-specific frontend.
 
 Machine shutdown synchronously joins its worker and all callbacks without

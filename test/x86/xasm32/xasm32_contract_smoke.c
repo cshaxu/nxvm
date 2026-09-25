@@ -99,5 +99,33 @@ int main(void)
         return 16;
     }
 
+    {
+        const char *invalid[] = {
+            "jmp short $(missing)",
+            "$(same):\nnop\n$(same):",
+            "bad short $(target)\n$(target):"
+        };
+        const char *valid[] = {
+            "jmp short $(target)\n$(target):",
+            "$(target):\njmp short $(target)"
+        };
+        /* Existing paragraph labels emit a NOP marker; references target the
+         * instruction after that marker. Preserve that established encoding. */
+        const lib_u8 expected[][3] = {{0xeb, 0x01, 0x90}, {0x90, 0xeb, 0xfe}};
+        for (lib_i32 mode = 0; mode <= 1; ++mode) {
+            for (lib_size i = 0; i < sizeof(invalid) / sizeof(*invalid); ++i) {
+                lib_memory_set(code, 0xa5, sizeof(code));
+                result_bytes = 37u;
+                if (x86_xasm32_assemble_paragraph(invalid[i], lib_text_length(invalid[i]),
+                        code, sizeof(code), &result_bytes, mode) != LIB_STATUS_UNSUPPORTED ||
+                    !xasm_output_is_unchanged(code, sizeof(code), 0xa5u, result_bytes, 37u)) return 17;
+            }
+            for (lib_size i = 0; i < sizeof(valid) / sizeof(*valid); ++i) {
+                if (x86_xasm32_assemble_paragraph(valid[i], lib_text_length(valid[i]),
+                        code, sizeof(code), &result_bytes, mode) != LIB_STATUS_OK ||
+                    result_bytes != 3u || lib_memory_compare(code, expected[i], 3u)) return 18;
+            }
+        }
+    }
     return 0;
 }

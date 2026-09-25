@@ -230,8 +230,8 @@ lib_status audio_stream_platform_enqueue(audio_stream_platform *platform,
             platform->renderer, writable, 0u));
         if (status != LIB_STATUS_OK) return status;
         submitted += writable;
+        *out_accepted_frames = submitted;
     }
-    *out_accepted_frames = submitted;
     return LIB_STATUS_OK;
 }
 
@@ -241,6 +241,8 @@ lib_status audio_stream_platform_clear(audio_stream_platform *platform)
 
     if (platform == LIB_NULL || platform->attached == LIB_FALSE)
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (lib_win32_reset_event(platform->interruption) == LIB_WIN32_FALSE)
+        return LIB_STATUS_IO_ERROR;
     status = audio_stream_win32_status(lib_win32_audio_client_stop(platform->client));
     if (status != LIB_STATUS_OK) return status;
     status = audio_stream_win32_status(lib_win32_audio_client_reset(platform->client));

@@ -20,6 +20,14 @@ static lib_u32 debug_wait_action, debug_calls, debug_cancels;
 static lib_u8 *debug_source;
 static lib_status debug_status;
 static lib_bool debug_oversize;
+static base_sync_event *reject_signal, *reject_reset;
+static lib_u32 joins;
+static lib_status signal_event(base_sync_event *event)
+{ return event == reject_signal ? LIB_STATUS_IO_ERROR : base_sync_event_signal(event); }
+static lib_status reset_event(base_sync_event *event)
+{ return event == reject_reset ? LIB_STATUS_IO_ERROR : base_sync_event_reset(event); }
+static lib_status join_task(base_sync_task *task)
+{ ++joins; return base_sync_task_join(task); }
 static void request_lock(base_sync_mutex *mutex);
 static void register_pending(void);
 static lib_status destroy_task(base_sync_task *task)
@@ -38,7 +46,13 @@ static lib_status no_thread(base_sync_task_entry entry, void *context,
 #define base_sync_event_wait idle_wait
 #define base_sync_wait_any paused_wait
 #define base_sync_mutex_lock request_lock
+#define base_sync_event_signal signal_event
+#define base_sync_event_reset reset_event
+#define base_sync_task_join join_task
 #include "common/machine/machine.c"
+#undef base_sync_task_join
+#undef base_sync_event_reset
+#undef base_sync_event_signal
 #undef base_sync_mutex_lock
 #undef base_sync_wait_any
 #undef base_sync_event_wait
@@ -107,6 +121,10 @@ static base_sync_wait_result paused_wait(base_sync_event *const *events,
     lib_u32 count, const base_sync_task *task, lib_u32 timeout, lib_u32 *index)
 {
     if (count == 1u) {
+        if (reject_signal == events[0])
+            return base_sync_wait_any(events, count, task, 0u, index);
+        if (events[0] == active->debug_event)
+            return idle_wait(events[0], timeout);
         lib_test_assert(events[0] == active->command_event && timeout == LIB_UINT32_MAX);
         if (action == 5u && idle_waits != 0u) {
             lib_test_assert(task == active->worker);
@@ -205,6 +223,85 @@ static void state(void *context, common_machine_state value, lib_u32 generation)
 static void completed_task(void *context, const base_sync_task *task)
 { (void)context; (void)task; }
 
+static void cancellation_task(void *context, const base_sync_task *task)
+{
+    lib_test_assert(base_sync_task_wait_cancel(task, LIB_UINT32_MAX) == BASE_SYNC_WAIT_CANCELLED);
+    *(lib_bool *)context = LIB_TRUE;
+}
+
+static lib_u32 media_calls;
+static lib_bool replace_media(void *context, const char *path, lib_storage_medium_mode mode)
+{ (void)context; (void)path; (void)mode; ++media_calls; return LIB_TRUE; }
+
+static void check_request_failures(void)
+{
+    common_machine_driver driver = { .reset = reset, .run = run,
+        .request_stop = stop, .request_wake = stop, .set_heartbeat = set_heartbeat,
+        .set_executor_callback = callback, .deliver_input = input, .copy_frame = frame,
+        .set_removable_media = replace_media };
+    lib_test_assert(common_machine_create(&active, &driver) == LIB_STATUS_OK);
+    lib_atomic_i32 *requests[] = { &active->debug_requested, &active->media_requested,
+        &active->state_read_requested, &active->state_write_requested };
+    base_sync_event *events[] = { active->debug_event, active->media_event,
+        active->state_event, active->state_event };
+    for (lib_u32 i = 0; i < 4u; ++i) {
+        /* A previous completion must never satisfy a failed new request. */
+        lib_test_assert(base_sync_event_signal(events[i]) == LIB_STATUS_OK);
+        reject_reset = events[i];
+        lib_test_assert(common_machine_submit_request(active, requests[i], events[i],
+            1u << COMMON_MACHINE_STOPPED) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(!common_machine_take_request(active, requests[i]));
+        reject_reset = LIB_NULL;
+        reject_signal = active->command_event;
+        lib_test_assert(common_machine_submit_request(active, requests[i], events[i],
+            1u << COMMON_MACHINE_STOPPED) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(base_sync_event_wait(events[i], 0u) == BASE_SYNC_WAIT_TIMED_OUT);
+        lib_test_assert(!common_machine_take_request(active, requests[i]));
+        reject_signal = LIB_NULL;
+        lib_test_assert(common_machine_submit_request(active, requests[i], events[i],
+            1u << COMMON_MACHINE_STOPPED) == LIB_STATUS_OK);
+        lib_test_assert(common_machine_take_request(active, requests[i]));
+        lib_test_assert(!common_machine_take_request(active, requests[i]));
+    }
+    lib_test_assert(common_machine_destroy(active) == LIB_STATUS_OK);
+    for (lib_u32 i = 0; i < 3u; ++i) {
+        lib_bool unwound = LIB_FALSE;
+        lib_test_assert(common_machine_create(&active, &driver) == LIB_STATUS_OK);
+        lib_test_assert(base_sync_task_create(cancellation_task, &unwound, &active->worker) == LIB_STATUS_OK);
+        base_sync_event *completed = i == 0u ? active->debug_event :
+            i == 1u ? active->media_event : active->state_event;
+        reject_signal = completed;
+        lib_u32 before = joins;
+        if (i == 1u) {
+            media_calls = 0u;
+            lib_atomic_i32_store_explicit(&active->media_requested, 1, LIB_MEMORY_ORDER_SEQ_CST);
+            common_machine_service_media(active);
+            common_machine_service_media(active);
+            lib_test_assert(media_calls == 1u);
+        } else common_machine_complete_request(active, completed);
+        lib_test_assert(common_machine_state_get(active) == COMMON_MACHINE_ERROR);
+        lib_test_assert(base_sync_task_cancelled(active->worker));
+        lib_test_assert(common_machine_wait_request(active, completed) == LIB_STATUS_IO_ERROR);
+        lib_test_assert(joins == before + 1u && unwound);
+        lib_test_assert(common_machine_submit_request(active, &active->debug_requested,
+            completed, 1u << COMMON_MACHINE_ERROR) == LIB_STATUS_INVALID_STATE);
+        common_machine_finish_requests(active, COMMON_MACHINE_STOPPED);
+        lib_test_assert(common_machine_state_get(active) == COMMON_MACHINE_ERROR);
+        reject_signal = LIB_NULL;
+        lib_test_assert(common_machine_destroy(active) == LIB_STATUS_OK);
+    }
+    /* A dispatch reset failure must not execute a pending start or spin on
+     * the still-signaled event. */
+    lib_test_assert(common_machine_create(&active, &driver) == LIB_STATUS_OK);
+    action = 1u; idle_waits = resets = 0u;
+    common_machine_begin_cold_run(active, LIB_FALSE);
+    reject_reset = active->command_event;
+    common_machine_worker(active, LIB_NULL);
+    lib_test_assert(common_machine_state_get(active) == COMMON_MACHINE_ERROR && resets == 0u);
+    reject_reset = LIB_NULL;
+    lib_test_assert(common_machine_destroy(active) == LIB_STATUS_OK);
+}
+
 static void check(base_sync_wait_result result, lib_u32 requested_action)
 {
     common_machine_driver driver = {0};
@@ -265,14 +362,14 @@ static void check(base_sync_wait_result result, lib_u32 requested_action)
         lib_test_assert(active->debug_status == LIB_STATUS_UNSUPPORTED && active->media_succeeded);
     }
     /* A dead worker rejects all registrations, even with an allowed state. */
-    lib_test_assert(!common_machine_submit_request(active, &active->state_write_requested,
-        active->state_event, 1u << common_machine_state_get(active)));
+    lib_test_assert(common_machine_submit_request(active, &active->state_write_requested,
+        active->state_event, 1u << common_machine_state_get(active)) == LIB_STATUS_INVALID_STATE);
     /* Deterministically finish between the public precheck and registration. */
     lib_atomic_i32_store_explicit(&active->terminate_requested, 0, LIB_MEMORY_ORDER_SEQ_CST);
     lib_atomic_i32_store_explicit(&active->state, COMMON_MACHINE_RUNNING, LIB_MEMORY_ORDER_SEQ_CST);
     terminate_before_submit = LIB_TRUE;
-    lib_test_assert(!common_machine_submit_request(active, &active->state_read_requested,
-        active->state_event, 1u << COMMON_MACHINE_RUNNING));
+    lib_test_assert(common_machine_submit_request(active, &active->state_read_requested,
+        active->state_event, 1u << COMMON_MACHINE_RUNNING) == LIB_STATUS_INVALID_STATE);
     lib_test_assert(!terminate_before_submit && !lib_atomic_i32_load_explicit(
         &active->state_read_requested, LIB_MEMORY_ORDER_SEQ_CST));
     /* A failed join must retain the worker and every referenced machine field. */
@@ -511,5 +608,6 @@ int main(void)
     }
     check_publication();
     check_debug();
+    check_request_failures();
     return 0;
 }

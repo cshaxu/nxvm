@@ -9925,6 +9925,7 @@ typedef struct
     lib_u8 code_len;
     lib_u8 flag_is_label;
     lib_u8 flag_has_label;
+    lib_u8 flag_resolved;
     char label_str[0x100];
     char op_str[0x100];
     t_aasm_oprptr ptr;
@@ -10188,6 +10189,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
     {
         lib_memory_set((void *)instr[i].code_array, 0x00, 15);
         asmx_get_label(aasmContext, &instr[i]);
+        instr[i].flag_resolved = !instr[i].flag_has_label || instr[i].flag_is_label;
         if (instr[i].flag_has_label)
         {
             if (instr[i].flag_is_label)
@@ -10295,7 +10297,11 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 sizeof(instr[j].stmt)) {
                             flagError = 1;
                         }
-                        aasm32_execute(aasmContext, instr[j].stmt, instr[j].code_array, flag32);
+                        if (!flagError && aasm32_execute(aasmContext, instr[j].stmt,
+                                instr[j].code_array, flag32) == instr[j].code_len && !flagError)
+                            instr[j].flag_resolved = 1;
+                        else
+                            flagError = 1;
                     }
                     if (flagError)
                     {
@@ -10373,7 +10379,11 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 sizeof(instr[j].stmt)) {
                             flagError = 1;
                         }
-                        aasm32_execute(aasmContext, instr[j].stmt, instr[j].code_array, flag32);
+                        if (!flagError && aasm32_execute(aasmContext, instr[j].stmt,
+                                instr[j].code_array, flag32) == instr[j].code_len && !flagError)
+                            instr[j].flag_resolved = 1;
+                        else
+                            flagError = 1;
                     }
                     if (flagError)
                     {
@@ -10387,6 +10397,11 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
     len = 0;
     for (i = 0; i < count; ++i)
     {
+        if (!instr[i].flag_resolved)
+        {
+            lib_release((void *)instr);
+            return LIB_STATUS_UNSUPPORTED;
+        }
         if ((lib_size)instr[i].code_len > code_capacity - len) {
             lib_release((void *)instr);
             return LIB_STATUS_LIMIT_EXCEEDED;

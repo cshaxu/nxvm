@@ -7,7 +7,6 @@ struct audio_stream_platform {
     lib_i16 copied[AUDIO_STREAM_PLAY_BATCH * 2u];
     lib_u32 queued;
     lib_u32 writable;
-    base_sync_event *enqueued;
 };
 
 static struct audio_stream_platform fake_platform;
@@ -24,6 +23,9 @@ static lib_u32 last_enqueued_frames;
 static base_sync_event *native_wait_entered;
 static base_sync_event *native_wait_release;
 static lib_bool native_wait_blocks;
+static lib_bool interrupt_prefix;
+static lib_i16 delivered_prefix[6];
+static lib_u32 delivered_count;
 
 lib_status audio_stream_platform_create(const lib_audio_stream_options *options,
     audio_stream_platform **out_platform)
@@ -47,15 +49,25 @@ lib_status audio_stream_platform_enqueue(audio_stream_platform *platform,
     const lib_i16 *samples, lib_u32 frame_count, lib_u32 *out_accepted_frames)
 {
     lib_u32 accepted = frame_count < accepted_limit ? frame_count : accepted_limit;
+    lib_status status = enqueue_status;
+    if (interrupt_prefix) {
+        accepted = 1u;
+        interrupt_prefix = LIB_FALSE;
+        status = LIB_STATUS_LIMIT_EXCEEDED;
+    }
+    if (delivered_count < 3u) {
+        lib_u32 copied = accepted < 3u - delivered_count ? accepted : 3u - delivered_count;
+        lib_memory_copy(delivered_prefix + delivered_count * 2u, samples,
+            (lib_size)copied * 2u * sizeof(*samples));
+        delivered_count += copied;
+    }
     ++enqueue_calls;
     last_enqueued_frames = accepted;
     lib_test_assert(platform == &fake_platform);
     lib_memory_copy(platform->copied, samples,
         (lib_size)accepted * 2u * sizeof(*samples));
-    if (platform->enqueued != LIB_NULL)
-        (void)base_sync_event_signal(platform->enqueued);
     *out_accepted_frames = accepted;
-    return accepted == 0u && frame_count != 0u ? LIB_STATUS_LIMIT_EXCEEDED : enqueue_status;
+    return accepted == 0u && frame_count != 0u ? LIB_STATUS_LIMIT_EXCEEDED : status;
 }
 
 lib_status audio_stream_platform_wait_writable(audio_stream_platform *platform)
@@ -100,7 +112,6 @@ int main(void)
 {
     lib_audio_stream_options options = { 48000u, 2u };
     lib_audio_stream *stream = LIB_NULL;
-    base_sync_event *enqueued = LIB_NULL;
     base_sync_event *native_wait_entered_event = LIB_NULL;
     base_sync_event *native_wait_release_event = LIB_NULL;
     lib_i16 samples[6] = { -1, 1, -2, 2, -3, 3 };
@@ -126,14 +137,10 @@ int main(void)
     lib_test_assert(lib_audio_stream_wait_writable(stream) == LIB_STATUS_OK && wait_calls == 0u);
     lib_test_assert(lib_audio_stream_cancel_wait(stream) == LIB_STATUS_OK);
     lib_test_assert(lib_audio_stream_wait_writable(stream) == LIB_STATUS_INVALID_STATE);
-    lib_test_assert(base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET, &enqueued) == LIB_STATUS_OK);
-    fake_platform.enqueued = enqueued;
     lib_test_assert(lib_audio_stream_enqueue(stream, submission, 512u, &accepted) == LIB_STATUS_OK);
     lib_test_assert(lib_audio_stream_enqueue(stream, submission, 512u, &accepted) == LIB_STATUS_OK);
-    lib_test_assert(base_sync_event_wait(enqueued, LIB_UINT32_MAX) == BASE_SYNC_WAIT_SIGNALED);
+    lib_test_assert(lib_audio_stream_flush(stream) == LIB_STATUS_OK);
     lib_test_assert(enqueue_calls == 1u && wait_calls == 1u);
-    fake_platform.enqueued = LIB_NULL;
-    base_sync_event_destroy(enqueued);
     lib_test_assert(lib_audio_stream_enqueue(stream, LIB_NULL, 0u, &accepted) == LIB_STATUS_OK);
     lib_test_assert(accepted == 0u && enqueue_calls == 1u);
     lib_test_assert(lib_audio_stream_enqueue(stream, LIB_NULL, 1u, &accepted) == LIB_STATUS_INVALID_ARGUMENT);
@@ -234,5 +241,16 @@ int main(void)
     native_wait_release = LIB_NULL;
     base_sync_event_destroy(native_wait_entered_event);
     base_sync_event_destroy(native_wait_release_event);
+    /* A backend cancellation after one accepted frame must retry only the
+     * suffix, through the same worker and FIFO completion boundary. */
+    delivered_count = 0u;
+    interrupt_prefix = LIB_TRUE;
+    lib_test_assert(lib_audio_stream_create(&options, &stream) == LIB_STATUS_OK);
+    lib_test_assert(lib_audio_stream_enqueue(stream, samples, 3u, &accepted) == LIB_STATUS_OK);
+    lib_test_assert(lib_audio_stream_flush(stream) == LIB_STATUS_OK);
+    lib_test_assert(delivered_count == 3u &&
+        lib_memory_compare(delivered_prefix, samples, sizeof(samples)) == 0);
+    lib_test_assert(lib_audio_stream_query(stream, &queued, &writable) == LIB_STATUS_OK && queued == 0u);
+    lib_test_assert(lib_audio_stream_destroy(&stream) == LIB_STATUS_OK);
     return 0;
 }
