@@ -26,7 +26,7 @@ void kvm_window_map_dirty_rect(const kvm_window_rect *source, const kvm_window_r
     if (target->bottom <= target->top) target->bottom = target->top + 1;
 }
 
-lib_i32 kvm_window_fit_outer_rect(const kvm_window_rect *work_area, lib_i32 desired_width,
+lib_bool kvm_window_fit_outer_rect(const kvm_window_rect *work_area, lib_i32 desired_width,
     lib_i32 desired_height, kvm_window_rect *fitted)
 {
     lib_i32 available_width;
@@ -35,24 +35,24 @@ lib_i32 kvm_window_fit_outer_rect(const kvm_window_rect *work_area, lib_i32 desi
     lib_i32 height;
 
     if (work_area == LIB_NULL || fitted == LIB_NULL || desired_width <= 0 ||
-        desired_height <= 0) return 0;
+        desired_height <= 0) return LIB_FALSE;
     available_width = work_area->right - work_area->left;
     available_height = work_area->bottom - work_area->top;
-    if (available_width <= 0 || available_height <= 0) return 0;
+    if (available_width <= 0 || available_height <= 0) return LIB_FALSE;
     width = desired_width;
     height = desired_height;
     if (width > available_width || height > available_height) {
         if (!kvm_window_fit_aspect_size(available_width, available_height,
-                (lib_u32)desired_width, (lib_u32)desired_height, &width, &height)) return 0;
+                (lib_u32)desired_width, (lib_u32)desired_height, &width, &height)) return LIB_FALSE;
     }
     fitted->left = work_area->left + (available_width - width) / 2;
     fitted->top = work_area->top + (available_height - height) / 2;
     fitted->right = fitted->left + width;
     fitted->bottom = fitted->top + height;
-    return 1;
+    return LIB_TRUE;
 }
 
-lib_i32 kvm_window_fit_client_size(const kvm_window_rect *work_area, lib_i32 decoration_width,
+lib_bool kvm_window_fit_client_size(const kvm_window_rect *work_area, lib_i32 decoration_width,
     lib_i32 decoration_height, lib_i32 desired_width, lib_i32 desired_height,
     lib_i32 *fitted_width, lib_i32 *fitted_height)
 {
@@ -61,21 +61,21 @@ lib_i32 kvm_window_fit_client_size(const kvm_window_rect *work_area, lib_i32 dec
 
     if (work_area == LIB_NULL || fitted_width == LIB_NULL || fitted_height == LIB_NULL ||
         decoration_width < 0 || decoration_height < 0 || desired_width <= 0 ||
-        desired_height <= 0) return 0;
+        desired_height <= 0) return LIB_FALSE;
     available_width = (work_area->right - work_area->left) - decoration_width;
     available_height = (work_area->bottom - work_area->top) - decoration_height;
-    if (available_width <= 0 || available_height <= 0) return 0;
+    if (available_width <= 0 || available_height <= 0) return LIB_FALSE;
     if (desired_width <= available_width && desired_height <= available_height) {
         *fitted_width = desired_width;
         *fitted_height = desired_height;
-        return 1;
+        return LIB_TRUE;
     }
     return kvm_window_fit_aspect_size(available_width, available_height,
         (lib_u32)desired_width, (lib_u32)desired_height, fitted_width,
         fitted_height);
 }
 
-lib_i32 kvm_window_fit_aspect_size(lib_i32 available_width, lib_i32 available_height,
+lib_bool kvm_window_fit_aspect_size(lib_i32 available_width, lib_i32 available_height,
     lib_u32 source_width, lib_u32 source_height, lib_i32 *fitted_width,
     lib_i32 *fitted_height)
 {
@@ -84,7 +84,7 @@ lib_i32 kvm_window_fit_aspect_size(lib_i32 available_width, lib_i32 available_he
 
     if (available_width <= 0 || available_height <= 0 || source_width == 0u ||
         source_height == 0u || fitted_width == LIB_NULL || fitted_height == LIB_NULL)
-        return 0;
+        return LIB_FALSE;
     if ((lib_u64)available_width * source_height <=
         (lib_u64)available_height * source_width) {
         width = available_width;
@@ -93,13 +93,13 @@ lib_i32 kvm_window_fit_aspect_size(lib_i32 available_width, lib_i32 available_he
         height = available_height;
         width = kvm_window_scale_extent(height, source_width, source_height);
     }
-    if (width <= 0 || height <= 0) return 0;
+    if (width <= 0 || height <= 0) return LIB_FALSE;
     *fitted_width = width;
     *fitted_height = height;
-    return 1;
+    return LIB_TRUE;
 }
 
-lib_i32 kvm_window_cursor_rect(const kvm_window_frame *frame, const kvm_window_rect *display,
+lib_bool kvm_window_cursor_rect(const kvm_window_frame *frame, const kvm_window_rect *display,
     kvm_window_rect *cursor)
 {
     lib_i32 width, height, cell_top, cell_bottom;
@@ -107,10 +107,10 @@ lib_i32 kvm_window_cursor_rect(const kvm_window_frame *frame, const kvm_window_r
     if (kvm_window_frame_validate(frame) != LIB_STATUS_OK || !display || !cursor || frame->graphics ||
         !frame->text.base.cursor_visible || frame->text.base.cursor_column < 0 || frame->text.base.cursor_row < 0 ||
         frame->text.base.cursor_column >= frame->text.base.text_columns || frame->text.base.cursor_row >= frame->text.base.text_rows)
-        return 0;
+        return LIB_FALSE;
     width = display->right - display->left;
     height = display->bottom - display->top;
-    if (width <= 0 || height <= 0) return 0;
+    if (width <= 0 || height <= 0) return LIB_FALSE;
     cell_top = (lib_i32)((lib_i64)frame->text.base.cursor_row*height/frame->text.base.text_rows);
     cell_bottom = (lib_i32)((lib_i64)(frame->text.base.cursor_row+1)*height/frame->text.base.text_rows);
     cursor->left = display->left+(lib_i32)((lib_i64)frame->text.base.cursor_column*width/frame->text.base.text_columns);
@@ -120,7 +120,7 @@ lib_i32 kvm_window_cursor_rect(const kvm_window_frame *frame, const kvm_window_r
     font_height = frame->text.base.font_height ? frame->text.base.font_height : KVM_WINDOW_FONT_HEIGHT;
     if (frame->text.base.cursor_bottom >= frame->text.base.cursor_top) {
         top = frame->text.base.cursor_top;
-        if (top >= font_height) return 0;
+        if (top >= font_height) return LIB_FALSE;
         bottom = (lib_u32)frame->text.base.cursor_bottom + 1u;
         if (bottom > font_height) bottom = font_height;
         cursor->top = display->top+cell_top+(lib_i32)(

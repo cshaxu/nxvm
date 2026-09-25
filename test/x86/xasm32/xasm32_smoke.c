@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "x86/xasm32/xasm32_interface.h"
 
 /* Golden digest captured before the dispatch-table relocation. Hash bytes and
@@ -83,10 +82,10 @@ int main(void)
     code[0] = 0x8bu; /* MOV r32,r/m32 */
     for (lib_u32 modrm = 0; modrm < 256; ++modrm) {
         lib_u32 mod = modrm >> 6, rm = modrm & 7;
-        lib_i32 has_sib = mod != 3 && rm == 4;
+        lib_bool has_sib = mod != 3 && rm == 4;
         code[1] = (lib_u8)modrm;
         for (lib_u32 sib = 0; sib < (has_sib ? 256u : 1u); ++sib) {
-            lib_size expected = 2u + has_sib;
+            lib_size expected = 2u + (has_sib ? 1u : 0u);
             lib_memory_set(code + 2, 0, sizeof(code) - 2);
             code[2] = (lib_u8)sib;
             if (mod == 1) ++expected;

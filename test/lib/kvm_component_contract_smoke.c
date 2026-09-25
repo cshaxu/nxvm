@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-base/worker_interface.h"
 
 
@@ -10,28 +9,28 @@ typedef struct component_probe {
     lib_status last_failure;
     kvm_event_type last_type;
     char last_hotkey[KVM_HOTKEY_IDENTIFIER_CAPACITY];
-    lib_i32 accept_input;
+    lib_bool accept_input;
 } component_probe;
 
-static lib_i32 component_probe_input(void *opaque, const kvm_input_event *event)
+static lib_bool component_probe_input(void *opaque, const kvm_input_event *event)
 {
     component_probe *probe = (component_probe *)opaque;
-    if (probe == LIB_NULL || event == LIB_NULL || !probe->accept_input) return 0;
+    if (probe == LIB_NULL || event == LIB_NULL || !probe->accept_input) return LIB_FALSE;
     ++probe->input_count;
     probe->last_identity = event->source_identity;
     probe->last_type = event->type;
     if (event->type == KVM_EVENT_HOTKEY)
         lib_memory_copy(probe->last_hotkey, event->data.hotkey.identifier,
             sizeof(probe->last_hotkey));
-    return 1;
+    return LIB_TRUE;
 }
 
 /* Leaf policy belongs after kvm-base attribution and matching. This test probe
  * models frozen Window delivery: regular matcher output succeeds but does not
  * enter the application sink; registered hotkeys still do. */
-static lib_i32 component_probe_hotkeys_only(void *opaque, const kvm_input_event *event)
+static lib_bool component_probe_hotkeys_only(void *opaque, const kvm_input_event *event)
 {
-    return event != LIB_NULL && event->type != KVM_EVENT_HOTKEY ? 1 :
+    return event != LIB_NULL && event->type != KVM_EVENT_HOTKEY ? LIB_TRUE :
         component_probe_input(opaque, event);
 }
 
@@ -68,7 +67,7 @@ int main(void)
     lib_u64 identity;
     lib_u32 index;
 
-    probe.accept_input = 1;
+    probe.accept_input = LIB_TRUE;
     kvm_hotkey_registry_initialize(&hotkeys);
     lib_test_assert(kvm_hotkey_registry_register(&hotkeys, 'P',
         KVM_HOTKEY_MODIFIER_CONTROL | KVM_HOTKEY_MODIFIER_ALT,
@@ -121,11 +120,11 @@ int main(void)
 
     event.type = KVM_EVENT_KEY;
     event.data.key.key = 'A';
-    event.data.key.pressed = 1u;
+    event.data.key.pressed = LIB_TRUE;
     lib_test_assert(kvm_component_emit(&first, &event));
     lib_test_assert(probe.input_count == 1u);
     lib_test_assert(probe.last_identity == first.source_identity);
-    probe.accept_input = 0;
+    probe.accept_input = LIB_FALSE;
     lib_test_assert(!kvm_component_emit(&first, &event));
     lib_test_assert(probe.failure_count == 1u);
     lib_test_assert(!kvm_component_emit(&first, &event));
@@ -141,12 +140,12 @@ int main(void)
     /* A frozen Window's delivery policy must not bypass matching. It silently
        consumes ordinary/mismatched records after kvm-base has attributed them,
        while forwarding only the copied matched identifier to the app sink. */
-    probe.accept_input = 1;
+    probe.accept_input = LIB_TRUE;
     probe.input_count = 0u;
     kvm_hotkey_matcher_initialize(&first.hotkey_matcher, &hotkeys);
     event.data.key.key = KVM_HOTKEY_KEY_CONTROL;
     event.data.key.scan_code = 0x1du;
-    event.data.key.pressed = 1u;
+    event.data.key.pressed = LIB_TRUE;
     event.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
     lib_test_assert(kvm_component_emit_to(&first, &event, component_probe_hotkeys_only,
         &probe, LIB_TRUE));

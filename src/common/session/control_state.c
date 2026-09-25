@@ -1,7 +1,7 @@
 #include "common/session/control_state.h"
 
 void common_session_state_initialize(common_session_state *state,
-    common_session_display display, lib_i32 console_control)
+    common_session_display display, lib_bool console_control)
 {
     if (state == NULL) return;
     *state = (common_session_state) { 0 };
@@ -14,7 +14,7 @@ void common_session_state_initialize(common_session_state *state,
 
 void common_session_state_note_window_close(common_session_state *state)
 {
-    if (state != NULL) state->window_suppressed = 1;
+    if (state != NULL) state->window_suppressed = LIB_TRUE;
 }
 
 void common_session_state_note_runtime(common_session_state *state,
@@ -37,31 +37,31 @@ void common_session_state_note_runtime(common_session_state *state,
        This covers X close and a stopped-to-paused state restore alike. */
     if (completed == COMMON_SESSION_MACHINE_PAUSED && was_stopped &&
         !state->window_actual)
-        state->window_suppressed = 1;
+        state->window_suppressed = LIB_TRUE;
     if (presentation_state == COMMON_SESSION_MACHINE_RUNNING &&
         state->runtime_actual != COMMON_SESSION_MACHINE_RUNNING)
-        state->window_suppressed = 0;
+        state->window_suppressed = LIB_FALSE;
     state->runtime_actual = presentation_state;
     if (presentation_state == COMMON_SESSION_MACHINE_STOPPED || presentation_state == COMMON_SESSION_MACHINE_ERROR) {
         /* A subsequent run must not inherit the previous run's display
          * route before it has committed a frame of its own. */
-        state->frame_actual = 0;
-        state->graphics_actual = 0;
+        state->frame_actual = LIB_FALSE;
+        state->graphics_actual = LIB_FALSE;
     }
 }
 
-lib_i32 common_session_state_note_frame(common_session_state *state, lib_u32 sequence,
-    lib_i32 graphics)
+lib_bool common_session_state_note_frame(common_session_state *state, lib_u32 sequence,
+    lib_bool graphics)
 {
     if (state == NULL || !common_session_frame_is_newer(sequence,
-            state->observed_frame_sequence)) return 0;
+            state->observed_frame_sequence)) return LIB_FALSE;
     state->observed_frame_sequence = sequence;
-    state->frame_actual = 1;
+    state->frame_actual = LIB_TRUE;
     state->graphics_actual = graphics != 0;
-    return 1;
+    return LIB_TRUE;
 }
 
-void common_session_state_note_window(common_session_state *state, lib_i32 exists)
+void common_session_state_note_window(common_session_state *state, lib_bool exists)
 {
     if (state == NULL) return;
     state->window_actual = exists != 0;
@@ -71,7 +71,7 @@ void common_session_state_note_window(common_session_state *state, lib_i32 exist
 }
 
 void common_session_state_note_vm_console(common_session_state *state,
-    lib_i32 exists)
+    lib_bool exists)
 {
     if (state == NULL) return;
     state->vm_console_actual = exists != 0;
@@ -81,7 +81,7 @@ void common_session_state_note_vm_console(common_session_state *state,
 }
 
 void common_session_state_note_current_console(common_session_state *state,
-    lib_i32 vm_console_current)
+    lib_bool vm_console_current)
 {
     common_session_console_actual current = vm_console_current ?
         COMMON_SESSION_CONSOLE_VM : COMMON_SESSION_CONSOLE_MONITOR;
@@ -104,10 +104,10 @@ common_ui_action common_session_state_take_action(common_session_state *state)
     return action;
 }
 
-lib_i32 common_session_state_monitor_is_current(const common_session_state *state)
+lib_bool common_session_state_monitor_is_current(const common_session_state *state)
 {
     common_session_presentation_plan desired;
-    if (state == NULL) return 0;
+    if (state == NULL) return LIB_FALSE;
     desired = common_session_state_desired(state);
     return desired.monitor_console_enabled &&
         state->current_console_actual ==
@@ -115,7 +115,7 @@ lib_i32 common_session_state_monitor_is_current(const common_session_state *stat
         state->in_flight != COMMON_UI_ACTION_BIND_VM_CONSOLE;
 }
 
-lib_i32 common_session_state_monitor_is_running_graphics_surface(
+lib_bool common_session_state_monitor_is_running_graphics_surface(
     const common_session_state *state)
 {
     return state != NULL &&
@@ -125,13 +125,13 @@ lib_i32 common_session_state_monitor_is_running_graphics_surface(
         common_session_state_monitor_is_current(state);
 }
 
-lib_i32 common_session_state_frame_targets_ready(const common_session_state *state)
+lib_bool common_session_state_frame_targets_ready(const common_session_state *state)
 {
     common_session_presentation_plan desired;
-    if (state == NULL) return 0;
+    if (state == NULL) return LIB_FALSE;
     desired = common_session_state_desired(state);
-    if (!desired.window_enabled && !desired.vm_console_enabled) return 0;
-    if (desired.window_enabled && !state->window_actual) return 0;
+    if (!desired.window_enabled && !desired.vm_console_enabled) return LIB_FALSE;
+    if (desired.window_enabled && !state->window_actual) return LIB_FALSE;
     return !desired.vm_console_enabled ||
         (state->vm_console_actual &&
          state->current_console_actual == COMMON_SESSION_CONSOLE_VM);
@@ -139,7 +139,7 @@ lib_i32 common_session_state_frame_targets_ready(const common_session_state *sta
 
 common_session_presentation_plan common_session_state_desired(const common_session_state *state)
 {
-    common_session_presentation_plan plan = { 0, 0, 1 };
+    common_session_presentation_plan plan = { LIB_FALSE, LIB_FALSE, LIB_TRUE };
     if (state == NULL) return plan;
     plan = common_session_derive_presentation(state->display,
         state->console_control, state->runtime_actual,

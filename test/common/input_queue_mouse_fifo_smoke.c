@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "common/machine/input_queue.h"
 
 
@@ -11,7 +10,7 @@ int main(void)
     kvm_input_event actual = { 0 };
 
     first.type = KVM_EVENT_MOUSE;
-    first.data.mouse.relative = 1u;
+    first.data.mouse.relative = LIB_TRUE;
     first.data.mouse.delta_y = 16;
     first.data.mouse.buttons = KVM_MOUSE_BUTTON_LEFT;
     second = first;

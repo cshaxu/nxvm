@@ -14,7 +14,7 @@ static void common_session_queue_latch_failure(common_session_queue *queue,
     base_sync_mutex_lock(queue->lock);
     if (!queue->fault_pending[slot]) {
         queue->faults[slot] = *event;
-        queue->fault_pending[slot] = 1;
+        queue->fault_pending[slot] = LIB_TRUE;
     }
     base_sync_event_signal(queue->available);
     base_sync_mutex_unlock(queue->lock);
@@ -185,7 +185,7 @@ lib_bool common_session_queue_take(common_session_queue *queue,
         for (slot = 0u; slot < 2u; ++slot) {
             if (!queue->fault_pending[slot]) continue;
             *out_event = queue->faults[slot];
-            queue->fault_pending[slot] = 0;
+            queue->fault_pending[slot] = LIB_FALSE;
             taken = LIB_TRUE;
             break;
         }
@@ -256,7 +256,7 @@ static lib_bool common_session_release_source(common_session_queue *queue,
             ++index;
             continue;
         }
-        pressed->data.key.pressed = 0u;
+        pressed->data.key.pressed = LIB_FALSE;
         /* Source retirement is ledger cleanup.  It can reach the control
            queue after pause, but must not turn into a late guest release in
            the paused or stopped VM. */

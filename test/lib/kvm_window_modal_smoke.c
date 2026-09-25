@@ -26,14 +26,14 @@ static lib_win32_bool LIB_WIN32_CALLBACK find_window(lib_win32_hwnd w, lib_win32
         target = w;
     return LIB_WIN32_TRUE;
 }
-static lib_i32 input(void *p, const kvm_input_event *e)
+static lib_bool input(void *p, const kvm_input_event *e)
 {
     (void)p;
     if (e->type == KVM_EVENT_SOURCE_RETIRED) {
         lib_win32_interlocked_increment(&retire_count);
         lib_win32_set_event(retired);
     }
-    return 1;
+    return LIB_TRUE;
 }
 static void failed(void *p, lib_u64 id, lib_status s)
 { (void)p; (void)id; (void)s; lib_test_assert(!"unexpected component failure"); }

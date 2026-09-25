@@ -26,8 +26,8 @@ typedef struct kvm_window_graphics_frame {
 } kvm_window_graphics_frame;
 
 typedef struct kvm_window_frame {
-    lib_u32 valid;
-    lib_u32 graphics;
+    lib_bool valid;
+    lib_bool graphics;
     union {
         kvm_window_text_frame text;
         kvm_window_graphics_frame image;

@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "lib/console/binding_interface.h"
 #include "lib/kvm-console/console_interface.h"
 
@@ -43,7 +42,7 @@ typedef struct destroy_context {
     lib_win32_handle done;
 } destroy_context;
 
-static lib_i32 retirement_input(void *opaque, const kvm_input_event *event)
+static lib_bool retirement_input(void *opaque, const kvm_input_event *event)
 {
     retirement_probe *probe = (retirement_probe *)opaque;
     lib_win32_long index;
@@ -59,7 +58,7 @@ static lib_i32 retirement_input(void *opaque, const kvm_input_event *event)
         lib_test_assert(event->type == KVM_EVENT_SOURCE_RETIRED);
         lib_win32_set_event(probe->retired);
     }
-    return 1;
+    return LIB_TRUE;
 }
 
 static void retirement_failure(void *opaque, lib_u64 source_identity,
@@ -308,12 +307,12 @@ static void check_activation_frame(void)
 
 static kvm_input_event reset_events[16];
 static lib_u32 reset_event_count;
-static lib_i32 reset_input(void *opaque, const kvm_input_event *event)
+static lib_bool reset_input(void *opaque, const kvm_input_event *event)
 {
     (void)opaque;
     lib_test_assert(reset_event_count < 16);
     reset_events[reset_event_count++] = *event;
-    return 1;
+    return LIB_TRUE;
 }
 static void reset_failure(void *opaque, lib_u64 id, lib_status status)
 { (void)opaque; (void)id; (void)status; lib_test_assert(0); }
@@ -328,9 +327,9 @@ static void check_input_reset(void)
     lib_test_assert(kvm_console_create(&c,&options)==0);
     lib_console *logical=kvm_console_get_console(c);
     lib_test_assert(lib_console_bind_generation(logical,1)==0);
-    e.value.raw_key=(lib_console_raw_key){ .key=LIB_WIN32_KEY_CONTROL, .scan_code=0x1d, .pressed=1, .modifiers=1 };
+    e.value.raw_key=(lib_console_raw_key){ .key=LIB_WIN32_KEY_CONTROL, .scan_code=0x1d, .pressed=LIB_TRUE, .modifiers=1 };
     lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==0);
-    e.value.raw_key=(lib_console_raw_key){ .unicode=0xd83d, .pressed=1 };
+    e.value.raw_key=(lib_console_raw_key){ .unicode=0xd83d, .pressed=LIB_TRUE };
     lib_test_assert(lib_console_deliver_event(logical,&e)==0);
     e.kind=LIB_CONSOLE_EVENT_RAW_MOUSE;
     e.value.raw_mouse=(lib_console_raw_mouse){ .delta_x=1, .delta_y=1 };
@@ -346,9 +345,9 @@ static void check_input_reset(void)
     lib_test_assert(kvm_component_mailboxes_capture_frame(&c->base.mailboxes,&generation,&copied,sizeof(copied)));
     lib_test_assert(copied.base.text_columns==80);
     e.kind=LIB_CONSOLE_EVENT_RAW_KEY;
-    e.value.raw_key=(lib_console_raw_key){ .unicode=0xde00, .pressed=1 };
+    e.value.raw_key=(lib_console_raw_key){ .unicode=0xde00, .pressed=LIB_TRUE };
     lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==1);
-    e.value.raw_key=(lib_console_raw_key){ .key='A', .scan_code=0x1e, .pressed=1 };
+    e.value.raw_key=(lib_console_raw_key){ .key='A', .scan_code=0x1e, .pressed=LIB_TRUE };
     lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==2);
     lib_test_assert(reset_events[1].type==KVM_EVENT_KEY && reset_events[1].data.key.key=='A');
     e.kind=LIB_CONSOLE_EVENT_RAW_MOUSE;
@@ -368,7 +367,7 @@ static void check_input_reset(void)
     lib_test_assert(kvm_console_mouse_buttons(LIB_WIN32_RIGHTMOST_BUTTON_PRESSED)==KVM_MOUSE_BUTTON_RIGHT);
     lib_test_assert(kvm_console_mouse_buttons(LIB_WIN32_FROM_LEFT_2ND_BUTTON_PRESSED)==0);
     e.kind=LIB_CONSOLE_EVENT_RAW_KEY;
-    e.value.raw_key=(lib_console_raw_key){ .key='P', .scan_code=0x19, .pressed=1, .modifiers=3 };
+    e.value.raw_key=(lib_console_raw_key){ .key='P', .scan_code=0x19, .pressed=LIB_TRUE, .modifiers=3 };
     lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==5);
     lib_test_assert(reset_events[4].type==KVM_EVENT_HOTKEY); /* Accepted snapshot policy survives. */
     lib_test_assert(kvm_console_destroy(c) == LIB_STATUS_OK);
@@ -456,15 +455,15 @@ static void check_character_banks(void)
     lib_test_assert(captured.rows == 50 && captured.text[3999] == 0x2588 &&
         captured.foreground[3999] == 5 && captured.background[3999] == 6);
     /* KVM scanlines are normalized before the independent Console boundary. */
-    const struct { lib_u32 height, top, bottom, visible, out_bottom; } cases[] = {
-        {0,14,15,1,15}, {16,20,21,0,15}, {16,14,31,1,15},
-        {16,4,7,1,7}, {8,7,255,1,7}, {16,9,8,1,8}
+    const struct { lib_u32 height, top, bottom; lib_bool visible; lib_u32 out_bottom; } cases[] = {
+        {0,14,15,LIB_TRUE,15}, {16,20,21,LIB_FALSE,15}, {16,14,31,LIB_TRUE,15},
+        {16,4,7,LIB_TRUE,7}, {8,7,255,LIB_TRUE,7}, {16,9,8,LIB_TRUE,8}
     };
     for (lib_u32 i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i) {
         frame.base.font_height = cases[i].height;
         frame.base.cursor_top = cases[i].top;
         frame.base.cursor_bottom = cases[i].bottom;
-        frame.base.cursor_visible = frame.base.cursor_phase = 1;
+        frame.base.cursor_visible = frame.base.cursor_phase = LIB_TRUE;
         lib_test_assert(kvm_console_publish_text_frame(&console, &frame) == LIB_STATUS_OK);
         lib_test_assert(captured.font_height == (cases[i].height ? cases[i].height : 16));
         lib_test_assert(captured.cursor_visible == cases[i].visible);

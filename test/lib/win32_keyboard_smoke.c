@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-base/input_interface.h"
 #include "lib/kvm-base/hotkey_interface.h"
 #include "lib/types/win32/input.h"
@@ -16,17 +15,17 @@ typedef struct shared_keyboard_capture {
     lib_u32 count;
 } shared_keyboard_capture;
 
-static lib_i32 capture_key(void *context, const kvm_input_event *event)
+static lib_bool capture_key(void *context, const kvm_input_event *event)
 {
     shared_keyboard_capture *capture = (shared_keyboard_capture *)context;
     if (event == LIB_NULL || event->type != KVM_EVENT_KEY ||
-        capture->count == sizeof(capture->keys)) return 0;
+        capture->count == sizeof(capture->keys)) return LIB_FALSE;
     capture->keys[capture->count] = (lib_u8)event->data.key.scan_code;
     capture->releases[capture->count] = (lib_u8)!event->data.key.pressed;
     capture->modifiers[capture->count] = event->data.key.modifiers;
     capture->identities[capture->count] = event->data.key.key;
     capture->flags[capture->count++] = event->data.key.flags;
-    return 1;
+    return LIB_TRUE;
 }
 
 typedef struct shared_hotkey_capture {
@@ -35,15 +34,15 @@ typedef struct shared_hotkey_capture {
     lib_u32 count;
 } shared_hotkey_capture;
 
-static lib_i32 capture_hotkey(void *context, const kvm_input_event *event)
+static lib_bool capture_hotkey(void *context, const kvm_input_event *event)
 {
     shared_hotkey_capture *capture = (shared_hotkey_capture *)context;
-    if (capture == LIB_NULL || event == LIB_NULL || capture->count == 8u) return 0;
+    if (capture == LIB_NULL || event == LIB_NULL || capture->count == 8u) return LIB_FALSE;
     capture->events[capture->count++] = *event;
-    return 1;
+    return LIB_TRUE;
 }
 
-static lib_i32 normalize_and_match(void *context, const kvm_input_event *event)
+static lib_bool normalize_and_match(void *context, const kvm_input_event *event)
 {
     shared_hotkey_capture *capture = (shared_hotkey_capture *)context;
     return capture != LIB_NULL && kvm_hotkey_matcher_submit(&capture->matcher,
@@ -189,14 +188,14 @@ int main(void)
 
     /* Only unmapped transitions ask the native adapter for character translation. */
     capture.count = 0;
-    kvm_keyboard_record record = { .kind = KVM_KEYBOARD_TRANSITION, .key = 'A', .pressed = 1 };
+    kvm_keyboard_record record = { .kind = KVM_KEYBOARD_TRANSITION, .key = 'A', .pressed = LIB_TRUE };
     lib_test_assert(kvm_keyboard_submit_record(&normalizer, LIB_NULL, &capture, capture_key, &record) ==
         KVM_KEYBOARD_ACCEPTED);
-    record.pressed = 0;
+    record.pressed = LIB_FALSE;
     lib_test_assert(kvm_keyboard_submit_record(&normalizer, LIB_NULL, &capture, capture_key, &record) ==
         KVM_KEYBOARD_ACCEPTED);
     lib_test_assert(capture.count == 2);
-    record.key = LIB_WIN32_KEY_PACKET; record.pressed = 1;
+    record.key = LIB_WIN32_KEY_PACKET; record.pressed = LIB_TRUE;
     lib_test_assert(kvm_keyboard_submit_record(&normalizer, LIB_NULL, &capture, capture_key, &record) ==
         KVM_KEYBOARD_UNMAPPED);
     lib_test_assert(capture.count == 2);

@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "lib/console-broker/console_interface.h"
 #include "lib/base/sync_interface.h"
 #include "lib/storage/file_interface.h"

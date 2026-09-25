@@ -11,7 +11,8 @@ typedef lib_i64 lib_linux_off_t;
 #define LIB_LINUX_LOCK_NB 4
 #define lib_linux_fseeko fseek
 #define lib_linux_ftello ftell
-static lib_i32 reject_lock, reject_open, expected_lock;
+static lib_bool reject_lock, reject_open;
+static lib_i32 expected_lock;
 static lib_u32 closes;
 static lib_c_file *open_stream(const char *path, const char *mode)
 {
@@ -39,7 +40,8 @@ static lib_i32 lock_stream(lib_i32 fd, lib_i32 operation)
 int main(void)
 {
     for (lib_i32 write = 0; write != 2; ++write) {
-        for (reject_lock = 0; reject_lock != 2; ++reject_lock) {
+        for (lib_u32 failure = 0u; failure != 2u; ++failure) {
+            reject_lock = failure != 0u;
             lib_storage_file file = { 0 };
             lib_u32 before = closes;
             expected_lock = write ? LIB_LINUX_LOCK_EX : LIB_LINUX_LOCK_SH;
@@ -56,10 +58,10 @@ int main(void)
             }
             lib_test_assert(lib_storage_file_close(&file) == LIB_STATUS_OK);
             lib_test_assert(closes == before + 1u && file.stream == LIB_NULL);
-            reject_open = 1;
+            reject_open = LIB_TRUE;
             lib_test_assert(storage_file_platform_open("fixture", write, &file) == LIB_STATUS_IO_ERROR);
             lib_test_assert(file.stream == LIB_NULL && closes == before + 1u);
-            reject_open = 0;
+            reject_open = LIB_FALSE;
         }
     }
     return 0;

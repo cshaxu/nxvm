@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #if defined(__linux__)
 #define _DEFAULT_SOURCE
 #endif
@@ -10,7 +9,7 @@
 #include "lib/types/linux/test.h"
 #endif
 
-static void check_decode(lib_u8 *code, lib_i32 flag32, lib_bool valid)
+static void check_decode(lib_u8 *code, lib_bool flag32, lib_bool valid)
 {
     char text[256], before[256];
     lib_size text_bytes = 37u, code_bytes = 19u;

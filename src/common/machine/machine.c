@@ -121,7 +121,7 @@ static lib_status common_machine_publish(common_machine *machine)
     base_sync_mutex_lock(machine->frame_lock);
     staging_index = machine->published_frame_index == 0 ? 1 : 0;
     frame = machine->frame_buffers[staging_index];
-    frame->window.valid = 0u;
+    frame->window.valid = LIB_FALSE;
     status = machine->driver.copy_frame(machine->driver.context, frame);
     if (status != LIB_STATUS_OK) {
         base_sync_mutex_unlock(machine->frame_lock);

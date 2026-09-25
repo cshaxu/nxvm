@@ -1,12 +1,11 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "common/session/control.h"
 
 /* These stubs keep the test at the application control boundary while making
  * the paused guest-injection barrier observable. */
 static lib_u32 delivered_guest_input;
-static lib_i32 deliver_input(void *context, const kvm_input_event *event)
-{ (void)context; (void)event; ++delivered_guest_input; return 1; }
+static lib_bool deliver_input(void *context, const kvm_input_event *event)
+{ (void)context; (void)event; ++delivered_guest_input; return LIB_TRUE; }
 
 static void take(common_session_queue *queue, common_session_event *event)
 { lib_test_assert(common_session_queue_take(queue, event, 0u)); }
@@ -26,7 +25,7 @@ int main(void)
     raw_key.type = KVM_EVENT_KEY;
     raw_key.source_identity = 41u;
     raw_key.data.key.key = 'A';
-    raw_key.data.key.pressed = 1u;
+    raw_key.data.key.pressed = LIB_TRUE;
 
     /* Application events admitted after each completed monitor -> raw ->
        monitor handoff remain one FIFO. Native records left in the host input
@@ -70,7 +69,7 @@ int main(void)
     lib_test_assert(common_session_queue_push_kvm_for_run(queue, &raw_key, 7u));
     take(queue, &event);
     lib_test_assert(!common_session_accept_kvm_event(&event, 7u, COMMON_SESSION_MACHINE_PAUSED));
-    raw_key.data.key.pressed = 0u;
+    raw_key.data.key.pressed = LIB_FALSE;
     lib_test_assert(common_session_queue_push_kvm_for_run(queue, &raw_key, 7u));
     take(queue, &event); lib_test_assert(common_session_accept_kvm_event(&event, 7u,
         COMMON_SESSION_MACHINE_PAUSED));

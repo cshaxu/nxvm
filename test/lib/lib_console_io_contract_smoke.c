@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 #include "lib/types/win32/console.h"
 #include "lib/types/win32/sync.h"
 #include "lib/console/binding_interface.h"
@@ -33,7 +32,7 @@ static lib_win32_char_info captured_cells[80u * 50u];
 static lib_win32_small_rect captured_region;
 static lib_win32_coord buffer_size={80,25};
 static lib_win32_small_rect viewport={0,0,79,24};
-static lib_i32 reject_viewport;
+static lib_bool reject_viewport;
 static lib_win32_bool LIB_WIN32_WINAPI screen_info(lib_win32_handle h, lib_win32_console_screen_buffer_info *p)
 { (void)h; lib_memory_set(p, 0, sizeof(*p)); p->dwSize=buffer_size; p->srWindow=viewport; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI set_viewport(lib_win32_handle h,lib_win32_bool absolute,const lib_win32_small_rect *rect)
@@ -175,13 +174,13 @@ int main(void)
     lib_test_assert(palette_sets==2);
     /* Native approximation consumes the already normalized scanline range. */
     f.font_height=16; f.cursor_top=14; f.cursor_bottom=15;
-    f.cursor_visible=f.cursor_phase=1;
+    f.cursor_visible=f.cursor_phase=LIB_TRUE;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
     lib_test_assert(last_cursor.dwSize==12 && last_cursor.bVisible);
-    f.cursor_visible=0;
+    f.cursor_visible=LIB_FALSE;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
     lib_test_assert(!last_cursor.bVisible);
-    f.cursor_visible=1; f.cursor_top=9; f.cursor_bottom=8;
+    f.cursor_visible=LIB_TRUE; f.cursor_top=9; f.cursor_bottom=8;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
     lib_test_assert(last_cursor.dwSize==100 && last_cursor.bVisible);
     for (lib_i32 axis=0;axis<2;++axis) {
@@ -195,7 +194,7 @@ int main(void)
     }
     cursor_ok=0;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_IO_ERROR);
-    f.cursor_visible=f.cursor_phase=1;
+    f.cursor_visible=f.cursor_phase=LIB_TRUE;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_IO_ERROR);
     cursor_ok=1;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);

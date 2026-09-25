@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-base/mailbox_interface.h"
 
 static lib_u32 mutex_creates, reject_mutex;

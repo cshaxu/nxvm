@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-window/window.h"
 #include "lib/kvm-console/console.h"
 
@@ -9,8 +8,8 @@ typedef struct leaf_probe {
     lib_status last_failure;
 } leaf_probe;
 
-static lib_i32 leaf_input(void *opaque, const kvm_input_event *event)
-{ (void)opaque; (void)event; return 1; }
+static lib_bool leaf_input(void *opaque, const kvm_input_event *event)
+{ (void)opaque; (void)event; return LIB_TRUE; }
 
 static void leaf_failure(void *opaque, lib_u64 identity, lib_status status)
 {

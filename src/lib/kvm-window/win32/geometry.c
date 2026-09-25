@@ -2,14 +2,14 @@
 #include "lib/types/win32/sync.h"
 #include "lib/kvm-window/win32/geometry.h"
 
-static lib_i32 kvm_win32_window_decoration(lib_win32_hwnd window, lib_i32 *width, lib_i32 *height)
+static lib_bool kvm_win32_window_decoration(lib_win32_hwnd window, lib_i32 *width, lib_i32 *height)
 {
     lib_win32_rect outer;
     lib_win32_rect client;
 
     if (window == LIB_NULL || width == LIB_NULL || height == LIB_NULL ||
         !lib_win32_get_window_rect(window, &outer) || !lib_win32_get_client_rect(window, &client))
-        return 0;
+        return LIB_FALSE;
     *width = (outer.right - outer.left) - (client.right - client.left);
     *height = (outer.bottom - outer.top) - (client.bottom - client.top);
     return *width >= 0 && *height >= 0;

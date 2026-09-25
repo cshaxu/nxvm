@@ -124,12 +124,11 @@ lib_status lib_storage_file_reader_read(lib_storage_file_reader *reader,
 
 lib_status lib_storage_file_reader_close(lib_storage_file_reader *reader)
 {
+    lib_status status;
     if (reader == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    {
-        lib_status status = lib_storage_file_close(&reader->file);
-        lib_release(reader);
-        return status;
-    }
+    status = lib_storage_file_close(&reader->file);
+    lib_release(reader);
+    return status;
 }
 
 lib_status lib_storage_file_writer_open(const char *path,
@@ -164,10 +163,9 @@ lib_status lib_storage_file_writer_write(lib_storage_file_writer *writer,
 
 lib_status lib_storage_file_writer_close(lib_storage_file_writer *writer)
 {
+    lib_status status;
     if (writer == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    {
-        lib_status status = lib_storage_file_close(&writer->file);
-        lib_release(writer);
-        return status;
-    }
+    status = lib_storage_file_close(&writer->file);
+    lib_release(writer);
+    return status;
 }

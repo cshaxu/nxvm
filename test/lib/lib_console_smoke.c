@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "lib/console/console_interface.h"
 #include "lib/console/binding_interface.h"
 
@@ -41,7 +40,7 @@ static lib_status console_probe_frame(void *context,
 
 int main(void)
 {
-    lib_test_assert(sizeof(lib_console_text_frame) == 16084);
+    lib_test_assert(sizeof(lib_console_text_frame) == 16092);
     lib_console *console = LIB_NULL;
     console_probe probe = { 0 };
     lib_console_event event = { 0 };

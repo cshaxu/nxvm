@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #ifndef COMMON_TEST_MACHINE_FIXTURE_H
 #define COMMON_TEST_MACHINE_FIXTURE_H
 

@@ -1,8 +1,22 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-base/mailbox_interface.h"
 #include "lib/kvm-window/frame_interface.h"
 #include "lib/kvm-console/frame_interface.h"
+#include "lib/console/console_interface.h"
+#include "lib/kvm-base/event_interface.h"
+
+#define ASSERT_BOOLEAN(type, member) \
+    _Static_assert(_Generic(((type *)0)->member, lib_bool: 1, default: 0), \
+        #type "." #member " must use the boolean value contract")
+ASSERT_BOOLEAN(kvm_window_frame, valid);
+ASSERT_BOOLEAN(kvm_window_frame, graphics);
+ASSERT_BOOLEAN(kvm_text_frame, cursor_visible);
+ASSERT_BOOLEAN(kvm_text_frame, cursor_phase);
+ASSERT_BOOLEAN(lib_console_text_frame, cursor_visible);
+ASSERT_BOOLEAN(lib_console_text_frame, cursor_phase);
+ASSERT_BOOLEAN(kvm_input_event, data.key.pressed);
+ASSERT_BOOLEAN(kvm_input_event, data.mouse.relative);
+#undef ASSERT_BOOLEAN
 
 static kvm_window_frame source, destination, storage;
 static kvm_component_mailboxes mailbox;
@@ -19,14 +33,14 @@ static void check_validation(void)
     source = (kvm_window_frame){0};
     lib_test_assert(kvm_window_frame_validate(LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT);
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_INVALID_ARGUMENT);
-    source.valid = 1u;
+    source.valid = LIB_TRUE;
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_INVALID_ARGUMENT);
     source.text.base.text_columns = source.text.base.text_rows = 1u;
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK);
     source.text.base.font_height = KVM_WINDOW_FONT_HEIGHT;
     source.text.base.text_columns = KVM_TEXT_COLUMNS;
     source.text.base.text_rows = KVM_TEXT_ROWS;
-    source.text.base.cursor_visible = 1u;
+    source.text.base.cursor_visible = LIB_TRUE;
     source.text.base.cursor_column = -1;
     source.text.base.cursor_row = 500;
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK);
@@ -61,7 +75,7 @@ static void check_validation(void)
     lib_test_assert(kvm_console_text_frame_validate(&text) == LIB_STATUS_INVALID_ARGUMENT);
     text.characters.secondary[0] = 0xe000u;
     lib_test_assert(kvm_console_text_frame_validate(&text) == LIB_STATUS_OK);
-    source.graphics = 1u;
+    source.graphics = LIB_TRUE;
     source.image.width = source.image.height = source.image.stride = 1u;
     lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK);
     source.image.stride = 0u;
@@ -90,14 +104,14 @@ static void check_copy(void)
 int main(void)
 {
     lib_u32 generation, old;
-    lib_test_assert(sizeof(kvm_text_frame) == 16084);
-    lib_test_assert(sizeof(kvm_window_text_frame) == 24276);
-    lib_test_assert(sizeof(kvm_console_text_frame) == 17108);
+    lib_test_assert(sizeof(kvm_text_frame) == 16092);
+    lib_test_assert(sizeof(kvm_window_text_frame) == 24284);
+    lib_test_assert(sizeof(kvm_console_text_frame) == 17116);
     lib_test_assert(sizeof(kvm_window_frame) == 984084);
     check_validation();
     lib_memory_set(&source, 0x3c, sizeof(source));
-    source.valid = 1u;
-    source.graphics = 0u;
+    source.valid = LIB_TRUE;
+    source.graphics = LIB_FALSE;
     source.text.base.text_columns = 80u;
     source.text.base.text_rows = 25u;
     source.text.base.font_height = 0u;
@@ -120,7 +134,7 @@ int main(void)
     lib_test_assert(kvm_component_mailboxes_publish_frame(&mailbox, &source, sizeof(storage) + 1u) == LIB_STATUS_LIMIT_EXCEEDED);
     lib_test_assert(mailbox.frame_generation == old);
     lib_test_assert(!kvm_component_mailboxes_capture_frame(&mailbox, &generation, &destination, 1u));
-    source.graphics = 1u;
+    source.graphics = LIB_TRUE;
     source.image.width = 3u;
     source.image.stride = 7u;
     source.image.height = 5u;
@@ -135,7 +149,7 @@ int main(void)
     source.image.width = source.image.stride = KVM_WINDOW_GRAPHICS_MAX_WIDTH;
     source.image.height = KVM_WINDOW_GRAPHICS_MAX_HEIGHT;
     check_copy();
-    source.graphics = 0u;
+    source.graphics = LIB_FALSE;
     source.text.base.text_columns = 80u; source.text.base.text_rows = 25u;
     source.text.base.font_height = 0u;
     for (lib_size i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i)
@@ -147,7 +161,7 @@ int main(void)
     lib_test_assert(!destination.graphics && ((const lib_u8 *)&destination)[kvm_window_frame_size_bytes(&source)] == 0xa5);
     kvm_component_mailboxes_acknowledge_frame(&mailbox, generation);
     lib_test_assert(!kvm_component_mailboxes_capture_frame(&mailbox, &generation, &destination, sizeof(destination)));
-    source.graphics = 1u;
+    source.graphics = LIB_TRUE;
     source.image.stride = KVM_WINDOW_GRAPHICS_MAX_WIDTH + 1u;
     lib_memory_set(&destination, 0xa5, sizeof(destination));
     lib_test_assert(!kvm_window_frame_copy(&destination, &source));

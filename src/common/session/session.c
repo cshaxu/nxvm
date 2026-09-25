@@ -30,37 +30,37 @@ static void common_session_clear_result(common_session_command_result *result)
     if (result != NULL) *result = (common_session_command_result) { 0 };
 }
 
-static lib_i32 common_session_deliver_machine_input(void *context,
+static lib_bool common_session_deliver_machine_input(void *context,
     const kvm_input_event *event)
 {
     return common_machine_enqueue_input((common_machine *)context, event) != 0;
 }
 
-static lib_i32 common_session_dispatch_request(common_session *session,
+static lib_bool common_session_dispatch_request(common_session *session,
     common_session_request request)
 {
-    if (request == COMMON_SESSION_REQUEST_NONE) return 1;
-    if (session == NULL || session->machine == NULL) return 0;
+    if (request == COMMON_SESSION_REQUEST_NONE) return LIB_TRUE;
+    if (session == NULL || session->machine == NULL) return LIB_FALSE;
     switch (request) {
     case COMMON_SESSION_REQUEST_START: return common_machine_start(session->machine);
     case COMMON_SESSION_REQUEST_RESUME: return common_machine_resume(session->machine);
     case COMMON_SESSION_REQUEST_PAUSE: return common_machine_pause(session->machine);
     case COMMON_SESSION_REQUEST_STOP: return common_machine_stop(session->machine);
     case COMMON_SESSION_REQUEST_RESET: return common_machine_reset(session->machine);
-    default: return 0;
+    default: return LIB_FALSE;
     }
 }
 
-static lib_i32 common_session_write_text(common_session *session, const char *text)
+static lib_bool common_session_write_text(common_session *session, const char *text)
 {
     char chunk[1024];
     lib_size used = 0u;
     char previous = '\0';
-    if (text == NULL) return 1;
+    if (text == NULL) return LIB_TRUE;
     for (; *text != '\0'; ++text) {
         if (used + 2u >= sizeof(chunk)) {
             chunk[used] = '\0';
-            if (common_ui_write_monitor(session->ui, chunk) != LIB_STATUS_OK) return 0;
+            if (common_ui_write_monitor(session->ui, chunk) != LIB_STATUS_OK) return LIB_FALSE;
             used = 0u;
         }
         if (*text == '\n' && previous != '\r') chunk[used++] = '\r';
@@ -71,58 +71,58 @@ static lib_i32 common_session_write_text(common_session *session, const char *te
     return used == 0u || common_ui_write_monitor(session->ui, chunk) == LIB_STATUS_OK;
 }
 
-static lib_i32 common_session_apply_result(common_session *session,
+static lib_bool common_session_apply_result(common_session *session,
     const common_session_command_result *result)
 {
     if (result->release_window_mouse &&
-        common_ui_release_window_mouse(session->ui) != LIB_STATUS_OK) return 0;
+        common_ui_release_window_mouse(session->ui) != LIB_STATUS_OK) return LIB_FALSE;
     if ((result->text[0] != '\0' || (result->detail != NULL && result->detail[0] != '\0')) &&
         common_session_state_monitor_is_current(&session->state)) {
         if (session->pending_line) {
             lib_bool completed;
-            if (common_ui_cancel_monitor_line(session->ui, &completed) != LIB_STATUS_OK) return 0;
+            if (common_ui_cancel_monitor_line(session->ui, &completed) != LIB_STATUS_OK) return LIB_FALSE;
             session->pending_line = completed;
             if (!completed && common_ui_write_monitor(session->ui, "\r\n") != LIB_STATUS_OK)
-                return 0;
+                return LIB_FALSE;
         }
         if (!common_session_write_text(session, result->text) ||
-            !common_session_write_text(session, result->detail)) return 0;
+            !common_session_write_text(session, result->detail)) return LIB_FALSE;
     }
-    if (!common_session_dispatch_request(session, result->request)) return 0;
+    if (!common_session_dispatch_request(session, result->request)) return LIB_FALSE;
     if (result->request != COMMON_SESSION_REQUEST_NONE ||
         !result->arm_prompt || session->pending_line ||
-        !common_session_state_monitor_is_current(&session->state)) return 1;
+        !common_session_state_monitor_is_current(&session->state)) return LIB_TRUE;
     if (common_ui_write_monitor(session->ui, result->prompt) != LIB_STATUS_OK ||
-        common_ui_request_monitor_line(session->ui) != LIB_STATUS_OK) return 0;
+        common_ui_request_monitor_line(session->ui) != LIB_STATUS_OK) return LIB_FALSE;
     session->pending_line = LIB_TRUE;
-    return 1;
+    return LIB_TRUE;
 }
 
-static lib_i32 common_session_arm_if_ready(common_session *session)
+static lib_bool common_session_arm_if_ready(common_session *session)
 {
     common_session_command_result result;
-    if (session == NULL || session->command.note_monitor_current == NULL) return 0;
+    if (session == NULL || session->command.note_monitor_current == NULL) return LIB_FALSE;
     common_session_clear_result(&result);
     session->command.note_monitor_current(session->command.context,
         common_session_state_monitor_is_current(&session->state), &result);
     return common_session_apply_result(session, &result);
 }
 
-static lib_i32 common_session_drive(common_session *session)
+static lib_bool common_session_drive(common_session *session)
 {
     common_ui_action action;
     lib_bool console_status_surface;
     if (session == NULL || session->ui == NULL || session->machine == NULL)
-        return 0;
+        return LIB_FALSE;
     common_ui_set_run_generation(session->ui,
         common_machine_run_generation(session->machine));
     action = common_session_state_take_action(&session->state);
     if (action != COMMON_UI_ACTION_NONE &&
         common_ui_apply_action(session->ui, action,
             common_session_ui_state(session->state.runtime_actual)) != LIB_STATUS_OK)
-        return 0;
+        return LIB_FALSE;
     if (session->state.observed_frame_sequence == 0u ||
-        !common_session_state_frame_targets_ready(&session->state)) return 1;
+        !common_session_state_frame_targets_ready(&session->state)) return LIB_TRUE;
     console_status_surface =
         session->state.display == COMMON_SESSION_DISPLAY_CONSOLE &&
         !session->state.console_control && session->frame.window.graphics != 0u;
@@ -134,45 +134,45 @@ static lib_i32 common_session_drive(common_session *session)
         console_status_surface) == LIB_STATUS_OK;
 }
 
-static lib_i32 common_session_handle_kvm_input(common_session *session,
+static lib_bool common_session_handle_kvm_input(common_session *session,
     const kvm_input_event *event)
 {
     common_session_command_result result;
     common_session_machine_state state;
-    if (session == NULL || event == NULL) return 0;
+    if (session == NULL || event == NULL) return LIB_FALSE;
     state = session->state.monitor_actual;
     if (event->type == KVM_EVENT_WINDOW_CLOSE) {
         if (state == COMMON_SESSION_MACHINE_RUNNING &&
             (session->command.begin_external == NULL ||
              !session->command.begin_external(session->command.context, state,
-                 COMMON_SESSION_REQUEST_PAUSE))) return 0;
+                 COMMON_SESSION_REQUEST_PAUSE))) return LIB_FALSE;
         common_session_state_note_window_close(&session->state);
         return state != COMMON_SESSION_MACHINE_RUNNING ||
             common_session_dispatch_request(session, COMMON_SESSION_REQUEST_PAUSE);
     }
     if (event->type == KVM_EVENT_HOTKEY) {
-        if (session->command.handle_hotkey == NULL) return 0;
+        if (session->command.handle_hotkey == NULL) return LIB_FALSE;
         common_session_clear_result(&result);
         if (!session->command.handle_hotkey(session->command.context, state,
-                event->data.hotkey.identifier, &result)) return 0;
+                event->data.hotkey.identifier, &result)) return LIB_FALSE;
         return common_session_apply_result(session, &result);
     }
     return common_session_dispatch_input(&session->queue, event, state,
         common_session_deliver_machine_input, session->machine);
 }
 
-static lib_i32 common_session_process_completed(common_session *session,
+static lib_bool common_session_process_completed(common_session *session,
     const common_session_event *event)
 {
     common_session_command_result result;
     lib_bool broker_monitor_completed = LIB_FALSE;
-    if (session == NULL || event == NULL) return 0;
+    if (session == NULL || event == NULL) return LIB_FALSE;
     if (event->run_generation != 0u &&
         event->run_generation != common_machine_run_generation(session->machine))
-        return 1;
+        return LIB_TRUE;
     common_session_clear_result(&result);
     if (event->kind == COMMON_SESSION_EVENT_RUNTIME_COMPLETED) {
-        if (session->command.note_runtime == NULL) return 0;
+        if (session->command.note_runtime == NULL) return LIB_FALSE;
         session->command.note_runtime(session->command.context,
             session->state.monitor_actual, event->value.runtime_state, &result);
         common_session_state_note_runtime(&session->state, event->value.runtime_state);
@@ -195,20 +195,20 @@ static lib_i32 common_session_process_completed(common_session *session,
         common_session_state_note_current_console(&session->state,
             event->value.broker_vm_console_current);
         broker_monitor_completed = !event->value.broker_vm_console_current;
-    } else return 1;
+    } else return LIB_TRUE;
     if (event->kind == COMMON_SESSION_EVENT_RUNTIME_COMPLETED &&
-        !common_session_apply_result(session, &result)) return 0;
+        !common_session_apply_result(session, &result)) return LIB_FALSE;
     /* Runtime wording is held by the injected command provider until the
      * monitor is Current.  A raw Console must never receive monitor status
      * text merely because its VM completion arrived first. */
-    if (!common_session_drive(session)) return 0;
+    if (!common_session_drive(session)) return LIB_FALSE;
     if ((event->kind == COMMON_SESSION_EVENT_RUNTIME_COMPLETED ||
          event->kind == COMMON_SESSION_EVENT_BROKER_COMPLETED) &&
         (session->state.runtime_actual != COMMON_SESSION_MACHINE_RUNNING ||
          common_session_state_frame_targets_ready(&session->state)) &&
         common_ui_set_state(session->ui,
             common_session_ui_state(session->state.runtime_actual)) != LIB_STATUS_OK)
-        return 0;
+        return LIB_FALSE;
     if (broker_monitor_completed && common_session_state_monitor_is_current(&session->state) &&
         session->command.note_broker != NULL)
         session->command.note_broker(session->command.context,
@@ -257,10 +257,10 @@ lib_status common_session_destroy(common_session *session)
     return LIB_STATUS_OK;
 }
 
-lib_i32 common_session_enqueue_ui_event(void *context, const common_ui_event *event)
+lib_bool common_session_enqueue_ui_event(void *context, const common_ui_event *event)
 {
     common_session *session = (common_session *)context;
-    if (session == NULL || event == NULL) return 0;
+    if (session == NULL || event == NULL) return LIB_FALSE;
     switch (event->kind) {
     case COMMON_UI_EVENT_KVM_INPUT:
         return common_session_queue_push_kvm_for_run(&session->queue, &event->value.kvm,
@@ -284,52 +284,52 @@ lib_i32 common_session_enqueue_ui_event(void *context, const common_ui_event *ev
     case COMMON_UI_EVENT_CONSOLE_FAILED:
         return common_session_queue_push_console_failed(&session->queue);
     }
-    return 0;
+    return LIB_FALSE;
 }
 
-lib_i32 common_session_enqueue_runtime_completed(common_session *session,
+lib_bool common_session_enqueue_runtime_completed(common_session *session,
     common_session_machine_state state, lib_u32 run_generation)
 {
     return session != NULL && common_session_queue_push_runtime_completed(&session->queue,
         state, run_generation);
 }
 
-lib_i32 common_session_enqueue_frame_completed(common_session *session,
+lib_bool common_session_enqueue_frame_completed(common_session *session,
     lib_u32 sequence, lib_bool graphics, lib_u32 run_generation)
 {
     return session != NULL && common_session_queue_push_frame_completed(&session->queue,
         sequence, graphics, run_generation);
 }
 
-lib_i32 common_session_run(common_session *session)
+lib_bool common_session_run(common_session *session)
 {
     common_session_command_result result;
     char line[COMMON_SESSION_TEXT_CAPACITY];
-    if (session == NULL || session->ui == NULL) return 0;
+    if (session == NULL || session->ui == NULL) return LIB_FALSE;
     common_session_clear_result(&result);
     session->command.open(session->command.context, &result);
     if (!common_session_apply_result(session, &result) || !common_session_arm_if_ready(session))
-        return 0;
+        return LIB_FALSE;
     for (;;) {
         common_session_event event;
         /* No periodic work: a failed indefinite wait is terminal, not idle. */
-        if (!common_session_queue_take(&session->queue, &event, LIB_UINT32_MAX)) return 0;
+        if (!common_session_queue_take(&session->queue, &event, LIB_UINT32_MAX)) return LIB_FALSE;
         if (event.kind == COMMON_SESSION_EVENT_KVM_INPUT) {
             if (!common_session_accept_kvm_event(&event,
                     common_machine_run_generation(session->machine),
                     session->state.monitor_actual)) continue;
             if (!common_session_handle_kvm_input(session, &event.value.kvm) ||
-                !common_session_drive(session) || !common_session_arm_if_ready(session)) return 0;
+                !common_session_drive(session) || !common_session_arm_if_ready(session)) return LIB_FALSE;
             continue;
         }
         if (event.kind == COMMON_SESSION_EVENT_MONITOR_LINE) {
             session->pending_line = LIB_FALSE;
             common_session_clear_result(&result);
             if (event.monitor_line_rejected) {
-                if (session->command.reject_line == NULL) return 0;
+                if (session->command.reject_line == NULL) return LIB_FALSE;
                 session->command.reject_line(session->command.context, &result);
             } else {
-                if (event.value.line.length >= sizeof(line)) return 0;
+                if (event.value.line.length >= sizeof(line)) return LIB_FALSE;
                 lib_memory_copy(line, event.value.line.text, event.value.line.length);
                 line[event.value.line.length] = '\0';
                 session->command.submit_line(session->command.context,
@@ -337,10 +337,10 @@ lib_i32 common_session_run(common_session *session)
             }
             if (result.exit_requested) {
                 (void)common_session_dispatch_request(session, COMMON_SESSION_REQUEST_STOP);
-                return 1;
+                return LIB_TRUE;
             }
             if (!common_session_apply_result(session, &result) ||
-                !common_session_drive(session) || !common_session_arm_if_ready(session)) return 0;
+                !common_session_drive(session) || !common_session_arm_if_ready(session)) return LIB_FALSE;
             continue;
         }
         if (event.kind == COMMON_SESSION_EVENT_CONSOLE_FAILED ||
@@ -351,8 +351,8 @@ lib_i32 common_session_run(common_session *session)
                 event.kind == COMMON_SESSION_EVENT_KVM_DELIVERY_FAILED ?
                 "KVM input delivery failed.\r\n" : "Control queue delivery failed.\r\n";
             (void)common_ui_write_monitor(session->ui, text);
-            return 0;
+            return LIB_FALSE;
         }
-        if (!common_session_process_completed(session, &event)) return 0;
+        if (!common_session_process_completed(session, &event)) return LIB_FALSE;
     }
 }

@@ -17,7 +17,6 @@ lib_status base_process_executable_directory(char *output, lib_size capacity)
         if (separator == path) status = LIB_STATUS_IO_ERROR;
         else {
             *separator = '\0';
-            if (separator == path + 1u && (path[0] == '/' || path[0] == '\\')) path[1] = '\0';
             lib_memory_copy(output, path, lib_text_length(path) + 1u);
         }
     }

@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-window/window.h"
 #include "lib/types/win32/window.h"
 /* This matcher fixture has no native Window; timer lifecycle is verified by
@@ -21,13 +20,13 @@ static kvm_win32_window_context context;
 static kvm_window_frame frame;
 static kvm_input_event delivered[32];
 static lib_u32 count, attempts, reject_at, failures;
-static lib_i32 sink(void *opaque, const kvm_input_event *event)
+static lib_bool sink(void *opaque, const kvm_input_event *event)
 {
     (void)opaque;
-    if (++attempts == reject_at) return 0;
+    if (++attempts == reject_at) return LIB_FALSE;
     lib_test_assert(count < 32);
     delivered[count++] = *event;
-    return 1;
+    return LIB_TRUE;
 }
 static void failure(void *opaque, lib_u64 identity, lib_status status)
 { (void)opaque; lib_test_assert(identity && status == LIB_STATUS_IO_ERROR); ++failures; }
@@ -48,9 +47,9 @@ static void initialize(void)
     lib_memory_set(&context, 0, sizeof(context));
     context.component = &window;
     count = attempts = reject_at = failures = 0;
-    frame.valid = 1; frame.text.base.text_columns = 80; frame.text.base.text_rows = 25;
+    frame.valid = LIB_TRUE; frame.text.base.text_columns = 80; frame.text.base.text_rows = 25;
 }
-static lib_i32 key(kvm_key key, lib_u16 scan, lib_i32 down, lib_u8 modifiers)
+static lib_bool key(kvm_key key, lib_u16 scan, lib_bool down, lib_u8 modifiers)
 {
     kvm_input_event event = { 0 };
     event.type = KVM_EVENT_KEY;
@@ -70,7 +69,7 @@ static void frozen_prefix_replay(void)
 {
     /* All ordinary flush causes share the same permission captured at make.
      * Repeats after unfreeze must not upgrade a frozen-origin prefix. */
-    for (lib_u32 frozen = 0; frozen < 2; ++frozen)
+    for (lib_u32 frozen = 0u; frozen < 2; ++frozen)
     for (lib_u32 cause = 0; cause < 3; ++cause) {
         kvm_input_event text = { .type = KVM_EVENT_TEXT };
         text.data.text.scalar = 0x1f600;
@@ -95,7 +94,7 @@ static void frozen_prefix_replay(void)
         lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     }
     /* Neither freezing direction may disable an otherwise matched hotkey. */
-    for (lib_u32 frozen = 0; frozen < 2; ++frozen) {
+    for (lib_u32 frozen = 0u; frozen < 2; ++frozen) {
         initialize();
         set_frozen(frozen);
         lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
@@ -110,7 +109,7 @@ static void frozen_prefix_replay(void)
         lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
     }
     /* Owner explicitly retains per-event filtering, not make/break balancing. */
-    for (lib_u32 frozen = 0; frozen < 2; ++frozen) {
+    for (lib_u32 frozen = 0u; frozen < 2; ++frozen) {
         initialize();
         set_frozen(frozen);
         lib_test_assert(key('A', 0x1e, 1, 0));

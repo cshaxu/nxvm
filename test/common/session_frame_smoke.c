@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "common/session/session_interface.h"
 
 static common_machine_frame published;
@@ -90,10 +89,10 @@ int main(void)
     common_session_state_note_vm_console(&session.state, 1);
     common_session_state_note_current_console(&session.state, 1);
     lib_test_assert(common_session_state_note_frame(&session.state, 1u, 0));
-    session.frame.window.valid = 1u;
+    session.frame.window.valid = LIB_TRUE;
     session.frame.sequence = 1u;
 
-    published.window.valid = 1u;
+    published.window.valid = LIB_TRUE;
     published.sequence = 3u;
     published.window.graphics = 1u;
     published.window.image.width = published.window.image.stride = 4;
@@ -123,11 +122,11 @@ int main(void)
     lib_test_assert(common_session_process_completed(&session, &event));
     lib_test_assert(copies == 1u); /* Duplicate notification does not copy again. */
     event.value.frame.sequence = 4u;
-    published.window.valid = 0u;
+    published.window.valid = LIB_FALSE;
     lib_test_assert(common_session_process_completed(&session, &event));
     lib_test_assert(session.frame.window.valid && session.frame.sequence == 3u &&
         session.state.graphics_actual);
-    published.window.valid = 1u;
+    published.window.valid = LIB_TRUE;
     published_run = 8u; /* Reset advanced between notification and snapshot. */
     lib_test_assert(common_session_process_completed(&session, &event));
     lib_test_assert(session.frame.sequence == 3u && session.state.observed_frame_sequence == 3u);

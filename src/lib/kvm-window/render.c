@@ -1,16 +1,16 @@
 #include "lib/kvm-window/render.h"
 
-lib_i32 kvm_window_frame_size(const kvm_window_frame *frame, lib_u32 *width, lib_u32 *height)
+lib_bool kvm_window_frame_size(const kvm_window_frame *frame, lib_u32 *width, lib_u32 *height)
 {
-    if (kvm_window_frame_validate(frame) != LIB_STATUS_OK || !width || !height) return 0;
+    if (kvm_window_frame_validate(frame) != LIB_STATUS_OK || !width || !height) return LIB_FALSE;
     *width = frame->graphics ? frame->image.width : frame->text.base.text_columns * 8u;
     *height = frame->graphics ? frame->image.height : frame->text.base.text_rows *
         (frame->text.base.font_height != 0u ? frame->text.base.font_height : KVM_WINDOW_FONT_HEIGHT);
-    return 1;
+    return LIB_TRUE;
 }
 
 static inline void kvm_window_update_pixel(lib_u32 *destination, lib_u32 colour,
-    lib_u32 x, lib_u32 y, lib_i32 valid, kvm_window_rect *damage)
+    lib_u32 x, lib_u32 y, lib_bool valid, kvm_window_rect *damage)
 {
     if (valid && *destination == colour) return;
     *destination = colour;
@@ -20,8 +20,8 @@ static inline void kvm_window_update_pixel(lib_u32 *destination, lib_u32 colour,
     if ((lib_i32)y + 1 > damage->bottom) damage->bottom = (lib_i32)y + 1;
 }
 
-lib_i32 kvm_window_render_frame(const kvm_window_frame *frame, lib_u32 *pixels,
-    lib_u32 width, lib_u32 height, lib_i32 *valid, kvm_window_rect *changed)
+lib_bool kvm_window_render_frame(const kvm_window_frame *frame, lib_u32 *pixels,
+    lib_u32 width, lib_u32 height, lib_bool *valid, kvm_window_rect *changed)
 {
     kvm_window_rect damage = {(lib_i32)width, (lib_i32)height, 0, 0};
     lib_u32 row;
@@ -29,7 +29,7 @@ lib_i32 kvm_window_render_frame(const kvm_window_frame *frame, lib_u32 *pixels,
 
     if (!pixels || !valid || !changed ||
         !kvm_window_frame_size(frame, &frame_width, &frame_height) ||
-        width != frame_width || height != frame_height) return 0;
+        width != frame_width || height != frame_height) return LIB_FALSE;
     if (!frame->graphics && frame->text.base.font_height)
         cell_height = frame->text.base.font_height;
     /* The surface is the rendered baseline, independent of skipped publications.
@@ -59,8 +59,8 @@ lib_i32 kvm_window_render_frame(const kvm_window_frame *frame, lib_u32 *pixels,
             }
         }
     }
-    *valid = 1;
-    if (damage.right == 0) return 0;
+    *valid = LIB_TRUE;
+    if (damage.right == 0) return LIB_FALSE;
     *changed = damage;
-    return 1;
+    return LIB_TRUE;
 }

@@ -12,20 +12,19 @@ static dasm32_handler const dtable_0f[0x100];
 struct dasm32_context
 {
     lib_u8 defsize;
-    lib_u8 flagError;
+    lib_bool flagError;
     lib_u8 *drcode;
     char dstmt[0x100];
     char dop[0x100], dopr[0x100], drm[0x100], dr[0x100], dimm[0x100];
     char dmovsreg[0x100], doverds[0x100], doverss[0x100];
     char dimmoff8[0x100], dimmoff16[0x100], dimmsign[0x100];
-    lib_u8 flagmem, flaglock;
+    lib_bool flagmem, flaglock;
     lib_u8 prefix_oprsize, prefix_addrsize;
     lib_u8 cr;
     lib_u64 cimm;
     lib_u8 iop;
 };
 
-#define trace (dasmContext->trace)
 #define defsize (dasmContext->defsize)
 #define flagError (dasmContext->flagError)
 #define drcode (dasmContext->drcode)
@@ -49,8 +48,6 @@ struct dasm32_context
 #define cimm (dasmContext->cimm)
 #define iop (dasmContext->iop)
 
-/* stack pointer size (unused) */
-/* #define _GetStackSize   (vcpu.ss.seg.data.big ? 4 : 2) */
 /* operand size */
 #define _GetOperandSize ((defsize ^ prefix_oprsize) ? 4 : 2)
 /* address size of the source operand */
@@ -218,7 +215,7 @@ static void _kdf_modrm(dasm32_context *dasmContext, lib_u8 regbyte, lib_u8 rmbyt
     lib_u8 disp8u;
     XASM32_TRACE_CALL_BEGIN("_kdf_modrm");
     XASM32_TRACE_CHECK_RETURN(_kdf_code(dasmContext, &modrm, 1));
-    flagmem = 1;
+    flagmem = LIB_TRUE;
     drm[0] = dr[0] = dsibindex[0] = 0;
     switch (rmbyte)
     {
@@ -617,7 +614,7 @@ static void _kdf_modrm(dasm32_context *dasmContext, lib_u8 regbyte, lib_u8 rmbyt
     if (_GetModRM_MOD(modrm) == 3)
     {
         XASM32_TRACE_BLOCK_BEGIN("ModRM_MOD(3)");
-        flagmem = 0;
+        flagmem = LIB_FALSE;
         switch (rmbyte)
         {
         case 1:
@@ -861,7 +858,7 @@ static void _d_moffs(dasm32_context *dasmContext, lib_u8 byte)
     (void)byte;
     lib_u32 offset = 0;
     XASM32_TRACE_CALL_BEGIN("_d_moffs");
-    flagmem = 1;
+    flagmem = LIB_TRUE;
     switch (_GetAddressSize)
     {
     case 2:
@@ -6779,8 +6776,8 @@ static lib_u8 dasm32_execute(dasm32_context *dasmContext, char *stmt, lib_u8 *rc
 
     iop = 0;
 
-    flagmem = 0;
-    flaglock = 0;
+    flagmem = LIB_FALSE;
+    flaglock = LIB_FALSE;
     prefix_oprsize = 0;
     prefix_addrsize = 0;
 

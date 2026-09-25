@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-window/window.h"
 #include "lib/types/win32/window.h"
 #include "lib/types/win32/sync.h"
@@ -13,7 +12,7 @@ static void paint_scenario(void);
 static lib_u32 paint_ends;
 static lib_i32 inject_output_failure;
 static lib_u32 notification_attempts;
-static lib_i32 reject_join;
+static lib_bool reject_join;
 static lib_win32_bool LIB_WIN32_WINAPI startup_signal(lib_win32_handle h)
 { return scenario==19 ? LIB_WIN32_FALSE : lib_win32_set_event(h); }
 static lib_win32_bool LIB_WIN32_WINAPI set_title(lib_win32_hwnd w, lib_win32_lpcstr title)
@@ -124,7 +123,7 @@ static lib_win32_dword LIB_WIN32_WINAPI controlled_wait(lib_win32_dword count, c
 #define kvm_component_mailboxes_select_notify select_notify
 static void checked_fail(kvm_component *component, lib_status status)
 {
-    static kvm_window_frame rejected = { .valid = 1, .text.base = { .text_columns = 80, .text_rows = 25 } };
+    static kvm_window_frame rejected = { .valid = LIB_TRUE, .text.base = { .text_columns = 80, .text_rows = 25 } };
     kvm_component_fail(component, status);
     lib_test_assert(kvm_component_mailboxes_publish_frame(&component->mailboxes, &rejected,
         kvm_window_frame_size_bytes(&rejected)) ==
@@ -137,11 +136,11 @@ static void checked_fail(kvm_component *component, lib_status status)
 #include "lib/kvm-window/win32/component.c"
 #undef kvm_component_fail
 
-static lib_i32 input(void *context, const kvm_input_event *event)
+static lib_bool input(void *context, const kvm_input_event *event)
 {
     (void)context;
-    if (scenario == 7 && event->type == KVM_EVENT_KEY) { ++ordinary; return 0; }
-    if (scenario == 8 && event->type == KVM_EVENT_WINDOW_CLOSE) { ++closes; return 1; }
+    if (scenario == 7 && event->type == KVM_EVENT_KEY) { ++ordinary; return LIB_FALSE; }
+    if (scenario == 8 && event->type == KVM_EVENT_WINDOW_CLOSE) { ++closes; return LIB_TRUE; }
     lib_test_assert(event->type == KVM_EVENT_SOURCE_RETIRED);
     ++retired;
     return scenario < 5 || scenario >= 7;
@@ -156,7 +155,7 @@ static void input_scenario(void)
 {
     kvm_win32_window_context *ctx = win32_window_context(created);
     kvm_input_event key = { .type = KVM_EVENT_KEY };
-    key.data.key.pressed = 1; key.data.key.scan_code = 0x1d;
+    key.data.key.pressed = LIB_TRUE; key.data.key.scan_code = 0x1d;
     key.data.key.key = scenario == 7 ? 'A' : KVM_KEY_CONTROL;
     key.data.key.modifiers = KVM_HOTKEY_MODIFIER_CONTROL;
     if (scenario == 7) {
@@ -165,7 +164,7 @@ static void input_scenario(void)
     } else {
         lib_test_assert(win32_window_emit_normalized(ctx, &key));
         lib_win32_send_message_a(created, LIB_WIN32_WM_CLOSE, 0, 0);
-        key.data.key.pressed = 0;
+        key.data.key.pressed = LIB_FALSE;
         lib_test_assert(win32_window_emit_normalized(ctx, &key));
         lib_test_assert(kvm_component_request_stop(&ctx->component->base) == LIB_STATUS_OK);
     }
@@ -205,8 +204,8 @@ int main(void)
         }
         lib_test_assert(kvm_window_create(&window, &options) == LIB_STATUS_OK);
         lib_test_assert(lib_win32_wait_for_single_object(waiting, LIB_WIN32_INFINITE) == LIB_WIN32_WAIT_OBJECT_0);
-        frame.valid = 1u; frame.text.base.text_columns = 80u; frame.text.base.text_rows = 25u;
-        frame.text.base.cursor_visible=1; frame.text.base.font_height=16; frame.text.base.cursor_top=14; frame.text.base.cursor_bottom=15;
+        frame.valid = LIB_TRUE; frame.text.base.text_columns = 80u; frame.text.base.text_rows = 25u;
+        frame.text.base.cursor_visible=LIB_TRUE; frame.text.base.font_height=16; frame.text.base.cursor_top=14; frame.text.base.cursor_bottom=15;
         lib_test_assert(kvm_window_publish_frame(window, &frame) == LIB_STATUS_OK);
         if(scenario==18) {
             void *retained=window->worker_state;

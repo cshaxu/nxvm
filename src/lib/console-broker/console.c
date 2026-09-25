@@ -24,16 +24,6 @@ typedef struct console_broker_output_binding {
 
 static lib_atomic_flag console_broker_process_claimed = LIB_ATOMIC_FLAG_INITIALIZER;
 
-static void console_broker_lock(console_broker *broker)
-{
-    console_broker_backend_lock_transaction(broker->backend);
-}
-
-static void console_broker_unlock(console_broker *broker)
-{
-    console_broker_backend_unlock_transaction(broker->backend);
-}
-
 static lib_status console_broker_write_bound(void *context, const char *text,
     lib_size length)
 {
@@ -187,15 +177,15 @@ lib_status console_broker_replace(console_broker *broker,
         expected_current == next_console ||
         (next_mode != CONSOLE_BROKER_RAW_EVENTS &&
          next_mode != CONSOLE_BROKER_COOKED_LINES)) return LIB_STATUS_INVALID_ARGUMENT;
-    console_broker_lock(broker);
+    console_broker_backend_lock_transaction(broker->backend);
     if (broker->broken || broker->current != expected_current) {
-        console_broker_unlock(broker);
+        console_broker_backend_unlock_transaction(broker->backend);
         return LIB_STATUS_INVALID_STATE;
     }
     old = broker->current;
     next_generation = broker->generation + 1u;
     if (next_generation == 0u) {
-        console_broker_unlock(broker);
+        console_broker_backend_unlock_transaction(broker->backend);
         return LIB_STATUS_LIMIT_EXCEEDED;
     }
     next = lib_console_retain(next_console);
@@ -204,13 +194,13 @@ lib_status console_broker_replace(console_broker *broker,
     status = console_broker_backend_prepare(broker->backend, next, next_mode);
     if (status != LIB_STATUS_OK) {
         lib_console_release(next);
-        console_broker_unlock(broker);
+        console_broker_backend_unlock_transaction(broker->backend);
         return status;
     }
     next_output = console_broker_output_binding_create(broker, next, next_generation);
     if (next_output == LIB_NULL) {
         lib_console_release(next);
-        console_broker_unlock(broker);
+        console_broker_backend_unlock_transaction(broker->backend);
         return LIB_STATUS_NO_MEMORY;
     }
     console_broker_install_output_binding(next, next_output);
@@ -232,7 +222,7 @@ lib_status console_broker_replace(console_broker *broker,
         console_broker_remove_output_binding(next, next_output);
         lib_console_release(next); /* Caller still owns next. */
         console_broker_remove_output_binding(old, old_output);
-        console_broker_unlock(broker);
+        console_broker_backend_unlock_transaction(broker->backend);
         return status;
     }
     lib_console_invalidate_binding(old);
@@ -254,11 +244,11 @@ lib_status console_broker_replace(console_broker *broker,
             old_output = broker->current_output;
             broker->current_output = LIB_NULL;
             console_broker_remove_output_binding(old, old_output);
-            console_broker_unlock(broker);
+            console_broker_backend_unlock_transaction(broker->backend);
             return restore_status;
         }
         restore_status = console_broker_notify_activation(broker);
-        console_broker_unlock(broker);
+        console_broker_backend_unlock_transaction(broker->backend);
         return restore_status == LIB_STATUS_OK ? status : restore_status;
     }
     broker->current = next;
@@ -273,7 +263,7 @@ lib_status console_broker_replace(console_broker *broker,
     lib_console_release(old);
     status = console_broker_notify_activation(broker);
     if (status != LIB_STATUS_OK) broker->broken = LIB_TRUE;
-    console_broker_unlock(broker);
+    console_broker_backend_unlock_transaction(broker->backend);
     return status;
 }
 
@@ -284,14 +274,14 @@ lib_status console_broker_request_cooked_line(console_broker *broker,
 
     if (broker == LIB_NULL || expected_current == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    console_broker_lock(broker);
+    console_broker_backend_lock_transaction(broker->backend);
     if (broker->broken || broker->current != expected_current ||
         broker->current_mode != CONSOLE_BROKER_COOKED_LINES) {
-        console_broker_unlock(broker);
+        console_broker_backend_unlock_transaction(broker->backend);
         return LIB_STATUS_INVALID_STATE;
     }
     status = console_broker_backend_request_cooked_line(broker->backend);
-    console_broker_unlock(broker);
+    console_broker_backend_unlock_transaction(broker->backend);
     return status;
 }
 
@@ -302,15 +292,15 @@ lib_status console_broker_cancel_cooked_line(console_broker *broker,
     if (out_completed != LIB_NULL) *out_completed = LIB_FALSE;
     if (broker == LIB_NULL || expected_current == LIB_NULL || out_completed == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    console_broker_lock(broker);
+    console_broker_backend_lock_transaction(broker->backend);
     if (broker->broken || broker->current != expected_current ||
         broker->current_mode != CONSOLE_BROKER_COOKED_LINES) {
-        console_broker_unlock(broker);
+        console_broker_backend_unlock_transaction(broker->backend);
         return LIB_STATUS_INVALID_STATE;
     }
     status = console_broker_backend_cancel_cooked_line(broker->backend, out_completed);
     if (status != LIB_STATUS_OK) broker->broken = LIB_TRUE;
-    console_broker_unlock(broker);
+    console_broker_backend_unlock_transaction(broker->backend);
     return status;
 }
 
@@ -320,7 +310,7 @@ lib_status console_broker_destroy(console_broker *broker)
     console_broker_output_binding *output;
     lib_status status;
     if (broker == LIB_NULL) return LIB_STATUS_OK;
-    console_broker_lock(broker);
+    console_broker_backend_lock_transaction(broker->backend);
     current = broker->current;
     output = broker->current_output;
     console_broker_backend_lock_output(broker->backend);
@@ -330,14 +320,14 @@ lib_status console_broker_destroy(console_broker *broker)
            already a terminal broker failure; retain its process-lifetime
            state rather than releasing either object underneath that worker. */
         console_broker_backend_unlock_output(broker->backend);
-        console_broker_unlock(broker);
+        console_broker_backend_unlock_transaction(broker->backend);
         return status;
     }
     broker->current = LIB_NULL;
     broker->current_output = LIB_NULL;
     if (current != LIB_NULL) lib_console_invalidate_binding(current);
     console_broker_backend_unlock_output(broker->backend);
-    console_broker_unlock(broker);
+    console_broker_backend_unlock_transaction(broker->backend);
     console_broker_remove_output_binding(current, output);
     lib_console_release(current);
     status = console_broker_backend_destroy(broker->backend);

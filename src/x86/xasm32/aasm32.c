@@ -16,19 +16,19 @@
 #define _ser_          \
     do                 \
     {                  \
-        flagError = 1; \
+        flagError = LIB_TRUE; \
         return;        \
     } while (0)
 #define _sert_         \
     do                 \
     {                  \
-        flagError = 1; \
+        flagError = LIB_TRUE; \
         return token;  \
     } while (0)
 #define _serf_         \
     do                 \
     {                  \
-        flagError = 1; \
+        flagError = LIB_TRUE; \
         return info;   \
     } while (0)
 
@@ -209,7 +209,7 @@ typedef struct
     lib_u16 rcs;
     lib_u32 reip;
     char label[0x100];
-    lib_u8 flages, flagcs, flagss, flagds, flagfs, flaggs;
+    lib_bool flages, flagcs, flagss, flagds, flagfs, flaggs;
 } t_aasm_oprinfo;
 /* global variables */
 
@@ -224,7 +224,7 @@ typedef struct aasm32_context
     char *rop, *ropr1, *ropr2, *ropr3;
     lib_u16 avcs, avip;
     char *aop, *aopr1, *aopr2;
-    lib_u8 flagError;
+    lib_bool flagError;
     t_aasm_oprinfo aoprig, aopri1, aopri2, aopri3;
     t_aasm_oprinfo *rinfo;
     lib_u8 tokimm8;
@@ -236,7 +236,6 @@ typedef struct aasm32_context
     char *rstart;
 } aasm32_context;
 
-#define trace (aasmContext->trace)
 #define defsize (aasmContext->defsize)
 #define prefix_oprsizeg (aasmContext->prefix_oprsizeg)
 #define prefix_addrsizeg (aasmContext->prefix_addrsizeg)
@@ -743,11 +742,11 @@ typedef enum
 } t_aasm_token;
 /* token variables */
 #define tokch (*tokptr)
-#define take(n) (flagend = 1, token = (n))
+#define take(n) (flagend = LIB_TRUE, token = (n))
 static t_aasm_token gettoken(aasm32_context *aasmContext, char *str)
 {
     lib_u32 tokimm = 0;
-    lib_u8 flagend = 0;
+    lib_bool flagend = LIB_FALSE;
     t_aasm_token token = TOKEN_NULL;
     t_aasm_scan_state state = STATE_START;
     XASM32_TRACE_CALL_BEGIN("gettoken");
@@ -2511,22 +2510,22 @@ static t_aasm_oprinfo parsearg_mem(aasm32_context *aasmContext, t_aasm_token tok
         switch (oldtoken)
         {
         case TOKEN_ES:
-            info.flages = 1;
+            info.flages = LIB_TRUE;
             break;
         case TOKEN_CS:
-            info.flagcs = 1;
+            info.flagcs = LIB_TRUE;
             break;
         case TOKEN_SS:
-            info.flagss = 1;
+            info.flagss = LIB_TRUE;
             break;
         case TOKEN_DS:
-            info.flagds = 1;
+            info.flagds = LIB_TRUE;
             break;
         case TOKEN_FS:
-            info.flagfs = 1;
+            info.flagfs = LIB_TRUE;
             break;
         case TOKEN_GS:
-            info.flaggs = 1;
+            info.flaggs = LIB_TRUE;
             break;
         default:
             _serf_;
@@ -3137,18 +3136,18 @@ static t_aasm_oprinfo parsearg_mem(aasm32_context *aasmContext, t_aasm_token tok
     case MEM_SI:
     case MEM_DI:
         if (info.flagds)
-            info.flagds = 0;
+            info.flagds = LIB_FALSE;
         break;
     case MEM_BP_SI:
     case MEM_BP_DI:
         if (info.flagss)
-            info.flagss = 0;
+            info.flagss = LIB_FALSE;
         break;
     case MEM_BP:
         if (!bp && info.flagds)
-            info.flagds = 0;
+            info.flagds = LIB_FALSE;
         else if (bp && info.flagss)
-            info.flagss = 0;
+            info.flagss = LIB_FALSE;
         break;
     case MEM_EAX:
     case MEM_ECX:
@@ -3157,21 +3156,21 @@ static t_aasm_oprinfo parsearg_mem(aasm32_context *aasmContext, t_aasm_token tok
     case MEM_ESI:
     case MEM_EDI:
         if (info.flagds)
-            info.flagds = 0;
+            info.flagds = LIB_FALSE;
         break;
     case MEM_EBP:
         if (info.flagss)
-            info.flagss = 0;
+            info.flagss = LIB_FALSE;
         break;
     case MEM_SIB:
         if (info.sib.base == R32_ESP ||
             (info.sib.base == R32_EBP && info.mod != MOD_M))
         {
             if (info.flagss)
-                info.flagss = 0;
+                info.flagss = LIB_FALSE;
         }
         else if (info.flagds)
-            info.flagds = 0;
+            info.flagds = LIB_FALSE;
         break;
     case MEM_BX_AL:
     case MEM_EBX_AL:
@@ -4445,7 +4444,7 @@ static void PREFIX_ES(aasm32_context *aasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("PREFIX_ES");
     if (ARG_NONE)
-        aoprig.flages = 1;
+        aoprig.flages = LIB_TRUE;
     else
         _ser_;
     XASM32_TRACE_CALL_END;
@@ -4553,7 +4552,7 @@ static void PREFIX_CS(aasm32_context *aasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("PREFIX_CS");
     if (ARG_NONE)
-        aoprig.flagcs = 1;
+        aoprig.flagcs = LIB_TRUE;
     else
         _ser_;
     XASM32_TRACE_CALL_END;
@@ -4661,7 +4660,7 @@ static void PREFIX_SS(aasm32_context *aasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("PREFIX_SS");
     if (ARG_NONE)
-        aoprig.flagss = 1;
+        aoprig.flagss = LIB_TRUE;
     else
         _ser_;
     XASM32_TRACE_CALL_END;
@@ -4769,7 +4768,7 @@ static void PREFIX_DS(aasm32_context *aasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("PREFIX_DS");
     if (ARG_NONE)
-        aoprig.flagds = 1;
+        aoprig.flagds = LIB_TRUE;
     else
         _ser_;
     XASM32_TRACE_CALL_END;
@@ -5063,7 +5062,7 @@ static void PREFIX_FS(aasm32_context *aasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("PREFIX_FS");
     if (ARG_NONE)
-        aoprig.flagfs = 1;
+        aoprig.flagfs = LIB_TRUE;
     else
         _ser_;
     XASM32_TRACE_CALL_END;
@@ -5072,7 +5071,7 @@ static void PREFIX_GS(aasm32_context *aasmContext)
 {
     XASM32_TRACE_CALL_BEGIN("PREFIX_GS");
     if (ARG_NONE)
-        aoprig.flaggs = 1;
+        aoprig.flaggs = LIB_TRUE;
     else
         _ser_;
     XASM32_TRACE_CALL_END;
@@ -5236,7 +5235,7 @@ static void OUTSB(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0x6e);
     rinfo = &aopri1;
     if (rinfo->flagds)
-        rinfo->flagds = 0;
+        rinfo->flagds = LIB_FALSE;
     if (ARG_NONE)
         rinfo = LIB_NULL;
     else if (ARG_DX_DSSI8)
@@ -5254,7 +5253,7 @@ static void OUTSW(aasm32_context *aasmContext, lib_u8 byte)
     _c_setbyte(aasmContext, 0x6f);
     rinfo = &aopri1;
     if (rinfo->flagds)
-        rinfo->flagds = 0;
+        rinfo->flagds = LIB_FALSE;
     switch (byte)
     {
     case 2:
@@ -5732,7 +5731,7 @@ static void MOVSB(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xa4);
     rinfo = &aopri2;
     if (rinfo->flagds)
-        rinfo->flagds = 0;
+        rinfo->flagds = LIB_FALSE;
     if (ARG_NONE)
         rinfo = LIB_NULL;
     else if (ARG_ESDI8_DSSI8)
@@ -5750,7 +5749,7 @@ static void MOVSW(aasm32_context *aasmContext, lib_u8 byte)
     _c_setbyte(aasmContext, 0xa5);
     rinfo = &aopri2;
     if (rinfo->flagds)
-        rinfo->flagds = 0;
+        rinfo->flagds = LIB_FALSE;
     switch (byte)
     {
     case 2:
@@ -5789,7 +5788,7 @@ static void CMPSB(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xa6);
     rinfo = &aopri1;
     if (rinfo->flagds)
-        rinfo->flagds = 0;
+        rinfo->flagds = LIB_FALSE;
     if (ARG_NONE)
         rinfo = LIB_NULL;
     else if (ARG_DSSI8_ESDI8)
@@ -5807,7 +5806,7 @@ static void CMPSW(aasm32_context *aasmContext, lib_u8 byte)
     _c_setbyte(aasmContext, 0xa7);
     rinfo = &aopri1;
     if (rinfo->flagds)
-        rinfo->flagds = 0;
+        rinfo->flagds = LIB_FALSE;
     switch (byte)
     {
     case 2:
@@ -5929,7 +5928,7 @@ static void LODSB(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xac);
     rinfo = &aopri1;
     if (rinfo->flagds)
-        rinfo->flagds = 0;
+        rinfo->flagds = LIB_FALSE;
     if (ARG_NONE)
         rinfo = LIB_NULL;
     else if (ARG_DSSI8)
@@ -5947,7 +5946,7 @@ static void LODSW(aasm32_context *aasmContext, lib_u8 byte)
     _c_setbyte(aasmContext, 0xad);
     rinfo = &aopri1;
     if (rinfo->flagds)
-        rinfo->flagds = 0;
+        rinfo->flagds = LIB_FALSE;
     switch (byte)
     {
     case 2:
@@ -6514,7 +6513,7 @@ static void XLATB(aasm32_context *aasmContext)
     XASM32_TRACE_CALL_BEGIN("XLATB");
     rinfo = &aopri1;
     if (rinfo->flagds)
-        rinfo->flagds = 0;
+        rinfo->flagds = LIB_FALSE;
     _c_setbyte(aasmContext, 0xd7);
     if (ARG_DSBXAL8)
     {
@@ -9255,17 +9254,17 @@ static void MOVSX(aasm32_context *aasmContext)
 }
 
 /* main routines */
-static lib_i32 is_end(aasm32_context *aasmContext, char c)
+static lib_bool is_end(aasm32_context *aasmContext, char c)
 {
     (void)aasmContext;
     return (!c || c == '\n' || c == ';');
 }
-static lib_i32 is_space(aasm32_context *aasmContext, char c)
+static lib_bool is_space(aasm32_context *aasmContext, char c)
 {
     (void)aasmContext;
     return (c == ' ' || c == '\t');
 }
-static lib_i32 is_prefix(aasm32_context *aasmContext)
+static lib_bool is_prefix(aasm32_context *aasmContext)
 {
     if (!lib_text_compare(rop, "es:") || !lib_text_compare(rop, "cs:") ||
         !lib_text_compare(rop, "ss:") || !lib_text_compare(rop, "ds:") ||
@@ -9274,11 +9273,11 @@ static lib_i32 is_prefix(aasm32_context *aasmContext)
         !lib_text_compare(rop, "repne:") || !lib_text_compare(rop, "repnz:") ||
         !lib_text_compare(rop, "repe:") || !lib_text_compare(rop, "repz:"))
     {
-        return 1;
+        return LIB_TRUE;
     }
     else
     {
-        return 0;
+        return LIB_FALSE;
     }
 }
 static void exec(aasm32_context *aasmContext)
@@ -9764,7 +9763,7 @@ static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_
     lib_u8 len;
     char astmt[0x100];
     char *rstmt;
-    lib_u8 flagprefix;
+    lib_bool flagprefix;
 
     if (!stmt || is_end(aasmContext, stmt[0]))
     {
@@ -9779,7 +9778,7 @@ static lib_u8 aasm32_execute(aasm32_context *aasmContext, const char *stmt, lib_
 
     prefix_oprsize = prefix_addrsize = 0;
     prefix_lock = prefix_repz = prefix_repnz = 0;
-    flagError = 0;
+    flagError = LIB_FALSE;
 
     iop = 0;
     lib_memory_set((void *)(&aopri1), 0x00, sizeof(t_aasm_oprinfo));
@@ -9923,9 +9922,9 @@ typedef struct
     lib_u32 stmt_id;
     lib_u8 code_array[15];
     lib_u8 code_len;
-    lib_u8 flag_is_label;
-    lib_u8 flag_has_label;
-    lib_u8 flag_resolved;
+    lib_bool flag_is_label;
+    lib_bool flag_has_label;
+    lib_bool flag_resolved;
     char label_str[0x100];
     char op_str[0x100];
     t_aasm_oprptr ptr;
@@ -9937,8 +9936,8 @@ static void asmx_get_label(aasm32_context *aasmContext, t_aasm_instr *rinstr)
     (void)aasmContext;
     lib_size i = 0, j = 0;
     rinstr->label_str[0] = 0;
-    rinstr->flag_has_label = 0;
-    rinstr->flag_is_label = 0;
+    rinstr->flag_has_label = LIB_FALSE;
+    rinstr->flag_is_label = LIB_FALSE;
     while (rinstr->stmt[i] && rinstr->stmt[i] != '$')
     {
         i++;
@@ -9962,12 +9961,12 @@ static void asmx_get_label(aasm32_context *aasmContext, t_aasm_instr *rinstr)
     {
         return;
     }
-    rinstr->flag_has_label = 1;
+    rinstr->flag_has_label = LIB_TRUE;
     if (rinstr->stmt[0] == '$' && rinstr->stmt[1] == '(' &&
         rinstr->stmt[lib_text_length(rinstr->stmt) - 1] == ':' &&
         rinstr->stmt[lib_text_length(rinstr->stmt) - 2] == ')')
     {
-        rinstr->flag_is_label = 1;
+        rinstr->flag_is_label = LIB_TRUE;
     }
 }
 static void asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr)
@@ -10110,7 +10109,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
     statement_bytes = lib_text_length(stmt);
     if (statement_bytes > 0x7fffffffu) return LIB_STATUS_INVALID_ARGUMENT;
     count = 1;
-    flagError = 0;
+    flagError = LIB_FALSE;
     for (i = 0; i < (lib_i32)statement_bytes; ++i)
     {
         if (stmt[i] == '\n')
@@ -10213,7 +10212,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
         }
         if (!instr[i].code_len)
         {
-            flagError = 1;
+            flagError = LIB_TRUE;
         }
         if (flagError)
         {
@@ -10236,7 +10235,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                 {
                     if (instr[j].flag_is_label)
                     {
-                        flagError = 1;
+                        flagError = LIB_TRUE;
                     }
                     else
                     {
@@ -10257,7 +10256,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             }
                             else
                             {
-                                flagError = 1;
+                                flagError = LIB_TRUE;
                             }
                             break;
                         case PTR_NEAR:
@@ -10270,7 +10269,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 }
                                 else
                                 {
-                                    flagError = 1;
+                                    flagError = LIB_TRUE;
                                 }
                                 break;
                             case 4:
@@ -10280,7 +10279,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 }
                                 else
                                 {
-                                    flagError = 1;
+                                    flagError = LIB_TRUE;
                                 }
                                 break;
                             default:
@@ -10288,20 +10287,20 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             }
                             break;
                         default:
-                            flagError = 1;
+                            flagError = LIB_TRUE;
                             break;
                         }
                         if (lib_c_snprintf(instr[j].stmt, sizeof(instr[j].stmt),
                                 "%s %s", instr[j].op_str, imm) < 0 ||
                             lib_text_length(instr[j].op_str) + 1u + lib_text_length(imm) >=
                                 sizeof(instr[j].stmt)) {
-                            flagError = 1;
+                            flagError = LIB_TRUE;
                         }
                         if (!flagError && aasm32_execute(aasmContext, instr[j].stmt,
                                 instr[j].code_array, flag32) == instr[j].code_len && !flagError)
-                            instr[j].flag_resolved = 1;
+                            instr[j].flag_resolved = LIB_TRUE;
                         else
-                            flagError = 1;
+                            flagError = LIB_TRUE;
                     }
                     if (flagError)
                     {
@@ -10321,7 +10320,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                 {
                     if (instr[j].flag_is_label)
                     {
-                        flagError = 1;
+                        flagError = LIB_TRUE;
                     }
                     else
                     {
@@ -10339,7 +10338,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             }
                             else
                             {
-                                flagError = 1;
+                                flagError = LIB_TRUE;
                             }
                             break;
                         case PTR_NEAR:
@@ -10352,7 +10351,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 }
                                 else
                                 {
-                                    flagError = 1;
+                                    flagError = LIB_TRUE;
                                 }
                                 break;
                             case 4:
@@ -10362,7 +10361,7 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                                 }
                                 else
                                 {
-                                    flagError = 1;
+                                    flagError = LIB_TRUE;
                                 }
                                 break;
                             default:
@@ -10370,20 +10369,20 @@ static lib_status aasm32x_execute(aasm32_context *aasmContext,
                             }
                             break;
                         default:
-                            flagError = 1;
+                            flagError = LIB_TRUE;
                             break;
                         }
                         if (lib_c_snprintf(instr[j].stmt, sizeof(instr[j].stmt),
                                 "%s %s", instr[j].op_str, imm) < 0 ||
                             lib_text_length(instr[j].op_str) + 1u + lib_text_length(imm) >=
                                 sizeof(instr[j].stmt)) {
-                            flagError = 1;
+                            flagError = LIB_TRUE;
                         }
                         if (!flagError && aasm32_execute(aasmContext, instr[j].stmt,
                                 instr[j].code_array, flag32) == instr[j].code_len && !flagError)
-                            instr[j].flag_resolved = 1;
+                            instr[j].flag_resolved = LIB_TRUE;
                         else
-                            flagError = 1;
+                            flagError = LIB_TRUE;
                     }
                     if (flagError)
                     {

@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 #include "machine_fixture.h"
 
 static lib_bool fake_reset(void *opaque)
@@ -83,7 +82,7 @@ static lib_status fake_copy_frame(void *opaque, common_machine_frame *frame)
     if (lib_win32_interlocked_compare_exchange(&fake->fail_frame, 0, 0))
         return LIB_STATUS_IO_ERROR;
     lib_memory_set(frame, 0, sizeof(*frame));
-    frame->window.valid = 1u;
+    frame->window.valid = LIB_TRUE;
     frame->window.text.base.text_columns = KVM_TEXT_COLUMNS;
     frame->window.text.base.text_rows = KVM_TEXT_ROWS;
     return LIB_STATUS_OK;

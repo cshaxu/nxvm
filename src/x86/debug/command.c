@@ -45,7 +45,7 @@ struct x86_debug {
     lib_size error_position;
     lib_size argument_count;
     char *arguments[DEBUG_MAXNARG];
-    lib_i32 exit_requested;
+    lib_bool exit_requested;
     char command_buffer[0x100];
     char command_copy[0x100];
     char file_name[0x100];
@@ -58,7 +58,7 @@ struct x86_debug {
     lib_u16 parsed_segment;
     lib_u16 parsed_offset;
     char pending_line[X86_DEBUG_LINE_CAPACITY];
-    lib_i32 pending_line_available;
+    lib_bool pending_line_available;
     command_continuation continuation;
     lib_u32 breakpoint_linear;
     lib_size breakpoint_remaining;
@@ -69,7 +69,6 @@ struct x86_debug {
 
 typedef x86_debug command_context;
 typedef x86_debug_register command_register;
-typedef x86_debug_watch_kind x86_debug_watch_kind;
 
 static void command_text_lower(char *text)
 {
@@ -94,7 +93,7 @@ static lib_i32 command_format_append(char **cursor, lib_size *remaining,
     *remaining -= (lib_size)written;
     return written;
 }
-static lib_i32 command_copy_text_checked(char *destination,
+static lib_bool command_copy_text_checked(char *destination,
     lib_size destination_capacity, const char *source);
 
 #define COMMAND_REGISTER_EAX X86_DEBUG_EAX
@@ -174,7 +173,7 @@ static lib_status command_end_output(command_context *command)
 {
     if (command->output_status != LIB_STATUS_OK) {
         command->continuation = COMMAND_CONTINUATION_NONE;
-        command->pending_line_available = 0;
+        command->pending_line_available = LIB_FALSE;
         command->run_kind = COMMAND_RUN_NONE;
         command->result->lifecycle_request = X86_DEBUG_LIFECYCLE_NONE;
         command->result->prompt[0] = '-';
@@ -185,10 +184,10 @@ static lib_status command_end_output(command_context *command)
     return command->output_status;
 }
 
-static lib_i32 command_read_line(command_context *debugContext,
+static lib_bool command_read_line(command_context *debugContext,
     char *buffer, lib_size buffer_size)
 {
-    if (debugContext == LIB_NULL || buffer == LIB_NULL || buffer_size == 0u) return 0;
+    if (debugContext == LIB_NULL || buffer == LIB_NULL || buffer_size == 0u) return LIB_FALSE;
     if (!debugContext->pending_line_available) {
         lib_size start = debugContext->output_length;
         while (start != 0u && debugContext->output[start - 1u] != '\n') --start;
@@ -199,15 +198,15 @@ static lib_i32 command_read_line(command_context *debugContext,
             debugContext->output_length = start;
             debugContext->result->prompt_ready = LIB_TRUE;
         }
-        return 0;
+        return LIB_FALSE;
     }
     if (!command_copy_text_checked(buffer, buffer_size,
-            debugContext->pending_line)) return 0;
-    debugContext->pending_line_available = 0;
-    return 1;
+            debugContext->pending_line)) return LIB_FALSE;
+    debugContext->pending_line_available = LIB_FALSE;
+    return LIB_TRUE;
 }
 
-static lib_i32 command_execute(command_context *debugContext,
+static lib_bool command_execute(command_context *debugContext,
     const x86_debug_request *request,
     x86_debug_response *result)
 {
@@ -219,9 +218,9 @@ static lib_i32 command_execute(command_context *debugContext,
     _Static_assert(sizeof(*result) <= COMMON_MACHINE_DEBUG_RESPONSE_CAPACITY,
         "x86 response must fit Machine transport");
 
-    if (debugContext == LIB_NULL || request == LIB_NULL || result == LIB_NULL) return 1;
+    if (debugContext == LIB_NULL || request == LIB_NULL || result == LIB_NULL) return LIB_TRUE;
     lib_memory_set(result, 0, sizeof(*result));
-    if (debugContext->access_status != LIB_STATUS_OK) return 1;
+    if (debugContext->access_status != LIB_STATUS_OK) return LIB_TRUE;
     debugContext->access_status = common_machine_debug_acquire(debugContext->machine, &lease);
     if (debugContext->access_status == LIB_STATUS_OK)
         debugContext->access_status = common_machine_debug_execute_with_lease(
@@ -235,7 +234,7 @@ static lib_i32 command_execute(command_context *debugContext,
     return debugContext->access_status != LIB_STATUS_OK;
 }
 
-static lib_i32 command_read_register(command_context *debugContext,
+static lib_bool command_read_register(command_context *debugContext,
     command_register register_id, lib_u32 *value)
 {
     x86_debug_response result;
@@ -243,12 +242,12 @@ static lib_i32 command_read_register(command_context *debugContext,
             &(x86_debug_request){
                 .operation = X86_DEBUG_READ_REGISTER,
                 .register_id = (lib_u32)register_id },
-            &result)) return 1;
+            &result)) return LIB_TRUE;
     *value = result.value;
-    return 0;
+    return LIB_FALSE;
 }
 
-static lib_i32 command_write_register(command_context *debugContext,
+static lib_bool command_write_register(command_context *debugContext,
     command_register register_id, lib_u32 value)
 {
     x86_debug_response result;
@@ -257,7 +256,7 @@ static lib_i32 command_write_register(command_context *debugContext,
         .register_id = (lib_u32)register_id, .address = value }, &result);
 }
 
-static lib_i32 command_access_memory(command_context *debugContext,
+static lib_bool command_access_memory(command_context *debugContext,
     x86_debug_operation operation, lib_u32 address,
     lib_u16 segment, lib_u16 offset, void *data,
     lib_u8 bytes)
@@ -267,7 +266,7 @@ static lib_i32 command_access_memory(command_context *debugContext,
     if (data == LIB_NULL || bytes > sizeof(request.data)) {
         debugContext->access_status = LIB_STATUS_INVALID_ARGUMENT;
         debugContext->error_position = 1u;
-        return 1;
+        return LIB_TRUE;
     }
     request.operation = operation;
     request.address = address;
@@ -280,38 +279,38 @@ static lib_i32 command_access_memory(command_context *debugContext,
     if (command_execute(debugContext, &request, &result)) {
         if (operation == X86_DEBUG_READ_LINEAR ||
             operation == X86_DEBUG_READ_REAL) lib_memory_set(data, 0, bytes);
-        return 1;
+        return LIB_TRUE;
     }
     if (operation == X86_DEBUG_READ_LINEAR ||
         operation == X86_DEBUG_READ_REAL)
         lib_memory_copy(data, result.data, bytes);
-    return 0;
+    return LIB_FALSE;
 }
 
-static lib_i32 command_read_linear(command_context *debugContext, lib_u32 address,
+static lib_bool command_read_linear(command_context *debugContext, lib_u32 address,
     void *data, lib_u8 bytes)
 { return command_access_memory(debugContext, X86_DEBUG_READ_LINEAR, address, 0u, 0u, data, bytes); }
 
-static lib_i32 command_write_linear(command_context *debugContext, lib_u32 address,
+static lib_bool command_write_linear(command_context *debugContext, lib_u32 address,
     void *data, lib_u8 bytes)
 { return command_access_memory(debugContext, X86_DEBUG_WRITE_LINEAR, address, 0u, 0u, data, bytes); }
 
-static lib_i32 command_read_real(command_context *debugContext, lib_u16 segment,
+static lib_bool command_read_real(command_context *debugContext, lib_u16 segment,
     lib_u16 offset, void *data, lib_u8 bytes)
 { return command_access_memory(debugContext, X86_DEBUG_READ_REAL, 0u, segment, offset, data, bytes); }
 
-static lib_i32 command_write_real(command_context *debugContext, lib_u16 segment,
+static lib_bool command_write_real(command_context *debugContext, lib_u16 segment,
     lib_u16 offset, void *data, lib_u8 bytes)
 { return command_access_memory(debugContext, X86_DEBUG_WRITE_REAL, 0u, segment, offset, data, bytes); }
-static lib_i32 command_read_port(command_context *debugContext,
+static lib_bool command_read_port(command_context *debugContext,
     lib_u16 port, lib_u32 *value)
 {
     x86_debug_response result;
     if (command_execute(debugContext, &(x86_debug_request){
             .operation = X86_DEBUG_READ_PORT, .port = port, .bytes = 1u }, &result))
-        return 1;
+        return LIB_TRUE;
     *value = result.value;
-    return 0;
+    return LIB_FALSE;
 }
 
 static lib_u32 command_read_port_value(command_context *debugContext,
@@ -322,7 +321,7 @@ static lib_u32 command_read_port_value(command_context *debugContext,
     return value;
 }
 
-static lib_i32 command_write_port(command_context *debugContext,
+static lib_bool command_write_port(command_context *debugContext,
     lib_u16 port, lib_u32 value)
 {
     x86_debug_request request = {0};
@@ -342,7 +341,7 @@ static lib_u32 command_code_property(command_context *debugContext,
         &(x86_debug_request){ .operation = operation }, &result) ? 0u : result.value;
 }
 
-static lib_i32 command_set_watch(command_context *debugContext,
+static lib_bool command_set_watch(command_context *debugContext,
     x86_debug_watch_kind kind, lib_u32 address)
 {
     x86_debug_response result;
@@ -351,7 +350,7 @@ static lib_i32 command_set_watch(command_context *debugContext,
         .watch_kind = kind }, &result);
 }
 
-static lib_i32 command_clear_watch(command_context *debugContext,
+static lib_bool command_clear_watch(command_context *debugContext,
     x86_debug_watch_kind kind)
 {
     x86_debug_response result;
@@ -372,7 +371,7 @@ static lib_i32 command_get_watch(command_context *debugContext,
     return result.enabled ? 1 : 0;
 }
 
-static lib_i32 command_is_paused(command_context *debugContext)
+static lib_bool command_is_paused(command_context *debugContext)
 {
     common_machine_debug_lease lease;
     return debugContext != LIB_NULL &&
@@ -386,26 +385,26 @@ static void command_resume(command_context *debugContext)
 }
 
 
-static lib_i32 command_set_break(command_context *debugContext,
+static lib_bool command_set_break(command_context *debugContext,
     lib_u32 linear)
 {
     x86_debug_request request = {0};
     x86_debug_response result;
 
-    if (debugContext == LIB_NULL) return 1;
+    if (debugContext == LIB_NULL) return LIB_TRUE;
     request.operation = X86_DEBUG_SET_EXECUTION_PLAN;
     request.execution_kind = X86_DEBUG_EXECUTION_BREAK_LINEAR;
     request.address = linear;
     if (command_execute(debugContext, &request, &result)) {
         command_printf(debugContext,
             "debug: fail to install breakpoint at L%08X\n", linear);
-        return 1;
+        return LIB_TRUE;
     }
     debugContext->breakpoint_linear = linear;
-    return 0;
+    return LIB_FALSE;
 }
 
-static lib_i32 command_set_break_real(command_context *debugContext,
+static lib_bool command_set_break_real(command_context *debugContext,
     lib_u16 segment, lib_u16 offset)
 { return command_set_break(debugContext, ((lib_u32)segment << 4u) + offset); }
 static void command_clear_break(command_context *debugContext)
@@ -419,23 +418,23 @@ static void command_clear_break(command_context *debugContext)
     debugContext->breakpoint_remaining = 0u;
 }
 
-static lib_i32 command_set_trace(command_context *debugContext, lib_size count)
+static lib_bool command_set_trace(command_context *debugContext, lib_size count)
 {
     x86_debug_request request = {0};
     x86_debug_response result;
 
-    if (debugContext == LIB_NULL) return 1;
+    if (debugContext == LIB_NULL) return LIB_TRUE;
     request.operation = X86_DEBUG_SET_EXECUTION_PLAN;
     request.execution_kind = X86_DEBUG_EXECUTION_TRACE;
     request.instruction_count = count;
     if (command_execute(debugContext, &request, &result)) {
         command_printf(debugContext, "debug: fail to install trace plan.\n");
-        return 1;
+        return LIB_TRUE;
     }
-    return 0;
+    return LIB_FALSE;
 }
 
-static lib_i32 command_get_execution_result(command_context *debugContext,
+static lib_bool command_get_execution_result(command_context *debugContext,
     lib_u32 *out_executed)
 {
     x86_debug_response result;
@@ -443,20 +442,20 @@ static lib_i32 command_get_execution_result(command_context *debugContext,
     if (out_executed == LIB_NULL || command_execute(debugContext,
             &(x86_debug_request) {
                 .operation = X86_DEBUG_GET_EXECUTION_RESULT },
-            &result) || !result.enabled) return 1;
+            &result) || !result.enabled) return LIB_TRUE;
     *out_executed = result.value;
     debugContext->observation = result.observation;
-    return 0;
+    return LIB_FALSE;
 }
 
-static lib_i32 command_begin_trace(command_context *debugContext,
+static lib_bool command_begin_trace(command_context *debugContext,
     command_run_kind kind, lib_size count)
 {
     if (debugContext == LIB_NULL || command_set_trace(debugContext,
-            count < 0x100u ? 1u : count)) return 1;
+            count < 0x100u ? 1u : count)) return LIB_TRUE;
     debugContext->run_kind = kind;
     debugContext->trace_remaining = count < 0x100u ? count : 1u;
-    return 0;
+    return LIB_FALSE;
 }
 
 static void command_begin_break(command_context *debugContext,
@@ -467,35 +466,35 @@ static void command_begin_break(command_context *debugContext,
     debugContext->breakpoint_remaining = count;
 }
 
-static lib_i32 command_copy_text_checked(char *destination,
+static lib_bool command_copy_text_checked(char *destination,
     lib_size destination_capacity, const char *source)
 {
     lib_size source_bytes;
 
     if (destination == LIB_NULL || source == LIB_NULL || destination_capacity == 0u) {
-        return 0;
+        return LIB_FALSE;
     }
     source_bytes = lib_text_length(source);
-    if (source_bytes >= destination_capacity) return 0;
+    if (source_bytes >= destination_capacity) return LIB_FALSE;
     lib_memory_copy(destination, source, source_bytes + 1u);
-    return 1;
+    return LIB_TRUE;
 }
 
-static lib_i32 command_append_text_checked(char *destination,
+static lib_bool command_append_text_checked(char *destination,
     lib_size destination_capacity, const char *source)
 {
     lib_size destination_bytes;
     lib_size source_bytes;
 
     if (destination == LIB_NULL || source == LIB_NULL || destination_capacity == 0u) {
-        return 0;
+        return LIB_FALSE;
     }
     destination_bytes = lib_text_length(destination);
     source_bytes = lib_text_length(source);
     if (destination_bytes >= destination_capacity ||
-        source_bytes >= destination_capacity - destination_bytes) return 0;
+        source_bytes >= destination_capacity - destination_bytes) return LIB_FALSE;
     lib_memory_copy(destination + destination_bytes, source, source_bytes + 1u);
-    return 1;
+    return LIB_TRUE;
 }
 
 static void rprintregs(command_context *debugContext);
@@ -516,27 +515,27 @@ static lib_u32 debug_register(command_context *debugContext, command_register re
     command_read_register(debugContext, reg, &value);
     return value;
 }
-static lib_i32 debug_set_register(command_context *debugContext, command_register reg, lib_u32 value)
+static lib_bool debug_set_register(command_context *debugContext, command_register reg, lib_u32 value)
 {
     return command_write_register(debugContext, reg, value);
 }
-static lib_i32 debug_set_word(command_context *debugContext, command_register reg, lib_u16 value)
+static lib_bool debug_set_word(command_context *debugContext, command_register reg, lib_u16 value)
 {
     /* Original _ax/_ip assignments preserve the upper half of their alias. */
     return debug_set_register(debugContext, reg,
         (debug_register(debugContext, reg) & 0xffff0000u) | value);
 }
-static lib_i32 debug_flag(command_context *debugContext, lib_u32 mask)
+static lib_bool debug_flag(command_context *debugContext, lib_u32 mask)
 {
     return (debug_register(debugContext, COMMAND_REGISTER_EFLAGS) & mask) != 0;
 }
-static void debug_set_flag(command_context *debugContext, lib_u32 mask, lib_i32 set)
+static void debug_set_flag(command_context *debugContext, lib_u32 mask, lib_bool set)
 {
     lib_u32 flags = debug_register(debugContext, COMMAND_REGISTER_EFLAGS);
     debug_set_register(debugContext, COMMAND_REGISTER_EFLAGS, set ? flags | mask : flags & ~mask);
 }
 
-static lib_i32 command_capture_cpu(command_context *debugContext,
+static lib_bool command_capture_cpu(command_context *debugContext,
     x86_debug_cpu_snapshot *out_snapshot)
 {
     x86_debug_response result;
@@ -544,9 +543,9 @@ static lib_i32 command_capture_cpu(command_context *debugContext,
     if (out_snapshot == LIB_NULL || command_execute(debugContext,
             &(x86_debug_request){
                 .operation = X86_DEBUG_GET_CPU_SNAPSHOT },
-            &result)) return 1;
+            &result)) return LIB_TRUE;
     *out_snapshot = result.cpu;
-    return 0;
+    return LIB_FALSE;
 }
 
 static void command_print_segment(command_context *debugContext,
@@ -876,7 +875,7 @@ static void aconsole(command_context *debugContext)
     lib_size i, len, errAsmPos;
     char cmdAsmBuff[0x100];
     lib_u8 acode[15];
-    lib_i32 flagExitAsm = 0;
+    lib_bool flagExitAsm = LIB_FALSE;
     while (!flagExitAsm)
     {
         command_printf(debugContext, "%04X:%04X ", asmSegRec, asmPtrRec);
@@ -884,7 +883,7 @@ static void aconsole(command_context *debugContext)
         command_text_lower(cmdAsmBuff);
         if (!lib_text_length(cmdAsmBuff))
         {
-            flagExitAsm = 1;
+            flagExitAsm = LIB_TRUE;
             continue;
         }
         if (cmdAsmBuff[0] == ';')
@@ -1269,7 +1268,7 @@ static void o(command_context *debugContext)
 /* quit */
 static void q(command_context *debugContext)
 {
-    flagExit = 1;
+    flagExit = LIB_TRUE;
 }
 /* register */
 static lib_u8 uprintins(command_context *debugContext, lib_u16 segment, lib_u16 off)
@@ -1277,7 +1276,7 @@ static lib_u8 uprintins(command_context *debugContext, lib_u16 segment, lib_u16 
     lib_size i;
     lib_u8 first = off > 0xfff1u ? (lib_u8)(0x10000u - off) : 15u;
     lib_size sbin_remaining;
-    lib_i32 binary_failed = LIB_FALSE;
+    lib_bool binary_failed = LIB_FALSE;
     lib_i32 format_result;
     lib_u8 len;
     lib_u8 ucode[15];
@@ -1821,21 +1820,21 @@ static void w(command_context *debugContext)
 #define xalin debugContext->assemble_linear
 #define xdlin debugContext->dump_linear
 #define xulin debugContext->unassemble_linear
-static lib_i32 xcheckrange(command_context *debugContext,
+static lib_bool xcheckrange(command_context *debugContext,
     lib_u32 linear, lib_u32 count)
 {
     if (count != 0u && count - 1u > LIB_UINT32_MAX - linear) {
         seterr(debugContext, narg - 1);
-        return 0;
+        return LIB_FALSE;
     }
-    return 1;
+    return LIB_TRUE;
 }
 /* print */
 static lib_u8 xuprintins(command_context *debugContext, lib_u32 linear)
 {
     lib_size i;
     lib_size sbin_remaining;
-    lib_i32 binary_failed = LIB_FALSE;
+    lib_bool binary_failed = LIB_FALSE;
     lib_i32 format_result;
     lib_u8 len;
     /* The decoder needs 15 host bytes; accept only bytes read before address end. */
@@ -1931,7 +1930,7 @@ static void xaconsole(command_context *debugContext)
     lib_size i, len, errAsmPos;
     char astmt[0x100];
     lib_u8 acode[15];
-    lib_i32 flagExitAsm = 0;
+    lib_bool flagExitAsm = LIB_FALSE;
     while (!flagExitAsm)
     {
         command_printf(debugContext, "L%08X ", xalin);
@@ -1940,7 +1939,7 @@ static void xaconsole(command_context *debugContext)
             astmt[lib_text_length(astmt) - 1u] = '\0';
         if (!lib_text_length(astmt))
         {
-            flagExitAsm = 1;
+            flagExitAsm = LIB_TRUE;
             continue;
         }
         errAsmPos = 0;
@@ -3110,7 +3109,7 @@ static void command_report_access(x86_debug *command)
 {
     if (command->access_status == LIB_STATUS_OK) return;
     command->continuation = COMMAND_CONTINUATION_NONE;
-    command->pending_line_available = 0;
+    command->pending_line_available = LIB_FALSE;
     command->run_kind = COMMAND_RUN_NONE;
     command->result->lifecycle_request = X86_DEBUG_LIFECYCLE_NONE;
     command->output_length = 0u;
@@ -3149,7 +3148,7 @@ lib_status x86_debug_submit_line(x86_debug *command,
         if (command_needs_machine(command) && !command_prepare_machine(command)) goto finished;
         if (!command_copy_text_checked(command->pending_line,
                 sizeof(command->pending_line), line)) return LIB_STATUS_INVALID_ARGUMENT;
-        command->pending_line_available = 1;
+        command->pending_line_available = LIB_TRUE;
         switch (command->continuation) {
         case COMMAND_CONTINUATION_ASSEMBLE:
             aconsole(debugContext);

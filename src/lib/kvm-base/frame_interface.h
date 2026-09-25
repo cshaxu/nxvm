@@ -31,8 +31,8 @@ typedef struct kvm_text_frame {
     lib_i32 cursor_row;
     lib_u8 cursor_top;
     lib_u8 cursor_bottom;
-    lib_u8 cursor_visible;
-    lib_u8 cursor_phase;
+    lib_bool cursor_visible;
+    lib_bool cursor_phase;
     kvm_text_cell cells[KVM_TEXT_COLUMNS * KVM_TEXT_ROWS];
     lib_u32 text_palette[16u]; /* 0x00RRGGBB */
     lib_u32 font_height;

@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-window/window.h"
 #include "lib/kvm-window/motion.h"
 #include "lib/kvm-window/geometry.h"
@@ -13,7 +12,7 @@ static void damage(void)
     lib_u32 generation = 0u, old;
     lib_u32 surface[16] = {0};
     kvm_window_rect changed;
-    lib_i32 valid = 0;
+    lib_bool valid = LIB_FALSE;
     lib_test_assert(kvm_component_mailboxes_create(&window.base.mailboxes, &window.pending_frame,
         sizeof(window.pending_frame)) == LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes, LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
@@ -34,7 +33,7 @@ static void damage(void)
         lib_test_assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_UNSUPPORTED);
         frame.image.height = 4u; frame.image.stride = 3u;
         lib_test_assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_INVALID_ARGUMENT);
-        frame = (kvm_window_frame){ .valid = 1u }; /* No graphics bytes in a text fixture. */
+        frame = (kvm_window_frame){ .valid = LIB_TRUE }; /* No graphics bytes in a text fixture. */
         frame.text.base.text_columns = 80u; frame.text.base.text_rows = 25u;
         frame.text.base.font_height = KVM_WINDOW_FONT_HEIGHT + 1u;
         lib_test_assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_UNSUPPORTED);
@@ -78,13 +77,13 @@ static void damage(void)
     lib_test_assert(!kvm_window_render_frame(&frame, surface, 4, 4, &valid, &changed));
     /* Row padding is not part of the displayed pixels. */
     frame.image.width = 3;
-    valid = 0;
+    valid = LIB_FALSE;
     lib_test_assert(kvm_window_render_frame(&frame, surface, 3, 4, &valid, &changed));
     lib_test_assert(changed.right == 3 && changed.bottom == 4);
     frame.image.pixels[3] = 255;
     lib_test_assert(!kvm_window_render_frame(&frame, surface, 3, 4, &valid, &changed));
     /* Recreated surfaces require full invalidation even for unchanged pixels. */
-    valid = 0;
+    valid = LIB_FALSE;
     lib_test_assert(kvm_window_render_frame(&frame, surface, 3, 4, &valid, &changed));
     lib_test_assert(changed.left == 0 && changed.top == 0 && changed.right == 3 && changed.bottom == 4);
     kvm_component_mailboxes_destroy(&window.base.mailboxes);
@@ -119,10 +118,10 @@ static void rendering(void)
     kvm_window_frame text = { 0 };
     kvm_window_rect display = { 0, 0, 640, 410 }, cursor;
     lib_u32 pixels[8 * 16];
-    lib_i32 valid = 0;
+    lib_bool valid = LIB_FALSE;
     kvm_window_rect changed;
-    text.valid = 1; text.text.base.text_columns = 80; text.text.base.text_rows = 25;
-    text.text.base.cursor_visible = 1; text.text.base.cursor_column = 0; text.text.base.cursor_row = 24;
+    text.valid = LIB_TRUE; text.text.base.text_columns = 80; text.text.base.text_rows = 25;
+    text.text.base.cursor_visible = LIB_TRUE; text.text.base.cursor_column = 0; text.text.base.cursor_row = 24;
     text.text.base.font_height = 16; text.text.base.cursor_top = 14; text.text.base.cursor_bottom = 15;
     lib_test_assert(kvm_window_cursor_rect(&text, &display, &cursor));
     lib_test_assert(cursor.bottom == 410 && cursor.top == 407);
@@ -203,7 +202,7 @@ static void rendering(void)
                 (kvm_text_cell){ column ? 5u : 3u, (lib_u8)column, fg, (lib_u8)(fg + 1u) };
         }
     }
-    valid = 0;
+    valid = LIB_FALSE;
     kvm_window_render_frame(&text, grid, 16, 32, &valid, &changed);
     for (lib_u32 row = 0; row < 2; ++row)
         for (lib_u32 column = 0; column < 2; ++column)
@@ -219,9 +218,9 @@ static void text_coverage(void)
     const lib_u32 columns[] = {1u, 3u, 80u, 80u, 80u, KVM_TEXT_COLUMNS};
     const lib_u32 rows[] = {1u, 2u, 22u, 25u, 43u, KVM_TEXT_ROWS};
     const lib_u32 sentinel = 0xdeadbeefu;
-    lib_i32 valid = 0;
+    lib_bool valid = LIB_FALSE;
     kvm_window_rect changed;
-    frame = (kvm_window_frame){ .valid = 1u };
+    frame = (kvm_window_frame){ .valid = LIB_TRUE };
     frame.text.base.text_palette[1] = 0x123456u;
     frame.text.base.text_palette[2] = 0xabcdefu;
     for (lib_u32 scan = 0; scan < KVM_WINDOW_FONT_HEIGHT; ++scan) {
@@ -241,7 +240,7 @@ static void text_coverage(void)
             lib_size count = (lib_size)width * height;
             frame.text.base.font_height = font_height;
             for (lib_size i = 0; i < count + 2u; ++i) guarded[i] = sentinel;
-            valid = 0;
+            valid = LIB_FALSE;
             lib_test_assert(kvm_window_render_frame(&frame, guarded + 1, width, height, &valid, &changed));
             lib_test_assert(changed.left == 0 && changed.top == 0 &&
                 changed.right == (lib_i32)width && changed.bottom == (lib_i32)height);
@@ -258,14 +257,14 @@ static void text_coverage(void)
     /* Equal pixel extents still compare all rows when the cell grid changes. */
     frame.text.base.text_rows = 25;
     frame.text.base.font_height = 16;
-    valid = 0;
+    valid = LIB_FALSE;
     lib_test_assert(kvm_window_render_frame(&frame, guarded + 1, 640, 400, &valid, &changed));
     frame.text.base.text_rows = 50;
     frame.text.base.font_height = 8;
     frame.text.base.cells[3999] = (kvm_text_cell){0, 0, 1, 1};
     lib_test_assert(kvm_window_render_frame(&frame, guarded + 1, 640, 400, &valid, &changed));
     lib_test_assert(changed.bottom == 400 && guarded[640u * 400u] == 0x123456u);
-    frame.text.base.cursor_visible = 1;
+    frame.text.base.cursor_visible = LIB_TRUE;
     frame.text.base.cursor_column = 79;
     frame.text.base.cursor_row = 49;
     frame.text.base.cursor_top = 6;
@@ -279,7 +278,7 @@ static void text_coverage(void)
     guarded[1] = sentinel;
     lib_test_assert(!kvm_window_render_frame(&frame, guarded + 1, 1u, 1u, &valid, &changed));
     lib_test_assert(guarded[1] == sentinel);
-    frame.valid = 0u;
+    frame.valid = LIB_FALSE;
     lib_test_assert(!kvm_window_render_frame(&frame, guarded + 1, KVM_TEXT_COLUMNS * 8u,
         KVM_TEXT_ROWS * KVM_WINDOW_FONT_HEIGHT, &valid, &changed));
     lib_test_assert(guarded[1] == sentinel);

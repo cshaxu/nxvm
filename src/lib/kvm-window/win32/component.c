@@ -28,15 +28,15 @@ typedef struct kvm_win32_window_context {
     lib_u32 *surface_pixels;
     lib_u32 surface_width;
     lib_u32 surface_height;
-    lib_i32 surface_valid;
+    lib_bool surface_valid;
     lib_u32 displayed_sequence;
     kvm_keyboard_normalizer keyboard_normalizer;
-    lib_i32 left_button;
-    lib_i32 right_button;
+    lib_bool left_button;
+    lib_bool right_button;
     lib_i64 pending_mouse_dx;
     lib_i64 pending_mouse_dy;
     lib_u32 pending_mouse_buttons;
-    lib_i32 mouse_delivery_posted;
+    lib_bool mouse_delivery_posted;
     kvm_win32_mouse mouse;
     lib_u32 client_surface_width;
     lib_u32 client_surface_height;
@@ -59,7 +59,7 @@ static kvm_win32_window_context *win32_window_context(lib_win32_hwnd window)
         lib_win32_get_window_long_ptr_a(window, LIB_WIN32_GWLP_USERDATA);
 }
 
-static lib_i32 win32_window_accepting_input(const kvm_win32_window_context *context)
+static lib_bool win32_window_accepting_input(const kvm_win32_window_context *context)
 {
     return context != LIB_NULL && context->component != LIB_NULL &&
         lib_atomic_i32_load_explicit(&context->component->base.stopping,
@@ -70,7 +70,7 @@ static lib_i32 win32_window_accepting_input(const kvm_win32_window_context *cont
  * separate from component lifetime: Window close and capture-release cleanup
  * still use accepting_input(). Native key transitions still reach kvm-base's
  * generic matcher so a registered product hotkey can be delivered. */
-static lib_i32 win32_window_accepting_content_input(
+static lib_bool win32_window_accepting_content_input(
     const kvm_win32_window_context *context)
 {
     return win32_window_accepting_input(context) &&
@@ -80,24 +80,24 @@ static lib_i32 win32_window_accepting_content_input(
 /* kvm-base has already attributed and matched this event.  Frozen Window
  * consumes ordinary matcher output, including mismatch replay, but continues
  * to forward the copied registered-hotkey event to the application sink. */
-static lib_i32 win32_window_deliver_normalized(void *opaque,
+static lib_bool win32_window_deliver_normalized(void *opaque,
     const kvm_input_event *event)
 {
     kvm_win32_window_context *context = (kvm_win32_window_context *)opaque;
 
-    if (!win32_window_accepting_input(context) || event == LIB_NULL) return 0;
+    if (!win32_window_accepting_input(context) || event == LIB_NULL) return LIB_FALSE;
     if (context->frozen != LIB_FALSE &&
         (event->type == KVM_EVENT_KEY || event->type == KVM_EVENT_TEXT ||
-         event->type == KVM_EVENT_MOUSE)) return 1;
+         event->type == KVM_EVENT_MOUSE)) return LIB_TRUE;
     return context->component->base.input_sink(
         context->component->base.input_context, event);
 }
 
-static lib_i32 win32_window_emit_normalized(void *opaque, const kvm_input_event *event)
+static lib_bool win32_window_emit_normalized(void *opaque, const kvm_input_event *event)
 {
     kvm_win32_window_context *context = (kvm_win32_window_context *)opaque;
 
-    if (!win32_window_accepting_input(context)) return 0;
+    if (!win32_window_accepting_input(context)) return LIB_FALSE;
     return kvm_component_emit_to(&context->component->base, event,
         win32_window_deliver_normalized, context, context->frozen == LIB_FALSE);
 }
@@ -117,7 +117,7 @@ static lib_win32_hcursor win32_window_create_transparent_cursor(void)
 }
 
 static void win32_window_set_client_cursor(
-    const kvm_win32_window_context *context, lib_i32 captured)
+    const kvm_win32_window_context *context, lib_bool captured)
 {
     if (captured && context != LIB_NULL && context->transparent_cursor != LIB_NULL)
         lib_win32_set_cursor(context->transparent_cursor);
@@ -174,23 +174,23 @@ static lib_status win32_window_destroy_surface(kvm_win32_window_context *context
     context->surface_pixels = LIB_NULL;
     context->surface_width = 0u;
     context->surface_height = 0u;
-    context->surface_valid = 0;
+    context->surface_valid = LIB_FALSE;
     return LIB_STATUS_OK;
 }
 
-static lib_i32 win32_window_ensure_surface(lib_win32_hwnd window,
+static lib_bool win32_window_ensure_surface(lib_win32_hwnd window,
     kvm_win32_window_context *context, lib_u32 width, lib_u32 height)
 {
     lib_win32_bitmapinfo info;
     lib_win32_hdc dc;
 
     if (window == LIB_NULL || context == LIB_NULL || width == 0u || height == 0u)
-        return 0;
+        return LIB_FALSE;
     if (context->surface_dc != LIB_NULL && context->surface_width == width &&
-        context->surface_height == height) return 1;
-    if (win32_window_destroy_surface(context) != LIB_STATUS_OK) return 0;
+        context->surface_height == height) return LIB_TRUE;
+    if (win32_window_destroy_surface(context) != LIB_STATUS_OK) return LIB_FALSE;
     dc = lib_win32_get_dc(window);
-    if (dc == LIB_NULL) return 0;
+    if (dc == LIB_NULL) return LIB_FALSE;
     context->surface_dc = lib_win32_create_compatible_dc(dc);
     lib_win32_zero_memory(&info, sizeof(info));
     info.bmiHeader.biSize = sizeof(info.bmiHeader);
@@ -202,37 +202,37 @@ static lib_i32 win32_window_ensure_surface(lib_win32_hwnd window,
     if (context->surface_dc != LIB_NULL)
         context->surface_bitmap = lib_win32_create_dibsection(dc, &info, LIB_WIN32_DIB_RGB_COLORS,
             (void **)&context->surface_pixels, LIB_NULL, 0u);
-    if (!lib_win32_release_dc(window, dc)) return 0;
+    if (!lib_win32_release_dc(window, dc)) return LIB_FALSE;
     if (context->surface_dc == LIB_NULL || context->surface_bitmap == LIB_NULL ||
         context->surface_pixels == LIB_NULL) {
         win32_window_destroy_surface(context);
-        return 0;
+        return LIB_FALSE;
     }
     context->surface_previous_bitmap = lib_win32_select_object(context->surface_dc,
         context->surface_bitmap);
     if (context->surface_previous_bitmap == LIB_NULL) {
         win32_window_destroy_surface(context);
-        return 0;
+        return LIB_FALSE;
     }
     context->surface_width = width;
     context->surface_height = height;
-    context->surface_valid = 0;
+    context->surface_valid = LIB_FALSE;
     lib_memory_set(context->surface_pixels, 0,
         (lib_size)width * height * sizeof(*context->surface_pixels));
-    return 1;
+    return LIB_TRUE;
 }
 
-static lib_i32 win32_window_display_rect(const kvm_win32_window_context *context,
+static lib_bool win32_window_display_rect(const kvm_win32_window_context *context,
     lib_u32 source_width, lib_u32 source_height, kvm_window_rect *display)
 {
     if (context == LIB_NULL || display == LIB_NULL || source_width == 0u ||
         source_height == 0u || context->client_width <= 0 ||
-        context->client_height <= 0) return 0;
+        context->client_height <= 0) return LIB_FALSE;
     display->left = 0;
     display->top = 0;
     display->right = context->client_width;
     display->bottom = context->client_height;
-    return 1;
+    return LIB_TRUE;
 }
 
 static void win32_window_capture_client_size(lib_win32_hwnd window,
@@ -277,19 +277,19 @@ static void win32_window_resize_client(lib_win32_hwnd window,
     context->client_surface_height = height;
 }
 
-static lib_i32 win32_window_cursor_rect(lib_win32_hwnd window,
+static lib_bool win32_window_cursor_rect(lib_win32_hwnd window,
     const kvm_win32_window_context *context, lib_win32_rect *cursor)
 {
     kvm_window_rect display;
     kvm_window_rect result;
     if (!window || !context || !cursor || !win32_window_display_rect(context,
-            context->surface_width, context->surface_height, &display)) return 0;
-    if (!kvm_window_cursor_rect(&context->frame, &display, &result)) return 0;
+            context->surface_width, context->surface_height, &display)) return LIB_FALSE;
+    if (!kvm_window_cursor_rect(&context->frame, &display, &result)) return LIB_FALSE;
     kvm_win32_rect_store(cursor, &result);
-    return 1;
+    return LIB_TRUE;
 }
 
-static lib_i32 win32_window_paint(lib_win32_hwnd window, kvm_win32_window_context *context,
+static lib_bool win32_window_paint(lib_win32_hwnd window, kvm_win32_window_context *context,
     lib_win32_hdc dc)
 {
     kvm_window_rect display;
@@ -297,24 +297,24 @@ static lib_i32 win32_window_paint(lib_win32_hwnd window, kvm_win32_window_contex
     if (context == LIB_NULL || context->surface_dc == LIB_NULL ||
         kvm_window_frame_validate(&context->frame) != LIB_STATUS_OK ||
         !win32_window_display_rect(context, context->surface_width,
-            context->surface_height, &display)) return 1;
+            context->surface_height, &display)) return LIB_TRUE;
     if (!lib_win32_stretch_blt(dc, display.left, display.top, display.right - display.left,
         display.bottom - display.top, context->surface_dc, 0, 0,
-        (lib_i32)context->surface_width, (lib_i32)context->surface_height, LIB_WIN32_SRCCOPY)) return 0;
+        (lib_i32)context->surface_width, (lib_i32)context->surface_height, LIB_WIN32_SRCCOPY)) return LIB_FALSE;
     if (context->cursor_blink_visible) {
         lib_win32_rect cursor;
         if (win32_window_cursor_rect(window, context, &cursor))
             return lib_win32_invert_rect(dc, &cursor) != 0;
     }
-    return 1;
+    return LIB_TRUE;
 }
 
-static lib_i32 win32_window_invalidate(lib_win32_hwnd window,
+static lib_bool win32_window_invalidate(lib_win32_hwnd window,
     kvm_win32_window_context *context, const lib_win32_rect *rect)
 {
-    if (lib_win32_invalidate_rect(window, rect, LIB_WIN32_FALSE)) return 1;
+    if (lib_win32_invalidate_rect(window, rect, LIB_WIN32_FALSE)) return LIB_TRUE;
     kvm_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
-    return 0;
+    return LIB_FALSE;
 }
 
 static void win32_window_advance_cursor_blink(lib_win32_hwnd window,
@@ -340,7 +340,7 @@ static void win32_window_advance_cursor_blink(lib_win32_hwnd window,
 }
 
 static lib_i32 win32_window_transition(kvm_win32_window_context *context,
-    lib_win32_wparam key, lib_win32_lparam lparam, lib_i32 released)
+    lib_win32_wparam key, lib_win32_lparam lparam, lib_bool released)
 {
     kvm_keyboard_record record = {
         KVM_KEYBOARD_TRANSITION, (lib_u16)((lparam >> 16) & 0xffu),
@@ -366,7 +366,7 @@ static void win32_window_emit_mouse(kvm_win32_window_context *context,
     event.type = KVM_EVENT_MOUSE;
     event.data.mouse.delta_x = dx;
     event.data.mouse.delta_y = dy;
-    event.data.mouse.relative = 1u;
+    event.data.mouse.relative = LIB_TRUE;
     event.data.mouse.buttons = buttons;
     (void)win32_window_emit_normalized(context, &event);
 }
@@ -374,7 +374,7 @@ static void win32_window_emit_mouse(kvm_win32_window_context *context,
 static void win32_window_flush_mouse(kvm_win32_window_context *context)
 {
     if (context == LIB_NULL || !context->mouse_delivery_posted) return;
-    context->mouse_delivery_posted = 0;
+    context->mouse_delivery_posted = LIB_FALSE;
     win32_window_emit_mouse(context,
         win32_window_mouse_clamp(context->pending_mouse_dx),
         win32_window_mouse_clamp(context->pending_mouse_dy),
@@ -393,7 +393,7 @@ static void win32_window_queue_mouse(lib_win32_hwnd window,
         (context->left_button ? KVM_MOUSE_BUTTON_LEFT : 0u) |
         (context->right_button ? KVM_MOUSE_BUTTON_RIGHT : 0u);
     if (context->mouse_delivery_posted) return;
-    context->mouse_delivery_posted = 1;
+    context->mouse_delivery_posted = LIB_TRUE;
     if (!lib_win32_post_message_a(window, WIN32_WINDOW_MOUSE_READY, 0u, 0))
         win32_window_flush_mouse(context);
 }
@@ -431,15 +431,11 @@ static void win32_window_release_mouse(kvm_win32_window_context *context)
     /* left/right_button is content state only. A real content press must never
      * survive a host capture release, whereas the host-only capture gesture
      * leaves both bits clear and therefore emits nothing here. */
-    if ((context->left_button || context->right_button) &&
-        win32_window_accepting_input(context)) {
-        context->left_button = 0;
-        context->right_button = 0;
-        win32_window_emit_mouse(context, 0, 0, 0u);
-    } else {
-        context->left_button = 0;
-        context->right_button = 0;
-    }
+    lib_bool notify_release = (context->left_button || context->right_button) &&
+        win32_window_accepting_input(context);
+    context->left_button = LIB_FALSE;
+    context->right_button = LIB_FALSE;
+    if (notify_release) win32_window_emit_mouse(context, 0, 0, 0u);
     if (kvm_win32_mouse_release(&context->mouse) != LIB_STATUS_OK)
         kvm_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
 }
@@ -466,9 +462,9 @@ static void win32_window_consume_frame(lib_win32_hwnd window,
     lib_u32 width;
     lib_u32 height;
     lib_win32_rect old_cursor = {0}, new_cursor = {0};
-    lib_i32 old_visible = context->cursor_blink_visible &&
+    lib_bool old_visible = context->cursor_blink_visible &&
         win32_window_cursor_rect(window, context, &old_cursor);
-    lib_i32 new_visible;
+    lib_bool new_visible;
 
     if (!win32_window_accepting_input(context) ||
         !kvm_component_mailboxes_capture_frame(&context->component->base.mailboxes,
@@ -507,45 +503,45 @@ static void win32_window_consume_frame(lib_win32_hwnd window,
         context->displayed_sequence);
 }
 
-static lib_i32 win32_window_consume_mailboxes(lib_win32_hwnd window,
+static lib_bool win32_window_consume_mailboxes(lib_win32_hwnd window,
     kvm_win32_window_context *context)
 {
     kvm_component_control control;
 
-    if (context == LIB_NULL || context->component == LIB_NULL) return 0;
+    if (context == LIB_NULL || context->component == LIB_NULL) return LIB_FALSE;
     while (win32_window_accepting_input(context) &&
         kvm_component_mailboxes_take_control(&context->component->base.mailboxes,
             &control)) {
         if (control.kind == KVM_COMPONENT_CONTROL_STOP) {
             lib_atomic_i32_store_explicit(&context->component->base.stopping, 1,
                 LIB_MEMORY_ORDER_RELEASE);
-            return 0;
+            return LIB_FALSE;
         }
         if (control.kind > KVM_WINDOW_CONTROL_RELEASE_MOUSE ||
             (control.kind == KVM_WINDOW_CONTROL_SET_TITLE &&
                 lib_memory_find(control.payload, '\0', KVM_WINDOW_TITLE_CAPACITY) == LIB_NULL) ||
             (control.kind == KVM_WINDOW_CONTROL_SET_FROZEN && control.payload[0] > 1u)) {
             kvm_component_fail(&context->component->base, LIB_STATUS_INVALID_ARGUMENT);
-            return 0;
+            return LIB_FALSE;
         }
         if (control.kind == KVM_WINDOW_CONTROL_SET_TITLE) {
             if (!lib_win32_set_window_text_a(window, (char *)control.payload)) {
                 kvm_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
-                return 0;
+                return LIB_FALSE;
             }
         }
         else if (control.kind == KVM_WINDOW_CONTROL_SET_FROZEN) {
             if (context->frozen == control.payload[0]) continue;
             if (context->frozen && !control.payload[0]) {
                 (void)lib_win32_set_foreground_window(window);
-                if (!win32_window_accepting_input(context)) return 0;
+                if (!win32_window_accepting_input(context)) return LIB_FALSE;
                 (void)lib_win32_set_focus(window);
-                if (!win32_window_accepting_input(context)) return 0;
+                if (!win32_window_accepting_input(context)) return LIB_FALSE;
             }
             context->frozen = control.payload[0];
             if (context->frozen) {
                 win32_window_release_mouse(context);
-                if (!win32_window_accepting_input(context)) return 0;
+                if (!win32_window_accepting_input(context)) return LIB_FALSE;
             } else {
                 context->cursor_blink_visible = LIB_TRUE;
                 context->cursor_blink_due = lib_win32_get_tick_count() +
@@ -556,9 +552,9 @@ static lib_i32 win32_window_consume_mailboxes(lib_win32_hwnd window,
                 !lib_win32_set_timer(window, WIN32_WINDOW_CURSOR_TIMER,
                     WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS, LIB_NULL)) {
                 kvm_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
-                return 0;
+                return LIB_FALSE;
             }
-            if (!win32_window_invalidate(window, context, LIB_NULL)) return 0;
+            if (!win32_window_invalidate(window, context, LIB_NULL)) return LIB_FALSE;
         } else if (control.kind == KVM_WINDOW_CONTROL_RELEASE_MOUSE)
             win32_window_release_mouse(context);
     }
@@ -720,7 +716,7 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
             return 0;
         }
         win32_window_flush_mouse(context);
-        context->left_button = 1;
+        context->left_button = LIB_TRUE;
         win32_window_mouse_buttons(context);
         return 0;
     case LIB_WIN32_WM_LBUTTONUP:
@@ -730,7 +726,7 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
         if (!kvm_win32_mouse_captured(&context->mouse) || !context->left_button)
             return 0;
         win32_window_flush_mouse(context);
-        context->left_button = 0;
+        context->left_button = LIB_FALSE;
         win32_window_mouse_buttons(context);
         return 0;
     case LIB_WIN32_WM_RBUTTONDOWN:
@@ -740,7 +736,7 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
             return 0;
         }
         win32_window_flush_mouse(context);
-        context->right_button = 1;
+        context->right_button = LIB_TRUE;
         win32_window_mouse_buttons(context);
         return 0;
     case LIB_WIN32_WM_RBUTTONUP:
@@ -748,7 +744,7 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
         if (!kvm_win32_mouse_captured(&context->mouse) || !context->right_button)
             return 0;
         win32_window_flush_mouse(context);
-        context->right_button = 0;
+        context->right_button = LIB_FALSE;
         win32_window_mouse_buttons(context);
         return 0;
     case LIB_WIN32_WM_KILLFOCUS:

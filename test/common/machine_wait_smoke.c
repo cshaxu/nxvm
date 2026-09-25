@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "common/machine/machine_interface.h"
 #include "lib/base/sync_interface.h"
 
@@ -197,7 +196,7 @@ static lib_bool run(void *context)
 static void input(void *context, const kvm_input_event *event)
 { (void)context; (void)event; }
 static lib_status frame(void *context, common_machine_frame *value)
-{ (void)context; value->window.valid = 0u; return frame_status; }
+{ (void)context; value->window.valid = LIB_FALSE; return frame_status; }
 static void state(void *context, common_machine_state value, lib_u32 generation)
 {
     (void)context;
@@ -414,11 +413,11 @@ static void check_publication(void)
     lib_test_assert(common_machine_copy_published_frame(active, &captured, common_machine_run_generation(active)));
     lib_test_assert(captured.sequence == 3 && captured.window.image.pixels[0] == 1 &&
         captured.window.image.pixels[15] == 2);
-    candidate.window.valid = 0; /* Driver reports no subsequent display change. */
+    candidate.window.valid = LIB_FALSE; /* Driver reports no subsequent display change. */
     lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);
     lib_test_assert(common_machine_published_frame_sequence(active) == 3);
     candidate = (common_machine_frame){0};
-    candidate.window.valid = 1;
+    candidate.window.valid = LIB_TRUE;
     candidate.window.text.base.text_columns = candidate.window.text.base.text_rows = 1;
     lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);
     lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK); /* Unchanged text suppressed. */
@@ -568,7 +567,7 @@ int main(void)
     lib_test_assert(sizeof(common_machine_frame) == 985112);
     /* Resource-only changes are publications, not just character changes. */
     static common_machine_frame before, after;
-    before.window.valid = 1u;
+    before.window.valid = LIB_TRUE;
     before.window.text.base.text_columns = 80u;
     before.window.text.base.text_rows = 25u;
     after = before;

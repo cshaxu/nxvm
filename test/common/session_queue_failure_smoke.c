@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "common/session/control.h"
 
 static lib_i32 fail_allocation, fail_mutex, fail_event;

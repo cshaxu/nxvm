@@ -1,12 +1,11 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "common/session/control.h"
 
 typedef struct capture {
     lib_u32 makes, breaks, extended_breaks;
 } capture;
 
-static lib_i32 receive(void *context, const kvm_input_event *event)
+static lib_bool receive(void *context, const kvm_input_event *event)
 {
     capture *c = context;
     lib_test_assert(event->type == KVM_EVENT_KEY);
@@ -15,7 +14,7 @@ static lib_i32 receive(void *context, const kvm_input_event *event)
         ++c->breaks;
         if (event->data.key.flags & KVM_KEY_FLAG_EXTENDED) ++c->extended_breaks;
     }
-    return 1;
+    return LIB_TRUE;
 }
 
 static void dispatch(common_session_queue *q, kvm_input_event *event, capture *c)
@@ -34,13 +33,13 @@ static void check(kvm_key key, lib_u16 scan, lib_i32 release_first, lib_i32 exte
     event.source_identity = 1;
     event.data.key.key = key;
     event.data.key.scan_code = scan;
-    event.data.key.pressed = 1;
+    event.data.key.pressed = LIB_TRUE;
     dispatch(q, &event, &c);
     dispatch(q, &event, &c); /* Repeat never adds a second held-key entry. */
     event.data.key.flags = KVM_KEY_FLAG_EXTENDED;
     dispatch(q, &event, &c);
     if (release_first) {
-        event.data.key.pressed = 0;
+        event.data.key.pressed = LIB_FALSE;
         event.data.key.flags = extended_first ? KVM_KEY_FLAG_EXTENDED : 0;
         dispatch(q, &event, &c);
     }
@@ -65,7 +64,7 @@ static void check_sources(common_session_machine_state retirement_state)
     event.type = KVM_EVENT_KEY;
     event.data.key.key = KVM_KEY_CONTROL;
     event.data.key.scan_code = 0x1d;
-    event.data.key.pressed = 1;
+    event.data.key.pressed = LIB_TRUE;
     event.source_identity = 1;
     dispatch(q, &event, &c);
     event.source_identity = 2;
@@ -84,7 +83,7 @@ static void check_sources(common_session_machine_state retirement_state)
     common_session_queue_dispose(q);
 }
 
-static lib_i32 receive_text(void *context, const kvm_input_event *event)
+static lib_bool receive_text(void *context, const kvm_input_event *event)
 {
     lib_u32 *calls = context;
     lib_test_assert(event->type == KVM_EVENT_TEXT && event->data.text.scalar == 0x4e2du);
@@ -118,7 +117,7 @@ static void check_capacity(void)
     event.type = KVM_EVENT_KEY;
     event.data.key.key = KVM_KEY_CONTROL;
     event.data.key.scan_code = 0x1d;
-    event.data.key.pressed = 1u;
+    event.data.key.pressed = LIB_TRUE;
     /* Same physical key on distinct sources must occupy distinct entries. */
     for (lib_u32 i = 1u; i <= capacity; ++i) {
         event.source_identity = i;
@@ -141,11 +140,11 @@ static void check_capacity(void)
     lib_test_assert(q.pressed_count == capacity && c.breaks == 0u);
     event.type = KVM_EVENT_KEY;
     event.source_identity = 1u;
-    event.data.key.pressed = 0u;
+    event.data.key.pressed = LIB_FALSE;
     dispatch(&q, &event, &c);
     lib_test_assert(q.pressed_count == capacity - 1u && c.breaks == 1u);
     event.source_identity = capacity + 1u;
-    event.data.key.pressed = 1u;
+    event.data.key.pressed = LIB_TRUE;
     dispatch(&q, &event, &c); /* Freed slot admits the formerly rejected key. */
     lib_test_assert(q.pressed_count == capacity && c.makes == capacity + 2u);
     event.type = KVM_EVENT_SOURCE_RETIRED;

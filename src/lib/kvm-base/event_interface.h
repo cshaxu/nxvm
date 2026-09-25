@@ -120,7 +120,7 @@ typedef struct kvm_input_event {
             lib_u32 flags;
             /* Current Ctrl/Alt/Shift state for the generic matcher. */
             lib_u8 modifiers;
-            lib_u8 pressed;
+            lib_bool pressed;
         } key;
         struct {
             lib_u32 scalar;
@@ -133,7 +133,7 @@ typedef struct kvm_input_event {
             lib_i32 wheel_x;
             lib_i32 wheel_y;
             lib_u32 buttons;
-            lib_u8 relative;
+            lib_bool relative;
         } mouse;
         struct {
             lib_u8 identifier[KVM_HOTKEY_IDENTIFIER_CAPACITY];

@@ -118,7 +118,7 @@ lib_bool base_sync_task_cancelled(const base_sync_task *task)
     const base_sync_event *events[1];
     lib_bool signaled = LIB_FALSE;
 
-    if (task == LIB_NULL || task->cancellation == LIB_NULL) return 0;
+    if (task == LIB_NULL || task->cancellation == LIB_NULL) return LIB_FALSE;
     events[0] = task->cancellation;
     return base_sync_platform_event_wait_many(events, 1u, 0u, &signaled,
         LIB_NULL) == LIB_STATUS_OK && signaled != LIB_FALSE;

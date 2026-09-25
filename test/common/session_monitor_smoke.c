@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "common/session/session_interface.h"
 #include "common/session/control.h"
 
@@ -11,21 +10,21 @@ static lib_size output_used;
 static lib_u32 writes, fail_write;
 static lib_u32 waits;
 static lib_bool fail_wait;
-static lib_i32 take_event(common_session_queue *queue, common_session_event *event,
+static lib_bool take_event(common_session_queue *queue, common_session_event *event,
     lib_u32 timeout_ms)
 {
     lib_test_assert(timeout_ms == LIB_UINT32_MAX);
     ++waits;
     if (fail_wait) {
         lib_test_assert(waits == 1u); /* A failed wait must never be retried. */
-        return 0;
+        return LIB_FALSE;
     }
     return common_session_queue_take(queue, event, timeout_ms);
 }
 static lib_u32 run(const common_machine *m) { (void)m; return 1; }
 static lib_bool copy_frame(common_machine *m, common_machine_frame *f, lib_u32 g)
 { (void)m; (void)f; (void)g; return LIB_FALSE; }
-static lib_i32 machine_request(common_machine *m) { (void)m; ++commands; return 1; }
+static lib_bool machine_request(common_machine *m) { (void)m; ++commands; return LIB_TRUE; }
 #define common_machine_run_generation run
 #define common_machine_copy_published_frame copy_frame
 #define common_machine_start machine_request

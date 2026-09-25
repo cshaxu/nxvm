@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-window/window.h"
 #include "lib/types/win32/window.h"
 #include "lib/types/win32/sync.h"
@@ -53,7 +52,7 @@ static lib_i32 LIB_WIN32_WINAPI metrics(lib_i32 index)
 }
 static lib_win32_bool LIB_WIN32_WINAPI get_clip(lib_win32_rect *r) { *r=clipped; return LIB_WIN32_TRUE; }
 static lib_u32 releases, clips, events;
-static lib_i32 reject_input;
+static lib_bool reject_input;
 static lib_i32 release_ok=1;
 static lib_u32 focus_requests, foreground_requests;
 static lib_i32 clip_ok = 1, resize_ok = 1, title_ok = 1, client_ok = 1;
@@ -178,7 +177,7 @@ static void title_notification(void)
     lib_test_assert(kvm_window_unfreeze(c->component)==0);
     lib_test_assert(c->frozen); /* Nested notification must not drain ahead of this control. */
 }
-static lib_i32 input(void *p,const kvm_input_event *e)
+static lib_bool input(void *p,const kvm_input_event *e)
 { (void)p; lib_test_assert(e->type==KVM_EVENT_MOUSE); ++events; return !reject_input; }
 static void failure(void *p,lib_u64 id,lib_status status)
 { (void)p;(void)id;(void)status; }
@@ -242,23 +241,23 @@ static void check_surface_damage(void)
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
     lib_test_assert(invalidations==before+2);
-    frame=(kvm_window_frame){.valid=1};
+    frame=(kvm_window_frame){.valid=LIB_TRUE};
     frame.text.base.text_columns=frame.text.base.text_rows=1;
     frame.text.base.font_height=8; /* Same pixel dimensions as graphics. */
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
     lib_test_assert(c.surface_valid && invalidations==before+3);
-    frame=(kvm_window_frame){.valid=1,.graphics=1};
+    frame=(kvm_window_frame){.valid=LIB_TRUE,.graphics=1};
     frame.image.width=frame.image.stride=frame.image.height=8;
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
     lib_test_assert(c.surface_valid && invalidations==before+3);
     lib_test_assert(invalidated.left==0 && invalidated.top==0 && invalidated.right==8 && invalidated.bottom==8);
     /* Same black bitmap, but a new cursor overlay must still invalidate. */
-    frame=(kvm_window_frame){.valid=1};
+    frame=(kvm_window_frame){.valid=LIB_TRUE};
     frame.text.base.text_columns=1; frame.text.base.text_rows=2;
     frame.text.base.font_height=4;
-    frame.text.base.cursor_visible=1;
+    frame.text.base.cursor_visible=LIB_TRUE;
     frame.text.base.cursor_top=frame.text.base.cursor_bottom=3;
     c.cursor_blink_visible=1;
     before=invalidations;
@@ -280,7 +279,7 @@ static void check_surface_damage(void)
     ticks+=250;
     win32_window_advance_cursor_blink((lib_win32_hwnd)1,&c);
     lib_test_assert(c.cursor_blink_visible && invalidations==before+5);
-    frame.text.base.cursor_visible=0;
+    frame.text.base.cursor_visible=LIB_FALSE;
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
     lib_test_assert(invalidations==before+6 && invalidated.top==7);
@@ -309,7 +308,7 @@ static void check_surface_damage(void)
     lib_test_assert(invalidations==before+10 && invalidated.left==0 && invalidated.top==0 &&
         invalidated.right==1 && invalidated.bottom==5);
     lib_test_assert(surface_bits[0]==0x654321 && surface_bits[32]==0x654321);
-    c.surface_valid=0; /* Recreated surface must invalidate fully, even same lib_win32_rgb. */
+    c.surface_valid=LIB_FALSE; /* Recreated surface must invalidate fully, even same lib_win32_rgb. */
     lib_test_assert(kvm_window_publish_frame(&window,&frame)==0);
     win32_window_consume_frame((lib_win32_hwnd)1,&c);
     lib_test_assert(invalidations==before+11 && invalidated.right==8 && invalidated.bottom==8);
@@ -344,13 +343,13 @@ int main(void)
     client.right=320; client.bottom=240;
     win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_SIZE,0,0);
     lib_test_assert(clipped.right==20 && clipped.bottom==290);
-    c.left_button=1; c.mouse.motion.remainder_x=7;
+    c.left_button=LIB_TRUE; c.mouse.motion.remainder_x=7;
     owner=(lib_win32_hwnd)2; notify_loss();
     lib_test_assert(!c.mouse.captured && !c.left_button && !c.mouse.motion.valid);
     lib_test_assert(!c.mouse.motion.remainder_x && releases==0 && events==1 && owner==(lib_win32_hwnd)2);
     notify_loss(); lib_test_assert(events==1 && releases==0);
     lib_test_assert(kvm_win32_mouse_capture(&c.mouse,(lib_win32_hwnd)1) == LIB_STATUS_OK);
-    c.right_button=1; win32_window_release_mouse(&c);
+    c.right_button=LIB_TRUE; win32_window_release_mouse(&c);
     lib_test_assert(releases==1 && events==2 && !c.mouse.captured && !c.right_button);
     lib_test_assert(kvm_win32_mouse_capture(&c.mouse,(lib_win32_hwnd)1) == LIB_STATUS_OK);
     clip_ok=0; win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_MOVE,0,0);
@@ -393,8 +392,8 @@ int main(void)
     lib_test_assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     client_ok=1;
-    c.frame.valid=1; c.frame.text.base.text_columns=80; c.frame.text.base.text_rows=25;
-    c.frame.text.base.cursor_visible=1; c.frame.text.base.font_height=16;
+    c.frame.valid=LIB_TRUE; c.frame.text.base.text_columns=80; c.frame.text.base.text_rows=25;
+    c.frame.text.base.cursor_visible=LIB_TRUE; c.frame.text.base.font_height=16;
     c.cursor_blink_due=250; c.cursor_blink_visible=1;
     for (ticks=0;ticks<250;++ticks) win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0);
     lib_test_assert(c.cursor_blink_visible);
@@ -423,7 +422,7 @@ int main(void)
     c.frozen=0; c.cursor_blink_due=10; ticks=0xfffffff0u;
     win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0); lib_test_assert(!c.cursor_blink_visible);
     ticks=10; win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0); lib_test_assert(c.cursor_blink_visible);
-    c.frame.text.base.cursor_visible=0; ticks=1000;
+    c.frame.text.base.cursor_visible=LIB_FALSE; ticks=1000;
     win32_window_proc((lib_win32_hwnd)1,LIB_WIN32_WM_TIMER,WIN32_WINDOW_CURSOR_TIMER,0); lib_test_assert(c.cursor_blink_visible);
     lib_test_assert(kvm_window_unfreeze(&window)==LIB_STATUS_OK);
     lib_test_assert(win32_window_consume_mailboxes((lib_win32_hwnd)1,&c));
@@ -449,7 +448,7 @@ int main(void)
         &window.pending_frame, sizeof(window.pending_frame))==0);
     lib_test_assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
-    c.component=&window; c.frozen=0; c.left_button=1;
+    c.component=&window; c.frozen=0; c.left_button=LIB_TRUE;
     reject_input=1; foreground_requests=0;
     lib_test_assert(kvm_window_release_mouse(&window)==0);
     lib_test_assert(kvm_window_freeze(&window)==0);
@@ -464,7 +463,7 @@ int main(void)
         &window.pending_frame, sizeof(window.pending_frame))==LIB_STATUS_OK);
     lib_test_assert(kvm_component_mailboxes_select_notify(&window.base.mailboxes,
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
-    c.component=&window; c.left_button=c.right_button=0; reject_input=0;
+    c.component=&window; c.left_button=c.right_button=LIB_FALSE; reject_input=0;
     c.mouse.captured=LIB_TRUE; c.mouse.window=(lib_win32_hwnd)1; owner=(lib_win32_hwnd)1;
     release_ok=0;
     lib_test_assert(kvm_window_freeze(&window)==LIB_STATUS_OK);
@@ -491,7 +490,7 @@ int main(void)
     client.right=640; client.bottom=480; origin.x=-900; origin.y=80;
     lib_test_assert(kvm_component_initialize(&window.base, &options, join, dispose,
         &window.pending_frame, sizeof(window.pending_frame))==0);
-    c.component=&window; c.frozen=0; c.left_button=c.right_button=0;
+    c.component=&window; c.frozen=0; c.left_button=c.right_button=LIB_FALSE;
     c.client_width=c.surface_width=640; c.client_height=c.surface_height=480;
     raw_record.header.dwType=LIB_WIN32_RIM_TYPEMOUSE;
     raw_record.header.hDevice=(lib_win32_handle)1;

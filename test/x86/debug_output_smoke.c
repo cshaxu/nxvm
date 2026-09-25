@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "x86/debug/debug_interface.h"
 
 static lib_bool fail_allocation;

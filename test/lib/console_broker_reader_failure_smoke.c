@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 #include "lib/types/win32/console.h"
 #include "lib/types/win32/sync.h"
 #include "lib/console/binding_interface.h"

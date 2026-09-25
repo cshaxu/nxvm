@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 #include "machine_fixture.h"
 
 
@@ -94,7 +93,7 @@ int main(void)
     machine_fake_initialize(&fake, &driver);
     fake.debug = execute_token;
     lib_test_assert(common_machine_create(&machine, &driver) == LIB_STATUS_OK);
-    frame.window.valid = 1u;
+    frame.window.valid = LIB_TRUE;
     frame.sequence = 77u;
     lib_test_assert(!common_machine_copy_published_frame(machine, &frame,
         common_machine_run_generation(machine)));
@@ -119,7 +118,7 @@ int main(void)
         lib_test_assert(frame.window.valid == 1u && frame.sequence == sequence);
     }
     input.type = KVM_EVENT_KEY;
-    input.data.key.pressed = 1u;
+    input.data.key.pressed = LIB_TRUE;
     lib_test_assert(common_machine_enqueue_input(machine, &input));
     lib_test_assert(lib_win32_wait_for_single_object(fake.input, 5000u) == LIB_WIN32_WAIT_OBJECT_0);
     lib_test_assert(lib_win32_interlocked_compare_exchange(&fake.inputs, 0, 0) == 1);

@@ -64,7 +64,7 @@ static lib_bool console_broker_ensure_text_surface(console_broker_backend *backe
     lib_win32_short width, height;
 
     if (output == LIB_NULL || output == LIB_WIN32_INVALID_HANDLE_VALUE ||
-        !lib_win32_get_console_screen_buffer_info(output, &info)) return 0;
+        !lib_win32_get_console_screen_buffer_info(output, &info)) return LIB_FALSE;
     width = info.srWindow.Right - info.srWindow.Left + 1;
     height = info.srWindow.Bottom - info.srWindow.Top + 1;
     if (width < (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS)
@@ -79,20 +79,20 @@ static lib_bool console_broker_ensure_text_surface(console_broker_backend *backe
         viewport.Left = viewport.Top = 0;
         viewport.Right = info.srWindow.Right - info.srWindow.Left;
         viewport.Bottom = info.srWindow.Bottom - info.srWindow.Top;
-        if (!lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport)) return 0;
-        if (!lib_win32_get_console_screen_buffer_info(output, &info)) return 0;
+        if (!lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport)) return LIB_FALSE;
+        if (!lib_win32_get_console_screen_buffer_info(output, &info)) return LIB_FALSE;
     }
     if (required.X != info.dwSize.X || required.Y != info.dwSize.Y) {
         /* Restoring dimensions cannot restore cells lost by a native shrink. */
         backend->previous_columns = backend->previous_rows = 0u;
-        if (!lib_win32_set_console_screen_buffer_size(output, required)) return 0;
+        if (!lib_win32_set_console_screen_buffer_size(output, required)) return LIB_FALSE;
     }
     viewport.Left = viewport.Top = 0;
     viewport.Right = width - 1;
     viewport.Bottom = height - 1;
     if (info.srWindow.Left != 0 || info.srWindow.Top != 0 ||
         info.srWindow.Right != viewport.Right || info.srWindow.Bottom != viewport.Bottom) {
-        if (!lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport)) return 0;
+        if (!lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport)) return LIB_FALSE;
     }
     /* Success means visible cells, not only backing storage. An unsupported
      * host size must fail instead of reporting a silently clipped surface. */

@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 /* Compile the real component bodies against controlled external queries.
  * No KVM interaction, sleeping, or timing-dependent assertion is needed. */
 #include "lib/types/win32/clock.h"
@@ -41,12 +40,12 @@ static lib_win32_key_state fake_key_state(lib_i32 key)
 
 static kvm_input_event emitted[8];
 static lib_u32 emitted_count;
-static lib_i32 capture(void *context, const kvm_input_event *event)
+static lib_bool capture(void *context, const kvm_input_event *event)
 {
     (void)context;
-    if (emitted_count == 8u) return 0;
+    if (emitted_count == 8u) return LIB_FALSE;
     emitted[emitted_count++] = *event;
-    return 1;
+    return LIB_TRUE;
 }
 
 #define CHECK(expression) do { if (!(expression)) return __LINE__; } while (0)
@@ -71,7 +70,7 @@ int main(void)
     counter_value = 123;
     CHECK(base_clock_platform_counter(&units, &frequency) == LIB_STATUS_OK);
     CHECK(units == 123u && frequency == 1000u);
-    for (pressed = 0u; pressed != 8u; ++pressed) {
+    for (pressed = LIB_FALSE; pressed != 8u; ++pressed) {
         lib_u8 expected = 0u;
         if ((pressed & 1u) != 0u) expected |= KVM_HOTKEY_MODIFIER_CONTROL;
         if ((pressed & 2u) != 0u) expected |= KVM_HOTKEY_MODIFIER_ALT;

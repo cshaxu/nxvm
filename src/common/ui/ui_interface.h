@@ -54,7 +54,7 @@ typedef struct common_ui_event {
     } value;
 } common_ui_event;
 
-typedef lib_i32 (*common_ui_event_sink)(void *context, const common_ui_event *event);
+typedef lib_bool (*common_ui_event_sink)(void *context, const common_ui_event *event);
 
 typedef struct common_ui_options {
     void *event_context;

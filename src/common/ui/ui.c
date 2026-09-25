@@ -25,7 +25,7 @@ struct common_ui {
     common_ui_input_context console_input;
 };
 
-static lib_i32 common_ui_emit(common_ui *ui, const common_ui_event *event)
+static lib_bool common_ui_emit(common_ui *ui, const common_ui_event *event)
 {
     return ui != NULL && ui->options.event_sink != NULL &&
         ui->options.event_sink(ui->options.event_context, event);
@@ -44,17 +44,17 @@ static void common_ui_delivery_failed(void *opaque, lib_u64 source_identity,
     (void)common_ui_emit(ui, &event);
 }
 
-static lib_i32 common_ui_input(void *opaque, const kvm_input_event *input)
+static lib_bool common_ui_input(void *opaque, const kvm_input_event *input)
 {
     common_ui_input_context *context = (common_ui_input_context *)opaque;
     common_ui *ui = context == NULL ? NULL : context->ui;
     common_ui_event event = { 0 };
-    if (ui == NULL || input == NULL) return 0;
+    if (ui == NULL || input == NULL) return LIB_FALSE;
     /* A graphical Window is the sole guest-mouse surface. The concurrent raw
        Console remains a keyboard/hotkey surface in Console display mode. */
     if (context->vm_console && input->type == KVM_EVENT_MOUSE &&
         lib_atomic_i32_load_explicit(&ui->window_live,
-            LIB_MEMORY_ORDER_SEQ_CST) != 0) return 1;
+            LIB_MEMORY_ORDER_SEQ_CST) != 0) return LIB_TRUE;
     event.kind = COMMON_UI_EVENT_KVM_INPUT;
     event.run_generation = lib_atomic_u32_load_explicit(
         &ui->run_generation, LIB_MEMORY_ORDER_SEQ_CST);

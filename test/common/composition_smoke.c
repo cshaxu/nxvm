@@ -1,5 +1,4 @@
 #include "lib/types/test.h"
-#include "lib/types/file.h"
 #include "common/ui/ui_interface.h"
 #include "lib/console-broker/console_interface.h"
 #include "lib/base/sync_interface.h"
@@ -89,14 +88,14 @@ lib_status console_broker_cancel_cooked_line(console_broker *broker,
     lib_console *expected, lib_bool *out_completed)
 { lib_test_assert(broker->current == expected); *out_completed = LIB_FALSE; return LIB_STATUS_OK; }
 
-static lib_i32 receive(void *context, const common_ui_event *event)
+static lib_bool receive(void *context, const common_ui_event *event)
 {
     (void)context;
     lib_test_assert(event->run_generation == 11u || event->run_generation == 12u ||
         event->run_generation == LIB_UINT32_MAX);
     received_run = event->run_generation;
     ++received;
-    return 1;
+    return LIB_TRUE;
 }
 static void input_worker(void *context, const base_sync_task *task)
 {
@@ -109,7 +108,7 @@ static void input_worker(void *context, const base_sync_task *task)
     options->failure_sink(options->failure_context, 1u, LIB_STATUS_IO_ERROR);
 }
 
-static void check_destroy(const common_ui_options *options, lib_u32 failure, lib_i32 raw)
+static void check_destroy(const common_ui_options *options, lib_u32 failure, lib_bool raw)
 {
     common_ui *ui;
     lib_test_assert(common_ui_create(&ui, options) == LIB_STATUS_OK);

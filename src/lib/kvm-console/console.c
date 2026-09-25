@@ -53,7 +53,7 @@ void kvm_console_receive_event(void *context,
         const lib_console_raw_mouse *mouse = &event->value.raw_mouse;
 
         input.type = KVM_EVENT_MOUSE;
-        input.data.mouse.relative = 1u;
+        input.data.mouse.relative = LIB_TRUE;
         if (console->previous_mouse_valid) {
             input.data.mouse.delta_x = (mouse->delta_x - console->previous_mouse_x) * 8;
             input.data.mouse.delta_y = (mouse->delta_y - console->previous_mouse_y) * 16;
@@ -160,7 +160,7 @@ lib_status kvm_console_publish_text_frame(kvm_console *console,
     text_frame.font_height = text->font_height ? text->font_height : 16u;
     if (text->cursor_bottom >= text->cursor_top) {
         if (text->cursor_top >= text_frame.font_height)
-            text_frame.cursor_visible = 0u;
+            text_frame.cursor_visible = LIB_FALSE;
         if (text->cursor_bottom >= text_frame.font_height)
             text_frame.cursor_bottom = (lib_u8)(text_frame.font_height - 1u);
     }

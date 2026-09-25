@@ -8,7 +8,7 @@
 static lib_u32 allocations, live_allocations;
 static lib_u32 allocation_attempts, fail_allocation_at;
 static lib_size last_allocation;
-static lib_i32 reject_allocation;
+static lib_bool reject_allocation;
 static void *allocate_bytes(lib_size count)
 {
     ++allocation_attempts;
@@ -36,7 +36,7 @@ static void release_bytes(void *bytes)
 #define lib_allocate_zero allocate_zero
 #define lib_release release_bytes
 
-static lib_i32 reject_close;
+static lib_bool reject_close;
 static lib_u32 close_calls;
 static lib_i32 close_stream(lib_c_file *stream)
 {
@@ -46,13 +46,13 @@ static lib_i32 close_stream(lib_c_file *stream)
 }
 #undef lib_c_fclose
 #define lib_c_fclose close_stream
-static lib_i32 reject_read;
+static lib_bool reject_read;
 static lib_size read_stream(void *bytes, lib_size size, lib_size count, lib_c_file *stream)
 { return reject_read ? 0u : lib_c_fread(bytes, size, count, stream); }
 #undef lib_c_fread
 #define lib_c_fread read_stream
 static lib_u32 write_calls, flush_calls, fail_write_at;
-static lib_i32 reject_flush;
+static lib_bool reject_flush;
 static lib_size write_stream(const void *bytes, lib_size size, lib_size count, lib_c_file *stream)
 {
     if (++write_calls == fail_write_at) count /= 2u;
@@ -103,7 +103,8 @@ static void medium_fill(void)
     lib_test_assert(lib_storage_medium_write_at(&medium, 0, "Z", 1) == LIB_STATUS_OK);
     lib_test_assert(write_calls == 1u && flush_calls == 1u);
     for (lib_u32 failure = 1; failure <= 2; ++failure) {
-        for (reject_flush = 0; reject_flush <= 1; ++reject_flush) {
+        for (lib_u32 flush_failure = 0u; flush_failure != 2u; ++flush_failure) {
+            reject_flush = flush_failure != 0u;
             write_calls = flush_calls = 0;
             fail_write_at = failure;
             lib_test_assert(lib_storage_medium_fill_at(&medium, 0, 1025u, 0x7c) == LIB_STATUS_IO_ERROR);
@@ -111,11 +112,11 @@ static void medium_fill(void)
         }
     }
     fail_write_at = 0;
-    reject_flush = 1;
+    reject_flush = LIB_TRUE;
     write_calls = flush_calls = 0;
     lib_test_assert(lib_storage_medium_fill_at(&medium, 0, 1025u, 0x8d) == LIB_STATUS_IO_ERROR);
     lib_test_assert(write_calls == 3u && flush_calls == 1u);
-    reject_flush = 0;
+    reject_flush = LIB_FALSE;
     write_calls = flush_calls = 0;
     fail_write_at = 1;
     lib_test_assert(lib_storage_medium_write_at(&medium, 0, "XYZ", 3) == LIB_STATUS_IO_ERROR);
@@ -185,10 +186,10 @@ static void overlay_index(const char *path)
     lib_test_assert(medium == LIB_NULL && live_allocations == 0u && close_calls == closed + 1u);
     fail_allocation_at = 0u;
     lib_test_assert(lib_storage_medium_open(path, LIB_STORAGE_MEDIUM_OVERLAY, &medium) == LIB_STATUS_OK);
-    reject_read = 1;
+    reject_read = LIB_TRUE;
     lib_test_assert(lib_storage_medium_write_at(medium, 0u, source, 1u) == LIB_STATUS_IO_ERROR);
     lib_test_assert(medium->pages[0] == LIB_NULL && live_allocations == 2u);
-    reject_read = 0;
+    reject_read = LIB_FALSE;
     lib_test_assert(lib_storage_medium_write_at(medium, 0u, source, 1u) == LIB_STATUS_OK);
     lib_test_assert(lib_storage_medium_destroy(&medium) == LIB_STATUS_OK && live_allocations == 0u);
 }
@@ -249,13 +250,13 @@ int main(void)
     lib_release(owned);
     lib_test_assert(lib_storage_file_read_owned(path, 1u, &owned, &length) == LIB_STATUS_LIMIT_EXCEEDED);
     lib_test_assert(owned == LIB_NULL && length == 0u && live_allocations == 0u);
-    reject_allocation = 1;
+    reject_allocation = LIB_TRUE;
     lib_test_assert(lib_storage_file_read_owned(path, sizeof(payload), &owned, &length) == LIB_STATUS_NO_MEMORY);
     lib_test_assert(owned == LIB_NULL && live_allocations == 0u);
     lib_storage_medium *medium = LIB_NULL;
     lib_test_assert(lib_storage_medium_open(path, LIB_STORAGE_MEDIUM_DIRECT, &medium) == LIB_STATUS_NO_MEMORY);
     lib_test_assert(medium == LIB_NULL);
-    reject_allocation = 0;
+    reject_allocation = LIB_FALSE;
     for (lib_i32 mode = LIB_STORAGE_MEDIUM_DIRECT; mode <= LIB_STORAGE_MEDIUM_OVERLAY; ++mode) {
         before = allocations;
         lib_test_assert(lib_storage_medium_open(path, (lib_storage_medium_mode)mode, &medium) == LIB_STATUS_OK);
@@ -292,14 +293,14 @@ int main(void)
     lib_test_assert(lib_storage_medium_destroy(&medium) == LIB_STATUS_OK);
     lib_test_assert(lib_storage_medium_open(path, LIB_STORAGE_MEDIUM_READONLY, &medium) == LIB_STATUS_OK);
     lib_u32 prior = close_calls;
-    reject_close = 1;
+    reject_close = LIB_TRUE;
     lib_test_assert(lib_storage_medium_destroy(&medium) == LIB_STATUS_IO_ERROR);
     lib_test_assert(medium == LIB_NULL && close_calls == prior + 1);
     lib_test_assert(lib_storage_medium_destroy(&medium) == LIB_STATUS_OK);
     lib_test_assert(close_calls == prior + 1); /* Consumed close must never be retried. */
     lib_test_assert(lib_storage_file_read_owned(path, sizeof(payload), &owned, &length) == LIB_STATUS_IO_ERROR);
     lib_test_assert(owned == LIB_NULL && live_allocations == 0u);
-    reject_close = 0;
+    reject_close = LIB_FALSE;
     medium_fill();
     overlay_index(path);
     lib_test_assert(shared_test_remove_file(path));

@@ -1,6 +1,5 @@
 #include "lib/types/test.h"
 #include "lib/types/win32/test.h"
-#include "lib/types/file.h"
 #include "lib/kvm-console/console.h"
 #include "lib/console/binding_interface.h"
 #include "lib/types/win32/sync.h"
@@ -28,8 +27,8 @@ static lib_win32_dword LIB_WIN32_WINAPI bounded_join(lib_win32_handle h,lib_win3
 #include "lib/kvm-console/win32/component.c"
 #undef base_sync_event_wait
 
-static lib_i32 input(void *p,const kvm_input_event *e)
-{ (void)p; lib_test_assert(e->type==KVM_EVENT_SOURCE_RETIRED); ++retired; return 1; }
+static lib_bool input(void *p,const kvm_input_event *e)
+{ (void)p; lib_test_assert(e->type==KVM_EVENT_SOURCE_RETIRED); ++retired; return LIB_TRUE; }
 static void failure(void *p,lib_u64 id,lib_status s)
 { (void)p; lib_test_assert(id && s==LIB_STATUS_IO_ERROR); ++failures; }
 int main(void)
