@@ -212,3 +212,8 @@ summary. All G1-G7 have direct dispositions in the audit evidence. Both document
 gates, the 28-file live link/control-character sweep and whitespace checks pass.
 No runtime/build/INI/asset input changed; no EXE rebuild or new runtime test
 result is claimed. T43 remains open.
+
+Coordinator actual-diff review accepts a5dbd9339, 6ab8aae5e and 0ae25cdb9
+against the owner-approved G1-G7 scope. S11 is closed and its active packet is
+removed; admission details remain in P3's history. T43 remains open for the
+owner's next decision, with no successor admitted.
