@@ -5,7 +5,9 @@
 The candidate is eligible for unchanged source import, followed by a complete
 receiving build and product regression. This is an audit verdict, not a claim
 that either receiving product has already been rebuilt or qualified with it.
-No Shared or product implementation is modified by S4.
+No Shared or product implementation was modified by the original audit delivery.
+The owner subsequently admitted unchanged import within S4; see the follow-up
+below for receiving verification and its acceptance blocker.
 
 - Canonical receiving baseline: NXVM `440ae83bc6e201bea2dcbdb84cc7fa442e9024dd`.
 - Clean candidate: SoftPC `dc9c34ce3fa2794840762e26c26801cd098c41ab`.
@@ -29,7 +31,7 @@ There are no additions or deletions. Types, its gate/self-test and the earlier
 canonical process/storage/audio capabilities are retained byte-for-byte.
 The source/test diff excluding README and manifests is +106/-28, net +78:
 production +19/-11 and tests +87/-17. This count describes the candidate;
-S4 itself changes documentation only.
+The original S4 audit delivery changed documentation only.
 
 ## Complete Difference Ledger
 
@@ -125,3 +127,63 @@ S4 requires MyNES documentation governance, whitespace checks and actual-change
 review. No new executable is deployed for this audit-only S. The next authorized
 import can use the pinned candidate unchanged, rebuild all dependencies and
 verify both products before reporting runtime acceptance. T43 remains open.
+
+## Owner-Admitted Import Follow-Up
+
+The owner explicitly reused S4 for import on 2026-09-25, continuing at P3.
+Receiver `33874cfe1` imported all 227 files from the committed SoftPC revision
+above, exported with `git archive`. All 227 receiving files match the export
+byte-for-byte; the resulting Shared diff is exactly the 17-file ledger above.
+There are no local Shared adaptations or product source changes. The source
+pin, not the retained manifest comment label, identifies this corpus.
+
+Actual-diff architecture/coding review found no new owner, duplicate execution
+path, platform leak or Types-boundary regression in the imported delta. Six
+manifest checks, test Types boundary, documentation governance and whitespace
+checks pass. This is a review of the complete import delta and its receiving
+callers, not a claim that unchanged Shared code has no latent defects.
+
+Both MyNES Release architectures build, as do NXVM's full unit dependencies.
+MyNES x64 full configured tests pass 129/130 (243.91 seconds); NXVM x64 complete
+unit tests pass 334/335 (219.49 seconds). NXVM x86 also passes 334/335
+(253.18 seconds). These runs fail only
+`library.audio_native`, at `test/lib/audio_native_smoke.c:201`: the native
+loopback does not observe non-silent data. An isolated NXVM x64 rerun fails at
+the same assertion. The audio implementation, Types declarations and test are
+unchanged from the receiving baseline; this is not evidence that the imported
+text-capacity delta caused the failure. Neither an environmental cause nor a
+production/test defect has yet been established. No assertion was weakened and
+no test was excluded.
+
+MyNES x86 finishes at 129/130 (217.82 seconds), failing the same assertion
+(abort exit `0xc0000409`). Across each complete MyNES configuration, Lib passes
+48/49, Common 18/18, x86 10/10 and MyNES 53/53. Thus the six-component result
+is 76/77 per architecture, not 77/77. Both NXVM complete unit runs finish
+334/335; their only failure is the same Shared native-audio test. All runs
+finished; there is no pending verification process. Final per-file comparison
+still finds zero mismatches in 227 files, and all six manifest checks pass.
+
+Reproduction uses the normal configured entries: `cmake --build
+build/t41-s8-nxvm-<arch> --target run-unit-tests --parallel 8` and `ctest
+--test-dir build/mynes-gcc-<arch>-release --output-on-failure -j 1`.
+The isolated reproduction is `ctest --test-dir build/t41-s8-nxvm-x64
+-R '^library.audio_native$' --output-on-failure -j 1`.
+
+The generated MyNES developer artifacts are not accepted release evidence while
+this test failure remains unresolved:
+
+- `assets/mynes/mynes_0_0_0043_x64.exe`: PE `8664`, 244750 bytes,
+  SHA-256 `F38E62A6D1F725003DD9460E4AA42879BE53EE42A794B39C19B5FBA5349F9BE7`.
+- `assets/mynes/mynes_0_0_0043_x86.exe`: PE `014C`, 237070 bytes,
+  SHA-256 `0A8B7B60E8E9231002440EFAA507D42272D60E4A69A025201BE9EB8819F4C744`.
+
+The owner subsequently directed commit/push of the unchanged import and its
+reported results, without adding audio investigation or repair. Shared P3
+`83022ea9f` is pushed; its indexed 227 Git blobs match the source pin exactly.
+MyNES P4 delivers this evidence and the developer artifact pair. This delivery
+exception does not claim a green suite or close S4/T43. No local Shared repair,
+test exclusion or weakened assertion was added. Coordinator actual-change
+review confirms target separation and the exact import; qualification remains
+limited by the explicitly recorded audio result.
+Ignored import/export and test logs remain under `build/t43-s4-import/` for
+immediate diagnosis until this S is accepted or explicitly redirected.

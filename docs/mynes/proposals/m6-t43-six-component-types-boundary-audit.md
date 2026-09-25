@@ -50,3 +50,14 @@ MyNES/NXVM consumers. Record a complete difference ledger and whether unchanged
 Shared source is eligible for import, including any product adaptation needed.
 This audit changes only MyNES task records; importing or repairing the candidate
 is a subsequent admitted action. Audit-only work produces no new executable.
+
+Owner follow-up on 2026-09-25 admits that import within the same S4, overriding
+the usual next-S allocation. Continue from P3 with the pinned six-root bytes,
+code-quality/manifest audit and full Shared dual-width testing; rebuild and
+regress MyNES and verify NXVM's receiving path. Refresh the MyNES 0043 pair.
+Preserve the earlier audit as history. T43 remains open after S4 delivery.
+
+After reviewing the native-audio failure, the owner directs commit/push of the
+unchanged import, evidence and rebuilt pair without adding audio repair. Keep
+the failure visible; delivery is not a claim of all-green qualification or T
+closure.
