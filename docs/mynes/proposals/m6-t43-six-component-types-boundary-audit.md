@@ -41,3 +41,12 @@ manifest, run both complete configured architectures and refresh the 0043 pair.
 The pointer batch needs no new aliases. The same-class sweep also covers raw
 scalar/constants/functions: add only their missing one-to-one Types vocabulary,
 preserve behavior, and include each newly found spelling in the rejection tests.
+
+## S4 Unchanged-Import Audit
+
+Compare all six roots against a pinned, clean SoftPC revision. Review every
+changed file, retained Types fixes, manifests, public layout changes and both
+MyNES/NXVM consumers. Record a complete difference ledger and whether unchanged
+Shared source is eligible for import, including any product adaptation needed.
+This audit changes only MyNES task records; importing or repairing the candidate
+is a subsequent admitted action. Audit-only work produces no new executable.
