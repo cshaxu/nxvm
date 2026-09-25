@@ -7,6 +7,8 @@ decision, but it cannot redefine current architecture, source layout, product
 UX, roadmap, rules, status, queue, or debt. Conflicts are resolved by the
 principal documents named in [the NXVM documentation guide](../README.md).
 
+S7 receiving evidence: [T43 Shared repair artifacts](evidence/m6-t43-s7-receiving-artifacts.md); eight current NXVM binaries, hashes and complete dual-width unit proof.
+
 | Current category | Owner | Purpose |
 | --- | --- | --- |
 | `architecture/` | Architecture owner | Supporting detailed rationale; each record explicitly states whether it is current or historical. |
