@@ -494,6 +494,12 @@ when the deployed artifact is already current; record that determination instead
 of manufacturing a binary diff.
 Identifiers are never reused or allocated out of queue order.
 
+Product deployment directories retain only the latest verified x64/x86 pair
+for each admitted runnable profile. After verifying the replacement pair,
+delete superseded EXEs in that product's artifact commit; retain old binaries
+only in Git history, not elsewhere under `assets/`. Current identifies the
+retained revision. Preserve adjacent configuration, snapshots and non-EXE assets.
+
 Every Shared source/build import or change reviews all receiving Apps, not only
 the packet's host product. Before S closure, rebuild and verify every affected
 App's admitted runnable profiles on x64 and x86, deploy and commit/push changed
@@ -516,8 +522,8 @@ architecture. Each is an optimized,
 stripped Release artifact and has its own recorded SHA-256 and PE architecture
 verification. A missing or failing required architecture toolchain blocks task
 closure rather than silently omitting that artifact. Task records map identifier
-to revision; historical artifacts retain their names and banners but are
-evidence, never active CMake targets. Current alone names admitted product
+to revision; historical artifacts remain in Git history with their original
+names and banners, never active CMake targets. Current alone names admitted product
 artifact targets and their baseline. Record source commit, identity/banner, and
 baseline/developer/product kind for both artifacts. Smoke executables stay in the build tree;
 design-only work creates none. Local artifacts are not release evidence, carry
@@ -530,9 +536,9 @@ A current product artifact is a stripped Release build with no compiler debug in
 
 After every build, test, smoke, sanitizer, or failed verification, remove owned
 temporary products once the active or immediately next subtask no longer needs
-them. `assets/nxvm/` is the NXVM executable deployment target;
-historical task artifacts may remain as evidence but are never regenerated or
-used as a product route. Configuration
+them. `assets/<product>/` is the product executable deployment target;
+only its latest verified pairs remain there under the retention rule above.
+Historical task artifacts are never regenerated as a product route. Configuration
 trees, objects, generated tests, logs, traces, sanitizer trees, and stale
 CMake/Ninja state are disposable unless the active subtask records a need.
 Before recursive cleanup, verify the resolved target is below `build/`, exclude
