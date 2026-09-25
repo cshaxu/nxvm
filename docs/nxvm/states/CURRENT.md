@@ -2,10 +2,9 @@
 
 ## Current Work
 
-No NXVM implementation task is active. MyNES-hosted M6 T43 S11 is the
-owner-approved cross-target documentation reconciliation; its
-[packet](../../mynes/states/CURRENT.md) owns admission, not an additional NXVM
-packet. [Queue](QUEUE.md) retains five unnumbered candidates.
+No NXVM implementation task is active. [Queue](QUEUE.md) retains five unnumbered
+candidates. MyNES-hosted M6 Td S3 governs latest-only executable retention for
+both products; its NXVM delivery removes superseded artifacts only.
 
 | Task | Closure |
 | --- | --- |
@@ -16,6 +15,9 @@ packet. [Queue](QUEUE.md) retains five unnumbered candidates.
 - Four fixed products: XT, AT, Model 40 and default PC/AT. Their eight optimized,
   stripped 0535 x64/x86 EXEs remain in `assets/nxvm/<profile>/`, adjacent to
   the owner INIs. PC110 is not an implemented runnable product.
+- Td S3 removes sixteen 0533/0534 EXEs. Only the eight current 0535 binaries
+  remain; their SHA-256 values are unchanged. Earlier binaries are recoverable
+  from Git history. The asset guide follows the shared latest-pair rule.
 - The latest receiver rebuild is MyNES-hosted T43 S10, NXVM commit `c5b17f671`.
   [S10 receiver evidence](../etc/evidence/m6-t43-s10-receiving-artifacts.md)
   owns current hashes and complete x64/x86 unit results, 335/335 each. The
@@ -23,9 +25,9 @@ packet. [Queue](QUEUE.md) retains five unnumbered candidates.
 - The canonical Shared baseline is `75099c178`: `src/{lib,common,x86}`,
   matching test roots and `test/register.cmake`. Common remains ISA-neutral;
   x86 owns the optional assembler and Debug CLI. S10 rebuilt all receivers.
-- This documentation reconciliation changes neither executable inputs nor
-  INI/media/firmware. The existing artifacts remain current; no new runtime
-  or integration result is claimed.
+- This retention cleanup changes neither executable inputs nor INI/media/firmware.
+  Current artifacts need no rebuild; both product documentation gates and exact
+  retained-file inventory/hash checks pass. No new runtime result is claimed.
 
 ## Historical Context
 
