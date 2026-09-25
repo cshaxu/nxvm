@@ -167,3 +167,7 @@ The [S9 evidence](../etc/evidence/m6-t43-s9-snapshot-resume.md) records reproduc
 fixture corrections, similar-case review and hashes. Actual-diff review retains
 one executor and successful-load transaction boundary. S9 awaits owner gameplay
 verification; T43 is not closed.
+
+Owner accepts S9 after successful manual gameplay verification on 2026-09-25.
+Coordinator review accepts d29c26b42 and closes S9; T43 remains open. The owner
+separately authorizes S10 for shared test registration and byte-sized booleans.
