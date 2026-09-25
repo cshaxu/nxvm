@@ -20,6 +20,7 @@ typedef struct native_console_fixture
     common_ui *ui;
     app_command_context command;
     HANDLE session_thread;
+    HANDLE raw_console_ready;
     lib_i32 session_result;
 } native_console_fixture;
 
@@ -109,6 +110,16 @@ static DWORD WINAPI run_session(void *opaque)
     native_console_fixture *fixture = opaque;
     fixture->session_result = common_session_run(fixture->session);
     return 0u;
+}
+
+static lib_bool ui_event_sink(void *opaque, const common_ui_event *event)
+{
+    native_console_fixture *fixture = opaque;
+    lib_bool accepted = common_session_enqueue_ui_event(fixture->session, event);
+    if (event->kind == COMMON_UI_EVENT_BROKER_COMPLETED &&
+        event->value.broker_vm_console_current)
+        assert(SetEvent(fixture->raw_console_ready));
+    return accepted;
 }
 
 static void wait_for_machine_state(common_machine *machine,
@@ -248,7 +259,7 @@ int main(void)
     assert(common_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
     assert(common_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
                                               LIB_STORAGE_MEDIUM_READONLY));
-    app_command_initialize(&fixture.command, fixture.machine, LIB_TRUE, LIB_TRUE,
+    app_command_initialize(&fixture.command, fixture.machine, LIB_TRUE,
                            COMMON_SESSION_DISPLAY_CONSOLE);
     session_options = (common_session_options){
         .display = COMMON_SESSION_DISPLAY_CONSOLE,
@@ -258,11 +269,15 @@ int main(void)
     assert(common_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
     common_machine_set_state_sink(fixture.machine, state_sink, &fixture);
     common_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);
+    state_sink(&fixture, COMMON_MACHINE_STOPPED,
+        common_machine_run_generation(fixture.machine));
     kvm_hotkey_registry_initialize(&hotkeys);
     assert(kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
                                         "pause-toggle") == LIB_STATUS_OK);
-    ui_options = (common_ui_options){.event_context = fixture.session,
-                                     .event_sink = common_session_enqueue_ui_event,
+    fixture.raw_console_ready = CreateEventW(NULL, FALSE, FALSE, NULL);
+    assert(fixture.raw_console_ready != NULL);
+    ui_options = (common_ui_options){.event_context = &fixture,
+                                     .event_sink = ui_event_sink,
                                      .hotkeys = hotkeys,
                                      .running_window_title = "MyNes native Console smoke (Running)",
                                      .paused_window_title = "MyNes native Console smoke (Paused)",
@@ -272,10 +287,11 @@ int main(void)
     fixture.session_thread = CreateThread(NULL, 0u, run_session, &fixture, 0u, NULL);
     assert(fixture.session_thread != NULL);
 
-    wait_for_machine_state(fixture.machine, COMMON_MACHINE_PAUSED);
     Sleep(50u);
-    submit_line(&fixture, "resume");
+    assert(common_machine_state_get(fixture.machine) == COMMON_MACHINE_STOPPED);
+    submit_line(&fixture, "start");
     wait_for_machine_state(fixture.machine, COMMON_MACHINE_RUNNING);
+    assert(WaitForSingleObject(fixture.raw_console_ready, 3000u) == WAIT_OBJECT_0);
     /* CONOUT$ names the active screen buffer at open time.  The raw KVM
        binding has just selected its private buffer, so open after the
        cutover rather than observing the original cooked monitor buffer. */
@@ -301,6 +317,7 @@ int main(void)
     CloseHandle(fixture.session_thread);
     assert(common_machine_shutdown(fixture.machine) == LIB_STATUS_OK);
     assert(common_ui_destroy(fixture.ui) == LIB_STATUS_OK);
+    CloseHandle(fixture.raw_console_ready);
     assert(common_session_destroy(fixture.session) == LIB_STATUS_OK);
     assert(common_machine_destroy(fixture.machine) == LIB_STATUS_OK);
     assert(core_driver_destroy(fixture.driver) == LIB_STATUS_OK);

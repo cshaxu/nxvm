@@ -232,3 +232,11 @@ Both full configured suites pass 132/132, both artifacts match the evidence,
 and Shared/NXVM are unchanged. S12 is closed; T43 remains open with no successor
 admitted and owner gameplay verification pending. The prevention action is the
 explicit scalar-span gate plus malformed-state and persistence-failure tests.
+
+## S13 Admission: Stopped Startup
+
+Owner approves removing MyNES's automatic startup reset, keeping a configured
+cartridge attached but STOPPED until explicit start. Scope is MyNES only; retain
+explicit reset, insertion and snapshot semantics. The [S13 evidence](../etc/evidence/m6-t43-s13-stopped-startup.md)
+records the mechanism, four-variant regression, native handoff finding, both
+complete suites and current dual-width artifacts. T43 remains open.

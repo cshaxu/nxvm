@@ -304,7 +304,8 @@ then swaps its owned hardware. Parse/allocation/I/O failure preserves the previo
 machine. Generic failure must not be fabricated into a detailed parse diagnosis.
 A richer copied diagnostic requires an explicitly designed product protocol.
 
-After successful attachment, App requests reset through session; it reports
+Startup attachment leaves Common STOPPED until explicit start. After an
+interactive cartridge insertion, App requests reset through session; it reports
 loaded-and-paused only after RESET_COMPLETED, not after request admission. Reset
 failure after a committed attachment faults the new machine; it does not promise
 rollback to the prior cartridge. Resume continues paused hardware; start from

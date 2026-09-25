@@ -133,7 +133,8 @@ Successful swap invalidates trap, breakpoints, controller-held state and output
 cache. Shared media bool exposes generic failure; do not invent detailed errors
 that Common did not return. Unit parser tests still assert typed internal errors.
 
-After attach, provider returns RESET; only RESET_COMPLETED reports loaded/paused.
+After interactive insertion, provider returns RESET; only RESET_COMPLETED reports loaded/paused.
+Startup attachment instead remains STOPPED until an explicit lifecycle command.
 Reset failure after swap retains the new cartridge in faulted context; insertion does
 not promise multi-operation rollback. While pending, no new lifecycle/media/debug
 command is dispatched. STOPPED media works on Common's existing idle worker.
@@ -195,8 +196,10 @@ line comments, and quoted ROM paths may contain spaces. Unknown or malformed
 assignments reject startup.
 After construction/binding but before session_run, composition calls App's
 startup preparation helper on the control thread; it attaches media and returns
-failure directly so startup can unwind. On success the provider's `open` returns
-the RESET request and uses the normal completion path. Do not set exit_requested
+failure directly so startup can unwind. Composition publishes Common's initial
+STOPPED fact with or without a ROM. The provider's `open` issues no lifecycle
+request; the initial fact enables the cooked prompt. Explicit `start` performs
+the cold reset/run sequence. Do not set exit_requested
 in `open` and expect it to work: existing Session honors that field only for a
 submitted monitor line. Exit codes: 0 orderly exit/help, 2 invalid startup
 arguments, 1 host/startup failure. A rejected interactive command keeps the session

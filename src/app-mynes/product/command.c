@@ -778,16 +778,13 @@ static void app_command_debug_submit(app_command_context *context,
 }
 
 void app_command_initialize(app_command_context *context, common_machine *machine,
-                            lib_bool cartridge_present, lib_bool initial_reset,
+                            lib_bool cartridge_present,
                             common_session_display display)
 {
     *context = (app_command_context){
         .machine = machine,
         .cartridge_present = cartridge_present,
-        .initial_reset = initial_reset,
-        .initial_state_pending = !initial_reset,
-        .suppress_window_after_reset = initial_reset &&
-                                       display == COMMON_SESSION_DISPLAY_WINDOW,
+        .initial_state_pending = LIB_TRUE,
         .session = {.display = display}};
 }
 
@@ -796,13 +793,7 @@ void app_command_open(void *opaque, common_session_command_result *out_result)
     app_command_context *context = opaque;
     app_command_result(out_result,
                        (const char *)app_command_help);
-    if (context != LIB_NULL && context->initial_reset)
-    {
-        context->initial_reset = LIB_FALSE;
-        context->run_after_reset = LIB_FALSE;
-        app_command_request(context, out_result, COMMON_SESSION_REQUEST_RESET);
-    }
-    else if (context != LIB_NULL && context->initial_state_pending)
+    if (context != LIB_NULL && context->initial_state_pending)
         out_result->arm_prompt = LIB_FALSE;
 }
 

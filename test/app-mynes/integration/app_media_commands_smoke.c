@@ -36,7 +36,7 @@ int main(void)
     assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
     assert(core_driver_make_driver(driver, &common_driver) == LIB_STATUS_OK);
     assert(common_machine_create(&machine, &common_driver) == LIB_STATUS_OK);
-    app_command_initialize(&command, machine, LIB_FALSE, LIB_FALSE,
+    app_command_initialize(&command, machine, LIB_FALSE,
         COMMON_SESSION_DISPLAY_WINDOW);
 
     /* Common begins monitoring at INIT and publishes the actual stopped
@@ -62,7 +62,7 @@ int main(void)
             COMMON_SESSION_MACHINE_STOPPED, &result);
         assert(common_machine_set_removable_media(machine, LIB_NULL,
             LIB_STORAGE_MEDIUM_READONLY));
-        app_command_initialize(&command, machine, LIB_FALSE, LIB_FALSE,
+        app_command_initialize(&command, machine, LIB_FALSE,
             COMMON_SESSION_DISPLAY_WINDOW);
     }
 

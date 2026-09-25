@@ -21,6 +21,8 @@ MyNes reads `mynes.ini` beside its executable before constructing Common. The
 file selects the optional startup ROM and `window` or `console` presentation;
 `display` defaults to `window` when omitted. Configuration is fixed for that
 process lifetime, so changing it means editing the file and restarting.
+Startup remains STOPPED, with or without a configured ROM: attachment alone
+does not reset, run or create a gameplay Window. Use `start` to begin execution.
 The [App/Core command contract](../etc/app-core-contract.md#app-commands-defaults-and-parsing)
 specifies the command grammar, ini syntax, defaults, limits and startup behavior.
 

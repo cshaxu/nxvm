@@ -20,6 +20,28 @@ static lib_bool app_command_contains(const char *text, const char *needle)
     return needle_length == 0u;
 }
 
+static void verify_stopped_startup(void)
+{
+    const common_session_display displays[] = {
+        COMMON_SESSION_DISPLAY_WINDOW, COMMON_SESSION_DISPLAY_CONSOLE};
+    for (lib_size display = 0u; display < 2u; ++display) {
+        for (lib_u32 present = 0u; present < 2u; ++present) {
+            app_command_context context;
+            common_session_command_result result;
+            app_command_initialize(&context, LIB_NULL, present != 0u, displays[display]);
+            app_command_open(&context, &result);
+            assert(result.request == COMMON_SESSION_REQUEST_NONE && !result.arm_prompt);
+            assert(!context.session.transition_pending && !context.run_after_reset);
+            app_command_note_runtime(&context, COMMON_SESSION_MACHINE_INIT,
+                COMMON_SESSION_MACHINE_STOPPED, &result);
+            assert(result.request == COMMON_SESSION_REQUEST_NONE);
+            app_command_note_monitor_current(&context, LIB_TRUE, &result);
+            assert(result.arm_prompt && result.text[0] == '\0');
+            assert(!context.initial_state_pending);
+        }
+    }
+}
+
 int main(void)
 {
     static const lib_u8 pause_toggle[] = "pause-toggle";
@@ -32,9 +54,14 @@ int main(void)
     common_session_command_result result;
     char path_line[11u + 1025u];
 
-    app_command_initialize(&startup_context, 0, 0, LIB_TRUE,
+    verify_stopped_startup();
+    app_command_initialize(&startup_context, 0, LIB_TRUE,
         COMMON_SESSION_DISPLAY_WINDOW);
     app_command_open(&startup_context, &result);
+    app_command_note_runtime(&startup_context, COMMON_SESSION_MACHINE_INIT,
+        COMMON_SESSION_MACHINE_STOPPED, &result);
+    app_command_submit_line(&startup_context, COMMON_SESSION_MACHINE_STOPPED,
+        "reset", &result);
     assert(result.request == COMMON_SESSION_REQUEST_RESET && !result.arm_prompt);
     app_command_note_runtime(&startup_context, COMMON_SESSION_MACHINE_STOPPED,
         COMMON_SESSION_MACHINE_INIT, &result);
@@ -63,7 +90,7 @@ int main(void)
         COMMON_SESSION_MACHINE_ERROR, &result);
     app_command_note_monitor_current(&startup_context, LIB_TRUE, &result);
     assert(app_command_output_compare(result.text, "Machine host error; exit and restart.\n") == 0);
-    app_command_initialize(&window_start_context, 0, LIB_TRUE, LIB_FALSE,
+    app_command_initialize(&window_start_context, 0, LIB_TRUE,
         COMMON_SESSION_DISPLAY_WINDOW);
     window_start_context.started_after_reset = LIB_TRUE;
     app_command_note_runtime(&window_start_context, COMMON_SESSION_MACHINE_PAUSED,
@@ -71,7 +98,7 @@ int main(void)
     assert(result.text[0] == '\0' && !result.arm_prompt);
     app_command_note_monitor_current(&window_start_context, LIB_TRUE, &result);
     assert(app_command_output_compare(result.text, "Machine started.\n") == 0);
-    app_command_initialize(&console_context, 0, LIB_TRUE, LIB_FALSE,
+    app_command_initialize(&console_context, 0, LIB_TRUE,
         COMMON_SESSION_DISPLAY_CONSOLE);
     app_command_note_runtime(&console_context, COMMON_SESSION_MACHINE_PAUSED,
         COMMON_SESSION_MACHINE_RUNNING, &result);
@@ -88,7 +115,7 @@ int main(void)
         COMMON_SESSION_REQUEST_RESET));
     assert(!app_command_begin_external(&startup_context, COMMON_SESSION_MACHINE_STOPPED,
         COMMON_SESSION_REQUEST_RESET));
-    app_command_initialize(&context, 0, 0, LIB_FALSE,
+    app_command_initialize(&context, 0, 0,
         COMMON_SESSION_DISPLAY_WINDOW);
     app_command_open(&context, &result);
     assert(result.text[0] == 'M' && !result.arm_prompt);
@@ -133,7 +160,7 @@ int main(void)
     assert(app_command_output_compare(result.text, "Unknown command.\n") == 0);
     app_command_submit_line(&context, COMMON_SESSION_MACHINE_STOPPED, "reset", &result);
     assert(app_command_output_compare(result.text, "Insert a cartridge before reset.\n") == 0);
-    app_command_initialize(&loaded_context, 0, LIB_TRUE, LIB_FALSE,
+    app_command_initialize(&loaded_context, 0, LIB_TRUE,
         COMMON_SESSION_DISPLAY_WINDOW);
     assert(app_command_handle_hotkey(&loaded_context, COMMON_SESSION_MACHINE_PAUSED,
         pause_toggle, &result));

@@ -73,7 +73,7 @@ int main(void)
         LIB_STORAGE_MEDIUM_READONLY));
     assert(common_machine_reset(machine));
     wait_for_paused(machine);
-    app_command_initialize(&command, machine, LIB_TRUE, LIB_FALSE,
+    app_command_initialize(&command, machine, LIB_TRUE,
         COMMON_SESSION_DISPLAY_WINDOW);
 
     submit(&command, "debug REGS", &result);

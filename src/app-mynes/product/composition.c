@@ -165,7 +165,6 @@ lib_i32 app_composition_run(const app_startup_config *config)
 
     app_command_initialize(&composition->command, composition->machine,
                            config->rom_path[0] != '\0',
-                           config->rom_path[0] != '\0',
                            config->text_output ? COMMON_SESSION_DISPLAY_CONSOLE : COMMON_SESSION_DISPLAY_WINDOW);
     composition->command.media_context = composition;
     composition->command.set_media = app_composition_set_media;
@@ -187,16 +186,12 @@ lib_i32 app_composition_run(const app_startup_config *config)
         goto cleanup;
     common_machine_set_state_sink(composition->machine, app_machine_state_sink, composition);
     common_machine_set_frame_sink(composition->machine, app_machine_frame_sink, composition);
-    if (config->rom_path[0] == '\0')
-    {
-        if (common_machine_state_get(composition->machine) != COMMON_MACHINE_STOPPED)
-            goto cleanup;
-        /* Common owns the machine's initial state but does not replay it when
-         * an observer binds. Relay that authoritative stopped snapshot before
-         * Session opens the first cooked prompt. */
-        app_machine_state_sink(composition, COMMON_MACHINE_STOPPED,
-                               common_machine_run_generation(composition->machine));
-    }
+    if (common_machine_state_get(composition->machine) != COMMON_MACHINE_STOPPED)
+        goto cleanup;
+    /* Binding an observer does not replay Common's initial state. Cartridge
+     * attachment does not start execution; publish STOPPED for either case. */
+    app_machine_state_sink(composition, COMMON_MACHINE_STOPPED,
+                           common_machine_run_generation(composition->machine));
 
     kvm_hotkey_registry_initialize(&hotkeys);
     if (kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,

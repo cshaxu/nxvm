@@ -1,5 +1,16 @@
 # M6 T43 Six-Component Types Boundary Audit
 
+## S13 Stopped Startup
+
+Owner approves removing the automatic startup RESET. With or without an INI
+ROM, composition only attaches media and reports Common's initial STOPPED fact.
+Command open displays help and awaits that fact before arming the first prompt;
+explicit start/reset and interactive cartridge insertion retain their semantics.
+Remove the obsolete initial-reset option, not Common lifecycle machinery.
+Cover ROM present/absent and Console/Window startup, then run both complete
+configured suites and refresh the stripped 0043 x64/x86 pair. MyNES-only changes;
+preserve INIs, snapshots, Shared and NXVM. Deliver reviewed commits and keep T43 open.
+
 ## S12 MyNES Production Quality Repair
 
 Owner admits the production audit batch and explicitly excludes Shared edits.

@@ -26,7 +26,6 @@ typedef struct app_command_context {
     lib_bool cartridge_present;
     lib_bool run_after_reset;
     lib_bool started_after_reset;
-    lib_bool initial_reset;
     lib_bool initial_state_pending;
     /* Window mode keeps a stopped cartridge reset in the cooked monitor until
      * the user starts or resumes it.  App maps that one completion to PAUSED
@@ -38,7 +37,7 @@ typedef struct app_command_context {
 } app_command_context;
 
 void app_command_initialize(app_command_context *context, common_machine *machine,
-    lib_bool cartridge_present, lib_bool initial_reset,
+    lib_bool cartridge_present,
     common_session_display display);
 void app_command_open(void *context, common_session_command_result *out_result);
 void app_command_reject_line(void *context, common_session_command_result *out_result);

@@ -113,3 +113,4 @@ architecture, rule set or current task state.
 - `evidence/m6-t37-s6-final-audit.md`: [M6 T37 S6 final audit](evidence/m6-t37-s6-final-audit.md); App/Core closure review and dual-architecture regression record.
 - `m2-execution-management-context.md`: [retained M2 planning context](m2-execution-management-context.md); historical supporting material.
 - `evidence/m6-t43-s12-production-quality.md`: [S12 MyNES quality repair](evidence/m6-t43-s12-production-quality.md); snapshot v3, candidate validation, checked saves and explicit atomic-replacement debt.
+- `evidence/m6-t43-s13-stopped-startup.md`: [S13 stopped startup](evidence/m6-t43-s13-stopped-startup.md); initial STOPPED, explicit start and dual-presenter verification.

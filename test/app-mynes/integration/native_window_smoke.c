@@ -261,7 +261,7 @@ int main(void)
     assert(common_machine_create(&fixture.machine, &driver) == LIB_STATUS_OK);
     assert(common_machine_set_removable_media(fixture.machine, FIXTURE_PATH,
                                               LIB_STORAGE_MEDIUM_READONLY));
-    app_command_initialize(&fixture.command, fixture.machine, LIB_TRUE, LIB_TRUE,
+    app_command_initialize(&fixture.command, fixture.machine, LIB_TRUE,
                            COMMON_SESSION_DISPLAY_WINDOW);
     session_options = (common_session_options){
         .display = COMMON_SESSION_DISPLAY_WINDOW,
@@ -280,6 +280,8 @@ int main(void)
     assert(common_session_create(&fixture.session, &session_options) == LIB_STATUS_OK);
     common_machine_set_state_sink(fixture.machine, state_sink, &fixture);
     common_machine_set_frame_sink(fixture.machine, frame_sink, &fixture);
+    state_sink(&fixture, COMMON_MACHINE_STOPPED,
+        common_machine_run_generation(fixture.machine));
     kvm_hotkey_registry_initialize(&hotkeys);
     assert(kvm_hotkey_registry_register(&hotkeys, KVM_KEY_ESCAPE, 0u,
                                         "pause-toggle") == LIB_STATUS_OK);
@@ -295,14 +297,11 @@ int main(void)
     fixture.session_thread = CreateThread(NULL, 0u, run_session, &fixture, 0u, NULL);
     assert(fixture.session_thread != NULL);
 
-    wait_for_machine_state(fixture.machine, COMMON_MACHINE_PAUSED);
-    /* The state sink is queued separately from the machine state.  Let the
-       sole session reducer acknowledge reset before submitting the command. */
+    /* Let Session consume the initial stopped fact before explicit start. */
     Sleep(50u);
-    /* Cartridge reset ends paused. Window mode reserves a Window for the
-       active run, but does not synthesize one before resume. */
+    assert(common_machine_state_get(fixture.machine) == COMMON_MACHINE_STOPPED);
     assert_no_window();
-    submit_line(&fixture, "resume");
+    submit_line(&fixture, "start");
     window = wait_for_window();
     assert(window != NULL);
     idle = wait_for_pixel(window, CLR_INVALID);
