@@ -266,7 +266,7 @@ static void check_activation_frame(void)
         lib_test_assert(kvm_console_publish_frame(c,&rejected)==LIB_STATUS_INVALID_ARGUMENT);
         rejected.base.text_columns=81; rejected.base.text_rows=25;
         lib_test_assert(kvm_console_publish_frame(c,&rejected)==LIB_STATUS_UNSUPPORTED);
-        rejected.base.text_columns=80; rejected.base.text_rows=26;
+        rejected.base.text_columns=80; rejected.base.text_rows=51;
         lib_test_assert(kvm_console_publish_frame(c,&rejected)==LIB_STATUS_UNSUPPORTED);
         rejected.base.text_rows=25; rejected.characters.secondary[255]=0xd800;
         lib_test_assert(kvm_console_publish_frame(c,&rejected)==LIB_STATUS_INVALID_ARGUMENT);
@@ -449,6 +449,12 @@ static void check_character_banks(void)
     lib_test_assert(kvm_console_publish_text_frame(&console, &frame) == LIB_STATUS_OK);
     lib_test_assert(captured.text[80] == 0x2500 && captured.foreground[80] == 3 && captured.background[80] == 4);
     lib_test_assert(captured.text[81] == 0x2588 && captured.foreground[81] == 5 && captured.background[81] == 6);
+    frame.base.text_columns = 80;
+    frame.base.text_rows = 50;
+    frame.base.cells[3999] = (kvm_text_cell){67, 1, 5, 6};
+    lib_test_assert(kvm_console_publish_text_frame(&console, &frame) == LIB_STATUS_OK);
+    lib_test_assert(captured.rows == 50 && captured.text[3999] == 0x2588 &&
+        captured.foreground[3999] == 5 && captured.background[3999] == 6);
     /* KVM scanlines are normalized before the independent Console boundary. */
     const struct { lib_u32 height, top, bottom, visible, out_bottom; } cases[] = {
         {0,14,15,1,15}, {16,20,21,0,15}, {16,14,31,1,15},

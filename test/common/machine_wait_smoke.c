@@ -340,6 +340,17 @@ static void check_publication(void)
         lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);
         lib_test_assert(common_machine_published_frame_sequence(active) == 6 + field);
     }
+    candidate.window.text.base.text_columns = 80;
+    candidate.window.text.base.text_rows = 50;
+    lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);
+    candidate.window.text.base.cells[3999].glyph_index = 'Z';
+    lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);
+    lib_test_assert(common_machine_copy_published_frame(active, &captured,
+        common_machine_run_generation(active)));
+    lib_test_assert(captured.sequence == 12 &&
+        captured.window.text.base.cells[3999].glyph_index == 'Z');
+    lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);
+    lib_test_assert(common_machine_published_frame_sequence(active) == 12);
     active->published_frame_sequence = LIB_UINT32_MAX - 1u;
     candidate.window.text.base.cells[0].glyph_index = 'Y';
     lib_test_assert(common_machine_publish(active) == LIB_STATUS_OK);

@@ -185,6 +185,7 @@ int main(void)
     lib_test_assert(common_ui_publish_frame(ui, &frame, &characters, sequence, 1, 1, 1) == LIB_STATUS_OK);
     lib_test_assert(status_builds == 1u && console_frames == 1u && window_frames == 1u);
     lib_test_assert(last_console.base.text_columns == 80u);
+    lib_test_assert(last_console.base.text_rows == 25u);
     lib_test_assert(last_console.base.text_palette[7] == 0xc0c0c0u &&
         last_console.base.text_palette[0] == 0u);
     for (lib_u32 i = 0; i < 13u; ++i)
@@ -204,7 +205,8 @@ int main(void)
     sequence = 3u;
     frame.graphics = 0u;
     lib_memory_set(&frame.text, 0, sizeof(frame.text));
-    frame.text.base.text_columns = 80u; frame.text.base.text_rows = 25u;
+    frame.text.base.text_columns = 80u; frame.text.base.text_rows = 50u;
+    frame.text.base.cells[3999].glyph_index = 'Z';
     characters.primary['T'] = 0x263au;
     characters.secondary['T'] = 0x2665u;
     frame.text.base.cells[0].glyph_index = 'T';
@@ -214,6 +216,8 @@ int main(void)
     publish_status = LIB_STATUS_OK;
     lib_test_assert(common_ui_publish_frame(ui, &frame, &characters, sequence, 1, 1, 1) == LIB_STATUS_OK);
     lib_test_assert(!ui->console_status_delivered && last_console.base.cells[0].glyph_index == 'T');
+    lib_test_assert(last_console.base.text_rows == 50u &&
+        last_console.base.cells[3999].glyph_index == 'Z');
     lib_test_assert(last_console.characters.primary['T'] == 0x263au &&
         last_console.characters.secondary['T'] == 0x2665u);
     lib_test_assert(status_builds == 1u && console_frames == 3u && window_frames == 3u);

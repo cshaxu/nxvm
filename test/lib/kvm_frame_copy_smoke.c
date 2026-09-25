@@ -36,15 +36,15 @@ static void check_validation(void)
     lib_test_assert(kvm_console_text_frame_validate(&text) == LIB_STATUS_OK);
     source.text.base.font_height = 0u;
     for (lib_u32 field = 0; field < 3; ++field) {
-        lib_u8 *value = field == 0 ? &source.text.base.cells[1999].foreground :
-            field == 1 ? &source.text.base.cells[1999].background : &source.text.base.cells[1999].glyph_bank;
+        lib_u8 *value = field == 0 ? &source.text.base.cells[3999].foreground :
+            field == 1 ? &source.text.base.cells[3999].background : &source.text.base.cells[3999].glyph_bank;
         *value = field == 2 ? 1 : 15;
         lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK);
         ++*value;
         lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_INVALID_ARGUMENT);
         source.text.base.text_rows = 1;
         lib_test_assert(kvm_window_frame_validate(&source) == LIB_STATUS_OK); /* Invisible tail. */
-        source.text.base.text_rows = 25;
+        source.text.base.text_rows = KVM_TEXT_ROWS;
         *value = 0;
     }
     source.text.base.text_rows++;
@@ -90,9 +90,9 @@ static void check_copy(void)
 int main(void)
 {
     lib_u32 generation, old;
-    lib_test_assert(sizeof(kvm_text_frame) == 8084);
-    lib_test_assert(sizeof(kvm_window_text_frame) == 16276);
-    lib_test_assert(sizeof(kvm_console_text_frame) == 9108);
+    lib_test_assert(sizeof(kvm_text_frame) == 16084);
+    lib_test_assert(sizeof(kvm_window_text_frame) == 24276);
+    lib_test_assert(sizeof(kvm_console_text_frame) == 17108);
     lib_test_assert(sizeof(kvm_window_frame) == 984084);
     check_validation();
     lib_memory_set(&source, 0x3c, sizeof(source));

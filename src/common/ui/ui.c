@@ -284,7 +284,7 @@ static void common_ui_status_frame(kvm_console_text_frame *frame,
     lib_size row = 0u, column = 0u;
     lib_memory_set(frame, 0, sizeof(*frame));
     frame->base.text_columns = KVM_TEXT_COLUMNS;
-    frame->base.text_rows = KVM_TEXT_ROWS;
+    frame->base.text_rows = 25u; /* Status layout is independent of capacity. */
     frame->base.cursor_column = -1;
     frame->base.cursor_row = -1;
     frame->base.text_palette[7] = 0xc0c0c0u;
@@ -298,7 +298,7 @@ static void common_ui_status_frame(kvm_console_text_frame *frame,
     for (index = 0u; text != NULL && text[index] != '\0'; ++index) {
         if (text[index] == '\r') continue;
         if (text[index] == '\n') { ++row; column = 0u; continue; }
-        if (row < KVM_TEXT_ROWS && column < KVM_TEXT_COLUMNS)
+        if (row < frame->base.text_rows && column < frame->base.text_columns)
             frame->base.cells[row * KVM_TEXT_COLUMNS + column].glyph_index = (lib_u8)text[index];
         ++column;
     }

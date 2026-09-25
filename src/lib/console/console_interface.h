@@ -11,8 +11,9 @@
  * native handle, process ownership, reader, or presentation policy.  Host is
  * the only component that binds one logical object to native Console I/O. */
 
+/* Fixed storage capacity; each frame supplies its active dimensions. */
 #define LIB_CONSOLE_TEXT_COLUMNS 80u
-#define LIB_CONSOLE_TEXT_ROWS 25u
+#define LIB_CONSOLE_TEXT_ROWS 50u
 
 typedef struct lib_console lib_console;
 

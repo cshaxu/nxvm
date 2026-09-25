@@ -129,6 +129,7 @@ static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
     console_broker *broker = LIB_NULL;
     lib_console *cooked, *raw;
     lib_console_text_frame frame = {0};
+    lib_win32_short write_rows;
     lib_win32_console_screen_buffer_info before, actual;
     lib_win32_coord extent = {columns, rows}, origin = {0, 0}, cells_size = {80, 25};
     lib_win32_small_rect viewport = {0, 0, 19, 9}, region;
@@ -153,10 +154,10 @@ static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
         lib_test_assert(lib_win32_set_console_window_info(broker->backend->output, LIB_WIN32_TRUE, &viewport));
         if (round == 0 && !scrolled && rows == 13) {
             fail_viewport = 1;
-            lib_test_assert(!console_broker_ensure_text_surface(broker->backend));
+            lib_test_assert(!console_broker_ensure_text_surface(broker->backend, 25u, &write_rows));
             lib_test_assert(fail_viewport == 0);
             ignore_viewport = 1;
-            lib_test_assert(!console_broker_ensure_text_surface(broker->backend));
+            lib_test_assert(!console_broker_ensure_text_surface(broker->backend, 25u, &write_rows));
             lib_test_assert(ignore_viewport == 0);
         }
         {
@@ -164,7 +165,7 @@ static void check_frame_extent(lib_i16 columns, lib_i16 rows, lib_i32 scrolled)
             lib_i32 width = viewport.Right - viewport.Left + 1;
             lib_i32 height = viewport.Bottom - viewport.Top + 1;
             lib_test_assert(lib_win32_get_console_screen_buffer_info(broker->backend->output, &raw_before));
-            lib_test_assert(console_broker_ensure_text_surface(broker->backend));
+            lib_test_assert(console_broker_ensure_text_surface(broker->backend, 25u, &write_rows));
             lib_test_assert(lib_win32_get_console_screen_buffer_info(broker->backend->output, &actual));
             lib_test_assert(actual.srWindow.Left == 0 && actual.srWindow.Top == 0);
             lib_test_assert(actual.srWindow.Right + 1 == (width < 80 ? 80 : width));

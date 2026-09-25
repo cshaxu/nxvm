@@ -54,7 +54,8 @@ static lib_win32_colorref console_broker_colorref_from_rgb(lib_u32 rgb)
     return lib_win32_rgb((rgb >> 16u) & 0xffu, (rgb >> 8u) & 0xffu, rgb & 0xffu);
 }
 
-static lib_bool console_broker_ensure_text_surface(console_broker_backend *backend)
+static lib_bool console_broker_ensure_text_surface(console_broker_backend *backend,
+    lib_u16 rows, lib_win32_short *write_rows)
 {
     lib_win32_handle output = backend->output;
     lib_win32_console_screen_buffer_info info;
@@ -68,8 +69,8 @@ static lib_bool console_broker_ensure_text_surface(console_broker_backend *backe
     height = info.srWindow.Bottom - info.srWindow.Top + 1;
     if (width < (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS)
         width = (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS;
-    if (height < (lib_win32_short)LIB_CONSOLE_TEXT_ROWS)
-        height = (lib_win32_short)LIB_CONSOLE_TEXT_ROWS;
+    if (height < (lib_win32_short)rows)
+        height = (lib_win32_short)rows;
     required.X = info.dwSize.X < width ? width : info.dwSize.X;
     required.Y = info.dwSize.Y < height ? height : info.dwSize.Y;
     /* Move the existing viewport before expanding capacity. Preserve both
@@ -95,6 +96,8 @@ static lib_bool console_broker_ensure_text_surface(console_broker_backend *backe
     }
     /* Success means visible cells, not only backing storage. An unsupported
      * host size must fail instead of reporting a silently clipped surface. */
+    *write_rows = height < (lib_win32_short)LIB_CONSOLE_TEXT_ROWS ?
+        height : (lib_win32_short)LIB_CONSOLE_TEXT_ROWS;
     return lib_win32_get_console_screen_buffer_info(output, &info) &&
         info.dwSize.X >= required.X && info.dwSize.Y >= required.Y &&
         info.srWindow.Left == 0 && info.srWindow.Top == 0 &&
@@ -613,17 +616,20 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
     }
     /* Palette application can also change native buffer/viewport geometry.
      * Establish the write surface after that operation, never before it. */
-    if (!console_broker_ensure_text_surface(backend)) {
+    if (!console_broker_ensure_text_surface(backend, frame->rows, &size.Y)) {
         console_broker_backend_unlock_output(backend);
         return LIB_STATUS_IO_ERROR;
     }
+    /* Clear the visible bounded surface, including rows left by a taller
+     * frame. Capacity alone must not enlarge a normal 25-row viewport. */
+    region.Bottom = size.Y - 1;
     if (backend->previous_columns != frame->columns ||
         backend->previous_rows != frame->rows ||
         lib_memory_compare(frame->text, backend->previous,
             sizeof(frame->text)) != 0 ||
         lib_memory_compare(frame->foreground, backend->previous_foreground, sizeof(frame->foreground)) != 0 ||
         lib_memory_compare(frame->background, backend->previous_background, sizeof(frame->background)) != 0) {
-        for (row = 0u; row < LIB_CONSOLE_TEXT_ROWS; ++row) {
+        for (row = 0u; row < (lib_u32)size.Y; ++row) {
             lib_u32 column;
             for (column = 0u; column < LIB_CONSOLE_TEXT_COLUMNS; ++column) {
                 lib_size offset = (lib_size)row * LIB_CONSOLE_TEXT_COLUMNS + column;
@@ -639,7 +645,7 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
         if (!lib_win32_write_console_output_w(backend->output, cells, size, position,
                 &region) || region.Left != 0 || region.Top != 0 ||
                 region.Right != LIB_CONSOLE_TEXT_COLUMNS - 1 ||
-                region.Bottom != LIB_CONSOLE_TEXT_ROWS - 1) {
+                region.Bottom != size.Y - 1) {
             console_broker_backend_unlock_output(backend);
             return LIB_STATUS_IO_ERROR;
         }

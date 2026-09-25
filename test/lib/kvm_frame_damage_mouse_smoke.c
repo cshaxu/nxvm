@@ -216,8 +216,8 @@ static void rendering(void)
 static void text_coverage(void)
 {
     static lib_u32 guarded[KVM_TEXT_COLUMNS * 8u * KVM_TEXT_ROWS * KVM_WINDOW_FONT_HEIGHT + 2u];
-    const lib_u32 columns[] = {1u, 3u, KVM_TEXT_COLUMNS};
-    const lib_u32 rows[] = {1u, 2u, KVM_TEXT_ROWS};
+    const lib_u32 columns[] = {1u, 3u, 80u, 80u, 80u, KVM_TEXT_COLUMNS};
+    const lib_u32 rows[] = {1u, 2u, 22u, 25u, 43u, KVM_TEXT_ROWS};
     const lib_u32 sentinel = 0xdeadbeefu;
     lib_i32 valid = 0;
     kvm_window_rect changed;
@@ -231,7 +231,7 @@ static void text_coverage(void)
     for (lib_u32 i = 0; i < KVM_TEXT_COLUMNS * KVM_TEXT_ROWS; ++i)
         frame.text.base.cells[i] = (kvm_text_cell){ (lib_u8)(i % 2u),
             (lib_u8)((i / 2u) % 2u), 1u, 2u };
-    for (lib_u32 grid = 0; grid < 3; ++grid) {
+    for (lib_size grid = 0; grid < sizeof(rows)/sizeof(rows[0]); ++grid) {
         frame.text.base.text_columns = columns[grid];
         frame.text.base.text_rows = rows[grid];
         for (lib_u32 font_height = 0; font_height <= KVM_WINDOW_FONT_HEIGHT; ++font_height) {
@@ -254,6 +254,26 @@ static void text_coverage(void)
                 lib_test_assert(guarded[i + 1u] == (foreground ? 0x123456u : 0xabcdefu));
             }
         }
+    }
+    /* Equal pixel extents still compare all rows when the cell grid changes. */
+    frame.text.base.text_rows = 25;
+    frame.text.base.font_height = 16;
+    valid = 0;
+    lib_test_assert(kvm_window_render_frame(&frame, guarded + 1, 640, 400, &valid, &changed));
+    frame.text.base.text_rows = 50;
+    frame.text.base.font_height = 8;
+    frame.text.base.cells[3999] = (kvm_text_cell){0, 0, 1, 1};
+    lib_test_assert(kvm_window_render_frame(&frame, guarded + 1, 640, 400, &valid, &changed));
+    lib_test_assert(changed.bottom == 400 && guarded[640u * 400u] == 0x123456u);
+    frame.text.base.cursor_visible = 1;
+    frame.text.base.cursor_column = 79;
+    frame.text.base.cursor_row = 49;
+    frame.text.base.cursor_top = 6;
+    frame.text.base.cursor_bottom = 7;
+    {
+        kvm_window_rect display = {0, 0, 640, 400}, cursor;
+        lib_test_assert(kvm_window_cursor_rect(&frame, &display, &cursor));
+        lib_test_assert(cursor.left == 632 && cursor.top == 398 && cursor.bottom == 400);
     }
     /* Rejected geometry and invalid frames must not touch even the first pixel. */
     guarded[1] = sentinel;

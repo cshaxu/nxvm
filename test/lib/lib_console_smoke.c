@@ -41,7 +41,7 @@ static lib_status console_probe_frame(void *context,
 
 int main(void)
 {
-    lib_test_assert(sizeof(lib_console_text_frame) == 8084);
+    lib_test_assert(sizeof(lib_console_text_frame) == 16084);
     lib_console *console = LIB_NULL;
     console_probe probe = { 0 };
     lib_console_event event = { 0 };
@@ -92,7 +92,7 @@ int main(void)
     lib_test_assert(probe.frames == 1u && next.frames == 0u);
     frame.columns = 81u;
     lib_test_assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_UNSUPPORTED);
-    frame.columns = 80u; frame.rows = 26u;
+    frame.columns = 80u; frame.rows = 51u;
     lib_test_assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_UNSUPPORTED);
     frame.rows = 0u;
     lib_test_assert(lib_console_write_text_frame(console, &frame) == LIB_STATUS_INVALID_ARGUMENT);

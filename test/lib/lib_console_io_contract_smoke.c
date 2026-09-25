@@ -29,12 +29,15 @@ static lib_win32_bool LIB_WIN32_WINAPI text_write(lib_win32_handle h,lib_win32_l
 static lib_i32 palette_query_ok, palette_set_ok, cursor_ok = 1;
 static lib_win32_wchar first_cell;
 static lib_win32_word first_attribute;
+static lib_win32_char_info captured_cells[80u * 50u];
+static lib_win32_small_rect captured_region;
 static lib_win32_coord buffer_size={80,25};
 static lib_win32_small_rect viewport={0,0,79,24};
+static lib_i32 reject_viewport;
 static lib_win32_bool LIB_WIN32_WINAPI screen_info(lib_win32_handle h, lib_win32_console_screen_buffer_info *p)
 { (void)h; lib_memory_set(p, 0, sizeof(*p)); p->dwSize=buffer_size; p->srWindow=viewport; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI set_viewport(lib_win32_handle h,lib_win32_bool absolute,const lib_win32_small_rect *rect)
-{ (void)h; lib_test_assert(absolute); viewport=*rect; return LIB_WIN32_TRUE; }
+{ (void)h; lib_test_assert(absolute); if(reject_viewport) return LIB_WIN32_FALSE; viewport=*rect; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI resize_buffer(lib_win32_handle h,lib_win32_coord size)
 { (void)h; buffer_size=size; return LIB_WIN32_TRUE; }
 static lib_win32_bool LIB_WIN32_WINAPI palette_get(lib_win32_handle h, lib_win32_console_screen_buffer_infoex *p)
@@ -45,6 +48,8 @@ static lib_win32_bool LIB_WIN32_WINAPI write_cells(lib_win32_handle h, const lib
 {
     (void)h; (void)a; (void)b; ++writes; first_cell=p[0].Char.UnicodeChar;
     first_attribute=p[0].Attributes;
+    captured_region=*r;
+    lib_memory_copy(captured_cells,p,(lib_size)a.X*a.Y*sizeof(*p));
     if (r->Bottom>=buffer_size.Y) r->Bottom=buffer_size.Y-1;
     if (partial_write==1) r->Right=39;
     if (partial_write==2) r->Bottom=11;
@@ -225,6 +230,29 @@ int main(void)
         lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
         lib_test_assert(writes==completed);
     }
+    /* Taller modes reach the last cell; shrinking clears old lower rows
+     * while preserving the native viewport and normal 25-row startup. */
+    {
+        const lib_u16 rows[] = {22u,25u,43u,50u,25u,50u};
+        for (lib_size i=0;i<sizeof(rows)/sizeof(rows[0]);++i) {
+            f.rows=rows[i];
+            lib_memory_set(f.text,0,sizeof(f.text));
+            f.text[(lib_size)f.rows*80u-1u]='Z';
+            lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+            lib_test_assert(captured_cells[(lib_size)f.rows*80u-1u].Char.UnicodeChar=='Z');
+            lib_test_assert(captured_region.Bottom>=f.rows-1);
+            for (lib_u32 row=f.rows;row<=(lib_u32)captured_region.Bottom;++row)
+                for (lib_u32 col=0;col<80u;++col)
+                    lib_test_assert(captured_cells[row*80u+col].Char.UnicodeChar==' ');
+        }
+    }
+    viewport.Bottom=24; reject_viewport=1;
+    lib_u32 completed=writes;
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_IO_ERROR);
+    lib_test_assert(writes==completed);
+    reject_viewport=0;
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+    lib_test_assert(viewport.Bottom==49);
     base_sync_mutex_destroy(b.transaction_lock);base_sync_mutex_destroy(b.output_lock);lib_win32_close_handle(stop);lib_console_release(b.console);
     cooked_restore();
     /* Disposal must not restore native mode a second time. */
