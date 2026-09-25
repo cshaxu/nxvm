@@ -76,3 +76,13 @@ signals. Exercise the production WASAPI adapter with deterministic OS-boundary
 doubles; remove real loopback entirely, without an opt-in switch, as the owner
 further directs. Do not modify host volume or production audio merely to make
 a loopback assertion pass.
+
+## S6 Receiving Artifact Completion
+
+Owner requests executable-delivery governance and the missing NXVM receiving
+artifacts. Test-only changes need no binary refresh; however S4 changed production
+console/frame/UI inputs after the deployed NXVM baseline. Verify/rebuild the
+four current NXVM profiles on both widths and verify the existing MyNES pair.
+Keep live 0535/0043 identities, INI contents and external BYOB assets unchanged.
+Shared rules, NXVM artifacts/evidence and MyNES task records use separate P
+commits. Run full unit suites and documentation gates; T43 stays open.

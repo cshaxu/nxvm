@@ -59,3 +59,30 @@ delta is +217/-209, net +8, excluding manifest/documents. Architecture/coding
 governance guided the OS-boundary test rather than a production workaround.
 S5 is accepted and closed; T43 remains open for owner review, without an active
 packet. [S5 evidence](../etc/evidence/m6-t43-s5-native-audio.md).
+
+## S6 Receiving Artifact Delivery
+
+Owner requires delivery governance and missing receiving EXEs, clarifying that
+unaffected executables need no artificial rebuild. Shared P1 `e25aec65b`
+requires impact review of every receiving App and current product builds,
+not merely test builds. NXVM P2 `735d155a9` delivers eight refreshed 0535
+executables (four profiles, x64/x86) and [hash/build evidence](../../nxvm/etc/evidence/m6-t43-s6-receiving-artifacts.md).
+MyNES 0043 targets build incrementally with unchanged S5 hashes; existing
+version identities are preserved. Production/test source delta is zero.
+
+Full S6 verification: NXVM unit 335/335 each width (23.69/22.77 seconds);
+Shared/MyNES x64 130/130 (130.51 seconds). First x86 run passed 129/130,
+failing `library.kvm_window_modal` at its pre-freeze modal-exit assertion.
+Three unchanged isolated reruns passed; complete unchanged x86 confirmation
+passed 130/130 (153.20 seconds). The initial failure is not erased: a P2 TODO
+requires owner-reviewed Shared investigation before altering this native test.
+Cause is not proven. Both product documentation gates and whitespace pass.
+No new external-ROM integration or user-visible manual acceptance is claimed.
+
+All eight rebuilt NXVM EXEs have verified PE architecture, version and no debug
+sections. Source, shared tests, MyNES binaries and user configuration were not
+intentionally changed. After product builds finished, the default NXVM INI
+changed externally from `console_control=false` to `0`; this unrelated edit is
+preserved and excluded from commits, so a completely clean worktree is not
+claimed. Owned temporary logs are removed after results are recorded; reusable
+build trees remain for open T43. S5's MyNES banner typo is corrected to 0.0.0043.

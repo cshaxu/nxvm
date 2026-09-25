@@ -62,7 +62,7 @@ Production roots retain S4 imported bytes; `test/lib` intentionally differs
 from SoftPC by this approved correction. No sibling repository was changed.
 
 Both incremental Release builds evaluated the 0043 developer targets. Unchanged
-production inputs retain the existing stripped MyNES 0.5.0043 pair from S4:
+production inputs retain the existing stripped MyNES 0.0.0043 pair from S4:
 
 - x64, PE8664, 244750 bytes, SHA-256
   `F38E62A6D1F725003DD9460E4AA42879BE53EE42A794B39C19B5FBA5349F9BE7`.
