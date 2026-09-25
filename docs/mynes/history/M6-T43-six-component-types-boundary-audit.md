@@ -240,3 +240,10 @@ cartridge attached but STOPPED until explicit start. Scope is MyNES only; retain
 explicit reset, insertion and snapshot semantics. The [S13 evidence](../etc/evidence/m6-t43-s13-stopped-startup.md)
 records the mechanism, four-variant regression, native handoff finding, both
 complete suites and current dual-width artifacts. T43 remains open.
+
+Coordinator actual-diff review accepts P1 dd2de1936: the original startup request,
+four-variant coverage, retained explicit commands, documentation and artifact
+hashes agree. Both full suites pass 132/132, Shared/NXVM/INI/snapshot are unchanged,
+and S13 is closed. T43 stays open, no successor is admitted, and owner manual
+verification is pending. The prompt/startup matrix and broker-completion wait
+are the prevention evidence; closure-only P2 does not require another EXE build.

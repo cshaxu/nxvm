@@ -67,3 +67,8 @@ Release with PE x64/x86 architecture and no .debug sections. Paths remain
 Implementation-P identity pins the source and both binaries. Coordinator review
 must inspect actual changes against the original request before acceptance;
 manual gameplay acceptance remains with the owner.
+
+Coordinator acceptance: reviewed P1 dd2de1936 actual source, tests, documents and
+binary hashes against the packet and original owner request. The sole lifecycle
+owner remains Common; App startup has no implicit RESET. Every S13 exit has
+direct proof; S13 closes, T43 remains open. No further implementation is admitted.
