@@ -1,6 +1,7 @@
 # System Architecture
 
-This is MyNes's approved macro architecture. Apply the
+This is MyNes's approved macro architecture. Milestone-qualified descriptions
+below preserve the introduction context; they are not current task status. Apply the
 [Architecture Rules](../../rules/ARCHITECTURE.md). Source organization belongs to
 [Source Layout](CODING.md); delivery state belongs to [Current](../states/CURRENT.md).
 
@@ -124,14 +125,14 @@ source is the guarantee, not source/binary compatibility of every old adapter.
 Independent shared tests use fake providers and no NES/x86 engine, ROM or App.
 The four-tree placement is defined only in Source Layout.
 
-Lib is reused unchanged from one reviewed upstream baseline, including its tests
-and manifests. MyNes work does not patch Lib for its own frame formats, character
+Lib is consumed from this repository's reviewed canonical Shared baseline,
+including its tests and manifests. MyNes work does not patch Lib for its own frame formats, character
 mapping or machine semantics. The adopted Console contract accepts explicit copied character maps. MyNes
 supplies ASCII mappings and does not depend on an implicit CP437 conversion.
 Required text-only submission behavior belongs to the adopted shared baseline.
-Any new Lib revision needs explicit pinned import and verification before use.
-A missing required Lib contract blocks the dependent acceptance and is returned
-to its upstream owner, rather than creating a local fork. Common preserves its
+A new Lib revision needs owner-approved Shared work or a pinned, reviewed import,
+with verification of every affected App. A missing contract returns to that
+Shared owner, rather than creating a product-local fork. Common preserves its
 existing mechanisms wherever neutral; repairs require an evidenced contract gap.
 
 Common machine owns executor lifecycle, synchronization and publication. Common
@@ -187,7 +188,7 @@ mode transitions, broker handoff and input reset; Lib only presents accepted dat
 
 Compatible source, names and layout are retained. A neutral extension changes
 its existing owner and accompanying tests once. Planning identifies a pinned
-four-tree source/test manifest and the current publishing owner; receiving
+four-root source/test subset plus `test/register.cmake` and the current publishing owner; receiving
 products validate an identical version and reconnect external adapters.
 Transfers are explicit snapshots, never runtime/build access to a sibling repo.
 Actual upstream/downstream repository edits require their own admitted work.
@@ -435,8 +436,8 @@ Never free borrowed driver context while the executor can still call it.
 
 ## Runtime Admission Boundary
 
-NXVM supplies governance/style; the shared foundation is adopted unchanged from
-SoftPC. Current records its exact source/evidence. The inherited x86 separation
+SoftPC supplied the initial shared foundation; this repository now publishes its
+canonical Shared corpus. Current records the exact committed source/evidence. The inherited x86 separation
 is already supplied upstream; no local extraction is a prerequisite for App/Core.
 Optional absent capabilities report unsupported, never empty success.
 
@@ -463,7 +464,7 @@ violations of this architecture that M3 must correct; historical closure does
 not waive component boundaries or failure ownership.
 
 Core guest state is deterministic; RGB/text output may deliberately approximate
-physical display. Lib's current 256-color/80x25 frame bounds are preserved.
-Future sound and atomic persistence require neutral upstream capabilities not
-present in this shared snapshot. App/Core cannot implement native workarounds
-or silently patch shared code to bypass those prerequisites.
+physical display. Frame capacities come from the current Lib copied-frame
+contracts, not a duplicated historical 80x25 limit. Audio and atomic storage now
+use the admitted Lib services. New capabilities still require Shared admission;
+App/Core cannot implement native workarounds or silently patch shared code.

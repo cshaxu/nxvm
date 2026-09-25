@@ -1,5 +1,38 @@
 # M6 T43 Six-Component Types Boundary Audit
 
+## S11 Three-Scope Governance Reconciliation
+
+Owner requests the Shared/NXVM/MyNES read-only audit and authorizes the next
+S, not Td, when gaps are found. The [G1-G7 ledger](../etc/evidence/m6-t43-s11-governance-audit.md)
+is the finite repair input. After the read-only audit, the owner approves repair
+and requests per-file diff counts. This includes the narrow rule-claim and
+numbering correction under S11 rather than Td; no general exception is created.
+
+Reconcile current versus historical state, superseded proposals, real product
+layouts, canonical Shared ownership and complete transfer inputs. Preserve one
+authority per concern; use links and archival disposition instead of copying
+old packets into Current. Do not change root README, runtime code, configuration,
+assets or EXEs. Shared, NXVM and MyNES repairs require separate target commits.
+Retain mandatory lifecycle checks as explicit coordinator review; describe the
+structural script truthfully. Do not relax requirements or add a new framework.
+
+Exit requires the complete ledger disposition, both documentation gates, direct
+local-link/control-character and layout/transfer checks, actual-diff review and
+target-separated commit/push. Documentation-only work does not rebuild already
+current EXEs. T43 remains open; no subsequent S is admitted by this brief.
+
+## T43 Convergence And Remaining Exit
+
+The [task history](../history/M6-T43-six-component-types-boundary-audit.md) records
+the accepted S1-S10 inventories, Types corrections, imports, audio/test repairs,
+receiving artifacts, quality sweep, snapshot repair and byte-boolean delivery.
+These are completed batches, not instructions to repeat their migrations.
+S11 consumes only G1-G7. Its closure does not claim a new six-corpus runtime
+audit or close T43. T-level closure still requires a current-source unit and
+applicable external-integration result, reconciliation of the accepted batches
+and explicit dispositions for [open debt](../states/TODO.md), plus owner acceptance.
+No future implementation batch is admitted by this summary.
+
 ## S10 Shared Registration And Byte Boolean
 
 Owner accepts S9 and admits this bounded Shared change, with NXVM and MyNES

@@ -6,70 +6,29 @@ only by [System Architecture](ARCHITECTURE.md).
 
 ## Current And Target Trees
 
-The source map is a target organization, not permission to create placeholders.
+The source map is the current repository organization, not permission to create placeholders.
 The actual delivery state is [Current](../states/CURRENT.md).
 
 ```text
 src/
-  app/
-    main.c
-    config.h / config.c
-    command.h / command.c
-    debug.h / debug.c
-    keyboard.h / keyboard.c
-    composition.h / composition.c
-  common/
-    machine/
-    session/
-    ui/
-  core/
-    driver_interface.h
-    driver.h
-    driver.c
-    media.c
-    debug_interface.h
-    debug.c
-    input.c
-    display.c
-    pacing.c
-    audio.c
-    machine_interface.h
-    machine.h
-    machine.c
-    cpu_interface.h
-    cpu.h
-    cpu.c
-    cpu_instructions.c
-    cpu_instructions.h
-    bus.h
-    bus.c
-    cartridge.h
-    cartridge.c
-    clock.h
-    clock.c
-    ppu.h
-    ppu.c
-    apu.h
-    apu.c
-    controller.h
-    controller.c
-  lib/
-    types/
-    storage/
-    base/
-    console/
-    console-broker/
-    kvm-base/
-    kvm-window/
-    kvm-console/
-    audio/
+  lib/                         shared platform/C services
+  common/{machine,session,ui}/  shared coordination
+  x86/{debug,xasm32}/           optional x86 capabilities, not MyNES runtime
+  app-mynes/
+    product/                   main, config, command, debug, keyboard, composition
+    core/                      flat hardware and driver implementation
+  app-nxvm/                    independently owned NXVM product
 test/
-  app/
-  core/
-  common/
-  lib/
-  integration/
-tools/
+  register.cmake               shared test registration input
+  lib/                         independently selectable Lib suite
+  common/                      independently selectable Common suite
+  x86/                         independently selectable x86 suite
+  app-mynes/
+    unit/{product,core}/
+    integration/
+  app-nxvm/                    independently owned NXVM tests
+tools/{shared,mynes,nxvm}/
+assets/{mynes,nxvm}/
 ```
 
 Directories are introduced with real cohesive source. Tiny App modules can
@@ -87,7 +46,7 @@ plugin directory is pre-created.
 
 ### NXVM Machine Style Reference
 
-The owner requires Core to resemble NXVM `src/core/machine` as closely as the
+The owner requires Core to preserve the historical NXVM machine style as closely as the
 NES ownership model permits. The owner's confirmed MyNes layout is flat
 `src/app-mynes/core` and `test/app-mynes/unit/core`: reuse NXVM's
 file/responsibility idioms, not its machine directory
@@ -135,9 +94,8 @@ Machine is an ownership concept and file prefix here, not a subdirectory.
 | apu.h, apu.c | Guest audio device; M4. |
 | audio.c, pacing.c | NES sample conversion/stream submission and guest-to-host speed policy using Lib; M4. |
 
-This is the target review tree, not a request to create empty future files.
-M2's invalid-frame and no-game-input callbacks stay in driver.c until substantive
-display/input behavior exists. driver.h is private to the integration files;
+The table records responsibilities and their introduction milestones, not pending
+implementation. Display and input now have their own files. driver.h is private to the integration files;
 hardware never includes it or Common. Private device headers remain device-owned.
 There is no core/host, separate Core debug directory or extra core_interface.h
 facade. Composition includes driver_interface.h; App debug includes only the
@@ -164,14 +122,14 @@ Core machine driver implements the machine driver; Common never includes Core he
 Private headers have plain responsibility names such as `decode.h` or `registers.h`.
 Avoid `_private`, `_internal` or `_native` filename suffixes: include visibility
 establishes privacy. Headers have path-derived include guards such as
-`CORE_CPU_INTERFACE_H`; include paths are rooted at src, for example
-`"core/machine_interface.h"`. Headers compile with only their declared
+`CORE_CPU_INTERFACE_H`; product include paths are rooted at `src/app-mynes`,
+for example `"core/machine_interface.h"`; shared includes are rooted at `src`. Headers compile with only their declared
 prerequisites; consumers do not rely on accidental transitive includes.
 
 ### Shared Type And C Vocabulary
 
 `lib/types/types_interface.h` is the one header-only foundation, using NXVM's
-spelling; prefer the compatible reviewed SoftPC implementation:
+spelling; consume the repository's reviewed canonical Shared baseline:
 
 | Vocabulary | Meaning |
 | --- | --- |
@@ -204,7 +162,7 @@ only with a real consumer. Do not make a competing MyNes type facade.
 
 ### Entry And Platform Names
 
-`product/main.c` owns process entry and delegates composition and command dispatch.
+`src/app-mynes/product/main.c` owns process entry and delegates composition and command dispatch.
 App config owns defaults/effective settings; command owns monitor grammar,
 debug owns NES debug policy and keyboard owns mappings/hotkey policy. They use
 one Common session route and public machine/UI operations. They do not implement
@@ -226,13 +184,13 @@ shared behavior moves to its actual neutral owner only when callers need the
 same contract. Split or merge files by responsibility, independent change and
 readability, never a line-count quota. Do not expose a helper just to test it.
 
-Tests live in the single root `test/` tree, whose only component directories are
-`app`, `core`, `common` and `lib`, matching src ownership; `integration` holds
-cross-component and admitted external-ROM scenarios. Core tests are flat under
+Tests live under the matching repository-root `test/` owner. MyNES repository-only
+tests use `test/app-mynes/unit/{product,core}`; admitted external-ROM scenarios
+use `test/app-mynes/integration`. Shared suites use `test/{lib,common,x86}`. Core tests are flat under
 `test/app-mynes/unit/core`, without an extra machine directory. There is no test/support:
 fixture helpers stay beside the tests of their owning component, or within
 integration when specific to integrated scenarios. Existing shared tests remain
-unchanged. The future build must give each component only its declared
+product-neutral. The build gives each component only its declared
 include/link dependencies; one executable or aggregate target cannot bypass them.
 The [App/Core design](../etc/app-core-contract.md#build-and-test-ownership)
 defines the component build/test boundaries. Actual product targets and artifact
@@ -240,8 +198,8 @@ identities are created only by source admission, never by design scaffolding.
 
 ### Shared Source Adoption
 
-The owner's four-tree placement is represented as this target mapping, not an
-instruction to copy files during design:
+SoftPC supplied the initial four-root neutral subset; these paths are now shared
+repository roots, not a private MyNES copy:
 
 | Transfer unit | SoftPC source | MyNes target |
 | --- | --- | --- |
@@ -252,8 +210,9 @@ instruction to copy files during design:
 
 Keep internal component paths/names and source/test manifests stable. Placement
 of the four roots may differ by product; root paths are explicit build inputs,
-not edits to shared source or product-name conditionals. Tests must build from
-the four roots alone. There is no parallel `src/test/` tree or staging code copy.
+not edits to shared source or product-name conditionals. Transfer `test/register.cmake` alongside the four roots; each suite remains
+independently buildable and selectable. The optional x86 source/test pair uses
+the same helper. There is no parallel `src/test/` tree or staging code copy.
 Product driver tests belong under `test/app-mynes/unit/core` or
 `test/app-mynes/integration`.
 
@@ -261,9 +220,11 @@ The adopted neutral corpus excludes x86 debug/assembler implementations.
 Receiving x86 products compose their own optional x86-debug/x86-xasm32 modules
 outside these four roots. MyNes creates no such modules and performs no extraction.
 
-Lib and Common source/tests/manifests remain identical to the selected upstream
-baseline. A missing shared capability needs its own upstream change and reviewed
-adoption; no MyNes-specific Lib/Common patch is part of App/Core work.
+This repository is the canonical Shared publisher. Owner-approved Shared work
+may update its neutral components and manifests, with all receiving Apps audited.
+Transfers pin a committed revision and preserve those bytes; sibling repositories
+remain read-only without separate authorization. App work cannot create a
+MyNES-specific branch or local copy of Lib/Common.
 
 Existing imported formatting remains intact. New product code follows C11;
 the adopted shared baseline has passed standalone strict-C11 builds. Source

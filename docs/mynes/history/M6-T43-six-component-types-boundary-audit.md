@@ -194,3 +194,21 @@ Coordinator accepts P1 75099c178, P2 c5b17f671 and P3 057d8c9aa after actual-dif
 and evidence review. S10 is closed; its active packet is removed. T43 stays
 open with no successor admitted. This governance-only closure changes no build
 input, so the verified artifacts remain current without rebuilding.
+
+## S11 Admission: Three-Scope Governance Audit
+
+Owner requests a read-only Shared/NXVM/MyNES governance/documentation audit and
+explicitly authorizes S11, not Td, if defects exist. At baseline 2cc11c2a0 the
+[audit](../etc/evidence/m6-t43-s11-governance-audit.md) finds G1-G7 despite both
+structural gates passing. S11 is admitted with a finite repair ledger and no
+runtime/configuration/artifact changes. Rule/tool changes require review before
+implementation. No finding is claimed repaired and T43 remains open.
+
+Owner then approves repair. Shared P1 a5dbd9339 makes the manual governance
+review and product-local sequence explicit; NXVM P2 6ab8aae5e archives stale
+packets/proposals and reconciles the current baseline. MyNES P3 corrects its
+layout, transfer and provenance authorities, duplicated UX prose and T43 exit
+summary. All G1-G7 have direct dispositions in the audit evidence. Both document
+gates, the 28-file live link/control-character sweep and whitespace checks pass.
+No runtime/build/INI/asset input changed; no EXE rebuild or new runtime test
+result is claimed. T43 remains open.

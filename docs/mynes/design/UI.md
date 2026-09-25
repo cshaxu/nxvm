@@ -85,9 +85,7 @@ only. It presents the same running machine without changing NES hardware mode.
 The `display` setting in `mynes.ini` selects Core's published representation at
 startup; Common continues its ordinary frame-kind-driven mode switching.
 Conversion and routing ownership are defined in [Architecture](ARCHITECTURE.md).
-publisher is parked during paused debugging.
 The chosen representation takes effect on explicit start/resume because the shared
-publisher is parked during paused debugging.
 publisher is parked during paused debugging.
 Both presenters are required product outcomes. M3 qualifies both with real
 Win32 native receivers: Window reads presented pixels and Console reads its

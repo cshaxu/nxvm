@@ -36,7 +36,9 @@ Never commit machine-local paths, protected ROM bytes or raw unbounded traces.
 
 ## Shared Corpus Admission
 
-The owner selected SoftPC Lib/Common as the preferred reusable source corpus.
+The owner selected SoftPC Lib/Common as the initial reusable source corpus.
+This repository now publishes the canonical Shared baseline; owner-approved
+Shared changes require neutral contracts, manifests and receiving-App verification.
 Each import still records pinned units, API/dependency fit, licenses/notices,
 transferred tests and one update owner. Separate unchanged units from derived
 units; retain source hashes/manifests and explain necessary deltas. Source reuse
@@ -46,8 +48,9 @@ provenance and resolve any missing grant before importing affected source.
 Do not rewrite compatible mechanisms merely to avoid an inventory. Do not make
 a sibling checkout a runtime/build dependency or modify it without authorization.
 
-The source and test transfer consists of the four roots mapped by
-[Source Layout](../../../design/CODING.md). Its target is one neutral corpus
+The neutral source/test transfer consists of the four roots plus
+`test/register.cmake`, as mapped by [Source Layout](../../../design/CODING.md).
+The optional x86 source/test pair extends it to six roots. Its target is one neutral corpus
 reimportable unchanged into SoftPC/NXVM; product-specific debugger integrations
 are outside it. Record root mapping, source/test hashes, generic changes and
 consumer adapter migration separately. An initial snapshot is not a declaration
@@ -55,6 +58,4 @@ that every inherited module is already neutral or compatible.
 
 Source/test copying is deferred until the relevant milestone is admitted, its
 local T decomposition/queue is reviewed and an import task is admitted under
-Execution. Approval of roadmap boundaries alone permits no source copying. The owner's
-latest design-first instruction supersedes immediate copying. No third-party
-source or test is acquired by this documentation revision.
+Execution. Approval of roadmap boundaries alone permits no source copying. No documentation approval alone authorizes a source import or sibling edit.

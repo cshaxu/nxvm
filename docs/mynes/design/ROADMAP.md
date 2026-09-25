@@ -112,8 +112,10 @@ pass deterministic round-trip, failure-atomicity and cross-process proof.
 Replay, rewind, save-state slots, compression, ROM redistribution and backward
 compatibility with unversioned experimental files are excluded.
 
-Every later Common change preserves the unchanged-transfer contract and carries
-its own tests. A needed Lib capability is developed upstream and adopted through
-a reviewed shared revision, never a product-local patch. Each milestone must name
+Every later Shared change preserves the unchanged-transfer contract and carries
+its own tests. This repository publishes the canonical Shared revision; a needed
+Lib capability requires owner-approved Shared work and receiving-App verification,
+never a product-local patch. Transfers to or from another repository pin a
+reviewed committed revision. Each milestone must name
 measurable coverage and verification
 when admitted; later milestones remain goals/dependencies/exits until then.
