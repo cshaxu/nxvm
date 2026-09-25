@@ -6,7 +6,8 @@ M6 T43 S8 is admitted for six-corpus quality audit and reviewed remediation.
 Owner-approved A-F repairs and receiving builds/tests are complete. Shared P1
 and NXVM P2 plus MyNES P3 are pushed. NXVM P4 5373a1a05 delivers the owner-required
 0/1-only INI parser, four supplied INIs, regression, UX contract and eight
-rebuilt EXEs. S8 awaits owner manual verification; T43 is not closed.
+rebuilt EXEs. Owner accepts S8 closure and admits the next S9 snapshot-resume
+repair. T43 is not closed; the S9 packet is being prepared before implementation.
 
 | Field | Required record |
 | --- | --- |

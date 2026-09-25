@@ -145,3 +145,7 @@ Coordinator actual-diff review confirms one existing parser, no textual aliases,
 unchanged media paths, all four INIs and eight verified EXEs in the same NXVM
 commit. Both documentation gates pass. S8 awaits owner manual verification;
 T43 remains open. Prevention is the exact accepted/rejected spelling matrix.
+
+Owner subsequently accepts S8 and explicitly admits S9 for snapshot resume
+freezing while the reported machine state is Running. S8 is closed on that
+acceptance; T43 remains open. The new symptom is not waived by S8 tests.
