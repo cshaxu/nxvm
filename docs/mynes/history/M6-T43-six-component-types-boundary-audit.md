@@ -38,3 +38,24 @@ compiles against candidate headers on both widths. Documentation governance and
 whitespace checks pass. This audit-only S changes no Shared source or binaries;
 product runtime acceptance belongs to an admitted import. S4 is closed and T43
 remains open. [Complete audit](../etc/evidence/m6-t43-s4-softpc-import-audit.md).
+
+## S4 Follow-up And S5 Acceptance
+
+The owner subsequently authorized same-S import and delivery despite the
+reported physical audio test failure. Shared `83022ea9f` and MyNES `f67eaefed`
+preserve that import and its explicit non-green result; S5 owns its correction.
+
+S5 Shared P1 `b7cbb30a9` replaces physical loopback with deterministic execution
+of the real WASAPI adapter. MyNES P2 `3959be3de` records full evidence. Coordinator
+review inspected the actual test replacement, CMake, manifest and documents;
+no production or public API changes, host changes, optional mode or sibling
+writes occurred. Complete suites pass on x64/x86: Shared/MyNES 130/130 and
+NXVM units 335/335. Six manifests, Types and documentation gates pass. The
+0043 pair was incrementally built and retains its verified S4 hashes.
+
+The original failure's full batch is resolved at the test acceptance boundary,
+not hidden as a skip or claimed as physical audio certification. Source/test
+delta is +217/-209, net +8, excluding manifest/documents. Architecture/coding
+governance guided the OS-boundary test rather than a production workaround.
+S5 is accepted and closed; T43 remains open for owner review, without an active
+packet. [S5 evidence](../etc/evidence/m6-t43-s5-native-audio.md).
