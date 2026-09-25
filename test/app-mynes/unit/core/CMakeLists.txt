@@ -263,3 +263,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(mynes-core-snapshot-smoke PRIVATE -UNDEBUG)
 endif()
 add_test(NAME mynes.core.snapshot-smoke COMMAND mynes-core-snapshot-smoke)
+add_test(NAME mynes.core.snapshot-fields
+    COMMAND ${CMAKE_COMMAND} -DSOURCE_ROOT=${CMAKE_SOURCE_DIR}
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/verify_snapshot_fields.cmake)

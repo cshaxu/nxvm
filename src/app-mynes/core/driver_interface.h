@@ -18,6 +18,8 @@ lib_status core_driver_destroy(core_driver *driver);
 void core_driver_request_input_reset(core_driver *driver);
 lib_bool core_driver_has_cartridge(const core_driver *driver);
 lib_status core_driver_load_battery_ram(core_driver *driver, const char *path);
+/* Call only at a quiescent boundary or after executor shutdown. No cartridge,
+ * no battery or clean RAM is successful no-work. Failure retains dirty RAM. */
 lib_status core_driver_save_battery_ram(core_driver *driver, const char *path);
 
 #endif

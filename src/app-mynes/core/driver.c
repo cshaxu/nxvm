@@ -575,11 +575,11 @@ lib_status core_driver_copy_frame(void *context, common_machine_frame *out_frame
     lib_bool cube;
 
     if (driver == LIB_NULL || out_frame == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    out_frame->window.valid = 0u;
+    out_frame->window.valid = LIB_FALSE;
     if (driver->machine == LIB_NULL || !driver->machine->ppu.frame_ready ||
         driver->machine->ppu.frame_revision == driver->published_frame_revision)
         return LIB_STATUS_OK;
-    out_frame->window.graphics = driver->text_output ? 0u : 1u;
+    out_frame->window.graphics = !driver->text_output;
     if (driver->text_output) {
         lib_u32 row;
         lib_u32 column;
@@ -630,7 +630,7 @@ lib_status core_driver_copy_frame(void *context, common_machine_frame *out_frame
             out_frame->characters.primary[index] = index < 128u ? (lib_u16)index : ' ';
             out_frame->characters.secondary[index] = index < 128u ? (lib_u16)index : ' ';
         }
-        out_frame->window.valid = 1u;
+        out_frame->window.valid = LIB_TRUE;
         driver->published_frame_revision = driver->machine->ppu.frame_revision;
         return LIB_STATUS_OK;
     }
@@ -669,7 +669,7 @@ lib_status core_driver_copy_frame(void *context, common_machine_frame *out_frame
         lib_u32 blue = ((rgb & 0xffu) + 25u) / 51u;
         out_frame->window.image.pixels[index] = (lib_u8)(36u * red + 6u * green + blue);
     }
-    out_frame->window.valid = 1u;
+    out_frame->window.valid = LIB_TRUE;
     driver->published_frame_revision = driver->machine->ppu.frame_revision;
     return LIB_STATUS_OK;
 }

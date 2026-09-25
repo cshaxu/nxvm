@@ -1,5 +1,24 @@
 # M6 T43 Six-Component Types Boundary Audit
 
+## S12 MyNES Production Quality Repair
+
+Owner admits the production audit batch and explicitly excludes Shared edits.
+Fix the omitted PPU sprite evaluation byte; validate restored device indices,
+counts and shift operands before committing candidate state. Replace scalar
+spans that depend on adjacent struct fields with explicit field serialization;
+retain arrays and existing endian helpers, without a serializer framework.
+Version the complete schema and reject older incomplete snapshots explicitly.
+Propagate battery-save errors before cartridge replacement and on shutdown;
+distinguish no-work from actual failure. Normalize product boolean vocabulary
+without changing numeric-only INI syntax. Regression tests cover corrupted
+snapshot rejection, resume determinism and persistence failure handling.
+
+Atomic destination replacement for battery and snapshot files is deferred by
+the owner to TODO: current Shared storage lacks that capability. No product
+native-file bypass or Shared change is permitted. Full configured x64/x86 suites,
+MyNES documentation gate, current 0043 stripped artifact pair, actual-diff review
+and MyNES-only commit/push are required. Keep T43 open for owner verification.
+
 ## S11 Three-Scope Governance Reconciliation
 
 Owner requests the Shared/NXVM/MyNES read-only audit and authorizes the next

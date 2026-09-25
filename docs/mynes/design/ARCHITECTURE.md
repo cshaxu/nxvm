@@ -80,7 +80,10 @@ Snapshot capture and restore follow the same boundary. Core owns the portable
 NES image: cartridge identity and immutable-reference facts, plus copied CPU,
 bus RAM, PPU, APU, controller, mapper and execution state. It never opens a
 path or chooses a user-visible lifecycle transition. App owns `save <file>` /
-`load <file>`, file streams and atomic destination replacement. Common provides
+`load <file>`, file streams and the destination replacement policy. Atomic
+replacement is required but currently deferred in [TODO](../states/TODO.md);
+the existing writer truncates the destination and cannot roll back a failed save.
+Common provides
 the serialized executor boundary and state-byte transport without interpreting
 the bytes. A load first decodes a bounded candidate, validates its cartridge
 reference and only then replaces live Core state; a failed decode or validation
@@ -465,6 +468,7 @@ not waive component boundaries or failure ownership.
 
 Core guest state is deterministic; RGB/text output may deliberately approximate
 physical display. Frame capacities come from the current Lib copied-frame
-contracts, not a duplicated historical 80x25 limit. Audio and atomic storage now
-use the admitted Lib services. New capabilities still require Shared admission;
+contracts, not a duplicated historical 80x25 limit. Audio and file I/O use
+the admitted Lib services; atomic file replacement remains deferred as above.
+New capabilities still require Shared admission;
 App/Core cannot implement native workarounds or silently patch shared code.

@@ -2,7 +2,7 @@
 
 #include "core/machine.h"
 
-enum { CORE_SNAPSHOT_VERSION = 2u, CORE_SNAPSHOT_PRG_RAM_BYTES = 8192u };
+enum { CORE_SNAPSHOT_VERSION = 3u, CORE_SNAPSHOT_PRG_RAM_BYTES = 8192u };
 
 #define SNAPSHOT_STEP(expression) \
     do { if (status == LIB_STATUS_OK) status = (expression); } while (0)
@@ -108,10 +108,20 @@ static lib_status snapshot_write_cartridge(const core_cartridge *c,
 {
     lib_status status;
     /* Fixed mapper registers; no pointers, size_t, or padding enter the stream. */
-    status = w(x, &c->mirroring, 9u);
+    status = w(x, &c->mirroring, 1u);
+    SNAPSHOT_STEP(w(x, &c->uxrom_prg_bank, 1u));
+    SNAPSHOT_STEP(w(x, &c->cnrom_chr_bank, 1u));
+    SNAPSHOT_STEP(w(x, &c->mmc1_control, 1u));
+    SNAPSHOT_STEP(w(x, &c->mmc1_chr_bank0, 1u));
+    SNAPSHOT_STEP(w(x, &c->mmc1_chr_bank1, 1u));
+    SNAPSHOT_STEP(w(x, &c->mmc1_prg_bank, 1u));
+    SNAPSHOT_STEP(w(x, &c->mmc1_shift_data, 1u));
+    SNAPSHOT_STEP(w(x, &c->mmc1_shift_count, 1u));
     SNAPSHOT_STEP(w(x, &c->mmc3_bank_select, 1u));
     SNAPSHOT_STEP(w(x, c->mmc3_bank_data, 8u));
-    SNAPSHOT_STEP(w(x, &c->mmc3_irq_latch, 3u));
+    SNAPSHOT_STEP(w(x, &c->mmc3_irq_latch, 1u));
+    SNAPSHOT_STEP(w(x, &c->mmc3_irq_counter, 1u));
+    SNAPSHOT_STEP(w(x, &c->mmc3_a12_low_ticks, 1u));
     SNAPSHOT_STEP(snapshot_write_bool(w, x, c->mmc3_irq_reload));
     SNAPSHOT_STEP(snapshot_write_bool(w, x, c->mmc3_irq_enabled));
     SNAPSHOT_STEP(snapshot_write_bool(w, x, c->mmc3_irq_asserted));
@@ -128,10 +138,20 @@ static lib_status snapshot_read_cartridge(core_cartridge *c,
     core_snapshot_read_callback r, void *x)
 {
     lib_status status;
-    status = r(x, &c->mirroring, 9u);
+    status = r(x, &c->mirroring, 1u);
+    SNAPSHOT_STEP(r(x, &c->uxrom_prg_bank, 1u));
+    SNAPSHOT_STEP(r(x, &c->cnrom_chr_bank, 1u));
+    SNAPSHOT_STEP(r(x, &c->mmc1_control, 1u));
+    SNAPSHOT_STEP(r(x, &c->mmc1_chr_bank0, 1u));
+    SNAPSHOT_STEP(r(x, &c->mmc1_chr_bank1, 1u));
+    SNAPSHOT_STEP(r(x, &c->mmc1_prg_bank, 1u));
+    SNAPSHOT_STEP(r(x, &c->mmc1_shift_data, 1u));
+    SNAPSHOT_STEP(r(x, &c->mmc1_shift_count, 1u));
     SNAPSHOT_STEP(r(x, &c->mmc3_bank_select, 1u));
     SNAPSHOT_STEP(r(x, c->mmc3_bank_data, 8u));
-    SNAPSHOT_STEP(r(x, &c->mmc3_irq_latch, 3u));
+    SNAPSHOT_STEP(r(x, &c->mmc3_irq_latch, 1u));
+    SNAPSHOT_STEP(r(x, &c->mmc3_irq_counter, 1u));
+    SNAPSHOT_STEP(r(x, &c->mmc3_a12_low_ticks, 1u));
     SNAPSHOT_STEP(snapshot_read_bool(r, x, &c->mmc3_irq_reload));
     SNAPSHOT_STEP(snapshot_read_bool(r, x, &c->mmc3_irq_enabled));
     SNAPSHOT_STEP(snapshot_read_bool(r, x, &c->mmc3_irq_asserted));
@@ -141,6 +161,11 @@ static lib_status snapshot_read_cartridge(core_cartridge *c,
     SNAPSHOT_STEP(snapshot_read_bool(r, x, &c->battery_backed));
     SNAPSHOT_STEP(snapshot_read_bool(r, x, &c->prg_ram_dirty));
     SNAPSHOT_STEP(snapshot_read_bool(r, x, &c->chr_ram));
+    if (status == LIB_STATUS_OK && (c->mirroring > 3u ||
+        c->mmc1_shift_count > 4u || c->mmc1_shift_data >= (1u << c->mmc1_shift_count) ||
+        c->mmc1_control > 31u || c->mmc1_chr_bank0 > 31u ||
+        c->mmc1_chr_bank1 > 31u || c->mmc1_prg_bank > 31u))
+        status = LIB_STATUS_INVALID_ARGUMENT;
     return status;
 }
 
@@ -164,7 +189,13 @@ static lib_status snapshot_write_apu(const core_apu *apu,
     SNAPSHOT_STEP(write(context, apu->envelope_decay, 3u));
     SNAPSHOT_STEP(write(context, apu->envelope_divider, 3u));
     SNAPSHOT_STEP(write(context, apu->sweep_divider, 2u));
-    SNAPSHOT_STEP(write(context, &apu->triangle_linear, 7u));
+    SNAPSHOT_STEP(write(context, &apu->triangle_linear, 1u));
+    SNAPSHOT_STEP(write(context, &apu->dmc_shift, 1u));
+    SNAPSHOT_STEP(write(context, &apu->dmc_sample, 1u));
+    SNAPSHOT_STEP(write(context, &apu->dmc_bits, 1u));
+    SNAPSHOT_STEP(write(context, &apu->frame_mode, 1u));
+    SNAPSHOT_STEP(write(context, &apu->enabled, 1u));
+    SNAPSHOT_STEP(write(context, &apu->dmc_output, 1u));
     SNAPSHOT_STEP(snapshot_write_u32(write, context, apu->frame_cycles));
     SNAPSHOT_STEP(snapshot_write_u32(write, context, apu->sample_phase));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, apu->frame_irq));
@@ -201,7 +232,13 @@ static lib_status snapshot_read_apu(core_apu *apu,
     SNAPSHOT_STEP(read(context, apu->envelope_decay, 3u));
     SNAPSHOT_STEP(read(context, apu->envelope_divider, 3u));
     SNAPSHOT_STEP(read(context, apu->sweep_divider, 2u));
-    SNAPSHOT_STEP(read(context, &apu->triangle_linear, 7u));
+    SNAPSHOT_STEP(read(context, &apu->triangle_linear, 1u));
+    SNAPSHOT_STEP(read(context, &apu->dmc_shift, 1u));
+    SNAPSHOT_STEP(read(context, &apu->dmc_sample, 1u));
+    SNAPSHOT_STEP(read(context, &apu->dmc_bits, 1u));
+    SNAPSHOT_STEP(read(context, &apu->frame_mode, 1u));
+    SNAPSHOT_STEP(read(context, &apu->enabled, 1u));
+    SNAPSHOT_STEP(read(context, &apu->dmc_output, 1u));
     SNAPSHOT_STEP(snapshot_read_u32(read, context, &apu->frame_cycles));
     SNAPSHOT_STEP(snapshot_read_u32(read, context, &apu->sample_phase));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &apu->frame_irq));
@@ -215,6 +252,13 @@ static lib_status snapshot_read_apu(core_apu *apu,
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &apu->triangle_reload));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &apu->dmc_sample_empty));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &apu->pulse_even_cycle));
+    if (status == LIB_STATUS_OK && (apu->pulse_phase[0] > 7u ||
+        apu->pulse_phase[1] > 7u || apu->triangle_phase > 31u ||
+        apu->triangle_linear > 127u || apu->dmc_bits > 8u ||
+        apu->dmc_output > 127u || apu->frame_mode > 1u ||
+        apu->frame_cycles >= (apu->frame_mode ? 37281u : 29829u) ||
+        apu->sample_phase >= 236250000u))
+        status = LIB_STATUS_INVALID_ARGUMENT;
     if (status == LIB_STATUS_OK) {
         lib_memory_set(apu->samples, 0, sizeof(apu->samples));
         apu->sample_read = 0u;
@@ -231,7 +275,11 @@ static lib_status snapshot_write_ppu(const core_ppu *ppu,
     lib_status status = LIB_STATUS_OK;
     SNAPSHOT_STEP(write(context, ppu->ciram, sizeof(ppu->ciram)));
     SNAPSHOT_STEP(write(context, ppu->palette, sizeof(ppu->palette)));
-    SNAPSHOT_STEP(write(context, &ppu->control, 5u));
+    SNAPSHOT_STEP(write(context, &ppu->control, 1u));
+    SNAPSHOT_STEP(write(context, &ppu->mask, 1u));
+    SNAPSHOT_STEP(write(context, &ppu->status, 1u));
+    SNAPSHOT_STEP(write(context, &ppu->io_latch, 1u));
+    SNAPSHOT_STEP(write(context, &ppu->read_buffer, 1u));
     SNAPSHOT_STEP(write(context, ppu->oam, sizeof(ppu->oam)));
     SNAPSHOT_STEP(write(context, &ppu->oam_address, 1u));
     SNAPSHOT_STEP(write(context, ppu->selected_sprites, 8u));
@@ -241,12 +289,17 @@ static lib_status snapshot_write_ppu(const core_ppu *ppu,
     SNAPSHOT_STEP(write(context, ppu->sprite_pattern_low, 8u));
     SNAPSHOT_STEP(write(context, ppu->sprite_pattern_high, 8u));
     SNAPSHOT_STEP(write(context, ppu->next_sprites, 8u));
-    SNAPSHOT_STEP(write(context, &ppu->next_sprite_count, 2u));
+    SNAPSHOT_STEP(write(context, &ppu->next_sprite_count, 1u));
+    SNAPSHOT_STEP(write(context, &ppu->sprite_evaluation_index, 1u));
+    SNAPSHOT_STEP(write(context, &ppu->sprite_evaluation_byte, 1u));
     SNAPSHOT_STEP(write(context, ppu->next_secondary_oam, 32u));
     SNAPSHOT_STEP(write(context, &ppu->next_secondary_oam_count, 1u));
     SNAPSHOT_STEP(snapshot_write_u16(write, context, ppu->address));
     SNAPSHOT_STEP(snapshot_write_u16(write, context, ppu->temporary_address));
-    SNAPSHOT_STEP(write(context, &ppu->background_tile, 4u));
+    SNAPSHOT_STEP(write(context, &ppu->background_tile, 1u));
+    SNAPSHOT_STEP(write(context, &ppu->background_attribute, 1u));
+    SNAPSHOT_STEP(write(context, &ppu->background_pattern_low, 1u));
+    SNAPSHOT_STEP(write(context, &ppu->background_pattern_high, 1u));
     SNAPSHOT_STEP(write(context, ppu->background_prefetch_pattern_low, 2u));
     SNAPSHOT_STEP(write(context, ppu->background_prefetch_pattern_high, 2u));
     SNAPSHOT_STEP(write(context, ppu->background_prefetch_attribute, 2u));
@@ -275,7 +328,11 @@ static lib_status snapshot_read_ppu(core_ppu *ppu,
     lib_status status = LIB_STATUS_OK;
     SNAPSHOT_STEP(read(context, ppu->ciram, sizeof(ppu->ciram)));
     SNAPSHOT_STEP(read(context, ppu->palette, sizeof(ppu->palette)));
-    SNAPSHOT_STEP(read(context, &ppu->control, 5u));
+    SNAPSHOT_STEP(read(context, &ppu->control, 1u));
+    SNAPSHOT_STEP(read(context, &ppu->mask, 1u));
+    SNAPSHOT_STEP(read(context, &ppu->status, 1u));
+    SNAPSHOT_STEP(read(context, &ppu->io_latch, 1u));
+    SNAPSHOT_STEP(read(context, &ppu->read_buffer, 1u));
     SNAPSHOT_STEP(read(context, ppu->oam, sizeof(ppu->oam)));
     SNAPSHOT_STEP(read(context, &ppu->oam_address, 1u));
     SNAPSHOT_STEP(read(context, ppu->selected_sprites, 8u));
@@ -285,12 +342,17 @@ static lib_status snapshot_read_ppu(core_ppu *ppu,
     SNAPSHOT_STEP(read(context, ppu->sprite_pattern_low, 8u));
     SNAPSHOT_STEP(read(context, ppu->sprite_pattern_high, 8u));
     SNAPSHOT_STEP(read(context, ppu->next_sprites, 8u));
-    SNAPSHOT_STEP(read(context, &ppu->next_sprite_count, 2u));
+    SNAPSHOT_STEP(read(context, &ppu->next_sprite_count, 1u));
+    SNAPSHOT_STEP(read(context, &ppu->sprite_evaluation_index, 1u));
+    SNAPSHOT_STEP(read(context, &ppu->sprite_evaluation_byte, 1u));
     SNAPSHOT_STEP(read(context, ppu->next_secondary_oam, 32u));
     SNAPSHOT_STEP(read(context, &ppu->next_secondary_oam_count, 1u));
     SNAPSHOT_STEP(snapshot_read_u16(read, context, &ppu->address));
     SNAPSHOT_STEP(snapshot_read_u16(read, context, &ppu->temporary_address));
-    SNAPSHOT_STEP(read(context, &ppu->background_tile, 4u));
+    SNAPSHOT_STEP(read(context, &ppu->background_tile, 1u));
+    SNAPSHOT_STEP(read(context, &ppu->background_attribute, 1u));
+    SNAPSHOT_STEP(read(context, &ppu->background_pattern_low, 1u));
+    SNAPSHOT_STEP(read(context, &ppu->background_pattern_high, 1u));
     SNAPSHOT_STEP(read(context, ppu->background_prefetch_pattern_low, 2u));
     SNAPSHOT_STEP(read(context, ppu->background_prefetch_pattern_high, 2u));
     SNAPSHOT_STEP(read(context, ppu->background_prefetch_attribute, 2u));
@@ -312,7 +374,11 @@ static lib_status snapshot_read_ppu(core_ppu *ppu,
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &ppu->suppress_vblank));
     if (status == LIB_STATUS_OK && (ppu->dot > 340u || ppu->scanline > 261u ||
         ppu->selected_sprite_count > 8u || ppu->next_sprite_count > 8u ||
-        ppu->secondary_oam_count > 32u || ppu->next_secondary_oam_count > 32u))
+        ppu->secondary_oam_count > 8u || ppu->next_secondary_oam_count > 8u ||
+        ppu->selected_sprite_count != ppu->secondary_oam_count ||
+        ppu->next_sprite_count != ppu->next_secondary_oam_count ||
+        ppu->sprite_evaluation_byte > 3u ||
+        ppu->fine_x > 7u))
         status = LIB_STATUS_INVALID_ARGUMENT;
     return status;
 }
@@ -324,12 +390,21 @@ static lib_status snapshot_write_machine(const core_machine *machine,
     lib_u32 index;
     SNAPSHOT_STEP(snapshot_write_apu(&machine->apu, write, context));
     SNAPSHOT_STEP(snapshot_write_ppu(&machine->ppu, write, context));
-    SNAPSHOT_STEP(write(context, &machine->controller.live, 5u));
+    SNAPSHOT_STEP(write(context, &machine->controller.live, 1u));
+    SNAPSHOT_STEP(write(context, &machine->controller.held, 1u));
+    SNAPSHOT_STEP(write(context, &machine->controller.transient, 1u));
+    SNAPSHOT_STEP(write(context, &machine->controller.captured, 1u));
+    SNAPSHOT_STEP(write(context, &machine->controller.index, 1u));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->controller.strobe));
     SNAPSHOT_STEP(write(context, machine->ram, sizeof(machine->ram)));
-    SNAPSHOT_STEP(write(context, &machine->a, 5u));
+    SNAPSHOT_STEP(write(context, &machine->a, 1u));
+    SNAPSHOT_STEP(write(context, &machine->x, 1u));
+    SNAPSHOT_STEP(write(context, &machine->y, 1u));
+    SNAPSHOT_STEP(write(context, &machine->s, 1u));
+    SNAPSHOT_STEP(write(context, &machine->p, 1u));
     SNAPSHOT_STEP(snapshot_write_u16(write, context, machine->pc));
-    SNAPSHOT_STEP(write(context, &machine->data_latch, 2u));
+    SNAPSHOT_STEP(write(context, &machine->data_latch, 1u));
+    SNAPSHOT_STEP(write(context, &machine->initial_ram_byte, 1u));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->irq_asserted));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->external_irq_asserted));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->cartridge_irq_asserted));
@@ -340,7 +415,8 @@ static lib_status snapshot_write_machine(const core_machine *machine,
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->nmi_asserted));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->nmi_pending));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->nmi_defer_once));
-    SNAPSHOT_STEP(write(context, &machine->interrupt_phase, 2u));
+    SNAPSHOT_STEP(write(context, &machine->interrupt_phase, 1u));
+    SNAPSHOT_STEP(write(context, &machine->dma_page, 1u));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->dma_pending));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->dma_active));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->dma_alignment_pending));
@@ -348,12 +424,17 @@ static lib_status snapshot_write_machine(const core_machine *machine,
     SNAPSHOT_STEP(snapshot_write_u16(write, context, machine->dma_index));
     SNAPSHOT_STEP(write(context, &machine->dma_latch, 1u));
     SNAPSHOT_STEP(snapshot_write_u16(write, context, machine->dmc_dma_address));
-    SNAPSHOT_STEP(write(context, &machine->dmc_dma_phase, 2u));
+    SNAPSHOT_STEP(write(context, &machine->dmc_dma_phase, 1u));
+    SNAPSHOT_STEP(write(context, &machine->dmc_dma_latch, 1u));
     SNAPSHOT_STEP(snapshot_write_bool(write, context, machine->dmc_dma_active));
     SNAPSHOT_STEP(snapshot_write_u64(write, context, machine->cycles));
     SNAPSHOT_STEP(snapshot_write_u64(write, context, machine->slots));
     SNAPSHOT_STEP(snapshot_write_u64(write, context, machine->instructions));
-    SNAPSHOT_STEP(write(context, &machine->trap.a, 5u));
+    SNAPSHOT_STEP(write(context, &machine->trap.a, 1u));
+    SNAPSHOT_STEP(write(context, &machine->trap.x, 1u));
+    SNAPSHOT_STEP(write(context, &machine->trap.y, 1u));
+    SNAPSHOT_STEP(write(context, &machine->trap.s, 1u));
+    SNAPSHOT_STEP(write(context, &machine->trap.p, 1u));
     SNAPSHOT_STEP(snapshot_write_u16(write, context, machine->trap.pc));
     SNAPSHOT_STEP(snapshot_write_u64(write, context, machine->trap.cycles));
     SNAPSHOT_STEP(snapshot_write_u64(write, context, machine->trap.instructions));
@@ -383,12 +464,21 @@ static lib_status snapshot_read_machine(core_machine *machine,
     lib_u32 index, kind, reason;
     SNAPSHOT_STEP(snapshot_read_apu(&machine->apu, read, context));
     SNAPSHOT_STEP(snapshot_read_ppu(&machine->ppu, read, context));
-    SNAPSHOT_STEP(read(context, &machine->controller.live, 5u));
+    SNAPSHOT_STEP(read(context, &machine->controller.live, 1u));
+    SNAPSHOT_STEP(read(context, &machine->controller.held, 1u));
+    SNAPSHOT_STEP(read(context, &machine->controller.transient, 1u));
+    SNAPSHOT_STEP(read(context, &machine->controller.captured, 1u));
+    SNAPSHOT_STEP(read(context, &machine->controller.index, 1u));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->controller.strobe));
     SNAPSHOT_STEP(read(context, machine->ram, sizeof(machine->ram)));
-    SNAPSHOT_STEP(read(context, &machine->a, 5u));
+    SNAPSHOT_STEP(read(context, &machine->a, 1u));
+    SNAPSHOT_STEP(read(context, &machine->x, 1u));
+    SNAPSHOT_STEP(read(context, &machine->y, 1u));
+    SNAPSHOT_STEP(read(context, &machine->s, 1u));
+    SNAPSHOT_STEP(read(context, &machine->p, 1u));
     SNAPSHOT_STEP(snapshot_read_u16(read, context, &machine->pc));
-    SNAPSHOT_STEP(read(context, &machine->data_latch, 2u));
+    SNAPSHOT_STEP(read(context, &machine->data_latch, 1u));
+    SNAPSHOT_STEP(read(context, &machine->initial_ram_byte, 1u));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->irq_asserted));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->external_irq_asserted));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->cartridge_irq_asserted));
@@ -399,7 +489,8 @@ static lib_status snapshot_read_machine(core_machine *machine,
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->nmi_asserted));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->nmi_pending));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->nmi_defer_once));
-    SNAPSHOT_STEP(read(context, &machine->interrupt_phase, 2u));
+    SNAPSHOT_STEP(read(context, &machine->interrupt_phase, 1u));
+    SNAPSHOT_STEP(read(context, &machine->dma_page, 1u));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->dma_pending));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->dma_active));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->dma_alignment_pending));
@@ -407,12 +498,17 @@ static lib_status snapshot_read_machine(core_machine *machine,
     SNAPSHOT_STEP(snapshot_read_u16(read, context, &machine->dma_index));
     SNAPSHOT_STEP(read(context, &machine->dma_latch, 1u));
     SNAPSHOT_STEP(snapshot_read_u16(read, context, &machine->dmc_dma_address));
-    SNAPSHOT_STEP(read(context, &machine->dmc_dma_phase, 2u));
+    SNAPSHOT_STEP(read(context, &machine->dmc_dma_phase, 1u));
+    SNAPSHOT_STEP(read(context, &machine->dmc_dma_latch, 1u));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->dmc_dma_active));
     SNAPSHOT_STEP(snapshot_read_u64(read, context, &machine->cycles));
     SNAPSHOT_STEP(snapshot_read_u64(read, context, &machine->slots));
     SNAPSHOT_STEP(snapshot_read_u64(read, context, &machine->instructions));
-    SNAPSHOT_STEP(read(context, &machine->trap.a, 5u));
+    SNAPSHOT_STEP(read(context, &machine->trap.a, 1u));
+    SNAPSHOT_STEP(read(context, &machine->trap.x, 1u));
+    SNAPSHOT_STEP(read(context, &machine->trap.y, 1u));
+    SNAPSHOT_STEP(read(context, &machine->trap.s, 1u));
+    SNAPSHOT_STEP(read(context, &machine->trap.p, 1u));
     SNAPSHOT_STEP(snapshot_read_u16(read, context, &machine->trap.pc));
     SNAPSHOT_STEP(snapshot_read_u64(read, context, &machine->trap.cycles));
     SNAPSHOT_STEP(snapshot_read_u64(read, context, &machine->trap.instructions));
@@ -441,7 +537,11 @@ static lib_status snapshot_read_machine(core_machine *machine,
     SNAPSHOT_STEP(snapshot_read_u16(read, context, &machine->breakpoint_bypass_pc));
     SNAPSHOT_STEP(snapshot_read_bool(read, context, &machine->breakpoint_bypass_valid));
     if (status == LIB_STATUS_OK && (machine->controller.index > 8u ||
-        machine->trace_count > CORE_MACHINE_TRACE_CAPACITY || machine->breakpoint_count > 16u))
+        machine->trace_count > CORE_MACHINE_TRACE_CAPACITY || machine->breakpoint_count > 16u ||
+        machine->interrupt_phase > 2u || machine->dma_phase > 3u ||
+        machine->dma_index > 256u || (machine->dma_active && machine->dma_index >= 256u) ||
+        machine->dmc_dma_phase > 4u ||
+        (machine->dmc_dma_active && machine->dmc_dma_phase >= 4u)))
         status = LIB_STATUS_INVALID_ARGUMENT;
     return status;
 }
@@ -496,6 +596,9 @@ lib_status core_snapshot_read(core_machine *machine,
     if ((status = snapshot_read_machine(&candidate, read, context)) != LIB_STATUS_OK ||
         (status = snapshot_read_cartridge(&cartridge, read, context)) != LIB_STATUS_OK)
         return status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
+    if (cartridge.chr_ram != machine->cartridge->chr_ram ||
+        cartridge.battery_backed != machine->cartridge->battery_backed)
+        return LIB_STATUS_INVALID_ARGUMENT;
     if (prg_ram_bytes != 0u) {
         staged_prg = lib_allocate(prg_ram_bytes);
         if (staged_prg == LIB_NULL) return LIB_STATUS_NO_MEMORY;

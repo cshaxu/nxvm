@@ -7,6 +7,7 @@
 #include "core/driver_interface.h"
 #include "lib/kvm-base/hotkey_interface.h"
 #include "lib/storage/medium_interface.h"
+#include "lib/types/file.h"
 
 typedef struct app_composition
 {
@@ -44,21 +45,39 @@ static lib_bool app_battery_path(const lib_u8 *rom_path, lib_u8 *out_path,
     return LIB_TRUE;
 }
 
+static lib_status app_composition_save_battery(app_composition *composition)
+{
+    lib_status status = LIB_STATUS_OK;
+
+    if (composition->battery_path[0] != '\0')
+        status = core_driver_save_battery_ram(composition->driver,
+            (const char *)composition->battery_path);
+    if (status != LIB_STATUS_OK)
+        lib_c_fprintf(lib_c_stderr, "Cannot save battery RAM: %s\n",
+            (const char *)composition->battery_path);
+    return status;
+}
+
 static lib_bool app_composition_set_media(void *opaque, const char *path)
 {
     app_composition *composition = opaque;
+    lib_u8 battery_path[APP_CONFIG_PATH_CAPACITY] = { 0 };
+    common_machine_state state;
 
     if (composition == LIB_NULL)
         return LIB_FALSE;
-    if (composition->battery_path[0] != '\0')
-        (void)core_driver_save_battery_ram(composition->driver,
-                                           (const char *)composition->battery_path);
+    state = common_machine_state_get(composition->machine);
+    if (state != COMMON_MACHINE_STOPPED && state != COMMON_MACHINE_PAUSED)
+        return LIB_FALSE;
+    if (path != LIB_NULL && !app_battery_path((const lib_u8 *)path, battery_path,
+            sizeof(battery_path))) return LIB_FALSE;
+    if (app_composition_save_battery(composition) != LIB_STATUS_OK)
+        return LIB_FALSE;
     if (!common_machine_set_removable_media(composition->machine, path,
                                             LIB_STORAGE_MEDIUM_READONLY))
         return LIB_FALSE;
-    composition->battery_path[0] = '\0';
-    if (path != LIB_NULL && app_battery_path((const lib_u8 *)path, composition->battery_path,
-                                             sizeof(composition->battery_path)))
+    lib_memory_copy(composition->battery_path, battery_path, sizeof(battery_path));
+    if (path != LIB_NULL)
         (void)core_driver_load_battery_ram(composition->driver,
                                            (const char *)composition->battery_path);
     return LIB_TRUE;
@@ -141,14 +160,8 @@ lib_i32 app_composition_run(const app_startup_config *config)
     if (common_machine_create(&composition->machine, &common_driver) != LIB_STATUS_OK)
         goto cleanup;
     if (config->rom_path[0] != '\0' &&
-        !common_machine_set_removable_media(composition->machine, (const char *)config->rom_path,
-                                            LIB_STORAGE_MEDIUM_READONLY))
+        !app_composition_set_media(composition, (const char *)config->rom_path))
         goto cleanup;
-    if (config->rom_path[0] != '\0' &&
-        app_battery_path(config->rom_path, composition->battery_path,
-                         sizeof(composition->battery_path)))
-        (void)core_driver_load_battery_ram(composition->driver,
-                                           (const char *)composition->battery_path);
 
     app_command_initialize(&composition->command, composition->machine,
                            config->rom_path[0] != '\0',
@@ -209,9 +222,8 @@ cleanup:
         if (status != LIB_STATUS_OK)
             return 1;
     }
-    if (composition->battery_path[0] != '\0')
-        (void)core_driver_save_battery_ram(composition->driver,
-                                           (const char *)composition->battery_path);
+    if (app_composition_save_battery(composition) != LIB_STATUS_OK)
+        result = 1;
     if (composition->ui != LIB_NULL && common_ui_destroy(composition->ui) != LIB_STATUS_OK)
         return 1;
     composition->ui = LIB_NULL;

@@ -59,9 +59,12 @@ int main(void)
     write_image(rom_a, 0x11u);
     write_image(rom_b, 0x22u);
     driver = load_driver(rom_a);
-    assert(core_driver_save_battery_ram(driver, save) == LIB_STATUS_INVALID_STATE);
-    assert(core_bus_write(driver->machine, 0x6000u, 0x5au) == LIB_STATUS_OK);
     assert(core_driver_save_battery_ram(driver, save) == LIB_STATUS_OK);
+    assert(core_bus_write(driver->machine, 0x6000u, 0x5au) == LIB_STATUS_OK);
+    assert(core_driver_save_battery_ram(driver, "missing-battery-directory/save.sav") != LIB_STATUS_OK);
+    assert(driver->machine->cartridge->prg_ram_dirty && ram_at(driver) == 0x5au);
+    assert(core_driver_save_battery_ram(driver, save) == LIB_STATUS_OK);
+    assert(!driver->machine->cartridge->prg_ram_dirty);
     assert(core_bus_write(driver->machine, 0x6000u, 0x3cu) == LIB_STATUS_OK);
     assert(remove(save) == 0);
     assert(core_driver_load_battery_ram(driver, save) != LIB_STATUS_OK);

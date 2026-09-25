@@ -217,3 +217,11 @@ Coordinator actual-diff review accepts a5dbd9339, 6ab8aae5e and 0ae25cdb9
 against the owner-approved G1-G7 scope. S11 is closed and its active packet is
 removed; admission details remain in P3's history. T43 remains open for the
 owner's next decision, with no successor admitted.
+
+## S12 Admission: MyNES Production Quality
+
+Owner admits the five-item production audit repair and forbids six-corpus edits.
+Atomic file replacement for battery and snapshot destinations is explicitly
+deferred to MyNES TODO. The [S12 evidence](../etc/evidence/m6-t43-s12-production-quality.md)
+maps all findings, same-class checks and verification. Only MyNES changes are
+admitted, including the current dual-width 0043 artifacts; T43 remains open.

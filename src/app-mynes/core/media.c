@@ -68,11 +68,12 @@ lib_status core_driver_save_battery_ram(core_driver *driver, const char *path)
     lib_u8 bytes[CORE_BATTERY_SAVE_HEADER_BYTES + 8192u] = { 0 };
     lib_size count;
 
-    if (driver == LIB_NULL || path == LIB_NULL || driver->machine == LIB_NULL)
+    if (driver == LIB_NULL || path == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (driver->machine == LIB_NULL) return LIB_STATUS_OK;
     count = core_cartridge_battery_ram_byte_count(driver->machine->cartridge);
     if (count == 0u || !driver->machine->cartridge->prg_ram_dirty)
-        return LIB_STATUS_INVALID_STATE;
+        return LIB_STATUS_OK;
     bytes[0] = 'M'; bytes[1] = 'N'; bytes[2] = 'S'; bytes[3] = 'R';
     bytes[4] = CORE_BATTERY_SAVE_VERSION;
     bytes[5] = driver->machine->cartridge->mapper;
@@ -91,6 +92,8 @@ lib_status core_driver_save_battery_ram(core_driver *driver, const char *path)
                 CORE_BATTERY_SAVE_HEADER_BYTES + count);
         if (writer != LIB_NULL && lib_storage_file_writer_close(writer) != LIB_STATUS_OK &&
             status == LIB_STATUS_OK) status = LIB_STATUS_IO_ERROR;
+        if (status == LIB_STATUS_OK)
+            driver->machine->cartridge->prg_ram_dirty = LIB_FALSE;
         return status;
     }
 }
