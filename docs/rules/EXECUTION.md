@@ -482,8 +482,20 @@ verifies, and copies two usable versioned artifacts to its
 `assets/<product>/` location: one `x64` and one `x86` Windows executable.
 Its four-digit revision is the numeric task identifier
 (`T258` is `0.5.0258`): it is an identity, not sequencing, rule. All its
-subtasks rebuild that revision; source commit plus SHA-256 identify the build.
+subtasks that change its executable inputs rebuild that revision; source commit
+plus SHA-256 identify the build. Test/documentation-only changes need no new EXE
+when the deployed artifact is already current; record that determination instead
+of manufacturing a binary diff.
 Identifiers are never reused or allocated out of queue order.
+
+Every Shared source/build import or change reviews all receiving Apps, not only
+the packet's host product. Before S closure, rebuild and verify every affected
+App's admitted runnable profiles on x64 and x86, deploy and commit/push changed
+EXEs in product-scoped P commits, and record their source revision and hashes.
+Unit-test builds do not substitute for product-target builds. An unchanged hash
+needs no binary commit. Receiving Apps retain their current artifact version
+unless a version change is explicitly admitted; unrelated user INI/configuration
+must remain unchanged. Missing or stale required artifacts block closure.
 
 Until the fixed-product build cutover, executable names remain
 `nxvm_0_5_NNNN_x64.exe` and `nxvm_0_5_NNNN_x86.exe`. After that admitted
