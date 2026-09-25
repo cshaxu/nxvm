@@ -171,3 +171,20 @@ verification; T43 is not closed.
 Owner accepts S9 after successful manual gameplay verification on 2026-09-25.
 Coordinator review accepts d29c26b42 and closes S9; T43 remains open. The owner
 separately authorizes S10 for shared test registration and byte-sized booleans.
+
+## S10 Registration And Byte Boolean Delivery
+
+Shared P1 75099c178 moves the unchanged registration helper to test/register.cmake,
+retains three independent suites, defines lib_bool as lib_u8 and fixes exact
+test callback/layout contracts. NXVM P2 c5b17f671 updates its two test substitutes
+and all eight 0535 receivers. MyNES P3 delivers both 0043 receivers and replaces
+a fixed sleep in its reset/debug test with the existing completion event.
+
+Complete MyNES suites pass 130/130 on each width; NXVM units pass 335/335 on
+each. Standalone Lib/Common/x86 pass 49/49, 18/18, 10/10; all six manifests and
+both documentation gates pass. Actual-diff review finds one production typedef
+change, no native/wire ABI alteration, no product-policy fork and no forwarding
+registration copy. Source/test delta is +41/-22, net +19, primarily test
+synchronization. [S10 evidence](../etc/evidence/m6-t43-s10-registration-byte-bool.md)
+records failed attempts, receiver hashes and the extra common transfer input.
+Delivery awaits owner manual acceptance. T43 remains open.

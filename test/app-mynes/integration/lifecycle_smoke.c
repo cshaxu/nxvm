@@ -8,6 +8,21 @@
 #define FIXTURE_PATH "mynes-lifecycle-fixture.nes"
 #define REPLACEMENT_PATH "mynes-lifecycle-replacement.nes"
 
+static void note_state(void *context, common_machine_state state, lib_u32 generation)
+{
+    (void)generation;
+    if (state == COMMON_MACHINE_RESET_COMPLETED)
+        assert(base_sync_event_signal(context) == LIB_STATUS_OK);
+}
+
+static void reset_and_wait(common_machine *machine, base_sync_event *completed)
+{
+    assert(base_sync_event_reset(completed) == LIB_STATUS_OK);
+    assert(common_machine_reset(machine));
+    assert(base_sync_event_wait(completed, 1000u) == BASE_SYNC_WAIT_SIGNALED);
+    assert(common_machine_state_get(machine) == COMMON_MACHINE_PAUSED);
+}
+
 static void make_fixture(lib_u8 *bytes)
 {
     static const lib_u8 program[] = {
@@ -49,7 +64,6 @@ static void observe(common_machine *machine, lib_u8 *response)
     static const lib_u8 request[8] = { 1u, 0u, 1u, 0u, 0u, 0u, 0u, 0u };
     lib_size response_size = 0u;
 
-    base_sync_sleep_milliseconds(5u);
     assert(common_machine_debug_acquire(machine, &lease) == LIB_STATUS_OK);
     assert(common_machine_debug_execute_with_lease(machine, &lease, request,
         sizeof(request), response, 64u, &response_size) == LIB_STATUS_OK);
@@ -66,6 +80,7 @@ int main(void)
     core_driver *driver = 0;
     common_machine *machine = 0;
     common_machine_driver common_driver;
+    base_sync_event *reset_completed = 0;
     lib_u32 repetition;
 
     make_fixture(fixture);
@@ -79,10 +94,11 @@ int main(void)
     assert(core_driver_create(&driver, &(core_driver_options) { 0 }) == LIB_STATUS_OK);
     assert(core_driver_make_driver(driver, &common_driver) == LIB_STATUS_OK);
     assert(common_machine_create(&machine, &common_driver) == LIB_STATUS_OK);
+    assert(base_sync_event_create(BASE_SYNC_EVENT_AUTO_RESET, &reset_completed) == LIB_STATUS_OK);
+    common_machine_set_state_sink(machine, note_state, reset_completed);
     assert(common_machine_set_removable_media(machine, FIXTURE_PATH,
         LIB_STORAGE_MEDIUM_READONLY));
-    assert(common_machine_reset(machine));
-    wait_for_state(machine, COMMON_MACHINE_PAUSED);
+    reset_and_wait(machine, reset_completed);
     observe(machine, response);
     assert(response[13] == 0u && response[18] == 0u && response[19] == 0x80u);
     for (repetition = 0u; repetition < 3u; ++repetition) {
@@ -107,8 +123,7 @@ int main(void)
     assert(core_driver_has_cartridge(driver));
     observe(machine, response);
     assert(response[18] == 0x10u && response[19] == 0x80u);
-    assert(common_machine_reset(machine));
-    wait_for_state(machine, COMMON_MACHINE_PAUSED);
+    reset_and_wait(machine, reset_completed);
     observe(machine, response);
     assert(response[13] == 0u);
     assert(common_machine_state_get(machine) == COMMON_MACHINE_PAUSED);
@@ -117,6 +132,7 @@ int main(void)
     assert(!core_driver_has_cartridge(driver));
     assert(common_machine_shutdown(machine) == LIB_STATUS_OK);
     assert(common_machine_destroy(machine) == LIB_STATUS_OK);
+    base_sync_event_destroy(reset_completed);
     assert(core_driver_destroy(driver) == LIB_STATUS_OK);
     return 0;
 }

@@ -1,5 +1,23 @@
 # M6 T43 Six-Component Types Boundary Audit
 
+## S10 Shared Registration And Byte Boolean
+
+Owner accepts S9 and admits this bounded Shared change, with NXVM and MyNES
+receiving deliveries. Move the one registration helper to `test/register.cmake`;
+all three standalone suites retain separate selection, targets and execution.
+Document this common transfer input instead of retaining a forwarding copy.
+Change the Types owner to `typedef lib_u8 lib_bool`, preserving canonical
+LIB_TRUE/LIB_FALSE behavior. Audit callbacks, native return normalization,
+copied layouts and persistence; native ABI, atomic and wire types stay unchanged.
+Update exact layout assertions and six manifests. No product policy change,
+new API or extra framework is authorized.
+
+Exit: actual-diff review; independent Lib/Common/x86 suites; complete configured
+MyNES and NXVM unit suites on x64/x86; rebuilt and verified current two MyNES
+and eight NXVM stripped EXEs; target-separated commits/push. Preserve INIs and
+owner title changes. Record findings, counts, hashes and transfer requirements,
+then await manual acceptance with T43 open.
+
 ## S9 Snapshot Resume Correction
 
 Owner admits this receiving-product defect after accepting S8. Reproduce the
