@@ -32,6 +32,12 @@ boolean layout changes, local flattening and shared test-registration cleanup.
 Review and deliver the owner's additional MyNES composition/native-test and
 NXVM.ini changes with target-separated commits. Preserve T43 open after S8.
 
+Owner resolves the final INI finding: all INI boolean values accept only 0/1;
+true/false are rejected, not aliases. Update the existing NXVM parser, four
+supplied configurations, repository-only regression and UX contract. MyNES has
+no boolean INI key and requires no parser change. Rebuild eight NXVM receivers,
+run complete dual-width units and retain the already verified MyNES artifacts.
+
 Prove that the Shared six-component corpus has one external-vocabulary owner:
 `src/lib/types/`. The audit covers `src/{lib,common,x86}` and
 `test/{lib,common,x86}` equally.

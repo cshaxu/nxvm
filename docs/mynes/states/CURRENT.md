@@ -4,8 +4,9 @@
 
 M6 T43 S8 is admitted for six-corpus quality audit and reviewed remediation.
 Owner-approved A-F repairs and receiving builds/tests are complete. Shared P1
-and NXVM P2 are pushed; MyNES delivery is being recorded. S8 remains open for
-the owner's INI decision and hands-on review; T43 is not closed.
+and NXVM P2 plus MyNES P3 are pushed. NXVM P4 5373a1a05 delivers the owner-required
+0/1-only INI parser, four supplied INIs, regression, UX contract and eight
+rebuilt EXEs. S8 awaits owner manual verification; T43 is not closed.
 
 | Field | Required record |
 | --- | --- |
@@ -20,7 +21,7 @@ the owner's INI decision and hands-on review; T43 is not closed.
 | Verification | Freeze tracked inventory; classify query hits by real reads/writes/callers; verify six manifests and existing static gates; report proof versus candidates. After approved fixes, full dual-width suites and affected receiving artifacts are required. |
 | Expected Markers | Concrete line references, semantic exceptions, proposed minimal owner-local repairs and separate discussion items; no count presented as exhaustive semantic proof. |
 | Asset Needs | Existing build trees and admitted BYOB product inputs; ten current optimized stripped EXEs rebuilt, no protected asset committed. |
-| Reporting Requirements | Report pushed repairs, exact verification, artifacts and the unvalidated owner INI spelling; do not claim a clean worktree or S closure while that decision is pending. |
+| Reporting Requirements | Report pushed repairs, exact verification and artifacts; include owner-approved 0/1-only INI correction and await owner manual verification. |
 | Stop Conditions | Stop on newly required behavior/ownership changes beyond approved findings or unapproved targets; report rather than hiding a failing gate. |
 | Exit Criteria | Audit phase: indexed finite inventory and findings report. S closure: subsequently approved repairs, verified source/tests/manifests, affected binaries, scoped pushed delivery and coordinator acceptance. |
 | Original Owner Request | Audit and repair boolean vocabulary, unused references, stale comments and duplicated/over-layered implementation; first report real findings and discuss individually. |
@@ -28,7 +29,7 @@ the owner's INI decision and hands-on review; T43 is not closed.
 
 | Task | Progress |
 | --- | --- |
-| T43 S8 | Shared P1 bfcbd31b2 and NXVM P2 14403bf51 pushed. Shared/MyNES 130/130 and NXVM unit 335/335 on both widths; standalone Lib/Common/X86 49/49, 18/18, 10/10. Ten EXEs rebuilt and checked. Owner MyNES edits verified. Default INI console_control=0 is rejected by the current true/false parser; preserve it pending owner approval of numeric aliases or restoring false. No S/T closure yet. |
+| T43 S8 | Shared P1 bfcbd31b2, NXVM P2 14403bf51, MyNES P3 239c0fcd1 and NXVM P4 5373a1a05 pushed. Shared/MyNES 130/130 and NXVM unit 335/335 on both widths; standalone Lib/Common/X86 49/49, 18/18, 10/10. Numeric-only INI correction verified with fresh NXVM units 335/335 per width and all eight receivers rebuilt. Actual-diff review passed; awaiting owner manual verification, no S/T closure. |
 | T43 S7 | Shared P1 `38ed0f26f`, NXVM P2 `6db4a9298`, MyNES P3 `6682a341c` accepted after actual-diff review. Shared/MyNES 130/130 and NXVM units 335/335 on both widths; ten affected EXEs rebuilt, checked and pushed. Six manifests/Types/docs gates pass. Native failure exclusions and async follow-up are explicit in TODO. Existing unrelated default INI edit remains untouched. |
 
 Proposal: [six-component Types boundary audit](../proposals/m6-t43-six-component-types-boundary-audit.md).

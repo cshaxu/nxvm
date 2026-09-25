@@ -207,9 +207,17 @@ trees; it is not a source or missing-asset defect.
 Owner MyNES edits preserve execution and fixture logic while updating native
 Window titles to explicit Running/Paused. Formatting-only changes are retained,
 not attributed to this Shared cleanup. The default NXVM.ini owner's numeric
-console_control=0 edit is not currently accepted by its true/false parser;
-approval for the narrow parser correction or restoring the spelling is pending.
-It must not be described as validated or silently overwritten.
+console_control=0 initially failed its true/false-only parser. The owner then
+required only 0/1 for every INI boolean, rejecting textual aliases. The existing
+NXVM parser and all four supplied NXVM INIs now follow that contract. MyNES has
+no boolean INI key; its rom/display configuration remains unchanged.
+
+The repository-only INI regression accepts 0 and 1, rejects ten other spellings
+and checks cleared output on rejection. Complete NXVM unit reruns pass x64
+335/335 (22.70 seconds) and x86 335/335 (24.00 seconds). Product source/test
+correction is +17/-3, net +14, across ini.c and nxvm_ini_smoke.c; the increase
+is the table-driven rejection regression, not a compatibility layer. Shared
+source/manifests and verified MyNES binaries remain unchanged by this correction.
 
 Shared changed source/test code, including the 26-line registration helper:
 +706/-776, net -70, across 90 files. Counted C/H/CMake changes under the six
@@ -229,3 +237,9 @@ identity and hashes belong to its receiving evidence, not a second task packet.
 
 Shared implementation is S8 P1 bfcbd31b2, committed and pushed. The six manifest
 roots are pinned by that commit; no sibling repository was modified.
+
+Numeric-only INI correction is delivered in NXVM S8 P4 5373a1a05, including all
+four INIs and eight receiving binaries. Coordinator actual-change review and
+both documentation gates pass. The current shared revision and verified MyNES
+artifacts need no additional rebuild for this product-only parser change.
+S8 delivery awaits owner hand-testing; neither S8 nor T43 is declared closed.

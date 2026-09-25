@@ -134,8 +134,14 @@ optimized stripped artifacts are rebuilt and hashed. The owner's MyNES title
 and formatting edits are preserved and tested. See the
 [repair and receiving ledger](../etc/evidence/m6-t43-s8-six-corpus-quality-audit.md).
 
-The owner's default INI uses console_control=0, but NXVM currently accepts only
-true/false. This is a real failed validation, not a Shared regression. The owner
-was asked whether to accept numeric aliases in the existing parser or restore
-false. Until that decision, the INI is untouched/uncommitted and S8 remains open;
-no clean-worktree, owner hand-test, S acceptance or T closure is claimed.
+The owner's default INI initially failed NXVM's true/false-only parser. The owner
+resolved this explicitly: all INI booleans accept only 0/1, without aliases.
+The existing parser, four supplied INIs and UX contract are corrected together;
+the table-driven regression rejects textual and other numeric values. Complete
+NXVM units rerun 335/335 on both widths (22.70/24.00 seconds), with eight
+receiving EXEs rebuilt. MyNES has no boolean INI key and its verified artifacts
+are unchanged. NXVM P4 5373a1a05 is pushed, following MyNES P3 239c0fcd1.
+Coordinator actual-diff review confirms one existing parser, no textual aliases,
+unchanged media paths, all four INIs and eight verified EXEs in the same NXVM
+commit. Both documentation gates pass. S8 awaits owner manual verification;
+T43 remains open. Prevention is the exact accepted/rejected spelling matrix.
