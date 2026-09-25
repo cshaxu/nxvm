@@ -1,5 +1,33 @@
 # M6 T43 Six-Component Types Boundary Audit
 
+## T43 Closure
+
+Owner explicitly accepts and closes T43 after S13 and snapshot-only P3
+9b2b10ce2. Coordinator reconciles the complete S1-S13 history, repaired Types
+ledger, Shared imports/audio/synchronization/boolean work, receiving artifacts,
+MyNES snapshots and stopped startup against the actual accepted commits.
+The proposal is [archived](M6-T43-six-component-types-boundary-audit-proposal.md).
+
+Current executable-source proof remains S13: complete configured suites pass
+132/132 on both widths, including all registered corpus/manifest gates and
+native presenters. No executable inputs changed after that run. For T closure,
+the existing owner-ROM probe is also run against all six admitted roles:
+Super Mario Bros., Dr. Mario, Jackal, Super Mario Bros. 2, Super Mario Bros. 3,
+and TMNT III. Both x64/x86 and graphics/text run 1,000 slices each (24 cases);
+each publishes 26-28 frames, has the expected mapper and zero traps, exits 0,
+and drains queued audio on teardown. Environment inputs use the six existing
+MYNES_OWNER_*_ROM variables, MYNES_OWNER_TEXT_FRAMES=1 and MYNES_OWNER_SLICES=1000.
+This is the retained bounded guest checkpoint, not complete-game, physical
+audio or frame-perfect qualification; the unpaced probe reports audio drops.
+No external input is copied or committed by this closure.
+
+The remaining atomic-save, asynchronous wake-failure, executable-path,
+snapshot EOF and native-modal-test issues retain their explicit receivers in
+[TODO](../states/TODO.md); closure does not claim their repair. Shared edits
+still require separate owner approval. Documentation governance, actual-change
+review and whitespace checks pass. This closure changes documents only;
+0043 binaries remain current, T43 closes, and no successor is admitted.
+
 ## S1 Admission
 
 Owner admitted S1 on 2026-09-24. It freezes and classifies the entire six-root

@@ -2,18 +2,13 @@
 
 ## Current Work
 
-M6 T43 S13 is complete after coordinator actual-diff review. T43 remains open;
-no subtask is active. Owner startup/gameplay verification is pending.
+M6 T43 is closed by owner acceptance. No MyNES task or subtask is active.
 
 | Task | Progress |
 | --- | --- |
-| T43 S13 | P1 dd2de1936 accepted: initial STOPPED with/without ROM, explicit start and native Console/Window verified; x64/x86 132/132; current 0043 pair refreshed. |
-| T43 S12 | P1 d92bccd7d accepted after actual-diff review: snapshot v3, candidate checks, explicit fields, checked saves and bool cleanup. Full x64/x86 suites 132/132 and current pair delivered; atomic replacement remains owner-deferred TODO. |
-| T43 S11 | G1-G7 repaired: Shared a5dbd9339, NXVM 6ab8aae5e, MyNES 0ae25cdb9. Both documentation gates and the 28-file live link/control-character sweep pass. Documentation only; existing EXEs remain current. |
-| T43 S10 | Accepted and closed: Shared P1 75099c178, NXVM P2 c5b17f671 and MyNES P3 057d8c9aa. Dual-width MyNES 130/130 and NXVM 335/335; standalone 49/49, 18/18, 10/10. Ten current artifacts delivered; owner accepts S10. |
-| T43 S9 | Accepted: d29c26b42 fixes snapshot resume at the MyNES driver. Full configured suites pass 130/130 on both widths; current 0043 pair rebuilt and manually accepted. |
+| T43 | Closed on owner instruction: S1-S13 accepted batches reconciled in history; final x64/x86 suites 132/132, six-ROM graphics/text matrix 24/24; remaining deferred contracts have explicit TODO receivers. |
 
-Proposal: [six-component Types boundary audit](../proposals/m6-t43-six-component-types-boundary-audit.md).
+Archived proposal: [six-component Types boundary audit](../history/M6-T43-six-component-types-boundary-audit-proposal.md).
 History: [T43 accepted work](../history/M6-T43-six-component-types-boundary-audit.md).
 Evidence: [S9 snapshot resume](../etc/evidence/m6-t43-s9-snapshot-resume.md).
 Current audit: [S13 stopped startup](../etc/evidence/m6-t43-s13-stopped-startup.md).
@@ -22,8 +17,10 @@ Artifact evidence: [S10 registration and byte boolean](../etc/evidence/m6-t43-s1
 ## Current Technical Baseline
 
 - MyNES: optimized stripped 0043 x64/x86 artifacts in `assets/mynes/`,
-  rebuilt for S13 P1 dd2de1936 and recorded in S13 evidence; awaiting owner startup/gameplay verification.
+  rebuilt for S13 P1 dd2de1936 and recorded in S13 evidence; accepted by owner.
+  Owner-provided v3 snapshot is committed in S13 P3 9b2b10ce2.
 - Shared: S10 75099c178; transfer the six roots plus test/register.cmake.
   Six manifests and Types gates pass. All receiving Apps were rebuilt together.
 - Snapshot `MNS1` guest state remains Core-owned; transient driver stop/frame
-  publication state is reset only after successful restore. T43 stays open.
+  publication state is reset only after successful restore. Deferred work remains
+  explicitly listed in [TODO](TODO.md), not implicitly claimed complete.
