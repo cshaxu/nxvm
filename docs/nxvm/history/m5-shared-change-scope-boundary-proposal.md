@@ -1,5 +1,10 @@
 # M5 Shared Change-Scope Boundary
 
+> Retired superseded proposal, not a candidate or rule. The accepted
+> [Execution Policy](../../rules/EXECUTION.md#change-discipline) permits one
+> hosting T to deliver separate NXVM, MyNES and Shared commits, with exactly
+> one target per P. The text below preserves the rejected earlier design.
+
 ## Objective
 
 Make product isolation an execution invariant: an NXVM or MyNES task changes
@@ -23,4 +28,3 @@ A discovered cross-boundary requirement becomes a separately admitted task.
 
 The shared execution rule states this boundary, commit scope names match it,
 and both product documentation gates still pass.
-

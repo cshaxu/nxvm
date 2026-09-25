@@ -25,7 +25,7 @@ release behavior remains the baseline until an implemented, verified cutover.
 
 ## Modules, Ownership, And Assembly
 
-- `app` owns INI syntax, runtime-media paths, product CLI and the one composition root.
+- `app-nxvm/product` owns INI syntax, runtime-media paths, product CLI and the one composition root.
   It assembles Common Session/UI/Machine and the NXVM driver.
 - `app-nxvm/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
@@ -72,9 +72,9 @@ Provenance belongs in evidence rather than repeated runtime strings.
 Construction prepares assets and a plan, validates, publishes one live machine,
 and rolls back through one resource owner on failure. Reset reuses the frozen
 plan and Core reset path. The driver retains only the selected board's resources,
-not simultaneous XT, PC/AT and Compaq ROM/state records. Moving directories
-alone is insufficient: board constructors currently in Machine move to Profile;
-Machine retains execution, host-resource lifetime and Common adaptation only.
+not simultaneous XT, PC/AT and Compaq ROM/state records. Profile owns board
+construction; Machine retains execution, host-resource lifetime and Common
+adaptation only.
 Injected asset/media services use neutral contracts, avoiding a Profile-to-
 Machine dependency cycle. Adding a board needs a composition and build entry,
 not another Common queue, App parser or generic-device machine-name branch.

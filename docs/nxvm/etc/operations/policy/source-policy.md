@@ -4,7 +4,12 @@
 > [rules/ARCHITECTURE.md](../../../../rules/ARCHITECTURE.md). It cannot create a new
 > product dependency, distribution commitment, or architecture authority.
 
-## NXVM Foundation
+## Historical NXVM Foundation
+
+The following records the pre-consolidation ntvdm64 import context, not a second
+current repository or product line. Current NXVM lives in `src/app-nxvm` under
+the root MIT license; the VDM direction is retired. The original authorization
+and per-unit provenance obligations below remain preserved.
 
 Before M1 imported NXVM source, ntvdm64 contained only project-owned material
 under the root MIT License. Referencing or pinning an external NXVM checkout
@@ -56,7 +61,7 @@ independently verifiable.
 
 Historical third-party NTVDM implementations may inform research leads,
 component inventory, startup hypotheses, and test design. They are not copied,
-transliterated, or treated as the ntvdm64 specification. They do not authorize
+transliterated, or treated as the current NXVM specification. They do not authorize
 a formal Microsoft backend, ABI, source import, or runtime dependency. A
 trusted external report may be used as a requirements reference even while its
 separate research proceeds; its proprietary details must be reduced to neutral
@@ -80,7 +85,7 @@ an explicit error, not permission for an embedded BIOS fallback. This local
 use does not grant redistribution rights.
 
 The external `nxvm-assets/profiles-nxvm` archive owns vendor payloads and manifests
-with slot, size, SHA-256, read-only mapping and provenance. At the approved
+with slot, size, SHA-256, read-only mapping and provenance. Following the completed
 cutover, CMake receives one local `NXVM_PROFILE_ASSETS_ROOT` for the selected
 machine build. It validates the selected Profile's manifest and generates an
 ignored local asset-root binding; it never copies firmware into source control
@@ -91,7 +96,7 @@ binary payloads. Repository templates use portable references, never tracked
 machine-local absolute paths. The loader supplies immutable bytes through the
 single Core ROM path.
 
-For XT, AT, DeskPro, default and PC110, `core/profiles` owns board C,
+For XT, AT, DeskPro, default and PC110, `src/app-nxvm/profiles` owns board C,
 ROM slot/mapping declarations and authorized ROM source if separately admitted.
 Protected `.rom` and `.cmos` payloads stay in the corresponding external profile
 archive. A CMOS seed initializes documented writable configuration, not a
@@ -111,5 +116,5 @@ names its primary hardware/documentation contract and project-owned probes.
 For example, controller queues/register state and the separation of video core
 from host presentation are legitimate design lessons. Its global device
 management, direct GUI integration, C++ plugin architecture, source text, and
-build structure are not ntvdm64 architecture and must not be copied,
+build structure are not current NXVM architecture and must not be copied,
 transliterated, or introduced as a dependency.

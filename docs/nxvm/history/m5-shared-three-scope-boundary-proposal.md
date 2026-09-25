@@ -1,5 +1,9 @@
 # M5 Td S173: Shared Three-Scope Boundary
 
+> Historical proposal, not a candidate or current rule. The three target names
+> remain valid; task-level isolation below was superseded by the accepted
+> [per-P target rule](../../rules/EXECUTION.md#change-discipline).
+
 ## Objective
 
 Define the repository's only task scopes as `NXVM`, `MyNES`, and `Shared`.

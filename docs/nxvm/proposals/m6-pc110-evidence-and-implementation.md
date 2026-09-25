@@ -30,7 +30,7 @@ does not prove complete original chipset documentation or a bootable emulator.
 2. Admit the required 486 work through the CPU proposal. For each missing
    chipset/device admit a separate bounded implementation task, including
    coupled downstream repairs; no incremental BIOS-compatibility patches.
-3. Compose selected hardware under `core/profiles/pc110`, using one Core plan,
+3. Compose selected hardware under `src/app-nxvm/profiles/pc110`, using one Core plan,
    timeline, media path and display owner. Share a chip only where semantics
    match; do not inherit another machine's board identity or copy its runner.
 4. Qualify the PC110 product through real firmware/media and both host

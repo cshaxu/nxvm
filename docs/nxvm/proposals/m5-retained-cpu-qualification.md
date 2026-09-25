@@ -11,7 +11,7 @@ architecture remains independent of build-fixed board profiles.
 The completed fixed-product cutover has made XT, AT, DeskPro and default PC/AT four build-selected
 products. Each uses external BYOB firmware, one adjacent NXVM.ini runtime-media
 route and sole `assets/nxvm/<profile>/` deployment. This qualification keeps
-CPU semantics in `core/devices`; it neither restores runtime CPU/profile/YAML
+CPU semantics in `src/app-nxvm/devices`; it neither restores runtime CPU/profile/YAML
 selection nor treats a successful product boot as CPU completeness proof.
 
 ## Scope And Batches

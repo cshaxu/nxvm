@@ -1,5 +1,11 @@
 # M6 T41 S3 — Lib Types Facade-Retirement Design
 
+> Completed historical design, not a candidate or current Types contract.
+> T41 S8 retired the facade (`bee033f59`); T43 S10 later changed `lib_bool`
+> to `lib_u8` (`75099c178`). Old int/lib_i32 and migration decisions below are
+> preserved as historical evidence. [Current](../states/CURRENT.md) owns the
+> live baseline; source Types owns the current representation.
+
 ## Decision
 
 Retire NXVM's root `type.h`, `type.c`, and `type-facade` target by moving only
