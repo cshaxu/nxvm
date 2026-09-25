@@ -86,3 +86,9 @@ changed externally from `console_control=false` to `0`; this unrelated edit is
 preserved and excluded from commits, so a completely clean worktree is not
 claimed. Owned temporary logs are removed after results are recorded; reusable
 build trees remain for open T43. S5's MyNES banner typo is corrected to 0.0.0043.
+
+Coordinator actual-change review accepts P1/P2 and MyNES P3 `0c7a58792`:
+rules distinguish necessary artifact refresh from test-only churn, all receiving
+profiles are accounted for, hashes/PE results and final complete suites are
+recorded, target commits are separate, and the native-test risk has a named
+receiver. S6 is closed; T43 remains open with no active implementation packet.
