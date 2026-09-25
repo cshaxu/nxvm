@@ -4,7 +4,8 @@ This package selects C11 without extensions in standalone and embedded builds.
 GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 
 Keep the six directories `src/lib`, `src/common`, `src/x86`, `test/lib`,
-`test/common`, `test/x86` together. Each test package has its own CMake entry
+`test/common`, `test/x86` and shared `test/register.cmake` together.
+Each test package has its own CMake entry
 and manifest; no importing-product sources, configuration, firmware or images
 are required. Lib and Common can instead use their four-directory neutral set.
 

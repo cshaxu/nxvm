@@ -564,7 +564,7 @@ int main(void)
     lib_test_assert(common_machine_create(&output, LIB_NULL) == LIB_STATUS_INVALID_ARGUMENT && output == LIB_NULL);
     output = (common_machine *)&invalid_driver;
     lib_test_assert(common_machine_create(&output, &invalid_driver) == LIB_STATUS_INVALID_ARGUMENT && output == LIB_NULL);
-    lib_test_assert(sizeof(common_machine_frame) == 985112);
+    lib_test_assert(sizeof(common_machine_frame) == 985108);
     /* Resource-only changes are publications, not just character changes. */
     static common_machine_frame before, after;
     before.window.valid = LIB_TRUE;

@@ -16,7 +16,7 @@ if(NOT TARGET x86-debug)
 endif()
 
 set(SHARED_X86_TEST_TARGETS)
-include("${CMAKE_CURRENT_LIST_DIR}/../lib/register.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
 shared_register_test(x86 debug_output x86-debug)
 shared_register_test(x86 debug_linear x86-debug)

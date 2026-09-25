@@ -19,7 +19,7 @@ if(NOT TARGET common-session)
 endif()
 
 set(SHARED_COMMON_TEST_TARGETS)
-include("${CMAKE_CURRENT_LIST_DIR}/../lib/register.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
 shared_register_test(common sync common-session)
 shared_register_test(common session_queue_failure common-session)

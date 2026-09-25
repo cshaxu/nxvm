@@ -9,12 +9,12 @@ typedef struct kvm_capture {
     lib_u32 count;
 } kvm_capture;
 
-static lib_i32 kvm_capture_event(void *opaque, const kvm_input_event *event)
+static lib_bool kvm_capture_event(void *opaque, const kvm_input_event *event)
 {
     kvm_capture *capture = (kvm_capture *)opaque;
-    if (capture == LIB_NULL || event == LIB_NULL || capture->count == 128u) return 0;
+    if (capture == LIB_NULL || event == LIB_NULL || capture->count == 128u) return LIB_FALSE;
     capture->events[capture->count++] = *event;
-    return 1;
+    return LIB_TRUE;
 }
 
 int main(void)

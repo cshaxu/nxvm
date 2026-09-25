@@ -4,7 +4,8 @@ This package selects C11 without extensions in standalone and embedded builds.
 GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 
 Unit tests and fixtures live in `test/lib`, not in the production corpus.
-Copied predicate fields use `lib_bool` and `LIB_TRUE`/`LIB_FALSE`; numeric
+Copied predicate fields use byte-sized `lib_bool` (`lib_u8`) and
+`LIB_TRUE`/`LIB_FALSE`; numeric
 indices, wire bytes, native results and atomic storage keep their own types.
 Copied frames/events are in-process values, not a serialized or stable binary
 ABI. Importers must rebuild all receivers together when their layouts change.

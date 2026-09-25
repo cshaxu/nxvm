@@ -5,7 +5,8 @@ GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 
 This neutral suite needs only sibling `src/common` and `src/lib` corpora.
 The four-directory set `src/lib`, `src/common`, `test/lib`, `test/common`
-builds and tests without any x86 or importing-product files.
+plus `test/register.cmake` builds and tests without any x86 or importing-product
+files. The shared helper only registers tests; each package selects its own suite.
 
 ```text
 cmake -S test/common -B build/common-tests -DCMAKE_BUILD_TYPE=Release

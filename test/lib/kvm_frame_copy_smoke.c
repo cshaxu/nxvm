@@ -104,10 +104,10 @@ static void check_copy(void)
 int main(void)
 {
     lib_u32 generation, old;
-    lib_test_assert(sizeof(kvm_text_frame) == 16092);
-    lib_test_assert(sizeof(kvm_window_text_frame) == 24284);
-    lib_test_assert(sizeof(kvm_console_text_frame) == 17116);
-    lib_test_assert(sizeof(kvm_window_frame) == 984084);
+    lib_test_assert(sizeof(kvm_text_frame) == 16084);
+    lib_test_assert(sizeof(kvm_window_text_frame) == 24276);
+    lib_test_assert(sizeof(kvm_console_text_frame) == 17108);
+    lib_test_assert(sizeof(kvm_window_frame) == 984080);
     check_validation();
     lib_memory_set(&source, 0x3c, sizeof(source));
     source.valid = LIB_TRUE;

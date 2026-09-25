@@ -3,6 +3,9 @@
 
 _Static_assert(sizeof(lib_i8) == 1u, "lib_i8 must remain one byte");
 _Static_assert(sizeof(lib_u8) == 1u, "lib_u8 must remain one byte");
+_Static_assert(_Generic((lib_bool)0, lib_u8: 1, default: 0),
+    "lib_bool must use the unsigned byte contract");
+_Static_assert(LIB_FALSE == 0 && LIB_TRUE == 1, "canonical boolean values");
 _Static_assert(sizeof(lib_uptr) == sizeof(void *),
     "lib_uptr must preserve every object-pointer bit");
 #include "lib/base/clock_interface.h"

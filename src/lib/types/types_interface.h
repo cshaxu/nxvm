@@ -18,7 +18,7 @@ typedef int64_t lib_i64;
 typedef size_t lib_size;
 typedef intptr_t lib_iptr;
 typedef uintptr_t lib_uptr;
-typedef lib_i32 lib_bool;
+typedef lib_u8 lib_bool;
 typedef lib_i32 lib_status;
 
 

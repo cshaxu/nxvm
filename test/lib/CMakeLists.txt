@@ -16,7 +16,7 @@ endif()
 
 # Tests consume only shared sources; no importing product resources or targets.
 set(SHARED_LIB_TEST_TARGETS)
-include("${CMAKE_CURRENT_LIST_DIR}/register.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
 shared_register_test(lib lib_console console)
 shared_register_test(lib types_contract base)
