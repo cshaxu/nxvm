@@ -30,3 +30,15 @@ provides real deployed-process evidence missing from the old monitor-only test.
 Native APIs are confined to this Windows diagnostic executable, not product ABI.
 Raw logs remain ignored for the immediately following diagnostic batch.
 No product rebuild is required for this test/documentation-only S.
+
+## S1 Coordinator Acceptance
+
+Reviewed the actual six-file `5e6ed82cd` diff against the original request and
+S1 packet: scope is baseline diagnosis, all eight are attempted, unresolved
+members remain explicit, and neither a green unit suite nor a successful cold
+boot is presented as T completion. CMake adds only the diagnostic executable;
+it cannot become an automatic boot pass. The native observer's owned process
+cleanup and stale Window-handle reset are checked. Documentation links, packet
+shape, identifier history and unchanged Queue agree. S1 is accepted and closed;
+T538 remains open for the two named residual classes. No Shared authority was
+consumed and no product behavior was modified.
