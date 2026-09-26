@@ -76,3 +76,14 @@ Original request, latest owner-directed split, packet, actual diff and retained
 coverage agree. S2 is accepted and closed after its successful push. S3 is the
 authorized next receiver for Console capacity and the already-preserved Shared
 candidate; T538 remains open and the complete repeat matrix is not waived.
+
+## S3 Executor Delivery
+
+Shared 6a3f3cb25 removes viewport-size requirements from the sole raw text
+storage path. Full backing storage is preserved without changing fonts or
+discarding offscreen rows; actual allocation/output failures still propagate.
+Three code/test files total +34/-68 lines. ABI and product source are unchanged.
+The [S3 evidence](../etc/evidence/t538-s3-console-buffer.md) records the sweep,
+335/335 NXVM units per width, 20/20 integration, 132/132 MyNES tests per width,
+six manifests, ten rebuilt receivers and unchanged owner configurations.
+This is not completion of the T-level repeated real-process boot matrix.
