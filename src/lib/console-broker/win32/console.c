@@ -60,48 +60,24 @@ static lib_bool console_broker_ensure_text_surface(console_broker_backend *backe
     lib_win32_handle output = backend->output;
     lib_win32_console_screen_buffer_info info;
     lib_win32_coord required;
-    lib_win32_small_rect viewport;
-    lib_win32_short width, height;
 
     if (output == LIB_NULL || output == LIB_WIN32_INVALID_HANDLE_VALUE ||
         !lib_win32_get_console_screen_buffer_info(output, &info)) return LIB_FALSE;
-    width = info.srWindow.Right - info.srWindow.Left + 1;
-    height = info.srWindow.Bottom - info.srWindow.Top + 1;
-    if (width < (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS)
-        width = (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS;
-    if (height < (lib_win32_short)rows)
-        height = (lib_win32_short)rows;
-    required.X = info.dwSize.X < width ? width : info.dwSize.X;
-    required.Y = info.dwSize.Y < height ? height : info.dwSize.Y;
-    /* Move the existing viewport before expanding capacity. Preserve both
-     * original dimensions: some hosts resize the buffer during this move. */
-    if (info.srWindow.Left != 0 || info.srWindow.Top != 0) {
-        viewport.Left = viewport.Top = 0;
-        viewport.Right = info.srWindow.Right - info.srWindow.Left;
-        viewport.Bottom = info.srWindow.Bottom - info.srWindow.Top;
-        if (!lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport)) return LIB_FALSE;
-        if (!lib_win32_get_console_screen_buffer_info(output, &info)) return LIB_FALSE;
-    }
+    required.X = info.dwSize.X < (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS ?
+        (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS : info.dwSize.X;
+    required.Y = info.dwSize.Y < (lib_win32_short)rows ?
+        (lib_win32_short)rows : info.dwSize.Y;
+    /* Frame storage is independent of the host's visible window. Preserve its
+     * font and scroll position, including when the whole frame cannot fit. */
     if (required.X != info.dwSize.X || required.Y != info.dwSize.Y) {
         /* Restoring dimensions cannot restore cells lost by a native shrink. */
         backend->previous_columns = backend->previous_rows = 0u;
         if (!lib_win32_set_console_screen_buffer_size(output, required)) return LIB_FALSE;
     }
-    viewport.Left = viewport.Top = 0;
-    viewport.Right = width - 1;
-    viewport.Bottom = height - 1;
-    if (info.srWindow.Left != 0 || info.srWindow.Top != 0 ||
-        info.srWindow.Right != viewport.Right || info.srWindow.Bottom != viewport.Bottom) {
-        if (!lib_win32_set_console_window_info(output, LIB_WIN32_TRUE, &viewport)) return LIB_FALSE;
-    }
-    /* Success means visible cells, not only backing storage. An unsupported
-     * host size must fail instead of reporting a silently clipped surface. */
-    *write_rows = height < (lib_win32_short)LIB_CONSOLE_TEXT_ROWS ?
-        height : (lib_win32_short)LIB_CONSOLE_TEXT_ROWS;
+    *write_rows = required.Y < (lib_win32_short)LIB_CONSOLE_TEXT_ROWS ?
+        required.Y : (lib_win32_short)LIB_CONSOLE_TEXT_ROWS;
     return lib_win32_get_console_screen_buffer_info(output, &info) &&
-        info.dwSize.X >= required.X && info.dwSize.Y >= required.Y &&
-        info.srWindow.Left == 0 && info.srWindow.Top == 0 &&
-        info.srWindow.Right >= viewport.Right && info.srWindow.Bottom >= viewport.Bottom;
+        info.dwSize.X >= required.X && info.dwSize.Y >= required.Y;
 }
 
 static lib_u8 console_broker_modifiers(lib_win32_dword state)
@@ -620,8 +596,7 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
         console_broker_backend_unlock_output(backend);
         return LIB_STATUS_IO_ERROR;
     }
-    /* Clear the visible bounded surface, including rows left by a taller
-     * frame. Capacity alone must not enlarge a normal 25-row viewport. */
+    /* Clear old lower rows within frame capacity, even when they are offscreen. */
     region.Bottom = size.Y - 1;
     if (backend->previous_columns != frame->columns ||
         backend->previous_rows != frame->rows ||
