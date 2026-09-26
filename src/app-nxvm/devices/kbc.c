@@ -35,6 +35,26 @@
 static void core_machine_kbc_drain_keyboard_serial(t_kbc *controller);
 static void core_machine_kbc_refresh_current_irq(t_kbc *controller);
 
+/* Ordinary input and automatic repeats share the keyboard-side backlog.
+ * Only drain_keyboard_serial may promote a scan byte into the output buffer. */
+static lib_status core_machine_kbc_queue_native_byte(t_kbc *controller,
+    lib_u8 native_byte)
+{
+    lib_u8 tail;
+
+    if (controller->data.keyboard_serial_count >=
+        CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY) return LIB_STATUS_NO_MEMORY;
+    tail = (lib_u8)((controller->data.keyboard_serial_head +
+        controller->data.keyboard_serial_count) % CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
+    controller->data.keyboard_serial[tail] = native_byte;
+    ++controller->data.keyboard_serial_count;
+    if (controller->data.serial_delivery_ticks != 0u &&
+        controller->data.serial_delivery_remaining_ticks == 0u) {
+        controller->data.serial_delivery_remaining_ticks = controller->data.serial_delivery_ticks;
+    }
+    return LIB_STATUS_OK;
+}
+
 static void core_machine_kbc_deassert_irq1(t_kbc *controller)
 {
     if (controller == LIB_NULL || !controller->data.irq1_asserted) return;
@@ -415,9 +435,8 @@ static lib_u8 core_machine_kbc_dequeue(t_kbc *controller)
         core_machine_kbc_deassert_irq12(controller);
     }
     core_machine_kbc_refresh_current_irq(controller);
-    /* Command responses are immediately eligible for the now-empty output
-     * buffer.  Keyboard reset BAT is separately released by the next Core
-     * time callback, after firmware has consumed ACK and armed IRQ1. */
+    /* Consuming ACK makes its pending BAT eligible for the empty output
+     * buffer. PIC masking/delivery owns when the resulting IRQ is serviced. */
     core_machine_kbc_advance(controller, 0u);
     core_machine_kbc_drain_keyboard_serial(controller);
     return value;
@@ -1002,17 +1021,18 @@ void core_machine_kbc_advance(t_kbc *controller, lib_u64 elapsed_ticks)
     elapsed_ticks -= controller->data.typematic_remaining_ticks;
     controller->data.typematic_remaining_ticks =
         controller->data.typematic_repeat_ticks;
-    (void)core_machine_kbc_publish_native_byte(controller,
+    (void)core_machine_kbc_queue_native_byte(controller,
         controller->data.typematic_scan_code);
     while (controller->data.typematic_repeat_ticks != 0u &&
         elapsed_ticks >= controller->data.typematic_repeat_ticks) {
         elapsed_ticks -= controller->data.typematic_repeat_ticks;
-        (void)core_machine_kbc_publish_native_byte(controller,
+        (void)core_machine_kbc_queue_native_byte(controller,
             controller->data.typematic_scan_code);
     }
     if (controller->data.typematic_repeat_ticks != 0u) {
         controller->data.typematic_remaining_ticks -= elapsed_ticks;
     }
+    core_machine_kbc_drain_keyboard_serial(controller);
 }
 
 lib_status core_machine_kbc_ticks_until_event(const t_kbc *controller,
@@ -1119,7 +1139,8 @@ static lib_status core_machine_kbc_admit_native_byte(t_kbc *controller,
         if (controller->data.set2_typematic_break_pending && known &&
             native_byte == controller->data.typematic_scan_code) {
             controller->data.typematic_active = LIB_FALSE;
-        } else if (native_byte != 0xe0u && native_byte != 0xe1u &&
+        } else if (!controller->data.set2_typematic_break_pending &&
+            native_byte != 0xe0u && native_byte != 0xe1u &&
             native_byte != 0xf0u && known &&
             controller->data.typematic_initial_ticks != 0u &&
             controller->data.typematic_repeat_ticks != 0u &&
@@ -1140,7 +1161,6 @@ static lib_status core_machine_kbc_admit_native_byte(t_kbc *controller,
 lib_status core_machine_kbc_submit_native_byte(t_kbc *controller,
     lib_u8 native_byte)
 {
-    lib_u8 tail;
     lib_status status;
 
     if (controller == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -1148,16 +1168,8 @@ lib_status core_machine_kbc_submit_native_byte(t_kbc *controller,
         CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY) return LIB_STATUS_NO_MEMORY;
     status = core_machine_kbc_admit_native_byte(controller, native_byte);
     if (status != LIB_STATUS_OK) return status;
-    tail = (lib_u8)((controller->data.keyboard_serial_head +
-        controller->data.keyboard_serial_count) %
-        CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
-    controller->data.keyboard_serial[tail] = native_byte;
-    ++controller->data.keyboard_serial_count;
-    if (controller->data.serial_delivery_ticks != 0u &&
-        controller->data.serial_delivery_remaining_ticks == 0u) {
-        controller->data.serial_delivery_remaining_ticks =
-            controller->data.serial_delivery_ticks;
-    }
+    status = core_machine_kbc_queue_native_byte(controller, native_byte);
+    if (status != LIB_STATUS_OK) return status;
     core_machine_kbc_drain_keyboard_serial(controller);
     return LIB_STATUS_OK;
 }
@@ -1177,19 +1189,9 @@ lib_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
     if (count > CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY -
         controller->data.keyboard_serial_count) return LIB_STATUS_NO_MEMORY;
     for (index = 0u; index < count; ++index) {
-        lib_u8 tail;
         if (core_machine_kbc_admit_native_byte(controller, native_bytes[index]) !=
             LIB_STATUS_OK) return LIB_STATUS_INVALID_STATE;
-        tail = (lib_u8)((controller->data.keyboard_serial_head +
-            controller->data.keyboard_serial_count) %
-            CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
-        controller->data.keyboard_serial[tail] = native_bytes[index];
-        ++controller->data.keyboard_serial_count;
-    }
-    if (controller->data.serial_delivery_ticks != 0u &&
-        controller->data.serial_delivery_remaining_ticks == 0u) {
-        controller->data.serial_delivery_remaining_ticks =
-            controller->data.serial_delivery_ticks;
+        (void)core_machine_kbc_queue_native_byte(controller, native_bytes[index]);
     }
     core_machine_kbc_drain_keyboard_serial(controller);
     return LIB_STATUS_OK;

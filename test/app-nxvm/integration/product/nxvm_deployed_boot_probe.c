@@ -26,7 +26,7 @@ static BOOL CALLBACK boot_find_window(HWND window, LPARAM opaque)
     return TRUE;
 }
 
-static lib_bool boot_capture_window(HWND window, const char *path)
+static lib_bool boot_capture_window(HWND window, const char *path, lib_bool print_client)
 {
     RECT size;
     BITMAPINFO info = {0};
@@ -51,7 +51,9 @@ static lib_bool boot_capture_window(HWND window, const char *path)
     bitmap = CreateDIBSection(source, &info, DIB_RGB_COLORS, &pixels, NULL, 0);
     if (!bitmap) goto done;
     previous = SelectObject(memory, bitmap);
-    if (!BitBlt(memory, 0, 0, size.right, size.bottom, source, 0, 0, SRCCOPY)) goto done;
+    if (print_client) {
+        if (!PrintWindow(window, memory, PW_CLIENTONLY)) goto done;
+    } else if (!BitBlt(memory, 0, 0, size.right, size.bottom, source, 0, 0, SRCCOPY)) goto done;
     header.bfType = 0x4d42;
     header.bfOffBits = sizeof(header) + sizeof(info.bmiHeader);
     header.bfSize = header.bfOffBits + info.bmiHeader.biSizeImage;
@@ -91,9 +93,13 @@ static lib_bool boot_send_text(HANDLE input, const char *command, DWORD return_r
     record.EventType = KEY_EVENT;
     record.Event.KeyEvent.wRepeatCount = 1;
     while (*command) {
+        SHORT mapping = VkKeyScanA(*command);
+
         record.Event.KeyEvent.uChar.AsciiChar = *command;
-        record.Event.KeyEvent.wVirtualKeyCode = *command == '\r' ? VK_RETURN : 0;
-        record.Event.KeyEvent.wVirtualScanCode = *command == '\r' ? 0x1cu : 0u;
+        record.Event.KeyEvent.wVirtualKeyCode = *command == '\r' ? VK_RETURN :
+            (mapping == -1 ? 0u : (WORD)(mapping & 0xffu));
+        record.Event.KeyEvent.wVirtualScanCode = (WORD)MapVirtualKeyA(
+            record.Event.KeyEvent.wVirtualKeyCode, MAPVK_VK_TO_VSC);
         record.Event.KeyEvent.bKeyDown = TRUE;
         if (!WriteConsoleInputA(input, &record, 1, &written) || written != 1)
             return LIB_FALSE;
@@ -104,6 +110,26 @@ static lib_bool boot_send_text(HANDLE input, const char *command, DWORD return_r
         ++command;
     }
     return LIB_TRUE;
+}
+
+static void boot_request_pause(HANDLE input, HWND window)
+{
+    INPUT_RECORD pause[2] = {0};
+    DWORD written;
+
+    if (window) {
+        PostMessageA(window, WM_CLOSE, 0, 0);
+        return;
+    }
+    pause[0].EventType = KEY_EVENT;
+    pause[0].Event.KeyEvent.bKeyDown = TRUE;
+    pause[0].Event.KeyEvent.wRepeatCount = 1;
+    pause[0].Event.KeyEvent.wVirtualKeyCode = 'P';
+    pause[0].Event.KeyEvent.wVirtualScanCode = 0x19;
+    pause[0].Event.KeyEvent.dwControlKeyState = LEFT_CTRL_PRESSED | LEFT_ALT_PRESSED;
+    pause[1] = pause[0];
+    pause[1].Event.KeyEvent.bKeyDown = FALSE;
+    (void)WriteConsoleInputA(input, pause, 2, &written);
 }
 
 lib_i32 main(lib_i32 argc, char **argv)
@@ -122,17 +148,24 @@ lib_i32 main(lib_i32 argc, char **argv)
     char *duration_end;
     unsigned long duration;
     unsigned long return_release_ms = 0u;
+    lib_bool lifecycle_sent = LIB_FALSE;
+    lib_u32 post_keys_sent = 0u;
 
-    if (argc != 6 && argc != 7) {
-        fprintf(stderr, "usage: probe EXE DIRECTORY SECONDS LOG BMP [START_RETURN_RELEASE_MS]\n");
+    if (argc < 6 || argc > 8) {
+        fprintf(stderr, "usage: probe EXE DIRECTORY SECONDS LOG BMP [START_RETURN_RELEASE_MS [reset|restart|post-key|post-burst|post-hold]]\n");
         return 2;
     }
     duration = strtoul(argv[3], &duration_end, 10);
     if (*duration_end != '\0' || duration == 0 || duration > 300) return 2;
-    if (argc == 7) {
+    if (argc >= 7) {
         return_release_ms = strtoul(argv[6], &duration_end, 10);
         if (*duration_end != '\0' || return_release_ms > 1000u) return 2;
     }
+    if (argc == 8 && lib_text_compare(argv[7], "reset") &&
+        lib_text_compare(argv[7], "restart") &&
+        lib_text_compare(argv[7], "post-key") &&
+        lib_text_compare(argv[7], "post-burst") &&
+        lib_text_compare(argv[7], "post-hold")) return 2;
     log = fopen(argv[4], "wb");
     if (!log) return 2;
     startup.cb = sizeof(startup);
@@ -153,7 +186,11 @@ lib_i32 main(lib_i32 argc, char **argv)
     begin = GetTickCount();
     do {
         GetExitCodeProcess(process.hProcess, &code);
-        if (code != STILL_ACTIVE) break;
+        if (code != STILL_ACTIVE) {
+            if (boot_read_console(output, text, sizeof(text)))
+                fprintf(log, "\n[process exit console]\n%s\n", text);
+            break;
+        }
         /* STARTF_USESHOWWINDOW hides the first native Window as well as the
          * Console. Let an existing guest Window paint normally, without
          * moving keyboard focus to the diagnostic run. */
@@ -180,27 +217,57 @@ lib_i32 main(lib_i32 argc, char **argv)
                 fprintf(log, "START_SENT=%d\n", started);
             }
         }
+        if (argc == 8 && started &&
+            (((!lib_text_compare(argv[7], "post-key") ||
+                !lib_text_compare(argv[7], "post-hold")) && !lifecycle_sent &&
+                strstr(text, "00512 KB OK")) ||
+             (!lib_text_compare(argv[7], "post-burst") && post_keys_sent < 120u &&
+                (post_keys_sent != 0u || strstr(text, "00512 KB OK"))))) {
+            INPUT_RECORD key[2] = {0};
+            DWORD written;
+            DWORD count = !lib_text_compare(argv[7], "post-hold") ? 1u : 2u;
+            key[0].EventType = KEY_EVENT;
+            key[0].Event.KeyEvent.bKeyDown = TRUE;
+            key[0].Event.KeyEvent.wRepeatCount = 1;
+            key[0].Event.KeyEvent.wVirtualKeyCode = 'A';
+            key[0].Event.KeyEvent.wVirtualScanCode = 0x1eu;
+            key[0].Event.KeyEvent.uChar.AsciiChar = 'a';
+            key[1] = key[0];
+            key[1].Event.KeyEvent.bKeyDown = FALSE;
+            fprintf(log, "POST_KEY_SENT=%d\n",
+                WriteConsoleInputA(input, key, count, &written) && written == count);
+            lifecycle_sent = LIB_TRUE;
+            ++post_keys_sent;
+        }
+        if (argc == 8 &&
+            (!lib_text_compare(argv[7], "reset") || !lib_text_compare(argv[7], "restart")) &&
+            started && !lifecycle_sent &&
+            GetTickCount() - begin >= (DWORD)duration * 500u) {
+            boot_request_pause(input, window.window);
+            Sleep(1000);
+            (void)boot_send_text(input,
+                !lib_text_compare(argv[7], "reset") ? "reset\r" : "stop\r", 0u);
+            Sleep(1000);
+            (void)boot_send_text(input,
+                !lib_text_compare(argv[7], "reset") ? "resume\r" : "start\r", 0u);
+            fprintf(log, "LIFECYCLE_SENT=%s\n", argv[7]);
+            lifecycle_sent = LIB_TRUE;
+        }
         Sleep(100);
     } while (GetTickCount() - begin < (DWORD)duration * 1000u);
     window.window = NULL;
     EnumWindows(boot_find_window, (LPARAM)&window);
-    if (window.window) fprintf(log, "WINDOW_CAPTURE=%d\n",
-        boot_capture_window(window.window, argv[5]));
+    if (window.window) {
+        char printed[MAX_PATH];
+        int length = snprintf(printed, sizeof(printed), "%s.print.bmp", argv[5]);
+        fprintf(log, "WINDOW_CAPTURE=%d\n",
+            boot_capture_window(window.window, argv[5], LIB_FALSE));
+        if (length > 0 && (lib_size)length < sizeof(printed))
+            fprintf(log, "WINDOW_PRINT_CAPTURE=%d\n",
+                boot_capture_window(window.window, printed, LIB_TRUE));
+    }
     if (started && code == STILL_ACTIVE) {
-        INPUT_RECORD pause[2] = {0};
-        DWORD written;
-        if (window.window) PostMessageA(window.window, WM_CLOSE, 0, 0);
-        else {
-            pause[0].EventType = KEY_EVENT;
-            pause[0].Event.KeyEvent.bKeyDown = TRUE;
-            pause[0].Event.KeyEvent.wRepeatCount = 1;
-            pause[0].Event.KeyEvent.wVirtualKeyCode = 'P';
-            pause[0].Event.KeyEvent.wVirtualScanCode = 0x19;
-            pause[0].Event.KeyEvent.dwControlKeyState = LEFT_CTRL_PRESSED | LEFT_ALT_PRESSED;
-            pause[1] = pause[0];
-            pause[1].Event.KeyEvent.bKeyDown = FALSE;
-            (void)WriteConsoleInputA(input, pause, 2, &written);
-        }
+        boot_request_pause(input, window.window);
         Sleep(1000);
         CloseHandle(output);
         output = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE,

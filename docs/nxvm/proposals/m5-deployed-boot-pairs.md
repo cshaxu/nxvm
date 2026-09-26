@@ -1,6 +1,6 @@
 # Deployed EXE/INI Boot Reliability
 
-Owner admitted M5 T538 on 2026-09-25. Target: NXVM only.
+Owner admitted M5 T538 on 2026-09-25. Primary target: NXVM.
 
 ## Goal And Boundary
 
@@ -13,16 +13,24 @@ success is not deployed-product proof.
 Keep selected hardware and owner media choices. Repair repeated mechanisms at
 their actual owner; no BIOS-screen special case, alternative loader, synthetic
 F1, success fallback or second lifecycle path. Shared source requires separate
-owner review. MyNES is out of scope. Assets stay external and masters unchanged.
+owner review. Owner subsequently separated the accepted S2 KBC repair from S3's
+Console backing-buffer repair: Shared Console broker/tests/contracts and both
+products' receiver builds are admitted in S3, without MyNES source or INI changes.
+No font scaling or automatic
+Window fallback is allowed. Assets stay external and masters unchanged.
 
 ## Evidence-Led Subtasks
 
 1. S1: freeze the eight-pair baseline and real-process failure matrix; identify
    repair batches and their production owners.
-2. Admit subsequent S batches from that complete matrix: coherent startup/config
-   failures first, then guest/device or presentation failures as evidence requires.
-   Each repair regresses every affected pair rather than chasing one screen.
-3. Final S: dual-width release deployment, complete units/integration, repeated
+2. S2: repair the reproduced AT KBC typematic/serial-delivery class on both
+   widths; record the resolved Model 40 capture ambiguity. Owner accepts this
+   bounded keyboard repair separately from the newly reproduced Console defect.
+3. S3: deliver complete Console backing storage independently of viewport size.
+   Preserve font/viewport, write offscreen cells and clear stale lower rows;
+   reject genuine buffer/I/O failure. No frame truncation or Window fallback.
+   Verify Shared regressions/manifests and both products' dual-width receivers.
+4. Final S: dual-width release deployment, complete units/integration, repeated
    real EXE/INI boots and owner manual validation handoff.
 
 The [convergence ledger](../etc/evidence/t538-boot-pairs.md) fixes the corpus.

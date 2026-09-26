@@ -42,3 +42,23 @@ cleanup and stale Window-handle reset are checked. Documentation links, packet
 shape, identifier history and unchanged Queue agree. S1 is accepted and closed;
 T538 remains open for the two named residual classes. No Shared authority was
 consumed and no product behavior was modified.
+
+## S2 Executor Delivery
+
+Owner explicitly accepts the 5170 keyboard repair as a separate S and transfers
+the independently reproduced Console capacity failure to S3. KBC now prevents
+unmatched Set-2 breaks from starting typematic and routes repeats through the
+same serial/inhibit boundary as native input. This is one controller-owner
+repair, not a BIOS or profile exception. Both original widths reproduce 303;
+both repaired widths reach DOS Setup under the same 50 ms Return-release input.
+Reset/resume and stop/start also reach Setup. Model 40 x86's complete visible
+frame and paused memory resolve the earlier capture ambiguity without a guest fix.
+
+The isolated S2 source uses the committed Shared corpus, passes 335/335 units
+per width and 20/20 external integration, and rebuilds eight optimized stripped
+0538 products. Final isolated AT processes each reach Setup and remain alive
+through 180 seconds. The ledger records source/artifact hashes, unchanged INIs,
+actual-diff review (+188/-55 across four source/test/build files), and the
+same-mechanism sweep. Only NXVM changes belong to this delivery. Pending Shared
+and MyNES work is preserved for S3. Whole-task repeat coverage remains pending;
+neither the S acceptance nor the green integration suite closes T538.

@@ -41,6 +41,14 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
 
 ## Architecture And Portability Debt
 
+- [ ] **Shared Console failure rollback (`TODO(Medium)`).** T538's exploratory
+  native fixture observed a 120x60 cooked history buffer with a 40x13 viewport
+  restored as 120x13 after injected raw-reader startup failure, before any frame
+  write. Risk: offscreen monitor history loss on that failure path. Admit a
+  separate Shared buffer-switch/rollback review with before/after native proof;
+  the approved raw-frame backing-capacity repair does not claim this recovery.
+  [Evidence](../etc/evidence/t538-boot-pairs.md).
+
 - [ ] **Browser storage (`TODO(Low)`).** Native file-backed storage already has
   its Lib owner. OPFS/IndexedDB/HTTP-backed pending I/O is a separate host
   capability, admitted only with a future browser consumer and no second

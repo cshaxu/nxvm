@@ -168,6 +168,7 @@ static lib_i32 core_machine_kbc_set2_break_cancels_typematic(void)
 {
     static const lib_u8 make_b[] = { 0x32u };
     static const lib_u8 break_b[] = { 0xf0u, 0x32u };
+    static const lib_u8 break_return[] = { 0xf0u, 0x5au };
     t_kbc kbc;
     t_port port;
     lib_i32 failed = 0;
@@ -188,6 +189,17 @@ static lib_i32 core_machine_kbc_set2_break_cancels_typematic(void)
     core_machine_kbc_advance(&kbc, 2u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xb0u ||
         kbc.data.typematic_active;
+    failed |= core_machine_kbc_submit_native_bytes(&kbc, break_return,
+        sizeof(break_return)) != LIB_STATUS_OK || kbc.data.typematic_active;
+    if (kbc.data.typematic_active)
+        fprintf(stderr, "KBC unmatched Return break incorrectly started typematic\n");
+    failed |= core_machine_kbc_submit_native_bytes(&kbc, make_b,
+        sizeof(make_b)) != LIB_STATUS_OK || !kbc.data.typematic_active;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != LIB_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x5au) != LIB_STATUS_OK ||
+        !kbc.data.typematic_active || kbc.data.typematic_scan_code != 0x32u;
+    failed |= core_machine_kbc_submit_native_bytes(&kbc, break_b,
+        sizeof(break_b)) != LIB_STATUS_OK || kbc.data.typematic_active;
     core_machine_kbc_finalize(&kbc);
     core_machine_port_finalize(&port);
     return failed;
@@ -351,6 +363,57 @@ static lib_i32 core_machine_kbc_ibm_5170_post_contract(void)
     return failed;
 }
 
+/* Automatic repeats must obey the same single-byte output and inhibit
+ * boundary as externally supplied scan bytes. */
+static lib_i32 core_machine_kbc_typematic_output_boundary(void)
+{
+    t_kbc kbc;
+    t_port port;
+    lib_i32 failed;
+    lib_u8 lines, ack, interface_result;
+
+    core_machine_port_initialize(&port);
+    core_machine_kbc_initialize(&kbc, &port);
+    core_machine_kbc_set_typematic_timing(&kbc, 1u, 1u);
+    failed = core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != LIB_STATUS_OK;
+    core_machine_kbc_advance(&kbc, 4u);
+    failed |= kbc.data.fifo_count != 1u;
+    if (kbc.data.fifo_count != 1u)
+        fprintf(stderr, "KBC repeat observation: output-bytes=%u\n",
+            (unsigned int)kbc.data.fifo_count);
+    core_machine_port_write(&port, 0x0064u, 0xadu);
+    while (kbc.data.fifo_count != 0u)
+        (void)core_machine_kbc_read_byte(&port, 0x0060u);
+    core_machine_kbc_advance(&kbc, 5u);
+    failed |= kbc.data.fifo_count != 0u;
+    if (kbc.data.fifo_count != 0u)
+        fprintf(stderr, "KBC inhibited repeat observation: output-bytes=%u\n",
+            (unsigned int)kbc.data.fifo_count);
+    /* Diagnostic replay of the ROM's flush / E0h / FFh / ABh ordering.
+     * This isolates controller state; it is not a full-ROM reproduction. */
+    core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
+    (void)core_machine_kbc_read_byte(&port, 0x0060u);
+    core_machine_port_write(&port, 0x0064u, 0xe0u);
+    (void)core_machine_kbc_read_byte(&port, 0x0064u);
+    lines = core_machine_kbc_read_byte(&port, 0x0060u);
+    core_machine_port_write(&port, 0x0060u, 0xffu);
+    if ((core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u)
+        (void)core_machine_kbc_read_byte(&port, 0x0060u);
+    (void)core_machine_kbc_read_byte(&port, 0x0064u);
+    ack = core_machine_kbc_read_byte(&port, 0x0060u);
+    if (ack == 0xfau)
+        failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
+    core_machine_port_write(&port, 0x0064u, 0xabu);
+    (void)core_machine_kbc_read_byte(&port, 0x0064u);
+    interface_result = core_machine_kbc_read_byte(&port, 0x0060u);
+    failed |= lines != 0u || ack != 0xfau || interface_result != 0u;
+    if (failed) fprintf(stderr, "KBC output/inhibit replay: E0=%02X FF=%02X AB=%02X\n",
+        (unsigned int)lines, (unsigned int)ack, (unsigned int)interface_result);
+    core_machine_kbc_finalize(&kbc);
+    core_machine_port_finalize(&port);
+    return failed;
+}
+
 typedef struct core_machine_kbc_cpu_fixture {
     core_machine *machine;
 } core_machine_kbc_cpu_fixture;
@@ -472,6 +535,7 @@ lib_i32 main(void)
     failed |= reset_enable_bat_failed;
     failed |= ibm_5170_post_contract_failed;
     failed |= cpu_reset_irq1_failed;
+    failed |= core_machine_kbc_typematic_output_boundary();
 
     failed |= core_machine_kbc_read_byte(&port, 0x0064u) != 0x10u;
     core_machine_kbc_set_input_port(&kbc, 0x80u);
