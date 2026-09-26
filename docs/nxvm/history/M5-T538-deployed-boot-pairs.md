@@ -87,3 +87,37 @@ The [S3 evidence](../etc/evidence/t538-s3-console-buffer.md) records the sweep,
 335/335 NXVM units per width, 20/20 integration, 132/132 MyNES tests per width,
 six manifests, ten rebuilt receivers and unchanged owner configurations.
 This is not completion of the T-level repeated real-process boot matrix.
+
+## S3 Coordinator Acceptance
+
+One-session coordinator review inspected actual Shared 6a3f3cb25, NXVM
+7d29f409b and MyNES a60dcb906 changes against the owner request and packet.
+This is self-review, not an independent reviewer. The buffer-only owner change
+matches the approved semantics; tests retain genuine output-failure detection.
+No API, INI, media, guest state or product source change is hidden in delivery.
+Ten receiver hashes and architecture verification match evidence, both product
+documentation gates and six manifests pass, and every P has exactly one target.
+All three commits were pushed immediately. S3 is accepted and closed; T538
+stays open for repeated deployed-process qualification. The distinct startup
+rollback TODO is neither removed nor claimed repaired.
+
+### S3 Completed Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T538 S3, after accepted S2. |
+| Admission And Approval | Owner explicitly requested S2 closure and a separate S for the Console repair on 2026-09-25; complete backing storage with a smaller scrollable viewport is approved. |
+| Objective | Remove false Console delivery failure caused solely by an undersized visible viewport while preserving all guest text cells. |
+| Non-goals | No font scaling, frame truncation, automatic Window fallback, new API, KBC change, owner INI change or unrelated MyNES source change. |
+| Reference Baseline | S2 implementation 1d80f11d8 and acceptance 3922622ea; Shared 75099c178; four frozen INIs. |
+| Candidate Proposal | [Deployed boot pairs](../proposals/m5-deployed-boot-pairs.md). |
+| Files And ABI Surface | Shared Console broker, two existing Lib tests, README and two manifests. NXVM eight 0538 and MyNES two 0043 receiving binaries/evidence. Public ABI unchanged. |
+| Applicable Rules | Shared EXECUTION, ARCHITECTURE, CODING, DOCUMENT; NXVM and MyNES architecture/coding/UI and source policies. Broker is the sole host buffer owner; copied guest frame is not modified to match viewport. |
+| Verification | Full/offscreen frame and smaller/scrolled viewport; rejected/ignored buffer growth and clipped native writes; stale lower-row clearing; existing Console handoff. Full NXVM units both widths and integration; full MyNES receiver suites both widths; all six manifests; optimized stripped receivers and documentation/diff review. |
+| Expected Markers | Undersized viewport no longer reports IO_ERROR; every active cell exists in backing storage; genuine storage/output failure still propagates. |
+| Asset Needs | Existing lawful external inputs only, no master or INI changes. Existing private diagnostic evidence may be reused when source identity matches. |
+| Reporting Requirements | Distinguish implemented candidate from deployed artifact and whole-task boot qualification; report both consumers and retained rollback debt. |
+| Stop Conditions | New host policy/API, product-state coupling, unexpected receiver regression or edits outside approved targets require review. |
+| Exit Criteria | Approved buffer policy and regressions pass; manifests/docs consistent; affected receivers rebuilt and verified; target-separated complete delivery reviewed and pushed. T-level three-fresh-launch matrix remains a later gate. |
+| Original Owner Request | Close the 5170 repair S, then admit a separate S to fix Console buffering without shrinking fonts or discarding offscreen data. |
+| Similar-Issue Sweep | Inspect raw text delivery, palette-before-geometry, tall-to-short clearing and cooked restoration. The separately recorded partial-startup history rollback remains TODO, not claimed fixed. |
