@@ -62,3 +62,17 @@ actual-diff review (+188/-55 across four source/test/build files), and the
 same-mechanism sweep. Only NXVM changes belong to this delivery. Pending Shared
 and MyNES work is preserved for S3. Whole-task repeat coverage remains pending;
 neither the S acceptance nor the green integration suite closes T538.
+
+## S2 Coordinator Acceptance
+
+Reviewed actual implementation 1d80f11d8, not only its test summary: the KBC
+change keeps one serial publisher, the new regressions cover unmatched breaks
+and inhibited repeats, and the observer never treats its exit code as boot
+acceptance. Its native APIs remain test-local. The eight deployed binaries are
+the isolated KBC build recorded in the ledger; no Shared or MyNES files are in
+this commit and no INI is changed. Old artifacts are recoverable from Git.
+
+Original request, latest owner-directed split, packet, actual diff and retained
+coverage agree. S2 is accepted and closed after its successful push. S3 is the
+authorized next receiver for Console capacity and the already-preserved Shared
+candidate; T538 remains open and the complete repeat matrix is not waived.
