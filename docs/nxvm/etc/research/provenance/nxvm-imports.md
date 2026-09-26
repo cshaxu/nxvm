@@ -72,3 +72,12 @@ NXVM as the canonical corpus; it does not replace NXVM-only manifest revisions,
 test aggregation, or documentation merely for byte parity. The complete
 six-component comparison and dual-architecture verification are in
 [T41 S13 Raw-CRT reconciliation](../../evidence/m6-t41-s13-softpc-raw-crt-reconciliation.md).
+
+M5 T538 S4 imports the reviewed project-owned Console repair unchanged from
+SoftPC b79769c19b9b69d2c751fad942f4bc3a1490e7c2. Same-path transfer updates
+src/lib/console-broker/win32/console.c, src/lib/README.md, both Lib manifests,
+test/lib/console_broker_display_smoke.c and lib_console_io_contract_smoke.c.
+Existing MIT authorization and notices are retained; no recovered-machine or
+third-party unit is introduced. The other four roots already match unchanged.
+[S4 evidence](../../evidence/t538-s4-console-import.md) records the full 227-file
+six-root parity, tests and receiving artifacts.

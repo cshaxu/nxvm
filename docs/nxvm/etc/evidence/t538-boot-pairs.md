@@ -418,3 +418,12 @@ observer/regression and version recipe only, no Console source change.
 | nxvm_xt_0_5_0538_x86.exe | B77672292A742A16C663872D5D58680256E8EB647061E8E7B9916AF205259D06 |
 | nxvm_at_0_5_0538_x64.exe | F9DFE3112CDB5E392C49A7F8BAF0E2FF7B273AEEE12C3D0F59DBCFECD057976A |
 | nxvm_at_0_5_0538_x86.exe | 902039D17CFAD2A6B334005545674F574175DA7F55E47A8B805E21B2671B12B9 |
+
+## Subsequent Console Batch
+
+S3's accepted capacity-only repair and receiver identities are recorded in
+[S3 evidence](t538-s3-console-buffer.md). Owner-admitted S4 imports the reviewed
+SoftPC output-extent/cache-coverage repair; [S4 evidence](t538-s4-console-import.md)
+owns six-root equality and updated receiver qualification. These changes do not
+replace the final three-fresh-launch-per-pair predicate or reinterpret S2's
+historical hashes as current artifacts. The original keyboard repair remains.

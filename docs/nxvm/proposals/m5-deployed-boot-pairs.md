@@ -30,7 +30,11 @@ Window fallback is allowed. Assets stay external and masters unchanged.
    Preserve font/viewport, write offscreen cells and clear stale lower rows;
    reject genuine buffer/I/O failure. No frame truncation or Window fallback.
    Verify Shared regressions/manifests and both products' dual-width receivers.
-4. Final S: dual-width release deployment, complete units/integration, repeated
+4. S4: import reviewed SoftPC Console output-extent and retained retry coverage
+   unchanged; verify six shared source/test roots and both products' receivers.
+   Buffer capacity, committed-frame cache and pending tail coverage remain
+   separate concepts inside the same broker owner and write path.
+5. Final S: dual-width release deployment, complete units/integration, repeated
    real EXE/INI boots and owner manual validation handoff.
 
 The [convergence ledger](../etc/evidence/t538-boot-pairs.md) fixes the corpus.

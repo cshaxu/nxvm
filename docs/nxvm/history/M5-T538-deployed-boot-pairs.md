@@ -121,3 +121,17 @@ rollback TODO is neither removed nor claimed repaired.
 | Exit Criteria | Approved buffer policy and regressions pass; manifests/docs consistent; affected receivers rebuilt and verified; target-separated complete delivery reviewed and pushed. T-level three-fresh-launch matrix remains a later gate. |
 | Original Owner Request | Close the 5170 repair S, then admit a separate S to fix Console buffering without shrinking fonts or discarding offscreen data. |
 | Similar-Issue Sweep | Inspect raw text delivery, palette-before-geometry, tall-to-short clearing and cooked restoration. The separately recorded partial-startup history rollback remains TODO, not claimed fixed. |
+
+## S4 Admission And Import Review
+
+Owner accepts the current S and requests a new import S; S3 was already closed,
+so coordinator admits the next unused S4 rather than reopening or re-closing it.
+The [S4 evidence](../etc/evidence/t538-s4-console-import.md) pins SoftPC b79769c1
+and records same-path import of six reviewed files, with all 227 files across
+six shared roots equal. Normal/failure writes keep one broker owner; committed
+cache and retry coverage are distinct facts, not duplicate rendering states.
+No public API or product source changes. Shared P1 4ca7e6401 is pushed.
+Executor qualification passes: NXVM 335/335 units per width and 20/20 external
+integration; MyNES 132/132 per width; all ten optimized stripped receivers,
+six manifests, component boundaries and Types gates. Owner INIs and snapshot
+are unchanged. Final coordinator acceptance follows delivery; T538 stays open.
