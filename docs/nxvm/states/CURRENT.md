@@ -2,9 +2,33 @@
 
 ## Current Work
 
-No NXVM implementation task is active. [Queue](QUEUE.md) retains five unnumbered
-candidates. MyNES-hosted M6 Td S3 governs latest-only executable retention for
-both products; its NXVM delivery removes superseded artifacts only.
+M5 T538 S1 is active: inventory and reproduce all eight deployed EXE/INI boot
+pairs before grouped root-cause repair. [Proposal](../proposals/m5-deployed-boot-pairs.md)
+owns the bounded task; [ledger](../etc/evidence/t538-boot-pairs.md) owns coverage.
+The five unrelated [Queue](QUEUE.md) candidates remain pending.
+
+## Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New: M5 T538 S1. T537 is the highest previously allocated NXVM identifier; later cross-product T41 records are preserved, not reusable NXVM numbering capacity. |
+| Admission And Approval | Owner request on 2026-09-25 admits a new NXVM task to audit and repair all EXE/INI pairs after observed exits and hangs following start. |
+| Objective | Freeze all eight deployed pairs and external inputs; reproduce their startup through the real product path and classify every result before planning batch repairs. |
+| Non-goals | No MyNES or Shared changes; no firmware substitution, synthetic boot success, changes to owner media masters, or broad CPU qualification. |
+| Reference Baseline | Clean a2418ae57; eight 0535 EXEs from c5b17f671 and four current owner INIs. Previous unit/integration passes do not prove these deployed launch cases. |
+| Candidate Proposal | [Deployed boot pairs](../proposals/m5-deployed-boot-pairs.md). |
+| Files And ABI Surface | NXVM docs, product-only integration harness and its NXVM CMake registration if required for real EXE observation. No public ABI or shared corpus change. |
+| Applicable Rules | Shared EXECUTION, ARCHITECTURE, CODING and DOCUMENT; NXVM design ARCHITECTURE, CODING, UI, ROADMAP; source-and-research policy. Unique state owners, real adjacent INI inputs, external readonly/overlay media, no manufactured timing claim. |
+| Verification | Hash all eight EXEs/four INIs and referenced inputs; validate PE width and file resolution; bounded real-process launches with start and checkpoint/exit capture for all eight cases. Model 40 x86 gets a 300-second diagnostic rerun because its 180-second capture already starts the DOS title; all other bounds remain 180 seconds. Run full x64/x86 repository-only units if test code changes; documentation gate and actual-diff review. |
+| Expected Markers | Each pair has a reproducible disposition: DOS prompt/date/installer checkpoint, pre-start error/exit, post-start error/exit, or timeout with last observable state. No unobserved case is called passing. |
+| Asset Needs | Existing lawful external profiles-nxvm/media-nxvm inputs only; record hashes without copying payloads. Preserve masters and owner INIs. |
+| Reporting Requirements | Report eight-case inventory, exact deployed launch results, repeated failure classes, test limitations and next repair batch. S1 is diagnosis, not task closure. |
+| Stop Conditions | Missing lawful assets, required Shared change, destructive media access, or observer perturbing the launch invalidates the affected result; report before changing authority. |
+| Exit Criteria | All eight baseline pairs are inventoried and attempted through the production launch path with classified evidence; repair batches have owners and regressions; required checks pass and complete S1 delivery is reviewed and pushed. |
+| Original Owner Request | Admit a new NXVM T to audit and repair every NXVM EXE/INI pairing so start reaches DOS or its installer; some deployed profiles exit or hang. |
+| Similar-Issue Sweep | Examine all four profiles and both widths for path resolution, build-fixed assets, parse/construction failures, lifecycle dispatch, display/input and guest boot checkpoints; no single-profile success substitutes for the matrix. |
+
+## Retained Closures
 
 | Task | Closure |
 | --- | --- |

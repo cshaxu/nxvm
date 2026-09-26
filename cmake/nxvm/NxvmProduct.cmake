@@ -215,6 +215,14 @@ target_include_directories(vm-app-console-lifecycle-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-app-console-lifecycle-smoke PRIVATE
     vm-app vm-machine)
+if(WIN32)
+    # Diagnostic observer only: a captured screen requires semantic review;
+    # process survival must not become a passing CTest boot assertion.
+    add_executable(nxvm-deployed-boot-probe
+        test/app-nxvm/integration/product/nxvm_deployed_boot_probe.c)
+    target_include_directories(nxvm-deployed-boot-probe PRIVATE "${CMAKE_SOURCE_DIR}/src")
+    target_link_libraries(nxvm-deployed-boot-probe PRIVATE gdi32 user32)
+endif()
 add_executable(vm-ini-cmos-seed-smoke
     test/app-nxvm/integration/product/vm_ini_cmos_seed_smoke.c)
 target_link_libraries(vm-ini-cmos-seed-smoke PRIVATE integration-session-ini-support)
