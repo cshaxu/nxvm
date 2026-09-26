@@ -41,6 +41,7 @@ struct console_broker_backend {
     lib_u32 previous_palette[16u];
     lib_u16 previous_columns;
     lib_u16 previous_rows;
+    lib_u16 coverage_rows;
 };
 
 /* This is a liveness boundary, not an input debounce or product timer.
@@ -55,7 +56,7 @@ static lib_win32_colorref console_broker_colorref_from_rgb(lib_u32 rgb)
 }
 
 static lib_bool console_broker_ensure_text_surface(console_broker_backend *backend,
-    lib_u16 rows, lib_win32_short *write_rows)
+    lib_u16 rows)
 {
     lib_win32_handle output = backend->output;
     lib_win32_console_screen_buffer_info info;
@@ -67,15 +68,20 @@ static lib_bool console_broker_ensure_text_surface(console_broker_backend *backe
         (lib_win32_short)LIB_CONSOLE_TEXT_COLUMNS : info.dwSize.X;
     required.Y = info.dwSize.Y < (lib_win32_short)rows ?
         (lib_win32_short)rows : info.dwSize.Y;
+    /* A host may shrink backing storage between frames without making the
+     * next frame itself need growth. The cache is invalid, but only rows that
+     * still exist can remain part of the next frame's clearing coverage. */
+    if (backend->coverage_rows > (lib_u16)info.dwSize.Y) {
+        backend->previous_columns = backend->previous_rows = 0u;
+        backend->coverage_rows = (lib_u16)info.dwSize.Y;
+    }
     /* Frame storage is independent of the host's visible window. Preserve its
      * font and scroll position, including when the whole frame cannot fit. */
     if (required.X != info.dwSize.X || required.Y != info.dwSize.Y) {
-        /* Restoring dimensions cannot restore cells lost by a native shrink. */
+        /* Surface geometry changed, so no completed-frame cache is valid. */
         backend->previous_columns = backend->previous_rows = 0u;
         if (!lib_win32_set_console_screen_buffer_size(output, required)) return LIB_FALSE;
     }
-    *write_rows = required.Y < (lib_win32_short)LIB_CONSOLE_TEXT_ROWS ?
-        required.Y : (lib_win32_short)LIB_CONSOLE_TEXT_ROWS;
     return lib_win32_get_console_screen_buffer_info(output, &info) &&
         info.dwSize.X >= required.X && info.dwSize.Y >= required.Y;
 }
@@ -392,6 +398,7 @@ lib_status console_broker_backend_activate(console_broker_backend *backend,
         sizeof(backend->previous_palette));
     backend->previous_columns = 0u;
     backend->previous_rows = 0u;
+    backend->coverage_rows = 0u;
     /* Normal cooked activation is not a line request. Rollback alone may
      * restore the unfinished request captured after the old reader joined. */
     if (mode == CONSOLE_BROKER_RAW_EVENTS || restore_cooked_request) {
@@ -542,7 +549,8 @@ lib_status console_broker_backend_write_bound(console_broker_backend *backend,
         return LIB_STATUS_OK;
     }
     {
-        /* A partial write can change cells even when the API reports failure. */
+        /* A stream write invalidates copied cells, but does not discard the
+         * former frame extent that a following frame must clear. */
         if (length != 0u) backend->previous_columns = backend->previous_rows = 0u;
         lib_status status = lib_win32_write_console_a(backend->output, text, (lib_win32_dword)length,
             &written, LIB_NULL) && written == (lib_win32_dword)length ? LIB_STATUS_OK : LIB_STATUS_IO_ERROR;
@@ -592,11 +600,17 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
     }
     /* Palette application can also change native buffer/viewport geometry.
      * Establish the write surface after that operation, never before it. */
-    if (!console_broker_ensure_text_surface(backend, frame->rows, &size.Y)) {
+    if (!console_broker_ensure_text_surface(backend, frame->rows)) {
         console_broker_backend_unlock_output(backend);
         return LIB_STATUS_IO_ERROR;
     }
-    /* Clear old lower rows within frame capacity, even when they are offscreen. */
+    /* Clear only this frame plus a possible tail written by the prior frame.
+     * Host viewport height is not frame content: a 30-row Terminal must not
+     * turn every 25-row DOS frame into a 30-row terminal update. */
+    if (backend->coverage_rows > frame->rows)
+        size.Y = (lib_win32_short)backend->coverage_rows;
+    else
+        size.Y = (lib_win32_short)frame->rows;
     region.Bottom = size.Y - 1;
     if (backend->previous_columns != frame->columns ||
         backend->previous_rows != frame->rows ||
@@ -615,8 +629,11 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
                         (frame->background[offset] << 4u) : 0);
             }
         }
-        /* A failed or clipped write may already have changed some cells. */
+        /* A failed or clipped write may already have changed some cells. The
+         * completed-frame cache is invalid, but its former coverage remains
+         * part of the next retry's rectangle. */
         backend->previous_columns = backend->previous_rows = 0u;
+        backend->coverage_rows = (lib_u16)size.Y;
         if (!lib_win32_write_console_output_w(backend->output, cells, size, position,
                 &region) || region.Left != 0 || region.Top != 0 ||
                 region.Right != LIB_CONSOLE_TEXT_COLUMNS - 1 ||
@@ -629,6 +646,7 @@ lib_status console_broker_backend_write_text_frame_bound(console_broker_backend 
         lib_memory_copy(backend->previous_background, frame->background, sizeof(frame->background));
         backend->previous_columns = frame->columns;
         backend->previous_rows = frame->rows;
+        backend->coverage_rows = frame->rows;
     }
     {
         lib_win32_console_cursor_info cursor;

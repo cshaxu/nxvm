@@ -30,8 +30,8 @@ static lib_win32_wchar first_cell;
 static lib_win32_word first_attribute;
 static lib_win32_char_info captured_cells[80u * 50u];
 static lib_win32_small_rect captured_region;
-static lib_win32_coord buffer_size={80,25};
-static lib_win32_small_rect viewport={0,0,79,24};
+static lib_win32_coord buffer_size={80,30};
+static lib_win32_small_rect viewport={0,0,79,29};
 static lib_bool reject_resize, ignore_resize;
 static lib_win32_bool LIB_WIN32_WINAPI screen_info(lib_win32_handle h, lib_win32_console_screen_buffer_info *p)
 { (void)h; lib_memory_set(p, 0, sizeof(*p)); p->dwSize=buffer_size; p->srWindow=viewport; return LIB_WIN32_TRUE; }
@@ -159,6 +159,7 @@ int main(void)
     f.columns=80;f.rows=25;f.text[0]=0x2588;f.palette[0]=1;
     for(lib_i32 i=0;i<2;++i) lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     lib_test_assert(first_cell==0x2588 && writes==1 && palette_attempts==2);
+    lib_test_assert(captured_region.Bottom==24);
     palette_query_ok=1;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==0);
     lib_test_assert(b.previous_palette[0]==0 && palette_sets==1);
@@ -226,25 +227,64 @@ int main(void)
         lib_test_assert(writes==completed);
     }
     /* Taller modes reach the last cell; shrinking clears old lower rows
-     * while preserving the native viewport and normal 25-row startup. */
+     * without tying raw output to the native viewport. */
     {
         const lib_u16 rows[] = {22u,25u,43u,50u,25u,50u};
+        const lib_u16 write_rows[] = {25u,25u,43u,50u,50u,50u};
         for (lib_size i=0;i<sizeof(rows)/sizeof(rows[0]);++i) {
             f.rows=rows[i];
             lib_memory_set(f.text,0,sizeof(f.text));
             f.text[(lib_size)f.rows*80u-1u]='Z';
             lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
             lib_test_assert(captured_cells[(lib_size)f.rows*80u-1u].Char.UnicodeChar=='Z');
-            lib_test_assert(captured_region.Bottom>=f.rows-1);
-            for (lib_u32 row=f.rows;row<=(lib_u32)captured_region.Bottom;++row)
+            lib_test_assert(captured_region.Bottom==(lib_win32_short)(write_rows[i]-1u));
+            for (lib_u32 row=f.rows;row<write_rows[i];++row)
                 for (lib_u32 col=0;col<80u;++col)
                     lib_test_assert(captured_cells[row*80u+col].Char.UnicodeChar==' ');
         }
     }
+    /* A partial 50-to-25 clear invalidates the cached cells, but retrying
+     * must still cover the former tail rather than leaving old characters. */
+    f.rows=50; lib_memory_set(f.text,0,sizeof(f.text)); f.text[80u*50u-1u]='T';
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+    f.rows=25; lib_memory_set(f.text,0,sizeof(f.text)); f.text[80u*25u-1u]='S';
+    partial_write=2;
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_IO_ERROR);
+    lib_test_assert(!b.previous_columns && !b.previous_rows && b.coverage_rows==50);
+    lib_u32 attempted=writes;
+    partial_write=0;
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+    lib_test_assert(writes==attempted+1 && captured_region.Bottom==49 && b.coverage_rows==25);
+    for (lib_u32 row=25u;row<50u;++row)
+        for (lib_u32 col=0u;col<80u;++col)
+            lib_test_assert(captured_cells[row*80u+col].Char.UnicodeChar==' ');
+    /* An external backing-store shrink can happen even when 25 rows still
+     * fit. Clamp the retained tail before choosing the native write extent. */
+    f.rows=50; lib_memory_set(f.text,0,sizeof(f.text)); f.text[80u*50u-1u]='X';
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+    buffer_size=(lib_win32_coord){80,30};
+    f.rows=25; lib_memory_set(f.text,0,sizeof(f.text)); f.text[80u*25u-1u]='Y';
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+    lib_test_assert(b.previous_columns==80 && b.previous_rows==25 && b.coverage_rows==25);
+    lib_test_assert(captured_region.Bottom==29);
+    buffer_size=(lib_win32_coord){120,60};
+    /* A direct stream write invalidates copied cells but cannot discard the
+     * tail that the following shorter frame must clear. */
+    f.rows=50; lib_memory_set(f.text,0,sizeof(f.text)); f.text[80u*50u-1u]='V';
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+    text_result=1; text_written=1;
+    lib_test_assert(console_broker_backend_write_bound(&b,b.console,1,"x",1)==LIB_STATUS_OK);
+    lib_test_assert(!b.previous_columns && !b.previous_rows && b.coverage_rows==50);
+    f.rows=25; lib_memory_set(f.text,0,sizeof(f.text)); f.text[80u*25u-1u]='W';
+    lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
+    lib_test_assert(captured_region.Bottom==49 && b.coverage_rows==25);
+    for (lib_u32 row=25u;row<50u;++row)
+        for (lib_u32 col=0u;col<80u;++col)
+            lib_test_assert(captured_cells[row*80u+col].Char.UnicodeChar==' ');
     /* A smaller, scrolled viewport must not limit full-frame storage. */
     viewport=(lib_win32_small_rect){7,3,46,15};
     buffer_size=(lib_win32_coord){120,60};
-    f.text[80u*50u-1u]='Q';
+    f.rows=50; f.text[80u*50u-1u]='Q';
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
     lib_test_assert(viewport.Left==7 && viewport.Top==3 && viewport.Right==46 && viewport.Bottom==15);
@@ -261,7 +301,6 @@ int main(void)
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     lib_test_assert(buffer_size.X==80 && buffer_size.Y==50);
     lib_test_assert(viewport.Left==7 && viewport.Top==3 && viewport.Right==46 && viewport.Bottom==15);
-    lib_test_assert(captured_cells[80u*50u-1u].Char.UnicodeChar=='Q');
     base_sync_mutex_destroy(b.transaction_lock);base_sync_mutex_destroy(b.output_lock);lib_win32_close_handle(stop);lib_console_release(b.console);
     cooked_restore();
     /* Disposal must not restore native mode a second time. */
