@@ -8,7 +8,7 @@ review; no MyNES task or subtask is active.
 Latest governance: owner approved latest-pair-only retention on 2026-09-25.
 Shared P1 330c8cd18 updates Execution; NXVM P2 b85f72179 removes sixteen old
 0533/0534 EXEs; MyNES P3 removes four old 0041/0042 EXEs and updates its asset
-guide. Exact inventory is ten EXEs (MyNES two 0043, NXVM eight 0535); all ten
+guide. At that cleanup the inventory was ten EXEs (MyNES two 0043, NXVM eight 0535); all ten
 SHA-256 values match the pre-cleanup baseline. Both documentation gates and
 diff/check pass. Configurations, snapshot, media and executable inputs are
 unchanged; no rebuild is needed. Deleted EXEs remain recoverable in Git history.
@@ -26,9 +26,11 @@ Artifact evidence: [S10 registration and byte boolean](../etc/evidence/m6-t43-s1
 ## Current Technical Baseline
 
 - MyNES: optimized stripped 0043 x64/x86 artifacts in `assets/mynes/`,
-  rebuilt for S13 P1 dd2de1936 and recorded in S13 evidence; accepted by owner.
+  rebuilt as receivers of NXVM-hosted M5 T538 S3; full suites pass 132/132 per
+  width. [Receiver evidence](../etc/evidence/t538-s3-console-receiver.md) records
+  hashes. No MyNES source or configuration changes; T43 remains closed.
   Owner-provided v3 snapshot is committed in S13 P3 9b2b10ce2.
-- Shared: S10 75099c178; transfer the six roots plus test/register.cmake.
+- Shared: 6a3f3cb25; transfer the six roots plus test/register.cmake.
   Six manifests and Types gates pass. All receiving Apps were rebuilt together.
 - Snapshot `MNS1` guest state remains Core-owned; transient driver stop/frame
   publication state is reset only after successful restore. Deferred work remains
