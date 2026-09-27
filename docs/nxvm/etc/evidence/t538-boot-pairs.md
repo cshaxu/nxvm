@@ -436,3 +436,16 @@ batch and approved owner-local test correction are recorded in
 not the eight EXE/INI cases or the requirement for three fresh launches per
 final pair. Earlier artifact hashes remain historical; final qualification
 must use the newly rebuilt receivers.
+
+## S6 Final Deployed Verification
+
+[S6 evidence](t538-s6-final-qualification.md) consumes all eight deployed pairs
+with three sequential fresh 180-second launches each, on unchanged S5 artifacts
+and actual adjacent INIs. Result: 18 boot terminals, five XT `9C 301` failures
+and one unclassified default x86 early pause. XT's sole successful launch also
+lacks confirmed pause/Debug handoff. No failed row is superseded by a later pass.
+AT and Model40 pass all six launches each. Full units, static checks and external
+integration pass on both host widths; all six manifests and asset identities
+remain valid. These gates do not replace the failed deployed qualification.
+T538 remains open; its finite outstanding batch stays here rather than being
+silently deferred to the unrelated queue. No production repair was part of S6.
