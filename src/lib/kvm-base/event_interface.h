@@ -12,6 +12,10 @@ typedef enum kvm_event_type {
     KVM_EVENT_MOUSE,
     KVM_EVENT_HOTKEY,
     KVM_EVENT_WINDOW_CLOSE,
+    /* This source can no longer observe balanced host releases. It carries no
+     * guest input; the receiving session releases only keys it recorded from
+     * this source. */
+    KVM_EVENT_INPUT_RESET,
     /* A raw component is permanently retiring. This is its final asynchronous
      * lifetime fact; the application clears pressed state by source_identity
      * and must not dereference the borrowed source handle. */

@@ -27,7 +27,7 @@ static lib_i32 console_broker_prepare_saw_active;
 static lib_i32 console_broker_wait_for_callback;
 static lib_u32 activations;
 static lib_u32 deactivations, disposals;
-static lib_u32 input_resets, activation_attempts;
+static lib_u32 input_resets, retirement_resets, activation_attempts;
 static lib_console *reset_console;
 static lib_u32 reset_generation;
 static console_broker_backend *test_backend;
@@ -87,7 +87,8 @@ lib_status console_broker_backend_activate(console_broker_backend *native_consol
     lib_bool restore_cooked_request)
 {
     lib_test_assert(reset_console == console && reset_generation == generation);
-    lib_test_assert(input_resets == ++activation_attempts);
+    ++activation_attempts;
+    lib_test_assert(input_resets + retirement_resets >= activation_attempts);
     if (console_broker_fail_next_activation > 0) {
         --console_broker_fail_next_activation;
         return LIB_STATUS_IO_ERROR;
@@ -233,7 +234,10 @@ static lib_status tracked_delivery(lib_console *console, const lib_console_event
         lib_test_assert(test_backend->active == LIB_NULL); /* Old reader already quiesced. */
         reset_console = console;
         reset_generation = event->binding_generation;
-        ++input_resets;
+        if (test_backend->generation != 0u &&
+            event->binding_generation == test_backend->generation)
+            ++retirement_resets;
+        else ++input_resets;
     }
     return lib_console_deliver_event(console, event);
 }
@@ -394,6 +398,7 @@ int main(void)
     lib_test_assert(console_broker_create(&second_broker, first,
         CONSOLE_BROKER_COOKED_LINES) == LIB_STATUS_OK);
     console_broker_destroy(second_broker);
+    lib_test_assert(retirement_resets != 0u);
 #ifdef _WIN32
     /* A replacement models a reader join: the new Current Console cannot be
        committed while the old reader's callback remains in flight. */

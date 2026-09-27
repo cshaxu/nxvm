@@ -9,20 +9,37 @@ static lib_win32_uint_ptr LIB_WIN32_WINAPI test_set_timer(lib_win32_hwnd window,
 { (void)window; (void)interval; (void)callback; return id; }
 static lib_win32_bool LIB_WIN32_WINAPI test_kill_timer(lib_win32_hwnd window, lib_win32_uint_ptr id)
 { (void)window; (void)id; return LIB_WIN32_TRUE; }
+static void *test_window_context;
+static lib_win32_long_ptr LIB_WIN32_WINAPI test_get_window_context(
+    lib_win32_hwnd window, lib_i32 index)
+{
+    (void)window;
+    return index == LIB_WIN32_GWLP_USERDATA ?
+        (lib_win32_long_ptr)test_window_context : 0;
+}
 #undef lib_win32_set_timer
 #undef lib_win32_kill_timer
+#undef lib_win32_get_window_long_ptr_a
 #define lib_win32_set_timer test_set_timer
 #define lib_win32_kill_timer test_kill_timer
+#define lib_win32_get_window_long_ptr_a test_get_window_context
 #include "lib/kvm-window/win32/component.c"
 
 static kvm_window window;
 static kvm_win32_window_context context;
 static kvm_window_frame frame;
 static kvm_input_event delivered[32];
-static lib_u32 count, attempts, reject_at, failures;
+static lib_u32 count, resets, retirements, attempts, reject_at, failures;
+static lib_bool reject_reset;
 static lib_bool sink(void *opaque, const kvm_input_event *event)
 {
     (void)opaque;
+    if (event->type == KVM_EVENT_INPUT_RESET) {
+        lib_test_assert(event->source_identity == window.base.source_identity);
+        ++resets;
+        return !reject_reset;
+    }
+    if (event->type == KVM_EVENT_SOURCE_RETIRED) { ++retirements; return LIB_TRUE; }
     if (++attempts == reject_at) return LIB_FALSE;
     lib_test_assert(count < 32);
     delivered[count++] = *event;
@@ -46,7 +63,9 @@ static void initialize(void)
         LIB_NULL, LIB_NULL) == LIB_STATUS_OK);
     lib_memory_set(&context, 0, sizeof(context));
     context.component = &window;
-    count = attempts = reject_at = failures = 0;
+    test_window_context = &context;
+    count = resets = retirements = attempts = reject_at = failures = 0;
+    reject_reset = LIB_FALSE;
     frame.valid = LIB_TRUE; frame.text.base.text_columns = 80; frame.text.base.text_rows = 25;
 }
 static lib_bool key(kvm_key key, lib_u16 scan, lib_bool down, lib_u8 modifiers)
@@ -129,6 +148,58 @@ static void frozen_prefix_replay(void)
     lib_test_assert(!key('B', 0x30, 1, 0) && attempts == 1);
     lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
 }
+
+static void frozen_reset(void)
+{
+    initialize();
+    lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(window.base.hotkey_matcher.held_count == 1 && count == 0u);
+    set_frozen(LIB_TRUE);
+    lib_test_assert(resets == 1u && count == 0u &&
+        window.base.hotkey_matcher.held_count == 0u);
+    lib_test_assert(!context.keyboard_normalizer.pending_high_surrogate &&
+        !context.keyboard_normalizer.pending_repeat_count);
+    set_frozen(LIB_FALSE);
+    lib_test_assert(key('A', 0x1e, 1, 0));
+    lib_test_assert(count == 1u && delivered[0].data.key.key == 'A');
+    lib_test_assert(win32_window_reset_input(&context));
+    lib_test_assert(resets == 2u && window.base.hotkey_matcher.held_count == 0u);
+    lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+}
+
+static void rejected_reset(void)
+{
+    initialize();
+    lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
+    lib_test_assert(window.base.hotkey_matcher.held_count == 1u && count == 0u);
+    reject_reset = LIB_TRUE;
+    win32_window_proc((lib_win32_hwnd)1, LIB_WIN32_WM_KILLFOCUS, 0u, 0u);
+    lib_test_assert(resets == 1u && failures == 1u && window.base.stopping &&
+        window.base.hotkey_matcher.held_count == 0u);
+    lib_test_assert(!key('A', 0x1e, 1, 0) && attempts == 0u);
+    kvm_component_retire(&window.base, LIB_STATUS_OK);
+    lib_test_assert(retirements == 1u && failures == 1u);
+    lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+}
+static void focus_reset(void)
+{
+    const lib_win32_uint messages[] = {
+        LIB_WIN32_WM_KILLFOCUS, LIB_WIN32_WM_ACTIVATEAPP
+    };
+    initialize();
+    for (lib_u32 i = 0u; i < 2u; ++i) {
+        lib_test_assert(key('A', 0x1e, LIB_TRUE, 0));
+        lib_test_assert(key('A', 0x1e, LIB_FALSE, 0));
+        lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, LIB_TRUE, 1));
+        lib_test_assert(count == (i + 1u) * 2u && window.base.hotkey_matcher.held_count == 1u);
+        for (lib_u32 repeat = 0u; repeat < 2u; ++repeat) {
+            win32_window_proc((lib_win32_hwnd)1, messages[i], 0u, 0u);
+            lib_test_assert(resets == i * 2u + repeat + 1u && failures == 0u);
+            lib_test_assert(count == (i + 1u) * 2u && window.base.hotkey_matcher.held_count == 0u);
+        }
+    }
+    lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
+}
 static lib_win32_handle start_race;
 static lib_status publish_status;
 static lib_win32_dword LIB_WIN32_WINAPI publish(void *unused)
@@ -149,6 +220,9 @@ int main(void)
     kvm_input_event event = { .type = KVM_EVENT_WINDOW_CLOSE };
     kvm_component_control taken;
     frozen_prefix_replay();
+    frozen_reset();
+    rejected_reset();
+    focus_reset();
     initialize();
     context.frozen = LIB_TRUE;
     lib_test_assert(key(KVM_KEY_CONTROL, 0x1d, 1, 1));
@@ -187,7 +261,7 @@ int main(void)
     lib_test_assert(attempts == 2 && count == 1);
     lib_test_assert(kvm_window_publish_frame(&window, &frame) == LIB_STATUS_INVALID_STATE);
     kvm_component_retire(&window.base, LIB_STATUS_OK);
-    lib_test_assert(failures == 1 && count == 2 && delivered[1].type == KVM_EVENT_SOURCE_RETIRED);
+    lib_test_assert(failures == 1 && count == 1 && retirements == 1u);
     lib_test_assert(kvm_component_destroy(&window.base) == LIB_STATUS_OK);
 
     initialize();

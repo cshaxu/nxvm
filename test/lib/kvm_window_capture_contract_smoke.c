@@ -51,7 +51,7 @@ static lib_i32 LIB_WIN32_WINAPI metrics(lib_i32 index)
     return index==LIB_WIN32_SM_CXSCREEN || index==LIB_WIN32_SM_CXVIRTUALSCREEN ? desktop_width : desktop_height;
 }
 static lib_win32_bool LIB_WIN32_WINAPI get_clip(lib_win32_rect *r) { *r=clipped; return LIB_WIN32_TRUE; }
-static lib_u32 releases, clips, events;
+static lib_u32 releases, clips, events, input_resets;
 static lib_bool reject_input;
 static lib_i32 release_ok=1;
 static lib_u32 focus_requests, foreground_requests;
@@ -178,7 +178,13 @@ static void title_notification(void)
     lib_test_assert(c->frozen); /* Nested notification must not drain ahead of this control. */
 }
 static lib_bool input(void *p,const kvm_input_event *e)
-{ (void)p; lib_test_assert(e->type==KVM_EVENT_MOUSE); ++events; return !reject_input; }
+{
+    (void)p;
+    if (e->type == KVM_EVENT_INPUT_RESET) { ++input_resets; return !reject_input; }
+    lib_test_assert(e->type == KVM_EVENT_MOUSE);
+    ++events;
+    return !reject_input;
+}
 static void failure(void *p,lib_u64 id,lib_status status)
 { (void)p;(void)id;(void)status; }
 static lib_status join(kvm_component *p, lib_u32 timeout_ms)
@@ -469,7 +475,8 @@ int main(void)
     lib_test_assert(kvm_window_freeze(&window)==LIB_STATUS_OK);
     lib_test_assert(kvm_window_unfreeze(&window)==LIB_STATUS_OK);
     lib_test_assert(!win32_window_consume_mailboxes((lib_win32_hwnd)1,&c));
-    lib_test_assert(c.frozen && window.base.mailboxes.control_count==1);
+    /* A native release failure is terminal before the freeze state changes. */
+    lib_test_assert(!c.frozen && window.base.mailboxes.control_count==1);
     lib_test_assert(window.base.failure==LIB_STATUS_IO_ERROR && window.base.stopping);
     lib_test_assert(!c.mouse.captured);
     lib_test_assert(kvm_component_destroy(&window.base)==LIB_STATUS_OK);

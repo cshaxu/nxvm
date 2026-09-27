@@ -85,6 +85,19 @@ lib_bool kvm_component_emit(kvm_component *component, const kvm_input_event *eve
         component->input_context, LIB_TRUE);
 }
 
+lib_bool kvm_component_reset_input(kvm_component *component)
+{
+    kvm_input_event event = { .type = KVM_EVENT_INPUT_RESET };
+    if (component == LIB_NULL || component->input_sink == LIB_NULL ||
+        lib_atomic_i32_load_explicit(&component->stopping,
+            LIB_MEMORY_ORDER_ACQUIRE) != 0) return LIB_FALSE;
+    kvm_hotkey_matcher_discard(&component->hotkey_matcher);
+    kvm_input_event_set_source(&event, component, component->source_identity);
+    if (component->input_sink(component->input_context, &event)) return LIB_TRUE;
+    kvm_component_fail(component, LIB_STATUS_IO_ERROR);
+    return LIB_FALSE;
+}
+
 lib_status kvm_component_enqueue_control(kvm_component *component,
     const kvm_component_control *control)
 {

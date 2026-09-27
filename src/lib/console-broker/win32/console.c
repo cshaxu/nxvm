@@ -127,6 +127,13 @@ static lib_status console_broker_emit_mouse(console_broker_backend *backend,
     return lib_console_deliver_event(backend->console, &event);
 }
 
+static lib_status console_broker_emit_input_reset(console_broker_backend *backend)
+{
+    lib_console_event event = { .kind = LIB_CONSOLE_EVENT_INPUT_RESET };
+    event.binding_generation = backend->generation;
+    return lib_console_deliver_event(backend->console, &event);
+}
+
 static void console_broker_reader_failed(console_broker_backend *backend)
 {
     lib_console_event event = { 0 };
@@ -188,6 +195,9 @@ static lib_win32_dword LIB_WIN32_WINAPI console_broker_reader(void *context)
                     &record.Event.KeyEvent) != LIB_STATUS_OK) break;
             if (record.EventType == LIB_WIN32_MOUSE_EVENT && console_broker_emit_mouse(backend,
                     &record.Event.MouseEvent) != LIB_STATUS_OK) break;
+            if (record.EventType == LIB_WIN32_FOCUS_EVENT &&
+                !record.Event.FocusEvent.bSetFocus &&
+                console_broker_emit_input_reset(backend) != LIB_STATUS_OK) break;
         }
         console_broker_reader_failed(backend);
     }
@@ -372,7 +382,8 @@ lib_status console_broker_backend_activate(console_broker_backend *backend,
         configured = (configured & ~(LIB_WIN32_ENABLE_ECHO_INPUT | LIB_WIN32_ENABLE_LINE_INPUT |
             LIB_WIN32_ENABLE_PROCESSED_INPUT | LIB_WIN32_ENABLE_QUICK_EDIT_MODE |
             LIB_WIN32_ENABLE_VIRTUAL_TERMINAL_INPUT)) |
-            LIB_WIN32_ENABLE_MOUSE_INPUT | LIB_WIN32_ENABLE_EXTENDED_FLAGS;
+            LIB_WIN32_ENABLE_MOUSE_INPUT | LIB_WIN32_ENABLE_WINDOW_INPUT |
+            LIB_WIN32_ENABLE_EXTENDED_FLAGS;
     else configured |= LIB_WIN32_ENABLE_ECHO_INPUT | LIB_WIN32_ENABLE_LINE_INPUT | LIB_WIN32_ENABLE_PROCESSED_INPUT;
     if (!lib_win32_set_console_mode(backend->input, configured)) return LIB_STATUS_IO_ERROR;
     /* A Current-Console cutover has one ownership boundary regardless of

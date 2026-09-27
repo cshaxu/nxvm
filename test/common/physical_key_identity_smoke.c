@@ -83,6 +83,40 @@ static void check_sources(common_session_machine_state retirement_state)
     common_session_queue_dispose(q);
 }
 
+static void check_input_reset(void)
+{
+    common_session_queue q = { 0 };
+    kvm_input_event event = { .type = KVM_EVENT_KEY };
+    capture c = { 0 };
+
+    lib_test_assert(common_session_queue_initialize(&q));
+    event.data.key.key = KVM_KEY_ALT;
+    event.data.key.scan_code = 0x38u;
+    event.data.key.pressed = LIB_TRUE;
+    event.source_identity = 1u;
+    dispatch(&q, &event, &c);
+    event.source_identity = 2u;
+    dispatch(&q, &event, &c);
+    event.type = KVM_EVENT_INPUT_RESET;
+    dispatch(&q, &event, &c);
+    lib_test_assert(c.breaks == 1u && q.pressed_count == 1u);
+    event.source_identity = 1u;
+    dispatch(&q, &event, &c);
+    lib_test_assert(c.breaks == 2u && q.pressed_count == 0u);
+    dispatch(&q, &event, &c);
+    lib_test_assert(c.breaks == 2u); /* Reset is idempotent. */
+
+    event.type = KVM_EVENT_KEY;
+    event.data.key.pressed = LIB_TRUE;
+    dispatch(&q, &event, &c);
+    lib_test_assert(c.makes == 3u && q.pressed_count == 1u);
+    event.type = KVM_EVENT_INPUT_RESET;
+    lib_test_assert(common_session_dispatch_input(&q, &event,
+        COMMON_SESSION_MACHINE_PAUSED, receive, &c));
+    lib_test_assert(c.breaks == 2u && q.pressed_count == 0u);
+    common_session_queue_dispose(&q);
+}
+
 static lib_bool receive_text(void *context, const kvm_input_event *event)
 {
     lib_u32 *calls = context;
@@ -173,6 +207,7 @@ int main(void)
         }
     check_sources(COMMON_SESSION_MACHINE_RUNNING);
     check_sources(COMMON_SESSION_MACHINE_PAUSED);
+    check_input_reset();
     check_text();
     check_capacity();
     return 0;

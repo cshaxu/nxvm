@@ -42,6 +42,9 @@ lib_bool kvm_component_emit(kvm_component *component, const kvm_input_event *eve
  * allow_replay tags this make's eligibility for later ordinary replay. */
 lib_bool kvm_component_emit_to(kvm_component *component, const kvm_input_event *event,
     kvm_input_sink delivery_sink, void *delivery_context, lib_bool allow_replay);
+/* Source-local cleanup bypasses matching so withheld prefixes cannot replay
+ * while a source is losing its ability to observe balanced host input. */
+lib_bool kvm_component_reset_input(kvm_component *component);
 lib_status kvm_component_enqueue_control(kvm_component *component,
     const kvm_component_control *control);
 void kvm_component_retire(kvm_component *component, lib_status status);

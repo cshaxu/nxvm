@@ -7,6 +7,7 @@
 static lib_win32_handle waiting, proceed;
 static lib_win32_hwnd created;
 static lib_i32 scenario, retired, failures, ordinary, closes;
+static lib_u32 input_resets;
 static void input_scenario(void);
 static void paint_scenario(void);
 static lib_u32 paint_ends;
@@ -139,6 +140,11 @@ static void checked_fail(kvm_component *component, lib_status status)
 static lib_bool input(void *context, const kvm_input_event *event)
 {
     (void)context;
+    if (event->type == KVM_EVENT_INPUT_RESET) {
+        lib_test_assert(event->source_identity != 0u);
+        ++input_resets;
+        return LIB_TRUE;
+    }
     if (scenario == 7 && event->type == KVM_EVENT_KEY) { ++ordinary; return LIB_FALSE; }
     if (scenario == 8 && event->type == KVM_EVENT_WINDOW_CLOSE) { ++closes; return LIB_TRUE; }
     lib_test_assert(event->type == KVM_EVENT_SOURCE_RETIRED);
@@ -185,6 +191,7 @@ int main(void)
         proceed = lib_win32_create_event_a(LIB_NULL, LIB_WIN32_TRUE, LIB_WIN32_FALSE, LIB_NULL);
         lib_test_assert(waiting && proceed);
         retired = failures = ordinary = closes = 0;
+        input_resets = 0u;
         paint_ends=0;
         inject_output_failure=0;
         notification_attempts=0;
@@ -227,6 +234,7 @@ int main(void)
         kvm_window_win32_state *state = window->worker_state;
         lib_test_assert(lib_win32_wait_for_single_object(state->worker, 5000u) == LIB_WIN32_WAIT_OBJECT_0);
         lib_test_assert(retired == 1 && failures == (scenario != 0 && scenario != 8));
+        if (scenario == 17) lib_test_assert(input_resets != 0u);
         lib_test_assert(!lib_win32_is_window(created));
         if (scenario==10 || scenario==11) lib_test_assert(paint_ends>0);
         lib_test_assert(ordinary == (scenario == 7) && closes == (scenario == 8));

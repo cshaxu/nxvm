@@ -30,7 +30,12 @@ void kvm_console_receive_event(void *context,
         console->worker_state == LIB_NULL)
         return;
     if (event->kind == LIB_CONSOLE_EVENT_INPUT_RESET) {
-        kvm_hotkey_matcher_discard(&console->base.hotkey_matcher);
+        if (console->previous_mouse_valid) {
+            input.type = KVM_EVENT_MOUSE;
+            input.data.mouse.relative = LIB_TRUE;
+            (void)kvm_console_emit_normalized(console, &input);
+        }
+        if (!kvm_component_reset_input(&console->base)) return;
         lib_memory_set(&console->keyboard, 0, sizeof(console->keyboard));
         console->previous_mouse_valid = LIB_FALSE;
     } else if (event->kind == LIB_CONSOLE_EVENT_ACTIVATED) {

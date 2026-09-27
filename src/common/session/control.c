@@ -206,7 +206,8 @@ lib_bool common_session_accept_kvm_event(const common_session_event *event,
     /* Source identity is globally monotonic.  Retirement is not guest input:
        it must always reach the ledger, even when the component belonged to a
        retired run, so a later allocation cannot inherit its held keys. */
-    if (input->type == KVM_EVENT_SOURCE_RETIRED) return LIB_TRUE;
+    if (input->type == KVM_EVENT_SOURCE_RETIRED ||
+        input->type == KVM_EVENT_INPUT_RESET) return LIB_TRUE;
     if (event->run_generation != 0u && event->run_generation !=
         current_run_generation) return LIB_FALSE;
     if (runtime_state == COMMON_SESSION_MACHINE_RUNNING) return LIB_TRUE;
@@ -282,7 +283,8 @@ lib_bool common_session_dispatch_input(common_session_queue *queue, const kvm_in
     if (event->type == KVM_EVENT_MOUSE || event->type == KVM_EVENT_TEXT)
         return runtime_state != COMMON_SESSION_MACHINE_RUNNING ||
             sink(sink_context, event);
-    if (event->type == KVM_EVENT_SOURCE_RETIRED)
+    if (event->type == KVM_EVENT_SOURCE_RETIRED ||
+        event->type == KVM_EVENT_INPUT_RESET)
         return common_session_release_source(queue, event->source_identity,
             runtime_state, sink, sink_context);
     if (event->type == KVM_EVENT_WINDOW_CLOSE)

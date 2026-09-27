@@ -74,19 +74,26 @@ static void console_broker_remove_output_binding(lib_console *console,
     lib_release(binding);
 }
 
+static lib_status console_broker_reset_bound(lib_console *console, lib_u32 generation)
+{
+    lib_console_event reset = { .kind = LIB_CONSOLE_EVENT_INPUT_RESET };
+    lib_status status;
+    reset.binding_generation = generation;
+    status = lib_console_deliver_event(console, &reset);
+    return status == LIB_STATUS_INVALID_STATE ? LIB_STATUS_OK : status;
+}
+
 static lib_status console_broker_activate_bound(console_broker *broker,
     lib_console *console, console_broker_mode mode, lib_u32 generation,
     lib_bool restore_cooked_request)
 {
     lib_status status;
-    lib_console_event reset = { .kind = LIB_CONSOLE_EVENT_INPUT_RESET };
     status = lib_console_bind_generation(console, generation);
     if (status != LIB_STATUS_OK) return status;
     /* Old reader is quiescent. Reset local input before any next reader can
      * deliver; a logical Console without an input sink needs no reset work. */
-    reset.binding_generation = generation;
-    status = lib_console_deliver_event(console, &reset);
-    if (status != LIB_STATUS_OK && status != LIB_STATUS_INVALID_STATE) return status;
+    status = console_broker_reset_bound(console, generation);
+    if (status != LIB_STATUS_OK) return status;
     status = console_broker_backend_activate(broker->backend, console, mode,
         generation, restore_cooked_request);
     if (status != LIB_STATUS_OK) lib_console_invalidate_binding(console);
@@ -225,6 +232,19 @@ lib_status console_broker_replace(console_broker *broker,
         console_broker_backend_unlock_transaction(broker->backend);
         return status;
     }
+    status = console_broker_reset_bound(old, broker->generation);
+    if (status != LIB_STATUS_OK) {
+        broker->broken = LIB_TRUE;
+        lib_console_invalidate_binding(old);
+        old_output = broker->current_output;
+        broker->current_output = LIB_NULL;
+        console_broker_backend_unlock_output(broker->backend);
+        console_broker_remove_output_binding(next, next_output);
+        lib_console_release(next);
+        console_broker_remove_output_binding(old, old_output);
+        console_broker_backend_unlock_transaction(broker->backend);
+        return status;
+    }
     lib_console_invalidate_binding(old);
     status = console_broker_activate_bound(broker, next, next_mode, next_generation,
         LIB_FALSE);
@@ -319,6 +339,13 @@ lib_status console_broker_destroy(console_broker *broker)
         /* A live reader still references backend and current.  This is
            already a terminal broker failure; retain its process-lifetime
            state rather than releasing either object underneath that worker. */
+        console_broker_backend_unlock_output(broker->backend);
+        console_broker_backend_unlock_transaction(broker->backend);
+        return status;
+    }
+    status = console_broker_reset_bound(current, broker->generation);
+    if (status != LIB_STATUS_OK) {
+        broker->broken = LIB_TRUE;
         console_broker_backend_unlock_output(broker->backend);
         console_broker_backend_unlock_transaction(broker->backend);
         return status;

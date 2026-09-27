@@ -341,37 +341,40 @@ static void check_input_reset(void)
     lib_test_assert(c->base.hotkey_matcher.held_count==1);
     e.binding_generation=2;
     lib_test_assert(lib_console_deliver_event(logical,&e)==0);
-    lib_test_assert(!c->base.hotkey_matcher.held_count && c->base.hotkey_matcher.registry.count==1);
+    lib_test_assert(reset_event_count==3 && reset_events[1].type==KVM_EVENT_MOUSE &&
+        reset_events[1].data.mouse.buttons==0u &&
+        reset_events[2].type==KVM_EVENT_INPUT_RESET &&
+        !c->base.hotkey_matcher.held_count && c->base.hotkey_matcher.registry.count==1);
     lib_test_assert(kvm_component_mailboxes_capture_frame(&c->base.mailboxes,&generation,&copied,sizeof(copied)));
     lib_test_assert(copied.base.text_columns==80);
     e.kind=LIB_CONSOLE_EVENT_RAW_KEY;
     e.value.raw_key=(lib_console_raw_key){ .unicode=0xde00, .pressed=LIB_TRUE };
-    lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==1);
+    lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==3);
     e.value.raw_key=(lib_console_raw_key){ .key='A', .scan_code=0x1e, .pressed=LIB_TRUE };
-    lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==2);
-    lib_test_assert(reset_events[1].type==KVM_EVENT_KEY && reset_events[1].data.key.key=='A');
+    lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==4);
+    lib_test_assert(reset_events[3].type==KVM_EVENT_KEY && reset_events[3].data.key.key=='A');
     e.kind=LIB_CONSOLE_EVENT_RAW_MOUSE;
     e.value.raw_mouse=(lib_console_raw_mouse){ .delta_x=61, .delta_y=21 };
-    lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==3);
-    lib_test_assert(reset_events[2].data.mouse.delta_x==0 && reset_events[2].data.mouse.delta_y==0);
+    lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==5);
+    lib_test_assert(reset_events[4].data.mouse.delta_x==0 && reset_events[4].data.mouse.delta_y==0);
     ++e.value.raw_mouse.delta_x; ++e.value.raw_mouse.delta_y;
     e.value.raw_mouse.buttons=LIB_WIN32_FROM_LEFT_1ST_BUTTON_PRESSED|LIB_WIN32_RIGHTMOST_BUTTON_PRESSED;
     lib_test_assert(lib_console_deliver_event(logical,&e)==0);
-    lib_test_assert(reset_events[3].data.mouse.delta_x==8 && reset_events[3].data.mouse.delta_y==16);
-    lib_test_assert(reset_events[2].data.mouse.buttons==0 && reset_events[3].data.mouse.buttons==
+    lib_test_assert(reset_events[5].data.mouse.delta_x==8 && reset_events[5].data.mouse.delta_y==16);
+    lib_test_assert(reset_events[4].data.mouse.buttons==0 && reset_events[5].data.mouse.buttons==
         (KVM_MOUSE_BUTTON_LEFT|KVM_MOUSE_BUTTON_RIGHT));
-    lib_test_assert(reset_events[3].data.mouse.relative && reset_events[3].source_identity==
-        reset_events[2].source_identity);
+    lib_test_assert(reset_events[5].data.mouse.relative && reset_events[5].source_identity==
+        reset_events[4].source_identity);
     lib_test_assert(kvm_console_mouse_buttons(0)==0);
     lib_test_assert(kvm_console_mouse_buttons(LIB_WIN32_FROM_LEFT_1ST_BUTTON_PRESSED)==KVM_MOUSE_BUTTON_LEFT);
     lib_test_assert(kvm_console_mouse_buttons(LIB_WIN32_RIGHTMOST_BUTTON_PRESSED)==KVM_MOUSE_BUTTON_RIGHT);
     lib_test_assert(kvm_console_mouse_buttons(LIB_WIN32_FROM_LEFT_2ND_BUTTON_PRESSED)==0);
     e.kind=LIB_CONSOLE_EVENT_RAW_KEY;
     e.value.raw_key=(lib_console_raw_key){ .key='P', .scan_code=0x19, .pressed=LIB_TRUE, .modifiers=3 };
-    lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==5);
-    lib_test_assert(reset_events[4].type==KVM_EVENT_HOTKEY); /* Accepted snapshot policy survives. */
+    lib_test_assert(lib_console_deliver_event(logical,&e)==0 && reset_event_count==7);
+    lib_test_assert(reset_events[6].type==KVM_EVENT_HOTKEY); /* Accepted snapshot policy survives. */
     lib_test_assert(kvm_console_destroy(c) == LIB_STATUS_OK);
-    lib_test_assert(reset_event_count==6 && reset_events[5].type==KVM_EVENT_SOURCE_RETIRED);
+    lib_test_assert(reset_event_count==8 && reset_events[7].type==KVM_EVENT_SOURCE_RETIRED);
 }
 
 static void invalid_control_failure(void *opaque, lib_u64 identity, lib_status status)

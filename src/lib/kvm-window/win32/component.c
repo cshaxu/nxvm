@@ -440,6 +440,15 @@ static void win32_window_release_mouse(kvm_win32_window_context *context)
         kvm_component_fail(&context->component->base, LIB_STATUS_IO_ERROR);
 }
 
+static lib_bool win32_window_reset_input(kvm_win32_window_context *context)
+{
+    if (!win32_window_accepting_input(context)) return LIB_FALSE;
+    if (!kvm_component_reset_input(&context->component->base)) return LIB_FALSE;
+    lib_memory_set(&context->keyboard_normalizer, 0,
+        sizeof(context->keyboard_normalizer));
+    return LIB_TRUE;
+}
+
 static void win32_window_capture_mouse(lib_win32_hwnd window,
     kvm_win32_window_context *context)
 {
@@ -538,15 +547,16 @@ static lib_bool win32_window_consume_mailboxes(lib_win32_hwnd window,
                 (void)lib_win32_set_focus(window);
                 if (!win32_window_accepting_input(context)) return LIB_FALSE;
             }
-            context->frozen = control.payload[0];
-            if (context->frozen) {
+            if (control.payload[0]) {
                 win32_window_release_mouse(context);
                 if (!win32_window_accepting_input(context)) return LIB_FALSE;
+                if (!win32_window_reset_input(context)) return LIB_FALSE;
             } else {
                 context->cursor_blink_visible = LIB_TRUE;
                 context->cursor_blink_due = lib_win32_get_tick_count() +
                     WIN32_WINDOW_CURSOR_BLINK_INTERVAL_MS;
             }
+            context->frozen = control.payload[0];
             if (context->frozen ?
                 !lib_win32_kill_timer(window, WIN32_WINDOW_CURSOR_TIMER) :
                 !lib_win32_set_timer(window, WIN32_WINDOW_CURSOR_TIMER,
@@ -749,9 +759,13 @@ static lib_win32_lresult LIB_WIN32_CALLBACK win32_window_proc(lib_win32_hwnd win
         return 0;
     case LIB_WIN32_WM_KILLFOCUS:
         win32_window_release_mouse(context);
+        (void)win32_window_reset_input(context);
         return 0;
     case LIB_WIN32_WM_ACTIVATEAPP:
-        if (!wparam) win32_window_release_mouse(context);
+        if (!wparam) {
+            win32_window_release_mouse(context);
+            (void)win32_window_reset_input(context);
+        }
         break;
     case LIB_WIN32_WM_CLOSE:
         { kvm_input_event close_event = { 0 };
