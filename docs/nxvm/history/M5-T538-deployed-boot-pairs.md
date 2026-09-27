@@ -171,3 +171,18 @@ Build trees are retained for that next qualification; no new task is admitted.
 | Exit Criteria | Reviewed import is byte-identical to pinned six-root corpus; required tests/builds/manifests pass; all receivers and evidence are committed/pushed per target; coordinator reviews actual changes; clean tree. T538 stays open. |
 | Original Owner Request | Close current S, admit a new S to import SoftPC fixes, then verify six components are completely identical. S3 was already closed. |
 | Similar-Issue Sweep | Reconcile all cache/coverage resets and raw-write extents in Console broker plus native/fake tests; check steady, shrink, stream-write invalidation and failed-write retry. Linux and KVM leaves do not own the Win32 backing rectangle. Existing cooked-history rollback TODO remains separate. |
+
+## S5 Admission And Import Review
+
+Owner requested the next unchanged six-root SoftPC import on 2026-09-27.
+S4 was already closed; coordinator admits S5 against baseline 52e5da766.
+[S5 evidence](../etc/evidence/t538-s5-input-reset-import.md) records the twenty
+same-path units, pinned source, source-loss contract, both receiver adapters
+and finite similar-issue batch. The initial 228-file equality audit identified
+a cross-owner test include. Owner approved fixing it here for SoftPC to import:
+production remains unchanged, while owner-local fixtures replace that test.
+Shared implementation 0c71110b0 is pushed. Both NXVM widths pass 335 unit and
+21 static cases; external integration passes 20/20. Both MyNES widths pass
+132/132. Ten optimized stripped receiver builds and both documentation gates
+pass. Receiver commits and coordinator closure follow; no T boot qualification
+is claimed.

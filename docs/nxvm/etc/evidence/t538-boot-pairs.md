@@ -427,3 +427,12 @@ SoftPC output-extent/cache-coverage repair; [S4 evidence](t538-s4-console-import
 owns six-root equality and updated receiver qualification. These changes do not
 replace the final three-fresh-launch-per-pair predicate or reinterpret S2's
 historical hashes as current artifacts. The original keyboard repair remains.
+
+## S5 Shared Input-Loss Batch
+
+The owner admitted a subsequent reviewed SoftPC import. Its finite reset-source
+batch and approved owner-local test correction are recorded in
+[S5 evidence](t538-s5-input-reset-import.md). This changes shared input cleanup,
+not the eight EXE/INI cases or the requirement for three fresh launches per
+final pair. Earlier artifact hashes remain historical; final qualification
+must use the newly rebuilt receivers.

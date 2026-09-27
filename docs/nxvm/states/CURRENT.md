@@ -2,9 +2,35 @@
 
 ## Current Work
 
-M5 T538 remains open. S2, S3 and S4 are accepted and closed; no S is active.
+M5 T538 remains open. S2, S3 and S4 are accepted and closed; S5 is active.
+The owner approved local repair of the imported cross-owner white-box test;
+SoftPC will receive that test-only correction from this repository. See
+[S5 evidence](../etc/evidence/t538-s5-input-reset-import.md).
+Shared implementation 0c71110b0 is pushed. All required suites and ten builds
+pass; target-scoped receiver deliveries and coordinator closure follow.
 [Proposal](../proposals/m5-deployed-boot-pairs.md) and
 [ledger](../etc/evidence/t538-boot-pairs.md) own the remaining whole-task repeated boot qualification.
+
+## Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T538 S5, next unused S after accepted S4. |
+| Admission And Approval | Owner on 2026-09-27 requests audit and unchanged import, then approves fixing the test boundary here for SoftPC to import. Targets: Shared and both NXVM/MyNES receiving builds, tests and evidence. S4 is already closed. |
+| Objective | Import pinned production unchanged; replace the cross-owner test with owner-local coverage and a boundary check, then verify both receiving products. |
+| Non-goals | No sibling writes, product-specific shared fork, product policy change, INI/media/snapshot modification, or T-level boot closure. |
+| Reference Baseline | NXVM 52e5da766; clean SoftPC 40da7d00 (full source pin in evidence), compared against b79769c1. |
+| Candidate Proposal | [Deployed boot pairs](../proposals/m5-deployed-boot-pairs.md), S5 shared input-loss batch. |
+| Files And ABI Surface | Imported source/test/manifest paths in four roots; x86 pair unchanged. Adds KVM_EVENT_INPUT_RESET and worker reset operation; consumers rebuilt together, no mixed enum ABI. Local corrections split the cross-owner fixture and update retirement-test event admission for reset without weakening single-retirement assertions. |
+| Applicable Rules | EXECUTION, ARCHITECTURE, CODING, DOCUMENT; both product guides, architecture/coding/UI and source policies. Lib owns native loss facts and matcher state; Common owns delivered-key ledger; product drivers own guest input. |
+| Verification | Production roots, test/x86 and registration helper remain pinned; enumerate approved test/lib and test/common deltas. Six manifests, Types/DAG/corpus gates; full NXVM units on x64/x86, external integration, MyNES full suites on both widths; ten optimized stripped builds; both documentation gates and actual diff review. |
+| Expected Markers | Focus loss, freeze and Console handoff reset the source without replaying held prefixes; Common releases only its recorded source keys; duplicate reset is harmless; rejected reset fails explicitly. |
+| Asset Needs | Existing lawful external inputs, read-only/overlay as configured. Preserve owner INIs/snapshot. Retain existing build trees for this receiver run and immediately following T qualification. |
+| Reporting Requirements | Audit API and receiver fit before import; report root equality, test counts, ten artifact hashes, code-size delta and per-target pushed commits. |
+| Stop Conditions | Independent third-party notice, unreviewed source change, unapproved shared divergence, incompatible consumer contract or regression requires coordinator disposition before closure. |
+| Exit Criteria | Pinned production unchanged, approved test-only delta recorded for SoftPC; all required tests/builds/gates pass; scoped commits pushed; coordinator actual-change review; clean tree. T remains open. |
+| Original Owner Request | Close old S, admit new S, audit and import all six SoftPC components; subsequently fix the identified test boundary here for SoftPC to import. |
+| Similar-Issue Sweep | Inspect reset/retirement producers and consumers across Lib, Common and both Apps: focus, freeze, handoff, repeated reset, paused/stale generations, sink failure and source-specific releases. Reconcile this finite batch separately from the T boot matrix. |
 
 ## Retained Progress
 

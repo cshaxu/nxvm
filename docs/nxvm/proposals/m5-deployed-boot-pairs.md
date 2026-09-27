@@ -34,7 +34,11 @@ Window fallback is allowed. Assets stay external and masters unchanged.
    unchanged; verify six shared source/test roots and both products' receivers.
    Buffer capacity, committed-frame cache and pending tail coverage remain
    separate concepts inside the same broker owner and write path.
-5. Final S: dual-width release deployment, complete units/integration, repeated
+5. S5: audit and import SoftPC's source-local input-loss reset across Console,
+   Window and Common's delivered-key ledger. Keep production unchanged; owner
+   approves splitting the cross-owner test here for SoftPC to import. Verify
+   manifests, the explicit test-only delta and both receiving products.
+6. Final S: dual-width release deployment, complete units/integration, repeated
    real EXE/INI boots and owner manual validation handoff.
 
 The [convergence ledger](../etc/evidence/t538-boot-pairs.md) fixes the corpus.

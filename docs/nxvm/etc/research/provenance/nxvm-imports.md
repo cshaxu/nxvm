@@ -81,3 +81,16 @@ Existing MIT authorization and notices are retained; no recovered-machine or
 third-party unit is introduced. The other four roots already match unchanged.
 [S4 evidence](../../evidence/t538-s4-console-import.md) records the full 227-file
 six-root parity, tests and receiving artifacts.
+
+## T538 S5 Shared Input Reset Import
+
+Owner-approved unchanged transfer from SoftPC
+40da7d0059c97e7f3a5026d16c128417e48e74b7; twenty same-path units are enumerated in
+[S5 evidence](../../evidence/t538-s5-input-reset-import.md). Existing neutral
+project-owner MIT corpus; no independent notice, recovered-machine source or
+protected asset is imported. Source/test manifests and both receiving Apps
+are verified together; sibling checkout is not a runtime dependency.
+The owner subsequently approved a local test-only boundary correction for
+SoftPC to import. No imported production source is changed; evidence enumerates
+the eight differing test paths, including deletion of the cross-owner fixture
+and admission of INPUT_RESET in the native retirement regression.
