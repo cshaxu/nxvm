@@ -26,11 +26,14 @@ Artifact evidence: [S10 registration and byte boolean](../etc/evidence/m6-t43-s1
 ## Current Technical Baseline
 
 - MyNES: optimized stripped 0043 x64/x86 artifacts in `assets/mynes/`,
-  rebuilt as receivers of NXVM-hosted M5 T538 S4; full suites pass 132/132 per
-  width. [Receiver evidence](../etc/evidence/t538-s4-console-import-receiver.md) records
+  rebuilt as receivers of NXVM-hosted M5 T538 S5; full suites pass 132/132 per
+  width. [Receiver evidence](../etc/evidence/t538-s5-input-reset-receiver.md) records
   hashes. No MyNES source or configuration changes; T43 remains closed.
   Owner-provided v3 snapshot is committed in S13 P3 9b2b10ce2.
-- Shared: 4ca7e6401, identical to SoftPC b79769c1; transfer the six roots plus test/register.cmake.
+- Shared: 0c71110b0; production and test/x86 match SoftPC 40da7d00. Two test
+  roots contain the owner-approved boundary/retirement corrections for SoftPC
+  to import, including removal of its cross-owner fixture. Transfer complete
+  roots with removals; test/register.cmake remains unchanged.
   Six manifests and Types gates pass. All receiving Apps were rebuilt together.
 - Snapshot `MNS1` guest state remains Core-owned; transient driver stop/frame
   publication state is reset only after successful restore. Deferred work remains
