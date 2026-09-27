@@ -235,3 +235,6 @@ pending; this S does not substitute unit/integration counts for that gate.
 
 Shared implementation is 0c71110b0714fffee3ef8c40bb352ee3dd71ee40, pushed to
 origin/master. It identifies the final source used by all ten receivers.
+NXVM receiver delivery is fd006cd5c; MyNES receiver delivery is 7f0521ab4.
+Coordinator actual-change review accepts these scoped deliveries and closes S5;
+the archived packet and review are in the task history. T538 remains open.
