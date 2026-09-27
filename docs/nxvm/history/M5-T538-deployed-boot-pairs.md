@@ -229,3 +229,44 @@ Current. Current evidence, proposal and history agree; Queue is unchanged.
 | Exit Criteria | Pinned production unchanged, approved test-only delta recorded for SoftPC; all required tests/builds/gates pass; scoped commits pushed; coordinator actual-change review; clean tree. T remains open. |
 | Original Owner Request | Close old S, admit new S, audit and import all six SoftPC components; subsequently fix the identified test boundary here for SoftPC to import. |
 | Similar-Issue Sweep | Inspect reset/retirement producers and consumers across Lib, Common and both Apps: focus, freeze, handoff, repeated reset, paused/stale generations, sink failure and source-specific releases. Reconcile this finite batch separately from the T boot matrix. |
+
+
+## S6 Coordinator Review: Verification Accepted, T Closure Rejected
+
+Coordinator reviewed the actual 9d5e0ed0a delivery, all 24 case dispositions,
+original-resolution captures, logs and complete both-width test results against
+the original closure-verification request. The packet's final clarification
+separates completing verification from passing its T gate; it does not relax
+any product qualification criterion. Eighteen boot successes, five XT 9C 301
+failures and one unclassified default early pause remain explicit. XT's sole
+boot success does not prove pause/Debug handoff. Neither repeated passes nor
+unit/integration success overwrite those gaps.
+
+S6 is accepted and closed as a completed negative verification. T538 remains
+open; its proposal is not archived, the outstanding deployed batch stays in
+its ledger, and no repair or next queued task is admitted. Shared fixes require
+owner review. Source/test delta is zero; existing eight artifacts, four INIs
+and media masters retain their hashes. Evidence includes the observer's pause
+acknowledgement limitation and preserves ignored raw observations for immediate
+diagnosis. No unrelated target or external source is changed.
+
+### S6 Archived Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; next unused S6 of open T538. |
+| Admission And Approval | Owner approved final closure verification on 2026-09-27: “好 你进行这个收口验证”. One session performs coordinator and executor roles sequentially. NXVM-only verification; no Shared or MyNES changes authorized. |
+| Objective | Qualify all eight currently deployed EXE/INI pairs with three independent fresh launches each; reconcile the complete T538 ledger and closure predicates. |
+| Non-goals | No INI/media edits, synthetic F1, production repair, new hardware qualification, shared import or next queued task. |
+| Reference Baseline | Clean c134b0982; unchanged S5 0538 artifacts and recorded input hashes. |
+| Candidate Proposal | [T538 proposal](../proposals/m5-deployed-boot-pairs.md); [coverage ledger](../etc/evidence/t538-boot-pairs.md). |
+| Files And ABI Surface | NXVM current/history/evidence and proposal disposition only; existing deployed observer and build trees reused. No ABI or executable input change planned. |
+| Applicable Rules | Execution: complete batch, unit/integration gates, per-target pushed P and actual-diff review. Document: single current authority and history retention. Source policy: external immutable media/firmware only. Architecture/coding unchanged; no production edit. |
+| Verification | Existing deployed observer: each of four profiles on both widths, three sequential 180-second observations, 50ms start Return release; owned-tree watchdog at 195 seconds. Model40 x86 diagnostic extension to 300 seconds only after demonstrated progress. Full NXVM non-desktop and desktop unit suites both widths, established external integration, six manifests, documentation gate and diff check. |
+| Expected Markers | Every launch reaches DOS prompt/date entry or installer, not merely a living process; input and pause/resume usable. No 30x error or unclassified exit/hang. |
+| Asset Needs | Actual adjacent NXVM.ini and external configured masters; verify hashes before/after. Logs/captures under ignored build/t538-s6, no instruction trace; retain only for this verification and immediate diagnosis. |
+| Reporting Requirements | Report batch progress, failures separately from success, final 24-case dispositions, suite totals, unchanged artifact decision and pushed commits. |
+| Stop Conditions | An unresolved case blocks T closure. Reconcile complete affected batch before proposing repairs; shared changes or scope expansion require owner review. Stop only owned observer/child processes. |
+| Exit Criteria | Complete and reconcile all 24 case dispositions plus applicable tests and governance; actual-change coordinator review, target-scoped commit/push and clean worktree. A completed verification may report a failed T gate; no failed or unclassified run may be called qualified. Close T only if every proposal exit is proved. |
+| Original Owner Request | “好 你进行这个收口验证”; verify the remaining repeated deployed boot qualification before claiming T538 closed. |
+| Similar-Issue Sweep | Consume all eight deployed pairs across both host widths and all three repetitions, covering shared input/presentation paths; recheck retained S2-S5 regressions through full suites. No new repair class claimed. |

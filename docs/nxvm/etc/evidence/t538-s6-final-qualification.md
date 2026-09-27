@@ -138,5 +138,8 @@ rows, not as shipped assets. Queue and MyNES/Shared trees are unchanged.
 The verification is complete and its T-gate result is **failed**. This is not
 T538 closure or acceptance of any failed row. The next action requires a bounded
 diagnostic/repair admission covering the XT input-handoff batch and the separate
-default early pause. Coordinator review must accept the evidence delivery
-separately from the rejected whole-task qualification.
+default early pause. Coordinator actual-change review accepts delivery
+9d5e0ed0a and closes S6 as a completed negative verification, separately from
+the rejected whole-task qualification. The archived packet and review are in
+[task history](../../history/M5-T538-deployed-boot-pairs.md). T538 stays open;
+no next S or repair is admitted.
