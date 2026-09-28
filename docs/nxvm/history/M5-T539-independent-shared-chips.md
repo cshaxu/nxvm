@@ -153,6 +153,8 @@ removes that bypass and covers the complete 126-case first-service family.
 [Evidence](../etc/evidence/t539-s6-dma-first-service.md) records the Intel source,
 negative control and remaining DMA extraction boundary. Full dual-width units
 (341/341), default integration (20/20), all other profile boots once, gates and
-eight receiving artifacts pass. The complete executor delivery is ready for
-pushed actual-change review; no Shared implementation or other product changes
-are part of S6.
+eight receiving artifacts pass. NXVM 0746220bf is pushed. Coordinator-role
+actual-diff review accepts the one removed bypass, 126-case fixture, preserved
+original tests, corrected source claim and artifact identities. No Shared
+implementation or other product changes are part of S6. The active packet is
+removed; S6 closes and T539 remains open for the pending DMA extraction.

@@ -108,5 +108,17 @@ No original test scenario or expectation was deleted or weakened.
 | nxvm_at_0_5_0539_x64.exe | AB56A4D9CD23948699C246AA18852C786FD7B6B4190A7A737C0204FE0BD256E5 |
 | nxvm_at_0_5_0539_x86.exe | BA93DE5AEC36A99FDAFB047D5AE6CF999E0E9E0C09DBCF28EC75161979883A6B |
 
-The complete executor delivery is ready for pushed actual-change review;
-coordinator acceptance is not inferred from the passing tests.
+## Actual-Change Acceptance
+
+Coordinator-role review of pushed 0746220bf inspected the production deletion,
+all matrix code, packet, ledger, corrected historical claim, build identities and
+remaining-document diff against the bounded brief. The existing phase handler
+is the sole transfer owner; no register/phase implementation, API or product
+branch was added. The matrix uses visible effects rather than a duplicate phase
+model, preserves original tests, and proves the baseline failure before success.
+
+Every first-service family member has direct proof; the unextracted DMA row and
+its separate page/reset and board-boundary work remain explicitly pending.
+One NXVM-target P contains the complete implementation and required evidence;
+Shared and MyNES are unchanged. S6 is accepted and its active packet is removed.
+T539 remains open for automatic admission of the next bounded extraction batch.
