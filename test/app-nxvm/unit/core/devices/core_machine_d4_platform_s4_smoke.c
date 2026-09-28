@@ -146,7 +146,8 @@ lib_i32 main(void)
 
     if (!failed) failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0061u, 0u) != LIB_STATUS_OK ||
-        machine->shared_kbc.data.output_port != 1u ||
+        core_machine_bus_write(machine, 0x0064u, 0xd0u) != LIB_STATUS_OK ||
+        core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK || value != 1u ||
         core_machine_bus_write(machine, 0x004bu, 0x30u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0048u, 1u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0048u, 0u) != LIB_STATUS_OK ||

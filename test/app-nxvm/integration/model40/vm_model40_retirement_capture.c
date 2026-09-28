@@ -203,7 +203,7 @@ typedef struct model40_retirement_capture {
     lib_u8 reset_vector_seen;
     lib_u32 reset_vector_count;
     lib_u8 reset_vector_shutdown_status[MODEL40_CAPTURE_RESET_HISTORY];
-    lib_u8 reset_vector_kbc_output_port[MODEL40_CAPTURE_RESET_HISTORY];
+    lib_bool reset_vector_a20[MODEL40_CAPTURE_RESET_HISTORY];
     lib_u8 reset_vector_io_valid;
     lib_u32 reset_vector_io_pc;
     lib_u16 reset_vector_io_port;
@@ -214,7 +214,7 @@ typedef struct model40_retirement_capture {
     lib_u8 reset_instruction_value;
     lib_u8 reset_instruction_state_seen;
     lib_u8 reset_instruction_shutdown_status;
-    lib_u8 reset_instruction_kbc_output_port;
+    lib_bool reset_instruction_a20;
     lib_u8 last_software_interrupt_valid;
     lib_u32 last_software_interrupt_pc;
     lib_u8 last_software_interrupt_vector;
@@ -784,8 +784,8 @@ static void model40_capture_observe(void *opaque,
         if (capture->machine != LIB_NULL && reset_sample < MODEL40_CAPTURE_RESET_HISTORY) {
             capture->reset_vector_shutdown_status[reset_sample] =
                 x86_rtc_read_register(capture->machine->shared_rtc, 0x0fu);
-            capture->reset_vector_kbc_output_port[reset_sample] =
-                capture->machine->shared_kbc.data.output_port;
+            capture->reset_vector_a20[reset_sample] =
+                capture->machine->executor_memory.data.flagA20;
         }
     }
     if (capture->machine != LIB_NULL && !capture->reset_instruction_seen &&
@@ -797,8 +797,8 @@ static void model40_capture_observe(void *opaque,
             executor_cpu_instructions.data.oldcpu.data.eax;
         capture->reset_instruction_state_seen = LIB_TRUE;
         capture->reset_instruction_shutdown_status = x86_rtc_read_register(capture->machine->shared_rtc, 0x0fu);
-        capture->reset_instruction_kbc_output_port =
-            capture->machine->shared_kbc.data.output_port;
+        capture->reset_instruction_a20 =
+            capture->machine->executor_memory.data.flagA20;
     }
     if (capture->machine != LIB_NULL && capture->low_stack_transition_seen &&
         (!capture->minimum_stack_seen ||
@@ -1772,14 +1772,14 @@ lib_i32 main(lib_i32 argc, char **argv)
         }
         printf("M5:T498:S5:WARM-RESET:count=%u", (unsigned)capture.reset_vector_count);
         for (index = 0u; index < reset_sample_count; ++index) {
-            printf("-shutdown=%02X-kbc-output=%02X",
+            printf("-shutdown=%02X-a20=%u",
                 (unsigned)capture.reset_vector_shutdown_status[index],
-                (unsigned)capture.reset_vector_kbc_output_port[index]);
+                (unsigned)capture.reset_vector_a20[index]);
         }
         if (capture.reset_instruction_state_seen) {
-            printf("-before-pulse-shutdown=%02X-before-pulse-kbc-output=%02X",
+            printf("-before-pulse-shutdown=%02X-before-pulse-a20=%u",
                 (unsigned)capture.reset_instruction_shutdown_status,
-                (unsigned)capture.reset_instruction_kbc_output_port);
+                (unsigned)capture.reset_instruction_a20);
         }
         printf("\n");
     }

@@ -180,12 +180,7 @@ typedef struct vm_byob_boot_trace {
     vm_byob_fdc_port_event kbc_port_history[VM_BYOB_KBC_WRITE_HISTORY];
     lib_u64 kbc_write_count;
     vm_byob_fdc_port_event kbc_write_history[VM_BYOB_KBC_WRITE_HISTORY];
-    lib_u8 kbc_after_self_test_fifo;
-    lib_u8 kbc_after_self_test_delayed;
-    lib_u8 kbc_after_self_test_polls;
     lib_u8 kbc_first_self_test_status;
-    lib_u8 kbc_first_self_test_fifo;
-    lib_u8 kbc_first_self_test_delayed;
     lib_u16 kbc_self_test_after_input_ax;
     lib_u32 kbc_self_test_after_input_flags;
     lib_u16 kbc_self_test_after_compare_ax;
@@ -199,13 +194,10 @@ typedef struct vm_byob_boot_trace {
     vm_byob_fdc_port_event kbc_keyboard_reset_reads[4u];
     lib_u8 kbc_reset_xmit_status_count;
     lib_u8 kbc_reset_xmit_status_values[4u];
-    lib_u8 kbc_reset_xmit_input_full;
-    lib_u8 kbc_reset_xmit_pending_write;
-    lib_u64 kbc_line_enable_writes;
-    lib_u32 kbc_line_enable_pc;
-    lib_u8 kbc_line_enable_fifo;
-    lib_u8 kbc_line_enable_bat_pending;
-    lib_u8 kbc_line_enable_irq_pending;
+    lib_u64 kbc_data4d_writes;
+    lib_u32 kbc_data4d_pc;
+    lib_u8 kbc_data4d_bat_pending;
+    lib_u8 kbc_data4d_irq_asserted;
     lib_u16 kbc_reset_loop_cx;
     lib_u16 kbc_reset_jcxz_cx;
     lib_u8 kbc_reset_loop_outcome;
@@ -711,8 +703,6 @@ static void vm_byob_retirement_observe(void *context,
                 trace->kbc_reset_xmit_status_values[trace->kbc_reset_xmit_status_count++] =
                     (lib_u8)observation->io_value;
             }
-            trace->kbc_reset_xmit_input_full = trace->machine->shared_kbc.data.input_buffer_full;
-            trace->kbc_reset_xmit_pending_write = trace->machine->shared_kbc.data.pending_write;
         }
         if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE &&
             observation->point.linear_pc >= 0xf1fe0u && observation->point.linear_pc < 0xf2028u &&
@@ -724,27 +714,17 @@ static void vm_byob_retirement_observe(void *context,
             trace->kbc_write_history[trace->kbc_write_count %
                 VM_BYOB_KBC_WRITE_HISTORY] = trace->kbc_port_history[index];
             ++trace->kbc_write_count;
-            if (observation->point.linear_pc == 0xf0397u &&
-                observation->io_port == 0x0064u && observation->io_value == 0xaau) {
-                trace->kbc_after_self_test_fifo = trace->machine->shared_kbc.data.fifo_count;
-                trace->kbc_after_self_test_delayed =
-                    trace->machine->shared_kbc.data.delayed_response_count;
-                trace->kbc_after_self_test_polls =
-                    trace->machine->shared_kbc.data.response_status_polls_remaining;
-            }
             if (observation->io_port == 0x0060u && observation->io_value == 0xffu) {
                 trace->kbc_keyboard_reset_seen = LIB_TRUE;
                 trace->kbc_keyboard_reset_read_count = 0u;
             }
-            if (observation->io_port == 0x0060u && observation->io_value == 0x4du &&
-                trace->machine->shared_kbc.data.command_byte == 0x4du) {
-                ++trace->kbc_line_enable_writes;
-                trace->kbc_line_enable_pc = observation->point.linear_pc;
-                trace->kbc_line_enable_fifo = trace->machine->shared_kbc.data.fifo_count;
-                trace->kbc_line_enable_bat_pending =
-                    trace->machine->shared_kbc.data.keyboard_bat_pending;
-                trace->kbc_line_enable_irq_pending =
-                    LIB_FALSE;
+            if (observation->io_port == 0x0060u && observation->io_value == 0x4du) {
+                ++trace->kbc_data4d_writes;
+                trace->kbc_data4d_pc = observation->point.linear_pc;
+                trace->kbc_data4d_bat_pending =
+                    x86_keyboard_get_signals(trace->machine->shared_kbc.connect.keyboard).bat_ready;
+                trace->kbc_data4d_irq_asserted =
+                    trace->machine->shared_kbc.connect.irq1_source.asserted;
             }
         } else if (trace->kbc_keyboard_reset_seen && observation->io_port == 0x0060u &&
             trace->kbc_keyboard_reset_read_count <
@@ -755,9 +735,6 @@ static void vm_byob_retirement_observe(void *context,
         } else if (observation->point.linear_pc == 0xf03a6u &&
             observation->io_port == 0x0064u && trace->kbc_first_self_test_status == 0u) {
             trace->kbc_first_self_test_status = (lib_u8)observation->io_value;
-            trace->kbc_first_self_test_fifo = trace->machine->shared_kbc.data.fifo_count;
-            trace->kbc_first_self_test_delayed =
-                trace->machine->shared_kbc.data.delayed_response_count;
         }
     }
     if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
@@ -2983,34 +2960,25 @@ done:
                     (unsigned int)access->port, (unsigned int)access->value);
             }
         }
-        printf("BOOT-PROBE=a20-port-writes=%llu-last=%05X-%02X-kbc-output=%02X\n",
+        printf("BOOT-PROBE=a20-port-writes=%llu-last=%05X-%02X-a20=%u\n",
             (unsigned long long)trace.a20_port_write_count,
             (unsigned int)trace.a20_port_last_pc,
             (unsigned int)trace.a20_port_last_value,
-            (unsigned int)session->core_machine->shared_kbc.data.output_port);
-        printf("BOOT-PROBE=kbc-queue=fifo:%u-delayed:%u/%u-response:%llu-polls:%u-config:%u-bat:%u-command:%02X-enabled:%u\n",
-            (unsigned int)session->core_machine->shared_kbc.data.fifo_count,
-            (unsigned int)session->core_machine->shared_kbc.data.delayed_response_index,
-            (unsigned int)session->core_machine->shared_kbc.data.delayed_response_count,
-            (unsigned long long)session->core_machine->shared_kbc.data.response_remaining_ticks,
-            (unsigned int)session->core_machine->shared_kbc.data.response_status_polls_remaining,
-            (unsigned int)session->core_machine->shared_kbc.data.command_response_ticks,
-            (unsigned int)session->core_machine->shared_kbc.data.keyboard_bat_pending,
-            (unsigned int)session->core_machine->shared_kbc.data.command_byte,
-            (unsigned int)session->core_machine->shared_kbc.data.keyboard_enabled);
-        printf("BOOT-PROBE=kbc-line-enable=%llu/%05X-fifo:%u-bat:%u-irq-pending:%u\n",
-            (unsigned long long)trace.kbc_line_enable_writes,
-            (unsigned int)trace.kbc_line_enable_pc,
-            (unsigned int)trace.kbc_line_enable_fifo,
-            (unsigned int)trace.kbc_line_enable_bat_pending,
-            (unsigned int)trace.kbc_line_enable_irq_pending);
-        printf("BOOT-PROBE=kbc-self-test=after:%u/%u/%u-first-status:%02X-state:%u/%u\n",
-            (unsigned int)trace.kbc_after_self_test_fifo,
-            (unsigned int)trace.kbc_after_self_test_delayed,
-            (unsigned int)trace.kbc_after_self_test_polls,
-            (unsigned int)trace.kbc_first_self_test_status,
-            (unsigned int)trace.kbc_first_self_test_fifo,
-            (unsigned int)trace.kbc_first_self_test_delayed);
+            (unsigned int)session->core_machine->executor_memory.data.flagA20);
+        {
+            lib_u64 ticks = 0u;
+            const lib_status status = core_machine_kbc_ticks_until_event(
+                &session->core_machine->shared_kbc, &ticks);
+            printf("BOOT-PROBE=kbc-deadline-status=%u-ticks=%llu\n",
+                (unsigned int)status, (unsigned long long)ticks);
+        }
+        printf("BOOT-PROBE=kbc-data4d-write=%llu/%05X-bat:%u-irq-asserted:%u\n",
+            (unsigned long long)trace.kbc_data4d_writes,
+            (unsigned int)trace.kbc_data4d_pc,
+            (unsigned int)trace.kbc_data4d_bat_pending,
+            (unsigned int)trace.kbc_data4d_irq_asserted);
+        printf("BOOT-PROBE=kbc-self-test-first-status=%02X\n",
+            (unsigned int)trace.kbc_first_self_test_status);
         printf("BOOT-PROBE=kbc-self-test-cpu=input:%04X/%08X-compare:%04X/%08X\n",
             (unsigned int)trace.kbc_self_test_after_input_ax,
             (unsigned int)trace.kbc_self_test_after_input_flags,
@@ -3038,14 +3006,12 @@ done:
             (unsigned int)trace.kbc_keyboard_reset_reads[2u].value,
             (unsigned int)trace.kbc_keyboard_reset_reads[3u].linear_pc,
             (unsigned int)trace.kbc_keyboard_reset_reads[3u].value);
-        printf("BOOT-PROBE=kbc-reset-xmit=status:%u/%02X,%02X,%02X,%02X-core:%u/%u\n",
+        printf("BOOT-PROBE=kbc-reset-xmit=status:%u/%02X,%02X,%02X,%02X\n",
             (unsigned int)trace.kbc_reset_xmit_status_count,
             (unsigned int)trace.kbc_reset_xmit_status_values[0u],
             (unsigned int)trace.kbc_reset_xmit_status_values[1u],
             (unsigned int)trace.kbc_reset_xmit_status_values[2u],
-            (unsigned int)trace.kbc_reset_xmit_status_values[3u],
-            (unsigned int)trace.kbc_reset_xmit_input_full,
-            (unsigned int)trace.kbc_reset_xmit_pending_write);
+            (unsigned int)trace.kbc_reset_xmit_status_values[3u]);
         printf("BOOT-PROBE=kbc-reset-flow=loop:%04X/%u-jcxz:%04X/%u\n",
             (unsigned int)trace.kbc_reset_loop_cx,
             (unsigned int)trace.kbc_reset_loop_outcome,
@@ -3264,11 +3230,21 @@ done:
                 (unsigned int)core_machine_dma_has_pending_request(
                     &session->core_machine->shared_dma_primary,
                     &session->core_machine->shared_dma_secondary));
-            printf("BOOT-PROBE=waiting-kbc=%llu/%llu/%llu-pit-rule=%u\n",
-                (unsigned long long)session->core_machine->shared_kbc.data.typematic_remaining_ticks,
-                (unsigned long long)session->core_machine->shared_kbc.data.response_remaining_ticks,
-                (unsigned long long)session->core_machine->shared_kbc.data.serial_delivery_remaining_ticks,
-                (unsigned int)session->core_machine->timing_plan.controller_timing.pit_clock);
+            {
+                lib_u64 ticks = 0u;
+                const lib_status status = x86_keyboard_ticks_until_repeat(
+                    session->core_machine->shared_kbc.connect.keyboard, &ticks);
+                printf("BOOT-PROBE=waiting-keyboard-repeat-status=%u-ticks=%llu\n",
+                    (unsigned int)status, (unsigned long long)ticks);
+            }
+            {
+                lib_u64 ticks = 0u;
+                const lib_status status = core_machine_kbc_ticks_until_event(
+                    &session->core_machine->shared_kbc, &ticks);
+                printf("BOOT-PROBE=waiting-kbc-deadline-status=%u-ticks=%llu-pit-rule=%u\n",
+                    (unsigned int)status, (unsigned long long)ticks,
+                    (unsigned int)session->core_machine->timing_plan.controller_timing.pit_clock);
+            }
         }
         if (post_resume_required) printf("BOOT-PROBE=post-resume-required\n");
         if (post_memory_failure) printf("BOOT-PROBE=post-memory-failure\n");

@@ -17,7 +17,7 @@ This ledger is not a claim of completed chip semantics/timing qualification.
 | `pit.c`, `pit.h` | S3 implementation: sole timer moved to `src/x86/devices/pit825x`; NXVM `pit_bus` owns port attachment, existing board/scheduler own wiring and clocks. Verification and acceptance are recorded in S3 evidence. |
 | `dma.c`, `dma.h` | S7 implementation: sole controller in `src/x86/devices/dma8237`; NXVM dma_bus retains page/lane expansion, pair arbitration and physical cycle provider. [S7 evidence](t539-s7-dma-extraction.md) maps original tests and verification; Current owns acceptance. [S6](t539-s6-dma-first-service.md) retains the prior first-service repair evidence. |
 | `rtc.c`, `rtc.h` | S4 accepted: sole mechanism moved to `src/x86/devices/rtc146818`; NXVM owns index/NMI, PIC signal binding, seed/checksum and clocks. Verification and actual-change acceptance are recorded in S4 evidence. |
-| `kbc.c`, `kbc.h` | Split AT-controller and attached keyboard/AUX behavior; board owns A20/reset and port/IRQ wiring. |
+| `kbc.c`, `kbc.h` | S8 implementation: opaque `kbc8042`, `keyboard` and `ps2mouse` in Shared; the original NXVM pair now owns only endpoint construction, ports, IRQ, A20/reset and time attachment. [Evidence](t539-s8-kbc-extraction.md) records order, test mapping and receivers; Current owns acceptance. |
 | `xt_keyboard.c`, `xt_keyboard.h` | Extract existing serial keyboard behavior; replace concrete PPI binding. |
 | `xt_ppi_keyboard.c`, `xt_ppi_keyboard.h` | Split implemented Mode-0 mechanism from XT DIP/NMI/speaker/keyboard attachment; no full-8255 claim. |
 | `fdc.c`, `fdc.h`, `fdc_observation_interface.h` | Extract command/state/deadline and observations; split PC adapter/drive wiring and decide unready policy ownership. |

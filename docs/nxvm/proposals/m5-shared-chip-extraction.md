@@ -75,6 +75,14 @@ Its [delivery evidence](../etc/evidence/t539-s7-dma-extraction.md) records the
 original-test migration, allocation rollback and receiving-product verification.
 Current owns acceptance; no remaining chip batch is implicitly accepted.
 
+S8 separates the qualified AT controller, keyboard and AUX device under its
+[boundary review](../etc/architecture/t539-s8-kbc-boundary.md). The controller
+owns transport; endpoints own commands/BAT/typematic/packet state; NXVM retains
+ports, IRQ, A20/reset and clock attachment. Its copied connection contract and
+stateless scan codec retain the original ordering without private peer access.
+The [delivery evidence](../etc/evidence/t539-s8-kbc-extraction.md) maps original
+cases, removed state, verification and artifact identities.
+
 The first admitted S freezes a migration ledger covering every tracked source
 file in the current devices subtree, its callers and tests. Each entry names
 the chip or board responsibility, dependencies, destination and proof. Every

@@ -8,6 +8,11 @@
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
 
+static void keyboard_repeat(void *context, lib_u8 byte)
+{
+    *(lib_u8 *)context = byte;
+}
+
 static lib_i32 vm_model_339_clock_contract_is_selected(void)
 {
     const vm_profile_default_pc_at_descriptor *model_339 =
@@ -94,9 +99,22 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
     failed |= session->core_machine->kbc_typematic_initial_ticks != 4000000u ||
         session->core_machine->kbc_typematic_repeat_ticks != 800000u ||
         session->core_machine->kbc_command_response_ticks != 0u;
-    failed |= session->core_machine->shared_kbc.data.typematic != 0x2cu ||
-        session->core_machine->shared_kbc.data.typematic_initial_ticks != 4000000u ||
-        session->core_machine->shared_kbc.data.typematic_repeat_ticks != 800000u;
+    {
+        x86_keyboard *keyboard = session->core_machine->shared_kbc.connect.keyboard;
+        lib_u64 ticks = 0u;
+        lib_u8 repeated = 0u;
+        failed |= x86_keyboard_admit(keyboard, 0x1cu) != LIB_STATUS_OK;
+        failed |= x86_keyboard_ticks_until_repeat(keyboard, &ticks) != LIB_STATUS_OK ||
+            ticks != 4000000u;
+        failed |= x86_keyboard_advance(keyboard, 3999999u, keyboard_repeat, &repeated) ||
+            repeated != 0u;
+        failed |= !x86_keyboard_advance(keyboard, 1u, keyboard_repeat, &repeated) ||
+            repeated != 0x1cu;
+        failed |= x86_keyboard_ticks_until_repeat(keyboard, &ticks) != LIB_STATUS_OK ||
+            ticks != 800000u;
+        failed |= x86_keyboard_admit(keyboard, 0xf0u) != LIB_STATUS_OK;
+        failed |= x86_keyboard_admit(keyboard, 0x1cu) != LIB_STATUS_OK;
+    }
     failed |= core_machine_capture_time_observation(session->core_machine,
         &time_observation) != LIB_STATUS_OK || !time_observation.pacing_time_available ||
         time_observation.pacing_ticks_per_second != 8000000u ||

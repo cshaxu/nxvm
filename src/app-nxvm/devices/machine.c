@@ -576,7 +576,12 @@ static lib_status core_machine_create_internal(
             return LIB_STATUS_INVALID_ARGUMENT;
         }
     } else {
-        core_machine_kbc_initialize(&machine->shared_kbc, &machine->executor_port);
+        lib_status status = core_machine_kbc_initialize(&machine->shared_kbc,
+            &machine->executor_port);
+        if (status != LIB_STATUS_OK) {
+            core_machine_destroy(machine);
+            return status;
+        }
     }
     {
         lib_status status = core_machine_dma_initialize(&machine->shared_dma_latch,
@@ -1376,7 +1381,7 @@ lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine
     }
     *out_scan_set = machine->keyboard_topology ==
         CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ? CORE_MACHINE_KEYBOARD_SCAN_SET_1 :
-        machine->shared_kbc.data.scan_set;
+        x86_keyboard_get_signals(machine->shared_kbc.connect.keyboard).scan_set;
     return LIB_STATUS_OK;
 }
 

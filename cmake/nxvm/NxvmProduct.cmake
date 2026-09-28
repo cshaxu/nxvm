@@ -1183,7 +1183,7 @@ add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237)
+target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-ps2mouse x86-keyboard x86-kbc8042)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(vm-machine-frame-smoke

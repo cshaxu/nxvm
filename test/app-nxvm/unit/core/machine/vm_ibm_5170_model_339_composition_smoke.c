@@ -1,4 +1,5 @@
 #include "lib/types/types_interface.h"
+#include "support/kbc_fixture.h"
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
@@ -87,11 +88,13 @@ static lib_i32 vm_model_339_selected_contract(void)
         speaker.timer_gate || !speaker.data_enabled || !speaker.output) ? 0x0004 : 0;
     failed |= (core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
         LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) ? 0x0008 : 0;
-    failed |= (session->core_machine->shared_kbc.connect.aux_present ||
-        session->core_machine->shared_kbc.data.aux_enabled ||
-        (session->core_machine->shared_kbc.data.command_byte &
-            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u) ? 0x0010 : 0;
-    failed |= (session->core_machine->shared_kbc.data.output_port != 0x03u ||
+    failed |= (x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
+        x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
+        !kbc_test_command_matches(&session->core_machine->shared_kbc,
+            &session->core_machine->executor_port, 0x20u,
+            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX)) ? 0x0010 : 0;
+    failed |= (!kbc_test_command_matches(&session->core_machine->shared_kbc,
+        &session->core_machine->executor_port, 0xd0u, 0xffu, 0x03u) ||
         !session->core_machine->executor_memory.data.flagA20) ? 0x0011 : 0;
     failed |= (core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
         LIB_STATUS_OK || memory_bytes != 512u * 1024u) ? 0x0020 : 0;

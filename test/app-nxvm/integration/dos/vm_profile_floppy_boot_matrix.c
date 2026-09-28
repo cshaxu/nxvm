@@ -292,33 +292,18 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 name, boot_bytes[0u], boot_bytes[1u], boot_bytes[2u], boot_bytes[3u],
                 boot_signature[1u], boot_signature[0u]);
         }
-        printf("T515:INI-BOOT:%s:KBC:output=%02X:command=%02X:fifo=%u:serial=%u:enabled=%u:scan=%u:typematic=%u/%02X/%llu:bat=%u:pending=%u:input-full=%u\n",
-            name, session->core_machine->shared_kbc.data.output_port,
-            session->core_machine->shared_kbc.data.command_byte,
-            session->core_machine->shared_kbc.data.fifo_count,
-            session->core_machine->shared_kbc.data.keyboard_serial_count,
-            session->core_machine->shared_kbc.data.keyboard_enabled,
-            session->core_machine->shared_kbc.data.scanning_enabled,
-            session->core_machine->shared_kbc.data.typematic_active,
-            session->core_machine->shared_kbc.data.typematic_scan_code,
-            (unsigned long long)session->core_machine->shared_kbc.data.typematic_remaining_ticks,
-            session->core_machine->shared_kbc.data.keyboard_bat_pending,
-            session->core_machine->shared_kbc.data.pending_write,
-            session->core_machine->shared_kbc.data.input_buffer_full);
-        printf("T516:INI-BOOT:%s:KBC-QUEUE:delayed=%u/%u:polls=%u:head=%u:", name,
-            session->core_machine->shared_kbc.data.delayed_response_index,
-            session->core_machine->shared_kbc.data.delayed_response_count,
-            session->core_machine->shared_kbc.data.response_status_polls_remaining,
-            session->core_machine->shared_kbc.data.fifo_head);
-        for (index = 0u; index < session->core_machine->shared_kbc.data.fifo_count;
-            ++index) {
-            const lib_u8 queue_index = (lib_u8)((
-                session->core_machine->shared_kbc.data.fifo_head + index) %
-                CORE_MACHINE_KBC_FIFO_CAPACITY);
-            printf("%02X/%u ", session->core_machine->shared_kbc.data.fifo[queue_index],
-                session->core_machine->shared_kbc.data.fifo_origin[queue_index]);
+        {
+            const t_kbc *kbc = &session->core_machine->shared_kbc;
+            const x86_keyboard_signals signals = x86_keyboard_get_signals(kbc->connect.keyboard);
+            lib_u64 ticks = 0u;
+            const lib_status status = core_machine_kbc_ticks_until_event(kbc, &ticks);
+            printf("T539:INI-BOOT:%s:KBC:scan=%u:bat=%u:irq1=%u:irq12=%u:a20=%u:deadline-status=%u:ticks=%llu\n",
+                name, (unsigned int)signals.scanning, (unsigned int)signals.bat_ready,
+                (unsigned int)kbc->connect.irq1_source.asserted,
+                (unsigned int)kbc->connect.irq12_source.asserted,
+                (unsigned int)session->core_machine->executor_memory.data.flagA20,
+                (unsigned int)status, (unsigned long long)ticks);
         }
-        printf("\n");
         if (trace_probe != LIB_NULL) {
             printf("T516:INI-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
                 name, (unsigned long long)trace_probe->cpu_retires,

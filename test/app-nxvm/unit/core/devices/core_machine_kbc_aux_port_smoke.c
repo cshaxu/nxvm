@@ -146,11 +146,9 @@ lib_i32 main(void)
     failed |= !take_aux_byte(&port, &master, &slave, 0x01u);
     failed |= !take_aux_byte(&port, &master, &slave, 0x01u);
     if (failed) {
-        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-ORDER:fifo=%u:delayed=%u/%u:bat=%u\n",
-            (unsigned int)kbc.data.fifo_count,
-            (unsigned int)kbc.data.delayed_response_count,
-            (unsigned int)kbc.data.delayed_response_index,
-            (unsigned int)kbc.data.keyboard_bat_pending);
+        fprintf(stderr, "M5:T267:AUX:PORT:FAIL:E9-ORDER:status=%02X:bat=%u\n",
+            (unsigned int)read_port(&port, 0x64u),
+            (unsigned int)x86_keyboard_get_signals(kbc.connect.keyboard).bat_ready);
         return 1;
     }
     stage = 4;
@@ -222,35 +220,39 @@ lib_i32 main(void)
     send_aux_command(&port, 0xffu);
     failed |= !take_aux_byte(&port, &master, &slave, 0xfau) ||
         !take_aux_byte(&port, &master, &slave, 0xaau) ||
+        !take_aux_byte(&port, &master, &slave, 0x00u);
+    send_aux_command(&port, 0xe9u);
+    failed |= !take_aux_byte(&port, &master, &slave, 0xfau) ||
         !take_aux_byte(&port, &master, &slave, 0x00u) ||
-        kbc.data.aux_reporting_enabled || kbc.data.aux_resolution != 2u ||
-        kbc.data.aux_sample_rate != 100u;
+        !take_aux_byte(&port, &master, &slave, 0x02u) ||
+        !take_aux_byte(&port, &master, &slave, 100u) ||
+        core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0u) !=
+            LIB_STATUS_INVALID_STATE;
 
     send_aux_command(&port, 0xf4u);
     failed |= !take_aux_byte(&port, &master, &slave, 0xfau) ||
         core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0u) != LIB_STATUS_OK ||
-        !kbc.data.irq12_asserted;
+        !kbc.connect.irq12_source.asserted;
     /* Keyboard scan bytes and AUX packets now have distinct device-side
      * admission queues.  Fill the KBC-visible AUX FIFO independently: 3
      * initial packet bytes plus these packets leave one byte, so the next
      * complete packet must be rejected atomically. */
-    for (index = 0u; index < (CORE_MACHINE_KBC_FIFO_CAPACITY - 3u) / 3u; ++index) {
+    for (index = 0u; index < 20u; ++index) {
         failed |= core_machine_kbc_submit_aux_report(&kbc,
             (lib_i16)(index + 1u), 0, 0u) != LIB_STATUS_OK;
     }
     failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 1u) !=
-        LIB_STATUS_INVALID_STATE || kbc.data.fifo_count !=
-            CORE_MACHINE_KBC_FIFO_CAPACITY - 1u || kbc.data.aux_button_state != 0u;
+        LIB_STATUS_INVALID_STATE ||
+        core_machine_kbc_submit_aux_report(&kbc, 0, 0, 0u) != LIB_STATUS_OK;
 
     /* A saturated KBC output FIFO must not make keyboard serial input look
      * like AUX state.  Its private queue has its own bounded admission. */
-    for (index = 0u; index < CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY; ++index) {
+    for (index = 0u; index < 64u; ++index) {
         failed |= core_machine_kbc_submit_native_byte(&kbc, index) != LIB_STATUS_OK;
     }
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0u) != LIB_STATUS_NO_MEMORY ||
-        kbc.data.keyboard_serial_count != CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0u) != LIB_STATUS_NO_MEMORY;
     core_machine_kbc_finalize(&kbc);
-    failed |= kbc.data.irq12_asserted;
+    failed |= kbc.connect.irq12_source.asserted;
 
     core_machine_pic_finalize(&master, &slave);
     core_machine_port_finalize(&port);

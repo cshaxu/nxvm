@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 #include "lib/types/types_interface.h"
+#include "x86/devices/ps2mouse/ps2mouse_interface.h"
+#include "x86/devices/keyboard/keyboard_interface.h"
+#include "x86/devices/kbc8042/kbc8042_interface.h"
 
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
@@ -17,10 +20,6 @@ typedef struct core_machine_pic_bus core_machine_pic_bus;
 typedef struct t_ram t_ram;
 typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
-
-#define CORE_MACHINE_KBC_FIFO_CAPACITY 64u
-#define CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY 64u
-#define CORE_MACHINE_KBC_RESPONSE_CAPACITY 4u
 
 #define CORE_MACHINE_KBC_COMMAND_TRANSLATION 0x40u
 #define CORE_MACHINE_KBC_COMMAND_IRQ12 0x02u
@@ -35,105 +34,21 @@ typedef struct core_machine_cpu_execution_context
 #define VKBC_STATUS_INHIBIT 0x10 /* keyboard inhibit switch is released */
 #define VKBC_STATUS_AUX 0x20 /* current output byte has AUX origin */
 
-typedef enum core_machine_kbc_output_origin {
-    CORE_MACHINE_KBC_OUTPUT_CONTROLLER,
-    CORE_MACHINE_KBC_OUTPUT_KEYBOARD,
-    CORE_MACHINE_KBC_OUTPUT_AUX
-} core_machine_kbc_output_origin;
-
-typedef enum core_machine_kbc_pending_write {
-    CORE_MACHINE_KBC_PENDING_NONE,
-    CORE_MACHINE_KBC_PENDING_COMMAND_BYTE,
-    CORE_MACHINE_KBC_PENDING_OUTPUT_PORT,
-    CORE_MACHINE_KBC_PENDING_KEYBOARD_LEDS,
-    CORE_MACHINE_KBC_PENDING_KEYBOARD_TYPEMATIC,
-    CORE_MACHINE_KBC_PENDING_KEYBOARD_SCAN_SET,
-    CORE_MACHINE_KBC_PENDING_AUX_DEVICE,
-    CORE_MACHINE_KBC_PENDING_AUX_DISCARD
-} core_machine_kbc_pending_write;
-
-typedef enum core_machine_kbc_aux_pending_parameter {
-    CORE_MACHINE_KBC_AUX_PENDING_NONE,
-    CORE_MACHINE_KBC_AUX_PENDING_SAMPLE_RATE,
-    CORE_MACHINE_KBC_AUX_PENDING_RESOLUTION
-} core_machine_kbc_aux_pending_parameter;
-
-typedef struct t_kbc_data {
-    lib_u8 command_byte;
-    lib_u8 output_port;
-    lib_u8 input_port;
-    lib_u8 test_inputs;
-    lib_u8 fifo[CORE_MACHINE_KBC_FIFO_CAPACITY];
-    core_machine_kbc_output_origin fifo_origin[CORE_MACHINE_KBC_FIFO_CAPACITY];
-    lib_u8 fifo_head;
-    lib_u8 fifo_count;
-    lib_u8 keyboard_serial[CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY];
-    lib_u8 keyboard_serial_head;
-    lib_u8 keyboard_serial_count;
-    core_machine_kbc_pending_write pending_write;
-    core_machine_kbc_aux_pending_parameter aux_pending_parameter;
-    lib_u8 keyboard_enabled;
-    lib_u8 scanning_enabled;
-    lib_u8 input_buffer_full;
-    lib_u8 last_write_command;
-    lib_u8 irq1_asserted;
-    lib_u8 irq12_asserted;
-    lib_u8 aux_enabled;
-    lib_u8 aux_reporting_enabled;
-    lib_u8 aux_scaling_2_to_1;
-    lib_u8 aux_button_state;
-    lib_u8 aux_resolution;
-    lib_u8 aux_sample_rate;
-    lib_u8 scan_set;
-    lib_u8 led_state;
-    lib_u8 typematic;
-    lib_u8 set2_break_pending;
-    lib_u8 set2_typematic_break_pending;
-    lib_u8 set2_extended_pending;
-    lib_u8 set2_pause_bytes[8];
-    lib_u8 set2_pause_count;
-    lib_u8 last_keyboard_output_byte;
-    lib_u8 previous_keyboard_output_byte;
-    lib_u8 keyboard_has_output;
-    lib_u8 keyboard_bat_pending;
-    /* The first clock/data release after controller reset starts the attached
-     * keyboard.  ADh/AEh subsequently gate the interface; they are not
-     * additional keyboard power cycles. */
-    lib_u8 keyboard_startup_released;
-    lib_u8 typematic_scan_code;
-    lib_u8 delayed_response[CORE_MACHINE_KBC_RESPONSE_CAPACITY];
-    core_machine_kbc_output_origin delayed_response_origin;
-    lib_u8 delayed_response_count;
-    lib_u8 delayed_response_index;
-    lib_u8 response_status_polls_remaining;
-    lib_u64 typematic_remaining_ticks;
-    lib_u64 response_remaining_ticks;
-    lib_u64 serial_delivery_remaining_ticks;
-    lib_u32 typematic_nominal_initial_ticks;
-    lib_u32 typematic_nominal_repeat_ticks;
-    lib_u32 typematic_initial_ticks;
-    lib_u32 typematic_repeat_ticks;
-    lib_u32 command_response_ticks;
-    lib_u32 serial_delivery_ticks;
-    lib_u8 command_response_status_polls;
-    lib_u8 typematic_active;
-} t_kbc_data;
-
 typedef struct t_kbc_connect {
+    x86_ps2_mouse *aux_device;
+    x86_keyboard *keyboard;
     core_machine_pic_irq_source irq1_source;
     core_machine_pic_irq_source irq12_source;
-    lib_u8 aux_present;
     t_ram *memory;
     core_machine_cpu_execution_context *execution;
-    lib_u8 reset_output_port;
 } t_kbc_connect;
 
 typedef struct t_kbc {
-    t_kbc_data data;
+    x86_kbc8042 *chip;
     t_kbc_connect connect;
 } t_kbc;
 
-void core_machine_kbc_initialize(t_kbc *controller, t_port *port);
+lib_status core_machine_kbc_initialize(t_kbc *controller, t_port *port);
 void core_machine_kbc_bind_core_services(t_kbc *controller, core_machine_pic_bus *pic_master,
     core_machine_pic_bus *pic_slave, t_ram *memory,
     core_machine_cpu_execution_context *execution, lib_u8 aux_present);

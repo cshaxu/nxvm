@@ -178,3 +178,18 @@ failure/TC/reset ordering, sparse ports, paired grants, original-test mapping,
 construction rollback, negative boundaries and receiver identities. No item
 remains in S7's bounded brief. S7 closes; T539 remains open for the remaining
 finite inventory and the next automatic admission is the AT keyboard chain.
+
+## S8: AT Controller, Keyboard And AUX Extraction
+
+Automatically admitted from 23b732201. The [boundary review](../etc/architecture/t539-s8-kbc-boundary.md)
+separates three opaque Shared owners and NXVM's port/IRQ/A20/reset attachment.
+No full 8042 MCU or timing upgrade is claimed. Original command/BAT/reply,
+parameter-interleaving and serial/typematic order is preserved; private-state
+test/dump access is removed without adding a test-only getter.
+
+[Evidence](../etc/evidence/t539-s8-kbc-extraction.md) records 345/345 full units,
+20/20 default integrations and 16/16 standalone chip checks per width, six
+other boots once, eight verified artifacts, all manifests and static/doc gates.
+Production C/H net +486; tests net +764. INI contents and other products are
+unchanged. Shared eb1e2e208 is pushed; NXVM delivery and actual-diff acceptance
+follow. T539 remains open for the remaining finite inventory.

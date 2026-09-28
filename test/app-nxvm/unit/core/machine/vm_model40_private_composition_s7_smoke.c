@@ -1,4 +1,5 @@
 #include "lib/types/types_interface.h"
+#include "support/kbc_fixture.h"
 #include <stdio.h>
 
 #include "app-nxvm/machine/machine_private.h"
@@ -26,7 +27,6 @@ lib_i32 main(void)
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     lib_i32 failed = 0;
-    lib_u8 fifo_count;
 
     even[0x3ff8u] = 0x26u;
     odd[0x3ff8u] = 0x90u;
@@ -84,7 +84,7 @@ lib_i32 main(void)
             LIB_STATUS_OK || value != 0x1fu ||
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
             sizeof(rom_byte)) != LIB_STATUS_OK || rom_byte != 0x26u ||
-        session->core_machine->shared_kbc.connect.aux_present ||
+        x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
         core_machine_bus_write(session->core_machine, 0x0061u, 0x02u) !=
             LIB_STATUS_OK || core_machine_get_speaker_observation(
             session->core_machine, &speaker) != LIB_STATUS_OK ||
@@ -93,9 +93,10 @@ lib_i32 main(void)
             0x0fu) != LIB_STATUS_OK ||
         session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
-        session->core_machine->shared_kbc.data.aux_enabled ||
-        (session->core_machine->shared_kbc.data.command_byte &
-            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
+        x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
+        !kbc_test_command_matches(&session->core_machine->shared_kbc,
+            &session->core_machine->executor_port, 0x20u,
+            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
     if (!failed) {
         /* Model-40 selects the existing generic-AT 2-tick initial prefetch
          * locality miss in addition to the deterministic base instruction tick. */
@@ -111,23 +112,31 @@ lib_i32 main(void)
         event.data.relative_mouse.delta_x = 1;
         event.data.relative_mouse.delta_y = 1;
         event.data.relative_mouse.buttons = 1u;
-        fifo_count = session->core_machine->shared_kbc.data.fifo_count;
+        failed |= (core_machine_port_read(&session->core_machine->executor_port,
+            0x64u) & VKBC_STATUS_OBF) != 0u;
         failed |= vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK;
-        failed |= session->core_machine->shared_kbc.data.fifo_count != fifo_count;
+        failed |= (core_machine_port_read(&session->core_machine->executor_port,
+            0x64u) & VKBC_STATUS_OBF) != 0u;
         core_machine_port_write(&session->core_machine->executor_port,
             0x0064u, 0xa8u);
-        failed |= session->core_machine->shared_kbc.data.aux_enabled ||
-            (session->core_machine->shared_kbc.data.command_byte &
-                CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
+        failed |= x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
+            !kbc_test_command_matches(&session->core_machine->shared_kbc,
+            &session->core_machine->executor_port, 0x20u,
+            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
         core_machine_port_write(&session->core_machine->executor_port,
             0x0060u, 0xf5u);
+        failed |= kbc_test_read_reply(&session->core_machine->shared_kbc,
+            &session->core_machine->executor_port) != 0xfau;
         core_machine_port_write(&session->core_machine->executor_port,
             0x0064u, 0xd4u);
         core_machine_port_write(&session->core_machine->executor_port,
             0x0060u, 0xf4u);
-        failed |= session->core_machine->shared_kbc.data.scanning_enabled ||
-            session->core_machine->shared_kbc.data.pending_write !=
-                CORE_MACHINE_KBC_PENDING_NONE;
+        failed |= x86_keyboard_get_signals(session->core_machine->shared_kbc.connect.keyboard).scanning ||
+            (core_machine_port_read(&session->core_machine->executor_port,
+                0x64u) & VKBC_STATUS_OBF) != 0u;
+        core_machine_port_write(&session->core_machine->executor_port, 0x60u, 0xeeu);
+        failed |= kbc_test_read_reply(&session->core_machine->shared_kbc,
+            &session->core_machine->executor_port) != 0xeeu;
     }
     if (!failed) printf("M5:T386:S7:MODEL40-PRIVATE-COMPOSITION:OK\n");
     if (!failed) printf("M5:T421:S1:MODEL40-SPEAKER-SELECTION:OK\n");
