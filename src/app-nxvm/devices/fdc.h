@@ -63,6 +63,7 @@ typedef struct {
     lib_u16 seek_target[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u64 seek_due_tick[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_pending[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_bool seek_recalibrate[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_result_st0[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_result_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_result_count;

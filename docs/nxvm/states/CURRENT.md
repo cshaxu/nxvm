@@ -8,7 +8,7 @@ ownership and bounded-admission class before chip extraction.
 
 | Task | Progress |
 | --- | --- |
-| T539 S11 | FDC seek/completion repair active. READY/drive qualification remains a subsequent FDC cutover gate; HDC, video, CPU/FPU and final ledger review remain. |
+| T539 S11 | Pending-operation repair and all receivers verified; awaiting coordinator actual-diff acceptance. READY/drive qualification remains a subsequent FDC cutover gate; HDC, video, CPU/FPU and final ledger review remain. |
 
 ## Active S11 Packet
 
@@ -43,6 +43,11 @@ S10 [decision record](../etc/architecture/t539-s10-fdc-boundary.md) and
 characterization cases and 347/347 full units per width. Intel READY/SEEK
 contradictions and pending-completion safety remain explicit cutover gates;
 no production, Shared or artifact change is claimed.
+
+S11 [evidence](../etc/evidence/t539-s11-fdc-seek-ownership.md) records reproduced
+identity/duplicate/overflow-admission failures, their single-owner correction,
+347/347 units per width, 20/20 default integrations per width, each other
+profile boot once and eight updated artifacts. Shared and INI are unchanged.
 
 M5 Td S174 queued this three-stage migration. Its first candidate is T539;
 the seven remaining [Queue](QUEUE.md) candidates retain their dependency order.

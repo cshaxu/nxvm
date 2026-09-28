@@ -143,7 +143,7 @@ static const core_machine_media_provider core_machine_fdc_fixture_provider = {
     core_machine_fdc_fixture_set_mark
 };
 
-static void core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
+static void core_machine_fdc_submit(core_machine_fdc *fdc, t_port *port,
     const lib_u8 *bytes, lib_size count)
 {
     lib_size index;
@@ -152,6 +152,12 @@ static void core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
     core_machine_fdc_advance(fdc);
+}
+
+static void core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
+    const lib_u8 *bytes, lib_size count)
+{
+    core_machine_fdc_submit(fdc, port, bytes, count);
     for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
         if (fdc->data.seek_pending[drive]) {
             core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[drive]);
@@ -285,6 +291,142 @@ static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine,
     fdc->connect.config = saved_config;
     fdc->connect.drives = saved_drives;
     media->present = saved_present;
+    return failed;
+}
+
+static lib_i32 core_machine_fdc_seek_ownership(core_machine_fdc *fdc, t_port *port)
+{
+    const core_machine_fdc_drive_bindings saved_drives = fdc->connect.drives;
+    const lib_u32 saved_rate = fdc->connect.config.clock_ticks_per_second;
+    lib_u8 result[2];
+    lib_i32 failed = 0;
+
+    /* Use absent mechanics to distinguish SEEK from RECALIBRATE under the
+       existing model. READY/Track0 qualification is a separate cutover gate. */
+    fdc->connect.drives.installed_mask = 0u;
+    fdc->connect.config.clock_ticks_per_second = 8000000u;
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        for (lib_u8 recalibrate = 0u; recalibrate < 2u; ++recalibrate) {
+            core_machine_fdc_reset(fdc);
+            core_machine_port_write(port, 0x03f2u, 0xfcu | drive);
+            core_machine_fdc_command(fdc, port,
+                (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
+            core_machine_fdc_command(fdc, port,
+                (const lib_u8[]){0x0fu, drive, 4u}, 3u);
+            core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+            failed |= !core_machine_fdc_read_result(fdc, port, result, 2u);
+            if (recalibrate) {
+                core_machine_fdc_submit(fdc, port,
+                    (const lib_u8[]){0x07u, drive}, 2u);
+            } else {
+                core_machine_fdc_submit(fdc, port,
+                    (const lib_u8[]){0x0fu, drive, 6u}, 3u);
+            }
+            core_machine_fdc_submit(fdc, port,
+                (const lib_u8[]){0x04u, drive}, 2u);
+            failed |= !core_machine_fdc_read_result(fdc, port, result, 1u);
+            core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[drive]);
+            core_machine_fdc_submit(fdc, port, (const lib_u8[]){0x08u}, 1u);
+            failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                result[0] != ((recalibrate ? 0x70u : 0x20u) | drive) ||
+                result[1] != (recalibrate ? 0u : 6u);
+        }
+    }
+    if (failed) fputs("FDC seek identity changed by intervening command\n", stderr);
+
+    /* Mixed commands complete together: neither the last command nor the
+       last unit selected may replace another unit's operation identity. */
+    core_machine_fdc_reset(fdc);
+    core_machine_port_write(port, 0x03f2u, 0xfcu);
+    core_machine_fdc_command(fdc, port,
+        (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        core_machine_fdc_command(fdc, port,
+            (const lib_u8[]){0x0fu, drive, 4u}, 3u);
+        core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
+        failed |= !core_machine_fdc_read_result(fdc, port, result, 2u);
+    }
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        const lib_u8 command[] = {(drive & 1u) ? 0x07u : 0x0fu, drive, 8u};
+        core_machine_fdc_submit(fdc, port, command, (drive & 1u) ? 2u : 3u);
+    }
+    core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[3u]);
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        core_machine_fdc_submit(fdc, port, (const lib_u8[]){0x08u}, 1u);
+        failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+            result[0] != (((drive & 1u) ? 0x70u : 0x20u) | drive) ||
+            result[1] != ((drive & 1u) ? 0u : 8u);
+    }
+
+    /* A second command cannot replace the same unit's active operation. */
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        lib_u64 due;
+        core_machine_fdc_reset(fdc);
+        core_machine_port_write(port, 0x03f2u, 0xfcu | drive);
+        core_machine_fdc_command(fdc, port,
+            (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
+        core_machine_fdc_submit(fdc, port,
+            (const lib_u8[]){0x0fu, drive, 3u}, 3u);
+        due = fdc->data.seek_due_tick[drive];
+        core_machine_fdc_submit(fdc, port,
+            (const lib_u8[]){0x0fu, drive, 7u}, 3u);
+        if (fdc->data.phase != core_machine_fdc_PHASE_RESULT ||
+            fdc->data.seek_due_tick[drive] != due ||
+            fdc->data.seek_target[drive] != 3u ||
+            !core_machine_fdc_read_result(fdc, port, result, 1u) ||
+            result[0] != 0x80u || fdc->connect.irq_source.asserted) {
+            fputs("FDC duplicate unit seek replaced active request\n", stderr);
+            failed = 1;
+        }
+    }
+
+    /* Fill the four legal outstanding slots. On the old implementation the
+       fifth request is inspected before its deadline, never executing the
+       out-of-bounds append as part of the negative control. */
+    core_machine_fdc_reset(fdc);
+    core_machine_port_write(port, 0x03f2u, 0xfcu);
+    core_machine_fdc_command(fdc, port,
+        (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        core_machine_fdc_submit(fdc, port,
+            (const lib_u8[]){0x0fu, drive, 1u}, 3u);
+    }
+    core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[3u]);
+    failed |= fdc->data.seek_result_count != CORE_MACHINE_FDC_DRIVE_COUNT;
+    core_machine_fdc_submit(fdc, port, (const lib_u8[]){0x0fu, 0u, 2u}, 3u);
+    if (fdc->data.phase != core_machine_fdc_PHASE_RESULT ||
+        fdc->data.seek_pending[0u] ||
+        !core_machine_fdc_read_result(fdc, port, result, 1u) || result[0] != 0x80u) {
+        fputs("FDC accepted fifth undrained seek completion\n", stderr);
+        failed = 1;
+    } else {
+        static const lib_u8 blocked[][2] = {
+            {0x03u, 3u}, {0x04u, 2u}, {0x07u, 2u}, {0x0fu, 3u},
+            {0x0au, 2u}, {0x05u, 9u}, {0x06u, 9u}, {0x09u, 9u},
+            {0x0cu, 9u}, {0x11u, 9u}, {0x19u, 9u}, {0x1du, 9u},
+            {0x0du, 6u}, {0x02u, 9u}, {0x00u, 1u}
+        };
+        for (lib_size index = 0u; index < sizeof(blocked) / sizeof(blocked[0]); ++index) {
+            lib_u8 command[9] = {0};
+            command[0] = blocked[index][0];
+            core_machine_fdc_submit(fdc, port, command, blocked[index][1]);
+            failed |= !core_machine_fdc_read_result(fdc, port, result, 1u) ||
+                result[0] != 0x80u ||
+                fdc->data.seek_result_count != CORE_MACHINE_FDC_DRIVE_COUNT;
+        }
+        for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+            core_machine_fdc_submit(fdc, port, (const lib_u8[]){0x08u}, 1u);
+            failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                result[0] != (0x20u | drive) || result[1] != 1u;
+        }
+        failed |= fdc->data.seek_result_count != 0u;
+    }
+    core_machine_fdc_reset(fdc);
+    failed |= fdc->data.seek_result_count != 0u || fdc->connect.irq_source.asserted;
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive)
+        failed |= fdc->data.seek_pending[drive];
+    fdc->connect.drives = saved_drives;
+    fdc->connect.config.clock_ticks_per_second = saved_rate;
     return failed;
 }
 
@@ -870,6 +1012,7 @@ lib_i32 main(void)
         }
     }
     if (!failed) failed |= core_machine_fdc_readiness_matrix(machine, &fixture);
+    if (!failed) failed |= core_machine_fdc_seek_ownership(fdc, port);
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
@@ -887,5 +1030,6 @@ lib_i32 main(void)
     puts("M5:T465:S3:FDC-8272-command:OK");
     puts("M5:T465:S5:FDC-parallel-seek:OK");
     puts("M5:T539:S10:FDC-readiness-characterization:OK");
+    puts("M5:T539:S11:FDC-seek-ownership:OK");
     return 0;
 }

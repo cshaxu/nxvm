@@ -421,6 +421,8 @@ static void core_machine_fdc_begin_seek(core_machine_fdc *fdc, lib_u16 target)
 
     distance = current > physical ? current - physical : physical - current;
     fdc->data.seek_target[drive] = physical;
+    fdc->data.seek_recalibrate[drive] =
+        (fdc->data.cmd[0] & 0x1fu) == core_machine_fdc_CMD_RECALIBRATE;
     fdc->data.seek_due_tick[drive] = fdc->data.elapsed_ticks +
         (lib_u64)distance * core_machine_fdc_timing_ticks(fdc,
             (lib_u64)(16u - fdc->data.srt) * 1000u);
@@ -826,6 +828,20 @@ static void core_machine_fdc_execute(core_machine_fdc *fdc)
     core_machine_media_info info;
     core_machine_media_result media_result;
     lib_i32 media_ok;
+
+    /* Intel requires SIS after seek/recalibrate completion. Until then no
+     * new command may overwrite a result. While seeking, each unit has one
+     * operation: reject a duplicate rather than replacing its target/deadline.
+     * Together these admission rules bound outstanding results to four. */
+    if ((opcode != core_machine_fdc_CMD_SENSE_INTERRUPT &&
+            fdc->data.seek_result_count != 0u) ||
+        ((opcode == core_machine_fdc_CMD_SEEK ||
+            opcode == core_machine_fdc_CMD_RECALIBRATE) &&
+            fdc->data.seek_pending[fdc->data.cmd[1] & 3u])) {
+        fdc->data.ret[0] = 0x80u;
+        core_machine_fdc_result_phase(fdc, 1u);
+        return;
+    }
 
     /* A command that changes controller activity supersedes reset's stale
      * Sense Interrupt notifications.  Sense Interrupt itself is the sole
@@ -1248,13 +1264,12 @@ void core_machine_fdc_advance_at(core_machine_fdc *fdc,
             fdc->data.drive_cylinder[drive] = fdc->data.seek_target[drive];
             fdc->data.cylinder = fdc->data.seek_target[drive];
             core_machine_fdc_observe_drive(fdc, drive);
-            /* uPD765 ST0 reserves Not Ready for Read/Write.  A SEEK still
-             * completes with SEEK END when its selected unit is absent; the
-             * controller records the requested PCN rather than inventing an
-             * abnormal completion.  RECALIBRATE is the mechanical check
-             * path: a missing Track 0 signal is Equipment Check. */
+            /* Preserve this operation's kind, not the last command received.
+             * READY/Track0 qualification remains the separate S10 cutover
+             * gate; the existing logical model distinguishes seek from the
+             * mechanical recalibration check here. */
             fdc->data.seek_result_st0[fdc->data.seek_result_count] =
-                ((fdc->data.cmd[0] & 0x1fu) == core_machine_fdc_CMD_SEEK ||
+                (!fdc->data.seek_recalibrate[drive] ||
                 core_machine_fdc_drive_mechanical_ready_for(fdc, drive)) ?
                 core_machine_fdc_ST0_NORMAL |
                 VFDC_ST0_SEEK_END | drive : core_machine_fdc_ST0_ABNORMAL |

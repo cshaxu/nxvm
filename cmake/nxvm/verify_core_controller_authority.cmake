@@ -91,4 +91,17 @@ foreach(required IN ITEMS "M5:T296:S4:CONTROLLER-AUTHORITY:OK"
     endif()
 endforeach()
 
+# Pending operations must not borrow the next command's input buffer.
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
+string(FIND "${fdc_source}" "void core_machine_fdc_advance_at(" fdc_advance_start)
+string(FIND "${fdc_source}" "lib_status core_machine_fdc_next_due_tick(" fdc_advance_end)
+if(fdc_advance_start LESS 0 OR fdc_advance_end LESS fdc_advance_start)
+    message(FATAL_ERROR "FDC advance ownership inspection range is missing")
+endif()
+math(EXPR fdc_advance_length "${fdc_advance_end} - ${fdc_advance_start}")
+string(SUBSTRING "${fdc_source}" ${fdc_advance_start} ${fdc_advance_length} fdc_advance)
+if(fdc_advance MATCHES "data\\.cmd")
+    message(FATAL_ERROR "FDC pending completion reads the current command buffer")
+endif()
+
 message(STATUS "M5 T296 S4 core FDC/HDC controller authority: OK")
