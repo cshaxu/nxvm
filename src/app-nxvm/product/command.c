@@ -116,7 +116,7 @@ static void vm_app_console_help(common_session_command_result *result)
 }
 
 static void vm_app_console_info(const vm_app_console_context *context,
-    common_session_command_result *result)
+    common_session_machine_state state, common_session_command_result *result)
 {
     vm_machine_information information;
     vm_machine *machine = vm_app_console_machine(context);
@@ -144,7 +144,7 @@ static void vm_app_console_info(const vm_app_console_context *context,
             information.fixed_disk_media_connected ? "connected" : "disconnected");
     vm_app_console_append(result, "\nBIOS: %s\nRunning: %s\n",
         information.external_firmware ? "external ROM mapped at F0000h" :
-            "profile ROM mapped", information.active ? "Yes" : "No");
+            "profile ROM mapped", vm_app_console_is_running(state) ? "Yes" : "No");
 }
 
 static const lib_u8 *vm_app_console_speed_name(vm_machine_speed speed)
@@ -247,7 +247,7 @@ static void vm_app_console_submit_line(void *opaque,
     vm_app_console_parse(context, context->command_buffer);
     if (context->argument_count == 0u) return;
     if (vm_app_console_text_equal(context->arguments[0], "help")) vm_app_console_help(result);
-    else if (vm_app_console_text_equal(context->arguments[0], "info")) vm_app_console_info(context, result);
+    else if (vm_app_console_text_equal(context->arguments[0], "info")) vm_app_console_info(context, state, result);
     else if (vm_app_console_text_equal(context->arguments[0], "speed")) vm_app_console_speed(context, result);
     else if (vm_app_console_text_equal(context->arguments[0], "floppy"))
         vm_app_console_floppy(context, state, result);

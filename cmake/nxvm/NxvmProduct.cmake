@@ -229,6 +229,9 @@ target_link_libraries(vm-ini-cmos-seed-smoke PRIVATE integration-session-ini-sup
 add_executable(vm-app-ini-smoke
     test/app-nxvm/unit/product/nxvm_ini_smoke.c)
 target_link_libraries(vm-app-ini-smoke PRIVATE vm-app)
+add_executable(vm-app-console-info-smoke
+    test/app-nxvm/unit/product/nxvm_console_info_smoke.c)
+target_link_libraries(vm-app-console-info-smoke PRIVATE vm-app)
 add_executable(vm-app-composition-atomicity-smoke
     test/app-nxvm/unit/product/nxvm_composition_atomicity_smoke.c
     src/app-nxvm/product/composition.c)
@@ -1993,6 +1996,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
     vm-app-composition-atomicity-smoke
+    vm-app-console-info-smoke
     vm-x86-debug-mapping-smoke
     vm-app-session-smoke
     vm-machine-initialization-atomicity-smoke

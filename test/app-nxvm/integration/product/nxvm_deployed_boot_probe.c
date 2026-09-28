@@ -112,14 +112,13 @@ static lib_bool boot_send_text(HANDLE input, const char *command, DWORD return_r
     return LIB_TRUE;
 }
 
-static void boot_request_pause(HANDLE input, HWND window)
+static lib_bool boot_request_pause(HANDLE input, HWND window)
 {
     INPUT_RECORD pause[2] = {0};
     DWORD written;
 
     if (window) {
-        PostMessageA(window, WM_CLOSE, 0, 0);
-        return;
+        return PostMessageA(window, WM_CLOSE, 0, 0) != 0;
     }
     pause[0].EventType = KEY_EVENT;
     pause[0].Event.KeyEvent.bKeyDown = TRUE;
@@ -129,7 +128,73 @@ static void boot_request_pause(HANDLE input, HWND window)
     pause[0].Event.KeyEvent.dwControlKeyState = LEFT_CTRL_PRESSED | LEFT_ALT_PRESSED;
     pause[1] = pause[0];
     pause[1].Event.KeyEvent.bKeyDown = FALSE;
-    (void)WriteConsoleInputA(input, pause, 2, &written);
+    return WriteConsoleInputA(input, pause, 2, &written) && written == 2u;
+}
+
+static lib_bool boot_monitor_prompt(HANDLE output)
+{
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    COORD origin = {0};
+    char line[32] = {0};
+    DWORD count;
+
+    if (!GetConsoleScreenBufferInfo(output, &info) ||
+        info.dwCursorPosition.X <= 0 || info.dwCursorPosition.X >= sizeof(line))
+        return LIB_FALSE;
+    origin.Y = info.dwCursorPosition.Y;
+    if (!ReadConsoleOutputCharacterA(output, line, info.dwCursorPosition.X,
+            origin, &count)) return LIB_FALSE;
+    while (count != 0u && line[count - 1u] == ' ') --count;
+    line[count] = '\0';
+    return lib_text_compare(line, "Console>") == 0;
+}
+
+static lib_bool boot_wait_paused(HANDLE input, HANDLE *output, FILE *log)
+{
+    char text[8192];
+    DWORD begin = GetTickCount();
+    lib_bool queried = LIB_FALSE;
+    lib_size previous_info_count = 0u;
+
+    /* A fixed sleep is not a lifecycle acknowledgement. Only type into the
+     * current monitor prompt, then confirm its fresh INFO says Running: No. */
+    do {
+        CloseHandle(*output);
+        *output = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE,
+            FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+        if (boot_read_console(*output, text, sizeof(text)) && boot_monitor_prompt(*output)) {
+            lib_size info_count = 0u;
+            char *info = text;
+            while ((info = strstr(info, "Device Info")) != LIB_NULL) {
+                ++info_count;
+                ++info;
+            }
+            if (!queried) {
+                if (!boot_send_text(input, "info\r", 0u)) return LIB_FALSE;
+                previous_info_count = info_count;
+                queried = LIB_TRUE;
+            } else if (info_count > previous_info_count) {
+                char *query = strstr(text, "Console> info"), *next, *state;
+                if (query != LIB_NULL) {
+                    while ((next = strstr(query + 1, "Console> info")) != LIB_NULL) query = next;
+                    state = strstr(query, "Running:");
+                    if (state != LIB_NULL) {
+                        state += sizeof("Running:") - 1u;
+                        while (*state == ' ') ++state;
+                        if (lib_text_compare_n(state, "No", 2u) == 0) {
+                            fprintf(log, "PAUSE_ACK=1\n[paused monitor]\n%s\n", text);
+                            return LIB_TRUE;
+                        }
+                    }
+                }
+            }
+        }
+        Sleep(20);
+    } while (GetTickCount() - begin < 5000u);
+    fprintf(log, "PAUSE_ACK=0 monitor_query=%d\n", queried);
+    if (boot_read_console(*output, text, sizeof(text)))
+        fprintf(log, "[pause timeout]\n%s\n", text);
+    return LIB_FALSE;
 }
 
 lib_i32 main(lib_i32 argc, char **argv)
@@ -145,6 +210,8 @@ lib_i32 main(lib_i32 argc, char **argv)
     FILE *log;
     lib_i32 result = 1;
     boot_window window = {0};
+    HWND previous_window = NULL;
+    char previous_title[128] = {0};
     char *duration_end;
     unsigned long duration;
     unsigned long return_release_ms = 0u;
@@ -196,6 +263,17 @@ lib_i32 main(lib_i32 argc, char **argv)
          * moving keyboard focus to the diagnostic run. */
         window.window = NULL;
         EnumWindows(boot_find_window, (LPARAM)&window);
+        {
+            char title[128] = {0};
+            if (window.window) GetWindowTextA(window.window, title, sizeof(title));
+            if (window.window != previous_window || lib_text_compare(title, previous_title)) {
+                fprintf(log, "WINDOW_STATE ms=%lu handle=%p title=%s\n",
+                    (unsigned long)(GetTickCount() - begin), (void *)window.window, title);
+                previous_window = window.window;
+                lib_memory_copy(previous_title, title, sizeof(previous_title));
+                fflush(log);
+            }
+        }
         if (window.window && !IsWindowVisible(window.window))
             ShowWindow(window.window, SW_SHOWNOACTIVATE);
         /* A raw presenter activates another screen buffer. Reopen CONOUT$
@@ -243,8 +321,8 @@ lib_i32 main(lib_i32 argc, char **argv)
             (!lib_text_compare(argv[7], "reset") || !lib_text_compare(argv[7], "restart")) &&
             started && !lifecycle_sent &&
             GetTickCount() - begin >= (DWORD)duration * 500u) {
-            boot_request_pause(input, window.window);
-            Sleep(1000);
+            if (!boot_request_pause(input, window.window) ||
+                !boot_wait_paused(input, &output, log)) goto done;
             (void)boot_send_text(input,
                 !lib_text_compare(argv[7], "reset") ? "reset\r" : "stop\r", 0u);
             Sleep(1000);
@@ -267,11 +345,8 @@ lib_i32 main(lib_i32 argc, char **argv)
                 boot_capture_window(window.window, printed, LIB_TRUE));
     }
     if (started && code == STILL_ACTIVE) {
-        boot_request_pause(input, window.window);
-        Sleep(1000);
-        CloseHandle(output);
-        output = CreateFileA("CONOUT$", GENERIC_READ | GENERIC_WRITE,
-            FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+        if (!boot_request_pause(input, window.window) ||
+            !boot_wait_paused(input, &output, log)) goto done;
         if (boot_read_console(output, text, sizeof(text)))
             fprintf(log, "\n[after pause request]\n%s\n", text);
         (void)boot_send_text(input, "debug\r", 0u);

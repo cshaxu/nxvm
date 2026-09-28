@@ -14,8 +14,10 @@ process, unchanged screen, or expired time budget is not success.
 Permitted dispositions: directly proven checkpoint; reproduced failure with
 named owner/repair receiver; blocked input/observation with exact reason.
 No pair is non-applicable. T closure requires all eight to be directly proven
-on the replacement artifacts, three fresh launches each, and complete applicable
-units/integration. Ledger refinements require recorded evidence, never dropping
+on the replacement artifacts and complete applicable units/integration. S7's
+owner instruction replaces the original three-launch requirement with one
+successful launch per pair; no machine/width is removed. Historical failures
+remain recorded and are not reclassified as passes. Ledger refinements require recorded evidence, never dropping
 a failing row. S1 closes only the baseline inventory, not this completion gate.
 
 ## Frozen Inputs
@@ -449,3 +451,15 @@ integration pass on both host widths; all six manifests and asset identities
 remain valid. These gates do not replace the failed deployed qualification.
 T538 remains open; its finite outstanding batch stays here rather than being
 silently deferred to the unrelated queue. No production repair was part of S6.
+
+## S7 Final Repair And Owner-Revised Acceptance
+
+[S7 evidence](t538-s7-orphan-release.md) records the approved Shared orphan-break
+repair, NXVM INFO state correction, complete affected-receiver tests/builds,
+and all eight current EXE/INI pairs reaching DOS/Setup with verified pause and
+Debug handoff. Owner explicitly replaces three launches with one successful
+launch per pair and approves closure after those passes. The finite matrix is
+8/8 accepted on that standard; no pair or historical failure is erased. Earlier
+0E 301 and default early-pause observations have the explicit owner acceptance
+disposition, not an asserted root cause. Existing cooked-history rollback debt
+remains separately in TODO. No queued task is admitted by this closure.

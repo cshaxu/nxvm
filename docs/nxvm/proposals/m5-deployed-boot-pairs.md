@@ -45,7 +45,10 @@ The [convergence ledger](../etc/evidence/t538-boot-pairs.md) fixes the corpus.
 Each case records executable/INI/input identity, process exit or semantic screen,
 reproduction count, root-cause owner and regression evidence. Time limits bound
 runs; they never mean boot success. Start with 180 seconds per launch and three
-fresh launches per final pair to expose intermittent behavior. S1 permits a
+fresh launches per final pair to expose intermittent behavior. During S7 the
+owner explicitly replaces this repetition requirement with one successful run
+per current pair, retaining prior failures as historical evidence rather than
+requiring more repeated launches. S1 permits a
 300-second Model 40 x86 diagnostic rerun: its 180-second capture already began
 the DOS title, so this tests completion of demonstrated progress, not an
 assumption that a blank screen is healthy. Other cases retain 180 seconds.
