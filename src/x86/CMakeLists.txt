@@ -13,10 +13,16 @@ get_filename_component(X86_COMMON_ROOT "${CMAKE_CURRENT_LIST_DIR}/../common" ABS
 if(NOT TARGET types)
     add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../lib" "${CMAKE_CURRENT_BINARY_DIR}/lib")
 endif()
-if(NOT TARGET common-machine)
+option(X86_BUILD_TOOLS "Build xasm32 and Debug alongside device components" ON)
+if(X86_BUILD_TOOLS AND NOT TARGET common-machine)
     add_subdirectory("${X86_COMMON_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/common")
 endif()
 
+add_library(x86-pit825x STATIC devices/pit825x/pit.c)
+target_include_directories(x86-pit825x PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-pit825x PUBLIC types)
+
+if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)
 target_include_directories(x86-xasm32 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-xasm32 PUBLIC types)
@@ -24,6 +30,7 @@ target_link_libraries(x86-xasm32 PUBLIC types)
 add_library(x86-debug STATIC debug/command.c)
 target_include_directories(x86-debug PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-debug PUBLIC common-machine x86-xasm32 storage)
+endif()
 
 add_custom_target(x86-verify
     COMMAND "${CMAKE_COMMAND}" -DCOMMON_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
