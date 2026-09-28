@@ -65,7 +65,7 @@ foreach(required IN ITEMS "core_machine_dma_advance_transaction"
     "x86_pit_advance" "core_machine_pic_refresh"
     "core_machine_fdc_advance_at" "core_machine_hdc_advance"
     "x86_rtc_advance" "core_machine_kbc_advance"
-    "core_machine_xt_keyboard_advance" "core_machine_vadp_advance")
+    "x86_xt_keyboard_advance" "core_machine_vadp_advance")
     string(FIND "${scheduler_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T499 lacks scheduler-owned controller migration: ${required}")

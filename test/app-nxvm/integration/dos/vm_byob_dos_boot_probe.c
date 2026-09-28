@@ -2095,15 +2095,19 @@ int main(lib_i32 argc, char **argv)
                 printf("PIT:out0=%u:out1=%u\n",
                     (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 0u),
                     (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 1u));
-                if (session->core_machine->xt_ppi_keyboard.mode_control == 0x9bu)
-                    printf("BOOT-PROBE=xt-ppi-unconfigured\n");
-                else printf("BOOT-PROBE=xt-ppi-configured\n");
-                if (session->core_machine->xt_keyboard.clock_held)
-                    printf("BOOT-PROBE=xt-keyboard-clock-held\n");
-                if (session->core_machine->xt_keyboard.bat_active)
-                    printf("BOOT-PROBE=xt-keyboard-bat-active\n");
-                if (session->core_machine->xt_keyboard.bat_result_pending)
-                    printf("BOOT-PROBE=xt-keyboard-bat-pending\n");
+                {
+                    x86_ppi8255_pins pins = {0u, 0u};
+                    lib_u64 next = 0u;
+                    if (x86_ppi8255_output(session->core_machine->xt_ppi_keyboard.ppi,
+                            1u, &pins) == LIB_STATUS_OK) {
+                        printf("BOOT-PROBE=xt-ppi-pb=%02X-drive=%02X\n",
+                            (unsigned int)pins.latch, (unsigned int)pins.output_mask);
+                    }
+                    if (x86_xt_keyboard_ticks_until_event(session->core_machine->xt_keyboard,
+                            &next) == LIB_STATUS_OK) {
+                        printf("BOOT-PROBE=xt-keyboard-next=%llu\n", (unsigned long long)next);
+                    }
+                }
                 if (session->core_machine->xt_ppi_keyboard.byte_ready)
                     printf("BOOT-PROBE=xt-keyboard-byte-ready\n");
                 {

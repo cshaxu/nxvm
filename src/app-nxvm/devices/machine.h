@@ -43,7 +43,7 @@
 #include "app-nxvm/devices/kbc.h"
 
 #include "app-nxvm/devices/xt_ppi_keyboard.h"
-#include "app-nxvm/devices/xt_keyboard.h"
+#include "x86/devices/xtkeyboard/xtkeyboard_interface.h"
 
 #include "app-nxvm/devices/vadp.h"
 
@@ -246,7 +246,7 @@ struct core_machine {
     core_machine_hdc hdc;
     t_kbc shared_kbc;
     core_machine_xt_ppi_keyboard xt_ppi_keyboard;
-    core_machine_xt_keyboard xt_keyboard;
+    x86_xt_keyboard *xt_keyboard;
     t_vadp shared_vadp;
     const core_machine_firmware_provider *firmware_provider;
     void *firmware_provider_context;

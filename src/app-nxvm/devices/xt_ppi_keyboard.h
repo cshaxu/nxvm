@@ -6,8 +6,7 @@
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
-
-#define CORE_MACHINE_XT_PPI_KEYBOARD_QUEUE_CAPACITY 16u
+#include "x86/devices/ppi8255/ppi8255_interface.h"
 
 typedef lib_u8 (*core_machine_xt_ppi_nmi_request)(void *owner);
 typedef void (*core_machine_xt_ppi_speaker_update)(void *owner,
@@ -21,18 +20,14 @@ typedef void (*core_machine_xt_ppi_byte_released)(void *owner);
  * wiring would otherwise become invented guest behavior. */
 typedef struct core_machine_xt_ppi_keyboard {
     core_machine_xt_ppi_keyboard_config config;
-    t_port *port;
     core_machine_pic_irq_source irq1_source;
-    lib_u8 mode_control;
-    lib_u8 port_a_latch;
-    lib_u8 port_b_latch;
-    lib_u8 port_c_latch;
+    x86_ppi8255 *ppi;
     lib_u8 current_byte;
-    lib_u8 byte_ready;
-    lib_u8 irq1_asserted;
-    lib_u8 io_check_asserted;
-    lib_u8 ram_parity_asserted;
-    lib_u8 nmi_signaled;
+    lib_bool byte_ready;
+    lib_bool irq1_asserted;
+    lib_bool io_check_asserted;
+    lib_bool ram_parity_asserted;
+    lib_bool nmi_signaled;
     core_machine_xt_ppi_nmi_request nmi_request;
     void *nmi_owner;
     core_machine_xt_ppi_speaker_update speaker_update;

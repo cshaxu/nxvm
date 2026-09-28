@@ -83,6 +83,12 @@ stateless scan codec retain the original ordering without private peer access.
 The [delivery evidence](../etc/evidence/t539-s8-kbc-extraction.md) maps original
 cases, removed state, verification and artifact identities.
 
+S9 consumes the XT PPI/keyboard rows under its
+[boundary review](../etc/architecture/t539-s9-xt-boundary.md). It separates
+register/serial mechanisms from board inputs and wiring, and characterizes
+refused serial completion before moving the implementation. Current owns
+execution status; this admission does not accept either remaining XT row.
+
 The first admitted S freezes a migration ledger covering every tracked source
 file in the current devices subtree, its callers and tests. Each entry names
 the chip or board responsibility, dependencies, destination and proof. Every

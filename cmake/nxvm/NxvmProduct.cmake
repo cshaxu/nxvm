@@ -56,7 +56,6 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/retirement_observation_interface.c
     src/app-nxvm/devices/timeline.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
-    src/app-nxvm/devices/xt_keyboard.c
 )
 add_dependencies(core-machine cpu-timing-manifest-catalog)
 # This is the complete public core-machine runtime. It extends the primitive
@@ -1171,7 +1170,6 @@ set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/dma_bus.c
     src/app-nxvm/devices/kbc.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
-    src/app-nxvm/devices/xt_keyboard.c
     src/app-nxvm/devices/transaction.c
 )
 add_library(core-machine-executor STATIC
@@ -1183,7 +1181,7 @@ add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-ps2mouse x86-keyboard x86-kbc8042)
+target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(vm-machine-frame-smoke
@@ -3401,7 +3399,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/dma_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/kbc.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/xt_ppi_keyboard.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/xt_keyboard.c|machine-executor"
     "vm-app|src/app-nxvm/product/command.c|console-product"
     "vm-app|src/app-nxvm/product/keyboard.c|keyboard-product"
     "vm-app|src/app-nxvm/product/startup.c|session-startup"

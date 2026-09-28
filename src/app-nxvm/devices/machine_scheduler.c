@@ -176,7 +176,7 @@ void core_machine_capture_time_observation_private(const core_machine *machine,
         }
     }
     if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
-        core_machine_xt_keyboard_ticks_until_event(&machine->xt_keyboard,
+        x86_xt_keyboard_ticks_until_event(machine->xt_keyboard,
             &device_ticks) == LIB_STATUS_OK) {
         if (device_ticks == 0u) immediate_due = LIB_TRUE;
         else if (source_ticks == 0u || device_ticks < source_ticks) {
@@ -374,7 +374,7 @@ static void core_machine_peripheral_advance(core_machine *machine,
     if (machine == LIB_NULL || source_ticks == 0u) return;
     kbc_ticks = core_machine_clock_domain_advance(&machine->kbc_clock, source_ticks);
     if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        core_machine_xt_keyboard_advance(&machine->xt_keyboard, source_ticks);
+        x86_xt_keyboard_advance(machine->xt_keyboard, source_ticks);
     } else {
         core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
     }
