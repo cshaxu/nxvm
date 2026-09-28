@@ -18,6 +18,8 @@ There is no executor, Console, input loop or product state machine here.
 | devices/kbc8042 | Qualified AT controller transport, translation, command/register and IRQ behavior | kbc8042_interface.h |
 | devices/keyboard | AT keyboard commands, BAT, scan-set, LEDs and typematic | keyboard_interface.h |
 | devices/ps2mouse | Existing three-byte AUX command/report protocol | ps2mouse_interface.h |
+| devices/ppi8255 | Qualified Mode-0 direction, output latches and BSR | ppi8255_interface.h |
+| devices/xtkeyboard | XT nine-bit serial delivery, FIFO and reset/BAT | xtkeyboard_interface.h |
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
 only on Types. Public names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
@@ -69,6 +71,15 @@ Reset preserves configured timings; stop execution before destruction and
 keep callback contexts alive until all chips are destroyed. The public headers
 define the limited reply/repeat reentrancy; no recursive command or destruction
 is allowed. No private state getter is provided for tests or diagnostics.
+
+PPI and XT keyboard each depend only on Types, not one another. The board
+supplies copied input pins and owns its receiving latch, IRQ, DIP, parity and
+speaker wiring. The qualified PPI subset retains documented baseline behavior
+for unsupported mode encodings; it does not claim complete 8255 silicon.
+XT keyboard timings are frozen service-unit durations supplied by composition.
+Failed byte acceptance retains the completed frame without more serial edges;
+receiver readiness or line release retries it. Reset discards pending data.
+Neither component owns a board clock, port registry, host input or scheduler.
 
 The protocol header is independent of the frontend: product adapters need not
 link the CLI to use its values. Aligned typed request/response copies traverse

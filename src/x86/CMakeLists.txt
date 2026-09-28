@@ -46,6 +46,14 @@ add_library(x86-kbc8042 STATIC devices/kbc8042/controller.c)
 target_include_directories(x86-kbc8042 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-kbc8042 PUBLIC types PRIVATE x86-keyboard)
 
+add_library(x86-ppi8255 STATIC devices/ppi8255/ppi.c)
+target_include_directories(x86-ppi8255 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-ppi8255 PUBLIC types)
+
+add_library(x86-xtkeyboard STATIC devices/xtkeyboard/keyboard.c)
+target_include_directories(x86-xtkeyboard PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-xtkeyboard PUBLIC types)
+
 if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)
 target_include_directories(x86-xasm32 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
