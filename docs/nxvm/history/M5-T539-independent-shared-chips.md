@@ -196,3 +196,21 @@ review checked the real chip/adapter, construction rollback, callback ordering,
 test/diagnostic migration, build/manifest and artifact diffs against the packet.
 No S8 item remains; S8 closes and its active packet is removed. T539 remains
 open for the remaining finite inventory, with XT PPI/keyboard next.
+
+## S9: XT PPI And Serial Keyboard Extraction
+
+Automatically admitted from 625ea7054. The [boundary review](../etc/architecture/t539-s9-xt-boundary.md)
+separates qualified PPI registers and serial/BAT state from NXVM board wiring.
+The old keyboard pair and duplicated PPI latches are removed. Negative controls
+expose and repair refused-byte counter wraparound, lost registration failure,
+non-progressing inhibited deadlines and direction/BAT release gaps through
+the same existing owner paths, without a new framework or timing claim.
+
+[Evidence](../etc/evidence/t539-s9-xt-extraction.md) records final 347/347 units,
+18/18 independent checks and 20/20 default integrations per width, all other
+profile boots once, eight verified artifacts and the static/manifest/doc gates.
+Production C/H net +106, tests net +294; INI contents and other products are
+unchanged. Shared 0f9c6b1a8 and NXVM 31e759965 are pushed. Coordinator review
+accepts the actual owner, callback, rollback, original-test, build, document
+and artifact diffs against the complete packet. No S9 item remains. S9 closes
+and its packet is removed; T539 remains open, with FDC next automatically.

@@ -69,9 +69,12 @@ Model 40 80.15s/96.10s (x64/x86). Both reusable build trees are restored to
 default configuration. This is one successful matrix, not a repeated
 reliability claim. Current alone owns acceptance status.
 
-Shared implementation P1 0f9c6b1a8 is pushed to origin/master. NXVM's receiving
-adapter, original-test migration, evidence and eight artifacts are delivered
-in the following product-scoped P; final coordinator acceptance is separate.
+Shared P1 0f9c6b1a8 and NXVM P2 31e759965 are pushed to origin/master.
+Coordinator-role actual-change review accepts the chip/adapter boundaries,
+original-case mapping, refusal/rollback/line-order fixes, deleted old paths,
+build and diagnostic migration, six manifests and eight artifact identities.
+No item remains in the bounded S9 brief. Its packet is removed; T539 remains
+open for the remaining finite inventory, with FDC next under automatic admission.
 
 Production C/H totals +477/-371 (net +106); tests +312/-18 (net +294), including
 new files. The added production responsibility is opaque lifetime/interfaces
