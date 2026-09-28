@@ -13,7 +13,7 @@ future Profile only when its separate evidence task admits real source files.
 src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
-  x86/{xasm32,debug}/
+  x86/{devices,xasm32,debug}/
   app-nxvm/             NXVM product implementation
     product/            main, INI configuration, CLI and composition
     devices/            reusable CPU/device/memory/bus/time and execution

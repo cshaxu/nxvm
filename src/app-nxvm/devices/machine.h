@@ -34,7 +34,7 @@
 
 #include "app-nxvm/devices/d4_memory.h"
 
-#include "app-nxvm/devices/rtc.h"
+#include "x86/devices/rtc146818/rtc146818_interface.h"
 
 #include "app-nxvm/devices/fdc.h"
 
@@ -239,7 +239,9 @@ struct core_machine {
     t_latch shared_dma_latch;
     t_dma shared_dma_primary;
     t_dma shared_dma_secondary;
-    core_machine_rtc shared_rtc;
+    x86_rtc *shared_rtc;
+    core_machine_pic_irq_source rtc_irq_source;
+    lib_u8 rtc_selected_register;
     core_machine_fdc fdc;
     core_machine_hdc hdc;
     t_kbc shared_kbc;

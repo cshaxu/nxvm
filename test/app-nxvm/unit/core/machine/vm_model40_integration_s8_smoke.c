@@ -80,7 +80,7 @@ lib_i32 main(void)
         session->core_machine->fdc_topology.drives.cylinder_count[0u] != 80u ||
         session->core_machine->fdc_topology.drives.cylinder_count[1u] != 80u ||
         session->core_machine->fdc_topology.drives.track_zero_active_low_mask != 0u ||
-        session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_TYPE_DISK_FLOPPY] !=
+        x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY) !=
             0x22u);
         core_machine_port_write(&session->core_machine->executor_port,
             0x0060u, 0xf5u);
@@ -164,8 +164,7 @@ lib_i32 main(void)
             (unsigned int)stage,
             (unsigned int)session->core_machine->fdc_topology.drives.installed_mask,
             (unsigned int)session->core_machine->fdc_topology.drives.track_zero_active_low_mask,
-            (unsigned int)session->core_machine->shared_rtc.registers[
-                CORE_MACHINE_RTC_TYPE_DISK_FLOPPY], (unsigned int)reset_status[0u],
+            (unsigned int)x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY), (unsigned int)reset_status[0u],
             (unsigned int)reset_status[1u], (unsigned int)reset_status[2u],
             (unsigned int)reset_status[3u], (unsigned int)sense_status);
     }

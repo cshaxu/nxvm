@@ -64,7 +64,7 @@ endforeach()
 foreach(required IN ITEMS "core_machine_dma_advance_transaction"
     "x86_pit_advance" "core_machine_pic_refresh"
     "core_machine_fdc_advance_at" "core_machine_hdc_advance"
-    "core_machine_rtc_advance" "core_machine_kbc_advance"
+    "x86_rtc_advance" "core_machine_kbc_advance"
     "core_machine_xt_keyboard_advance" "core_machine_vadp_advance")
     string(FIND "${scheduler_source}" "${required}" position)
     if(position EQUAL -1)

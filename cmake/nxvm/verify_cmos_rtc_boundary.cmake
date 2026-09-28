@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/rtc.c" rtc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/rtc146818/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
@@ -20,17 +20,35 @@ foreach(forbidden IN ITEMS "time(" "localtime(" "GetSystemTime"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_rtc_advance"
-    "core_machine_pic_irq_source_assert" "core_machine_pic_irq_source_deassert"
-    "CORE_MACHINE_RTC_REG_C_IRQF" "CORE_MACHINE_RTC_REG_C_UF"
-    "CORE_MACHINE_RTC_REG_C_PF")
+foreach(required IN ITEMS "x86_rtc_advance" "rtc->output("
+    "X86_RTC_REG_C_IRQF" "X86_RTC_REG_C_UF" "X86_RTC_REG_C_PF")
     string(FIND "${rtc_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "CMOS RTC state/IRQ contract is incomplete: ${required}")
     endif()
 endforeach()
 
-string(FIND "${scheduler_source}" "core_machine_rtc_advance" machine_advance_position)
+foreach(required IN ITEMS "core_machine_pic_irq_source_assert"
+    "core_machine_pic_irq_source_deassert" "rtc_selected_register"
+    "x86_rtc_create" "core_machine_port_rollback_registration")
+    string(FIND "${board_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "CMOS RTC board binding is incomplete: ${required}")
+    endif()
+endforeach()
+if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/rtc.c" OR
+   EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/rtc.h")
+    message(FATAL_ERROR "Legacy RTC mechanism must not coexist with Shared RTC")
+endif()
+foreach(forbidden IN ITEMS "app-nxvm/" "core_machine_pic" "selected_register"
+    "timing_provenance")
+    string(FIND "${rtc_source}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "Board policy leaked into Shared RTC: ${forbidden}")
+    endif()
+endforeach()
+
+string(FIND "${scheduler_source}" "x86_rtc_advance" machine_advance_position)
 string(FIND "${board_source}" "core_machine_configure_rtc_cmos"
     machine_binding_position)
 string(FIND "${devices_source}" "core_machine_rtc_" device_position)

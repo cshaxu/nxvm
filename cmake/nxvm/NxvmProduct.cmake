@@ -1172,7 +1172,6 @@ set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/kbc.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
     src/app-nxvm/devices/xt_keyboard.c
-    src/app-nxvm/devices/rtc.c
     src/app-nxvm/devices/transaction.c
 )
 add_library(core-machine-executor STATIC
@@ -1184,7 +1183,7 @@ add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-executor PUBLIC x86-pit825x)
+target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(vm-machine-frame-smoke
@@ -3403,7 +3402,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/kbc.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/xt_ppi_keyboard.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/xt_keyboard.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/rtc.c|machine-executor"
     "vm-app|src/app-nxvm/product/command.c|console-product"
     "vm-app|src/app-nxvm/product/keyboard.c|keyboard-product"
     "vm-app|src/app-nxvm/product/startup.c|session-startup"

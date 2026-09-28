@@ -36,8 +36,8 @@ endforeach()
 string(FIND "${provider_header}" "advance_time" provider_position)
 string(FIND "${lifecycle_source}" "vm_machine_execution_provider_advance_time"
     lifecycle_position)
-string(FIND "${devices_source}" "core_machine_rtc_advance" cmos_position)
-string(FIND "${machine_source}" "core_machine_rtc_advance" rtc_position)
+string(FIND "${devices_source}" "x86_rtc_advance" cmos_position)
+string(FIND "${machine_source}" "x86_rtc_advance" rtc_position)
 string(FIND "${machine_source}" "rtc_cmos_configured" rtc_configured_position)
 string(FIND "${profile_header}" "core_machine_clock_plan" profile_position)
 if(provider_position EQUAL -1 OR NOT lifecycle_position EQUAL -1 OR

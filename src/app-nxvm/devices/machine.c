@@ -760,7 +760,7 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     }
     core_machine_dma_reset(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary);
-    if (machine->rtc_cmos_configured) core_machine_rtc_reset(&machine->shared_rtc);
+    if (machine->rtc_cmos_configured) x86_rtc_reset(machine->shared_rtc);
     core_machine_board_cold_reset(machine);
     core_machine_fdc_reset(&machine->fdc);
     core_machine_hdc_reset(&machine->hdc);
@@ -1446,7 +1446,7 @@ void core_machine_destroy(core_machine *machine)
         core_machine_fdc_finalize(&machine->fdc);
         core_machine_dma_finalize(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary);
-        core_machine_rtc_finalize(&machine->shared_rtc);
+        x86_rtc_destroy(machine->shared_rtc);
         if (machine->keyboard_topology ==
                 CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
             core_machine_xt_keyboard_finalize(&machine->xt_keyboard);

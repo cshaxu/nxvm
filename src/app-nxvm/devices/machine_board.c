@@ -22,11 +22,11 @@ static lib_i32 core_machine_rtc_cmos_config_is_valid(
     for (index = 0u; index < config->default_count; ++index) {
         lib_u8 register_index = config->defaults[index].index;
 
-        if (register_index >= CORE_MACHINE_RTC_REGISTER_COUNT ||
-            register_index == CORE_MACHINE_RTC_REG_A ||
-            register_index == CORE_MACHINE_RTC_REG_B ||
-            register_index == CORE_MACHINE_RTC_REG_C ||
-            register_index == CORE_MACHINE_RTC_REG_D) {
+        if (register_index >= X86_RTC_REGISTER_COUNT ||
+            register_index == X86_RTC_REG_A ||
+            register_index == X86_RTC_REG_B ||
+            register_index == X86_RTC_REG_C ||
+            register_index == X86_RTC_REG_D) {
             return LIB_FALSE;
         }
     }
@@ -42,7 +42,8 @@ static lib_status core_machine_rtc_cmos_port_read(void *owner,
         port != machine->rtc_cmos_config.data_port) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    *out_value = core_machine_rtc_read_selected(&machine->shared_rtc);
+    *out_value = x86_rtc_read_register(machine->shared_rtc,
+        machine->rtc_selected_register);
     return LIB_STATUS_OK;
 }
 
@@ -56,11 +57,12 @@ static lib_status core_machine_rtc_cmos_port_write(void *owner,
         (void)core_machine_set_nmi_mask(machine,
             (value & machine->rtc_cmos_config.nmi_mask_bit) != 0u ?
             LIB_TRUE : LIB_FALSE);
-        core_machine_rtc_select_register(&machine->shared_rtc, (lib_u8)value);
+        machine->rtc_selected_register = (lib_u8)(value & 0x3fu);
         return LIB_STATUS_OK;
     }
     if (port == machine->rtc_cmos_config.data_port) {
-        core_machine_rtc_write_selected(&machine->shared_rtc, (lib_u8)value);
+        x86_rtc_write_register(machine->shared_rtc,
+            machine->rtc_selected_register, (lib_u8)value);
         return LIB_STATUS_OK;
     }
     return LIB_STATUS_INVALID_ARGUMENT;
@@ -506,10 +508,17 @@ lib_status core_machine_set_cpu_bus_ready(core_machine *machine, lib_i32 ready)
     machine->cpu_cycle_bus_ready = ready ? LIB_TRUE : LIB_FALSE;
     return LIB_STATUS_OK;
 }
+static void core_machine_rtc_irq_output(void *context, lib_bool asserted)
+{
+    core_machine_pic_irq_source *source = context;
+    if (asserted) core_machine_pic_irq_source_assert(source);
+    else core_machine_pic_irq_source_deassert(source);
+}
+
 lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config)
 {
-    core_machine_rtc_config rtc_config;
+    x86_rtc_config rtc_config;
     core_machine_port_provider_entry *port_checkpoint;
     lib_status status;
     lib_size index;
@@ -543,13 +552,21 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
             port_checkpoint);
         return status;
     }
-    rtc_config.irq = config->irq;
     rtc_config.ticks_per_second = config->ticks_per_second;
-    rtc_config.timing = config->timing;
-    core_machine_rtc_initialize(&machine->shared_rtc, &machine->shared_pic_master,
-        &machine->shared_pic_slave, &rtc_config);
+    rtc_config.uip_lead_ticks = config->timing.uip_lead_ticks;
+    rtc_config.update_ticks = config->timing.update_ticks;
+    status = x86_rtc_create(&rtc_config, core_machine_rtc_irq_output,
+        &machine->rtc_irq_source, &machine->shared_rtc);
+    if (status != LIB_STATUS_OK) {
+        core_machine_port_rollback_registration(&machine->executor_port,
+            port_checkpoint);
+        return status;
+    }
+    core_machine_pic_irq_source_bind(&machine->rtc_irq_source,
+        &machine->shared_pic_master, &machine->shared_pic_slave, config->irq);
     for (index = 0u; index < config->default_count; ++index) {
-        core_machine_rtc_write_nvram(&machine->shared_rtc,
+        if (config->defaults[index].index <= X86_RTC_REG_D) continue;
+        x86_rtc_write_register(machine->shared_rtc,
             config->defaults[index].index, config->defaults[index].value);
     }
     if (config->derive_configuration_checksum) {
@@ -560,11 +577,11 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
          * checksum here after every configured byte has its sole owner value. */
         for (index = 0x10u; index < 0x2eu; ++index) {
             checksum = (lib_u16)(checksum +
-                machine->shared_rtc.registers[index]);
+                x86_rtc_read_register(machine->shared_rtc, (lib_u8)index));
         }
-        core_machine_rtc_write_nvram(&machine->shared_rtc, 0x2eu,
+        x86_rtc_write_register(machine->shared_rtc, 0x2eu,
             CORE_MACHINE_MASK_U8(checksum >> 8u));
-        core_machine_rtc_write_nvram(&machine->shared_rtc, 0x2fu,
+        x86_rtc_write_register(machine->shared_rtc, 0x2fu,
             CORE_MACHINE_MASK_U8(checksum));
     }
     machine->rtc_cmos_config = *config;

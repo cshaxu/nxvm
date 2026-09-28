@@ -783,7 +783,7 @@ static void model40_capture_observe(void *opaque,
         }
         if (capture->machine != LIB_NULL && reset_sample < MODEL40_CAPTURE_RESET_HISTORY) {
             capture->reset_vector_shutdown_status[reset_sample] =
-                capture->machine->shared_rtc.registers[0x0fu];
+                x86_rtc_read_register(capture->machine->shared_rtc, 0x0fu);
             capture->reset_vector_kbc_output_port[reset_sample] =
                 capture->machine->shared_kbc.data.output_port;
         }
@@ -796,7 +796,7 @@ static void model40_capture_observe(void *opaque,
         capture->reset_instruction_value = (lib_u8)capture->machine->
             executor_cpu_instructions.data.oldcpu.data.eax;
         capture->reset_instruction_state_seen = LIB_TRUE;
-        capture->reset_instruction_shutdown_status = capture->machine->shared_rtc.registers[0x0fu];
+        capture->reset_instruction_shutdown_status = x86_rtc_read_register(capture->machine->shared_rtc, 0x0fu);
         capture->reset_instruction_kbc_output_port =
             capture->machine->shared_kbc.data.output_port;
     }

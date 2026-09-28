@@ -16,8 +16,8 @@ endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     machine_devices)
-foreach(forbidden "core_machine_rtc_initialize" "core_machine_rtc_reset"
-        "core_machine_rtc_advance" "core_machine_rtc_finalize")
+foreach(forbidden "x86_rtc_create" "x86_rtc_reset"
+        "x86_rtc_advance" "x86_rtc_destroy")
     string(FIND "${machine_devices}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "VM device composition retains RTC state access: ${forbidden}")

@@ -4,11 +4,11 @@
 #include "app-nxvm/devices/entry_plan_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/media_interface.h"
-#include "app-nxvm/devices/rtc.h"
+#include "x86/devices/rtc146818/rtc146818_interface.h"
 #include "../devices/support/core_machine_cpu_fixture.h"
 
 typedef struct mantle_fixture {
-    core_machine_rtc rtc;
+    x86_rtc *rtc;
     core_machine_media_registry *media;
     lib_u8 media_byte;
 } mantle_fixture;
@@ -16,13 +16,13 @@ typedef struct mantle_fixture {
 static void fixture_reset(void *context)
 {
     mantle_fixture *fixture = (mantle_fixture *)context;
-    if (fixture != LIB_NULL) core_machine_rtc_reset(&fixture->rtc);
+    if (fixture != LIB_NULL) x86_rtc_reset(fixture->rtc);
 }
 
 static void fixture_advance(void *context, lib_u64 elapsed_ticks)
 {
     mantle_fixture *fixture = (mantle_fixture *)context;
-    if (fixture != LIB_NULL) core_machine_rtc_advance(&fixture->rtc, elapsed_ticks);
+    if (fixture != LIB_NULL) x86_rtc_advance(fixture->rtc, elapsed_ticks);
 }
 
 static const core_machine_execution_provider fixture_execution_provider = {
@@ -72,7 +72,7 @@ lib_i32 main(void)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    const core_machine_rtc_config rtc_config = { .irq = 8u, .ticks_per_second = 1u };
+    const x86_rtc_config rtc_config = {1u, 0u, 0u};
     const core_machine_entry_plan_preload preload = { 0x0200u, halt, sizeof(halt) };
     core_machine_entry_plan plan = { 0 };
     core_machine_run_budget budget = { 1u, 0u };
@@ -85,10 +85,10 @@ lib_i32 main(void)
 
     fixture.media_byte = 0xa5u;
     if (core_machine_media_registry_create(&fixture.media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
+        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        x86_rtc_create(&rtc_config, LIB_NULL, LIB_NULL, &fixture.rtc) !=
+            LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        test_core_machine_fixture_initialize_rtc_with_shared_pic(machine,
-            &fixture.rtc, &rtc_config);
         if (core_machine_bind_execution_provider(machine,
             &fixture_execution_provider, &fixture) != LIB_STATUS_OK) failed |= 0x02;
         if (core_machine_media_registry_bind(fixture.media, 1u,
@@ -113,7 +113,7 @@ lib_i32 main(void)
             !media_info.present) failed |= 0x100;
     }
     core_machine_destroy(machine);
-    core_machine_rtc_finalize(&fixture.rtc);
+    x86_rtc_destroy(fixture.rtc);
     core_machine_media_registry_destroy(fixture.media);
     if (failed) {
         printf("mantle shape failed=%x reason=%u\n", failed, result.reason);

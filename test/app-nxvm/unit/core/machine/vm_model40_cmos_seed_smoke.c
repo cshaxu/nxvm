@@ -4,7 +4,7 @@
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
-#include "app-nxvm/devices/rtc.h"
+#include "x86/devices/rtc146818/rtc146818_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"

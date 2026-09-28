@@ -83,16 +83,16 @@ lib_i32 main(void)
     failed |= !failed && core_machine_memory_write(machine, 0x00fffff0u, &nop,
         sizeof(nop)) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0070u,
-        CORE_MACHINE_RTC_REG_B) != LIB_STATUS_OK;
+        X86_RTC_REG_B) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0071u,
-        CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_UIE) !=
+        X86_RTC_REG_B_24H | X86_RTC_REG_B_UIE) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_set_trace_provider(machine, &trace) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= !failed && (result.reason != CORE_MACHINE_STOP_BUDGET ||
         result.elapsed_ticks != 3u ||
-        machine->shared_rtc.calendar.second != 3u);
+        x86_rtc_read_register(machine->shared_rtc, X86_RTC_SECOND) != 3u);
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != LIB_STATUS_OK;
     failed |= !failed && (observation.now != 3u || observation.pending_events != 0u ||

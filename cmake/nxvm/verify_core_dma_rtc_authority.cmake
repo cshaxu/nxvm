@@ -17,7 +17,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
 
 foreach(required IN ITEMS "core_machine_configure_dma"
     "core_machine_configure_rtc_cmos" "core_machine_rtc_cmos_port_provider"
-    "core_machine_rtc_advance" "core_machine_dma_bind_channel")
+    "x86_rtc_advance" "core_machine_dma_bind_channel")
     string(FIND "${core_source}" "${required}" source_position)
     string(FIND "${core_header}" "${required}" header_position)
     if(source_position EQUAL -1 AND header_position EQUAL -1)
@@ -43,11 +43,9 @@ endforeach()
 
 foreach(vm_source IN ITEMS "${machine_source}" "${lifecycle_source}")
     foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
-        "core_machine_dma_bind_channel" "core_machine_rtc_initialize"
-        "core_machine_rtc_reset" "core_machine_rtc_advance"
-        "core_machine_rtc_finalize" "core_machine_rtc_select_register"
-        "core_machine_rtc_read_selected" "core_machine_rtc_write_selected"
-        "core_machine_rtc_write_nvram"
+        "core_machine_dma_bind_channel" "x86_rtc_create"
+        "x86_rtc_reset" "x86_rtc_advance"
+        "x86_rtc_destroy" "x86_rtc_read_register" "x86_rtc_write_register"
         "core_machine_set_nmi_mask" "core_machine_install_port_provider")
         string(FIND "${vm_source}" "${forbidden}" position)
         if(NOT position EQUAL -1)
@@ -57,11 +55,9 @@ foreach(vm_source IN ITEMS "${machine_source}" "${lifecycle_source}")
 endforeach()
 
 foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
-    "core_machine_dma_bind_channel" "core_machine_rtc_initialize"
-    "core_machine_rtc_reset" "core_machine_rtc_advance"
-    "core_machine_rtc_finalize" "core_machine_rtc_select_register"
-    "core_machine_rtc_read_selected" "core_machine_rtc_write_selected"
-    "core_machine_rtc_write_nvram"
+    "core_machine_dma_bind_channel" "x86_rtc_create"
+    "x86_rtc_reset" "x86_rtc_advance"
+    "x86_rtc_destroy" "x86_rtc_read_register" "x86_rtc_write_register"
     "core_machine_set_nmi_mask" "core_machine_install_port_provider")
     string(FIND "${devices_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)

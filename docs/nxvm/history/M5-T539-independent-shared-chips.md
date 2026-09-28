@@ -104,3 +104,17 @@ integration, standalone chip, static and manifest results are in S3 evidence;
 the document gate, 46 local links, identifiers, queue and source mapping agree.
 P3 accepts S3 and removes its active packet. T539 stays open, with no next S
 admitted and no claim that the remaining chip extractions are complete.
+
+## S4: RTC Extraction
+
+Continuation from 803c9d019 under the owner's 2026-09-28 automatic-S admission.
+Shared x86 owns the opaque MC146818 mechanism; NXVM retains index/NMI,
+PIC binding, seed/checksum and clock/provenance. The two old RTC files leave
+the product tree. Malformed-month array bounds are contained at their sole
+owner without a new hardware-accuracy claim.
+
+[S4 evidence](../etc/evidence/t539-s4-rtc-extraction.md) records preserved
+functions, migrated tests, all-month sanitizer proof, full dual-width units
+and integration, single-pass profile boots and eight receiving artifacts.
+Shared and NXVM are separate implementation P targets; coordinator actual-change
+acceptance follows the complete deliveries. No other chip is accepted by S4.

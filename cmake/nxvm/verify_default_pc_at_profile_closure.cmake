@@ -8,7 +8,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/external_
     firmware_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/rtc.c" rtc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/rtc146818/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
 
 foreach(required IN ITEMS

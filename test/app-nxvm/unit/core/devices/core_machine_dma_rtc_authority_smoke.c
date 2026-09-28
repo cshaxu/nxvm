@@ -137,8 +137,8 @@ int main(void)
 
     stage = 3;
     core_machine_dma_rtc_initialize_pic(machine);
-    core_machine_dma_rtc_cmos_write(machine, CORE_MACHINE_RTC_REG_B,
-        CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_UIE);
+    core_machine_dma_rtc_cmos_write(machine, X86_RTC_REG_B,
+        X86_RTC_REG_B_24H | X86_RTC_REG_B_UIE);
     if (core_machine_memory_write(machine, 0x00fffff0u, program, sizeof(program)) !=
             LIB_STATUS_OK || core_machine_run(machine, budget, &result) !=
             LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -146,7 +146,7 @@ int main(void)
         failed = 1;
         stage = 3;
     } else if (core_machine_dma_rtc_cmos_read(machine,
-            CORE_MACHINE_RTC_SECOND) != 0x05u) {
+            X86_RTC_SECOND) != 0x05u) {
         failed = 1;
         stage = 4;
     } else if (!(interrupt_pending = core_machine_pic_scan_interrupt(
@@ -158,17 +158,17 @@ int main(void)
     } else if (core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) !=
         0x5au || core_machine_dma_rtc_cmos_read(machine,
-            CORE_MACHINE_RTC_SECOND) != 0x05u) {
+            X86_RTC_SECOND) != 0x05u) {
         failed = 1;
         stage = 6;
     }
 
 done:
     if (failed && machine != LIB_NULL) {
-        printf("M5:T296:S3:DMA-RTC-AUTHORITY:DETAIL:%d C=%02x IRQ=%u asserted=%u pending=%d vector=%02x IRR=%02x/%02x\n",
-            stage, machine->shared_rtc.registers[CORE_MACHINE_RTC_REG_C],
-            machine->shared_rtc.irq_source.irq,
-            machine->shared_rtc.irq_source.asserted,
+        printf("M5:T296:S3:DMA-RTC-AUTHORITY:DETAIL:%d IRQ=%u asserted=%u pending=%d vector=%02x IRR=%02x/%02x\n",
+            stage,
+            machine->rtc_irq_source.irq,
+            machine->rtc_irq_source.asserted,
             interrupt_pending, interrupt_vector,
             machine->shared_pic_master.data.irr, machine->shared_pic_slave.data.irr);
     }

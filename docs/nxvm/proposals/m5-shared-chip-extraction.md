@@ -4,7 +4,9 @@
 
 First of three ordered NXVM migrations requested by the owner, admitted as
 [M5 T539](../history/M5-T539-independent-shared-chips.md). S1 is research/design
-only; later production batches await design review and their own admission.
+only. The owner's subsequent automatic-S authorization permits the coordinator
+to admit each bounded production batch after its design review, without another
+manual approval round. The active packet records each batch and its targets.
 Extract the implemented chip
 mechanisms from `src/app-nxvm/devices` into `src/x86/devices`, leaving NXVM
 responsible for board composition and product adaptation rather than private
@@ -48,7 +50,13 @@ on 2026-09-28; admit its source batch only after the S2 design delivery.
 
 S3 implements that PIT batch: [delivery evidence](../etc/evidence/t539-s3-pit-extraction.md)
 records the chip-only library, removed old route, board reconnection and receiver
-verification. This approval does not extend to the other chip batches.
+verification. The owner subsequently authorized automatic admission of the
+remaining S batches on 2026-09-28; this does not waive their boundary reviews,
+verification, separate target commits or exit criteria.
+
+S4 extracts RTC/CMOS under that authorization; its
+[evidence](../etc/evidence/t539-s4-rtc-extraction.md) records the chip/board
+split and malformed-month safety boundary. Current owns its acceptance state.
 
 The first admitted S freezes a migration ledger covering every tracked source
 file in the current devices subtree, its callers and tests. Each entry names

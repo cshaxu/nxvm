@@ -21,6 +21,9 @@ including firmware-hook consumer proof and the approved first PIT extraction.
 T539 S3: [PIT extraction evidence](evidence/t539-s3-pit-extraction.md),
 the opaque chip boundary, NXVM reconnection, receiver tests and artifact identities.
 
+T539 S4: [RTC extraction evidence](evidence/t539-s4-rtc-extraction.md),
+calendar ownership, board reconnection, invalid-month safety and verification.
+
 S8 receiving evidence: [T43 quality-repair artifacts](evidence/m6-t43-s8-receiving-artifacts.md); rebuilt boolean-layout receivers and owner-approved 0/1-only INI correction.
 
 | Current category | Owner | Purpose |

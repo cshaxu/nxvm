@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/rtc.h"
+#include "x86/devices/rtc146818/rtc146818_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 

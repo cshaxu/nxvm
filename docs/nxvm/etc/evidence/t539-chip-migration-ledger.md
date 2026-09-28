@@ -2,7 +2,7 @@
 
 Baseline 996a19a17. All 81 tracked files under `src/app-nxvm/devices` are listed
 exactly once below. Entries remain **designed, not migrated**, except the
-PIT row explicitly updated by S3; the original inventory stays finite.
+PIT row accepted by S3 and RTC row under S4 verification; the inventory stays finite.
 The [design review](../architecture/t539-independent-chip-design.md) supplies
 dependency details, proposed contracts, regression ownership and decision gates.
 This ledger is not a claim of completed chip semantics/timing qualification.
@@ -14,7 +14,7 @@ This ledger is not a claim of completed chip semantics/timing qualification.
 | `pic.c`, `pic.h`, `pic_interface.h` | Extract one PIC; retain paired wiring and fixed ports in board. |
 | `pit.c`, `pit.h` | S3 implementation: sole timer moved to `src/x86/devices/pit825x`; NXVM `pit_bus` owns port attachment, existing board/scheduler own wiring and clocks. Verification and acceptance are recorded in S3 evidence. |
 | `dma.c`, `dma.h` | Split controller from page registers, address/lane expansion, pair arbitration and physical bus provider. |
-| `rtc.c`, `rtc.h` | Extract RTC/CMOS; replace PIC and whole-machine timing definitions with local inputs/output. |
+| `rtc.c`, `rtc.h` | S4 implementation under verification: sole mechanism moved to `src/x86/devices/rtc146818`; NXVM owns index/NMI, PIC signal binding, seed/checksum and clocks. Acceptance pending in S4 evidence. |
 | `kbc.c`, `kbc.h` | Split AT-controller and attached keyboard/AUX behavior; board owns A20/reset and port/IRQ wiring. |
 | `xt_keyboard.c`, `xt_keyboard.h` | Extract existing serial keyboard behavior; replace concrete PPI binding. |
 | `xt_ppi_keyboard.c`, `xt_ppi_keyboard.h` | Split implemented Mode-0 mechanism from XT DIP/NMI/speaker/keyboard attachment; no full-8255 claim. |
@@ -70,3 +70,4 @@ governance verification; no executable or runtime-test result is claimed here.
 Baseline T538 runtime acceptance remains historical evidence, not proof of this
 future architecture. S1 changed no source, tests, manifests, binary or INI.
 For the PIT cutover, see [S3 evidence](t539-s3-pit-extraction.md).
+For the RTC batch, see [S4 evidence](t539-s4-rtc-extraction.md).

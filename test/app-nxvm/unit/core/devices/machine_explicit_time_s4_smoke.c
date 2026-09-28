@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/rtc.h"
+#include "x86/devices/rtc146818/rtc146818_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
 static lib_i32 machine_explicit_time_prepare(core_machine **out_machine)
@@ -69,7 +69,7 @@ lib_i32 main(void)
         core_machine_destroy(machine);
         return 1;
     }
-    second_before_explicit_time = machine->shared_rtc.calendar.second;
+    second_before_explicit_time = x86_rtc_read_register(machine->shared_rtc, X86_RTC_SECOND);
 
     failed |= second.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         second.executed != 0u || second.ticks != 0u ||
@@ -84,10 +84,10 @@ lib_i32 main(void)
         elapsed != first.elapsed_ticks + 5u ||
         core_machine_get_timeline_observation(machine, &after) != LIB_STATUS_OK ||
         after.now != before.now + 5u ||
-        machine->shared_rtc.calendar.second != second_before_explicit_time + 5u;
+        x86_rtc_read_register(machine->shared_rtc, X86_RTC_SECOND) != second_before_explicit_time + 5u;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_get_elapsed_ticks(machine, &elapsed) != LIB_STATUS_OK ||
-        elapsed != 0u || machine->shared_rtc.calendar.second !=
+        elapsed != 0u || x86_rtc_read_register(machine->shared_rtc, X86_RTC_SECOND) !=
             second_before_explicit_time + 5u ||
         core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
         core_machine_get_elapsed_ticks(machine, &elapsed) != LIB_STATUS_OK ||

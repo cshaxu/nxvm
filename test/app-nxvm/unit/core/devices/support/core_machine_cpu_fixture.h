@@ -206,16 +206,6 @@ static inline lib_status test_core_machine_fixture_query_configuration_memory_ro
             bytes, access, out_route);
 }
 
-static inline void test_core_machine_fixture_initialize_rtc_with_shared_pic(
-    core_machine *machine, core_machine_rtc *rtc,
-    const core_machine_rtc_config *config)
-{
-    if (machine != LIB_NULL && rtc != LIB_NULL && config != LIB_NULL) {
-        core_machine_rtc_initialize(rtc, &machine->shared_pic_master,
-            &machine->shared_pic_slave, config);
-    }
-}
-
 static inline lib_i32 test_core_machine_fixture_executor_storage_is_coherent(
     const core_machine *machine)
 {

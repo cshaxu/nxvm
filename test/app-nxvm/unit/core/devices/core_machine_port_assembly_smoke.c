@@ -149,7 +149,6 @@ static lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
         .defaults = {{CORE_MACHINE_RTC_EQUIPMENT, 0x2fu}}
     };
     core_machine_port_test_allocation allocation = { fail_at, 0u };
-    core_machine_rtc rtc_zero = {0};
     core_machine_rtc_cmos_config config_zero = {0};
     core_machine *machine = LIB_NULL;
     lib_i32 failed = core_machine_create(&machine_config, &machine) != LIB_STATUS_OK;
@@ -158,7 +157,7 @@ static lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_rtc_cmos(machine, &rtc_config) !=
                 LIB_STATUS_NO_MEMORY || machine->rtc_cmos_configured ||
-            lib_memory_compare(&machine->shared_rtc, &rtc_zero, sizeof(rtc_zero)) != 0 ||
+            machine->shared_rtc != LIB_NULL ||
             lib_memory_compare(&machine->rtc_cmos_config, &config_zero,
                 sizeof(config_zero)) != 0 ||
             core_machine_port_has_write(&machine->executor_port, 0x0070u) ||
