@@ -2,13 +2,15 @@
 
 ## Current Work
 
-M5 T539 S1 is admitted for independent-chip extraction research and design.
-Production migration is not admitted in this S. The owner first requests the
-directory/dependency design, per-chip gaps, required diffs and prior decisions.
+M5 T539 remains open. S1 research/design is accepted and closed; no S is executing.
+Production migration has not started. The owner is reviewing the directory and
+dependency design, per-chip gaps, required diffs and prior decisions.
 
 | Task | Progress |
 | --- | --- |
-| T539 S1 | Active: NXVM-only architecture audit/design; no source or artifact changes. |
+| T539 S1 | Closed: design delivered in 8a8a97991; 81-file inventory and governance verified. Await owner decisions before the next S. |
+
+The following is S1's retained admission record, not an active production packet.
 
 | Field | Required record |
 | --- | --- |

@@ -4,7 +4,7 @@
 
 Owner admitted the first [migration proposal](../proposals/m5-shared-chip-extraction.md)
 after Td S174 (996a19a17), requesting research/design before source changes.
-T538 is closed; T539 remains open. Current's packet is the execution authority.
+T538 is closed; T539 remains open. Current records admission and execution status.
 
 ## S1: Boundary Research And Design
 
@@ -33,3 +33,15 @@ manifests and receiving executables remain unchanged. Validation: exact 81/81
 inventory comparison, diff whitespace check, NXVM documentation governance gate
 and all local Markdown links in the nine delivery documents passed. No runtime tests or builds
 are required or claimed for this design-only S.
+
+## S1 Acceptance
+
+Coordinator-role actual-change review accepted P1 `8a8a97991` on 2026-09-28:
+nine NXVM documentation files only, 414 insertions and 29 deletions. Compared the
+original request, admitted brief, complete file inventory and source anchors to
+the delivered design; no Shared/MyNES/product-runtime changes or unsupported
+hardware-completeness claims were introduced. The two governance skills kept
+component ownership explicit and preserved the original handler-style constraint.
+
+P2 records S1 closure only. T539 remains open; production batches and unresolved
+architecture decisions await owner review. No other T or S is admitted.
