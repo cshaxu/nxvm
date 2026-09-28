@@ -30,7 +30,8 @@ Artifact evidence: [S10 registration and byte boolean](../etc/evidence/m6-t43-s1
   width. [Receiver evidence](../etc/evidence/t538-s7-orphan-release-receiver.md) records
   hashes. No MyNES source or configuration changes; T43 remains closed.
   Owner-provided v3 snapshot is committed in S13 P3 9b2b10ce2.
-- Shared: 064b9619b (T538 S7 P1) adds the orphan-release repair to 0c71110b0.
+- Shared: 268464d49; executable behavior is 064b9619b (T538 S7 P1), with
+  P4's owner-requested key-specific comment clarification and updated manifest.
   Lib source/test roots add that correction; S5's two test roots retain the
   boundary/retirement corrections for SoftPC to import, including removal of
   its cross-owner fixture. No complete SoftPC parity is claimed. Transfer complete

@@ -21,3 +21,8 @@ The [host evidence](../../../nxvm/etc/evidence/t538-s7-orphan-release.md)
 records the exact repair, source/test delta and qualification. SoftPC must import
 the new Lib source/test roots in addition to S5's return differences; no sibling
 was changed and six-root equality is not claimed.
+
+Coordinator accepted receiver P3 193530996 after actual-change review. Subsequent
+Shared P4 268464d49 changes only the owner-requested key-specific comment and
+manifest; executable inputs/behavior and the two artifact hashes are unchanged,
+so another build is not required. MyNES T43 remains closed.
