@@ -139,5 +139,7 @@ original test plus all eight PIC port-registration rollback/retry cases.
 [S5 evidence](../etc/evidence/t539-s5-pic-extraction.md) records both-width
 341/341 units, 20/20 default integration, 12/12 independent chip tests,
 single-pass remaining profile boots, manifests/gates and eight artifact hashes.
-Shared delivery d6dc6ca3a is pushed. NXVM delivery and coordinator review follow;
-no remaining chip batch is implicitly accepted.
+Shared d6dc6ca3a and NXVM 6cf3cee40 are pushed. Coordinator inspected their
+actual ownership, priority/cascade/poll, lifetime, rollback and caller/test
+changes; no outstanding gap remains in the bounded brief. S5 is closed;
+T539 remains open and no remaining chip batch is implicitly accepted.

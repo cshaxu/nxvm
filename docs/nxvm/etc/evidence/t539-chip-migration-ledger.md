@@ -2,8 +2,8 @@
 
 Baseline 996a19a17. All 81 tracked files under `src/app-nxvm/devices` are listed
 exactly once below. Entries remain **designed, not migrated**, except the
-PIT row accepted by S3, RTC row accepted by S4 and the S5 PIC implementation
-under receiver verification; the inventory stays finite.
+PIT row accepted by S3, RTC row accepted by S4 and PIC row accepted by S5;
+the inventory stays finite.
 The [design review](../architecture/t539-independent-chip-design.md) supplies
 dependency details, proposed contracts, regression ownership and decision gates.
 This ledger is not a claim of completed chip semantics/timing qualification.

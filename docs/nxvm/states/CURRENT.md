@@ -2,12 +2,13 @@
 
 ## Current Work
 
-M5 T539 remains open. S4 RTC extraction is closed; S5 is admitted for PIC
-extraction under the owner's automatic-S authorization dated 2026-09-28.
+M5 T539 remains open. S5 PIC extraction is closed after actual-change review.
+Subsequent bounded batches continue under the owner's automatic-S authorization
+dated 2026-09-28; no additional manual admission is required.
 
 | Task | Progress |
 | --- | --- |
-| T539 S5 | Implementation and verification complete: units 341/341, default integration 20/20 and independent chip suites 12/12 per width; all eight profile/width boots pass once. Shared d6dc6ca3a pushed; NXVM delivery and actual-diff acceptance pending. |
+| T539 S5 | Accepted: Shared d6dc6ca3a and NXVM 6cf3cee40 pushed; actual-change review complete. All bounded exit criteria satisfied; remaining T539 inventory is not accepted by this closure. |
 
 | Field | Required record |
 | --- | --- |
@@ -46,16 +47,16 @@ unchanged owner INIs. MyNES retains its two unchanged 0043 receivers; its T43
 remains closed.
 
 Lib/Common retain the accepted 268464d49 baseline. Shared x86 PIT is accepted
-at 24162ac93; RTC at 8a8435648. Current NXVM source/artifacts are 06f99605d.
-[S4 evidence](../etc/evidence/t539-s4-rtc-extraction.md) owns the source mapping,
-artifact hashes and malformed-month safety evidence. Full sibling parity is
+at 24162ac93, RTC at 8a8435648 and PIC at d6dc6ca3a. Current NXVM source/artifacts
+are 6cf3cee40. [S5 evidence](../etc/evidence/t539-s5-pic-extraction.md) owns the
+source mapping, artifact hashes and transaction rollback evidence. Full sibling parity is
 not claimed; no sibling repository was modified.
 
-Verification: NXVM 339/339 units and 20/20 default-profile external integration
+Verification: NXVM 341/341 units and 20/20 default-profile external integration
 per width; all six non-default profile/width boot matrices pass once.
-Independent chip suites are 10/10 per width; all 93 specialized static steps
-and six manifests pass. MyNES has no x86 dependency or artifact input change.
-The S4 temporary build trees are removed; the two S3 NXVM incremental trees
+Independent chip suites are 12/12 per width; the specialized static aggregate,
+extended PIC boundary and six manifests pass. MyNES has no x86 dependency or artifact input change.
+The S5 temporary build trees are removed; the two S3 NXVM incremental trees
 remain for the immediately next chip batch. Cooked-history rollback debt
 remains in [TODO](TODO.md). This bounded regression acceptance does not claim
 complete hardware qualification or indefinite absence of intermittent faults.

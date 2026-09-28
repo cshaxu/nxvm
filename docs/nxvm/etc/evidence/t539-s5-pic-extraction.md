@@ -3,7 +3,7 @@
 Baseline be86dee2e. This batch covers pic.c, pic.h, pic_interface.h and all
 their production/test consumers. It does not qualify new hardware behavior or
 close the remaining chip inventory. Shared delivery is d6dc6ca3a; NXVM
-delivery and coordinator acceptance follow the completed receiver matrix.
+delivery is 6cf3cee40. Both are pushed and accepted after actual-change review.
 
 ## Ownership And Actual Changes
 
@@ -84,3 +84,15 @@ its receivers are unchanged.
 | nxvm_xt_0_5_0539_x86.exe | 86E4F03D3D797111623E0925E0035BB480052765BB3212AD4BCF957C7A5B6C9C |
 | nxvm_at_0_5_0539_x64.exe | BD247B9B027EA24DAF2CD67F1535D62D508B83206969745F247E9D93D73F863B |
 | nxvm_at_0_5_0539_x86.exe | 6709302CE25BC056780457D73953E312E4596FC2E2FD588E409763D64D5E36E4 |
+
+## Actual-Change Acceptance
+
+Coordinator reviewed d6dc6ca3a and 6cf3cee40 against the finite PIC brief:
+single-chip priority/ICW/OCW ownership, strict slave/poll selection versus
+master SFNM, resolved level versus source counts, cascade acknowledge,
+configured delay/reset retention, source lifetime and transactional failure
+cleanup. CPU/device callers no longer inspect private PIC state. All required
+receiver proofs above pass; six manifests and committed diff checks pass.
+No outstanding item remains in S5. T539 and the unextracted inventory remain
+open. Temporary S5 chip/probe build trees are removed; reusable dual-width
+NXVM trees remain for subsequent automatic admission.
