@@ -228,3 +228,18 @@ P1 7fa0f75d5 is pushed. Coordinator actual-diff acceptance closes this bounded
 prerequisite, not FDC migration. The source contradicts Intel SEEK/READY rules
 and has pending-completion identity/capacity risks; those remain explicit T539
 cutover gates. S11 automatically begins the pending seek/completion repair.
+
+## S11: Pending FDC Operation Ownership
+
+P1 a714e194b repairs command-buffer identity leakage and bounds outstanding
+seek completions through admission, not result eviction. Production net +16
+lines; tests net +144. [Evidence](../etc/evidence/t539-s11-fdc-seek-ownership.md)
+records reproduced negative controls, 347/347 units and 20/20 default
+integrations per width, six other profile boots once, eight artifact hashes
+and static/document/manifest checks. Shared, MyNES and INI are unchanged.
+
+Coordinator-role actual-diff review accepts operation ownership, capacity
+proof, unsupported-sequence qualification, reset/SIS coverage and receiver
+evidence. S11 closes after its complete P1 push; it does not close FDC
+extraction. S12 automatically admits drive-input/status qualification and
+repair under the same T539; its bounded packet is in Current.
