@@ -1675,9 +1675,7 @@ int main(lib_i32 argc, char **argv)
     lib_u8 last_fdc_result[3] = {0u, 0u, 0u};
     lib_u8 last_fdc_phase = 0u;
     lib_u32 last_fdc_remaining = 0u;
-    lib_u16 last_dma_address = 0u;
-    lib_u16 last_dma_count = 0u;
-    lib_u8 last_dma_mode = 0u;
+    x86_dma_signals last_dma = { 0u, 4u, LIB_FALSE };
     lib_u64 executed_total = 0u;
     lib_u64 run_count = 0u;
     lib_u32 last_reason = CORE_MACHINE_STOP_NONE;
@@ -1943,9 +1941,7 @@ int main(lib_i32 argc, char **argv)
             last_fdc_result[2u] = session->core_machine->fdc.data.st2;
             last_fdc_phase = (lib_u8)session->core_machine->fdc.data.phase;
             last_fdc_remaining = session->core_machine->fdc.data.transfer_remaining;
-            last_dma_address = session->core_machine->shared_dma_primary.data.currAddr[2u];
-            last_dma_count = session->core_machine->shared_dma_primary.data.currCount[2u];
-            last_dma_mode = session->core_machine->shared_dma_primary.data.mode[2u];
+            last_dma = x86_dma_get_signals(session->core_machine->shared_dma_primary.device);
         }
         if (result.reason == CORE_MACHINE_STOP_FAULT) {
             printf("BOOT-PROBE=guest-fault\n");
@@ -2104,15 +2100,13 @@ int main(lib_i32 argc, char **argv)
                 printf("BOOT-PROBE=post-bl=%02X-post-flags=%04X\n",
                     (unsigned int)(session->core_machine->executor_cpu.data.ebx & 0xffu),
                     (unsigned int)(session->core_machine->executor_cpu.data.eflags & 0xffffu));
-                printf("BOOT-PROBE=post-dma-status=%02X-request=%02X-mask=%02X\n",
-                    (unsigned int)session->core_machine->shared_dma_primary.data.status,
-                    (unsigned int)session->core_machine->shared_dma_primary.data.request,
-                    (unsigned int)session->core_machine->shared_dma_primary.data.mask);
-                printf("BOOT-PROBE=post-dma-command=%02X-mode0=%02X-count0=%04X-address0=%04X\n",
-                    (unsigned int)session->core_machine->shared_dma_primary.data.command,
-                    (unsigned int)session->core_machine->shared_dma_primary.data.mode[0u],
-                    (unsigned int)session->core_machine->shared_dma_primary.data.currCount[0u],
-                    (unsigned int)session->core_machine->shared_dma_primary.data.currAddr[0u]);
+                {
+                    x86_dma_signals dma = x86_dma_get_signals(
+                        session->core_machine->shared_dma_primary.device);
+                    printf("BOOT-PROBE=post-dma-eligible=%02X-active=%u-enabled=%u\n",
+                        (unsigned int)dma.requests, (unsigned int)dma.active_channel,
+                        (unsigned int)dma.enabled);
+                }
                 printf("BOOT-PROBE=post-elapsed-ticks=%llu\n",
                     (unsigned long long)session->core_machine->elapsed_ticks);
                 printf("BOOT-PROBE=pit-waits-first=%llu-second=%llu-irq0=%llu\n",
@@ -2556,9 +2550,9 @@ done:
             (unsigned int)last_fdc_bytes[4u], (unsigned int)last_fdc_bytes[5u],
             (unsigned int)last_fdc_bytes[6u], (unsigned int)last_fdc_bytes[7u],
             (unsigned int)last_fdc_bytes[8u]);
-        printf("BOOT-PROBE=last-fdc-remaining=%u-dma2-address=%04X-count=%04X-mode=%02X\n",
-            (unsigned int)last_fdc_remaining, (unsigned int)last_dma_address,
-            (unsigned int)last_dma_count, (unsigned int)last_dma_mode);
+        printf("BOOT-PROBE=last-fdc-remaining=%u-dma-eligible=%02X-active=%u-enabled=%u\n",
+            (unsigned int)last_fdc_remaining, (unsigned int)last_dma.requests,
+            (unsigned int)last_dma.active_channel, (unsigned int)last_dma.enabled);
         printf("BOOT-PROBE=fdc-terminals=%llu-failed=%llu-last=%02X/%u/%02X,%02X,%02X\n",
             (unsigned long long)trace.fdc_terminal_count,
             (unsigned long long)trace.fdc_failed_terminal_count,

@@ -30,7 +30,7 @@
 
 #include "app-nxvm/devices/pit_bus.h"
 
-#include "app-nxvm/devices/dma.h"
+#include "app-nxvm/devices/dma_bus.h"
 
 #include "app-nxvm/devices/d4_memory.h"
 

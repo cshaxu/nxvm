@@ -67,7 +67,13 @@ S6 is an evidence-led DMA prerequisite: [first-service repair](../etc/evidence/t
 Source review found that the secondary first transfer bypasses the phase handler,
 contradicting the prior blanket timing-order audit. Repair and characterize the
 whole affected channel/mode family before extraction; do not publish a shared
-phase-bypass API merely to preserve this defect. The DMA migration remains pending.
+phase-bypass API merely to preserve this defect. S6 did not complete DMA migration.
+
+S7 completes that DMA cutover under the [boundary review](../etc/architecture/t539-s7-dma-boundary.md):
+one opaque controller in Shared, page/lane and paired-bus wiring in NXVM.
+Its [delivery evidence](../etc/evidence/t539-s7-dma-extraction.md) records the
+original-test migration, allocation rollback and receiving-product verification.
+Current owns acceptance; no remaining chip batch is implicitly accepted.
 
 The first admitted S freezes a migration ledger covering every tracked source
 file in the current devices subtree, its callers and tests. Each entry names

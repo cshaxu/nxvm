@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma.h"
+#include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/lifecycle.h"
@@ -47,8 +47,7 @@ lib_i32 main(void)
         0u);
     core_machine_port_write(&session->core_machine->executor_port, 0x0009u,
         0x06u);
-    if (session->core_machine->shared_dma_secondary.data.mode[0u] != 0xc0u ||
-        !core_machine_dma_has_pending_request(
+    if (!core_machine_dma_has_pending_request(
             &session->core_machine->shared_dma_primary,
             &session->core_machine->shared_dma_secondary)) {
         failed = 1;
@@ -56,11 +55,9 @@ lib_i32 main(void)
     }
 
     vm_machine_reset(session);
-    if (session->core_machine->shared_dma_primary.data.request != 0u ||
-        session->core_machine->shared_dma_secondary.data.request != 0u ||
-        session->core_machine->shared_dma_primary.data.mask != VDMA_MASK_VALID ||
-        session->core_machine->shared_dma_secondary.data.mask != VDMA_MASK_VALID ||
-        session->core_machine->shared_dma_secondary.data.mode[0u] != 0u) {
+    if (core_machine_dma_has_pending_request(
+            &session->core_machine->shared_dma_primary,
+            &session->core_machine->shared_dma_secondary)) {
         failed = 1;
         goto done;
     }

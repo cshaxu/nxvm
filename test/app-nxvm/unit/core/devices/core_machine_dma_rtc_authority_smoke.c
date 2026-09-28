@@ -55,10 +55,10 @@ static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
         core_machine_bus_write(machine, 0x0041u, 0u) != LIB_STATUS_OK ||
         core_machine_advance_time(machine, 3u) != LIB_STATUS_OK ||
         x86_pit_get_output(machine->shared_pit.device, 1u) ||
-        (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(0u)) == 0u ||
+        (core_machine_port_read(&machine->executor_port, 8u) & 0x10u) == 0u ||
         core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
         !x86_pit_get_output(machine->shared_pit.device, 1u) ||
-        (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(0u)) != 0u;
+        (core_machine_port_read(&machine->executor_port, 8u) & 0x10u) != 0u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -115,7 +115,8 @@ int main(void)
         machine->shared_dma_primary.connect.device_owner[0u] != machine ||
         machine->refresh_dma_request.core_token == 0u ||
         machine->refresh_dma_request.channel != 0u ||
-        machine->shared_dma_primary.data.mask != VDMA_MASK_VALID ||
+        core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary) ||
         core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) !=
             0x5au) {
         failed = 1;

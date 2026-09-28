@@ -158,3 +158,18 @@ actual-diff review accepts the one removed bypass, 126-case fixture, preserved
 original tests, corrected source claim and artifact identities. No Shared
 implementation or other product changes are part of S6. The active packet is
 removed; S6 closes and T539 remains open for the pending DMA extraction.
+
+## S7: DMA Extraction
+
+Automatically admitted from 0ceb739f6. The [boundary review](../etc/architecture/t539-s7-dma-boundary.md)
+separates one opaque 8237A controller from NXVM's page/lane and paired-bus
+integration. The old chip implementation and accelerated advance path are
+removed; all callers and original behavioral scenarios migrate to public
+registers, copied signals and the real phase path. Construction failures roll
+back port publication and chip ownership without hiding an earlier error.
+
+[Evidence](../etc/evidence/t539-s7-dma-extraction.md) records 342/342 units,
+20/20 default integrations and 13/13 independent chip tests per width, every
+remaining boot once, eight verified artifacts, all six manifests and gates.
+Production C/H net -49; tests net +301. INIs, MyNES and sibling repositories
+are unchanged. Shared/NXVM delivery and coordinator acceptance are pending.

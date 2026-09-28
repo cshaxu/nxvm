@@ -1,3 +1,4 @@
+#include "support/dma_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -183,18 +184,18 @@ lib_i32 main(void)
                 core_machine_hdc_advance(&machine->hdc);
                 if (dma_provider == LIB_NULL || dma_provider->read_device == LIB_NULL ||
                     machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
-                    (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) == 0u)
+                    (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) == 0u)
                     failed |= 0x100;
-                core_machine_dma_advance(&machine->shared_dma_latch,
+                test_dma_transfers(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->executor_memory, sizeof(dma_bytes));
+                    &machine->executor_memory, &machine->executor_port, sizeof(dma_bytes));
                 if (!failed && (core_machine_memory_read_physical(&machine->executor_memory,
                     0x2200u, (lib_uptr)dma_bytes, sizeof(dma_bytes)) !=
                     LIB_STATUS_OK || dma_bytes[0] != 0u || dma_bytes[511] != 0xffu ||
                     dma_bytes[512] != 0xa5u || dma_bytes[1023] != 0xa5u))
                     failed |= 0x200;
                 if (!failed && (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
-                    (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) != 0u ||
+                    (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0u)) failed |= 0x400;
             }
             if (!failed) {
@@ -204,7 +205,7 @@ lib_i32 main(void)
                 core_machine_hdc_advance(&machine->hdc);
                 dma_provider->terminal_count(&machine->hdc, &machine->shared_dma_latch);
                 if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
-                    (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) != 0u ||
+                    (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0x02u) failed |= 0x800;
             }
             if (!failed) {
@@ -221,14 +222,14 @@ lib_i32 main(void)
                 core_machine_hdc_advance(&machine->hdc);
                 if (dma_provider == LIB_NULL || dma_provider->write_device == LIB_NULL ||
                     machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_WRITE ||
-                    (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) == 0u)
+                    (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) == 0u)
                     failed |= 0x2000;
-                core_machine_dma_advance(&machine->shared_dma_latch,
+                test_dma_transfers(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->executor_memory, sizeof(dma_bytes));
+                    &machine->executor_memory, &machine->executor_port, sizeof(dma_bytes));
                 if (!failed && (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0u ||
-                    (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) != 0u ||
+                    (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u ||
                     media.bytes[0] != 0xffu || media.bytes[511] != 0u)) failed |= 0x4000;
             }
             if (!failed) {
@@ -268,11 +269,11 @@ lib_i32 main(void)
                     core_machine_port_write(&machine->executor_port, 0x0320u, read_dcb[index]);
                 core_machine_hdc_advance(&machine->hdc);
                 if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
-                    (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) != 0u) {
+                    (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u) {
                     failed |= 0x20000;
                 }
                 core_machine_port_write(&machine->executor_port, 0x0323u, 0x01u);
-                if ((machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) == 0u) {
+                if ((core_machine_port_read(&machine->executor_port, 8u) & 0x80u) == 0u) {
                     failed |= 0x20000;
                 }
                 dma_provider->terminal_count(&machine->hdc, &machine->shared_dma_latch);

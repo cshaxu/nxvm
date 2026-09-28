@@ -1,7 +1,8 @@
+#include "support/dma_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma.h"
+#include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/fdc.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/media_interface.h"
@@ -559,9 +560,9 @@ lib_i32 main(void)
                 core_machine_fdc_advance_at(fdc, 100u);
                 failed |= !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                     &machine->shared_dma_secondary);
-                core_machine_dma_advance(&machine->shared_dma_latch,
+                test_dma_transfers(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->executor_memory, 1u);
+                    &machine->executor_memory, &machine->executor_port, 1u);
                 failed |= fixture.read_count != 1u ||
                     core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                         &machine->shared_dma_secondary);
@@ -571,9 +572,9 @@ lib_i32 main(void)
                 core_machine_fdc_advance_at(fdc, 220u);
                 failed |= !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                     &machine->shared_dma_secondary);
-                core_machine_dma_advance(&machine->shared_dma_latch,
+                test_dma_transfers(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->executor_memory, 1u);
+                    &machine->executor_memory, &machine->executor_port, 1u);
                 failed |= fixture.read_count != 2u || fdc->data.phase !=
                     core_machine_fdc_PHASE_PENDING_COMPLETE || fdc->connect.irq_source.asserted ||
                     fdc->data.dma_byte_gate_pending || fdc->data.next_dma_byte_tick != 0u;
@@ -608,9 +609,9 @@ lib_i32 main(void)
                 core_machine_port_write(port, 0x000bu, 0x4au);
                 core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
                 for (lib_u32 index = 0u; index < sizeof(scan_dma); ++index) {
-                    core_machine_dma_advance(&machine->shared_dma_latch,
+                    test_dma_transfers(&machine->shared_dma_latch,
                         &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                        &machine->executor_memory, 1u);
+                        &machine->executor_memory, &machine->executor_port, 1u);
                     if (index + 1u < sizeof(scan_dma)) {
                         core_machine_fdc_advance_at(fdc,
                         fdc->data.elapsed_ticks + 8u * 31u);
@@ -639,9 +640,9 @@ lib_i32 main(void)
                 core_machine_fdc_command(fdc, port, read_sector_dma_terminal,
                     sizeof(read_sector_dma_terminal));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    core_machine_dma_advance(&machine->shared_dma_latch,
+                    test_dma_transfers(&machine->shared_dma_latch,
                         &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                        &machine->executor_memory, 1u);
+                        &machine->executor_memory, &machine->executor_port, 1u);
                     if (index + 1u < 512u) core_machine_fdc_advance_at(fdc,
                         fdc->data.elapsed_ticks + 8u * 25u);
                 }
@@ -742,9 +743,9 @@ lib_i32 main(void)
                 core_machine_fdc_write_dma2(port, 0x0600u, 1u);
                 fallback_read_count = fixture.read_count;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
-                core_machine_dma_advance(&machine->shared_dma_latch,
+                test_dma_transfers(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->executor_memory, 1u);
+                    &machine->executor_memory, &machine->executor_port, 1u);
                 failed |= fixture.read_count != fallback_read_count + 1u ||
                     !fdc->data.dma_byte_gate_pending ||
                     core_machine_dma_has_pending_request(&machine->shared_dma_primary,
@@ -752,9 +753,9 @@ lib_i32 main(void)
                 core_machine_fdc_advance_at(fdc, fdc->data.next_dma_byte_tick);
                 failed |= !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                     &machine->shared_dma_secondary);
-                core_machine_dma_advance(&machine->shared_dma_latch,
+                test_dma_transfers(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->executor_memory, 1u);
+                    &machine->executor_memory, &machine->executor_port, 1u);
                 failed |= fixture.read_count != fallback_read_count + 2u || fdc->data.phase !=
                     core_machine_fdc_PHASE_PENDING_COMPLETE;
                 core_machine_fdc_advance(fdc);

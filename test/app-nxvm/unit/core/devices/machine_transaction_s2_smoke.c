@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/cpu_instructions.h"
-#include "app-nxvm/devices/dma.h"
+#include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
@@ -294,7 +294,12 @@ lib_i32 main(void)
     core_machine_port_initialize(&port);
     failed |= core_machine_memory_initialize_for(&memory, 2u * 1024u * 1024u,
         LIB_NULL) != LIB_STATUS_OK;
-    core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u);
+    if (core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u) != LIB_STATUS_OK) {
+        core_machine_memory_finalize(&memory);
+        core_machine_port_finalize(&port);
+        core_machine_destroy(machine);
+        return 1;
+    }
     core_machine_dma_reset(&latch, &primary, &secondary);
     failed |= core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
@@ -317,8 +322,9 @@ lib_i32 main(void)
     failed |= core_machine_memory_read_physical(&memory, 0x11234u,
         (lib_uptr)&data, 1u) != LIB_STATUS_OK || data != 0xa5u;
 
-    core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
+    core_machine_dma_finalize(&latch, &primary, &secondary);
+    core_machine_memory_finalize(&memory);
     core_machine_destroy(machine);
     if (failed != 0) return 1;
     printf("M5:T354:S2:TRANSACTION:OK\n");

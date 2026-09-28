@@ -1,7 +1,8 @@
+#include "../devices/support/dma_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma.h"
+#include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/fdc.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
@@ -135,10 +136,10 @@ lib_i32 main(void)
         model40_fdc_write_dma2(port, 0x0600u, 511u);
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
         for (index = 0u; index < 512u; ++index) {
-            core_machine_dma_advance(&session->core_machine->shared_dma_latch,
+            test_dma_transfers(&session->core_machine->shared_dma_latch,
                 &session->core_machine->shared_dma_primary,
                 &session->core_machine->shared_dma_secondary,
-                &session->core_machine->executor_memory, 1u);
+                &session->core_machine->executor_memory, &session->core_machine->executor_port, 1u);
             if (index + 1u < 512u) core_machine_fdc_advance_at(fdc,
                 fdc->data.elapsed_ticks + 128u);
         }

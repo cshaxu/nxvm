@@ -3,13 +3,34 @@
 ## Current Work
 
 M5 T539 remains open. S6's DMA first-service repair is accepted after actual-change
-review; opaque DMA extraction is the next batch. No S is currently active.
+review. S7 now extracts the opaque DMA controller and reconnects its board users.
 Subsequent bounded batches continue under the owner's automatic-S authorization
 dated 2026-09-28; no additional manual admission is required.
 
 | Task | Progress |
 | --- | --- |
-| T539 S6 | Accepted: 0746220bf pushed; actual-change review and all bounded exit criteria pass. Eight 0539 products are current. DMA extraction and the remaining finite inventory stay open. |
+| T539 S7 | Implementation complete: opaque DMA chip and board cutover, all private-test callers migrated. Final full units 342/342 and default integrations 20/20 per width; independent chips 13/13 per width; all six remaining boots pass once. Eight artifact identities verified. Target-separated delivery and coordinator actual-change acceptance remain pending. |
+
+## Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T539 S7, following accepted S6 and commit 0ceb739f6. Single-agent coordinator/executor review. |
+| Admission And Approval | Owner's 2026-09-28 automatic-S authorization covers the remaining chip extraction batches. Targets: Shared and NXVM, delivered in separate commits. MyNES and sibling repositories remain unchanged. |
+| Objective | Extract the existing single 8237A register/priority/service-phase mechanism into an opaque Types-only x86 device; reconnect NXVM's page/lane, paired arbitration and physical-transfer responsibilities, removing the old chip implementation. |
+| Non-goals | No universal device framework, new hardware qualification, timing downgrade, new media behavior, CPU extraction, profile change, INI change or MyNES change. |
+| Reference Baseline | 0ceb739f6; S6 evidence records 341 units and 20 default integrations per width plus the six remaining boot rows and eight current 0539 artifacts. |
+| Candidate Proposal | [Independent shared chips](../proposals/m5-shared-chip-extraction.md), [boundary contracts](../etc/architecture/t539-boundary-contracts.md), and [S7 boundary review](../etc/architecture/t539-s7-dma-boundary.md). |
+| Files And ABI Surface | Shared: src/x86/devices/dma8237, mirrored test/x86/devices, x86 build/boundary rules and manifests. NXVM: devices/dma, its machine/board/scheduler callers, DMA/FDC/HDC and transaction tests, product build/guards, task records and eight affected EXEs. Public chip API exposes bounded registers/signals/cycles, never board pointers or full private state. |
+| Applicable Rules | Guide-selected architecture, coding, documentation, execution and source-policy authorities. One state owner, Types-only chip dependency, no private cross-component tests, git mv for relocation, target-separated P commits, immediate push, all affected artifact receivers reviewed. No exception. |
+| Verification | Independent chip tests without App/Common or external assets; full NXVM unit suites on x64/x86; full default integration and one boot per remaining profile/width; static aggregate, six manifests, documentation/link checks and actual-diff review. Reuse build/t539-s3 NXVM trees and build/t539-s7 standalone chip trees while S7 is active; test each boot row once, no repeated matrix rounds. |
+| Expected Markers | Single chip implementation, no Shared App includes/page registers/peer pointers, no remaining App private-chip reads; preserved register, normal/TM, M2M, terminal/autoinit and 126 first-service cases. All required suites pass; eight stripped 0539 PE artifacts have recorded identity/architecture/hash. |
+| Asset Needs | Existing owner-managed external firmware/media only, unchanged INIs. No downloads, protected binary commits or new asset definitions. |
+| Reporting Requirements | Report concrete boundary findings, test counts and failures, changed files/ABI, test disposition, artifact hashes and commit/push receipts. Distinguish intermediate work from accepted runnable evidence. |
+| Stop Conditions | New unsupported behavioral or licensing decision, irreconcilable hardware semantics, or out-of-scope consumer change requires escalation. Ordinary extraction/build failures are repaired within this S, not reported as completion. |
+| Exit Criteria | Entire DMA ledger row implemented, original path deleted, all callers and behavioral tests migrated, construction rollback correct, verification complete, Shared/NXVM P commits pushed and actual-change review accepted. T539 remains open for its remaining inventory. |
+| Original Owner Request | Independently decouple existing chips into src/x86/devices; retain only board integration in NXVM; automatically admit every S without repeated approval. |
+| Similar-Issue Sweep | Search all src/test/cmake uses of t_dma, VDMA_, DMA private fields, accelerated advance and provider bindings; classify chip versus board responsibility, migrate all production/test callers, and enforce the Shared dependency boundary. Previously fixed secondary first-transfer bypass must not recur. |
 
 The [proposal](../proposals/m5-shared-chip-extraction.md),
 [contracts](../etc/architecture/t539-boundary-contracts.md),

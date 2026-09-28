@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma.h"
+#include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/fdc.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/media_interface.h"
@@ -240,19 +240,19 @@ int main(void)
                 core_machine_fdc_change_command(fdc, port, specify_dma, sizeof(specify_dma));
                 core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
                 core_machine_fdc_change_require(&failed, &first_failure, 13,
-                    (dma->data.status & VDMA_STATUS_DRQ(2u)) == 0u);
+                    (core_machine_port_read(port, 8u) & 0x40u) == 0u);
                 core_machine_port_write(port, 0x03f2u, 0x0cu);
                 core_machine_fdc_change_require(&failed, &first_failure, 14,
-                    (dma->data.status & VDMA_STATUS_DRQ(2u)) != 0u ||
+                    (core_machine_port_read(port, 8u) & 0x40u) != 0u ||
                     fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
                 core_machine_fdc_change_require(&failed, &first_failure, 15,
-                    (dma->data.status & VDMA_STATUS_DRQ(2u)) == 0u);
+                    (core_machine_port_read(port, 8u) & 0x40u) == 0u);
                 core_machine_port_write(port, 0x03f2u, 0x00u);
                 core_machine_fdc_change_require(&failed, &first_failure, 16,
-                    (dma->data.status & VDMA_STATUS_DRQ(2u)) != 0u ||
+                    (core_machine_port_read(port, 8u) & 0x40u) != 0u ||
                     fdc->data.flagINTR || fdc->connect.irq_source.asserted ||
                     fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);

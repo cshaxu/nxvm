@@ -5,7 +5,7 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.h" fdc_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c" devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma.c" dma_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.c" dma_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
 
 foreach(forbidden IN ITEMS "dma_primary" "dma_secondary" "dma_latch"

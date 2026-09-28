@@ -2,7 +2,8 @@
 
 Baseline 996a19a17. All 81 tracked files under `src/app-nxvm/devices` are listed
 exactly once below. Entries remain **designed, not migrated**, except the
-PIT row accepted by S3, RTC row accepted by S4 and PIC row accepted by S5;
+PIT row accepted by S3, RTC row accepted by S4, PIC row accepted by S5,
+and the S7 DMA implementation awaiting Current's acceptance;
 the inventory stays finite.
 The [design review](../architecture/t539-independent-chip-design.md) supplies
 dependency details, proposed contracts, regression ownership and decision gates.
@@ -14,7 +15,7 @@ This ledger is not a claim of completed chip semantics/timing qualification.
 | `fpu.c`, `fpu.h`, `fpu_interface.h` | Extract implemented FPU state/extension behavior; replace CPU-private coupling with explicit extension boundary. |
 | `pic.c`, `pic.h`, `pic_interface.h` | S5 implementation: sole controller mechanism in `src/x86/devices/pic8259`; NXVM pic_bus owns ports, source counts and pair wiring. [Evidence](t539-s5-pic-extraction.md) records verification; Current owns acceptance. |
 | `pit.c`, `pit.h` | S3 implementation: sole timer moved to `src/x86/devices/pit825x`; NXVM `pit_bus` owns port attachment, existing board/scheduler own wiring and clocks. Verification and acceptance are recorded in S3 evidence. |
-| `dma.c`, `dma.h` | Migration pending: split controller from page registers, address/lane expansion, pair arbitration and physical bus provider. [S6](t539-s6-dma-first-service.md) repairs the uncovered secondary first-service phase bypass as an extraction prerequisite, not completion of this row. |
+| `dma.c`, `dma.h` | S7 implementation: sole controller in `src/x86/devices/dma8237`; NXVM dma_bus retains page/lane expansion, pair arbitration and physical cycle provider. [S7 evidence](t539-s7-dma-extraction.md) maps original tests and verification; Current owns acceptance. [S6](t539-s6-dma-first-service.md) retains the prior first-service repair evidence. |
 | `rtc.c`, `rtc.h` | S4 accepted: sole mechanism moved to `src/x86/devices/rtc146818`; NXVM owns index/NMI, PIC signal binding, seed/checksum and clocks. Verification and actual-change acceptance are recorded in S4 evidence. |
 | `kbc.c`, `kbc.h` | Split AT-controller and attached keyboard/AUX behavior; board owns A20/reset and port/IRQ wiring. |
 | `xt_keyboard.c`, `xt_keyboard.h` | Extract existing serial keyboard behavior; replace concrete PPI binding. |

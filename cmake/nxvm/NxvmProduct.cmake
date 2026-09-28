@@ -1168,7 +1168,7 @@ set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/cpu_instructions.c
     src/app-nxvm/devices/pic_bus.c
     src/app-nxvm/devices/pit_bus.c
-    src/app-nxvm/devices/dma.c
+    src/app-nxvm/devices/dma_bus.c
     src/app-nxvm/devices/kbc.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
     src/app-nxvm/devices/xt_keyboard.c
@@ -1183,7 +1183,7 @@ add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259)
+target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(vm-machine-frame-smoke
@@ -3398,7 +3398,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/cpu_instructions.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/pic_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/pit_bus.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/dma.c|machine-executor"
+    "core-machine-executor|src/app-nxvm/devices/dma_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/kbc.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/xt_ppi_keyboard.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/xt_keyboard.c|machine-executor"

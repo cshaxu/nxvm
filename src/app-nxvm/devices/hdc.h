@@ -4,7 +4,7 @@
 
 
 #include "app-nxvm/devices/controller_interface.h"
-#include "app-nxvm/devices/dma.h"
+#include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port_interface.h"
