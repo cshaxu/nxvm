@@ -34,6 +34,18 @@ add_library(x86-dma8237 STATIC devices/dma8237/dma.c)
 target_include_directories(x86-dma8237 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-dma8237 PUBLIC types)
 
+add_library(x86-ps2mouse STATIC devices/ps2mouse/mouse.c)
+target_include_directories(x86-ps2mouse PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-ps2mouse PUBLIC types)
+
+add_library(x86-keyboard STATIC devices/keyboard/keyboard.c)
+target_include_directories(x86-keyboard PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-keyboard PUBLIC types)
+
+add_library(x86-kbc8042 STATIC devices/kbc8042/controller.c)
+target_include_directories(x86-kbc8042 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-kbc8042 PUBLIC types PRIVATE x86-keyboard)
+
 if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)
 target_include_directories(x86-xasm32 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

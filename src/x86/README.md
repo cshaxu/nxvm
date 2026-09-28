@@ -15,10 +15,13 @@ There is no executor, Console, input loop or product state machine here.
 | devices/rtc146818 | MC146818-compatible calendar, registers, IRQ/SQW and configured-time deadlines | rtc146818_interface.h |
 | devices/pic8259 | Single 8259 priority, ICW/OCW, interrupt selection/acknowledge and delivery deadlines | pic8259_interface.h |
 | devices/dma8237 | Single 8237A register protocol, requests, priority and input-clock service phases | dma8237_interface.h |
+| devices/kbc8042 | Qualified AT controller transport, translation, command/register and IRQ behavior | kbc8042_interface.h |
+| devices/keyboard | AT keyboard commands, BAT, scan-set, LEDs and typematic | keyboard_interface.h |
+| devices/ps2mouse | Existing three-byte AUX command/report protocol | ps2mouse_interface.h |
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
 only on Types. Public names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
-Build targets are x86-debug, x86-xasm32, x86-pit825x, x86-rtc146818, x86-pic8259 and x86-dma8237. Private includes stay component-local;
+Build targets are x86-debug, x86-xasm32 and x86-<device-directory>. Private includes stay component-local;
 no native platform code or importing-product source dependency is allowed.
 
 PIT depends only on Types. Its opaque instance owns counter state; the board
@@ -54,6 +57,19 @@ inputs, but cannot recursively advance/reset/destroy the controller. Undefined
 reads preserve the bus byte; status reads consume TC bits. Copied signal queries
 do not mutate state. Stop execution before destroying the instance.
 
+Keyboard and PS/2 mouse depend only on Types. Controller connections carry
+copied endpoint inputs and synchronous byte/signal callbacks, never endpoint
+objects. Its only keyboard dependency is the stateless scan-code conversion
+table. The board owns ports, IRQ routing, A20/reset, construction and clock
+conversion. The controller owns transport queues and delivery phases; the
+endpoints own command parameters, BAT/typematic or mouse packet state. Resend
+history retains the existing accepted-output semantics. This is the qualified
+AT model, not a complete 8042 MCU or new protocol/timing qualification.
+Reset preserves configured timings; stop execution before destruction and
+keep callback contexts alive until all chips are destroyed. The public headers
+define the limited reply/repeat reentrancy; no recursive command or destruction
+is allowed. No private state getter is provided for tests or diagnostics.
+
 The protocol header is independent of the frontend: product adapters need not
 link the CLI to use its values. Aligned typed request/response copies traverse
 Machine's existing paused lease and bounded byte rendezvous. Machine does not
@@ -83,7 +99,8 @@ cmake --build build/x86-corpus --target x86-verify
 ```
 
 For a chip-only receiver, configure with `-DX86_BUILD_TOOLS=OFF` and build
-`x86-pit825x`, `x86-rtc146818`, `x86-pic8259` or `x86-dma8237`. This does not configure Common or link Debug/assembly tools.
+any `x86-<device-directory>` target. This does not configure Common or link
+Debug/assembly tools.
 
 MANIFEST.sha256 covers every file with exact LF-normalized SHA-256 values.
 x86-verify reuses Common's manifest checker with this corpus root; the x86-owned
