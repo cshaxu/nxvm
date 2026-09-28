@@ -11,7 +11,7 @@
 #include "app-nxvm/devices/lifecycle_interface.h"
 #include "app-nxvm/devices/memory_interface.h"
 #include "app-nxvm/devices/port_interface.h"
-#include "app-nxvm/devices/pic_interface.h"
+#include "app-nxvm/devices/pic_bus_interface.h"
 #include "lib/types/types_interface.h"
 
 #include "app-nxvm/devices/trace_interface.h"

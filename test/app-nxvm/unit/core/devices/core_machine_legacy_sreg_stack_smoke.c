@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -641,15 +642,15 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
         if(!failed) {
             state.machine->executor_cpu.data.eflags|=VCPU_EFLAGS_IF;lib_memory_set(&source,0,sizeof(source));
             before=test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            state.machine->shared_pic_master.data.icw2=0x20u;
+            test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,&state.machine->shared_pic_master,&state.machine->shared_pic_slave,0u);
             core_machine_pic_irq_source_assert(&source);core_machine_pic_irq_source_deassert(&source);
             failed|=core_machine_run(state.machine,(core_machine_run_budget){3u,0u},&result)!=LIB_STATUS_OK ||
                 result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after=test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed|=core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(lib_u16)after.data.esp,CORE_MACHINE_REFERENCE_OF(ip),2u)!=LIB_STATUS_OK ||
-                after.data.eip!=0x101u || ip!=frame[form] || !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,VPIC_IRR_IRQ(0u)) ||
+                after.data.eip!=0x101u || ip!=frame[form] || !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),VPIC_IRR_IRQ(0u)) ||
                 !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||
                 (form==3u && (after.data.esp!=0x7ff8u ||
                 !legacy_sreg_stack_sregs_same(&before, &after) ||

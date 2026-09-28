@@ -2,13 +2,31 @@
 
 ## Current Work
 
-M5 T539 remains open. S4 RTC extraction is closed after actual-change review;
-no S is active at this acceptance boundary. The owner's automatic-S admission
-authorization remains effective; the next bounded chip batch is PIC.
+M5 T539 remains open. S4 RTC extraction is closed; S5 is admitted for PIC
+extraction under the owner's automatic-S authorization dated 2026-09-28.
 
 | Task | Progress |
 | --- | --- |
-| T539 | PIT and RTC accepted; remaining finite chip inventory pending. |
+| T539 S5 | Implementation and verification complete: units 341/341, default integration 20/20 and independent chip suites 12/12 per width; all eight profile/width boots pass once. Shared d6dc6ca3a pushed; NXVM delivery and actual-diff acceptance pending. |
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T539 S5 after S4 acceptance be86dee2e. |
+| Admission And Approval | Owner authorized automatic admission of every S on 2026-09-28. Coordinator admits the complete PIC ledger batch, with Shared and NXVM targets, under that authority. |
+| Objective | Extract one opaque Types-only 8259 mechanism, reconnect the XT single controller and PC/AT pair through NXVM-owned routing/aggregation, and remove private chip access and the old implementation. |
+| Non-goals | Other chip extraction, new timing qualification, changing BIOS/media/INI, Lib/Common/MyNES edits, sibling writes, new generic device frameworks or weakening existing PIC/CPU scenarios. |
+| Reference Baseline | be86dee2e; the pic.c, pic.h and pic_interface.h ledger row; S1 design and S2 interrupt/lifetime contracts. |
+| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [contracts](../etc/architecture/t539-boundary-contracts.md), [ledger](../etc/evidence/t539-chip-migration-ledger.md), [S5 boundary review](../etc/architecture/t539-s5-pic-boundary.md). |
+| Files And ABI Surface | Shared src/x86/devices/pic8259, matching tests/build/guards/manifests; NXVM pic_bus board adapter, all CPU/device/machine consumers and tests, build/docs and eight 0539 EXEs. Opaque local command/data, IRQ input, cascade signals/selection, acknowledge, reset and timing/deadline APIs; no peer chip pointer. |
+| Applicable Rules | Task Reading Set; source policy; Architecture/Coding/Document/Execution; architecture-governance then coding-governance. One chip state owner; board owns ports, source aggregation and pair wiring; Types-only shared source; preserve handler style and behavior; failure cleanup and separate target commits. |
+| Verification | Standalone x86 chip suites x64/x86; full NXVM run-unit-tests both widths; run-integration-tests default both widths and each remaining profile/width boot once; verify-current-specialized-gates; six manifests and documentation gate; eight stripped optimized 0539 products with PE/version/SHA and unchanged INIs. |
+| Expected Markers | No App/Common/peer-private include in chip; no PIC register structure outside its component; one priority/ICW/OCW implementation; board-only port decode, IRQ-source counts and cascade wiring; retained poll/SFNM/spurious/INTA/reset/deadline regressions. |
+| Asset Needs | Existing external profile firmware/media only; existing source/ledger evidence. No external asset import, modification or new reference-derived semantics. |
+| Reporting Requirements | Explain boundary findings and any objection before implementation; report verification, source/test delta, artifact identities and actual-diff acceptance. |
+| Stop Conditions | Unsupported behavioral change or new source/license requirement outside this batch; a failing receiver blocks closure. Automatic admission does not permit hiding unresolved semantics or unrelated edits. |
+| Exit Criteria | Entire PIC ledger batch and caller sweep have a disposition; standalone chip and board reconnection replace old path; required tests/artifacts pass, target-separated deliveries pushed and coordinator actual-change acceptance recorded. T remains open. |
+| Original Owner Request | Independent decoupled chips in x86/devices, NXVM board integration only; automatically admit each subsequent S without another manual approval. |
+| Similar-Issue Sweep | Search all src/test/cmake for t_pic, PIC private data, cascade peer pointers, IRQ-source aggregation and initialization/acknowledgement/deadline callers; migrate all hits or explicitly retain board-only roles. Tests use register operations/owned fixtures, not a new test-only public state dump. |
 
 The [proposal](../proposals/m5-shared-chip-extraction.md),
 [contracts](../etc/architecture/t539-boundary-contracts.md),

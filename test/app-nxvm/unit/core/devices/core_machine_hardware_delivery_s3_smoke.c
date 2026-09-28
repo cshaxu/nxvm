@@ -1,10 +1,11 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "support/core_machine_cpu_fixture.h"
 
 /* Retained owners supply the detailed gate and VM86 frame matrices. */
@@ -71,7 +72,7 @@ static lib_i32 hardware_delivery_s3_real_priority(void)
         state.machine->executor_cpu.data.esp = 0x00008000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
@@ -85,8 +86,8 @@ static lib_i32 hardware_delivery_s3_real_priority(void)
             CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
             CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
             state.machine->executor_cpu.data.flagNMI ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
                 0x00007ffau, (lib_uptr)frame, sizeof(frame)) !=
                 LIB_STATUS_OK ||
@@ -112,7 +113,7 @@ static lib_i32 hardware_delivery_s3_protected_priority(void)
     if (!failed) {
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
-        state.machine->shared_pic_master.data.icw2 = IE_VECTOR;
+        test_pic_program_vector(&state.machine->shared_pic_master, IE_VECTOR);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
@@ -126,8 +127,8 @@ static lib_i32 hardware_delivery_s3_protected_priority(void)
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) ||
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_TF) ||
             state.machine->executor_cpu.data.flagNMI ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
             !ie_read(&state, IE_STACK_BASE - 12u, frame, sizeof(frame)) ||
             frame[0] != 1u || frame[1] != 0x0008u ||
             frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);
@@ -153,9 +154,9 @@ static lib_i32 hardware_delivery_s3_vm86_install_gate(
 static lib_i32 hardware_delivery_s3_vm86_pic_matches(
     const vm86_delivery_state *state, lib_i32 nmi_masked)
 {
-    lib_u8 irq_pending = CORE_MACHINE_BIT_IS_SET(state->machine->shared_pic_master.data.irr,
+    lib_u8 irq_pending = CORE_MACHINE_BIT_IS_SET(test_pic_read(&state->machine->shared_pic_master, 0x0au),
         VPIC_IRR_IRQ(0u));
-    lib_u8 irq_active = CORE_MACHINE_BIT_IS_SET(state->machine->shared_pic_master.data.isr,
+    lib_u8 irq_active = CORE_MACHINE_BIT_IS_SET(test_pic_read(&state->machine->shared_pic_master, 0x0bu),
         VPIC_ISR_IRQ(0u));
 
     if (nmi_masked) {
@@ -177,7 +178,7 @@ static lib_i32 hardware_delivery_s3_vm86_priority(lib_i32 mask_nmi)
     if (!failed) {
         state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
         state.machine->executor_cpu.data.flagMaskNMI = mask_nmi ? LIB_TRUE : LIB_FALSE;
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);

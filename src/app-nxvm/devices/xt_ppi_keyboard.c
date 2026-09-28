@@ -214,7 +214,7 @@ lib_status core_machine_xt_ppi_keyboard_initialize(
 }
 
 void core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
-    t_pic *master, t_pic *slave)
+    core_machine_pic_bus *master, core_machine_pic_bus *slave)
 {
     if (keyboard == LIB_NULL) return;
     core_machine_pic_irq_source_bind(&keyboard->irq1_source, master, slave,

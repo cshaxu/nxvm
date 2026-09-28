@@ -1,10 +1,11 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "support/core_machine_cpu_fixture.h"
 
 typedef struct pic_phase_s2_state {
@@ -97,7 +98,7 @@ lib_i32 main(void)
     if (!failed) {
         state.machine->executor_cpu.data.esp = 0x00008000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
@@ -108,9 +109,9 @@ lib_i32 main(void)
                 &result) != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             state.machine->executor_cpu.data.eip != 0x0101u ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || !CORE_MACHINE_BIT_IS_SET(
-                state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
+                test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
             !pic_phase_s2_has_acknowledgement_before_frame(&state) ||
             core_machine_reset(state.machine) != LIB_STATUS_OK ||
             state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||

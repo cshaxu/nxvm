@@ -25,4 +25,22 @@ if(core_cpu_pic_bind_call EQUAL -1 OR core_cpu_pic_bind_targets EQUAL -1)
     message(FATAL_ERROR "Core does not own the required CPU execution/PIC binding")
 endif()
 
-message(STATUS "M5 T295 CPU/PIC lifecycle authority: OK")
+foreach(old_file pic.c pic.h pic_interface.h)
+    if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/${old_file}")
+        message(FATAL_ERROR "Duplicate pre-extraction PIC path: ${old_file}")
+    endif()
+endforeach()
+file(GLOB_RECURSE pic_consumers
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h")
+foreach(consumer IN LISTS pic_consumers)
+    file(READ "${consumer}" contents)
+    if(contents MATCHES "x86/devices/pic8259/pic\\.h" OR
+       contents MATCHES "(shared_pic_(master|slave)|pic_(master|slave))[ \\t]*(\\.|->)data" OR
+       contents MATCHES "app-nxvm/devices/pic(_interface)?\\.h")
+        message(FATAL_ERROR "Private/old PIC dependency: ${consumer}")
+    endif()
+endforeach()
+message(STATUS "M5 T295 CPU/PIC lifecycle and T539 chip boundary: OK")

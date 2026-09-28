@@ -2,7 +2,7 @@
 
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/dma.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/hdc.h"
 
 #define CORE_MACHINE_HDC_COMMAND_READ_SECTORS 0x20u
@@ -1061,7 +1061,7 @@ static const core_machine_dma_channel_provider core_machine_hdc_dma_channel = {
 void core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
-    t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config)
+    core_machine_pic_bus *pic_master, core_machine_pic_bus *pic_slave, const core_machine_hdc_config *config)
 {
     if (hdc == LIB_NULL || config == LIB_NULL) return;
     hdc->connect.media_registry = media_registry;

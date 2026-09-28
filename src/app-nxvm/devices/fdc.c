@@ -8,7 +8,7 @@
 
 #include "app-nxvm/devices/dma.h"
 #include "app-nxvm/devices/media_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/fdc.h"
 
@@ -1151,7 +1151,7 @@ void core_machine_fdc_connect(core_machine_fdc *fdc,
     const core_machine_dma_request_binding *dma_request,
     core_machine_fdc_dma_request_operation dma_request_assert,
     core_machine_fdc_dma_request_operation dma_request_deassert,
-    void *dma_request_owner, t_pic *pic_master, t_pic *pic_slave,
+    void *dma_request_owner, core_machine_pic_bus *pic_master, core_machine_pic_bus *pic_slave,
     t_port *port, const core_machine_fdc_config *config,
     const core_machine_fdc_terminal_observation_provider *observation_provider)
 {

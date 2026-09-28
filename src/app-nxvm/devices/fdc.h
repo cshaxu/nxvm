@@ -11,10 +11,10 @@ extern "C" {
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/dma.h"
 #include "app-nxvm/devices/media_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/fdc_observation_interface.h"
 
-typedef struct t_pic t_pic;
+typedef struct core_machine_pic_bus core_machine_pic_bus;
 typedef struct t_port t_port;
 
 #define CORE_MACHINE_DEVICE_FDC "Intel 8272A"
@@ -234,7 +234,7 @@ void core_machine_fdc_connect(core_machine_fdc *fdc,
     const core_machine_dma_request_binding *dma_request,
     core_machine_fdc_dma_request_operation dma_request_assert,
     core_machine_fdc_dma_request_operation dma_request_deassert,
-    void *dma_request_owner, t_pic *pic_master, t_pic *pic_slave,
+    void *dma_request_owner, core_machine_pic_bus *pic_master, core_machine_pic_bus *pic_slave,
     t_port *port, const core_machine_fdc_config *config,
     const core_machine_fdc_terminal_observation_provider *observation_provider);
 const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(void);

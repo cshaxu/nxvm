@@ -1,13 +1,14 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/pit_bus.h"
 #include "app-nxvm/devices/port.h"
 
 typedef struct pit_irq0_fixture {
-    t_pic master;
-    t_pic slave;
+    core_machine_pic_bus master;
+    core_machine_pic_bus slave;
     core_machine_pit_bus pit;
     t_port port;
     core_machine_pic_irq_source irq0;
@@ -76,14 +77,14 @@ static lib_i32 pit_irq0_test_mode2_edge(void)
             &fixture.slave);
     x86_pit_advance(fixture.pit.device, 1u);
     failed |= !x86_pit_get_output(fixture.pit.device, 0u) ||
-        !fixture.irq0.asserted || fixture.master.data.asserted[0u] != 1u ||
+        !fixture.irq0.asserted || fixture.master.asserted[0u] != 1u ||
         core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x08u;
     core_machine_port_write(&fixture.port, 0x0020u, 0x20u);
-    failed |= fixture.master.data.isr != 0u ||
+    failed |= test_pic_read(&fixture.master, 0x0bu) != 0u ||
         core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
     x86_pit_advance(fixture.pit.device, 2u);
     failed |= x86_pit_get_output(fixture.pit.device, 0u) || fixture.irq0.asserted ||
-        fixture.master.data.asserted[0u] != 0u;
+        fixture.master.asserted[0u] != 0u;
     pit_irq0_finalize(&fixture);
     return failed;
 }
@@ -137,7 +138,7 @@ static lib_i32 pit_irq0_test_gate_and_reset(void)
     failed |= !x86_pit_get_output(fixture.pit.device, 0u) || !fixture.irq0.asserted;
     core_machine_pic_reset(&fixture.master, &fixture.slave);
     x86_pit_reset(fixture.pit.device);
-    failed |= fixture.irq0.asserted || fixture.master.data.asserted[0u] != 0u ||
+    failed |= fixture.irq0.asserted || fixture.master.asserted[0u] != 0u ||
         x86_pit_get_output(fixture.pit.device, 0u);
     pit_irq0_finalize(&fixture);
     return failed;

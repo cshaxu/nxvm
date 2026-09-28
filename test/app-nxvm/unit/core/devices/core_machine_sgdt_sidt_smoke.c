@@ -1,10 +1,11 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "support/core_machine_cpu_fixture.h"
 
 #define SGDT_SIDT_IMAGE_BYTES 6u
@@ -412,7 +413,7 @@ static lib_i32 sgdt_sidt_test_pending_pic(void)
             0u, code, sizeof(code)) != LIB_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         lib_memory_set(&irq, 0, sizeof(irq));
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
@@ -431,8 +432,8 @@ static lib_i32 sgdt_sidt_test_pending_pic(void)
             core_machine_memory_read_physical(&state.machine->executor_memory,
             after.data.ss.base + (lib_u16)after.data.esp,
             CORE_MACHINE_REFERENCE_OF(frame), sizeof(frame)) != LIB_STATUS_OK || frame != 5u ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
             lib_memory_compare(image, expected, sizeof(image)) != 0;
     }
     core_machine_destroy(state.machine);

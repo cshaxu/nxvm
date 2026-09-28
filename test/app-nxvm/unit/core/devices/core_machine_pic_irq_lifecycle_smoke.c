@@ -1,10 +1,11 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
 
-static void initialize_pic(t_pic *master, t_pic *slave, t_port *port,
+static void initialize_pic(core_machine_pic_bus *master, core_machine_pic_bus *slave, t_port *port,
     lib_u8 icw1)
 {
     core_machine_port_write(port, 0x0020u, icw1);
@@ -21,8 +22,8 @@ static void initialize_pic(t_pic *master, t_pic *slave, t_port *port,
 
 lib_i32 main(void)
 {
-    t_pic master;
-    t_pic slave;
+    core_machine_pic_bus master;
+    core_machine_pic_bus slave;
     t_port port;
     core_machine_pic_irq_source irq1;
     core_machine_pic_irq_source irq6;
@@ -42,7 +43,7 @@ lib_i32 main(void)
     core_machine_pic_irq_source_deassert(&irq6);
     failed |= !core_machine_pic_scan_interrupt(&master, &slave);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x0eu;
-    failed |= (master.data.isr & VPIC_ISR_IRQ(6u)) == 0u;
+    failed |= (test_pic_read(&master, 0x0bu) & VPIC_ISR_IRQ(6u)) == 0u;
     core_machine_port_write(&port, 0x0020u, 0x20u);
 
     core_machine_pic_irq_source_assert(&irq6);
@@ -66,8 +67,8 @@ lib_i32 main(void)
     core_machine_pic_irq_source_deassert(&irq14);
     core_machine_pic_refresh(&master, &slave);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x76u;
-    failed |= (master.data.isr & VPIC_ISR_IRQ(2u)) == 0u ||
-        (slave.data.isr & VPIC_ISR_IRQ(6u)) == 0u;
+    failed |= (test_pic_read(&master, 0x0bu) & VPIC_ISR_IRQ(2u)) == 0u ||
+        (test_pic_read(&slave, 0x0bu) & VPIC_ISR_IRQ(6u)) == 0u;
     core_machine_port_write(&port, 0x00a0u, 0x20u);
     core_machine_port_write(&port, 0x0020u, 0x20u);
 
@@ -89,8 +90,8 @@ lib_i32 main(void)
     core_machine_pic_irq_source_assert(&irq14);
     core_machine_pic_refresh(&master, &slave);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x76u;
-    failed |= (master.data.isr & VPIC_ISR_IRQ(2u)) == 0u ||
-        (slave.data.isr & VPIC_ISR_IRQ(6u)) == 0u;
+    failed |= (test_pic_read(&master, 0x0bu) & VPIC_ISR_IRQ(2u)) == 0u ||
+        (test_pic_read(&slave, 0x0bu) & VPIC_ISR_IRQ(6u)) == 0u;
     core_machine_port_write(&port, 0x00a0u, 0x20u);
     core_machine_port_write(&port, 0x0020u, 0x20u);
     core_machine_pic_refresh(&master, &slave);

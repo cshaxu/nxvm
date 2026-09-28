@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
@@ -374,7 +375,7 @@ static lib_i32 sign_extend_test_irq(void)
             state.machine->executor_cpu.data.eax = opcodes[opcode] == 0x98u ?
                 0xaabb0080u : 0xaabb8000u;
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
-            state.machine->shared_pic_master.data.icw2 = 0x20u;
+            test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master,
                 &state.machine->shared_pic_slave, 0u);
@@ -394,7 +395,7 @@ static lib_i32 sign_extend_test_irq(void)
                     0xaabbff80u : 0xaabb8000u) ||
                 after.data.edx != (opcodes[opcode] == 0x99u ?
                     0x5566ffffu : 0x55660000u) ||
-                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u));
         }
         core_machine_destroy(state.machine);

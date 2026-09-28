@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -5,7 +6,7 @@
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "support/core_machine_cpu_fixture.h"
 
 #define GDT_POINTER 0x0100u
@@ -466,7 +467,7 @@ static lib_i32 task_switch_expect_pending_irq(core_machine_cpu_profile profile)
         fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
         fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
         fixture.machine->executor_cpu.data.idtr.limit = 0x0107u;
-        fixture.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&fixture.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &fixture.machine->shared_pic_master,
             &fixture.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
@@ -482,9 +483,9 @@ static lib_i32 task_switch_expect_pending_irq(core_machine_cpu_profile profile)
                 VCPU_EFLAGS_IF) ||
             cpu.data.tr.selector != 0x0030u ||
             !CORE_MACHINE_BIT_IS_SET(cpu.data.cr0, VCPU_CR0_TS) ||
-            !CORE_MACHINE_BIT_IS_SET(fixture.machine->shared_pic_master.data.isr,
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(fixture.machine->shared_pic_master.data.irr,
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
         failed |= core_machine_memory_read(fixture.machine, 0x3000u, &marker,
             sizeof(marker)) != LIB_STATUS_OK || marker != 0u;
@@ -493,8 +494,8 @@ static lib_i32 task_switch_expect_pending_irq(core_machine_cpu_profile profile)
                 "T329 irq=%u result=%u eip=%04x ax=%04x sp=%04x ss=%05x tr=%04x isr=%02x irr=%02x marker=%04x\n",
                 (unsigned)profile, (unsigned)result.reason, cpu.data.eip,
                 cpu.data.ax, cpu.data.sp, cpu.data.ss.base, cpu.data.tr.selector,
-                fixture.machine->shared_pic_master.data.isr,
-                fixture.machine->shared_pic_master.data.irr, marker);
+                test_pic_read(&fixture.machine->shared_pic_master, 0x0bu),
+                test_pic_read(&fixture.machine->shared_pic_master, 0x0au), marker);
         }
     }
     core_machine_destroy(fixture.machine);
@@ -1270,7 +1271,7 @@ static lib_i32 task_switch_expect_tss32_direct(lib_u8 operand32,
             fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
             fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
             fixture.machine->executor_cpu.data.idtr.limit = 0x0107u;
-            fixture.machine->shared_pic_master.data.icw2 = 0x20u;
+            test_pic_program_vector(&fixture.machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&irq, &fixture.machine->shared_pic_master,
                 &fixture.machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&irq);
@@ -1437,9 +1438,9 @@ static lib_i32 task_switch_expect_tss32_direct(lib_u8 operand32,
         if (pending_irq) {
             failed |= cpu.data.eip != 0x181u || cpu.data.esp != 0x7ffau ||
                 CORE_MACHINE_BIT_IS_SET(cpu.data.eflags, VCPU_EFLAGS_IF) ||
-                !CORE_MACHINE_BIT_IS_SET(fixture.machine->shared_pic_master.data.isr,
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.machine->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
-                    fixture.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
+                    test_pic_read(&fixture.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
         }
         if (debug_trap) {
             lib_u32 frame[3] = {0u, 0u, 0u};

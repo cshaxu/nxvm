@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/kbc.h"
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
 
 static lib_u8 read_port(t_port *port, lib_u16 id)
@@ -24,7 +24,7 @@ static void initialize_pic(t_port *port)
     core_machine_port_write(port, 0x00a1u, 0x01u);
 }
 
-static lib_i32 take_aux_byte(t_port *port, t_pic *master, t_pic *slave,
+static lib_i32 take_aux_byte(t_port *port, core_machine_pic_bus *master, core_machine_pic_bus *slave,
     lib_u8 expected)
 {
     core_machine_pic_refresh(master, slave);
@@ -52,8 +52,8 @@ static void send_aux_parameter(t_port *port, lib_u8 value)
 lib_i32 main(void)
 {
     t_kbc kbc;
-    t_pic master;
-    t_pic slave;
+    core_machine_pic_bus master;
+    core_machine_pic_bus slave;
     t_ram memory = {0};
     core_machine_cpu_execution_context execution = {0};
     t_port port;

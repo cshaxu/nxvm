@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
@@ -512,7 +513,7 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
         {
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
             lib_memory_set(&source, 0, sizeof(source));
-            state.machine->shared_pic_master.data.icw2 = 0x20u;
+            test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave,
                 0u);
@@ -527,8 +528,8 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
                 after.data.ss.base + (lib_u16)after.data.esp,
                 CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != 1u || !CORE_MACHINE_BIT_IS_SET(
-                state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+                test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
             if (form == 0u)
             {

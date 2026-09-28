@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
@@ -670,7 +671,7 @@ static lib_i32 cmps_irq_case(lib_i32 repeat)
             state.machine->executor_cpu.data.ecx = 0x11220003u;
         state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
         lib_memory_set(&irq, 0, sizeof(irq));
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
@@ -687,8 +688,8 @@ static lib_i32 cmps_irq_case(lib_i32 repeat)
             after.data.ecx != (repeat ? 0x11220002u : 0x11220003u) ||
             (after.data.eflags & CMPS_FLAGS) !=
             (VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
-            VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+            VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
             VPIC_IRR_IRQ(0u)) || !cmps_memory_same(&state, 0x20010u, 0x30020u,
             left, right, sizeof(left));
     }

@@ -246,10 +246,10 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 time_observation.next_deadline_valid,
                 time_observation.progress_disposition);
         }
-        printf("T515:INI-BOOT:%s:PIC:IRR=%02X:IMR=%02X:ISR=%02X:IRQ0=%u\n",
-            name, session->core_machine->shared_pic_master.data.irr,
-            session->core_machine->shared_pic_master.data.imr,
-            session->core_machine->shared_pic_master.data.isr,
+        printf("T515:INI-BOOT:%s:PIC:pending=%u:IRQ0=%u\n",
+            name, core_machine_pic_scan_interrupt(
+                &session->core_machine->shared_pic_master,
+                &session->core_machine->shared_pic_slave),
             session->core_machine->shared_pit_irq0_source.asserted);
         printf("T515:INI-BOOT:%s:PIT:out0=%u:out1=%u\n", name,
             (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 0u),

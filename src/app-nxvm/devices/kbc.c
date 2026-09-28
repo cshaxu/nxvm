@@ -7,7 +7,7 @@
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
 
 #include "app-nxvm/devices/kbc.h"
@@ -909,8 +909,8 @@ void core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
     core_machine_kbc_register_ports(controller, port);
     core_machine_kbc_reset(controller);
 }
-void core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
-    t_pic *pic_slave, t_ram *memory,
+void core_machine_kbc_bind_core_services(t_kbc *controller, core_machine_pic_bus *pic_master,
+    core_machine_pic_bus *pic_slave, t_ram *memory,
     core_machine_cpu_execution_context *execution, lib_u8 aux_present)
 {
     if (controller == LIB_NULL) return;

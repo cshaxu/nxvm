@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -414,7 +415,7 @@ static lib_i32 iret_outer_s52_test_pic(void)
         }
         if (!failed) {
             lib_memory_set(&source, 0, sizeof(source));
-            state.machine->shared_pic_master.data.icw2 = vector;
+            test_pic_program_vector(&state.machine->shared_pic_master, vector);
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master,
                 &state.machine->shared_pic_slave, 0u);
@@ -431,9 +432,9 @@ static lib_i32 iret_outer_s52_test_pic(void)
                 failed |= after.data.eip != 0x00000101u;
                 failed |= after.data.cs.selector != 0x0008u;
                 failed |= !after.data.flagHalt;
-                failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u));
-                failed |= CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+                failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                     VPIC_IRR_IRQ(0u));
                 failed |= core_machine_memory_read_physical(
                     &state.machine->executor_memory, after.data.ss.base +
@@ -444,9 +445,9 @@ static lib_i32 iret_outer_s52_test_pic(void)
             } else {
                 failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
                 failed |= after.data.eip != 0x00000011u;
-                failed |= CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+                failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u));
-                failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+                failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                     VPIC_IRR_IRQ(0u));
             }
         }

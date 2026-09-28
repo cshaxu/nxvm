@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/machine/lifecycle.h"
@@ -160,14 +160,10 @@ lib_i32 main(void)
 
     failed |= default_at_cmos_seed_is_loaded();
     if (failed) {
-        printf("RTC probe failed=%04x: second=%u hour=%u B=%02x IRR=%02x/%02x ISR=%02x/%02x\n", failed,
+        printf("RTC probe failed=%04x: second=%u hour=%u B=%02x\n", failed,
             x86_rtc_read_register(session->core_machine->shared_rtc, X86_RTC_SECOND),
             x86_rtc_read_register(session->core_machine->shared_rtc, X86_RTC_HOUR),
-            x86_rtc_read_register(session->core_machine->shared_rtc, X86_RTC_REG_B),
-            session->core_machine->rtc_irq_source.master->data.irr,
-            session->core_machine->rtc_irq_source.slave->data.irr,
-            session->core_machine->rtc_irq_source.master->data.isr,
-            session->core_machine->rtc_irq_source.slave->data.isr);
+            x86_rtc_read_register(session->core_machine->shared_rtc, X86_RTC_REG_B));
     }
     vm_machine_destroy(session);
     if (failed) return 1;

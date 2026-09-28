@@ -581,8 +581,17 @@ static lib_status core_machine_create_internal(
     core_machine_dma_initialize(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
         &machine->executor_port, dma_controller_count);
-    core_machine_pic_initialize(&machine->shared_pic_master,
-        &machine->shared_pic_slave, &machine->executor_port, config->pic_topology);
+    {
+        lib_status status = core_machine_port_registration_status(&machine->executor_port);
+        if (status == LIB_STATUS_OK) {
+            status = core_machine_pic_initialize(&machine->shared_pic_master,
+                &machine->shared_pic_slave, &machine->executor_port, config->pic_topology);
+        }
+        if (status != LIB_STATUS_OK) {
+            core_machine_destroy(machine);
+            return status;
+        }
+    }
     core_machine_pic_set_irq_timing(&machine->shared_pic_master,
         &machine->shared_pic_slave, &config->pic_irq_timing);
     core_machine_cpu_execution_context_bind_pic(&machine->executor_cpu_execution,

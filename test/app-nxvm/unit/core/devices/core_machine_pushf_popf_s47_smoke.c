@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -376,7 +377,7 @@ static lib_i32 pushf_popf_s47_test_irq(void)
                 LIB_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             lib_memory_set(&source, 0, sizeof(source));
-            state.machine->shared_pic_master.data.icw2 = 0x20u;
+            test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
                 &state.machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
@@ -388,8 +389,8 @@ static lib_i32 pushf_popf_s47_test_irq(void)
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp, CORE_MACHINE_REFERENCE_OF(frame),
                 2u) != LIB_STATUS_OK || after.data.eip != 0x101u || frame != 1u ||
-                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || !pushf_popf_s47_gprs_same(&before, &after) ||
                 !pushf_popf_s47_sregs_same(&before, &after) ||
                 (form == 0u && (after.data.esp != 0x7ff8u ||

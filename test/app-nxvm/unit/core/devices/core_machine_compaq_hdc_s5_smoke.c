@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/hdc.h"
 #include "app-nxvm/devices/media_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
 
 typedef struct core_machine_compaq_hdc_media {
@@ -104,8 +104,8 @@ lib_i32 main(void)
     core_machine_hdc empty_hdc = {0};
     t_port port = {0};
     t_port empty_port = {0};
-    t_pic master = {0};
-    t_pic slave = {0};
+    core_machine_pic_bus master = {0};
+    core_machine_pic_bus slave = {0};
     lib_u32 value;
     lib_i32 failed = 0;
 

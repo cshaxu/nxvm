@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -170,7 +171,7 @@ done:
             machine->rtc_irq_source.irq,
             machine->rtc_irq_source.asserted,
             interrupt_pending, interrupt_vector,
-            machine->shared_pic_master.data.irr, machine->shared_pic_slave.data.irr);
+            test_pic_read(&machine->shared_pic_master, 0x0au), test_pic_read(&machine->shared_pic_slave, 0x0au));
     }
     core_machine_destroy(machine);
     if (failed) printf("M5:T296:S3:DMA-RTC-AUTHORITY:FAIL:%d\n", stage);

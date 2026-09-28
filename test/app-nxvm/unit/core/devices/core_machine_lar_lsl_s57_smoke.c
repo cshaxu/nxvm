@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -828,7 +829,7 @@ static lib_i32 lar_lsl_s57_test_pic_lar(void)
             LAR_LSL_S57_CODE_ADDRESS, code, sizeof(code)) != LIB_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         lib_memory_set(&source, 0, sizeof(source));
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
@@ -841,9 +842,9 @@ static lib_i32 lar_lsl_s57_test_pic_lar(void)
             !CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) ||
             !lar_lsl_s57_nonstack_gprs_same(&before, &after, 1, 0) ||
             !lar_lsl_s57_sregs_same(&before, &after) ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
             after.data.ss.base + (lib_u16)after.data.esp,
@@ -925,7 +926,7 @@ static lib_i32 lar_lsl_s57_test_pic_lsl_and_invalid(void)
                 LAR_LSL_S57_CODE_ADDRESS, codes[form], lengths[form]) != LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
             lib_memory_set(&source, 0, sizeof(source));
-            state.machine->shared_pic_master.data.icw2 = 0x20u;
+            test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
                 &state.machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
@@ -938,8 +939,8 @@ static lib_i32 lar_lsl_s57_test_pic_lsl_and_invalid(void)
                 !!CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_ZF) != expected_zf[form] ||
                 !lar_lsl_s57_nonstack_gprs_same(&before, &after, 1, 0) ||
                 !lar_lsl_s57_sregs_same(&before, &after) ||
-                !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
                 (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK ||

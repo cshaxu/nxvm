@@ -4,7 +4,7 @@
 
 
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
 
 #define CORE_MACHINE_XT_PPI_KEYBOARD_QUEUE_CAPACITY 16u
@@ -49,7 +49,7 @@ lib_status core_machine_xt_ppi_keyboard_initialize(
     core_machine_xt_ppi_keyboard *keyboard,
     const core_machine_xt_ppi_keyboard_config *config, t_port *port);
 void core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
-    t_pic *master, t_pic *slave);
+    core_machine_pic_bus *master, core_machine_pic_bus *slave);
 void core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keyboard,
     core_machine_xt_ppi_nmi_request request, void *owner);
 void core_machine_xt_ppi_keyboard_bind_speaker(core_machine_xt_ppi_keyboard *keyboard,

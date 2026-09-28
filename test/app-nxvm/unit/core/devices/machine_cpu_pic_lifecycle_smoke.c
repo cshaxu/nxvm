@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -25,13 +26,13 @@ lib_i32 main(void)
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= cpu_pic_binding_is_owned(machine);
     if (machine != LIB_NULL) {
-        machine->shared_pic_master.data.irr = 0xffu;
-        machine->shared_pic_slave.data.irr = 0xffu;
+        x86_pic_set_inputs(machine->shared_pic_master.device, 0u, 0xffu, 0u);
+        x86_pic_set_inputs(machine->shared_pic_slave.device, 0u, 0xffu, 0u);
     }
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= cpu_pic_binding_is_owned(machine);
-    failed |= machine == LIB_NULL || machine->shared_pic_master.data.irr != 0u ||
-        machine->shared_pic_slave.data.irr != 0u;
+    failed |= machine == LIB_NULL || test_pic_read(&machine->shared_pic_master, 0x0au) != 0u ||
+        test_pic_read(&machine->shared_pic_slave, 0x0au) != 0u;
 
     core_machine_destroy(machine);
     if (failed != 0) return 1;

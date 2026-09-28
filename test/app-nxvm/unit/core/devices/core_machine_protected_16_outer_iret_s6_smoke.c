@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 
 /* Reuse S3's private protected-machine setup without extending test support. */
 #define main protected_16_gate_s3_retained_main
@@ -326,7 +327,7 @@ static lib_i32 s6_iret_irq(void)
         state.machine->executor_cpu.data.tr.limit = sizeof(tss) - 1u;
         state.machine->executor_cpu.data.tr.dpl = 0u;
         state.machine->executor_cpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
-        state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
+        test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
@@ -340,8 +341,8 @@ static lib_i32 s6_iret_irq(void)
             state.machine->executor_cpu.data.eip != S3_HANDLER ||
             state.machine->executor_cpu.data.esp != 0x12346ff6u ||
             CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
             !s3_gate_read(&state, 0x00006ff6u, frame, sizeof(frame)) ||
             frame[0] != 0x0010u || frame[1] != 0x001bu ||
         frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL | 0x02u) ||

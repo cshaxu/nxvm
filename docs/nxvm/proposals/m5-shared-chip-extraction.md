@@ -58,6 +58,11 @@ S4 extracts RTC/CMOS under that authorization; its
 [evidence](../etc/evidence/t539-s4-rtc-extraction.md) records the chip/board
 split and malformed-month safety boundary. Current owns its acceptance state.
 
+S5 extracts the single PIC mechanism and reconnects NXVM's board-owned cascade
+and IRQ-source aggregation. Its [boundary review](../etc/architecture/t539-s5-pic-boundary.md)
+and [evidence](../etc/evidence/t539-s5-pic-extraction.md) cover all callers,
+private-test migration and construction rollback. Current owns acceptance.
+
 The first admitted S freezes a migration ledger covering every tracked source
 file in the current devices subtree, its callers and tests. Each entry names
 the chip or board responsibility, dependencies, destination and proof. Every

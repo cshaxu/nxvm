@@ -112,7 +112,7 @@ typedef struct {
 typedef struct t_cpuins t_cpuins;
 typedef struct t_ram t_ram;
 typedef struct t_port t_port;
-typedef struct t_pic t_pic;
+typedef struct core_machine_pic_bus core_machine_pic_bus;
 typedef struct core_machine_transaction_state core_machine_transaction_state;
 typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
@@ -199,8 +199,8 @@ struct core_machine_cpu_execution_context {
     t_ram *memory;
     t_port *port;
     core_machine_transaction_state *transaction;
-    t_pic *pic_master;
-    t_pic *pic_slave;
+    core_machine_pic_bus *pic_master;
+    core_machine_pic_bus *pic_slave;
     const core_machine_cpu_execution_diagnostic_provider *diagnostic_provider;
     void *diagnostic_context;
     core_machine_cpu_external_cycle_provider external_cycle_provider;
@@ -245,8 +245,8 @@ void core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     t_cpuins *instructions, t_ram *memory, t_port *port);
 void core_machine_cpu_execution_context_bind_pic(
-    core_machine_cpu_execution_context *context, t_pic *master,
-    t_pic *slave);
+    core_machine_cpu_execution_context *context, core_machine_pic_bus *master,
+    core_machine_pic_bus *slave);
 void core_machine_cpu_execution_context_bind_diagnostic_provider(
     core_machine_cpu_execution_context *context,
     const core_machine_cpu_execution_diagnostic_provider *provider,

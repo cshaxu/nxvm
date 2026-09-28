@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
@@ -368,7 +369,7 @@ static lib_i32 lfg_test_irq_shadow(void)
         if (!failed) {
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
             lib_memory_set(&source, 0, sizeof(source));
-            state.machine->shared_pic_master.data.icw2 = 0x20u;
+            test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
@@ -382,15 +383,15 @@ static lib_i32 lfg_test_irq_shadow(void)
                     after.data.ss.base + (lib_u16)after.data.esp,
                     (lib_uptr)&frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.data.eip != (opcode == 0u ? 0x0100u : 0x0101u) || !CORE_MACHINE_BIT_IS_SET(
-                    state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+                    test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                     VPIC_IRR_IRQ(0u)) || frame_ip != (opcode == 0u ? 6u : 5u);
         }
         if (failed)
             printf("LFG irq op=%02x eip=%08x esp=%08x irr=%02x isr=%02x frame=%04x\n",
                 opcodes[opcode], after.data.eip, after.data.esp,
-                state.machine->shared_pic_master.data.irr,
-                state.machine->shared_pic_master.data.isr, frame_ip);
+                test_pic_read(&state.machine->shared_pic_master, 0x0au),
+                test_pic_read(&state.machine->shared_pic_master, 0x0bu), frame_ip);
         core_machine_destroy(state.machine);
         if (failed)
             return 0;

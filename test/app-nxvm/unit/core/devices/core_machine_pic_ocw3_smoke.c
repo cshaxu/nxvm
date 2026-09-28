@@ -1,13 +1,14 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
 
 typedef struct pic_ocw3_fixture {
-    t_pic master;
-    t_pic slave;
+    core_machine_pic_bus master;
+    core_machine_pic_bus slave;
     t_port port;
 } pic_ocw3_fixture;
 
@@ -56,9 +57,8 @@ static lib_i32 pic_ocw3_test_read_and_poll(void)
     failed |= core_machine_port_read(&fixture.port, 0x0020u) != VPIC_IRR_IRQ(4u);
     core_machine_port_write(&fixture.port, 0x0020u, 0x0cu);
     failed |= core_machine_port_read(&fixture.port, 0x0020u) !=
-        (VPIC_POLL_I | 4u) || fixture.master.data.irr != 0u ||
-        fixture.master.data.isr != VPIC_ISR_IRQ(4u) ||
-        CORE_MACHINE_BIT_IS_SET(fixture.master.data.ocw3, VPIC_OCW3_P);
+        (VPIC_POLL_I | 4u) || test_pic_read(&fixture.master, 0x0au) != 0u ||
+        test_pic_read(&fixture.master, 0x0bu) != VPIC_ISR_IRQ(4u);
     failed |= core_machine_port_read(&fixture.port, 0x0020u) != 0u;
     core_machine_port_write(&fixture.port, 0x0020u, 0x0bu);
     failed |= core_machine_port_read(&fixture.port, 0x0020u) != VPIC_ISR_IRQ(4u) ||
@@ -72,7 +72,7 @@ static lib_i32 pic_ocw3_test_read_and_poll(void)
     pic_ocw3_raise(&fixture, &irq5, 5u);
     core_machine_port_write(&fixture.port, 0x0020u, 0x0cu);
     failed |= core_machine_port_read(&fixture.port, 0x0020u) !=
-        (VPIC_POLL_I | 5u) || fixture.master.data.isr != 0u;
+        (VPIC_POLL_I | 5u) || test_pic_read(&fixture.master, 0x0bu) != 0u;
     pic_ocw3_finalize(&fixture);
 
     pic_ocw3_initialize(&fixture, 0x01u);
@@ -80,11 +80,11 @@ static lib_i32 pic_ocw3_test_read_and_poll(void)
     core_machine_pic_refresh(&fixture.master, &fixture.slave);
     core_machine_port_write(&fixture.port, 0x0020u, 0x0cu);
     failed |= core_machine_port_read(&fixture.port, 0x0020u) !=
-        (VPIC_POLL_I | 2u) || fixture.master.data.cascade_irr != 0u ||
-        fixture.master.data.isr != VPIC_ISR_IRQ(2u);
+        (VPIC_POLL_I | 2u) || test_pic_read(&fixture.master, 0x0au) != 0u ||
+        test_pic_read(&fixture.master, 0x0bu) != VPIC_ISR_IRQ(2u);
     core_machine_port_write(&fixture.port, 0x00a0u, 0x0cu);
     failed |= core_machine_port_read(&fixture.port, 0x00a0u) !=
-        (VPIC_POLL_I | 6u) || fixture.slave.data.isr != VPIC_ISR_IRQ(6u);
+        (VPIC_POLL_I | 6u) || test_pic_read(&fixture.slave, 0x0bu) != VPIC_ISR_IRQ(6u);
     pic_ocw3_finalize(&fixture);
     return failed;
 }
@@ -103,16 +103,16 @@ static lib_i32 pic_ocw3_test_special_mask(void)
     failed |= core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
     core_machine_port_write(&fixture.port, 0x0020u, 0x68u);
     core_machine_port_write(&fixture.port, 0x0021u, VPIC_OCW1_IMR(1u));
-    failed |= fixture.master.data.isr != VPIC_ISR_IRQ(1u) ||
+    failed |= test_pic_read(&fixture.master, 0x0bu) != VPIC_ISR_IRQ(1u) ||
         !core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave) ||
         core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x0du;
     core_machine_port_write(&fixture.port, 0x0020u, 0x20u);
-    failed |= fixture.master.data.isr != VPIC_ISR_IRQ(1u);
+    failed |= test_pic_read(&fixture.master, 0x0bu) != VPIC_ISR_IRQ(1u);
     core_machine_port_write(&fixture.port, 0x0021u, 0u);
     core_machine_port_write(&fixture.port, 0x0020u, 0x20u);
-    failed |= fixture.master.data.isr != 0u;
+    failed |= test_pic_read(&fixture.master, 0x0bu) != 0u;
     core_machine_port_write(&fixture.port, 0x0020u, 0x48u);
-    failed |= CORE_MACHINE_BIT_IS_SET(fixture.master.data.ocw3, VPIC_OCW3_SMM);
+    /* Exact OCW3 bit retention is covered by the independent chip corpus. */
     pic_ocw3_finalize(&fixture);
     return failed;
 }

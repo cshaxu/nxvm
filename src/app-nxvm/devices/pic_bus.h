@@ -1,46 +1,25 @@
-/* Copyright 2012-2014 Neko. */
-
-#ifndef CORE_MACHINE_PIC_H
-#define CORE_MACHINE_PIC_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+/* Copyright 2012-2026 Neko. */
+#ifndef CORE_MACHINE_PIC_BUS_H
+#define CORE_MACHINE_PIC_BUS_H
 #include "lib/types/types_interface.h"
-
-#include "app-nxvm/devices/pic_interface.h"
+#include "x86/devices/pic8259/pic8259_interface.h"
+#include "app-nxvm/devices/pic_bus_interface.h"
 #include "app-nxvm/devices/port.h"
 
-#define CORE_MACHINE_DEVICE_PIC "Intel 8259A"
-
-typedef enum {ICW1, ICW2, ICW3, ICW4, OCW1} t_pic_init_status;
-
-#define VPIC_MAX_IRQ_COUNT 8
-typedef struct {
-    lib_u8 irr;  /* Interrupt Request Register */
-    lib_u8 imr;  /* Interrupt Mask Register */
-    lib_u8 isr;  /* In Service Register */
-    lib_u8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
-    t_pic_init_status status; /* initialization status */
-    lib_u8 irx; /* id of current top potential ir */
-    lib_u8 asserted[VPIC_MAX_IRQ_COUNT]; /* source levels */
-    lib_u8 cascade_irr; /* paired slave's synthesized request */
-    lib_u32 unmask_delivery_ticks[VPIC_MAX_IRQ_COUNT];
-    lib_u64 unmask_remaining_ticks[VPIC_MAX_IRQ_COUNT];
-} t_pic_data;
-
-typedef struct t_pic {
-    t_pic_data data;
-    /* Construction-fixed pair for immediate refresh of the one cascade state. */
-    struct t_pic *cascade_master;
-    struct t_pic *cascade_slave;
-} t_pic;
+/* Board endpoint, not chip state. Multiple source leases resolve to one input.
+ * Pair links belong to this board adapter and never enter the shared chip. */
+typedef struct core_machine_pic_bus {
+    x86_pic *device;
+    struct core_machine_pic_bus *master;
+    struct core_machine_pic_bus *slave;
+    lib_u8 asserted[8];
+} core_machine_pic_bus;
 
 typedef struct core_machine_pic_irq_source {
-    t_pic *master;
-    t_pic *slave;
+    core_machine_pic_bus *master;
+    core_machine_pic_bus *slave;
     lib_u8 irq;
-    lib_u8 asserted;
+    lib_bool asserted;
 } core_machine_pic_irq_source;
 
 /*
@@ -111,30 +90,27 @@ typedef struct core_machine_pic_irq_source {
 /* POLL bits */
 #define VPIC_POLL_I 0x80 /* must be 1 for poll command */
 
-void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
-    core_machine_pic_topology topology);
-void core_machine_pic_reset(t_pic *master, t_pic *slave);
-void core_machine_pic_refresh(t_pic *master, t_pic *slave);
-void core_machine_pic_set_irq_timing(t_pic *master, t_pic *slave,
-    const core_machine_pic_irq_timing *timing);
-void core_machine_pic_advance(t_pic *master, t_pic *slave,
-    lib_u64 elapsed_ticks);
-lib_status core_machine_pic_ticks_until_event(const t_pic *master, const t_pic *slave,
-    lib_u64 *out_ticks);
-void core_machine_pic_finalize(t_pic *master, t_pic *slave);
+
+lib_status core_machine_pic_initialize(core_machine_pic_bus *master,
+    core_machine_pic_bus *slave, t_port *port, core_machine_pic_topology topology);
+void core_machine_pic_reset(core_machine_pic_bus *master, core_machine_pic_bus *slave);
+void core_machine_pic_refresh(core_machine_pic_bus *master, core_machine_pic_bus *slave);
+void core_machine_pic_set_irq_timing(core_machine_pic_bus *master,
+    core_machine_pic_bus *slave, const core_machine_pic_irq_timing *timing);
+void core_machine_pic_advance(core_machine_pic_bus *master,
+    core_machine_pic_bus *slave, lib_u64 elapsed_ticks);
+lib_status core_machine_pic_ticks_until_event(const core_machine_pic_bus *master,
+    const core_machine_pic_bus *slave, lib_u64 *out_ticks);
+void core_machine_pic_finalize(core_machine_pic_bus *master, core_machine_pic_bus *slave);
 void core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
-    t_pic *master, t_pic *slave, lib_u8 irq_id);
+    core_machine_pic_bus *master, core_machine_pic_bus *slave, lib_u8 irq_id);
 void core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source);
 void core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source);
 void core_machine_pic_timer_output(void *owner, lib_u8 asserted);
-lib_u8 core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
-lib_u8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave);
-/* First logical INTA: select the request, transfer it from IRR to ISR, and
- * return the vector reserved for the CPU's following interrupt entry. */
-lib_u8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
-
-#ifdef __cplusplus
-}/*_EOCD_*/
-#endif
-
+lib_u8 core_machine_pic_scan_interrupt(core_machine_pic_bus *master,
+    core_machine_pic_bus *slave);
+lib_u8 core_machine_pic_peek_interrupt(core_machine_pic_bus *master,
+    core_machine_pic_bus *slave);
+lib_u8 core_machine_pic_get_interrupt(core_machine_pic_bus *master,
+    core_machine_pic_bus *slave);
 #endif

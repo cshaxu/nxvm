@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -387,7 +388,7 @@ static lib_i32 hlt_s49_test_irq(void)
         state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         lib_memory_set(&source, 0, sizeof(source));
-        state.machine->shared_pic_master.data.icw2 = (lib_u8)vector;
+        test_pic_program_vector(&state.machine->shared_pic_master, (lib_u8)vector);
         core_machine_pic_irq_source_bind(&source,
             &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -411,9 +412,9 @@ static lib_i32 hlt_s49_test_irq(void)
         failed |= after.data.esp != ((before.data.esp & 0xffff0000u) |
             (lib_u16)(before.data.esp - 6u));
         failed |= !hlt_s49_sregs_preserved(&before, &after);
-        failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+        failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
             VPIC_ISR_IRQ(0u));
-        failed |= CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+        failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
             VPIC_IRR_IRQ(0u));
         failed |= core_machine_memory_read_physical(
             &state.machine->executor_memory,
@@ -451,9 +452,9 @@ static lib_i32 hlt_s49_test_irq(void)
         failed |= after.data.eflags != before.data.eflags;
         failed |= !hlt_s49_gprs_preserved(&before, &after);
         failed |= !hlt_s49_sregs_preserved(&before, &after);
-        failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+        failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
             VPIC_IRR_IRQ(0u));
-        failed |= CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+        failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
             VPIC_ISR_IRQ(0u));
     }
     core_machine_destroy(state.machine);

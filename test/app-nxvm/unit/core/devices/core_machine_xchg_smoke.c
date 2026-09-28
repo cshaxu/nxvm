@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
@@ -364,7 +365,7 @@ static lib_i32 xchg_test_irq_no_shadow(void)
         state.machine->executor_cpu.data.eax = 0xaabb3344u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
         lib_memory_set(&source,0,sizeof(source));
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source,&state.machine->shared_pic_master,&state.machine->shared_pic_slave,0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
@@ -373,7 +374,7 @@ static lib_i32 xchg_test_irq_no_shadow(void)
         after=test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(lib_u16)after.data.esp,
             (lib_uptr)&frame,2u)!=LIB_STATUS_OK || after.data.eip!=0x101u || frame!=4u ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,VPIC_ISR_IRQ(0u));
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -694,7 +695,7 @@ static lib_i32 xchg_test_accumulator_irq(void)
         state.machine->executor_cpu.data.eax = 0xaabb3344u;
         state.machine->executor_cpu.data.ecx = 0x55667788u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source,
             &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -711,7 +712,7 @@ static lib_i32 xchg_test_accumulator_irq(void)
             frame != 1u ||
             after.data.eax != 0xaabb7788u ||
             after.data.ecx != 0x55663344u ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u));
     }
     if (failed)
@@ -724,8 +725,8 @@ static lib_i32 xchg_test_accumulator_irq(void)
             frame,
             after.data.eax,
             after.data.ecx,
-            state.machine->shared_pic_master.data.irr,
-            state.machine->shared_pic_master.data.isr);
+            test_pic_read(&state.machine->shared_pic_master, 0x0au),
+            test_pic_read(&state.machine->shared_pic_master, 0x0bu));
     }
     core_machine_destroy(state.machine);
     return !failed;

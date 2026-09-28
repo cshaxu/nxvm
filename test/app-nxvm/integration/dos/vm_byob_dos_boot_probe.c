@@ -2135,14 +2135,14 @@ int main(lib_i32 argc, char **argv)
                     printf("BOOT-PROBE=xt-keyboard-bat-pending\n");
                 if (session->core_machine->xt_ppi_keyboard.byte_ready)
                     printf("BOOT-PROBE=xt-keyboard-byte-ready\n");
-                printf("BOOT-PROBE=pic-imr=%02X\n",
-                    (unsigned int)session->core_machine->shared_pic_master.data.imr);
-                if (session->core_machine->shared_pic_master.data.imr == 0xffu)
-                    printf("BOOT-PROBE=pic-imr-ff\n");
-                else printf("BOOT-PROBE=pic-imr-not-ff\n");
-                if (session->core_machine->shared_pic_master.data.status == OCW1)
-                    printf("BOOT-PROBE=pic-ocw1-ready\n");
-                else printf("BOOT-PROBE=pic-not-ocw1-ready\n");
+                {
+                    lib_u8 mask = 0u;
+                    x86_pic_read_register(session->core_machine->shared_pic_master.device,
+                        1u, &mask);
+                    printf("BOOT-PROBE=pic-imr=%02X\n", (unsigned int)mask);
+                    if (mask == 0xffu) printf("BOOT-PROBE=pic-imr-ff\n");
+                    else printf("BOOT-PROBE=pic-imr-not-ff\n");
+                }
                 if (post_memory_failure) printf("BOOT-PROBE=post-memory-failure\n");
                 else if (post_keyboard_failure)
                     printf("BOOT-PROBE=post-keyboard-failure\n");
@@ -3145,10 +3145,10 @@ done:
                 }
             }
         }
-        printf("BOOT-PROBE=pic-imr=%02X-irr=%02X-isr=%02X-fdc-irq=%u\n",
-            (unsigned int)session->core_machine->shared_pic_master.data.imr,
-            (unsigned int)session->core_machine->shared_pic_master.data.irr,
-            (unsigned int)session->core_machine->shared_pic_master.data.isr,
+        printf("BOOT-PROBE=pic-pending=%u-fdc-irq=%u\n",
+            (unsigned int)core_machine_pic_scan_interrupt(
+                &session->core_machine->shared_pic_master,
+                &session->core_machine->shared_pic_slave),
             (unsigned int)session->core_machine->fdc.connect.irq_source.asserted);
         if (core_machine_memory_read(session->core_machine, 0x0410u,
                 &bda_equipment, sizeof(bda_equipment)) == LIB_STATUS_OK &&

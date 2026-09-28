@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 
 /* Reuse S3's owner-local protected-gate fixture without a new support API. */
 #define main protected_16_gate_s3_retained_main
@@ -84,7 +85,7 @@ static lib_i32 s5_outer_event(core_machine_cpu_profile profile,
     lib_memory_set(&source, 0, sizeof(source));
     if (!failed && nmi) state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
     if (!failed && !nmi) {
-        state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
+        test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
@@ -115,8 +116,8 @@ static lib_i32 s5_outer_event(core_machine_cpu_profile profile,
         if (!failed && nmi) {
             failed |= state.machine->executor_cpu.data.flagNMI;
         } else if (!failed) {
-            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
         }
     }
@@ -171,7 +172,7 @@ static lib_i32 s5_rejected_outer(lib_u8 invalid_tr, lib_u8 invalid_ss,
     if (!failed) {
         failed |= !s3_gate_write(&state, S5_KERNEL_STACK_TOP - sizeof(sentinel_before),
             sentinel_before, sizeof(sentinel_before));
-        state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
+        test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
@@ -186,8 +187,8 @@ static lib_i32 s5_rejected_outer(lib_u8 invalid_tr, lib_u8 invalid_ss,
             S5_KERNEL_STACK_TOP - sizeof(sentinel_after), sentinel_after,
             sizeof(sentinel_after)) || lib_memory_compare(sentinel_before, sentinel_after,
             sizeof(sentinel_before)) != 0 || !CORE_MACHINE_BIT_IS_SET(
-            state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
+            test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;

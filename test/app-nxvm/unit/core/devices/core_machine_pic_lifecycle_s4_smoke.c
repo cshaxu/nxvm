@@ -1,13 +1,14 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/pit_bus.h"
 #include "app-nxvm/devices/port.h"
 
 typedef struct pic_lifecycle_fixture {
-    t_pic master;
-    t_pic slave;
+    core_machine_pic_bus master;
+    core_machine_pic_bus slave;
     t_port port;
 } pic_lifecycle_fixture;
 
@@ -53,13 +54,13 @@ static lib_i32 pic_lifecycle_test_master_level(void)
     core_machine_pic_irq_source_bind(&second, &fixture.master, &fixture.slave, 5u);
     core_machine_pic_irq_source_assert(&first);
     core_machine_pic_irq_source_assert(&second);
-    failed |= fixture.master.data.asserted[5u] != 2u ||
+    failed |= fixture.master.asserted[5u] != 2u ||
         core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x0du;
     pic_lifecycle_eoi(&fixture, LIB_FALSE);
     core_machine_pic_refresh(&fixture.master, &fixture.slave);
     failed |= !core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
     core_machine_pic_irq_source_deassert(&first);
-    failed |= fixture.master.data.asserted[5u] != 1u;
+    failed |= fixture.master.asserted[5u] != 1u;
     (void)core_machine_pic_get_interrupt(&fixture.master, &fixture.slave);
     pic_lifecycle_eoi(&fixture, LIB_FALSE);
     core_machine_pic_refresh(&fixture.master, &fixture.slave);
@@ -84,7 +85,7 @@ static lib_i32 pic_lifecycle_test_slave_level(void)
     core_machine_pic_irq_source_assert(&first);
     core_machine_pic_irq_source_assert(&second);
     core_machine_pic_refresh(&fixture.master, &fixture.slave);
-    failed |= fixture.slave.data.asserted[6u] != 2u ||
+    failed |= fixture.slave.asserted[6u] != 2u ||
         core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x76u;
     pic_lifecycle_eoi(&fixture, LIB_TRUE);
     core_machine_pic_refresh(&fixture.master, &fixture.slave);
@@ -93,7 +94,7 @@ static lib_i32 pic_lifecycle_test_slave_level(void)
     (void)core_machine_pic_get_interrupt(&fixture.master, &fixture.slave);
     pic_lifecycle_eoi(&fixture, LIB_TRUE);
     core_machine_pic_refresh(&fixture.master, &fixture.slave);
-    failed |= fixture.slave.data.asserted[6u] != 1u ||
+    failed |= fixture.slave.asserted[6u] != 1u ||
         !core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
     core_machine_pic_irq_source_deassert(&second);
     core_machine_pic_refresh(&fixture.master, &fixture.slave);
@@ -123,18 +124,18 @@ static lib_i32 pic_lifecycle_test_pit_reset(void)
     core_machine_port_write(&fixture.port, 0x0040u, 0u);
     /* The first clock transfers CR to CE; the IRQ0 edge is the fifth clock. */
     x86_pit_advance(pit.device, 5u);
-    failed |= !irq0.asserted || fixture.master.data.asserted[0u] != 1u;
+    failed |= !irq0.asserted || fixture.master.asserted[0u] != 1u;
     core_machine_pic_reset(&fixture.master, &fixture.slave);
     x86_pit_reset(pit.device);
-    failed |= irq0.asserted || fixture.master.data.asserted[0u] != 0u;
+    failed |= irq0.asserted || fixture.master.asserted[0u] != 0u;
     core_machine_port_write(&fixture.port, 0x0043u, 0x34u);
     core_machine_port_write(&fixture.port, 0x0040u, 3u);
     core_machine_port_write(&fixture.port, 0x0040u, 0u);
     x86_pit_advance(pit.device, 5u);
-    failed |= !irq0.asserted || fixture.master.data.asserted[0u] != 1u ||
-        (fixture.master.data.irr & VPIC_IRR_IRQ(0u)) == 0u;
+    failed |= !irq0.asserted || fixture.master.asserted[0u] != 1u ||
+        (test_pic_read(&fixture.master, 0x0au) & VPIC_IRR_IRQ(0u)) == 0u;
     core_machine_pit_bus_destroy(&pit);
-    failed |= irq0.asserted || fixture.master.data.asserted[0u] != 0u;
+    failed |= irq0.asserted || fixture.master.asserted[0u] != 0u;
     pic_lifecycle_finalize(&fixture);
     return failed;
 }
@@ -152,7 +153,7 @@ static lib_i32 pic_lifecycle_test_edge_empty_and_bind(void)
     core_machine_pic_irq_source_bind(&source, &fixture.master, &fixture.slave, 16u);
     failed |= source.master != LIB_NULL || source.slave != LIB_NULL || source.asserted;
     failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x0fu ||
-        fixture.master.data.isr != 0u || fixture.slave.data.isr != 0u;
+        test_pic_read(&fixture.master, 0x0bu) != 0u || test_pic_read(&fixture.slave, 0x0bu) != 0u;
     core_machine_pic_irq_source_bind(&source, &fixture.master, &fixture.slave, 1u);
     core_machine_pic_irq_source_assert(&source);
     core_machine_pic_irq_source_deassert(&source);

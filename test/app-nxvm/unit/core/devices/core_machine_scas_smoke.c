@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
@@ -541,7 +542,7 @@ static lib_i32 scas_test_irq(void)
         scas_seed(&state);
         state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
         lib_memory_set(&irq, 0, sizeof(irq));
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
@@ -554,8 +555,8 @@ static lib_i32 scas_test_irq(void)
             after.data.ss.base + (lib_u16)after.data.esp,
             CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
             after.data.eip != 0x101u || frame_ip != 1u || after.data.edi != 0x21u ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
-            VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+            VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
             VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
@@ -578,7 +579,7 @@ static lib_i32 scas_test_irq(void)
         state.machine->executor_cpu.data.ecx = 0x11220003u;
         state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
         lib_memory_set(&irq, 0, sizeof(irq));
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
@@ -592,8 +593,8 @@ static lib_i32 scas_test_irq(void)
             CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
             after.data.eip != 0x101u || frame_ip != 0u ||
             after.data.ecx != 0x11220002u || after.data.edi != 0x21u ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
-            VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+            VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
             VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);

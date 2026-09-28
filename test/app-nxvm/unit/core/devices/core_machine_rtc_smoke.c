@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/port.h"
 #include "x86/devices/rtc146818/rtc146818_interface.h"
@@ -28,8 +28,8 @@ static void rtc_output(void *context, lib_bool asserted)
 lib_i32 main(void)
 {
     t_port port;
-    t_pic master;
-    t_pic slave;
+    core_machine_pic_bus master;
+    core_machine_pic_bus slave;
     x86_rtc *rtc = LIB_NULL;
     core_machine_pic_irq_source irq_source;
     x86_rtc_config config = {50000u, 0u, 0u};

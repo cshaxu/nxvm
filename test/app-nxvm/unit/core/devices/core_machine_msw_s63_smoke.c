@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
@@ -323,7 +324,7 @@ static lib_i32 msw_s63_test_lock_irq(void)
         msw_s63_machine state; core_machine_pic_irq_source irq; core_machine_run_result result; t_cpu before; t_cpu after; lib_u16 offset=0x100u,segment=0u,frame=0u;
         lib_i32 failed=!msw_s63_prepare(&state,CORE_MACHINE_CPU_PROFILE_80386);
         if(!failed) failed |= core_machine_memory_write(state.machine,0u,codes[form],4u)!=LIB_STATUS_OK || core_machine_memory_write(state.machine,0x80u,&offset,2u)!=LIB_STATUS_OK || core_machine_memory_write(state.machine,0x82u,&segment,2u)!=LIB_STATUS_OK || core_machine_memory_write(state.machine,0x100u,&hlt,1u)!=LIB_STATUS_OK;
-        if(!failed) { msw_s63_seed(&state); state.machine->executor_cpu.data.eax=0xdead000cu; state.machine->executor_cpu.data.cr0=0x00a50000u; before=test_core_machine_fixture_capture_cpu_after_run(state.machine); lib_memory_set(&irq,0,sizeof(irq)); state.machine->shared_pic_master.data.icw2=0x20u; core_machine_pic_irq_source_bind(&irq,&state.machine->shared_pic_master,&state.machine->shared_pic_slave,0u); core_machine_pic_irq_source_assert(&irq); core_machine_pic_irq_source_deassert(&irq); failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=LIB_STATUS_OK || result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT; after=test_core_machine_fixture_capture_cpu_after_run(state.machine); failed |= core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(lib_u16)after.data.esp,CORE_MACHINE_REFERENCE_OF(frame),2u)!=LIB_STATUS_OK || after.data.eip!=0x101u || frame!=3u || after.data.eflags!=(before.data.eflags&~VCPU_EFLAGS_IF) || !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,VPIC_IRR_IRQ(0u)); if(form==0u) failed |= after.data.eax!=0xdead0000u || after.data.cr0!=before.data.cr0; else failed |= after.data.cr0!=0x00a5000cu || after.data.eax!=before.data.eax; }
+        if(!failed) { msw_s63_seed(&state); state.machine->executor_cpu.data.eax=0xdead000cu; state.machine->executor_cpu.data.cr0=0x00a50000u; before=test_core_machine_fixture_capture_cpu_after_run(state.machine); lib_memory_set(&irq,0,sizeof(irq)); test_pic_program_vector(&state.machine->shared_pic_master, 0x20u); core_machine_pic_irq_source_bind(&irq,&state.machine->shared_pic_master,&state.machine->shared_pic_slave,0u); core_machine_pic_irq_source_assert(&irq); core_machine_pic_irq_source_deassert(&irq); failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=LIB_STATUS_OK || result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT; after=test_core_machine_fixture_capture_cpu_after_run(state.machine); failed |= core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(lib_u16)after.data.esp,CORE_MACHINE_REFERENCE_OF(frame),2u)!=LIB_STATUS_OK || after.data.eip!=0x101u || frame!=3u || after.data.eflags!=(before.data.eflags&~VCPU_EFLAGS_IF) || !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),VPIC_IRR_IRQ(0u)); if(form==0u) failed |= after.data.eax!=0xdead0000u || after.data.cr0!=before.data.cr0; else failed |= after.data.cr0!=0x00a5000cu || after.data.eax!=before.data.eax; }
         core_machine_destroy(state.machine); if(failed)return 0;
     } return 1;
 }

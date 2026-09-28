@@ -43,7 +43,8 @@ it does not change runtime ownership before the corresponding cutover.
   generic execution and faults and the sole guest
   timeline. Generic mechanisms know hardware contracts, not product names.
   T539 moves PIT 8253/8254 state and waveforms to `x86/devices/pit825x`,
-  and RTC/calendar/register state to `x86/devices/rtc146818`. NXVM retains
+  RTC/calendar/register state to `x86/devices/rtc146818`, and individual PIC
+  state/priority to `x86/devices/pic8259`. NXVM retains cascade/source aggregation,
   port attachment, index/NMI latches, seed/checksum, clock conversion and
   IRQ/refresh/speaker wiring. Current records each batch's acceptance; other
   chip extractions remain pending.

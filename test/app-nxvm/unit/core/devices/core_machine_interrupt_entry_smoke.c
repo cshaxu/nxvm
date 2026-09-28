@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -387,7 +388,7 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
                 sizeof(handler));
         if (!failed && !nmi) {
             lib_memory_set(&source, 0, sizeof(source));
-            state.machine->shared_pic_master.data.icw2 = IE_VECTOR;
+            test_pic_program_vector(&state.machine->shared_pic_master, IE_VECTOR);
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
@@ -400,15 +401,15 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
         if (!failed && !reject) {
             failed |= after.data.cs.selector != 0x000bu ||
                 after.data.esp != IE_STACK_BASE - 12u ||
-                (!CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, 1u) && !nmi) ||
-                CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, 1u) ||
+                (!CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), 1u) && !nmi) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), 1u) ||
                 state.machine->executor_cpu.data.flagNMI;
         } else if (!failed) {
             failed |= after.data.cs.selector != before.data.cs.selector ||
                 after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
                 (nmi ? !state.machine->executor_cpu.data.flagNMI :
-                    (!CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, 1u) ||
-                     CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, 1u)));
+                    (!CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), 1u) ||
+                     CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), 1u)));
         }
     }
     core_machine_destroy(state.machine);

@@ -12,7 +12,7 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 6. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
 Independent chips are admitted as [T539](../history/M5-T539-independent-shared-chips.md),
-currently extracting the approved PIT batch. The first two remaining candidates depend on
+covering the finite chip inventory in bounded batches. The first two remaining candidates depend on
 that extraction: common board integration, then product split. They are queued,
 not implementation admission.
 The later candidates retain their semantic qualification scope against the

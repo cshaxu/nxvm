@@ -26,7 +26,7 @@
 
 #include "app-nxvm/devices/port.h"
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 
 #include "app-nxvm/devices/pit_bus.h"
 
@@ -230,8 +230,8 @@ struct core_machine {
     core_machine_cpu_execution_context executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
-    t_pic shared_pic_master;
-    t_pic shared_pic_slave;
+    core_machine_pic_bus shared_pic_master;
+    core_machine_pic_bus shared_pic_slave;
     core_machine_pic_irq_source shared_pit_irq0_source;
     core_machine_pit_bus shared_pit;
     core_machine_pit_bus auxiliary_pit;

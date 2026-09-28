@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 
 /* Reuse S3's owner-local protected gate fixture without creating a public test API. */
 #define main protected_16_gate_s3_retained_main
@@ -96,7 +97,7 @@ static lib_i32 s4_outer_entry(core_machine_cpu_profile profile,
             state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
         }
         if (!failed && !software_origin && !nmi) {
-            state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
+            test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master,
                 &state.machine->shared_pic_slave, 0u);
@@ -128,9 +129,9 @@ static lib_i32 s4_outer_entry(core_machine_cpu_profile profile,
         if (!failed && nmi) {
             failed |= state.machine->executor_cpu.data.flagNMI;
         } else if (!failed && !software_origin) {
-            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
-                state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
+                test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
         }
     }
     core_machine_destroy(state.machine);
@@ -213,7 +214,7 @@ static lib_i32 s4_external_event(core_machine_cpu_profile profile,
             !s3_gate_write(&state, S3_CODE_BASE + S3_HANDLER, loop, sizeof(loop));
         if (!failed && nmi) state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
         if (!failed && !nmi) {
-            state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
+            test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
@@ -233,8 +234,8 @@ static lib_i32 s4_external_event(core_machine_cpu_profile profile,
         if (!failed && nmi) {
             failed |= state.machine->executor_cpu.data.flagNMI;
         } else if (!failed) {
-            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
         }
     }
@@ -268,7 +269,7 @@ static lib_i32 s4_rejected_event(lib_u8 gate_type, lib_u8 present,
                 stack_before, sizeof(stack_before));
         if (!failed && nmi) state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
         if (!failed && !nmi) {
-            state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
+            test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
@@ -287,8 +288,8 @@ static lib_i32 s4_rejected_event(lib_u8 gate_type, lib_u8 present,
         if (!failed && nmi) {
             failed |= !state.machine->executor_cpu.data.flagNMI;
         } else if (!failed) {
-            failed |= !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
         }
     }

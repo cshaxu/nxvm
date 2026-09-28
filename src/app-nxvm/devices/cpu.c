@@ -130,8 +130,8 @@ const char *core_machine_cpu_profile_name(core_machine_cpu_profile profile)
 }
 
 void core_machine_cpu_execution_context_bind_pic(
-    core_machine_cpu_execution_context *context, t_pic *master,
-    t_pic *slave)
+    core_machine_cpu_execution_context *context, core_machine_pic_bus *master,
+    core_machine_pic_bus *slave)
 {
     if (context == LIB_NULL) return;
     context->pic_master = master;

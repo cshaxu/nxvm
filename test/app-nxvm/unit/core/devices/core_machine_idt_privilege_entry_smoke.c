@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -221,7 +222,7 @@ static lib_i32 pe_test_external_bypasses_software_dpl(void)
     if (!failed) {
         lib_memory_set(&source, 0, sizeof(source));
         state.machine->executor_cpu.data.eflags = 0x00000202u;
-        state.machine->shared_pic_master.data.icw2 = PE_VECTOR;
+        test_pic_program_vector(&state.machine->shared_pic_master, PE_VECTOR);
         core_machine_pic_irq_source_bind(&source,
             &state.machine->shared_pic_master, &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
@@ -231,8 +232,8 @@ static lib_i32 pe_test_external_bypasses_software_dpl(void)
             after.data.cs.selector != 0x0008u || after.data.cs.dpl != 0u ||
             after.data.ss.selector != 0x0010u || after.data.esp != 0x00008fecu ||
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, 1u) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, 1u);
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), 1u) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), 1u);
     }
     core_machine_destroy(state.machine);
     return !failed;

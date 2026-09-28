@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -664,7 +665,7 @@ static lib_i32 imul_s56_test_irq_no_shadow(void)
         }
         if (!failed) {
             lib_memory_set(&source_irq, 0, sizeof(source_irq));
-            machine->shared_pic_master.data.icw2 = 0x20u;
+            test_pic_program_vector(&machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source_irq,
                 &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source_irq);
@@ -699,9 +700,9 @@ static lib_i32 imul_s56_test_irq_no_shadow(void)
                 VCPU_EFLAGS_RESERVED)) | 0x02u);
             failed |= CORE_MACHINE_BIT_IS_SET(frame_flags, VCPU_EFLAGS_CF);
             failed |= CORE_MACHINE_BIT_IS_SET(frame_flags, VCPU_EFLAGS_OF);
-            failed |= !CORE_MACHINE_BIT_IS_SET(machine->shared_pic_master.data.isr,
+            failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u));
-            failed |= CORE_MACHINE_BIT_IS_SET(machine->shared_pic_master.data.irr,
+            failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
         }
         if (failed) {

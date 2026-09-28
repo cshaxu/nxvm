@@ -93,8 +93,6 @@ static lib_i32 vm_model_339_selected_contract(void)
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u) ? 0x0010 : 0;
     failed |= (session->core_machine->shared_kbc.data.output_port != 0x03u ||
         !session->core_machine->executor_memory.data.flagA20) ? 0x0011 : 0;
-    failed |= session->core_machine->shared_pic_master.data.unmask_delivery_ticks[1u] !=
-        120u ? 0x0012 : 0;
     failed |= (core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
         LIB_STATUS_OK || memory_bytes != 512u * 1024u) ? 0x0020 : 0;
     failed |= (core_machine_get_planar_parity_observation(session->core_machine,
@@ -117,6 +115,18 @@ static lib_i32 vm_model_339_selected_contract(void)
         core_machine_port_read(&session->core_machine->executor_port, 0x03f1u) != 0x50u ||
         session->core_machine->hdc.connect.config.service.command_ticks != 16000u ||
         session->core_machine->hdc.connect.config.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
+    {
+        core_machine_pic_bus *bus = &session->core_machine->shared_pic_master;
+        lib_u64 ticks = 0u;
+        x86_pic_write_register(bus->device, 0u, 0x13u);
+        x86_pic_write_register(bus->device, 1u, 8u);
+        x86_pic_write_register(bus->device, 1u, 1u);
+        x86_pic_write_register(bus->device, 1u, 2u);
+        x86_pic_set_inputs(bus->device, 0u, 2u, 0u);
+        x86_pic_write_register(bus->device, 1u, 0u);
+        failed |= x86_pic_ticks_until_event(bus->device, &ticks) !=
+            LIB_STATUS_OK || ticks != 120u ? 0x0012 : 0;
+    }
     vm_machine_destroy(session);
     return failed;
 }

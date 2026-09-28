@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -448,7 +449,7 @@ static lib_i32 pft_test_irq_no_shadow(void)
         state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         lib_memory_set(&source, 0, sizeof(source));
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
@@ -460,9 +461,9 @@ static lib_i32 pft_test_irq_no_shadow(void)
         failed |= !pft_read_private(&state, PFT_DATA_ADDRESS +
             (lib_u16)after.data.esp, &frame_ip, sizeof(frame_ip)) ||
             after.data.cs.selector != 0x08u || after.data.eip != 0x101u ||
-            frame_ip != 0u || !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+            frame_ip != 0u || !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
-                state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
+                test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;

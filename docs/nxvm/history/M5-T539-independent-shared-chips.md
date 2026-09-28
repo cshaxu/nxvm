@@ -127,3 +127,17 @@ suites 10/10, default integration 20/20, and every other profile/width boot
 passes once. All eight 0539 artifacts are current; INIs and other products are
 unchanged. The bounds correction is safety containment, not a timing upgrade.
 S4 closes with no remaining item in its bounded brief; T539 stays open.
+
+## S5: PIC Extraction
+
+Automatically admitted from be86dee2e. Shared x86 owns one opaque 8259;
+NXVM pic_bus owns ports, source counts and cascade wiring. All callers and
+tests migrate without a second PIC implementation. The initial allocation
+failure regression was repaired at machine construction and covered by the
+original test plus all eight PIC port-registration rollback/retry cases.
+
+[S5 evidence](../etc/evidence/t539-s5-pic-extraction.md) records both-width
+341/341 units, 20/20 default integration, 12/12 independent chip tests,
+single-pass remaining profile boots, manifests/gates and eight artifact hashes.
+Shared delivery d6dc6ca3a is pushed. NXVM delivery and coordinator review follow;
+no remaining chip batch is implicitly accepted.

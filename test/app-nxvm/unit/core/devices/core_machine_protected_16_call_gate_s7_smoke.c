@@ -1,8 +1,9 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 
 /* Reuse S3's owner-local protected-gate fixture without a support API. */
 #define main protected_16_gate_s3_retained_main
@@ -313,7 +314,7 @@ static lib_i32 s7_irq_no_shadow(void)
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             state.machine->executor_cpu.data.eip != 1u || !CORE_MACHINE_BIT_IS_SET(
                 state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF);
-        state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
+        test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
@@ -326,8 +327,8 @@ static lib_i32 s7_irq_no_shadow(void)
             state.machine->executor_cpu.data.eip != S7_CALL_TARGET + 1u ||
             state.machine->executor_cpu.data.sp != S7_KERNEL_STACK_TOP - 18u ||
             CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
             !s3_gate_read(&state, S7_KERNEL_STACK_TOP - sizeof(call_frame),
                 call_frame, sizeof(call_frame)) || call_frame[0] != 6u ||
             call_frame[1] != 0x001bu || call_frame[2] != parameters[0] ||

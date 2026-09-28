@@ -1,10 +1,11 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "support/core_machine_cpu_fixture.h"
 
 #define S3_GDT_BASE 0x0300u
@@ -332,7 +333,7 @@ static lib_i32 s3_gate_external_irq(void)
     lib_memory_set(&source, 0, sizeof(source));
     if (!failed) {
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        state.machine->shared_pic_master.data.icw2 = S3_VECTOR;
+        test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
@@ -345,8 +346,8 @@ static lib_i32 s3_gate_external_irq(void)
             state.machine->executor_cpu.data.esp != S3_STACK_TOP - 6u ||
             CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
             CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.irr,
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || !s3_gate_read(&state, S3_STACK_TOP - 6u,
                 frame, sizeof(frame)) || frame[0] != 1u || frame[1] != 0x0008u ||
             frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);

@@ -1,3 +1,4 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -8,7 +9,7 @@
 #include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/kbc.h"
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
 #include "support/core_machine_cpu_fixture.h"
 
@@ -32,8 +33,8 @@ static void core_machine_kbc_initialize_pic(t_port *port)
 static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
 {
     t_kbc kbc;
-    t_pic pic_master;
-    t_pic pic_slave;
+    core_machine_pic_bus pic_master;
+    core_machine_pic_bus pic_slave;
     t_ram memory = {0};
     core_machine_cpu_execution_context execution = {0};
     t_port port;
@@ -480,7 +481,7 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
         failed |= core_machine_run(fixture.machine, (core_machine_run_budget){2u, 0u},
                 &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             fixture.machine->executor_cpu.data.eip != offset ||
-            !CORE_MACHINE_BIT_IS_SET(fixture.machine->shared_pic_master.data.isr,
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(1u));
     }
     core_machine_destroy(fixture.machine);
@@ -490,8 +491,8 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
 lib_i32 main(void)
 {
     t_kbc kbc;
-    t_pic pic_master;
-    t_pic pic_slave;
+    core_machine_pic_bus pic_master;
+    core_machine_pic_bus pic_slave;
     t_ram memory = {0};
     core_machine_cpu_execution_context execution = {0};
     t_port port;
@@ -573,7 +574,7 @@ lib_i32 main(void)
         LIB_STATUS_INVALID_STATE;
     core_machine_port_write(&port, 0x0064u, 0xaeu);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
-    failed |= (pic_master.data.irr & VPIC_IRR_IRQ(1u)) == 0u;
+    failed |= (test_pic_read(&pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) == 0u;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
     core_machine_port_write(&port, 0x0020u, 0x20u);
@@ -611,7 +612,7 @@ lib_i32 main(void)
         (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
             LIB_STATUS_INVALID_STATE ||
-        (pic_master.data.irr & VPIC_IRR_IRQ(1u)) != 0u;
+        (test_pic_read(&pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) != 0u;
     core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
     core_machine_port_write(&port, 0x0064u, 0xaau);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
@@ -622,7 +623,7 @@ lib_i32 main(void)
     failed |= !kbc.data.keyboard_enabled ||
         (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) != 0u ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
-        (pic_master.data.irr & VPIC_IRR_IRQ(1u)) == 0u ||
+        (test_pic_read(&pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) == 0u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
     core_machine_port_write(&port, 0x0060u, 0xffu);

@@ -6,10 +6,10 @@
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/dma.h"
 #include "app-nxvm/devices/media_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port_interface.h"
 
-typedef struct t_pic t_pic;
+typedef struct core_machine_pic_bus core_machine_pic_bus;
 #define CORE_MACHINE_HDC_STATUS_ERR 0x01u
 #define CORE_MACHINE_HDC_STATUS_DRQ 0x08u
 #define CORE_MACHINE_HDC_STATUS_DSC 0x10u
@@ -115,7 +115,7 @@ typedef struct core_machine_hdc {
 void core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
-    t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config);
+    core_machine_pic_bus *pic_master, core_machine_pic_bus *pic_slave, const core_machine_hdc_config *config);
 void core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
     const core_machine_dma_request_binding *binding,
     void (*request_assert)(void *owner,

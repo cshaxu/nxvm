@@ -1,10 +1,11 @@
+#include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 #include "support/core_machine_cpu_fixture.h"
 
 /* T337_REAL_UD_VECTOR6_DELIVERY: this owner installs and observes vector 6. */
@@ -502,7 +503,7 @@ static lib_i32 tf_db_s60_test_tf_priority_over_irq(void)
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_TF |
             VCPU_EFLAGS_IF;
         lib_memory_set(&irq, 0u, sizeof(irq));
-        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
@@ -512,9 +513,9 @@ static lib_i32 tf_db_s60_test_tf_priority_over_irq(void)
             diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
             (after.data.dr6 & 0x00004000u) == 0u || after.data.eip != 0x0101u ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->shared_pic_master.data.isr,
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u)) || !CORE_MACHINE_BIT_IS_SET(
-                    state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
+                    test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
                 (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK ||

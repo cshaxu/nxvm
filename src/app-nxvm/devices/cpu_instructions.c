@@ -2,7 +2,7 @@
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/pic.h"
+#include "app-nxvm/devices/pic_bus.h"
 
 #include "app-nxvm/devices/transaction.h"
 
