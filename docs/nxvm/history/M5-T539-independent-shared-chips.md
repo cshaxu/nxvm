@@ -45,3 +45,20 @@ component ownership explicit and preserved the original handler-style constraint
 
 P2 records S1 closure only. T539 remains open; production batches and unresolved
 architecture decisions await owner review. No other T or S is admitted.
+
+## S2: Concrete Boundary Contracts
+
+Continuation admitted on 2026-09-28 under the owner's implementation goal.
+NXVM docs only, baseline 2197486b0. The
+[contract record](../etc/architecture/t539-boundary-contracts.md) specifies
+bus/signal/time/lifecycle constraints and a bounded PIT extraction. All seven
+firmware provider definitions have null software-interrupt slots: remove that
+unused capability at CPU extraction, not replace it. FDC media/READY and
+reference-derived response remain a separately reviewed class, not a claimed
+hardware fix. The original 81-file ledger remains entirely not migrated.
+
+Owner approved the PIT Shared/NXVM first extraction through the asynchronous
+review question. S2 still edits no source. Its exit is delivery of reviewable
+contracts, source evidence, document links, diff check and NXVM documentation
+governance. Next S may consume the approved PIT batch; other chip behavior
+changes still require their appropriate review. No new executable for design.

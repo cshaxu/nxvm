@@ -14,6 +14,9 @@ S10 receiving evidence: [T43 byte-boolean artifacts](evidence/m6-t43-s10-receivi
 T539 S1 research: [independent-chip design](architecture/t539-independent-chip-design.md)
 and [81-file migration inventory](evidence/t539-chip-migration-ledger.md);
 proposed boundaries and decision gates, not an implemented Shared ABI.
+
+T539 S2: [concrete chip contracts](architecture/t539-boundary-contracts.md),
+including firmware-hook consumer proof and the approved first PIT extraction.
 S8 receiving evidence: [T43 quality-repair artifacts](evidence/m6-t43-s8-receiving-artifacts.md); rebuilt boolean-layout receivers and owner-approved 0/1-only INI correction.
 
 | Current category | Owner | Purpose |

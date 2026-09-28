@@ -40,6 +40,12 @@ CPU firmware hook and FDC unready-response ownership before their extraction;
 retain behavior meanwhile. Do not label AT KBC or XT Mode-0 PPI models as full
 general-purpose MCU/8255 implementations.
 
+S2's [concrete contracts](../etc/architecture/t539-boundary-contracts.md) refine
+these findings: the software-interrupt interception slot has no current provider
+consumer and needs no replacement API; FDC unready semantics still require their
+own full-class review. The owner approved PIT extraction and NXVM reconnection
+on 2026-09-28; admit its source batch only after the S2 design delivery.
+
 The first admitted S freezes a migration ledger covering every tracked source
 file in the current devices subtree, its callers and tests. Each entry names
 the chip or board responsibility, dependencies, destination and proof. Every

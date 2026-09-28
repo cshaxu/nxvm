@@ -2,34 +2,33 @@
 
 ## Current Work
 
-M5 T539 remains open. S1 research/design is accepted and closed; no S is executing.
-Production migration has not started. The owner is reviewing the directory and
-dependency design, per-chip gaps, required diffs and prior decisions.
+M5 T539 remains open. S1 is closed; S2 is active for concrete chip-boundary
+contracts and the next migration brief. The owner goal is to implement chip/device
+architecture separation. Shared source changes still require design review;
+S2 changes NXVM documentation only, not runtime code.
 
 | Task | Progress |
 | --- | --- |
-| T539 S1 | Closed: design delivered in 8a8a97991; 81-file inventory and governance verified. Await owner decisions before the next S. |
-
-The following is S1's retained admission record, not an active production packet.
+| T539 S2 | Active: resolve live consumers and concrete bus/signal/time contracts; prepare PIT extraction for owner review. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New: M5 T539 S1, after closed T538 and Td S174. |
-| Admission And Approval | Owner admits queue candidate 1 in this conversation on 2026-09-27; research/design first, no production migration yet. |
-| Objective | Freeze all devices files and caller/test boundaries; design independent shared chips, dependency rules, chip-specific deltas and decisions for owner review. |
-| Non-goals | No source/test/build/Shared/MyNES/INI/asset changes; no new hardware, timing upgrades, ibmpc implementation or App split. |
-| Reference Baseline | Clean master 996a19a17; T538 runtime and eight 0538 EXEs unchanged. |
+| Identifier Mode | Continuation: M5 T539 S2, after S1 P2 2197486b0. |
+| Admission And Approval | Owner's continuing goal on 2026-09-28 is chip/device architecture separation; this prerequisite S is concrete design only. Existing owner review before Shared source modification remains binding; no such edits admitted here. |
+| Objective | Resolve CPU firmware-hook consumers and FDC response ownership; define bus/interrupt/DMA/time/lifetime boundaries and a bounded PIT migration contract. |
+| Non-goals | No source/test/build/Shared/MyNES/INI/asset edits, new hardware, timing requalification, ibmpc implementation, App split or speculative framework. |
+| Reference Baseline | Clean master 2197486b0; 81-file S1 inventory and T538 runtime baseline unchanged. |
 | Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md); [task history](../history/M5-T539-independent-shared-chips.md). |
-| Files And ABI Surface | NXVM docs only: active packet, queue, proposal, history, evidence index and design/ledger; proposed APIs only, no ABI edits. |
+| Files And ABI Surface | NXVM Current/proposal/history and supporting design/evidence index; proposed owner-local contracts only, no public ABI changes. |
 | Applicable Rules | NXVM guide, Architecture/Coding/Roadmap, source policy; shared Execution/Architecture/Coding/Document rules; architecture-governance and coding-governance skills. |
-| Verification | Tracked-file ledger coverage; include/call/field/caller/build/test inspection; Markdown links, git diff --check and NXVM documentation gate. Design-only scope requires no runtime rebuild or invented runtime proof. |
-| Expected Markers | All tracked devices files classified; every chip group has current boundary, target, concrete change and regression owner; decisions separated from approved facts. |
+| Verification | All tracked firmware-provider definitions and assignments; FDC policy selections, consumers and existing evidence; PIT production/readback/test/clock/binding paths; document links, diff check and NXVM documentation gate. No runtime build/test claim for design-only edits. |
+| Expected Markers | Named consumer dispositions, explicit units/effects/ownership, no invented replacement hook, concrete PIT API and fixture/build acceptance, unresolved hardware behavior separated from structural decisions. |
 | Asset Needs | None; original code and existing evidence only; no external ROM/source import. |
-| Reporting Requirements | Report target tree, dependencies, per-chip gaps/diffs, sequencing and pending decisions with source anchors; stop before production work. |
-| Stop Conditions | Missing owner decision needed for implementation; forbidden scope edit; claimed chip identity unsupported by current evidence. Record these as design decisions, not invented hardware contracts. |
-| Exit Criteria | Requested design and complete finite inventory reviewed against actual source; governance proof and documentation delivery; T remains open for owner review of implementation. |
-| Original Owner Request | Admit independent chip extraction; first research directory/dependency structure, each chip's decoupling gaps, needed diffs and architecture decisions. |
-| Similar-Issue Sweep | Inventory entire devices subtree plus production callers, build descriptions and owning tests for direct peer state, private machine dependencies, fixed board routes, time ownership and public-boundary bypasses. No semantic completeness claim. |
+| Reporting Requirements | Report new evidence and exact proposed change, request review of first Shared extraction, preserve full T objective and stop before unapproved Shared changes. |
+| Stop Conditions | Unresolved behavior may not be disguised by a neutral name or asserted as hardware truth; Shared source permission and chip-specific semantic evidence required before its implementation. |
+| Exit Criteria | Reviewable contracts and PIT migration brief grounded in source; governance checks and pushed design record. T539 remains open; no chip reported migrated. |
+| Original Owner Request | Implement chip/device architecture separation; preserve prior request for directory/dependency/per-chip design and S breakdown. |
+| Similar-Issue Sweep | Search all tracked production/test firmware providers for the proposed obsolete interception hook; inspect all FDC unready policy sites and PIT routes, including Model-40 auxiliary timer and output-binding conflict validation. |
 
 [Task history](../history/M5-T538-deployed-boot-pairs.md) retains reviewed packets
 and actual-change acceptance. [Archived proposal](../history/M5-T538-deployed-boot-pairs-proposal.md),
