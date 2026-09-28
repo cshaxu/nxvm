@@ -14,10 +14,11 @@ There is no executor, Console, input loop or product state machine here.
 | devices/pit825x | 8253/8254 counters, register protocol, GATE/OUT and input-clock deadlines | pit825x_interface.h |
 | devices/rtc146818 | MC146818-compatible calendar, registers, IRQ/SQW and configured-time deadlines | rtc146818_interface.h |
 | devices/pic8259 | Single 8259 priority, ICW/OCW, interrupt selection/acknowledge and delivery deadlines | pic8259_interface.h |
+| devices/dma8237 | Single 8237A register protocol, requests, priority and input-clock service phases | dma8237_interface.h |
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
 only on Types. Public names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
-Build targets are x86-debug, x86-xasm32, x86-pit825x, x86-rtc146818 and x86-pic8259. Private includes stay component-local;
+Build targets are x86-debug, x86-xasm32, x86-pit825x, x86-rtc146818, x86-pic8259 and x86-dma8237. Private includes stay component-local;
 no native platform code or importing-product source dependency is allowed.
 
 PIT depends only on Types. Its opaque instance owns counter state; the board
@@ -42,6 +43,16 @@ addresses, source aggregation and master/slave wiring. Cascade signals cross
 as copied values, never peer pointers. Selection is non-mutating; acknowledge
 and command-register poll consume requests. Reset preserves configured timing.
 Calls have one execution owner; no native wait or host time enters the chip.
+
+DMA depends only on Types. One opaque controller owns its registers, requests,
+priority and service phases. The caller grants a local or delegated cascade
+slot and advances one input clock at a time. A scoped cycle provider receives
+local addresses; the board owns page/lane expansion, memory/device effects,
+pair wiring and transaction preflight. A failed cycle releases service without
+advancing address/count. Providers are not retained and may change request/EOP
+inputs, but cannot recursively advance/reset/destroy the controller. Undefined
+reads preserve the bus byte; status reads consume TC bits. Copied signal queries
+do not mutate state. Stop execution before destroying the instance.
 
 The protocol header is independent of the frontend: product adapters need not
 link the CLI to use its values. Aligned typed request/response copies traverse
@@ -72,7 +83,7 @@ cmake --build build/x86-corpus --target x86-verify
 ```
 
 For a chip-only receiver, configure with `-DX86_BUILD_TOOLS=OFF` and build
-`x86-pit825x`, `x86-rtc146818` or `x86-pic8259`. This does not configure Common or link Debug/assembly tools.
+`x86-pit825x`, `x86-rtc146818`, `x86-pic8259` or `x86-dma8237`. This does not configure Common or link Debug/assembly tools.
 
 MANIFEST.sha256 covers every file with exact LF-normalized SHA-256 values.
 x86-verify reuses Common's manifest checker with this corpus root; the x86-owned
