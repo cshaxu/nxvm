@@ -71,7 +71,7 @@ Capture copies the active bytes without consuming; acknowledgement clears pendin
 if that publication is still latest. Failed output keeps it pending without
 restoring a stale copy over newer content or signalling another retry.
 
-Mouse and close events never flush a keyboard prefix. Mismatch/keyboard release
+Mouse and close events never flush a keyboard prefix. Mismatch/matched keyboard release
 replays pending keyboard events in order; keyboard/mouse interleaving is not
 buffered. A rejected input sink closes the source and clears pending state;
 the first failure is reported immediately; only quiesced exit reports retirement. STOP/fault closes
@@ -85,6 +85,8 @@ only when the scan is absent. A held key retains its original logical key across
 lock/layout changes. Both leaves share this ledger. Ordinary keys and modifiers follow the same lifetime: a
 delivered make always retains its break and never becomes consumed later.
 The ledger is released at retirement; destroy also handles workerless cleanup.
+An unmatched break is consumed without delivery or pending-key replay: a new or
+reset input source must not forward a release whose make it never accepted.
 Destroy performs one bounded join. An unjoinable live worker is an importing
 application terminal infrastructure failure; the library does not terminate or
 add a fallback wake channel. A selected wake failure after a request has been

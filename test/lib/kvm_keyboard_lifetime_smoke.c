@@ -137,6 +137,27 @@ static void failure_paths(void)
     lib_test_assert(c.count == 1 && c.attempts == 2);
     kvm_hotkey_matcher_discard(&matcher);
 }
+static void orphan_releases(void)
+{
+    kvm_hotkey_registry registry = {0};
+    kvm_hotkey_matcher matcher;
+    capture c = {0};
+    lib_test_assert(kvm_hotkey_registry_register(&registry, 'P', 3, "action") == LIB_STATUS_OK);
+    kvm_hotkey_matcher_initialize(&matcher, &registry);
+    lib_test_assert(submit(&matcher, &c, KVM_KEY_ENTER, 0x1c, 0, 0, LIB_FALSE));
+    lib_test_assert(c.attempts == 0 && matcher.held_count == 0);
+    lib_test_assert(submit(&matcher, &c, KVM_KEY_CONTROL, 0x1d, 0, 1, LIB_TRUE));
+    lib_test_assert(submit(&matcher, &c, KVM_KEY_ENTER, 0x1c, 0, 1, LIB_FALSE));
+    lib_test_assert(c.attempts == 0 && matcher.held_count == 1);
+    lib_test_assert(submit(&matcher, &c, KVM_KEY_CONTROL, 0x1d, 0, 0, LIB_FALSE));
+    lib_test_assert(c.count == 2 && matcher.held_count == 0);
+    lib_test_assert(submit(&matcher, &c, 'A', 0x1e, 0, 0, LIB_TRUE));
+    kvm_hotkey_matcher_discard(&matcher);
+    lib_u32 attempts = c.attempts;
+    lib_test_assert(submit(&matcher, &c, 'A', 0x1e, 0, 0, LIB_FALSE));
+    lib_test_assert(c.attempts == attempts && matcher.held_count == 0);
+    kvm_hotkey_matcher_discard(&matcher);
+}
 static void no_failure(void *opaque, lib_u64 source, lib_status status)
 { (void)opaque; (void)source; (void)status; }
 static lib_status no_join(kvm_component *component, lib_u32 timeout_ms)
@@ -176,6 +197,22 @@ static void adapter_equivalence(lib_u32 scan)
     context.component = &window; console.worker_state = &state; window_context = &context;
     lib_win32_hwnd handle = (lib_win32_hwnd)1;
     lib_win32_lparam lp = (lib_win32_lparam)scan << 16;
+    /* New source: the previous cooked reader consumed the make. */
+    win32_window_proc(handle, LIB_WIN32_WM_KEYUP, 'A', lp);
+    console_record(&console, 'A', scan, 'a', LIB_FALSE, 0);
+    lib_test_assert(w.attempts == 0 && c.attempts == 0);
+    /* Reset revokes the old make; its late break belongs to neither source. */
+    win32_window_proc(handle, LIB_WIN32_WM_KEYDOWN, 'A', lp);
+    console_record(&console, 'A', scan, 'a', LIB_TRUE, 0);
+    lib_test_assert(kvm_component_reset_input(&window.base));
+    lib_test_assert(kvm_component_reset_input(&console.base));
+    lib_test_assert(w.count == 2 && c.count == 2);
+    lib_test_assert(w.events[1].type == KVM_EVENT_INPUT_RESET &&
+        c.events[1].type == KVM_EVENT_INPUT_RESET);
+    win32_window_proc(handle, LIB_WIN32_WM_KEYUP, 'A', lp);
+    console_record(&console, 'A', scan, 'a', LIB_FALSE, 0);
+    lib_test_assert(w.attempts == 2 && c.attempts == 2);
+    w.count = w.attempts = c.count = c.attempts = 0;
     win32_window_proc(handle, LIB_WIN32_WM_KEYDOWN, 'A', lp);
     win32_window_proc(handle, LIB_WIN32_WM_KEYUP, 'A', lp);
     console_record(&console, 'A', scan, 'a', 1, 0);
@@ -399,6 +436,7 @@ static void physical_identity(void)
 
 int main(void)
 {
+    orphan_releases();
     physical_identity();
     permutations();
     failure_paths();
