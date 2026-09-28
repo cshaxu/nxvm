@@ -2,34 +2,34 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S9 are accepted. S10 is automatically admitted under
-the owner's 2026-09-28 authorization: resolve the FDC extraction prerequisite
-with a complete readiness/command characterization and concrete owner contract.
+M5 T539 remains open. S1-S10 are accepted. S11 is automatically admitted under
+the owner's 2026-09-28 authorization: repair the pending FDC seek/completion
+ownership and bounded-admission class before chip extraction.
 
 | Task | Progress |
 | --- | --- |
-| T539 S10 | FDC prerequisite is implemented and verified, awaiting coordinator actual-diff acceptance. Source cutover remains gated by the recorded repair obligations. HDC, video, CPU/FPU and final finite-ledger review remain. |
+| T539 S11 | FDC seek/completion repair active. READY/drive qualification remains a subsequent FDC cutover gate; HDC, video, CPU/FPU and final ledger review remain. |
 
-## Active S10 Packet
+## Active S11 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation, M5 T539 S10; single session switches coordinator/executor roles. |
-| Admission And Approval | Owner automatic-S approval of 2026-09-28 covers this explicit T539 prerequisite. NXVM documentation/tests/build registration only; Shared, MyNES and sibling source remain read-only. |
-| Objective | Resolve the finite ledger's FDC ownership gate before source relocation: inventory every readiness consumer, command/result/IRQ/DRQ/seek/reset interaction, characterize the two current unready policies and specify a neutral chip/drive/board contract with no renamed BIOS-policy flag. |
-| Non-goals | No production cutover, new controller qualification, timing upgrade, protected asset import, INI change or source-derived hardware assumption. Test characterization is not hardware correctness. |
-| Reference Baseline | Clean pushed 02931b886; S9 source/artifacts remain the executable baseline. |
-| Candidate Proposal | [T539](../proposals/m5-shared-chip-extraction.md), [contracts](../etc/architecture/t539-boundary-contracts.md), [finite ledger](../etc/evidence/t539-chip-migration-ledger.md); FDC row remains pending migration. |
-| Files And ABI Surface | NXVM FDC contract/evidence and original unit-test family; inspect fdc.c/h, controller/media interfaces, machine construction/scheduler, all board configurations and consumers. No public ABI change in this prerequisite S. |
-| Applicable Rules | Architecture unique state/output/publication owner and neutral interfaces; Coding retain table/command semantics and no forwarding framework; Execution finite class coverage, no partial P and actual-diff review; Documentation current/evidence separation; source policy permits read-only references, not copied external code or firmware. |
-| Verification | Read complete affected source and historical source-qualified evidence; verify local original manual/reference identities before relying on them. Add table-driven repository-only characterization across all implemented command families and readiness inputs. Run full units on x64/x86 if tests change, documentation gate, links and diff checks. Existing EXEs need no rebuild absent production/build-input change. |
-| Expected Markers | Complete finite command/readiness matrix with expected results, IRQ/DRQ, deadlines and side effects; original FDC markers retained. Each uncertainty or defect has an explicit source-cutover disposition, not a generic compatibility switch. |
-| Asset Needs | Existing authorized archived controller manual and local read-only emulator references only. Unit tests use in-code media, no external ROM/media. |
-| Reporting Requirements | Report decisive contradictions before implementation; durable record maps each FDC state/member and caller to chip/drive/board ownership, all matrix rows and subsequent repair obligations. Commit/push only the complete prerequisite result, then coordinator review and closure. |
-| Stop Conditions | New license, protected-copy or unsupported hardware assertion outside this contract. A genuine evidence gap is named, not hidden as L3 or converted into a BIOS workaround. |
-| Exit Criteria | All readiness consumers and command families have explicit dispositions; future interface/lifetime/time/failure contract is concrete, old-policy disposition is justified, characterization and required gates pass, actual diff accepted and pushed. FDC migration itself remains unaccepted until its later cutover S. |
-| Original Owner Request | Extract all independent chip mechanisms into x86/devices, retain board composition in NXVM, preserve real functionality and remove duplicate paths; automatically admit each S. |
-| Similar-Issue Sweep | Reconcile fixed READY, mechanical presence/position, media availability/generation, DOR gates, all read/write/scan/format/seek/reset paths, interrupted commands and pending completions; classify every hit before designing the replacement. |
+| Identifier Mode | Continuation, M5 T539 S11; one session switches coordinator/executor roles. |
+| Admission And Approval | Owner automatic-S authorization; NXVM production/tests/docs and its eight affected artifacts only. Shared, MyNES, INI and siblings remain unchanged. |
+| Objective | Remove dependence on the most recently received command for an older seek completion; bound pending completion storage and correctly admit commands around SIS, reset and parallel seeks. |
+| Non-goals | No FDC relocation, new public device framework, READY wiring guess, timing-grade upgrade or legacy unready-policy rename. |
+| Reference Baseline | S10 P1 7fa0f75d5 and its coordinator acceptance; executable baseline remains S9. |
+| Candidate Proposal | [T539](../proposals/m5-shared-chip-extraction.md), [S10 decision](../etc/architecture/t539-s10-fdc-boundary.md) and [finite ledger](../etc/evidence/t539-chip-migration-ledger.md). |
+| Files And ABI Surface | NXVM fdc.c/h and original FDC test family; touch scheduler/board only if required by the same ownership fix. No Shared ABI change. |
+| Applicable Rules | Unique state owner, bounded inputs, unchanged original command style, no second FIFO/state authority, target-specific commits and actual-diff review. Read Architecture/Coding/Execution and source policy plus the selected Intel pages. |
+| Verification | Reproduce negative controls without undefined-memory test execution; cover mixed seek/recalibrate across all four units, intervening commands, SIS draining, reset/cancel and excess/repeated requests. Full unit x64/x86, default integration both widths, other profile/width boots once each, static/doc gates; rebuild all eight optimized 0539 EXEs and inspect identities. |
+| Expected Markers | Original FDC markers plus explicit completion/admission regression marker. Existing 120-row readiness characterization remains unless a separately admitted semantic correction replaces it. |
+| Asset Needs | Existing authorized external profiles/media only; unit inputs remain in-code. No master or INI mutation. |
+| Reporting Requirements | Report reproduced causes, source-supported admission behavior and any undocumented hardware case explicitly; count source/test diff and record artifact hashes. No partial P delivery. |
+| Stop Conditions | New protected-source/import need or a semantic claim unsupported by inspected evidence. Do not force a BIOS-specific result to make a boot pass. |
+| Exit Criteria | No shared-command identity leak, no unbounded completion append, original/negative tests pass, all affected receivers verified once, complete implementation pushed and coordinator actual-diff accepted. |
+| Original Owner Request | Independent chip mechanisms in x86/devices, board integration retained in NXVM, no duplicate path, automatic admission of each S. |
+| Similar-Issue Sweep | Every writer/reader of pending seek, command buffer, completion cause, result arrays, IRQ and reset; all unit indices and same-unit overlap, not only one failing sequence. |
 
 The [proposal](../proposals/m5-shared-chip-extraction.md),
 [contracts](../etc/architecture/t539-boundary-contracts.md),

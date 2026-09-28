@@ -214,3 +214,17 @@ unchanged. Shared 0f9c6b1a8 and NXVM 31e759965 are pushed. Coordinator review
 accepts the actual owner, callback, rollback, original-test, build, document
 and artifact diffs against the complete packet. No S9 item remains. S9 closes
 and its packet is removed; T539 remains open, with FDC next automatically.
+
+## S10: FDC Extraction Prerequisite
+
+Automatically admitted from 02931b886. [Decision record](../etc/architecture/t539-s10-fdc-boundary.md)
+checks the archived Intel original and read-only PCjs/86Box logic, maps every
+command/readiness consumer and specifies the chip/drive/board boundary. One
+120-case characterization matrix adds 106 test lines; no production or Shared
+change. Full units pass 347/347 per width; documentation, local links and
+whitespace checks pass. No executable-input change requires a new artifact.
+
+P1 7fa0f75d5 is pushed. Coordinator actual-diff acceptance closes this bounded
+prerequisite, not FDC migration. The source contradicts Intel SEEK/READY rules
+and has pending-completion identity/capacity risks; those remain explicit T539
+cutover gates. S11 automatically begins the pending seek/completion repair.
