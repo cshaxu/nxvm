@@ -77,7 +77,7 @@ static lib_bool kvm_hotkey_transition(kvm_hotkey_matcher *matcher,
     modifier = kvm_hotkey_modifier_bit(event->data.key.key);
     if (!event->data.key.pressed) {
         if (index == matcher->held_count)
-            return LIB_TRUE; /* No accepted make remains in this input source. */
+            return LIB_TRUE; /* No accepted make for this key remains in this input source. */
         if (matcher->held[index].state != KVM_HOTKEY_CONSUMED &&
             (!kvm_hotkey_flush_pending(matcher, sink, context) || !sink(context, event)))
             return LIB_FALSE;
