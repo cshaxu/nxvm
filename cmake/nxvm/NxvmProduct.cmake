@@ -1,6 +1,38 @@
 option(PROJECT_ENABLE_BOCHX_RESEARCH
     "Build the local-only Bochx experiment manifest validator" OFF)
 
+add_executable(nxvm-firmware-build EXCLUDE_FROM_ALL
+    src/app-nxvm/firmware/build.c)
+target_link_libraries(nxvm-firmware-build PRIVATE x86-xasm32 storage)
+
+set(nxvm_default_firmware_sources)
+foreach(unit IN ITEMS entry boot video equipment memory system floppy_post
+    floppy_irq floppy disk disk_irq keyboard_irq keyboard rtc_post timer_irq clock
+    dma_post pic_post pit_post)
+    list(APPEND nxvm_default_firmware_sources
+        "${CMAKE_SOURCE_DIR}/src/app-nxvm/firmware/${unit}.asm")
+endforeach()
+set(nxvm_default_firmware_rom "${CMAKE_BINARY_DIR}/generated/default-pc-at.rom")
+set(nxvm_test_firmware_source "${CMAKE_BINARY_DIR}/generated/firmware-test.c")
+add_custom_command(OUTPUT "${nxvm_test_firmware_source}"
+    COMMAND "${CMAKE_COMMAND}"
+        "-DINPUT_BIOS_0=${nxvm_default_firmware_rom}"
+        -DINPUT_BIOS_1=LIB_NULL -DINPUT_VIDEO=LIB_NULL
+        -DINPUT_CMOS=LIB_NULL -DINPUT_FONT=LIB_NULL
+        "-DOUTPUT=${nxvm_test_firmware_source}"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/embed_firmware.cmake"
+    DEPENDS "${nxvm_default_firmware_rom}" cmake/nxvm/embed_firmware.cmake
+    VERBATIM)
+add_executable(nxvm-firmware-floppy-smoke
+    test/app-nxvm/unit/firmware/floppy_smoke.c "${nxvm_test_firmware_source}")
+target_link_libraries(nxvm-firmware-floppy-smoke PRIVATE vm-profile)
+add_custom_command(OUTPUT "${nxvm_default_firmware_rom}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/generated"
+    COMMAND nxvm-firmware-build "${CMAKE_SOURCE_DIR}/src/app-nxvm/firmware"
+        "${nxvm_default_firmware_rom}"
+    DEPENDS nxvm-firmware-build ${nxvm_default_firmware_sources}
+    COMMENT "Assembling project-owned default BIOS" VERBATIM)
+
 include(cmake/nxvm/NxvmProductProfile.cmake)
 
 set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
@@ -1065,6 +1097,8 @@ endif()
 endfunction()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(nxvm-firmware-build PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-firmware-floppy-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-pcat-topology-s2-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1391,7 +1425,8 @@ add_library(integration-session-ini-support STATIC
 )
 target_link_libraries(integration-session-ini-support PUBLIC
     vm-machine
-    vm-app)
+    vm-app
+    nxvm-product-firmware)
 target_include_directories(integration-session-ini-support PUBLIC
     "${CMAKE_SOURCE_DIR}"
 )
@@ -1726,6 +1761,7 @@ add_executable(core-machine-port-assembly-smoke
 target_link_libraries(core-machine-port-assembly-smoke PRIVATE core-machine)
 
 set(PROJECT_UNIT_TEST_TARGETS
+    nxvm-firmware-floppy-smoke
     vm-default-pc-at-profile-smoke
     vm-pcat-topology-s2-smoke
     vm-pcat-composition-s4-smoke
@@ -2433,6 +2469,20 @@ foreach(target IN LISTS PROJECT_UNIT_TEST_TARGETS)
     project_add_test(${target} unit)
 endforeach()
 
+add_test(NAME unit.nxvm-firmware-embedding
+    COMMAND "${CMAKE_COMMAND}"
+        "-DWORK=${CMAKE_BINARY_DIR}/test/nxvm-firmware-embedding"
+        "-DEMBED_SCRIPT=${CMAKE_SOURCE_DIR}/cmake/nxvm/embed_firmware.cmake"
+        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/product/firmware_embedding.cmake")
+set_tests_properties(unit.nxvm-firmware-embedding PROPERTIES LABELS unit)
+add_test(NAME unit.nxvm-firmware-build
+    COMMAND "${CMAKE_COMMAND}"
+        "-DBUILDER=$<TARGET_FILE:nxvm-firmware-build>"
+        "-DSOURCE=${CMAKE_SOURCE_DIR}/src/app-nxvm/firmware"
+        "-DWORK=${CMAKE_BINARY_DIR}/test/nxvm-firmware-build"
+        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/product/firmware_build.cmake")
+set_tests_properties(unit.nxvm-firmware-build PROPERTIES LABELS unit TIMEOUT 30)
+
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS
@@ -2584,7 +2634,7 @@ list(LENGTH project_t515_registered_cases project_t515_registered_case_count)
 if(NOT project_t515_registered_case_count EQUAL 1)
     message(FATAL_ERROR "Fixed product build must register exactly one matching boot row.")
 endif()
-set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS)
+set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS nxvm-firmware-embedding nxvm-firmware-build)
 if(POWERSHELL_EXECUTABLE)
     list(APPEND PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
         core-machine-8086-timing-results-s5
@@ -2633,6 +2683,7 @@ if(POWERSHELL_EXECUTABLE)
         COMMENT "Building and executing repository-only unit tests"
         VERBATIM)
     add_dependencies(run-unit-tests ${PROJECT_UNIT_TEST_TARGETS})
+    add_dependencies(run-unit-tests nxvm-firmware-build)
     # The canonical shared corpus owns its own CTest registration.  Keep its
     # executables in the aggregate build without re-registering an NXVM copy.
     add_dependencies(run-unit-tests ${PROJECT_SHARED_CORPUS_TEST_TARGETS})
@@ -2707,6 +2758,7 @@ function(add_current_vm_artifact target version)
         "${CMAKE_SOURCE_DIR}/src")
     target_link_libraries(${target} PRIVATE
         vm-app
+        nxvm-product-firmware
         vm-machine)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")

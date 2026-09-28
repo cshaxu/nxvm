@@ -104,6 +104,15 @@ No universal device framework, plugin registry or forwarding-only wrapper.
 
 ## Verification And Exit
 
+The owner's S12 amendment additionally requires self-built BIOS source and
+construction under `src/app-nxvm/firmware`, and build-time ROM embedding for
+all four machine EXEs. Vendor originals remain external BYOB inputs; generated
+byte objects remain ignored. The owner explicitly requires the eight resulting
+EXEs in `assets/nxvm/<profile>/` to be committed/pushed. Cutover must remove the
+runtime ROM-file route, retain guest execution and immutable Core mapping, and
+prove startup without the build-input ROM directory. This amendment does not
+permit a host BIOS service or a chip-specific firmware workaround.
+
 - All extracted chips build/test without app-nxvm headers, source or assets;
   source-boundary checks prevent reverse and private cross-chip dependencies.
 - Chip tests move to `test/x86/devices` under its independent test build;

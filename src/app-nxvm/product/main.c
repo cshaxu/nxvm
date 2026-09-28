@@ -14,6 +14,7 @@
 #include "app-nxvm/product/composition.h"
 #include "app-nxvm/product/command.h"
 #include "app-nxvm/product/startup.h"
+#include "app-nxvm/product/profile_binding.h"
 
 lib_i32 main(void)
 {
@@ -28,7 +29,7 @@ lib_i32 main(void)
         printf("Unable to determine NXVM.ini path.\n");
         return 1;
     }
-    if (vm_app_create(&session) != LIB_STATUS_OK ||
+    if (vm_app_create(&vm_app_firmware, &session) != LIB_STATUS_OK ||
         vm_app_console_context_create(&console_context) != LIB_STATUS_OK) {
         (void)vm_app_destroy(session);
         return 1;

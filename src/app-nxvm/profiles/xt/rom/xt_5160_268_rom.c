@@ -3,17 +3,6 @@
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
 #include "app-nxvm/profiles/byob/blob.h"
 
-lib_i32 vm_profile_xt_5160_268_byob_manifest_is_valid(
-    const vm_profile_xt_5160_268_byob_manifest *manifest)
-{
-    return manifest != LIB_NULL && manifest->system_path != LIB_NULL &&
-        manifest->system_path[0] != '\0' &&
-        ((manifest->system_sha256 == LIB_NULL) || manifest->system_sha256[0] != '\0') &&
-        ((manifest->xebec_path == LIB_NULL && manifest->xebec_sha256 == LIB_NULL) ||
-         (manifest->xebec_path != LIB_NULL && manifest->xebec_path[0] != '\0' &&
-          (manifest->xebec_sha256 == LIB_NULL || manifest->xebec_sha256[0] != '\0')));
-}
-
 lib_status vm_profile_xt_5160_268_external_rom_create(
     const lib_u8 *system, lib_size system_bytes,
     const lib_u8 *xebec, lib_size xebec_bytes,
@@ -32,36 +21,6 @@ lib_status vm_profile_xt_5160_268_external_rom_create(
     *out_rom = (vm_profile_xt_5160_268_external_rom) { system, xebec, video,
         video == LIB_NULL ? 0u : video_bytes, xebec != LIB_NULL };
     return LIB_STATUS_OK;
-}
-
-lib_status vm_profile_xt_5160_268_byob_manifest_load(
-    const vm_profile_xt_5160_268_byob_manifest *manifest,
-    lib_u8 *system_bytes, lib_u8 *xebec_bytes,
-    vm_profile_xt_5160_268_external_rom *out_rom)
-{
-    lib_status status;
-
-    if (!vm_profile_xt_5160_268_byob_manifest_is_valid(manifest) ||
-        system_bytes == LIB_NULL || xebec_bytes == LIB_NULL || out_rom == LIB_NULL) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    status = vm_profile_byob_blob_load(&(vm_profile_byob_blob) {manifest->system_path,
-        manifest->system_sha256, VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES}, system_bytes);
-    if (status != LIB_STATUS_OK) return status;
-    if (manifest->xebec_path != LIB_NULL) {
-        status = vm_profile_byob_blob_load(&(vm_profile_byob_blob) {manifest->xebec_path,
-            manifest->xebec_sha256, VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES}, xebec_bytes);
-        if (status != LIB_STATUS_OK) {
-            lib_memory_set(system_bytes, 0, VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES);
-            return status;
-        }
-    }
-    return vm_profile_xt_5160_268_external_rom_create(system_bytes,
-        VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES,
-        manifest->xebec_path == LIB_NULL ? LIB_NULL : xebec_bytes,
-        manifest->xebec_path == LIB_NULL ? 0u : VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES,
-        LIB_NULL, 0u,
-        out_rom);
 }
 
 static lib_status vm_profile_xt_5160_268_firmware_configure(void *opaque,

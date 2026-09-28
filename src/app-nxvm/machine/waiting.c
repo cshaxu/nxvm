@@ -141,10 +141,12 @@ lib_status vm_machine_waiting_advance(vm_machine *session,
     if (session == LIB_NULL || result == LIB_NULL || out_advanced == LIB_NULL ||
         session->core_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_advanced = 0;
-    if (result->reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        !vm_machine_control_is_running(&session->control)) {
+    if (result->reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         return LIB_STATUS_INVALID_STATE;
     }
+    /* Stop can arrive after the runner's active check. It cancels remaining
+     * HLT service; it is not a failed guest operation. */
+    if (!vm_machine_control_is_running(&session->control)) return LIB_STATUS_OK;
     status = core_machine_capture_time_observation(session->core_machine,
         &observation);
     if (status != LIB_STATUS_OK) return status;

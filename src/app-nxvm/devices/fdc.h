@@ -24,6 +24,7 @@ typedef enum core_machine_fdc_phase {
     core_machine_fdc_PHASE_PENDING_COMMAND,
     core_machine_fdc_PHASE_EXECUTION_READ,
     core_machine_fdc_PHASE_EXECUTION_WRITE,
+    core_machine_fdc_PHASE_EXECUTION_WRITE_TAIL,
     core_machine_fdc_PHASE_EXECUTION_SCAN,
     core_machine_fdc_PHASE_EXECUTION_FORMAT,
     core_machine_fdc_PHASE_PENDING_COMPLETE,
@@ -59,11 +60,13 @@ typedef struct {
     lib_u8 scan_mode;
     lib_u8 scan_sector_satisfies;
     lib_u16 cylinder;
-    lib_u16 drive_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u8 pcn[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u16 seek_target[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u64 seek_due_tick[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_pending[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_bool seek_recalibrate[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u8 seek_head[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u8 seek_steps[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_result_st0[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_result_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 seek_result_count;
@@ -83,6 +86,7 @@ typedef struct {
     lib_u64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
     lib_u8 observed_ready[CORE_MACHINE_FDC_DRIVE_COUNT];
+    lib_u8 ready_sense_mask;
     lib_u8 initial_media_baseline_pending;
     lib_u8 ready_poll_enabled;
     lib_u8 dma_byte_gate_pending;
@@ -112,6 +116,8 @@ typedef struct {
 typedef struct {
     core_machine_fdc_data data;
     core_machine_fdc_connection connect;
+    /* Board-side mechanical position survives controller reset; not PCN. */
+    lib_u16 drive_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
 } core_machine_fdc;
 
 /*
@@ -158,14 +164,14 @@ typedef struct {
 #define VFDC_ST0_DS       0x03 /* drive select */
 #define VFDC_ST0_SEEK_END 0x20
 #define VFDC_ST0_EQUIPMENT_CHECK 0x10
-#define core_machine_fdc_ST0_NORMAL 0x20
+#define core_machine_fdc_ST0_NORMAL 0x00
 #define core_machine_fdc_ST0_ABNORMAL 0x40
 #define core_machine_fdc_ST0_READY_CHANGE 0xc0
 #define core_machine_fdc_ST0_NOT_READY 0x08
 
 /* status register 2 bits */
-#define VFDC_ST2_SCAN_MATCH    0x04
-#define VFDC_ST2_SCAN_MISMATCH 0x08
+#define VFDC_ST2_SCAN_MATCH    0x08
+#define VFDC_ST2_SCAN_MISMATCH 0x04
 #define VFDC_ST2_CONTROL_MARK  0x40
 
 /* status register 3 bit */

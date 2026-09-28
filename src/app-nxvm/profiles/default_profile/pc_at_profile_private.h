@@ -137,7 +137,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     lib_u8 unpopulated_extended_memory;
     /* 8237A boundary-transfer workspace, expressed as a real-mode segment. */
     lib_u16 fdc_bounce_segment;
-    /* Frozen board READY inputs, one bit per physically fitted FDC drive. */
+    /* Frozen board READY input per unit select, independent of fitted drives. */
     lib_u8 fdc_ready_mask;
     lib_u8 hdc_present;
     lib_u8 planar_parity_present;

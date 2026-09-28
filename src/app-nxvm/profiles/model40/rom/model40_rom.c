@@ -31,61 +31,6 @@ lib_status vm_profile_model40_external_rom_create(
     return LIB_STATUS_OK;
 }
 
-lib_i32 vm_profile_model40_byob_manifest_is_valid(
-    const vm_profile_model40_byob_manifest *manifest)
-{
-    return manifest != LIB_NULL && manifest->even_path != LIB_NULL &&
-        manifest->odd_path != LIB_NULL && manifest->even_path[0] != '\0' &&
-        manifest->odd_path[0] != '\0' &&
-        ((manifest->even_sha256 == LIB_NULL && manifest->odd_sha256 == LIB_NULL) ||
-         (manifest->even_sha256 != LIB_NULL && manifest->odd_sha256 != LIB_NULL &&
-          manifest->even_sha256[0] != '\0' && manifest->odd_sha256[0] != '\0')) &&
-        ((manifest->video_path == LIB_NULL && manifest->video_sha256 == LIB_NULL) ||
-         (manifest->video_path != LIB_NULL && manifest->video_path[0] != '\0' &&
-          (manifest->video_sha256 == LIB_NULL || manifest->video_sha256[0] != '\0')));
-}
-
-lib_status vm_profile_model40_byob_manifest_load(
-    const vm_profile_model40_byob_manifest *manifest,
-    lib_u8 *even_bytes, lib_u8 *odd_bytes,
-    lib_u8 *video_bytes,
-    vm_profile_model40_external_rom *out_rom)
-{
-    lib_status status;
-
-    if (!vm_profile_model40_byob_manifest_is_valid(manifest) || even_bytes == LIB_NULL ||
-        odd_bytes == LIB_NULL || video_bytes == LIB_NULL || out_rom == LIB_NULL) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    status = vm_profile_byob_blob_load(&(vm_profile_byob_blob) {
-        manifest->even_path, manifest->even_sha256,
-        VM_PROFILE_MODEL40_ROM_CHIP_BYTES}, even_bytes);
-    if (status != LIB_STATUS_OK) return status;
-    status = vm_profile_byob_blob_load(&(vm_profile_byob_blob) {
-        manifest->odd_path, manifest->odd_sha256,
-        VM_PROFILE_MODEL40_ROM_CHIP_BYTES}, odd_bytes);
-    if (status != LIB_STATUS_OK) {
-        lib_memory_set(even_bytes, 0, VM_PROFILE_MODEL40_ROM_CHIP_BYTES);
-        return status;
-    }
-    if (manifest->video_path != LIB_NULL) {
-        status = vm_profile_byob_blob_load(&(vm_profile_byob_blob) {
-            manifest->video_path, manifest->video_sha256,
-            VM_PROFILE_MODEL40_VIDEO_ROM_BYTES}, video_bytes);
-        if (status != LIB_STATUS_OK || !vm_profile_byob_option_rom_is_valid(video_bytes,
-                VM_PROFILE_MODEL40_VIDEO_ROM_BYTES, VM_PROFILE_MODEL40_VIDEO_ROM_BYTES)) {
-            lib_memory_set(even_bytes, 0, VM_PROFILE_MODEL40_ROM_CHIP_BYTES);
-            lib_memory_set(odd_bytes, 0, VM_PROFILE_MODEL40_ROM_CHIP_BYTES);
-            lib_memory_set(video_bytes, 0, VM_PROFILE_MODEL40_VIDEO_ROM_BYTES);
-            return LIB_STATUS_INTERNAL_ERROR;
-        }
-    }
-    return vm_profile_model40_external_rom_create(even_bytes,
-        VM_PROFILE_MODEL40_ROM_CHIP_BYTES, odd_bytes, VM_PROFILE_MODEL40_ROM_CHIP_BYTES,
-        manifest->video_path == LIB_NULL ? LIB_NULL : video_bytes,
-        manifest->video_path == LIB_NULL ? 0u : VM_PROFILE_MODEL40_VIDEO_ROM_BYTES, out_rom);
-}
-
 static void vm_profile_model40_rom_materialize(
     const vm_profile_model40_external_rom *rom, lib_u8 *window)
 {

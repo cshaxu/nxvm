@@ -26,11 +26,6 @@ lib_status vm_app_configure_machine(const vm_session_request *request,
     out_config->floppy_format = VM_APP_PROFILE_FLOPPY_FORMAT;
     out_config->memory_bytes = request->memory_bytes;
     out_config->bios_count = VM_APP_PROFILE_BIOS_COUNT;
-    out_config->bios_path[0u] = VM_APP_PROFILE_BIOS_0;
-    out_config->bios_path[1u] = VM_APP_PROFILE_BIOS_1;
-    out_config->video_path = VM_APP_PROFILE_VIDEO;
-    out_config->cmos_seed = VM_APP_PROFILE_CMOS;
-    out_config->font_path = VM_APP_PROFILE_FONT;
     for (index = 0u; index < VM_MACHINE_FLOPPY_SLOT_COUNT; ++index) {
         out_config->floppy_image[index] = index < request->floppy_count ?
             (const char *)request->floppy[index] : LIB_NULL;

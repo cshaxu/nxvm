@@ -103,7 +103,7 @@ lib_i32 main(void)
     };
     const core_machine_fdc_drive_bindings drives = {
         {11u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
-            CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u, {0u, 0u, 0u, 0u}, 0u
+            CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u, {0u, 0u, 0u, 0u}, 0u, {0}
     };
     const core_machine_hdc_config hdc_config = {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB, .irq = 14u,

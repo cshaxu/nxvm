@@ -84,6 +84,7 @@ lib_i32 main(void)
     port = session->core_machine->fdc.connect.port;
     stage = '3';
     if (port == LIB_NULL) goto done;
+    core_machine_port_write(port, 0x03f7u, 0x00u); /* 1.44MB: 500 kbps. */
     for (index = 0u; index < sizeof(expected); ++index) {
         expected[index] = (lib_u8)((index * 17u) ^ (index >> 4u));
         if (vm_machine_fdd_write_byte(&session->fdd, 0u, 0u,

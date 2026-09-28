@@ -6,6 +6,7 @@
 #include "app-nxvm/machine/frame.h"
 
 struct vm_app {
+    vm_machine_assets firmware;
     vm_machine *machine;
     common_machine *common_machine;
     common_session *session;
@@ -48,14 +49,16 @@ static void vm_app_machine_frame_published(void *context, lib_u32 sequence,
         sequence, graphics, run_generation);
 }
 
-lib_status vm_app_create(vm_app **out_app)
+lib_status vm_app_create(const vm_machine_assets *firmware, vm_app **out_app)
 {
     vm_app *app;
 
     if (out_app == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_app = LIB_NULL;
+    if (firmware == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     app = lib_allocate_zero(1u, sizeof(*app));
     if (app == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    app->firmware = *firmware;
     *out_app = app;
     return LIB_STATUS_OK;
 }
@@ -103,7 +106,7 @@ lib_status vm_app_compose_machine(vm_app *app, const vm_session_request *request
         return LIB_STATUS_INVALID_STATE;
     status = vm_app_configure_machine(request, &config);
     if (status == LIB_STATUS_OK) {
-        status = vm_machine_create(&config, &machine);
+        status = vm_machine_create_from_assets(&config, &app->firmware, &machine);
     }
     if (status == LIB_STATUS_OK) {
         status = vm_machine_describe_common_driver(machine, &driver);

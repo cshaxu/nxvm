@@ -56,6 +56,16 @@ static lib_i32 verify_wait_speed(vm_machine *session, vm_machine_speed speed)
         return 1;
     }
     vm_machine_executor_state_stop(session->control.state);
+    /* Stop may arrive after the runner's active check but before HLT service.
+     * Cancellation must neither advance guest time nor become a fault. */
+    before = after;
+    advanced = 1;
+    if (vm_machine_waiting_advance(session, &waiting, &advanced) != LIB_STATUS_OK ||
+        advanced || core_machine_get_elapsed_ticks(session->core_machine, &after) !=
+            LIB_STATUS_OK || after != before) {
+        puts("Stopped HLT service must succeed without advancing time");
+        return 1;
+    }
     return 0;
 }
 

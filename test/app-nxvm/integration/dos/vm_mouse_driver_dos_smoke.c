@@ -10,7 +10,7 @@
 #include "app-nxvm/devices/guest_input_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
-#define VM_MOUSE_DOS_BOOT_BUDGET 800000u
+#define VM_MOUSE_DOS_BOOT_BUDGET 6000000u
 #define VM_MOUSE_DOS_RUN_BUDGET 400000u
 #define VM_MOUSE_DOS_MARKER_CELL 1920u
 

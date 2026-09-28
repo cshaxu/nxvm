@@ -1,6 +1,7 @@
 #include "lib/types/types_interface.h"
 
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
+#include "app-nxvm/profiles/device/floppy.h"
 
 /* This bit represents only the B1 CPU/Core input. It is not a claim that a
  * 5160 board device has been bound. */
@@ -107,9 +108,11 @@ lib_status vm_profile_xt_5160_268_plan_create(
     out_profile->topology.fdc_drives = (core_machine_fdc_drive_bindings) {{
         VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, CORE_MACHINE_MEDIA_ID_INVALID,
         CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
-        {40u, 0u, 0u, 0u}, 0u};
+        {40u, 0u, 0u, 0u}, 0u, {0}};
+    out_profile->topology.fdc_drives.channel =
+        vm_profile_floppy_channel_get(VM_PROFILE_FLOPPY_525_360K);
     out_profile->topology.fdc = (core_machine_fdc_config) {0x03f2u, 0x03f4u,
-        0x03f5u, 0u, 0u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_GENERIC, 0x0fu,
+        0x03f5u, 0u, 0u, 6u, 2u, 0x0fu,
         4772727u, 0u, 0u};
     out_profile->topology.hdc_present = LIB_TRUE;
     out_profile->topology.hdc_media_id = VM_PROFILE_XT_5160_268_HDD_MEDIA_ID;

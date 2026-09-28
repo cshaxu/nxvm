@@ -15,6 +15,7 @@ endif()
 
 function(nxvm_require_profile_asset relative bytes sha256)
     set(path "${NXVM_PROFILE_ASSETS_ROOT}/${relative}")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${path}")
     if(NOT EXISTS "${path}")
         message(FATAL_ERROR "Required BYOB profile asset is missing: ${path}")
     endif()
@@ -51,14 +52,12 @@ if(NXVM_PRODUCT_PROFILE STREQUAL "default-pc-at-80386-1440k-hdd")
     set(NXVM_PROFILE_FLOPPY_FORMAT VM_MACHINE_FLOPPY_FORMAT_1440K)
     set(product_asset_key 1440k-hdd)
     nxvm_require_manifest(default-pc-at)
-    set(NXVM_PROFILE_BIOS_0 "${NXVM_PROFILE_ASSETS_ROOT}/default-pc-at/firmware/default-pc-at-${product_asset_key}.rom")
+    set(NXVM_PROFILE_BIOS_0 "${nxvm_default_firmware_rom}")
     set(NXVM_PROFILE_CMOS "${NXVM_PROFILE_ASSETS_ROOT}/default-pc-at/cmos/default-pc-at-${product_asset_key}.cmos")
     set(NXVM_PROFILE_BIOS_COUNT 1)
     set(NXVM_PROFILE_BIOS_1 LIB_NULL)
     set(NXVM_PROFILE_VIDEO LIB_NULL)
-    set(bios_hash df7a7fe8172001739de7dd4228b4eab4f11f7be97412f277e858da3aa61d7ff0)
     set(cmos_hash 6b02de39b0dbd9ce2516c94545b89b4d1883df4cf6714876c60bef3fd6f93d0d)
-    nxvm_require_profile_asset("default-pc-at/firmware/default-pc-at-${product_asset_key}.rom" 65536 "${bios_hash}")
     nxvm_require_profile_asset("default-pc-at/cmos/default-pc-at-${product_asset_key}.cmos" 64 "${cmos_hash}")
 elseif(NXVM_PRODUCT_PROFILE STREQUAL "ibm-5160-model-268-360k")
     set(NXVM_PRODUCT_MACHINE_KEY xt)
@@ -108,15 +107,25 @@ else()
     message(FATAL_ERROR "Unsupported NXVM_PRODUCT_PROFILE: ${NXVM_PRODUCT_PROFILE}")
 endif()
 
-foreach(nxvm_profile_path_field IN ITEMS BIOS_0 BIOS_1 VIDEO CMOS)
-    set(nxvm_profile_path "${NXVM_PROFILE_${nxvm_profile_path_field}}")
-    if(nxvm_profile_path STREQUAL "LIB_NULL")
-        set(NXVM_PROFILE_${nxvm_profile_path_field}_LITERAL LIB_NULL)
-    else()
-        set(NXVM_PROFILE_${nxvm_profile_path_field}_LITERAL "\"${nxvm_profile_path}\"")
-    endif()
-endforeach()
-
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/app-nxvm/product")
 configure_file("${CMAKE_SOURCE_DIR}/cmake/nxvm/profile_binding.h.in"
     "${CMAKE_BINARY_DIR}/generated/app-nxvm/product/profile_binding.h" @ONLY)
+
+set(nxvm_firmware_inputs)
+set(nxvm_firmware_arguments)
+foreach(role IN ITEMS BIOS_0 BIOS_1 VIDEO CMOS FONT)
+    list(APPEND nxvm_firmware_arguments "-DINPUT_${role}=${NXVM_PROFILE_${role}}")
+    if(NOT NXVM_PROFILE_${role} STREQUAL "LIB_NULL")
+        list(APPEND nxvm_firmware_inputs "${NXVM_PROFILE_${role}}")
+    endif()
+endforeach()
+set(nxvm_firmware_source "${CMAKE_BINARY_DIR}/generated/app-nxvm/product/firmware.c")
+add_custom_command(OUTPUT "${nxvm_firmware_source}"
+    COMMAND "${CMAKE_COMMAND}" ${nxvm_firmware_arguments}
+        "-DOUTPUT=${nxvm_firmware_source}"
+        -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/embed_firmware.cmake"
+    DEPENDS ${nxvm_firmware_inputs} "${CMAKE_SOURCE_DIR}/cmake/nxvm/embed_firmware.cmake"
+    COMMENT "Embedding selected NXVM firmware" VERBATIM)
+# Only products and external integration link this target; unit fixtures do not.
+add_library(nxvm-product-firmware STATIC EXCLUDE_FROM_ALL "${nxvm_firmware_source}")
+target_include_directories(nxvm-product-firmware PRIVATE "${CMAKE_SOURCE_DIR}/src")

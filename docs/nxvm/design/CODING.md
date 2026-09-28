@@ -6,7 +6,8 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 ## Current Tree
 
 The product/shared-corpus layout is current. `devices`, `machine`, `product`
-and `profiles` are NXVM product roots below `app-nxvm`; `pc110` remains a
+and `profiles` are NXVM runtime roots below `app-nxvm`; `firmware` owns
+project-authored guest firmware source and its build tools. `pc110` remains a
 future Profile only when its separate evidence task admits real source files.
 
 ```text
@@ -18,6 +19,7 @@ src/
     product/            main, INI configuration, CLI and composition
     devices/            reusable CPU/device/memory/bus/time and execution
     machine/            NXVM driver, asset/media and execution adapter
+    firmware/           project-owned BIOS source and offline ROM construction
     profiles/
       xt/               IBM 5160 board composition and firmware slots
       at/               IBM 5170 board composition and firmware slots
@@ -33,18 +35,25 @@ variants rather than renaming them into a replacement Standard profile.
 Do not add a framework or empty future directories. CPU-family implementations
 and selection tables stay in generic Core, not copied into board directories.
 
-Profile-specific ROM source, mapping declarations and an asset manifest live
-with the NXVM product profile. Protected payloads remain external in the user-supplied,
+ROM mapping declarations and asset roles remain with the NXVM product profile.
+Project-owned BIOS source/build lives in `src/app-nxvm/firmware`, not in the
+runtime driver or devices. Its build produces a candidate ROM under `build/`
+and embeds its bytes into the selected EXE. Other machines embed their BYOB
+ROMs through the same build step. Protected originals remain in the user-supplied,
 owner-managed `nxvm-assets/profiles-nxvm/<machine>/` tree; original manuals remain
 in `nxvm-assets/manuals/`. CMake receives the untracked absolute
-`NXVM_PROFILE_ASSETS_ROOT` for a selected build and creates a local generated
-configuration header/source containing that root. It neither copies ROM
-bytes into the source/build output nor permits an unconfigured generic root.
-Documentation changes do not move assets. Each versioned product EXE and its
+`NXVM_PROFILE_ASSETS_ROOT` for a selected build. Generated ROM byte sources and
+objects remain ignored under `build/`, not tracked source. The runtime ROM
+contract carries immutable bytes, not external file paths. This is the approved
+target; Current records cutover verification and acceptance status.
+Documentation changes do not move assets. Each versioned local product EXE and its
 adjacent NXVM.ini live only in `assets/nxvm/<profile>/`; relative
 runtime-media paths resolve from that file. It has no firmware/CMOS/font asset
 path keys. NXVM.ini is the sole
 product runtime configuration route; repository-only tests do not load it.
+The owner explicitly requires the embedded-ROM EXEs in `assets/nxvm/<profile>/`
+to be committed with their product delivery. Raw vendor ROMs and generated
+byte sources/objects remain outside tracked source.
 Do not rename/move external assets merely to match target source directory names.
 
 ## Files And Names

@@ -5,6 +5,7 @@
 
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/product/config.h"
+#include "app-nxvm/product/profile_binding.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "lib/base/sync_interface.h"
 
@@ -57,7 +58,8 @@ lib_status integration_ini_session_restart(integration_ini_session *session)
     }
     status = vm_app_configure_machine(&session->request, &configuration);
     if (status == LIB_STATUS_OK)
-        status = vm_machine_create(&configuration, &session->session);
+        status = vm_machine_create_from_assets(&configuration, &vm_app_firmware,
+            &session->session);
     if (status != LIB_STATUS_OK || session->session == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
     if (session->transform != LIB_NULL && session->transform(session,
             session->transform_opaque) != LIB_STATUS_OK) {

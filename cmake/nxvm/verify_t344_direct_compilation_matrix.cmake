@@ -48,7 +48,9 @@ foreach(project_t344_entry IN LISTS project_t344_matrix)
         message(FATAL_ERROR
             "Could not inspect T344 Ninja commands for ${project_t344_target}: ${project_t344_command_error}")
     endif()
-    string(REGEX MATCH "[^\n]*${project_t344_source_name}[^\n]*"
+    # A generated source also appears in its generator invocation. Inspect
+    # the compiler's -c command, never that generator or the later link line.
+    string(REGEX MATCH "[^\n]*[ \t]-c[ \t]+[^\n]*${project_t344_source_name}[^\n]*"
         project_t344_source_command "${project_t344_command_output}")
     if(project_t344_source_command STREQUAL "")
         message(FATAL_ERROR

@@ -26,4 +26,15 @@ foreach(forbidden "default_pc_at.c" "rom/bios.c" "rom/qdcga.c")
     endif()
 endforeach()
 
-message(STATUS "M5:T515:S3:EXTERNAL-ROM-CLOSURE:OK")
+# Profiles map supplied immutable bytes; only the build may open ROM files.
+file(GLOB_RECURSE profile_sources
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*.h")
+foreach(path IN LISTS profile_sources)
+    file(READ "${path}" text)
+    if(text MATCHES "lib_storage_file_|lib_storage_medium_open|fopen[ \t]*\\(|CreateFile|ReadFile|bios_path|video_path|font_path|create_file_backed|byob_manifest_load")
+        message(FATAL_ERROR "Runtime firmware file route in profile: ${path}")
+    endif()
+endforeach()
+
+message(STATUS "M5:T539:S12:IMMUTABLE-ROM-CLOSURE:OK")

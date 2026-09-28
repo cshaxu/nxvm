@@ -243,3 +243,24 @@ proof, unsupported-sequence qualification, reset/SIS coverage and receiver
 evidence. S11 closes after its complete P1 push; it does not close FDC
 extraction. S12 automatically admits drive-input/status qualification and
 repair under the same T539; its bounded packet is in Current.
+
+## S12: FDC Drive/Status Qualification And Embedded Firmware
+
+The owner expanded this prerequisite to recover project-owned BIOS source and
+embed each selected machine's firmware at build time. Raw vendor ROMs remain
+external; the owner explicitly authorizes the eight embedded-ROM EXEs in the
+product artifact commit. No Shared, MyNES or INI change is included.
+
+The complete implementation removes the DeskPro-specific unready policy and
+runtime ROM file routes, separates READY/media and physical head/PCN, repairs
+source-confirmed status/SCAN/TC behavior, and reconnects the guest default BIOS
+through real FDC/DMA/PIC services. A verification-discovered stopped-HLT race
+is repaired at the NXVM wait boundary, with deterministic before/after proof.
+[S12 evidence](../etc/evidence/t539-s12-fdc-drive-status.md) records source
+pages, changed expectations, eleven guest BIOS scenarios, 350/350 units per
+width, default integrations 20/20 per width, six vendor boots once, runtime
+input-denial probes, static/manifests, code-size review and eight final hashes.
+
+Executor self-review considers the bounded implementation ready for its single
+complete P delivery; coordinator acceptance is not implied. FDC extraction,
+other chips and T539 remain open under the finite migration ledger.

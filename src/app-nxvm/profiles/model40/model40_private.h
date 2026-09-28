@@ -38,10 +38,5 @@ lib_status vm_profile_model40_external_rom_create(
     vm_profile_model40_external_rom *out_rom);
 void vm_profile_model40_core_config_initialize(core_machine_config *out_config);
 lib_status vm_profile_model40_values_create(vm_profile_contract_values *out_values);
-lib_status vm_profile_model40_byob_manifest_load(
-    const vm_profile_model40_byob_manifest *manifest,
-    lib_u8 *even_bytes, lib_u8 *odd_bytes,
-    lib_u8 *video_bytes,
-    vm_profile_model40_external_rom *out_rom);
 const core_machine_firmware_provider *vm_profile_model40_firmware_provider(void);
 #endif

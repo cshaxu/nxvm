@@ -143,9 +143,9 @@ lib_i32 main(void)
         core_machine_fdc_advance(&session->core_machine->fdc);
         sense_status = (lib_u8)core_machine_port_read(
             &session->core_machine->executor_port, 0x03f5u);
-        sense_cylinder = (lib_u8)core_machine_port_read(
-            &session->core_machine->executor_port, 0x03f5u);
-        failed |= sense_status != 0x80u || sense_cylinder != 0u;
+        failed |= sense_status != 0x80u ||
+            (core_machine_port_read(&session->core_machine->executor_port, 0x03f4u) &
+            (VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_CB)) != VFDC_MSR_RQM;
         if (failed) stage = 4;
     }
     if (!failed) {

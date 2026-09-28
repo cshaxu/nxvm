@@ -37,27 +37,26 @@ static lib_i32 verify_constructor_output_contract(void)
     vm_profile_machine_plan *plan =
         (vm_profile_machine_plan *)(lib_uptr)1u;
 
-    if (vm_machine_create(LIB_NULL, &session) != LIB_STATUS_INVALID_ARGUMENT ||
-        session != LIB_NULL) return 1;
-    session = (vm_machine *)(lib_uptr)1u;
     if (vm_machine_create_from_assets(LIB_NULL, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL) return 1;
     if (vm_profile_machine_plan_create(LIB_NULL, &assets, &plan) !=
         LIB_STATUS_INVALID_ARGUMENT || plan != LIB_NULL) return 1;
-    plan = (vm_profile_machine_plan *)(lib_uptr)1u;
-    return vm_profile_machine_plan_create_file_backed(LIB_NULL, &plan) !=
-        LIB_STATUS_INVALID_ARGUMENT || plan != LIB_NULL;
+    return 0;
 }
 
-static lib_i32 verify_byob_blob_argument_contract(void)
+static lib_i32 verify_option_rom_argument_contract(void)
 {
-    lib_u8 bytes[1u] = {0};
-    const vm_profile_byob_blob invalid_blob = {LIB_NULL, LIB_NULL, sizeof(bytes)};
+    lib_u8 bytes[512u] = {0};
 
-    return vm_profile_byob_blob_load(LIB_NULL, bytes) != LIB_STATUS_INVALID_ARGUMENT ||
-        vm_profile_byob_blob_load(&invalid_blob, bytes) != LIB_STATUS_INVALID_ARGUMENT ||
-        vm_profile_byob_blob_load(&(vm_profile_byob_blob) {
-            "asset.rom", LIB_NULL, sizeof(bytes)}, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT;
+    if (vm_profile_byob_option_rom_is_valid(LIB_NULL, sizeof(bytes), sizeof(bytes)) ||
+        vm_profile_byob_option_rom_is_valid(bytes, 2u, sizeof(bytes)) ||
+        vm_profile_byob_option_rom_is_valid(bytes, sizeof(bytes), 511u)) return 1;
+    bytes[0u] = 0x55u;
+    bytes[1u] = 0xaau;
+    bytes[2u] = 1u;
+    if (!vm_profile_byob_option_rom_is_valid(bytes, sizeof(bytes), sizeof(bytes))) return 1;
+    bytes[3u] = 1u;
+    return vm_profile_byob_option_rom_is_valid(bytes, sizeof(bytes), sizeof(bytes));
 }
 
 static lib_i32 profile_timing_is_materialized(const core_machine_config *config,
@@ -190,7 +189,7 @@ lib_i32 main(void)
         verify_recovery() != 0 || verify_reset_outcome() != 0 ||
         verify_running_reset_outcome() != 0 ||
         verify_constructor_output_contract() != 0 ||
-        verify_byob_blob_argument_contract() != 0) {
+        verify_option_rom_argument_contract() != 0) {
         return 1;
     }
     printf("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");

@@ -28,6 +28,8 @@ static lib_i32 fdc_read_result(core_machine_fdc *fdc, t_port *port, lib_u8 *resu
     lib_size index;
     core_machine_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
+        if ((core_machine_port_read(port, 0x03f4u) & VFDC_MSR_ReadyRead) !=
+            VFDC_MSR_ReadyRead) return LIB_FALSE;
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
@@ -55,6 +57,7 @@ lib_i32 main(void)
         session == LIB_NULL || !session->active ||
         (port = session->core_machine->fdc.connect.port) == LIB_NULL) return 1;
     core_machine_port_write(port, 0x03f2u, 0x1cu);
+    core_machine_port_write(port, 0x03f7u, 0x00u); /* 1.44MB: 500 kbps. */
 
     /* No image is an FDC result, not a host or BIOS shortcut. */
     fdc_command(&session->core_machine->fdc, port, read_sector, sizeof(read_sector));
@@ -65,6 +68,10 @@ lib_i32 main(void)
     vm_machine_fdd_create_for(&session->fdd);
     core_machine_fdc_refresh(&session->core_machine->fdc);
     failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u;
+    /* A real STEP clears disk-change; SEEK to the current PCN does not. */
+    fdc_command(&session->core_machine->fdc, port, (const lib_u8[]){ 0x0fu, 0x00u, 0x01u }, 3u);
+    fdc_command(&session->core_machine->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
+    failed |= !fdc_read_result(&session->core_machine->fdc, port, result, 2u);
     fdc_command(&session->core_machine->fdc, port, (const lib_u8[]){ 0x0fu, 0x00u, 0x00u }, 3u);
     fdc_command(&session->core_machine->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, 2u);
@@ -81,7 +88,8 @@ lib_i32 main(void)
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
     failed |= result[0] != core_machine_fdc_ST0_NORMAL;
     fdc_command(&session->core_machine->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
-    failed |= !fdc_read_result(&session->core_machine->fdc, port, result, 2u);
+    failed |= !fdc_read_result(&session->core_machine->fdc, port, result, 1u) ||
+        result[0] != 0x80u;
 
     session->fdd.connect.flagReadOnly = LIB_TRUE;
     fdc_command(&session->core_machine->fdc, port, write_sector, sizeof(write_sector));
@@ -90,13 +98,12 @@ lib_i32 main(void)
     failed |= (result[1] & 0x02u) == 0u;
     session->fdd.connect.flagReadOnly = LIB_FALSE;
 
-    /* 03h is the unsupported 1 Mbps encoding; 01h is the valid 300 kbps
-     * 8272A rate used by 360 KB media. */
+    /* Reserved rate is rejected; restore this medium's 500-kbps rate. */
     core_machine_port_write(port, 0x03f7u, 0x03u);
     fdc_command(&session->core_machine->fdc, port, read_sector, sizeof(read_sector));
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
     failed |= (result[1] & 0x04u) == 0u;
-    core_machine_port_write(port, 0x03f7u, 0x02u);
+    core_machine_port_write(port, 0x03f7u, 0x00u);
 
     fdc_command(&session->core_machine->fdc, port, read_sector, sizeof(read_sector));
     failed |= (core_machine_port_read(port, 0x03f4u) &

@@ -12,14 +12,6 @@
 #define VM_PROFILE_XT_5160_268_SYSTEM_ROM_PHYSICAL_START 0x000f0000u
 #define VM_PROFILE_XT_5160_268_XEBEC_ROM_PHYSICAL_START 0x000c8000u
 
-typedef struct vm_profile_xt_5160_268_byob_manifest {
-    const char *system_path;
-    const char *system_sha256;
-    const char *xebec_path;
-    const char *xebec_sha256;
-    const char *provenance;
-} vm_profile_xt_5160_268_byob_manifest;
-
 typedef struct vm_profile_xt_5160_268_external_rom {
     const lib_u8 *system_bytes;
     const lib_u8 *xebec_bytes;
@@ -41,12 +33,6 @@ lib_status vm_profile_xt_5160_268_values_create(
 lib_status vm_profile_xt_5160_268_plan_create(
     vm_profile_xt_5160_268_plan_snapshot *out_profile,
     lib_u8 xebec_rom_present);
-lib_i32 vm_profile_xt_5160_268_byob_manifest_is_valid(
-    const vm_profile_xt_5160_268_byob_manifest *manifest);
-lib_status vm_profile_xt_5160_268_byob_manifest_load(
-    const vm_profile_xt_5160_268_byob_manifest *manifest,
-    lib_u8 *system_bytes, lib_u8 *xebec_bytes,
-    vm_profile_xt_5160_268_external_rom *out_rom);
 lib_status vm_profile_xt_5160_268_external_rom_create(
     const lib_u8 *system, lib_size system_bytes,
     const lib_u8 *xebec, lib_size xebec_bytes,

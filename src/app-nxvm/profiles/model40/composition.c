@@ -2,6 +2,7 @@
 #include "app-nxvm/profiles/model40/composition_interface.h"
 
 #include "app-nxvm/devices/vadp.h"
+#include "app-nxvm/profiles/device/floppy.h"
 
 static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *plan,
     core_machine_fdc_terminal_observation_provider terminal_observation)
@@ -14,7 +15,8 @@ static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *
         .installed_mask = 0x03u,
         .double_sided_mask = 0x03u,
         .track_zero_active_low_mask = 0u,
-        .cylinder_count = {80u, 80u, 0u, 0u}
+        .cylinder_count = {80u, 80u, 0u, 0u},
+        .channel = vm_profile_floppy_channel_get(VM_PROFILE_FLOPPY_525_1200K)
     };
     core_machine_fdc_config fdc = {0};
     core_machine_hdc_config hdc = {0};
@@ -23,7 +25,7 @@ static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     fdc = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
-        0x03f7u, 0x03f7u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE,
+        0x03f7u, 0x03f7u, 6u, 2u,
         0x0fu, 8000000u, 0u, 0u };
     hdc = (core_machine_hdc_config) {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB,

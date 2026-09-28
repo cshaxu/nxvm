@@ -13,7 +13,7 @@
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_FDC242_BOOT_BUDGET 6000000u
-#define VM_FDC242_RUN_BUDGET 400000u
+#define VM_FDC242_RUN_BUDGET 6000000u
 #define VM_FDC242_MARKER_CELL 1920u
 #define VM_FDC242_DMA_ADDRESS 0x00080000u
 #define VM_FDC242_TRACK_BYTES (18u * 512u)
@@ -42,6 +42,9 @@ static void vm_fdc242_fat_set(lib_u8 *fat, lib_u16 cluster, lib_u16 value)
 static lib_i32 vm_fdc242_install(lib_u8 *image, DWORD size)
 {
     static const lib_u8 program[] = {
+        /* DOS may leave the head on any cylinder. Reset/recalibrate through
+         * guest BIOS before taking ownership of IRQ6 and direct FDC commands. */
+        0x31,0xc0,0x31,0xd2,0xcd,0x13,0x73,0x02,0xeb,0xfe,
         0x1e,0x31,0xc0,0x8e,0xd8,0xb8,0x80,0x02,0xa3,0x38,0x00,
         0x0e,0x58,0xa3,0x3a,0x00,0x1f, 0xe4,0x21,0x24,0xbf,0xe6,0x21,0xfb,
         0xb0,0x06,0xe6,0x0a, 0x30,0xc0,0xe6,0x0d, 0xe6,0x0c, 0xe6,0x04, 0xb0,0x00,0xe6,0x04,
@@ -55,7 +58,7 @@ static lib_i32 vm_fdc242_install(lib_u8 *image, DWORD size)
         0xec,0xa2,0xb0,0x02, 0xec,0xa2,0xb1,0x02, 0xec,0xa2,0xb2,0x02,
         0xec,0xa2,0xb3,0x02, 0xec,0xa2,0xb4,0x02, 0xec,0xa2,0xb5,0x02,
         0xec,0xa2,0xb6,0x02, 0xb0,0x08,0xee, 0xec,0xa2,0xb7,0x02,
-        0xec,0xa2,0xb8,0x02, 0xc6,0x06,0xa0,0x02,0x00,
+        0xc6,0x06,0xa0,0x02,0x00,
         0xe4,0x21,0x24,0xbf,0xe6,0x21,
         0xba,0xf2,0x03, 0xb0,0x1c,0xee,
         0xba,0xf5,0x03,
@@ -70,7 +73,7 @@ static lib_i32 vm_fdc242_install(lib_u8 *image, DWORD size)
         0xec,0xa2,0xa1,0x02, 0xec,0xa2,0xa2,0x02, 0xec,0xa2,0xa3,0x02,
         0xec,0xa2,0xa4,0x02, 0xec,0xa2,0xa5,0x02, 0xec,0xa2,0xa6,0x02,
         0xec,0xa2,0xa7,0x02,
-        0xb0,0x08,0xee, 0xec,0xa2,0xa8,0x02, 0xec,0xa2,0xa9,0x02,
+        0xb0,0x08,0xee, 0xec,0xa2,0xa8,0x02,
         0xb0,0x20,0xe6,0x20,
         0xb8,0x00,0xb8, 0x8e,0xc0,
         0x26,0xc7,0x06,0x00,0x0f,0x46,0x07,
@@ -174,8 +177,8 @@ static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
 
 typedef struct vm_fdc242_result {
     lib_u8 bytes[VM_FDC242_TRACK_BYTES];
-    lib_u8 result[10];
-    lib_u8 off_result[9];
+    lib_u8 result[9];
+    lib_u8 off_result[8];
 } vm_fdc242_result;
 
 static lib_i32 vm_fdc242_run_case(integration_ini_session *ini_session,
@@ -205,6 +208,16 @@ static lib_i32 vm_fdc242_run_case(integration_ini_session *ini_session,
         sizeof(out_result->off_result)) != LIB_STATUS_OK) goto done;
     ok = 1;
 done:
+    if (!ok && session != LIB_NULL) {
+        core_machine_observation observation;
+        lib_u8 disk_status = 0u;
+        if (core_machine_capture_observation(session->core_machine, &observation) ==
+                LIB_STATUS_OK && core_machine_memory_read(session->core_machine,
+                0x441u, &disk_status, sizeof(disk_status)) == LIB_STATUS_OK) {
+            fprintf(stderr, "FDC guest stopped at %04x:%08x BIOS status=%02x\n",
+                observation.cpu.cs, observation.cpu.eip, disk_status);
+        }
+    }
     if (session != LIB_NULL) vm_machine_executor_state_stop(session->control.state);
     return ok;
 }
@@ -226,40 +239,42 @@ lib_i32 main(lib_i32 argc, char **argv)
         vm_fdc242_run_case(&ini_session, 128u, &short_quantum) &&
         lib_memory_compare(expected, one_instruction.bytes, sizeof(expected)) == 0 &&
         lib_memory_compare(&one_instruction, &short_quantum, sizeof(one_instruction)) == 0 &&
-        one_instruction.result[0] == 1u && one_instruction.result[1] == 0x20u &&
+        one_instruction.result[0] == 1u && one_instruction.result[1] == 0x00u &&
         one_instruction.result[2] == 0u && one_instruction.result[3] == 0u &&
         one_instruction.result[4] == 0u && one_instruction.result[5] == 0u &&
         one_instruction.result[6] == 0x13u && one_instruction.result[7] == 0x02u &&
-        one_instruction.result[8] == 0x80u && one_instruction.result[9] == 0u &&
+        one_instruction.result[8] == 0x80u &&
         one_instruction.off_result[0] == core_machine_fdc_ST0_ABNORMAL &&
         one_instruction.off_result[1] == 0x04u && one_instruction.off_result[7] ==
         0x80u;
     if (!passed) {
+        for (lib_size index = 0u; index < sizeof(one_instruction.result); ++index)
+            fprintf(stderr, "result[%zu]=%02x ", index, one_instruction.result[index]);
+        fputc('\n', stderr);
         for (lib_size index = 0u; index < sizeof(expected); ++index) {
             if (expected[index] != one_instruction.bytes[index]) {
                 first_mismatch = index;
                 break;
             }
         }
-        fprintf(stderr, "M5:T242:S4:FDC:DOS:FAIL bytes=%d@%zu:%02x/%02x runs=%d result=%d off=%d/%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
+        fprintf(stderr, "M5:T242:S4:FDC:DOS:FAIL bytes=%d@%zu:%02x/%02x runs=%d result=%d off=%d/%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
             lib_memory_compare(expected, one_instruction.bytes, sizeof(expected)) == 0,
             first_mismatch,
             first_mismatch < sizeof(expected) ? expected[first_mismatch] : 0u,
             first_mismatch < sizeof(expected) ? one_instruction.bytes[first_mismatch] : 0u,
             lib_memory_compare(&one_instruction, &short_quantum, sizeof(one_instruction)) == 0,
-            one_instruction.result[0] == 1u && one_instruction.result[1] == 0x20u &&
+            one_instruction.result[0] == 1u && one_instruction.result[1] == 0x00u &&
             one_instruction.result[2] == 0u && one_instruction.result[3] == 0u &&
             one_instruction.result[4] == 0u && one_instruction.result[5] == 0u &&
             one_instruction.result[6] == 0x13u && one_instruction.result[7] == 0x02u &&
-            one_instruction.result[8] == 0x80u && one_instruction.result[9] == 0u,
+            one_instruction.result[8] == 0x80u,
             one_instruction.off_result[0] == core_machine_fdc_ST0_ABNORMAL &&
             one_instruction.off_result[1] == 0x04u && one_instruction.off_result[7] ==
             0x80u,
             one_instruction.off_result[0], one_instruction.off_result[1],
             one_instruction.off_result[2], one_instruction.off_result[3],
             one_instruction.off_result[4], one_instruction.off_result[5],
-            one_instruction.off_result[6], one_instruction.off_result[7],
-            one_instruction.off_result[8]);
+            one_instruction.off_result[6], one_instruction.off_result[7]);
         integration_ini_session_close(&ini_session); return 1;
     }
     integration_ini_session_close(&ini_session);

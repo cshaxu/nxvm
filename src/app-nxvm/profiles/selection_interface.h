@@ -38,11 +38,7 @@ typedef struct vm_machine_config {
     const char *fixed_disk_image[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
     lib_storage_medium_mode floppy_mode[VM_MACHINE_FLOPPY_SLOT_COUNT];
     lib_storage_medium_mode fixed_disk_mode[VM_MACHINE_FIXED_DISK_SLOT_COUNT];
-    const char *cmos_seed;
-    const char *font_path;
-    const char *bios_path[2];
     lib_size bios_count;
-    const char *video_path;
     vm_machine_floppy_format floppy_format;
     lib_i32 create_fdd;
     lib_u16 create_hdd_cylinders;

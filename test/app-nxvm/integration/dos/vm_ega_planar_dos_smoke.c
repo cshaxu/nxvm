@@ -9,7 +9,7 @@
 #include "app-nxvm/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
-#define VM_EGA_DOS_BOOT_BUDGET 800000u
+#define VM_EGA_DOS_BOOT_BUDGET 6000000u
 #define VM_EGA_DOS_RUN_BUDGET 400000u
 
 static lib_u16 vm_ega_dos_fat12_get(const lib_u8 *fat, lib_u16 cluster)

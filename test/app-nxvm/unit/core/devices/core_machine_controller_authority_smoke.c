@@ -153,15 +153,13 @@ lib_i32 main(void)
             core_machine_controller_fdc_command(&machine->fdc, port, read_absent,
                 sizeof(read_absent));
             failed |= !core_machine_controller_fdc_result(&machine->fdc, port, result,
-                sizeof(result)) || result[0] != core_machine_fdc_ST0_ABNORMAL ||
-                result[1] != 0x04u;
+                sizeof(result)) || result[0] != 0x48u || result[1] != 0u;
 
             core_machine_controller_fdc_command(&machine->fdc, port, write_absent,
                 sizeof(write_absent));
             core_machine_port_write(port, fdc_config.data_port, 0x5au);
             failed |= !core_machine_controller_fdc_result(&machine->fdc, port, result,
-                sizeof(result)) || result[0] != core_machine_fdc_ST0_ABNORMAL ||
-                result[1] != 0x04u;
+                sizeof(result)) || result[0] != 0x48u || result[1] != 0u;
 
             if (!core_machine_controller_hdc_program_chs(machine, &hdc_config) ||
                 core_machine_bus_write(machine, hdc_config.bus.task_file.status_command_port,

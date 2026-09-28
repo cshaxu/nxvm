@@ -31,6 +31,8 @@ typedef struct boot_trace_fdc_terminal_record {
     core_machine_fdc_terminal_observation result;
     lib_u8 command[9];
     lib_u8 ccr;
+    lib_u8 pcn;
+    lib_u16 physical_cylinder;
 } boot_trace_fdc_terminal_record;
 
 typedef struct boot_trace_probe {
@@ -76,6 +78,9 @@ static void boot_trace_fdc_terminal(void *opaque,
     if (probe->fdc != LIB_NULL) {
         lib_memory_copy(terminal->command, probe->fdc->data.cmd, sizeof(terminal->command));
         terminal->ccr = probe->fdc->data.ccr;
+        terminal->pcn = probe->fdc->data.pcn[observation->drive & 3u];
+        terminal->physical_cylinder = probe->fdc->drive_cylinder[
+            probe->fdc->data.dor & VFDC_DOR_DS];
     }
     ++probe->fdc_terminal_count;
 }
@@ -375,7 +380,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 const boot_trace_fdc_terminal_record *terminal =
                     &trace_probe->fdc_terminals[(first_terminal + index) %
                         BOOT_TRACE_FDC_TERMINALS];
-                printf("%02X:%u:%02X/%02X/%02X/%02X/%02X/%02X/%02X:%u:cmd=%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X:ccr=%02X ",
+                printf("%02X:%u:%02X/%02X/%02X/%02X/%02X/%02X/%02X:%u:cmd=%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X:ccr=%02X:pcn=%u:physical=%u ",
                     terminal->result.command, terminal->result.drive,
                     terminal->result.result[0u], terminal->result.result[1u],
                     terminal->result.result[2u], terminal->result.result[3u],
@@ -384,7 +389,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                     terminal->command[0u], terminal->command[1u], terminal->command[2u],
                     terminal->command[3u], terminal->command[4u], terminal->command[5u],
                     terminal->command[6u], terminal->command[7u], terminal->command[8u],
-                    terminal->ccr);
+                    terminal->ccr, terminal->pcn, terminal->physical_cylinder);
             }
             printf("\n");
         }

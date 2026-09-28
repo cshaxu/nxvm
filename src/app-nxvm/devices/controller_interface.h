@@ -22,11 +22,6 @@ typedef struct core_machine_dma_request_binding {
     lib_u8 channel;
 } core_machine_dma_request_binding;
 
-typedef enum core_machine_fdc_unready_read_policy {
-    CORE_MACHINE_FDC_UNREADY_READ_GENERIC = 0,
-    CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE
-} core_machine_fdc_unready_read_policy;
-
 typedef struct core_machine_fdc_config {
     lib_u16 dor_port;
     lib_u16 status_port;
@@ -36,9 +31,8 @@ typedef struct core_machine_fdc_config {
     lib_u16 control_port;
     lib_u8 irq;
     lib_u8 dma_channel;
-    core_machine_fdc_unready_read_policy unready_read_policy;
     /* Frozen board READY inputs, one bit per controller drive select.  They
-     * are mechanical wiring facts, never inferred from inserted media. */
+     * are electrical wiring facts, never inferred from inserted media. */
     lib_u8 ready_mask;
     /* Frozen conversion into the Core virtual axis.  This is an L2 macro
      * ratio unless a selected board source qualifies it; Core uses it only to
@@ -49,6 +43,20 @@ typedef struct core_machine_fdc_config {
     lib_u16 diagnostic_port;
     lib_u8 diagnostic_read_value;
 } core_machine_fdc_config;
+
+/* Flat-media recording is a drive/board contract, not an 8272A identity rule.
+ * The borrowed immutable context outlives the controller. A synchronous sample
+ * must not re-enter it. False means no readable/formattable track at this
+ * rate/position; only the controller chooses command status and completion. */
+typedef lib_bool (*core_machine_fdc_channel_sample)(const void *context,
+    lib_u8 drive, const core_machine_media_geometry *geometry,
+    lib_u16 physical_cylinder, lib_u32 rate_bps, lib_bool mfm,
+    lib_u16 *out_cylinder);
+
+typedef struct core_machine_fdc_channel_provider {
+    core_machine_fdc_channel_sample sample;
+    const void *context;
+} core_machine_fdc_channel_provider;
 
 typedef struct core_machine_fdc_drive_bindings {
     core_machine_media_id media_id[CORE_MACHINE_FDC_DRIVE_COUNT];
@@ -64,6 +72,7 @@ typedef struct core_machine_fdc_drive_bindings {
      * the controller.  Unset preserves the 8272A's ordinary active-high ST3
      * representation. */
     lib_u8 track_zero_active_low_mask;
+    core_machine_fdc_channel_provider channel;
 } core_machine_fdc_drive_bindings;
 
 typedef enum core_machine_hdc_protocol {

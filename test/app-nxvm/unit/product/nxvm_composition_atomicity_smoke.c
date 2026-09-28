@@ -50,6 +50,7 @@ typedef struct composition_fixture {
 } composition_fixture;
 
 static composition_fixture fixture;
+static const vm_machine_assets firmware = {0};
 
 static void composition_fixture_reset(composition_failure failure)
 {
@@ -74,10 +75,10 @@ lib_status vm_app_configure_machine(const vm_session_request *request,
     return LIB_STATUS_OK;
 }
 
-lib_status vm_machine_create(const vm_machine_config *config,
-    vm_machine **out_machine)
+lib_status vm_machine_create_from_assets(const vm_machine_config *config,
+    const vm_machine_assets *assets, vm_machine **out_machine)
 {
-    if (config == LIB_NULL || out_machine == LIB_NULL || fixture.machine.live)
+    if (config == LIB_NULL || assets == LIB_NULL || out_machine == LIB_NULL || fixture.machine.live)
         return LIB_STATUS_INVALID_STATE;
     if (fixture.failure == COMPOSITION_FAILURE_MACHINE_CREATE)
         return LIB_STATUS_NO_MEMORY;
@@ -223,7 +224,7 @@ static lib_i32 composition_machine_failure_recovers(composition_failure failure,
     vm_session_request request = {0};
 
     composition_fixture_reset(failure);
-    if (vm_app_create(&app) != LIB_STATUS_OK ||
+    if (vm_app_create(&firmware, &app) != LIB_STATUS_OK ||
         vm_app_compose_machine(app, &request) != expected ||
         vm_app_machine(app) != LIB_NULL || vm_app_common_machine(app) != LIB_NULL ||
         !composition_fixture_clean()) return 0;
@@ -241,7 +242,7 @@ static lib_i32 composition_control_failure_recovers(void)
     common_session_options options = {0};
 
     composition_fixture_reset(COMPOSITION_FAILURE_SESSION_CREATE);
-    if (vm_app_create(&app) != LIB_STATUS_OK ||
+    if (vm_app_create(&firmware, &app) != LIB_STATUS_OK ||
         vm_app_compose_machine(app, &request) != LIB_STATUS_OK ||
         vm_app_compose_control(app, &options) != LIB_STATUS_INVALID_ARGUMENT ||
         vm_app_session(app) != LIB_NULL || !fixture.machine.live ||
@@ -261,7 +262,7 @@ static lib_i32 composition_ui_failure_recovers(composition_failure failure)
     common_ui_options ui_options = {0};
 
     composition_fixture_reset(failure);
-    if (vm_app_create(&app) != LIB_STATUS_OK ||
+    if (vm_app_create(&firmware, &app) != LIB_STATUS_OK ||
         vm_app_compose_machine(app, &request) != LIB_STATUS_OK ||
         vm_app_compose_control(app, &session_options) != LIB_STATUS_OK ||
         vm_app_compose_ui(app, &ui_options) != LIB_STATUS_INVALID_ARGUMENT ||
@@ -283,7 +284,7 @@ static lib_i32 composition_destroy_failure_recovers(void)
     common_ui_options ui_options = {0};
 
     composition_fixture_reset(COMPOSITION_FAILURE_NONE);
-    if (vm_app_create(&app) != LIB_STATUS_OK ||
+    if (vm_app_create(&firmware, &app) != LIB_STATUS_OK ||
         vm_app_compose_machine(app, &request) != LIB_STATUS_OK ||
         vm_app_compose_control(app, &session_options) != LIB_STATUS_OK ||
         vm_app_compose_ui(app, &ui_options) != LIB_STATUS_OK) return 0;

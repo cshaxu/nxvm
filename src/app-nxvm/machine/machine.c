@@ -410,11 +410,6 @@ static lib_status vm_machine_create_from_plan(const vm_machine_config *config,
         vm_profile_machine_plan_copy_text_glyphs(session->profile_plan,
             &session->text_glyphs) != LIB_STATUS_OK) { vm_machine_destroy(session); return LIB_STATUS_INVALID_ARGUMENT; }
     session->retained_config = *config;
-    session->retained_config.cmos_seed = LIB_NULL;
-    session->retained_config.bios_path[0u] = LIB_NULL;
-    session->retained_config.bios_path[1u] = LIB_NULL;
-    session->retained_config.video_path = LIB_NULL;
-    session->retained_config.font_path = LIB_NULL;
     status = vm_machine_initialize(session);
     if (status != LIB_STATUS_OK) { vm_machine_destroy(session); return status; }
     if ((vm_machine_config_floppy(config, 0u) != LIB_NULL &&
@@ -452,20 +447,6 @@ lib_status vm_machine_create_from_assets(const vm_machine_config *config,
     if (out_session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_session = LIB_NULL;
     status = vm_profile_machine_plan_create(config, assets, &plan);
-    if (status != LIB_STATUS_OK) return status;
-    return vm_machine_create_from_plan(config, plan, out_session);
-}
-
-lib_status vm_machine_create(const vm_machine_config *config,
-    vm_machine **out_session)
-{
-    vm_profile_machine_plan *plan = LIB_NULL;
-    lib_status status;
-
-    if (out_session == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_session = LIB_NULL;
-    if (config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = vm_profile_machine_plan_create_file_backed(config, &plan);
     if (status != LIB_STATUS_OK) return status;
     return vm_machine_create_from_plan(config, plan, out_session);
 }

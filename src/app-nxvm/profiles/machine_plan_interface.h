@@ -13,8 +13,6 @@ typedef struct vm_profile_model40_external_rom vm_profile_model40_external_rom;
 
 lib_status vm_profile_machine_plan_create(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_profile_machine_plan **out_plan);
-lib_status vm_profile_machine_plan_create_file_backed(const vm_machine_config *config,
-    vm_profile_machine_plan **out_plan);
 void vm_profile_machine_plan_destroy(vm_profile_machine_plan *plan);
 
 const core_machine_config *vm_profile_machine_plan_core_config_get(

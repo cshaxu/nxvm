@@ -20,6 +20,20 @@ same facts in their commit and in this index's next bounded update. The current
 distributable notice set is [`THIRD_PARTY_NOTICES.md`](../../../../../THIRD_PARTY_NOTICES.md).
 Independent third-party notices still require a separate review before import.
 
+## T539 S12 Project-Owned BIOS Recovery
+
+Owner-authorized recovery from this repository's historical revision
+`1cf34c1f452f4e76b7a6e88eccb0953c70ba9cd9`,
+`src/vm/profile/default_profile/firmware/{bios.h,fdc_firmware.h,hdc.h,qdkeyb.h,rtc_firmware.h,post_firmware.h}`
+and the keyboard tables in `bios.c`, into `src/app-nxvm/firmware/`.
+This is the owner's MIT source, not third-party ROM reverse engineering.
+Copyright notices are retained. C-string assembly becomes readable guest
+assembly; a standalone builder emits ROM templates and code, not host BIOS
+services. The source README maps units; [S12 evidence](../../evidence/t539-s12-fdc-drive-status.md)
+records byte comparison, subsequent protocol corrections and verification.
+Raw vendor ROMs are excluded; executable publication follows the explicit
+owner exception in the source policy.
+
 ## Canonical Shared Library
 
 M5 T530 initially imports the project-owner-provided shared library from

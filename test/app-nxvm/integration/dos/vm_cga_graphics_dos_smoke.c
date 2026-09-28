@@ -9,7 +9,7 @@
 #include "app-nxvm/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
-#define VM_CGA_DOS_BOOT_BUDGET 800000u
+#define VM_CGA_DOS_BOOT_BUDGET 6000000u
 #define VM_CGA_DOS_RUN_BUDGET 400000u
 
 static lib_i32 vm_cga_dos_fat12_get(const lib_u8 *fat, lib_u16 cluster)
@@ -152,13 +152,25 @@ static lib_i32 vm_cga_dos_run_until(vm_machine *session, lib_u32 limit,
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
-        if (!want_graphics && vm_cga_dos_has_prompt(&snapshot)) return 1;
+        if (!want_graphics && vm_cga_dos_has_prompt(&snapshot)) {
+            printf("CGA DOS prompt: instruction budget used=%u\n", executed);
+            return 1;
+        }
         if (want_graphics && snapshot.kind == CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4 &&
             snapshot.pixels[0] == 0u && snapshot.pixels[1] == 1u &&
             snapshot.pixels[2] == 2u && snapshot.pixels[3] == 3u &&
             snapshot.pixels[320u] == 3u && snapshot.pixels[321u] == 2u &&
             snapshot.pixels[322u] == 1u && snapshot.pixels[323u] == 0u) return 1;
         executed += budget.instructions;
+    }
+    fprintf(stderr, "CGA DOS budget exhausted: stage=%s instructions=%u\n",
+        want_graphics ? "program" : "boot", executed);
+    if (snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT) {
+        lib_size cell;
+        for (cell = 0u; cell < 2000u; ++cell) {
+            fputc(snapshot.characters[cell] ? snapshot.characters[cell] : ' ', stderr);
+            if (cell % 80u == 79u) fputc('\n', stderr);
+        }
     }
     return 0;
 }

@@ -179,7 +179,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     16u * 1024u * 1024u,
     LIB_TRUE,
     0x9fc0u,
-    0x01u,
+    0x0fu,
     LIB_TRUE,
     LIB_FALSE,
     CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1,
@@ -269,7 +269,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     512u * 1024u,
     LIB_TRUE,
     0x7000u,
-    0x01u,
+    0x0fu,
     LIB_TRUE,
     LIB_TRUE,
     /* IBM specifies counter 1 as the refresh-request source, but not the

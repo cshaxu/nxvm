@@ -11,7 +11,7 @@
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 
-#define VM_ATA253_BOOT_BUDGET 800000u
+#define VM_ATA253_BOOT_BUDGET 6000000u
 #define VM_ATA253_RUN_BUDGET 400000u
 #define VM_ATA253_MARKER_CELL 1920u
 

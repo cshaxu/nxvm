@@ -130,8 +130,7 @@ lib_i32 main(void)
         session->core_machine->fdc.connect.config.direction_port != 0x03f7u ||
         session->core_machine->fdc.connect.config.irq != 6u ||
         session->core_machine->fdc.connect.config.dma_channel != 2u ||
-        session->core_machine->fdc.connect.config.unready_read_policy !=
-            CORE_MACHINE_FDC_UNREADY_READ_GENERIC) {
+        session->core_machine->fdc.connect.config.ready_mask != 0x0fu) {
         vm_machine_destroy(session);
         return 1;
     }

@@ -1,13 +1,13 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 
-#include "lib/storage/file_interface.h"
 #include "app-nxvm/profiles/byob/blob.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "app-nxvm/profiles/model40/composition_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
+#include "app-nxvm/profiles/device/floppy.h"
 
 #define VM_PROFILE_MACHINE_FDD_MEDIA_ID 1u
 #define VM_PROFILE_MACHINE_HDD_MEDIA_ID 2u
@@ -260,7 +260,7 @@ static lib_status vm_profile_machine_plan_xt(vm_profile_machine_plan *plan,
     vm_profile_xt_5160_268_external_rom source;
 
     if (config->bios_count == 0u || config->bios_count > 2u ||
-        config->cmos_seed != LIB_NULL || config->memory_bytes != 0u || config->create_fdd ||
+        (assets->cmos_seed.data != LIB_NULL || assets->cmos_seed.bytes != 0u) || config->memory_bytes != 0u || config->create_fdd ||
         config->create_hdd_cylinders != 0u ||
         config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
         config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
@@ -381,123 +381,6 @@ lib_status vm_profile_machine_plan_create(const vm_machine_config *config,
     return LIB_STATUS_OK;
 }
 
-typedef struct vm_profile_machine_file_assets {
-    lib_u8 *bios[2];
-    lib_u8 *cmos_seed;
-    lib_u8 *video;
-    lib_u8 *font;
-    vm_machine_assets view;
-} vm_profile_machine_file_assets;
-
-static void vm_profile_machine_file_assets_destroy(
-    vm_profile_machine_file_assets *assets)
-{
-    if (assets == LIB_NULL) return;
-    lib_release(assets->bios[0u]);
-    lib_release(assets->bios[1u]);
-    lib_release(assets->cmos_seed);
-    lib_release(assets->video);
-    lib_release(assets->font);
-    *assets = (vm_profile_machine_file_assets) {0};
-}
-
-static lib_status vm_profile_machine_file_load(const char *path,
-    lib_size bytes, vm_machine_asset_bytes *out_view, lib_u8 **out_owned)
-{
-    lib_u8 *owned;
-    lib_status status;
-
-    if (out_view == LIB_NULL || out_owned == LIB_NULL) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    *out_view = (vm_machine_asset_bytes) {0};
-    *out_owned = LIB_NULL;
-    if (path == LIB_NULL || bytes == 0u) return LIB_STATUS_INVALID_ARGUMENT;
-    owned = (lib_u8 *)lib_allocate(bytes);
-    if (owned == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    status = vm_profile_byob_blob_load(&(vm_profile_byob_blob) {path, LIB_NULL, bytes},
-        owned);
-    if (status != LIB_STATUS_OK) {
-        lib_release(owned);
-        return status;
-    }
-    *out_view = (vm_machine_asset_bytes) {owned, bytes};
-    *out_owned = owned;
-    return LIB_STATUS_OK;
-}
-
-static lib_status vm_profile_machine_file_variable_load(const char *path,
-    lib_size maximum, vm_machine_asset_bytes *out_view, lib_u8 **out_owned)
-{
-    void *owned = LIB_NULL;
-    lib_size bytes = 0u;
-    lib_status status;
-
-    if (out_view == LIB_NULL || out_owned == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_view = (vm_machine_asset_bytes) {0};
-    *out_owned = LIB_NULL;
-    if (path == LIB_NULL || maximum == 0u) return LIB_STATUS_INVALID_ARGUMENT;
-    status = lib_storage_file_read_owned(path, maximum, &owned, &bytes);
-    if (status == LIB_STATUS_NO_MEMORY) return LIB_STATUS_NO_MEMORY;
-    if (status != LIB_STATUS_OK || bytes == 0u) {
-        lib_release(owned);
-        return LIB_STATUS_INTERNAL_ERROR;
-    }
-    *out_view = (vm_machine_asset_bytes) {owned, bytes};
-    *out_owned = owned;
-    return LIB_STATUS_OK;
-}
-
-lib_status vm_profile_machine_plan_create_file_backed(const vm_machine_config *config,
-    vm_profile_machine_plan **out_plan)
-{
-    vm_profile_machine_file_assets assets = {0};
-    lib_size bios_bytes;
-    lib_status status;
-
-    if (out_plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_plan = LIB_NULL;
-    if (config == LIB_NULL || config->bios_count == 0u ||
-        config->bios_count > 2u || (config->profile_kind !=
-            VM_MACHINE_PROFILE_IBM_5160_MODEL_268 && config->cmos_seed == LIB_NULL)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    if (config->profile_kind == VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
-        if (config->bios_count != 2u) return LIB_STATUS_INVALID_ARGUMENT;
-        bios_bytes = VM_PROFILE_MODEL40_ROM_CHIP_BYTES;
-    } else if (config->profile_kind == VM_MACHINE_PROFILE_IBM_5160_MODEL_268) {
-        bios_bytes = VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES;
-    } else {
-        bios_bytes = config->bios_count == 1u ? VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES :
-            VM_PROFILE_EXTERNAL_PC_AT_ROM_CHIP_BYTES;
-    }
-    status = vm_profile_machine_file_load(config->bios_path[0u], bios_bytes,
-        &assets.view.bios[0u], &assets.bios[0u]);
-    if (status == LIB_STATUS_OK && config->bios_count == 2u) {
-        const lib_size secondary_bytes = config->profile_kind ==
-            VM_MACHINE_PROFILE_IBM_5160_MODEL_268 ? VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES :
-            bios_bytes;
-        status = vm_profile_machine_file_load(config->bios_path[1u], secondary_bytes,
-            &assets.view.bios[1u], &assets.bios[1u]);
-    }
-    if (status == LIB_STATUS_OK && config->cmos_seed != LIB_NULL) status =
-        vm_profile_machine_file_load(config->cmos_seed, VM_MACHINE_CMOS_SEED_BYTES,
-            &assets.view.cmos_seed, &assets.cmos_seed);
-    if (status == LIB_STATUS_OK && config->video_path != LIB_NULL) status =
-        config->profile_kind == VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 ?
-        vm_profile_machine_file_load(config->video_path, VM_PROFILE_MODEL40_VIDEO_ROM_BYTES,
-            &assets.view.video, &assets.video) :
-        vm_profile_machine_file_variable_load(config->video_path,
-            VM_PROFILE_EXTERNAL_PC_AT_VIDEO_ROM_MAX_BYTES, &assets.view.video, &assets.video);
-    if (status == LIB_STATUS_OK && config->font_path != LIB_NULL) status =
-        vm_profile_machine_file_load(config->font_path, VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES,
-            &assets.view.font, &assets.font);
-    if (status == LIB_STATUS_OK) status = vm_profile_machine_plan_create(config,
-        &assets.view, out_plan);
-    vm_profile_machine_file_assets_destroy(&assets);
-    return status;
-}
-
 void vm_profile_machine_plan_destroy(vm_profile_machine_plan *plan)
 {
     if (plan == LIB_NULL) return;
@@ -572,7 +455,7 @@ static lib_status vm_profile_machine_plan_materialize_pc_at(
     core_machine_fdc_drive_bindings drives = {
         {VM_PROFILE_MACHINE_FDD_MEDIA_ID, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
-        {0u, 0u, 0u, 0u}, 0u
+        {0u, 0u, 0u, 0u}, 0u, {0}
     };
     core_machine_fdc_config fdc = {0};
 
@@ -609,6 +492,14 @@ static lib_status vm_profile_machine_plan_materialize_pc_at(
     lib_memory_copy(drives.cylinder_count, profile->fdc_cylinder_count,
         sizeof(drives.cylinder_count));
     drives.track_zero_active_low_mask = profile->fdc_track_zero_active_low_mask;
+    for (vm_profile_floppy_kind kind = VM_PROFILE_FLOPPY_35_1440K;
+            kind <= VM_PROFILE_FLOPPY_35_720K; ++kind) {
+        if (vm_profile_floppy_cmos_type_get(kind) == profile->cmos.floppy_type) {
+            drives.channel = vm_profile_floppy_channel_get(kind);
+            break;
+        }
+    }
+    if (drives.channel.sample == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     fdc.diagnostic_port = profile->fdc_diagnostic_port;
     fdc.diagnostic_read_value = profile->fdc_diagnostic_read_value;
     if (core_machine_plan_configure_fdc(core_plan, &drives, &fdc) != LIB_STATUS_OK) {

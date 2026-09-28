@@ -9,7 +9,8 @@
 #include "app-nxvm/product/request_interface.h"
 typedef struct vm_app vm_app;
 
-lib_status vm_app_create(vm_app **out_app);
+/* Borrowed immutable firmware bytes must outlive the App. */
+lib_status vm_app_create(const vm_machine_assets *firmware, vm_app **out_app);
 lib_status vm_app_destroy(vm_app *app);
 common_session *vm_app_session(const vm_app *app);
 vm_machine *vm_app_machine(const vm_app *app);
