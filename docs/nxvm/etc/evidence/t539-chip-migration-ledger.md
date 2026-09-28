@@ -3,7 +3,8 @@
 Baseline 996a19a17. All 81 tracked files under `src/app-nxvm/devices` are listed
 exactly once below. Entries remain **designed, not migrated**, except the
 PIT row accepted by S3, RTC row accepted by S4, PIC row accepted by S5,
-and DMA row accepted by S7;
+DMA row accepted by S7, AT keyboard chain accepted by S8 and XT PPI/keyboard
+accepted by S9;
 the inventory stays finite.
 The [design review](../architecture/t539-independent-chip-design.md) supplies
 dependency details, proposed contracts, regression ownership and decision gates.
@@ -20,7 +21,7 @@ This ledger is not a claim of completed chip semantics/timing qualification.
 | `kbc.c`, `kbc.h` | S8 implementation: opaque `kbc8042`, `keyboard` and `ps2mouse` in Shared; the original NXVM pair now owns only endpoint construction, ports, IRQ, A20/reset and time attachment. [Evidence](t539-s8-kbc-extraction.md) records order, test mapping and receivers; Current owns acceptance. |
 | `xt_keyboard.c`, `xt_keyboard.h` | S9 implementation: sole serial/FIFO/BAT owner moved to `x86/devices/xtkeyboard`; old pair and concrete PPI dependency removed. [Evidence](t539-s9-xt-extraction.md) maps cases and verification; Current owns acceptance. |
 | `xt_ppi_keyboard.c`, `xt_ppi_keyboard.h` | S9 implementation: qualified Mode-0 registers in `x86/devices/ppi8255`; NXVM pair retains DIP/NMI/speaker/receiving latch and IRQ wiring. No full-8255 claim. [Evidence](t539-s9-xt-extraction.md) records rollback and release proof. |
-| `fdc.c`, `fdc.h`, `fdc_observation_interface.h` | Extract command/state/deadline and observations; split PC adapter/drive wiring and decide unready policy ownership. |
+| `fdc.c`, `fdc.h`, `fdc_observation_interface.h` | Pending. [S10 contract/characterization](../architecture/t539-s10-fdc-boundary.md) rejects a renamed unready-policy flag, identifies seek completion safety/ownership and READY contradictions, and fixes the chip/drive/board boundary. These repair gates precede extraction. |
 | `hdc.c`, `hdc.h` | Extract explicit controller personalities, not universal ATA; detach IRQ/DMA/board port routing. |
 | `vadp.c`, `vadp.h` | Extract video mechanisms with one VRAM/frame owner; detach physical memory/port installation. |
 | `controller_interface.h` | Split mixed chip variants/timing value types from board port/IRQ/DMA/topology configuration; no shared umbrella machine config. |

@@ -184,6 +184,110 @@ static lib_i32 core_machine_fdc_read_result(core_machine_fdc *fdc, t_port *port,
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
+/* S10 records the pre-extraction behavior, not a silicon qualification.
+ * In particular, READY and installed are currently ignored by data commands. */
+static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine,
+    core_machine_fdc_fixture_media *media)
+{
+    core_machine_fdc *fdc = &machine->fdc;
+    t_port *port = &machine->executor_port;
+    static const struct {
+        lib_u8 bytes[9];
+        lib_u8 count;
+        core_machine_fdc_phase phase;
+        lib_bool deskpro_read;
+    } commands[] = {
+        {{0x46u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u,
+            core_machine_fdc_PHASE_EXECUTION_READ, LIB_TRUE},
+        {{0x4cu, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u,
+            core_machine_fdc_PHASE_EXECUTION_READ, LIB_TRUE},
+        {{0x45u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u,
+            core_machine_fdc_PHASE_EXECUTION_WRITE, LIB_FALSE},
+        {{0x49u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u,
+            core_machine_fdc_PHASE_EXECUTION_WRITE, LIB_FALSE},
+        {{0x51u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 1u}, 9u,
+            core_machine_fdc_PHASE_EXECUTION_SCAN, LIB_FALSE},
+        {{0x59u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 1u}, 9u,
+            core_machine_fdc_PHASE_EXECUTION_SCAN, LIB_FALSE},
+        {{0x5du, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 1u}, 9u,
+            core_machine_fdc_PHASE_EXECUTION_SCAN, LIB_FALSE},
+        {{0x42u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u,
+            core_machine_fdc_PHASE_EXECUTION_READ, LIB_FALSE},
+        {{0x4du, 0u, 2u, 1u, 0x1bu, 0xa5u}, 6u,
+            core_machine_fdc_PHASE_EXECUTION_FORMAT, LIB_FALSE},
+        {{0x4au, 0u}, 2u, core_machine_fdc_PHASE_RESULT, LIB_FALSE}
+    };
+    static const struct {
+        lib_bool present;
+        lib_u8 dor;
+        lib_u8 ready;
+        lib_u8 installed;
+        lib_bool admitted;
+    } inputs[] = {
+        {LIB_TRUE,  0x1cu, 0x0fu, 1u, LIB_TRUE},
+        {LIB_FALSE, 0x1cu, 0x0fu, 1u, LIB_FALSE},
+        {LIB_TRUE,  0x0cu, 0x0fu, 1u, LIB_FALSE},
+        {LIB_TRUE,  0x1du, 0x0fu, 1u, LIB_FALSE},
+        {LIB_TRUE,  0x1cu, 0u,    1u, LIB_TRUE},
+        {LIB_TRUE,  0x1cu, 0x0fu, 0u, LIB_TRUE}
+    };
+    const core_machine_fdc_config saved_config = fdc->connect.config;
+    const core_machine_fdc_drive_bindings saved_drives = fdc->connect.drives;
+    const lib_bool saved_present = media->present;
+    lib_i32 failed = 0;
+
+    for (lib_u8 policy = 0u; policy < 2u; ++policy) {
+        for (lib_size input = 0u; input < sizeof(inputs) / sizeof(inputs[0]); ++input) {
+            for (lib_size command = 0u; command < sizeof(commands) / sizeof(commands[0]); ++command) {
+                lib_u8 result[7];
+                lib_bool mismatch;
+
+                core_machine_fdc_reset(fdc);
+                fdc->connect.config.unready_read_policy = policy == 0u ?
+                    CORE_MACHINE_FDC_UNREADY_READ_GENERIC :
+                    CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE;
+                fdc->connect.config.ready_mask = inputs[input].ready;
+                fdc->connect.drives.installed_mask = inputs[input].installed;
+                media->present = inputs[input].present;
+                media->mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
+                core_machine_port_write(port, 0x03f2u, inputs[input].dor);
+                core_machine_fdc_command(fdc, port,
+                    (const lib_u8[]){0x03u, 0xdfu, 0x02u}, 3u);
+                core_machine_fdc_write_dma2(port, 0x0600u, 511u);
+                core_machine_fdc_command(fdc, port, commands[command].bytes,
+                    commands[command].count);
+                if (!inputs[input].admitted) {
+                    const lib_bool not_ready = policy != 0u && commands[command].deskpro_read;
+                    core_machine_fdc_advance(fdc);
+                    mismatch = !fdc->connect.irq_source.asserted ||
+                        !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                        result[0] != (not_ready ? 0x48u : 0x40u) ||
+                        result[1] != (not_ready ? 0u : 0x04u) ||
+                        result[2] != 0u || fdc->connect.irq_source.asserted;
+                } else {
+                    mismatch = fdc->data.phase != commands[command].phase ||
+                        fdc->connect.irq_source.asserted !=
+                            (commands[command].phase == core_machine_fdc_PHASE_RESULT);
+                }
+                mismatch |= core_machine_dma_has_pending_request(
+                    &machine->shared_dma_primary, &machine->shared_dma_secondary) !=
+                    (inputs[input].admitted &&
+                        commands[command].phase != core_machine_fdc_PHASE_RESULT);
+                if (mismatch) {
+                    fprintf(stderr, "FDC readiness policy=%u input=%zu command=%02x\n",
+                        policy, input, commands[command].bytes[0]);
+                    failed = 1;
+                }
+            }
+        }
+    }
+    core_machine_fdc_reset(fdc);
+    fdc->connect.config = saved_config;
+    fdc->connect.drives = saved_drives;
+    media->present = saved_present;
+    return failed;
+}
+
 lib_i32 main(void)
 {
     static const lib_u8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
@@ -765,6 +869,7 @@ lib_i32 main(void)
             }
         }
     }
+    if (!failed) failed |= core_machine_fdc_readiness_matrix(machine, &fixture);
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {
@@ -781,5 +886,6 @@ lib_i32 main(void)
     puts("M5:T465:S2:FDC-reset:OK");
     puts("M5:T465:S3:FDC-8272-command:OK");
     puts("M5:T465:S5:FDC-parallel-seek:OK");
+    puts("M5:T539:S10:FDC-readiness-characterization:OK");
     return 0;
 }
