@@ -1,5 +1,10 @@
 # T507 S4: 8237A DMA Controller Re-Audit
 
+Historical correction: [T539 S6](t539-s6-dma-first-service.md) found that D7's
+blanket success conclusion missed the secondary controller's direct first-transfer
+call. Its source-level negative control and phase-path repair supersede that
+part of this audit; this report is not proof of complete current DMA conformance.
+
 ## Research quality and boundary
 
 The primary source is Intel `231466-005`, *8237A High Performance

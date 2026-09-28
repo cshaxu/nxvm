@@ -63,6 +63,12 @@ and IRQ-source aggregation. Its [boundary review](../etc/architecture/t539-s5-pi
 and [evidence](../etc/evidence/t539-s5-pic-extraction.md) cover all callers,
 private-test migration and construction rollback. Current owns acceptance.
 
+S6 is an evidence-led DMA prerequisite: [first-service repair](../etc/evidence/t539-s6-dma-first-service.md).
+Source review found that the secondary first transfer bypasses the phase handler,
+contradicting the prior blanket timing-order audit. Repair and characterize the
+whole affected channel/mode family before extraction; do not publish a shared
+phase-bypass API merely to preserve this defect. The DMA migration remains pending.
+
 The first admitted S freezes a migration ledger covering every tracked source
 file in the current devices subtree, its callers and tests. Each entry names
 the chip or board responsibility, dependencies, destination and proof. Every

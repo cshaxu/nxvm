@@ -143,3 +143,16 @@ Shared d6dc6ca3a and NXVM 6cf3cee40 are pushed. Coordinator inspected their
 actual ownership, priority/cascade/poll, lifetime, rollback and caller/test
 changes; no outstanding gap remains in the bounded brief. S5 is closed;
 T539 remains open and no remaining chip batch is implicitly accepted.
+
+## S6: DMA First-Service Prerequisite
+
+Automatically admitted from 4f278a918 for NXVM only. Before opaque extraction,
+source review found that secondary channels perform their first transfer directly
+in arbitration rather than through the normal/compressed phase handler. S6
+removes that bypass and covers the complete 126-case first-service family.
+[Evidence](../etc/evidence/t539-s6-dma-first-service.md) records the Intel source,
+negative control and remaining DMA extraction boundary. Full dual-width units
+(341/341), default integration (20/20), all other profile boots once, gates and
+eight receiving artifacts pass. The complete executor delivery is ready for
+pushed actual-change review; no Shared implementation or other product changes
+are part of S6.

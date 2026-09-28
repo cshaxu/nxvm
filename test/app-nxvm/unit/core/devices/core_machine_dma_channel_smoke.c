@@ -157,6 +157,140 @@ static void core_machine_dma_advance_phases(t_latch *latch, t_dma *primary,
         LIB_NULL, ticks);
 }
 
+typedef struct core_machine_dma_phase_fixture {
+    lib_u32 reads;
+    lib_u32 writes;
+    lib_u32 terminals;
+    lib_u16 last_write;
+} core_machine_dma_phase_fixture;
+
+static void core_machine_dma_phase_read(void *owner, t_latch *latch)
+{
+    core_machine_dma_phase_fixture *fixture = owner;
+    ++fixture->reads;
+    latch->data.word = 0xa55au;
+}
+
+static void core_machine_dma_phase_write(void *owner, t_latch *latch)
+{
+    core_machine_dma_phase_fixture *fixture = owner;
+    ++fixture->writes;
+    fixture->last_write = latch->data.word;
+}
+
+static void core_machine_dma_phase_terminal(void *owner, t_latch *latch)
+{
+    core_machine_dma_phase_fixture *fixture = owner;
+    (void)latch;
+    ++fixture->terminals;
+}
+
+static lib_i32 core_machine_dma_first_service_matrix(void)
+{
+    static const core_machine_dma_channel_provider provider = {
+        core_machine_dma_phase_read, core_machine_dma_phase_write,
+        core_machine_dma_phase_terminal
+    };
+    static const lib_u8 channels[] = {0u, 1u, 2u, 3u, 5u, 6u, 7u};
+    t_latch latch = {0};
+    t_dma primary = {0};
+    t_dma secondary = {0};
+    t_ram memory = {0};
+    t_port port;
+    core_machine_dma_request_binding bindings[7] = {{0}};
+    core_machine_dma_phase_fixture fixture = {0};
+    lib_u32 row;
+    lib_i32 failed = 0;
+
+    core_machine_port_initialize(&port);
+    if (core_machine_memory_initialize_for(&memory, 65536u, LIB_NULL) !=
+            LIB_STATUS_OK) {
+        failed = 1;
+        goto done;
+    }
+    core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u);
+    for (row = 0u; row < 7u; ++row) {
+        if (core_machine_dma_bind_channel(&latch, &primary, &secondary,
+                channels[row], &provider, &fixture, &bindings[row]) != LIB_STATUS_OK) {
+            failed = 1;
+            goto done;
+        }
+    }
+    /* Seven channels x normal/TM x demand/single/block x verify/write/read.
+     * Use the real clock-phase entry, not the accelerated fixture helper. */
+    for (row = 0u; row < 126u; ++row) {
+        lib_u8 index = (lib_u8)(row / 18u);
+        lib_u8 channel = channels[index] & 3u;
+        lib_bool word = channels[index] >= 5u;
+        lib_bool compressed = (row / 9u) % 2u != 0u;
+        lib_u8 mode = (lib_u8)(((row / 3u) % 3u) << 6u);
+        lib_u8 transfer = (lib_u8)((row % 3u) << 2u);
+        lib_u16 address_port = word ? (lib_u16)(0xc0u + channel * 4u) :
+            (lib_u16)(channel * 2u);
+        lib_u16 count_port = (lib_u16)(address_port + (word ? 2u : 1u));
+        lib_u16 clear_port = word ? 0xd8u : 0x0cu;
+        lib_u16 status_port = word ? 0xd0u : 0x08u;
+        lib_u32 physical = word ? 0x2000u : 0x1000u;
+        lib_u8 bytes[2] = {0x11u, 0x22u};
+        lib_u8 phase;
+        lib_i32 row_failed = 0;
+
+        core_machine_dma_reset(&latch, &primary, &secondary);
+        lib_memory_set(&fixture, 0u, sizeof(fixture));
+        row_failed |= core_machine_memory_write_physical(&memory, physical,
+            (lib_uptr)bytes, sizeof(bytes)) != LIB_STATUS_OK;
+        if (word) {
+            core_machine_dma_write_secondary_channel(&port, channel, 0x1000u,
+                0u, 0u, (lib_u8)(mode | transfer | channel));
+        } else {
+            core_machine_dma_write_primary_channel(&port, channel, 0x1000u,
+                0u, (lib_u8)(mode | transfer | channel));
+        }
+        core_machine_port_write(&port, status_port,
+            compressed ? VDMA_COMMAND_TM : 0u);
+        core_machine_port_write(&port, word ? 0xd4u : 0x0au, channel);
+        core_machine_dma_request_assert(&primary, &secondary, &bindings[index]);
+        /* One arbitration tick enters S1; no transfer until S4 executes. */
+        for (phase = 0u; phase < (compressed ? 3u : 4u); ++phase) {
+            core_machine_dma_advance_phases(&latch, &primary, &secondary,
+                &memory, 1u);
+            row_failed |= fixture.reads != 0u || fixture.writes != 0u ||
+                fixture.terminals != 0u;
+            row_failed |= core_machine_dma_read_pair(&port, clear_port,
+                address_port) != 0x1000u;
+            row_failed |= core_machine_dma_read_pair(&port, clear_port,
+                count_port) != 0u;
+            row_failed |= (core_machine_port_read(&port, status_port) & 0x0fu) != 0u;
+            row_failed |= core_machine_memory_read_physical(&memory, physical,
+                (lib_uptr)bytes, sizeof(bytes)) != LIB_STATUS_OK ||
+                bytes[0] != 0x11u || bytes[1] != 0x22u;
+        }
+        core_machine_dma_advance_phases(&latch, &primary, &secondary, &memory, 1u);
+        row_failed |= fixture.reads != (transfer == 8u ? 0u : 1u) ||
+            fixture.writes != (transfer == 8u ? 1u : 0u) || fixture.terminals != 1u;
+        row_failed |= transfer == 8u && fixture.last_write != (word ? 0x2211u : 0x11u);
+        row_failed |= core_machine_dma_read_pair(&port, clear_port, address_port) != 0x1001u;
+        row_failed |= core_machine_dma_read_pair(&port, clear_port, count_port) != 0xffffu;
+        row_failed |= (core_machine_port_read(&port, status_port) & 0x0fu) != (1u << channel);
+        row_failed |= core_machine_memory_read_physical(&memory, physical,
+            (lib_uptr)bytes, sizeof(bytes)) != LIB_STATUS_OK ||
+            bytes[0] != (transfer == 4u ? 0x5au : 0x11u) ||
+            bytes[1] != (transfer == 4u && word ? 0xa5u : 0x22u);
+        core_machine_dma_advance_phases(&latch, &primary, &secondary, &memory, 6u);
+        row_failed |= fixture.reads + fixture.writes != 1u || fixture.terminals != 1u;
+        if (row_failed) {
+            printf("DMA first-service mismatch: channel=%u TM=%u mode=%02x transfer=%02x\n",
+                channels[index], compressed, mode, transfer);
+            failed = 1;
+        }
+    }
+done:
+    core_machine_dma_finalize(&latch, &primary, &secondary);
+    core_machine_memory_finalize(&memory);
+    core_machine_port_finalize(&port);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     static const core_machine_dma_channel_provider provider = {
@@ -196,7 +330,7 @@ lib_i32 main(void)
     lib_u16 words[2] = {0};
     lib_u8 channel;
     lib_u16 page_port;
-    lib_i32 failed = 0;
+    lib_i32 failed = core_machine_dma_first_service_matrix();
 
     core_machine_port_initialize(&port);
     if (core_machine_memory_initialize_for(&memory, 2u * 1024u * 1024u,

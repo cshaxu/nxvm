@@ -908,7 +908,6 @@ static void core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
             }
         } else {
             dma_service_begin(secondary, id);
-            Execute(secondary, latch, ram, transaction, id, LIB_TRUE);
         }
     }
 }

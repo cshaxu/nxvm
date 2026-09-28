@@ -28,6 +28,10 @@ T539 S5: [PIC boundary](architecture/t539-s5-pic-boundary.md) and
 [extraction evidence](evidence/t539-s5-pic-extraction.md), single-controller
 ownership, board cascade/source wiring and receiver verification.
 
+T539 S6: [DMA first-service repair](evidence/t539-s6-dma-first-service.md),
+direct phase-bypass finding, complete affected-family negative control and
+receiver verification; an extraction prerequisite, not completed DMA migration.
+
 S8 receiving evidence: [T43 quality-repair artifacts](evidence/m6-t43-s8-receiving-artifacts.md); rebuilt boolean-layout receivers and owner-approved 0/1-only INI correction.
 
 | Current category | Owner | Purpose |

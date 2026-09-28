@@ -3,31 +3,32 @@
 ## Current Work
 
 M5 T539 remains open. S5 PIC extraction is closed after actual-change review.
+S6 repairs the DMA first-service phase bypass before opaque chip extraction.
 Subsequent bounded batches continue under the owner's automatic-S authorization
 dated 2026-09-28; no additional manual admission is required.
 
 | Task | Progress |
 | --- | --- |
-| T539 S5 | Accepted: Shared d6dc6ca3a and NXVM 6cf3cee40 pushed; actual-change review complete. All bounded exit criteria satisfied; remaining T539 inventory is not accepted by this closure. |
+| T539 S6 | Complete executor delivery: DMA first-service bypass removed, 126-case negative/positive control, full dual-width tests and eight products pass. Awaiting pushed actual-change review; DMA extraction remains pending. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: M5 T539 S5 after S4 acceptance be86dee2e. |
-| Admission And Approval | Owner authorized automatic admission of every S on 2026-09-28. Coordinator admits the complete PIC ledger batch, with Shared and NXVM targets, under that authority. |
-| Objective | Extract one opaque Types-only 8259 mechanism, reconnect the XT single controller and PC/AT pair through NXVM-owned routing/aggregation, and remove private chip access and the old implementation. |
-| Non-goals | Other chip extraction, new timing qualification, changing BIOS/media/INI, Lib/Common/MyNES edits, sibling writes, new generic device frameworks or weakening existing PIC/CPU scenarios. |
-| Reference Baseline | be86dee2e; the pic.c, pic.h and pic_interface.h ledger row; S1 design and S2 interrupt/lifetime contracts. |
-| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [contracts](../etc/architecture/t539-boundary-contracts.md), [ledger](../etc/evidence/t539-chip-migration-ledger.md), [S5 boundary review](../etc/architecture/t539-s5-pic-boundary.md). |
-| Files And ABI Surface | Shared src/x86/devices/pic8259, matching tests/build/guards/manifests; NXVM pic_bus board adapter, all CPU/device/machine consumers and tests, build/docs and eight 0539 EXEs. Opaque local command/data, IRQ input, cascade signals/selection, acknowledge, reset and timing/deadline APIs; no peer chip pointer. |
-| Applicable Rules | Task Reading Set; source policy; Architecture/Coding/Document/Execution; architecture-governance then coding-governance. One chip state owner; board owns ports, source aggregation and pair wiring; Types-only shared source; preserve handler style and behavior; failure cleanup and separate target commits. |
-| Verification | Standalone x86 chip suites x64/x86; full NXVM run-unit-tests both widths; run-integration-tests default both widths and each remaining profile/width boot once; verify-current-specialized-gates; six manifests and documentation gate; eight stripped optimized 0539 products with PE/version/SHA and unchanged INIs. |
-| Expected Markers | No App/Common/peer-private include in chip; no PIC register structure outside its component; one priority/ICW/OCW implementation; board-only port decode, IRQ-source counts and cascade wiring; retained poll/SFNM/spurious/INTA/reset/deadline regressions. |
-| Asset Needs | Existing external profile firmware/media only; existing source/ledger evidence. No external asset import, modification or new reference-derived semantics. |
-| Reporting Requirements | Explain boundary findings and any objection before implementation; report verification, source/test delta, artifact identities and actual-diff acceptance. |
-| Stop Conditions | Unsupported behavioral change or new source/license requirement outside this batch; a failing receiver blocks closure. Automatic admission does not permit hiding unresolved semantics or unrelated edits. |
-| Exit Criteria | Entire PIC ledger batch and caller sweep have a disposition; standalone chip and board reconnection replace old path; required tests/artifacts pass, target-separated deliveries pushed and coordinator actual-change acceptance recorded. T remains open. |
+| Identifier Mode | Continuation: M5 T539 S6 after S5 acceptance 4f278a918. |
+| Admission And Approval | Owner authorized automatic admission of every S on 2026-09-28. Coordinator admits this NXVM-only DMA extraction prerequisite after source inspection found a first-transfer bypass. No Shared or MyNES source modification. |
+| Objective | Remove the secondary-controller first-transfer bypass so all eligible channels enter the existing normal/compressed service phases before observable transfer effects; characterize the complete affected channel/mode family before extraction. |
+| Non-goals | Extracting DMA yet, changing page/reset/cascade semantics, a new scheduler or timing model, new hardware-accuracy grades, BIOS/media/INI changes, Shared/MyNES edits or sibling writes. |
+| Reference Baseline | 4f278a918; dma.c/dma.h ledger batch, S1/S2 DMA boundaries; Intel 231466-005 pp. 4 and 7; prior T507 D7 claim requires correction for the uncovered secondary first service. |
+| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [contracts](../etc/architecture/t539-boundary-contracts.md), [ledger](../etc/evidence/t539-chip-migration-ledger.md), [prior DMA audit](../etc/evidence/t507-s4-dma-controller-reaudit.md). |
+| Files And ABI Surface | NXVM dma.c, existing DMA channel regression, NXVM evidence/status/history/proposal/index and eight 0539 EXEs. No new public API or struct; retain original phase handlers. |
+| Applicable Rules | Task Reading Set; source policy; Architecture/Coding/Document/Execution; architecture-governance and coding-governance. One execution path, observable failure ordering, original cohesive handlers, bounded completeness and actual-diff acceptance. |
+| Verification | Demonstrate regression failure before repair and pass after; cover channels 0-3/5-7, normal/TM, demand/single/block and transfer directions; full NXVM units and default integration x64/x86, each other profile/width boot once; specialized static aggregate, six manifests, documentation gate, PE/version/SHA and unchanged INIs. |
+| Expected Markers | Execute is called only by the existing phase handler, never directly by arbitration. Before S4 no provider/RAM/address/count/TC publication; correct single completion thereafter. Existing M2M, cascade, READY and transaction regressions remain. |
+| Asset Needs | Read-only existing Intel PDF and existing external profile firmware/media. No import, license change or external asset modification. |
+| Reporting Requirements | Report the false blanket phase-order conclusion and the concrete defect, negative-control proof, full regression outcomes, source/test delta and actual-change acceptance. |
+| Stop Conditions | Evidence contradicts the selected phase repair, or regressions require unrelated behavioral changes; failing required tests block closure. Never weaken a test or reclassify an incorrect path as compatible L3. |
+| Exit Criteria | Entire first-service channel/mode family covered; bypass removed without new state/API; affected receivers and gates pass; complete NXVM delivery pushed then actual-diff accepted. DMA extraction stays pending in the ledger. |
 | Original Owner Request | Independent decoupled chips in x86/devices, NXVM board integration only; automatically admit each subsequent S without another manual approval. |
-| Similar-Issue Sweep | Search all src/test/cmake for t_pic, PIC private data, cascade peer pointers, IRQ-source aggregation and initialization/acknowledgement/deadline callers; migrate all hits or explicitly retain board-only roles. Tests use register operations/owned fixtures, not a new test-only public state dump. |
+| Similar-Issue Sweep | Inspect every Execute caller, primary/secondary grant, M2M half-cycle, accelerated fixture entry and scheduler transaction/clock route. Cover all seven bindable channels with normal/TM and demand/single/block; preserve callback-before-commit failure rules. Extraction-only page/lane/binding concerns remain in the DMA ledger row, not silently accepted. |
 
 The [proposal](../proposals/m5-shared-chip-extraction.md),
 [contracts](../etc/architecture/t539-boundary-contracts.md),
@@ -48,14 +49,17 @@ remains closed.
 
 Lib/Common retain the accepted 268464d49 baseline. Shared x86 PIT is accepted
 at 24162ac93, RTC at 8a8435648 and PIC at d6dc6ca3a. Current NXVM source/artifacts
-are 6cf3cee40. [S5 evidence](../etc/evidence/t539-s5-pic-extraction.md) owns the
-source mapping, artifact hashes and transaction rollback evidence. Full sibling parity is
+were 6cf3cee40; S6's complete delivery now includes the first-service repair and
+rebuilt eight artifacts. [S6 evidence](../etc/evidence/t539-s6-dma-first-service.md)
+owns current verification/hashes; [S5 evidence](../etc/evidence/t539-s5-pic-extraction.md)
+retains PIC source mapping and transaction rollback. Full sibling parity is
 not claimed; no sibling repository was modified.
 
 Verification: NXVM 341/341 units and 20/20 default-profile external integration
 per width; all six non-default profile/width boot matrices pass once.
-Independent chip suites are 12/12 per width; the specialized static aggregate,
-extended PIC boundary and six manifests pass. MyNES has no x86 dependency or artifact input change.
+S6's 126 DMA first-service cases pass within the unit suite. Independent chip
+suites remain S5's 12/12 evidence, not a new standalone S6 run. The specialized
+static aggregate and six manifests pass. MyNES has no artifact input change.
 The S5 temporary build trees are removed; the two S3 NXVM incremental trees
 remain for the immediately next chip batch. Cooked-history rollback debt
 remains in [TODO](TODO.md). This bounded regression acceptance does not claim
