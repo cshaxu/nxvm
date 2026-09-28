@@ -443,7 +443,7 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
-        .shared_pit_personality = CORE_MACHINE_PIT_PERSONALITY_8253
+        .shared_pit_personality = X86_PIT_PERSONALITY_8253
     };
     core_machine_kbc_cpu_fixture fixture = {0};
     core_machine_run_result result;

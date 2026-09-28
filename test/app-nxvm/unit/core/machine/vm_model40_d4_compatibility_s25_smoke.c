@@ -40,7 +40,7 @@ lib_i32 main(void)
         LIB_STATUS_OK || session == LIB_NULL ||
         core_machine_bus_read(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
             &port_b) != LIB_STATUS_OK || (port_b & 0x10u) == 0u ||
-        (core_machine_pit_advance(&session->core_machine->shared_pit, 19u),
+        (x86_pit_advance(session->core_machine->shared_pit.device, 19u),
          core_machine_bus_read(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
             &port_b) != LIB_STATUS_OK) || (port_b & 0x10u) != 0u ||
         !vm_model40_d4_read(session->core_machine,

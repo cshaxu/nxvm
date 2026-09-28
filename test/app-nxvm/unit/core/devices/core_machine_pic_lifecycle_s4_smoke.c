@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/pic.h"
-#include "app-nxvm/devices/pit.h"
+#include "app-nxvm/devices/pit_bus.h"
 #include "app-nxvm/devices/port.h"
 
 typedef struct pic_lifecycle_fixture {
@@ -105,31 +105,35 @@ static lib_i32 pic_lifecycle_test_slave_level(void)
 static lib_i32 pic_lifecycle_test_pit_reset(void)
 {
     pic_lifecycle_fixture fixture;
-    t_pit pit;
+    core_machine_pit_bus pit;
     core_machine_pic_irq_source irq0;
     lib_i32 failed = 0;
 
     pic_lifecycle_initialize(&fixture, 0x11u);
     core_machine_pic_irq_source_bind(&irq0, &fixture.master, &fixture.slave, 0u);
-    core_machine_pit_initialize(&pit, &fixture.port);
-    core_machine_pit_reset(&pit);
-    core_machine_pit_set_output(&pit, 0u, core_machine_pic_timer_output, &irq0);
+    if (core_machine_pit_bus_create(&pit, &fixture.port,
+            X86_PIT_PERSONALITY_8254, 0x0040u) != LIB_STATUS_OK) {
+        pic_lifecycle_finalize(&fixture);
+        return 1;
+    }
+    x86_pit_reset(pit.device);
+    x86_pit_set_output(pit.device, 0u, core_machine_pic_timer_output, &irq0);
     core_machine_port_write(&fixture.port, 0x0043u, 0x34u);
     core_machine_port_write(&fixture.port, 0x0040u, 3u);
     core_machine_port_write(&fixture.port, 0x0040u, 0u);
     /* The first clock transfers CR to CE; the IRQ0 edge is the fifth clock. */
-    core_machine_pit_advance(&pit, 5u);
+    x86_pit_advance(pit.device, 5u);
     failed |= !irq0.asserted || fixture.master.data.asserted[0u] != 1u;
     core_machine_pic_reset(&fixture.master, &fixture.slave);
-    core_machine_pit_reset(&pit);
+    x86_pit_reset(pit.device);
     failed |= irq0.asserted || fixture.master.data.asserted[0u] != 0u;
     core_machine_port_write(&fixture.port, 0x0043u, 0x34u);
     core_machine_port_write(&fixture.port, 0x0040u, 3u);
     core_machine_port_write(&fixture.port, 0x0040u, 0u);
-    core_machine_pit_advance(&pit, 5u);
+    x86_pit_advance(pit.device, 5u);
     failed |= !irq0.asserted || fixture.master.data.asserted[0u] != 1u ||
         (fixture.master.data.irr & VPIC_IRR_IRQ(0u)) == 0u;
-    core_machine_pit_finalize(&pit);
+    core_machine_pit_bus_destroy(&pit);
     failed |= irq0.asserted || fixture.master.data.asserted[0u] != 0u;
     pic_lifecycle_finalize(&fixture);
     return failed;

@@ -9,6 +9,14 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
+static lib_u16 read_refresh_count(core_machine *machine)
+{
+    lib_u16 low;
+    core_machine_port_write(&machine->executor_port, 0x0043u, 0x40u);
+    low = core_machine_port_read(&machine->executor_port, 0x0041u);
+    return (lib_u16)(low | (core_machine_port_read(&machine->executor_port, 0x0041u) << 8u));
+}
+
 lib_i32 main(void)
 {
     lib_u8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
@@ -89,7 +97,7 @@ lib_i32 main(void)
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u);
     failed |= !failed && (core_machine_reset(session->core_machine) != LIB_STATUS_OK ||
         core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK ||
-        session->core_machine->shared_pit.data.reload[1u] != 18u);
+        read_refresh_count(session->core_machine) != 18u);
     failed |= !failed && (vm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     even[0u] = 2u;

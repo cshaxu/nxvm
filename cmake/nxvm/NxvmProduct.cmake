@@ -1167,7 +1167,7 @@ set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/fpu.c
     src/app-nxvm/devices/cpu_instructions.c
     src/app-nxvm/devices/pic.c
-    src/app-nxvm/devices/pit.c
+    src/app-nxvm/devices/pit_bus.c
     src/app-nxvm/devices/dma.c
     src/app-nxvm/devices/kbc.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
@@ -1184,6 +1184,7 @@ add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+target_link_libraries(core-machine-executor PUBLIC x86-pit825x)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(vm-machine-frame-smoke
@@ -1278,18 +1279,6 @@ add_executable(core-machine-ram-port-context-smoke
 target_link_libraries(core-machine-ram-port-context-smoke PRIVATE
     core-machine
 )
-add_executable(core-machine-pit-readback-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pit_readback_smoke.c
-)
-target_link_libraries(core-machine-pit-readback-smoke PRIVATE core-machine)
-add_executable(core-machine-pit-8253-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pit_8253_smoke.c
-)
-target_link_libraries(core-machine-pit-8253-smoke PRIVATE core-machine)
-add_executable(core-machine-pit-waveform-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pit_waveform_smoke.c
-)
-target_link_libraries(core-machine-pit-waveform-smoke PRIVATE core-machine)
 add_executable(core-machine-pit-divider-smoke
     test/app-nxvm/unit/core/devices/machine_pit_divider_smoke.c
 )
@@ -1908,9 +1897,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-reset-rom-alias-smoke
     core-machine-memory-device-registration-s16-smoke
     core-machine-ram-port-context-smoke
-    core-machine-pit-readback-smoke
-    core-machine-pit-8253-smoke
-    core-machine-pit-waveform-smoke
     core-machine-pit-divider-smoke
     core-machine-pit-irq0-s2-smoke
     core-machine-auxiliary-pit-s3-smoke
@@ -2545,7 +2531,7 @@ endforeach()
 endif()
 
 set(PROJECT_CURRENT_VM_RUNTIME_PATH
-    "${CMAKE_BINARY_DIR}/vm-0-5-0538.exe")
+    "${CMAKE_BINARY_DIR}/vm-0-5-0539.exe")
 configure_file("${CMAKE_SOURCE_DIR}/assets/nxvm/${NXVM_PRODUCT_PROFILE}/NXVM.ini"
     "${CMAKE_BINARY_DIR}/NXVM.ini" COPYONLY)
 function(project_add_t533_console_integration_test target)
@@ -2755,8 +2741,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0538)
-add_current_vm_artifact(vm-0-5-0538 "0.5.0538")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0539)
+add_current_vm_artifact(vm-0-5-0539 "0.5.0539")
 if(TARGET run-integration-tests)
     add_dependencies(run-integration-tests ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 endif()
@@ -3412,7 +3398,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/fpu.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/cpu_instructions.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/pic.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/pit.c|machine-executor"
+    "core-machine-executor|src/app-nxvm/devices/pit_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/dma.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/kbc.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/xt_ppi_keyboard.c|machine-executor"

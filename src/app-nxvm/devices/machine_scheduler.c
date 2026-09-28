@@ -65,7 +65,7 @@ static lib_u8 core_machine_deadline_consider_absolute(const core_machine *machin
     return LIB_FALSE;
 }
 
-static lib_u8 core_machine_deadline_consider_pit(const t_pit *pit,
+static lib_u8 core_machine_deadline_consider_pit(const x86_pit *pit,
     const core_machine_clock_domain *clock, lib_u64 *io_source_ticks)
 {
     lib_u8 counter;
@@ -74,7 +74,7 @@ static lib_u8 core_machine_deadline_consider_pit(const t_pit *pit,
     for (counter = 0u; counter < 3u; ++counter) {
         lib_u64 device_ticks;
 
-        if (core_machine_pit_ticks_until_output(pit, counter, &device_ticks) ==
+        if (x86_pit_ticks_until_output(pit, counter, &device_ticks) ==
             LIB_STATUS_OK) {
             if (core_machine_deadline_consider_clock(clock, device_ticks,
                     io_source_ticks)) immediate_due = LIB_TRUE;
@@ -120,10 +120,10 @@ void core_machine_capture_time_observation_private(const core_machine *machine,
      * usable Core-local conversion.  Provenance decides what we promise about
      * the edge, not whether a programmed PIT may wake a halted guest. */
     if (machine->timing_plan_copied) {
-        if (core_machine_deadline_consider_pit(&machine->shared_pit,
+        if (core_machine_deadline_consider_pit(machine->shared_pit.device,
                 &machine->pit_clock, &source_ticks)) immediate_due = LIB_TRUE;
         if (machine->auxiliary_pit_configured) {
-            if (core_machine_deadline_consider_pit(&machine->auxiliary_pit,
+            if (core_machine_deadline_consider_pit(machine->auxiliary_pit.device,
                     &machine->auxiliary_pit_clock, &source_ticks)) immediate_due =
                 LIB_TRUE;
         }
@@ -313,9 +313,9 @@ static void core_machine_arbitration_advance(core_machine *machine,
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_DMA_ADVANCE,
             0u, (lib_u32)dma_ticks, 0u);
     }
-    core_machine_pit_advance(&machine->shared_pit, pit_ticks);
+    x86_pit_advance(machine->shared_pit.device, pit_ticks);
     if (machine->auxiliary_pit_configured) {
-        core_machine_pit_advance(&machine->auxiliary_pit, auxiliary_pit_ticks);
+        x86_pit_advance(machine->auxiliary_pit.device, auxiliary_pit_ticks);
     }
     if (pit_ticks != 0u) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIT_ADVANCE,

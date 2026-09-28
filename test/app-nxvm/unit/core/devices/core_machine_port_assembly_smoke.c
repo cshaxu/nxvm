@@ -219,10 +219,33 @@ static lib_i32 port_assembly_hdc_transaction(void)
     return failed || port_assembly_fresh_default_create();
 }
 
+static lib_i32 port_assembly_pit_transaction(void)
+{
+    lib_i32 failed = 0;
+    for (lib_u32 fail_at = 1u; fail_at <= 7u; ++fail_at) {
+        t_port ports;
+        core_machine_pit_bus bus = {0};
+        core_machine_port_test_allocation allocation = {fail_at, 0u};
+        core_machine_port_initialize(&ports);
+        core_machine_port_set_test_allocation(&ports, &allocation);
+        failed |= core_machine_pit_bus_create(&bus, &ports,
+            X86_PIT_PERSONALITY_8254, 0x0048u) != LIB_STATUS_NO_MEMORY ||
+            bus.device != LIB_NULL;
+        for (lib_u16 port = 0x0048u; port <= 0x004bu; ++port) {
+            failed |= core_machine_port_has_read(&ports, port) ||
+                core_machine_port_has_write(&ports, port);
+        }
+        core_machine_pit_bus_destroy(&bus);
+        core_machine_port_finalize(&ports);
+    }
+    return failed;
+}
+
 lib_i32 main(void)
 {
     lib_i32 failed = port_assembly_range_transaction() ||
-        port_assembly_create_failure() || port_assembly_fdc_transaction();
+        port_assembly_create_failure() || port_assembly_fdc_transaction() ||
+        port_assembly_pit_transaction();
 
     if (failed) return 1;
     puts("M5:T313:S3:PORT-ASSEMBLY:OK");

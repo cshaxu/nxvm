@@ -42,6 +42,9 @@ it does not change runtime ownership before the corresponding cutover.
 - `app-nxvm/devices` owns CPU, memory, bus, devices, reset,
   generic execution and faults and the sole guest
   timeline. Generic mechanisms know hardware contracts, not product names.
+  T539's first cutover moves PIT 8253/8254 state and waveforms to
+  `x86/devices/pit825x`; NXVM retains its port attachment, clock conversion
+  and IRQ/refresh/speaker wiring. Other chip extractions remain pending.
 - `common/machine` owns the shared execution/control protocol and paused-debug
   lease; `common/session` is the sole product-control reducer;
   `common/ui` binds Lib KVM and the Console broker.

@@ -25,7 +25,7 @@ lib_status vm_profile_xt_5160_268_values_create(
     values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_8088;
     values.core.configuration.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     values.core.configuration.shared_pit_personality =
-        CORE_MACHINE_PIT_PERSONALITY_8253;
+        X86_PIT_PERSONALITY_8253;
     values.core.configuration.pic_topology =
         CORE_MACHINE_PIC_TOPOLOGY_SINGLE;
     values.core.configuration.dma_controller_count = 1u;

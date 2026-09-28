@@ -1,7 +1,8 @@
 # T539 S1: Finite Devices Inventory
 
 Baseline 996a19a17. All 81 tracked files under `src/app-nxvm/devices` are listed
-exactly once below. Status for every entry is **designed, not migrated**.
+exactly once below. Entries remain **designed, not migrated**, except the
+PIT row explicitly updated by S3; the original inventory stays finite.
 The [design review](../architecture/t539-independent-chip-design.md) supplies
 dependency details, proposed contracts, regression ownership and decision gates.
 This ledger is not a claim of completed chip semantics/timing qualification.
@@ -11,7 +12,7 @@ This ledger is not a claim of completed chip semantics/timing qualification.
 | `cpu.c`, `cpu.h`, `cpu_instructions.c`, `cpu_instructions.h`, `cpu_interface.h`, `cpu_timing.c`, `cpu_timing.h`, `cpu_timing_model.c`, `cpu_trace.h` | Extract CPU execution/timing; remove machine/private peer dependencies; preserve tables; resolve firmware hook, bus, INTA and generated catalogs. |
 | `fpu.c`, `fpu.h`, `fpu_interface.h` | Extract implemented FPU state/extension behavior; replace CPU-private coupling with explicit extension boundary. |
 | `pic.c`, `pic.h`, `pic_interface.h` | Extract one PIC; retain paired wiring and fixed ports in board. |
-| `pit.c`, `pit.h` | Extract 8253/8254 timer; retain routing and clock conversion in board. |
+| `pit.c`, `pit.h` | S3 implementation: sole timer moved to `src/x86/devices/pit825x`; NXVM `pit_bus` owns port attachment, existing board/scheduler own wiring and clocks. Verification and acceptance are recorded in S3 evidence. |
 | `dma.c`, `dma.h` | Split controller from page registers, address/lane expansion, pair arbitration and physical bus provider. |
 | `rtc.c`, `rtc.h` | Extract RTC/CMOS; replace PIC and whole-machine timing definitions with local inputs/output. |
 | `kbc.c`, `kbc.h` | Split AT-controller and attached keyboard/AUX behavior; board owns A20/reset and port/IRQ wiring. |
@@ -52,7 +53,9 @@ Source anchors use symbol names to survive subsequent line moves:
   DMA pair inspection and clock-domain deadline conversion.
 - Build: `cmake/nxvm/NxvmProduct.cmake` executor/observable source ownership and
   generated timing catalogs; `src/x86/CMakeLists.txt` and `verify_corpus.cmake`
-  currently support only xasm32/debug, with Common assembled unconditionally.
+  at the S1 baseline supported only xasm32/debug, with Common assembled
+  unconditionally. S3 adds a Types-only PIT target and a tools-off standalone
+  build that does not assemble Common.
 - Tests: `test/app-nxvm/unit/core/devices` and `unit/core/machine` contain mixed
   chip and board assertions; profile and integration tests remain product-owned.
   Relevant families include PIC priority/phase/lifecycle, PIT waveform/readback,
@@ -65,4 +68,5 @@ Tracked-file set equality checks the inventory against Git, not an inferred
 directory count. Design-only edits require Markdown/reference and documentation
 governance verification; no executable or runtime-test result is claimed here.
 Baseline T538 runtime acceptance remains historical evidence, not proof of this
-future architecture. No source, tests, manifests, binary or INI was changed.
+future architecture. S1 changed no source, tests, manifests, binary or INI.
+For the PIT cutover, see [S3 evidence](t539-s3-pit-extraction.md).

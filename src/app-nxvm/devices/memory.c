@@ -6,7 +6,6 @@
 
 
 
-#include "app-nxvm/devices/pit.h"
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 

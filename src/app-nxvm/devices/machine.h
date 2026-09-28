@@ -28,7 +28,7 @@
 
 #include "app-nxvm/devices/pic.h"
 
-#include "app-nxvm/devices/pit.h"
+#include "app-nxvm/devices/pit_bus.h"
 
 #include "app-nxvm/devices/dma.h"
 
@@ -233,8 +233,8 @@ struct core_machine {
     t_pic shared_pic_master;
     t_pic shared_pic_slave;
     core_machine_pic_irq_source shared_pit_irq0_source;
-    t_pit shared_pit;
-    t_pit auxiliary_pit;
+    core_machine_pit_bus shared_pit;
+    core_machine_pit_bus auxiliary_pit;
     lib_u8 auxiliary_pit_configured;
     t_latch shared_dma_latch;
     t_dma shared_dma_primary;

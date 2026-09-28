@@ -12,6 +12,14 @@ static void program_counter0(core_machine *machine, lib_u16 base,
     core_machine_port_write(&machine->executor_port, base, count >> 8u);
 }
 
+static lib_u16 read_counter0(core_machine *machine, lib_u16 base)
+{
+    lib_u16 low;
+    core_machine_port_write(&machine->executor_port, (lib_u16)(base + 3u), 0u);
+    low = core_machine_port_read(&machine->executor_port, base);
+    return (lib_u16)(low | (core_machine_port_read(&machine->executor_port, base) << 8u));
+}
+
 lib_i32 main(void)
 {
     core_machine_config config = { 0 };
@@ -27,21 +35,20 @@ lib_i32 main(void)
         failed |= !machine->auxiliary_pit_configured ||
             !core_machine_port_has_read(&machine->executor_port, 0x0048u) ||
             !core_machine_port_has_write(&machine->executor_port, 0x004bu) ||
-            !core_machine_port_has_read(&machine->executor_port, 0x0040u) ||
-            machine->auxiliary_pit.connect.output[0u] != LIB_NULL;
+            !core_machine_port_has_read(&machine->executor_port, 0x0040u);
         failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
         failed |= core_machine_reset(machine) != LIB_STATUS_OK;
         program_counter0(machine, 0x0040u, 0x30u, 3u);
         program_counter0(machine, 0x0048u, 0x30u, 2u);
         /* A completed count write reaches CE on the following clock. */
-        failed |= machine->shared_pit.data.count[0u] != 0u ||
-            machine->auxiliary_pit.data.count[0u] != 0u;
+        failed |= read_counter0(machine, 0x0040u) != 0u ||
+            read_counter0(machine, 0x0048u) != 0u;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK;
-        failed |= machine->shared_pit.data.count[0u] != 3u ||
-            machine->auxiliary_pit.data.count[0u] != 0u;
+        failed |= read_counter0(machine, 0x0040u) != 3u ||
+            read_counter0(machine, 0x0048u) != 0u;
         failed |= core_machine_advance_time(machine, 3u) != LIB_STATUS_OK;
-        failed |= machine->shared_pit.data.count[0u] != 0u ||
-            machine->auxiliary_pit.data.count[0u] != 2u;
+        failed |= read_counter0(machine, 0x0040u) != 0u ||
+            read_counter0(machine, 0x0048u) != 2u;
         core_machine_port_write(&machine->executor_port, 0x004bu, 0x00u);
         failed |= core_machine_port_read(&machine->executor_port, 0x0048u) != 2u ||
             core_machine_port_read(&machine->executor_port, 0x0048u) != 0u;
@@ -52,11 +59,14 @@ lib_i32 main(void)
         failed |= core_machine_port_read(&machine->executor_port, 0x0048u) != 0x22u ||
             core_machine_port_read(&machine->executor_port, 0x0048u) != 0x22u;
         failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-        failed |= machine->shared_pit.data.count[0u] != 0u ||
-            machine->auxiliary_pit.data.count[0u] != 0u ||
-            !machine->shared_pit.data.flagReady[0u] ||
-            !machine->auxiliary_pit.data.flagReady[0u] ||
-            machine->auxiliary_pit.connect.output[0u] != LIB_NULL;
+        /* Reset cancels both programmed output transitions. */
+        {
+            lib_u64 deadline;
+            failed |= x86_pit_get_output(machine->shared_pit.device, 0u) ||
+                x86_pit_get_output(machine->auxiliary_pit.device, 0u) ||
+                x86_pit_ticks_until_output(machine->shared_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE ||
+                x86_pit_ticks_until_output(machine->auxiliary_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE;
+        }
     }
     core_machine_destroy(machine);
     if (failed) return 1;

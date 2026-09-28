@@ -8,7 +8,6 @@
 #include "app-nxvm/devices/device_support.h"
 
 
-#include "app-nxvm/devices/pit.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/pic.h"
 

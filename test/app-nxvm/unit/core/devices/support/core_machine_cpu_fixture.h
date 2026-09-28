@@ -102,10 +102,10 @@ static inline lib_status test_core_machine_fixture_register_memory_device_provid
 
 static inline void test_core_machine_fixture_program_pit_divider(
     core_machine *machine, lib_u8 control, lib_u16 divisor,
-    core_machine_pit_output_provider output, void *owner)
+    x86_pit_output_provider output, void *owner)
 {
     if (machine == LIB_NULL) return;
-    core_machine_pit_set_output(&machine->shared_pit, 0u, output, owner);
+    x86_pit_set_output(machine->shared_pit.device, 0u, output, owner);
     core_machine_port_write(&machine->executor_port, 0x0043u, control);
     core_machine_port_write(&machine->executor_port, 0x0040u, divisor & 0xffu);
     core_machine_port_write(&machine->executor_port, 0x0040u, divisor >> 8u);

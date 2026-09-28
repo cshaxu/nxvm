@@ -67,3 +67,17 @@ S2 acceptance: coordinator-role review of P1 360e7d4ee confirmed the complete
 design brief, seven provider definitions, distinct FDC evidence limits and
 approved PIT boundary. Local links, diff check and NXVM documentation gate pass.
 P2 closes this design S only; no chip has moved and T539 remains open.
+
+## S3: Approved PIT Extraction
+
+Continuation from 9c1eadf0d, explicitly approved for Shared and NXVM only.
+The sole 8253/8254 mechanism and pure chip tests move to x86; NXVM retains
+port decoding, clock conversion, IRQ0/refresh/speaker and auxiliary-PIT/D4
+wiring. Original waveform logic is preserved; no timing-grade change.
+
+[S3 evidence](../etc/evidence/t539-s3-pit-extraction.md) records preservation
+review, cleanup/failure tests, dual-width units/integration, static checks and
+eight 0539 receiving artifacts. Shared and NXVM use separate P commits;
+Lib/Common, MyNES, sibling repositories and owner INIs remain unchanged.
+Coordinator actual-change acceptance follows the delivered commits. T539
+does not close with this first chip batch.

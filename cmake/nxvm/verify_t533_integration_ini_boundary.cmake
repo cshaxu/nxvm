@@ -27,6 +27,16 @@ foreach(source IN LISTS integration_sources)
     if(source MATCHES "/support/.*\\.c$" OR source MATCHES "\\\\support\\\\.*\\.c$")
         continue()
     endif()
+    # The deployed-product probe starts the real EXE beside its owner's INI;
+    # it must not link or construct an in-process machine/session fixture.
+    if(source MATCHES "/product/nxvm_deployed_boot_probe\\.c$")
+        if(NOT text MATCHES "CreateProcessA\\(argv\\[1\\]" OR
+           NOT text MATCHES "NULL, argv\\[2\\], &startup, &process" OR
+           text MATCHES "core_machine_create[ \t\r\n]*\\(")
+            message(FATAL_ERROR "Deployed probe must launch the real product: ${source}")
+        endif()
+        continue()
+    endif()
     if(source MATCHES "\\.c$" AND NOT text MATCHES
         "integration_ini_session_|vm_app_ini_load|nxvm_console_process_run")
         message(FATAL_ERROR "T533 integration lacks an INI session consumer: ${source}")

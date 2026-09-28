@@ -2121,12 +2121,9 @@ int main(lib_i32 argc, char **argv)
                     (unsigned long long)trace.irq0_retires);
                 printf("BOOT-PROBE=trace-cpu-retires=%llu\n",
                     (unsigned long long)trace.cpu_retires);
-                printf("BOOT-PROBE=pit0-cw=%02X-reload=%u-remaining=%u-out=%u-active=%u\n",
-                    (unsigned int)session->core_machine->shared_pit.data.cw[0u],
-                    (unsigned int)session->core_machine->shared_pit.data.reload[0u],
-                    (unsigned int)session->core_machine->shared_pit.data.remaining[0u],
-                    (unsigned int)session->core_machine->shared_pit.data.flagOutput[0u],
-                    (unsigned int)session->core_machine->shared_pit.data.flagActive[0u]);
+                printf("PIT:out0=%u:out1=%u\n",
+                    (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 0u),
+                    (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 1u));
                 if (session->core_machine->xt_ppi_keyboard.mode_control == 0x9bu)
                     printf("BOOT-PROBE=xt-ppi-unconfigured\n");
                 else printf("BOOT-PROBE=xt-ppi-configured\n");
@@ -2530,20 +2527,9 @@ done:
             (unsigned int)session->core_machine->executor_cpu.data.es.selector,
             (unsigned int)(session->core_machine->executor_cpu.data.eax & 0xffffu),
             (unsigned int)(session->core_machine->executor_cpu.data.ebp & 0xffffu));
-        printf("BOOT-PROBE=pit0-count=%04X-latch=%04X-remaining=%u-latched=%u-active=%u-read=%u"
-            "-pit1-count=%04X-remaining=%u-active=%u-output=%u-clock=%u/%llu\n",
-            (unsigned int)session->core_machine->shared_pit.data.count[0u],
-            (unsigned int)session->core_machine->shared_pit.data.latch[0u],
-            (unsigned int)session->core_machine->shared_pit.data.remaining[0u],
-            (unsigned int)session->core_machine->shared_pit.data.flagLatch[0u],
-            (unsigned int)session->core_machine->shared_pit.data.flagActive[0u],
-            (unsigned int)session->core_machine->shared_pit.data.flagRead[0u],
-            (unsigned int)session->core_machine->shared_pit.data.count[1u],
-            (unsigned int)session->core_machine->shared_pit.data.remaining[1u],
-            (unsigned int)session->core_machine->shared_pit.data.flagActive[1u],
-            (unsigned int)session->core_machine->shared_pit.data.flagOutput[1u],
-            (unsigned int)session->core_machine->pit_clock.phase,
-            (unsigned long long)session->core_machine->pit_clock.delivered_ticks);
+        printf("PIT:out0=%u:out1=%u\n",
+            (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 0u),
+            (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 1u));
         printf("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
             (unsigned int)session->core_machine->fdc.data.phase,
             (unsigned int)session->core_machine->fdc.data.dor,

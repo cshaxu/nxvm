@@ -178,7 +178,7 @@ typedef struct core_machine_config {
     core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
     /* Frozen shared system-PIT chip selection; zero preserves 8254 users. */
-    core_machine_pit_personality shared_pit_personality;
+    x86_pit_personality shared_pit_personality;
     core_machine_pic_topology pic_topology;
     /* Product profiles select one or two controllers explicitly.  Zero is
      * retained only for direct Core fixture compatibility and resolves to two. */

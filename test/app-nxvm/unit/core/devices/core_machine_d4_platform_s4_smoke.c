@@ -37,6 +37,7 @@ static lib_i32 core_machine_port_b_exclusivity(void)
     value = 0u;
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK ||
+        core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_INVALID_STATE ||
         core_machine_configure_planar_parity(machine, &planar) != LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
@@ -45,6 +46,14 @@ static lib_i32 core_machine_port_b_exclusivity(void)
     core_machine_destroy(machine);
     return failed;
 }
+static lib_u16 read_refresh_count(core_machine *machine)
+{
+    lib_u16 low;
+    core_machine_port_write(&machine->executor_port, 0x0043u, 0x40u);
+    low = core_machine_port_read(&machine->executor_port, 0x0041u);
+    return (lib_u16)(low | (core_machine_port_read(&machine->executor_port, 0x0041u) << 8u));
+}
+
 lib_i32 main(void)
 {
     core_machine_config config = {0};
@@ -72,7 +81,7 @@ lib_i32 main(void)
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
-        machine->shared_pit.data.reload[1u] != 18u ||
+        read_refresh_count(machine) != 18u ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
         value != 0x1fu ||
         core_machine_get_d4_platform_observation(machine, &observation) !=

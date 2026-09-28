@@ -392,8 +392,8 @@ static lib_status core_machine_create_internal(
             config->retirement_time_contract) ||
         !core_machine_transaction_contract_is_valid(
             &config->transaction_contract) ||
-        (config->shared_pit_personality != CORE_MACHINE_PIT_PERSONALITY_8254 &&
-        config->shared_pit_personality != CORE_MACHINE_PIT_PERSONALITY_8253) ||
+        (config->shared_pit_personality != X86_PIT_PERSONALITY_8254 &&
+        config->shared_pit_personality != X86_PIT_PERSONALITY_8253) ||
         (config->auxiliary_pit_present != LIB_FALSE &&
         config->auxiliary_pit_present != LIB_TRUE) ||
         (config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
@@ -589,14 +589,21 @@ static lib_status core_machine_create_internal(
         &machine->shared_pic_master, &machine->shared_pic_slave);
     core_machine_pic_irq_source_bind(&machine->shared_pit_irq0_source,
         &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
-    core_machine_pit_initialize_as(&machine->shared_pit, &machine->executor_port,
-        config->shared_pit_personality);
-    if (config->auxiliary_pit_present) {
-        core_machine_pit_initialize_at(&machine->auxiliary_pit,
-            &machine->executor_port, config->auxiliary_pit_base_port);
-        machine->auxiliary_pit_configured = LIB_TRUE;
+    {
+        lib_status status = core_machine_pit_bus_create(&machine->shared_pit,
+            &machine->executor_port, config->shared_pit_personality, 0x0040u);
+        if (status == LIB_STATUS_OK && config->auxiliary_pit_present) {
+            status = core_machine_pit_bus_create(&machine->auxiliary_pit,
+                &machine->executor_port, X86_PIT_PERSONALITY_8254,
+                config->auxiliary_pit_base_port);
+            machine->auxiliary_pit_configured = status == LIB_STATUS_OK;
+        }
+        if (status != LIB_STATUS_OK) {
+            core_machine_destroy(machine);
+            return status;
+        }
     }
-    core_machine_pit_set_output(&machine->shared_pit, 0,
+    x86_pit_set_output(machine->shared_pit.device, 0,
         core_machine_pic_timer_output, &machine->shared_pit_irq0_source);
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_board_configure_xt_ppi_speaker(machine);
@@ -628,7 +635,7 @@ static lib_status core_machine_create_internal(
         core_machine_kbc_set_serial_delivery_timing(&machine->shared_kbc,
             machine->kbc_serial_delivery_ticks);
     }
-    core_machine_pit_set_output(&machine->shared_pit, 1, LIB_NULL, LIB_NULL);
+    x86_pit_set_output(machine->shared_pit.device, 1, LIB_NULL, LIB_NULL);
     {
         lib_status status = core_machine_port_registration_status(
             &machine->executor_port);
@@ -759,9 +766,9 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     core_machine_hdc_reset(&machine->hdc);
     core_machine_pic_reset(&machine->shared_pic_master,
         &machine->shared_pic_slave);
-    core_machine_pit_reset(&machine->shared_pit);
+    x86_pit_reset(machine->shared_pit.device);
     if (machine->auxiliary_pit_configured) {
-        core_machine_pit_reset(&machine->auxiliary_pit);
+        x86_pit_reset(machine->auxiliary_pit.device);
     }
     core_machine_board_after_pit_reset(machine);
     machine->d4_refresh_hold_pending = LIB_FALSE;
@@ -1433,6 +1440,8 @@ void core_machine_destroy(core_machine *machine)
         machine->firmware_context.machine = LIB_NULL;
         machine->firmware_provider = LIB_NULL;
         machine->firmware_provider_context = LIB_NULL;
+        core_machine_pit_bus_destroy(&machine->shared_pit);
+        core_machine_pit_bus_destroy(&machine->auxiliary_pit);
         core_machine_hdc_finalize(&machine->hdc);
         core_machine_fdc_finalize(&machine->fdc);
         core_machine_dma_finalize(&machine->shared_dma_latch,
@@ -1445,10 +1454,6 @@ void core_machine_destroy(core_machine *machine)
         } else core_machine_kbc_finalize(&machine->shared_kbc);
         core_machine_pic_finalize(&machine->shared_pic_master,
             &machine->shared_pic_slave);
-        core_machine_pit_finalize(&machine->shared_pit);
-        if (machine->auxiliary_pit_configured) {
-            core_machine_pit_finalize(&machine->auxiliary_pit);
-        }
         core_machine_vadp_finalize(&machine->shared_vadp);
         core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
         core_machine_port_finalize(&machine->executor_port);
