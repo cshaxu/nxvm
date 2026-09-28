@@ -2,8 +2,10 @@
 
 ## Goal And Admission
 
-First of three ordered NXVM migration candidates requested by the owner.
-Unnumbered and not admitted for implementation. Extract the implemented chip
+First of three ordered NXVM migrations requested by the owner, admitted as
+[M5 T539](../history/M5-T539-independent-shared-chips.md). S1 is research/design
+only; later production batches await design review and their own admission.
+Extract the implemented chip
 mechanisms from `src/app-nxvm/devices` into `src/x86/devices`, leaving NXVM
 responsible for board composition and product adaptation rather than private
 copies of shared chips.
@@ -29,6 +31,14 @@ copies of shared chips.
   remain with their current board/adapter owner pending the second candidate.
 
 ## Coverage And Work Strategy
+
+S1's [design review](../etc/architecture/t539-independent-chip-design.md) and
+[81-file ledger](../etc/evidence/t539-chip-migration-ledger.md) document current
+coupling, proposed component boundaries, receiving tests and pending decisions.
+They are research outputs, not permission to change Shared code. Resolve the
+CPU firmware hook and FDC unready-response ownership before their extraction;
+retain behavior meanwhile. Do not label AT KBC or XT Mode-0 PPI models as full
+general-purpose MCU/8255 implementations.
 
 The first admitted S freezes a migration ledger covering every tracked source
 file in the current devices subtree, its callers and tests. Each entry names

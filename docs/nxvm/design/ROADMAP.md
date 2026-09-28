@@ -29,7 +29,8 @@ Retain lawful external firmware composition and Console/debugger interaction.
 The next structural target is the three-step [Queue](../states/QUEUE.md):
 independent chips in `x86/devices`, shared PC board mechanisms in `x86/ibmpc`,
 then `app-mypcxt`, `app-mypcat`, `app-mypcdeskpro386` and default-386
-`app-nxvm`. These are unadmitted candidates, not completed migrations.
+`app-nxvm`. The chip stage is admitted as T539, initially research/design only;
+the board and App stages remain unadmitted candidates. None is a completed migration.
 Retained qualification work follows the new owners without reduced coverage.
 
 Retain all implemented XT, AT, DeskPro 386 and default PC/AT variants; inventory

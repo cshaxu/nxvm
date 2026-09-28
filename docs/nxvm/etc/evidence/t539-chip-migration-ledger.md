@@ -1,0 +1,68 @@
+# T539 S1: Finite Devices Inventory
+
+Baseline 996a19a17. All 81 tracked files under `src/app-nxvm/devices` are listed
+exactly once below. Status for every entry is **designed, not migrated**.
+The [design review](../architecture/t539-independent-chip-design.md) supplies
+dependency details, proposed contracts, regression ownership and decision gates.
+This ledger is not a claim of completed chip semantics/timing qualification.
+
+| Files | Proposed disposition and change |
+| --- | --- |
+| `cpu.c`, `cpu.h`, `cpu_instructions.c`, `cpu_instructions.h`, `cpu_interface.h`, `cpu_timing.c`, `cpu_timing.h`, `cpu_timing_model.c`, `cpu_trace.h` | Extract CPU execution/timing; remove machine/private peer dependencies; preserve tables; resolve firmware hook, bus, INTA and generated catalogs. |
+| `fpu.c`, `fpu.h`, `fpu_interface.h` | Extract implemented FPU state/extension behavior; replace CPU-private coupling with explicit extension boundary. |
+| `pic.c`, `pic.h`, `pic_interface.h` | Extract one PIC; retain paired wiring and fixed ports in board. |
+| `pit.c`, `pit.h` | Extract 8253/8254 timer; retain routing and clock conversion in board. |
+| `dma.c`, `dma.h` | Split controller from page registers, address/lane expansion, pair arbitration and physical bus provider. |
+| `rtc.c`, `rtc.h` | Extract RTC/CMOS; replace PIC and whole-machine timing definitions with local inputs/output. |
+| `kbc.c`, `kbc.h` | Split AT-controller and attached keyboard/AUX behavior; board owns A20/reset and port/IRQ wiring. |
+| `xt_keyboard.c`, `xt_keyboard.h` | Extract existing serial keyboard behavior; replace concrete PPI binding. |
+| `xt_ppi_keyboard.c`, `xt_ppi_keyboard.h` | Split implemented Mode-0 mechanism from XT DIP/NMI/speaker/keyboard attachment; no full-8255 claim. |
+| `fdc.c`, `fdc.h`, `fdc_observation_interface.h` | Extract command/state/deadline and observations; split PC adapter/drive wiring and decide unready policy ownership. |
+| `hdc.c`, `hdc.h` | Extract explicit controller personalities, not universal ATA; detach IRQ/DMA/board port routing. |
+| `vadp.c`, `vadp.h` | Extract video mechanisms with one VRAM/frame owner; detach physical memory/port installation. |
+| `controller_interface.h` | Split mixed chip variants/timing value types from board port/IRQ/DMA/topology configuration; no shared umbrella machine config. |
+| `display.c`, `display_interface.h`, `guest_display_frame.h`, `presentation_interface.c`, `presentation_interface.h` | Split device-owned copied display values from machine display-provider slot and product presentation bridge; keep slot/bridge in board/adapter. |
+| `device_support.h` | Audit macros by real owner; retain needed owner-local mechanics or existing Types equivalents; no new catch-all public utils component. |
+| `clock.c`, `clock.h`, `timeline.c`, `timeline.h` | Retain board clock conversion/event ordering; chips receive documented time inputs, not machine timeline pointers. |
+| `transaction.c`, `transaction.h` | Retain board transaction/arbitration owner; expose bounded bus effects to CPU/DMA without shared private latch pointers. |
+| `memory.c`, `memory.h`, `memory_interface.c`, `memory_interface.h`, `port.c`, `port.h`, `port_interface.c`, `port_interface.h` | Retain physical storage/address decode/port routing; CPU translation stays CPU, video local state stays video. |
+| `d4_memory.c`, `d4_memory.h` | Retain Model-40 board-specific memory mapping, not an independent chip. |
+| `machine.c`, `machine.h`, `machine_board.c`, `machine_display.c`, `machine_firmware.c`, `machine_interface.h`, `machine_plan.c`, `machine_scheduler.c` | Retain machine composition/scheduling; replace embedded/private chip state and peer inspection with public connections; later ibmpc task classifies common board logic. |
+| `debug.c`, `debug_interface.h`, `retirement_observation_interface.c`, `retirement_observation_interface.h`, `trace_interface.c`, `trace_interface.h` | Retain machine debug/observation adapter, consume copied CPU/device observations; not another shared Debug CLI. |
+| `entry_plan_interface.c`, `entry_plan_interface.h`, `firmware_interface.h`, `rom_mapping_interface.c`, `rom_mapping_interface.h` | Retain entry/firmware/ROM board-service contracts; separately decide live CPU interception dependency. |
+| `media_interface.c`, `media_interface.h` | Retain registry/lifetime at board; separate only necessary neutral per-device media operations; no host file/storage dependency in chip. |
+| `execution_provider.h`, `guest_input_interface.h`, `lifecycle_interface.h` | Retain machine execution/input/lifecycle boundary; board maps input to actual attached device. |
+
+## Inspected Boundary Evidence
+
+Source anchors use symbol names to survive subsequent line moves:
+
+- CPU: execution context connections in `cpu_instructions.h`; PIC acknowledgement
+  in `cpu_instructions.c`; machine-private timing in `cpu_timing_model.c`;
+  `core_machine_firmware_handle_software_interrupt` and its machine binding.
+- PIC: paired initialization/acknowledgement and cascade fields. DMA: paired
+  initialization/advance, page/lane address construction, provider validation
+  and binding token allocation. PIT: local waveforms/output and port binding.
+- KBC: `core_machine_kbc_apply_output_port`, explicit reset and serial/BAT paths.
+  XT PPI header's Mode-0 limitation; XT keyboard concrete PPI delivery.
+- FDC: `core_machine_fdc_complete_unready_read`, drive seek and PC adapter ports.
+  HDC: personality dispatch, DMA provider and PIC source connection.
+- RTC: PIC binding/IRQ and machine timing includes. Video: physical mapping,
+  observers and copied frame generation. Scheduler: private FDC phase inspection,
+  DMA pair inspection and clock-domain deadline conversion.
+- Build: `cmake/nxvm/NxvmProduct.cmake` executor/observable source ownership and
+  generated timing catalogs; `src/x86/CMakeLists.txt` and `verify_corpus.cmake`
+  currently support only xasm32/debug, with Common assembled unconditionally.
+- Tests: `test/app-nxvm/unit/core/devices` and `unit/core/machine` contain mixed
+  chip and board assertions; profile and integration tests remain product-owned.
+  Relevant families include PIC priority/phase/lifecycle, PIT waveform/readback,
+  DMA channel/token/Model-40, KBC serial/AUX, FDC topology/media, HDC personalities,
+  RTC calendar/CMOS, video text/planar geometry, CPU timing/exception/FPU ledgers.
+
+## Verification Scope
+
+Tracked-file set equality checks the inventory against Git, not an inferred
+directory count. Design-only edits require Markdown/reference and documentation
+governance verification; no executable or runtime-test result is claimed here.
+Baseline T538 runtime acceptance remains historical evidence, not proof of this
+future architecture. No source, tests, manifests, binary or INI was changed.

@@ -159,8 +159,9 @@ maps this design to observed code and bounded migration evidence.
 
 ## Queued Shared-Hardware And App Split
 
-The owner-approved planning direction has three ordered, unadmitted
-[implementation candidates](../states/QUEUE.md):
+The owner-approved planning direction has three ordered stages. The first is
+[T539](../proposals/m5-shared-chip-extraction.md), admitted for research/design;
+the other two remain [implementation candidates](../states/QUEUE.md):
 
 1. `x86/devices` owns independent chips, including CPU, PIC, PIT and DMA;
    each retains its state and internal timing. It does not own a PC profile,

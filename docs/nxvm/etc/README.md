@@ -10,6 +10,10 @@ principal documents named in [the NXVM documentation guide](../README.md).
 S7 receiving evidence: [T43 Shared repair artifacts](evidence/m6-t43-s7-receiving-artifacts.md); eight current NXVM binaries, hashes and complete dual-width unit proof.
 
 S10 receiving evidence: [T43 byte-boolean artifacts](evidence/m6-t43-s10-receiving-artifacts.md); rebuilt eight 0535 receivers and corrected test callback contracts.
+
+T539 S1 research: [independent-chip design](architecture/t539-independent-chip-design.md)
+and [81-file migration inventory](evidence/t539-chip-migration-ledger.md);
+proposed boundaries and decision gates, not an implemented Shared ABI.
 S8 receiving evidence: [T43 quality-repair artifacts](evidence/m6-t43-s8-receiving-artifacts.md); rebuilt boolean-layout receivers and owner-approved 0/1-only INI correction.
 
 | Current category | Owner | Purpose |

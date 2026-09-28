@@ -2,15 +2,32 @@
 
 ## Current Work
 
-M5 T538 is accepted and closed. S1-S7 are complete; no task or subtask is active.
-Owner explicitly authorizes one successful launch per current EXE/INI pair
-instead of three repetitions. All eight pairs pass, and the complete required
-unit/integration suites pass. Historical failures remain recorded under that
-acceptance disposition, not reclassified as successes or explained causes.
+M5 T539 S1 is admitted for independent-chip extraction research and design.
+Production migration is not admitted in this S. The owner first requests the
+directory/dependency design, per-chip gaps, required diffs and prior decisions.
 
 | Task | Progress |
 | --- | --- |
-| T538 | Closed: S7 Shared repair 064b9619b, NXVM delivery 7149e1d9e, MyNES receivers 193530996; eight current boot pairs pass, all ten artifacts verified and pushed. |
+| T539 S1 | Active: NXVM-only architecture audit/design; no source or artifact changes. |
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New: M5 T539 S1, after closed T538 and Td S174. |
+| Admission And Approval | Owner admits queue candidate 1 in this conversation on 2026-09-27; research/design first, no production migration yet. |
+| Objective | Freeze all devices files and caller/test boundaries; design independent shared chips, dependency rules, chip-specific deltas and decisions for owner review. |
+| Non-goals | No source/test/build/Shared/MyNES/INI/asset changes; no new hardware, timing upgrades, ibmpc implementation or App split. |
+| Reference Baseline | Clean master 996a19a17; T538 runtime and eight 0538 EXEs unchanged. |
+| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md); [task history](../history/M5-T539-independent-shared-chips.md). |
+| Files And ABI Surface | NXVM docs only: active packet, queue, proposal, history, evidence index and design/ledger; proposed APIs only, no ABI edits. |
+| Applicable Rules | NXVM guide, Architecture/Coding/Roadmap, source policy; shared Execution/Architecture/Coding/Document rules; architecture-governance and coding-governance skills. |
+| Verification | Tracked-file ledger coverage; include/call/field/caller/build/test inspection; Markdown links, git diff --check and NXVM documentation gate. Design-only scope requires no runtime rebuild or invented runtime proof. |
+| Expected Markers | All tracked devices files classified; every chip group has current boundary, target, concrete change and regression owner; decisions separated from approved facts. |
+| Asset Needs | None; original code and existing evidence only; no external ROM/source import. |
+| Reporting Requirements | Report target tree, dependencies, per-chip gaps/diffs, sequencing and pending decisions with source anchors; stop before production work. |
+| Stop Conditions | Missing owner decision needed for implementation; forbidden scope edit; claimed chip identity unsupported by current evidence. Record these as design decisions, not invented hardware contracts. |
+| Exit Criteria | Requested design and complete finite inventory reviewed against actual source; governance proof and documentation delivery; T remains open for owner review of implementation. |
+| Original Owner Request | Admit independent chip extraction; first research directory/dependency structure, each chip's decoupling gaps, needed diffs and architecture decisions. |
+| Similar-Issue Sweep | Inventory entire devices subtree plus production callers, build descriptions and owning tests for direct peer state, private machine dependencies, fixed board routes, time ownership and public-boundary bypasses. No semantic completeness claim. |
 
 [Task history](../history/M5-T538-deployed-boot-pairs.md) retains reviewed packets
 and actual-change acceptance. [Archived proposal](../history/M5-T538-deployed-boot-pairs-proposal.md),
@@ -18,14 +35,8 @@ and actual-change acceptance. [Archived proposal](../history/M5-T538-deployed-bo
 [S7 evidence](../etc/evidence/t538-s7-orphan-release.md) record scope, revised
 acceptance, tests and hashes.
 
-M5 Td S174 records the owner's three-stage migration request: shared chips,
-shared PC board integration, then four independent Apps. The eight
-[Queue](QUEUE.md) candidates include these three first and retain the five
-qualification candidates with updated future owners. Implementation remains
-unadmitted. NXVM-only proposal/design/status changes passed actual-diff,
-dependency/reference review, local-link checks, diff whitespace and the NXVM
-documentation gate. No source, Shared corpus, MyNES, INI, asset or executable
-changed; current binaries need no rebuild. The Td P is the durable record.
+M5 Td S174 queued the three-stage migration. Its first candidate is now T539;
+the seven remaining [Queue](QUEUE.md) candidates retain their dependency order.
 
 ## Current Technical Baseline
 
