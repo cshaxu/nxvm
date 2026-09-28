@@ -147,6 +147,9 @@ All ten current optimized stripped Release receivers contain the S7 source
 changes reviewed here. This document's NXVM implementation P and the linked
 Shared P identify those changes; MyNES has only receiving binaries/evidence.
 Shared source commit is 064b9619b.
+Owner subsequently requests a key-specific wording correction; 268464d49 changes
+only that comment and its manifest. Receiver hashes remain valid without a
+redundant rebuild; source executable behavior is unchanged.
 The four adjacent INIs retain the frozen hashes in the convergence ledger.
 
 | Artifact | SHA-256 |

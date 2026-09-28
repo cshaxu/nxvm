@@ -1,6 +1,6 @@
 # M5 T538: Deployed Boot Pairs
 
-Owner admitted 2026-09-25. [Proposal](../proposals/m5-deployed-boot-pairs.md).
+Owner admitted 2026-09-25. [Proposal](M5-T538-deployed-boot-pairs-proposal.md).
 S1 inventories and reproduces all deployed pairs; task remains open.
 
 Identifier reconciliation: T537 is already present in immutable NXVM history
@@ -110,7 +110,7 @@ rollback TODO is neither removed nor claimed repaired.
 | Objective | Remove false Console delivery failure caused solely by an undersized visible viewport while preserving all guest text cells. |
 | Non-goals | No font scaling, frame truncation, automatic Window fallback, new API, KBC change, owner INI change or unrelated MyNES source change. |
 | Reference Baseline | S2 implementation 1d80f11d8 and acceptance 3922622ea; Shared 75099c178; four frozen INIs. |
-| Candidate Proposal | [Deployed boot pairs](../proposals/m5-deployed-boot-pairs.md). |
+| Candidate Proposal | [Deployed boot pairs](M5-T538-deployed-boot-pairs-proposal.md). |
 | Files And ABI Surface | Shared Console broker, two existing Lib tests, README and two manifests. NXVM eight 0538 and MyNES two 0043 receiving binaries/evidence. Public ABI unchanged. |
 | Applicable Rules | Shared EXECUTION, ARCHITECTURE, CODING, DOCUMENT; NXVM and MyNES architecture/coding/UI and source policies. Broker is the sole host buffer owner; copied guest frame is not modified to match viewport. |
 | Verification | Full/offscreen frame and smaller/scrolled viewport; rejected/ignored buffer growth and clipped native writes; stale lower-row clearing; existing Console handoff. Full NXVM units both widths and integration; full MyNES receiver suites both widths; all six manifests; optimized stripped receivers and documentation/diff review. |
@@ -160,7 +160,7 @@ Build trees are retained for that next qualification; no new task is admitted.
 | Objective | Import SoftPC b79769c1 Console output-extent and retry-coverage repair unchanged, and prove all six source/test roots match that committed source. |
 | Non-goals | No sibling writes, new API, product source or INI/media changes, font scaling, viewport resizing or whole-task boot qualification claim. |
 | Reference Baseline | NXVM 763a70134; SoftPC b79769c1 clean worktree, including its reviewed S8 P2 fix. |
-| Candidate Proposal | [Deployed boot pairs](../proposals/m5-deployed-boot-pairs.md), Console output batch. |
+| Candidate Proposal | [Deployed boot pairs](M5-T538-deployed-boot-pairs-proposal.md), Console output batch. |
 | Files And ABI Surface | Six changed files in src/lib and test/lib; other four roots and test/register.cmake verified unchanged. Eight NXVM 0538 and two MyNES 0043 receivers plus target-owned evidence. ABI unchanged. |
 | Applicable Rules | EXECUTION, ARCHITECTURE, CODING, DOCUMENT; both product guides, architecture/coding/UI and source policies. Only broker owns native frame storage; cache validity and retained coverage are separate facts; no product policy enters Lib. |
 | Verification | Exact six-root path/byte comparison to pinned source and current sibling; all six manifests and component/Types gates through complete suites. NXVM full units x64/x86 and external integration; MyNES full suites both widths; all ten optimized stripped product builds; INI hashes unchanged; both documentation gates and actual-diff review. |
@@ -218,7 +218,7 @@ Current. Current evidence, proposal and history agree; Queue is unchanged.
 | Objective | Import pinned production unchanged; replace the cross-owner test with owner-local coverage and a boundary check, then verify both receiving products. |
 | Non-goals | No sibling writes, product-specific shared fork, product policy change, INI/media/snapshot modification, or T-level boot closure. |
 | Reference Baseline | NXVM 52e5da766; clean SoftPC 40da7d00 (full source pin in evidence), compared against b79769c1. |
-| Candidate Proposal | [Deployed boot pairs](../proposals/m5-deployed-boot-pairs.md), S5 shared input-loss batch. |
+| Candidate Proposal | [Deployed boot pairs](M5-T538-deployed-boot-pairs-proposal.md), S5 shared input-loss batch. |
 | Files And ABI Surface | Imported source/test/manifest paths in four roots; x86 pair unchanged. Adds KVM_EVENT_INPUT_RESET and worker reset operation; consumers rebuilt together, no mixed enum ABI. Local corrections split the cross-owner fixture and update retirement-test event admission for reset without weakening single-retirement assertions. |
 | Applicable Rules | EXECUTION, ARCHITECTURE, CODING, DOCUMENT; both product guides, architecture/coding/UI and source policies. Lib owns native loss facts and matcher state; Common owns delivered-key ledger; product drivers own guest input. |
 | Verification | Production roots, test/x86 and registration helper remain pinned; enumerate approved test/lib and test/common deltas. Six manifests, Types/DAG/corpus gates; full NXVM units on x64/x86, external integration, MyNES full suites on both widths; ten optimized stripped builds; both documentation gates and actual diff review. |
@@ -259,7 +259,7 @@ diagnosis. No unrelated target or external source is changed.
 | Objective | Qualify all eight currently deployed EXE/INI pairs with three independent fresh launches each; reconcile the complete T538 ledger and closure predicates. |
 | Non-goals | No INI/media edits, synthetic F1, production repair, new hardware qualification, shared import or next queued task. |
 | Reference Baseline | Clean c134b0982; unchanged S5 0538 artifacts and recorded input hashes. |
-| Candidate Proposal | [T538 proposal](../proposals/m5-deployed-boot-pairs.md); [coverage ledger](../etc/evidence/t538-boot-pairs.md). |
+| Candidate Proposal | [T538 proposal](M5-T538-deployed-boot-pairs-proposal.md); [coverage ledger](../etc/evidence/t538-boot-pairs.md). |
 | Files And ABI Surface | NXVM current/history/evidence and proposal disposition only; existing deployed observer and build trees reused. No ABI or executable input change planned. |
 | Applicable Rules | Execution: complete batch, unit/integration gates, per-target pushed P and actual-diff review. Document: single current authority and history retention. Source policy: external immutable media/firmware only. Architecture/coding unchanged; no production edit. |
 | Verification | Existing deployed observer: each of four profiles on both widths, three sequential 180-second observations, 50ms start Return release; owned-tree watchdog at 195 seconds. Model40 x86 diagnostic extension to 300 seconds only after demonstrated progress. Full NXVM non-desktop and desktop unit suites both widths, established external integration, six manifests, documentation gate and diff check. |
@@ -270,3 +270,61 @@ diagnosis. No unrelated target or external source is changed.
 | Exit Criteria | Complete and reconcile all 24 case dispositions plus applicable tests and governance; actual-change coordinator review, target-scoped commit/push and clean worktree. A completed verification may report a failed T gate; no failed or unclassified run may be called qualified. Close T only if every proposal exit is proved. |
 | Original Owner Request | “好 你进行这个收口验证”; verify the remaining repeated deployed boot qualification before claiming T538 closed. |
 | Similar-Issue Sweep | Consume all eight deployed pairs across both host widths and all three repetitions, covering shared input/presentation paths; recheck retained S2-S5 regressions through full suites. No new repair class claimed. |
+
+## S7 Coordinator Review And T538 Closure
+
+Owner approved the exact Shared orphan-release repair, then explicitly replaced
+three repetitions with one successful launch per EXE/INI pair and authorized
+submission/closure once each passes. Reviewed implementation P1 064b9619b,
+NXVM P2 7149e1d9e and MyNES P3 193530996 against the original request,
+complete packet, actual source/test/build/documentation diffs and artifact hashes.
+Subsequent owner-requested comment correction P4 268464d49 is reviewed as
+non-executable: explicitly names this key rather than the whole input source.
+Manifest is updated; no binary rebuild or repeated runtime test is needed.
+
+The current eight-pair matrix passes 8/8: XT/AT/Model40 reach complete DOS 5
+Setup and default reaches `A:\>`, on both host widths. Fresh INFO confirms pause
+before Debug reads; no row reports POST error, early pause or exit/hang.
+[S7 evidence](../etc/evidence/t538-s7-orphan-release.md) preserves raw-observation
+identities, the identical Model40 captures, repaired owners and historical
+unexplained observations with the owner's acceptance disposition. It does not
+claim their causes proven or unlimited runtime reliability.
+
+Full NXVM units pass 336/336 plus 21 static checks and 20/20 external integration
+per width; MyNES passes 132/132 per width. Six manifests and both documentation
+gates pass. All ten optimized stripped artifacts are pushed, while owner INIs,
+snapshot and external assets remain unchanged. Source/test/build delta is
++184/-15, net +169, dominated by regression/observer proof; production is +4/-4.
+Lib's source-local accepted-key ledger and Common's delivered-key ledger retain
+distinct lifetimes. No API, duplicate execution path or BIOS workaround is added.
+
+T-level review reconciles the complete convergence ledger, S2-S7 corrections,
+product architecture/coding constraints, source/asset boundary, all actual
+changes and the open TODO list. Cooked-history rollback debt retains its
+separate Shared-review receiver; no unrelated queue item is silently completed.
+Proposal is archived, Queue remains unchanged, MyNES T43 stays closed. S7 and
+T538 are accepted and closed under the owner's revised verification standard.
+No next task is admitted. Prevention: use authoritative session state in monitor
+reports, reject orphan breaks at their source owner, and require semantic guest
+and pause checkpoints rather than observer exit or arbitrary sleeps.
+
+### S7 Archived Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; next unused S7 of open M5 T538. |
+| Admission And Approval | Owner requests continued investigation and repair on 2026-09-27. One session performs coordinator and executor roles sequentially. Owner subsequently approves the reviewed Shared orphan-release repair: consume breaks absent from the existing source-local held-key ledger, without replaying pending modifiers. NXVM and MyNES are affected receivers. |
+| Objective | Resolve the complete S6 residual batch: XT startup input/POST and pause handoff, and the separate default x86 premature pause. Distinguish observer defects, external interference and product defects before changing their owning mechanism. |
+| Non-goals | No BIOS-specific input discard, F1 workaround, INI/media substitution, broad timing downgrade, unreviewed Shared/MyNES changes or next queued task. |
+| Reference Baseline | Clean ea250fa56; unchanged S5 0538 receivers and S6 immutable EXE/INI/media identities. All 24 prior dispositions remain evidence, not overwritten by new passes. |
+| Candidate Proposal | [Deployed boot pairs](M5-T538-deployed-boot-pairs-proposal.md); [convergence ledger](../etc/evidence/t538-boot-pairs.md); [S6 residual batch](../etc/evidence/t538-s6-final-qualification.md). |
+| Files And ABI Surface | NXVM integration observer/regressions, INFO lifecycle report, task records and eight dual-width 0538 receivers; Shared kvm-base/hotkey.c, its contract, owner-local keyboard regressions and manifests; MyNES current dual-width 0043 receivers. No public ABI changes or unrelated App edits. |
+| Applicable Rules | Execution complete-batch and single-target P rules; architecture single input/state owner and no BIOS workaround; coding flat owner-local repair and Types; documentation single current authority; source policy external immutable firmware/media. Architecture/coding governance skills used. |
+| Verification | Bounded real EXE/INI replay, isolated serial native tests, paired start Return release delays and semantic pause acknowledgement. Each diagnostic process at most 180 seconds plus 20 seconds cleanup; owned logs under ignored build/t538-s7, no instruction recording. Full NXVM units both widths and integration, full MyNES suites both widths, six manifests and both documentation gates; all ten optimized stripped receivers rebuilt for the Shared production change. T closure needs one successful launch for each of eight current pairs, as subsequently directed by the owner. |
+| Expected Markers | No debugger text sent without confirmed monitor handoff. All eight current pairs reach DOS/installer without F1 and acknowledge pause; historical unexplained failures remain explicit under the owner's single-pass acceptance disposition. |
+| Asset Needs | Existing external firmware and media only, unchanged adjacent INIs and overlay masters. Retain S6 raw observations and current build trees for immediate comparison. |
+| Reporting Requirements | Report confirmed versus suspected causes, Shared repair proposal before edits, complete affected-batch dispositions, tests/build hashes, source delta, reviewed pushed P and remaining gates. |
+| Stop Conditions | Further Shared changes beyond the approved orphan-release mechanism require owner review. Any failure in the revised eight-pair qualification prevents closure. Stop only owned processes. |
+| Exit Criteria | All admitted residuals reconciled with repairs or the owner's single-pass acceptance disposition, complete units/integration and eight successful current pairs; affected artifacts/evidence pushed, actual-change review and clean tree. Owner permits T closure after these gates, but no next task. |
+| Original Owner Request | Continue investigating and repairing the failures exposed by S6 closure verification. |
+| Similar-Issue Sweep | Inspect cooked/raw and Window input sources, unmatched releases, reset/retirement and delivered-key ledger, all pause producers, observer command injection and acknowledgement across XT/AT/Model40/default and both widths. Shared hits are reported for approval, not hidden in an App workaround. |
