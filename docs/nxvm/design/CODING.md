@@ -3,7 +3,7 @@
 This is the macro layout authority. Apply [Coding Rules](../../rules/CODING.md);
 dependencies belong to [System Architecture](ARCHITECTURE.md).
 
-## Current And Target Trees
+## Current Tree
 
 The product/shared-corpus layout is current. `devices`, `machine`, `product`
 and `profiles` are NXVM product roots below `app-nxvm`; `pc110` remains a
@@ -76,3 +76,27 @@ owned values without external ROM/INI/YAML/media dependencies.
 Preserve every implemented board's tests and boot scenarios. Rehome CPU, chip,
 transaction, lifecycle and failure regressions with their owner. Factoring
 fixtures or removing duplicate machinery must not reduce behavior coverage.
+
+## Queued Successor Layout
+
+The three ordered [migration proposals](../states/QUEUE.md) target:
+
+```text
+src/
+  lib/
+  common/
+  x86/{devices,ibmpc,xasm32,debug}/
+  app-mypcxt/
+  app-mypcat/
+  app-mypcdeskpro386/
+  app-nxvm/             default 386 only after cutover
+```
+
+`app-mypc110` is future work, not an empty directory to create now. Real chip
+responsibilities move to devices; common PC board mechanisms move to ibmpc;
+product-specific assembly remains App-owned. Existing CPU implementation
+style and coherent file boundaries are preserved, not rewritten for renaming.
+Matching shared tests live in `test/x86/{devices,ibmpc}`; each App owns its
+`test/app-<product>` unit/integration tree, documentation, tools and build entry.
+No source, test, firmware, INI or executable is relocated by this proposal-only
+governance. Deployment identities/paths are separately governed at App cutover.

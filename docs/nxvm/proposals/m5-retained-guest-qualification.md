@@ -10,8 +10,13 @@ actual hardware and firmware. No machine is replaced or gated on Standard select
 The completed cutover establishes four product bindings: one selected Profile and external
 BYOB asset root at build time, one adjacent NXVM.ini for runtime media and
 presentation, and deployment only in `assets/nxvm/<profile>/`. This task
-extends that exact production route; it does not use retired YAML/catalog
+extends that production behavior; it does not use retired YAML/catalog
 construction or manufacture firmware/CMOS/media substitutes.
+
+After the preceding [App split](m5-independent-pc-apps.md), run these same
+scenarios against mypcxt, mypcat, mypcdeskpro386 and default-386 nxvm using
+their admitted artifact/INI map. Preserve scenario identities and checkpoints;
+do not interpret changed executable paths as permission to drop coverage.
 
 ## Dependencies And Batches
 

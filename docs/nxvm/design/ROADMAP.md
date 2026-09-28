@@ -26,6 +26,12 @@ Retain lawful external firmware composition and Console/debugger interaction.
 
 ## M5: Fixed Machine Builds And Shared Devices
 
+The next structural target is the three-step [Queue](../states/QUEUE.md):
+independent chips in `x86/devices`, shared PC board mechanisms in `x86/ibmpc`,
+then `app-mypcxt`, `app-mypcat`, `app-mypcdeskpro386` and default-386
+`app-nxvm`. These are unadmitted candidates, not completed migrations.
+Retained qualification work follows the new owners without reduced coverage.
+
 Retain all implemented XT, AT, DeskPro 386 and default PC/AT variants; inventory
 PC110 prerequisites without making a new Standard-board choice a dependency.
 Converge build selection, NXVM.ini, Devices, Profiles-owned construction and
@@ -51,8 +57,8 @@ infer complete PC110 support from AT registers or emulator placeholders.
 
 ## M7: PC110 Product Closure
 
-Deliver the PC110 executable through the same App/Common runtime, asset route
-and dual host-architecture builds. Prove firmware, storage, display/input,
+Deliver the later `app-mypc110` executable through the same App/Common runtime,
+asset route and dual host-architecture builds. Prove firmware, storage, display/input,
 lifecycle and selected guest checkpoints; state excluded capabilities explicitly.
 
 ## M8 And Later: Evidence-Led Compatibility

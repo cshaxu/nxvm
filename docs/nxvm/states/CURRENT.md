@@ -16,7 +16,16 @@ acceptance disposition, not reclassified as successes or explained causes.
 and actual-change acceptance. [Archived proposal](../history/M5-T538-deployed-boot-pairs-proposal.md),
 [convergence ledger](../etc/evidence/t538-boot-pairs.md), and
 [S7 evidence](../etc/evidence/t538-s7-orphan-release.md) record scope, revised
-acceptance, tests and hashes. The five [Queue](QUEUE.md) candidates are unchanged.
+acceptance, tests and hashes.
+
+M5 Td S174 records the owner's three-stage migration request: shared chips,
+shared PC board integration, then four independent Apps. The eight
+[Queue](QUEUE.md) candidates include these three first and retain the five
+qualification candidates with updated future owners. Implementation remains
+unadmitted. NXVM-only proposal/design/status changes passed actual-diff,
+dependency/reference review, local-link checks, diff whitespace and the NXVM
+documentation gate. No source, Shared corpus, MyNES, INI, asset or executable
+changed; current binaries need no rebuild. The Td P is the durable record.
 
 ## Current Technical Baseline
 

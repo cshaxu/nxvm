@@ -11,9 +11,16 @@ RTC, keyboard, video or storage chip identity.
 The completed fixed-product cutover selects one Profile per implemented XT, AT, DeskPro and
 default product. Controller work starts from that construction: external BYOB
 firmware is resolved by the selected Profile, NXVM.ini supplies only runtime
-media/presentation, and deployment is only `assets/nxvm/<profile>/`. A repair
+media/presentation, and current deployment is `assets/nxvm/<profile>/`. A repair
 must not recreate a YAML/catalog machine selector or board-specific second
 execution path.
+
+This candidate follows [chip extraction](m5-shared-chip-extraction.md),
+[common PC integration](m5-shared-ibmpc-integration.md) and
+[independent Apps](m5-independent-pc-apps.md). Its ledgers must address the
+resulting `x86/devices` chip owners, `x86/ibmpc` shared-board mechanisms and
+App-specific compositions, using the admitted deployment map. Migration does
+not replace the source/function/timing qualification required here.
 
 ## Scope And Batches
 

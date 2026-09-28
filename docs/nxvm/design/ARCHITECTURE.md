@@ -25,6 +25,10 @@ release behavior remains the baseline until an implemented, verified cutover.
 
 ## Modules, Ownership, And Assembly
 
+The following map describes the implemented baseline. The queued successor
+target is specified under **Queued Shared-Hardware And App Split** below;
+it does not change runtime ownership before the corresponding cutover.
+
 - `app-nxvm/product` owns INI syntax, runtime-media paths, product CLI and the one composition root.
   It assembles Common Session/UI/Machine and the NXVM driver.
 - `app-nxvm/machine` is that driver: asset/media lifetime, bounded execution,
@@ -152,3 +156,29 @@ fallback substitutes for missing hardware.
 [Roadmap](ROADMAP.md) and [Current](../states/CURRENT.md) own sequencing and
 implemented status. The [T533 consolidation record](../history/M5-T533-fixed-machine-products.md)
 maps this design to observed code and bounded migration evidence.
+
+## Queued Shared-Hardware And App Split
+
+The owner-approved planning direction has three ordered, unadmitted
+[implementation candidates](../states/QUEUE.md):
+
+1. `x86/devices` owns independent chips, including CPU, PIC, PIT and DMA;
+   each retains its state and internal timing. It does not own a PC profile,
+   host executor, firmware workaround or peer chip's internals. Composition
+   connects public memory/I/O cycles, signals and interrupt acknowledgement.
+2. `x86/ibmpc` owns the four machines' proven common PC assembly mechanisms:
+   board routing, wiring, construction/reset and one guest scheduler. It uses
+   independent chip contracts; product-specific topology and asset selection
+   stay in the App. No mirrored device state or second Common lifecycle loop.
+3. Four independent Apps compose these shared capabilities: `app-mypcxt`
+   (5160), `app-mypcat` (5170), `app-mypcdeskpro386` (Model 40), and
+   `app-nxvm` (default 386). Later PC110 belongs to `app-mypc110` after its
+   separate hardware qualification. No App depends on another App.
+
+The x86 package therefore expands beyond tools to hardware and reusable PC
+integration, while Lib/Common stay neutral. Chip and shared-board tests follow
+their shared owner; product firmware/boot/INI tests follow their App. Preserve
+existing CPU families, personalities and tests. Structural moves are not V30,
+Raiden II, 486 or PC110 implementation and do not upgrade timing evidence.
+New product scope names and deployment rules require separate Td governance
+before the third candidate's cutover; current names/locations remain valid.
