@@ -62,3 +62,8 @@ review question. S2 still edits no source. Its exit is delivery of reviewable
 contracts, source evidence, document links, diff check and NXVM documentation
 governance. Next S may consume the approved PIT batch; other chip behavior
 changes still require their appropriate review. No new executable for design.
+
+S2 acceptance: coordinator-role review of P1 360e7d4ee confirmed the complete
+design brief, seven provider definitions, distinct FDC evidence limits and
+approved PIT boundary. Local links, diff check and NXVM documentation gate pass.
+P2 closes this design S only; no chip has moved and T539 remains open.
