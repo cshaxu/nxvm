@@ -815,3 +815,20 @@ Before/after ledger disposition: S12's input/status prerequisite changes from
 unresolved to implemented and verified, pending coordinator acceptance of the
 complete P. The FDC extraction row remains pending. T539 also still requires
 the HDC/video/CPU/FPU and remaining file dispositions; S12 cannot close T539.
+
+## Coordinator Acceptance
+
+P1 `408a31cc7` is present at HEAD and origin/master. Coordinator review of the
+actual committed source, removed files, build, tests, documents and artifacts
+accepts the bounded S12 batch above. The post-commit specialized aggregate
+finishes successfully, including the tracked-source vocabulary gate and
+379-row direct-compilation audit. All eight deployed SHA-256 values still
+match the final table; the implementation worktree was clean before this
+governance update. Existing verification and timing/READ TRACK limitations
+remain explicit; no new boot or full-silicon claim is made.
+
+S12's prerequisite disposition is now accepted. Its active packet is removed,
+but the FDC extraction row remains pending. The reusable build trees and their
+bounded negative/probe fixtures are retained for that immediately next batch.
+This governance-only acceptance changes no executable input and requires no
+new binary. T539 remains open.

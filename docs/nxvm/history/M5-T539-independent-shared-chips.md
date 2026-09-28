@@ -261,6 +261,10 @@ pages, changed expectations, eleven guest BIOS scenarios, 350/350 units per
 width, default integrations 20/20 per width, six vendor boots once, runtime
 input-denial probes, static/manifests, code-size review and eight final hashes.
 
-Executor self-review considers the bounded implementation ready for its single
-complete P delivery; coordinator acceptance is not implied. FDC extraction,
-other chips and T539 remain open under the finite migration ledger.
+P1 408a31cc7 is pushed. Coordinator actual-diff review accepts the complete
+bounded batch, including source qualification, removed duplicate loader routes,
+guest firmware ownership, stopped-HLT cancellation and verification limits.
+The post-commit specialized aggregate passes and all eight deployed hashes
+still match the evidence. S12 closes and its packet is removed; FDC extraction,
+other chips and T539 remain open under the finite migration ledger. Reusable
+build trees remain needed for the immediately following FDC extraction.
