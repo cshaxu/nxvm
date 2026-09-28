@@ -71,10 +71,25 @@ Commands are the existing `run-unit-tests`, `run-integration-tests` and
 `verify-current-specialized-gates` targets; remaining profiles are configured
 one at a time, their product/boot target built, and their sole boot row tested.
 No successful boot is repeated for a multiple-round matrix. Both reusable
-NXVM build trees are restored to the default profile. Commit receipts and
-coordinator acceptance remain pending; this record does not yet close S7.
+NXVM build trees are restored to the default profile.
 Shared implementation P1 is 53b4be21d, pushed to origin/master. NXVM delivers
 the receiving adapter, tests, documents and eight products in its separate P2.
+
+## Actual-Change Acceptance
+
+Coordinator-role review inspected pushed Shared 53b4be21d and NXVM 217125697
+against the complete brief: chip/board ownership, scoped callbacks and copied
+values, first-service phases, cascade priority, TC/read side effects, reset,
+physical transaction failures, construction rollback and all consumers.
+Test review checked the original scenario mapping and final corrected TC-read
+ordering, not just green test counts. Public observations replace private
+representation checks without a second state owner or full-state getter.
+
+All required verification and eight receiver artifacts are complete. Shared
+P1 and NXVM P2 have separate target scopes and are pushed to origin/master.
+The temporary S7 standalone build trees are removed; the reusable NXVM trees
+remain for the next batch. No outstanding item remains in this bounded S.
+S7 is accepted and its active packet is removed. T539 remains open.
 
 Production C/H changes total +1231/-1280 (net -49), including the new Shared
 chip and removed App implementation. Test C/H changes total +526/-225 (net
