@@ -67,7 +67,7 @@ The lifecycle guard now rejects direct product-owned x86 PIT lifecycle calls.
   and integration-route checks. All six manifests and diff whitespace pass.
   Documentation and actual-change review accompany acceptance below/history.
 - Source/test delta against 9c1eadf0d, `git diff --numstat` with C/H pathspecs:
-  +967/-838, net +129 (production +55; tests +74), 36 rows including two
+  +964/-838, net +126 (production +55; tests +71), 36 rows including two
   detected source renames. Moved tests whose mechanical edits defeat Git's
   rename heuristic are counted as delete/add, not duplicate retained tests.
   The increase buys the opaque interface, transactional board attachment and
@@ -84,7 +84,7 @@ The lifecycle guard now rejects direct product-owned x86 PIT lifecycle calls.
 ## Receiving Artifacts
 
 Eight developer artifacts in `assets/nxvm/<profile>/` are Release 0.5.0539,
-compiled from the S3 Shared and NXVM source delivered as P1/P2. PE Machine is
+compiled from Shared P1 24162ac93 and NXVM P2 797ad8887. PE Machine is
 8664 for x64 and 014c for x86; the embedded version matches. Release uses
 `--strip-debug`, and all eight have no compiler debug sections; ordinary COFF
 symbols are not mistaken for compiler debug information. Runtime Debug remains.
@@ -112,4 +112,11 @@ Owner INIs are byte-identical before/after builds:
 
 Only the two NXVM build trees are retained for the immediate next chip step's
 incremental regression baseline; standalone PIT and profile-switch build trees
-are disposable after acceptance. No external assets, INIs, media or fonts change.
+are removed at acceptance. No external assets, INIs, media or fonts change.
+
+Coordinator review caught and removed one duplicate timeout-diagnostic print
+introduced by the private-field migration. Both matrix executables recompile;
+test admission, success criteria and all production inputs are unchanged, so
+there is no additional boot replay or product rebuild. The final P records this
+diagnostic-only correction and S acceptance. Documentation governance, all 46
+changed-document local links and actual target/ledger dispositions are reviewed.

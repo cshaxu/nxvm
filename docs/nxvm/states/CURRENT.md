@@ -2,33 +2,14 @@
 
 ## Current Work
 
-M5 T539 remains open. S2 is closed; S3 is active for the owner-approved PIT
-8253/8254 extraction and complete NXVM reconnection.
+M5 T539 remains open. S3 is closed after the approved PIT extraction and
+complete NXVM reconnection; no next source batch is admitted.
 
 | Task | Progress |
 | --- | --- |
-| T539 S3 | Active: extract PIT into Shared x86/devices, retain NXVM board wiring and verify all affected receivers. |
+| T539 S3 | Closed: Shared PIT and all NXVM receivers verified, committed and pushed; remaining chips await their next boundary review. |
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T539 S3 after S2 P2 9c1eadf0d. |
-| Admission And Approval | Owner explicitly approved first PIT extraction and Shared/NXVM reconnection in the 2026-09-28 asynchronous review answer. |
-| Objective | Move the sole PIT 8253/8254 mechanism behind an opaque Types-only public boundary, reconnect primary and auxiliary timers and migrate pure chip tests without waveform changes or old copies. |
-| Non-goals | Other chip extraction, new PIT modes/algorithms, time-grade changes, Shared Lib/Common changes, MyNES source/artifacts, INIs/media/fonts, firmware hook removal or FDC behavior changes. |
-| Reference Baseline | 9c1eadf0d and S2 contracts; original 81-file inventory; eight 0538 binaries are the pre-extraction reference, now replaced by verified 0539 receivers. |
-| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [contracts](../etc/architecture/t539-boundary-contracts.md), [history](../history/M5-T539-independent-shared-chips.md). |
-| Files And ABI Surface | Shared: src/x86 PIT, build/guards/docs/manifest and test/x86 timer cases/guards/manifest. NXVM: PIT old paths, direct callers, board adapters, timer-dependent tests, CMake/tools/docs and eight receiving EXEs. Each target has separate P commits; no sibling writes. |
-| Applicable Rules | Task reading set, source policy, Architecture/Coding/Document/Execution authorities and both governance skills. Public opacity, one route/state owner, unchanged waveforms, Types vocabulary, no raw peer pointer, complete failure cleanup. |
-| Verification | Standalone PIT source/test builds and full x86 suite x64/x86; full NXVM unit suites and static checks; relevant PIT/IRQ0/refresh/auxiliary tests; affected external boot integration; six manifests, documentation gate, diff check; all four profile Release x64/x86 0539 EXEs with PE/strip/hash verification and unchanged INI hashes. |
-| Expected Markers | Only x86 compiles timer mechanism; no old pit files, App include or private PIT access; primary/auxiliary timers work through one public path; all previous behavioral cases retained. |
-| Asset Needs | Existing external nxvm-assets only for integration/build; no copies or edits. |
-| Reporting Requirements | Report boundary progress, test/build results, actual source/test line delta, target-separated pushed commits and artifact hashes; no claim of T completion. |
-| Stop Conditions | New waveform/guest behavior change, unapproved shared-component change or failed required receiver blocks S closure; do not weaken tests or expose mutable internals. |
-| Exit Criteria | PIT inventory entries migrated and callers reconnected, no duplicate path, required verification/artifacts/commits complete; coordinator actual-diff review and S closure, T remains open. |
-| Original Owner Request | Implement chip/device separation; approved PIT retains counters/registers/Gate/OUT/time while NXVM retains ports/clock conversion/IRQ/refresh/speaker wiring. |
-| Similar-Issue Sweep | All PIT functions/types/includes/fields in src/test/build/tools; primary/auxiliary port routes and conflict ownership; reset/destruction output release; shared private-edge verifier negatives; MyNES dependency check proves it does not link the new PIT target. |
-
-[Task history](../history/M5-T538-deployed-boot-pairs.md) retains reviewed packets
+[Previous task history](../history/M5-T538-deployed-boot-pairs.md) retains reviewed packets
 and actual-change acceptance. [Archived proposal](../history/M5-T538-deployed-boot-pairs-proposal.md),
 [convergence ledger](../etc/evidence/t538-boot-pairs.md), and
 [S7 evidence](../etc/evidence/t538-s7-orphan-release.md) record scope, revised
@@ -46,7 +27,8 @@ remains closed.
 
 Lib/Common retain the accepted 268464d49 baseline, including the prior orphan
 release repair and test-path corrections. Shared x86 now adds the S3 PIT
-component; [S3 evidence](../etc/evidence/t539-s3-pit-extraction.md) owns the
+component at 24162ac93; NXVM source/artifacts are 797ad8887.
+[S3 evidence](../etc/evidence/t539-s3-pit-extraction.md) owns the
 source/artifact mapping. Full sibling parity is not claimed, and no sibling
 repository was modified.
 

@@ -81,3 +81,26 @@ eight 0539 receiving artifacts. Shared and NXVM use separate P commits;
 Lib/Common, MyNES, sibling repositories and owner INIs remain unchanged.
 Coordinator actual-change acceptance follows the delivered commits. T539
 does not close with this first chip batch.
+
+## S3 Acceptance
+
+On 2026-09-28, coordinator-role actual-diff review inspected Shared P1
+24162ac93 and NXVM P2 797ad8887 against the original approval and packet:
+P1 contains only src/x86 and test/x86; P2 only NXVM receivers, build entries,
+documentation and artifacts. The two original PIT files are the entire accepted
+ledger batch; all other inventory dispositions remain pending, not implicitly
+accepted. No duplicate chip implementation or board-state mirror survives.
+
+The review checked the opaque contract, retained waveform bodies, transactional
+seven-route attachment, sink lifetime/reset order, primary/auxiliary consumers,
+preserved test cases, boundary negatives and actual EXE/INI identities. Both
+governance skills enforced one state owner and cohesive original handler style,
+not a new framework. No unsupported timing upgrade or new dependency was added.
+
+One duplicated failure-diagnostic print was caught in this review and removed;
+both matrix test binaries compile again. It does not alter tests' admission or
+success criteria, production sources or product artifacts. Required unit,
+integration, standalone chip, static and manifest results are in S3 evidence;
+the document gate, 46 local links, identifiers, queue and source mapping agree.
+P3 accepts S3 and removes its active packet. T539 stays open, with no next S
+admitted and no claim that the remaining chip extractions are complete.
