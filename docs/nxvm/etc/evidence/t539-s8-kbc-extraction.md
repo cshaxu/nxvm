@@ -85,9 +85,18 @@ Model 40 passes in 80.21s/98.51s. Both reusable build trees are restored to
 default configuration. These single-pass results do not claim indefinite
 absence of intermittent faults or a hardware timing upgrade.
 
-Shared P1 eb1e2e208 is pushed to origin/master. NXVM P2 contains the receiving
-adapter, tests, evidence and artifacts. Coordinator actual-change acceptance
-follows that delivery; this record does not close the entire T539 inventory.
+Shared P1 eb1e2e208 and NXVM P2 6ae9802dc are pushed to origin/master. The latter
+contains the receiving adapter, tests, evidence and artifacts.
+
+Coordinator-role actual-change review accepts both delivered diffs against
+the complete S8 packet: unique owners, scoped/copy contracts, command/BAT/IRQ
+ordering, reset/destruction, failed construction, no private-state escape,
+original-case mapping, independent dependencies, manifests and receiver hashes.
+Source growth has explicit ownership/lifetime responsibility; no general
+framework or compatibility branch was added. Documentation governance, 50
+local links and diff checks pass. No item remains in the bounded S8 brief;
+its active packet is removed. T539 remains open for the rest of the finite
+inventory, with XT PPI/keyboard next under automatic admission.
 
 Production C/H totals +1707/-1221 (net +486); test C/H totals +999/-235
 (net +764), including new files. Growth is explicit opaque contracts, lifetime

@@ -191,5 +191,8 @@ test/dump access is removed without adding a test-only getter.
 20/20 default integrations and 16/16 standalone chip checks per width, six
 other boots once, eight verified artifacts, all manifests and static/doc gates.
 Production C/H net +486; tests net +764. INI contents and other products are
-unchanged. Shared eb1e2e208 is pushed; NXVM delivery and actual-diff acceptance
-follow. T539 remains open for the remaining finite inventory.
+unchanged. Shared eb1e2e208 and NXVM 6ae9802dc are pushed. Coordinator-role
+review checked the real chip/adapter, construction rollback, callback ordering,
+test/diagnostic migration, build/manifest and artifact diffs against the packet.
+No S8 item remains; S8 closes and its active packet is removed. T539 remains
+open for the remaining finite inventory, with XT PPI/keyboard next.
