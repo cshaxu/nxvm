@@ -26,6 +26,10 @@ add_library(x86-rtc146818 STATIC devices/rtc146818/rtc.c)
 target_include_directories(x86-rtc146818 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-rtc146818 PUBLIC types)
 
+add_library(x86-pic8259 STATIC devices/pic8259/pic.c)
+target_include_directories(x86-pic8259 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-pic8259 PUBLIC types)
+
 if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)
 target_include_directories(x86-xasm32 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

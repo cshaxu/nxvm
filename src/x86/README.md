@@ -13,10 +13,11 @@ There is no executor, Console, input loop or product state machine here.
 | xasm32 | x86 byte/text assembly and disassembly | xasm32_interface.h |
 | devices/pit825x | 8253/8254 counters, register protocol, GATE/OUT and input-clock deadlines | pit825x_interface.h |
 | devices/rtc146818 | MC146818-compatible calendar, registers, IRQ/SQW and configured-time deadlines | rtc146818_interface.h |
+| devices/pic8259 | Single 8259 priority, ICW/OCW, interrupt selection/acknowledge and delivery deadlines | pic8259_interface.h |
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
 only on Types. Public names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
-Build targets are x86-debug, x86-xasm32, x86-pit825x and x86-rtc146818. Private includes stay component-local;
+Build targets are x86-debug, x86-xasm32, x86-pit825x, x86-rtc146818 and x86-pic8259. Private includes stay component-local;
 no native platform code or importing-product source dependency is allowed.
 
 PIT depends only on Types. Its opaque instance owns counter state; the board
@@ -34,6 +35,13 @@ release an asserted output while the borrowed sink is alive. The board owns
 index/NMI latches, PIC routing, clock conversion, seed/checksum and timing
 provenance. Invalid-month bounds containment does not qualify undocumented
 calendar programming as hardware-accurate.
+
+PIC depends only on Types. Each opaque controller owns its registers, priority,
+resolved input levels and configured unmask countdowns. The board owns port
+addresses, source aggregation and master/slave wiring. Cascade signals cross
+as copied values, never peer pointers. Selection is non-mutating; acknowledge
+and command-register poll consume requests. Reset preserves configured timing.
+Calls have one execution owner; no native wait or host time enters the chip.
 
 The protocol header is independent of the frontend: product adapters need not
 link the CLI to use its values. Aligned typed request/response copies traverse
@@ -64,7 +72,7 @@ cmake --build build/x86-corpus --target x86-verify
 ```
 
 For a chip-only receiver, configure with `-DX86_BUILD_TOOLS=OFF` and build
-`x86-pit825x` or `x86-rtc146818`. This does not configure Common or link Debug/assembly tools.
+`x86-pit825x`, `x86-rtc146818` or `x86-pic8259`. This does not configure Common or link Debug/assembly tools.
 
 MANIFEST.sha256 covers every file with exact LF-normalized SHA-256 values.
 x86-verify reuses Common's manifest checker with this corpus root; the x86-owned
