@@ -118,3 +118,12 @@ functions, migrated tests, all-month sanitizer proof, full dual-width units
 and integration, single-pass profile boots and eight receiving artifacts.
 Shared and NXVM are separate implementation P targets; coordinator actual-change
 acceptance follows the complete deliveries. No other chip is accepted by S4.
+
+S4 coordinator acceptance reviewed Shared 8a8435648 and NXVM 06f99605d against
+the contract and finite ledger. Opaque ownership, board wiring, allocation
+rollback, reset/destruction, register-read side effects and all callers were
+checked in the actual diff. Full units are 339/339 per width, independent chip
+suites 10/10, default integration 20/20, and every other profile/width boot
+passes once. All eight 0539 artifacts are current; INIs and other products are
+unchanged. The bounds correction is safety containment, not a timing upgrade.
+S4 closes with no remaining item in its bounded brief; T539 stays open.

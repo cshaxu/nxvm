@@ -101,3 +101,14 @@ is S4 Shared P1 plus NXVM P2; their commit identities accompany acceptance.
 All four INI SHA-256 values are byte-identical to the table in
 [S3 evidence](t539-s3-pit-extraction.md). No superseded artifact version or
 unrelated product receiver was added.
+
+## Actual-Change Acceptance
+
+Shared implementation is 8a8435648; NXVM reconnection and the eight artifacts
+are 06f99605d. Coordinator review inspected their actual changes, including
+register ownership, C-read acknowledgement, callback lifetime and destruction,
+port rollback, unchanged seed filtering/checksum, migrated test expectations
+and the absence of an old RTC implementation. No new gap was found.
+Required verification above passes. S4 is accepted; T539 remains open and the
+remaining finite inventory is not implicitly accepted. Owner authorization
+allows automatic admission of the next bounded chip batch.
