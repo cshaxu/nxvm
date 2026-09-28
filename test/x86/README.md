@@ -30,6 +30,12 @@ clock ratios and PIC/refresh/speaker wiring remain receiving-product tests.
 The same entry with `-DX86_BUILD_TOOLS=OFF` builds the chip suite independently
 of Common, Debug and all product sources.
 
+`devices/rtc146818` retains calendar/SET/12-hour/BCD, phase/reset, divider,
+SQW and alarm-deadline cases. Contract tests exercise IRQ release, invalid
+selectors, no-event results and all 256 month inputs in binary and BCD through
+both deadline preview and actual midnight advancement. Invalid dates are a
+memory-safety check, not a claim of undocumented hardware behavior.
+
 All x86 tests are headless. Native-thread coverage is Windows-only; the other
 tests remain portable. Assertions are enabled in Release builds. This suite
 does not imply emulator, firmware, or desktop-interaction qualification.
