@@ -501,3 +501,13 @@ setup plus existing paused register operations; no production API changes.
 case map, initial bootstrap failure and correct receiving boundary. Complete
 units pass 379/379 per width; specialized gates and six manifests pass.
 Executor delivery awaits coordinator actual-commit review. T539 remains open.
+
+### S24 Acceptance
+
+Coordinator actual-commit review accepts pushed NXVM P1 ff09b22a3. All 198
+original contexts retain receivers, including complementary private-cache and
+real-board fault checks. Complete units pass 379/379 per width; specialized
+checks, six manifests and documentation/diff checks pass. Eleven test/build
+paths add 1,692/remove 1,232 lines. No production or artifact input changes.
+The packet is removed; S25 is next. Remaining original private consumers
+number 92, assigned through S37. CPU acceptance and T539 remain open.

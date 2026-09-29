@@ -2,8 +2,8 @@
 
 Baseline a9ca9a6f2. Current owns admission and acceptance. This batch consumes
 the three S24 entries in the [incremental inventory](t539-cpu-incremental-inventory.md),
-not the whole CPU row. Implementation and verification are complete; coordinator
-actual-commit acceptance is still pending.
+not the whole CPU row. Coordinator actual-commit review accepts implementation
+P1 ff09b22a3; Current owns the retained task status.
 
 ## Original Coverage And Receivers
 
@@ -116,3 +116,19 @@ private board mutation with explicit existing public operations. It adds no
 production layer or duplicate CPU implementation. The original board files
 now contain only protected-fault and PIC integration; instruction matrices
 have one CPU-local home. No generic framework or new fixture API was added.
+
+## Coordinator Acceptance
+
+Review of the actual P1 checks all six receiver files, CMake/UD registration,
+constructor inventories, private-access rejection controls and task records
+against the original contexts. The copied-segment boundary is not used to
+claim private-cache equality: those assertions remain in CPU tests. Original
+arrays/loops and board PIC/physical-memory assertions retain their owners.
+The bootstrap correction changes fixture preparation only. No new source,
+timing grade, API, firmware or artifact input is introduced. The 92 remaining
+original consumers and the opaque-lifetime/Shared move retain explicit future
+S owners; S24 acceptance is not whole CPU extraction or T539 closure.
+
+Admission fields, linked work-plan numbering, Queue order and evidence/status
+authority are consistent. This one-session run performed executor review,
+then coordinator actual-commit review; it is not an independent-agent audit.
