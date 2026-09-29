@@ -10,7 +10,7 @@
 #include "app-nxvm/devices/cpu.h"
 
 #include "app-nxvm/devices/cpu_instructions.h"
-#include "app-nxvm/devices/fpu.h"
+#include "x86/devices/fpu/fpu_interface.h"
 
 #include "app-nxvm/devices/execution_provider.h"
 
@@ -224,7 +224,7 @@ struct core_machine {
     lib_u8 entry_plan_applied;
     core_machine_cpu_profile cpu_profile;
     lib_u8 cpu_80386_cr_mov_ignores_mod;
-    core_machine_fpu fpu;
+    x86_fpu *fpu;
     t_cpu executor_cpu;
     t_cpuins executor_cpu_instructions;
     core_machine_cpu_execution_context executor_cpu_execution;

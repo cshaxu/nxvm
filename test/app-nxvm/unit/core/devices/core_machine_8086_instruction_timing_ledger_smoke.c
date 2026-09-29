@@ -69,6 +69,7 @@ static lib_i32 timing_8086_prepare(core_machine **out_machine,
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .fpu_profile = X86_FPU_PROFILE_8087,
         .ticks_per_instruction = 29u,
         .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
     };
@@ -406,11 +407,12 @@ static lib_i32 timing_8086_test_wait_ticks(void)
 
     if (!failed) {
         failed |= !timing_8086_load(machine, wait, sizeof(wait)) ||
-            ((machine->fpu.busy = LIB_TRUE), 0) ||
-            ((machine->fpu.completion_remaining_ticks = 3u), 0) ||
+            (x86_fpu_begin_command(machine->fpu, 0xdbu, 0xe3u), 0) ||
+            (x86_fpu_advance(machine->fpu, 2u), 0) ||
             !timing_8086_execute(machine, 1u, 6u, &state) ||
-            machine->fpu.completion_remaining_ticks != 0u ||
-            machine->fpu.last_wait_ticks != 3u;
+            x86_fpu_ticks_until_completion(machine->fpu, &(lib_u64){0}) !=
+                LIB_STATUS_INVALID_STATE ||
+            x86_fpu_last_wait_ticks(machine->fpu) != 3u;
     }
     core_machine_destroy(machine);
     return failed;

@@ -41,14 +41,14 @@ typedef struct timing_80386_manifest_capture {
 } timing_80386_manifest_capture;
 
 /* Chapter 17 explicitly directs ESC clock accounting to the selected 80287
- * or 80387 data sheet.  Preserve that L2 non-CPU range handoff rather than
- * manufacturing a scalar source_ticks observation. */
+ * or 80387 data sheet. Observe the issued command and remaining L2 completion
+ * interval, not a scalar CPU source_ticks value. Chip-local range assertions
+ * belong to the independent FPU contract test. */
 typedef struct timing_80386_manifest_esc_handoff {
     lib_i32 verified;
     lib_u8 opcode;
     lib_u8 modrm;
-    lib_u64 ticks_min;
-    lib_u64 ticks_max;
+    lib_u64 remaining_ticks;
 } timing_80386_manifest_esc_handoff;
 
 static const timing_80386_manifest_record timing_80386_manifest_records[] = {
@@ -498,11 +498,10 @@ static lib_i32 timing_80386_manifest_write_results(const char *path,
             "\"retirement_origin\":0,\"source_timing_unallocated\":false,"
             "\"coprocessor_profile\":\"80387\","
             "\"escape_opcode\":%u,\"escape_modrm\":%u,"
-            "\"coprocessor_ticks_min\":%llu,\"coprocessor_ticks_max\":%llu,"
+            "\"coprocessor_remaining_ticks\":%llu,"
             "\"handoff_kind\":\"CPU_FPU_COMMAND\",\"passed\":true}",
             timing_80386_manifest_esc.opcode, timing_80386_manifest_esc.modrm,
-            timing_80386_manifest_esc.ticks_min,
-            timing_80386_manifest_esc.ticks_max) < 0) {
+            timing_80386_manifest_esc.remaining_ticks) < 0) {
         fclose(file);
         return 1;
     }
@@ -686,10 +685,11 @@ static lib_i32 timing_80386_manifest_verify_esc_handoff(void)
     static const lib_u8 fadd[] = { 0xd8u, 0xc0u };
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_80387
+        .fpu_profile = X86_FPU_PROFILE_80387
     };
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
+    lib_u64 remaining_ticks = 0u;
     lib_status status = core_machine_create(&config, &machine);
     lib_i32 failed = status != LIB_STATUS_OK;
 
@@ -704,15 +704,14 @@ static lib_i32 timing_80386_manifest_verify_esc_handoff(void)
         TIMING_80386_MANIFEST_RESET_PHYSICAL, fadd, sizeof(fadd));
     if (!failed && status == LIB_STATUS_OK) status = core_machine_run(machine,
         (core_machine_run_budget){ 1u, 0u }, &run);
-    failed |= status != LIB_STATUS_OK || run.executed != 1u || !machine->fpu.busy ||
-        machine->fpu.last_escape_opcode != fadd[0] ||
-        machine->fpu.last_escape_modrm != fadd[1] ||
-        machine->fpu.operation_ticks_min != 12u ||
-        machine->fpu.operation_ticks_max != 26u ||
+    failed |= status != LIB_STATUS_OK || run.executed != 1u ||
+        x86_fpu_ticks_until_completion(machine->fpu, &remaining_ticks) != LIB_STATUS_OK ||
+        remaining_ticks == 0u || remaining_ticks > 19u ||
+        machine->transaction.address != fadd[0] ||
+        machine->transaction.value != fadd[1] ||
         machine->transaction.kind != CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND;
     if (!failed) timing_80386_manifest_esc = (timing_80386_manifest_esc_handoff) {
-        1, fadd[0], fadd[1], machine->fpu.operation_ticks_min,
-        machine->fpu.operation_ticks_max
+        1, fadd[0], fadd[1], remaining_ticks
     };
     core_machine_destroy(machine);
     return failed;

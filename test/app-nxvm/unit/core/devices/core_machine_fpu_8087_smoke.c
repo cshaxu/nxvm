@@ -4,7 +4,7 @@
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/cpu_instructions.h"
-#include "app-nxvm/devices/fpu_interface.h"
+#include "x86/devices/fpu/fpu_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
@@ -30,7 +30,7 @@ static const core_machine_execution_provider fpu_test_provider = {
 };
 
 static lib_i32 fpu_test_prepare(fpu_test_machine *state,
-    core_machine_cpu_profile cpu_profile, core_machine_fpu_profile fpu_profile)
+    core_machine_cpu_profile cpu_profile, x86_fpu_profile fpu_profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -80,10 +80,10 @@ static lib_i32 test_arithmetic_and_fninit(void)
     const lib_u32 second = 0x40100000u; /* 2.25 */
     const lib_u32 expected = 0x40700000u; /* 3.75 */
     fpu_test_machine state;
-    core_machine_fpu_state fpu_state;
+    x86_fpu_state fpu_state;
     lib_u32 observed = 0u;
     lib_i32 failed = !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_FPU_PROFILE_8087);
+        X86_FPU_PROFILE_8087);
 
     if (!failed) {
         failed |= !fpu_test_write(&state, 0u, program, sizeof(program));
@@ -96,7 +96,7 @@ static lib_i32 test_arithmetic_and_fninit(void)
             LIB_STATUS_OK || fpu_state.control_word != 0x037fu ||
             (fpu_state.status_word & 0x00ffu) != 0u ||
             fpu_state.pending_unmasked_exception ||
-            fpu_state.tags[fpu_state.top] != CORE_MACHINE_FPU_TAG_VALID;
+            fpu_state.tags[fpu_state.top] != X86_FPU_TAG_VALID;
     }
     core_machine_destroy(state.machine);
     return failed;
@@ -108,9 +108,9 @@ static lib_i32 test_stack_fault_and_reset(void)
     static const lib_u8 fninit[] = { 0xdbu, 0xe3u };
     const lib_u32 one = 0x3f800000u;
     fpu_test_machine state;
-    core_machine_fpu_state fpu_state;
+    x86_fpu_state fpu_state;
     lib_i32 failed = !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_FPU_PROFILE_8087);
+        X86_FPU_PROFILE_8087);
 
     if (!failed) {
         for (lib_u8 index = 0u; index < 9u; ++index) {
@@ -125,7 +125,7 @@ static lib_i32 test_stack_fault_and_reset(void)
         failed |= core_machine_get_fpu_state(state.machine, &fpu_state) !=
             LIB_STATUS_OK || fpu_state.status_word != 0u ||
             fpu_state.control_word != 0x037fu ||
-            fpu_state.tags[0] != CORE_MACHINE_FPU_TAG_EMPTY;
+            fpu_state.tags[0] != X86_FPU_TAG_EMPTY;
     }
     core_machine_destroy(state.machine);
     return failed;
@@ -149,9 +149,9 @@ static lib_i32 test_unmasked_fwait(void)
     lib_u16 frame[3] = { 0u, 0u, 0u };
     fpu_test_machine state;
     core_machine_cpu_diagnostic diagnostic;
-    core_machine_fpu_state fpu_state;
+    x86_fpu_state fpu_state;
     lib_i32 failed = !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_FPU_PROFILE_8087);
+        X86_FPU_PROFILE_8087);
 
     if (!failed) {
         failed |= !fpu_test_write(&state, 0u, program, sizeof(program));
@@ -190,17 +190,17 @@ static lib_i32 test_profile_gates(void)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    core_machine_fpu_operation_metadata metadata;
+    x86_fpu_operation_metadata metadata;
     lib_i32 failed = 0;
 
-    metadata = core_machine_fpu_operation_metadata_get(0xd9u, 0x06u);
-    failed |= !metadata.valid || metadata.minimum_cpu != CORE_MACHINE_CPU_PROFILE_8086 ||
-        metadata.minimum_fpu != CORE_MACHINE_FPU_PROFILE_8087 ||
-        metadata.operation != CORE_MACHINE_FPU_OPERATION_FLD_M32;
+    metadata = x86_fpu_operation_metadata_get(0xd9u, 0x06u);
+    failed |= !metadata.valid ||
+        metadata.minimum_fpu != X86_FPU_PROFILE_8087 ||
+        metadata.operation != X86_FPU_OPERATION_FLD_M32;
     for (lib_u8 index = 0u; index < 2u; ++index) {
         fpu_test_machine state;
         failed |= !fpu_test_prepare(&state, profiles[index],
-            CORE_MACHINE_FPU_PROFILE_8087);
+            X86_FPU_PROFILE_8087);
         if (state.machine != LIB_NULL) {
             failed |= !fpu_test_write(&state, 0u, fninit, sizeof(fninit));
             failed |= !fpu_test_run(&state, 1u, LIB_STATUS_OK, LIB_NULL);
@@ -210,24 +210,26 @@ static lib_i32 test_profile_gates(void)
     {
         fpu_test_machine state;
         failed |= !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
-            CORE_MACHINE_FPU_PROFILE_80287);
+            X86_FPU_PROFILE_80287);
         if (state.machine != LIB_NULL) {
             failed |= !fpu_test_write(&state, 0u, fninit, sizeof(fninit));
             failed |= !fpu_test_run(&state, 1u, LIB_STATUS_OK, LIB_NULL) ||
-                !state.machine->fpu.busy;
+                x86_fpu_ticks_until_completion(state.machine->fpu,
+                    &(lib_u64){0}) != LIB_STATUS_OK;
         }
         core_machine_destroy(state.machine);
     }
     {
         fpu_test_machine state;
         failed |= !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
-            CORE_MACHINE_FPU_PROFILE_8087);
+            X86_FPU_PROFILE_8087);
         if (state.machine != LIB_NULL) {
             failed |= !fpu_test_write(&state, 0u, unsupported_m32,
                 sizeof(unsupported_m32));
             failed |= !fpu_test_write(&state, FPU_TEST_ONE, &nan, sizeof(nan));
             failed |= !fpu_test_run(&state, 1u, LIB_STATUS_OK, LIB_NULL) ||
-                !state.machine->fpu.busy;
+                x86_fpu_ticks_until_completion(state.machine->fpu,
+                    &(lib_u64){0}) != LIB_STATUS_OK;
         }
         core_machine_destroy(state.machine);
     }

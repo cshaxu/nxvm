@@ -18,7 +18,7 @@ static void imul_reset(void *o){imul_machine *s=(imul_machine *)o;if(s!=LIB_NULL
 static const core_machine_execution_provider imul_execution={imul_reset,LIB_NULL};
 static lib_i32 imul_prepare(core_machine_cpu_profile p,imul_provider *provider,imul_machine *s)
 {
- const core_machine_config c={.memory_bytes=CORE_MACHINE_MINIMUM_MEMORY_BYTES,.cpu_profile=p,.fpu_profile=CORE_MACHINE_FPU_PROFILE_NONE};if(s==LIB_NULL)return 0;lib_memory_set(s,0,sizeof(*s));
+ const core_machine_config c={.memory_bytes=CORE_MACHINE_MINIMUM_MEMORY_BYTES,.cpu_profile=p,.fpu_profile=X86_FPU_PROFILE_NONE};if(s==LIB_NULL)return 0;lib_memory_set(s,0,sizeof(*s));
  if(core_machine_create(&c,&s->machine)!=LIB_STATUS_OK||(provider!=LIB_NULL&&test_core_machine_fixture_register_memory_device_provider(s->machine,IMUL_PROVIDER_ADDRESS,4u,imul_read,imul_write,imul_query,provider)!=LIB_STATUS_OK)||!test_core_machine_fixture_bind_freeze_reset(s->machine,&imul_execution,s)){core_machine_destroy(s->machine);s->machine=LIB_NULL;return 0;}return 1;
 }
 static lib_i32 imul_run(imul_machine *s,const lib_u8 *code,lib_size bytes,lib_i32 fault,t_cpu *out,core_machine_cpu_diagnostic *d)

@@ -57,6 +57,10 @@ it does not change runtime ownership before the corresponding cutover.
   port attachment, index/NMI latches, seed/checksum, clock conversion and
   IRQ/refresh/speaker wiring. Current records each batch's acceptance; other
   chip extractions remain pending.
+  The S16 implementation moves FPU stack/status and extension timing to
+  `x86/devices/fpu`; CPU retains pair legality and operand cycles. Current
+  distinguishes receiving verification from acceptance. CPU extraction still
+  needs its separate physical-bus, interrupt and diagnostic boundary cutover.
 - `common/machine` owns the shared execution/control protocol and paused-debug
   lease; `common/session` is the sole product-control reducer;
   `common/ui` binds Lib KVM and the Console broker.

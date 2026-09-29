@@ -50,7 +50,7 @@ static lib_i32 core_machine_port_probe_prepare(core_machine **out_machine,
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
     const core_machine_port_provider provider = {
@@ -86,7 +86,7 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
     const core_machine_port_provider read_provider = {
@@ -139,7 +139,7 @@ static lib_i32 core_machine_port_probe_fdc_write_conflict_is_retained(void)
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
     const core_machine_port_provider write_provider = {

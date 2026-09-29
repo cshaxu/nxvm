@@ -9,10 +9,10 @@ static lib_i32 valid_cpu_profile(core_machine_cpu_profile profile)
         profile <= CORE_MACHINE_CPU_PROFILE_80386;
 }
 
-static lib_i32 valid_fpu_profile(core_machine_fpu_profile profile)
+static lib_i32 valid_fpu_profile(x86_fpu_profile profile)
 {
-    return profile >= CORE_MACHINE_FPU_PROFILE_NONE &&
-        profile <= CORE_MACHINE_FPU_PROFILE_80387;
+    return profile >= X86_FPU_PROFILE_NONE &&
+        profile <= X86_FPU_PROFILE_80387;
 }
 
 static lib_i32 verify_metadata(core_machine_cpu_instruction_space space,
@@ -47,7 +47,7 @@ lib_i32 main(void)
                     (lib_u8)opcode, (lib_u8)modrm);
             failed |= !metadata.valid ||
                 metadata.minimum_cpu != CORE_MACHINE_CPU_PROFILE_8086 ||
-                metadata.minimum_fpu != CORE_MACHINE_FPU_PROFILE_8087;
+                metadata.minimum_fpu != X86_FPU_PROFILE_8087;
         }
     }
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {

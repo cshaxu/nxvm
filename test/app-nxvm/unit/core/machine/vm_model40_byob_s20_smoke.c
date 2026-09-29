@@ -56,7 +56,7 @@ lib_i32 main(void)
         session->core_machine_config.l1_compatibility_policy !=
             CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
         session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
-        session->core_machine_config.fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
+        session->core_machine_config.fpu_profile != X86_FPU_PROFILE_NONE ||
         !session->core_machine_config.cpu_80386_cr_mov_ignores_mod ||
         core_machine_capture_time_observation(session->core_machine,
             &time_observation) != LIB_STATUS_OK || !time_observation.pacing_time_available ||

@@ -144,7 +144,8 @@ static lib_i32 retirement_unallocated_profile_case(core_machine_cpu_profile prof
 static lib_i32 retirement_8086_context_formula_case(void)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .fpu_profile = X86_FPU_PROFILE_8087
     };
     const core_machine_run_budget budget = { 1u, 0u };
     const lib_u8 segment_movsb[] = { 0x26u, 0xa4u };
@@ -204,8 +205,8 @@ static lib_i32 retirement_8086_context_formula_case(void)
             core_machine_set_a20(machine, 1) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0xfffffff0u, wait,
                 sizeof(wait)) != LIB_STATUS_OK ||
-            ((machine->fpu.busy = LIB_TRUE), 0) ||
-            ((machine->fpu.completion_remaining_ticks = 3u), 0) ||
+            (x86_fpu_begin_command(machine->fpu, 0xdbu, 0xe3u), 0) ||
+            (x86_fpu_advance(machine->fpu, 2u), 0) ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.executed != 1u || probe.count != 3u ||
             probe.records[2].source_ticks != 6u ||

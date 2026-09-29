@@ -38,7 +38,7 @@ static lib_i32 verr_verw_s58_prepare(verr_verw_s58_machine *state,
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
 
     if (state == LIB_NULL) {

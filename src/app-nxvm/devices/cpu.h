@@ -5,7 +5,7 @@
 
 
 #include "app-nxvm/devices/cpu_interface.h"
-#include "app-nxvm/devices/fpu_interface.h"
+#include "x86/devices/fpu/fpu_interface.h"
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/device_support.h"
 
@@ -53,7 +53,7 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_context_bind_profiles(
     core_machine_cpu_execution_context *context,
     core_machine_cpu_profile cpu_profile,
-    core_machine_fpu_profile fpu_profile,
+    x86_fpu_profile fpu_profile,
     lib_u8 cpu_80386_cr_mov_ignores_mod);
 #include "lib/types/types_interface.h"
 

@@ -106,7 +106,7 @@ static lib_u32 core_machine_cpu_timing_formula_inputs(
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
     }
     if (opcode_index < data->oplen && data->opcodes[opcode_index] == 0x9bu &&
-        core_machine_fpu_last_wait_ticks(&machine->fpu) != 0u) {
+        x86_fpu_last_wait_ticks(machine->fpu) != 0u) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_WAIT_TICKS;
     }
     return inputs;
@@ -305,7 +305,7 @@ lib_i32 core_machine_cpu_timing_select(core_machine *machine,
     if (!core_machine_cpu_timing_apply_8086_lock(machine, &result)) return 0;
     if (core_machine_cpu_timing_is_wait(&machine->executor_cpu_instructions.data) &&
         !core_machine_timing_add_ticks(&result.ticks,
-            core_machine_fpu_last_wait_ticks(&machine->fpu))) return 0;
+            x86_fpu_last_wait_ticks(machine->fpu))) return 0;
     result.key_id = machine->source_timing_form_id;
     result.formula_inputs = core_machine_cpu_timing_formula_inputs(machine);
     if (result.retirement_origin ==

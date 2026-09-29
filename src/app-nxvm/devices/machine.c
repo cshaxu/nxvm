@@ -134,10 +134,10 @@ static lib_i32 core_machine_valid_cpu_profile(core_machine_cpu_profile profile)
         profile <= CORE_MACHINE_CPU_PROFILE_80386;
 }
 
-static lib_i32 core_machine_valid_fpu_profile(core_machine_fpu_profile profile)
+static lib_i32 core_machine_valid_fpu_profile(x86_fpu_profile profile)
 {
-    return profile >= CORE_MACHINE_FPU_PROFILE_NONE &&
-        profile <= CORE_MACHINE_FPU_PROFILE_80387;
+    return profile >= X86_FPU_PROFILE_NONE &&
+        profile <= X86_FPU_PROFILE_80387;
 }
 
 static lib_u32 core_machine_cpu_reset_rom_alias(
@@ -300,20 +300,20 @@ lib_status core_machine_get_cpu_profile(
 }
 
 lib_status core_machine_get_fpu_profile(
-    const core_machine *machine, core_machine_fpu_profile *out_profile)
+    const core_machine *machine, x86_fpu_profile *out_profile)
 {
     if (machine == LIB_NULL || out_profile == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    *out_profile = machine->fpu.profile;
+    *out_profile = x86_fpu_get_profile(machine->fpu);
     return LIB_STATUS_OK;
 }
 
 lib_status core_machine_get_fpu_state(
-    const core_machine *machine, core_machine_fpu_state *out_state)
+    const core_machine *machine, x86_fpu_state *out_state)
 {
     if (machine == LIB_NULL || out_state == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    core_machine_fpu_get_state(&machine->fpu, out_state);
+    x86_fpu_get_state(machine->fpu, out_state);
     return LIB_STATUS_OK;
 }
 
@@ -522,7 +522,13 @@ static lib_status core_machine_create_internal(
     machine->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
     machine->kbc_input_port_configured = config->kbc_input_port_configured;
     machine->kbc_input_port = config->kbc_input_port;
-    core_machine_fpu_initialize(&machine->fpu, config->fpu_profile);
+    {
+        lib_status status = x86_fpu_create(config->fpu_profile, &machine->fpu);
+        if (status != LIB_STATUS_OK) {
+            lib_release(machine);
+            return status;
+        }
+    }
     lib_atomic_i32_initialize(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
     core_machine_transaction_initialize(&machine->transaction);
@@ -536,9 +542,9 @@ static lib_status core_machine_create_internal(
         &machine->executor_memory, &machine->executor_port);
     core_machine_cpu_execution_context_bind_profiles(
         &machine->executor_cpu_execution, machine->cpu_profile,
-        machine->fpu.profile, machine->cpu_80386_cr_mov_ignores_mod);
+        x86_fpu_get_profile(machine->fpu), machine->cpu_80386_cr_mov_ignores_mod);
     core_machine_cpu_execution_context_bind_fpu(
-        &machine->executor_cpu_execution, &machine->fpu);
+        &machine->executor_cpu_execution, machine->fpu);
     core_machine_cpu_execution_context_bind_external_cycle_provider(
         &machine->executor_cpu_execution, core_machine_cpu_external_cycle_trace,
         machine);
@@ -799,7 +805,7 @@ static lib_status core_machine_cold_reset(core_machine *machine)
 {
     lib_status status;
     core_machine_cpu_state_reset(&machine->executor_cpu_execution);
-    core_machine_fpu_reset(&machine->fpu);
+    x86_fpu_reset(machine->fpu);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
     core_machine_d4_memory_reset(machine);
@@ -1512,6 +1518,7 @@ void core_machine_destroy(core_machine *machine)
             &machine->shared_pic_slave);
         core_machine_vadp_finalize(&machine->shared_vadp);
         core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
+        x86_fpu_destroy(machine->fpu);
         core_machine_port_finalize(&machine->executor_port);
         core_machine_memory_finalize(&machine->executor_memory);
         for (lib_size index = 0u; index < machine->immutable_rom_mapping_count;

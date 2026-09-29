@@ -23,7 +23,7 @@ static lib_i32 cpu_execution_context_reset_case(
 {
     if (context == LIB_NULL || cpu == LIB_NULL || test_case == LIB_NULL) return 1;
     core_machine_cpu_execution_context_bind_profiles(context, test_case->profile,
-        CORE_MACHINE_FPU_PROFILE_NONE, LIB_FALSE);
+        X86_FPU_PROFILE_NONE, LIB_FALSE);
     core_machine_cpu_state_reset(context);
     return cpu->data.cs.selector != 0xf000u || cpu->data.eip != 0x0000fff0u ||
         cpu->data.cs.base != test_case->code_base ||

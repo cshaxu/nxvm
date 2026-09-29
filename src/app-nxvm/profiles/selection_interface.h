@@ -4,7 +4,7 @@
 
 
 #include "app-nxvm/devices/cpu_interface.h"
-#include "app-nxvm/devices/fpu_interface.h"
+#include "x86/devices/fpu/fpu_interface.h"
 #include "lib/storage/medium_interface.h"
 
 typedef enum vm_machine_profile_kind {
@@ -43,7 +43,7 @@ typedef struct vm_machine_config {
     lib_i32 create_fdd;
     lib_u16 create_hdd_cylinders;
     core_machine_cpu_profile cpu_profile;
-    core_machine_fpu_profile fpu_profile;
+    x86_fpu_profile fpu_profile;
 } vm_machine_config;
 
 typedef struct vm_machine_asset_bytes {

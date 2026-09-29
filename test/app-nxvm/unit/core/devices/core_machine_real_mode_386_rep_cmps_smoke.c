@@ -19,7 +19,7 @@ static lib_i32 t292_prepare(core_machine_cpu_profile profile, core_machine **out
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
     static const lib_u8 reset_jump[] = {0xeau, 0u, 0u, 0u, 0u};

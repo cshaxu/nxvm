@@ -13,7 +13,7 @@ static lib_i32 verify(void)
         .create_fdd = 1,
         .create_hdd_cylinders = 1u,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     vm_machine_reset_vector vector;
     vm_machine *session = LIB_NULL;
@@ -35,7 +35,7 @@ static lib_i32 verify_created(void)
         .create_fdd = 1,
         .create_hdd_cylinders = 1u,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     vm_machine_information information;
     vm_machine *session = LIB_NULL;
@@ -57,7 +57,7 @@ static lib_i32 verify_selected_cpu_uses_the_resolved_topology(void)
 {
     const vm_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_80287
+        .fpu_profile = X86_FPU_PROFILE_80287
     };
     core_machine_cpu_profile profile;
     vm_machine *session = LIB_NULL;

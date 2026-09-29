@@ -84,11 +84,11 @@ static lib_i32 profile_timing_is_materialized(const core_machine_config *config,
 
 static lib_i32 session_core_config_is_applied(const vm_machine *session,
     lib_size memory_bytes, core_machine_cpu_profile cpu_profile,
-    core_machine_fpu_profile fpu_profile)
+    x86_fpu_profile fpu_profile)
 {
     lib_size observed_memory_bytes = 0u;
     core_machine_cpu_profile observed_cpu_profile;
-    core_machine_fpu_profile observed_fpu_profile;
+    x86_fpu_profile observed_fpu_profile;
 
     return session != LIB_NULL && session->core_machine != LIB_NULL &&
         core_machine_get_memory_bytes(session->core_machine,
@@ -107,7 +107,7 @@ static lib_i32 verify_create_materialization(
     const vm_machine_config overrides = {
         .memory_bytes = 32u * 1024u * 1024u,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_80387
+        .fpu_profile = X86_FPU_PROFILE_80387
     };
     vm_machine *default_session = LIB_NULL;
     vm_machine *configured_session = LIB_NULL;

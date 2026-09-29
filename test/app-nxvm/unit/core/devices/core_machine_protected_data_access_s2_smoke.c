@@ -52,7 +52,7 @@ static lib_i32 pda_prepare(pda_machine *state, core_machine_cpu_profile profile)
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     static const lib_u8 gdt_pointer[] = { 0x1fu,0u,0u,0x03u,0u,0u };
     static const lib_u8 gdt[] = {

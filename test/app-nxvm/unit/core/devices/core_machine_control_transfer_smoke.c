@@ -53,7 +53,7 @@ static lib_i32 ct_prepare(ct_machine *state, core_machine_cpu_profile profile,
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const lib_u8 gdt_pointer[] = { 0x2fu,0,0,0x03u,0,0 };
     lib_u8 gdt[] = {
@@ -101,7 +101,7 @@ static lib_i32 ct_prepare_real(ct_machine *state, core_machine_cpu_profile profi
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     static const lib_u8 reset_jump[] = {0xeau,0,0,0,0};
 

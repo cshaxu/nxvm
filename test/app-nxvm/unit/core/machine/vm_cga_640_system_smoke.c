@@ -33,7 +33,7 @@ lib_i32 main(void)
     const vm_machine_config config = {
         .floppy_image = { "" },
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;

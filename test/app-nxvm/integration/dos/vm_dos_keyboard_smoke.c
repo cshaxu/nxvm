@@ -7,6 +7,7 @@
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/machine/fault.h"
+#include "app-nxvm/machine/display.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
@@ -85,7 +86,7 @@ static lib_i32 vm_dos_keyboard_has_edit_menu(const vm_machine *session)
         vm_dos_keyboard_has_text(session, "Help");
 }
 
-static lib_i32 vm_dos_keyboard_verify_text_frame(const vm_machine *session)
+static lib_i32 vm_dos_keyboard_verify_text_frame(vm_machine *session)
 {
     core_machine_guest_display_frame frame;
     lib_u8 text[TEXT_VIDEO_CELLS * 2u];
@@ -98,7 +99,13 @@ static lib_i32 vm_dos_keyboard_verify_text_frame(const vm_machine *session)
         printf("edit display: text memory unavailable\n");
         return 0;
     }
-    (void)test_vm_machine_capture_presentation(session, &frame);
+    /* The caller has acknowledged pause. Compare the same frozen guest state,
+     * not the previous frame retained by the ordinary 16 ms display cadence. */
+    (void)vm_machine_publish_display(session, LIB_TRUE);
+    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) {
+        printf("edit display: paused frame unavailable\n");
+        return 0;
+    }
     if (frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u) {
         printf("edit display: kind=%u columns=%u rows=%u\n", frame.kind,

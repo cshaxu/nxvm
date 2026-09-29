@@ -104,6 +104,12 @@ No universal device framework, plugin registry or forwarding-only wrapper.
 
 ## Verification And Exit
 
+S16 consumes the FPU row under its
+[boundary review](../etc/architecture/t539-s16-fpu-extraction.md): Types-only
+opaque state and time owner, CPU-owned pairing, preserved partial arithmetic,
+and independent tests without a private-layout production bridge. Current
+owns admission and acceptance; CPU extraction remains required afterward.
+
 S15 consumes the video and related display ledger rows under its
 [boundary](../etc/architecture/t539-s15-video-extraction.md). The
 [evidence](../etc/evidence/t539-s15-video-extraction.md) records the independent

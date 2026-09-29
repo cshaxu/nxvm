@@ -151,7 +151,7 @@ void core_machine_capture_time_observation_private(const core_machine *machine,
         if (core_machine_deadline_consider_absolute(machine, hdc_due_tick,
                 &source_ticks)) immediate_due = LIB_TRUE;
     }
-    if (core_machine_fpu_ticks_until_completion(&machine->fpu, &device_ticks) ==
+    if (x86_fpu_ticks_until_completion(machine->fpu, &device_ticks) ==
         LIB_STATUS_OK) {
         if (device_ticks <= UINT64_MAX - machine->elapsed_ticks &&
             core_machine_deadline_consider_absolute(machine,
@@ -352,7 +352,7 @@ static void core_machine_readiness_advance(core_machine *machine,
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_HDC_ADVANCE,
             0u, 0u, 0u);
     }
-    core_machine_fpu_advance(&machine->fpu, source_ticks);
+    x86_fpu_advance(machine->fpu, source_ticks);
     rtc_ticks = core_machine_clock_domain_advance(&machine->rtc_clock, source_ticks);
     if (machine->rtc_cmos_configured) {
         x86_rtc_advance(machine->shared_rtc, rtc_ticks);

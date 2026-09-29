@@ -4,7 +4,7 @@
 
 
 #include "app-nxvm/devices/cpu_interface.h"
-#include "app-nxvm/devices/fpu_interface.h"
+#include "x86/devices/fpu/fpu_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/profiles/profile_contract_interface.h"
@@ -94,7 +94,7 @@ typedef struct vm_profile_default_pc_at_firmware_service {
 
 typedef struct vm_profile_default_pc_at_cpu_contract {
     core_machine_cpu_profile cpu_profile;
-    core_machine_fpu_profile fpu_profile;
+    x86_fpu_profile fpu_profile;
     lib_u32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
@@ -112,7 +112,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     const char *identity;
     lib_u32 compatibility_revision;
     core_machine_cpu_profile cpu_profile;
-    core_machine_fpu_profile fpu_profile;
+    x86_fpu_profile fpu_profile;
     lib_u32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
@@ -193,7 +193,7 @@ typedef struct vm_profile_default_pc_at_plan_snapshot {
 typedef struct vm_profile_default_at_request {
     lib_u32 requested_options;
     core_machine_cpu_profile cpu_profile;
-    core_machine_fpu_profile fpu_profile;
+    x86_fpu_profile fpu_profile;
     lib_size memory_bytes;
     lib_u8 floppy_cmos_type;
 } vm_profile_default_at_request;
@@ -205,7 +205,7 @@ vm_profile_ibm_5170_model_339_descriptor_get(void);
 lib_i32 vm_profile_default_pc_at_cpu_contract_select(
     const vm_profile_default_pc_at_descriptor *descriptor,
     core_machine_cpu_profile requested_cpu,
-    core_machine_fpu_profile requested_fpu,
+    x86_fpu_profile requested_fpu,
     vm_profile_default_pc_at_cpu_contract *out_contract);
 lib_i32 vm_profile_default_pc_at_core_config_materialize(
     const vm_profile_default_pc_at_descriptor *descriptor,

@@ -74,7 +74,7 @@ lib_i32 main(void)
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     static const lib_u8 program[] = { 0x90u };
     static const lib_u8 handler[] = { 0xf4u };

@@ -31,7 +31,7 @@ static lib_i32 cli_sti_prepare(core_machine_cpu_profile profile,
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .fpu_profile = X86_FPU_PROFILE_NONE,
         .shared_pit_personality = X86_PIT_PERSONALITY_8253,
         .clock_plan = { .pit = {1u, 4u, 0u} }
     };

@@ -207,7 +207,7 @@ static lib_status vm_profile_machine_plan_default(vm_profile_machine_plan *plan,
     if (vm_profile_machine_plan_floppy(config, VM_PROFILE_FLOPPY_35_1440K,
             LIB_TRUE, &plan->media_floppy) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
     if (config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
-        config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE) {
+        config->fpu_profile != X86_FPU_PROFILE_NONE) {
         request.requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU;
         request.cpu_profile = config->cpu_profile;
         request.fpu_profile = config->fpu_profile;
@@ -263,7 +263,7 @@ static lib_status vm_profile_machine_plan_xt(vm_profile_machine_plan *plan,
         (assets->cmos_seed.data != LIB_NULL || assets->cmos_seed.bytes != 0u) || config->memory_bytes != 0u || config->create_fdd ||
         config->create_hdd_cylinders != 0u ||
         config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
-        config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
+        config->fpu_profile != X86_FPU_PROFILE_NONE ||
         vm_profile_machine_plan_floppy(config, VM_PROFILE_FLOPPY_525_360K, LIB_FALSE,
             &plan->media_floppy) != LIB_STATUS_OK ||
         vm_profile_xt_5160_268_external_rom_create(assets->bios[0u].data,

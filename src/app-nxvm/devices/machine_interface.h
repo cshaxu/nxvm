@@ -5,7 +5,7 @@
 #include "app-nxvm/devices/cpu_interface.h"
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/display_interface.h"
-#include "app-nxvm/devices/fpu_interface.h"
+#include "x86/devices/fpu/fpu_interface.h"
 #include "app-nxvm/devices/execution_provider.h"
 #include "app-nxvm/devices/firmware_interface.h"
 #include "app-nxvm/devices/lifecycle_interface.h"
@@ -167,7 +167,7 @@ typedef struct core_machine_xt_ppi_keyboard_config {
 typedef struct core_machine_config {
     lib_size memory_bytes;
     core_machine_cpu_profile cpu_profile;
-    core_machine_fpu_profile fpu_profile;
+    x86_fpu_profile fpu_profile;
     /* Original 80386 silicon accepts MOV CR ModR/M forms with MOD other
      * than 11b, using the r/m field as the general-register selector. */
     lib_u8 cpu_80386_cr_mov_ignores_mod;
@@ -592,9 +592,9 @@ lib_status core_machine_get_cpu_state(
 lib_status core_machine_get_cpu_profile(
     const core_machine *machine, core_machine_cpu_profile *out_profile);
 lib_status core_machine_get_fpu_profile(
-    const core_machine *machine, core_machine_fpu_profile *out_profile);
+    const core_machine *machine, x86_fpu_profile *out_profile);
 lib_status core_machine_get_fpu_state(
-    const core_machine *machine, core_machine_fpu_state *out_state);
+    const core_machine *machine, x86_fpu_state *out_state);
 lib_status core_machine_get_memory_bytes(
     const core_machine *machine, lib_size *out_memory_bytes);
 lib_status core_machine_get_elapsed_ticks(

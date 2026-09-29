@@ -30,7 +30,7 @@ static lib_i32 prepare_machine(core_machine_cpu_profile profile,
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     if (state == LIB_NULL) return 1;
     lib_memory_set(state, 0, sizeof(*state));

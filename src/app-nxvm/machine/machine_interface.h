@@ -4,7 +4,7 @@
 
 
 #include "app-nxvm/devices/cpu_interface.h"
-#include "app-nxvm/devices/fpu_interface.h"
+#include "x86/devices/fpu/fpu_interface.h"
 #include "app-nxvm/devices/guest_input_interface.h"
 #include "app-nxvm/profiles/selection_interface.h"
 #include "app-nxvm/machine/event_interface.h"

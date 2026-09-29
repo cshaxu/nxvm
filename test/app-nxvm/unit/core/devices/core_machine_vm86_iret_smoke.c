@@ -40,7 +40,7 @@ static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
     const core_machine_config config = {
         .memory_bytes = 0x100000u,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const lib_u32 frame[9u] = {
         0x00000010u, 0xa5a50200u, VCPU_EFLAGS_VM | VCPU_EFLAGS_IF,

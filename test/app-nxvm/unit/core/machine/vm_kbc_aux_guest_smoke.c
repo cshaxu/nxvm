@@ -62,7 +62,7 @@ lib_i32 main(void)
 {
     const vm_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const core_machine_entry_plan_preload preloads[] = {
         { 0x7c00u, vm_kbc_aux_boot_code, sizeof(vm_kbc_aux_boot_code) },

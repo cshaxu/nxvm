@@ -58,7 +58,7 @@ lib_i32 main(void)
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
     const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,

@@ -17,7 +17,7 @@ void vm_profile_model40_core_config_initialize(core_machine_config *out_config)
     *out_config = (core_machine_config) {
         .memory_bytes = 2u * 1024u * 1024u,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .fpu_profile = X86_FPU_PROFILE_NONE,
         .cpu_80386_cr_mov_ignores_mod = LIB_TRUE,
         .a20_wrap_policy = CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB,
         .ticks_per_instruction = 1u,

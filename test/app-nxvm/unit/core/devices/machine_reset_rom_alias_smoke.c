@@ -39,7 +39,7 @@ static lib_i32 reset_rom_run(core_machine_cpu_profile profile)
     const core_machine_config config = {
         .memory_bytes = 0x00100000u,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .fpu_profile = X86_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
     const core_machine_run_budget budget = {4u, 0u};

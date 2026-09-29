@@ -39,7 +39,7 @@ static lib_i32 vm86_delivery_prepare(vm86_delivery_state *state, lib_u8 vector)
     const core_machine_config config = {
         .memory_bytes = 0x100000u,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .fpu_profile = X86_FPU_PROFILE_NONE,
         .clock_plan.dma = { 1u, 1000000u, 0u },
         .clock_plan.pit = { 1u, 1000000u, 0u },
         .clock_plan.rtc = { 1u, 1000000u, 0u },

@@ -50,7 +50,7 @@ static lib_i32 iret_prepare(iret_machine *state, iret_negative negative,
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0,

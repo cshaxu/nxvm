@@ -49,7 +49,7 @@ static lib_i32 vm_xt_5160_268_contract_is_fixed(void)
         profile.topology.absent_memory[2].bytes != 0x00030000u ||
         profile.topology.absent_memory[2].read_value != 0xffu ||
         profile.values.core.configuration.fpu_profile !=
-            CORE_MACHINE_FPU_PROFILE_NONE ||
+            X86_FPU_PROFILE_NONE ||
         profile.values.core.configuration.shared_pit_personality !=
             X86_PIT_PERSONALITY_8253 ||
         profile.values.core.configuration.pic_topology !=

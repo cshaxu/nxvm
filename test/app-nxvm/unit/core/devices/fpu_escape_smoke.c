@@ -23,7 +23,7 @@ static const core_machine_execution_provider fpu_escape_provider = {
     fpu_escape_reset, LIB_NULL
 };
 
-static lib_i32 prepare_machine(core_machine_fpu_profile fpu_profile,
+static lib_i32 prepare_machine(x86_fpu_profile fpu_profile,
     lib_u32 cr0, fpu_escape_machine *state)
 {
     const core_machine_config config = {
@@ -45,7 +45,7 @@ static lib_i32 prepare_machine(core_machine_fpu_profile fpu_profile,
 }
 
 static lib_i32 run_case(const lib_u8 *program, lib_size program_size,
-    core_machine_fpu_profile fpu_profile, lib_u32 cr0, lib_u32 expected_exception,
+    x86_fpu_profile fpu_profile, lib_u32 cr0, lib_u32 expected_exception,
     lib_u32 expected_eip)
 {
     fpu_escape_machine state;
@@ -94,7 +94,7 @@ static lib_i32 run_nm_delivery_case(const lib_u8 *program,
     t_cpu after;
     lib_u16 frame[3] = { 0u, 0u, 0u };
     lib_u32 original_eax = 0u;
-    lib_i32 failed = prepare_machine(CORE_MACHINE_FPU_PROFILE_NONE, cr0, &state);
+    lib_i32 failed = prepare_machine(X86_FPU_PROFILE_NONE, cr0, &state);
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0u, program,
@@ -148,16 +148,16 @@ lib_i32 main(void)
     static const lib_u8 fwait[] = { 0x9bu };
     lib_i32 failed = 0;
 
-    failed |= run_case(fninit, sizeof(fninit), CORE_MACHINE_FPU_PROFILE_NONE,
+    failed |= run_case(fninit, sizeof(fninit), X86_FPU_PROFILE_NONE,
         0u, 0u, 2u);
     failed |= run_case(memory_escape, sizeof(memory_escape),
-        CORE_MACHINE_FPU_PROFILE_NONE, 0u, 0u, 4u);
+        X86_FPU_PROFILE_NONE, 0u, 0u, 4u);
     failed |= run_nm_delivery_case(fninit, sizeof(fninit), VCPU_CR0_EM);
-    failed |= run_case(fwait, sizeof(fwait), CORE_MACHINE_FPU_PROFILE_NONE,
+    failed |= run_case(fwait, sizeof(fwait), X86_FPU_PROFILE_NONE,
         VCPU_CR0_TS, 0u, 1u);
     failed |= run_nm_delivery_case(fwait, sizeof(fwait),
         VCPU_CR0_TS | VCPU_CR0_MP);
-    failed |= run_case(fninit, sizeof(fninit), CORE_MACHINE_FPU_PROFILE_80387,
+    failed |= run_case(fninit, sizeof(fninit), X86_FPU_PROFILE_80387,
         0u, 0u, 2u);
     if (failed) return 1;
     printf("M5:T156:S1:FPU-ESC:OK\n");

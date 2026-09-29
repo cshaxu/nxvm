@@ -24,7 +24,7 @@ lib_status vm_profile_xt_5160_268_values_create(
     values.core.id = VM_PROFILE_XT_5160_268_CONTRACT_ID;
     values.core.configuration.memory_bytes = 256u * 1024u;
     values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_8088;
-    values.core.configuration.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
+    values.core.configuration.fpu_profile = X86_FPU_PROFILE_NONE;
     values.core.configuration.shared_pit_personality =
         X86_PIT_PERSONALITY_8253;
     values.core.configuration.pic_topology =

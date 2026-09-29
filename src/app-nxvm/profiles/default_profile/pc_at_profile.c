@@ -145,7 +145,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     "default-pc-at",
     1u,
     CORE_MACHINE_CPU_PROFILE_80386,
-    CORE_MACHINE_FPU_PROFILE_NONE,
+    X86_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
     { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
@@ -218,7 +218,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     "ibm-5170-model-339",
     1u,
     CORE_MACHINE_CPU_PROFILE_80286,
-    CORE_MACHINE_FPU_PROFILE_NONE,
+    X86_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
     { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
@@ -356,12 +356,12 @@ static lib_i32 vm_profile_default_pc_at_cpu_profile_is_valid(
 }
 
 static lib_i32 vm_profile_default_pc_at_fpu_profile_is_valid(
-    core_machine_fpu_profile profile)
+    x86_fpu_profile profile)
 {
-    return profile == CORE_MACHINE_FPU_PROFILE_NONE ||
-        profile == CORE_MACHINE_FPU_PROFILE_8087 ||
-        profile == CORE_MACHINE_FPU_PROFILE_80287 ||
-        profile == CORE_MACHINE_FPU_PROFILE_80387;
+    return profile == X86_FPU_PROFILE_NONE ||
+        profile == X86_FPU_PROFILE_8087 ||
+        profile == X86_FPU_PROFILE_80287 ||
+        profile == X86_FPU_PROFILE_80387;
 }
 
 static lib_i32 vm_profile_default_pc_at_fdc_bounce_is_valid(
@@ -377,7 +377,7 @@ static lib_i32 vm_profile_default_pc_at_fdc_bounce_is_valid(
 lib_i32 vm_profile_default_pc_at_cpu_contract_select(
     const vm_profile_default_pc_at_descriptor *descriptor,
     core_machine_cpu_profile requested_cpu,
-    core_machine_fpu_profile requested_fpu,
+    x86_fpu_profile requested_fpu,
     vm_profile_default_pc_at_cpu_contract *out_contract)
 {
     if (descriptor == LIB_NULL || out_contract == LIB_NULL ||
@@ -588,7 +588,7 @@ lib_status vm_profile_default_pc_at_topology_materialize(
 
 static lib_status vm_profile_default_pc_at_values_create(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    core_machine_cpu_profile cpu_profile, core_machine_fpu_profile fpu_profile,
+    core_machine_cpu_profile cpu_profile, x86_fpu_profile fpu_profile,
     vm_profile_contract_values *out_values)
 {
     vm_profile_default_pc_at_cpu_contract contract;
@@ -759,7 +759,7 @@ lib_status vm_profile_ibm_5170_plan_create(
 
 static lib_status vm_profile_default_at_request_select(
     const vm_profile_default_at_request *request,
-    core_machine_cpu_profile *out_cpu, core_machine_fpu_profile *out_fpu,
+    core_machine_cpu_profile *out_cpu, x86_fpu_profile *out_fpu,
     lib_size *out_memory)
 {
     const vm_profile_default_pc_at_descriptor *descriptor =
@@ -796,7 +796,7 @@ static lib_status vm_profile_default_at_values_create(
     vm_profile_contract_values *out_values)
 {
     core_machine_cpu_profile cpu_profile;
-    core_machine_fpu_profile fpu_profile;
+    x86_fpu_profile fpu_profile;
     lib_size memory_bytes;
     vm_profile_contract_values values = {0};
     const vm_profile_contract_catalog catalog = { ibm_5170_contract_ids,

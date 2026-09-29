@@ -42,7 +42,7 @@ static lib_i32 real_ud_prepare(real_ud_machine *state,
     core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = X86_FPU_PROFILE_NONE
     };
     const lib_u16 handler_offset = REAL_UD_HANDLER_OFFSET;
     const lib_u16 handler_segment = 0u;

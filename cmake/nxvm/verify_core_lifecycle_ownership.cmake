@@ -6,7 +6,7 @@ file(GLOB_RECURSE product_sources LIST_DIRECTORIES FALSE
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.c")
 
 set(forbidden_lifecycle_call
-    "(core_machine_(cpu_state|cpu_execution|memory|port|pic|pit_bus|dma|kbc|vadp|fpu)_(create|initialize|reset|refresh|destroy|finalize)|x86_pit_(create|reset|destroy))[ \t\r\n]*\\(")
+    "(core_machine_(cpu_state|cpu_execution|memory|port|pic|pit_bus|dma|kbc|vadp)_(create|initialize|reset|refresh|destroy|finalize)|x86_(pit|fpu)_(create|reset|destroy))[ \t\r\n]*\\(")
 
 foreach(source_file IN LISTS product_sources)
     file(READ "${source_file}" source_text)

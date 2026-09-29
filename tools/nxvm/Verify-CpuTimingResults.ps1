@@ -54,10 +54,9 @@ foreach ($result in $results) {
             [string]$result.handoff_kind -ne "CPU_FPU_COMMAND" -or
             [string]$result.coprocessor_profile -ne "80387" -or
             $result.escape_opcode -ne 216 -or $result.escape_modrm -ne 192 -or
-            $null -eq $result.coprocessor_ticks_min -or
-            $null -eq $result.coprocessor_ticks_max -or
-            $result.coprocessor_ticks_min -le 0 -or
-            $result.coprocessor_ticks_max -lt $result.coprocessor_ticks_min -or
+            $null -eq $result.coprocessor_remaining_ticks -or
+            $result.coprocessor_remaining_ticks -le 0 -or
+            $result.coprocessor_remaining_ticks -gt 19 -or
             $result.source_timing_unallocated -or -not $result.passed) {
             throw "CPU timing MCP-domain result is not conforming: $key"
         }

@@ -66,7 +66,7 @@ void core_machine_cpu_execution_context_initialize(
     context->prefetch_reservation_linear = 0u;
     context->prefetch_reservation_count = 0u;
     context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
+    context->fpu_profile = X86_FPU_PROFILE_NONE;
     context->cpu_80386_cr_mov_ignores_mod = LIB_FALSE;
     context->fpu = LIB_NULL;
 }
@@ -74,7 +74,7 @@ void core_machine_cpu_execution_context_initialize(
 void core_machine_cpu_execution_context_bind_profiles(
     core_machine_cpu_execution_context *context,
     core_machine_cpu_profile cpu_profile,
-    core_machine_fpu_profile fpu_profile,
+    x86_fpu_profile fpu_profile,
     lib_u8 cpu_80386_cr_mov_ignores_mod)
 {
     if (context == LIB_NULL) return;
@@ -86,7 +86,7 @@ void core_machine_cpu_execution_context_bind_profiles(
 }
 
 void core_machine_cpu_execution_context_bind_fpu(
-    core_machine_cpu_execution_context *context, core_machine_fpu *fpu)
+    core_machine_cpu_execution_context *context, x86_fpu *fpu)
 {
     if (context != LIB_NULL) context->fpu = fpu;
 }

@@ -32,7 +32,7 @@ static const core_machine_execution_provider fpu_interface_s65_provider = {
 };
 
 static lib_i32 fpu_interface_s65_prepare(core_machine_cpu_profile profile,
-    core_machine_fpu_profile fpu_profile, fpu_interface_s65_machine *state)
+    x86_fpu_profile fpu_profile, fpu_interface_s65_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -74,7 +74,7 @@ static lib_i32 fpu_interface_s65_same(const t_cpu *before, const t_cpu *after)
 }
 
 static lib_i32 fpu_interface_s65_success(const lib_u8 *code, lib_size size,
-    core_machine_cpu_profile profile, core_machine_fpu_profile fpu_profile,
+    core_machine_cpu_profile profile, x86_fpu_profile fpu_profile,
     lib_u32 cr0)
 {
     fpu_interface_s65_machine state;
@@ -129,7 +129,7 @@ static lib_i32 fpu_interface_s65_mf(void)
     t_cpu after;
     lib_status status;
     lib_i32 failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_FPU_PROFILE_80387, &state);
+        X86_FPU_PROFILE_80387, &state);
 
     if (!failed) {
         state.machine->executor_cpu.data.esp = 0x00008000u;
@@ -139,7 +139,9 @@ static lib_i32 fpu_interface_s65_mf(void)
                 sizeof(handler_segment)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, handler_offset, handler,
                 sizeof(handler)) != LIB_STATUS_OK;
-        state.machine->fpu.pending_unmasked_exception = LIB_TRUE;
+        x86_fpu_load_control_word(state.machine->fpu, 0x037eu);
+        failed |= x86_fpu_store_m32(state.machine->fpu, &(lib_u32){0}) !=
+            X86_FPU_EXECUTE_COMPLETED || !x86_fpu_wait_pending(state.machine->fpu);
         before = state.machine->executor_cpu;
         failed |= !fpu_interface_s65_run(&state, wait, sizeof(wait), &after,
             &diagnostic, &status) || status != LIB_STATUS_OK ||
@@ -176,7 +178,7 @@ static lib_i32 fpu_interface_s65_reject(const lib_u8 *code, lib_size size,
     t_cpu after;
     lib_status status;
     lib_i32 failed = !fpu_interface_s65_prepare(profile,
-        CORE_MACHINE_FPU_PROFILE_NONE, &state);
+        X86_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
@@ -193,8 +195,7 @@ static lib_i32 fpu_interface_s65_reject(const lib_u8 *code, lib_size size,
 }
 
 static lib_i32 fpu_interface_s65_handoff(core_machine_cpu_profile cpu,
-    core_machine_fpu_profile profile, lib_u32 expected_min,
-    lib_u32 expected_max)
+    x86_fpu_profile profile)
 {
     static const lib_u8 fadd_wait[] = { 0xd8u, 0xc0u, 0x9bu };
     fpu_interface_s65_machine state;
@@ -216,23 +217,23 @@ static lib_i32 fpu_interface_s65_handoff(core_machine_cpu_profile cpu,
         failed |= status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
             after.data.eip != sizeof(fadd_wait) - 1u ||
             after.data.eax != before.data.eax || after.data.ebx != before.data.ebx ||
-            !state.machine->fpu.busy ||
-            state.machine->fpu.last_escape_opcode != fadd_wait[0] ||
-            state.machine->fpu.last_escape_modrm != fadd_wait[1] ||
-            state.machine->fpu.operation_ticks_min != expected_min ||
-            state.machine->fpu.operation_ticks_max != expected_max ||
+            x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_OK ||
+            state.machine->transaction.address != fadd_wait[0] ||
+            state.machine->transaction.value != fadd_wait[1] ||
             state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
             state.machine->transaction.kind != CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND;
         failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
             &(core_machine_run_result){ 0 }) != LIB_STATUS_OK ||
-            state.machine->fpu.busy;
+            x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_INVALID_STATE;
     }
     core_machine_destroy(state.machine);
     return !failed;
 }
 
 static lib_i32 fpu_interface_s65_deadline(core_machine_cpu_profile cpu,
-    core_machine_fpu_profile profile)
+    x86_fpu_profile profile)
 {
     static const lib_u8 fadd[] = { 0xd8u, 0xc0u };
     fpu_interface_s65_machine state;
@@ -245,12 +246,15 @@ static lib_i32 fpu_interface_s65_deadline(core_machine_cpu_profile cpu,
             sizeof(fadd)) != LIB_STATUS_OK ||
             core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
                 &(core_machine_run_result){0}) != LIB_STATUS_OK ||
-            !state.machine->fpu.busy ||
+            x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_OK ||
             core_machine_capture_time_observation(state.machine, &observation) !=
                 LIB_STATUS_OK || !observation.next_deadline_valid ||
             observation.next_deadline_tick <= observation.elapsed_ticks ||
             core_machine_advance_to_next_deadline(state.machine, &advanced) !=
-                LIB_STATUS_OK || !advanced || state.machine->fpu.busy;
+                LIB_STATUS_OK || !advanced ||
+            x86_fpu_ticks_until_completion(state.machine->fpu,
+                &(lib_u64){0}) != LIB_STATUS_INVALID_STATE;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -265,7 +269,7 @@ static lib_i32 fpu_interface_s65_incompatible(void)
     t_cpu after;
     lib_status status;
     lib_i32 failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_FPU_PROFILE_8087, &state);
+        X86_FPU_PROFILE_8087, &state);
 
     if (!failed) {
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(state.machine);
@@ -292,7 +296,7 @@ static lib_i32 fpu_interface_s65_nm_delivery(const lib_u8 *code,
     t_cpu after;
     lib_u16 frame_ip = 0u;
     lib_i32 failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_FPU_PROFILE_NONE, &state);
+        X86_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0u, code,
@@ -345,7 +349,7 @@ static lib_i32 fpu_interface_s65_irq(const lib_u8 *instruction,
     lib_u16 frame_ip = 0u;
     lib_i32 failed = instruction_size + 1u > sizeof(code) ||
         !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-            CORE_MACHINE_FPU_PROFILE_NONE, &state);
+            X86_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
         lib_memory_copy(code, instruction, instruction_size);
@@ -398,7 +402,7 @@ static lib_i32 fpu_interface_s65_vm86(void)
     t_cpu after;
     lib_status status;
     lib_i32 failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_FPU_PROFILE_NONE, &state);
+        X86_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
         state.machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
@@ -468,7 +472,7 @@ static lib_i32 fpu_interface_s65_protected_nm(void)
     t_cpu after;
     lib_u16 frame_ip = 0u;
     lib_i32 failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_FPU_PROFILE_NONE, &state);
+        X86_FPU_PROFILE_NONE, &state);
 
     idt[7u * 8u + 1u] = 0x01u;
     idt[7u * 8u + 2u] = 0x08u;
@@ -561,51 +565,51 @@ lib_i32 main(void)
     for (profile = CORE_MACHINE_CPU_PROFILE_8086;
         profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
         failed |= !fpu_interface_s65_success(wait, sizeof(wait), profile,
-            CORE_MACHINE_FPU_PROFILE_NONE, 0u);
+            X86_FPU_PROFILE_NONE, 0u);
         failed |= !fpu_interface_s65_success(fninit, sizeof(fninit), profile,
-            CORE_MACHINE_FPU_PROFILE_NONE, 0u);
+            X86_FPU_PROFILE_NONE, 0u);
         for (index = 0u; index != sizeof(escapes) / sizeof(escapes[0]);
             ++index) {
             failed |= !fpu_interface_s65_success(escapes[index],
-                sizeof(escapes[index]), profile, CORE_MACHINE_FPU_PROFILE_NONE,
+                sizeof(escapes[index]), profile, X86_FPU_PROFILE_NONE,
                 0u);
         }
     }
     failed |= !fpu_interface_s65_success(fninit, sizeof(fninit),
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_FPU_PROFILE_8087, 0u);
+        CORE_MACHINE_CPU_PROFILE_8086, X86_FPU_PROFILE_8087, 0u);
     failed |= !fpu_interface_s65_handoff(CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_FPU_PROFILE_8087, 0u, 0u);
+        X86_FPU_PROFILE_8087);
     failed |= !fpu_interface_s65_handoff(CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_FPU_PROFILE_8087, 0u, 0u);
+        X86_FPU_PROFILE_8087);
     failed |= !fpu_interface_s65_handoff(CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_FPU_PROFILE_80287, 0u, 0u);
+        X86_FPU_PROFILE_80287);
     failed |= !fpu_interface_s65_handoff(CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_FPU_PROFILE_80287, 0u, 0u);
+        X86_FPU_PROFILE_80287);
     failed |= !fpu_interface_s65_handoff(CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_FPU_PROFILE_80387, 12u, 26u);
+        X86_FPU_PROFILE_80387);
     failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_FPU_PROFILE_8087);
+        X86_FPU_PROFILE_8087);
     failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_FPU_PROFILE_8087);
+        X86_FPU_PROFILE_8087);
     failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_FPU_PROFILE_80287);
+        X86_FPU_PROFILE_80287);
     failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_FPU_PROFILE_80287);
+        X86_FPU_PROFILE_80287);
     failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_FPU_PROFILE_80387);
+        X86_FPU_PROFILE_80387);
     failed |= !fpu_interface_s65_incompatible();
     failed |= !fpu_interface_s65_success(attr_wait, sizeof(attr_wait),
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE, 0u);
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_s65_success(attr_wait_66, sizeof(attr_wait_66),
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE, 0u);
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_s65_success(attr_wait_67, sizeof(attr_wait_67),
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE, 0u);
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_s65_success(attr_esc, sizeof(attr_esc),
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE, 0u);
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_s65_success(attr_esc_66, sizeof(attr_esc_66),
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE, 0u);
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_s65_success(attr_esc_67, sizeof(attr_esc_67),
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE, 0u);
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, 0u);
     failed |= !fpu_interface_s65_mf();
     for (profile = CORE_MACHINE_CPU_PROFILE_8086;
         profile <= CORE_MACHINE_CPU_PROFILE_80286; ++profile) {

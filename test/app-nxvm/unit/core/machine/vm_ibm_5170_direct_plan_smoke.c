@@ -71,7 +71,7 @@ static lib_i32 vm_default_at_direct_plan_is_complete(void)
         VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
         VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |
         VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY,
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE,
+        CORE_MACHINE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE,
         32u * 1024u * 1024u, 0x40u};
     vm_profile_default_pc_at_plan_snapshot profile;
 

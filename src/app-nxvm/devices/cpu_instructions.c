@@ -8135,14 +8135,14 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
     core_machine_cpu_instruction_space space, lib_u8 opcode, lib_u8 modrm)
 {
     core_machine_cpu_instruction_metadata metadata = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_FPU_PROFILE_NONE, 1};
+        CORE_MACHINE_CPU_PROFILE_8086, X86_FPU_PROFILE_NONE, 1};
 
     switch (space)
     {
     case CORE_MACHINE_CPU_INSTRUCTION_PRIMARY:
         if (opcode >= 0xd8u && opcode <= 0xdfu)
         {
-            metadata.minimum_fpu = CORE_MACHINE_FPU_PROFILE_8087;
+            metadata.minimum_fpu = X86_FPU_PROFILE_8087;
         }
         else if ((opcode >= 0x60u && opcode <= 0x62u) || opcode == 0x68u ||
                  opcode == 0x69u || opcode == 0x6au || opcode == 0x6bu ||
@@ -8224,7 +8224,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         }
         break;
     case CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE:
-        metadata.minimum_fpu = CORE_MACHINE_FPU_PROFILE_8087;
+        metadata.minimum_fpu = X86_FPU_PROFILE_8087;
         metadata.valid = opcode >= 0xd8u && opcode <= 0xdfu;
         break;
     }
@@ -8258,11 +8258,27 @@ static void UndefinedOpcode(core_machine_cpu_execution_context *context)
     CPU_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     CPU_TRACE_CALL_END;
 }
+static lib_bool core_machine_cpu_allows_fpu(core_machine_cpu_profile cpu,
+    x86_fpu_profile fpu)
+{
+    if (fpu == X86_FPU_PROFILE_NONE) return LIB_TRUE;
+    if (fpu == X86_FPU_PROFILE_8087) {
+        return core_machine_cpu_profile_has_8086_semantics(cpu) ||
+            cpu == CORE_MACHINE_CPU_PROFILE_80186;
+    }
+    if (fpu == X86_FPU_PROFILE_80287) {
+        return cpu == CORE_MACHINE_CPU_PROFILE_80286 ||
+            cpu == CORE_MACHINE_CPU_PROFILE_80386;
+    }
+    return fpu == X86_FPU_PROFILE_80387 &&
+        cpu == CORE_MACHINE_CPU_PROFILE_80386;
+}
+
 static void FPU_ESCAPE(core_machine_cpu_execution_context *context)
 {
-    core_machine_fpu_escape_action action;
+    x86_fpu_escape_action action;
     core_machine_cpu_instruction_metadata metadata;
-    core_machine_fpu_operation_metadata fpu_metadata;
+    x86_fpu_operation_metadata fpu_metadata;
     lib_u8 escape_opcode;
     lib_u8 modrm;
     lib_u32 fpu_m32;
@@ -8286,51 +8302,53 @@ static void FPU_ESCAPE(core_machine_cpu_execution_context *context)
     }
     else
     {
-        action = core_machine_fpu_escape_dispatch(context->fpu,
-            context->cpu_profile, escape_opcode, modrm);
-        if (action == CORE_MACHINE_FPU_ESCAPE_UNSUPPORTED)
+        action = core_machine_cpu_allows_fpu(context->cpu_profile,
+            x86_fpu_get_profile(context->fpu)) ?
+            x86_fpu_escape_dispatch(context->fpu, escape_opcode, modrm) :
+            X86_FPU_ESCAPE_UNSUPPORTED;
+        if (action == X86_FPU_ESCAPE_UNSUPPORTED)
         {
             CPU_TRACE_CHECK_RETURN(_SetExcept_FPU_UNSUPPORTED(0));
         }
-        else if (action != CORE_MACHINE_FPU_ESCAPE_CONSUME_NONE &&
+        else if (action != X86_FPU_ESCAPE_CONSUME_NONE &&
             !context->preview_mode && context->transaction != LIB_NULL &&
             core_machine_transaction_begin(context->transaction,
                 CORE_MACHINE_TRANSACTION_OWNER_CPU,
                 CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND, escape_opcode, modrm,
-                (lib_u32)context->fpu->profile) == LIB_STATUS_OK)
+                (lib_u32)x86_fpu_get_profile(context->fpu)) == LIB_STATUS_OK)
         {
             core_machine_transaction_commit(context->transaction);
         }
-        if (action == CORE_MACHINE_FPU_ESCAPE_EXECUTE_8087)
+        if (action == X86_FPU_ESCAPE_EXECUTE_8087)
         {
-            fpu_metadata = core_machine_fpu_operation_metadata_get(escape_opcode, modrm);
+            fpu_metadata = x86_fpu_operation_metadata_get(escape_opcode, modrm);
             switch (fpu_metadata.operation)
             {
-            case CORE_MACHINE_FPU_OPERATION_FNINIT:
-                core_machine_fpu_reset(context->fpu);
+            case X86_FPU_OPERATION_FNINIT:
+                x86_fpu_reset(context->fpu);
                 break;
-            case CORE_MACHINE_FPU_OPERATION_FLD_M32:
+            case X86_FPU_OPERATION_FLD_M32:
                 CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
-                (void)core_machine_fpu_load_m32(context->fpu,
+                (void)x86_fpu_load_m32(context->fpu,
                     CORE_MACHINE_MASK_U32(instruction_state.data.crm));
                 break;
-            case CORE_MACHINE_FPU_OPERATION_FSTP_M32:
-                if (core_machine_fpu_store_m32(context->fpu, &fpu_m32) ==
-                    CORE_MACHINE_FPU_EXECUTE_COMPLETED) {
+            case X86_FPU_OPERATION_FSTP_M32:
+                if (x86_fpu_store_m32(context->fpu, &fpu_m32) ==
+                    X86_FPU_EXECUTE_COMPLETED) {
                     instruction_state.data.crm = fpu_m32;
                     CPU_TRACE_CHECK_RETURN(_m_write_rm(context, 4));
                 }
                 break;
-            case CORE_MACHINE_FPU_OPERATION_FLDCW_M16:
+            case X86_FPU_OPERATION_FLDCW_M16:
                 CPU_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
-                core_machine_fpu_load_control_word(context->fpu,
+                x86_fpu_load_control_word(context->fpu,
                     CORE_MACHINE_MASK_U16(instruction_state.data.crm));
                 break;
-            case CORE_MACHINE_FPU_OPERATION_FADD_ST0_STI:
-            case CORE_MACHINE_FPU_OPERATION_FMUL_ST0_STI:
-            case CORE_MACHINE_FPU_OPERATION_FSUB_ST0_STI:
-            case CORE_MACHINE_FPU_OPERATION_FDIV_ST0_STI:
-                (void)core_machine_fpu_binary_st0_sti(context->fpu,
+            case X86_FPU_OPERATION_FADD_ST0_STI:
+            case X86_FPU_OPERATION_FMUL_ST0_STI:
+            case X86_FPU_OPERATION_FSUB_ST0_STI:
+            case X86_FPU_OPERATION_FDIV_ST0_STI:
+                (void)x86_fpu_binary_st0_sti(context->fpu,
                     fpu_metadata.operation, (lib_u8)(modrm & 7u));
                 break;
             default: break;
@@ -8339,8 +8357,8 @@ static void FPU_ESCAPE(core_machine_cpu_execution_context *context)
              * outside that semantic subset remains a valid coprocessor
              * command handoff; it is not a CPU #UD or model-only fault. */
         }
-        if (action != CORE_MACHINE_FPU_ESCAPE_CONSUME_NONE) {
-            core_machine_fpu_begin_command(context->fpu, escape_opcode, modrm);
+        if (action != X86_FPU_ESCAPE_CONSUME_NONE) {
+            x86_fpu_begin_command(context->fpu, escape_opcode, modrm);
         }
     }
     CPU_TRACE_CALL_END;
@@ -12555,7 +12573,7 @@ static void WAIT(core_machine_cpu_execution_context *context)
         CPU_TRACE_CHECK_RETURN(_SetExcept_NM(0));
         CPU_TRACE_BLOCK_END;
     }
-    else if (core_machine_fpu_wait_pending(context->fpu))
+    else if (x86_fpu_wait_pending(context->fpu))
     {
         CPU_TRACE_BLOCK_BEGIN("FPU_PENDING(1)");
         CPU_TRACE_CHECK_RETURN(_SetExcept_MF(0));
@@ -12563,7 +12581,7 @@ static void WAIT(core_machine_cpu_execution_context *context)
     }
     else
     {
-        (void)core_machine_fpu_complete_wait(context->fpu);
+        (void)x86_fpu_complete_wait(context->fpu);
     }
     CPU_TRACE_CALL_END;
 }

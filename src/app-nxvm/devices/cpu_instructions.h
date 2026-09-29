@@ -15,8 +15,7 @@ extern "C" {
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/firmware_interface.h"
-#include "app-nxvm/devices/fpu.h"
-#include "app-nxvm/devices/fpu_interface.h"
+#include "x86/devices/fpu/fpu_interface.h"
 
 typedef enum {
     ARITHTYPE_NULL,
@@ -159,7 +158,7 @@ typedef void (*core_machine_cpu_external_cycle_provider)(void *context,
 
 typedef struct core_machine_cpu_instruction_metadata {
     core_machine_cpu_profile minimum_cpu;
-    core_machine_fpu_profile minimum_fpu;
+    x86_fpu_profile minimum_fpu;
     lib_i32 valid;
 } core_machine_cpu_instruction_metadata;
 
@@ -236,9 +235,9 @@ struct core_machine_cpu_execution_context {
     lib_u32 prefetch_reservation_linear;
     lib_u8 prefetch_reservation_count;
     core_machine_cpu_profile cpu_profile;
-    core_machine_fpu_profile fpu_profile;
+    x86_fpu_profile fpu_profile;
     lib_u8 cpu_80386_cr_mov_ignores_mod;
-    core_machine_fpu *fpu;
+    x86_fpu *fpu;
 };
 
 void core_machine_cpu_execution_context_initialize(
@@ -252,7 +251,7 @@ void core_machine_cpu_execution_context_bind_diagnostic_provider(
     const core_machine_cpu_execution_diagnostic_provider *provider,
     void *provider_context);
 void core_machine_cpu_execution_context_bind_fpu(
-    core_machine_cpu_execution_context *context, core_machine_fpu *fpu);
+    core_machine_cpu_execution_context *context, x86_fpu *fpu);
 void core_machine_cpu_execution_context_bind_external_cycle_provider(
     core_machine_cpu_execution_context *context,
     core_machine_cpu_external_cycle_provider provider, void *provider_context);

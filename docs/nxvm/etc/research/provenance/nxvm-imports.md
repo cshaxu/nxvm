@@ -119,3 +119,14 @@ an owner-approved internal extraction, not imported emulator or vendor code.
 The [S15 evidence](../../evidence/t539-s15-video-extraction.md) identifies the
 transport, typed-memory, construction and verification changes. No original
 commercial ROM, media or generated firmware byte source enters Shared.
+
+## T539 S16 FPU Extraction
+
+Project-owned MIT source at c0722284b, app-nxvm/devices/fpu.c/h and
+fpu_interface.h, moves to x86/devices/fpu. This is an owner-approved internal
+extraction, not new third-party source or expanded x87 implementation.
+Arithmetic and timing function bodies retain the original algorithms; opaque
+lifetime and CPU pairing ownership replace the machine-private connection.
+[Evidence](../../evidence/t539-s16-fpu-extraction.md) maps the original
+cases, independent tests and completed receiving verification. No asset enters
+the Shared source/test corpus.

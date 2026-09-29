@@ -1193,7 +1193,6 @@ set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/port.c
     src/app-nxvm/devices/memory.c
     src/app-nxvm/devices/cpu.c
-    src/app-nxvm/devices/fpu.c
     src/app-nxvm/devices/cpu_instructions.c
     src/app-nxvm/devices/pic_bus.c
     src/app-nxvm/devices/pit_bus.c
@@ -1211,7 +1210,7 @@ add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine-executor PUBLIC x86-fpu x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(vm-machine-frame-smoke
@@ -3410,7 +3409,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/memory.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/transaction.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/cpu.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/fpu.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/cpu_instructions.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/pic_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/pit_bus.c|machine-executor"

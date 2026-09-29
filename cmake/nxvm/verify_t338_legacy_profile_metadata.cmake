@@ -16,7 +16,7 @@ endfunction()
 
 # The metadata starts at the 8086 baseline and names every primary 80186
 # extension explicitly.  Later-only primary bytes remain out of this package.
-t338_require("CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_FPU_PROFILE_NONE, 1"
+t338_require("CORE_MACHINE_CPU_PROFILE_8086, X86_FPU_PROFILE_NONE, 1"
     "the primary baseline must remain 8086")
 foreach(t338_opcode IN ITEMS
     "opcode >= 0x60u && opcode <= 0x62u"
