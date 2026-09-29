@@ -459,3 +459,12 @@ FAULTED state. No public contract or production behavior changed.
 [S22 evidence](../etc/evidence/t539-s22-mov-moffs-migration.md) records actual
 case mapping, full verification, limits and source/test accounting. Executor
 delivery is ready for actual-commit review, not yet coordinator acceptance.
+
+### S22 Acceptance
+
+Coordinator actual-commit review accepts pushed NXVM P1 `9e5382872` with all
+277 original contexts retained. Complete units pass 375/375 on each width;
+66 specialized steps, six manifests and documentation/diff checks pass.
+Ten test/build paths add 1,040/remove 1,174 lines. No production or EXE input
+changes. The active packet is removed; S23 is next. The remaining 96 original
+private CPU consumers retain explicit receivers; T539 remains open.
