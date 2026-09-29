@@ -79,6 +79,13 @@ Current owns acceptance; 96 original direct consumers remain with S23-S37.
 
 - `core_machine_xchg_smoke.c`
 
+S23 implementation moves 96 instruction contexts to cpu_xchg_smoke.c; five
+board fault/IRQ contexts remain without private CPU access. The remaining
+original inventory is 95 files, assigned to S24-S37. The broad search also
+matches cpu_bus_boundary_negative.cmake's intentional rejected-code strings;
+that verifier is not an unassigned CPU consumer. See
+[S23 evidence](t539-s23-xchg-migration.md). Current owns acceptance.
+
 ### S24: 3 matching files
 
 - `core_machine_gpr_push_pop_smoke.c`

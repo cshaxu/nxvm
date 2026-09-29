@@ -2,9 +2,8 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S22 are accepted; there is no active S packet.
-S23 (XCHG) is next under the owner's automatic-admission authorization.
-S23-S40 remain planned in the
+M5 T539 remains open. S1-S22 are accepted; S23 (XCHG) is admitted below.
+S24-S40 remain planned in the
 [CPU work packages](../etc/architecture/t539-cpu-work-packages.md).
 
 S22 implementation P1 `9e5382872` separates GPR MOV/MOFFS instruction
@@ -21,6 +20,27 @@ remaining 96 original direct private-test consumers and include dependents to
 S23-S37. Embedded CPU lifetime remains until S38; physical Shared relocation
 is S39; whole CPU acceptance is S40. S32 owns the unresolved 32-bit BOUND
 observation. None is silently closed or transferred to the next T.
+
+## Active S23 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T539 S23; baseline S22 P2 8dd52d43f. Target NXVM only. |
+| Admission And Approval | Owner automatic-S authorization and bounded CPU decomposition request; coordinator admits the XCHG migration without new Shared or product behavior. |
+| Objective | Separate XCHG chip invariants from board composition and eliminate private CPU access in the original board test. |
+| Non-goals | No CPU algorithm/timing changes, Shared relocation, new public test API, lifetime cutover, MyNES/INI/asset changes or new device framework. |
+| Reference Baseline | 8dd52d43f; clean intake. Original core_machine_xchg_smoke.c has 876 lines, twelve test families and 101 instruction contexts. |
+| Candidate Proposal | [T539](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [work packages](../etc/architecture/t539-cpu-work-packages.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md), [S23 evidence](../etc/evidence/t539-s23-xchg-migration.md). |
+| Files And ABI Surface | Original board test, CPU-owned receiving test, existing CPU fixture if needed, NXVM build/gate classifications and task records. No production ABI change. |
+| Applicable Rules | Product reading set; shared Execution/Architecture/Coding/Document and NXVM Architecture/Coding. One chip state owner, public copied board observations, original table/handler style and coverage preserved. No imports. |
+| Verification | Build existing x64/x86 trees; complete unit suites sequentially to avoid overlapping native desktop tests. Specialized gates, six manifests, documentation/diff checks. Transient focused selection is the two XCHG targets and CPU-boundary negative test. |
+| Expected Markers | Preserve T316/S27/S28, T401/S12/S46 and all original arrays/loops/assertions. CPU target links x86-cpu only. Retain three protected fault cases and two real PIC frame cases. |
+| Asset Needs | Repository-owned instruction bytes only. Retain three build/t539-s3 trees and recovery patch. No EXE rebuild when link inputs remain unchanged; rebuild affected pairs if that changes. |
+| Reporting Requirements | Report case split, fixture-mechanism changes, actual verification, size counts and complete-P push; coordinator separately reviews actual commit. |
+| Stop Conditions | Stop for lost assertions, behavior/timing-grade differences, required new public contracts, unrelated edits or production repairs beyond this batch. |
+| Exit Criteria | All 101 contexts retained; 96 chip instruction contexts independent of board; five board cases use no private CPU. Full verification and actual-diff review pass with target-scoped pushed delivery. CPU row remains open. |
+| Original Owner Request | Extract independent chips preserving CPU handlers, semantics and tests; bounded traceable S deliveries with automatic admission. |
+| Similar-Issue Sweep | Review all twelve XCHG families and source includers, private CPU/cache/memory access and sequential instruction setup. Preserve writable/limit fault rollback and real IRQ frames; other consumers retain S24-S37 receivers. |
 
 ## Accepted Progress
 

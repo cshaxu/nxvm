@@ -11,6 +11,7 @@ set(paths src/app-nxvm/machine/machine.c src/app-nxvm/devices/machine.c
     test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c)
 foreach(name IN LISTS cpu_files)
     list(APPEND paths "src/app-nxvm/devices/${name}")
@@ -77,7 +78,7 @@ endforeach()
 message(STATUS "Board CPU observation boundary: five negative controls pass")
 
 foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
-        core_machine_gpr_mov_smoke.c core_machine_moffs_smoke.c)
+        core_machine_gpr_mov_smoke.c core_machine_moffs_smoke.c core_machine_xchg_smoke.c)
     set(path "${WORK}/test/app-nxvm/unit/core/devices/${name}")
     file(READ "${path}" original)
     foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0;"
@@ -94,4 +95,4 @@ foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
         endif()
     endforeach()
 endforeach()
-message(STATUS "Migrated board tests: sixteen negative controls pass")
+message(STATUS "Migrated board tests: twenty negative controls pass")

@@ -468,3 +468,14 @@ Coordinator actual-commit review accepts pushed NXVM P1 `9e5382872` with all
 Ten test/build paths add 1,040/remove 1,174 lines. No production or EXE input
 changes. The active packet is removed; S23 is next. The remaining 96 original
 private CPU consumers retain explicit receivers; T539 remains open.
+
+## S23: XCHG Consumer Migration
+
+Admitted at S22 P2 8dd52d43f under automatic authorization. The twelve original
+test families retain 101 instruction contexts: 96 CPU-local and five real
+board fault/IRQ cases. Public register operations/copied observations replace
+board-private setup; protected segment attributes now come from guest GDT
+loads, not private cache writes. Production, Shared and artifact inputs do
+not change. [S23 evidence](../etc/evidence/t539-s23-xchg-migration.md) records
+all receivers, verification and scope. Complete units pass 376/376 per width;
+executor delivery awaits actual-commit coordinator review.

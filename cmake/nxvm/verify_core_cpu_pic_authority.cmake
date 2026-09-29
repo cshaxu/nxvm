@@ -75,7 +75,7 @@ foreach(board_source IN LISTS board_sources)
     endif()
 endforeach()
 foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c
-        core_machine_gpr_mov_smoke.c core_machine_moffs_smoke.c)
+        core_machine_gpr_mov_smoke.c core_machine_moffs_smoke.c core_machine_xchg_smoke.c)
     file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/${board_test}" contents)
     if(contents MATCHES "executor_cpu|core_machine_cpu_fixture|app-nxvm/devices/cpu(_instructions)?\\.h")
         message(FATAL_ERROR "Migrated board test bypasses CPU boundary: ${board_test}")

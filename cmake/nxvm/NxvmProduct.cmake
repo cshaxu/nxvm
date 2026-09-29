@@ -676,6 +676,8 @@ add_executable(core-machine-lea-smoke test/app-nxvm/unit/core/devices/core_machi
 target_link_libraries(core-machine-lea-smoke PRIVATE core-machine)
 add_executable(core-machine-xchg-smoke test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c)
 target_link_libraries(core-machine-xchg-smoke PRIVATE core-machine)
+add_executable(cpu-xchg-smoke test/app-nxvm/unit/core/devices/cpu_xchg_smoke.c)
+target_link_libraries(cpu-xchg-smoke PRIVATE x86-cpu)
 add_executable(core-machine-sign-extend-smoke test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c)
 target_link_libraries(core-machine-sign-extend-smoke PRIVATE core-machine)
 add_executable(core-machine-moffs-smoke test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c)
@@ -1843,6 +1845,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-lea-smoke
     cpu-gpr-mov-smoke
     cpu-moffs-smoke
+    cpu-xchg-smoke
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
     core-machine-legacy-alu-s2-smoke
@@ -2109,7 +2112,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-tf-db-s60-smoke
     core-machine-verr-verw-s58-smoke
     core-machine-vm86-delivery-smoke
-    core-machine-xchg-smoke
+    cpu-xchg-smoke
     vm-dos-mem-fault-smoke
     vm-fault-outcome-runner-smoke)
 
