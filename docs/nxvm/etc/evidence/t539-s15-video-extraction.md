@@ -130,6 +130,7 @@ vendor qualification, with unchanged tested source and default inputs.
 | nxvm_model40_0_5_0539_x86.exe | 242F7D7FB553BA22B7F12076072FFD152281078477786DFB34DF3A3825D8FDE0 |
 | nxvm_model40_0_5_0539_x64.exe | 296A24FBB991297A912F174C9A7780F52DA6A15CAC0C8A015D0D3CC811CD070F |
 
-Source identity is the S15 Shared/NXVM implementation pair recorded in task
-history. No S15 acceptance or T539 completion is implied before that delivery
-and coordinator review. CPU/FPU and the remaining finite ledger stay in T539.
+Source identity is Shared 522d0b27f plus NXVM 88ae417ff. Coordinator review of
+the actual commits accepts this bounded batch; the post-delivery tools-off
+suite passes 43/43 and artifact hashes remain as above. T539 is not complete:
+CPU/FPU and the remaining finite ledger stay in its original scope.

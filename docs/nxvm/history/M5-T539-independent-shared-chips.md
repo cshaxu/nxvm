@@ -319,5 +319,10 @@ maps original cases, actual semantic-boundary review, 367/367 units and 20/20
 default integrations per width, six vendor boots once, tools-off 43/43, six
 manifests and eight artifact hashes. Source/test/build delta is +5362/-3957,
 net +1405; independent tests account for most growth. Shared P1 522d0b27f is
-pushed; NXVM P2 delivers receiver source, artifacts and evidence. Coordinator
-acceptance is pending; CPU/FPU and remaining ledger rows stay in T539.
+pushed; NXVM P2 88ae417ff delivers receiver source, artifacts and evidence.
+Coordinator actual-commit review accepts the complete video/display batch,
+including original-case mapping, the optional VGA route, typed backing access,
+construction rollback and the caller-proven dead-helper retirement. Post-delivery
+standalone tests pass 43/43; final artifact hashes and untouched INIs agree.
+S15 closes and its active packet is removed. CPU/FPU and remaining ledger rows
+stay in T539; the next automatic admission still requires its boundary review.
