@@ -79,6 +79,64 @@ static lib_i32 pic_phase_s2_has_acknowledgement_before_frame(
     return 0;
 }
 
+static lib_i32 pic_phase_s2_cascaded_bus(void)
+{
+    const core_machine_config config = {0};
+    pic_phase_s2_state state = {0};
+    const core_machine_trace_provider trace = { pic_phase_s2_trace, &state };
+    core_machine_pic_irq_source irq = {0};
+    lib_u8 vector = 0xffu;
+    lib_i32 failed;
+
+    if (core_machine_create(&config, &state.machine) != LIB_STATUS_OK) return 1;
+    failed = core_machine_freeze_execution_providers(state.machine) != LIB_STATUS_OK ||
+        core_machine_reset(state.machine) != LIB_STATUS_OK ||
+        core_machine_set_trace_provider(state.machine, &trace) != LIB_STATUS_OK;
+    if (!failed) {
+        x86_pic *master = state.machine->shared_pic_master.device;
+        x86_pic *slave = state.machine->shared_pic_slave.device;
+        x86_pic_write_register(master, 0u, 0x11u);
+        x86_pic_write_register(master, 1u, 0x20u);
+        x86_pic_write_register(master, 1u, 0x04u);
+        x86_pic_write_register(master, 1u, 0x01u);
+        x86_pic_write_register(slave, 0u, 0x11u);
+        x86_pic_write_register(slave, 1u, 0x28u);
+        x86_pic_write_register(slave, 1u, 0x02u);
+        x86_pic_write_register(slave, 1u, 0x01u);
+        core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
+            &state.machine->shared_pic_slave, 14u);
+        core_machine_pic_irq_source_assert(&irq);
+        core_machine_pic_irq_source_deassert(&irq);
+        core_machine_pic_refresh(&state.machine->shared_pic_master,
+            &state.machine->shared_pic_slave);
+        failed |= !core_machine_cpu_bus.interrupt_pending(state.machine);
+        failed |= core_machine_transaction_begin(&state.machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA,
+            CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, 0u, 0u, 0u) != LIB_STATUS_OK;
+        state.count = 0u;
+        failed |= core_machine_cpu_bus.acknowledge_interrupt(state.machine, &vector) !=
+                LIB_STATUS_INVALID_ARGUMENT || vector != 0xffu || state.count != 0u ||
+            state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_DMA ||
+            !core_machine_cpu_bus.interrupt_pending(state.machine) ||
+            test_pic_read(&state.machine->shared_pic_master, 0x0bu) != 0u ||
+            test_pic_read(&state.machine->shared_pic_slave, 0x0bu) != 0u;
+        core_machine_transaction_cancel(&state.machine->transaction);
+        state.count = 0u;
+        failed |= core_machine_cpu_bus.acknowledge_interrupt(state.machine, &vector) !=
+                LIB_STATUS_OK || vector != 0x2eu || state.count != 2u ||
+            state.events[0].type != CORE_MACHINE_TRACE_TRANSACTION_BEGIN ||
+            state.events[1].type != CORE_MACHINE_TRACE_TRANSACTION_COMMIT ||
+            state.events[1].value != 0x2eu ||
+            ((state.events[0].detail >> 8u) & 0xffu) !=
+                CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE ||
+            test_pic_read(&state.machine->shared_pic_master, 0x0bu) != 0x04u ||
+            test_pic_read(&state.machine->shared_pic_slave, 0x0bu) != 0x40u ||
+            state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     const core_machine_config config = {
@@ -144,6 +202,7 @@ lib_i32 main(void)
             state.machine->transaction.cancelled_count != 0u;
     }
     core_machine_destroy(state.machine);
+    failed |= pic_phase_s2_cascaded_bus();
     if (failed) return 1;
     printf("M5:T456:S2:PIC-PHASE:OK\\n");
     return 0;

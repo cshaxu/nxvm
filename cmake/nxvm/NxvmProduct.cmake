@@ -2474,6 +2474,12 @@ add_test(NAME unit.fdc-boundary-negative
         "-DWORK=${CMAKE_BINARY_DIR}/test/fdc-boundary-negative"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/core/devices/fdc_boundary_negative.cmake")
 set_tests_properties(unit.fdc-boundary-negative PROPERTIES LABELS unit TIMEOUT 30)
+add_test(NAME unit.cpu-bus-boundary-negative
+    COMMAND "${CMAKE_COMMAND}"
+        "-DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
+        "-DWORK=${CMAKE_BINARY_DIR}/test/cpu-bus-boundary-negative"
+        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/core/devices/cpu_bus_boundary_negative.cmake")
+set_tests_properties(unit.cpu-bus-boundary-negative PROPERTIES LABELS unit TIMEOUT 60)
 
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
@@ -2627,7 +2633,8 @@ if(NOT project_t515_registered_case_count EQUAL 1)
     message(FATAL_ERROR "Fixed product build must register exactly one matching boot row.")
 endif()
 set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
-    nxvm-firmware-embedding nxvm-firmware-build fdc-boundary-negative)
+    nxvm-firmware-embedding nxvm-firmware-build fdc-boundary-negative
+    cpu-bus-boundary-negative)
 if(POWERSHELL_EXECUTABLE)
     list(APPEND PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
         core-machine-8086-timing-results-s5

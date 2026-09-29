@@ -127,14 +127,16 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # These public CPU tests now execute guest table loads with the built-in
     # provider, rather than mutating CPU caches through a firmware fixture.
     "test/app-nxvm/unit/core/devices/core_machine_protected_ud_delivery_s1_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_real_ud_delivery_s1_smoke.c")
+    "test/app-nxvm/unit/core/devices/core_machine_real_ud_delivery_s1_smoke.c"
+    # Board CPU-bus INTA admission/cascade proof without a firmware provider.
+    "test/app-nxvm/unit/core/devices/core_machine_pic_phase_s2_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 103)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 103 entries.")
+if(NOT project_t344_constructor_count EQUAL 104)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 104 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 103)
+if(NOT project_t344_constructor_unique_count EQUAL 104)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -153,8 +155,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 103)
-    message(FATAL_ERROR "T344 expected 103 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 104)
+    message(FATAL_ERROR "T344 expected 104 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)

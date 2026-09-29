@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 3.23)
+if(NOT DEFINED PROJECT_SOURCE_DIR OR NOT DEFINED WORK)
+    message(FATAL_ERROR "PROJECT_SOURCE_DIR and WORK are required")
+endif()
+
+# Mutate only copied inputs in the owned build-tree fixture.
+set(cpu_files cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
+    cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
+set(paths src/app-nxvm/machine/machine.c src/app-nxvm/devices/machine.c
+    src/app-nxvm/devices/cpu_bus.c)
+foreach(name IN LISTS cpu_files)
+    list(APPEND paths "src/app-nxvm/devices/${name}")
+endforeach()
+foreach(path IN LISTS paths)
+    get_filename_component(directory "${WORK}/${path}" DIRECTORY)
+    file(MAKE_DIRECTORY "${directory}")
+    configure_file("${PROJECT_SOURCE_DIR}/${path}" "${WORK}/${path}" COPYONLY)
+endforeach()
+set(gate "${PROJECT_SOURCE_DIR}/cmake/nxvm/verify_core_cpu_pic_authority.cmake")
+execute_process(COMMAND "${CMAKE_COMMAND}" "-DPROJECT_SOURCE_DIR=${WORK}"
+    -P "${gate}" RESULT_VARIABLE status OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if(NOT status EQUAL 0)
+    message(FATAL_ERROR "Unmodified CPU fixture rejected: ${output}${error}")
+endif()
+
+foreach(name IN LISTS cpu_files)
+    set(path "${WORK}/src/app-nxvm/devices/${name}")
+    file(READ "${path}" original)
+    foreach(token IN ITEMS t_ram t_port core_machine_transaction
+            firmware_interrupt software_interrupt core_machine_pic_scan_interrupt
+            "#include \"app-nxvm/devices/machine.h\""
+            "#include \"app-nxvm/devices/cpu_bus.h\"")
+        if(token MATCHES "^#include")
+            set(expected "CPU imports outside its neutral boundary")
+        elseif(token MATCHES "^core_machine_pic_")
+            set(expected "CPU retains a concrete PIC dependency")
+        else()
+            set(expected "CPU retains a board or firmware dependency")
+        endif()
+        file(WRITE "${path}" "${original}\n${token}\n")
+        execute_process(COMMAND "${CMAKE_COMMAND}" "-DPROJECT_SOURCE_DIR=${WORK}"
+            -P "${gate}" RESULT_VARIABLE status OUTPUT_VARIABLE output ERROR_VARIABLE error)
+        file(WRITE "${path}" "${original}")
+        string(FIND "${output}${error}" "${expected}" match)
+        if(status EQUAL 0 OR match EQUAL -1)
+            message(FATAL_ERROR "CPU negative ${name}/${token} not specifically rejected: ${output}${error}")
+        endif()
+    endforeach()
+endforeach()
+message(STATUS "CPU bus boundary: baseline and 72 negative controls pass")

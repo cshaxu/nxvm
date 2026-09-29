@@ -30,6 +30,9 @@ and [work evidence](evidence/t539-s18-cpu-extraction.md); the owner's
 single CPU batch. [Incremental inventory](evidence/t539-cpu-incremental-inventory.md)
 maps recovery, pending consumers and their receiving packages.
 
+T539 S19: [CPU bus boundary evidence](evidence/t539-s19-cpu-bus-boundary.md)
+records callback coverage and transaction-order qualification after S18.
+
 T539 S2: [concrete chip contracts](architecture/t539-boundary-contracts.md),
 including firmware-hook consumer proof and the approved first PIT extraction.
 
