@@ -55,3 +55,9 @@ matrix (365 strict, 33 deferred). The six Shared source/test manifests remain
 unchanged and pass in the unit suite. `git diff --check` is clean. No tracked
 binary is changed; S32 is a test-owner migration and does not require a new
 product executable.
+
+Actual pushed P1 `9f785a551` has exactly eight scoped paths, passes
+`git show --check`, and equals `origin/master` at independent review. It adds
+1,593/removes 1,589 lines overall; excluding this 57-line evidence, the
+code/test/build/gate change adds 1,536/removes 1,589 (net -53). There is no
+tracked binary. S32 exits here; S33-S45 remain unaccepted.

@@ -196,6 +196,14 @@ pushed P1 `38bc5b10c`. S32-S45 remain unaccepted.
 - `core_machine_legacy_alu_s2_smoke.c`
 - `core_machine_legacy_lock_s1_smoke.c`
 
+S32 assigns all 775 original contexts to CPU-only receivers (767) or public
+board receivers (eight). Neither original source reads private CPU state now.
+The S31 count of 73 direct-private `.c` consumers plus one fixture header
+falls to 71 `.c` files plus that header, or 72 pending consumers assigned to
+S33-S42. [S32 evidence](t539-s32-legacy-alu-lock-migration.md) records the
+receiving map and verification; actual-commit review accepts pushed P1
+`9f785a551`. S33-S45 remain unaccepted.
+
 ### S33-S35: 1 matching file, three non-overlapping case groups
 
 - `core_machine_inc_dec_smoke.c`

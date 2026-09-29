@@ -2,10 +2,10 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S31 are accepted; S32 is active under automatic
+M5 T539 remains open. S1-S32 are accepted; S33 is active under automatic
 admission. The former
 eleven-file, 7,000-plus-line arithmetic assignment is split into S30-S35
-under the existing automatic-S authorization; S32-S45 remain pending.
+under the existing automatic-S authorization; S33-S45 remain pending.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
 
@@ -39,26 +39,43 @@ The S30 packet is closed; 76 original private-test consumers remain assigned
 to S31-S42. S43-S45 still own lifetime, physical relocation and whole-CPU
 acceptance.
 
-## S32 Active Packet
+## S32 Acceptance
+
+Actual pushed NXVM P1 `9f785a551` has exactly eight scoped paths, passes
+`git show --check`, and equals `origin/master` at independent review. All 775
+original contexts retain one receiver: 767 CPU-owned and eight board-owned.
+Code/test/build/gate changes add 1,536/remove 1,589 lines (net -53); the
+57-line P1 evidence draft is separate. Two CPU tests link only `x86-cpu` and
+compile with warnings as errors; board tests use public machine operations.
+Complete x64/x86 builds and units pass 399/399 on each width; all 66
+specialized gates pass per width, including T317/T332/T337/T344, CPU/PIC
+authority, the 398-row direct matrix, six unchanged Shared manifests and
+documentation governance. No production/API or executable input changed.
+[S32 evidence](../etc/evidence/t539-s32-legacy-alu-lock-migration.md) contains
+the original-case receiving map. The S32 packet is closed; 72 original
+private-test consumers remain assigned to S33-S42. S43-S45 retain lifetime,
+physical relocation and whole-CPU acceptance.
+
+## S33 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation, M5 T539 S32 after accepted S31 P2 `23ef73d48`; NXVM target only. |
+| Identifier Mode | Continuation, M5 T539 S33 after accepted S32 P1 `9f785a551`; NXVM target only. |
 | Admission And Approval | Automatic-S authorization; one session separates executor and coordinator review. |
-| Objective | Assign every legacy ALU and LOCK test case to its CPU or board owner, removing private board-test access without losing profile, flags, timing, #UD or bus observations. |
-| Non-goals | No production CPU/timing algorithm, new public ABI, S33-S35 arithmetic work, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
-| Reference Baseline | Clean pushed `23ef73d48`, x64/x86 units 397/397. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) assign the two sources to S32. |
+| Objective | Assign the first `core_machine_inc_dec_smoke.c` group, INC/DEC through DIV/IDIV and original divide-fault cases, to CPU or board owner without losing profile, flags, fault or timing observations. Retain the unmigrated remainder for S34-S35. |
+| Non-goals | No production CPU/timing algorithm, new public ABI, S34-S35 arithmetic groups, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
+| Reference Baseline | Clean pushed S32 P1 `9f785a551`, x64/x86 units 399/399. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) assign the first group of the 3,400-plus-line source to S33. |
 | Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | `core_machine_legacy_alu_s2_smoke.c` and `core_machine_legacy_lock_s1_smoke.c` (1,696 original lines), CPU-only receivers, NXVM test registration/gates, test-local fixtures and evidence. Enumerate exact contexts before edits. |
-| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU opcode/flags/profile/timing cases stay CPU-owned; real divide-vector delivery, protected descriptor/IOPL and external port observations stay board-owned. |
+| Files And ABI Surface | `core_machine_inc_dec_smoke.c`: its functions from `inc_dec_test_register_forms` through `inc_dec_test_div_idiv_fault_nonpublication`, CPU-only receiver(s), NXVM test registration/gates, test-local fixtures and evidence. Enumerate exact contexts and shared helpers before edits; preserve all functions from `inc_dec_test_test_rm_reg_forms` onward for S34-S35. |
+| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU opcode/flags/profile/timing and synthetic cache cases stay CPU-owned; real divide-vector delivery, protected descriptor/access faults and bus observations stay board-owned. |
 | Verification | Full x64/x86 builds and repository-only unit suites; T317/T332/T337/T344, CPU/PIC authority, direct matrix, six unchanged manifests, documentation/diff checks. |
-| Expected Markers | CPU receivers link only `x86-cpu`; surviving board cases use public machine operations with no private CPU state; one receiver per original case. |
+| Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no newly introduced private CPU state; one receiver per S33 case, no duplicated execution path and no lost S34-S35 case. |
 | Asset Needs | Repository-only inputs; preserve the S18 local recovery artifact. No ROM/media/INI/EXE input change. |
 | Reporting Requirements | Original-case receiving map, exact changed paths and line counts, dual-width results, pushed P1 and independent actual-commit P2 review. |
-| Stop Conditions | Lost case, new production/API requirement, or scope beyond these two sources requires packet revision before continuing. |
-| Exit Criteria | CPU/board ownership proved, all original cases retained, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. |
+| Stop Conditions | Lost case, new production/API requirement, or scope beyond the first arithmetic group requires packet revision before continuing. |
+| Exit Criteria | First-group CPU/board ownership proved, all original first-group and residual cases retained, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. The `inc_dec` source remains an inventory consumer until S35. |
 | Original Owner Request | Split oversized CPU migration into traceable S tasks with automatic admission, preserving semantics, original code style and single-owner architecture. |
-| Similar-Issue Sweep | Inspect LOCK legality across CPU generations, #UD terminal handling, timing assertions, the ALU divide-vector path and protected IOPL/port side effects. S33-S35 remain assigned, not presumed done. |
+| Similar-Issue Sweep | Inspect the first-group division faults, protected descriptor cases, public board snapshot equivalence and original timing assertions. S34-S35 remain assigned, not presumed done. |
 
 ## S29 Acceptance
 
