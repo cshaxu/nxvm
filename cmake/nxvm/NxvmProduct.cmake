@@ -710,6 +710,8 @@ target_link_libraries(core-machine-pusha-popa-smoke PRIVATE core-machine)
 add_executable(core-machine-enter-leave-smoke
     test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c)
 target_link_libraries(core-machine-enter-leave-smoke PRIVATE core-machine)
+add_executable(cpu-enter-leave-smoke test/app-nxvm/unit/core/devices/cpu_enter_leave_smoke.c)
+target_link_libraries(cpu-enter-leave-smoke PRIVATE x86-cpu)
 add_executable(core-machine-gpr-push-pop-smoke
     test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c)
 target_link_libraries(core-machine-gpr-push-pop-smoke PRIVATE core-machine)
@@ -1854,6 +1856,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-gpr-push-pop-smoke
     cpu-push-immediate-smoke
     cpu-pusha-popa-smoke
+    cpu-enter-leave-smoke
     cpu-xchg-smoke
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
@@ -2069,7 +2072,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-direct-flags-smoke
     core-machine-debug-mov-s59-smoke
     core-machine-double-shift-smoke
-    core-machine-enter-leave-smoke
+    cpu-enter-leave-smoke
     core-machine-fpu-escape-smoke
     core-machine-fpu-interface-s65-smoke
     core-machine-fs-gs-stack-smoke

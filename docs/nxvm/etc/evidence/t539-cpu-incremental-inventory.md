@@ -103,6 +103,12 @@ the negative verifier's deliberate rejected-code strings.
 
 - `core_machine_enter_leave_smoke.c`
 
+S25 removes this private board dependency. The 53 original contexts receive
+51 CPU and four board executions, with two protected faults retaining both
+private-cache and board observations. Original nesting/width/rejection tables
+remain. See [S25 evidence](t539-s25-enter-leave-migration.md). Current owns
+acceptance; 91 original private consumers remain assigned to S26-S37.
+
 ### S26: 2 matching files
 
 - `core_machine_legacy_sreg_stack_smoke.c`

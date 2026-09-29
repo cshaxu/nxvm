@@ -511,3 +511,15 @@ checks, six manifests and documentation/diff checks pass. Eleven test/build
 paths add 1,692/remove 1,232 lines. No production or artifact input changes.
 The packet is removed; S25 is next. Remaining original private consumers
 number 92, assigned through S37. CPU acceptance and T539 remain open.
+
+## S25: ENTER/LEAVE Consumer Migration
+
+Admitted at S24 P2 413375179 under automatic authorization. All 53 original
+contexts retain receivers: 51 CPU and four board executions, including two
+complementary protected-fault scenarios. Original instruction tables and
+complete cache/register comparisons remain; board faults and PIC composition
+use existing public CPU operations. No production/API/timing change.
+[S25 evidence](../etc/evidence/t539-s25-enter-leave-migration.md) records the
+case map and actual differences. Full units pass 380/380 per width; 66
+specialized gates and six manifests pass. Seven test/build paths add 679/remove
+518 lines. Executor delivery awaits actual-commit coordinator review.
