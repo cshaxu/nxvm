@@ -424,3 +424,16 @@ entry/current, decode/fault, debug, FPU and observer-free paths. The active S20
 packet is removed; S21 is next under automatic authorization. Remaining raw
 instruction-test consumers and embedded lifetime keep their S21-S31 receivers;
 whole CPU acceptance remains S32, and T539 stays open.
+
+## S21: LEA/MOVX Consumer Migration
+
+The intake review split the former 18-file, 11,335-line package into S21-S29;
+only unadmitted subsequent packages shift to S30-S40. The current work plan
+and inventory own that mapping; earlier entries retain historical numbering.
+S21 separates all 53 original LEA/MOVX cases into CPU-owned instruction tests
+and public-operation board composition tests. Eight intended MOVX opcode cases
+supplement the eight retained original ModR/M sequences. No CPU implementation,
+timing grade, Shared corpus, MyNES, INI or executable input changes.
+[S21 evidence](../etc/evidence/t539-s21-lea-movx-migration.md) records the fixture
+mechanism differences, full verification and size accounting. Executor delivery
+is ready for coordinator actual-commit review; acceptance is not yet claimed.

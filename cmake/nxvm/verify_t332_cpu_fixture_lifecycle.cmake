@@ -26,6 +26,9 @@ set(project_t332_inherited_sources
     "test/app-nxvm/unit/core/devices/core_machine_protected_return_atomicity_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_protected_iret_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_interrupt_entry_smoke.c")
+set(project_t332_public_board_sources
+    "test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c")
 
 function(project_t332_require_shared_lifecycle source)
     set(path "${PROJECT_T332_SOURCE_DIR}/${source}")
@@ -33,6 +36,18 @@ function(project_t332_require_shared_lifecycle source)
         message(FATAL_ERROR "T332 CPU fixture source is missing: ${source}")
     endif()
     file(READ "${path}" content)
+    if(source IN_LIST project_t332_public_board_sources)
+        foreach(operation core_machine_create core_machine_freeze_execution_providers
+                core_machine_reset core_machine_debug_patch_registers)
+            if(NOT content MATCHES "${operation}[ \t\r\n]*\\(")
+                message(FATAL_ERROR "Public board fixture misses ${operation}: ${source}")
+            endif()
+        endforeach()
+        if(content MATCHES "core_machine_bind_execution_provider|executor_cpu|core_machine_cpu_fixture")
+            message(FATAL_ERROR "Public board fixture restores private CPU setup: ${source}")
+        endif()
+        return()
+    endif()
     if(source STREQUAL "test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c")
         if(NOT content MATCHES "support/cpu_bus_fixture[.]h" OR
             NOT content MATCHES "cpu_bus_prepare" OR
@@ -68,8 +83,9 @@ foreach(project_t332_entry IN LISTS project_t332_inventory)
         message(FATAL_ERROR
             "T332 CPU fixture wrapper omits its inherited lifecycle owner: ${project_t332_source}")
     endif()
-    if("${project_t332_content}" MATCHES "core_machine_bind_execution_provider" OR
-        "${project_t332_content}" MATCHES "core_machine_freeze_execution_providers")
+    if(NOT project_t332_source IN_LIST project_t332_public_board_sources AND
+       ("${project_t332_content}" MATCHES "core_machine_bind_execution_provider" OR
+        "${project_t332_content}" MATCHES "core_machine_freeze_execution_providers"))
         message(FATAL_ERROR
             "T332 CPU fixture owner restores direct bind/freeze setup: ${project_t332_source}")
     endif()
@@ -87,4 +103,4 @@ if(NOT project_t332_positive MATCHES "test_core_machine_fixture_(create_bind_fre
     message(FATAL_ERROR "T332 CPU fixture lifecycle verifier self-check failed.")
 endif()
 
-message(STATUS "T332 CPU fixture lifecycle closure passed: 47 owners use board lifecycle or the CPU-local FLAGS fixture.")
+message(STATUS "T332 CPU fixture lifecycle closure passed: 47 owners use shared setup, explicit public board setup or CPU-local fixtures.")

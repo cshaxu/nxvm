@@ -1,9 +1,13 @@
 # T539 CPU Incremental Baseline Inventory
 
+Current receiving numbers follow the S21 intake subdivision in the linked
+work plan; S18-S20 historical evidence retains its original planned numbers.
+No accepted S is renumbered.
+
 ## Baseline Recovery
 
 The 2026-09-29 S18 replan preserves the original CPU architecture but defers the
-board's opaque allocation cutover to S30. The existing board-owned CPU and
+board's opaque allocation cutover to S38. The existing board-owned CPU and
 decoder remain the sole storage, bound through the existing execution-context
 initializer. Bus, timing and copied-observation work remains in place. No
 private-pointer accessor, state mirror or second execution path was added.
@@ -18,17 +22,17 @@ that backup. The snapshot is not a claim that the pending corpus was buildable.
 
 Deferred changes and exact receivers:
 
-- S30: machine CPU allocation/destruction and pointer-member call syntax.
+- S38: machine CPU allocation/destruction and pointer-member call syntax.
   CPU-owned create/destroy implementation and its independent lifecycle test
   remain; the board still uses its original embedded allocation lifetime.
-- S27: the incomplete `core_machine_interrupt_entry_smoke.c` migration. Restore
+- S35: the incomplete `core_machine_interrupt_entry_smoke.c` migration. Restore
   its HEAD form and existing CMake delivered-fault definition together, so its
   software-INT/hardware-delivery includers retain their original API and cases.
   Its public-snapshot migration is preserved in the recovery patch and earlier
   S18 evidence; CPU-local NMI/rollback regressions remain in the active corpus.
 - Other pending source/test work stays active, with eventual receiving packages
   named by the [work plan](../architecture/t539-cpu-work-packages.md). Its mere
-  presence does not accept S19-S32. Later briefs review retained work rather
+  presence does not accept S19-S40. Later briefs review retained work rather
   than replaying or rewriting the same implementation.
 
 Full x64 build recovered after those two changes. Complete unit verification,
@@ -44,34 +48,63 @@ These are migration inputs, not 100 failing tests or a complete count of cases.
 Each receiving S must retain all original cases/loops and map any moved case
 between chip and board tests; a filename search alone cannot prove coverage.
 
-S18 actual-diff review additionally assigns S24 a BOUND operand-form check:
+S18 actual-diff review additionally assigns S32 a BOUND operand-form check:
 the CPU-local fixture observed emulator-error for 32-bit `62 C0`, versus UD
 for the original 16-bit case. Reproduce against the pre-migration baseline and
 audit related memory-only operand forms before deciding the repair. This is
 an unresolved observation, not a timing downgrade or an accepted CPU result.
 
-### S21: 18 matching files
+### S21: 2 matching files
+
+- `core_machine_lea_smoke.c`
+- `core_machine_movx_smoke.c`
+
+S21 implementation removes both files' private CPU dependencies. Original
+chip cases receive CPU-only targets `cpu_lea_smoke.c` and `cpu_movx_smoke.c`;
+board IRQ/provider/fault assertions remain in the original files. See
+[case mapping and proof](t539-s21-lea-movx-migration.md). Current owns acceptance.
+
+### S22: 2 matching files
+
+- `core_machine_gpr_mov_smoke.c`
+- `core_machine_moffs_smoke.c`
+
+### S23: 1 matching files
+
+- `core_machine_xchg_smoke.c`
+
+### S24: 3 matching files
+
+- `core_machine_gpr_push_pop_smoke.c`
+- `core_machine_push_immediate_smoke.c`
+- `core_machine_pusha_popa_smoke.c`
+
+### S25: 1 matching files
 
 - `core_machine_enter_leave_smoke.c`
-- `core_machine_fs_gs_stack_smoke.c`
-- `core_machine_gpr_mov_smoke.c`
-- `core_machine_gpr_push_pop_smoke.c`
-- `core_machine_lea_smoke.c`
+
+### S26: 2 matching files
+
 - `core_machine_legacy_sreg_stack_smoke.c`
+- `core_machine_fs_gs_stack_smoke.c`
+
+### S27: 3 matching files
+
 - `core_machine_les_lds_s41_smoke.c`
 - `core_machine_les_lds_smoke.c`
 - `core_machine_lss_lfs_lgs_smoke.c`
-- `core_machine_moffs_smoke.c`
-- `core_machine_movx_smoke.c`
-- `core_machine_operand_address_smoke.c`
-- `core_machine_prefix_attributes_s64_smoke.c`
-- `core_machine_push_immediate_smoke.c`
-- `core_machine_pusha_popa_smoke.c`
+
+### S28: 2 matching files
+
 - `core_machine_segment_selector_smoke.c`
 - `core_machine_sreg_mov_smoke.c`
-- `core_machine_xchg_smoke.c`
 
-### S22: 11 matching files
+### S29: 2 matching files
+
+- `core_machine_operand_address_smoke.c`
+- `core_machine_prefix_attributes_s64_smoke.c`
+
+### S30: 11 matching files
 
 - `core_machine_bit_scan_smoke.c`
 - `core_machine_bit_test_smoke.c`
@@ -85,7 +118,7 @@ an unresolved observation, not a timing downgrade or an accepted CPU result.
 - `core_machine_setcc_smoke.c`
 - `core_machine_sign_extend_smoke.c`
 
-### S23: 12 matching files
+### S31: 12 matching files
 
 - `core_machine_cmps_smoke.c`
 - `core_machine_direct_flags_smoke.c`
@@ -100,7 +133,7 @@ an unresolved observation, not a timing downgrade or an accepted CPU result.
 - `core_machine_scas_smoke.c`
 - `core_machine_stos_smoke.c`
 
-### S24: 13 matching files
+### S32: 13 matching files
 
 - `core_machine_arpl_s53_smoke.c`
 - `core_machine_arpl_smoke.c`
@@ -116,7 +149,7 @@ an unresolved observation, not a timing downgrade or an accepted CPU result.
 - `core_machine_tf_db_s60_smoke.c`
 - `core_machine_verr_verw_s58_smoke.c`
 
-### S25: 5 matching files
+### S33: 5 matching files
 
 - `core_machine_protected_16_call_gate_s7_smoke.c`
 - `core_machine_protected_16_external_s4_smoke.c`
@@ -124,7 +157,7 @@ an unresolved observation, not a timing downgrade or an accepted CPU result.
 - `core_machine_protected_16_outer_iret_s6_smoke.c`
 - `core_machine_protected_16_outer_s5_smoke.c`
 
-### S26: 11 matching files
+### S34: 11 matching files
 
 - `core_machine_call_gate_privilege_entry_smoke.c`
 - `core_machine_call_gate_smoke.c`
@@ -138,7 +171,7 @@ an unresolved observation, not a timing downgrade or an accepted CPU result.
 - `core_machine_task_switch_smoke.c`
 - `core_machine_tss_iomap_port_smoke.c`
 
-### S27: 10 matching files
+### S35: 10 matching files
 
 - `core_machine_cli_sti_s48_smoke.c`
 - `core_machine_cli_sti_smoke.c`
@@ -151,7 +184,7 @@ an unresolved observation, not a timing downgrade or an accepted CPU result.
 - `core_machine_vm86_delivery_smoke.c`
 - `core_machine_vm86_iret_smoke.c`
 
-### S28: 16 matching files
+### S36: 16 matching files
 
 - `core_machine_80186_instruction_timing_ledger_smoke.c`
 - `core_machine_80186_timing_manifest_runner.c`
@@ -170,7 +203,7 @@ an unresolved observation, not a timing downgrade or an accepted CPU result.
 - `core_machine_t359_s5_timing_smoke.c`
 - `core_machine_t359_s6_timing_smoke.c`
 
-### S29: 4 matching files
+### S37: 4 matching files
 
 - `core_machine_fpu_interface_s65_smoke.c`
 - `cpu_profile_gate_smoke.c`
@@ -179,13 +212,13 @@ an unresolved observation, not a timing downgrade or an accepted CPU result.
 
 ## Include Dependency Closure
 
-The matching-file inventory is not the entire compile dependency graph. S25
+The matching-file inventory is not the entire compile dependency graph. S33
 must also keep the 80286/80386 timing runners building when their included
-16-bit gate/task/call fixtures change; S28 owns their subsequent timing-corpus
-migration. S26 includes outer-IRET's atomicity-fixture consumer. S27 additionally
+16-bit gate/task/call fixtures change; S36 owns their subsequent timing-corpus
+migration. S34 includes outer-IRET's atomicity-fixture consumer. S35 additionally
 includes `core_machine_interrupt_return_composition_s4_smoke.c` and
 `core_machine_vm86_lgdt_lidt_s5_smoke.c`, which inherit private setup through
-included source rather than a direct search hit. Protected IRET is in S27
+included source rather than a direct search hit. Protected IRET is in S35
 with its CLI/STI-dependent includer. Do not migrate one included source's return
 shape while leaving its includers with the old shape.
 

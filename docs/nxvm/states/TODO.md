@@ -41,6 +41,15 @@ preserves every old entry and its retirement/transfer, not an assertion of repai
 
 ## Architecture And Portability Debt
 
+- [ ] **Shared native-test desktop isolation (`TODO(Medium)`).** During T539
+  S21, concurrent x64/x86 unit suites produced one unchanged
+  `library.kvm_window_modal` failure: the native move loop exited before the
+  test's expected cancellation point. Cross-process desktop interference is
+  suspected, not proven. Keep native desktop suites from overlapping across
+  build trees for receiving verification. Admit a separate Shared test-runner
+  isolation review if reproduced; preserve real window assertions, do not
+  suppress the test. [Evidence](../etc/evidence/t539-s21-lea-movx-migration.md).
+
 - [ ] **Shared Console failure rollback (`TODO(Medium)`).** T538's exploratory
   native fixture observed a 120x60 cooked history buffer with a 40x13 viewport
   restored as 120x13 after injected raw-reader startup failure, before any frame

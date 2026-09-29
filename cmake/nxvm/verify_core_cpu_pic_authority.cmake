@@ -68,10 +68,16 @@ foreach(board_source IN LISTS board_sources)
     if(contents MATCHES "executor_cpu(_instructions|_execution)?[ \t\r\n]*(\\.|->)[ \t\r\n]*[a-zA-Z_]")
         message(FATAL_ERROR "Board bypasses copied CPU operations: ${board_source}")
     endif()
-    # Only the original embedded lifetime owner remains until S30.
+    # Only the original embedded lifetime owner remains until the allocation cutover.
     if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" AND
        contents MATCHES "#[ \t]*include[ \t]*[<\"]app-nxvm/devices/cpu(_instructions)?\\.h[>\"]")
         message(FATAL_ERROR "Board imports private CPU layout: ${board_source}")
+    endif()
+endforeach()
+foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c)
+    file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/${board_test}" contents)
+    if(contents MATCHES "executor_cpu|core_machine_cpu_fixture|app-nxvm/devices/cpu(_instructions)?\\.h")
+        message(FATAL_ERROR "Migrated board test bypasses CPU boundary: ${board_test}")
     endif()
 endforeach()
 file(GLOB_RECURSE pic_consumers

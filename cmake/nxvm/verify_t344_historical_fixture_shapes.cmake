@@ -14,7 +14,6 @@ set(project_t344_migrated_sources
     "test/app-nxvm/unit/core/devices/core_machine_fpu_8087_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_idt_privilege_entry_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_protected_privilege_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c"
@@ -26,6 +25,8 @@ set(project_t344_migrated_sources
     "test/app-nxvm/unit/core/devices/cpu_profile_gate_smoke.c"
     "test/app-nxvm/unit/core/devices/fpu_escape_smoke.c")
 set(project_t344_retained_sources
+    "test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_bound_s54_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_control_transfer_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_controller_authority_smoke.c"
@@ -104,12 +105,12 @@ set(project_t344_retained_sources
 set(project_t344_inventory ${project_t344_migrated_sources}
     ${project_t344_retained_sources})
 list(LENGTH project_t344_inventory project_t344_inventory_count)
-if(NOT project_t344_inventory_count EQUAL 97)
-    message(FATAL_ERROR "T344 fixture-shape inventory must contain 97 direct constructors.")
+if(NOT project_t344_inventory_count EQUAL 98)
+    message(FATAL_ERROR "T344 fixture-shape inventory must contain 98 direct constructors.")
 endif()
 list(REMOVE_DUPLICATES project_t344_inventory)
 list(LENGTH project_t344_inventory project_t344_unique_count)
-if(NOT project_t344_unique_count EQUAL 97)
+if(NOT project_t344_unique_count EQUAL 98)
     message(FATAL_ERROR "T344 fixture-shape inventory contains a duplicate source.")
 endif()
 
@@ -131,12 +132,12 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # Board CPU-bus INTA admission/cascade proof without a firmware provider.
     "test/app-nxvm/unit/core/devices/core_machine_pic_phase_s2_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 104)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 104 entries.")
+if(NOT project_t344_constructor_count EQUAL 105)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 105 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 104)
+if(NOT project_t344_constructor_unique_count EQUAL 105)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -155,8 +156,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 104)
-    message(FATAL_ERROR "T344 expected 104 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 105)
+    message(FATAL_ERROR "T344 expected 105 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)
@@ -175,4 +176,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 historical fixture shapes passed: 97 historical, 4 timing-manifest and 2 guest-table-load constructors; 22 shared tails, 75 retained shapes.")
+message(STATUS "T344 fixture shapes passed: 98 inventoried, 4 timing-manifest, 2 guest-table-load and 1 INTA constructor; 21 shared tails, 77 explicit shapes.")

@@ -627,6 +627,10 @@ add_executable(core-machine-setcc-smoke test/app-nxvm/unit/core/devices/core_mac
 target_link_libraries(core-machine-setcc-smoke PRIVATE core-machine)
 add_executable(core-machine-movx-smoke test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c)
 target_link_libraries(core-machine-movx-smoke PRIVATE core-machine)
+add_executable(cpu-movx-smoke test/app-nxvm/unit/core/devices/cpu_movx_smoke.c)
+target_link_libraries(cpu-movx-smoke PRIVATE x86-cpu)
+add_executable(cpu-lea-smoke test/app-nxvm/unit/core/devices/cpu_lea_smoke.c)
+target_link_libraries(cpu-lea-smoke PRIVATE x86-cpu)
 add_executable(core-machine-bit-test-smoke test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c)
 target_link_libraries(core-machine-bit-test-smoke PRIVATE core-machine)
 add_executable(core-machine-inc-dec-smoke test/app-nxvm/unit/core/devices/core_machine_inc_dec_smoke.c)
@@ -1831,6 +1835,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-legacy-lock-s1-smoke
     core-machine-setcc-smoke
     core-machine-movx-smoke
+    cpu-movx-smoke
+    cpu-lea-smoke
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
     core-machine-legacy-alu-s2-smoke
@@ -2059,7 +2065,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-iret-s51-smoke
     core-machine-lahf-sahf-smoke
     core-machine-lar-lsl-s57-smoke
-    core-machine-lea-smoke
+    cpu-lea-smoke
     core-machine-legacy-lock-s1-smoke
     core-machine-legacy-alu-s2-smoke
     core-machine-legacy-sreg-stack-smoke
@@ -2170,7 +2176,7 @@ foreach(t337_ud_target IN LISTS PROJECT_T337_UD_UNIT_TEST_TARGETS)
                 set(t337_ud_found TRUE)
             endif()
             if(t337_ud_source_text MATCHES
-                "test_core_machine_fixture_preflight_real_ud_terminal|T337_REAL_UD_TERMINAL_GUEST_LIDT")
+                "test_core_machine_fixture_preflight_real_ud_terminal|T337_REAL_UD_TERMINAL_GUEST_LIDT|T337_REAL_UD_TERMINAL_CPU_OWNER|T337_REAL_UD_TERMINAL_IVT_REJECT")
                 set(t337_ud_terminal TRUE)
             endif()
             if(t337_ud_source_text MATCHES "T337_REAL_UD_VECTOR6_DELIVERY")

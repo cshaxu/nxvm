@@ -7,7 +7,9 @@ endif()
 set(cpu_files cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
     cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
 set(paths src/app-nxvm/machine/machine.c src/app-nxvm/devices/machine.c
-    src/app-nxvm/devices/cpu_bus.c)
+    src/app-nxvm/devices/cpu_bus.c
+    test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c)
 foreach(name IN LISTS cpu_files)
     list(APPEND paths "src/app-nxvm/devices/${name}")
 endforeach()
@@ -71,3 +73,22 @@ foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0;"
     endif()
 endforeach()
 message(STATUS "Board CPU observation boundary: five negative controls pass")
+
+foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c)
+    set(path "${WORK}/test/app-nxvm/unit/core/devices/${name}")
+    file(READ "${path}" original)
+    foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0;"
+            "#include \"support/core_machine_cpu_fixture.h\""
+            "#include \"app-nxvm/devices/cpu.h\""
+            "#include \"app-nxvm/devices/cpu_instructions.h\"")
+        file(WRITE "${path}" "${original}\n${injection}\n")
+        execute_process(COMMAND "${CMAKE_COMMAND}" "-DPROJECT_SOURCE_DIR=${WORK}"
+            -P "${gate}" RESULT_VARIABLE status OUTPUT_VARIABLE output ERROR_VARIABLE error)
+        file(WRITE "${path}" "${original}")
+        string(FIND "${output}${error}" "Migrated board test bypasses CPU boundary" match)
+        if(status EQUAL 0 OR match EQUAL -1)
+            message(FATAL_ERROR "Migrated board negative ${name}/${injection} not rejected: ${output}${error}")
+        endif()
+    endforeach()
+endforeach()
+message(STATUS "Migrated board tests: eight negative controls pass")
