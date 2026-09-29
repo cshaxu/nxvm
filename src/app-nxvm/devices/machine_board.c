@@ -692,12 +692,13 @@ lib_status core_machine_report_planar_parity_fault(core_machine *machine)
 
 static lib_status core_machine_absent_memory_read(void *owner,
     lib_u32 physical, lib_uptr destination,
-    lib_uptr bytes)
+    lib_uptr bytes, lib_bool observe_only)
 {
     const core_machine_absent_memory *absent =
         (const core_machine_absent_memory *)owner;
 
     (void)physical;
+    (void)observe_only;
     if (absent == LIB_NULL || !absent->configured || destination == 0u ||
         bytes == 0u) return LIB_STATUS_INTERNAL_ERROR;
     lib_memory_set((void *)destination, absent->config.read_value, bytes);

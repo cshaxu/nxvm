@@ -34,6 +34,7 @@ set(project_t344_retained_sources
     "test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s9_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_d4_platform_s4_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_cpu_timing_preview_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_memory_inspection_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_display_authority_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_dma_binding_token_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_dma_rtc_authority_smoke.c"
@@ -103,12 +104,12 @@ set(project_t344_retained_sources
 set(project_t344_inventory ${project_t344_migrated_sources}
     ${project_t344_retained_sources})
 list(LENGTH project_t344_inventory project_t344_inventory_count)
-if(NOT project_t344_inventory_count EQUAL 96)
-    message(FATAL_ERROR "T344 fixture-shape inventory must contain 96 direct constructors.")
+if(NOT project_t344_inventory_count EQUAL 97)
+    message(FATAL_ERROR "T344 fixture-shape inventory must contain 97 direct constructors.")
 endif()
 list(REMOVE_DUPLICATES project_t344_inventory)
 list(LENGTH project_t344_inventory project_t344_unique_count)
-if(NOT project_t344_unique_count EQUAL 96)
+if(NOT project_t344_unique_count EQUAL 97)
     message(FATAL_ERROR "T344 fixture-shape inventory contains a duplicate source.")
 endif()
 
@@ -124,12 +125,12 @@ set(project_t344_timing_manifest_sources
 set(project_t344_constructor_sources ${project_t344_inventory}
     ${project_t344_timing_manifest_sources})
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 100)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 100 entries.")
+if(NOT project_t344_constructor_count EQUAL 101)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 101 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 100)
+if(NOT project_t344_constructor_unique_count EQUAL 101)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -148,8 +149,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 100)
-    message(FATAL_ERROR "T344 expected 100 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 101)
+    message(FATAL_ERROR "T344 expected 101 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)
@@ -168,4 +169,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 historical fixture shapes passed: 96 classified and 4 timing-manifest direct constructors, 22 shared tails, 73 retained shapes.")
+message(STATUS "T344 historical fixture shapes passed: 97 classified and 4 timing-manifest direct constructors, 22 shared tails, 75 retained shapes.")

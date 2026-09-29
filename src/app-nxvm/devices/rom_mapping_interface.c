@@ -5,12 +5,13 @@
 
 static lib_status core_machine_rom_mapping_read(void *owner,
     lib_u32 physical, lib_uptr destination,
-    lib_uptr bytes)
+    lib_uptr bytes, lib_bool observe_only)
 {
     const core_machine_immutable_rom_mapping *mapping =
         (const core_machine_immutable_rom_mapping *)owner;
     lib_size offset;
 
+    (void)observe_only;
     if (mapping == LIB_NULL || mapping->image == LIB_NULL || destination == 0u ||
         physical < mapping->physical_start) return LIB_STATUS_INTERNAL_ERROR;
     offset = (lib_size)((lib_u64)physical - mapping->physical_start);

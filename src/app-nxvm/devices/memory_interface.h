@@ -33,10 +33,12 @@ typedef enum core_machine_memory_route {
 
 /* A composition-owned device may claim a configured physical range.  Returning
  * LIB_STATUS_UNSUPPORTED from query leaves the range available to the next
- * registered device or ordinary RAM; other failures are terminal. */
+ * registered device or ordinary RAM; other failures are terminal. Read callbacks
+ * with observe_only return the same bytes without changing device state. Query
+ * is always observational; inspection never falls back to an operational read. */
 typedef lib_status (*core_machine_memory_device_read)(void *owner,
     lib_u32 physical, lib_uptr destination,
-    lib_uptr bytes);
+    lib_uptr bytes, lib_bool observe_only);
 typedef lib_status (*core_machine_memory_device_write)(void *owner,
     lib_u32 physical, lib_uptr source,
     lib_uptr bytes);

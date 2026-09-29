@@ -13,14 +13,14 @@ typedef struct checked_memory_provider {
 } checked_memory_provider;
 
 static lib_status checked_memory_read(void *owner, lib_u32 physical,
-    lib_uptr destination, lib_uptr bytes)
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
     checked_memory_provider *provider = (checked_memory_provider *)owner;
 
     if (provider == LIB_NULL || physical != 0x00180000u || bytes != 1u) {
         return LIB_STATUS_INTERNAL_ERROR;
     }
-    ++provider->read_count;
+    if (!observe_only) ++provider->read_count;
     *(lib_u8 *)destination = provider->value;
     return LIB_STATUS_OK;
 }

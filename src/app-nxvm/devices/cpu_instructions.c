@@ -229,11 +229,14 @@ static void _kma_read_physical(core_machine_cpu_execution_context *context, lib_
             physical, byte, LIB_FALSE, provenance);
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
-    memory_status = _kma_is_reset_vector_fetch(context, physical, byte, provenance) ?
+    memory_status = context->preview_mode ?
+        core_machine_memory_inspect_physical(context->memory, physical, rdata,
+            byte, _kma_is_reset_vector_fetch(context, physical, byte, provenance)) :
+        _kma_is_reset_vector_fetch(context, physical, byte, provenance) ?
         core_machine_memory_read_reset_physical(context->memory, physical, rdata,
             byte) : core_machine_memory_read_physical(context->memory, physical,
             rdata, byte);
-    if (memory_status == LIB_STATUS_UNSUPPORTED) {
+    if (memory_status == LIB_STATUS_UNSUPPORTED && !context->preview_mode) {
         memory_status = core_machine_memory_read_physical(context->memory, physical,
             rdata, byte);
     }

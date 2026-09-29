@@ -2834,9 +2834,9 @@ static lib_i32 core_machine_control_stack_direct_call_gate_parameters(
         (lib_u16)((lib_u16)data->opcodes[selector_index + 1u] << 8u);
     table_base = (selector & VCPU_SELECTOR_TI) != 0u ?
         data->oldcpu.data.ldtr.base : data->oldcpu.data.gdtr.base;
-    return core_machine_memory_read_physical(&machine->executor_memory,
+    return core_machine_memory_inspect_physical(&machine->executor_memory,
         table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
-        (lib_uptr)out_parameters, 1u) == LIB_STATUS_OK;
+        (lib_uptr)out_parameters, 1u, LIB_FALSE) == LIB_STATUS_OK;
 }
 
 static lib_i32 core_machine_control_stack_call_gate_parameters(core_machine *machine,
@@ -2847,9 +2847,9 @@ static lib_i32 core_machine_control_stack_call_gate_parameters(core_machine *mac
     if (machine == LIB_NULL || out_parameters == LIB_NULL) return 0;
     table_base = (selector & VCPU_SELECTOR_TI) != 0u ?
         machine->executor_cpu.data.ldtr.base : machine->executor_cpu.data.gdtr.base;
-    return core_machine_memory_read_physical(&machine->executor_memory,
+    return core_machine_memory_inspect_physical(&machine->executor_memory,
         table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
-        (lib_uptr)out_parameters, 1u) == LIB_STATUS_OK;
+        (lib_uptr)out_parameters, 1u, LIB_FALSE) == LIB_STATUS_OK;
 }
 
 static lib_i32 core_machine_control_stack_selector_is_task_gate(core_machine *machine,
@@ -2861,9 +2861,9 @@ static lib_i32 core_machine_control_stack_selector_is_task_gate(core_machine *ma
     if (machine == LIB_NULL) return 0;
     table_base = (selector & VCPU_SELECTOR_TI) != 0u ?
         machine->executor_cpu.data.ldtr.base : machine->executor_cpu.data.gdtr.base;
-    if (core_machine_memory_read_physical(&machine->executor_memory,
+    if (core_machine_memory_inspect_physical(&machine->executor_memory,
             table_base + (selector & VCPU_SELECTOR_IDX) + 5u,
-            (lib_uptr)&access, 1u) != LIB_STATUS_OK) return 0;
+            (lib_uptr)&access, 1u, LIB_FALSE) != LIB_STATUS_OK) return 0;
     return (access & 0x0fu) == VCPU_DESC_SYS_TYPE_TASKGATE;
 }
 

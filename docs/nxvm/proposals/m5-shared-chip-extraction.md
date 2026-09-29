@@ -104,6 +104,12 @@ No universal device framework, plugin registry or forwarding-only wrapper.
 
 ## Verification And Exit
 
+S17 closes the CPU observation prerequisite under its
+[boundary review](../etc/architecture/t539-s17-cpu-observation.md): preview and
+timing reads must not mutate MMIO/parity state. One routed read mechanism carries
+explicit intent; ordinary guest reads retain their effects. CPU extraction and
+the complete CPU ledger row remain required after this prerequisite.
+
 S16 consumes the FPU row under its
 [boundary review](../etc/architecture/t539-s16-fpu-extraction.md): Types-only
 opaque state and time owner, CPU-owned pairing, preserved partial arithmetic,

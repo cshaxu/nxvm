@@ -10,13 +10,14 @@ typedef struct scan_provider { lib_u32 reads; } scan_provider;
 typedef struct scan_machine { core_machine *machine; } scan_machine;
 
 static lib_status scan_read(void *owner,lib_u32 physical,
-    lib_uptr destination,lib_uptr bytes)
+    lib_uptr destination,lib_uptr bytes,lib_bool observe_only)
 {
     scan_provider *provider=(scan_provider *)owner;
     (void)destination;
     if(provider==LIB_NULL||physical!=SCAN_PROVIDER_ADDRESS||(bytes!=2u&&bytes!=4u))
         return LIB_STATUS_INVALID_ARGUMENT;
-    ++provider->reads;return LIB_STATUS_OK;
+    if(!observe_only)++provider->reads;
+    return LIB_STATUS_OK;
 }
 static lib_status scan_write(void *owner,lib_u32 physical,
     lib_uptr source,lib_uptr bytes)

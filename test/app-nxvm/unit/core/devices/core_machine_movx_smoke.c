@@ -26,13 +26,13 @@ typedef struct movx_form {
 } movx_form;
 
 static lib_status movx_read(void *owner, lib_u32 physical,
-    lib_uptr destination, lib_uptr bytes)
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
     movx_provider *provider = (movx_provider *)owner;
 
     if (provider == LIB_NULL || physical != MOVX_SOURCE_MEMORY ||
         (bytes != 1u && bytes != 2u)) return LIB_STATUS_INVALID_ARGUMENT;
-    ++provider->reads;
+    if (!observe_only) ++provider->reads;
     if (provider->read_status != LIB_STATUS_OK) return provider->read_status;
     lib_memory_copy((void *)destination, provider->value, bytes);
     return LIB_STATUS_OK;

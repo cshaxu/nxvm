@@ -20,6 +20,10 @@ extension state, CPU-owned pairing and independent test migration.
 The [evidence](evidence/t539-s16-fpu-extraction.md) maps original cases,
 verification limits and accepted delivery; Current owns task status.
 
+T539 S17: [CPU observation boundary](architecture/t539-s17-cpu-observation.md)
+and [verification evidence](evidence/t539-s17-cpu-observation.md); one routed
+read mechanism separates inspection from guest side effects before CPU extraction.
+
 T539 S2: [concrete chip contracts](architecture/t539-boundary-contracts.md),
 including firmware-hook consumer proof and the approved first PIT extraction.
 

@@ -94,6 +94,10 @@ struct core_machine_memory_test_allocation {
 
 lib_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
     lib_uptr destination, lib_uptr size);
+/* Same physical route and bytes, without device or parity side effects.
+ * reset_fetch first selects the architected reset alias, as CPU fetch does. */
+lib_status core_machine_memory_inspect_physical(t_ram *ram, lib_u32 physical,
+    lib_uptr destination, lib_uptr size, lib_bool reset_fetch);
 /* CPU reset-cache fetches are the one architectural access which precedes
  * board-controlled A20 routing.  This route accepts only an already-registered
  * immutable/device provider at the raw physical address; it never falls back

@@ -15,11 +15,12 @@ static lib_i32 core_machine_d4_setup_blocks_extension(const core_machine_d4_memo
 }
 
 static lib_status core_machine_d4_setup_read(void *opaque, lib_u32 physical,
-    lib_uptr destination, lib_uptr bytes)
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
     core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
 
     (void)physical;
+    (void)observe_only;
     if (memory == LIB_NULL || destination == 0u || !core_machine_d4_setup_blocks_extension(memory)) {
         return LIB_STATUS_UNSUPPORTED;
     }
@@ -52,11 +53,12 @@ static lib_status core_machine_d4_setup_query(void *opaque, lib_u32 physical,
 }
 
 static lib_status core_machine_d4_control_read(void *opaque, lib_u32 physical,
-    lib_uptr destination, lib_uptr bytes)
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
     core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
     lib_u32 offset;
 
+    (void)observe_only;
     if (memory == LIB_NULL || destination == 0u || bytes != 1u ||
         physical < CORE_MACHINE_D4_CONTROL_PHYSICAL) return LIB_STATUS_INTERNAL_ERROR;
     offset = physical - CORE_MACHINE_D4_CONTROL_PHYSICAL;

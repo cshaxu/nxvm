@@ -21,9 +21,10 @@ static void sentinel_read(t_port *port, lib_u16 address, void *owner)
 }
 
 static lib_status ignored_read(void *owner, lib_u32 physical,
-    lib_uptr destination, lib_uptr bytes)
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
     (void)owner;
+    (void)observe_only;
     (void)physical;
     (void)destination;
     (void)bytes;
@@ -56,10 +57,11 @@ typedef struct priority_provider {
 } priority_provider;
 
 static lib_status priority_read(void *owner, lib_u32 physical,
-    lib_uptr destination, lib_uptr bytes)
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
     priority_provider *provider = (priority_provider *)owner;
 
+    (void)observe_only;
     if (provider == LIB_NULL || physical != 0x8000u || bytes != 1u) {
         return LIB_STATUS_INTERNAL_ERROR;
     }

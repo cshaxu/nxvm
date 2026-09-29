@@ -2,9 +2,26 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S16 are accepted. There is no active S packet.
-The owner's automatic-S authorization remains; the next CPU batch requires
-its concrete boundary review and admission before implementation.
+M5 T539 remains open. S1-S16 are accepted. S17 is admitted below.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T539 S17; next unused S after accepted S16. |
+| Admission And Approval | Coordinator admission under the owner's 2026-09-28 automatic-S authorization for chip extraction and Shared/NXVM reconnection. Targets: Shared video and NXVM memory/CPU observation. No MyNES executable dependency changes. |
+| Objective | Close the CPU observation prerequisite: preview and timing reads preserve routed bytes without device-read or parity side effects, through one memory routing mechanism. Consume the CPU/memory boundary portion of the finite ledger; do not claim CPU extraction complete. |
+| Non-goals | No instruction algorithm, timing grade, board clock, firmware, INI, CPU family or product identity change; no new framework, native pointer exposure or shared machine wrapper. |
+| Reference Baseline | a3bb1e3f8; clean worktree, S16 accepted and eight 0539 artifacts. |
+| Candidate Proposal | [T539 proposal](../proposals/m5-shared-chip-extraction.md), [finite ledger](../etc/evidence/t539-chip-migration-ledger.md), [S17 contract](../etc/architecture/t539-s17-cpu-observation.md). |
+| Files And ABI Surface | NXVM memory read-provider contract, CPU preview/timing callers, physical memory/ROM/video/board providers and their tests; Shared video bounded inspection operation and same-owner tests; applicable CMake, static gates, manifests and eight NXVM artifacts. |
+| Applicable Rules | Task Reading Set; Execution, Architecture, Coding and Documentation rules; NXVM architecture/layout and source policy. Single routing/state owner, no private cross-chip access, Types vocabulary, retained original handler style and exact manifests. Existing owner-approved embedded-ROM artifact exception only. |
+| Verification | Build both build/t539-s3/nxvm-x64 and nxvm-x86 with cmake --build --parallel 8; run ctest --test-dir each -L unit -j 4 --output-on-failure sequentially; full default integration -L integration -j 1 for each width; tools-off build/test in build/t539-s3/fdc-independent; specialized aggregate, six manifests, documentation governance and git diff --check. Rebuild/deploy all four NXVM profiles in both widths, inspect PE/hash/no compiler debug data, one boot per vendor/profile/width with existing bounded probe and no retirement observer. No repeated success trials. |
+| Expected Markers | Ordinary reads retain side effects; inspect returns equal bytes without parity notification or EGA latch mutation; A20/reset/provider priorities and failure results preserved; preview has no page-table writes; timing-origin/formula tests unchanged; suites exit zero and artifacts identify 0539. |
+| Asset Needs | Existing external BYOB build ROMs and integration media, unchanged masters and owner INIs. Unit fixtures are code-owned. Reuse the three bounded S16 build trees; no raw trace or new external asset. |
+| Reporting Requirements | Confirm the boundary; report mechanism findings and failed verification honestly; evidence maps every provider and CPU observational read, before/after dispositions, actual diff/net lines, all receiving artifacts and known limits. |
+| Stop Conditions | Stop for a required timing downgrade, changed instruction result, unrelated/shared consumer behavior or missing source/asset authority; revise the packet before material expansion. No acceptance on a local smoke alone. |
+| Exit Criteria | Entire observation class reconciled, regression and complete receiving verification pass, no alternate address decoder or copy/restore of live device state, separate Shared/NXVM complete P commits pushed, coordinator actual-change review and governance closure. CPU extraction remains in T539. |
+| Original Owner Request | Extract independent chips into x86/devices, preserve CPU handler style and all families, retain NXVM board ownership, automatically admit bounded S work and do not leave known in-scope defects behind. |
+| Similar-Issue Sweep | Inspect CPU preview, timing descriptor rereads, all physical-memory read providers and diagnostic/frame read callers. Record each hit as fixed or genuinely operational; no silent diagnostic-to-bus fallback. Regress and statically guard preview/timing use of the observation path. |
 
 ## Retained Progress
 

@@ -8,8 +8,8 @@
 #define IMUL_PROVIDER_ADDRESS 0x5000u
 typedef struct imul_provider { lib_u32 reads; } imul_provider;
 typedef struct imul_machine { core_machine *machine; } imul_machine;
-static lib_status imul_read(void *owner,lib_u32 physical,lib_uptr dst,lib_uptr bytes)
-{ imul_provider *p=(imul_provider *)owner;(void)dst;if(p==LIB_NULL||physical!=IMUL_PROVIDER_ADDRESS||(bytes!=2u&&bytes!=4u))return LIB_STATUS_INVALID_ARGUMENT;++p->reads;return LIB_STATUS_OK; }
+static lib_status imul_read(void *owner,lib_u32 physical,lib_uptr dst,lib_uptr bytes,lib_bool observe_only)
+{ imul_provider *p=(imul_provider *)owner;(void)dst;if(p==LIB_NULL||physical!=IMUL_PROVIDER_ADDRESS||(bytes!=2u&&bytes!=4u))return LIB_STATUS_INVALID_ARGUMENT;if(!observe_only)++p->reads;return LIB_STATUS_OK; }
 static lib_status imul_write(void *o,lib_u32 p,lib_uptr s,lib_uptr b)
 {(void)o;(void)p;(void)s;(void)b;return LIB_STATUS_UNSUPPORTED;}
 static lib_status imul_query(void *o,lib_u32 p,lib_uptr b,core_machine_memory_access a)

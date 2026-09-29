@@ -552,8 +552,8 @@ static void core_machine_memory_write_a20(t_port *port, lib_u16 port_id,
     ram->data.flagA20 = CORE_MACHINE_BIT_IS_SET(port->data.ioByte, VRAM_FLAG_A20);
 }
 
-lib_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
-    lib_uptr destination, lib_uptr byte)
+static lib_status core_machine_memory_read_routed(t_ram *ram, lib_u32 physical,
+    lib_uptr destination, lib_uptr byte, lib_bool observe_only)
 {
     lib_size offset;
     const core_machine_memory_device_provider *provider;
@@ -578,8 +578,9 @@ lib_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
             if (status != LIB_STATUS_OK) return status;
             if (single_provider != LIB_NULL) {
                 for (index = 0u; index < byte; ++index) {
-                    status = core_machine_memory_read_physical(ram,
-                        physical + (lib_u32)index, destination + index, 1u);
+                    status = core_machine_memory_read_routed(ram,
+                        physical + (lib_u32)index, destination + index, 1u,
+                        observe_only);
                     if (status != LIB_STATUS_OK) return status;
                 }
                 return LIB_STATUS_OK;
@@ -587,14 +588,16 @@ lib_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
         }
     }
     if (provider != LIB_NULL) {
-        status = provider->read(provider->owner, provider_physical, destination, byte);
+        status = provider->read(provider->owner, provider_physical, destination,
+            byte, observe_only);
         if (status != LIB_STATUS_UNSUPPORTED) return status;
         status = core_machine_memory_offset(ram, physical, byte, &offset);
         if (status != LIB_STATUS_OK) return status;
     }
     lib_memory_copy((void *)destination,
         (void *)(ram->connect.backing + offset), byte);
-    if (ram->connect.parity != 0u && offset < ram->connect.parity_bytes) {
+    if (!observe_only && ram->connect.parity != 0u &&
+        offset < ram->connect.parity_bytes) {
         lib_uptr index;
         lib_uptr checked = byte;
         if (checked > ram->connect.parity_bytes - offset) checked =
@@ -611,6 +614,33 @@ lib_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
     return LIB_STATUS_OK;
 }
 
+lib_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes)
+{
+    return core_machine_memory_read_routed(ram, physical, destination, bytes,
+        LIB_FALSE);
+}
+
+lib_status core_machine_memory_inspect_physical(t_ram *ram, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool reset_fetch)
+{
+    const core_machine_memory_device_provider *provider;
+    lib_status status;
+
+    if (ram == LIB_NULL || destination == 0u || bytes == 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (reset_fetch) {
+        status = core_machine_memory_reset_provider_resolve(ram, physical,
+            bytes, &provider);
+        if (status == LIB_STATUS_OK)
+            status = provider->read(provider->owner, physical, destination,
+                bytes, LIB_TRUE);
+        if (status != LIB_STATUS_UNSUPPORTED) return status;
+    }
+    return core_machine_memory_read_routed(ram, physical, destination, bytes,
+        LIB_TRUE);
+}
+
 lib_status core_machine_memory_read_reset_physical(t_ram *ram,
     lib_u32 physical, lib_uptr destination,
     lib_uptr bytes)
@@ -624,7 +654,8 @@ lib_status core_machine_memory_read_reset_physical(t_ram *ram,
     status = core_machine_memory_reset_provider_resolve(ram, physical, bytes,
         &provider);
     if (status != LIB_STATUS_OK) return status;
-    return provider->read(provider->owner, physical, destination, bytes);
+    return provider->read(provider->owner, physical, destination, bytes,
+        LIB_FALSE);
 }
 lib_status core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
     lib_uptr source, lib_uptr byte)

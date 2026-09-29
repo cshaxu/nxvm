@@ -4,11 +4,12 @@
 #include "app-nxvm/devices/machine_interface.h"
 
 static lib_status overlay_read(void *opaque, lib_u32 physical,
-    lib_uptr destination, lib_uptr bytes)
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
     lib_u8 *value = (lib_u8 *)opaque;
 
     (void)physical;
+    (void)observe_only;
     if (value == LIB_NULL || destination == 0u || bytes != 1u || *value == 0u) {
         return LIB_STATUS_UNSUPPORTED;
     }

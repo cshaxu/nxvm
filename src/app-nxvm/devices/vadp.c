@@ -139,9 +139,10 @@ static lib_status register_ports(t_vadp *adapter,
 }
 
 static lib_status cga_read(void *context, lib_u32 address,
-    lib_uptr destination, lib_uptr bytes)
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
-    return x86_video_memory_read(context, X86_VIDEO_MEMORY_CGA, address,
+    return (observe_only ? x86_video_memory_inspect : x86_video_memory_read)(
+        context, X86_VIDEO_MEMORY_CGA, address,
         (lib_u8 *)destination, bytes);
 }
 
@@ -162,9 +163,10 @@ static lib_status cga_query(void *context, lib_u32 address,
 }
 
 static lib_status planar_read(void *context, lib_u32 address,
-    lib_uptr destination, lib_uptr bytes)
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
-    return x86_video_memory_read(context, X86_VIDEO_MEMORY_PLANAR, address,
+    return (observe_only ? x86_video_memory_inspect : x86_video_memory_read)(
+        context, X86_VIDEO_MEMORY_PLANAR, address,
         (lib_u8 *)destination, bytes);
 }
 
@@ -296,8 +298,8 @@ void core_machine_vadp_finalize(t_vadp *adapter)
 static lib_status read_backing(void *context, lib_u32 address,
     lib_u8 *destination, lib_size bytes)
 {
-    return core_machine_memory_read_physical(context, address,
-        (lib_uptr)destination, bytes);
+    return core_machine_memory_inspect_physical(context, address,
+        (lib_uptr)destination, bytes, LIB_FALSE);
 }
 
 lib_i32 core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,

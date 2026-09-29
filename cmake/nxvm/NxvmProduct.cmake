@@ -1500,6 +1500,7 @@ target_link_libraries(core-machine-ega-sequencer-port-smoke PRIVATE core-machine
 add_executable(core-machine-ega-registration-transaction-smoke
     test/app-nxvm/unit/core/devices/core_machine_ega_registration_transaction_smoke.c
 )
+
 target_include_directories(core-machine-ega-registration-transaction-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -1508,6 +1509,13 @@ target_link_libraries(core-machine-ega-registration-transaction-smoke PRIVATE
 )
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-ega-registration-transaction-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-memory-inspection-smoke
+    test/app-nxvm/unit/core/devices/core_machine_memory_inspection_smoke.c)
+target_link_libraries(core-machine-memory-inspection-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(core-machine-memory-inspection-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-ega-controller-port-smoke
@@ -1933,6 +1941,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-cga-640-port-smoke
     core-machine-ega-sequencer-port-smoke
     core-machine-ega-registration-transaction-smoke
+    core-machine-memory-inspection-smoke
     core-machine-ega-controller-port-smoke
     core-machine-ega-planar-port-smoke
     core-machine-compaq-cecg-s9-smoke

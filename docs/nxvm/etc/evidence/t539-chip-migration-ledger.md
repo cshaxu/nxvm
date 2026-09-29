@@ -13,7 +13,7 @@ This ledger is not a claim of completed chip semantics/timing qualification.
 
 | Files | Proposed disposition and change |
 | --- | --- |
-| `cpu.c`, `cpu.h`, `cpu_instructions.c`, `cpu_instructions.h`, `cpu_interface.h`, `cpu_timing.c`, `cpu_timing.h`, `cpu_timing_model.c`, `cpu_trace.h` | Extract CPU execution/timing; remove machine/private peer dependencies; preserve tables; resolve firmware hook, bus, INTA and generated catalogs. |
+| `cpu.c`, `cpu.h`, `cpu_instructions.c`, `cpu_instructions.h`, `cpu_interface.h`, `cpu_timing.c`, `cpu_timing.h`, `cpu_timing_model.c`, `cpu_trace.h` | Extraction pending: remove machine/private peer dependencies; preserve tables; resolve firmware hook, bus, INTA and generated catalogs. S17 repairs the observation prerequisite; [evidence](t539-s17-cpu-observation.md) records its receiving proof, not completed CPU extraction. |
 | `fpu.c`, `fpu.h`, `fpu_interface.h` | S16 accepted: opaque Types-only FPU in x86/devices/fpu; CPU retains pairing and operand cycles, machine owns lifetime. [Evidence](t539-s16-fpu-extraction.md) maps original cases, complete receiving proof and diagnostic-overhead limits. Shared 5fa831a2b and NXVM 9783297fb remove the old implementation. |
 | `pic.c`, `pic.h`, `pic_interface.h` | S5 implementation: sole controller mechanism in `src/x86/devices/pic8259`; NXVM pic_bus owns ports, source counts and pair wiring. [Evidence](t539-s5-pic-extraction.md) records verification; Current owns acceptance. |
 | `pit.c`, `pit.h` | S3 implementation: sole timer moved to `src/x86/devices/pit825x`; NXVM `pit_bus` owns port attachment, existing board/scheduler own wiring and clocks. Verification and acceptance are recorded in S3 evidence. |
