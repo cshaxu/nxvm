@@ -97,7 +97,6 @@ static lib_status vm_profile_model40_firmware_reset(void *opaque,
 static const core_machine_firmware_provider vm_profile_model40_provider = {
     vm_profile_model40_firmware_configure,
     vm_profile_model40_firmware_reset,
-    LIB_NULL,
     LIB_NULL
 };
 

@@ -5,7 +5,7 @@
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/rom_mapping_interface.h"
 #include "support/core_machine_executor_fixture.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 typedef struct firmware_probe {
     core_machine *machine;
@@ -132,14 +132,12 @@ static lib_status firmware_probe_after_run(void *opaque,
 static const core_machine_firmware_provider firmware_probe_provider = {
     firmware_probe_configure,
     firmware_probe_reset,
-    firmware_probe_after_run,
-    LIB_NULL
+    firmware_probe_after_run
 };
 
 static const core_machine_firmware_provider firmware_failed_probe_provider = {
     firmware_failed_probe_configure,
     firmware_failed_probe_reset,
-    LIB_NULL,
     LIB_NULL
 };
 

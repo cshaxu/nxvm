@@ -2,7 +2,9 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
+
+/* T337_REAL_UD_TERMINAL_GUEST_LIDT: preparation is outside measured ticks. */
 
 static lib_i32 core_machine_real_mode_tick_case(
     const char *name,
@@ -21,6 +23,7 @@ static lib_i32 core_machine_real_mode_tick_case(
     core_machine_cpu_profile actual_profile;
     core_machine *machine = LIB_NULL;
     lib_status status;
+    lib_u64 setup_ticks = 0u;
     lib_i32 failed = 0;
 
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
@@ -28,18 +31,36 @@ static lib_i32 core_machine_real_mode_tick_case(
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+    if (expected_status == LIB_STATUS_INTERNAL_ERROR && !failed) {
+        const lib_u8 lidt[] = {0x0fu, 0x01u, 0x1eu, 0x00u, 0x06u};
+        const lib_u8 idt_pointer[] = {0x17u, 0u, 0u, 0u, 0u, 0u};
+        core_machine_run_result setup;
+
+        failed |= core_machine_memory_write(machine, 0xfffffff0u, lidt,
+            sizeof(lidt)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x0600u, idt_pointer,
+            sizeof(idt_pointer)) != LIB_STATUS_OK ||
+            core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+            &setup) != LIB_STATUS_OK || setup.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EIP,
+            0xfff0u) != LIB_STATUS_OK ||
+            core_machine_capture_observation(machine, &observation) != LIB_STATUS_OK;
+        if (failed) {
+            core_machine_destroy(machine);
+            return 1;
+        }
+        setup_ticks = observation.elapsed_ticks;
+    }
     failed |= core_machine_memory_write(machine, 0xfffffff0u, program,
         program_bytes) != LIB_STATUS_OK;
-    if (expected_status == LIB_STATUS_INTERNAL_ERROR)
-        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(machine);
     status = core_machine_run(machine, budget, &result);
     failed |= status != expected_status || result.reason != expected_reason ||
         result.executed != expected_executed || result.ticks != expected_ticks ||
-        result.elapsed_ticks != expected_ticks;
+        result.elapsed_ticks != setup_ticks + expected_ticks;
     failed |= core_machine_get_cpu_profile(machine, &actual_profile) !=
         LIB_STATUS_OK || actual_profile != profile;
     failed |= core_machine_capture_observation(machine, &observation) !=
-        LIB_STATUS_OK || observation.elapsed_ticks != expected_ticks;
+        LIB_STATUS_OK || observation.elapsed_ticks != setup_ticks + expected_ticks;
     if (failed) {
         fprintf(stderr,
             "M5:T218:S2:REAL-MODE-TICKS:FAIL case=%s status=%d reason=%d "

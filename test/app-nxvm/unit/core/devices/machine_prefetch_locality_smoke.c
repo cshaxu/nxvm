@@ -3,7 +3,17 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/transaction.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
+
+static core_machine_cpu_execution_context *prefetch_observed_cpu;
+static lib_u32 prefetch_grants;
+
+/* The test-built scheduler calls this spy; all CPU behavior remains real. */
+void test_cpu_prefetch_grant(core_machine_cpu_execution_context *cpu)
+{
+    if (cpu == prefetch_observed_cpu) ++prefetch_grants;
+    core_machine_cpu_execution_advance_prefetch_reservation(cpu);
+}
 
 static void external_cycle_begin_and_commit(
     core_machine_cpu_external_cycle_provider provider, void *context,
@@ -141,10 +151,8 @@ static lib_i32 external_cycle_observer_contract(void)
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    provider = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_context;
+    provider = core_machine_cpu_external_cycle_trace;
+    context = machine;
     failed |= provider == LIB_NULL;
     if (!failed) {
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN, CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0u, 1u,
@@ -216,10 +224,8 @@ static lib_i32 d4_refresh_external_cycle_contract(void)
     failed |= core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    provider = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_context;
+    provider = core_machine_cpu_external_cycle_trace;
+    context = machine;
     failed |= provider == LIB_NULL;
     if (!failed) {
         external_cycle_begin_and_commit(provider, context, 0x800u, 4u, LIB_FALSE,
@@ -313,10 +319,8 @@ static lib_i32 cecg_aperture_wait_contract(void)
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    provider = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_context;
+    provider = core_machine_cpu_external_cycle_trace;
+    context = machine;
     if (!failed) {
         external_cycle_begin_and_commit(provider, context, 0x000a0000u, 1u,
             LIB_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
@@ -348,10 +352,8 @@ static lib_i32 d4_cecg_memory_class_contract(void)
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    provider = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_context;
+    provider = core_machine_cpu_external_cycle_trace;
+    context = machine;
     if (!failed) {
         external_cycle_begin_and_commit(provider, context, 0x0009ff00u, 1u,
             LIB_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
@@ -378,10 +380,8 @@ static lib_i32 cecg_port_wait_contract(void)
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    provider = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_provider;
-    context = machine == LIB_NULL ? LIB_NULL :
-        machine->executor_cpu_execution.external_cycle_context;
+    provider = core_machine_cpu_external_cycle_trace;
+    context = machine;
     failed |= provider == LIB_NULL;
     if (!failed) {
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
@@ -414,13 +414,12 @@ static lib_i32 cecg_port_wait_contract(void)
     core_machine_destroy(machine);
     return !failed;
 }
-static lib_i32 prefetch_reservation_contract(void)
+static lib_i32 prefetch_grant_contract(void)
 {
     static const core_machine_external_cycle_timing timing = {2048u, 2u, 0u,
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
     core_machine_config config = {0};
     core_machine *machine = LIB_NULL;
-    core_machine_cpu_execution_context *cpu;
     lib_i32 failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
@@ -429,50 +428,32 @@ static lib_i32 prefetch_reservation_contract(void)
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    cpu = machine == LIB_NULL ? LIB_NULL : &machine->executor_cpu_execution;
     if (!failed) {
-        cpu->prefetch_linear = 0x10u;
-        cpu->prefetch_count = 15u;
-        cpu->prefetch_valid = LIB_TRUE;
-        cpu->prefetch_expected_linear = 0x17u;
-        cpu->prefetch_expected_valid = LIB_TRUE;
-        core_machine_cpu_execution_reserve_prefetch(cpu);
-        failed |= !cpu->prefetch_reservation_valid ||
-            cpu->prefetch_reservation_linear != 0x17u ||
-            cpu->prefetch_reservation_count != 15u;
+        prefetch_observed_cpu = &machine->executor_cpu_execution;
+        prefetch_grants = 0u;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK;
-        failed |= cpu->prefetch_reservation_valid || !cpu->prefetch_valid ||
-            cpu->prefetch_linear != 0x10u || cpu->prefetch_count != 15u ||
+        failed |= prefetch_grants != 1u ||
             machine->external_cycle_overlap_valid ||
             machine->external_cycle_round_ticks != 0u;
-        core_machine_cpu_execution_reserve_prefetch(cpu);
-        failed |= !cpu->prefetch_reservation_valid;
-        core_machine_cpu_execution_invalidate_prefetch(cpu);
-        failed |= cpu->prefetch_reservation_valid || cpu->prefetch_valid ||
-            cpu->prefetch_expected_valid;
-        cpu->prefetch_linear = 0x10u;
-        cpu->prefetch_count = 15u;
-        cpu->prefetch_valid = LIB_TRUE;
-        cpu->prefetch_expected_linear = 0x17u;
-        cpu->prefetch_expected_valid = LIB_TRUE;
-        core_machine_cpu_execution_reserve_prefetch(cpu);
         failed |= core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK;
         failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA) != LIB_STATUS_OK;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
-            !cpu->prefetch_reservation_valid;
+            prefetch_grants != 1u;
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
         machine->d4_refresh_hold_pending = LIB_TRUE;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
-            !cpu->prefetch_reservation_valid;
+            prefetch_grants != 1u;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
-            cpu->prefetch_reservation_valid;
-        core_machine_cpu_execution_reserve_prefetch(cpu);
-        failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-            cpu->prefetch_reservation_valid || cpu->prefetch_valid;
+            prefetch_grants != 2u;
+        failed |= core_machine_reset(machine) != LIB_STATUS_OK;
+        prefetch_grants = 0u;
+        failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
+            prefetch_grants != 1u;
     }
+    prefetch_observed_cpu = LIB_NULL;
     core_machine_destroy(machine);
     return !failed;
 }
@@ -506,7 +487,7 @@ lib_i32 main(void)
     failed |= !external_cycle_observer_contract();
     failed |= !d4_refresh_external_cycle_contract();
     failed |= !retirement_wait_contract();
-    failed |= !prefetch_reservation_contract();
+    failed |= !prefetch_grant_contract();
     failed |= !cecg_port_wait_contract();
     failed |= !d4_cecg_memory_class_contract();
     failed |= !cecg_aperture_wait_contract();

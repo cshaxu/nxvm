@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 static lib_i32 run_case(core_machine_cpu_profile profile)
 {

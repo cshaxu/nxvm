@@ -7,8 +7,6 @@
 
 
 
-#include "app-nxvm/devices/cpu.h"
-
 #include "app-nxvm/devices/cpu_instructions.h"
 #include "x86/devices/fpu/fpu_interface.h"
 
@@ -131,7 +129,6 @@ struct core_machine {
     lib_u8 timing_plan_copied;
     core_machine_d4_memory d4_memory;
     core_machine_transaction_state transaction;
-    core_machine_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
     lib_u32 external_cycle_page_tag;
     lib_u64 external_cycle_round_ticks;
@@ -151,24 +148,11 @@ struct core_machine {
     lib_u8 cpu_retirement_wait_pending;
     lib_u64 maximum_instruction_ticks;
     core_machine_retirement_time_contract retirement_time_contract;
-    lib_u8 source_timing_unallocated;
-    core_machine_retirement_timing_origin source_timing_origin;
-    lib_u32 source_timing_form_id;
-    lib_u32 source_timing_key_id;
-    lib_u32 source_timing_formula_inputs;
-    core_machine_retirement_repeat_phase source_timing_repeat_phase;
     core_machine_retirement_eligibility_key retirement_eligibility_key;
     lib_u8 retirement_eligibility_key_valid;
     core_machine_retirement_eligibility_key retirement_qualification[
         CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY];
     lib_size retirement_qualification_count;
-    lib_u8 source_repeat_active;
-    lib_u16 source_repeat_cs;
-    lib_u32 source_repeat_eip;
-    lib_u8 source_repeat_opcode;
-    lib_u8 source_repeat_prefix;
-    lib_u8 source_repeat_operand_size;
-    lib_u8 source_repeat_address_size;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain auxiliary_pit_clock;
@@ -293,7 +277,7 @@ void core_machine_cpu_diagnostic_reset(core_machine *machine);
 void core_machine_retirement_observation_initialize(core_machine *machine);
 void core_machine_retirement_observation_reset(core_machine *machine);
 void core_machine_retirement_observation_capture_instruction(core_machine *machine,
-    const t_cpu *cpu, const t_cpuins *instructions);
+    const core_machine_cpu_instruction_observation *observation);
 void core_machine_retirement_observation_capture_eligibility_key(
     core_machine *machine);
 void core_machine_retirement_observation_publish(core_machine *machine,
@@ -322,6 +306,7 @@ lib_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology);
 lib_u32 core_machine_linear_pc(const core_machine *machine);
 void core_machine_external_cycle_invalidate(core_machine *machine);
+extern const core_machine_cpu_bus_provider core_machine_cpu_bus;
 void core_machine_transaction_trace(void *opaque,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     core_machine_transaction_phase phase, lib_u32 address,
@@ -366,9 +351,6 @@ void core_machine_capture_time_observation_private(const core_machine *machine,
 lib_status core_machine_firmware_invoke(core_machine *machine,
     lib_i32 configuring, lib_i32 track_operation_failures,
     lib_status (*callback)(void *, core_machine_firmware_context *));
-lib_status core_machine_firmware_handle_software_interrupt(void *opaque,
-    lib_u8 vector, const core_machine_firmware_interrupt_frame *frame,
-    core_machine_firmware_interrupt_result *result, lib_u8 *out_handled);
 lib_status core_machine_plan_validate(const core_machine_plan *plan);
 lib_status core_machine_plan_apply_topology(core_machine *machine,
     const core_machine_plan *plan);

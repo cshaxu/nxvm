@@ -1,7 +1,6 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/kbc.h"
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/pic_bus.h"
@@ -55,7 +54,6 @@ lib_i32 main(void)
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
     t_ram memory = {0};
-    core_machine_cpu_execution_context execution = {0};
     t_port port;
     lib_i32 failed = 0;
     lib_i32 stage = 1;
@@ -65,7 +63,7 @@ lib_i32 main(void)
     core_machine_pic_initialize(&master, &slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &master, &slave, &memory,
-        &execution, LIB_TRUE);
+        LIB_NULL, LIB_NULL, LIB_TRUE);
     initialize_pic(&port);
 
     core_machine_port_write(&port, 0x0064u, 0x20u);

@@ -15,20 +15,6 @@ typedef enum core_machine_retirement_timing_disposition {
     CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED
 } core_machine_retirement_timing_disposition;
 
-typedef enum core_machine_retirement_timing_origin {
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED = 0,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_DYNAMIC_MULTIPLY,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_PRIVILEGED,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK,
-    CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY
-} core_machine_retirement_timing_origin;
 
 typedef enum core_machine_retirement_modrm_form {
     CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE = 0,
@@ -42,13 +28,6 @@ typedef enum core_machine_retirement_control_outcome {
     CORE_MACHINE_RETIREMENT_CONTROL_TAKEN
 } core_machine_retirement_control_outcome;
 
-typedef enum core_machine_retirement_repeat_phase {
-    CORE_MACHINE_RETIREMENT_REPEAT_NONE = 0,
-    CORE_MACHINE_RETIREMENT_REPEAT_PRIMITIVE,
-    CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT,
-    CORE_MACHINE_RETIREMENT_REPEAT_FIRST,
-    CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION
-} core_machine_retirement_repeat_phase;
 
 typedef enum core_machine_retirement_io_direction {
     CORE_MACHINE_RETIREMENT_IO_NONE = 0,
@@ -56,9 +35,6 @@ typedef enum core_machine_retirement_io_direction {
     CORE_MACHINE_RETIREMENT_IO_WRITE
 } core_machine_retirement_io_direction;
 
-/* The timing form is an opaque Core-owned identifier. A classified path
- * without a ledger lookup intentionally reports this sentinel. */
-#define CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ((lib_u32)-1)
 #define CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ((lib_u8)-1)
 
 /* A semantic retirement identity; it deliberately contains no instruction
@@ -117,6 +93,9 @@ typedef struct core_machine_retirement_observation {
     lib_u8 address_size_32;
     lib_u8 lock_prefix;
     lib_u8 repeat_prefix;
+    /* Copies made only for an installed callback; no private CPU pointers. */
+    core_machine_debug_cpu_snapshot instruction_entry_cpu;
+    core_machine_debug_cpu_snapshot current_cpu;
 } core_machine_retirement_observation;
 
 typedef void (*core_machine_retirement_observation_callback)(

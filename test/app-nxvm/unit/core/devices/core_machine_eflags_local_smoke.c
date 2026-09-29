@@ -1,47 +1,24 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/cpu_bus_fixture.h"
 
-typedef struct eflags_machine { core_machine *machine; } eflags_machine;
-
-static void eflags_reset(void *opaque)
+static lib_i32 eflags_run(cpu_bus_fixture *state, lib_u8 opcode, t_cpu *after)
 {
-    eflags_machine *state = (eflags_machine *)opaque;
-    if (state != LIB_NULL)
-        (void)test_core_machine_fixture_reset_real_mode(state->machine);
-}
-
-static const core_machine_execution_provider eflags_provider = {
-    eflags_reset, LIB_NULL
-};
-
-static lib_i32 eflags_prepare_profile(core_machine_cpu_profile profile, eflags_machine *state)
-{
-    const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = profile,
-        .fpu_profile = X86_FPU_PROFILE_NONE
-    };
-    lib_memory_set(state, 0, sizeof(*state));
-    return test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &eflags_provider, state, &state->machine);
-}
-
-static lib_i32 eflags_prepare(eflags_machine *state)
-{
-    return eflags_prepare_profile(CORE_MACHINE_CPU_PROFILE_80386, state);
-}
-
-static lib_i32 eflags_run(eflags_machine *state, lib_u8 opcode, t_cpu *after)
-{
-    core_machine_run_result result;
-    return test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) &&
-        core_machine_memory_write(state->machine, 0u, &opcode, 1u) == LIB_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){ 1u, 0u }, &result) == LIB_STATUS_OK &&
-        result.reason == CORE_MACHINE_STOP_BUDGET &&
-        ((*after = test_core_machine_fixture_capture_cpu_after_run(state->machine)), 1);
+    if (core_machine_cpu_execution_load_segment(&state->execution,
+            &state->cpu.data.cs, 0u) ||
+        core_machine_cpu_execution_load_segment(&state->execution,
+            &state->cpu.data.ds, 0u) ||
+        core_machine_cpu_execution_load_segment(&state->execution,
+            &state->cpu.data.es, 0u) ||
+        core_machine_cpu_execution_load_segment(&state->execution,
+            &state->cpu.data.ss, 0u)) return 0;
+    state->cpu.data.eip = 0u;
+    state->cpu.data.flagHalt = LIB_FALSE;
+    state->memory[0] = opcode;
+    core_machine_cpu_execution_refresh(&state->execution);
+    *after = state->cpu;
+    return state->instruction_count == 1u && !state->faults &&
+        !state->instructions.data.except && !state->cpu.data.flagHalt;
 }
 
 lib_i32 main(void)
@@ -53,44 +30,41 @@ lib_i32 main(void)
         VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
     lib_u8 op;
     for (op = 0u; op != 2u; ++op) {
-        eflags_machine state;
+        cpu_bus_fixture state;
         t_cpu after;
-        lib_i32 failed = !eflags_prepare(&state);
-        if (!failed) {
-            state.machine->executor_cpu.data.eax = op ? 0x1122ff00u : 0x11220000u;
-            state.machine->executor_cpu.data.eflags = saved;
-            failed |= !eflags_run(&state, 0x9eu, &after) ||
-                (after.data.eflags & sahf_mask) != (op ? sahf_mask : 0u) ||
-                (after.data.eflags & ~sahf_mask) != (saved & ~sahf_mask) ||
-                after.data.eax != state.machine->executor_cpu.data.eax ||
-                after.data.eip != 1u;
-        }
-        core_machine_destroy(state.machine);
+        lib_i32 failed = 0;
+        cpu_bus_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        state.cpu.data.eax = op ? 0x1122ff00u : 0x11220000u;
+        state.cpu.data.eflags = saved;
+        failed |= !eflags_run(&state, 0x9eu, &after) ||
+            (after.data.eflags & sahf_mask) != (op ? sahf_mask : 0u) ||
+            (after.data.eflags & ~sahf_mask) != (saved & ~sahf_mask) ||
+            after.data.eax != (op ? 0x1122ff00u : 0x11220000u) ||
+            after.data.eip != 1u;
         if (failed) return 1;
     }
     {
-        eflags_machine state;
+        cpu_bus_fixture state;
         t_cpu after;
-        lib_i32 failed = !eflags_prepare(&state);
-        if (!failed) {
-            state.machine->executor_cpu.data.eax = 0x11220000u;
-            state.machine->executor_cpu.data.eflags = saved;
-            failed |= !eflags_run(&state, 0x9fu, &after) ||
-                (after.data.eax & 0xff00u) != 0xd700u ||
-                (after.data.eax & 0xffff00ffu) != 0x11220000u || after.data.eflags != saved;
-        }
-        core_machine_destroy(state.machine);
+        lib_i32 failed = 0;
+        cpu_bus_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+        state.cpu.data.eax = 0x11220000u;
+        state.cpu.data.eflags = saved;
+        failed |= !eflags_run(&state, 0x9fu, &after) ||
+            (after.data.eax & 0xff00u) != 0xd700u ||
+            (after.data.eax & 0xffff00ffu) != 0x11220000u || after.data.eflags != saved;
         if (failed) return 1;
     }
     {
         static const lib_u8 opcodes[] = { 0xf5u, 0xf5u, 0xf8u, 0xf9u, 0xfcu, 0xfdu };
         lib_u8 index;
         for (index = 0u; index != sizeof(opcodes); ++index) {
-            eflags_machine state;
+            cpu_bus_fixture state;
             t_cpu after;
             lib_u32 initial = saved;
             lib_u32 expected = saved;
-            lib_i32 failed = !eflags_prepare(&state);
+            lib_i32 failed = 0;
+            cpu_bus_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
             if (opcodes[index] == 0xf5u)
                 initial = index == 0u ? saved & ~VCPU_EFLAGS_CF : saved;
             if (opcodes[index] == 0xf5u)
@@ -99,14 +73,11 @@ lib_i32 main(void)
             if (opcodes[index] == 0xf9u) expected |= VCPU_EFLAGS_CF;
             if (opcodes[index] == 0xfcu) expected &= ~VCPU_EFLAGS_DF;
             if (opcodes[index] == 0xfdu) expected |= VCPU_EFLAGS_DF;
-            if (!failed) {
-                state.machine->executor_cpu.data.eax = 0x11223344u;
-                state.machine->executor_cpu.data.eflags = initial;
-                failed |= !eflags_run(&state, opcodes[index], &after) ||
-                    after.data.eax != 0x11223344u || after.data.eflags != expected ||
-                    after.data.eip != 1u;
-            }
-            core_machine_destroy(state.machine);
+            state.cpu.data.eax = 0x11223344u;
+            state.cpu.data.eflags = initial;
+            failed |= !eflags_run(&state, opcodes[index], &after) ||
+                after.data.eax != 0x11223344u || after.data.eflags != expected ||
+                after.data.eip != 1u;
             if (failed) return 1;
         }
     }
@@ -118,15 +89,13 @@ lib_i32 main(void)
         lib_u8 index;
         for (profile = 0u; profile != 2u; ++profile) {
         for (index = 0u; index != sizeof(opcodes); ++index) {
-            eflags_machine state;
+            cpu_bus_fixture state;
             t_cpu after;
-            lib_i32 failed = !eflags_prepare_profile(profiles[profile], &state);
-            if (!failed) {
-                state.machine->executor_cpu.data.eax = 0x1122ff00u;
-                state.machine->executor_cpu.data.eflags = saved;
-                failed |= !eflags_run(&state, opcodes[index], &after) || after.data.eip != 1u;
-            }
-            core_machine_destroy(state.machine);
+            lib_i32 failed = 0;
+            cpu_bus_prepare(&state, profiles[profile]);
+            state.cpu.data.eax = 0x1122ff00u;
+            state.cpu.data.eflags = saved;
+            failed |= !eflags_run(&state, opcodes[index], &after) || after.data.eip != 1u;
             if (failed) return 1;
         }
         }

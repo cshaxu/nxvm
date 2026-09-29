@@ -36,17 +36,13 @@ add_custom_command(OUTPUT "${nxvm_default_firmware_rom}"
 include(cmake/nxvm/NxvmProductProfile.cmake)
 
 set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
-set(PROJECT_CPU_TIMING_MANIFEST_CATALOG
-    "${CMAKE_BINARY_DIR}/generated/cpu_timing_manifest_catalog.inc")
 set(PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG
     "${CMAKE_BINARY_DIR}/generated/cpu_timing_manifest_metadata_catalog.inc")
 add_custom_command(
-    OUTPUT "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
-        "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
+    OUTPUT "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
     COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
         -File "${CMAKE_SOURCE_DIR}/tools/nxvm/Export-CpuTimingManifestCatalog.ps1"
-        -OutPath "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
-        -MetadataOutPath "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
+        -OutPath "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
     DEPENDS tools/nxvm/Export-CpuTimingManifestCatalog.ps1
         tools/nxvm/Verify-CpuTimingManifestContract.ps1
         docs/nxvm/etc/cpu-timing/t435-s2-8086-timing-manifest.json
@@ -56,8 +52,7 @@ add_custom_command(
         docs/nxvm/etc/cpu-timing/t435-s2-80386-timing-manifest.json
     VERBATIM)
 add_custom_target(cpu-timing-manifest-catalog
-    DEPENDS "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
-        "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
+    DEPENDS "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
 
 set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-lib-tests
@@ -66,8 +61,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
 
 add_library(core-machine STATIC
     src/app-nxvm/devices/clock.c
-    src/app-nxvm/devices/cpu_timing.c
-    src/app-nxvm/devices/cpu_timing_model.c
+    src/app-nxvm/devices/cpu_bus.c
     src/app-nxvm/devices/d4_memory.c
     src/app-nxvm/devices/debug.c
     src/app-nxvm/devices/entry_plan_interface.c
@@ -88,13 +82,11 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/timeline.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
 )
-add_dependencies(core-machine cpu-timing-manifest-catalog)
 # This is the complete public core-machine runtime. It extends the primitive
 # storage/executor target below; it is not a second guest executor.
 add_library(core-machine-runtime ALIAS core-machine)
 target_include_directories(core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
-    "${CMAKE_BINARY_DIR}/generated"
 )
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(core-machine PUBLIC
@@ -110,10 +102,8 @@ endif()
 # production library's build definition.
 get_target_property(PROJECT_CORE_MACHINE_SOURCES core-machine SOURCES)
 add_library(core-machine-observable STATIC ${PROJECT_CORE_MACHINE_SOURCES})
-add_dependencies(core-machine-observable cpu-timing-manifest-catalog)
 target_include_directories(core-machine-observable PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
-    "${CMAKE_BINARY_DIR}/generated"
 )
 target_link_libraries(core-machine-observable PUBLIC core-machine-executor)
 target_compile_definitions(core-machine-observable PUBLIC
@@ -335,7 +325,15 @@ add_executable(core-machine-transaction-s2-smoke
 target_link_libraries(core-machine-transaction-s2-smoke PRIVATE core-machine-observable)
 add_executable(core-machine-prefetch-locality-smoke
     test/app-nxvm/unit/core/devices/machine_prefetch_locality_smoke.c)
-target_link_libraries(core-machine-prefetch-locality-smoke PRIVATE core-machine)
+# Observe the board-to-CPU grant without exposing CPU reservation storage.
+# Compile the same scheduler with only its outgoing call redirected to the spy.
+add_library(core-machine-prefetch-scheduler-test OBJECT
+    src/app-nxvm/devices/machine_scheduler.c)
+target_link_libraries(core-machine-prefetch-scheduler-test PRIVATE core-machine)
+target_compile_definitions(core-machine-prefetch-scheduler-test PRIVATE
+    core_machine_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
+target_link_libraries(core-machine-prefetch-locality-smoke PRIVATE
+    core-machine-prefetch-scheduler-test core-machine)
 
 add_executable(core-machine-competition-s3-smoke
     test/app-nxvm/unit/core/devices/machine_competition_s3_smoke.c)
@@ -455,6 +453,8 @@ target_compile_definitions(core-machine-8086-timing-manifest-runner PRIVATE
     PROJECT_TEST_8086_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-decoder-inventory.json")
 add_dependencies(core-machine-8086-timing-manifest-runner
     cpu-timing-manifest-catalog)
+target_include_directories(core-machine-8086-timing-manifest-runner PRIVATE
+    "${CMAKE_BINARY_DIR}/generated")
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-8086-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -475,6 +475,8 @@ target_compile_definitions(core-machine-8088-timing-manifest-runner PRIVATE
     PROJECT_TEST_TIMING_MANIFEST_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8088-decoder-inventory.json")
 add_dependencies(core-machine-8088-timing-manifest-runner
     cpu-timing-manifest-catalog)
+target_include_directories(core-machine-8088-timing-manifest-runner PRIVATE
+    "${CMAKE_BINARY_DIR}/generated")
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-8088-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -500,6 +502,8 @@ target_compile_definitions(core-machine-80186-timing-manifest-runner PRIVATE
     PROJECT_TEST_80186_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80186-timing-results.json")
 add_dependencies(core-machine-80186-timing-manifest-runner
     cpu-timing-manifest-catalog)
+target_include_directories(core-machine-80186-timing-manifest-runner PRIVATE
+    "${CMAKE_BINARY_DIR}/generated")
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-80186-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -515,6 +519,8 @@ target_compile_definitions(core-machine-80286-timing-manifest-runner PRIVATE
     PROJECT_TEST_80286_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80286-timing-results.json")
 add_dependencies(core-machine-80286-timing-manifest-runner
     cpu-timing-manifest-catalog)
+target_include_directories(core-machine-80286-timing-manifest-runner PRIVATE
+    "${CMAKE_BINARY_DIR}/generated")
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-80286-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -563,6 +569,8 @@ target_compile_definitions(core-machine-80386-timing-manifest-runner PRIVATE
     PROJECT_TEST_80386_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80386-timing-results.json")
 add_dependencies(core-machine-80386-timing-manifest-runner
     cpu-timing-manifest-catalog)
+target_include_directories(core-machine-80386-timing-manifest-runner PRIVATE
+    "${CMAKE_BINARY_DIR}/generated")
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-80386-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -633,7 +641,7 @@ endif()
 add_executable(core-machine-rotate-smoke test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c)
 target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
 add_executable(core-machine-eflags-local-smoke test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c)
-target_link_libraries(core-machine-eflags-local-smoke PRIVATE core-machine)
+target_link_libraries(core-machine-eflags-local-smoke PRIVATE x86-cpu)
 add_executable(core-machine-pushf-popf-smoke test/app-nxvm/unit/core/devices/core_machine_pushf_popf_smoke.c)
 target_link_libraries(core-machine-pushf-popf-smoke PRIVATE core-machine)
 add_executable(core-machine-pushf-popf-s47-smoke test/app-nxvm/unit/core/devices/core_machine_pushf_popf_s47_smoke.c)
@@ -889,12 +897,11 @@ endif()
 # latter only after the zero-retirement delivery boundary.
 foreach(target IN ITEMS
     core-machine-t359-s4-timing-smoke
+    core-machine-interrupt-entry-smoke
     core-machine-iret-outer-s52-smoke
     core-machine-debug-mov-s59-smoke
     core-machine-tf-db-s60-smoke
     core-machine-vm86-delivery-smoke
-    core-machine-interrupt-entry-smoke
-    core-machine-80286-protected-mode-smoke
     core-machine-arpl-s53-smoke
     core-machine-protected-privilege-smoke
     core-machine-protected-return-atomicity-smoke
@@ -1187,13 +1194,26 @@ set(VM_MEDIA_SOURCES
     src/app-nxvm/machine/media/fdd.c
     src/app-nxvm/machine/media/hdd.c
 )
+add_library(x86-cpu STATIC
+    src/app-nxvm/devices/cpu.c
+    src/app-nxvm/devices/cpu_instructions.c
+    src/app-nxvm/devices/cpu_timing.c
+    src/app-nxvm/devices/cpu_timing_model.c
+)
+target_include_directories(x86-cpu PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(x86-cpu PUBLIC types PRIVATE x86-fpu)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set_source_files_properties(
+        src/app-nxvm/devices/cpu_timing.c
+        src/app-nxvm/devices/cpu_timing_model.c
+        PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra;-Wpedantic;-Werror")
+endif()
+
 set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/display.c
     src/app-nxvm/devices/vadp.c
     src/app-nxvm/devices/port.c
     src/app-nxvm/devices/memory.c
-    src/app-nxvm/devices/cpu.c
-    src/app-nxvm/devices/cpu_instructions.c
     src/app-nxvm/devices/pic_bus.c
     src/app-nxvm/devices/pit_bus.c
     src/app-nxvm/devices/dma_bus.c
@@ -1204,13 +1224,13 @@ set(CORE_MACHINE_SOURCES
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
 )
-# CPU/RAM/port primitives used by the one runtime target above. The legacy
+# RAM/port primitives used by the one runtime target above. The legacy
 # target name stays for existing build scripts; new CMake code uses this alias.
 add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-executor PUBLIC x86-fpu x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine-executor PUBLIC x86-cpu x86-fpu x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(vm-machine-frame-smoke
@@ -1289,7 +1309,7 @@ add_executable(core-machine-cpu-context-smoke
     test/app-nxvm/unit/core/devices/cpu_execution_context_smoke.c
 )
 target_link_libraries(core-machine-cpu-context-smoke PRIVATE
-    core-machine
+    x86-cpu
 )
 
 add_executable(core-machine-cpu-fault-diagnostic-smoke
@@ -2009,7 +2029,6 @@ list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
 # unit #UD source cannot silently bypass that classification.
 set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-80286-protected-mode-smoke
-    core-machine-80386-paging-smoke
     core-machine-arpl-s53-smoke
     core-machine-arpl-smoke
     core-machine-bit-scan-smoke
@@ -2106,7 +2125,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-cpu-fpu-profile-closure-smoke)
 
 # A real-mode #UD owner must not rely on an all-zero IVT entry.  The terminal
-# class is discovered from the concrete shared preflight in its owned source;
+# class is discovered from the shared preflight or guest-LIDT marker;
 # the remaining two classes are deliberately explicit because they do not use
 # that rollback helper.  Keep these target lists exact: configure fails if an
 # inventoried owner has no one disposition.
@@ -2151,7 +2170,7 @@ foreach(t337_ud_target IN LISTS PROJECT_T337_UD_UNIT_TEST_TARGETS)
                 set(t337_ud_found TRUE)
             endif()
             if(t337_ud_source_text MATCHES
-                "test_core_machine_fixture_preflight_real_ud_terminal")
+                "test_core_machine_fixture_preflight_real_ud_terminal|T337_REAL_UD_TERMINAL_GUEST_LIDT")
                 set(t337_ud_terminal TRUE)
             endif()
             if(t337_ud_source_text MATCHES "T337_REAL_UD_VECTOR6_DELIVERY")
@@ -3417,8 +3436,8 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/port.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/memory.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/transaction.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/cpu.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/cpu_instructions.c|machine-executor"
+    "x86-cpu|src/app-nxvm/devices/cpu.c|cpu"
+    "x86-cpu|src/app-nxvm/devices/cpu_instructions.c|cpu"
     "core-machine-executor|src/app-nxvm/devices/pic_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/pit_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/dma_bus.c|machine-executor"
@@ -3457,6 +3476,7 @@ file(GENERATE
 set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
     core-machine-executor
+    x86-cpu
     common-machine
     x86-xasm32
     x86-debug
@@ -3503,9 +3523,22 @@ foreach(project_t344_target IN LISTS PROJECT_T344_DIRECT_COMPILE_TARGETS)
         endif()
         file(RELATIVE_PATH project_t344_source
             "${CMAKE_SOURCE_DIR}" "${project_t344_source_path}")
-        if(project_t344_target_strict)
+        get_source_file_property(project_t344_source_options
+            "${project_t344_source_path}" DIRECTORY "${project_t344_target_source_dir}"
+            COMPILE_OPTIONS)
+        set(project_t344_compile_options ${project_t344_target_options}
+            ${project_t344_source_options})
+        set(project_t344_source_strict TRUE)
+        foreach(project_t344_required_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+            list(FIND project_t344_compile_options "${project_t344_required_flag}"
+                project_t344_flag_index)
+            if(project_t344_flag_index EQUAL -1)
+                set(project_t344_source_strict FALSE)
+            endif()
+        endforeach()
+        if(project_t344_source_strict)
             set(project_t344_status retained-strict)
-            set(project_t344_reason target-local-strict-options)
+            set(project_t344_reason target-and-source-strict-options)
         elseif(project_t344_source MATCHES "^src/")
             set(project_t344_status deferred)
             set(project_t344_reason inherited-or-mixed-production-warning-admission)

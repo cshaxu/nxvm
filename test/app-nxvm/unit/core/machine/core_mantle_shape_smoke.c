@@ -5,7 +5,6 @@
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "x86/devices/rtc146818/rtc146818_interface.h"
-#include "../devices/support/core_machine_cpu_fixture.h"
 
 typedef struct mantle_fixture {
     x86_rtc *rtc;
@@ -99,7 +98,7 @@ lib_i32 main(void)
     }
     plan.state.ip = 0x0200u;
     plan.state.sp = 0x1000u;
-    plan.state.eflags = VCPU_EFLAGS_IF;
+    plan.state.eflags = 0x0200u; /* IF: allow the halted CPU to accept interrupts. */
     plan.entry_physical = 0x0200u;
     plan.entry_route = CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
     plan.preloads = &preload;

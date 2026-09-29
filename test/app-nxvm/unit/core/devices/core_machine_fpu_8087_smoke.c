@@ -2,11 +2,10 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/cpu_instructions.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "x86/devices/fpu/fpu_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 #define FPU_TEST_ONE 0x00000100u
 #define FPU_TEST_ZERO 0x00000104u
@@ -15,14 +14,23 @@
 
 typedef struct fpu_test_machine {
     core_machine *machine;
+    lib_status reset_status;
 } fpu_test_machine;
 
 static void fpu_test_reset(void *opaque)
 {
     fpu_test_machine *state = (fpu_test_machine *)opaque;
 
-    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
-        state->machine);
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    };
+    if (state != LIB_NULL) state->reset_status =
+        core_machine_cpu_debug_patch_registers(
+            &state->machine->executor_cpu_execution, &entry);
 }
 
 static const core_machine_execution_provider fpu_test_provider = {
@@ -41,7 +49,8 @@ static lib_i32 fpu_test_prepare(fpu_test_machine *state,
     lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 0;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
-            &fpu_test_provider, state)) {
+            &fpu_test_provider, state) || state->reset_status != LIB_STATUS_OK) {
+        printf("FPU prepare profile=%u reset=%u\n", cpu_profile, state->reset_status);
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
         return 0;
@@ -62,7 +71,11 @@ static lib_i32 fpu_test_run(fpu_test_machine *state, lib_u64 instructions,
     core_machine_run_budget budget = { instructions, 0u };
     core_machine_run_result result;
 
-    if (core_machine_run(state->machine, budget, &result) != expected_status) return 0;
+    if (core_machine_run(state->machine, budget, &result) != expected_status) {
+        printf("FPU run reason=%u detail=%u pc=%x\n", result.reason,
+            result.detail, result.linear_pc);
+        return 0;
+    }
     return out_diagnostic == LIB_NULL || core_machine_get_cpu_diagnostic(
         state->machine, out_diagnostic) == LIB_STATUS_OK;
 }
@@ -149,6 +162,7 @@ static lib_i32 test_unmasked_fwait(void)
     lib_u16 frame[3] = { 0u, 0u, 0u };
     fpu_test_machine state;
     core_machine_cpu_diagnostic diagnostic;
+    core_machine_debug_cpu_snapshot cpu;
     x86_fpu_state fpu_state;
     lib_i32 failed = !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
         X86_FPU_PROFILE_8087);
@@ -159,7 +173,8 @@ static lib_i32 test_unmasked_fwait(void)
         failed |= !fpu_test_write(&state, FPU_TEST_ZERO, &zero, sizeof(zero));
         failed |= !fpu_test_write(&state, FPU_TEST_CONTROL, &unmask_zero_divide,
             sizeof(unmask_zero_divide));
-        state.machine->executor_cpu.data.esp = 0x00008000u;
+        failed |= core_machine_debug_write_register(state.machine,
+            CORE_MACHINE_DEBUG_ESP, 0x00008000u) != LIB_STATUS_OK;
         failed |= !fpu_test_write(&state, 0x0040u, &handler_offset,
             sizeof(handler_offset)) || !fpu_test_write(&state, 0x0042u,
             &handler_segment, sizeof(handler_segment)) || !fpu_test_write(
@@ -168,11 +183,13 @@ static lib_i32 test_unmasked_fwait(void)
         failed |= diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.last_delivered_exception.exception_mask,
-                VCPUINS_EXCEPT_MF) || state.machine->executor_cpu.data.eip !=
-                handler_offset || state.machine->executor_cpu.data.esp !=
-                0x00007ffau || !test_core_machine_fixture_read_linear(
-                state.machine, 0x00007ffau, CORE_MACHINE_REFERENCE_OF(frame),
-                sizeof(frame)) || frame[0] != 14u || frame[1] != 0u;
+                VCPUINS_EXCEPT_MF) ||
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
+            cpu.eip != handler_offset || cpu.esp != 0x00007ffau ||
+            core_machine_debug_read_linear(state.machine, 0x00007ffau,
+                frame, sizeof(frame)) != LIB_STATUS_OK ||
+            frame[0] != 14u || frame[1] != 0u;
         failed |= core_machine_get_fpu_state(state.machine, &fpu_state) !=
             LIB_STATUS_OK || (fpu_state.status_word & 0x0084u) != 0x0084u ||
             !fpu_state.pending_unmasked_exception;
@@ -238,10 +255,16 @@ static lib_i32 test_profile_gates(void)
 
 lib_i32 main(void)
 {
-    lib_i32 failed = test_arithmetic_and_fninit() || test_stack_fault_and_reset() ||
-        test_unmasked_fwait() || test_profile_gates();
+    const lib_i32 arithmetic = test_arithmetic_and_fninit();
+    const lib_i32 stack = test_stack_fault_and_reset();
+    const lib_i32 wait = test_unmasked_fwait();
+    const lib_i32 profiles = test_profile_gates();
 
-    if (failed) return 1;
+    if (arithmetic || stack || wait || profiles) {
+        printf("FPU-8087 arithmetic=%d stack=%d wait=%d profiles=%d\n",
+            arithmetic, stack, wait, profiles);
+        return 1;
+    }
     printf("M5:T262:S3:FPU-8087:OK\n");
     return 0;
 }

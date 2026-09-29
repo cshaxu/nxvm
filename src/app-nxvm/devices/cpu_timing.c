@@ -1,11 +1,7 @@
 #include "lib/types/types_interface.h"
 
-#include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/cpu_timing.h"
-
-static const char *const core_machine_cpu_timing_manifest_keys[] = {
-#include "cpu_timing_manifest_catalog.inc"
-};
 
 static lib_i32 core_machine_cpu_timing_string_odd_word(
     const t_cpuins_data *data, lib_u32 opcode_index)
@@ -27,20 +23,16 @@ static lib_i32 core_machine_cpu_timing_string_odd_word(
         (destination_transfer && (data->oldcpu.data.di & 1u) != 0u);
 }
 
-_Static_assert(sizeof(core_machine_cpu_timing_manifest_keys) /
-    sizeof(core_machine_cpu_timing_manifest_keys[0]) == 4906u,
-    "CPU timing canonical manifest count drifted");
-
 static lib_u32 core_machine_cpu_timing_formula_inputs(
-    const core_machine *machine)
+    const core_machine_cpu_execution_context *context)
 {
     const t_cpuins_data *data;
     lib_u32 prefix;
     lib_u32 opcode_index;
     lib_u32 inputs = 0u;
 
-    if (machine == LIB_NULL) return 0u;
-    data = &machine->executor_cpu_instructions.data;
+    if (context == LIB_NULL) return 0u;
+    data = &context->instructions->data;
     prefix = 0u;
     while (prefix < data->oplen) {
         switch (data->opcodes[prefix]) {
@@ -81,7 +73,7 @@ static lib_u32 core_machine_cpu_timing_formula_inputs(
     if (data->flagLock) inputs |= CORE_MACHINE_CPU_TIMING_INPUT_LOCK;
     if (data->prefix_rep != PREFIX_REP_NONE) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_REPEAT;
-        if (machine->source_timing_repeat_phase !=
+        if (context->timing_result.repeat_phase !=
             CORE_MACHINE_RETIREMENT_REPEAT_NONE) {
             inputs |= CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE;
         }
@@ -99,14 +91,14 @@ static lib_u32 core_machine_cpu_timing_formula_inputs(
         ((data->opcodes[opcode_index + 1u] >> 3u) & 7u) >= 4u) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND;
     }
-    if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
-         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ||
-         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) &&
+    if ((context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
+         context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ||
+         context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) &&
         core_machine_cpu_timing_string_odd_word(data, opcode_index)) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
     }
     if (opcode_index < data->oplen && data->opcodes[opcode_index] == 0x9bu &&
-        x86_fpu_last_wait_ticks(machine->fpu) != 0u) {
+        x86_fpu_last_wait_ticks(context->fpu) != 0u) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_WAIT_TICKS;
     }
     return inputs;
@@ -131,17 +123,17 @@ static lib_i32 core_machine_cpu_timing_is_wait(const t_cpuins_data *data)
     return 0;
 }
 
-static lib_i32 core_machine_cpu_timing_try(core_machine *machine,
+static lib_i32 core_machine_cpu_timing_try(core_machine_cpu_execution_context *context,
     core_machine_cpu_timing_result *result,
     core_machine_retirement_timing_origin origin,
-    lib_i32 (*evaluate)(core_machine *, lib_u64 *))
+    lib_i32 (*evaluate)(core_machine_cpu_execution_context *, lib_u64 *))
 {
     lib_u64 ticks;
 
-    if (evaluate == LIB_NULL || !evaluate(machine, &ticks)) return 0;
+    if (evaluate == LIB_NULL || !evaluate(context, &ticks)) return 0;
     result->ticks = ticks;
     result->retirement_origin = origin;
-    machine->source_timing_origin = origin;
+    context->timing_result.retirement_origin = origin;
     return 1;
 }
 
@@ -149,22 +141,22 @@ static lib_i32 core_machine_cpu_timing_try(core_machine *machine,
  * selector chain.  Candidate evaluators still live at their existing owner
  * during the incremental replacement, but only this profile-private branch
  * may select one for a successful 80186 retirement. */
-static lib_i32 core_machine_cpu_timing_select_80186(core_machine *machine,
+static lib_i32 core_machine_cpu_timing_select_80186(core_machine_cpu_execution_context *context,
     core_machine_cpu_timing_result *result)
 {
-    return core_machine_cpu_timing_try(machine, result,
+    return core_machine_cpu_timing_try(context, result,
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
         core_machine_string_io_source_instruction_cost) ||
-        core_machine_cpu_timing_try(machine, result,
+        core_machine_cpu_timing_try(context, result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
             core_machine_l2_dynamic_arithmetic_model_cost) ||
-        core_machine_cpu_timing_try(machine, result,
+        core_machine_cpu_timing_try(context, result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
             core_machine_primary_source_instruction_cost) ||
-        core_machine_cpu_timing_try(machine, result,
+        core_machine_cpu_timing_try(context, result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK,
             core_machine_control_stack_source_instruction_cost) ||
-        core_machine_cpu_timing_try(machine, result,
+        core_machine_cpu_timing_try(context, result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK,
             core_machine_80186_source_instruction_cost);
 }
@@ -172,22 +164,22 @@ static lib_i32 core_machine_cpu_timing_select_80186(core_machine *machine,
 /* The 80286 has a complete Appendix-B timing ledger.  Keep its candidate
  * selection profile-private: 80386-only candidates and the compatibility
  * endpoint cannot silently supply a successful 80286 retirement. */
-static lib_i32 core_machine_cpu_timing_select_80286(core_machine *machine,
+static lib_i32 core_machine_cpu_timing_select_80286(core_machine_cpu_execution_context *context,
     core_machine_cpu_timing_result *result)
 {
-    return core_machine_cpu_timing_try(machine, result,
+    return core_machine_cpu_timing_try(context, result,
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
         core_machine_string_io_source_instruction_cost) ||
-        core_machine_cpu_timing_try(machine, result,
+        core_machine_cpu_timing_try(context, result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
             core_machine_l2_dynamic_arithmetic_model_cost) ||
-        core_machine_cpu_timing_try(machine, result,
+        core_machine_cpu_timing_try(context, result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
             core_machine_primary_source_instruction_cost) ||
-        core_machine_cpu_timing_try(machine, result,
+        core_machine_cpu_timing_try(context, result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK,
             core_machine_control_stack_source_instruction_cost) ||
-        core_machine_cpu_timing_try(machine, result,
+        core_machine_cpu_timing_try(context, result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK,
             core_machine_80286_source_instruction_cost);
 }
@@ -216,16 +208,16 @@ static lib_i32 core_machine_cpu_timing_has_8086_lock_prefix(
  * applicability is a decoder/semantic question; once a valid instruction
  * has retired and one source row owns its base cost, this sole selector owns
  * the additive clock term. */
-static lib_i32 core_machine_cpu_timing_apply_8086_lock(core_machine *machine,
+static lib_i32 core_machine_cpu_timing_apply_8086_lock(core_machine_cpu_execution_context *context,
     core_machine_cpu_timing_result *result)
 {
     const t_cpuins_data *data;
 
-    if (machine == LIB_NULL || result == LIB_NULL) return 0;
-    if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
-        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8088 &&
-        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) return 1;
-    data = &machine->executor_cpu_instructions.data;
+    if (context == LIB_NULL || result == LIB_NULL) return 0;
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+        context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8088 &&
+        context->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) return 1;
+    data = &context->instructions->data;
     if (!core_machine_cpu_timing_has_8086_lock_prefix(data) ||
         result->source_timing_unallocated) return 1;
     if (result->ticks > UINT64_MAX - 2u) return 0;
@@ -233,88 +225,95 @@ static lib_i32 core_machine_cpu_timing_apply_8086_lock(core_machine *machine,
     return 1;
 }
 
-lib_i32 core_machine_cpu_timing_select(core_machine *machine,
+lib_i32 core_machine_cpu_timing_select(core_machine_cpu_execution_context *context,
     core_machine_cpu_timing_result *out_result)
 {
     core_machine_cpu_timing_result result;
 
-    if (machine == LIB_NULL || out_result == LIB_NULL) return 0;
-    machine->source_timing_unallocated = LIB_FALSE;
-    machine->source_timing_origin =
+    if (context == LIB_NULL || out_result == LIB_NULL) return 0;
+    context->timing_result.source_timing_unallocated = LIB_FALSE;
+    context->timing_result.retirement_origin =
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
-    machine->source_timing_form_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
-    machine->source_timing_key_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
-    machine->source_timing_formula_inputs = 0u;
-    machine->source_timing_repeat_phase = CORE_MACHINE_RETIREMENT_REPEAT_NONE;
+    context->timing_result.form_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    context->timing_result.key_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    context->timing_result.formula_inputs = 0u;
+    context->timing_result.repeat_phase = CORE_MACHINE_RETIREMENT_REPEAT_NONE;
     lib_memory_set(&result, 0, sizeof(result));
 
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
-        if (!core_machine_cpu_timing_try(machine, &result,
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+        if (!core_machine_cpu_timing_try(context, &result,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
                 core_machine_string_io_source_instruction_cost) &&
-            !core_machine_cpu_timing_try(machine, &result,
+            !core_machine_cpu_timing_try(context, &result,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
                 core_machine_l2_dynamic_arithmetic_model_cost) &&
-            !core_machine_cpu_timing_try(machine, &result,
+            !core_machine_cpu_timing_try(context, &result,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
                 core_machine_primary_source_instruction_cost) &&
-            !core_machine_cpu_timing_try(machine, &result,
+            !core_machine_cpu_timing_try(context, &result,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK,
                 core_machine_control_stack_source_instruction_cost) &&
-            !core_machine_cpu_timing_try(machine, &result,
+            !core_machine_cpu_timing_try(context, &result,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY,
                 core_machine_compatibility_instruction_cost)) return 0;
-    } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
-        if (!core_machine_cpu_timing_select_80186(machine, &result)) return 0;
-    } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
-        if (!core_machine_cpu_timing_select_80286(machine, &result)) return 0;
-    } else if (!core_machine_cpu_timing_try(machine, &result,
+    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
+        if (!core_machine_cpu_timing_select_80186(context, &result)) return 0;
+    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+        if (!core_machine_cpu_timing_select_80286(context, &result)) return 0;
+    } else if (!core_machine_cpu_timing_try(context, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
             core_machine_string_io_source_instruction_cost) &&
-        !core_machine_cpu_timing_try(machine, &result,
+        !core_machine_cpu_timing_try(context, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_DYNAMIC_MULTIPLY,
             core_machine_80386_dynamic_multiply_cost) &&
-        !core_machine_cpu_timing_try(machine, &result,
+        !core_machine_cpu_timing_try(context, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
             core_machine_l2_dynamic_arithmetic_model_cost) &&
-        !core_machine_cpu_timing_try(machine, &result,
+        !core_machine_cpu_timing_try(context, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY,
             core_machine_80386_secondary_source_instruction_cost) &&
-        !core_machine_cpu_timing_try(machine, &result,
+        !core_machine_cpu_timing_try(context, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_PRIVILEGED,
             core_machine_80386_privileged_source_instruction_cost) &&
-        !core_machine_cpu_timing_try(machine, &result,
+        !core_machine_cpu_timing_try(context, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
             core_machine_primary_source_instruction_cost) &&
-        !core_machine_cpu_timing_try(machine, &result,
+        !core_machine_cpu_timing_try(context, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK,
             core_machine_control_stack_source_instruction_cost) &&
-        !(machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 &&
-          core_machine_cpu_timing_try(machine, &result,
+        !(context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 &&
+          core_machine_cpu_timing_try(context, &result,
               CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
               core_machine_8086_source_instruction_cost)) &&
-        !(machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
-          core_machine_cpu_timing_try(machine, &result,
+        !(context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+          core_machine_cpu_timing_try(context, &result,
               CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK,
               core_machine_80386_source_instruction_cost)) &&
-        !core_machine_cpu_timing_try(machine, &result,
+        !core_machine_cpu_timing_try(context, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY,
             core_machine_compatibility_instruction_cost)) {
         return 0;
     }
-    if (!core_machine_cpu_timing_apply_8086_lock(machine, &result)) return 0;
-    if (core_machine_cpu_timing_is_wait(&machine->executor_cpu_instructions.data) &&
+    if (!core_machine_cpu_timing_apply_8086_lock(context, &result)) return 0;
+    if (core_machine_cpu_timing_is_wait(&context->instructions->data) &&
         !core_machine_timing_add_ticks(&result.ticks,
-            x86_fpu_last_wait_ticks(machine->fpu))) return 0;
-    result.key_id = machine->source_timing_form_id;
-    result.formula_inputs = core_machine_cpu_timing_formula_inputs(machine);
+            x86_fpu_last_wait_ticks(context->fpu))) return 0;
+    result.key_id = context->timing_result.form_id;
+    result.formula_inputs = core_machine_cpu_timing_formula_inputs(context);
     if (result.retirement_origin ==
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) {
         result.formula_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_CONTROL;
     }
-    result.source_timing_unallocated = machine->source_timing_unallocated;
-    machine->source_timing_key_id = result.key_id;
-    machine->source_timing_formula_inputs = result.formula_inputs;
+    result.source_timing_unallocated = context->timing_result.source_timing_unallocated;
+    result.form_id = context->timing_result.form_id;
+    result.repeat_phase = context->timing_result.repeat_phase;
+    context->timing_result = result;
     *out_result = result;
     return 1;
+}
+
+core_machine_cpu_timing_result core_machine_cpu_capture_timing(
+    const core_machine_cpu_execution_context *context)
+{
+    return context->timing_result;
 }

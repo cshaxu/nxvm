@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -174,6 +175,21 @@ static lib_i32 vm_model_339_floppy_contract(void)
  * refresh counter.  Keep that board-level edge observable through the same
  * CPU retirement path which real firmware uses; a direct advance is not
  * permitted on this profile's physical Core axis. */
+static lib_status vm_model_339_prepare_refresh(core_machine *machine)
+{
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP),
+        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x0500u,
+            [CORE_MACHINE_DEBUG_ESP] = 0xfffeu }
+    };
+    return core_machine_debug_patch_registers(machine, &entry);
+}
+
 static lib_i32 vm_model_339_refresh_polling_is_live(void)
 {
     static const lib_u8 program[] = {
@@ -193,18 +209,8 @@ static lib_i32 vm_model_339_refresh_polling_is_live(void)
         vm_machine_destroy(session);
         return 1;
     }
-    session->core_machine->executor_cpu.data.cs.selector = 0u;
-    session->core_machine->executor_cpu.data.cs.base = 0u;
-    session->core_machine->executor_cpu.data.ds.selector = 0u;
-    session->core_machine->executor_cpu.data.ds.base = 0u;
-    session->core_machine->executor_cpu.data.es.selector = 0u;
-    session->core_machine->executor_cpu.data.es.base = 0u;
-    session->core_machine->executor_cpu.data.ss.selector = 0u;
-    session->core_machine->executor_cpu.data.ss.base = 0u;
-    session->core_machine->executor_cpu.data.eip = 0x0500u;
-    session->core_machine->executor_cpu.data.sp = 0xfffeu;
-    session->core_machine->executor_cpu.data.flagHalt = LIB_FALSE;
-    failed = core_machine_run(session->core_machine, (core_machine_run_budget) {1000u, 0u},
+    failed = vm_model_339_prepare_refresh(session->core_machine) != LIB_STATUS_OK ||
+        core_machine_run(session->core_machine, (core_machine_run_budget) {1000u, 0u},
         &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     vm_machine_destroy(session);
     return failed;
@@ -226,6 +232,7 @@ static lib_i32 vm_model_339_refresh_post_loop_is_calibrated(void)
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
     };
     core_machine_run_result result = {0};
+    core_machine_debug_cpu_snapshot cpu = {0};
     vm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
 
@@ -235,24 +242,15 @@ static lib_i32 vm_model_339_refresh_post_loop_is_calibrated(void)
         vm_machine_destroy(session);
         return 1;
     }
-    session->core_machine->executor_cpu.data.cs.selector = 0u;
-    session->core_machine->executor_cpu.data.cs.base = 0u;
-    session->core_machine->executor_cpu.data.ds.selector = 0u;
-    session->core_machine->executor_cpu.data.ds.base = 0u;
-    session->core_machine->executor_cpu.data.es.selector = 0u;
-    session->core_machine->executor_cpu.data.es.base = 0u;
-    session->core_machine->executor_cpu.data.ss.selector = 0u;
-    session->core_machine->executor_cpu.data.ss.base = 0u;
-    session->core_machine->executor_cpu.data.eip = 0x0500u;
-    session->core_machine->executor_cpu.data.sp = 0xfffeu;
-    session->core_machine->executor_cpu.data.flagHalt = LIB_FALSE;
-    failed = core_machine_run(session->core_machine,
+    failed = vm_model_339_prepare_refresh(session->core_machine) != LIB_STATUS_OK ||
+        core_machine_run(session->core_machine,
         (core_machine_run_budget) {200000u, 0u}, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        session->core_machine->executor_cpu.data.cx < 0xf600u;
+        core_machine_debug_capture_cpu_snapshot(session->core_machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK ||
+        (cpu.ecx & 0xffffu) < 0xf600u;
     if (failed) printf("M5:T516:S2:MODEL339-REFRESH:CX=%04X:EIP=%04X:reason=%u\n",
-        session->core_machine->executor_cpu.data.cx,
-        session->core_machine->executor_cpu.data.eip, result.reason);
+        (unsigned int)(cpu.ecx & 0xffffu), (unsigned int)cpu.eip, result.reason);
     vm_machine_destroy(session);
     return failed;
 }
@@ -270,6 +268,12 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339, .bios_count = 2u
     };
     core_machine_run_result result = {0};
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x0500u }
+    };
+    lib_u32 eax = 0u;
     vm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
 
@@ -279,13 +283,11 @@ static lib_i32 vm_model_339_dma_page_word_io_is_converted(void)
         vm_machine_destroy(session);
         return 1;
     }
-    session->core_machine->executor_cpu.data.cs.selector = 0u;
-    session->core_machine->executor_cpu.data.cs.base = 0u;
-    session->core_machine->executor_cpu.data.eip = 0x0500u;
-    session->core_machine->executor_cpu.data.flagHalt = LIB_FALSE;
-    failed = core_machine_run(session->core_machine, (core_machine_run_budget) {64u, 0u},
+    failed = core_machine_debug_patch_registers(session->core_machine, &entry) !=
+        LIB_STATUS_OK || core_machine_run(session->core_machine, (core_machine_run_budget) {64u, 0u},
         &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        session->core_machine->executor_cpu.data.ax != 0x55aau;
+        core_machine_debug_read_register(session->core_machine,
+            CORE_MACHINE_DEBUG_EAX, &eax) != LIB_STATUS_OK || (eax & 0xffffu) != 0x55aau;
     vm_machine_destroy(session);
     return failed;
 }

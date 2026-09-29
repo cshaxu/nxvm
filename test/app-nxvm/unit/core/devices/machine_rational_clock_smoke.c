@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/clock.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 #define RATIONAL_CLOCK_STEPS 4u
 

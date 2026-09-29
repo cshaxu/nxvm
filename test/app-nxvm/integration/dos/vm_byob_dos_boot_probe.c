@@ -452,20 +452,6 @@ static void vm_byob_fdc_terminal_observe(void *context,
     trace->last_fdc_terminal = *observation;
 }
 
-static void vm_byob_model40_vector_write_observe(void *context,
-    lib_u32 physical, lib_uptr bytes)
-{
-    vm_byob_boot_trace *trace = context;
-
-    if (trace == LIB_NULL || trace->machine == LIB_NULL ||
-        trace->model40_int10_vector_write_observed || physical > 0x0042u ||
-        physical + bytes <= 0x0040u) return;
-    trace->model40_int10_vector_write_observed = LIB_TRUE;
-    trace->model40_int10_vector_write_pc = trace->machine->executor_cpu.data.cs.base +
-        trace->machine->executor_cpu.data.eip;
-    trace->model40_int10_vector_write_cs = trace->machine->executor_cpu.data.cs.selector;
-}
-
 static void vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
     const core_machine_retirement_observation *observation)
 {
@@ -567,22 +553,22 @@ static void vm_byob_retirement_observe(void *context,
                 (lib_u8)observation->io_value;
         }
         trace->kbc_self_test_after_input_ax =
-            (lib_u16)trace->machine->executor_cpu.data.eax;
-        trace->kbc_self_test_after_input_flags = trace->machine->executor_cpu.data.eflags;
+            (lib_u16)observation->current_cpu.eax;
+        trace->kbc_self_test_after_input_flags = observation->current_cpu.eflags;
     } else if (observation->point.linear_pc == 0xf036au) {
         trace->kbc_self_test_after_compare_ax =
-            (lib_u16)trace->machine->executor_cpu.data.eax;
-        trace->kbc_self_test_after_compare_flags = trace->machine->executor_cpu.data.eflags;
+            (lib_u16)observation->current_cpu.eax;
+        trace->kbc_self_test_after_compare_flags = observation->current_cpu.eflags;
     } else if (observation->point.linear_pc == 0xf0370u &&
         trace->kbc_self_test_jne_count < sizeof(trace->kbc_self_test_jne_outcomes)) {
             trace->kbc_self_test_jne_outcomes[trace->kbc_self_test_jne_count++] =
                 (lib_u8)observation->control_outcome;
     }
     if (trace->machine != LIB_NULL && observation->point.linear_pc == 0xf1fefu) {
-        trace->kbc_reset_loop_cx = trace->machine->executor_cpu.data.cx;
+        trace->kbc_reset_loop_cx = (lib_u16)observation->current_cpu.ecx;
         trace->kbc_reset_loop_outcome = (lib_u8)observation->control_outcome;
     } else if (trace->machine != LIB_NULL && observation->point.linear_pc == 0xf1ff1u) {
-        trace->kbc_reset_jcxz_cx = trace->machine->executor_cpu.data.cx;
+        trace->kbc_reset_jcxz_cx = (lib_u16)observation->current_cpu.ecx;
         trace->kbc_reset_jcxz_outcome = (lib_u8)observation->control_outcome;
     }
     if (observation->point.linear_pc >= 0xf1ff0u && observation->point.linear_pc < 0xf2028u &&
@@ -592,7 +578,7 @@ static void vm_byob_retirement_observe(void *context,
             observation->point.linear_pc;
     }
     if (trace->machine != LIB_NULL) {
-        const t_cpu_data_sreg *es = &trace->machine->executor_cpu.data.es;
+        const core_machine_debug_segment_snapshot *es = &observation->current_cpu.es;
 
         ++trace->model40_retirements;
         if (observation->point.linear_pc == 0x000f08f8u) {
@@ -600,11 +586,11 @@ static void vm_byob_retirement_observe(void *context,
             trace->ibm5170_rep_stos_es = es->selector;
             trace->ibm5170_rep_stos_es_base = es->base;
             trace->ibm5170_rep_stos_di = (lib_u16)
-                trace->machine->executor_cpu.data.edi;
+                observation->current_cpu.edi;
             trace->ibm5170_rep_stos_cx = (lib_u16)
-                trace->machine->executor_cpu.data.ecx;
+                observation->current_cpu.ecx;
             trace->ibm5170_rep_stos_ax = (lib_u16)
-                trace->machine->executor_cpu.data.eax;
+                observation->current_cpu.eax;
         }
         if (es->selector != trace->model40_last_es_selector ||
             es->base != trace->model40_last_es_base) {
@@ -614,7 +600,7 @@ static void vm_byob_retirement_observe(void *context,
             trace->model40_es_change_pcs[index] = observation->point.linear_pc;
             trace->model40_es_change_selectors[index] = es->selector;
             trace->model40_es_change_bases[index] = es->base;
-            trace->model40_es_change_cr0[index] = trace->machine->executor_cpu.data.cr0;
+            trace->model40_es_change_cr0[index] = observation->current_cpu.cr0;
             ++trace->model40_es_change_count;
             trace->model40_last_es_selector = es->selector;
             trace->model40_last_es_base = es->base;
@@ -623,47 +609,47 @@ static void vm_byob_retirement_observe(void *context,
     if (observation->point.linear_pc == 0x000c0cd7u && trace->machine != LIB_NULL) {
         ++trace->model40_int10_entry_count;
         trace->model40_int10_entry_predecessor = trace->last_linear_pc;
-        trace->model40_int10_entry_ss = trace->machine->executor_cpu.data.ss.selector;
+        trace->model40_int10_entry_ss = observation->current_cpu.ss.selector;
         trace->model40_int10_entry_sp = (lib_u16)
-            trace->machine->executor_cpu.data.esp;
+            observation->current_cpu.esp;
     }
     if ((observation->point.linear_pc == 0x000c0d2du ||
          observation->point.linear_pc == 0x000c0d30u) && trace->machine != LIB_NULL) {
         trace->model40_int10_iret_frame_observed = LIB_TRUE;
         ++trace->model40_int10_iret_frame_count;
         trace->model40_int10_iret_frame_pc = observation->point.linear_pc;
-        trace->model40_int10_iret_ss = trace->machine->executor_cpu.data.ss.selector;
+        trace->model40_int10_iret_ss = observation->current_cpu.ss.selector;
         trace->model40_int10_iret_sp = (lib_u16)
-            trace->machine->executor_cpu.data.esp;
-        trace->model40_int10_iret_esp = trace->machine->executor_cpu.data.esp;
-        trace->model40_int10_iret_ss_base = trace->machine->executor_cpu.data.ss.base;
-        trace->model40_int10_iret_ss_limit = trace->machine->executor_cpu.data.ss.limit;
-        trace->model40_int10_iret_ss_big = trace->machine->executor_cpu.data.ss.seg.data.big;
+            observation->current_cpu.esp;
+        trace->model40_int10_iret_esp = observation->current_cpu.esp;
+        trace->model40_int10_iret_ss_base = observation->current_cpu.ss.base;
+        trace->model40_int10_iret_ss_limit = observation->current_cpu.ss.limit;
+        trace->model40_int10_iret_ss_big = observation->current_cpu.ss.big;
         trace->model40_int10_iret_cs_default_32 =
-            trace->machine->executor_cpu.data.cs.seg.exec.defsize;
+            observation->current_cpu.cs.defsize;
         (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
-            trace->machine->executor_cpu.data.ss.base + trace->model40_int10_iret_sp,
+            observation->current_cpu.ss.base + trace->model40_int10_iret_sp,
             (lib_uptr)trace->model40_int10_iret_words,
             sizeof(trace->model40_int10_iret_words));
     }
     if (observation->point.linear_pc == 0x000fd7a6u && trace->machine != LIB_NULL) {
         trace->model40_bios_iret_frame_observed = LIB_TRUE;
-        trace->model40_bios_iret_ss = trace->machine->executor_cpu.data.ss.selector;
-        trace->model40_bios_iret_sp = (lib_u16)trace->machine->executor_cpu.data.esp;
+        trace->model40_bios_iret_ss = observation->current_cpu.ss.selector;
+        trace->model40_bios_iret_sp = (lib_u16)observation->current_cpu.esp;
         (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
-            trace->machine->executor_cpu.data.ss.base +
+            observation->current_cpu.ss.base +
                 (lib_u16)(trace->model40_bios_iret_sp - 6u),
             (lib_uptr)trace->model40_bios_iret_words,
             sizeof(trace->model40_bios_iret_words));
     }
     if (!trace->model40_invalid_entry_observed && trace->machine != LIB_NULL &&
-        trace->machine->executor_cpu.data.cs.base + trace->machine->executor_cpu.data.eip ==
+        observation->current_cpu.cs.base + observation->current_cpu.eip ==
             0x000e0cd7u) {
         trace->model40_invalid_entry_observed = LIB_TRUE;
         trace->model40_invalid_entry_source = observation->point;
-        trace->model40_invalid_entry_ss = trace->machine->executor_cpu.data.ss.selector;
+        trace->model40_invalid_entry_ss = observation->current_cpu.ss.selector;
         trace->model40_invalid_entry_sp = (lib_u16)
-            trace->machine->executor_cpu.data.esp;
+            observation->current_cpu.esp;
     }
     if (observation->point.linear_pc >= 0x000c0000u &&
         observation->point.linear_pc < 0x000c4000u) {
@@ -779,7 +765,7 @@ static void vm_byob_retirement_observe(void *context,
         ++trace->ibm5170_refresh_diagnostic_error_branch_taken;
     if (observation->point.linear_pc == 0x000f05b8u && trace->machine != LIB_NULL) {
         trace->ibm5170_refresh_diagnostic_count =
-            (lib_u16)trace->machine->executor_cpu.data.ecx;
+            (lib_u16)observation->current_cpu.ecx;
         trace->ibm5170_refresh_diagnostic_count_valid = 1;
     }
     if (observation->point.linear_pc == 0x000fd1abu &&
@@ -791,14 +777,14 @@ static void vm_byob_retirement_observe(void *context,
         ++trace->model40_memory_parity_error_branches;
     }
     if (observation->point.linear_pc == 0x000fc2d0u && trace->machine != LIB_NULL) {
-        trace->model40_memory_error_es = trace->machine->executor_cpu.data.es.selector;
-        trace->model40_memory_error_di = (lib_u16)trace->machine->executor_cpu.data.edi;
-        trace->model40_memory_error_ax = (lib_u16)trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_error_es = observation->current_cpu.es.selector;
+        trace->model40_memory_error_di = (lib_u16)observation->current_cpu.edi;
+        trace->model40_memory_error_ax = (lib_u16)observation->current_cpu.eax;
     }
     if (observation->point.linear_pc == 0x000fc1a9u && trace->machine != LIB_NULL) {
         ++trace->model40_memory_test_entries;
-        trace->model40_memory_test_dx = (lib_u16)trace->machine->executor_cpu.data.edx;
-        trace->model40_memory_test_ax_entry = (lib_u16)trace->machine->executor_cpu.data.eax;
+        trace->model40_memory_test_dx = (lib_u16)observation->current_cpu.edx;
+        trace->model40_memory_test_ax_entry = (lib_u16)observation->current_cpu.eax;
     }
     if (observation->point.linear_pc == 0x000fc101u) {
         ++trace->model40_memory_pattern_producer_entries;
@@ -813,7 +799,7 @@ static void vm_byob_retirement_observe(void *context,
         (void)x86_video_observe_bus(trace->machine->shared_vadp.chip, &video);
         trace->model40_memory_status_test_active = LIB_TRUE;
         trace->model40_memory_status_test_ax_entry =
-            (lib_u16)trace->machine->executor_cpu.data.eax;
+            (lib_u16)observation->current_cpu.eax;
         trace->model40_memory_status_test_video_memory_disabled =
             video.cpu_memory_disabled;
         trace->model40_memory_status_test_graphics_6 =
@@ -821,9 +807,9 @@ static void vm_byob_retirement_observe(void *context,
         trace->model40_memory_status_test_sequencer_0 =
             video.sequencer_reset;
         trace->model40_memory_status_test_gdtr_base =
-            trace->machine->executor_cpu.data.gdtr.base;
+            observation->current_cpu.gdtr.base;
         trace->model40_memory_status_test_gdtr_limit =
-            trace->machine->executor_cpu.data.gdtr.limit;
+            observation->current_cpu.gdtr.limit;
         (void)core_machine_memory_read(trace->machine,
             trace->model40_memory_status_test_gdtr_base + 0x48u,
             trace->model40_memory_status_test_descriptor,
@@ -841,15 +827,15 @@ static void vm_byob_retirement_observe(void *context,
         trace->model40_memory_error_exit_predecessor = trace->last_linear_pc;
     }
     if (observation->point.linear_pc == 0x000fd1eau && trace->machine != LIB_NULL) {
-        const t_cpu *cpu = &trace->machine->executor_cpu;
+        const core_machine_debug_cpu_snapshot *cpu = &observation->current_cpu;
 
         ++trace->model40_memory_address_failures;
-        trace->model40_memory_address_failure_ds = cpu->data.ds.selector;
-        trace->model40_memory_address_failure_si = (lib_u16)cpu->data.esi;
-        trace->model40_memory_address_failure_eax = cpu->data.eax;
-        trace->model40_memory_address_failure_ebx = cpu->data.ebx;
-        trace->model40_memory_address_failure_ebp = cpu->data.ebp;
-        trace->model40_memory_address_failure_eflags = cpu->data.eflags;
+        trace->model40_memory_address_failure_ds = cpu->ds.selector;
+        trace->model40_memory_address_failure_si = (lib_u16)cpu->esi;
+        trace->model40_memory_address_failure_eax = cpu->eax;
+        trace->model40_memory_address_failure_ebx = cpu->ebx;
+        trace->model40_memory_address_failure_ebp = cpu->ebp;
+        trace->model40_memory_address_failure_eflags = cpu->eflags;
     }
     if (observation->point.linear_pc == 0x000fd14cu) {
         ++trace->model40_ram_post_entries;
@@ -862,7 +848,7 @@ static void vm_byob_retirement_observe(void *context,
         ++trace->model40_resume_entries;
         trace->model40_resume_predecessor = trace->last_linear_pc;
         trace->model40_resume_ax = trace->machine == LIB_NULL ? 0u :
-            (lib_u16)trace->machine->executor_cpu.data.eax;
+            (lib_u16)observation->current_cpu.eax;
     } else if (observation->point.linear_pc == 0x000fb8deu) {
         ++trace->model40_post_setup_entries;
         trace->model40_post_setup_predecessor = trace->last_linear_pc;
@@ -905,16 +891,16 @@ static void vm_byob_retirement_observe(void *context,
         trace->model40_post_status_helper_predecessor = trace->last_linear_pc;
     } else if (observation->point.linear_pc == 0x000fc043u && trace->machine != LIB_NULL) {
         ++trace->model40_memory_address_test_entries;
-        trace->model40_memory_address_test_eflags = trace->machine->executor_cpu.data.eflags;
+        trace->model40_memory_address_test_eflags = observation->current_cpu.eflags;
         (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
-            trace->machine->executor_cpu.data.ds.base + 0x58u,
+            observation->current_cpu.ds.base + 0x58u,
             (lib_uptr)&trace->model40_memory_address_test_status,
             sizeof(trace->model40_memory_address_test_status));
     } else if (observation->point.linear_pc == 0x000fc04bu && trace->machine != LIB_NULL) {
         ++trace->model40_memory_address_error_entries;
         trace->model40_memory_address_error_predecessor = trace->last_linear_pc;
-        trace->model40_memory_address_error_ds = trace->machine->executor_cpu.data.ds.selector;
-        trace->model40_memory_address_error_ds_base = trace->machine->executor_cpu.data.ds.base;
+        trace->model40_memory_address_error_ds = observation->current_cpu.ds.selector;
+        trace->model40_memory_address_error_ds_base = observation->current_cpu.ds.base;
         (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             trace->model40_memory_address_error_ds_base + 0x58u,
             (lib_uptr)&trace->model40_memory_address_error_status,
@@ -924,19 +910,19 @@ static void vm_byob_retirement_observe(void *context,
             trace->model40_memory_pattern_entries % VM_BYOB_MODEL40_MEMORY_BASE_HISTORY);
 
         trace->model40_memory_pattern_bases[history_index] =
-            trace->machine->executor_cpu.data.es.base;
+            observation->current_cpu.es.base;
         if (trace->model40_memory_pattern_entries == 0u) {
-            trace->model40_memory_pattern_es_base = trace->machine->executor_cpu.data.es.base;
+            trace->model40_memory_pattern_es_base = observation->current_cpu.es.base;
             trace->model40_memory_pattern_es_selector =
-                trace->machine->executor_cpu.data.es.selector;
+                observation->current_cpu.es.selector;
         }
         ++trace->model40_memory_pattern_entries;
     } else if (observation->point.linear_pc == 0x000f8738u && trace->machine != LIB_NULL &&
         trace->model40_memory_pattern_after_edi == 0u) {
         trace->model40_memory_pattern_after_es_base =
-            trace->machine->executor_cpu.data.es.base;
-        trace->model40_memory_pattern_after_eax = trace->machine->executor_cpu.data.eax;
-        trace->model40_memory_pattern_after_edi = trace->machine->executor_cpu.data.edi;
+            observation->current_cpu.es.base;
+        trace->model40_memory_pattern_after_eax = observation->current_cpu.eax;
+        trace->model40_memory_pattern_after_edi = observation->current_cpu.edi;
         {
             const lib_u32 physical =
                 trace->model40_memory_pattern_after_es_base +
@@ -950,22 +936,22 @@ static void vm_byob_retirement_observe(void *context,
             }
         }
     } else if (observation->point.linear_pc == 0x000fc1cbu && trace->machine != LIB_NULL) {
-        lib_u32 physical = trace->machine->executor_cpu.data.es.base +
-            (lib_u16)((trace->machine->executor_cpu.data.edi - 2u) & 0xffffu);
+        lib_u32 physical = observation->current_cpu.es.base +
+            (lib_u16)((observation->current_cpu.edi - 2u) & 0xffffu);
         const lib_size history_index = (lib_size)(
             trace->model40_memory_compare_failures % VM_BYOB_MODEL40_MEMORY_BASE_HISTORY);
 
         trace->model40_memory_compare_bases[history_index] =
-            trace->machine->executor_cpu.data.es.base;
+            observation->current_cpu.es.base;
         ++trace->model40_memory_compare_failures;
-        trace->model40_memory_compare_eax = trace->machine->executor_cpu.data.eax;
-        trace->model40_memory_compare_edi = trace->machine->executor_cpu.data.edi;
-        trace->model40_memory_compare_es_base = trace->machine->executor_cpu.data.es.base;
+        trace->model40_memory_compare_eax = observation->current_cpu.eax;
+        trace->model40_memory_compare_edi = observation->current_cpu.edi;
+        trace->model40_memory_compare_es_base = observation->current_cpu.es.base;
         trace->model40_memory_compare_es_selector =
-            trace->machine->executor_cpu.data.es.selector;
-        trace->model40_memory_compare_cr0 = trace->machine->executor_cpu.data.cr0;
-        trace->model40_memory_compare_gdtr_base = trace->machine->executor_cpu.data.gdtr.base;
-        trace->model40_memory_compare_gdtr_limit = trace->machine->executor_cpu.data.gdtr.limit;
+            observation->current_cpu.es.selector;
+        trace->model40_memory_compare_cr0 = observation->current_cpu.cr0;
+        trace->model40_memory_compare_gdtr_base = observation->current_cpu.gdtr.base;
+        trace->model40_memory_compare_gdtr_limit = observation->current_cpu.gdtr.limit;
         (void)core_machine_memory_read(trace->machine,
             trace->model40_memory_compare_gdtr_base + 0x48u,
             trace->model40_memory_compare_descriptor,
@@ -977,20 +963,20 @@ static void vm_byob_retirement_observe(void *context,
                 sizeof(trace->model40_memory_compare_value));
         }
         ++trace->model40_memory_scas_entries;
-        trace->model40_memory_scas_ax = (lib_u16)trace->machine->executor_cpu.data.eax;
-        trace->model40_memory_scas_di = (lib_u16)trace->machine->executor_cpu.data.edi;
-        trace->model40_memory_scas_es = trace->machine->executor_cpu.data.es.selector;
-        trace->model40_memory_scas_es_base = trace->machine->executor_cpu.data.es.base;
-        trace->model40_memory_scas_eflags = trace->machine->executor_cpu.data.eflags;
+        trace->model40_memory_scas_ax = (lib_u16)observation->current_cpu.eax;
+        trace->model40_memory_scas_di = (lib_u16)observation->current_cpu.edi;
+        trace->model40_memory_scas_es = observation->current_cpu.es.selector;
+        trace->model40_memory_scas_es_base = observation->current_cpu.es.base;
+        trace->model40_memory_scas_eflags = observation->current_cpu.eflags;
     } else if (observation->point.linear_pc == 0x000fc1ccu &&
         observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN &&
         trace->machine != LIB_NULL) {
         ++trace->model40_memory_compare_branch_taken;
-        trace->model40_memory_compare_eax = trace->machine->executor_cpu.data.eax;
-        trace->model40_memory_compare_edi = trace->machine->executor_cpu.data.edi;
+        trace->model40_memory_compare_eax = observation->current_cpu.eax;
+        trace->model40_memory_compare_edi = observation->current_cpu.edi;
         trace->model40_memory_compare_es_selector =
-            trace->machine->executor_cpu.data.es.selector;
-        trace->model40_memory_compare_es_base = trace->machine->executor_cpu.data.es.base;
+            observation->current_cpu.es.selector;
+        trace->model40_memory_compare_es_base = observation->current_cpu.es.base;
         {
             const lib_u32 physical = trace->model40_memory_compare_es_base +
                 (lib_u16)((trace->model40_memory_compare_edi - 2u) & 0xffffu);
@@ -1004,14 +990,14 @@ static void vm_byob_retirement_observe(void *context,
         }
     } else if (observation->point.linear_pc == 0x000fc207u &&
         trace->machine != LIB_NULL) {
-        const lib_u32 physical = trace->machine->executor_cpu.data.es.base +
-            (lib_u16)trace->machine->executor_cpu.data.edi;
+        const lib_u32 physical = observation->current_cpu.es.base +
+            (lib_u16)observation->current_cpu.edi;
 
         ++trace->model40_memory_mismatch_entries;
-        trace->model40_memory_mismatch_ax = (lib_u16)trace->machine->executor_cpu.data.eax;
-        trace->model40_memory_mismatch_di = (lib_u16)trace->machine->executor_cpu.data.edi;
-        trace->model40_memory_mismatch_es = trace->machine->executor_cpu.data.es.selector;
-        trace->model40_memory_mismatch_es_base = trace->machine->executor_cpu.data.es.base;
+        trace->model40_memory_mismatch_ax = (lib_u16)observation->current_cpu.eax;
+        trace->model40_memory_mismatch_di = (lib_u16)observation->current_cpu.edi;
+        trace->model40_memory_mismatch_es = observation->current_cpu.es.selector;
+        trace->model40_memory_mismatch_es_base = observation->current_cpu.es.base;
         trace->model40_memory_b_window_writes_at_mismatch =
             trace->model40_memory_b_window_writes;
         trace->model40_memory_b_window_last_pc_at_mismatch =
@@ -1022,15 +1008,15 @@ static void vm_byob_retirement_observe(void *context,
         if (trace->model40_memory_status_test_active) {
             ++trace->model40_memory_status_test_mismatches;
             trace->model40_memory_status_test_expected =
-                (lib_u16)trace->machine->executor_cpu.data.eax;
+                (lib_u16)observation->current_cpu.eax;
             trace->model40_memory_status_test_offset =
-                (lib_u16)trace->machine->executor_cpu.data.edi;
+                (lib_u16)observation->current_cpu.edi;
             trace->model40_memory_status_test_es =
-                trace->machine->executor_cpu.data.es.selector;
+                observation->current_cpu.es.selector;
             trace->model40_memory_status_test_es_base =
-                trace->machine->executor_cpu.data.es.base;
+                observation->current_cpu.es.base;
             trace->model40_memory_status_test_cr0 =
-                trace->machine->executor_cpu.data.cr0;
+                observation->current_cpu.cr0;
             (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
                 trace->model40_memory_status_test_es_base +
                     trace->model40_memory_status_test_offset,
@@ -1042,7 +1028,7 @@ static void vm_byob_retirement_observe(void *context,
         trace->machine != LIB_NULL) {
         ++trace->model40_memory_test_return_entries;
         trace->model40_memory_test_return_ax =
-            (lib_u16)trace->machine->executor_cpu.data.eax;
+            (lib_u16)observation->current_cpu.eax;
     } else if ((observation->point.linear_pc == 0x000f85b4u ||
         observation->point.linear_pc == 0x000fbc8au ||
         observation->point.linear_pc == 0x000fbcf3u ||
@@ -1089,34 +1075,34 @@ static void vm_byob_retirement_observe(void *context,
     }
     if (!trace->real_286_high_flags_observed && trace->machine != LIB_NULL &&
         trace->machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
-        (trace->machine->executor_cpu.data.cr0 & VCPU_CR0_PE) == 0u &&
-        (trace->machine->executor_cpu.data.eflags & 0xf000u) != 0u) {
+        (observation->current_cpu.cr0 & VCPU_CR0_PE) == 0u &&
+        (observation->current_cpu.eflags & 0xf000u) != 0u) {
         trace->real_286_high_flags_observed = LIB_TRUE;
         trace->real_286_high_flags_point = observation->point;
-        trace->real_286_high_flags_value = trace->machine->executor_cpu.data.eflags;
+        trace->real_286_high_flags_value = observation->current_cpu.eflags;
     }
     if (trace->machine != LIB_NULL &&
-        (trace->machine->executor_cpu.data.cs.base +
-            trace->machine->executor_cpu.data.eip == 0x0001450fu ||
-         trace->machine->executor_cpu.data.cs.base +
-            trace->machine->executor_cpu.data.eip == 0x000145efu)) {
+        (observation->current_cpu.cs.base +
+            observation->current_cpu.eip == 0x0001450fu ||
+         observation->current_cpu.cs.base +
+            observation->current_cpu.eip == 0x000145efu)) {
         const lib_u8 index = (lib_u8)(
             trace->near_ud_count % VM_BYOB_NEAR_UD_HISTORY);
 
         trace->near_ud_history[index] = observation->point;
         trace->near_ud_eflags[index] = trace->machine == LIB_NULL ? 0u :
-            trace->machine->executor_cpu.data.eflags;
+            observation->current_cpu.eflags;
         trace->near_ud_eax[index] = trace->machine == LIB_NULL ? 0u :
-            trace->machine->executor_cpu.data.eax;
+            observation->current_cpu.eax;
         trace->near_ud_ebx[index] = trace->machine == LIB_NULL ? 0u :
-            trace->machine->executor_cpu.data.ebx;
+            observation->current_cpu.ebx;
         ++trace->near_ud_count;
     }
     if (observation->point.linear_pc == trace->int15_linear &&
             trace->machine != LIB_NULL) {
         ++trace->int15_calls;
         trace->last_int15_ah = (lib_u8)(
-            trace->machine->executor_cpu.data.eax >> 8u);
+            observation->current_cpu.eax >> 8u);
         if (trace->last_int15_ah == 0x24u) trace->int15_ah_seen |= 0x01u;
         if (trace->last_int15_ah == 0x87u) trace->int15_ah_seen |= 0x02u;
         if (trace->last_int15_ah == 0x88u) trace->int15_ah_seen |= 0x04u;
@@ -1132,22 +1118,22 @@ static void vm_byob_retirement_observe(void *context,
             observation->point.bytes[0u] == 0x9cu && trace->machine != LIB_NULL) {
         ++trace->pushf_calls;
         trace->last_pushf_high = (lib_u16)(
-            trace->machine->executor_cpu.data.eflags & 0xf000u);
+            observation->current_cpu.eflags & 0xf000u);
     }
     if (observation->point.linear_pc == 0x00007cebu) {
         if (trace->machine != LIB_NULL) {
-            const lib_u16 ds = trace->machine->executor_cpu.data.ds.selector;
-            const lib_u16 es = trace->machine->executor_cpu.data.es.selector;
-            const lib_u16 si = (lib_u16)trace->machine->executor_cpu.data.esi;
-            const lib_u16 di = (lib_u16)trace->machine->executor_cpu.data.edi;
+            const lib_u16 ds = observation->current_cpu.ds.selector;
+            const lib_u16 es = observation->current_cpu.es.selector;
+            const lib_u16 si = (lib_u16)observation->current_cpu.esi;
+            const lib_u16 di = (lib_u16)observation->current_cpu.edi;
 
             trace->boot_loader_ds = ds;
             trace->boot_loader_es = es;
             trace->boot_loader_si = si;
             trace->boot_loader_di = di;
-            trace->boot_loader_cx = (lib_u16)trace->machine->executor_cpu.data.ecx;
+            trace->boot_loader_cx = (lib_u16)observation->current_cpu.ecx;
             trace->boot_loader_flags =
-                (lib_u16)trace->machine->executor_cpu.data.eflags;
+                (lib_u16)observation->current_cpu.eflags;
             (void)core_machine_memory_read(trace->machine, (lib_u32)ds * 16u + si,
                 trace->boot_loader_left, sizeof(trace->boot_loader_left));
             (void)core_machine_memory_read(trace->machine, (lib_u32)es * 16u + di,
@@ -1164,7 +1150,7 @@ static void vm_byob_retirement_observe(void *context,
     if (observation->point.linear_pc == 0x00007d30u && trace->machine != LIB_NULL) {
         trace->boot_loader_read_return_observed = LIB_TRUE;
         trace->boot_loader_read_return_flags =
-            (lib_u16)trace->machine->executor_cpu.data.eflags;
+            (lib_u16)observation->current_cpu.eflags;
         (void)core_machine_memory_read(trace->machine, 0x003eu,
             trace->boot_loader_int13_state, sizeof(trace->boot_loader_int13_state));
     }
@@ -1341,11 +1327,14 @@ static void vm_byob_model40_memory_write_observe(void *context,
     lib_u32 physical, lib_uptr bytes)
 {
     vm_byob_boot_trace *trace = (vm_byob_boot_trace *)context;
+    core_machine_cpu_state cpu;
     lib_u32 pc;
 
-    if (trace == LIB_NULL) return;
-    pc = trace->machine == LIB_NULL ? 0u : trace->machine->executor_cpu.data.cs.base +
-        trace->machine->executor_cpu.data.eip;
+    if (trace == LIB_NULL || trace->machine == LIB_NULL) return;
+    /* This synchronous board callback observes the write-time PC, not the
+     * previous retirement. It cannot execute or mutate the borrowed CPU. */
+    core_machine_cpu_capture_state(&trace->machine->executor_cpu_execution, &cpu);
+    pc = cpu.cs_base + cpu.eip;
     if (physical <= 0x00000042u &&
         (lib_u64)physical + bytes > 0x00000040u) {
         const lib_size index = (lib_size)(trace->model40_int10_vector_write_count %
@@ -1354,8 +1343,7 @@ static void vm_byob_model40_memory_write_observe(void *context,
         trace->model40_int10_vector_write_observed = LIB_TRUE;
         ++trace->model40_int10_vector_write_count;
         trace->model40_int10_vector_write_pc = pc;
-        trace->model40_int10_vector_write_cs =
-            trace->machine->executor_cpu.data.cs.selector;
+        trace->model40_int10_vector_write_cs = cpu.cs;
         (void)core_machine_memory_read_physical(&trace->machine->executor_memory,
             0x00000040u,
             (lib_uptr)&trace->model40_int10_vector_offset,
@@ -1365,8 +1353,7 @@ static void vm_byob_model40_memory_write_observe(void *context,
             (lib_uptr)&trace->model40_int10_vector_segment,
             sizeof(trace->model40_int10_vector_segment));
         trace->model40_int10_vector_history_pc[index] = pc;
-        trace->model40_int10_vector_history_cs[index] =
-            trace->machine->executor_cpu.data.cs.selector;
+        trace->model40_int10_vector_history_cs[index] = cpu.cs;
         trace->model40_int10_vector_history_offset[index] =
             trace->model40_int10_vector_offset;
         trace->model40_int10_vector_history_segment[index] =
@@ -1639,6 +1626,7 @@ int main(lib_i32 argc, char **argv)
     core_machine_run_result result;
     x86_video_snapshot snapshot;
     core_machine_cpu_diagnostic diagnostic;
+    core_machine_debug_cpu_snapshot current_cpu;
     core_machine_trace_provider trace_provider;
     vm_byob_boot_trace trace = {0};
     ULONGLONG started;
@@ -1809,8 +1797,6 @@ int main(lib_i32 argc, char **argv)
         printf("BOOT-PROBE=setup-failed\n");
         goto done;
     }
-    (void)core_machine_register_memory_write_observer(session->core_machine,
-        vm_byob_model40_vector_write_observe, &trace);
     /* This is probe-only observability after construction; the FDC retains the
        sole terminal event path and no guest-visible state is changed. */
     session->core_machine->fdc.connect.observation_provider =
@@ -1852,7 +1838,7 @@ int main(lib_i32 argc, char **argv)
             lib_u8 fault_bytes[4] = {0u};
             lib_u8 far_pointer[6] = {0u};
             lib_u8 descriptor[8] = {0u};
-            const t_cpu *fault_cpu = &session->core_machine->executor_cpu;
+            core_machine_debug_cpu_snapshot fault_cpu;
 
             (void)core_machine_memory_read_physical(&session->core_machine->executor_memory,
                 result.linear_pc, (lib_uptr)fault_bytes, sizeof(fault_bytes));
@@ -1866,10 +1852,13 @@ int main(lib_i32 argc, char **argv)
             printf("BOOT-PROBE=fault-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)fault_bytes[0u], (unsigned int)fault_bytes[1u],
                 (unsigned int)fault_bytes[2u], (unsigned int)fault_bytes[3u]);
-            printf("BOOT-PROBE=cpu-cr0=%08X-cs=%04X-base=%08X-eip=%08X-gdt=%08X/%08X\n",
-                (unsigned int)fault_cpu->data.cr0, (unsigned int)fault_cpu->data.cs.selector,
-                (unsigned int)fault_cpu->data.cs.base, (unsigned int)fault_cpu->data.eip,
-                (unsigned int)fault_cpu->data.gdtr.base, (unsigned int)fault_cpu->data.gdtr.limit);
+            if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &fault_cpu) == LIB_STATUS_OK) {
+                printf("BOOT-PROBE=cpu-cr0=%08X-cs=%04X-base=%08X-eip=%08X-gdt=%08X/%08X\n",
+                    (unsigned int)fault_cpu.cr0, (unsigned int)fault_cpu.cs.selector,
+                    (unsigned int)fault_cpu.cs.base, (unsigned int)fault_cpu.eip,
+                    (unsigned int)fault_cpu.gdtr.base, (unsigned int)fault_cpu.gdtr.limit);
+            }
             printf("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
                 (unsigned int)session->core_machine->d4_memory.control,
                 (unsigned int)session->core_machine->d4_memory.ram_setup);
@@ -2055,6 +2044,11 @@ int main(lib_i32 argc, char **argv)
         }
         if (GetTickCount64() - progress >= no_progress_limit) {
             if (waiting_for_interrupt) {
+                if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+                        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK) {
+                    printf("BOOT-PROBE=waiting-cpu-snapshot-unavailable\n");
+                    goto done;
+                }
                 if (!waiting_with_deadline) printf("BOOT-PROBE=waiting-no-deadline\n");
                 else if (waiting_interrupts_enabled)
                     printf("BOOT-PROBE=waiting-deadline-if-enabled\n");
@@ -2065,10 +2059,10 @@ int main(lib_i32 argc, char **argv)
                 printf("BOOT-PROBE=waiting-linear-pc=%05X\n",
                     (unsigned int)waiting_linear_pc);
                 printf("BOOT-PROBE=post-message-offset=%04X\n",
-                    (unsigned int)session->core_machine->executor_cpu.data.bp);
+                    (unsigned int)(lib_u16)current_cpu.ebp);
                 if (core_machine_memory_read(session->core_machine,
-                        session->core_machine->executor_cpu.data.ss.base +
-                        session->core_machine->executor_cpu.data.sp + 2u,
+                        current_cpu.ss.base +
+                        (lib_u16)current_cpu.esp + 2u,
                         &post_caller_offset, sizeof(post_caller_offset)) == LIB_STATUS_OK) {
                     printf("BOOT-PROBE=post-caller-offset=%04X\n",
                         (unsigned int)post_caller_offset);
@@ -2087,8 +2081,8 @@ int main(lib_i32 argc, char **argv)
                         (unsigned int)post_manufacturing_error_flag);
                 }
                 printf("BOOT-PROBE=post-bl=%02X-post-flags=%04X\n",
-                    (unsigned int)(session->core_machine->executor_cpu.data.ebx & 0xffu),
-                    (unsigned int)(session->core_machine->executor_cpu.data.eflags & 0xffffu));
+                    (unsigned int)(current_cpu.ebx & 0xffu),
+                    (unsigned int)(current_cpu.eflags & 0xffffu));
                 {
                     x86_dma_signals dma = x86_dma_get_signals(
                         session->core_machine->shared_dma_primary.device);
@@ -2166,10 +2160,13 @@ int main(lib_i32 argc, char **argv)
     printf("BOOT-PROBE=run-count=%llu-last-reason=%u-wait-advanced=%u\n",
         (unsigned long long)run_count, (unsigned int)last_reason,
         (unsigned int)last_wait_advanced);
-    printf("BOOT-PROBE=last-detail=%08X-cs=%08X-ip=%08X\n",
-        (unsigned int)last_detail,
-        (unsigned int)session->core_machine->executor_cpu.data.cs.base,
-        (unsigned int)session->core_machine->executor_cpu.data.eip);
+    if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) == LIB_STATUS_OK) {
+        printf("BOOT-PROBE=last-detail=%08X-cs=%08X-ip=%08X\n",
+            (unsigned int)last_detail,
+            (unsigned int)current_cpu.cs.base,
+            (unsigned int)current_cpu.eip);
+    }
     printf("BOOT-PROBE=last-retired-pc=%05X\n",
         (unsigned int)trace.last_linear_pc);
     if (diagnostic.last_delivered_exception.valid) {
@@ -2228,6 +2225,12 @@ done:
         lib_u8 int13_state[5] = {0u};
         lib_u8 next_instruction_bytes[8] = {0u};
 
+        if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK) {
+            printf("BOOT-PROBE=final-cpu-snapshot-unavailable\n");
+            exit_code = 1;
+            goto cleanup;
+        }
         lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
         core_machine_cpu_diagnostic_capture(session->core_machine, &diagnostic);
         if (diagnostic.first_fault.valid) {
@@ -2236,10 +2239,10 @@ done:
             lib_u8 descriptor[8] = {0u};
             lib_u8 idt_descriptor[8] = {0u};
             const lib_u32 descriptor_linear =
-                session->core_machine->executor_cpu.data.gdtr.base +
+                current_cpu.gdtr.base +
                 (diagnostic.first_fault.exception_code & 0xfff8u);
             const lib_u32 idt_linear =
-                session->core_machine->executor_cpu.data.idtr.base + 0x68u;
+                current_cpu.idtr.base + 0x68u;
 
             printf("BOOT-PROBE=first-fault-mask=%08X-code=%08X-pc=%05X-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)diagnostic.first_fault.exception_mask,
@@ -2252,22 +2255,22 @@ done:
             (void)core_machine_memory_read(session->core_machine, idt_linear,
                 idt_descriptor, sizeof(idt_descriptor));
             printf("BOOT-PROBE=first-fault-gdtr=%05X/%04X-selector=%04X-desc=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
-                (unsigned int)session->core_machine->executor_cpu.data.gdtr.base,
-                (unsigned int)session->core_machine->executor_cpu.data.gdtr.limit,
+                (unsigned int)current_cpu.gdtr.base,
+                (unsigned int)current_cpu.gdtr.limit,
                 (unsigned int)(diagnostic.first_fault.exception_code & 0xffffu),
                 (unsigned int)descriptor[0u], (unsigned int)descriptor[1u],
                 (unsigned int)descriptor[2u], (unsigned int)descriptor[3u],
                 (unsigned int)descriptor[4u], (unsigned int)descriptor[5u],
                 (unsigned int)descriptor[6u], (unsigned int)descriptor[7u]);
             printf("BOOT-PROBE=first-fault-idtr=%05X/%04X-vector13=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
-                (unsigned int)session->core_machine->executor_cpu.data.idtr.base,
-                (unsigned int)session->core_machine->executor_cpu.data.idtr.limit,
+                (unsigned int)current_cpu.idtr.base,
+                (unsigned int)current_cpu.idtr.limit,
                 (unsigned int)idt_descriptor[0u], (unsigned int)idt_descriptor[1u],
                 (unsigned int)idt_descriptor[2u], (unsigned int)idt_descriptor[3u],
                 (unsigned int)idt_descriptor[4u], (unsigned int)idt_descriptor[5u],
                 (unsigned int)idt_descriptor[6u], (unsigned int)idt_descriptor[7u]);
             (void)core_machine_memory_read(session->core_machine,
-                session->core_machine->executor_cpu.data.gdtr.base + 0x30u,
+                current_cpu.gdtr.base + 0x30u,
                 descriptor, sizeof(descriptor));
             printf("BOOT-PROBE=debug-gdt-30=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)descriptor[0u], (unsigned int)descriptor[1u],
@@ -2507,13 +2510,13 @@ done:
                 (unsigned int)next_instruction_bytes[7u]);
         }
         printf("BOOT-PROBE=final-cx=%04X-dx=%04X-di=%04X-ds=%04X-es=%04X-ax=%04X-bp=%04X\n",
-            (unsigned int)(session->core_machine->executor_cpu.data.ecx & 0xffffu),
-            (unsigned int)(session->core_machine->executor_cpu.data.edx & 0xffffu),
-            (unsigned int)(session->core_machine->executor_cpu.data.edi & 0xffffu),
-            (unsigned int)session->core_machine->executor_cpu.data.ds.selector,
-            (unsigned int)session->core_machine->executor_cpu.data.es.selector,
-            (unsigned int)(session->core_machine->executor_cpu.data.eax & 0xffffu),
-            (unsigned int)(session->core_machine->executor_cpu.data.ebp & 0xffffu));
+            (unsigned int)(current_cpu.ecx & 0xffffu),
+            (unsigned int)(current_cpu.edx & 0xffffu),
+            (unsigned int)(current_cpu.edi & 0xffffu),
+            (unsigned int)current_cpu.ds.selector,
+            (unsigned int)current_cpu.es.selector,
+            (unsigned int)(current_cpu.eax & 0xffffu),
+            (unsigned int)(current_cpu.ebp & 0xffffu));
         printf("PIT:out0=%u:out1=%u\n",
             (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 0u),
             (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 1u));
@@ -3226,12 +3229,12 @@ done:
         }
         }
         if (core_machine_memory_read_physical(&session->core_machine->executor_memory,
-                session->core_machine->executor_cpu.data.ss.base +
-                    (session->core_machine->executor_cpu.data.esp & 0xffffu),
+                current_cpu.ss.base +
+                    (current_cpu.esp & 0xffffu),
                 (lib_uptr)stack_words, sizeof(stack_words)) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=stack-ss=%04X-sp=%04X-words=%04X,%04X,%04X,%04X,%04X,%04X,%04X,%04X\n",
-                (unsigned int)session->core_machine->executor_cpu.data.ss.selector,
-                (unsigned int)(session->core_machine->executor_cpu.data.esp & 0xffffu),
+                (unsigned int)current_cpu.ss.selector,
+                (unsigned int)(current_cpu.esp & 0xffffu),
                 (unsigned int)stack_words[0u], (unsigned int)stack_words[1u],
                 (unsigned int)stack_words[2u], (unsigned int)stack_words[3u],
                 (unsigned int)stack_words[4u], (unsigned int)stack_words[5u],
@@ -3358,6 +3361,7 @@ done:
                 (unsigned int)port_61, (unsigned int)port_87);
         }
     }
+cleanup:
     if (session != LIB_NULL && session->core_machine != LIB_NULL) {
         (void)core_machine_set_trace_provider(session->core_machine, LIB_NULL);
     }

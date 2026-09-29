@@ -2,10 +2,10 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/cpu.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 static lib_i32 core_machine_port_b_exclusivity(void)
 {
@@ -131,20 +131,23 @@ lib_i32 main(void)
         !speaker.configured || !speaker.timer_gate || !speaker.data_enabled ||
         speaker.output != speaker.timer_output;
 
+    if (!failed) failed |= test_core_machine_fixture_nmi_prepare(machine);
     if (!failed) failed |= core_machine_bus_write(machine, 0x0061u, 0x03u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0070u, 0x80u) !=
             LIB_STATUS_OK || core_machine_report_d4_iochk_fault(machine) !=
             LIB_STATUS_OK || core_machine_get_d4_platform_observation(machine,
             &observation) != LIB_STATUS_OK || !observation.iochk_latched ||
-        observation.nmi_signaled || machine->executor_cpu.data.flagNMI ||
+        observation.nmi_signaled ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
-        value != 0x53u || core_machine_bus_write(machine, 0x0070u, 0u) !=
+        value != 0x53u || test_core_machine_fixture_nmi_execute(machine, LIB_FALSE) ||
+        core_machine_bus_write(machine, 0x0070u, 0u) !=
             LIB_STATUS_OK || core_machine_get_d4_platform_observation(machine,
             &observation) != LIB_STATUS_OK || !observation.nmi_signaled ||
-        !machine->executor_cpu.data.flagNMI;
+        test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
     if (!failed) printf("M5:T386:S4:D4-NMI-MASK:OK\n");
 
     if (!failed) failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
+        test_core_machine_fixture_nmi_prepare(machine) ||
         core_machine_bus_write(machine, 0x0061u, 0u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0064u, 0xd0u) != LIB_STATUS_OK ||
         core_machine_bus_read(machine, 0x0060u, &value) != LIB_STATUS_OK || value != 1u ||
@@ -155,22 +158,25 @@ lib_i32 main(void)
         core_machine_get_d4_platform_observation(machine, &observation) !=
             LIB_STATUS_OK || !observation.failsafe_enabled ||
         !observation.failsafe_latched || !observation.nmi_signaled ||
-        !machine->executor_cpu.data.flagNMI ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
-        value != 0x90u;
+        value != 0x90u || test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
     if (!failed) printf("M5:T386:S4:D4-FAILSAFE-ROUTE:OK\n");
 
     if (!failed) {
         core_machine_run_result result;
+        core_machine_cpu_state cpu;
         lib_u64 elapsed_before_shutdown;
 
         elapsed_before_shutdown = machine->elapsed_ticks;
+        failed |= core_machine_debug_write_register(machine,
+            CORE_MACHINE_DEBUG_EIP, 0x0000fff0u) != LIB_STATUS_OK ||
+            !core_machine_cpu_is_halted(&machine->executor_cpu_execution);
         core_machine_cpu_execution_request_shutdown(&machine->executor_cpu_execution);
-        machine->executor_cpu.data.flagHalt = LIB_TRUE;
         failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},
             &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_RESET_REQUESTED ||
-            machine->executor_cpu.data.eip != 0x0000fff0u ||
+            core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK ||
+            cpu.eip != 0x0000fff0u ||
             machine->elapsed_ticks != elapsed_before_shutdown ||
             core_machine_get_d4_platform_observation(machine, &observation) !=
                 LIB_STATUS_OK || !observation.failsafe_enabled ||
@@ -180,9 +186,10 @@ lib_i32 main(void)
         core_machine_get_d4_platform_observation(machine, &observation) !=
             LIB_STATUS_OK || observation.iochk_enabled || observation.failsafe_enabled ||
         observation.iochk_latched || observation.failsafe_latched ||
-        observation.nmi_signaled || machine->executor_cpu.data.flagNMI ||
+        observation.nmi_signaled ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
-        value != 0x1fu;
+        value != 0x1fu || test_core_machine_fixture_nmi_prepare(machine) ||
+        test_core_machine_fixture_nmi_execute(machine, LIB_FALSE);
     if (!failed) failed |= core_machine_port_b_exclusivity();
     core_machine_destroy(machine);
     if (failed) return 1;

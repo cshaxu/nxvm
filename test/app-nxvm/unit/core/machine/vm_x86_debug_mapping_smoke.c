@@ -36,6 +36,8 @@ lib_i32 main(void)
     common_machine_debug_lease lease;
     x86_debug_response result;
     lib_u32 register_id;
+    lib_u32 watch_address;
+    lib_u8 watch_enabled;
     lib_u8 byte = 0x5au;
     vm_machine_debug_stop_reason stop_reason;
     lib_u64 executed;
@@ -104,13 +106,16 @@ lib_i32 main(void)
             .operation = X86_DEBUG_SET_WATCH,
             .watch_kind = X86_DEBUG_WATCH_READ,
             .address = 0x600u
-        }, &result) || !machine->core_machine->executor_cpu_instructions.data.flagWR ||
-        machine->core_machine->executor_cpu_instructions.data.wrLinear != 0x600u)
+        }, &result) || core_machine_debug_get_watchpoint(machine->core_machine,
+            CORE_MACHINE_DEBUG_WATCH_READ, &watch_enabled, &watch_address) !=
+            LIB_STATUS_OK || !watch_enabled || watch_address != 0x600u)
         goto failed;
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
             .operation = X86_DEBUG_CLEAR_WATCH,
             .watch_kind = X86_DEBUG_WATCH_READ
-        }, &result) || machine->core_machine->executor_cpu_instructions.data.flagWR)
+        }, &result) || core_machine_debug_get_watchpoint(machine->core_machine,
+            CORE_MACHINE_DEBUG_WATCH_READ, &watch_enabled, &watch_address) !=
+            LIB_STATUS_OK || watch_enabled)
         goto failed;
     if (!vm_debug_execute(machine, &lease, &(x86_debug_request){
             .operation = X86_DEBUG_SET_WATCH,

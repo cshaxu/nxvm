@@ -18,8 +18,6 @@ extern "C" {
 
 typedef struct core_machine_pic_bus core_machine_pic_bus;
 typedef struct t_ram t_ram;
-typedef struct core_machine_cpu_execution_context
-    core_machine_cpu_execution_context;
 
 #define CORE_MACHINE_KBC_COMMAND_TRANSLATION 0x40u
 #define CORE_MACHINE_KBC_COMMAND_IRQ12 0x02u
@@ -40,7 +38,8 @@ typedef struct t_kbc_connect {
     core_machine_pic_irq_source irq1_source;
     core_machine_pic_irq_source irq12_source;
     t_ram *memory;
-    core_machine_cpu_execution_context *execution;
+    void (*request_reset)(void *context);
+    void *reset_context;
 } t_kbc_connect;
 
 typedef struct t_kbc {
@@ -51,7 +50,8 @@ typedef struct t_kbc {
 lib_status core_machine_kbc_initialize(t_kbc *controller, t_port *port);
 void core_machine_kbc_bind_core_services(t_kbc *controller, core_machine_pic_bus *pic_master,
     core_machine_pic_bus *pic_slave, t_ram *memory,
-    core_machine_cpu_execution_context *execution, lib_u8 aux_present);
+    void (*request_reset)(void *context), void *reset_context,
+    lib_u8 aux_present);
 void core_machine_kbc_set_input_port(t_kbc *controller, lib_u8 value);
 void core_machine_kbc_set_reset_output_port(t_kbc *controller,
     lib_u8 value);

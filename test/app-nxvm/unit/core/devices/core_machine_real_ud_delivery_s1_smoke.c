@@ -2,9 +2,8 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/cpu.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
 
 /* T337_REAL_UD_VECTOR6_DELIVERY: this owner proves the shared real #UD path. */
 
@@ -23,18 +22,6 @@ typedef struct real_ud_case {
     core_machine_cpu_profile profile;
 } real_ud_case;
 
-static void real_ud_reset(void *opaque)
-{
-    real_ud_machine *state = (real_ud_machine *)opaque;
-
-    if (state != LIB_NULL)
-        (void)test_core_machine_fixture_reset_real_mode(state->machine);
-}
-
-static const core_machine_execution_provider real_ud_provider = {
-    real_ud_reset, LIB_NULL
-};
-
 static lib_i32 real_ud_prepare(real_ud_machine *state,
     const real_ud_case *test_case, lib_u16 idtr_limit)
 {
@@ -46,15 +33,45 @@ static lib_i32 real_ud_prepare(real_ud_machine *state,
     };
     const lib_u16 handler_offset = REAL_UD_HANDLER_OFFSET;
     const lib_u16 handler_segment = 0u;
-    t_cpu *cpu;
+    static const lib_u8 load_idtr[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x04u };
+    const lib_u8 idtr[] = { (lib_u8)idtr_limit, (lib_u8)(idtr_limit >> 8u),
+        0u, 0u, 0u, 0u };
+    const core_machine_debug_register_patch setup = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x0300u }
+    };
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+        .values = { [CORE_MACHINE_DEBUG_EIP] = REAL_UD_CODE_OFFSET,
+            [CORE_MACHINE_DEBUG_ESP] = REAL_UD_STACK_OFFSET,
+            [CORE_MACHINE_DEBUG_EAX] = 0x12340000u,
+            [CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_CF |
+                CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF }
+    };
+    core_machine_run_result result;
 
     if (state == LIB_NULL || test_case == LIB_NULL) return 0;
     config.cpu_profile = test_case->profile;
     lib_memory_set(state, 0, sizeof(*state));
-    if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
-            &real_ud_provider, state, &state->machine) ||
-        !test_core_machine_fixture_prepare_real_mode_execution(state->machine,
-            REAL_UD_CODE_OFFSET) ||
+    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
+        core_machine_reset(state->machine) != LIB_STATUS_OK ||
+        core_machine_debug_patch_registers(state->machine, &setup) != LIB_STATUS_OK ||
+        core_machine_memory_write(state->machine, 0x0300u, load_idtr,
+            sizeof(load_idtr)) != LIB_STATUS_OK ||
+        core_machine_memory_write(state->machine, 0x0400u, idtr,
+            sizeof(idtr)) != LIB_STATUS_OK ||
+        core_machine_run(state->machine, (core_machine_run_budget){1u, 0u},
+            &result) != LIB_STATUS_OK || result.executed != 1u ||
+        result.reason != CORE_MACHINE_STOP_BUDGET ||
+        core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, REAL_UD_CODE_OFFSET,
             test_case->program, test_case->bytes) !=
             LIB_STATUS_OK ||
@@ -70,22 +87,18 @@ static lib_i32 real_ud_prepare(real_ud_machine *state,
         state->machine = LIB_NULL;
         return 0;
     }
-    cpu = &state->machine->executor_cpu;
-    cpu->data.idtr.limit = idtr_limit;
-    cpu->data.esp = REAL_UD_STACK_OFFSET;
-    cpu->data.eax = 0x12340000u;
-    cpu->data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF;
     return 1;
 }
 
 static lib_i32 real_ud_run(real_ud_machine *state, lib_u32 budget,
-    lib_status *status, core_machine_run_result *result, t_cpu *after,
+    lib_status *status, core_machine_run_result *result, core_machine_debug_cpu_snapshot *after,
     core_machine_cpu_diagnostic *diagnostic)
 {
     *status = core_machine_run(state->machine,
         (core_machine_run_budget){ budget, 0u }, result);
-    *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
+    return core_machine_debug_capture_cpu_snapshot(state->machine,
+        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, after) == LIB_STATUS_OK &&
+        core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
         LIB_STATUS_OK;
 }
 
@@ -95,37 +108,38 @@ static lib_i32 real_ud_test_delivery_case(const real_ud_case *test_case)
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     lib_u16 frame[3] = { 0u, 0u, 0u };
-    t_cpu before;
-    t_cpu after;
+    core_machine_debug_cpu_snapshot before = {0};
+    core_machine_debug_cpu_snapshot after = {0};
     lib_status status;
     lib_i32 failed = !real_ud_prepare(&state, test_case,
         REAL_UD_VECTOR * 4u + 3u);
 
     if (!failed) {
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= !real_ud_run(&state, 1u, &status, &result, &after,
             &diagnostic) || status != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.last_delivered_exception.exception_mask,
-                VCPUINS_EXCEPT_UD) || after.data.eip !=
-            REAL_UD_HANDLER_OFFSET || after.data.esp !=
-            ((before.data.esp & 0xffff0000u) |
-                (lib_u16)(before.data.esp - 6u)) ||
-            after.data.eflags != (before.data.eflags &
-                ~(VCPU_EFLAGS_IF | VCPU_EFLAGS_TF)) ||
-            !test_core_machine_fixture_read_linear(state.machine,
-                after.data.ss.base + (lib_u16)after.data.esp,
-                CORE_MACHINE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] !=
-            REAL_UD_CODE_OFFSET || frame[1] != before.data.cs.selector ||
-            frame[2] != (lib_u16)((before.data.eflags &
-                ~VCPU_EFLAGS_RESERVED) | 0x02u);
+                VCPUINS_EXCEPT_UD) || after.eip !=
+            REAL_UD_HANDLER_OFFSET || after.esp !=
+            ((before.esp & 0xffff0000u) |
+                (lib_u16)(before.esp - 6u)) ||
+            after.eflags != (before.eflags &
+                ~(CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF)) ||
+            core_machine_debug_read_linear(state.machine,
+                after.ss.base + (lib_u16)after.esp,
+                frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] !=
+            REAL_UD_CODE_OFFSET || frame[1] != before.cs.selector ||
+            frame[2] != (lib_u16)((before.eflags &
+                0x00037fd5u) | 0x02u);
         failed |= !real_ud_run(&state, 2u, &status, &result, &after,
             &diagnostic) || status != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            after.data.eip != REAL_UD_HANDLER_OFFSET + 2u ||
-            after.data.eax != before.data.eax + 1u;
+            after.eip != REAL_UD_HANDLER_OFFSET + 2u ||
+            after.eax != before.eax + 1u;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -161,27 +175,29 @@ static lib_i32 real_ud_test_delivery_failure(void)
     real_ud_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    t_cpu before;
-    t_cpu after;
+    core_machine_debug_cpu_snapshot before = {0};
+    core_machine_debug_cpu_snapshot after = {0};
     lib_status status;
     lib_i32 failed = !real_ud_prepare(&state, &test_case,
         REAL_UD_VECTOR * 4u - 1u);
 
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
-            VCPU_EFLAGS_IF;
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_debug_write_register(state.machine,
+            CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF |
+            CORE_MACHINE_DEBUG_EFLAGS_IF) != LIB_STATUS_OK;
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= !real_ud_run(&state, 1u, &status, &result, &after,
             &diagnostic) || status != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT ||
             !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            diagnostic.last_delivered_exception.valid || after.data.eip !=
-            before.data.eip || after.data.esp != before.data.esp ||
-            after.data.eax != before.data.eax || after.data.eflags !=
-            before.data.eflags || lib_memory_compare(&after.data.cs, &before.data.cs,
-                sizeof(after.data.cs)) != 0 || lib_memory_compare(&after.data.ss,
-                &before.data.ss, sizeof(after.data.ss)) != 0;
+            diagnostic.last_delivered_exception.valid || after.eip !=
+            before.eip || after.esp != before.esp ||
+            after.eax != before.eax || after.eflags !=
+            before.eflags || lib_memory_compare(&after.cs, &before.cs,
+                sizeof(after.cs)) != 0 || lib_memory_compare(&after.ss,
+                &before.ss, sizeof(after.ss)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;

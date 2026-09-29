@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 #define RESET_LINEAR 0xfffffff0u
 #define RESET_PHYSICAL 0x000ffff0u

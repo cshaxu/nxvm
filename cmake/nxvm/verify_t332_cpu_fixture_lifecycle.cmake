@@ -33,7 +33,15 @@ function(project_t332_require_shared_lifecycle source)
         message(FATAL_ERROR "T332 CPU fixture source is missing: ${source}")
     endif()
     file(READ "${path}" content)
-    if(NOT "${content}" MATCHES "core_machine_cpu_fixture.h" OR
+    if(source STREQUAL "test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c")
+        if(NOT content MATCHES "support/cpu_bus_fixture[.]h" OR
+            NOT content MATCHES "cpu_bus_prepare" OR
+            content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
+            message(FATAL_ERROR "CPU-local FLAGS test must use its chip fixture without board lifecycle")
+        endif()
+        return()
+    endif()
+    if(NOT "${content}" MATCHES "core_machine_(cpu|board)_fixture[.]h" OR
         NOT "${content}" MATCHES
         "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)")
         message(FATAL_ERROR "T332 CPU fixture source omits shared setup: ${source}")
@@ -79,4 +87,4 @@ if(NOT project_t332_positive MATCHES "test_core_machine_fixture_(create_bind_fre
     message(FATAL_ERROR "T332 CPU fixture lifecycle verifier self-check failed.")
 endif()
 
-message(STATUS "T332 CPU fixture lifecycle closure passed: 47 owner smokes use the shared bind/freeze setup.")
+message(STATUS "T332 CPU fixture lifecycle closure passed: 47 owners use board lifecycle or the CPU-local FLAGS fixture.")

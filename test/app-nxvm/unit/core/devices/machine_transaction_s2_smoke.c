@@ -7,7 +7,7 @@
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/transaction.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 typedef struct transaction_probe {
     core_machine_trace_event events[256];

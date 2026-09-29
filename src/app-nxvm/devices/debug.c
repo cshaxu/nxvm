@@ -29,45 +29,16 @@ lib_status core_machine_debug_read_cpu(
                core_machine_get_cpu_state(machine, out_state) : status;
 }
 
-static void core_machine_debug_copy_segment(
-    core_machine_debug_segment_snapshot *out_segment,
-    const t_cpu_data_sreg *source)
-{
-    if (out_segment == LIB_NULL || source == LIB_NULL) return;
-    *out_segment = (core_machine_debug_segment_snapshot) {
-        .selector = source->selector, .base = source->base,
-        .limit = source->limit, .dpl = source->dpl, .type = source->sys.type,
-        .accessed = source->seg.accessed, .executable = source->seg.executable,
-        .conform = source->seg.exec.conform, .readable = source->seg.exec.readable,
-        .defsize = source->seg.exec.defsize, .big = source->seg.data.big,
-        .expdown = source->seg.data.expdown, .writable = source->seg.data.writable
-    };
-}
-
 lib_status core_machine_debug_capture_cpu_snapshot(const core_machine *machine,
+    core_machine_cpu_snapshot_point point,
     core_machine_debug_cpu_snapshot *out_snapshot)
 {
     lib_status status = core_machine_debug_require_boundary(machine);
-    const t_cpu *cpu;
 
     if (out_snapshot == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (status != LIB_STATUS_OK) return status;
-    cpu = &machine->executor_cpu;
-    lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
-    core_machine_debug_copy_segment(&out_snapshot->es, &cpu->data.es);
-    core_machine_debug_copy_segment(&out_snapshot->cs, &cpu->data.cs);
-    core_machine_debug_copy_segment(&out_snapshot->ss, &cpu->data.ss);
-    core_machine_debug_copy_segment(&out_snapshot->ds, &cpu->data.ds);
-    core_machine_debug_copy_segment(&out_snapshot->fs, &cpu->data.fs);
-    core_machine_debug_copy_segment(&out_snapshot->gs, &cpu->data.gs);
-    core_machine_debug_copy_segment(&out_snapshot->tr, &cpu->data.tr);
-    core_machine_debug_copy_segment(&out_snapshot->ldtr, &cpu->data.ldtr);
-    core_machine_debug_copy_segment(&out_snapshot->gdtr, &cpu->data.gdtr);
-    core_machine_debug_copy_segment(&out_snapshot->idtr, &cpu->data.idtr);
-    out_snapshot->cr0 = cpu->data.cr0;
-    out_snapshot->cr2 = cpu->data.cr2;
-    out_snapshot->cr3 = cpu->data.cr3;
-    return LIB_STATUS_OK;
+    return status == LIB_STATUS_OK ?
+        core_machine_cpu_debug_capture_snapshot(&machine->executor_cpu_execution,
+            point, out_snapshot) : status;
 }
 
 lib_status core_machine_debug_read_memory(
@@ -105,99 +76,24 @@ lib_status core_machine_debug_continue(
                core_machine_run(machine, budget, out_result) : status;
 }
 
-lib_status core_machine_debug_capture_instruction_observation(
-    const core_machine *machine,
+lib_status core_machine_debug_capture_instruction_observation(const core_machine *machine,
     core_machine_debug_instruction_observation *out_observation)
 {
     lib_status status = core_machine_debug_require_boundary(machine);
-    const t_cpu *cpu;
-    const t_cpuins_data *instructions;
-    lib_size index;
 
-    if (status != LIB_STATUS_OK || out_observation == LIB_NULL) return
-        status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
-    cpu = &machine->executor_cpu;
-    instructions = &machine->executor_cpu_instructions.data;
-    lib_memory_set(out_observation, 0, sizeof(*out_observation));
-    out_observation->cs = cpu->data.cs.selector;
-    out_observation->ss = cpu->data.ss.selector;
-    out_observation->ds = cpu->data.ds.selector;
-    out_observation->es = cpu->data.es.selector;
-    out_observation->fs = cpu->data.fs.selector;
-    out_observation->gs = cpu->data.gs.selector;
-    out_observation->cs_base = cpu->data.cs.base;
-    out_observation->ss_base = cpu->data.ss.base;
-    out_observation->eip = cpu->data.eip;
-    out_observation->esp = cpu->data.esp;
-    out_observation->eax = cpu->data.eax;
-    out_observation->ecx = cpu->data.ecx;
-    out_observation->edx = cpu->data.edx;
-    out_observation->ebx = cpu->data.ebx;
-    out_observation->ebp = cpu->data.ebp;
-    out_observation->esi = cpu->data.esi;
-    out_observation->edi = cpu->data.edi;
-    out_observation->eflags = cpu->data.eflags;
-    out_observation->code_default_size = cpu->data.cs.seg.exec.defsize;
-    out_observation->instruction_cs = instructions->reccs;
-    out_observation->instruction_eip = instructions->receip;
-    out_observation->instruction_linear = instructions->linear;
-    out_observation->instruction_byte_count = instructions->oplen;
-    lib_memory_copy(out_observation->instruction_bytes, instructions->opcodes,
-        sizeof(out_observation->instruction_bytes));
-    out_observation->memory_access_count = instructions->msize <
-        CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY ? instructions->msize :
-        CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY;
-    for (index = 0u; index < out_observation->memory_access_count; ++index) {
-        out_observation->memory_accesses[index].write =
-            instructions->mem[index].flagWrite;
-        out_observation->memory_accesses[index].linear =
-            instructions->mem[index].linear;
-        out_observation->memory_accesses[index].bytes =
-            instructions->mem[index].byte;
-        out_observation->memory_accesses[index].data =
-            instructions->mem[index].data;
-    }
-    out_observation->watch_hit = instructions->watch_hit;
-    out_observation->watch_kind = (core_machine_debug_watch_kind)
-        instructions->watch_kind;
-    out_observation->watch_address = instructions->watch_address;
-    return LIB_STATUS_OK;
+    return status == LIB_STATUS_OK ?
+        core_machine_cpu_debug_capture_instruction(&machine->executor_cpu_execution,
+            out_observation) : status;
 }
 
 lib_status core_machine_debug_read_register(const core_machine *machine,
     core_machine_debug_register register_id, lib_u32 *out_value)
 {
     lib_status status = core_machine_debug_require_boundary(machine);
-    const t_cpu *cpu;
 
-    if (status != LIB_STATUS_OK || out_value == LIB_NULL) return
-        status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
-    cpu = &machine->executor_cpu;
-    switch (register_id) {
-    case CORE_MACHINE_DEBUG_EAX: *out_value = cpu->data.eax; break;
-    case CORE_MACHINE_DEBUG_ECX: *out_value = cpu->data.ecx; break;
-    case CORE_MACHINE_DEBUG_EDX: *out_value = cpu->data.edx; break;
-    case CORE_MACHINE_DEBUG_EBX: *out_value = cpu->data.ebx; break;
-    case CORE_MACHINE_DEBUG_ESP: *out_value = cpu->data.esp; break;
-    case CORE_MACHINE_DEBUG_EBP: *out_value = cpu->data.ebp; break;
-    case CORE_MACHINE_DEBUG_ESI: *out_value = cpu->data.esi; break;
-    case CORE_MACHINE_DEBUG_EDI: *out_value = cpu->data.edi; break;
-    case CORE_MACHINE_DEBUG_EIP: *out_value = cpu->data.eip; break;
-    case CORE_MACHINE_DEBUG_EFLAGS: *out_value = cpu->data.eflags; break;
-    case CORE_MACHINE_DEBUG_ES: *out_value = cpu->data.es.selector; break;
-    case CORE_MACHINE_DEBUG_CS: *out_value = cpu->data.cs.selector; break;
-    case CORE_MACHINE_DEBUG_SS: *out_value = cpu->data.ss.selector; break;
-    case CORE_MACHINE_DEBUG_DS: *out_value = cpu->data.ds.selector; break;
-    case CORE_MACHINE_DEBUG_FS: *out_value = cpu->data.fs.selector; break;
-    case CORE_MACHINE_DEBUG_GS: *out_value = cpu->data.gs.selector; break;
-    case CORE_MACHINE_DEBUG_CR0: *out_value = cpu->data.cr0; break;
-    case CORE_MACHINE_DEBUG_CR1: *out_value = cpu->data.cr1; break;
-    case CORE_MACHINE_DEBUG_CR2: *out_value = cpu->data.cr2; break;
-    case CORE_MACHINE_DEBUG_CR3: *out_value = cpu->data.cr3; break;
-    case CORE_MACHINE_DEBUG_CR4: *out_value = cpu->data.cr4; break;
-    default: return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    return LIB_STATUS_OK;
+    return status == LIB_STATUS_OK ?
+        core_machine_cpu_debug_read_register(&machine->executor_cpu_execution,
+            register_id, out_value) : status;
 }
 
 lib_status core_machine_debug_write_register(core_machine *machine,
@@ -212,79 +108,14 @@ lib_status core_machine_debug_write_register(core_machine *machine,
     return core_machine_debug_patch_registers(machine, &patch);
 }
 
-static lib_i32 core_machine_debug_patch_segment(
-    core_machine_cpu_execution_context *context, t_cpu *cpu,
-    core_machine_debug_register register_id, lib_u32 value)
-{
-    switch (register_id) {
-    case CORE_MACHINE_DEBUG_ES:
-        return core_machine_cpu_execution_load_segment(context, &cpu->data.es,
-            (lib_u16)value);
-    case CORE_MACHINE_DEBUG_CS:
-        return core_machine_cpu_execution_load_segment(context, &cpu->data.cs,
-            (lib_u16)value);
-    case CORE_MACHINE_DEBUG_SS:
-        return core_machine_cpu_execution_load_segment(context, &cpu->data.ss,
-            (lib_u16)value);
-    case CORE_MACHINE_DEBUG_DS:
-        return core_machine_cpu_execution_load_segment(context, &cpu->data.ds,
-            (lib_u16)value);
-    case CORE_MACHINE_DEBUG_FS:
-        return core_machine_cpu_execution_load_segment(context, &cpu->data.fs,
-            (lib_u16)value);
-    case CORE_MACHINE_DEBUG_GS:
-        return core_machine_cpu_execution_load_segment(context, &cpu->data.gs,
-            (lib_u16)value);
-    default: return 0;
-    }
-}
-
 lib_status core_machine_debug_patch_registers(core_machine *machine,
     const core_machine_debug_register_patch *patch)
 {
-    const lib_u32 valid_mask =
-        (1u << CORE_MACHINE_DEBUG_REGISTER_COUNT) - 1u;
-    core_machine_cpu_execution_context candidate_context;
-    t_cpu candidate_cpu;
     lib_status status = core_machine_debug_require_boundary(machine);
-    core_machine_debug_register register_id;
 
-    if (status != LIB_STATUS_OK || patch == LIB_NULL) return
-        status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
-    if (patch->mask == 0u || (patch->mask & ~valid_mask) != 0u)
-        return LIB_STATUS_INVALID_ARGUMENT;
-    candidate_cpu = machine->executor_cpu;
-    candidate_context = machine->executor_cpu_execution;
-    candidate_context.cpu = &candidate_cpu;
-    for (register_id = CORE_MACHINE_DEBUG_EAX;
-         register_id < CORE_MACHINE_DEBUG_REGISTER_COUNT; ++register_id) {
-        if ((patch->mask & CORE_MACHINE_DEBUG_REGISTER_MASK(register_id)) == 0u)
-            continue;
-        switch (register_id) {
-        case CORE_MACHINE_DEBUG_EAX: candidate_cpu.data.eax = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_ECX: candidate_cpu.data.ecx = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_EDX: candidate_cpu.data.edx = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_EBX: candidate_cpu.data.ebx = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_ESP: candidate_cpu.data.esp = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_EBP: candidate_cpu.data.ebp = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_ESI: candidate_cpu.data.esi = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_EDI: candidate_cpu.data.edi = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_EIP: candidate_cpu.data.eip = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_EFLAGS: candidate_cpu.data.eflags = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_CR0: candidate_cpu.data.cr0 = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_CR1: candidate_cpu.data.cr1 = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_CR2: candidate_cpu.data.cr2 = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_CR3: candidate_cpu.data.cr3 = patch->values[register_id]; break;
-        case CORE_MACHINE_DEBUG_CR4: candidate_cpu.data.cr4 = patch->values[register_id]; break;
-        default:
-            if (core_machine_debug_patch_segment(&candidate_context,
-                    &candidate_cpu, register_id, patch->values[register_id]))
-                return LIB_STATUS_INVALID_STATE;
-            break;
-        }
-    }
-    machine->executor_cpu = candidate_cpu;
-    return LIB_STATUS_OK;
+    return status == LIB_STATUS_OK ?
+        core_machine_cpu_debug_patch_registers(&machine->executor_cpu_execution,
+            patch) : status;
 }
 
 lib_status core_machine_debug_get_code_default_size(const core_machine *machine,
@@ -408,52 +239,10 @@ lib_status core_machine_debug_get_watchpoint(core_machine *machine,
     return LIB_STATUS_OK;
 }
 
-static void core_machine_cpu_diagnostic_copy_point(
-    core_machine_cpu_execution_point *point, const t_cpu *cpu,
-    const t_cpuins *instructions, lib_u8 fault_origin)
-{
-    const t_cpu *source;
-
-    if (point == LIB_NULL || cpu == LIB_NULL || instructions == LIB_NULL) return;
-    source = fault_origin ? &instructions->data.oldcpu : cpu;
-    point->cs = source->data.cs.selector;
-    point->cs_base = source->data.cs.base;
-    point->eip = source->data.eip;
-    point->linear_pc = instructions->data.linear;
-    point->byte_count = (lib_u8)instructions->data.oplen;
-    lib_memory_copy(point->bytes, instructions->data.opcodes, sizeof(point->bytes));
-}
-
-static void core_machine_cpu_diagnostic_record_snapshot(
-    core_machine_cpu_fault_snapshot *snapshot, const t_cpu *cpu,
-    const t_cpuins *instructions)
-{
-    if (snapshot == LIB_NULL || cpu == LIB_NULL || instructions == LIB_NULL) return;
-    lib_memory_set(snapshot, 0, sizeof(*snapshot));
-    snapshot->valid = 1;
-    snapshot->exception_mask = instructions->data.except;
-    snapshot->exception_code = instructions->data.excode;
-    core_machine_cpu_diagnostic_copy_point(&snapshot->point, cpu, instructions,
-        LIB_TRUE);
-    snapshot->eax = cpu->data.eax;
-    snapshot->ebx = cpu->data.ebx;
-    snapshot->ecx = cpu->data.ecx;
-    snapshot->edx = cpu->data.edx;
-    snapshot->cr2 = cpu->data.cr2;
-    snapshot->esp = cpu->data.esp;
-    snapshot->ss = cpu->data.ss.selector;
-    snapshot->ss_base = cpu->data.ss.base;
-    snapshot->ebp = cpu->data.ebp;
-    snapshot->esi = cpu->data.esi;
-    snapshot->edi = cpu->data.edi;
-    snapshot->eflags = cpu->data.eflags;
-}
-
 static void core_machine_cpu_diagnostic_record_instruction(void *opaque,
-    const void *opaque_cpu, const t_cpuins *instructions)
+    const core_machine_cpu_instruction_observation *observation)
 {
     core_machine *machine = (core_machine *)opaque;
-    const t_cpu *cpu = (const t_cpu *)opaque_cpu;
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED
     core_machine_cpu_diagnostic_state *state;
 #endif
@@ -464,8 +253,7 @@ static void core_machine_cpu_diagnostic_record_instruction(void *opaque,
     /* Recent instruction history is a development diagnostic.  The retained
      * runtime debugger reads the current machine state through its explicit
      * copied operations, while faults retain their own snapshots below. */
-    core_machine_cpu_diagnostic_copy_point(
-        &state->snapshot.recent[state->next_index], cpu, instructions, LIB_FALSE);
+    state->snapshot.recent[state->next_index] = observation->point;
     state->next_index = (state->next_index + 1u) % CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY;
     if (state->snapshot.recent_count < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY) {
         ++state->snapshot.recent_count;
@@ -477,39 +265,36 @@ static void core_machine_cpu_diagnostic_record_instruction(void *opaque,
      * keep the zero-overhead path. */
     if (machine->retirement_observation.provider.callback != LIB_NULL ||
         machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL) {
-        core_machine_retirement_observation_capture_instruction(machine, cpu,
-            instructions);
+        core_machine_retirement_observation_capture_instruction(machine, observation);
     }
 }
 
 static void core_machine_cpu_diagnostic_record_fault(void *opaque,
-    const void *opaque_cpu, const t_cpuins *instructions)
+    const core_machine_cpu_fault_snapshot *snapshot)
 {
     core_machine *machine = (core_machine *)opaque;
-    const t_cpu *cpu = (const t_cpu *)opaque_cpu;
     core_machine_cpu_fault_snapshot *fault;
 
-    if (machine == LIB_NULL || cpu == LIB_NULL || instructions == LIB_NULL) return;
+    if (machine == LIB_NULL || snapshot == LIB_NULL) return;
     fault = &machine->cpu_diagnostic.snapshot.first_fault;
     if (fault->valid) return;
-    core_machine_cpu_diagnostic_record_snapshot(fault, cpu, instructions);
+    *fault = *snapshot;
     (void)core_machine_report_fault(machine, fault->exception_mask);
 }
 
 static void core_machine_cpu_diagnostic_record_delivered_exception(
-    void *opaque, const void *opaque_cpu, const t_cpuins *instructions)
+    void *opaque, const core_machine_cpu_fault_snapshot *snapshot)
 {
     core_machine *machine = (core_machine *)opaque;
-    const t_cpu *cpu = (const t_cpu *)opaque_cpu;
     core_machine_cpu_fault_snapshot *exception;
 
-    if (machine == LIB_NULL || cpu == LIB_NULL || instructions == LIB_NULL) return;
+    if (machine == LIB_NULL || snapshot == LIB_NULL) return;
     exception = &machine->cpu_diagnostic.snapshot.first_delivered_exception;
     if (!exception->valid) {
-        core_machine_cpu_diagnostic_record_snapshot(exception, cpu, instructions);
+        *exception = *snapshot;
     }
     exception = &machine->cpu_diagnostic.snapshot.last_delivered_exception;
-    core_machine_cpu_diagnostic_record_snapshot(exception, cpu, instructions);
+    *exception = *snapshot;
     machine->cpu_diagnostic.snapshot.delivered_exception_count++;
 }
 

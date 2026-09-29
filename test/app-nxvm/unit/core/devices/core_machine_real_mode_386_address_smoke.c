@@ -1,11 +1,10 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 #define TEST_RESET_LINEAR 0xfffffff0u
 #define TEST_RESET_PHYSICAL 0x000ffff0u

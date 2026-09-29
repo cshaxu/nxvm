@@ -2,12 +2,11 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/cpu_instructions.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory_interface.h"
 #include "app-nxvm/devices/port_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 /* T337_REAL_UD_VECTOR6_DELIVERY: the corpus installs and observes vector 6. */
 
@@ -203,7 +202,7 @@ static lib_i32 corpus_test_int_iret(void)
         failed |= corpus_run_to_ud(machine, program, sizeof(program), &fault);
         failed |= (fault.eax & 0xffffu) != 0x1234u ||
             (fault.esp & 0xffffu) != 0x1000u ||
-            !CORE_MACHINE_BIT_IS_SET(fault.eflags, VCPU_EFLAGS_CF);
+            !CORE_MACHINE_BIT_IS_SET(fault.eflags, CORE_MACHINE_DEBUG_EFLAGS_CF);
     }
     core_machine_destroy(machine);
     return failed;

@@ -5,11 +5,6 @@
 
 
 
-static lib_u32 core_machine_trace_linear_pc(const core_machine *machine)
-{
-    return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
-}
-
 static void core_machine_trace_flush(core_machine *machine)
 {
     core_machine_trace_state *trace = &machine->trace;
@@ -97,7 +92,7 @@ void core_machine_trace_record(
     event->sequence = trace->next_sequence++;
     event->elapsed_ticks = machine->elapsed_ticks;
     event->timeline_ticks = machine->timeline.now;
-    event->linear_pc = core_machine_trace_linear_pc(machine);
+    event->linear_pc = core_machine_cpu_linear_pc(&machine->executor_cpu_execution);
     event->address = address;
     event->value = value;
     event->detail = detail;

@@ -7,56 +7,42 @@
 #include "app-nxvm/devices/cpu_interface.h"
 #include "x86/devices/fpu/fpu_interface.h"
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/device_support.h"
+/* CPU-local arithmetic notation; no board support dependency. */
+#define X86_CPU_BIT_IS_SET(state, flag) (!!((state) & (flag)))
+#define X86_CPU_BIT_SET(destination, source) ((destination) |= (source))
+#define X86_CPU_BIT_CLEAR(destination, source) ((destination) &= ~(source))
+#define X86_CPU_BIT_MAKE(destination, source, enabled) \
+    ((enabled) ? X86_CPU_BIT_SET((destination), (source)) : \
+        X86_CPU_BIT_CLEAR((destination), (source)))
+
+#define X86_CPU_MASK_U8(value) ((lib_u8)(value))
+#define X86_CPU_MASK_U16(value) ((lib_u16)(value))
+#define X86_CPU_MASK_U24(value) ((lib_u32)(value) & 0x00ffffffu)
+#define X86_CPU_MASK_U32(value) ((lib_u32)(value))
+#define X86_CPU_MASK_U64(value) ((lib_u64)(value))
+
+#define X86_CPU_REFERENCE_OF(value) lib_pointer_to_uptr(&(value))
+
+#define X86_CPU_MSB_7 0x40u
+#define X86_CPU_MSB_8 0x80u
+#define X86_CPU_MSB_15 0x4000u
+#define X86_CPU_MSB_16 0x8000u
+#define X86_CPU_MSB_31 0x40000000u
+#define X86_CPU_MSB_32 0x80000000u
+#define X86_CPU_GET_MSB_7(value) (X86_CPU_MASK_U8(value) & X86_CPU_MSB_7)
+#define X86_CPU_GET_MSB_8(value) (X86_CPU_MASK_U8(value) & X86_CPU_MSB_8)
+#define X86_CPU_GET_MSB_15(value) (X86_CPU_MASK_U16(value) & X86_CPU_MSB_15)
+#define X86_CPU_GET_MSB_16(value) (X86_CPU_MASK_U16(value) & X86_CPU_MSB_16)
+#define X86_CPU_GET_MSB_31(value) (X86_CPU_MASK_U32(value) & X86_CPU_MSB_31)
+#define X86_CPU_GET_MSB_32(value) (X86_CPU_MASK_U32(value) & X86_CPU_MSB_32)
+#define X86_CPU_GET_LSB(value) X86_CPU_BIT_IS_SET((value), 1u)
+#define X86_CPU_GET_LSB_U8(value) (X86_CPU_MASK_U8(value) & 1u)
+#define X86_CPU_GET_LSB_U16(value) (X86_CPU_MASK_U16(value) & 1u)
+#define X86_CPU_GET_LSB_U32(value) (X86_CPU_MASK_U32(value) & 1u)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef enum core_machine_cpu_segment {
-    CORE_MACHINE_CPU_SEGMENT_ES,
-    CORE_MACHINE_CPU_SEGMENT_CS,
-    CORE_MACHINE_CPU_SEGMENT_SS,
-    CORE_MACHINE_CPU_SEGMENT_DS,
-    CORE_MACHINE_CPU_SEGMENT_FS,
-    CORE_MACHINE_CPU_SEGMENT_GS
-} core_machine_cpu_segment;
-
-typedef enum core_machine_cpu_watchpoint {
-    CORE_MACHINE_CPU_WATCH_READ,
-    CORE_MACHINE_CPU_WATCH_WRITE,
-    CORE_MACHINE_CPU_WATCH_EXECUTE
-} core_machine_cpu_watchpoint;
-
-typedef struct core_machine_cpu_execution_context
-    core_machine_cpu_execution_context;
-
-void core_machine_cpu_execution_request_stop(
-    core_machine_cpu_execution_context *context);
-lib_u8 core_machine_cpu_execution_consume_stop_request(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_request_debug_pause(
-    core_machine_cpu_execution_context *context);
-lib_u8 core_machine_cpu_execution_consume_debug_pause_request(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_request_reset(
-    core_machine_cpu_execution_context *context);
-lib_u8 core_machine_cpu_execution_consume_reset_request(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_request_shutdown(
-    core_machine_cpu_execution_context *context);
-lib_u8 core_machine_cpu_execution_consume_shutdown_request(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_state_initialize(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_context_bind_profiles(
-    core_machine_cpu_execution_context *context,
-    core_machine_cpu_profile cpu_profile,
-    x86_fpu_profile fpu_profile,
-    lib_u8 cpu_80386_cr_mov_ignores_mod);
-#include "lib/types/types_interface.h"
-
 
 #define CORE_MACHINE_DEVICE_CPU CORE_MACHINE_CPU_DEVICE_NAME
 
@@ -203,66 +189,66 @@ typedef struct {
 #define VCPU_EFLAGS_ID    0x00200000
 #define VCPU_EFLAGS_RESERVED 0xffc0802a
 */
-#define _GetEFLAGS_CF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_CF))
-#define _GetEFLAGS_PF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_PF))
-#define _GetEFLAGS_AF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_AF))
-#define _GetEFLAGS_ZF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
-#define _GetEFLAGS_SF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_SF))
-#define _GetEFLAGS_TF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_TF))
-#define _GetEFLAGS_IF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_IF))
-#define _GetEFLAGS_DF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_DF))
-#define _GetEFLAGS_OF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_OF))
-#define _GetEFLAGS_IOPLL (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
-#define _GetEFLAGS_IOPLH (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
+#define _GetEFLAGS_CF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_CF))
+#define _GetEFLAGS_PF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_PF))
+#define _GetEFLAGS_AF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_AF))
+#define _GetEFLAGS_ZF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
+#define _GetEFLAGS_SF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_SF))
+#define _GetEFLAGS_TF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_TF))
+#define _GetEFLAGS_IF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_IF))
+#define _GetEFLAGS_DF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_DF))
+#define _GetEFLAGS_OF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_OF))
+#define _GetEFLAGS_IOPLL (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
+#define _GetEFLAGS_IOPLH (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
 #define _GetEFLAGS_IOPL  ((cpu_state.data.eflags & VCPU_EFLAGS_IOPL) >> 12)
-#define _GetEFLAGS_NT    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_NT))
-#define _GetEFLAGS_RF    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_RF))
-#define _GetEFLAGS_VM    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_VM))
+#define _GetEFLAGS_NT    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_NT))
+#define _GetEFLAGS_RF    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_RF))
+#define _GetEFLAGS_VM    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_VM))
 /*
-#define _GetEFLAGS_AC    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_AC))
-#define _GetEFLAGS_VIF   (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
-#define _GetEFLAGS_VIP   (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
-#define _GetEFLAGS_ID    (CORE_MACHINE_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
-#define _SetEFLAGS_CF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_CF))
-#define _SetEFLAGS_PF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_PF))
-#define _SetEFLAGS_AF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_AF))
-#define _SetEFLAGS_ZF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
-#define _SetEFLAGS_SF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_SF))
-#define _SetEFLAGS_TF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_TF))
-#define _SetEFLAGS_IF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_IF))
-#define _SetEFLAGS_DF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_DF))
-#define _SetEFLAGS_OF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_OF))
-#define _SetEFLAGS_IOPLL (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
-#define _SetEFLAGS_IOPLH (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
-#define _SetEFLAGS_IOPL  (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
-#define _SetEFLAGS_NT    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_NT))
-#define _SetEFLAGS_RF    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_RF))
-#define _SetEFLAGS_VM    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_VM))
+#define _GetEFLAGS_AC    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_AC))
+#define _GetEFLAGS_VIF   (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
+#define _GetEFLAGS_VIP   (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
+#define _GetEFLAGS_ID    (X86_CPU_BIT_IS_SET(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
+#define _SetEFLAGS_CF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_CF))
+#define _SetEFLAGS_PF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_PF))
+#define _SetEFLAGS_AF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_AF))
+#define _SetEFLAGS_ZF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
+#define _SetEFLAGS_SF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_SF))
+#define _SetEFLAGS_TF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_TF))
+#define _SetEFLAGS_IF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_IF))
+#define _SetEFLAGS_DF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_DF))
+#define _SetEFLAGS_OF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_OF))
+#define _SetEFLAGS_IOPLL (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
+#define _SetEFLAGS_IOPLH (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
+#define _SetEFLAGS_IOPL  (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
+#define _SetEFLAGS_NT    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_NT))
+#define _SetEFLAGS_RF    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_RF))
+#define _SetEFLAGS_VM    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_VM))
 /*
-#define _SetEFLAGS_AC    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_AC))
-#define _SetEFLAGS_VIF   (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
-#define _SetEFLAGS_VIP   (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
-#define _SetEFLAGS_ID    (CORE_MACHINE_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
-#define _ClrEFLAGS_CF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_CF))
-#define _ClrEFLAGS_PF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_PF))
-#define _ClrEFLAGS_AF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_AF))
-#define _ClrEFLAGS_ZF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
-#define _ClrEFLAGS_SF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_SF))
-#define _ClrEFLAGS_TF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_TF))
-#define _ClrEFLAGS_IF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_IF))
-#define _ClrEFLAGS_DF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_DF))
-#define _ClrEFLAGS_OF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_OF))
-#define _ClrEFLAGS_IOPLL (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
-#define _ClrEFLAGS_IOPLH (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
-#define _ClrEFLAGS_IOPL  (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
-#define _ClrEFLAGS_NT    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_NT))
-#define _ClrEFLAGS_RF    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_RF))
-#define _ClrEFLAGS_VM    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_VM))
+#define _SetEFLAGS_AC    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_AC))
+#define _SetEFLAGS_VIF   (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
+#define _SetEFLAGS_VIP   (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
+#define _SetEFLAGS_ID    (X86_CPU_BIT_SET(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
+#define _ClrEFLAGS_CF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_CF))
+#define _ClrEFLAGS_PF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_PF))
+#define _ClrEFLAGS_AF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_AF))
+#define _ClrEFLAGS_ZF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
+#define _ClrEFLAGS_SF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_SF))
+#define _ClrEFLAGS_TF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_TF))
+#define _ClrEFLAGS_IF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_IF))
+#define _ClrEFLAGS_DF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_DF))
+#define _ClrEFLAGS_OF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_OF))
+#define _ClrEFLAGS_IOPLL (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
+#define _ClrEFLAGS_IOPLH (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
+#define _ClrEFLAGS_IOPL  (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
+#define _ClrEFLAGS_NT    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_NT))
+#define _ClrEFLAGS_RF    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_RF))
+#define _ClrEFLAGS_VM    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_VM))
 /*
-#define _ClrEFLAGS_AC    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_AC))
-#define _ClrEFLAGS_VIF   (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
-#define _ClrEFLAGS_VIP   (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
-#define _ClrEFLAGS_ID    (CORE_MACHINE_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
+#define _ClrEFLAGS_AC    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_AC))
+#define _ClrEFLAGS_VIF   (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
+#define _ClrEFLAGS_VIP   (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
+#define _ClrEFLAGS_ID    (X86_CPU_BIT_CLEAR(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
 
 #define VCPU_ModRM_MOD 0xc0
 #define VCPU_ModRM_REG 0x38
@@ -277,12 +263,9 @@ typedef struct {
 #define _GetSIB_Index(csib)   (((csib) & VCPU_SIB_Index)   >> 3)
 #define _GetSIB_Base(csib)    (((csib) & VCPU_SIB_Base)    >> 0)
 
-#define VCPU_CR0_PE 0x00000001
-#define VCPU_CR0_TS 0x00000008
-#define VCPU_CR0_PG 0x80000000
-#define _GetCR0_PE (CORE_MACHINE_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PE))
-#define _GetCR0_PG (CORE_MACHINE_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PG))
-#define _SetCR0_TS (CORE_MACHINE_BIT_SET(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _GetCR0_PE (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PE))
+#define _GetCR0_PG (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PG))
+#define _SetCR0_TS (X86_CPU_BIT_SET(cpu_state.data.cr0, VCPU_CR0_TS))
 
 #define _MakePageFaultErrorCode(p, wr, us) ((p) | ((wr) << 1) | ((us) << 2))
 
@@ -299,14 +282,14 @@ typedef struct {
 #define VCPU_PGENTRY_US    0x00000004 /* user/supervisor */
 #define VCPU_PGENTRY_RW    0x00000002 /* writable */
 #define VCPU_PGENTRY_P     0x00000001 /* present */
-#define _GetPageEntry_P(pge)      (CORE_MACHINE_BIT_IS_SET((pge), VCPU_PGENTRY_P))
-#define _GetPageEntry_RW(pge)     (CORE_MACHINE_BIT_IS_SET((pge), VCPU_PGENTRY_RW))
-#define _GetPageEntry_US(pge)     (CORE_MACHINE_BIT_IS_SET((pge), VCPU_PGENTRY_US))
-#define _GetPageEntry_A(pge)      (CORE_MACHINE_BIT_IS_SET((pge), VCPU_PGENTRY_A))
-#define _GetPageEntry_D(pge)      (CORE_MACHINE_BIT_IS_SET((pge), VCPU_PGENTRY_D))
+#define _GetPageEntry_P(pge)      (X86_CPU_BIT_IS_SET((pge), VCPU_PGENTRY_P))
+#define _GetPageEntry_RW(pge)     (X86_CPU_BIT_IS_SET((pge), VCPU_PGENTRY_RW))
+#define _GetPageEntry_US(pge)     (X86_CPU_BIT_IS_SET((pge), VCPU_PGENTRY_US))
+#define _GetPageEntry_A(pge)      (X86_CPU_BIT_IS_SET((pge), VCPU_PGENTRY_A))
+#define _GetPageEntry_D(pge)      (X86_CPU_BIT_IS_SET((pge), VCPU_PGENTRY_D))
 #define _GetPageEntry_Base(pge)   ((pge) & VCPU_PGENTRY_BASE)
-#define _SetPageEntry_A(pge)      (CORE_MACHINE_BIT_SET((pge), VCPU_PGENTRY_A))
-#define _SetPageEntry_D(pge)      (CORE_MACHINE_BIT_SET((pge), VCPU_PGENTRY_D))
+#define _SetPageEntry_A(pge)      (X86_CPU_BIT_SET((pge), VCPU_PGENTRY_A))
+#define _SetPageEntry_D(pge)      (X86_CPU_BIT_SET((pge), VCPU_PGENTRY_D))
 #define _IsPageEntryPresent(pge)  _GetPageEntry_P(pge)
 #define _IsPageEntryWritable(pge) _GetPageEntry_RW(pge)
 #define _GetPageSize              VCPU_PAGESIZE
@@ -315,7 +298,7 @@ typedef struct {
 #define VCPU_SELECTOR_TI  0x0004 /* table indicator */
 #define VCPU_SELECTOR_IDX 0xfff8 /* index */
 #define _GetSelector_RPL(selector)    (((selector) & VCPU_SELECTOR_RPL) >> 0)
-#define _GetSelector_TI(selector)     (CORE_MACHINE_BIT_IS_SET((selector), VCPU_SELECTOR_TI))
+#define _GetSelector_TI(selector)     (X86_CPU_BIT_IS_SET((selector), VCPU_SELECTOR_TI))
 #define _GetSelector_Index(selector)  (((selector) & VCPU_SELECTOR_IDX) >> 3)
 #define _GetSelector_Offset(selector) (((selector) & VCPU_SELECTOR_IDX) >> 0)
 #define _IsSelectorNull(selector)     (!_GetSelector_TI(selector) && !_GetSelector_Index(selector))
@@ -329,11 +312,11 @@ typedef struct {
 /* descriptor type */
 #define _GetDesc_Type(descriptor) (((descriptor) & VCPU_DESC_TYPE) >> 40)
 /* system segment (0) or user segment (1) */
-#define _GetDesc_S(descriptor)    (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_S))
+#define _GetDesc_S(descriptor)    (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_S))
 /* descriptor previlege level */
 #define _GetDesc_DPL(descriptor)  (((descriptor) & VCPU_DESC_DPL) >> 45)
 /* descriptor presence */
-#define _GetDesc_P(descriptor)    (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_P))
+#define _GetDesc_P(descriptor)    (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_P))
 
 #define _IsDescUser(descriptor)    (_GetDesc_S(descriptor))
 #define _IsDescSys(descriptor)     (!_GetDesc_S(descriptor))
@@ -362,10 +345,10 @@ typedef struct {
 #define VCPU_DESC_SYS_TYPE_INTGATE_32  0x0e
 #define VCPU_DESC_SYS_TYPE_TRAPGATE_32 0x0f
 
-#define _GetDescSys_Type_E(descriptor)   (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_TSS_TYPE_E))
-#define _GetDescTSS_Type_B(descriptor)   (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_TSS_TYPE_B))
-#define _SetDescTSS_Type_B(descriptor)   (CORE_MACHINE_BIT_SET((descriptor), VCPU_DESC_TSS_TYPE_B))
-#define _ClrDescTSS_Type_B(descriptor)   (CORE_MACHINE_BIT_CLEAR((descriptor), VCPU_DESC_TSS_TYPE_B))
+#define _GetDescSys_Type_E(descriptor)   (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_TSS_TYPE_E))
+#define _GetDescTSS_Type_B(descriptor)   (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_TSS_TYPE_B))
+#define _SetDescTSS_Type_B(descriptor)   (X86_CPU_BIT_SET((descriptor), VCPU_DESC_TSS_TYPE_B))
+#define _ClrDescTSS_Type_B(descriptor)   (X86_CPU_BIT_CLEAR((descriptor), VCPU_DESC_TSS_TYPE_B))
 
 #define _IsDescSys32(descriptor)      (_IsDescSys(descriptor) && _GetDescSys_Type_E(descriptor))
 #define _IsDescLDT(descriptor)        (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_LDT))
@@ -413,18 +396,18 @@ typedef struct {
 #define _GetDescSeg_Base(descriptor) \
     ((((descriptor) & VCPU_DESC_SEG_BASE_0) >> 16) | (((descriptor) & VCPU_DESC_SEG_BASE_1) >> 32))
 /* segment granularity */
-#define _GetDescSeg_G(descriptor)        (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_SEG_G))
+#define _GetDescSeg_G(descriptor)        (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_SEG_G))
 
-#define _GetDescUser_Avl(descriptor)     (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_USER_AVL))
-#define _GetDescUser_Type_A(descriptor)  (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_USER_TYPE_A))
-#define _SetDescUser_Type_A(descriptor)  (CORE_MACHINE_BIT_SET((descriptor), VCPU_DESC_USER_TYPE_A))
-#define _GetDescData_Type_W(descriptor)  (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_DATA_TYPE_W))
-#define _GetDescData_Type_E(descriptor)  (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_DATA_TYPE_E))
-#define _GetDescCode_Type_R(descriptor)  (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_CODE_TYPE_R))
-#define _GetDescCode_Type_C(descriptor)  (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_CODE_TYPE_C))
-#define _GetDescUser_Type_CD(descriptor) (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_USER_TYPE_CD))
-#define _GetDescData_B(descriptor)       (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_DATA_B))
-#define _GetDescCode_D(descriptor)       (CORE_MACHINE_BIT_IS_SET((descriptor), VCPU_DESC_CODE_D))
+#define _GetDescUser_Avl(descriptor)     (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_USER_AVL))
+#define _GetDescUser_Type_A(descriptor)  (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_USER_TYPE_A))
+#define _SetDescUser_Type_A(descriptor)  (X86_CPU_BIT_SET((descriptor), VCPU_DESC_USER_TYPE_A))
+#define _GetDescData_Type_W(descriptor)  (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_DATA_TYPE_W))
+#define _GetDescData_Type_E(descriptor)  (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_DATA_TYPE_E))
+#define _GetDescCode_Type_R(descriptor)  (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_CODE_TYPE_R))
+#define _GetDescCode_Type_C(descriptor)  (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_CODE_TYPE_C))
+#define _GetDescUser_Type_CD(descriptor) (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_USER_TYPE_CD))
+#define _GetDescData_B(descriptor)       (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_DATA_B))
+#define _GetDescCode_D(descriptor)       (X86_CPU_BIT_IS_SET((descriptor), VCPU_DESC_CODE_D))
 
 #define _IsDescSegGranularLarge(descriptor)  (_GetDescSeg_G(descriptor))
 #define _IsDescUserAccessed(descriptor)      (_IsDescUser(descriptor) && _GetDescUser_Type_A(descriptor))
@@ -464,20 +447,14 @@ typedef struct {
     (((descriptor) & VCPU_DESC_GATE_OFFSET_0) | (((descriptor) & VCPU_DESC_GATE_OFFSET_1) >> 32))
 #define _GetDescCall_Count(descriptor)    (((descriptor) & VCPU_DESC_CALL_COUNT) >> 32)
 
-#define VCPU_CR0_PE 0x00000001
-#define VCPU_CR0_MP 0x00000002
-#define VCPU_CR0_EM 0x00000004
-#define VCPU_CR0_TS 0x00000008
-#define VCPU_CR0_ET 0x00000010
-#define VCPU_CR0_PG 0x80000000
-#define _GetCR0_PE (CORE_MACHINE_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PE))
-#define _GetCR0_MP (CORE_MACHINE_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_MP))
-#define _GetCR0_EM (CORE_MACHINE_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_EM))
-#define _GetCR0_TS (CORE_MACHINE_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_TS))
-#define _GetCR0_ET (CORE_MACHINE_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_ET))
-#define _GetCR0_PG (CORE_MACHINE_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PG))
-#define _SetCR0_TS (CORE_MACHINE_BIT_SET(cpu_state.data.cr0, VCPU_CR0_TS))
-#define _ClrCR0_TS (CORE_MACHINE_BIT_CLEAR(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _GetCR0_PE (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PE))
+#define _GetCR0_MP (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_MP))
+#define _GetCR0_EM (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_EM))
+#define _GetCR0_TS (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _GetCR0_ET (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_ET))
+#define _GetCR0_PG (X86_CPU_BIT_IS_SET(cpu_state.data.cr0, VCPU_CR0_PG))
+#define _SetCR0_TS (X86_CPU_BIT_SET(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _ClrCR0_TS (X86_CPU_BIT_CLEAR(cpu_state.data.cr0, VCPU_CR0_TS))
 
 #define VCPU_CR3_BASE   0xfffff000
 #define _GetCR3_Base    (cpu_state.data.cr3 & VCPU_CR3_BASE)
@@ -486,22 +463,6 @@ typedef struct {
 #define _IsProtected (_GetCR0_PE && !_GetEFLAGS_VM)
 #define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : cpu_state.data.cs.dpl) : 0)
 #define _MakeCPL(cpl) (cpu_state.data.cs.dpl = (cpl))
-
-lib_i32 core_machine_cpu_read_linear(core_machine_cpu_execution_context *context,
-    lib_u32 linear, void *out_data, lib_u8 size);
-lib_i32 core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
-    lib_u32 linear, const void *in_data, lib_u8 size);
-lib_i32 core_machine_cpu_get_code_default_size(
-    const core_machine_cpu_execution_context *context);
-lib_u32 core_machine_cpu_get_code_base(
-    const core_machine_cpu_execution_context *context);
-void core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
-    core_machine_cpu_watchpoint kind, lib_u32 linear);
-void core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
-    core_machine_cpu_watchpoint kind);
-void core_machine_cpu_get_watchpoint(const core_machine_cpu_execution_context *context,
-    core_machine_cpu_watchpoint kind, lib_u8 *out_enabled,
-    lib_u32 *out_linear);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

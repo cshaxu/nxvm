@@ -3,6 +3,7 @@
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/cpu_timing.h"
 #include "support/core_machine_cpu_fixture.h"
 
 #define TIMING_80286_RESET_LINEAR 0x00fffff0u
@@ -128,7 +129,8 @@ static lib_i32 timing_80286_xlat(void)
         core_machine_memory_write(machine, 0x1001u, value, sizeof(value)) !=
             LIB_STATUS_OK || !timing_80286_run(machine, &state, 1u, 5u) ||
         CORE_MACHINE_MASK_U8(machine->executor_cpu.data.eax) != value[0] ||
-        machine->source_timing_unallocated;
+        core_machine_cpu_capture_timing(&machine->executor_cpu_execution).
+            source_timing_unallocated;
 
     core_machine_destroy(machine);
     return failed;

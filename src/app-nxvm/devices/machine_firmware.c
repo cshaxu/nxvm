@@ -29,48 +29,6 @@ lib_status core_machine_firmware_invoke(core_machine *machine,
     machine->firmware_operation_active = 0;
     return status;
 }
-lib_status core_machine_firmware_handle_software_interrupt(void *opaque,
-    lib_u8 vector, const core_machine_firmware_interrupt_frame *frame,
-    core_machine_firmware_interrupt_result *result, lib_u8 *out_handled)
-{
-    core_machine *machine = (core_machine *)opaque;
-    lib_u8 ivt[4];
-    lib_u16 target_offset;
-    lib_u16 target_segment;
-    lib_status status;
-
-    if (out_handled == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_handled = LIB_FALSE;
-    if (machine == LIB_NULL || frame == LIB_NULL || result == LIB_NULL ||
-        machine->firmware_provider == LIB_NULL ||
-        machine->firmware_provider->software_interrupt == LIB_NULL ||
-        machine->firmware_operation_active) return LIB_STATUS_OK;
-    status = core_machine_memory_read_physical(&machine->executor_memory,
-        (lib_u32)vector * 4u, (lib_uptr)ivt, sizeof(ivt));
-    if (status != LIB_STATUS_OK) return status;
-    target_offset = (lib_u16)(ivt[0] | ((lib_u16)ivt[1] << 8u));
-    target_segment = (lib_u16)(ivt[2] | ((lib_u16)ivt[3] << 8u));
-    machine->firmware_operation_active = 1;
-    machine->firmware_context.machine = machine;
-    machine->firmware_context.operation_status = LIB_STATUS_OK;
-    machine->firmware_context.track_operation_failures = 1;
-    machine->firmware_context.configuring = 0;
-    machine->firmware_context.active = 1;
-    status = machine->firmware_provider->software_interrupt(
-        machine->firmware_provider_context, &machine->firmware_context, vector,
-        target_segment, target_offset, frame, result, out_handled);
-    if (status == LIB_STATUS_OK &&
-        machine->firmware_context.operation_status != LIB_STATUS_OK) {
-        status = machine->firmware_context.operation_status;
-    }
-    machine->firmware_context.active = 0;
-    machine->firmware_context.track_operation_failures = 0;
-    machine->firmware_context.configuring = 0;
-    machine->firmware_operation_active = 0;
-    if (status != LIB_STATUS_OK) *out_handled = LIB_FALSE;
-    return status;
-}
-
 static lib_status core_machine_firmware_operation_result(
     core_machine_firmware_context *firmware, lib_status status)
 {

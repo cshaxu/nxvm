@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 typedef struct readiness_trace_probe {
     core_machine_trace_event events[40];

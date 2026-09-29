@@ -26,7 +26,6 @@ static lib_status vm_runner_reset_failure(void *context,
 static const core_machine_firmware_provider vm_runner_reset_failure_provider = {
     LIB_NULL,
     vm_runner_reset_failure,
-    LIB_NULL,
     LIB_NULL
 };
 

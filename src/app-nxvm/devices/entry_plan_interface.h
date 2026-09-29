@@ -1,6 +1,7 @@
 #ifndef CORE_MACHINE_ENTRY_PLAN_INTERFACE_H
 #define CORE_MACHINE_ENTRY_PLAN_INTERFACE_H
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/cpu_interface.h"
 
 
 #include "app-nxvm/devices/memory_interface.h"
@@ -20,22 +21,6 @@ typedef struct core_machine_entry_plan_preload {
     lib_size byte_count;
 } core_machine_entry_plan_preload;
 
-typedef struct core_machine_entry_plan_state {
-    lib_u16 cs;
-    lib_u16 ds;
-    lib_u16 es;
-    lib_u16 ss;
-    lib_u16 ip;
-    lib_u16 sp;
-    lib_u32 eax;
-    lib_u32 ebx;
-    lib_u32 ecx;
-    lib_u32 edx;
-    lib_u32 esi;
-    lib_u32 edi;
-    lib_u32 ebp;
-    lib_u32 eflags;
-} core_machine_entry_plan_state;
 
 typedef struct core_machine_entry_plan {
     core_machine_entry_plan_state state;

@@ -9,7 +9,7 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
-#include "../devices/support/core_machine_cpu_fixture.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "support/rom/session_assets.h"
 
 static lib_i32 vm_pcat_s4_topology_matches(
@@ -111,14 +111,22 @@ static lib_i32 vm_pcat_s4_reset_rearms_selected_machine(
     const vm_profile_default_pc_at_descriptor *profile)
 {
     static const lib_u8 nop = 0x90u;
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x1000u }
+    };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_timeline_observation timeline;
     lib_i32 nmi_masked = LIB_FALSE;
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL ||
-        !test_core_machine_fixture_prepare_real_mode_execution(
-            session->core_machine, 0x1000u) ||
+        core_machine_debug_patch_registers(session->core_machine, &entry) !=
+            LIB_STATUS_OK ||
         core_machine_memory_write(session->core_machine, 0x1000u, &nop,
             sizeof(nop)) != LIB_STATUS_OK ||
         core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||

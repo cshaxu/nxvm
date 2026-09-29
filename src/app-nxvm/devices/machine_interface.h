@@ -85,16 +85,6 @@ typedef enum core_machine_retirement_time_contract {
     CORE_MACHINE_RETIREMENT_TIME_PHYSICAL = 1
 } core_machine_retirement_time_contract;
 
-/* Level 2 costs are relative to one completed executor refresh. Zero keeps the
- * legacy ticks_per_instruction base and disables the corresponding surcharge. */
-typedef struct core_machine_instruction_timing {
-    lib_u32 base_ticks;
-    lib_u32 prefix_surcharge;
-    lib_u32 taken_branch_surcharge;
-    lib_u32 data_memory_surcharge;
-    lib_u32 io_surcharge;
-    lib_u32 rep_iteration_surcharge;
-} core_machine_instruction_timing;
 
 /* A profile-selected external CPU-memory-cycle policy. The Core CPU owner
  * charges the declared page result only after a matching lifecycle commit.

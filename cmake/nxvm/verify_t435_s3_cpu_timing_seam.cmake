@@ -26,8 +26,11 @@ t435_require_count("${machine_text}" "core_machine_retirement_observation_publis
     "machine.c must have one raw retirement publication")
 t435_require_count("${timing_text}" "lib_i32 core_machine_cpu_timing_select\\(" 1
     "cpu_timing.c must own one selector")
-t435_require_count("${timing_text}" "machine->source_timing_origin =" 2
+t435_require_count("${timing_text}" "context->timing_result.retirement_origin =" 2
     "cpu_timing.c must reset and assign origin once")
+if("${timing_text}" MATCHES "machine->|#include \".*machine[.]h\"")
+    message(FATAL_ERROR "CPU timing must own its result without a board-state dependency")
+endif()
 if("${timing_text}" MATCHES "external_cycle|dma_|READY|HOLD|prefetch")
     message(FATAL_ERROR "T435 S3 timing seam drift: cpu_timing.c absorbed a board input")
 endif()

@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -79,6 +80,16 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
     };
     vm_machine *session = LIB_NULL;
     core_machine_run_result result = {0};
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP),
+        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x0500u,
+            [CORE_MACHINE_DEBUG_ESP] = 0xfffeu }
+    };
     lib_u32 port_b;
     lib_u32 tick;
     lib_i32 failed = 0;
@@ -100,18 +111,8 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
         failed = 1;
     }
     if (!failed) {
-        session->core_machine->executor_cpu.data.cs.selector = 0u;
-        session->core_machine->executor_cpu.data.cs.base = 0u;
-        session->core_machine->executor_cpu.data.ds.selector = 0u;
-        session->core_machine->executor_cpu.data.ds.base = 0u;
-        session->core_machine->executor_cpu.data.es.selector = 0u;
-        session->core_machine->executor_cpu.data.es.base = 0u;
-        session->core_machine->executor_cpu.data.ss.selector = 0u;
-        session->core_machine->executor_cpu.data.ss.base = 0u;
-        session->core_machine->executor_cpu.data.eip = 0x0500u;
-        session->core_machine->executor_cpu.data.sp = 0xfffeu;
-        session->core_machine->executor_cpu.data.flagHalt = LIB_FALSE;
-        failed = core_machine_run(session->core_machine,
+        failed = core_machine_debug_patch_registers(session->core_machine,
+            &entry) != LIB_STATUS_OK || core_machine_run(session->core_machine,
             (core_machine_run_budget) {1000u, 0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     }

@@ -14,7 +14,6 @@ extern "C" {
 #define CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY 512u
 
 #include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/firmware_interface.h"
 #include "x86/devices/fpu/fpu_interface.h"
 
 typedef enum {
@@ -109,82 +108,15 @@ typedef struct {
 } t_cpuins_data;
 
 typedef struct t_cpuins t_cpuins;
-typedef struct t_ram t_ram;
-typedef struct t_port t_port;
-typedef struct core_machine_pic_bus core_machine_pic_bus;
-typedef struct core_machine_transaction_state core_machine_transaction_state;
-typedef struct core_machine_cpu_execution_context
-    core_machine_cpu_execution_context;
 
-typedef lib_status (*core_machine_cpu_firmware_interrupt_provider)(
-    void *opaque, lib_u8 vector,
-    const core_machine_firmware_interrupt_frame *frame,
-    core_machine_firmware_interrupt_result *result, lib_u8 *out_handled);
 typedef void (*core_machine_cpu_instruction_handler)(
     core_machine_cpu_execution_context *context);
-
-typedef enum core_machine_cpu_instruction_space {
-    CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
-    CORE_MACHINE_CPU_INSTRUCTION_0F,
-    CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE
-} core_machine_cpu_instruction_space;
-
-/* CPU accesses share one transaction path. This label preserves their
- * architectural source for board-timing consumers without asserting that a
- * logical access is already an external bus cycle. */
-typedef enum core_machine_cpu_memory_access_provenance {
-    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA = 0,
-    CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH,
-    CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH,
-    CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ,
-    CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE
-} core_machine_cpu_memory_access_provenance;
-
-typedef enum core_machine_cpu_external_cycle_phase {
-    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN = 1,
-    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-    /* The Core CPU owner issued this named sequential request while the
-     * preceding prefetch cycle was still in flight. */
-    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE
-} core_machine_cpu_external_cycle_phase;
-
-
-typedef void (*core_machine_cpu_external_cycle_provider)(void *context,
-    core_machine_cpu_external_cycle_phase phase,
-    core_machine_cpu_external_cycle_space space, lib_u32 address,
-    lib_u8 bytes, lib_u8 write,
-    core_machine_cpu_memory_access_provenance provenance);
-
-typedef struct core_machine_cpu_instruction_metadata {
-    core_machine_cpu_profile minimum_cpu;
-    x86_fpu_profile minimum_fpu;
-    lib_i32 valid;
-} core_machine_cpu_instruction_metadata;
-
-/* A lexical result is intentionally narrower than instruction decoding: it
- * names only the byte-layout components used by 80386 Jcc's `m` timing term.
- * It never validates operands or applies instruction semantics. */
-typedef struct core_machine_cpu_instruction_lexeme {
-    lib_u8 byte_count;
-    lib_u8 component_count;
-    lib_u8 available;
-} core_machine_cpu_instruction_lexeme;
 
 typedef struct {
     /* instruction dispatch */
     core_machine_cpu_instruction_handler insTable[0x100];
     core_machine_cpu_instruction_handler insTable_0f[0x100];
 } t_cpuins_connect;
-
-typedef struct core_machine_cpu_execution_diagnostic_provider {
-    void (*record_instruction)(void *context, const void *cpu,
-        const t_cpuins *instructions);
-    void (*record_delivered_exception)(void *context, const void *cpu,
-        const t_cpuins *instructions);
-    void (*record_fault)(void *context, const void *cpu,
-        const t_cpuins *instructions);
-} core_machine_cpu_execution_diagnostic_provider;
 
 struct t_cpuins {
     t_cpuins_data data;
@@ -195,17 +127,21 @@ struct t_cpuins {
 struct core_machine_cpu_execution_context {
     t_cpu *cpu;
     t_cpuins *instructions;
-    t_ram *memory;
-    t_port *port;
-    core_machine_transaction_state *transaction;
-    core_machine_pic_bus *pic_master;
-    core_machine_pic_bus *pic_slave;
+    core_machine_instruction_timing instruction_timing;
+    core_machine_cpu_timing_result timing_result;
+    lib_u8 source_repeat_active;
+    lib_u16 source_repeat_cs;
+    lib_u32 source_repeat_eip;
+    lib_u8 source_repeat_opcode;
+    lib_u8 source_repeat_prefix;
+    lib_u8 source_repeat_operand_size;
+    lib_u8 source_repeat_address_size;
+    const core_machine_cpu_bus_provider *bus;
+    void *bus_context;
     const core_machine_cpu_execution_diagnostic_provider *diagnostic_provider;
     void *diagnostic_context;
     core_machine_cpu_external_cycle_provider external_cycle_provider;
     void *external_cycle_context;
-    core_machine_cpu_firmware_interrupt_provider firmware_interrupt_provider;
-    void *firmware_interrupt_context;
     lib_u8 stop_requested;
     lib_u8 debug_pause_requested;
     lib_u8 reset_requested;
@@ -242,25 +178,8 @@ struct core_machine_cpu_execution_context {
 
 void core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
-    t_cpuins *instructions, t_ram *memory, t_port *port);
-void core_machine_cpu_execution_context_bind_pic(
-    core_machine_cpu_execution_context *context, core_machine_pic_bus *master,
-    core_machine_pic_bus *slave);
-void core_machine_cpu_execution_context_bind_diagnostic_provider(
-    core_machine_cpu_execution_context *context,
-    const core_machine_cpu_execution_diagnostic_provider *provider,
-    void *provider_context);
-void core_machine_cpu_execution_context_bind_fpu(
-    core_machine_cpu_execution_context *context, x86_fpu *fpu);
-void core_machine_cpu_execution_context_bind_external_cycle_provider(
-    core_machine_cpu_execution_context *context,
-    core_machine_cpu_external_cycle_provider provider, void *provider_context);
-void core_machine_cpu_execution_context_bind_firmware_interrupt_provider(
-    core_machine_cpu_execution_context *context,
-    core_machine_cpu_firmware_interrupt_provider provider, void *provider_context);
-void core_machine_cpu_execution_context_bind_transaction(
-    core_machine_cpu_execution_context *context,
-    core_machine_transaction_state *transaction);
+    t_cpuins *instructions, const core_machine_cpu_bus_provider *bus,
+    void *bus_context);
 lib_u8 core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
     lib_u16 selector);
@@ -272,57 +191,11 @@ lib_u8 core_machine_cpu_execution_write_linear(
     lib_uptr rdata, lib_u8 byte);
 void core_machine_cpu_execution_initialize(
     core_machine_cpu_execution_context *context);
-/* Core invalidates queued instruction bytes after a stopped-state physical write.
- * The caller does not need CPU or prefetch storage access. */
-void core_machine_cpu_execution_reserve_prefetch(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_advance_prefetch_reservation(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_invalidate_prefetch(
-    core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_reset(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_refresh(
-    core_machine_cpu_execution_context *context);
-lib_u8 core_machine_cpu_execution_consume_instruction_fault_delivery(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context);
-core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
-    core_machine_cpu_instruction_space space, lib_u8 opcode, lib_u8 modrm);
-lib_u8 core_machine_cpu_instruction_lexeme_scan(
-    const lib_u8 *bytes, lib_u8 available_bytes,
-    core_machine_cpu_profile profile, lib_u8 code_32,
-    core_machine_cpu_instruction_lexeme *out_lexeme);
-lib_u8 core_machine_cpu_execution_preview_lexeme(
-    const core_machine_cpu_execution_context *context,
-    core_machine_cpu_instruction_lexeme *out_lexeme);
 
-#define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
-#define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */
-#define VCPUINS_EXCEPT_NMI 0x00000004 /* 02 - n/a:   non-maskable interrupt */
-#define VCPUINS_EXCEPT_BP  0x00000008 /* 03 - trap:  break point */
-#define VCPUINS_EXCEPT_OF  0x00000010 /* 04 - trap:  overflow exception */
-#define VCPUINS_EXCEPT_BR  0x00000020 /* 05 - fault: boundary check fail */
-#define VCPUINS_EXCEPT_UD  0x00000040 /* 06 - fault: invalid opcode */
-#define VCPUINS_EXCEPT_NM  0x00000080 /* 07 - fault: coprocessor not available */
-#define VCPUINS_EXCEPT_DF  0x00000100 /* 08 - double fault abort */
-#define VCPUINS_EXCEPT_09  0x00000200 /* 09 - abort: reserved */
-#define VCPUINS_EXCEPT_TS  0x00000400 /* 10 - fault: task state segment fail */
-#define VCPUINS_EXCEPT_NP  0x00000800 /* 11 - fault: segment not present */
-#define VCPUINS_EXCEPT_SS  0x00001000 /* 12 - fault: stack segment fault */
-#define VCPUINS_EXCEPT_GP  0x00002000 /* 13 - fault: general protection */
-#define VCPUINS_EXCEPT_PF  0x00004000 /* 14 - fault: page fault */
-#define VCPUINS_EXCEPT_15  0x00008000 /* 15 - n/a:   reserved */
-#define VCPUINS_EXCEPT_MF  0x00010000 /* 16 - fault: x87 fpu floating point error */
-
-#define VCPUINS_EXCEPT_FPU_UNSUPPORTED 0x40000000 /* internal FPU model stop */
-
-/* 80386 real-address stack-limit wrap is an architectural shutdown, not an
- * interrupt-deliverable exception. */
-#define VCPUINS_EXCEPT_SHUTDOWN 0x20000000
-
-#define VCPUINS_EXCEPT_CE  0x80000000 /* 31 - internal case error */
 
 #ifdef __cplusplus
 }/*_EOCD_*/

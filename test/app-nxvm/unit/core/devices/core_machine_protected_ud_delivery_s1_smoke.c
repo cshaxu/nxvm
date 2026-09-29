@@ -2,10 +2,8 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/cpu_instructions.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
 
 #define UD_S1_GDT_BASE 0x0300u
 #define UD_S1_IDT_BASE 0x0400u
@@ -17,19 +15,6 @@ typedef struct ud_s1_machine {
     core_machine *machine;
 } ud_s1_machine;
 
-static void ud_s1_reset(void *opaque)
-{
-    ud_s1_machine *state = (ud_s1_machine *)opaque;
-
-    if (state != LIB_NULL) {
-        (void)test_core_machine_fixture_reset_real_mode(state->machine);
-    }
-}
-
-static const core_machine_execution_provider ud_s1_provider = {
-    ud_s1_reset, LIB_NULL
-};
-
 static lib_i32 ud_s1_prepare(ud_s1_machine *state)
 {
     const core_machine_config config = {
@@ -38,38 +23,45 @@ static lib_i32 ud_s1_prepare(ud_s1_machine *state)
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
 
-    if (state == LIB_NULL) {
-        return 0;
-    }
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    };
+
+    if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    return test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &ud_s1_provider, state, &state->machine) &&
-        test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
+    return core_machine_create(&config, &state->machine) == LIB_STATUS_OK &&
+        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        core_machine_reset(state->machine) == LIB_STATUS_OK &&
+        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
-static lib_i32 ud_s1_gprs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 ud_s1_gprs_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
 {
-    return before->data.eax == after->data.eax &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.ebx == after->data.ebx &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi;
+    return before->eax == after->eax &&
+        before->ecx == after->ecx &&
+        before->edx == after->edx &&
+        before->ebx == after->ebx &&
+        before->ebp == after->ebp &&
+        before->esi == after->esi &&
+        before->edi == after->edi;
 }
 
-static lib_i32 ud_s1_data_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 ud_s1_data_sregs_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
 {
-    return lib_memory_compare(&before->data.es, &after->data.es,
-            sizeof(before->data.es)) == 0 &&
-        lib_memory_compare(&before->data.ss, &after->data.ss,
-            sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds,
-            sizeof(before->data.ds)) == 0 &&
-        lib_memory_compare(&before->data.fs, &after->data.fs,
-            sizeof(before->data.fs)) == 0 &&
-        lib_memory_compare(&before->data.gs, &after->data.gs,
-            sizeof(before->data.gs)) == 0;
+    return lib_memory_compare(&before->es, &after->es,
+            sizeof(before->es)) == 0 &&
+        lib_memory_compare(&before->ss, &after->ss,
+            sizeof(before->ss)) == 0 &&
+        lib_memory_compare(&before->ds, &after->ds,
+            sizeof(before->ds)) == 0 &&
+        lib_memory_compare(&before->fs, &after->fs,
+            sizeof(before->fs)) == 0 &&
+        lib_memory_compare(&before->gs, &after->gs,
+            sizeof(before->gs)) == 0;
 }
 
 static lib_i32 ud_s1_delivered(const core_machine_cpu_diagnostic *diagnostic)
@@ -90,7 +82,33 @@ static lib_i32 ud_s1_boot_protected(ud_s1_machine *state,
         0xffu,0xffu,0u,0x30u,0u,0x92u,0u,0u
     };
     lib_u8 idt[6u * 8u + 8u] = { 0u };
-    t_cpu *cpu;
+    /* Load architectural table registers through the guest instruction path. */
+    static const lib_u8 setup[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x05u, /* LGDT [0500] */
+        0x0fu, 0x01u, 0x1eu, 0x06u, 0x05u  /* LIDT [0506] */
+    };
+    const lib_u8 tables[] = {
+        sizeof(gdt) - 1u, 0u, 0u, 3u, 0u, 0u,
+        sizeof(idt) - 1u, 0u, 0u, 4u, 0u, 0u
+    };
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_FS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_GS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+        .values = { [CORE_MACHINE_DEBUG_CS] = 8u,
+            [CORE_MACHINE_DEBUG_SS] = 0x10u, [CORE_MACHINE_DEBUG_DS] = 0x10u,
+            [CORE_MACHINE_DEBUG_ES] = 0x10u, [CORE_MACHINE_DEBUG_FS] = 0x10u,
+            [CORE_MACHINE_DEBUG_GS] = 0x10u, [CORE_MACHINE_DEBUG_ESP] = 0x8000u,
+            [CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_CF |
+                CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_DF }
+    };
+    core_machine_run_result result;
 
     if (!ud_s1_prepare(state)) {
         return 0;
@@ -112,39 +130,16 @@ static lib_i32 ud_s1_boot_protected(ud_s1_machine *state,
             (const lib_u8[]){ 0xf4u }, 1u) != LIB_STATUS_OK) {
         return 0;
     }
-    cpu = &state->machine->executor_cpu;
-    cpu->data.cr0 = VCPU_CR0_PE;
-    cpu->data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
-    cpu->data.gdtr.flagValid = LIB_TRUE;
-    cpu->data.gdtr.sregtype = SREG_GDTR;
-    cpu->data.gdtr.base = UD_S1_GDT_BASE;
-    cpu->data.gdtr.limit = sizeof(gdt) - 1u;
-    cpu->data.idtr.flagValid = LIB_TRUE;
-    cpu->data.idtr.sregtype = SREG_IDTR;
-    cpu->data.idtr.base = UD_S1_IDT_BASE;
-    cpu->data.idtr.limit = sizeof(idt) - 1u;
-    cpu->data.cs.selector = 0x0008u;
-    cpu->data.cs.base = UD_S1_CODE_BASE;
-    cpu->data.cs.limit = 0xffffu;
-    cpu->data.cs.flagValid = LIB_TRUE;
-    cpu->data.cs.sregtype = SREG_CODE;
-    cpu->data.cs.dpl = 0u;
-    cpu->data.cs.seg.executable = LIB_TRUE;
-    cpu->data.ss.selector = 0x0010u;
-    cpu->data.ss.base = UD_S1_STACK_BASE;
-    cpu->data.ss.limit = 0xffffu;
-    cpu->data.ss.flagValid = LIB_TRUE;
-    cpu->data.ss.sregtype = SREG_STACK;
-    cpu->data.ss.dpl = 0u;
-    cpu->data.ss.seg.data.writable = LIB_TRUE;
-    cpu->data.ds = cpu->data.ss;
-    cpu->data.ds.sregtype = SREG_DATA;
-    cpu->data.es = cpu->data.ds;
-    cpu->data.fs = cpu->data.ds;
-    cpu->data.gs = cpu->data.ds;
-    cpu->data.esp = 0x00008000u;
-    cpu->data.eip = 0u;
-    return 1;
+    return core_machine_memory_write(state->machine, 0u, setup,
+            sizeof(setup)) == LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0x0500u, tables,
+            sizeof(tables)) == LIB_STATUS_OK &&
+        core_machine_run(state->machine, (core_machine_run_budget){2u, 0u},
+            &result) == LIB_STATUS_OK && result.executed == 2u &&
+        result.reason == CORE_MACHINE_STOP_BUDGET &&
+        core_machine_debug_write_register(state->machine, CORE_MACHINE_DEBUG_CR0,
+            VCPU_CR0_PE) == LIB_STATUS_OK &&
+        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
 static lib_i32 ud_s1_protected_delivery(const lib_u8 *code,
@@ -154,35 +149,38 @@ static lib_i32 ud_s1_protected_delivery(const lib_u8 *code,
     ud_s1_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
-    t_cpu after;
+    core_machine_debug_cpu_snapshot before = {0};
+    core_machine_debug_cpu_snapshot after = {0};
     lib_i32 failed = !ud_s1_boot_protected(&state, code, bytes, LIB_TRUE);
 
     if (!failed) {
-        before = state.machine->executor_cpu;
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK;
-        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= !ud_s1_delivered(&diagnostic) ||
-            after.data.eip != UD_S1_HANDLER_OFFSET ||
-            after.data.esp != before.data.esp - 12u ||
-            after.data.eflags != (before.data.eflags & ~VCPU_EFLAGS_IF) ||
+            after.eip != UD_S1_HANDLER_OFFSET ||
+            after.esp != before.esp - 12u ||
+            after.eflags != (before.eflags & ~CORE_MACHINE_DEBUG_EFLAGS_IF) ||
             !ud_s1_gprs_same(&before, &after) ||
             !ud_s1_data_sregs_same(&before, &after) ||
-            !test_core_machine_fixture_read_linear(state.machine,
-                after.data.ss.base + after.data.esp, CORE_MACHINE_REFERENCE_OF(frame),
-                sizeof(frame)) || frame[0] != 0u ||
-            frame[1] != before.data.cs.selector ||
-            frame[2] != before.data.eflags;
+            core_machine_debug_read_linear(state.machine,
+                after.ss.base + after.esp, frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
+            frame[1] != before.cs.selector ||
+            frame[2] != before.eflags;
     }
     if (!failed) {
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            state.machine->executor_cpu.data.eip != UD_S1_HANDLER_OFFSET + 1u;
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            after.eip != UD_S1_HANDLER_OFFSET + 1u;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -370,22 +368,24 @@ static lib_i32 ud_s1_protected_invalid_gate(void)
     ud_s1_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
-    t_cpu after;
+    core_machine_debug_cpu_snapshot before = {0};
+    core_machine_debug_cpu_snapshot after = {0};
     lib_i32 failed = !ud_s1_boot_protected(&state, code, sizeof(code), LIB_FALSE);
 
     if (!failed) {
-        before = state.machine->executor_cpu;
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK;
-        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
-            after.data.eflags != before.data.eflags ||
+            after.eip != before.eip || after.esp != before.esp ||
+            after.eflags != before.eflags ||
             !ud_s1_gprs_same(&before, &after) ||
             !ud_s1_data_sregs_same(&before, &after);
     }

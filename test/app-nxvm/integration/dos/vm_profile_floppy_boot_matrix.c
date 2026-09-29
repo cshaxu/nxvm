@@ -6,6 +6,7 @@
 
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -392,14 +393,27 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
             }
             printf("\n");
         }
-        printf("T515:INI-BOOT:%s:REGS:EAX=%08X:EBX=%08X:ECX=%08X:EDX=%08X:ESI=%08X:EDI=%08X:EBP=%08X\n",
-            name, session->core_machine->executor_cpu.data.eax,
-            session->core_machine->executor_cpu.data.ebx,
-            session->core_machine->executor_cpu.data.ecx,
-            session->core_machine->executor_cpu.data.edx,
-            session->core_machine->executor_cpu.data.esi,
-            session->core_machine->executor_cpu.data.edi,
-            session->core_machine->executor_cpu.data.ebp);
+        {
+            const core_machine_debug_register registers[] = {
+                CORE_MACHINE_DEBUG_EAX, CORE_MACHINE_DEBUG_EBX,
+                CORE_MACHINE_DEBUG_ECX, CORE_MACHINE_DEBUG_EDX,
+                CORE_MACHINE_DEBUG_ESI, CORE_MACHINE_DEBUG_EDI,
+                CORE_MACHINE_DEBUG_EBP
+            };
+            lib_u32 values[7];
+            lib_size captured;
+
+            for (captured = 0u; captured < sizeof(registers) / sizeof(registers[0]);
+                    ++captured) {
+                if (core_machine_debug_read_register(session->core_machine,
+                        registers[captured], &values[captured]) != LIB_STATUS_OK) break;
+            }
+            if (captured == sizeof(registers) / sizeof(registers[0])) {
+                printf("T515:INI-BOOT:%s:REGS:EAX=%08X:EBX=%08X:ECX=%08X:EDX=%08X:ESI=%08X:EDI=%08X:EBP=%08X\n",
+                    name, values[0], values[1], values[2], values[3],
+                    values[4], values[5], values[6]);
+            }
+        }
         if (core_machine_memory_read(session->core_machine, cpu.cs_base + cpu.eip, pc_bytes,
                 sizeof(pc_bytes)) == LIB_STATUS_OK) {
             printf("T516:INI-BOOT:%s:PC-BYTES:%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X\n",

@@ -366,3 +366,20 @@ removed. Both Model40 boots meet the unchanged 90-second bound with the existing
 observer-free probe. INIs, external masters and MyNES remain unchanged. S17's
 packet is removed; opaque CPU extraction and all remaining ledger dispositions
 stay in T539, not transferred or declared complete.
+
+## S18: Complete CPU Extraction
+
+Admitted at 25ec0f6c3 under the owner's automatic-S authorization. The
+[boundary](../etc/architecture/t539-s18-cpu-extraction.md) consumes all nine CPU
+files and their callers/tests, rather than closing another prerequisite-only
+batch. Implementation and receiving verification are pending; Current owns the
+active packet. No CPU migration or artifact result is claimed by admission.
+
+### Owner Replanning, 2026-09-29
+
+The owner requested smaller S deliveries because the original CPU packet was
+not trackable. [S18-S32](../etc/architecture/t539-cpu-work-packages.md) supersede
+its all-in-one delivery scope. S18 is still unaccepted and now first recovers a
+green incremental baseline; existing uncommitted work and narrow test results
+remain in its evidence. This amendment neither closes the CPU row nor waives
+full-unit gates. Later S packages are planned; Current owns their admission.

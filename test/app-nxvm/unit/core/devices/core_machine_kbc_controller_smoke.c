@@ -6,16 +6,20 @@
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
 
-#include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/kbc.h"
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 static lib_u8 core_machine_kbc_read_byte(t_port *port, lib_u16 port_id)
 {
     return (lib_u8)core_machine_port_read(port, port_id);
+}
+
+static void count_reset_pulse(void *context)
+{
+    ++*(lib_u32 *)context;
 }
 
 static lib_bool keyboard_has_repeat(const t_kbc *kbc)
@@ -121,7 +125,6 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     core_machine_pic_bus pic_master;
     core_machine_pic_bus pic_slave;
     t_ram memory = {0};
-    core_machine_cpu_execution_context execution = {0};
     t_port port;
     lib_i32 failed = 0;
 
@@ -129,7 +132,7 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     core_machine_pic_initialize(&pic_master, &pic_slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
-        &memory, &execution, LIB_TRUE);
+        &memory, LIB_NULL, LIB_NULL, LIB_TRUE);
     core_machine_kbc_initialize_pic(&port);
 
     core_machine_port_write(&port, 0x0064u, 0xd4u);
@@ -502,14 +505,23 @@ static lib_i32 core_machine_kbc_typematic_output_boundary(void)
 
 typedef struct core_machine_kbc_cpu_fixture {
     core_machine *machine;
+    lib_status reset_status;
 } core_machine_kbc_cpu_fixture;
 
 static void core_machine_kbc_cpu_reset(void *opaque)
 {
     core_machine_kbc_cpu_fixture *fixture = opaque;
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    };
 
     if (fixture != LIB_NULL)
-        (void)test_core_machine_fixture_reset_real_mode(fixture->machine);
+        fixture->reset_status = core_machine_cpu_debug_patch_registers(
+            &fixture->machine->executor_cpu_execution, &entry);
 }
 
 static const core_machine_execution_provider core_machine_kbc_cpu_provider = {
@@ -533,17 +545,17 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
     };
     core_machine_kbc_cpu_fixture fixture = {0};
     core_machine_run_result result;
+    core_machine_cpu_state cpu;
     lib_u16 offset = 0x0100u;
     lib_u16 segment = 0u;
     lib_i32 failed = !test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &core_machine_kbc_cpu_provider, &fixture, &fixture.machine);
+        &core_machine_kbc_cpu_provider, &fixture, &fixture.machine) ||
+        fixture.reset_status != LIB_STATUS_OK;
 
     if (!failed) {
         core_machine_kbc_initialize_pic(&fixture.machine->executor_port);
         core_machine_port_write(&fixture.machine->executor_port, 0x0021u, 0xfdu);
-        failed |= !test_core_machine_fixture_prepare_real_mode_execution(
-                fixture.machine, 0u) ||
-            core_machine_memory_write(fixture.machine, 0u, code, sizeof(code)) !=
+        failed |= core_machine_memory_write(fixture.machine, 0u, code, sizeof(code)) !=
                 LIB_STATUS_OK ||
             core_machine_memory_write(fixture.machine, 0x0024u, &offset,
                 sizeof(offset)) != LIB_STATUS_OK ||
@@ -555,7 +567,8 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
     if (!failed) {
         failed |= core_machine_run(fixture.machine, (core_machine_run_budget){3u, 0u},
                 &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
-            fixture.machine->executor_cpu.data.eip != 6u ||
+            core_machine_get_cpu_state(fixture.machine, &cpu) != LIB_STATUS_OK ||
+            cpu.eip != 6u ||
             x86_keyboard_get_signals(fixture.machine->shared_kbc.connect.keyboard).bat_ready ||
             (core_machine_port_read(&fixture.machine->executor_port, 0x64u) & VKBC_STATUS_OBF) == 0u ||
             !fixture.machine->shared_kbc.connect.irq1_source.asserted;
@@ -563,7 +576,8 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
     if (!failed) {
         failed |= core_machine_run(fixture.machine, (core_machine_run_budget){2u, 0u},
                 &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
-            fixture.machine->executor_cpu.data.eip != offset ||
+            core_machine_get_cpu_state(fixture.machine, &cpu) != LIB_STATUS_OK ||
+            cpu.eip != offset ||
             !CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(1u)) ||
             core_machine_port_read(&fixture.machine->executor_port, 0x60u) != 0xaau ||
@@ -579,7 +593,7 @@ lib_i32 main(void)
     core_machine_pic_bus pic_master;
     core_machine_pic_bus pic_slave;
     t_ram memory = {0};
-    core_machine_cpu_execution_context execution = {0};
+    lib_u32 reset_pulses = 0u;
     t_port port;
     lib_i32 failed = 0;
     lib_i32 mixed_failed;
@@ -598,7 +612,7 @@ lib_i32 main(void)
     core_machine_pic_initialize(&pic_master, &pic_slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
-        &memory, &execution, LIB_TRUE);
+        &memory, count_reset_pulse, &reset_pulses, LIB_TRUE);
     core_machine_kbc_initialize_pic(&port);
 
     mixed_failed = core_machine_kbc_mixed_fifo_lifecycle();
@@ -836,17 +850,17 @@ lib_i32 main(void)
     core_machine_port_write(&port, 0x0064u, 0xd0u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x03u;
     core_machine_port_write(&port, 0x0064u, 0xffu);
-    failed |= core_machine_cpu_execution_consume_reset_request(&execution) ||
+    failed |= reset_pulses != 0u ||
         !memory.data.flagA20;
     core_machine_port_write(&port, 0x0064u, 0xfeu);
-    failed |= !core_machine_cpu_execution_consume_reset_request(&execution) ||
+    failed |= reset_pulses != 1u ||
         !memory.data.flagA20;
     core_machine_port_write(&port, 0x0064u, 0xd0u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x03u;
     core_machine_port_write(&port, 0x0064u, 0xd1u);
     core_machine_port_write(&port, 0x0060u, 0x00u);
     failed |= memory.data.flagA20 ||
-        !core_machine_cpu_execution_consume_reset_request(&execution);
+        reset_pulses != 2u;
 
     core_machine_kbc_reset(&kbc);
     core_machine_port_write(&port, 0x0064u, 0x60u);

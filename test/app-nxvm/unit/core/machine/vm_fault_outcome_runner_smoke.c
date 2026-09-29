@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory.h"
@@ -12,17 +11,27 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
 #include "app-nxvm/machine/machine_private.h"
-#include "../devices/support/core_machine_cpu_fixture.h"
 
 static lib_i32 vm_fault_outcome_prepare(vm_machine *session)
 {
-    const lib_u8 program[] = { 0xd6u };
+    /* T337_REAL_UD_TERMINAL_GUEST_LIDT: LIDT [0100h] makes vector 6
+       unavailable before the invalid opcode, without private CPU mutation. */
+    const lib_u8 program[] = { 0x0fu, 0x01u, 0x1eu, 0x00u, 0x01u, 0xd6u };
+    const lib_u8 idtr[] = { 0x17u, 0u, 0u, 0u, 0u, 0u };
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    };
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL) return 0;
-    return test_core_machine_fixture_prepare_real_mode_execution(
-            session->core_machine, 0u) && core_machine_memory_write(session->core_machine, 0u, program,
-        sizeof(program)) == LIB_STATUS_OK &&
-        test_core_machine_fixture_preflight_real_ud_terminal(session->core_machine);
+    return core_machine_debug_patch_registers(session->core_machine, &entry) ==
+        LIB_STATUS_OK && core_machine_memory_write(session->core_machine, 0u,
+        program, sizeof(program)) == LIB_STATUS_OK &&
+        core_machine_memory_write(session->core_machine, 0x0100u, idtr,
+            sizeof(idtr)) == LIB_STATUS_OK;
 }
 
 lib_i32 main(void)

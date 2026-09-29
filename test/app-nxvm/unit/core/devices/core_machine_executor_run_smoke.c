@@ -4,7 +4,7 @@
 
 
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 lib_i32 main(void)
 {

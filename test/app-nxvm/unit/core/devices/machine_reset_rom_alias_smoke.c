@@ -31,7 +31,7 @@ static lib_status reset_rom_reset(void *opaque,
 }
 
 static const core_machine_firmware_provider reset_rom_provider = {
-    reset_rom_configure, reset_rom_reset, LIB_NULL, LIB_NULL
+    reset_rom_configure, reset_rom_reset, LIB_NULL
 };
 
 static lib_i32 reset_rom_run(core_machine_cpu_profile profile)

@@ -7,7 +7,6 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/session_assets.h"
-#include "../devices/support/core_machine_cpu_fixture.h"
 
 #define VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET 100000u
 #define VM_NO_MEDIA_TEXT_CELLS (80u * 25u)
@@ -45,7 +44,7 @@ lib_i32 main(void)
     lib_u32 f2_count = 0u;
     lib_i32 key_wait_seen = 0;
     lib_i32 failed = 0;
-    t_cpu cpu;
+    lib_u32 eax;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK) return 1;
     if (!session->active || session->core_machine == LIB_NULL) goto fail;
@@ -62,9 +61,12 @@ lib_i32 main(void)
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0x10u) {
             ++int10_count;
-            cpu = test_core_machine_fixture_capture_cpu_after_run(
-                session->core_machine);
-            functions[cpu.data.ah] = 1u;
+            if (core_machine_debug_read_register(session->core_machine,
+                    CORE_MACHINE_DEBUG_EAX, &eax) != LIB_STATUS_OK) {
+                failed = 1;
+                break;
+            }
+            functions[(eax >> 8u) & 0xffu] = 1u;
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) ++f2_count;
         if (opcode[0] == 0xb4u && opcode[1] == 0x11u) key_wait_seen = 1;

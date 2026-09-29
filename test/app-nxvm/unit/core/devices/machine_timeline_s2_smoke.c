@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/timeline.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 typedef struct timeline_probe {
     core_machine_timeline *timeline;

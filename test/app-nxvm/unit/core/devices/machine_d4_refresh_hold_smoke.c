@@ -5,7 +5,7 @@
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/transaction.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 #define REFRESH_PROBE_EVENT_CAPACITY 1024u
 

@@ -86,6 +86,9 @@ static const core_machine_port_provider timing_manifest_port_provider = {
 static const timing_manifest_record timing_manifest_records[] = {
 #include "cpu_timing_manifest_metadata_catalog.inc"
 };
+_Static_assert(sizeof(timing_manifest_records) /
+    sizeof(timing_manifest_records[0]) == 4906u,
+    "CPU timing canonical manifest count drifted");
 static lib_i32 timing_manifest_covered[sizeof(timing_manifest_records) /
     sizeof(timing_manifest_records[0])];
 static core_machine_retirement_observation timing_manifest_results[

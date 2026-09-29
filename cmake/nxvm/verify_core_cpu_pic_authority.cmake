@@ -15,15 +15,30 @@ if(vm_cpu_pic_wiring)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" core_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_bus.c" bus_source)
 string(FIND "${core_source}"
-    "core_machine_cpu_execution_context_bind_pic(&machine->executor_cpu_execution,"
-    core_cpu_pic_bind_call)
-string(FIND "${core_source}"
-    "&machine->shared_pic_master, &machine->shared_pic_slave);"
-    core_cpu_pic_bind_targets)
-if(core_cpu_pic_bind_call EQUAL -1 OR core_cpu_pic_bind_targets EQUAL -1)
-    message(FATAL_ERROR "Core does not own the required CPU execution/PIC binding")
+    "&core_machine_cpu_bus, machine);" core_cpu_bus_bind)
+if(core_cpu_bus_bind EQUAL -1)
+    message(FATAL_ERROR "Core board does not bind the CPU bus provider")
 endif()
+foreach(token IN ITEMS
+    ".interrupt_pending = core_machine_cpu_bus_interrupt_pending"
+    ".acknowledge_interrupt = core_machine_cpu_bus_acknowledge_interrupt"
+    "core_machine_pic_scan_interrupt(&machine->shared_pic_master,"
+    "core_machine_pic_get_interrupt(&machine->shared_pic_master,"
+    "&machine->shared_pic_slave)"
+    "CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE")
+    string(FIND "${bus_source}" "${token}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "CPU/PIC board bus contract is missing: ${token}")
+    endif()
+endforeach()
+foreach(cpu_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h)
+    file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/${cpu_file}" contents)
+    if(contents MATCHES "core_machine_pic_|shared_pic_|bind_pic|pic8259/")
+        message(FATAL_ERROR "CPU retains a concrete PIC dependency: ${cpu_file}")
+    endif()
+endforeach()
 
 foreach(old_file pic.c pic.h pic_interface.h)
     if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/${old_file}")

@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "app-nxvm/devices/debug_interface.h"
 
 typedef struct inspection_probe {
     lib_u32 reads;
@@ -101,6 +101,16 @@ lib_i32 main(void)
         const lib_u32 directory = 0x4003u, page = 0x5003u;
         lib_u32 copied = 0u;
         const lib_u8 nop = 0x90u;
+        const core_machine_debug_register_patch setup = {
+            .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR3),
+            .values = { [CORE_MACHINE_DEBUG_CR3] = 0x3000u }
+        };
+        lib_u32 cr0;
 
         failed |= core_machine_memory_write_physical(memory, 0x3000u,
             (lib_uptr)&directory, sizeof(directory)) != LIB_STATUS_OK;
@@ -108,9 +118,11 @@ lib_i32 main(void)
             (lib_uptr)&page, sizeof(page)) != LIB_STATUS_OK;
         failed |= core_machine_memory_write_physical(memory, 0x5000u,
             (lib_uptr)&nop, sizeof(nop)) != LIB_STATUS_OK;
-        failed |= !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u);
-        machine->executor_cpu.data.cr3 = 0x3000u;
-        machine->executor_cpu.data.cr0 |= 0x80000001u;
+        failed |= core_machine_debug_patch_registers(machine, &setup) != LIB_STATUS_OK ||
+            core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_CR0,
+                &cr0) != LIB_STATUS_OK ||
+            core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_CR0,
+                cr0 | VCPU_CR0_PG | VCPU_CR0_PE) != LIB_STATUS_OK;
         core_machine_cpu_execution_invalidate_prefetch(&machine->executor_cpu_execution);
         failed |= !core_machine_cpu_execution_preview_lexeme(
             &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||

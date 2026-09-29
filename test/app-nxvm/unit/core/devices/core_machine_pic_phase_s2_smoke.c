@@ -3,23 +3,32 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/debug_interface.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 typedef struct pic_phase_s2_state {
     core_machine *machine;
     core_machine_trace_event events[256u];
     lib_u32 count;
+    lib_status reset_status;
 } pic_phase_s2_state;
 
 static void pic_phase_s2_reset(void *opaque)
 {
     pic_phase_s2_state *state = (pic_phase_s2_state *)opaque;
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    };
 
     if (state != LIB_NULL) {
-        (void)test_core_machine_fixture_reset_real_mode(state->machine);
+        state->reset_status = core_machine_cpu_debug_patch_registers(
+            &state->machine->executor_cpu_execution, &entry);
     }
 }
 
@@ -58,6 +67,7 @@ static lib_i32 pic_phase_s2_has_acknowledgement_before_frame(
             break;
         }
     }
+    if (acknowledgement == 0u) return 0;
     for (index = acknowledgement; index < state->count; ++index) {
         const core_machine_trace_event *event = &state->events[index];
 
@@ -82,13 +92,26 @@ lib_i32 main(void)
     pic_phase_s2_state state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
+    core_machine_cpu_state cpu;
+    const core_machine_debug_register_patch interrupt_entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+        .values = {
+            [CORE_MACHINE_DEBUG_ESP] = 0x00008000u,
+            [CORE_MACHINE_DEBUG_EFLAGS] = 0x00000200u
+        }
+    };
     const core_machine_trace_provider trace = { pic_phase_s2_trace, &state };
     lib_i32 failed = 0;
 
     lib_memory_set(&state, 0, sizeof(state));
     lib_memory_set(&irq, 0, sizeof(irq));
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
-            &pic_phase_s2_provider, &state, &state.machine)) return 1;
+            &pic_phase_s2_provider, &state, &state.machine) ||
+        state.reset_status != LIB_STATUS_OK) {
+        core_machine_destroy(state.machine);
+        return 1;
+    }
     failed |= core_machine_set_trace_provider(state.machine, &trace) !=
         LIB_STATUS_OK || core_machine_memory_write(state.machine, 0u, program,
             sizeof(program)) != LIB_STATUS_OK || core_machine_memory_write(
@@ -96,8 +119,8 @@ lib_i32 main(void)
         core_machine_memory_write(state.machine, 0x0100u, handler,
             sizeof(handler)) != LIB_STATUS_OK;
     if (!failed) {
-        state.machine->executor_cpu.data.esp = 0x00008000u;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
+        failed |= core_machine_debug_patch_registers(state.machine,
+            &interrupt_entry) != LIB_STATUS_OK;
         test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -108,12 +131,14 @@ lib_i32 main(void)
             core_machine_run(state.machine, (core_machine_run_budget){ 8u, 0u },
                 &result) != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            state.machine->executor_cpu.data.eip != 0x0101u ||
+            core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
+            cpu.eip != 0x0101u ||
             CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || !CORE_MACHINE_BIT_IS_SET(
                 test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
             !pic_phase_s2_has_acknowledgement_before_frame(&state) ||
             core_machine_reset(state.machine) != LIB_STATUS_OK ||
+            state.reset_status != LIB_STATUS_OK ||
             state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
             state.machine->transaction.committed_count != 0u ||
             state.machine->transaction.cancelled_count != 0u;

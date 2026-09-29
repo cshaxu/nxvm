@@ -5,10 +5,50 @@
 
 
 
-#include "../devices/support/core_machine_cpu_fixture.h"
+#include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/debug_interface.h"
 
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
+
+static lib_bool sessions_are_isolated(core_machine *first, core_machine *second)
+{
+    const lib_u8 values[] = { 0x11u, 0x22u };
+    core_machine *machines[] = { first, second };
+    lib_u8 observed;
+    lib_u8 enabled;
+    lib_u32 address;
+    lib_u32 eax;
+    lib_u32 index;
+
+    if (first == LIB_NULL || second == LIB_NULL || first == second ||
+        &first->executor_cpu_execution == &second->executor_cpu_execution ||
+        &first->executor_memory == &second->executor_memory ||
+        &first->executor_port == &second->executor_port ||
+        &first->shared_rtc == &second->shared_rtc ||
+        &first->fdc == &second->fdc || &first->hdc == &second->hdc) return LIB_FALSE;
+    for (index = 0u; index < 2u; ++index) {
+        if (core_machine_debug_write_real(machines[index], 0u, 0u,
+                &values[index], 1u) != LIB_STATUS_OK ||
+            core_machine_debug_write_register(machines[index],
+                CORE_MACHINE_DEBUG_EAX, values[index] * 0x01010101u) !=
+                    LIB_STATUS_OK) return LIB_FALSE;
+    }
+    if (core_machine_debug_set_watchpoint(first, CORE_MACHINE_DEBUG_WATCH_READ,
+            0x1234u) != LIB_STATUS_OK) return LIB_FALSE;
+    for (index = 0u; index < 2u; ++index) {
+        if (core_machine_debug_read_real(machines[index], 0u, 0u,
+                &observed, 1u) != LIB_STATUS_OK || observed != values[index] ||
+            core_machine_debug_read_register(machines[index],
+                CORE_MACHINE_DEBUG_EAX, &eax) != LIB_STATUS_OK ||
+            eax != values[index] * 0x01010101u ||
+            core_machine_debug_get_watchpoint(machines[index],
+                CORE_MACHINE_DEBUG_WATCH_READ, &enabled, &address) !=
+                    LIB_STATUS_OK || enabled != (index == 0u) ||
+            (enabled && address != 0x1234u)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
 
 lib_i32 main(void)
 {
@@ -21,7 +61,7 @@ lib_i32 main(void)
 
     if (!failed) {
         failed |= first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;
-        failed |= !test_core_machine_fixture_sessions_are_isolated(
+        failed |= !sessions_are_isolated(
             first->core_machine, second->core_machine);
     }
 

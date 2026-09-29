@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/retirement_observation_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
@@ -595,9 +596,9 @@ static void model40_capture_observe(void *opaque,
         lib_u32 sample = capture->d4_memory_iteration_count++;
 
         if (sample < MODEL40_CAPTURE_D4_MEMORY_HISTORY) {
-            capture->d4_memory_ebp[sample] = capture->machine->executor_cpu.data.ebp;
-            capture->d4_memory_next_pc[sample] = capture->machine->executor_cpu.data.cs.base +
-                capture->machine->executor_cpu.data.eip;
+            capture->d4_memory_ebp[sample] = observation->current_cpu.ebp;
+            capture->d4_memory_next_pc[sample] = observation->current_cpu.cs.base +
+                observation->current_cpu.eip;
         }
     }
     if (capture->d4_timer_history_enabled &&
@@ -654,18 +655,13 @@ static void model40_capture_observe(void *opaque,
         observation->point.linear_pc == 0x000f57a6u) {
         capture->iret_frame_seen = LIB_TRUE;
         ++capture->iret_frame_count;
-        capture->iret_ss = capture->machine->executor_cpu_instructions.
-            data.oldcpu.data.ss.selector;
-        capture->iret_sp = (lib_u16)capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.esp;
-        capture->iret_ss_base = capture->machine->executor_cpu_instructions.
-            data.oldcpu.data.ss.base;
+        capture->iret_ss = observation->instruction_entry_cpu.ss.selector;
+        capture->iret_sp = (lib_u16)observation->instruction_entry_cpu.esp;
+        capture->iret_ss_base = observation->instruction_entry_cpu.ss.base;
         capture->iret_operand_size_32 = observation->operand_size_32;
-        capture->iret_stack_size_32 = capture->machine->executor_cpu_instructions.
-            data.oldcpu.data.ss.seg.data.big;
-        capture->iret_cr0 = capture->machine->executor_cpu_instructions.
-            data.oldcpu.data.cr0;
-        capture->iret_frame_address = capture->machine->executor_cpu.data.ss.base +
+        capture->iret_stack_size_32 = observation->instruction_entry_cpu.ss.big;
+        capture->iret_cr0 = observation->instruction_entry_cpu.cr0;
+        capture->iret_frame_address = observation->current_cpu.ss.base +
             capture->iret_sp;
         if (core_machine_memory_read(capture->machine,
                 capture->iret_frame_address,
@@ -675,36 +671,28 @@ static void model40_capture_observe(void *opaque,
     }
     if (capture->machine != LIB_NULL && !capture->interrupt_scan_entry_seen &&
         observation->point.linear_pc == 0x000f004du &&
-        (capture->machine->executor_cpu_instructions.data.oldcpu.data.cs.base +
-            capture->machine->executor_cpu_instructions.data.oldcpu.data.eip <
+        (observation->instruction_entry_cpu.cs.base +
+            observation->instruction_entry_cpu.eip <
             0x000f004du ||
-        capture->machine->executor_cpu_instructions.data.oldcpu.data.cs.base +
-            capture->machine->executor_cpu_instructions.data.oldcpu.data.eip >
+        observation->instruction_entry_cpu.cs.base +
+            observation->instruction_entry_cpu.eip >
             0x000f0054u)) {
         capture->interrupt_scan_entry_seen = LIB_TRUE;
-        capture->interrupt_scan_source_cs = capture->machine->executor_cpu_instructions.
-            data.oldcpu.data.cs.selector;
-        capture->interrupt_scan_source_ip = (lib_u16)capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.eip;
-        capture->interrupt_scan_source_sp = (lib_u16)capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.esp;
-        capture->interrupt_scan_ss = capture->machine->executor_cpu.data.ss.selector;
-        capture->interrupt_scan_sp = (lib_u16)capture->machine->executor_cpu.data.esp;
+        capture->interrupt_scan_source_cs = observation->instruction_entry_cpu.cs.selector;
+        capture->interrupt_scan_source_ip = (lib_u16)observation->instruction_entry_cpu.eip;
+        capture->interrupt_scan_source_sp = (lib_u16)observation->instruction_entry_cpu.esp;
+        capture->interrupt_scan_ss = observation->current_cpu.ss.selector;
+        capture->interrupt_scan_sp = (lib_u16)observation->current_cpu.esp;
     }
     if (capture->machine != LIB_NULL &&
         observation->point.linear_pc == 0x000f001fu) {
         capture->interrupt_service_entry_seen = LIB_TRUE;
         ++capture->interrupt_service_entry_count;
-        capture->interrupt_service_ss = capture->machine->executor_cpu_instructions.
-            data.oldcpu.data.ss.selector;
-        capture->interrupt_service_sp = (lib_u16)capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.esp;
-        capture->interrupt_service_source_cs = capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.cs.selector;
-        capture->interrupt_service_source_ip = (lib_u16)capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.eip;
-        capture->interrupt_service_source_sp = (lib_u16)capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.esp;
+        capture->interrupt_service_ss = observation->instruction_entry_cpu.ss.selector;
+        capture->interrupt_service_sp = (lib_u16)observation->instruction_entry_cpu.esp;
+        capture->interrupt_service_source_cs = observation->instruction_entry_cpu.cs.selector;
+        capture->interrupt_service_source_ip = (lib_u16)observation->instruction_entry_cpu.eip;
+        capture->interrupt_service_source_sp = (lib_u16)observation->instruction_entry_cpu.esp;
         for (index = 0u; index < capture->recent_count; ++index) {
             lib_u8 recent_index = (capture->recent_next + index) %
                 (sizeof(capture->recent_linear_pc) /
@@ -793,8 +781,7 @@ static void model40_capture_observe(void *opaque,
         observation->point.byte_count >= 2u && observation->point.bytes[0u] == 0xe6u) {
         capture->reset_instruction_seen = LIB_TRUE;
         capture->reset_instruction_port = observation->point.bytes[1u];
-        capture->reset_instruction_value = (lib_u8)capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.eax;
+        capture->reset_instruction_value = (lib_u8)observation->instruction_entry_cpu.eax;
         capture->reset_instruction_state_seen = LIB_TRUE;
         capture->reset_instruction_shutdown_status = x86_rtc_read_register(capture->machine->shared_rtc, 0x0fu);
         capture->reset_instruction_a20 =
@@ -802,11 +789,9 @@ static void model40_capture_observe(void *opaque,
     }
     if (capture->machine != LIB_NULL && capture->low_stack_transition_seen &&
         (!capture->minimum_stack_seen ||
-        (lib_u16)capture->machine->
-            executor_cpu.data.esp < capture->minimum_stack_value)) {
+        (lib_u16)observation->current_cpu.esp < capture->minimum_stack_value)) {
         capture->minimum_stack_seen = LIB_TRUE;
-        capture->minimum_stack_value = (lib_u16)capture->machine->
-            executor_cpu.data.esp;
+        capture->minimum_stack_value = (lib_u16)observation->current_cpu.esp;
         capture->minimum_stack_pc = observation->point.linear_pc;
         for (index = 0u; index < capture->recent_count; ++index) {
             lib_u8 recent_index = (capture->recent_next + index) %
@@ -819,15 +804,12 @@ static void model40_capture_observe(void *opaque,
         capture->minimum_stack_trace_count = capture->recent_count;
     }
     if (capture->machine != LIB_NULL && !capture->low_stack_transition_seen &&
-        capture->machine->executor_cpu_instructions.
-            data.oldcpu.data.esp > 0x0100u &&
-        capture->machine->executor_cpu.data.esp <= 0x0100u) {
+        observation->instruction_entry_cpu.esp > 0x0100u &&
+        observation->current_cpu.esp <= 0x0100u) {
         capture->low_stack_transition_seen = LIB_TRUE;
         capture->low_stack_transition_pc = observation->point.linear_pc;
-        capture->low_stack_transition_before = (lib_u16)capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.esp;
-        capture->low_stack_transition_after = (lib_u16)capture->machine->
-            executor_cpu.data.esp;
+        capture->low_stack_transition_before = (lib_u16)observation->instruction_entry_cpu.esp;
+        capture->low_stack_transition_after = (lib_u16)observation->current_cpu.esp;
         for (index = 0u; index < capture->recent_count; ++index) {
             lib_u8 recent_index = (capture->recent_next + index) %
                 (sizeof(capture->recent_linear_pc) /
@@ -841,15 +823,12 @@ static void model40_capture_observe(void *opaque,
         capture->low_stack_transition_trace_count = capture->recent_count;
     }
     if (capture->machine != LIB_NULL && !capture->stack_exhaustion_seen &&
-        capture->machine->executor_cpu_instructions.
-            data.oldcpu.data.esp > 0x0020u &&
-        capture->machine->executor_cpu.data.esp <= 0x0020u) {
+        observation->instruction_entry_cpu.esp > 0x0020u &&
+        observation->current_cpu.esp <= 0x0020u) {
         capture->stack_exhaustion_seen = LIB_TRUE;
         capture->stack_exhaustion_pc = observation->point.linear_pc;
-        capture->stack_exhaustion_before = (lib_u16)capture->machine->
-            executor_cpu_instructions.data.oldcpu.data.esp;
-        capture->stack_exhaustion_after = (lib_u16)capture->machine->
-            executor_cpu.data.esp;
+        capture->stack_exhaustion_before = (lib_u16)observation->instruction_entry_cpu.esp;
+        capture->stack_exhaustion_after = (lib_u16)observation->current_cpu.esp;
         for (index = 0u; index < capture->recent_count; ++index) {
             lib_u8 recent_index = (capture->recent_next + index) %
                 (sizeof(capture->recent_linear_pc) /
@@ -882,12 +861,12 @@ static void model40_capture_observe(void *opaque,
         capture->last_software_interrupt_vector = observation->point.bytes[opcode_index + 1u];
         if (capture->machine != LIB_NULL) {
             capture->last_software_interrupt_ss =
-                capture->machine->executor_cpu.data.ss.selector;
+                observation->current_cpu.ss.selector;
             capture->last_software_interrupt_sp =
-                (lib_u16)capture->machine->executor_cpu.data.esp;
+                (lib_u16)observation->current_cpu.esp;
             capture->last_software_interrupt_target =
-                capture->machine->executor_cpu.data.cs.base +
-                capture->machine->executor_cpu.data.eip;
+                observation->current_cpu.cs.base +
+                observation->current_cpu.eip;
             capture->last_software_interrupt_target_read =
                 core_machine_memory_read_physical(&capture->machine->executor_memory,
                     capture->last_software_interrupt_target,
@@ -1257,6 +1236,8 @@ lib_i32 main(lib_i32 argc, char **argv)
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result = { 0 };
     core_machine_cpu_diagnostic diagnostic = { 0 };
+    core_machine_debug_cpu_snapshot current_cpu;
+    core_machine_debug_cpu_snapshot entry_cpu;
     model40_retirement_capture capture = { 0 };
     integration_ini_session ini_session = {0};
     vm_machine *session;
@@ -1301,8 +1282,8 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (status == LIB_STATUS_OK) {
         capture.reset_vector2_read = core_machine_memory_read(session->core_machine,
             8u, capture.reset_vector2, sizeof(capture.reset_vector2)) == LIB_STATUS_OK;
-        session->core_machine->executor_cpu_instructions.data.flagWW = LIB_TRUE;
-        session->core_machine->executor_cpu_instructions.data.wwLinear = 0x0000001au;
+        status = core_machine_debug_set_watchpoint(session->core_machine,
+            CORE_MACHINE_DEBUG_WATCH_WRITE, 0x0000001au);
     }
     for (index = 0u; status == LIB_STATUS_OK && index < MODEL40_CAPTURE_RUN_LIMIT &&
         (!capture.checkpoint_reached || (c1_diagnostic && !capture.c1_checkpoint_reached) ||
@@ -1323,6 +1304,13 @@ lib_i32 main(lib_i32 argc, char **argv)
             status = vm_machine_waiting_advance(session, &result, &advanced);
             if (status != LIB_STATUS_OK || !advanced) break;
         }
+        status = core_machine_debug_capture_cpu_snapshot(session->core_machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu);
+        if (status == LIB_STATUS_OK) {
+            status = core_machine_debug_capture_cpu_snapshot(session->core_machine,
+                CORE_MACHINE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &entry_cpu);
+        }
+        if (status != LIB_STATUS_OK) break;
         if (capture.last_software_interrupt_valid &&
             !capture.last_software_interrupt_target_stopped_read) {
             capture.last_software_interrupt_target_stopped_read =
@@ -1341,8 +1329,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         if (capture.interrupt_service_entry_seen &&
             !capture.interrupt_service_frame_read) {
             capture.interrupt_service_frame_read = core_machine_memory_read(
-                session->core_machine, session->core_machine->executor_cpu_instructions.
-                data.oldcpu.data.ss.base + capture.interrupt_service_sp,
+                session->core_machine, entry_cpu.ss.base + capture.interrupt_service_sp,
                 capture.interrupt_service_frame,
                 sizeof(capture.interrupt_service_frame)) == LIB_STATUS_OK;
         }
@@ -1353,38 +1340,26 @@ lib_i32 main(lib_i32 argc, char **argv)
                 cpu.cs_base + cpu.eip == 0x000f1bd0u) {
                 capture.nmi_entry_seen = LIB_TRUE;
                 ++capture.nmi_entry_count;
-                capture.nmi_entry_ss = session->core_machine->executor_cpu.data.ss.selector;
-                capture.nmi_entry_sp = (lib_u16)
-                    session->core_machine->executor_cpu.data.esp;
-                capture.nmi_entry_ss_base = session->core_machine->
-                    executor_cpu.data.ss.base;
-                capture.nmi_entry_source_cs = session->core_machine->
-                    executor_cpu_instructions.data.oldcpu.data.cs.selector;
-                capture.nmi_entry_source_ip = (lib_u16)session->core_machine->
-                    executor_cpu_instructions.data.oldcpu.data.eip;
-                capture.nmi_entry_source_flags = (lib_u16)session->core_machine->
-                    executor_cpu_instructions.data.oldcpu.data.eflags;
-                capture.nmi_entry_source_cr0 = session->core_machine->
-                    executor_cpu_instructions.data.oldcpu.data.cr0;
+                capture.nmi_entry_ss = current_cpu.ss.selector;
+                capture.nmi_entry_sp = (lib_u16)current_cpu.esp;
+                capture.nmi_entry_ss_base = current_cpu.ss.base;
+                capture.nmi_entry_source_cs = entry_cpu.cs.selector;
+                capture.nmi_entry_source_ip = (lib_u16)entry_cpu.eip;
+                capture.nmi_entry_source_flags = (lib_u16)entry_cpu.eflags;
+                capture.nmi_entry_source_cr0 = entry_cpu.cr0;
                 capture.nmi_entry_vector2_read = core_machine_memory_read(
                     session->core_machine, 8u, capture.nmi_entry_vector2,
                     sizeof(capture.nmi_entry_vector2)) == LIB_STATUS_OK;
                 capture.nmi_entry_frame_read = core_machine_memory_read(
-                    session->core_machine,
-                    session->core_machine->executor_cpu.data.ss.base +
-                        capture.nmi_entry_sp,
+                    session->core_machine, current_cpu.ss.base + capture.nmi_entry_sp,
                     capture.nmi_entry_frame, sizeof(capture.nmi_entry_frame)) ==
                     LIB_STATUS_OK;
             }
             if (!capture.interrupt_handler_entry_seen &&
                 core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK &&
                 cpu.cs_base + cpu.eip == 0x000f0060u &&
-                (session->core_machine->executor_cpu_instructions.data.oldcpu.data.cs.base +
-                    session->core_machine->executor_cpu_instructions.data.oldcpu.data.eip <
-                    0x000f0060u ||
-                session->core_machine->executor_cpu_instructions.data.oldcpu.data.cs.base +
-                    session->core_machine->executor_cpu_instructions.data.oldcpu.data.eip >
-                    0x000f0067u)) {
+                (entry_cpu.cs.base + entry_cpu.eip < 0x000f0060u ||
+                entry_cpu.cs.base + entry_cpu.eip > 0x000f0067u)) {
                 lib_u8 vector;
 
                 capture.interrupt_handler_entry_seen = LIB_TRUE;
@@ -1400,18 +1375,13 @@ lib_i32 main(lib_i32 argc, char **argv)
                         capture.recent_opcode[recent_index];
                 }
                 capture.interrupt_handler_trace_count = capture.recent_count;
-                capture.interrupt_handler_ss = session->core_machine->
-                    executor_cpu.data.ss.selector;
-                capture.interrupt_handler_sp = (lib_u16)session->core_machine->
-                    executor_cpu.data.esp;
-                capture.interrupt_handler_source_cs = session->core_machine->
-                    executor_cpu_instructions.data.oldcpu.data.cs.selector;
-                capture.interrupt_handler_source_ip = (lib_u16)session->core_machine->
-                    executor_cpu_instructions.data.oldcpu.data.eip;
-                capture.interrupt_handler_source_sp = (lib_u16)session->core_machine->
-                    executor_cpu_instructions.data.oldcpu.data.esp;
+                capture.interrupt_handler_ss = current_cpu.ss.selector;
+                capture.interrupt_handler_sp = (lib_u16)current_cpu.esp;
+                capture.interrupt_handler_source_cs = entry_cpu.cs.selector;
+                capture.interrupt_handler_source_ip = (lib_u16)entry_cpu.eip;
+                capture.interrupt_handler_source_sp = (lib_u16)entry_cpu.esp;
                 capture.interrupt_handler_frame_read = core_machine_memory_read(
-                    session->core_machine, session->core_machine->executor_cpu.data.ss.base +
+                    session->core_machine, current_cpu.ss.base +
                     capture.interrupt_handler_sp, capture.interrupt_handler_frame,
                     sizeof(capture.interrupt_handler_frame)) == LIB_STATUS_OK;
                 for (vector = 0u; vector != 0xffu; ++vector) {
@@ -1573,16 +1543,19 @@ lib_i32 main(lib_i32 argc, char **argv)
                 (unsigned)cpu.halted);
         }
     }
-    printf("M5:T498:S5:FINAL-INTERNAL-CPU:es=%04X-base=%08X-ds=%04X-base=%08X-ss=%04X-base=%08X-ebx=%08X-eax=%08X-cr0=%08X\n",
-        (unsigned)session->core_machine->executor_cpu.data.es.selector,
-        (unsigned)session->core_machine->executor_cpu.data.es.base,
-        (unsigned)session->core_machine->executor_cpu.data.ds.selector,
-        (unsigned)session->core_machine->executor_cpu.data.ds.base,
-        (unsigned)session->core_machine->executor_cpu.data.ss.selector,
-        (unsigned)session->core_machine->executor_cpu.data.ss.base,
-        (unsigned)session->core_machine->executor_cpu.data.ebx,
-        (unsigned)session->core_machine->executor_cpu.data.eax,
-        (unsigned)session->core_machine->executor_cpu.data.cr0);
+    if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) == LIB_STATUS_OK) {
+        printf("M5:T498:S5:FINAL-INTERNAL-CPU:es=%04X-base=%08X-ds=%04X-base=%08X-ss=%04X-base=%08X-ebx=%08X-eax=%08X-cr0=%08X\n",
+            (unsigned)current_cpu.es.selector,
+            (unsigned)current_cpu.es.base,
+            (unsigned)current_cpu.ds.selector,
+            (unsigned)current_cpu.ds.base,
+            (unsigned)current_cpu.ss.selector,
+            (unsigned)current_cpu.ss.base,
+            (unsigned)current_cpu.ebx,
+            (unsigned)current_cpu.eax,
+            (unsigned)current_cpu.cr0);
+    }
     if (capture.iret_frame_seen) {
         printf("M5:T498:S5:IRET-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-cr0=%08X-operand32=%u-stack32=%u-ip=%04X-cs=%04X-flags=%04X-stopped-read=%u-stopped-ip=%04X-stopped-cs=%04X-stopped-flags=%04X\n",
             (unsigned)capture.iret_frame_count, (unsigned)capture.iret_frame_read,

@@ -7,7 +7,6 @@
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/waiting.h"
-#include "../../unit/core/devices/support/core_machine_cpu_fixture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 1500000u
@@ -36,7 +35,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     core_machine_run_result result = {0};
     core_machine_observation observation;
     x86_video_snapshot snapshot;
-    t_cpu cpu;
+    lib_u32 eax;
     lib_u8 opcode[2];
     lib_u8 functions[256] = {0};
     lib_u64 instruction;
@@ -61,9 +60,12 @@ lib_i32 main(lib_i32 argc, char **argv)
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0x10u) {
             ++int10_count;
-            cpu = test_core_machine_fixture_capture_cpu_after_run(
-                session->core_machine);
-            functions[cpu.data.ah] = 1u;
+            if (core_machine_debug_read_register(session->core_machine,
+                    CORE_MACHINE_DEBUG_EAX, &eax) != LIB_STATUS_OK) {
+                failed = 1;
+                break;
+            }
+            functions[(eax >> 8u) & 0xffu] = 1u;
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) {
             ++f2_count;

@@ -4,7 +4,6 @@
 
 #include <windows.h>
 
-#include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -15,7 +14,6 @@
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
-#include "../../unit/core/devices/support/core_machine_cpu_fixture.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
@@ -169,7 +167,7 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
 {
     vm_machine *session = ini_session->session;
     core_machine_cpu_diagnostic diagnostic = {0};
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu;
     lib_size index;
     lib_bool was_running;
 
@@ -208,16 +206,17 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
                 point->bytes[2]);
         }
     }
-    cpu = test_core_machine_fixture_capture_cpu_after_run(session->core_machine);
-    if (session->core_machine != LIB_NULL) {
+    if (core_machine_debug_capture_cpu_snapshot(session->core_machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) ==
+            LIB_STATUS_OK) {
         printf("M5:T287:S23:WINDOWS31:CPU cr0=%08X cr2=%08X cr3=%08X "
             "gdtr=%08X/%04X idtr=%08X/%04X cs=%04X:%08X/%08X ds=%04X:%08X/%08X "
-            "ss=%04X:%08X/%08X\n", cpu.data.cr0, cpu.data.cr2, cpu.data.cr3,
-            cpu.data.gdtr.base, cpu.data.gdtr.limit, cpu.data.idtr.base,
-            cpu.data.idtr.limit, cpu.data.cs.selector, cpu.data.cs.base,
-            cpu.data.cs.limit, cpu.data.ds.selector, cpu.data.ds.base,
-            cpu.data.ds.limit, cpu.data.ss.selector, cpu.data.ss.base,
-            cpu.data.ss.limit);
+            "ss=%04X:%08X/%08X\n", cpu.cr0, cpu.cr2, cpu.cr3,
+            cpu.gdtr.base, cpu.gdtr.limit, cpu.idtr.base,
+            cpu.idtr.limit, cpu.cs.selector, cpu.cs.base,
+            cpu.cs.limit, cpu.ds.selector, cpu.ds.base,
+            cpu.ds.limit, cpu.ss.selector, cpu.ss.base,
+            cpu.ss.limit);
     }
     vm_t287_print_frame(session);
 }

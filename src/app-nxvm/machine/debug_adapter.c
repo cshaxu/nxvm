@@ -80,7 +80,8 @@ static lib_status vm_machine_debug_capture_cpu(vm_machine *machine,
 
     if (machine == LIB_NULL || out_snapshot == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
-    status = core_machine_debug_capture_cpu_snapshot(machine->core_machine, &state);
+    status = core_machine_debug_capture_cpu_snapshot(machine->core_machine,
+        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &state);
     if (status != LIB_STATUS_OK) return vm_machine_debug_status_from_type(status);
     lib_memory_set(out_snapshot, 0, sizeof(*out_snapshot));
     vm_machine_debug_copy_segment(&out_snapshot->es, &state.es);

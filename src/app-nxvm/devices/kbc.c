@@ -1,6 +1,5 @@
 /* Copyright 2012-2026 Neko. */
 #include "app-nxvm/devices/kbc.h"
-#include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/memory.h"
 
 static x86_kbc8042_keyboard_inputs kbc_keyboard_inputs(void *context)
@@ -104,8 +103,8 @@ static void kbc_irq(void *context, lib_bool auxiliary, lib_bool asserted)
 static void kbc_reset_pulse(void *context)
 {
     t_kbc *attachment = context;
-    if (attachment->connect.execution != LIB_NULL) {
-        core_machine_cpu_execution_request_reset(attachment->connect.execution);
+    if (attachment->connect.request_reset != LIB_NULL) {
+        attachment->connect.request_reset(attachment->connect.reset_context);
     }
 }
 
@@ -193,13 +192,15 @@ lib_status core_machine_kbc_initialize(t_kbc *attachment, t_port *port)
 
 void core_machine_kbc_bind_core_services(t_kbc *attachment,
     core_machine_pic_bus *master, core_machine_pic_bus *slave, t_ram *memory,
-    core_machine_cpu_execution_context *execution, lib_u8 aux_present)
+    void (*request_reset)(void *context), void *reset_context,
+    lib_u8 aux_present)
 {
     if (attachment == LIB_NULL) return;
     core_machine_pic_irq_source_bind(&attachment->connect.irq1_source, master, slave, 1u);
     core_machine_pic_irq_source_bind(&attachment->connect.irq12_source, master, slave, 12u);
     attachment->connect.memory = memory;
-    attachment->connect.execution = execution;
+    attachment->connect.request_reset = request_reset;
+    attachment->connect.reset_context = reset_context;
     x86_kbc8042_set_aux_present(attachment->chip, aux_present);
 }
 

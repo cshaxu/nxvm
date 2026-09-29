@@ -24,6 +24,12 @@ T539 S17: [CPU observation boundary](architecture/t539-s17-cpu-observation.md)
 and [verification evidence](evidence/t539-s17-cpu-observation.md); one routed
 read mechanism separates inspection from guest side effects before CPU extraction.
 
+T539 S18: [CPU extraction boundary](architecture/t539-s18-cpu-extraction.md)
+and [work evidence](evidence/t539-s18-cpu-extraction.md); the owner's
+[S18-S32 decomposition](architecture/t539-cpu-work-packages.md) replaces the
+single CPU batch. [Incremental inventory](evidence/t539-cpu-incremental-inventory.md)
+maps recovery, pending consumers and their receiving packages.
+
 T539 S2: [concrete chip contracts](architecture/t539-boundary-contracts.md),
 including firmware-hook consumer proof and the approved first PIT extraction.
 

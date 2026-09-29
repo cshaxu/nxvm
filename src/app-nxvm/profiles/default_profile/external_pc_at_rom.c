@@ -37,7 +37,7 @@ static lib_status vm_profile_external_pc_at_rom_reset(void *opaque,
 
 static const core_machine_firmware_provider vm_profile_external_pc_at_rom = {
     vm_profile_external_pc_at_rom_configure, vm_profile_external_pc_at_rom_reset,
-    LIB_NULL, LIB_NULL
+    LIB_NULL
 };
 
 const core_machine_firmware_provider *vm_profile_external_pc_at_rom_provider(void)

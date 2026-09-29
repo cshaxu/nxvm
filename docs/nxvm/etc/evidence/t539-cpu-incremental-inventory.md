@@ -1,0 +1,195 @@
+# T539 CPU Incremental Baseline Inventory
+
+## Baseline Recovery
+
+The 2026-09-29 S18 replan preserves the original CPU architecture but defers the
+board's opaque allocation cutover to S30. The existing board-owned CPU and
+decoder remain the sole storage, bound through the existing execution-context
+initializer. Bus, timing and copied-observation work remains in place. No
+private-pointer accessor, state mirror or second execution path was added.
+
+A native Git binary diff of all tracked pending work was saved before recovery
+as `build/t539-s3/s18-before-incremental-baseline.patch` (1,221,515 bytes,
+SHA-256 `D87DEB564901D04CCB024C14F64C921FAE9BC91269842FC00A2CA7C72A1187B8`).
+This is an ignored local recovery artifact, not an accepted source revision;
+keep it with the retained build trees until its deferred edits are reconciled.
+Untracked CPU bus/fixture/evidence files remain in the worktree, unchanged by
+that backup. The snapshot is not a claim that the pending corpus was buildable.
+
+Deferred changes and exact receivers:
+
+- S30: machine CPU allocation/destruction and pointer-member call syntax.
+  CPU-owned create/destroy implementation and its independent lifecycle test
+  remain; the board still uses its original embedded allocation lifetime.
+- S27: the incomplete `core_machine_interrupt_entry_smoke.c` migration. Restore
+  its HEAD form and existing CMake delivered-fault definition together, so its
+  software-INT/hardware-delivery includers retain their original API and cases.
+  Its public-snapshot migration is preserved in the recovery patch and earlier
+  S18 evidence; CPU-local NMI/rollback regressions remain in the active corpus.
+- Other pending source/test work stays active, with eventual receiving packages
+  named by the [work plan](../architecture/t539-cpu-work-packages.md). Its mere
+  presence does not accept S19-S32. Later briefs review retained work rather
+  than replaying or rewriting the same implementation.
+
+Full x64 build recovered after those two changes. Complete unit verification,
+cross-width verification, artifacts and actual-diff acceptance are recorded in
+[S18 evidence](t539-s18-cpu-extraction.md), not inferred from this inventory.
+
+## Remaining Private Test Consumers
+
+Search: `rg -l 'executor_cpu\.|executor_cpu_instructions|support/core_machine_cpu_fixture.h' test/app-nxvm/unit`.
+The recovery snapshot has 100 matching files, all under
+`test/app-nxvm/unit/core/devices/`. Names below are relative to that directory.
+These are migration inputs, not 100 failing tests or a complete count of cases.
+Each receiving S must retain all original cases/loops and map any moved case
+between chip and board tests; a filename search alone cannot prove coverage.
+
+S18 actual-diff review additionally assigns S24 a BOUND operand-form check:
+the CPU-local fixture observed emulator-error for 32-bit `62 C0`, versus UD
+for the original 16-bit case. Reproduce against the pre-migration baseline and
+audit related memory-only operand forms before deciding the repair. This is
+an unresolved observation, not a timing downgrade or an accepted CPU result.
+
+### S21: 18 matching files
+
+- `core_machine_enter_leave_smoke.c`
+- `core_machine_fs_gs_stack_smoke.c`
+- `core_machine_gpr_mov_smoke.c`
+- `core_machine_gpr_push_pop_smoke.c`
+- `core_machine_lea_smoke.c`
+- `core_machine_legacy_sreg_stack_smoke.c`
+- `core_machine_les_lds_s41_smoke.c`
+- `core_machine_les_lds_smoke.c`
+- `core_machine_lss_lfs_lgs_smoke.c`
+- `core_machine_moffs_smoke.c`
+- `core_machine_movx_smoke.c`
+- `core_machine_operand_address_smoke.c`
+- `core_machine_prefix_attributes_s64_smoke.c`
+- `core_machine_push_immediate_smoke.c`
+- `core_machine_pusha_popa_smoke.c`
+- `core_machine_segment_selector_smoke.c`
+- `core_machine_sreg_mov_smoke.c`
+- `core_machine_xchg_smoke.c`
+
+### S22: 11 matching files
+
+- `core_machine_bit_scan_smoke.c`
+- `core_machine_bit_test_smoke.c`
+- `core_machine_double_shift_smoke.c`
+- `core_machine_imul2_smoke.c`
+- `core_machine_imul_immediate_s56_smoke.c`
+- `core_machine_inc_dec_smoke.c`
+- `core_machine_legacy_alu_s2_smoke.c`
+- `core_machine_legacy_lock_s1_smoke.c`
+- `core_machine_rotate_smoke.c`
+- `core_machine_setcc_smoke.c`
+- `core_machine_sign_extend_smoke.c`
+
+### S23: 12 matching files
+
+- `core_machine_cmps_smoke.c`
+- `core_machine_direct_flags_smoke.c`
+- `core_machine_lahf_sahf_smoke.c`
+- `core_machine_lods_smoke.c`
+- `core_machine_movs_smoke.c`
+- `core_machine_port_io_s55_smoke.c`
+- `core_machine_port_ownership_smoke.c`
+- `core_machine_port_strings_smoke.c`
+- `core_machine_pushf_popf_s47_smoke.c`
+- `core_machine_pushf_popf_smoke.c`
+- `core_machine_scas_smoke.c`
+- `core_machine_stos_smoke.c`
+
+### S24: 13 matching files
+
+- `core_machine_arpl_s53_smoke.c`
+- `core_machine_arpl_smoke.c`
+- `core_machine_bound_s54_smoke.c`
+- `core_machine_clts_s62_smoke.c`
+- `core_machine_debug_mov_s59_smoke.c`
+- `core_machine_descriptor_system_smoke.c`
+- `core_machine_dttr_s61_smoke.c`
+- `core_machine_lar_lsl_s57_smoke.c`
+- `core_machine_lgdt_lidt_smoke.c`
+- `core_machine_msw_s63_smoke.c`
+- `core_machine_sgdt_sidt_smoke.c`
+- `core_machine_tf_db_s60_smoke.c`
+- `core_machine_verr_verw_s58_smoke.c`
+
+### S25: 5 matching files
+
+- `core_machine_protected_16_call_gate_s7_smoke.c`
+- `core_machine_protected_16_external_s4_smoke.c`
+- `core_machine_protected_16_gate_s3_smoke.c`
+- `core_machine_protected_16_outer_iret_s6_smoke.c`
+- `core_machine_protected_16_outer_s5_smoke.c`
+
+### S26: 11 matching files
+
+- `core_machine_call_gate_privilege_entry_smoke.c`
+- `core_machine_call_gate_smoke.c`
+- `core_machine_control_transfer_smoke.c`
+- `core_machine_idt_privilege_entry_smoke.c`
+- `core_machine_iret_outer_s52_smoke.c`
+- `core_machine_protected_data_access_s2_smoke.c`
+- `core_machine_protected_far_s1_smoke.c`
+- `core_machine_protected_privilege_smoke.c`
+- `core_machine_protected_return_atomicity_smoke.c`
+- `core_machine_task_switch_smoke.c`
+- `core_machine_tss_iomap_port_smoke.c`
+
+### S27: 10 matching files
+
+- `core_machine_cli_sti_s48_smoke.c`
+- `core_machine_cli_sti_smoke.c`
+- `core_machine_hardware_delivery_s3_smoke.c`
+- `core_machine_hlt_s49_smoke.c`
+- `core_machine_interrupt_entry_smoke.c`
+- `core_machine_iret_s51_smoke.c`
+- `core_machine_protected_iret_smoke.c`
+- `core_machine_software_int_s50_smoke.c`
+- `core_machine_vm86_delivery_smoke.c`
+- `core_machine_vm86_iret_smoke.c`
+
+### S28: 16 matching files
+
+- `core_machine_80186_instruction_timing_ledger_smoke.c`
+- `core_machine_80186_timing_manifest_runner.c`
+- `core_machine_80286_instruction_timing_ledger_smoke.c`
+- `core_machine_80286_timing_manifest_runner.c`
+- `core_machine_80386_protected_io_timing_smoke.c`
+- `core_machine_80386_timing_manifest_runner.c`
+- `core_machine_8086_instruction_timing_ledger_smoke.c`
+- `core_machine_8086_timing_manifest_runner.c`
+- `core_machine_instruction_timing_ledger_smoke.c`
+- `core_machine_instruction_timing_smoke.c`
+- `core_machine_legacy_timing_normalization_s2_smoke.c`
+- `core_machine_t359_s2_timing_smoke.c`
+- `core_machine_t359_s3_timing_smoke.c`
+- `core_machine_t359_s4_timing_smoke.c`
+- `core_machine_t359_s5_timing_smoke.c`
+- `core_machine_t359_s6_timing_smoke.c`
+
+### S29: 4 matching files
+
+- `core_machine_fpu_interface_s65_smoke.c`
+- `cpu_profile_gate_smoke.c`
+- `fpu_escape_smoke.c`
+- `support/core_machine_cpu_fixture.h`
+
+## Include Dependency Closure
+
+The matching-file inventory is not the entire compile dependency graph. S25
+must also keep the 80286/80386 timing runners building when their included
+16-bit gate/task/call fixtures change; S28 owns their subsequent timing-corpus
+migration. S26 includes outer-IRET's atomicity-fixture consumer. S27 additionally
+includes `core_machine_interrupt_return_composition_s4_smoke.c` and
+`core_machine_vm86_lgdt_lidt_s5_smoke.c`, which inherit private setup through
+included source rather than a direct search hit. Protected IRET is in S27
+with its CLI/STI-dependent includer. Do not migrate one included source's return
+shape while leaving its includers with the old shape.
+
+The CPU-owner bus/context and EFLAGS tests, migrated board/machine tests and
+integration probes remain required regressions even though they no longer
+match this private-state search. Their earlier S18 mappings remain in evidence.
+No test target or original case was removed for baseline recovery.

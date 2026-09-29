@@ -2,8 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/cpu_instructions.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "app-nxvm/devices/debug_interface.h"
 
 #define PREVIEW_RESET_PHYSICAL 0x000ffff0u
 
@@ -1500,9 +1499,24 @@ static lib_i32 preview_test_cpu_fetch_nonpublication(void)
 static lib_i32 preview_test_limited_fetch_nonpublication(void)
 {
     static const lib_u8 program[] = { 0x0fu, 0x84u, 0x78u, 0x56u };
+    /* Load a real 16-bit code descriptor at the last four bytes of RAM. */
+    static const lib_u8 load_gdt[] = { 0x0fu, 0x01u, 0x16u, 0x00u, 0x03u };
+    static const lib_u8 gdtr[] = { 0x0fu, 0u, 0u, 0x04u, 0u, 0u };
+    static const lib_u8 gdt[] = {
+        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+        0xffu, 0xffu, 0xfcu, 0xffu, 0xffu, 0x9au, 0u, 0u
+    };
+    core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = { [CORE_MACHINE_DEBUG_EIP] = 0x0200u }
+    };
+    core_machine_run_result result;
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
     };
+    core_machine_cpu_state cpu;
     core_machine_cpu_instruction_lexeme lexeme;
     core_machine_observation before = { 0 };
     core_machine_observation after = { 0 };
@@ -1513,10 +1527,28 @@ static lib_i32 preview_test_limited_fetch_nonpublication(void)
     lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
-        !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u) ||
-        ((machine->executor_cpu.data.cs.base = 0x00fffffcu),
-            core_machine_memory_write(machine, 0x00fffffcu, program,
-                sizeof(program)) != LIB_STATUS_OK) ||
+        core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0200u, load_gdt,
+            sizeof(load_gdt)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0300u, gdtr,
+            sizeof(gdtr)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0400u, gdt,
+            sizeof(gdt)) != LIB_STATUS_OK ||
+        core_machine_run(machine, (core_machine_run_budget){1u, 0u}, &result) !=
+            LIB_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+        core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_CR0,
+            1u) != LIB_STATUS_OK;
+
+    entry.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+        CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP);
+    entry.values[CORE_MACHINE_DEBUG_CS] = 8u;
+    entry.values[CORE_MACHINE_DEBUG_EIP] = 0u;
+    if (!failed) failed |= core_machine_debug_patch_registers(machine, &entry) !=
+        LIB_STATUS_OK || core_machine_get_cpu_state(machine, &cpu) !=
+        LIB_STATUS_OK || cpu.cs_base != 0x00fffffcu || cpu.eip != 0u ||
+        core_machine_memory_write(machine, 0x00fffffcu, program,
+            sizeof(program)) != LIB_STATUS_OK ||
         core_machine_capture_observation(machine, &before) != LIB_STATUS_OK;
 
     if (!failed) {
@@ -1546,6 +1578,8 @@ static lib_i32 preview_test_taken_jcc_target(void)
     core_machine_observation before = { 0 };
     core_machine_observation after = { 0 };
     core_machine_run_result result;
+    core_machine_cpu_state cpu;
+    lib_u32 flags = 0u;
     core_machine *machine = LIB_NULL;
     lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -1554,10 +1588,14 @@ static lib_i32 preview_test_taken_jcc_target(void)
             sizeof(program)) != LIB_STATUS_OK;
 
     if (!failed) {
-        machine->executor_cpu.data.eflags &= ~VCPU_EFLAGS_ZF;
-        if (core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+        if (core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
+                &flags) != LIB_STATUS_OK ||
+            core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
+                flags & ~CORE_MACHINE_DEBUG_EFLAGS_ZF) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-            machine->executor_cpu.data.eip != 0xfff0u) {
+            core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK ||
+            cpu.eip != 0xfff0u) {
             failed = 1;
         } else if (core_machine_capture_observation(machine, &before) !=
             LIB_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
@@ -1586,6 +1624,8 @@ static lib_i32 preview_test_taken_near_jcc_target(void)
     core_machine_observation before = { 0 };
     core_machine_observation after = { 0 };
     core_machine_run_result result;
+    core_machine_cpu_state cpu;
+    lib_u32 flags = 0u;
     core_machine *machine = LIB_NULL;
     lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -1594,10 +1634,14 @@ static lib_i32 preview_test_taken_near_jcc_target(void)
             sizeof(program)) != LIB_STATUS_OK;
 
     if (!failed) {
-        machine->executor_cpu.data.eflags |= VCPU_EFLAGS_ZF;
-        if (core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+        if (core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
+                &flags) != LIB_STATUS_OK ||
+            core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
+                flags | CORE_MACHINE_DEBUG_EFLAGS_ZF) != LIB_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-            machine->executor_cpu.data.eip != 0xfff9u) {
+            core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK ||
+            cpu.eip != 0xfff9u) {
             failed = 1;
         } else if (core_machine_capture_observation(machine, &before) !=
             LIB_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
@@ -1641,6 +1685,7 @@ static lib_i32 preview_test_default_reset_alias(void)
     };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
+    core_machine_cpu_state cpu;
     core_machine *machine = LIB_NULL;
     lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -1650,7 +1695,7 @@ static lib_i32 preview_test_default_reset_alias(void)
         core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         result.executed != 1u ||
-        machine->executor_cpu.data.eip != 0xfff1u;
+        core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK || cpu.eip != 0xfff1u;
 
     core_machine_destroy(machine);
     return failed;

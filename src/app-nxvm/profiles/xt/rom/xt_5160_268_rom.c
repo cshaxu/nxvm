@@ -63,7 +63,6 @@ static lib_status vm_profile_xt_5160_268_firmware_reset(void *opaque,
 static const core_machine_firmware_provider vm_profile_xt_5160_268_provider = {
     vm_profile_xt_5160_268_firmware_configure,
     vm_profile_xt_5160_268_firmware_reset,
-    LIB_NULL,
     LIB_NULL
 };
 

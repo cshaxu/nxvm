@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/core_machine_executor_fixture.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 typedef struct checked_memory_provider {
     lib_u32 read_count;

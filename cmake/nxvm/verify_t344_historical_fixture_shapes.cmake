@@ -123,14 +123,18 @@ set(project_t344_timing_manifest_sources
     "test/app-nxvm/unit/core/devices/core_machine_80286_timing_manifest_runner.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_timing_manifest_runner.c")
 set(project_t344_constructor_sources ${project_t344_inventory}
-    ${project_t344_timing_manifest_sources})
+    ${project_t344_timing_manifest_sources}
+    # These public CPU tests now execute guest table loads with the built-in
+    # provider, rather than mutating CPU caches through a firmware fixture.
+    "test/app-nxvm/unit/core/devices/core_machine_protected_ud_delivery_s1_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_real_ud_delivery_s1_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 101)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 101 entries.")
+if(NOT project_t344_constructor_count EQUAL 103)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 103 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 101)
+if(NOT project_t344_constructor_unique_count EQUAL 103)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -149,8 +153,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 101)
-    message(FATAL_ERROR "T344 expected 101 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 103)
+    message(FATAL_ERROR "T344 expected 103 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)
@@ -169,4 +173,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 historical fixture shapes passed: 97 classified and 4 timing-manifest direct constructors, 22 shared tails, 75 retained shapes.")
+message(STATUS "T344 historical fixture shapes passed: 97 historical, 4 timing-manifest and 2 guest-table-load constructors; 22 shared tails, 75 retained shapes.")

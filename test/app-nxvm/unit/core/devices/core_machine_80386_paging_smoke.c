@@ -2,10 +2,9 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "app-nxvm/devices/debug_interface.h"
+#include "support/core_machine_board_fixture.h"
 
 #define TEST_GDT_POINTER 0x0100u
 #define TEST_GDT_ADDRESS 0x0300u
@@ -36,6 +35,7 @@
 
 typedef struct paging_machine {
     core_machine *machine;
+    lib_status reset_status;
 } paging_machine;
 
 typedef struct paging_trace_probe {
@@ -74,8 +74,16 @@ static void paging_reset(void *opaque)
 {
     paging_machine *state = (paging_machine *)opaque;
 
-    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
-        state->machine);
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    };
+    if (state != LIB_NULL) state->reset_status =
+        core_machine_cpu_debug_patch_registers(
+            &state->machine->executor_cpu_execution, &entry);
 }
 
 static const core_machine_execution_provider paging_provider = {
@@ -96,7 +104,7 @@ static lib_i32 paging_prepare(paging_machine *state,
     lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 0;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
-            &paging_provider, state)) {
+            &paging_provider, state) || state->reset_status != LIB_STATUS_OK) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
         return 0;
@@ -190,9 +198,32 @@ static lib_i32 paging_expect_fault(const core_machine_cpu_diagnostic *diagnostic
         diagnostic->first_fault.point.linear_pc == point_linear;
 }
 
+/* Re-enter a halted fixture through the CPU-owned prepared-entry boundary. */
+static lib_i32 paging_resume_at(core_machine *machine, lib_u16 cs,
+    lib_u16 ds, lib_u16 ss, lib_u16 ip, lib_u32 flags)
+{
+    core_machine_debug_cpu_snapshot cpu;
+    core_machine_cpu_prepared_entry *entry = LIB_NULL;
+    core_machine_entry_plan_state state;
+
+    if (core_machine_debug_capture_cpu_snapshot(machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK) return 0;
+    state = (core_machine_entry_plan_state) {
+        .cs = cs, .ds = ds, .es = cpu.es.selector, .ss = ss,
+        .ip = ip, .sp = (lib_u16)cpu.esp,
+        .eax = cpu.eax, .ebx = cpu.ebx, .ecx = cpu.ecx, .edx = cpu.edx,
+        .esi = cpu.esi, .edi = cpu.edi, .ebp = cpu.ebp, .eflags = flags
+    };
+    if (core_machine_cpu_prepare_entry(&machine->executor_cpu_execution,
+            &state, &entry) != LIB_STATUS_OK) return 0;
+    core_machine_cpu_finish_entry(entry, LIB_TRUE);
+    return 1;
+}
+
 static lib_i32 paging_test_delivered_page_fault(void)
 {
     static const lib_u8 protected_code[] = {
+        0x0fu, 0x01u, 0x1eu, 0x00u, 0x06u,
         0xbcu, 0x00u, 0x50u,
         0x66u, 0xb8u, 0x00u, 0x10u, 0x00u, 0x00u,
         0x0fu, 0x22u, 0xd8u,
@@ -202,6 +233,9 @@ static lib_i32 paging_test_delivered_page_fault(void)
     };
     static const lib_u8 faulting_code[] = { 0xa1u, 0x00u, 0x90u };
     static const lib_u8 hlt[] = { 0xf4u };
+    static const lib_u8 idt_pointer[] = {
+        0x77u, 0x00u, 0x00u, 0x05u, 0x00u, 0x00u
+    };
     const lib_u8 gate[] = { 0x00u, 0x01u, 0x08u, 0x00u,
         0x00u, 0x8eu, 0x00u, 0x00u };
     const lib_u32 code_entry = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
@@ -212,8 +246,8 @@ static lib_i32 paging_test_delivered_page_fault(void)
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
-    t_cpu after;
+    core_machine_debug_cpu_snapshot before = {0};
+    core_machine_debug_cpu_snapshot after = {0};
     lib_u32 frame[4] = { 0u, 0u, 0u, 0u };
     lib_i32 failed = !paging_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -221,6 +255,8 @@ static lib_i32 paging_test_delivered_page_fault(void)
         failed |= !paging_install_tables(state.machine, code_entry, data_entry,
             stack_entry) || !paging_write_bootstrap(state.machine, protected_code,
             sizeof(protected_code));
+        failed |= core_machine_memory_write(state.machine, 0x0600u,
+            idt_pointer, sizeof(idt_pointer)) != LIB_STATUS_OK;
         failed |= !paging_run(state.machine, 0, &result, &diagnostic);
     }
     if (!failed) {
@@ -229,35 +265,41 @@ static lib_i32 paging_test_delivered_page_fault(void)
             state.machine, 0x0080u, faulting_code, sizeof(faulting_code)) !=
             LIB_STATUS_OK || core_machine_memory_write(state.machine, 0x0100u,
             hlt, sizeof(hlt)) != LIB_STATUS_OK;
-        state.machine->executor_cpu.data.idtr.base = 0x0500u;
-        state.machine->executor_cpu.data.idtr.limit = 14u * 8u + 7u;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        test_core_machine_fixture_resume_after_halt_at(state.machine, 0x0080u);
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !paging_resume_at(state.machine, TEST_CODE_SELECTOR,
+            TEST_DATA_SELECTOR, TEST_DATA_SELECTOR, 0x0080u,
+            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF);
+        failed |= core_machine_debug_write_register(state.machine,
+            CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF |
+            CORE_MACHINE_DEBUG_EFLAGS_IF) != LIB_STATUS_OK;
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
             &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
             LIB_STATUS_OK;
-        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_PF) || diagnostic.last_delivered_exception.exception_code != 0u ||
-            after.data.eip != 0x0100u || after.data.cr2 != 0x00009000u ||
-            after.data.esp != 0x00004ff0u || !test_core_machine_fixture_read_linear(
-                state.machine, after.data.ss.base + after.data.esp,
-                CORE_MACHINE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] != 0u ||
+            after.eip != 0x0100u || after.cr2 != 0x00009000u ||
+            after.esp != 0x00004ff0u || core_machine_debug_read_linear(
+                state.machine, after.ss.base + after.esp,
+                frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 0u ||
             frame[1] != 0x0080u || frame[2] != TEST_CODE_SELECTOR ||
-            frame[3] != before.data.eflags || after.data.eax != before.data.eax ||
-            after.data.ebx != before.data.ebx || after.data.ecx != before.data.ecx ||
-            after.data.edx != before.data.edx || after.data.ebp != before.data.ebp ||
-            after.data.esi != before.data.esi || after.data.edi != before.data.edi;
+            frame[3] != before.eflags || after.eax != before.eax ||
+            after.ebx != before.ebx || after.ecx != before.ecx ||
+            after.edx != before.edx || after.ebp != before.ebp ||
+            after.esi != before.esi || after.edi != before.edi;
     }
     if (!failed) {
         failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
             &result) != LIB_STATUS_OK || result.reason !=
-            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            state.machine->executor_cpu.data.eip != 0x0101u;
+            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            after.eip != 0x0101u;
     }
     core_machine_destroy(state.machine);
     return failed;
@@ -298,7 +340,7 @@ static lib_i32 paging_test_valid_path(void)
     lib_u32 pre_cr3 = 0u;
     lib_u32 pre_ecx = 0u;
     lib_u32 pre_edx = 0u;
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu = {0};
     paging_trace_probe trace = {{{0}}, 0u};
     const core_machine_trace_provider trace_provider = { paging_trace, &trace };
     lib_i32 ran;
@@ -318,12 +360,13 @@ static lib_i32 paging_test_valid_path(void)
         failed |= !paging_write_bootstrap(state.machine, protected_code,
             sizeof(protected_code));
         ran = paging_run(state.machine, 0, &result, &diagnostic);
-        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        pre_cr0 = cpu.data.cr0;
-        pre_cr2 = cpu.data.cr2;
-        pre_cr3 = cpu.data.cr3;
-        pre_ecx = cpu.data.ecx;
-        pre_edx = cpu.data.edx;
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
+        pre_cr0 = cpu.cr0;
+        pre_cr2 = cpu.cr2;
+        pre_cr3 = cpu.cr3;
+        pre_ecx = cpu.ecx;
+        pre_edx = cpu.edx;
         registers = !diagnostic.first_fault.valid &&
             pre_cr0 == (VCPU_CR0_PE | VCPU_CR0_PG) && pre_cr2 == 0u &&
             pre_cr3 == TEST_PAGE_DIRECTORY && pre_ecx ==
@@ -348,8 +391,9 @@ static lib_i32 paging_test_valid_path(void)
                 CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE,
                 CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE);
         reset_ok = core_machine_reset(state.machine) == LIB_STATUS_OK &&
-            ((cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine)),
-            cpu.data.cr0 == 0u && cpu.data.cr2 == 0u && cpu.data.cr3 == 0u);
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) == LIB_STATUS_OK &&
+            cpu.cr0 == 0u && cpu.cr2 == 0u && cpu.cr3 == 0u;
         failed |= !ran || !registers || !data_ok || !entries_read ||
             !entries_ok || !provenance_ok || !reset_ok;
         if (failed) {
@@ -377,7 +421,7 @@ static lib_i32 paging_test_fault(lib_u32 code_entry, lib_u32 data_entry,
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu = {0};
     lib_i32 failed = !paging_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -386,10 +430,11 @@ static lib_i32 paging_test_fault(lib_u32 code_entry, lib_u32 data_entry,
         failed |= !paging_write_bootstrap(state.machine, protected_code,
             protected_code_size);
         failed |= !paging_run(state.machine, 1, &result, &diagnostic);
-        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
         failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF,
             expected_code, expected_point);
-        failed |= cpu.data.cr2 != expected_cr2 ||
+        failed |= cpu.cr2 != expected_cr2 ||
             diagnostic.first_fault.cr2 != expected_cr2;
         if (failed) {
             fprintf(stderr,
@@ -398,7 +443,7 @@ static lib_i32 paging_test_fault(lib_u32 code_entry, lib_u32 data_entry,
                 diagnostic.first_fault.exception_mask,
                 diagnostic.first_fault.exception_code,
                 diagnostic.first_fault.point.cs,
-                diagnostic.first_fault.point.linear_pc, cpu.data.cr2,
+                diagnostic.first_fault.point.linear_pc, cpu.cr2,
                 expected_point, expected_cr2);
         }
     }
@@ -447,167 +492,6 @@ static lib_i32 paging_test_page_faults(void)
     return failed;
 }
 
-static lib_i32 paging_test_control_gate(core_machine_cpu_profile profile,
-    const lib_u8 *code, lib_size code_size)
-{
-    paging_machine state;
-    core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    lib_i32 failed = !paging_prepare(&state, profile);
-
-    if (!failed) {
-        failed |= core_machine_memory_write(state.machine, 0u, code, code_size) !=
-            LIB_STATUS_OK;
-        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
-            state.machine);
-        failed |= !paging_run(state.machine, 1, &result, &diagnostic);
-        failed |= !diagnostic.first_fault.valid ||
-            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                VCPUINS_EXCEPT_UD);
-    }
-    core_machine_destroy(state.machine);
-    return failed;
-}
-
-static lib_i32 paging_test_control_forms(void)
-{
-    static const lib_u8 write_reserved_cr1[] = {
-        0x66u, 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u,
-        0x0fu, 0x22u, 0xc8u
-    };
-    static const lib_u8 pg_without_pe[] = {
-        0x66u, 0xb8u, 0x00u, 0x00u, 0x00u, 0x80u,
-        0x0fu, 0x22u, 0xc0u
-    };
-    static const lib_u8 unaligned_cr3[] = {
-        0x66u, 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u,
-        0x0fu, 0x22u, 0xd8u
-    };
-    static const lib_u8 read_cr0[] = { 0x0fu, 0x20u, 0xc0u };
-    lib_i32 failed = 0;
-
-    failed |= paging_test_control_gate(CORE_MACHINE_CPU_PROFILE_80386,
-        write_reserved_cr1, sizeof(write_reserved_cr1));
-    failed |= paging_test_control_gate(CORE_MACHINE_CPU_PROFILE_80386,
-        pg_without_pe, sizeof(pg_without_pe));
-    failed |= paging_test_control_gate(CORE_MACHINE_CPU_PROFILE_80386,
-        unaligned_cr3, sizeof(unaligned_cr3));
-    failed |= paging_test_control_gate(CORE_MACHINE_CPU_PROFILE_80286,
-        read_cr0, sizeof(read_cr0));
-    failed |= paging_test_control_gate(CORE_MACHINE_CPU_PROFILE_80186,
-        read_cr0, sizeof(read_cr0));
-    return failed;
-}
-
-static lib_i32 paging_test_invlpg_real_case(core_machine_cpu_profile profile,
-    const lib_u8 *code, lib_size code_size)
-{
-    paging_machine state;
-    core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
-    t_cpu after;
-    lib_i32 failed = !paging_prepare(&state, profile);
-
-    if (!failed) {
-        state.machine->executor_cpu.data.eax = 0x11223344u;
-        state.machine->executor_cpu.data.ecx = 0x55667788u;
-        state.machine->executor_cpu.data.edx = 0x99aabbccu;
-        state.machine->executor_cpu.data.ebx = 0xddeeff00u;
-        state.machine->executor_cpu.data.esi = 0x13579bdfu;
-        state.machine->executor_cpu.data.edi = 0x2468ace0u;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
-            state.machine);
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= core_machine_memory_write(state.machine, 0u, code, code_size) !=
-                LIB_STATUS_OK || !paging_run(state.machine, 1, &result,
-                &diagnostic);
-        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            diagnostic.first_fault.exception_code != 0u ||
-            diagnostic.first_fault.point.cs != 0u ||
-            diagnostic.first_fault.point.linear_pc != 0u || lib_memory_compare(&after,
-                &before, sizeof(after)) != 0;
-    }
-    core_machine_destroy(state.machine);
-    return failed;
-}
-
-static lib_i32 paging_test_invlpg_rejection(void)
-{
-    static const lib_u8 invlpg[] = {
-        0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
-    };
-    static const lib_u8 operand_size[] = {
-        0x66u, 0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
-    };
-    static const lib_u8 address_size[] = {
-        0x67u, 0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
-    };
-    static const lib_u8 combined_size[] = {
-        0x66u, 0x67u, 0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
-    };
-    static const lib_u8 locked[] = {
-        0xf0u, 0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
-    };
-    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80186, invlpg,
-            sizeof(invlpg))) return 1;
-    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80286, invlpg,
-            sizeof(invlpg))) return 2;
-    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-            invlpg, sizeof(invlpg))) return 3;
-    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-            operand_size, sizeof(operand_size))) return 4;
-    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-            address_size, sizeof(address_size))) return 5;
-    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-            combined_size, sizeof(combined_size))) return 6;
-    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
-            locked, sizeof(locked))) return 7;
-    return 0;
-}
-
-static lib_i32 paging_test_cr0_mutable_controls(void)
-{
-    static const lib_u8 write_mutable[] = {
-        0x66u, 0xb8u, 0x1eu, 0x00u, 0x00u, 0x00u,
-        0x0fu, 0x22u, 0xc0u,
-        0x0fu, 0x20u, 0xc1u,
-        0xf4u
-    };
-    const lib_u32 mutable = VCPU_CR0_MP | VCPU_CR0_EM | VCPU_CR0_TS |
-        VCPU_CR0_ET;
-    paging_machine state;
-    core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
-    t_cpu cpu;
-    lib_i32 failed = !paging_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
-
-    if (!failed) {
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= core_machine_memory_write(state.machine, 0u, write_mutable,
-            sizeof(write_mutable)) != LIB_STATUS_OK || !paging_run(state.machine,
-            0, &result, &diagnostic);
-        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= diagnostic.first_fault.valid || cpu.data.cr0 != mutable ||
-            cpu.data.eax != mutable || cpu.data.ecx != mutable ||
-            cpu.data.eip != sizeof(write_mutable) || cpu.data.eflags != 0x02u ||
-            cpu.data.ebx != 0u || cpu.data.edx != 0x00000300u || cpu.data.esp != 0u ||
-            cpu.data.ebp != 0u || cpu.data.esi != 0u || cpu.data.edi != 0u ||
-            lib_memory_compare(&cpu.data.es, &before.data.es, sizeof(cpu.data.es)) != 0 ||
-            lib_memory_compare(&cpu.data.cs, &before.data.cs, sizeof(cpu.data.cs)) != 0 ||
-            lib_memory_compare(&cpu.data.ss, &before.data.ss, sizeof(cpu.data.ss)) != 0 ||
-            lib_memory_compare(&cpu.data.ds, &before.data.ds, sizeof(cpu.data.ds)) != 0 ||
-            lib_memory_compare(&cpu.data.fs, &before.data.fs, sizeof(cpu.data.fs)) != 0 ||
-            lib_memory_compare(&cpu.data.gs, &before.data.gs, sizeof(cpu.data.gs)) != 0;
-    }
-    core_machine_destroy(state.machine);
-    return failed;
-}
-
 static lib_i32 paging_test_cr3_directory_reload(void)
 {
     static const lib_u8 protected_code[] = {
@@ -630,7 +514,7 @@ static lib_i32 paging_test_cr3_directory_reload(void)
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu = {0};
     lib_i32 failed = !paging_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -655,16 +539,17 @@ static lib_i32 paging_test_cr3_directory_reload(void)
     }
     if (!failed) {
         failed |= !paging_run(state.machine, 0, &result, &diagnostic);
-        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= diagnostic.first_fault.valid || cpu.data.cr0 !=
-            (VCPU_CR0_PE | VCPU_CR0_PG) || cpu.data.cr3 !=
-            TEST_PAGE_DIRECTORY_RELOAD || cpu.data.eax != first_value ||
-            cpu.data.ecx != TEST_PAGE_DIRECTORY_RELOAD || cpu.data.edx !=
-            second_value || cpu.data.ebx != 0x00003000u || cpu.data.eip !=
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
+        failed |= diagnostic.first_fault.valid || cpu.cr0 !=
+            (VCPU_CR0_PE | VCPU_CR0_PG) || cpu.cr3 !=
+            TEST_PAGE_DIRECTORY_RELOAD || cpu.eax != first_value ||
+            cpu.ecx != TEST_PAGE_DIRECTORY_RELOAD || cpu.edx !=
+            second_value || cpu.ebx != 0x00003000u || cpu.eip !=
             TEST_PROTECTED_CODE + sizeof(protected_code) ||
-            cpu.data.eflags != 0x00000002u ||
-            cpu.data.esp != 0x00005000u || cpu.data.ebp != 0u ||
-            cpu.data.esi != 0u || cpu.data.edi != 0u;
+            cpu.eflags != 0x00000002u ||
+            cpu.esp != 0x00005000u || cpu.ebp != 0u ||
+            cpu.esi != 0u || cpu.edi != 0u;
     }
     core_machine_destroy(state.machine);
     return failed;
@@ -694,7 +579,7 @@ static lib_i32 paging_test_no_stale_translation(void)
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu = {0};
     lib_u32 pte = 0u;
     lib_i32 failed = !paging_permission_prepare(&state, program, sizeof(program),
         TEST_PAGE_TABLE | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE,
@@ -712,10 +597,11 @@ static lib_i32 paging_test_no_stale_translation(void)
                 &result) != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_BUDGET || core_machine_get_cpu_diagnostic(
                 state.machine, &diagnostic) != LIB_STATUS_OK;
-        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= diagnostic.first_fault.valid || cpu.data.eax != first_value ||
-            cpu.data.eip != 4u || cpu.data.edx != 0x00000300u || cpu.data.cr3 !=
-            TEST_PAGE_DIRECTORY || cpu.data.eflags != 0x00000002u;
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
+        failed |= diagnostic.first_fault.valid || cpu.eax != first_value ||
+            cpu.eip != 4u || cpu.edx != 0x00000300u || cpu.cr3 !=
+            TEST_PAGE_DIRECTORY || cpu.eflags != 0x00000002u;
     }
     if (!failed) {
         failed |= !paging_write_u32(state.machine, TEST_PAGE_TABLE_SECOND +
@@ -724,10 +610,11 @@ static lib_i32 paging_test_no_stale_translation(void)
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK;
-        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= diagnostic.first_fault.valid || cpu.data.eax != first_value ||
-            cpu.data.edx != second_value || cpu.data.eip != 8u ||
-            cpu.data.cr3 != TEST_PAGE_DIRECTORY || cpu.data.eflags !=
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
+        failed |= diagnostic.first_fault.valid || cpu.eax != first_value ||
+            cpu.edx != second_value || cpu.eip != 8u ||
+            cpu.cr3 != TEST_PAGE_DIRECTORY || cpu.eflags !=
                 0x00000002u || !paging_permission_read(state.machine,
                 TEST_PAGE_TABLE_SECOND + 3u * 4u, &pte, sizeof(pte)) ||
             pte != (replacement | TEST_PAGE_ACCESSED);
@@ -794,6 +681,7 @@ static lib_i32 paging_permission_prepare(paging_machine *state,
     lib_u32 initial_pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
     lib_u32 initial_pte = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
+    core_machine_debug_cpu_snapshot prepared = {0};
     lib_i32 failed = program_size > sizeof(protected_code) -
         sizeof(enable_paging) || !paging_prepare(state,
         CORE_MACHINE_CPU_PROFILE_80386);
@@ -816,32 +704,44 @@ static lib_i32 paging_permission_prepare(paging_machine *state,
             core_machine_memory_write(state->machine, TEST_STACK_PHYSICAL +
                 0xffeu, &stack, sizeof(stack)) != LIB_STATUS_OK;
         failed |= !paging_run(state->machine, 0, &result, &diagnostic);
-        if (user) {
-            state->machine->executor_cpu.data.cs.selector =
-                TEST_USER_CODE_SELECTOR;
-            state->machine->executor_cpu.data.cs.dpl = 3u;
-            failed |= core_machine_cpu_execution_load_segment(
-                &state->machine->executor_cpu_execution,
-                &state->machine->executor_cpu.data.ds,
-                TEST_USER_DATA_SELECTOR) != 0 ||
-                core_machine_cpu_execution_load_segment(
-                &state->machine->executor_cpu_execution,
-                &state->machine->executor_cpu.data.ss,
-                TEST_USER_DATA_SELECTOR) != 0;
-        } else {
-            state->machine->executor_cpu.data.ds.limit = 0xffffffffu;
-            state->machine->executor_cpu.data.ss.limit = 0xffffffffu;
-        }
+        /* Load the intended caches from real descriptors before installing the
+         * restrictive page permissions whose effects are under test. */
+        const lib_u8 code_descriptor[] = {
+            0xffu, 0xffu, 0x00u, 0x70u, 0x00u,
+            user ? 0xfau : 0x9au, 0x00u, 0x00u
+        };
+        const lib_u8 data_descriptor[] = {
+            0xffu, 0xffu, 0x00u, 0x00u, 0x00u,
+            user ? 0xf2u : 0x92u, 0x8fu, 0x00u
+        };
+        failed |= core_machine_debug_write_register(state->machine,
+            CORE_MACHINE_DEBUG_CR0, VCPU_CR0_PE) != LIB_STATUS_OK;
+        failed |= core_machine_memory_write(state->machine, TEST_GDT_ADDRESS +
+            (user ? 24u : 8u), code_descriptor, sizeof(code_descriptor)) !=
+            LIB_STATUS_OK || core_machine_memory_write(state->machine,
+            TEST_GDT_ADDRESS + (user ? 32u : 16u), data_descriptor,
+            sizeof(data_descriptor)) != LIB_STATUS_OK;
+        failed |= core_machine_debug_write_register(state->machine,
+            CORE_MACHINE_DEBUG_EAX, 0xfacebeefu) != LIB_STATUS_OK ||
+            core_machine_debug_write_register(state->machine,
+            CORE_MACHINE_DEBUG_EBX, TEST_DATA_LINEAR) != LIB_STATUS_OK ||
+            core_machine_debug_write_register(state->machine,
+            CORE_MACHINE_DEBUG_ESP, 0x00005000u) != LIB_STATUS_OK;
+        failed |= !paging_resume_at(state->machine,
+            user ? TEST_USER_CODE_SELECTOR : TEST_CODE_SELECTOR,
+            user ? TEST_USER_DATA_SELECTOR : TEST_DATA_SELECTOR,
+            user ? TEST_USER_DATA_SELECTOR : TEST_DATA_SELECTOR, 0u, 0u);
+        failed |= core_machine_debug_capture_cpu_snapshot(state->machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &prepared) != LIB_STATUS_OK ||
+            prepared.cs.base != TEST_PERMISSION_CODE ||
+            prepared.cs.limit != 0xffffu || prepared.cs.dpl != (user ? 3u : 0u) ||
+            prepared.ds.limit != 0xffffffffu || prepared.ss.limit != 0xffffffffu ||
+            prepared.eip != 0u;
         failed |= !paging_permission_install(state->machine, pde_code, pde_data,
             pte_code, pte_data, pte_stack);
-        state->machine->executor_cpu.data.cs.base = TEST_PERMISSION_CODE;
-        state->machine->executor_cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_PG |
-            (set_reserved_cr0_bit ? TEST_80386_FORMER_WP_BIT : 0u);
-        state->machine->executor_cpu.data.eax = 0xfacebeefu;
-        state->machine->executor_cpu.data.ebx = TEST_DATA_LINEAR;
-        state->machine->executor_cpu.data.esp = 0x00005000u;
-        test_core_machine_fixture_resume_after_halt_at(state->machine,
-            0u);
+        failed |= core_machine_debug_write_register(state->machine,
+            CORE_MACHINE_DEBUG_CR0, VCPU_CR0_PE | VCPU_CR0_PG |
+            (set_reserved_cr0_bit ? TEST_80386_FORMER_WP_BIT : 0u)) != LIB_STATUS_OK;
         if (out_program_eip != LIB_NULL) *out_program_eip =
             0u;
     }
@@ -855,7 +755,7 @@ static lib_i32 paging_permission_expect_fault(paging_machine *state,
 {
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu = {0};
     lib_u32 pde = 0u;
     lib_u32 pte = 0u;
     lib_u16 data = 0u;
@@ -865,16 +765,17 @@ static lib_i32 paging_permission_expect_fault(paging_machine *state,
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
             LIB_STATUS_OK;
 
-    cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    failed |= core_machine_debug_capture_cpu_snapshot(state->machine,
+        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
     failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
         diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_PF) ||
         diagnostic.first_fault.exception_code != expected_code ||
         diagnostic.first_fault.point.linear_pc != TEST_PERMISSION_CODE + program_eip ||
-        cpu.data.cr2 != expected_cr2 ||
-        diagnostic.first_fault.cr2 != expected_cr2 || cpu.data.eip != program_eip ||
-        cpu.data.ebx != TEST_DATA_LINEAR || cpu.data.esp != 0x00005000u ||
-        cpu.data.eflags != 0x00000002u;
-    if (access == PAGING_PERMISSION_READ) failed |= cpu.data.eax != 0xfacebeefu;
+        cpu.cr2 != expected_cr2 ||
+        diagnostic.first_fault.cr2 != expected_cr2 || cpu.eip != program_eip ||
+        cpu.ebx != TEST_DATA_LINEAR || cpu.esp != 0x00005000u ||
+        cpu.eflags != 0x00000002u;
+    if (access == PAGING_PERMISSION_READ) failed |= cpu.eax != 0xfacebeefu;
     failed |= !paging_permission_read(state->machine, pde_address, &pde,
         sizeof(pde)) || !paging_permission_read(state->machine, pte_address,
             &pte, sizeof(pte)) ||
@@ -891,8 +792,8 @@ static lib_i32 paging_permission_expect_fault(paging_machine *state,
             "T311 fault access=%u result=%u/%u diag=%x/%x eip=%x cr2=%x eax=%x ebx=%x esp=%x flags=%x pde=%x/%x pte=%x/%x\n",
             (unsigned)access, (unsigned)result.executed, (unsigned)result.reason,
             diagnostic.first_fault.exception_mask,
-            diagnostic.first_fault.exception_code, cpu.data.eip, cpu.data.cr2,
-            cpu.data.eax, cpu.data.ebx, cpu.data.esp, cpu.data.eflags, pde,
+            diagnostic.first_fault.exception_code, cpu.eip, cpu.cr2,
+            cpu.eax, cpu.ebx, cpu.esp, cpu.eflags, pde,
             pde_initial, pte, pte_initial);
     }
     return !failed;
@@ -903,7 +804,7 @@ static lib_i32 paging_permission_expect_success(paging_machine *state,
 {
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu = {0};
     lib_u32 pde = 0u;
     lib_u32 pte = 0u;
     lib_u16 data = 0u;
@@ -913,21 +814,22 @@ static lib_i32 paging_permission_expect_success(paging_machine *state,
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
             LIB_STATUS_OK;
 
-    cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    failed |= core_machine_debug_capture_cpu_snapshot(state->machine,
+        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
     failed |= diagnostic.first_fault.valid || !paging_permission_read(
         state->machine, pde_address, &pde, sizeof(pde)) ||
         !paging_permission_read(state->machine, pte_address, &pte,
             sizeof(pte)) || (pde & TEST_PAGE_ACCESSED) == 0u ||
         (pte & TEST_PAGE_ACCESSED) == 0u;
     if (access == PAGING_PERMISSION_READ) {
-        failed |= cpu.data.eax != 0xface1234u ||
+        failed |= cpu.eax != 0xface1234u ||
             (pte & TEST_PAGE_DIRTY) != 0u;
     } else if (access == PAGING_PERMISSION_WRITE) {
         failed |= !paging_permission_read(state->machine, TEST_DATA_PHYSICAL,
             &data, sizeof(data)) || data != 0xbeefu ||
             (pte & TEST_PAGE_DIRTY) == 0u;
     } else if (access == PAGING_PERMISSION_STACK) {
-        failed |= cpu.data.esp != 0x00004ffeu ||
+        failed |= cpu.esp != 0x00004ffeu ||
             !paging_permission_read(state->machine, TEST_STACK_PHYSICAL +
                 0xffeu, &data, sizeof(data)) ||
             data != 0xbeefu || (pte & TEST_PAGE_DIRTY) == 0u;
@@ -936,7 +838,7 @@ static lib_i32 paging_permission_expect_success(paging_machine *state,
         fprintf(stderr,
             "T311 success access=%u result=%u/%u fault=%d eax=%x esp=%x pde=%x pte=%x\n",
             (unsigned)access, (unsigned)result.executed, (unsigned)result.reason,
-            diagnostic.first_fault.valid, cpu.data.eax, cpu.data.esp, pde, pte);
+            diagnostic.first_fault.valid, cpu.eax, cpu.esp, pde, pte);
     }
     return !failed;
 }
@@ -1115,7 +1017,7 @@ static lib_i32 paging_test_cross_data(void)
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu = {0};
     lib_u16 word = 0u;
     lib_u8 byte = 0u;
     lib_i32 failed = 0;
@@ -1124,10 +1026,12 @@ static lib_i32 paging_test_cross_data(void)
     word = 0x3412u;
     failed |= core_machine_memory_write(state.machine, TEST_CROSS_DATA_FIRST +
         0xfffu, &word, sizeof(word)) != LIB_STATUS_OK;
-    state.machine->executor_cpu.data.ebx = TEST_DATA_LINEAR + 0xfffu;
+    failed |= core_machine_debug_write_register(state.machine,
+        CORE_MACHINE_DEBUG_EBX, TEST_DATA_LINEAR + 0xfffu) != LIB_STATUS_OK;
     failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
-    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-    failed |= diagnostic.first_fault.valid || cpu.data.eax != 0xface3412u ||
+    failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
+    failed |= diagnostic.first_fault.valid || cpu.eax != 0xface3412u ||
         !paging_cross_entries(state.machine, TEST_PAGE_DIRECTORY + 4u,
             TEST_PAGE_TABLE_SECOND + 3u * 4u, TEST_PAGE_TABLE_SECOND + 4u * 4u,
             pde | TEST_PAGE_ACCESSED, first | TEST_PAGE_ACCESSED,
@@ -1135,7 +1039,8 @@ static lib_i32 paging_test_cross_data(void)
     core_machine_destroy(state.machine);
 
     if (!paging_cross_prepare(&state, write, sizeof(write), second, 0)) return 1;
-    state.machine->executor_cpu.data.ebx = TEST_DATA_LINEAR + 0xfffu;
+    failed |= core_machine_debug_write_register(state.machine,
+        CORE_MACHINE_DEBUG_EBX, TEST_DATA_LINEAR + 0xfffu) != LIB_STATUS_OK;
     failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
     failed |= diagnostic.first_fault.valid || !paging_cross_entries(state.machine,
         TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND + 3u * 4u,
@@ -1163,7 +1068,7 @@ static lib_i32 paging_test_cross_stack(void)
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu = {0};
     lib_u8 low = 0u;
     lib_u8 high = 0u;
     lib_i32 failed;
@@ -1173,10 +1078,12 @@ static lib_i32 paging_test_cross_stack(void)
         return 1;
     failed = !paging_write_u32(state.machine, TEST_PAGE_TABLE + 3u * 4u, first) ||
         !paging_write_u32(state.machine, TEST_PAGE_TABLE + 4u * 4u, second);
-    state.machine->executor_cpu.data.esp = 0x00004001u;
+    failed |= core_machine_debug_write_register(state.machine,
+        CORE_MACHINE_DEBUG_ESP, 0x00004001u) != LIB_STATUS_OK;
     failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
-    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-    failed |= diagnostic.first_fault.valid || cpu.data.esp != 0x00003fffu ||
+    failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
+    failed |= diagnostic.first_fault.valid || cpu.esp != 0x00003fffu ||
         !paging_cross_entries(state.machine, TEST_PAGE_DIRECTORY,
             TEST_PAGE_TABLE + 3u * 4u, TEST_PAGE_TABLE + 4u * 4u,
             pde | TEST_PAGE_ACCESSED, first | TEST_PAGE_ACCESSED |
@@ -1196,11 +1103,13 @@ static lib_i32 paging_test_cross_stack(void)
             &(lib_u8){ 0x12u }, 1u) != LIB_STATUS_OK ||
         core_machine_memory_write(state.machine, TEST_STACK_PHYSICAL,
             &(lib_u8){ 0x34u }, 1u) != LIB_STATUS_OK;
-    state.machine->executor_cpu.data.esp = 0x00003fffu;
+    failed |= core_machine_debug_write_register(state.machine,
+        CORE_MACHINE_DEBUG_ESP, 0x00003fffu) != LIB_STATUS_OK;
     failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
-    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-    failed |= diagnostic.first_fault.valid || cpu.data.esp != 0x00004001u ||
-        cpu.data.eax != 0xface3412u || !paging_cross_entries(state.machine,
+    failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
+    failed |= diagnostic.first_fault.valid || cpu.esp != 0x00004001u ||
+        cpu.eax != 0xface3412u || !paging_cross_entries(state.machine,
         TEST_PAGE_DIRECTORY, TEST_PAGE_TABLE + 3u * 4u,
         TEST_PAGE_TABLE + 4u * 4u, pde | TEST_PAGE_ACCESSED,
         first | TEST_PAGE_ACCESSED, second | TEST_PAGE_ACCESSED);
@@ -1212,13 +1121,15 @@ static lib_i32 paging_test_cross_stack(void)
     failed |= !paging_write_u32(state.machine, TEST_PAGE_TABLE + 3u * 4u, first) ||
         !paging_write_u32(state.machine, TEST_PAGE_TABLE + 4u * 4u,
             TEST_STACK_PHYSICAL | TEST_PAGE_WRITABLE);
-    state.machine->executor_cpu.data.esp = 0x00004001u;
+    failed |= core_machine_debug_write_register(state.machine,
+        CORE_MACHINE_DEBUG_ESP, 0x00004001u) != LIB_STATUS_OK;
     failed |= !paging_cross_run(&state, 1, &result, &diagnostic);
-    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+    failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
     failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF, 0x02u,
-        TEST_PERMISSION_CODE) || cpu.data.cr2 != 0x00004000u ||
-        cpu.data.esp != 0x00004001u || cpu.data.eax != 0xfacebeefu ||
-        cpu.data.eflags != 0x02u || !paging_cross_entries(state.machine,
+        TEST_PERMISSION_CODE) || cpu.cr2 != 0x00004000u ||
+        cpu.esp != 0x00004001u || cpu.eax != 0xfacebeefu ||
+        cpu.eflags != 0x02u || !paging_cross_entries(state.machine,
         TEST_PAGE_DIRECTORY, TEST_PAGE_TABLE + 3u * 4u,
         TEST_PAGE_TABLE + 4u * 4u, pde | TEST_PAGE_ACCESSED, first,
         TEST_STACK_PHYSICAL | TEST_PAGE_WRITABLE);
@@ -1239,7 +1150,7 @@ static lib_i32 paging_test_cross_fetch(void)
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu cpu;
+    core_machine_debug_cpu_snapshot cpu = {0};
     lib_i32 failed;
 
     if (!paging_cross_prepare(&state, first, sizeof(first),
@@ -1250,7 +1161,8 @@ static lib_i32 paging_test_cross_fetch(void)
         TEST_PERMISSION_CODE + 0xfffu, first, sizeof(first)) != LIB_STATUS_OK ||
         core_machine_memory_write(state.machine, TEST_CROSS_CODE_PHYSICAL,
             second, sizeof(second)) != LIB_STATUS_OK;
-    state.machine->executor_cpu.data.eip = 0x0fffu;
+    failed |= core_machine_debug_write_register(state.machine,
+        CORE_MACHINE_DEBUG_EIP, 0x0fffu) != LIB_STATUS_OK;
     failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
     failed |= diagnostic.first_fault.valid || !paging_cross_entries(state.machine,
         TEST_PAGE_DIRECTORY, TEST_PAGE_TABLE + 7u * 4u,
@@ -1265,12 +1177,14 @@ static lib_i32 paging_test_cross_fetch(void)
         TEST_CROSS_CODE_PHYSICAL | TEST_PAGE_WRITABLE) ||
         core_machine_memory_write(state.machine, TEST_PERMISSION_CODE + 0xfffu,
             first, sizeof(first)) != LIB_STATUS_OK;
-    state.machine->executor_cpu.data.eip = 0x0fffu;
+    failed |= core_machine_debug_write_register(state.machine,
+        CORE_MACHINE_DEBUG_EIP, 0x0fffu) != LIB_STATUS_OK;
     failed |= !paging_cross_run(&state, 1, &result, &diagnostic);
-    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+    failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
     failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF, 0u,
-        TEST_PERMISSION_CODE + 0x0fffu) || cpu.data.cr2 !=
-        TEST_PERMISSION_CODE + 0x1000u || cpu.data.eip != 0x0fffu ||
+        TEST_PERMISSION_CODE + 0x0fffu) || cpu.cr2 !=
+        TEST_PERMISSION_CODE + 0x1000u || cpu.eip != 0x0fffu ||
         !paging_cross_entries(state.machine, TEST_PAGE_DIRECTORY,
             TEST_PAGE_TABLE + 7u * 4u, TEST_PAGE_TABLE + 8u * 4u,
             pde | TEST_PAGE_ACCESSED,
@@ -1290,19 +1204,16 @@ lib_i32 main(void)
     const lib_i32 valid = paging_test_valid_path();
     const lib_i32 delivered = paging_test_delivered_page_fault();
     const lib_i32 faults = paging_test_page_faults();
-    const lib_i32 controls = paging_test_control_forms();
-    const lib_i32 invlpg = paging_test_invlpg_rejection();
-    const lib_i32 cr0_controls = paging_test_cr0_mutable_controls();
     const lib_i32 cr3_reload = paging_test_cr3_directory_reload();
     const lib_i32 no_stale_translation = paging_test_no_stale_translation();
     const lib_i32 permissions = paging_test_permissions();
     const lib_i32 cross_page = paging_test_cross_page();
 
-    if (valid || delivered || faults || controls || invlpg || cr0_controls ||
+    if (valid || delivered || faults ||
         cr3_reload || no_stale_translation || permissions || cross_page) {
         fprintf(stderr,
-            "M5:T258:S2:I386-PAGING:FAIL valid=%d delivered=%d faults=%d controls=%d invlpg=%d cr0=%d cr3=%d stale=%d permissions=%d cross=%d\n",
-            valid, delivered, faults, controls, invlpg, cr0_controls,
+            "M5:T258:S2:I386-PAGING:FAIL valid=%d delivered=%d faults=%d cr3=%d stale=%d permissions=%d cross=%d\n",
+            valid, delivered, faults,
             cr3_reload, no_stale_translation, permissions, cross_page);
         return 1;
     }

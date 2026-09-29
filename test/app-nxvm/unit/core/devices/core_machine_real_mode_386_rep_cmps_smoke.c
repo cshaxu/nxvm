@@ -1,12 +1,11 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
 
 #define T292_RESET_LINEAR 0xfffffff0u
 #define T292_RESET_PHYSICAL 0x000ffff0u
@@ -72,6 +71,7 @@ int main(void)
     const core_machine_run_budget budget = {256u, 0u};
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    core_machine_debug_cpu_snapshot snapshot;
     core_machine *machine = LIB_NULL;
     lib_i32 failed = !t292_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine);
 
@@ -84,10 +84,13 @@ int main(void)
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-            diagnostic.first_fault.valid || machine->executor_cpu.data.ecx != 1u ||
-            machine->executor_cpu.data.esi != T292_SOURCE + 2u ||
-            machine->executor_cpu.data.edi != T292_DESTINATION + 2u ||
-            (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) != 0u;
+            diagnostic.first_fault.valid ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            snapshot.ecx != 1u ||
+            snapshot.esi != T292_SOURCE + 2u ||
+            snapshot.edi != T292_DESTINATION + 2u ||
+            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) != 0u;
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
@@ -100,9 +103,12 @@ int main(void)
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-            diagnostic.first_fault.valid || machine->executor_cpu.data.ecx != 1u ||
-            machine->executor_cpu.data.edi != T292_SOURCE + 2u ||
-            (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+            diagnostic.first_fault.valid ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            snapshot.ecx != 1u ||
+            snapshot.edi != T292_SOURCE + 2u ||
+            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) == 0u;
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
@@ -122,10 +128,13 @@ int main(void)
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-            diagnostic.first_fault.valid || machine->executor_cpu.data.ecx != 0u ||
-            machine->executor_cpu.data.esi != 0x00001001u ||
-            machine->executor_cpu.data.edi != T292_DESTINATION + 1u ||
-            (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+            diagnostic.first_fault.valid ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &snapshot) != LIB_STATUS_OK ||
+            snapshot.ecx != 0u ||
+            snapshot.esi != 0x00001001u ||
+            snapshot.edi != T292_DESTINATION + 1u ||
+            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) == 0u;
     }
     core_machine_destroy(machine);
     if (failed) return 1;

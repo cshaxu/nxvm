@@ -1,7 +1,9 @@
 #include "lib/types/types_interface.h"
+#include "support/core_machine_board_fixture.h"
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/debug_interface.h"
 
 static lib_i32 core_machine_xt_ppi_keyboard_path(void)
 {
@@ -142,14 +144,15 @@ static lib_i32 core_machine_xt_ppi_parity_nmi_path(void)
         LIB_STATUS_OK;
     failed |= !failed && core_machine_set_xt_ppi_fault_input(machine,
         CORE_MACHINE_XT_PPI_FAULT_RAM_PARITY, LIB_TRUE) != LIB_STATUS_OK;
+    failed |= !failed && test_core_machine_fixture_nmi_prepare(machine);
     failed |= !failed && core_machine_bus_read(machine, 0x0062u, &value) !=
         LIB_STATUS_OK;
     failed |= !failed && value != 0x80u;
-    failed |= !failed && machine->executor_cpu.data.flagNMI;
+    failed |= !failed && test_core_machine_fixture_nmi_execute(machine, LIB_FALSE);
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x20u) !=
         LIB_STATUS_OK;
-    failed |= !failed && !machine->executor_cpu.data.flagNMI;
     failed |= !failed && !machine->xt_ppi_keyboard.nmi_signaled;
+    failed |= !failed && test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) !=
         LIB_STATUS_OK;
@@ -158,14 +161,15 @@ static lib_i32 core_machine_xt_ppi_parity_nmi_path(void)
     failed |= !failed && core_machine_set_nmi_mask(machine, LIB_TRUE) != LIB_STATUS_OK;
     failed |= !failed && core_machine_set_xt_ppi_fault_input(machine,
         CORE_MACHINE_XT_PPI_FAULT_IO_CHECK, LIB_TRUE) != LIB_STATUS_OK;
+    failed |= !failed && test_core_machine_fixture_nmi_prepare(machine);
     failed |= !failed && core_machine_bus_read(machine, 0x0062u, &value) !=
         LIB_STATUS_OK;
     failed |= !failed && value != 0x40u;
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x10u) !=
         LIB_STATUS_OK;
-    failed |= !failed && machine->executor_cpu.data.flagNMI;
+    failed |= !failed && test_core_machine_fixture_nmi_execute(machine, LIB_FALSE);
     failed |= !failed && core_machine_set_nmi_mask(machine, LIB_FALSE) != LIB_STATUS_OK;
-    failed |= !failed && !machine->executor_cpu.data.flagNMI;
+    failed |= !failed && test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) !=
         LIB_STATUS_OK;
