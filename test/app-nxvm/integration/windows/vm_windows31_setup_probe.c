@@ -1,3 +1,4 @@
+#include "../../support/hdc.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -164,19 +165,25 @@ static void vm_t287_print_frame(const vm_machine *session)
     }
 }
 
-static void vm_t287_report_fault(vm_machine *session, const char *stage)
+static void vm_t287_report_fault(integration_ini_session *ini_session, const char *stage)
 {
+    vm_machine *session = ini_session->session;
     core_machine_cpu_diagnostic diagnostic = {0};
     t_cpu cpu;
     lib_size index;
+    lib_bool was_running;
 
     if (session == LIB_NULL) return;
+    was_running = vm_machine_control_is_running(&session->control);
+    if (common_machine_state_get(ini_session->common_machine) == COMMON_MACHINE_RUNNING &&
+        integration_ini_session_pause(ini_session, 5000u) != LIB_STATUS_OK) return;
+    if (common_machine_shutdown(session->executor) != LIB_STATUS_OK) return;
     (void)core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic);
     printf("M5:T287:S23:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
-        vm_machine_control_is_running(&session->control),
-        session->core_machine->hdc.data.command_count,
-        session->core_machine->hdc.data.last_command);
+        was_running,
+        hdc_observe(&session->core_machine->hdc).command_count,
+        hdc_observe(&session->core_machine->hdc).last_command);
     if (diagnostic.first_fault.valid) {
         const core_machine_cpu_fault_snapshot *fault = &diagnostic.first_fault;
 
@@ -258,7 +265,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (observed_setup_inf) {
         Sleep(VM_T287_FAULT_OBSERVATION_MILLISECONDS);
         if (!vm_machine_control_is_running(&session->control)) {
-            vm_t287_report_fault(session, "setup-inf-fault");
+            vm_t287_report_fault(&ini_session, "setup-inf-fault");
             goto done;
         }
         if (vm_t287_has_text(session, "Welcome to Setup.")) {
@@ -283,7 +290,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                         }
                     }
                 }
-                vm_t287_report_fault(session, "after-welcome-enter");
+                vm_t287_report_fault(&ini_session, "after-welcome-enter");
                 goto done;
             }
             passed = 1;
@@ -291,9 +298,9 @@ lib_i32 main(lib_i32 argc, char **argv)
             vm_t287_print_frame(session);
             goto done;
         }
-        vm_t287_report_fault(session, "setup-inf-running");
+        vm_t287_report_fault(&ini_session, "setup-inf-running");
     } else {
-        vm_t287_report_fault(session, stage);
+        vm_t287_report_fault(&ini_session, stage);
     }
 
 done:
@@ -302,6 +309,6 @@ done:
     return passed ? 0 : 1;
 
 fail:
-    vm_t287_report_fault(session, stage);
+    vm_t287_report_fault(&ini_session, stage);
     goto done;
 }

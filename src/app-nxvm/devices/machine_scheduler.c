@@ -348,7 +348,7 @@ static void core_machine_readiness_advance(core_machine *machine,
             0u, 0u, 0u);
     }
     if (machine->hdc_configured) {
-        core_machine_hdc_advance_elapsed(&machine->hdc, source_ticks);
+        core_machine_hdc_advance_at(&machine->hdc, due_tick);
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_HDC_ADVANCE,
             0u, 0u, 0u);
     }

@@ -1,3 +1,4 @@
+#include "../../../support/hdc.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -25,28 +26,28 @@ static lib_i32 read_first_sector(vm_machine *session, lib_u8 drive_head,
     core_machine_port_write(&session->core_machine->executor_port, 0x01f5u, 0u);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f6u, drive_head);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f7u, 0x20u);
-    core_machine_hdc_advance(hdc);
+    hdc_service(hdc);
     value = core_machine_port_read(&session->core_machine->executor_port, 0x03f6u);
-    if ((value & CORE_MACHINE_HDC_STATUS_DRQ) == 0u || !core_machine_hdc_irq_pending(hdc)) return 0;
+    if ((value & X86_HDC_STATUS_DRQ) == 0u || !core_machine_hdc_irq_pending(hdc)) return 0;
     value = core_machine_port_read(&session->core_machine->executor_port, 0x01f7u);
-    if ((value & CORE_MACHINE_HDC_STATUS_DRQ) == 0u || core_machine_hdc_irq_pending(hdc) ||
+    if ((value & X86_HDC_STATUS_DRQ) == 0u || core_machine_hdc_irq_pending(hdc) ||
         core_machine_port_read(&session->core_machine->executor_port, 0x01f0u) != expected_word) return 0;
     for (index = 1u; index < 256u; ++index) {
         (void)core_machine_port_read(&session->core_machine->executor_port, 0x01f0u);
     }
-    core_machine_hdc_advance(hdc);
+    hdc_service(hdc);
     if (!core_machine_hdc_irq_pending(hdc)) return 0;
     (void)core_machine_port_read(&session->core_machine->executor_port, 0x01f7u);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f7u, 0xecu);
-    core_machine_hdc_advance(hdc);
+    hdc_service(hdc);
     value = core_machine_port_read(&session->core_machine->executor_port, 0x01f7u);
-    if ((value & CORE_MACHINE_HDC_STATUS_ERR) == 0u || core_machine_hdc_irq_pending(hdc)) return 0;
+    if ((value & X86_HDC_STATUS_ERR) == 0u || core_machine_hdc_irq_pending(hdc)) return 0;
     core_machine_port_write(&session->core_machine->executor_port, 0x03f6u,
-        CORE_MACHINE_HDC_DEVICE_CONTROL_SRST);
+        X86_HDC_DEVICE_CONTROL_SRST);
     core_machine_port_write(&session->core_machine->executor_port, 0x03f6u, 0u);
     return !core_machine_hdc_irq_pending(hdc) &&
         core_machine_port_read(&session->core_machine->executor_port, 0x01f1u) ==
-            CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK;
+            X86_HDC_ERROR_DIAGNOSTIC_OK;
 }
 
 lib_i32 main(void)

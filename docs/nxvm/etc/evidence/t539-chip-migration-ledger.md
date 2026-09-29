@@ -4,7 +4,8 @@ Baseline 996a19a17. All 81 tracked files under `src/app-nxvm/devices` are listed
 exactly once below. Entries remain **designed, not migrated**, except the
 PIT row accepted by S3, RTC row accepted by S4, PIC row accepted by S5,
 DMA row accepted by S7, AT keyboard chain accepted by S8 and XT PPI/keyboard
-accepted by S9 and FDC accepted by S13;
+accepted by S9 and FDC accepted by S13; the S14 HDC implementation is
+recorded below with acceptance owned by Current;
 the inventory stays finite.
 The [design review](../architecture/t539-independent-chip-design.md) supplies
 dependency details, proposed contracts, regression ownership and decision gates.
@@ -22,7 +23,7 @@ This ledger is not a claim of completed chip semantics/timing qualification.
 | `xt_keyboard.c`, `xt_keyboard.h` | S9 implementation: sole serial/FIFO/BAT owner moved to `x86/devices/xtkeyboard`; old pair and concrete PPI dependency removed. [Evidence](t539-s9-xt-extraction.md) maps cases and verification; Current owns acceptance. |
 | `xt_ppi_keyboard.c`, `xt_ppi_keyboard.h` | S9 implementation: qualified Mode-0 registers in `x86/devices/ppi8255`; NXVM pair retains DIP/NMI/speaker/receiving latch and IRQ wiring. No full-8255 claim. [Evidence](t539-s9-xt-extraction.md) records rollback and release proof. |
 | `fdc.c`, `fdc.h`, `fdc_observation_interface.h` | S13 implementation: opaque command/PCN/cause owner in `x86/devices/fdc8272`; NXVM retains PC registers, physical drive/record provider, ports and PIC/DMA wiring. Copied diagnostics replace private caller access. [S13 evidence](t539-s13-fdc-extraction.md) maps original scenarios and verification; Current owns acceptance. S11/S12 qualification and the documented READ TRACK/timing limits are preserved, not promoted to complete silicon qualification. |
-| `hdc.c`, `hdc.h` | Extract explicit controller personalities, not universal ATA; detach IRQ/DMA/board port routing. |
+| `hdc.c`, `hdc.h` | S14 implementation: sole opaque ATA PIO, Compaq/WD, WD1003 and Xebec command/state family in `x86/devices/hdc`; NXVM pair retains port/media-ID and PIC/DMA attachment. [Evidence](t539-s14-hdc-extraction.md) records original-case migration, time/lifecycle/capacity proofs and eight receiving artifacts; Current owns acceptance. |
 | `vadp.c`, `vadp.h` | Extract video mechanisms with one VRAM/frame owner; detach physical memory/port installation. |
 | `controller_interface.h` | Split mixed chip variants/timing value types from board port/IRQ/DMA/topology configuration; no shared umbrella machine config. |
 | `display.c`, `display_interface.h`, `guest_display_frame.h`, `presentation_interface.c`, `presentation_interface.h` | Split device-owned copied display values from machine display-provider slot and product presentation bridge; keep slot/bridge in board/adapter. |

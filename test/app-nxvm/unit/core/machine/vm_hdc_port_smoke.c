@@ -1,3 +1,4 @@
+#include "../../../support/hdc.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -33,7 +34,7 @@ static lib_i32 vm_hdc_read(core_machine *machine, lib_u16 port, lib_u32 *value)
 static lib_i32 vm_hdc_complete_command(core_machine *machine)
 {
     if (machine == LIB_NULL) return 0;
-    core_machine_hdc_advance(&machine->hdc);
+    hdc_service(&machine->hdc);
     return 1;
 }
 
@@ -70,7 +71,7 @@ static lib_i32 vm_hdc_drain_data(core_machine *machine, lib_u16 *first_word)
         if (!vm_hdc_read(machine, HDC_DATA_PORT, &value)) return 0;
         if (index == 0u && first_word != LIB_NULL) *first_word = (lib_u16)value;
     }
-    core_machine_hdc_advance(&machine->hdc);
+    hdc_service(&machine->hdc);
     return 1;
 }
 
@@ -82,7 +83,7 @@ static lib_i32 vm_hdc_fill_data(core_machine *machine, lib_u16 first_word)
         if (!vm_hdc_write(machine, HDC_DATA_PORT,
                 index == 0u ? first_word : 0u)) return 0;
     }
-    core_machine_hdc_advance(&machine->hdc);
+    hdc_service(&machine->hdc);
     return 1;
 }
 
@@ -116,9 +117,9 @@ static lib_i32 vm_hdc_progress_probe(vm_machine *session)
 
     if (!vm_hdc_program_lba(session, 0u, 2u) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
-        session->core_machine->hdc.data.phase != CORE_MACHINE_HDC_PHASE_PENDING_COMMAND ||
-        session->core_machine->hdc.data.next_service_tick !=
-            session->core_machine->hdc.data.elapsed_ticks + 200u ||
+        hdc_observe(&session->core_machine->hdc).phase != X86_HDC_PHASE_PENDING_COMMAND ||
+        hdc_observe(&session->core_machine->hdc).next_service_tick !=
+            hdc_observe(&session->core_machine->hdc).elapsed_ticks + 200u ||
         !vm_hdc_complete_command(session->core_machine) ||
         !vm_hdc_drain_data(session->core_machine, &word) ||
         !vm_hdc_read(session->core_machine, HDC_SECTOR_COUNT_PORT, &value) ||
@@ -173,23 +174,23 @@ lib_i32 main(void)
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
         !vm_hdc_complete_command(session->core_machine) ||
         !vm_hdc_read(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
-            CORE_MACHINE_HDC_STATUS_DRQ) || !core_machine_hdc_irq_pending(
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC |
+            X86_HDC_STATUS_DRQ) || !core_machine_hdc_irq_pending(
                 &session->core_machine->hdc) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
         core_machine_hdc_irq_pending(&session->core_machine->hdc) ||
         !vm_hdc_drain_data(session->core_machine, &word) || word != 0x0040u ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC) ||
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC) ||
         !vm_hdc_program_chs(session) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x30u) ||
         !vm_hdc_complete_command(session->core_machine) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
-            CORE_MACHINE_HDC_STATUS_DRQ) ||
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC |
+            X86_HDC_STATUS_DRQ) ||
         !vm_hdc_fill_data(session->core_machine, 0xa55au) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC) ||
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC) ||
         !vm_hdc_program_chs(session) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
         !vm_hdc_complete_command(session->core_machine) ||
@@ -205,56 +206,56 @@ lib_i32 main(void)
         !vm_hdc_program_lba(session, 0u, 0u) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
         !vm_hdc_complete_command(session->core_machine) ||
-        session->core_machine->hdc.data.sectors_remaining != 256u ||
+        hdc_observe(&session->core_machine->hdc).sectors_remaining != 256u ||
         !vm_hdc_read(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, &value) ||
         !core_machine_hdc_irq_pending(&session->core_machine->hdc) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
         core_machine_hdc_irq_pending(&session->core_machine->hdc) ||
         !vm_hdc_read(session->core_machine, HDC_DATA_PORT, &value) ||
-        session->core_machine->hdc.data.sectors_remaining != 256u ||
+        hdc_observe(&session->core_machine->hdc).sectors_remaining != 256u ||
         !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, 0x04u) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != CORE_MACHINE_HDC_STATUS_BSY || core_machine_hdc_irq_pending(
+        value != X86_HDC_STATUS_BSY || core_machine_hdc_irq_pending(
             &session->core_machine->hdc) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != CORE_MACHINE_HDC_STATUS_BSY ||
+        value != X86_HDC_STATUS_BSY ||
         !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, 0x00u) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC) ||
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC) ||
         !vm_hdc_program_lba(session, invalid_lba, 1u) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
         !vm_hdc_complete_command(session->core_machine) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
         !vm_hdc_read(session->core_machine, HDC_ERROR_PORT, &value) ||
-        value != CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND ||
+        value != X86_HDC_ERROR_ID_NOT_FOUND ||
         !vm_hdc_write(session->core_machine, HDC_DRIVE_HEAD_PORT, 0x10u) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
         !vm_hdc_complete_command(session->core_machine) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
         !vm_hdc_read(session->core_machine, HDC_ERROR_PORT, &value) ||
-        value != CORE_MACHINE_HDC_ERROR_ABORT ||
+        value != X86_HDC_ERROR_ABORT ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x99u) ||
         !vm_hdc_complete_command(session->core_machine) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
         !vm_hdc_read(session->core_machine, HDC_ERROR_PORT, &value) ||
-        value != CORE_MACHINE_HDC_ERROR_ABORT ||
+        value != X86_HDC_ERROR_ABORT ||
         !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, 0x04u) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != CORE_MACHINE_HDC_STATUS_BSY ||
+        value != X86_HDC_STATUS_BSY ||
         !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, 0x00u) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC) ||
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC) ||
         !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT,
-            CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) ||
+            X86_HDC_DEVICE_CONTROL_NIEN) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
         !vm_hdc_complete_command(session->core_machine) ||
         !vm_hdc_read(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
-            CORE_MACHINE_HDC_STATUS_DRQ) || core_machine_hdc_irq_pending(
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC |
+            X86_HDC_STATUS_DRQ) || core_machine_hdc_irq_pending(
                 &session->core_machine->hdc) ||
         !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, 0x00u) ||
         !core_machine_hdc_irq_pending(&session->core_machine->hdc) ||
@@ -278,9 +279,9 @@ lib_i32 main(void)
         !vm_hdc_write(no_media->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
         !vm_hdc_complete_command(no_media->core_machine) ||
         !vm_hdc_read(no_media->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
+        value != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
         !vm_hdc_read(no_media->core_machine, HDC_ERROR_PORT, &value) ||
-        value != CORE_MACHINE_HDC_ERROR_ABORT) {
+        value != X86_HDC_ERROR_ABORT) {
         failed = 1;
     }
     vm_machine_destroy(no_media);

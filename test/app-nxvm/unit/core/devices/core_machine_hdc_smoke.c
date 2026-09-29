@@ -1,3 +1,4 @@
+#include "../../../support/hdc.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -105,7 +106,7 @@ static lib_i32 core_machine_hdc_command(core_machine *machine,
     const core_machine_hdc_task_file_config *config, lib_u8 command)
 {
     if (!core_machine_hdc_write(machine, config->status_command_port, command)) return 0;
-    core_machine_hdc_advance(&machine->hdc);
+    hdc_service(&machine->hdc);
     return 1;
 }
 
@@ -128,7 +129,7 @@ static lib_i32 core_machine_hdc_drain(core_machine *machine,
         if (!core_machine_hdc_read(machine, config->data_port, &word)) return 0;
         if (index == 0u && first_word != LIB_NULL) *first_word = (lib_u16)word;
     }
-    core_machine_hdc_advance(&machine->hdc);
+    hdc_service(&machine->hdc);
     return 1;
 }
 
@@ -139,7 +140,7 @@ static lib_i32 core_machine_hdc_fill(core_machine *machine,
         if (!core_machine_hdc_write(machine, config->data_port,
                 index == 0u ? first_word : 0u)) return 0;
     }
-    core_machine_hdc_advance(&machine->hdc);
+    hdc_service(&machine->hdc);
     return 1;
 }
 
@@ -190,40 +191,40 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
         if (core_machine_configure_hdc(machine, &topology) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK ||
-            machine->hdc.data.error != CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK ||
+            hdc_observe(&machine->hdc).error != X86_HDC_ERROR_DIAGNOSTIC_OK ||
             !core_machine_hdc_program_chs(machine, &hdc_config) ||
             !core_machine_hdc_write(machine, hdc_config.drive_head_port, 0xa0u) ||
             !core_machine_hdc_command(machine, &hdc_config, 0x22u) ||
             !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-            status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
-                CORE_MACHINE_HDC_STATUS_DRQ) ||
+            status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC |
+                X86_HDC_STATUS_DRQ) ||
             !core_machine_hdc_drain(machine, &hdc_config, &word) || word != 0x5678u ||
             !core_machine_hdc_write(machine,
                 hdc_config.alternate_status_device_control_port, 0x08u) ||
-            machine->hdc.data.fixed_disk_register != 0x08u ||
-            machine->hdc.data.drive_head != 0xa0u ||
+            hdc_observe(&machine->hdc).fixed_disk_register != 0x08u ||
+            hdc_observe(&machine->hdc).drive_head != 0xa0u ||
             core_machine_bus_read(machine, hdc_config.alternate_status_device_control_port,
                 &status) != LIB_STATUS_UNSUPPORTED ||
             !core_machine_hdc_program_chs(machine, &hdc_config) ||
             !core_machine_hdc_command(machine, &hdc_config, 0x91u) ||
             !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-            status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC) ||
+            status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC) ||
             !core_machine_hdc_command(machine, &hdc_config, 0x10u) ||
-            machine->hdc.data.step_rate_selector != 0u ||
-            machine->hdc.data.step_rate_ticks != 280u ||
-            machine->hdc.data.step_pulse_limit != 1023u ||
+            hdc_observe(&machine->hdc).step_rate_selector != 0u ||
+            hdc_observe(&machine->hdc).step_rate_ticks != 280u ||
+            hdc_observe(&machine->hdc).step_pulse_limit != 1023u ||
             !core_machine_hdc_command(machine, &hdc_config, 0x7fu) ||
-            machine->hdc.data.step_rate_selector != 15u ||
-            machine->hdc.data.step_rate_ticks != 60000u ||
-            machine->hdc.data.step_pulse_limit != 0u ||
+            hdc_observe(&machine->hdc).step_rate_selector != 15u ||
+            hdc_observe(&machine->hdc).step_rate_ticks != 60000u ||
+            hdc_observe(&machine->hdc).step_pulse_limit != 0u ||
             !core_machine_hdc_command(machine, &hdc_config, 0x90u) ||
-            machine->hdc.data.step_rate_selector != 15u ||
-            machine->hdc.data.step_rate_ticks != 60000u ||
-            machine->hdc.data.step_pulse_limit != 1023u ||
+            hdc_observe(&machine->hdc).step_rate_selector != 15u ||
+            hdc_observe(&machine->hdc).step_rate_ticks != 60000u ||
+            hdc_observe(&machine->hdc).step_pulse_limit != 1023u ||
             !core_machine_hdc_command(machine, &hdc_config, 0xecu) ||
             !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-            status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
-            machine->hdc.data.error != CORE_MACHINE_HDC_ERROR_ABORT) {
+            status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
+            hdc_observe(&machine->hdc).error != X86_HDC_ERROR_ABORT) {
             failed = 1;
         }
     }
@@ -295,17 +296,17 @@ lib_i32 main(void)
                 core_machine_reset(machine) != LIB_STATUS_OK)) {
                 failed |= 0x04;
             } else {
-                if (hdc->data.error != 0x01u || hdc->data.sector_count != 1u ||
-                    hdc->data.sector_number != 1u ||
+                if (hdc_observe(hdc).error != 0x01u || hdc_observe(hdc).sector_count != 1u ||
+                    hdc_observe(hdc).sector_number != 1u ||
                     !core_machine_hdc_write(machine,
                         hdc_config.alternate_status_device_control_port,
-                        CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) ||
+                        X86_HDC_DEVICE_CONTROL_NIEN) ||
                     !core_machine_hdc_program_chs(machine, &hdc_config) ||
                     !core_machine_hdc_command(machine, &hdc_config, 0x20u) ||
                     !core_machine_hdc_read(machine,
                         hdc_config.alternate_status_device_control_port, &status) ||
-                    status != (CORE_MACHINE_HDC_STATUS_DRDY |
-                        CORE_MACHINE_HDC_STATUS_DSC | CORE_MACHINE_HDC_STATUS_DRQ) ||
+                    status != (X86_HDC_STATUS_DRDY |
+                        X86_HDC_STATUS_DSC | X86_HDC_STATUS_DRQ) ||
                     core_machine_hdc_irq_pending(hdc) ||
                     !core_machine_hdc_write(machine,
                         hdc_config.alternate_status_device_control_port, 0u) ||
@@ -346,15 +347,15 @@ lib_i32 main(void)
                     !core_machine_hdc_command(machine, &hdc_config, 0x20u) ||
                     !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
                     !core_machine_hdc_read(machine, hdc_config.error_features_port, &error) ||
-                    status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
-                    error != CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND) failed |= 0x40;
+                    status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
+                    error != X86_HDC_ERROR_ID_NOT_FOUND) failed |= 0x40;
                 media.forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK;
 
                 reads_before = media.read_count;
                 media.forced_read_result = CORE_MACHINE_MEDIA_RESULT_PERMANENT;
                 if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
                     !core_machine_hdc_command(machine, &hdc_config, 0x30u) ||
-                    hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
+                    hdc_observe(hdc).phase != X86_HDC_PHASE_DATA_WRITE ||
                     !core_machine_hdc_fill(machine, &hdc_config, 0xa55au) ||
                     media.read_count != reads_before || media.write_count != 2u ||
                     media.sector[0][0] != 0x5au || media.sector[0][1] != 0xa5u) {
@@ -368,174 +369,14 @@ lib_i32 main(void)
                     !core_machine_hdc_fill(machine, &hdc_config, 0xbeefu) ||
                     !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
                     !core_machine_hdc_read(machine, hdc_config.error_features_port, &error) ||
-                    status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
-                    error != CORE_MACHINE_HDC_ERROR_ABORT) failed |= 0x80;
+                    status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
+                    error != X86_HDC_ERROR_ABORT) failed |= 0x80;
                 media.read_only = LIB_FALSE;
-
-                if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
-                    !core_machine_hdc_write(machine, hdc_config.status_command_port, 0x20u) ||
-                    hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_COMMAND ||
-                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
-                    hdc->data.next_service_tick != hdc->data.elapsed_ticks + 7u ||
-                    core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_write(machine, hdc_config.sector_number_port, 0u) ||
-                    hdc->data.sector_number != 1u) {
-                    failed |= 0x200;
-                }
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
-                    hdc->data.sector_number != 1u ||
-                    hdc->data.status != (CORE_MACHINE_HDC_STATUS_DRDY |
-                        CORE_MACHINE_HDC_STATUS_DSC | CORE_MACHINE_HDC_STATUS_DRQ) ||
-                    !core_machine_hdc_write(machine, hdc_config.status_command_port, 0x30u) ||
-                    hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
-                    hdc->data.status != (CORE_MACHINE_HDC_STATUS_DRDY |
-                        CORE_MACHINE_HDC_STATUS_DSC | CORE_MACHINE_HDC_STATUS_DRQ) ||
-                    !core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status);
-                for (lib_u32 index = 0u; index < 256u; ++index) {
-                    failed |= !core_machine_hdc_read(machine, hdc_config.data_port, &status);
-                    if (index == 0u) failed |= status != 0xa55au;
-                }
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR ||
-                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
-                    hdc->data.next_service_tick != hdc->data.elapsed_ticks + 3u ||
-                    core_machine_hdc_irq_pending(hdc);
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-                    hdc->data.status != (CORE_MACHINE_HDC_STATUS_DRDY |
-                        CORE_MACHINE_HDC_STATUS_DSC) || !core_machine_hdc_irq_pending(hdc);
-
-                if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
-                    !core_machine_hdc_write(machine, hdc_config.status_command_port, 0x30u)) {
-                    failed |= 0x800;
-                }
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
-                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status);
-                for (lib_u32 index = 0u; index < 256u; ++index) {
-                    failed |= !core_machine_hdc_write(machine, hdc_config.data_port,
-                        index == 0u ? 0x5aa5u : 0u);
-                }
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR ||
-                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
-                    hdc->data.next_service_tick != hdc->data.elapsed_ticks + 3u ||
-                    core_machine_hdc_irq_pending(hdc);
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-                    media.sector[0][0] != 0xa5u || media.sector[0][1] != 0x5au ||
-                    !core_machine_hdc_irq_pending(hdc);
-
-                media.sector[1][0] = 0x78u;
-                media.sector[1][1] = 0x56u;
-                if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
-                    !core_machine_hdc_write(machine, hdc_config.sector_count_port, 2u) ||
-                    !core_machine_hdc_command(machine, &hdc_config, 0x20u) ||
-                    !core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-                    core_machine_hdc_irq_pending(hdc)) failed |= 0x4000;
-                for (lib_u32 index = 0u; index < 256u; ++index) {
-                    failed |= !core_machine_hdc_read(machine, hdc_config.data_port, &status);
-                    if (index == 0u) failed |= status != 0x5aa5u;
-                }
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR ||
-                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY || core_machine_hdc_irq_pending(hdc);
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
-                    hdc->data.sector_number != 2u || hdc->data.sector_count != 1u ||
-                    !core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_read(machine, hdc_config.alternate_status_device_control_port, &status) ||
-                    !core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-                    core_machine_hdc_irq_pending(hdc);
-                for (lib_u32 index = 0u; index < 256u; ++index) {
-                    failed |= !core_machine_hdc_read(machine, hdc_config.data_port, &status);
-                    if (index == 0u) failed |= status != 0x5678u;
-                }
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR ||
-                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY || core_machine_hdc_irq_pending(hdc);
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-                    hdc->data.sector_count != 0u || !core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-                    core_machine_hdc_irq_pending(hdc);
-
-                if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
-                    !core_machine_hdc_write(machine, hdc_config.sector_count_port, 2u) ||
-                    !core_machine_hdc_command(machine, &hdc_config, 0x30u) ||
-                    !core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-                    core_machine_hdc_irq_pending(hdc)) failed |= 0x8000;
-                for (lib_u32 index = 0u; index < 256u; ++index) {
-                    failed |= !core_machine_hdc_write(machine, hdc_config.data_port,
-                        index == 0u ? 0x2211u : 0u);
-                }
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR ||
-                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
-                    core_machine_hdc_irq_pending(hdc);
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
-                    hdc->data.sector_number != 2u || hdc->data.sector_count != 1u ||
-                    media.write_count != 4u || media.sector[0][0] != 0x11u ||
-                    media.sector[0][1] != 0x22u || !core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_read(machine,
-                        hdc_config.alternate_status_device_control_port, &status) ||
-                    !core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-                    core_machine_hdc_irq_pending(hdc);
-                for (lib_u32 index = 0u; index < 256u; ++index) {
-                    failed |= !core_machine_hdc_write(machine, hdc_config.data_port,
-                        index == 0u ? 0x4433u : 0u);
-                }
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR ||
-                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
-                    core_machine_hdc_irq_pending(hdc);
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-                    hdc->data.sector_count != 0u || media.write_count != 5u ||
-                    media.sector[1][0] != 0x33u || media.sector[1][1] != 0x44u ||
-                    !core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-                    core_machine_hdc_irq_pending(hdc);
-                if (!core_machine_hdc_write(machine, hdc_config.status_command_port, 0xecu) ||
-                    hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_COMMAND ||
-                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY) {
-                    failed |= 0x1000;
-                }
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
-                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-                    !core_machine_hdc_read(machine, hdc_config.data_port, &status) ||
-                    status != 0x0040u;
-                for (lib_u32 index = 1u; index < 256u; ++index) {
-                    failed |= !core_machine_hdc_read(machine, hdc_config.data_port, &status);
-                }
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR;
-                core_machine_hdc_advance(hdc);
-                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-                    !core_machine_hdc_irq_pending(hdc);
-
-                if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
-                    !core_machine_hdc_write(machine, hdc_config.status_command_port, 0x20u) ||
-                    hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_COMMAND ||
-                    !core_machine_hdc_write(machine,
-                        hdc_config.alternate_status_device_control_port,
-                        CORE_MACHINE_HDC_DEVICE_CONTROL_SRST) ||
-                    hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
-                    !core_machine_hdc_write(machine,
-                        hdc_config.alternate_status_device_control_port, 0u) ||
-                    hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-                    hdc->data.status != (CORE_MACHINE_HDC_STATUS_DRDY |
-                        CORE_MACHINE_HDC_STATUS_DSC) || core_machine_hdc_irq_pending(hdc)) {
-                    failed |= 0x2000;
-                }
-
                 media.present = LIB_FALSE;
                 if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
                     !core_machine_hdc_command(machine, &hdc_config, 0x20u) ||
                     !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
-                    status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR)) {
+                    status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR)) {
                     failed |= 0x100;
                 }
             }
@@ -551,7 +392,6 @@ lib_i32 main(void)
     }
     puts("M5:T286:S1:ATA-NIEN:PORT:OK");
     puts("M5:T283:S2:CORE-HDC-MEDIA:OK");
-    puts("M5:T347:S3:ATA-SERVICE:OK");
     puts("M5:T479:S5:IBM-WD1003:OK");
     return 0;
 }

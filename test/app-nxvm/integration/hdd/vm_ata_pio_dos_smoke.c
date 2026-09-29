@@ -1,3 +1,4 @@
+#include "../../support/hdc.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -62,7 +63,7 @@ static lib_i32 vm_ata253_set_nien(vm_ata253_program *program, lib_i32 enabled)
 {
     return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x03f6u) &&
         vm_ata253_put(program, 0xb0u) &&
-        vm_ata253_put(program, enabled ? CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN : 0u) &&
+        vm_ata253_put(program, enabled ? X86_HDC_DEVICE_CONTROL_NIEN : 0u) &&
         vm_ata253_put(program, 0xeeu);
 }
 
@@ -77,9 +78,9 @@ static lib_i32 vm_ata253_wait_drq(vm_ata253_program *program)
 {
     return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x01f7u) &&
         vm_ata253_put(program, 0xecu) && vm_ata253_put(program, 0xa8u) &&
-        vm_ata253_put(program, CORE_MACHINE_HDC_STATUS_BSY) && vm_ata253_put(program, 0x75u) &&
+        vm_ata253_put(program, X86_HDC_STATUS_BSY) && vm_ata253_put(program, 0x75u) &&
         vm_ata253_put(program, 0xfbu) && vm_ata253_put(program, 0xa8u) &&
-        vm_ata253_put(program, CORE_MACHINE_HDC_STATUS_DRQ) && vm_ata253_put(program, 0x74u) &&
+        vm_ata253_put(program, X86_HDC_STATUS_DRQ) && vm_ata253_put(program, 0x74u) &&
         vm_ata253_put(program, 0xf7u);
 }
 
@@ -87,9 +88,9 @@ static lib_i32 vm_ata253_wait_ready(vm_ata253_program *program)
 {
     return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x01f7u) &&
         vm_ata253_put(program, 0xecu) && vm_ata253_put(program, 0xa8u) &&
-        vm_ata253_put(program, CORE_MACHINE_HDC_STATUS_BSY) && vm_ata253_put(program, 0x75u) &&
+        vm_ata253_put(program, X86_HDC_STATUS_BSY) && vm_ata253_put(program, 0x75u) &&
         vm_ata253_put(program, 0xfbu) && vm_ata253_put(program, 0xa8u) &&
-        vm_ata253_put(program, CORE_MACHINE_HDC_STATUS_DRQ) && vm_ata253_put(program, 0x75u) &&
+        vm_ata253_put(program, X86_HDC_STATUS_DRQ) && vm_ata253_put(program, 0x75u) &&
         vm_ata253_put(program, 0xf7u);
 }
 

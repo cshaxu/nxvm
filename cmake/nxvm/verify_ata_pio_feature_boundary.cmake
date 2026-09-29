@@ -2,7 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/hdc.c" hdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/hdc/hdc.c" hdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/hdc.c" hdc_adapter)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
     profile_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
@@ -12,8 +13,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.c"
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_hdc_smoke.c"
     core_fixture)
 
-if(hdc_source MATCHES "#include[ \t]+\"vm/")
-    message(FATAL_ERROR "Core ATA PIO controller retains a VM include")
+if(hdc_source MATCHES "#include[ \t]+\"(vm|app-nxvm)/")
+    message(FATAL_ERROR "Shared HDC controller retains a product include")
 endif()
 
 if(core_fixture MATCHES "#include[ \t]+\"vm/")
@@ -37,21 +38,28 @@ foreach(forbidden IN ITEMS "core_machine_memory_" "vm_profile_default_firmware"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_hdc_resolve_sector"
-    "core_machine_hdc_lba" "core_machine_hdc_selected_master"
-    "CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN" "CORE_MACHINE_HDC_DEVICE_CONTROL_SRST"
-    "core_machine_hdc_clear_irq"
-    "core_machine_pic_irq_source_assert" "core_machine_media_query"
-    "core_machine_media_read_bytes" "core_machine_media_write_bytes")
+foreach(required IN ITEMS "x86_hdc_resolve_sector"
+    "x86_hdc_lba" "x86_hdc_selected_master"
+    "X86_HDC_DEVICE_CONTROL_NIEN" "X86_HDC_DEVICE_CONTROL_SRST"
+    "x86_hdc_clear_irq" "hdc->connect.query" "hdc->connect.read"
+    "hdc->connect.write")
     string(FIND "${hdc_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "ATA PIO feature contract is incomplete: ${required}")
     endif()
 endforeach()
 
-foreach(forbidden IN ITEMS "core_machine_hdc_load_lba_sector"
-    "core_machine_hdc_store_lba_sector" "core_machine_hdc_load_chs_sector"
-    "core_machine_hdc_store_chs_sector")
+foreach(required IN ITEMS "core_machine_pic_irq_source_assert" "core_machine_media_query"
+    "core_machine_media_read_bytes" "core_machine_media_write_bytes" "x86_hdc_create"
+    "x86_hdc_destroy" "x86_hdc_read" "x86_hdc_write")
+    string(FIND "${hdc_adapter}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "HDC board attachment is incomplete: ${required}")
+    endif()
+endforeach()
+foreach(forbidden IN ITEMS "x86_hdc_load_lba_sector"
+    "x86_hdc_store_lba_sector" "x86_hdc_load_chs_sector"
+    "x86_hdc_store_chs_sector")
     string(FIND "${hdc_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "ATA PIO retains a duplicate sector path: ${forbidden}")

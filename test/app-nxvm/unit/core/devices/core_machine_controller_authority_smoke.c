@@ -1,3 +1,4 @@
+#include "../../../support/hdc.h"
 #include "support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
@@ -167,23 +168,23 @@ lib_i32 main(void)
                     0x20u) != LIB_STATUS_OK ||
                 core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
                     &status) != LIB_STATUS_OK ||
-                status != CORE_MACHINE_HDC_STATUS_BSY) {
+                status != X86_HDC_STATUS_BSY) {
                 failed |= 0x08;
             } else {
-                core_machine_hdc_advance(&machine->hdc);
+                hdc_service(&machine->hdc);
                 if (core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
                         &status) != LIB_STATUS_OK ||
                 core_machine_bus_read(machine, hdc_config.bus.task_file.error_features_port,
                     &error) != LIB_STATUS_OK ||
-                status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
-                error != CORE_MACHINE_HDC_ERROR_ABORT) {
+                status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
+                error != X86_HDC_ERROR_ABORT) {
                     failed |= 0x08;
                 }
             }
             if (core_machine_reset(machine) != LIB_STATUS_OK ||
                 core_machine_port_read(port, fdc_config.status_port) != TEST_FDC_MSR_RQM ||
-                machine->hdc.data.status != (CORE_MACHINE_HDC_STATUS_DRDY |
-                    CORE_MACHINE_HDC_STATUS_DSC)) {
+                hdc_observe(&machine->hdc).status != (X86_HDC_STATUS_DRDY |
+                    X86_HDC_STATUS_DSC)) {
                 failed |= 0x10;
             }
         }

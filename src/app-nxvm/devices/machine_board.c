@@ -1076,14 +1076,27 @@ lib_status core_machine_configure_hdc(core_machine *machine,
         machine->hdc_topology.media_id, machine->hdc_topology.slave_media_id,
         &machine->shared_pic_master,
         &machine->shared_pic_slave, &machine->hdc_topology.config);
-    core_machine_hdc_initialize(&machine->hdc);
-    for (index = 0u; index < port_count; ++index) {
+    status = core_machine_hdc_initialize(&machine->hdc);
+    for (index = 0u; status == LIB_STATUS_OK && index < port_count; ++index) {
         if (ports[index].read && (status = core_machine_port_add_read_provider(
                 &machine->executor_port, ports[index].port, provider->read,
                 &machine->hdc)) != LIB_STATUS_OK) break;
         if (ports[index].write && (status = core_machine_port_add_write_provider(
                 &machine->executor_port, ports[index].port, provider->write,
                 &machine->hdc)) != LIB_STATUS_OK) break;
+    }
+    if (status == LIB_STATUS_OK &&
+        machine->hdc_topology.config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) {
+        status = core_machine_port_add_read_wired_or_provider(&machine->executor_port,
+            machine->hdc_topology.config.bus.task_file.drive_address_port,
+            provider->read, &machine->hdc);
+    }
+    if (status == LIB_STATUS_OK &&
+        machine->hdc_topology.config.protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT) {
+        status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
+            &machine->shared_dma_primary, &machine->shared_dma_secondary,
+            machine->hdc_topology.config.bus.xebec.dma_channel,
+            core_machine_hdc_dma_provider(), &machine->hdc, &machine->hdc_dma_request);
     }
     if (status != LIB_STATUS_OK) {
         core_machine_port_rollback_registration(&machine->executor_port,
@@ -1093,32 +1106,7 @@ lib_status core_machine_configure_hdc(core_machine *machine,
             sizeof(machine->hdc_topology));
         return status;
     }
-    if (machine->hdc_topology.config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) {
-        status = core_machine_port_add_read_wired_or_provider(&machine->executor_port,
-            machine->hdc_topology.config.bus.task_file.drive_address_port,
-            provider->read, &machine->hdc);
-        if (status != LIB_STATUS_OK) {
-            core_machine_port_rollback_registration(&machine->executor_port,
-                port_checkpoint);
-            core_machine_hdc_finalize(&machine->hdc);
-            lib_memory_set(&machine->hdc_topology, 0u,
-                sizeof(machine->hdc_topology));
-            return status;
-        }
-    }
     if (machine->hdc_topology.config.protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT) {
-        status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
-            &machine->shared_dma_primary, &machine->shared_dma_secondary,
-            machine->hdc_topology.config.bus.xebec.dma_channel,
-            core_machine_hdc_dma_provider(), &machine->hdc, &machine->hdc_dma_request);
-        if (status != LIB_STATUS_OK) {
-            core_machine_port_rollback_registration(&machine->executor_port,
-                port_checkpoint);
-            core_machine_hdc_finalize(&machine->hdc);
-            lib_memory_set(&machine->hdc_topology, 0u,
-                sizeof(machine->hdc_topology));
-            return status;
-        }
         core_machine_hdc_bind_dma_request(&machine->hdc, &machine->hdc_dma_request,
             core_machine_hdc_dma_request_assert, core_machine_hdc_dma_request_deassert,
             machine);

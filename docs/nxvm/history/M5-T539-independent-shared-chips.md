@@ -287,3 +287,21 @@ the unchanged flat-record/timing limits. No new silicon-completeness claim.
 The active S13 packet is removed on acceptance; T539 remains open for CPU/FPU,
 HDC, video and every remaining ledger disposition. MyNES link inputs, its
 0043 artifacts, external originals and owner INIs are unchanged.
+
+## S14: Independent HDC Family
+
+Shared P1 9020d8bba extracts the opaque ATA/Compaq/WD1003/Xebec controller
+and independent tests. NXVM P2 reconnects ports, media IDs, board timing and
+PIC/DMA signals; removes private diagnostics and duplicate chip tests; and
+delivers eight embedded-ROM EXEs. [Evidence](../etc/evidence/t539-s14-hdc-extraction.md)
+maps original cases, semantic corrections, 358/358 units and 20/20 final
+default integrations per width, six vendor boots once, tools-off 25/25,
+six manifests and final artifact identities. Source/test/build delta is
++2572/-1580, net +992; the record explains independent-boundary and test costs.
+
+Final diagnostic review caught unsafe live reads and stop-induced counter
+reset. Terminal Windows probes now confirm pause and join before sampling;
+the checkpoint retains its ATA predicate. The optional setup probe is built,
+not claimed runtime-qualified. No production lifecycle change, timing upgrade,
+ESDI addition, owner INI, external master or MyNES artifact change is included.
+Coordinator actual-commit acceptance remains separate from this delivery.

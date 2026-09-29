@@ -1,3 +1,4 @@
+#include "../../../support/hdc.h"
 #include "support/dma_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
@@ -159,15 +160,15 @@ lib_i32 main(void)
             failed |= 0x20;
         } else {
             core_machine_port_write(&machine->executor_port, 0x0320u, dcb[0]);
-            if (machine->hdc.xebec.dcb_count != 0u) failed |= 0x40;
+            if (hdc_observe(&machine->hdc).xebec_dcb_count != 0u) failed |= 0x40;
             core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
             for (index = 0u; index < sizeof(dcb); ++index)
                 core_machine_port_write(&machine->executor_port, 0x0320u, dcb[index]);
-            if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_PENDING_COMMAND ||
+            if (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_PENDING_COMMAND ||
                 core_machine_hdc_next_due_tick(&machine->hdc, &due_tick) != LIB_STATUS_OK ||
-                due_tick != machine->hdc.data.elapsed_ticks + 250u ||
+                due_tick != hdc_observe(&machine->hdc).elapsed_ticks + 250u ||
                 core_machine_hdc_irq_pending(&machine->hdc)) failed |= 0x80;
-            core_machine_hdc_advance(&machine->hdc);
+            hdc_service(&machine->hdc);
             for (index = 0u; index < sizeof(response); ++index) {
                 if (core_machine_port_read(&machine->executor_port, 0x0320u) != response[index]) {
                     failed |= 0x80;
@@ -181,9 +182,9 @@ lib_i32 main(void)
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(read_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, read_dcb[index]);
-                core_machine_hdc_advance(&machine->hdc);
+                hdc_service(&machine->hdc);
                 if (dma_provider == LIB_NULL || dma_provider->read_device == LIB_NULL ||
-                    machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
+                    hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_DMA_READ ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) == 0u)
                     failed |= 0x100;
                 test_dma_transfers(&machine->shared_dma_latch,
@@ -194,7 +195,7 @@ lib_i32 main(void)
                     LIB_STATUS_OK || dma_bytes[0] != 0u || dma_bytes[511] != 0xffu ||
                     dma_bytes[512] != 0xa5u || dma_bytes[1023] != 0xa5u))
                     failed |= 0x200;
-                if (!failed && (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
+                if (!failed && (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_RESPONSE ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0u)) failed |= 0x400;
             }
@@ -202,9 +203,9 @@ lib_i32 main(void)
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(read_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, read_dcb[index]);
-                core_machine_hdc_advance(&machine->hdc);
+                hdc_service(&machine->hdc);
                 dma_provider->terminal_count(&machine->hdc, &machine->shared_dma_latch);
-                if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
+                if (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_RESPONSE ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0x02u) failed |= 0x800;
             }
@@ -219,15 +220,15 @@ lib_i32 main(void)
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(write_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, write_dcb[index]);
-                core_machine_hdc_advance(&machine->hdc);
+                hdc_service(&machine->hdc);
                 if (dma_provider == LIB_NULL || dma_provider->write_device == LIB_NULL ||
-                    machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_WRITE ||
+                    hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_DMA_WRITE ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) == 0u)
                     failed |= 0x2000;
                 test_dma_transfers(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
                     &machine->executor_memory, &machine->executor_port, sizeof(dma_bytes));
-                if (!failed && (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
+                if (!failed && (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_RESPONSE ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0u ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u ||
                     media.bytes[0] != 0xffu || media.bytes[511] != 0u)) failed |= 0x4000;
@@ -236,7 +237,7 @@ lib_i32 main(void)
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(sense_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, sense_dcb[index]);
-                core_machine_hdc_advance(&machine->hdc);
+                hdc_service(&machine->hdc);
                 for (index = 0u; index < sizeof(sense); ++index) {
                     if (core_machine_port_read(&machine->executor_port, 0x0320u) != sense[index]) {
                         failed |= 0x8000;
@@ -248,7 +249,7 @@ lib_i32 main(void)
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(invalid_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, invalid_dcb[index]);
-                core_machine_hdc_advance(&machine->hdc);
+                hdc_service(&machine->hdc);
                 if (core_machine_port_read(&machine->executor_port, 0x0320u) != 0x02u)
                     failed |= 0x10000;
             }
@@ -257,7 +258,7 @@ lib_i32 main(void)
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, dcb[index]);
-                core_machine_hdc_advance(&machine->hdc);
+                hdc_service(&machine->hdc);
                 if (!core_machine_hdc_irq_pending(&machine->hdc) ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != response[0] ||
                     core_machine_hdc_irq_pending(&machine->hdc)) failed |= 0x20000;
@@ -267,8 +268,8 @@ lib_i32 main(void)
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(read_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, read_dcb[index]);
-                core_machine_hdc_advance(&machine->hdc);
-                if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
+                hdc_service(&machine->hdc);
+                if (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_DMA_READ ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u) {
                     failed |= 0x20000;
                 }
@@ -281,23 +282,23 @@ lib_i32 main(void)
             }
             if (!failed) {
                 core_machine_port_write(&machine->executor_port, 0x0323u, 0x5au);
-                if (machine->hdc.xebec.mask_pattern != 0x5au) failed |= 0x20000;
+                if (hdc_observe(&machine->hdc).xebec_mask != 0x5au) failed |= 0x20000;
             }
             if (!failed) {
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(initialize_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, initialize_dcb[index]);
-                if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_INITIALIZE) failed |= 0x40000;
-                for (index = 0u; index < sizeof(machine->hdc.xebec.initialize); ++index)
+                if (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_INITIALIZE) failed |= 0x40000;
+                for (index = 0u; index < sizeof(hdc_observe(&machine->hdc).xebec_initialize); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, 0u);
-                core_machine_hdc_advance(&machine->hdc);
-                if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE) failed |= 0x80000;
+                hdc_service(&machine->hdc);
+                if (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_RESPONSE) failed |= 0x80000;
             }
             if (!failed) {
                 core_machine_port_write(&machine->executor_port, 0x0321u, 0u);
-                if (machine->hdc.xebec.dcb_count != 0u ||
-                    machine->hdc.xebec.mask_pattern != 0u ||
-                    machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_IDLE) failed |= 0x100000;
+                if (hdc_observe(&machine->hdc).xebec_dcb_count != 0u ||
+                    hdc_observe(&machine->hdc).xebec_mask != 0u ||
+                    hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_IDLE) failed |= 0x100000;
             }
         }
     }

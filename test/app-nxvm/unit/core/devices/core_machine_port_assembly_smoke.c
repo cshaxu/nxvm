@@ -20,6 +20,21 @@ static lib_status port_assembly_create_fdc(const x86_fdc_connection *connection,
 #include "app-nxvm/devices/fdc.c"
 #undef x86_fdc_create
 
+static lib_bool fail_hdc_create;
+static lib_status port_assembly_create_hdc(const x86_hdc_config *config,
+    const x86_hdc_connection *connection, x86_hdc **out_hdc)
+{
+    if (fail_hdc_create) {
+        *out_hdc = LIB_NULL;
+        return LIB_STATUS_NO_MEMORY;
+    }
+    return x86_hdc_create(config, connection, out_hdc);
+}
+
+#define x86_hdc_create port_assembly_create_hdc
+#include "app-nxvm/devices/hdc.c"
+#undef x86_hdc_create
+
 typedef struct port_assembly_probe_state {
     lib_u32 value;
 } port_assembly_probe_state;
@@ -197,7 +212,8 @@ static lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
     return failed || port_assembly_fresh_default_create();
 }
 
-static lib_i32 port_assembly_hdc_transaction(void)
+static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
+    lib_size fail_at)
 {
     const core_machine_config machine_config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
@@ -214,16 +230,49 @@ static lib_i32 port_assembly_hdc_transaction(void)
                 .alternate_status_device_control_port = 0x03f6u,
                 .lba28_supported = LIB_TRUE}}
     };
-    core_machine_port_test_allocation allocation = {17u, 0u};
+    core_machine_port_test_allocation allocation = {fail_at, 0u};
     core_machine_hdc hdc_zero = {0};
     core_machine_hdc_topology topology_zero = {0};
     core_machine *machine = LIB_NULL;
+    const lib_bool xebec = protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT;
+    const lib_bool compaq = protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB;
+    const lib_u16 first_port = xebec ? 0x0320u : 0x01f0u;
+    const lib_u16 last_port = xebec ? 0x0323u : 0x01f7u;
     lib_i32 failed = 0;
 
     failed |= core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
         core_machine_create(&machine_config, &machine) != LIB_STATUS_OK;
     topology.media_registry = media;
+    topology.config.protocol = protocol;
+    topology.config.bus.task_file.lba28_supported =
+        protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO;
+    topology.config.bus.task_file.clock_ticks_per_second = 8000000u;
+    if (!failed && (xebec || compaq)) {
+        const core_machine_dma_wiring wiring = {.fdc_channel = 2u,
+            .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+            .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL};
+        core_machine_fdc_topology fdc = {.media_registry = media,
+            .drives = {{1u, 0u, 0u, 0u}},
+            .config = {.dor_port = 0x03f2u, .status_port = 0x03f4u,
+                .data_port = 0x03f5u, .direction_port = 0x03f7u,
+                .control_port = 0x03f7u, .irq = 6u, .dma_channel = 2u}};
+        failed |= core_machine_configure_dma(machine, &wiring, &fdc.dma_request) != LIB_STATUS_OK;
+        if (compaq) {
+            topology.config.bus.task_file.drive_address_port = 0x03f7u;
+            failed |= core_machine_configure_fdc(machine, &fdc) != LIB_STATUS_OK;
+        } else {
+            topology.config.irq = 5u;
+            topology.config.bus.xebec = (core_machine_hdc_xebec_config){
+                .data_port = 0x0320u, .hardware_status_reset_port = 0x0321u,
+                .jumpers_select_port = 0x0322u, .dma_irq_mask_port = 0x0323u,
+                .dma_channel = 3u, .drive_type = CORE_MACHINE_XEBEC_DRIVE_TYPE_2,
+                .expected_media_geometry = {CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT,
+                    CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR, CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS,
+                    CORE_MACHINE_XEBEC_TYPE_2_HEADS, CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK}};
+        }
+    }
     if (!failed) {
+        fail_hdc_create = fail_at == 0u;
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_hdc(machine, &topology) != LIB_STATUS_NO_MEMORY ||
             machine->hdc_configured ||
@@ -233,6 +282,17 @@ static lib_i32 port_assembly_hdc_transaction(void)
             core_machine_port_has_read(&machine->executor_port, 0x01f0u) ||
             core_machine_port_has_write(&machine->executor_port, 0x01f0u) ||
             core_machine_port_has_read(&machine->executor_port, 0x03f6u);
+        for (lib_u16 port = first_port; port <= last_port; ++port)
+            failed |= core_machine_port_has_read(&machine->executor_port, port) ||
+                core_machine_port_has_write(&machine->executor_port, port);
+        failed |= core_machine_port_has_write(&machine->executor_port, 0x03f6u) ||
+            (fail_hdc_create && allocation.attempts != 0u);
+        if (compaq) failed |= !machine->fdc_configured ||
+            !core_machine_port_has_read(&machine->executor_port, 0x03f7u);
+        if (xebec) failed |= machine->hdc_dma_request.core_token != 0u ||
+            core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                &machine->shared_dma_secondary);
+        fail_hdc_create = LIB_FALSE;
         allocation.fail_at = 0u;
         allocation.attempts = 0u;
         failed |= core_machine_configure_hdc(machine, &topology) != LIB_STATUS_OK ||
@@ -240,6 +300,8 @@ static lib_i32 port_assembly_hdc_transaction(void)
     }
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
+    if (failed) fprintf(stderr, "HDC rollback protocol=%u fail_at=%u\n",
+        (lib_u32)protocol, (lib_u32)fail_at);
     return failed || port_assembly_fresh_default_create();
 }
 
@@ -304,8 +366,14 @@ lib_i32 main(void)
     if (failed) return 1;
     puts("M5:T313:S3:PORT-ASSEMBLY:OK");
 
-    failed = port_assembly_rtc_transaction(1u) || port_assembly_rtc_transaction(2u) ||
-        port_assembly_hdc_transaction();
+    failed = port_assembly_rtc_transaction(1u) || port_assembly_rtc_transaction(2u);
+    for (lib_u32 protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO;
+        protocol <= CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT; ++protocol) {
+        const lib_size routes = protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ? 7u :
+            protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB ? 19u : 18u;
+        for (lib_size fail_at = 0u; fail_at <= routes; ++fail_at)
+            failed |= port_assembly_hdc_transaction((core_machine_hdc_protocol)protocol, fail_at);
+    }
 
     if (failed) return 1;
     puts("M5:T313:S4:CONTROLLER-ROLLBACK:OK");

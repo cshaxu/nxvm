@@ -1,3 +1,4 @@
+#include "../../../support/hdc.h"
 #include "../devices/support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include "support/kbc_fixture.h"
@@ -153,19 +154,19 @@ lib_i32 main(void)
             0x01f6u, 0x2au);
         core_machine_port_write(&session->core_machine->executor_port,
             0x01f7u, 0x90u);
-        core_machine_hdc_advance(&session->core_machine->hdc);
-        failed |= session->core_machine->hdc.data.error != 0x01u ||
+        hdc_service(&session->core_machine->hdc);
+        failed |= hdc_observe(&session->core_machine->hdc).error != 0x01u ||
             !core_machine_hdc_irq_pending(&session->core_machine->hdc);
         (void)core_machine_port_read(&session->core_machine->executor_port,
             0x01f7u);
         failed |= core_machine_hdc_irq_pending(&session->core_machine->hdc);
         core_machine_port_write(&session->core_machine->executor_port,
             0x01f7u, 0xecu);
-        core_machine_hdc_advance(&session->core_machine->hdc);
+        hdc_service(&session->core_machine->hdc);
         failed |= (core_machine_port_read(&session->core_machine->executor_port,
-            0x01f7u) & CORE_MACHINE_HDC_STATUS_ERR) == 0u ||
+            0x01f7u) & X86_HDC_STATUS_ERR) == 0u ||
             core_machine_port_read(&session->core_machine->executor_port,
-                0x01f1u) != CORE_MACHINE_HDC_ERROR_ABORT;
+                0x01f1u) != X86_HDC_ERROR_ABORT;
         if (failed) stage = 5;
     }
     if (failed && session != LIB_NULL) {

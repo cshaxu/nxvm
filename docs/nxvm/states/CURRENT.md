@@ -2,13 +2,34 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S13 are accepted. No S is active between this
-acceptance and the next coordinator admission. The owner's automatic-S
-authorization remains in force for subsequent bounded chip batches.
+M5 T539 remains open. S1-S13 are accepted. S14 is automatically admitted
+under the owner's standing authorization after the HDC boundary review.
 
 | Task | Progress |
 | --- | --- |
 | T539 S13 | Accepted: Shared P1 1d6dc5876 and NXVM P2 c18859898 extract the sole opaque 8272A mechanism and reconnect the PC adapter. Full units 355/355 per width; default integrations 20/20 per width; six vendor boots once; tools-off 22/22; static gates and six manifests pass. Eight 0539 EXEs are committed/pushed. |
+| T539 S14 | Delivery: Shared P1 9020d8bba is pushed; complete NXVM P2 is ready for delivery and coordinator review. Full units pass 358/358 and final default integrations 20/20 per width; tools-off 25/25, six vendor boots once, six manifests and specialized/document gates pass. Eight EXEs match recorded PE/hash identities. The diagnostic pause/join correction and counted actual diff are in S14 evidence. |
+
+## Active S14 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, M5 T539 S14; coordinator/executor roles in one session. |
+| Admission And Approval | Owner automatic-S authorization, 2026-09-28; Shared and NXVM changes in separate commits. MyNES receiver review/artifact-only refresh if affected. No sibling writes, external originals or user INI changes. |
+| Objective | Consume the complete HDC ledger row: one independent opaque controller family with explicit existing personalities, no App/media/PIC/DMA private dependency, and no old parallel production path. |
+| Non-goals | No new commands, timing grade, ESDI, machine variant, generic device framework, media cache or CPU/video extraction within this batch. |
+| Reference Baseline | Accepted b2cbaf74c; Shared FDC 1d6dc5876 and NXVM source/artifacts c18859898. |
+| Candidate Proposal | [T539](../proposals/m5-shared-chip-extraction.md), [ledger](../etc/evidence/t539-chip-migration-ledger.md), [S1 design](../etc/architecture/t539-independent-chip-design.md), [S14 boundary](../etc/architecture/t539-s14-hdc-extraction.md). |
+| Files And ABI Surface | x86/devices/hdc and owner tests/build/manifests; NXVM HDC adapter, construction/scheduler, fourteen identified private/immediate-advance test/diagnostic callers, affected gates and eight artifacts. Neutral register, record, signal, time and copied-observation API. |
+| Applicable Rules | Architecture and Coding rules/skills, product architecture/layout, Execution, Documentation and source policy. Single buffer/command owner, independent protocols, no reverse dependency, complete target-separated delivery and actual-diff acceptance. |
+| Verification | Full NXVM units x64/x86; tools-off independent x86 suite; mapped original controller/board cases; zero-time, reset/destruction, allocation/registration rollback and provider failures; default integration both widths and remaining profile/width boots once; eight optimized 0539 EXEs; six manifests/corpus/static/document/whitespace checks. MyNES link review, 0043 rebuild only if inputs affected. |
+| Expected Markers | Existing ATA/WD/Xebec data/status/IRQ/DMA and boot markers remain. New independent chip cases prove the declared boundary; no complete-silicon claim. |
+| Asset Needs | Existing external BYOB/media and embedded firmware route unchanged. Units use code-owned inputs; retain reusable build/t539-s3 trees. |
+| Reporting Requirements | Boundary confirmation, complete caller/test ownership map, actual diff, counted source/test lines and positive-growth explanation, final verification and artifact identities. No partial P. |
+| Stop Conditions | New unsupported behavior/source/licensing requirement or out-of-scope public contract; coordinator consolidates a revised brief before implementation. |
+| Exit Criteria | All HDC mechanism/state lives in the independent family; App owns only real board/media adaptation; original coverage retained; time/lifecycle findings resolved with proof; checks/artifacts pass; complete P commits pushed and actual-change accepted. |
+| Original Owner Request | Extract independent chips to x86/devices, leave board integration in NXVM, remove duplicate paths, automatically admit each subsequent S. |
+| Similar-Issue Sweep | All four personalities; command/data/next-sector/DCB/result, live versus captured task-file, reset/TC/IRQ/DRQ, deadline zero/absent/due, media failures, construction rollback and every private HDC caller. |
 
 The [proposal](../proposals/m5-shared-chip-extraction.md),
 [finite ledger](../etc/evidence/t539-chip-migration-ledger.md),

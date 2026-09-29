@@ -1,3 +1,4 @@
+#include "../../support/hdc.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -64,22 +65,6 @@ static const char *vm_t287_wait_for_text(const vm_machine *session,
     return LIB_NULL;
 }
 
-static lib_i32 vm_t287_wait_for_hdc_command(const vm_machine *session,
-    DWORD timeout)
-{
-    DWORD elapsed;
-
-    if (session == LIB_NULL || session->core_machine == LIB_NULL) return 0;
-    for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
-        if (session->core_machine->hdc.data.command_count != 0u) return 1;
-        if (elapsed >= 500u && !vm_machine_control_is_running(&session->control)) {
-            return 0;
-        }
-        Sleep(10u);
-    }
-    return 0;
-}
-
 static void vm_t287_submit_key(const vm_machine *session, lib_u16 scan_code,
     lib_u16 virtual_key)
 {
@@ -111,8 +96,8 @@ static void vm_t287_report(const vm_machine *session, const char *stage)
     printf("M5:T287:S2:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         vm_machine_control_is_running(&session->control),
-        session->core_machine->hdc.data.command_count,
-        session->core_machine->hdc.data.last_command);
+        hdc_observe(&session->core_machine->hdc).command_count,
+        hdc_observe(&session->core_machine->hdc).last_command);
     if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
             LIB_STATUS_OK && diagnostic.first_fault.valid) {
         lib_size index;
@@ -211,12 +196,15 @@ lib_i32 main(lib_i32 argc, char **argv)
     vm_t287_submit_key(session, 0x17u, 'I');
     vm_t287_submit_key(session, 0x13u, 'R');
     vm_t287_submit_key(session, 0x1cu, VK_RETURN);
-    if (!vm_t287_wait_for_hdc_command(session,
-            VM_T287_COMMAND_TIMEOUT_MILLISECONDS)) goto fail;
+    if (vm_t287_wait_for_text(session, "file(s)", "File(s)",
+            VM_T287_COMMAND_TIMEOUT_MILLISECONDS) == LIB_NULL) goto fail;
+    if (integration_ini_session_pause(&ini_session, VM_T287_COMMAND_TIMEOUT_MILLISECONDS) != LIB_STATUS_OK)
+        goto fail;
+    if (common_machine_shutdown(ini_session.common_machine) != LIB_STATUS_OK) goto fail;
     stage = "bda-hdd-count";
     if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
             sizeof(hdd_bda)) == LIB_STATUS_OK) hdd_count = hdd_bda[1];
-    ata_commands = session->core_machine->hdc.data.command_count;
+    ata_commands = hdc_observe(&session->core_machine->hdc).command_count;
     vm_machine_stop(session);
     vm_t287_report_frame(session);
     if (c_present && ata_commands != 0u) {
@@ -228,7 +216,10 @@ lib_i32 main(lib_i32 argc, char **argv)
     }
 
 fail:
-    vm_t287_report(session, stage);
+    if (common_machine_state_get(ini_session.common_machine) == COMMON_MACHINE_RUNNING)
+        (void)integration_ini_session_pause(&ini_session, VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
+    if (common_machine_shutdown(ini_session.common_machine) == LIB_STATUS_OK)
+        vm_t287_report(session, stage);
     if (session != LIB_NULL) vm_machine_stop(session);
     integration_ini_session_close(&ini_session);
     return 1;

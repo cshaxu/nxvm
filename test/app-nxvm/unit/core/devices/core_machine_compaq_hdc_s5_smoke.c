@@ -1,3 +1,4 @@
+#include "../../../support/hdc.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -126,72 +127,53 @@ lib_i32 main(void)
         failed |= 0x02;
     } else {
         core_machine_hdc_connect(&hdc, registry, 1u, 2u, &master, &slave, &config);
-        core_machine_hdc_initialize(&hdc);
-        if (!core_machine_compaq_hdc_install(&port, &hdc)) {
+        if (core_machine_hdc_initialize(&hdc) != LIB_STATUS_OK ||
+            !core_machine_compaq_hdc_install(&port, &hdc)) {
             failed |= 0x02;
         } else {
             core_machine_port_write(&port, 0x01f2u, 1u);
             core_machine_port_write(&port, 0x01f3u, 1u);
             core_machine_port_write(&port, 0x01f6u, 0x2au);
             core_machine_port_write(&port, 0x01f7u, 0x20u);
-            core_machine_hdc_advance(&hdc);
+            hdc_service(&hdc);
             value = core_machine_port_read(&port, 0x03f7u);
             failed |= value != 0x8au || !core_machine_hdc_irq_pending(&hdc);
             value = core_machine_port_read(&port, 0x03f6u);
-            failed |= (value & CORE_MACHINE_HDC_STATUS_DRQ) == 0u ||
+            failed |= (value & X86_HDC_STATUS_DRQ) == 0u ||
                 !core_machine_hdc_irq_pending(&hdc);
             value = core_machine_port_read(&port, 0x01f7u);
-            failed |= (value & CORE_MACHINE_HDC_STATUS_DRQ) == 0u ||
+            failed |= (value & X86_HDC_STATUS_DRQ) == 0u ||
                 core_machine_hdc_irq_pending(&hdc);
             value = core_machine_port_read(&port, 0x01f0u);
             failed |= value != 0x1234u;
             for (lib_u16 index = 1u; index < 256u; ++index) {
                 (void)core_machine_port_read(&port, 0x01f0u);
             }
-            core_machine_hdc_advance(&hdc);
+            hdc_service(&hdc);
             failed |= !core_machine_hdc_irq_pending(&hdc);
 
             core_machine_port_write(&port, 0x01f2u, 1u);
             core_machine_port_write(&port, 0x01f3u, 1u);
             core_machine_port_write(&port, 0x01f6u, 0x3au);
             core_machine_port_write(&port, 0x01f7u, 0x20u);
-            core_machine_hdc_advance(&hdc);
+            hdc_service(&hdc);
             value = core_machine_port_read(&port, 0x01f0u);
             failed |= value != 0x5678u;
             for (lib_u16 index = 1u; index < 256u; ++index) {
                 (void)core_machine_port_read(&port, 0x01f0u);
             }
-            core_machine_hdc_advance(&hdc);
+            hdc_service(&hdc);
             failed |= !core_machine_hdc_irq_pending(&hdc);
 
             core_machine_port_write(&port, 0x01f7u, 0x40u);
-            core_machine_hdc_advance(&hdc);
-            failed |= (core_machine_port_read(&port, 0x03f6u) & CORE_MACHINE_HDC_STATUS_ERR) !=
+            hdc_service(&hdc);
+            failed |= (core_machine_port_read(&port, 0x03f6u) & X86_HDC_STATUS_ERR) !=
                 0u || !core_machine_hdc_irq_pending(&hdc);
-            core_machine_port_write(&port, 0x01f4u, 0x7fu);
-            core_machine_port_write(&port, 0x01f5u, 0x03u);
-            core_machine_port_write(&port, 0x01f7u, 0x10u);
-            core_machine_hdc_advance(&hdc);
-            failed |= hdc.data.cylinder_low != 0u || hdc.data.cylinder_high != 0u;
-            core_machine_port_write(&port, 0x01f7u, 0x91u);
-            core_machine_hdc_advance(&hdc);
-            failed |= (core_machine_port_read(&port, 0x01f7u) & CORE_MACHINE_HDC_STATUS_ERR) != 0u;
-            core_machine_port_write(&port, 0x01f7u, 0x90u);
-            core_machine_hdc_advance(&hdc);
-            failed |= core_machine_port_read(&port, 0x01f1u) != 0x01u;
-            core_machine_port_write(&port, 0x01f7u, 0xecu);
-            core_machine_hdc_advance(&hdc);
-            failed |= (core_machine_port_read(&port, 0x01f7u) & CORE_MACHINE_HDC_STATUS_ERR) ==
-                0u || core_machine_port_read(&port, 0x01f1u) != CORE_MACHINE_HDC_ERROR_ABORT;
-            core_machine_port_write(&port, 0x01f7u, 0x22u);
-            core_machine_hdc_advance(&hdc);
-            failed |= (core_machine_port_read(&port, 0x01f7u) & CORE_MACHINE_HDC_STATUS_ERR) ==
-                0u || core_machine_port_read(&port, 0x01f1u) != CORE_MACHINE_HDC_ERROR_ABORT;
-            core_machine_port_write(&port, 0x03f6u, CORE_MACHINE_HDC_DEVICE_CONTROL_SRST);
+            core_machine_port_write(&port, 0x03f6u, X86_HDC_DEVICE_CONTROL_SRST);
             core_machine_port_write(&port, 0x03f6u, 0u);
             failed |= core_machine_hdc_irq_pending(&hdc) ||
                 core_machine_port_read(&port, 0x03f6u) !=
-                    (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC);
+                    (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC);
 
             /* A fitted Compaq controller remains reset-ready with no mounted
              * image.  Firmware may probe it before deciding to boot the FDD;
@@ -199,18 +181,18 @@ lib_i32 main(void)
             core_machine_port_initialize(&empty_port);
             core_machine_hdc_connect(&empty_hdc, registry, 3u,
                 CORE_MACHINE_MEDIA_ID_INVALID, &master, &slave, &config);
-            core_machine_hdc_initialize(&empty_hdc);
-            if (!core_machine_compaq_hdc_install(&empty_port, &empty_hdc)) {
+            if (core_machine_hdc_initialize(&empty_hdc) != LIB_STATUS_OK ||
+                !core_machine_compaq_hdc_install(&empty_port, &empty_hdc)) {
                 failed |= 0x04;
             } else {
                 core_machine_port_write(&empty_port, 0x01f6u, 0xa0u);
                 failed |= core_machine_port_read(&empty_port, 0x03f6u) !=
-                    (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC);
+                    (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC);
             }
         }
     }
     if (failed) {
-        fprintf(stderr, "M5:T386:S5:COMPAQ-HDC-ROUTE:FAIL %x status=%x error=%x phase=%u irq=%u chs=%x:%x:%x\n", failed, hdc.data.status, hdc.data.error, hdc.data.phase, hdc.data.irq_pending, hdc.data.cylinder_high, hdc.data.cylinder_low, hdc.data.sector_number);
+        fprintf(stderr, "M5:T386:S5:COMPAQ-HDC-ROUTE:FAIL %x status=%x error=%x phase=%u irq=%u chs=%x:%x:%x\n", failed, hdc_observe(&hdc).status, hdc_observe(&hdc).error, hdc_observe(&hdc).phase, hdc_observe(&hdc).irq_pending, hdc_observe(&hdc).cylinder_high, hdc_observe(&hdc).cylinder_low, hdc_observe(&hdc).sector_number);
         core_machine_hdc_finalize(&hdc);
         core_machine_media_registry_destroy(registry);
         core_machine_port_finalize(&port);
