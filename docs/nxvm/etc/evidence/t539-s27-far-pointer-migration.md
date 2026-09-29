@@ -90,3 +90,16 @@ assertions and board fault/PIC obligations while removing board-private CPU
 access. No parallel production state, execution route or helper API is added.
 Existing 0539 EXEs remain current because their executable inputs are unchanged.
 Retain the existing build trees/recovery patch for later CPU work packages.
+
+## Coordinator Acceptance
+
+Actual-commit review accepts NXVM P1 42d6c86e0. Review compared the three
+original matrices with the six receivers, including protected selector/cache
+preconditions, original guest bytes, rollback assertions, IRQ acknowledgement
+and the LSS versus LFS/LGS shadow distinction. It checked target linkage,
+terminal-UD registration, constructor classification and all boundary mutations.
+The migration removes private CPU access from these three board files without
+changing production behavior or using a new public test interface. Build/unit,
+specialized-gate and six-manifest proof meet this packet; documentation and
+scope review confirm no Shared, MyNES or artifact-input changes. S27 closes.
+S28-S40 and the whole CPU/T539 acceptance remain pending.

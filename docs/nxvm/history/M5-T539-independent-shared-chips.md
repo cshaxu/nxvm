@@ -568,3 +568,12 @@ Full units pass 385/385 per width; 66 specialized gates and six unchanged
 manifests pass. Eleven test/build paths add 1,294/remove 1,017 lines, net +277.
 Executor delivery awaits coordinator actual-commit review. CPU extraction and
 T539 remain open; 86 original private consumers have S28-S37 receivers.
+
+### S27 Acceptance
+
+Coordinator actual-commit review accepts pushed P1 42d6c86e0. The original
+117-context map, six final test receivers, build/gate delta and evidence meet
+the admitted ownership and preservation requirements. Complete units pass
+385/385 per width; 66 specialized gates, six manifests and documentation/diff
+checks pass. Production and executable inputs remain unchanged. S27 closes;
+S28 is next. The active packet is removed; CPU extraction and T539 remain open.
