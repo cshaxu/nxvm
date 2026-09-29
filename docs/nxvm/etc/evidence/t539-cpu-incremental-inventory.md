@@ -127,6 +127,12 @@ Current owns acceptance; 89 original private consumers remain assigned S27-S37.
 - `core_machine_les_lds_smoke.c`
 - `core_machine_lss_lfs_lgs_smoke.c`
 
+S27 implementation removes these three board-private CPU dependencies. All
+117 original contexts retain receivers: 110 CPU executions and 20 board
+executions, with thirteen complementary fault receivers. Real PIC/SS-shadow
+checks stay board-owned. See [S27 evidence](t539-s27-far-pointer-migration.md).
+Current owns acceptance; 86 original private consumers remain assigned S28-S37.
+
 ### S28: 2 matching files
 
 - `core_machine_segment_selector_smoke.c`

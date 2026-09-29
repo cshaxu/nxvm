@@ -27,6 +27,9 @@ set(project_t332_inherited_sources
     "test/app-nxvm/unit/core/devices/core_machine_protected_iret_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_interrupt_entry_smoke.c")
 set(project_t332_public_board_sources
+    "test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_les_lds_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"

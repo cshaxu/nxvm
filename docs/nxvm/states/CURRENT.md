@@ -2,11 +2,40 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S26 are accepted; no S packet is active.
+M5 T539 remains open. S1-S26 are accepted; S27 is active.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain S27-S40 as pending, not accepted CPU extraction.
 
+## S27 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, M5 T539 S27 after accepted S26 P2 9a4de7adf; NXVM target only. |
+| Admission And Approval | Owner automatic-S authorization of 2026-09-28 and CPU decomposition amendment of 2026-09-29; coordinator admits this bounded package on 2026-09-29, single-session dual roles. |
+| Objective | Migrate the three far-pointer-load inventory rows without losing their 117 original contexts; remove board-private CPU access while retaining instruction/cache assertions and PIC/fault receivers. |
+| Non-goals | No CPU semantics, timing grade, public API, Shared relocation, lifetime cutover, firmware, INI, MyNES or artifact change. |
+| Reference Baseline | Clean S26 P2 9a4de7adf; units 382/382 per width. Original LES/LDS S41 has 68 contexts, LES/LDS 22 and LSS/LFS/LGS 27. |
+| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU work packages](../etc/architecture/t539-cpu-work-packages.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
+| Files And ABI Surface | Three original far-pointer-load smoke files, CPU-owned receivers, relevant NXVM CMake registrations/lifecycle/boundary gates, packet/history/evidence. No public ABI change. |
+| Applicable Rules | Product guide Task Reading Set, NXVM Architecture/Coding, shared Execution/Architecture/Coding/Document rules; architecture-governance then coding-governance skills. Preserve original tables, single owner and all contexts. No external-source operation. |
+| Verification | Full x64/x86 builds and complete unit suites, native desktop suites sequential; specialized gates, six unchanged manifests, documentation governance and diff check. Transient focused selection: three old/new far-pointer targets and CPU bus negative controls. |
+| Expected Markers | CPU receivers link only x86-cpu; original board files reject private CPU imports/access; original contexts map explicitly to CPU/board receivers, including overlapping matrices. |
+| Asset Needs | Repository-only test inputs. Retain existing build/t539-s3 trees and S18 recovery patch; EXE inputs unchanged, no external assets or INI changes. |
+| Reporting Requirements | Confirm boundary, report discoveries, original-case mapping, counted paths and line delta, exact verification and pushed complete implementation P before coordinator review. |
+| Stop Conditions | Lost cases, new production interface/behavior requirement, unaccounted includer, or oversized scope requires packet revision. Failures prevent acceptance and require diagnosis. |
+| Exit Criteria | All 117 contexts retained; private cache predicates CPU-owned, PIC/shadow and machine faults board-owned; full verification and actual-commit review pass; implementation and governance Ps pushed. |
+| Original Owner Request | Decompose oversized S18 into independently traceable S tasks while completing independent CPU extraction without style/semantic loss; automatically admit each S. |
+| Similar-Issue Sweep | Search all three originals, their includers and CMake inventories for private CPU imports/access. Preserve inconsistent selector/cache preconditions at CPU owner; inspect skipped-case fixture lifetime. Remaining consumers retain S28-S37 receivers. |
+
 ## Retained S26 Baseline
+
+S27 executor delivery retains all 117 original contexts, with 110 CPU and 20
+board executions (13 complementary fault contexts). Complete units pass 385/385
+per width; 66 specialized gates and six unchanged manifests pass. Eleven
+test/build paths add 1,294/remove 1,017 lines. No executable inputs changed.
+The remaining original private consumers number 86, assigned S28-S37.
+See [S27 evidence](../etc/evidence/t539-s27-far-pointer-migration.md).
+Coordinator actual-commit acceptance is pending.
 
 Coordinator actual-commit review accepts S26 implementation P1 `587a91af9`.
 All 164 original segment-stack contexts remain in CPU-only tests, with 18

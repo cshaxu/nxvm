@@ -670,6 +670,12 @@ add_executable(cpu-legacy-sreg-stack-smoke test/app-nxvm/unit/core/devices/cpu_l
 target_link_libraries(cpu-legacy-sreg-stack-smoke PRIVATE x86-cpu)
 add_executable(core-machine-lss-lfs-lgs-smoke test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c)
 target_link_libraries(core-machine-lss-lfs-lgs-smoke PRIVATE core-machine)
+add_executable(cpu-lss-lfs-lgs-smoke test/app-nxvm/unit/core/devices/cpu_lss_lfs_lgs_smoke.c)
+target_link_libraries(cpu-lss-lfs-lgs-smoke PRIVATE x86-cpu)
+add_executable(cpu-les-lds-smoke test/app-nxvm/unit/core/devices/cpu_les_lds_smoke.c)
+target_link_libraries(cpu-les-lds-smoke PRIVATE x86-cpu)
+add_executable(cpu-les-lds-s41-smoke test/app-nxvm/unit/core/devices/cpu_les_lds_s41_smoke.c)
+target_link_libraries(cpu-les-lds-s41-smoke PRIVATE x86-cpu)
 add_executable(core-machine-les-lds-smoke test/app-nxvm/unit/core/devices/core_machine_les_lds_smoke.c)
 target_link_libraries(core-machine-les-lds-smoke PRIVATE core-machine)
 
@@ -1864,6 +1870,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-fs-gs-stack-smoke
     cpu-legacy-sreg-stack-smoke
     cpu-xchg-smoke
+    cpu-les-lds-smoke
+    cpu-les-lds-s41-smoke
+    cpu-lss-lfs-lgs-smoke
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
     core-machine-legacy-alu-s2-smoke
@@ -2096,11 +2105,11 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-legacy-lock-s1-smoke
     core-machine-legacy-alu-s2-smoke
     cpu-legacy-sreg-stack-smoke
-    core-machine-les-lds-s41-smoke
-    core-machine-les-lds-smoke
+    cpu-les-lds-s41-smoke
+    cpu-les-lds-smoke
     core-machine-lgdt-lidt-smoke
     core-machine-lods-smoke
-    core-machine-lss-lfs-lgs-smoke
+    cpu-lss-lfs-lgs-smoke
     cpu-moffs-smoke
     core-machine-movs-smoke
     core-machine-movx-smoke

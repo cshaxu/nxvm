@@ -554,3 +554,17 @@ test/build and documentation delta against all 164 original contexts and the
 width with no failures. Scope, ownership, gate evidence and unchanged artifact
 inputs meet the packet. S26 closes; S27 is next. The CPU ledger and T539 remain
 open, with 89 original private consumers still assigned through S37.
+
+## S27: Far-Pointer Load Consumer Migration
+
+Admitted at S26 P2 9a4de7adf under automatic authorization. The three LES/LDS
+and LSS/LFS/LGS suites retain all 117 original contexts: 110 CPU and 20 board
+executions, including thirteen complementary fault contexts. Private cache
+preconditions stay CPU-owned; real PIC acknowledgement, SS shadow and machine
+faults use board receivers without private CPU access. No production/API/timing
+or executable input changes. [S27 evidence](../etc/evidence/t539-s27-far-pointer-migration.md)
+records the case map, bootstrap change and skipped-construction cleanup.
+Full units pass 385/385 per width; 66 specialized gates and six unchanged
+manifests pass. Eleven test/build paths add 1,294/remove 1,017 lines, net +277.
+Executor delivery awaits coordinator actual-commit review. CPU extraction and
+T539 remain open; 86 original private consumers have S28-S37 receivers.
