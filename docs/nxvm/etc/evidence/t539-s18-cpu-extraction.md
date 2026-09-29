@@ -985,3 +985,15 @@ rewritten. Shared/MyNES/INI diff is empty. S24 owns the unresolved 32-bit BOUND
 observation; it is not claimed fixed. CPU Shared relocation is not yet achieved.
 Executor review finds this amended baseline brief ready for implementation P;
 coordinator actual-commit acceptance remains required.
+
+## Coordinator Acceptance
+
+Reviewed pushed implementation `0067d80c4` against the amended S18 packet,
+original owner scope, actual source/test/build changes and the evidence above.
+Commit contents match the reviewed worktree; git show --check passes and the
+worktree was clean after push. All changed paths belong to NXVM. Recovery,
+single CPU ownership, mapped deferrals and required receiving proof satisfy
+S18. The added full-cache regression repairs the review-found coverage loss
+without widening a production API. Accept S18 as a green incremental baseline;
+do not accept the CPU row or imply S19-S32 are complete. The pending BOUND
+observation remains explicit in S24. Closure adds governance only.

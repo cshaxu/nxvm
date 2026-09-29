@@ -383,3 +383,15 @@ its all-in-one delivery scope. S18 is still unaccepted and now first recovers a
 green incremental baseline; existing uncommitted work and narrow test results
 remain in its evidence. This amendment neither closes the CPU row nor waives
 full-unit gates. Later S packages are planned; Current owns their admission.
+
+### S18 Baseline Acceptance
+
+NXVM implementation P1 `0067d80c4` was pushed and reviewed as the amended
+incremental-baseline delivery. Coordinator review accepts S18, not the complete
+CPU extraction. The full-unit baseline is green (370/370 per width), default
+integration is 20/20 per width, standalone tools-off is 45/45, and six vendor
+boots pass once. Eight updated 0539 artifacts, manifests, specialized gates and
+documentation checks are recorded in S18 evidence. Shared/MyNES/INIs are
+unchanged. The inventory preserves deferred work and assigns all remaining
+consumers to S19-S32; S24 owns the unresolved 32-bit BOUND observation.
+The S18 packet is removed. T539 stays open; S19 is the next planned package.
