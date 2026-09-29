@@ -21,7 +21,9 @@ set(paths src/app-nxvm/machine/machine.c src/app-nxvm/devices/machine.c
     test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_les_lds_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c)
+    test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c)
 foreach(name IN LISTS cpu_files)
     list(APPEND paths "src/app-nxvm/devices/${name}")
 endforeach()
@@ -92,7 +94,8 @@ foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
         core_machine_enter_leave_smoke.c core_machine_fs_gs_stack_smoke.c
         core_machine_legacy_sreg_stack_smoke.c
         core_machine_les_lds_s41_smoke.c core_machine_les_lds_smoke.c
-        core_machine_lss_lfs_lgs_smoke.c)
+        core_machine_lss_lfs_lgs_smoke.c core_machine_segment_selector_smoke.c
+        core_machine_sreg_mov_smoke.c)
     set(path "${WORK}/test/app-nxvm/unit/core/devices/${name}")
     file(READ "${path}" original)
     foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0;"
@@ -109,4 +112,4 @@ foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
         endif()
     endforeach()
 endforeach()
-message(STATUS "Migrated board tests: 56 negative controls pass")
+message(STATUS "Migrated board tests: 64 negative controls pass")

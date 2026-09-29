@@ -577,3 +577,17 @@ the admitted ownership and preservation requirements. Complete units pass
 385/385 per width; 66 specialized gates, six manifests and documentation/diff
 checks pass. Production and executable inputs remain unchanged. S27 closes;
 S28 is next. The active packet is removed; CPU extraction and T539 remain open.
+
+## S28: Segment Selector and SREG MOV Consumer Migration
+
+Admitted after S27 P2 5c93dbf8d under owner automatic-S authorization. The
+two original mixed suites retain 244 execution contexts and three metadata
+queries: 241 CPU executions and 25 board executions, with 22 complementary
+fault contexts. Actual 286 exception delivery, 386 machine faults and three
+PIC/IRQ shadow contexts stay board-owned. The original 286 cache-rejection
+helper's inverted success result and incorrect pre-MOV AX expectation are
+corrected in both receivers. [S28 evidence](../etc/evidence/t539-s28-segment-migration.md)
+records the case map, ownership and verification. Full units pass 387/387
+per width; all 66 specialized gates and six unchanged manifests pass. No
+production/API or executable input changes. Executor delivery awaits
+coordinator actual-commit acceptance; CPU extraction and T539 remain open.

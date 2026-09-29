@@ -2,9 +2,30 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S27 are accepted; no S packet is active.
+M5 T539 remains open. S1-S27 are accepted; S28 is active.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain S28-S40 as pending, not accepted CPU extraction.
+
+## S28 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, M5 T539 S28 after S27 P2 5c93dbf8d; NXVM target only. |
+| Admission And Approval | Coordinator admission under owner automatic-S authorization and CPU decomposition amendment; single-session dual roles. |
+| Objective | Separate segment-selector and SREG MOV CPU tests from board receivers; preserve 244 original execution contexts and three metadata queries, correcting the discovered 286 subtest result inversion. |
+| Non-goals | No CPU semantics/timing change, public ABI, Shared relocation, lifetime cutover, firmware, INI, MyNES or artifact change. |
+| Reference Baseline | Clean 5c93dbf8d; full units 385/385 per width. Selector suite has 138 execution contexts plus three metadata queries; SREG MOV has 106 contexts. A passing selector executable currently masks failure in its inverted 286 cache-rejection helper. |
+| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU work packages](../etc/architecture/t539-cpu-work-packages.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
+| Files And ABI Surface | Two original smoke sources, CPU-owned receiving tests, existing CPU fixture storage increased from 128 to 256 KiB to retain the original DS=3333h memory cases, NXVM CMake registrations/constructor/boundary gates, packet/history/evidence. No public interface addition. |
+| Applicable Rules | Product Task Reading Set, shared and NXVM architecture/coding, execution/documentation rules; architecture-governance then coding-governance. Preserve original tables and assertions with explicit correction evidence. No external-source operation. |
+| Verification | Full x64/x86 build and unit suites; sequential native desktop suites; specialized gates, six unchanged manifests, documentation and diff checks. Transient focused selection: old/new selector and SREG MOV tests, CPU boundary negatives. |
+| Expected Markers | CPU receivers link only x86-cpu; two board files reject private CPU access; original contexts and fault/PIC receivers mapped; 286 helper failure cannot be interpreted as success. |
+| Asset Needs | Repository-only inputs; retain build/t539-s3 trees and recovery patch. No product executable inputs or owner configuration changes. |
+| Reporting Requirements | Report original-case map, discovered test defects and corrections, exact changed paths/line counts, complete verification, pushed implementation and actual-commit review. |
+| Stop Conditions | New production behavior/API need, lost cases, unaccounted includer or oversized scope requires revision; failed verification blocks acceptance. |
+| Exit Criteria | Complete original-context receiving proof, corrected 286 result/expectation contract, no board-private CPU access, complete units and gates, actual-commit acceptance, pushed implementation and governance Ps. |
+| Original Owner Request | Independently traceable CPU extraction S tasks preserving original style/semantics; automatically admit each bounded package. |
+| Similar-Issue Sweep | Inspect both sources and includers for private-state access and success/failure polarity; compare MOV-before-fault expectations at instruction-entry boundary, preserve cache rollback at CPU owner and real delivered exceptions/PIC at board owner. Remaining consumers keep S29-S37 receivers. |
 
 ## Retained S27 Baseline
 

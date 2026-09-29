@@ -138,6 +138,13 @@ Current owns acceptance; 86 original private consumers remain assigned S28-S37.
 - `core_machine_segment_selector_smoke.c`
 - `core_machine_sreg_mov_smoke.c`
 
+S28 removes both board-private CPU dependencies. The 244 original execution
+contexts and three metadata queries retain 241 CPU and 25 board executions:
+22 fault contexts have complementary receivers, and the three SREG IRQ cases
+remain board-only. The inverted 286 rejection helper is corrected in both
+receivers. See [S28 evidence](t539-s28-segment-migration.md). Current owns
+acceptance; 84 original private consumers remain assigned S29-S37.
+
 ### S29: 2 matching files
 
 - `core_machine_operand_address_smoke.c`

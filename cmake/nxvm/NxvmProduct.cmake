@@ -706,6 +706,10 @@ add_executable(cpu-moffs-smoke test/app-nxvm/unit/core/devices/cpu_moffs_smoke.c
 target_link_libraries(cpu-moffs-smoke PRIVATE x86-cpu)
 add_executable(core-machine-sreg-mov-smoke test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c)
 target_link_libraries(core-machine-sreg-mov-smoke PRIVATE core-machine)
+add_executable(cpu-sreg-mov-smoke test/app-nxvm/unit/core/devices/cpu_sreg_mov_smoke.c)
+target_link_libraries(cpu-sreg-mov-smoke PRIVATE x86-cpu)
+add_executable(cpu-segment-selector-smoke test/app-nxvm/unit/core/devices/cpu_segment_selector_smoke.c)
+target_link_libraries(cpu-segment-selector-smoke PRIVATE x86-cpu)
 add_executable(core-machine-movs-smoke test/app-nxvm/unit/core/devices/core_machine_movs_smoke.c)
 target_link_libraries(core-machine-movs-smoke PRIVATE core-machine)
 add_executable(core-machine-stos-smoke test/app-nxvm/unit/core/devices/core_machine_stos_smoke.c)
@@ -1873,6 +1877,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-les-lds-smoke
     cpu-les-lds-s41-smoke
     cpu-lss-lfs-lgs-smoke
+    cpu-sreg-mov-smoke
+    cpu-segment-selector-smoke
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
     core-machine-legacy-alu-s2-smoke
@@ -2128,12 +2134,12 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-real-ud-delivery-s1-smoke
     core-machine-rotate-smoke
     core-machine-scas-smoke
-    core-machine-segment-selector-smoke
+    cpu-segment-selector-smoke
     core-machine-setcc-smoke
     core-machine-sgdt-sidt-smoke
     core-machine-sign-extend-smoke
     core-machine-software-int-s50-smoke
-    core-machine-sreg-mov-smoke
+    cpu-sreg-mov-smoke
     core-machine-stos-smoke
     core-machine-task-switch-smoke
     core-machine-tf-db-s60-smoke

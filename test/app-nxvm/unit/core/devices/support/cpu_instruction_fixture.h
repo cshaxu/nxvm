@@ -10,7 +10,7 @@ typedef struct cpu_instruction_fixture {
     t_cpuins instructions;
     core_machine_cpu_execution_context execution;
     core_machine_cpu_fault_snapshot fault;
-    lib_u8 memory[131072];
+    lib_u8 memory[262144];
 } cpu_instruction_fixture;
 
 static lib_status cpu_instruction_read(void *opaque, lib_u32 address,
