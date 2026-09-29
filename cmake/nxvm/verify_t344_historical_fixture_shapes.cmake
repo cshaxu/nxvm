@@ -5,17 +5,12 @@ endif()
 set(project_t344_migrated_sources
     "test/app-nxvm/unit/core/devices/core_machine_80286_protected_mode_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_paging_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_call_gate_privilege_entry_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_call_gate_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_descriptor_system_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_fpu_8087_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_idt_privilege_entry_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_protected_privilege_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_task_switch_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_tss_iomap_port_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_vm86_delivery_smoke.c"
@@ -23,6 +18,7 @@ set(project_t344_migrated_sources
     "test/app-nxvm/unit/core/devices/cpu_profile_gate_smoke.c"
     "test/app-nxvm/unit/core/devices/fpu_escape_smoke.c")
 set(project_t344_retained_sources
+    "test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c"
@@ -119,12 +115,12 @@ set(project_t344_retained_sources
 set(project_t344_inventory ${project_t344_migrated_sources}
     ${project_t344_retained_sources})
 list(LENGTH project_t344_inventory project_t344_inventory_count)
-if(NOT project_t344_inventory_count EQUAL 112)
-    message(FATAL_ERROR "T344 fixture-shape inventory must contain 112 direct constructors.")
+if(NOT project_t344_inventory_count EQUAL 108)
+    message(FATAL_ERROR "T344 fixture-shape inventory must contain 108 direct constructors.")
 endif()
 list(REMOVE_DUPLICATES project_t344_inventory)
 list(LENGTH project_t344_inventory project_t344_unique_count)
-if(NOT project_t344_unique_count EQUAL 112)
+if(NOT project_t344_unique_count EQUAL 108)
     message(FATAL_ERROR "T344 fixture-shape inventory contains a duplicate source.")
 endif()
 
@@ -146,12 +142,12 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # Board CPU-bus INTA admission/cascade proof without a firmware provider.
     "test/app-nxvm/unit/core/devices/core_machine_pic_phase_s2_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 119)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 119 entries.")
+if(NOT project_t344_constructor_count EQUAL 115)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 115 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 119)
+if(NOT project_t344_constructor_unique_count EQUAL 115)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -170,13 +166,41 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 119)
-    message(FATAL_ERROR "T344 expected 119 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 115)
+    message(FATAL_ERROR "T344 expected 115 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)
     if(project_t344_index EQUAL -1)
         message(FATAL_ERROR "T344 direct constructor is unclassified: ${project_t344_source}")
+    endif()
+endforeach()
+
+# These five tests share one public board setup rather than copying a
+# constructor and descriptor bootstrap into each source.
+set(project_t344_public_limit_sources
+    "test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c")
+set(project_t344_limit_helper
+    "test/app-nxvm/unit/core/devices/support/cpu_board_limit_fixture.h")
+file(READ "${PROJECT_T344_SOURCE_DIR}/${project_t344_limit_helper}"
+    project_t344_limit_helper_content)
+foreach(operation core_machine_create core_machine_freeze_execution_providers
+        core_machine_reset core_machine_debug_patch_registers)
+    if(NOT project_t344_limit_helper_content MATCHES "${operation}[ \t\r\n]*\\(")
+        message(FATAL_ERROR "T344 public limit helper omits ${operation}.")
+    endif()
+endforeach()
+foreach(project_t344_source IN LISTS project_t344_public_limit_sources)
+    file(READ "${PROJECT_T344_SOURCE_DIR}/${project_t344_source}"
+        project_t344_content)
+    if(NOT project_t344_content MATCHES "support/cpu_board_limit_fixture[.]h" OR
+        NOT project_t344_content MATCHES "test_cpu_board_limit_prepare[ \t\r\n]*\\(" OR
+        project_t344_content MATCHES "core_machine_create[ \t\r\n]*\\(")
+        message(FATAL_ERROR "T344 public limit fixture is not uniquely shared: ${project_t344_source}")
     endif()
 endforeach()
 
@@ -190,4 +214,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 fixture shapes passed: 112 inventoried, 4 timing-manifest, 2 guest-table-load and 1 INTA constructor; 20 shared tails, 92 explicit shapes.")
+message(STATUS "T344 fixture shapes passed: 108 direct inventoried, 5 shared public-limit callers, 4 timing-manifest, 2 guest-table-load and 1 INTA constructor.")

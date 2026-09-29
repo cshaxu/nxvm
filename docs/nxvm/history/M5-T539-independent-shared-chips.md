@@ -636,3 +636,14 @@ S30 is admitted for bit scan/test, double shift, IMUL2, SETcc and sign
 extension only. Its six original suites must keep every case at a CPU or
 board receiver. The staged `inc_dec` suite stays assigned to S33-S35, not
 silently accepted or dropped. [Current](../states/CURRENT.md) owns the packet.
+
+## S30 Implementation: Bit/Condition/Extension Ownership
+
+The six suites' 549 original contexts have 539 CPU-only and ten board-only
+receivers. Five protected-limit board tests share one public setup; the sixth
+retains actual PIC/IRQ delivery. Full x64 and x86 repository-only unit suites
+pass 395/395 each, and 66 specialized gates pass per width. Six unchanged
+Shared manifests verify. No production/API, firmware/INI/media or executable
+input changed. The [S30 evidence](../etc/evidence/t539-s30-bit-condition-extension-migration.md)
+contains the context map. Implementation awaits pushed-P actual-diff review;
+T539 and CPU extraction remain open.

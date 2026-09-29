@@ -7,6 +7,9 @@ M5 T539 remains open. S1-S29 are accepted; S30 is active. Its former eleven-file
 implementation under the existing automatic-S authorization.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
+S30 implementation has dual-width 395/395 complete units and 66 specialized
+gates per width; [its context map](../etc/evidence/t539-s30-bit-condition-extension-migration.md)
+awaits a pushed implementation P and actual-commit acceptance review.
 
 ## S29 Acceptance
 

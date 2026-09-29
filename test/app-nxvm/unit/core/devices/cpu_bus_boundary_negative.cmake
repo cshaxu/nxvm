@@ -24,6 +24,12 @@ set(paths src/app-nxvm/machine/machine.c src/app-nxvm/devices/machine.c
     test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c
+    test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c)
 foreach(name IN LISTS cpu_files)
@@ -91,6 +97,11 @@ endforeach()
 message(STATUS "Board CPU observation boundary: five negative controls pass")
 
 foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
+        core_machine_bit_scan_smoke.c
+        core_machine_bit_test_smoke.c
+        core_machine_double_shift_smoke.c core_machine_imul2_smoke.c
+        core_machine_setcc_smoke.c
+        core_machine_sign_extend_smoke.c
         core_machine_gpr_mov_smoke.c core_machine_moffs_smoke.c core_machine_xchg_smoke.c
         core_machine_gpr_push_pop_smoke.c core_machine_push_immediate_smoke.c core_machine_pusha_popa_smoke.c
         core_machine_enter_leave_smoke.c core_machine_fs_gs_stack_smoke.c
@@ -115,4 +126,4 @@ foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
         endif()
     endforeach()
 endforeach()
-message(STATUS "Migrated board tests: 72 negative controls pass")
+message(STATUS "Migrated board tests: 96 negative controls pass")

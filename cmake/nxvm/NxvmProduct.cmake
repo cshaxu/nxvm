@@ -625,6 +625,8 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 add_executable(core-machine-setcc-smoke test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c)
 target_link_libraries(core-machine-setcc-smoke PRIVATE core-machine)
+add_executable(cpu-setcc-smoke test/app-nxvm/unit/core/devices/cpu_setcc_smoke.c)
+target_link_libraries(cpu-setcc-smoke PRIVATE x86-cpu)
 add_executable(core-machine-movx-smoke test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c)
 target_link_libraries(core-machine-movx-smoke PRIVATE core-machine)
 add_executable(cpu-movx-smoke test/app-nxvm/unit/core/devices/cpu_movx_smoke.c)
@@ -633,6 +635,8 @@ add_executable(cpu-lea-smoke test/app-nxvm/unit/core/devices/cpu_lea_smoke.c)
 target_link_libraries(cpu-lea-smoke PRIVATE x86-cpu)
 add_executable(core-machine-bit-test-smoke test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c)
 target_link_libraries(core-machine-bit-test-smoke PRIVATE core-machine)
+add_executable(cpu-bit-test-smoke test/app-nxvm/unit/core/devices/cpu_bit_test_smoke.c)
+target_link_libraries(cpu-bit-test-smoke PRIVATE x86-cpu)
 add_executable(core-machine-inc-dec-smoke test/app-nxvm/unit/core/devices/core_machine_inc_dec_smoke.c)
 target_link_libraries(core-machine-inc-dec-smoke PRIVATE core-machine)
 add_executable(core-machine-legacy-alu-s2-smoke
@@ -696,6 +700,8 @@ add_executable(cpu-pusha-popa-smoke test/app-nxvm/unit/core/devices/cpu_pusha_po
 target_link_libraries(cpu-pusha-popa-smoke PRIVATE x86-cpu)
 add_executable(core-machine-sign-extend-smoke test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c)
 target_link_libraries(core-machine-sign-extend-smoke PRIVATE core-machine)
+add_executable(cpu-sign-extend-smoke test/app-nxvm/unit/core/devices/cpu_sign_extend_smoke.c)
+target_link_libraries(cpu-sign-extend-smoke PRIVATE x86-cpu)
 add_executable(core-machine-moffs-smoke test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c)
 target_link_libraries(core-machine-moffs-smoke PRIVATE core-machine)
 add_executable(core-machine-gpr-mov-smoke test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c)
@@ -743,8 +749,14 @@ add_executable(core-machine-legacy-sreg-stack-smoke
 target_link_libraries(core-machine-legacy-sreg-stack-smoke PRIVATE core-machine)
 add_executable(core-machine-double-shift-smoke test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c)
 target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
+add_executable(cpu-double-shift-smoke test/app-nxvm/unit/core/devices/cpu_double_shift_smoke.c)
+target_link_libraries(cpu-double-shift-smoke PRIVATE x86-cpu)
 add_executable(core-machine-bit-scan-smoke test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c)
 target_link_libraries(core-machine-bit-scan-smoke PRIVATE core-machine)
+add_executable(cpu-bit-scan-smoke test/app-nxvm/unit/core/devices/cpu_bit_scan_smoke.c)
+target_link_libraries(cpu-bit-scan-smoke PRIVATE x86-cpu)
+add_executable(cpu-imul2-smoke test/app-nxvm/unit/core/devices/cpu_imul2_smoke.c)
+target_link_libraries(cpu-imul2-smoke PRIVATE x86-cpu)
 add_executable(core-machine-imul2-smoke test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c)
 target_link_libraries(core-machine-imul2-smoke PRIVATE core-machine)
 add_executable(core-machine-imul-immediate-s56-smoke
@@ -1868,6 +1880,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-prefix-attributes-s64-smoke
     core-machine-legacy-lock-s1-smoke
     core-machine-setcc-smoke
+    cpu-setcc-smoke
     core-machine-movx-smoke
     cpu-movx-smoke
     cpu-lea-smoke
@@ -1887,7 +1900,11 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-segment-selector-smoke
     cpu-prefix-attributes-s64-smoke
     cpu-operand-address-smoke
+    cpu-bit-scan-smoke
+    cpu-double-shift-smoke
+    cpu-imul2-smoke
     core-machine-bit-test-smoke
+    cpu-bit-test-smoke
     core-machine-inc-dec-smoke
     core-machine-legacy-alu-s2-smoke
     core-machine-rotate-smoke
@@ -1912,6 +1929,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-lea-smoke
     core-machine-xchg-smoke
     core-machine-sign-extend-smoke
+    cpu-sign-extend-smoke
     core-machine-moffs-smoke
     core-machine-gpr-mov-smoke
     core-machine-sreg-mov-smoke
@@ -2087,8 +2105,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-80286-protected-mode-smoke
     core-machine-arpl-s53-smoke
     core-machine-arpl-smoke
-    core-machine-bit-scan-smoke
-    core-machine-bit-test-smoke
+    cpu-bit-test-smoke
     core-machine-bound-s54-smoke
     core-machine-cli-sti-s48-smoke
     core-machine-clts-s62-smoke
@@ -2100,7 +2117,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-descriptor-system-smoke
     core-machine-direct-flags-smoke
     core-machine-debug-mov-s59-smoke
-    core-machine-double-shift-smoke
+    cpu-double-shift-smoke
     cpu-enter-leave-smoke
     core-machine-fpu-escape-smoke
     core-machine-fpu-interface-s65-smoke
@@ -2108,7 +2125,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-gpr-mov-smoke
     cpu-gpr-push-pop-smoke
     core-machine-hlt-s49-smoke
-    core-machine-imul2-smoke
+    cpu-imul2-smoke
     core-machine-imul-immediate-s56-smoke
     core-machine-inc-dec-smoke
     core-machine-iret-outer-s52-smoke
@@ -2143,9 +2160,10 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-scas-smoke
     cpu-segment-selector-smoke
     cpu-prefix-attributes-s64-smoke
-    core-machine-setcc-smoke
+    cpu-bit-scan-smoke
+    cpu-setcc-smoke
     core-machine-sgdt-sidt-smoke
-    core-machine-sign-extend-smoke
+    cpu-sign-extend-smoke
     core-machine-software-int-s50-smoke
     cpu-sreg-mov-smoke
     core-machine-stos-smoke

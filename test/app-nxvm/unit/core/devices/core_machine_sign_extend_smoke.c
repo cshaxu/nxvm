@@ -1,503 +1,101 @@
 #include "support/pic_fixture.h"
-#include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "support/core_machine_board_fixture.h"
 #include "app-nxvm/devices/device_support.h"
-#include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
-
-typedef struct sign_extend_machine {
-    core_machine *machine;
-} sign_extend_machine;
-
-static void sign_extend_reset(void *opaque)
-{
-    sign_extend_machine *state = (sign_extend_machine *)opaque;
-
-    if (state != LIB_NULL)
-        (void)test_core_machine_fixture_reset_real_mode(state->machine);
-}
-
-static const core_machine_execution_provider sign_extend_provider = {
-    sign_extend_reset, LIB_NULL
-};
-
-static lib_i32 sign_extend_prepare(core_machine_cpu_profile profile,
-    sign_extend_machine *state)
-{
-    const core_machine_config config = {
-        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = profile,
-        .fpu_profile = X86_FPU_PROFILE_NONE
-    };
-
-    lib_memory_set(state, 0, sizeof(*state));
-return test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &sign_extend_provider, state, &state->machine);
-}
-
-static lib_i32 sign_extend_run(sign_extend_machine *state, const lib_u8 *code,
-    lib_u8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
-    lib_status *status)
-{
-    core_machine_run_result result;
-
-    if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-            LIB_STATUS_OK)
-        return 0;
-    *status = core_machine_run(state->machine,
-        (core_machine_run_budget){ 1u, 0u }, &result);
-    *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        LIB_STATUS_OK;
-}
-
-static void sign_extend_set_registers(sign_extend_machine *state)
-{
-    state->machine->executor_cpu.data.eax = 0xaabb0000u;
-    state->machine->executor_cpu.data.ecx = 0x11223344u;
-    state->machine->executor_cpu.data.edx = 0x55660000u;
-    state->machine->executor_cpu.data.ebx = 0x778899aau;
-    state->machine->executor_cpu.data.esp = 0xbbbb8000u;
-    state->machine->executor_cpu.data.ebp = 0xccccddddu;
-    state->machine->executor_cpu.data.esi = 0xeeeeffffu;
-    state->machine->executor_cpu.data.edi = 0x10203040u;
-    state->machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
-}
-
-static lib_i32 sign_extend_state_equal(const t_cpu *before, const t_cpu *after)
-{
-    return before->data.eax == after->data.eax &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.ebx == after->data.ebx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi &&
-        before->data.eflags == after->data.eflags &&
-        before->data.eip == after->data.eip;
-}
-
-static lib_i32 sign_extend_nonparticipants_equal(const t_cpu *before,
-    const t_cpu *after, lib_u8 opcode)
-{
-    return before->data.ecx == after->data.ecx &&
-        before->data.ebx == after->data.ebx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi &&
-        before->data.eflags == after->data.eflags &&
-        (opcode == 0x98u || before->data.eax == after->data.eax) &&
-        (opcode == 0x99u || before->data.edx == after->data.edx);
-}
-
-static lib_i32 sign_extend_test_default(void)
-{
-    static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386
-    };
-    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
-    lib_u8 profile;
-    lib_u8 opcode;
-    lib_u8 sign;
-
-    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
-            ++profile)
-    {
-        for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
-        {
-            for (sign = 0u; sign != 2u; ++sign)
-            {
-                sign_extend_machine state;
-                t_cpu before;
-                t_cpu after;
-                core_machine_cpu_diagnostic diagnostic;
-                lib_status status;
-                lib_u8 code[] = { opcodes[opcode] };
-                lib_u32 expected_eax;
-                lib_u32 expected_edx;
-                lib_i32 failed;
-
-                lib_memory_set(&state, 0, sizeof(state));
-                lib_memory_set(&before, 0, sizeof(before));
-                lib_memory_set(&after, 0, sizeof(after));
-                lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-                status = LIB_STATUS_INVALID_ARGUMENT;
-                failed = !sign_extend_prepare(profiles[profile], &state);
-                if (!failed)
-                {
-                    failed |= !test_core_machine_fixture_prepare_real_mode_execution(
-                        state.machine, 0u);
-                    sign_extend_set_registers(&state);
-                    state.machine->executor_cpu.data.eax =
-                        opcodes[opcode] == 0x98u ?
-                        (sign == 0u ? 0xaabb007fu : 0xaabb0080u) :
-                        (sign == 0u ? 0xaabb007fu : 0xaabb8000u);
-                    before = test_core_machine_fixture_capture_cpu_after_run(
-                        state.machine);
-                    expected_eax = opcodes[opcode] == 0x98u ?
-                        (sign == 0u ? 0xaabb007fu : 0xaabbff80u) :
-                        before.data.eax;
-                    expected_edx = opcodes[opcode] == 0x99u ?
-                        (sign == 0u ? 0x55660000u : 0x5566ffffu) :
-                        before.data.edx;
-                    failed |= !sign_extend_run(&state, code, sizeof(code),
-                        &after, &diagnostic, &status) ||
-                        status != LIB_STATUS_OK ||
-                        diagnostic.first_fault.valid ||
-                        after.data.eip != 1u ||
-                        after.data.eax != expected_eax ||
-                        after.data.edx != expected_edx ||
-                        !sign_extend_nonparticipants_equal(&before, &after,
-                            opcodes[opcode]);
-                }
-                core_machine_destroy(state.machine);
-                if (failed)
-                    return 0;
-            }
-        }
-    }
-    return 1;
-}
-
-static lib_i32 sign_extend_test_operand32(void)
-{
-    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
-    lib_u8 opcode;
-    lib_u8 sign;
-
-    for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
-    {
-        for (sign = 0u; sign != 2u; ++sign)
-        {
-            sign_extend_machine state;
-            t_cpu before;
-            t_cpu after;
-            core_machine_cpu_diagnostic diagnostic;
-            lib_status status;
-            lib_u8 code[] = { 0x66u, opcodes[opcode] };
-            lib_u32 expected_eax;
-            lib_u32 expected_edx;
-            lib_i32 failed;
-
-            lib_memory_set(&state, 0, sizeof(state));
-            lib_memory_set(&before, 0, sizeof(before));
-            lib_memory_set(&after, 0, sizeof(after));
-            lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-            status = LIB_STATUS_INVALID_ARGUMENT;
-            failed = !sign_extend_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-                &state);
-            if (!failed)
-            {
-                failed |= !test_core_machine_fixture_prepare_real_mode_execution(
-                    state.machine, 0u);
-                sign_extend_set_registers(&state);
-                state.machine->executor_cpu.data.eax =
-                    opcodes[opcode] == 0x98u ?
-                    (sign == 0u ? 0xabcd7f00u : 0xabcd8000u) :
-                    (sign == 0u ? 0x12347f00u : 0xabcd8000u);
-                before = test_core_machine_fixture_capture_cpu_after_run(
-                    state.machine);
-                expected_eax = opcodes[opcode] == 0x98u ?
-                    (sign == 0u ? 0x00007f00u : 0xffff8000u) :
-                    before.data.eax;
-                expected_edx = opcodes[opcode] == 0x99u ?
-                    (sign == 0u ? 0x00000000u : 0xffffffffu) :
-                    before.data.edx;
-                failed |= !sign_extend_run(&state, code, sizeof(code), &after,
-                    &diagnostic, &status) ||
-                    status != LIB_STATUS_OK ||
-                    diagnostic.first_fault.valid ||
-                    after.data.eip != 2u ||
-                    after.data.eax != expected_eax ||
-                    after.data.edx != expected_edx ||
-                    !sign_extend_nonparticipants_equal(&before, &after,
-                        opcodes[opcode]);
-            }
-            core_machine_destroy(state.machine);
-            if (failed)
-                return 0;
-        }
-    }
-    return 1;
-}
-
-static lib_i32 sign_extend_test_address_prefix(void)
-{
-    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
-    lib_u8 opcode;
-
-    for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
-    {
-        sign_extend_machine state;
-        t_cpu before;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
-        lib_status status;
-        lib_u8 code[] = { 0x67u, opcodes[opcode] };
-        lib_i32 failed;
-
-        lib_memory_set(&state, 0, sizeof(state));
-        lib_memory_set(&before, 0, sizeof(before));
-        lib_memory_set(&after, 0, sizeof(after));
-        lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-        status = LIB_STATUS_INVALID_ARGUMENT;
-        failed = !sign_extend_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
-        if (!failed)
-        {
-            failed |= !test_core_machine_fixture_prepare_real_mode_execution(
-                state.machine, 0u);
-            sign_extend_set_registers(&state);
-            state.machine->executor_cpu.data.eax = opcodes[opcode] == 0x98u ?
-                0xaabb0080u : 0xaabb8000u;
-            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= !sign_extend_run(&state, code, sizeof(code), &after,
-                &diagnostic, &status) ||
-                status != LIB_STATUS_OK ||
-                diagnostic.first_fault.valid ||
-                after.data.eip != 2u ||
-                after.data.eax != (opcodes[opcode] == 0x98u ?
-                    0xaabbff80u : before.data.eax) ||
-                after.data.edx != (opcodes[opcode] == 0x99u ?
-                    0x5566ffffu : before.data.edx) ||
-                !sign_extend_nonparticipants_equal(&before, &after,
-                    opcodes[opcode]);
-        }
-        core_machine_destroy(state.machine);
-        if (failed)
-            return 0;
-    }
-    return 1;
-}
-
-static lib_i32 sign_extend_test_prefix_reject(void)
-{
-    static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286
-    };
-    static const lib_u8 prefixes[] = { 0x66u, 0x67u };
-    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
-    lib_u8 profile;
-    lib_u8 prefix;
-    lib_u8 opcode;
-
-    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
-            ++profile)
-    {
-        for (prefix = 0u; prefix != sizeof(prefixes); ++prefix)
-        {
-            for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
-            {
-                sign_extend_machine state;
-                t_cpu before;
-                t_cpu after;
-                core_machine_cpu_diagnostic diagnostic;
-                lib_status status;
-                lib_u8 code[] = { prefixes[prefix], opcodes[opcode] };
-                lib_i32 failed;
-
-                lib_memory_set(&state, 0, sizeof(state));
-                lib_memory_set(&before, 0, sizeof(before));
-                lib_memory_set(&after, 0, sizeof(after));
-                lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-                status = LIB_STATUS_INVALID_ARGUMENT;
-                failed = !sign_extend_prepare(profiles[profile], &state);
-                if (!failed)
-                {
-                    failed |= !test_core_machine_fixture_prepare_real_mode_execution(
-                        state.machine, 0u);
-                    sign_extend_set_registers(&state);
-                    failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
-                        state.machine);
-                    before = test_core_machine_fixture_capture_cpu_after_run(
-                        state.machine);
-                    failed |= !sign_extend_run(&state, code, sizeof(code),
-                        &after, &diagnostic, &status) ||
-                        status != LIB_STATUS_INTERNAL_ERROR ||
-                        !diagnostic.first_fault.valid ||
-                        !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                            VCPUINS_EXCEPT_UD) ||
-                        !sign_extend_state_equal(&before, &after);
-                }
-                core_machine_destroy(state.machine);
-                if (failed)
-                    return 0;
-            }
-        }
-    }
-    return 1;
-}
+#include "app-nxvm/devices/debug_interface.h"
+#include <stdio.h>
 
 static lib_i32 sign_extend_test_irq(void)
 {
-    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
+    static const lib_u8 opcodes[] = {0x98u, 0x99u};
     static const lib_u8 hlt = 0xf4u;
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
     lib_u8 opcode;
 
-    for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
-    {
-        sign_extend_machine state;
-        core_machine_pic_irq_source source;
-        core_machine_run_result result;
-        t_cpu after;
-        lib_u8 code[] = { opcodes[opcode], 0x90u };
-        lib_u16 offset = 0x0100u;
-        lib_u16 segment = 0u;
-        lib_u16 frame = 0u;
-        lib_i32 failed;
+    for (opcode = 0u; opcode < sizeof(opcodes); ++opcode) {
+        core_machine *machine = LIB_NULL;
+        core_machine_pic_irq_source source = {0};
+        core_machine_run_result result = {0};
+        core_machine_debug_cpu_snapshot after = {0};
+        core_machine_debug_register_patch patch = {0};
+        const lib_u8 code[] = {opcodes[opcode], 0x90u};
+        lib_u16 offset = 0x0100u, segment = 0u, frame = 0u;
+        lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK;
 
-        lib_memory_set(&state, 0, sizeof(state));
-        lib_memory_set(&source, 0, sizeof(source));
-        lib_memory_set(&result, 0, sizeof(result));
-        lib_memory_set(&after, 0, sizeof(after));
-        failed = !sign_extend_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
-        if (!failed)
-        {
-            failed |= !test_core_machine_fixture_prepare_real_mode_execution(
-                state.machine, 0u) ||
-                core_machine_memory_write(state.machine, 0u, code,
-                    sizeof(code)) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x80u, &offset,
-                    2u) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x82u, &segment,
-                    2u) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x100u, &hlt,
-                    1u) != LIB_STATUS_OK;
-            sign_extend_set_registers(&state);
-            state.machine->executor_cpu.data.eax = opcodes[opcode] == 0x98u ?
+        if (!failed) {
+            patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS);
+            patch.values[CORE_MACHINE_DEBUG_EAX] = opcodes[opcode] == 0x98u ?
                 0xaabb0080u : 0xaabb8000u;
-            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF;
-            test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
+            patch.values[CORE_MACHINE_DEBUG_ECX] = 0x11223344u;
+            patch.values[CORE_MACHINE_DEBUG_EDX] = 0x55660000u;
+            patch.values[CORE_MACHINE_DEBUG_EBX] = 0x778899aau;
+            patch.values[CORE_MACHINE_DEBUG_ESP] = 0xbbbb8000u;
+            patch.values[CORE_MACHINE_DEBUG_EBP] = 0xccccddddu;
+            patch.values[CORE_MACHINE_DEBUG_ESI] = 0xeeeeffffu;
+            patch.values[CORE_MACHINE_DEBUG_EDI] = 0x10203040u;
+            patch.values[CORE_MACHINE_DEBUG_EFLAGS] = VCPU_EFLAGS_IF;
+            failed |= core_machine_debug_patch_registers(machine, &patch) !=
+                    LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0u, code, sizeof(code)) !=
+                    LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x80u, &offset,
+                    sizeof(offset)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x82u, &segment,
+                    sizeof(segment)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x100u, &hlt,
+                    sizeof(hlt)) != LIB_STATUS_OK;
+        }
+        if (!failed) {
+            test_pic_program_vector(&machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &state.machine->shared_pic_master,
-                &state.machine->shared_pic_slave, 0u);
+                &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
-            failed |= core_machine_run(state.machine,
-                (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed |= core_machine_memory_read_physical(
-                &state.machine->executor_memory,
-                after.data.ss.base + (lib_u16)after.data.esp,
-                (lib_uptr)&frame, 2u) != LIB_STATUS_OK ||
-                after.data.eip != 0x101u ||
-                frame != 1u ||
-                after.data.eax != (opcodes[opcode] == 0x98u ?
+            failed |= core_machine_run(machine,
+                    (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
+                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                core_machine_memory_read(machine,
+                    after.ss.base + (lib_u16)after.esp, &frame,
+                    sizeof(frame)) != LIB_STATUS_OK ||
+                after.eip != 0x101u || frame != 1u ||
+                after.eax != (opcodes[opcode] == 0x98u ?
                     0xaabbff80u : 0xaabb8000u) ||
-                after.data.edx != (opcodes[opcode] == 0x99u ?
+                after.edx != (opcodes[opcode] == 0x99u ?
                     0x5566ffffu : 0x55660000u) ||
-                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+                !CORE_MACHINE_BIT_IS_SET(
+                    test_pic_read(&machine->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u));
         }
-        core_machine_destroy(state.machine);
-        if (failed)
-            return 0;
-    }
-    return 1;
-}
-
-static lib_i32 sign_extend_test_lock_diagnostic(void)
-{
-    static const lib_u8 opcodes[] = { 0x98u, 0x99u };
-    lib_u8 opcode;
-
-    for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
-    {
-        sign_extend_machine state;
-        t_cpu before;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
-        lib_status status;
-        lib_u8 code[] = { 0xf0u, opcodes[opcode] };
-        lib_i32 failed;
-
-        lib_memory_set(&state, 0, sizeof(state));
-        lib_memory_set(&before, 0, sizeof(before));
-        lib_memory_set(&after, 0, sizeof(after));
-        lib_memory_set(&diagnostic, 0, sizeof(diagnostic));
-        status = LIB_STATUS_INVALID_ARGUMENT;
-        failed = !sign_extend_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
-        if (!failed)
-        {
-            failed |= !test_core_machine_fixture_prepare_real_mode_execution(
-                state.machine, 0u);
-            sign_extend_set_registers(&state);
-            state.machine->executor_cpu.data.eax = 0xaabb0080u;
-            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
-                state.machine);
-            before = test_core_machine_fixture_capture_cpu_after_run(
-                state.machine);
-            failed |= !sign_extend_run(&state, code, sizeof(code), &after,
-                &diagnostic, &status) ||
-                status != LIB_STATUS_INTERNAL_ERROR ||
-                !diagnostic.first_fault.valid ||
-                !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                    VCPUINS_EXCEPT_UD) ||
-                !sign_extend_state_equal(&before, &after);
-        }
-        if (failed)
-        {
-            printf(
-                "SIGN-EXT lock opcode=%02x status=%d fault=%08x "
-                "before=%08x/%08x/%08x after=%08x/%08x/%08x\n",
-                opcodes[opcode],
-                status,
-                diagnostic.first_fault.exception_mask,
-                before.data.eip,
-                before.data.eax,
-                before.data.edx,
-                after.data.eip,
-                after.data.eax,
-                after.data.edx);
-        }
-        core_machine_destroy(state.machine);
-        if (failed)
-            return 0;
+        core_machine_destroy(machine);
+        if (failed) return 0;
     }
     return 1;
 }
 
 lib_i32 main(void)
 {
-    if (!sign_extend_test_default())
-    {
-        printf("SIGN-EXT stage=default\n");
-        return 1;
-    }
-    if (!sign_extend_test_operand32())
-    {
-        printf("SIGN-EXT stage=operand32\n");
-        return 1;
-    }
-    if (!sign_extend_test_address_prefix())
-    {
-        printf("SIGN-EXT stage=address-prefix\n");
-        return 1;
-    }
-    if (!sign_extend_test_prefix_reject())
-    {
-        printf("SIGN-EXT stage=prefix-reject\n");
-        return 1;
-    }
-    if (!sign_extend_test_irq())
-    {
-        printf("SIGN-EXT stage=irq\n");
-        return 1;
-    }
-    if (!sign_extend_test_lock_diagnostic())
-    {
-        printf("SIGN-EXT stage=lock\n");
-        return 1;
-    }
+    if (!sign_extend_test_irq()) return 1;
     printf("M5:T316:S29:SIGN-EXTEND:OK\n");
     printf("M5:T401:S45:SIGN-EXTEND-PROFILES:OK\n");
     return 0;

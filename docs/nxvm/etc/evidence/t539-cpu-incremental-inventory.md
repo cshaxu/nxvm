@@ -169,6 +169,15 @@ inventory file until its last private access is removed.
 - `core_machine_setcc_smoke.c`
 - `core_machine_sign_extend_smoke.c`
 
+S30 implementation assigns all 549 contexts to six CPU-only receivers (539)
+and six surviving board receivers (ten). These six `.c` sources no longer read
+private CPU state. The S29 HEAD search counted 81 direct-private `.c` consumers
+plus one shared fixture header; S30 removes six `.c` consumers, leaving 75
+`.c` files plus that header, or 76 pending consumers assigned to S31-S42.
+[S30 evidence](t539-s30-bit-condition-extension-migration.md) records the
+receiving map and dual-width verification. Actual-commit review still owns
+acceptance; no part of S31-S45 is claimed here.
+
 ### S31: 2 matching files
 
 - `core_machine_imul_immediate_s56_smoke.c`

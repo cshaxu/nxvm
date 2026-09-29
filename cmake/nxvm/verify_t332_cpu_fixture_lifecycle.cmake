@@ -27,6 +27,12 @@ set(project_t332_inherited_sources
     "test/app-nxvm/unit/core/devices/core_machine_protected_iret_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_interrupt_entry_smoke.c")
 set(project_t332_public_board_sources
+    "test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_les_lds_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c"
@@ -45,6 +51,21 @@ set(project_t332_public_board_sources
     "test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c")
+set(project_t332_public_limit_sources
+    "test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c")
+
+file(READ "${PROJECT_T332_SOURCE_DIR}/test/app-nxvm/unit/core/devices/support/cpu_board_limit_fixture.h"
+    project_t332_limit_helper)
+foreach(operation core_machine_create core_machine_freeze_execution_providers
+        core_machine_reset core_machine_debug_patch_registers)
+    if(NOT project_t332_limit_helper MATCHES "${operation}[ \t\r\n]*\\(")
+        message(FATAL_ERROR "Public board limit helper misses ${operation}.")
+    endif()
+endforeach()
 
 function(project_t332_require_shared_lifecycle source)
     set(path "${PROJECT_T332_SOURCE_DIR}/${source}")
@@ -53,12 +74,19 @@ function(project_t332_require_shared_lifecycle source)
     endif()
     file(READ "${path}" content)
     if(source IN_LIST project_t332_public_board_sources)
-        foreach(operation core_machine_create core_machine_freeze_execution_providers
-                core_machine_reset core_machine_debug_patch_registers)
-            if(NOT content MATCHES "${operation}[ \t\r\n]*\\(")
-                message(FATAL_ERROR "Public board fixture misses ${operation}: ${source}")
+        if(source IN_LIST project_t332_public_limit_sources)
+            if(NOT content MATCHES "support/cpu_board_limit_fixture[.]h" OR
+                NOT content MATCHES "test_cpu_board_limit_prepare[ \t\r\n]*\\(")
+                message(FATAL_ERROR "Public board fixture misses shared limit setup: ${source}")
             endif()
-        endforeach()
+        else()
+            foreach(operation core_machine_create core_machine_freeze_execution_providers
+                    core_machine_reset core_machine_debug_patch_registers)
+                if(NOT content MATCHES "${operation}[ \t\r\n]*\\(")
+                    message(FATAL_ERROR "Public board fixture misses ${operation}: ${source}")
+                endif()
+            endforeach()
+        endif()
         if(content MATCHES "core_machine_bind_execution_provider|executor_cpu|core_machine_cpu_fixture")
             message(FATAL_ERROR "Public board fixture restores private CPU setup: ${source}")
         endif()

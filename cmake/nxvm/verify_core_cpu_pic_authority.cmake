@@ -75,6 +75,11 @@ foreach(board_source IN LISTS board_sources)
     endif()
 endforeach()
 foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c
+        core_machine_bit_scan_smoke.c
+        core_machine_bit_test_smoke.c
+        core_machine_double_shift_smoke.c core_machine_imul2_smoke.c
+        core_machine_setcc_smoke.c
+        core_machine_sign_extend_smoke.c
         core_machine_gpr_mov_smoke.c core_machine_moffs_smoke.c core_machine_xchg_smoke.c
         core_machine_gpr_push_pop_smoke.c core_machine_push_immediate_smoke.c core_machine_pusha_popa_smoke.c
         core_machine_enter_leave_smoke.c core_machine_fs_gs_stack_smoke.c
