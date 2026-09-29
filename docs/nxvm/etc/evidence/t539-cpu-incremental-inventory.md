@@ -183,6 +183,14 @@ P1 `442088410`; no part of S31-S45 is claimed here.
 - `core_machine_imul_immediate_s56_smoke.c`
 - `core_machine_rotate_smoke.c`
 
+S31 implementation assigns all 335 original contexts to two CPU-only
+receivers (324) and the two board receivers (eleven). Neither original `.c`
+source reads private CPU state now. The S30 count of 75 direct-private `.c`
+consumers plus one shared fixture header falls to 73 `.c` files plus that
+header, or 74 pending consumers assigned to S32-S42. [S31 evidence](t539-s31-imul-group2-migration.md)
+records the receiving map and verification; actual-commit review accepts
+pushed P1 `38bc5b10c`. S32-S45 remain unaccepted.
+
 ### S32: 2 matching files
 
 - `core_machine_legacy_alu_s2_smoke.c`

@@ -46,4 +46,8 @@ Shared source/test manifests remain unchanged and pass within the unit suite.
 S31 is test-only; the x64 executable changed incidentally during a gate build
 and was restored to its clean pre-build tracked version.
 
-The P1 commit and actual-commit review are recorded in CURRENT after push.
+Actual pushed P1 `38bc5b10c` has exactly nine scoped paths, passes
+`git show --check`, and matches `origin/master` at review. Its code/test/build
+and gate delta adds 1,289/removes 1,468 lines (net -179), excluding the
+49-line P1 evidence draft. No tracked binary is in the commit. S31 exits here;
+S32-S45 remain unaccepted.

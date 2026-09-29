@@ -2,11 +2,27 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S30 are accepted; S31 is active. The former
+M5 T539 remains open. S1-S31 are accepted; S32 is next for automatic
+admission. The former
 eleven-file, 7,000-plus-line arithmetic assignment is split into S30-S35
 under the existing automatic-S authorization; S32-S45 remain pending.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
+
+## S31 Acceptance
+
+Actual pushed NXVM P1 `38bc5b10c` has exactly nine scoped paths, passes
+`git show --check`, and equals `origin/master` at review. All 335 original
+contexts retain one receiver: 324 CPU-owned and eleven board-owned. Code,
+test, build and gate changes add 1,289/remove 1,468 lines (net -179); the
+49-line evidence report is separate. Two CPU tests link only `x86-cpu` and
+compile with warnings as errors. Complete x64/x86 units pass 397/397 each;
+T317/T332/T344 and CPU/PIC gates, 396-row direct matrix, six unchanged
+Shared manifests, and documentation governance pass. No production/API or
+executable input changed. [S31 evidence](../etc/evidence/t539-s31-imul-group2-migration.md)
+contains the original-case receiving map. The S31 packet is closed; 74
+original private-test consumers remain assigned to S32-S42. S43-S45 retain
+lifetime, physical relocation and whole-CPU acceptance.
 
 ## S30 Acceptance
 
@@ -23,26 +39,10 @@ The S30 packet is closed; 76 original private-test consumers remain assigned
 to S31-S42. S43-S45 still own lifetime, physical relocation and whole-CPU
 acceptance.
 
-## S31 Active Packet
+## Next Admission
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, M5 T539 S31 after S30 P2 `e8511d6d0`; NXVM target only. |
-| Admission And Approval | Coordinator admission under the owner's automatic-S authorization; one session switches executor/coordinator roles. |
-| Objective | Move CPU-owned immediate IMUL and Group-2 rotate/shift assertions from two mixed sources to CPU-only receivers; retain actual protected faults and PIC IRQ at the board. |
-| Non-goals | No CPU production/timing change, new public ABI, S32-S35 ALU work, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
-| Reference Baseline | Clean pushed `e8511d6d0`, complete units 395/395 per width. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) assign only `core_machine_imul_immediate_s56_smoke.c` and `core_machine_rotate_smoke.c` to S31. |
-| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | The two original tests, CPU-only receivers, test-local fixtures only when deleting repeated setup, NXVM test registration/boundary gates and task evidence. Preserve every original profile, program, case and assertion receiver. |
-| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. Synthetic CPU cache/flags/results stay CPU-owned; real descriptor delivery, physical memory and PIC IRQ stay board-owned. No external-source operation. |
-| Verification | Full x64/x86 builds and repository-only unit suites, specialized gates, six unchanged manifests, documentation/diff checks. Focused selection is local to S31 and not a durable gate. |
-| Expected Markers | CPU receivers link only `x86-cpu`; board receivers use public machine operations without private CPU state; one execution path per original case. |
-| Asset Needs | Repository-only inputs and existing build trees; preserve the S18 local recovery artifact. No ROM/media/INI/EXE input change. |
-| Reporting Requirements | Original-case receiving map, exact changed paths and code line counts, dual-width results, pushed implementation and actual-commit review. |
-| Stop Conditions | Lost original case, unaccounted includer, new production/API requirement, or scope beyond the two sources requires packet revision before continuing. |
-| Exit Criteria | CPU/board ownership proved, all original scenarios retained, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. |
-| Original Owner Request | Split oversized CPU migration into traceable S tasks with automatic admission, preserving original semantics, code style and single-owner architecture. |
-| Similar-Issue Sweep | Inspect both suites for private fixture access, profile/timing claims, synthetic segment-cache setup, real board faults and IRQ, and Group-2 #UD polarity. Leave S32-S35 assigned, not presumed done. |
+S32 owns only legacy ALU and LOCK test ownership migration. It is not yet
+implemented or accepted; its packet will be recorded before edits.
 
 ## S29 Acceptance
 
@@ -80,6 +80,7 @@ observation. None is silently closed or transferred to the next T.
 
 | Task | Progress |
 | --- | --- |
+| T539 S31 | Accepted: NXVM P1 38bc5b10c migrates immediate IMUL and Group-2 test ownership; all 335 original contexts retain CPU/board receivers; units 397/397 per width. No production or asset change. |
 | T539 S30 | Accepted: NXVM P1 442088410 migrates bit/condition/extension ownership. All 549 original contexts retain CPU/board receivers; units 395/395 per width. No production or asset change. |
 | T539 S29 | Accepted: NXVM P1 86fe95201 migrates operand/address and S64 prefix ownership. All 28 operand contexts and twelve prefix groups retain receivers; units 389/389 per width. No production or asset change. |
 | T539 S28 | Accepted: NXVM P1 fa092b95e migrates segment selector/SREG MOV test ownership. All 244 original contexts and three queries retained; units 387/387 per width. No production or asset change. |
