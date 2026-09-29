@@ -92,6 +92,10 @@ lib_status x86_video_create(x86_video **out_video);
 void x86_video_destroy(x86_video *video);
 lib_status x86_video_memory_read(x86_video *video, x86_video_memory_region region,
     lib_u32 address, lib_u8 *destination, lib_size bytes);
+/* Serialized observation of the same CPU-visible bytes, without updating
+ * planar read latches. It does not perform a guest memory cycle. */
+lib_status x86_video_memory_inspect(x86_video *video, x86_video_memory_region region,
+    lib_u32 address, lib_u8 *destination, lib_size bytes);
 lib_status x86_video_memory_write(x86_video *video, x86_video_memory_region region,
     lib_u32 address, const lib_u8 *source, lib_size bytes);
 lib_status x86_video_memory_query(x86_video *video, x86_video_memory_region region,

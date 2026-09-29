@@ -266,7 +266,7 @@ static lib_u8 x86_video_logical_operation(lib_u8 operation,
 }
 
 static lib_u8 x86_video_ega_color_compare(
-    const x86_video *adapter)
+    const x86_video *adapter, const lib_u8 *latches)
 {
     lib_u8 value = 0xffu;
     lib_u8 plane;
@@ -275,8 +275,7 @@ static lib_u8 x86_video_ega_color_compare(
     for (plane = 0u; plane < X86_VIDEO_EGA_PLANES; ++plane) {
         if ((adapter->data.graphics[7] & (1u << plane)) != 0u) continue;
         value &= (adapter->data.graphics[2] & (1u << plane)) != 0u ?
-            adapter->data.ega_latches[plane] :
-            (lib_u8)~adapter->data.ega_latches[plane];
+            latches[plane] : (lib_u8)~latches[plane];
     }
     return value;
 }
@@ -352,7 +351,7 @@ static lib_i32 x86_video_ega_cpu_aperture_contains(const x86_video *adapter,
 
 static lib_status x86_video_ega_planar_read(x86_video *adapter,
     lib_u32 physical, lib_u8 *destination,
-    lib_size bytes)
+    lib_size bytes, lib_bool observe_only)
 {
     lib_size index;
 
@@ -369,19 +368,22 @@ static lib_status x86_video_ega_planar_read(x86_video *adapter,
             x86_video_ega_planar_offset(adapter, address) >> 2u :
             x86_video_ega_planar_offset(adapter, address);
         lib_u8 plane;
+        lib_u8 latches[X86_VIDEO_EGA_PLANES];
 
         for (plane = 0u; plane < X86_VIDEO_EGA_PLANES; ++plane) {
-            adapter->data.ega_latches[plane] = adapter->data.ega_planar_vram
+            latches[plane] = adapter->data.ega_planar_vram
                 [(lib_size)plane * X86_VIDEO_EGA_PLANE_BYTES + offset];
         }
+        if (!observe_only)
+            lib_memory_copy(adapter->data.ega_latches, latches, sizeof(latches));
         if ((adapter->data.graphics[5] & 0x08u) != 0u) {
-            destination[index] = x86_video_ega_color_compare(adapter);
+            destination[index] = x86_video_ega_color_compare(adapter, latches);
         } else {
             lib_u8 map = x86_video_vga_chain4_active(adapter) ?
                 (lib_u8)(address & 3u) : adapter->data.graphics[4];
 
             destination[index] = map < X86_VIDEO_EGA_PLANES ?
-                adapter->data.ega_latches[map] : 0u;
+                latches[map] : 0u;
         }
     }
     return LIB_STATUS_OK;
@@ -2310,14 +2312,30 @@ void x86_video_destroy(x86_video *video)
     lib_release(video);
 }
 
-lib_status x86_video_memory_read(x86_video *video, x86_video_memory_region region,
-    lib_u32 address, lib_u8 *destination, lib_size bytes)
+static lib_status x86_video_memory_read_selected(x86_video *video,
+    x86_video_memory_region region, lib_u32 address, lib_u8 *destination,
+    lib_size bytes, lib_bool observe_only)
 {
     if (region == X86_VIDEO_MEMORY_CGA)
         return x86_video_cga_read(video, address, destination, bytes);
     if (region == X86_VIDEO_MEMORY_PLANAR)
-        return x86_video_ega_planar_read(video, address, destination, bytes);
+        return x86_video_ega_planar_read(video, address, destination, bytes,
+            observe_only);
     return LIB_STATUS_INVALID_ARGUMENT;
+}
+
+lib_status x86_video_memory_read(x86_video *video, x86_video_memory_region region,
+    lib_u32 address, lib_u8 *destination, lib_size bytes)
+{
+    return x86_video_memory_read_selected(video, region, address, destination,
+        bytes, LIB_FALSE);
+}
+
+lib_status x86_video_memory_inspect(x86_video *video, x86_video_memory_region region,
+    lib_u32 address, lib_u8 *destination, lib_size bytes)
+{
+    return x86_video_memory_read_selected(video, region, address, destination,
+        bytes, LIB_TRUE);
 }
 
 lib_status x86_video_memory_write(x86_video *video, x86_video_memory_region region,

@@ -113,6 +113,10 @@ of writes preceding an invalid byte. Relocation changes none of these semantics.
 
 ## Build and verification
 
+Video memory inspection returns the same selected CGA/planar bytes as a CPU
+read without updating EGA latches. Callers serialize both operations with the
+device owner; inspection is not a concurrent snapshot or guest bus cycle.
+
 Keep src/x86, src/common and src/lib as sibling corpora. For example:
 
 ```text
