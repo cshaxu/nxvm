@@ -479,3 +479,12 @@ loads, not private cache writes. Production, Shared and artifact inputs do
 not change. [S23 evidence](../etc/evidence/t539-s23-xchg-migration.md) records
 all receivers, verification and scope. Complete units pass 376/376 per width;
 executor delivery awaits actual-commit coordinator review.
+
+### S23 Acceptance
+
+Coordinator actual-commit review accepts pushed NXVM P1 `5c2835936`. Both widths
+pass 376/376 units; 66 specialized steps, six manifests and documentation/diff
+checks pass. Seven test/build paths add 609/remove 688 lines. No production or
+EXE input change. The packet is removed; S24 is next. Remaining original private
+consumers number 95, with the negative verifier's intentional strings separately
+identified. T539 and whole CPU acceptance remain open.

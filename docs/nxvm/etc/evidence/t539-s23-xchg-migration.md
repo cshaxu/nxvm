@@ -84,3 +84,14 @@ removed board-owned instruction cases. Documentation and staged diff checks pass
 
 Executor review is complete; coordinator actual-commit acceptance remains
 separate. This batch does not accept the CPU extraction row or close T539.
+
+## Coordinator Acceptance
+
+Reviewed actual pushed P1 `5c2835936`, including all added/removed instruction
+families, retained board cases, exact gate membership and task documentation.
+The twelve-family mapping, full verification and no-executable-change decision
+match the 16-field packet and the actual change. Protected setup changes only
+the fixture mechanism, retaining the original fault/rollback outcome; no CPU
+algorithm, table, timing grade or public mutable state was introduced. Accept
+S23 and remove its active packet. S24 is next; T539 and CPU extraction remain
+open with all residual consumers and lifetime/relocation work still assigned.
