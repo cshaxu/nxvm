@@ -447,3 +447,15 @@ passing isolated x86 full run; its unproven concurrency cause is a TODO, not a
 claimed repair. Ten test/build paths add 626/remove 499 lines. The packet is
 removed; S22 is next, and T539 remains open through the planned CPU receiving
 audit. No production, asset, INI, Shared or MyNES change was required.
+
+## S22: GPR MOV/MOFFS Consumer Migration
+
+Admitted at S21 P2 bf8dd127c under automatic authorization. The 277 original
+contexts now have 269 CPU-owned and eight board-owned receivers, retaining
+tables, profiles, register/memory rollback, protected DF and real PIC frames.
+Public copied CPU access replaces board-private setup; the two original
+post-fault physical RAM checks remain because the public memory API excludes
+FAULTED state. No public contract or production behavior changed.
+[S22 evidence](../etc/evidence/t539-s22-mov-moffs-migration.md) records actual
+case mapping, full verification, limits and source/test accounting. Executor
+delivery is ready for actual-commit review, not yet coordinator acceptance.

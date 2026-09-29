@@ -69,6 +69,12 @@ board IRQ/provider/fault assertions remain in the original files. See
 - `core_machine_gpr_mov_smoke.c`
 - `core_machine_moffs_smoke.c`
 
+S22 implementation removes these two files' private CPU dependencies. Their
+269 chip cases move to `cpu_gpr_mov_smoke.c` and `cpu_moffs_smoke.c`; eight
+board fault/IRQ cases remain. The original faulted-state physical-memory
+assertions are board-owned, not CPU access. See [S22 evidence](t539-s22-mov-moffs-migration.md).
+Current owns acceptance; 96 original direct consumers remain with S23-S37.
+
 ### S23: 1 matching files
 
 - `core_machine_xchg_smoke.c`

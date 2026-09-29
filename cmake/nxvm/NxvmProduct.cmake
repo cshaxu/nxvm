@@ -682,6 +682,10 @@ add_executable(core-machine-moffs-smoke test/app-nxvm/unit/core/devices/core_mac
 target_link_libraries(core-machine-moffs-smoke PRIVATE core-machine)
 add_executable(core-machine-gpr-mov-smoke test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c)
 target_link_libraries(core-machine-gpr-mov-smoke PRIVATE core-machine)
+add_executable(cpu-gpr-mov-smoke test/app-nxvm/unit/core/devices/cpu_gpr_mov_smoke.c)
+target_link_libraries(cpu-gpr-mov-smoke PRIVATE x86-cpu)
+add_executable(cpu-moffs-smoke test/app-nxvm/unit/core/devices/cpu_moffs_smoke.c)
+target_link_libraries(cpu-moffs-smoke PRIVATE x86-cpu)
 add_executable(core-machine-sreg-mov-smoke test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c)
 target_link_libraries(core-machine-sreg-mov-smoke PRIVATE core-machine)
 add_executable(core-machine-movs-smoke test/app-nxvm/unit/core/devices/core_machine_movs_smoke.c)
@@ -1837,6 +1841,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-movx-smoke
     cpu-movx-smoke
     cpu-lea-smoke
+    cpu-gpr-mov-smoke
+    cpu-moffs-smoke
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
     core-machine-legacy-alu-s2-smoke
@@ -2055,7 +2061,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-fpu-escape-smoke
     core-machine-fpu-interface-s65-smoke
     core-machine-fs-gs-stack-smoke
-    core-machine-gpr-mov-smoke
+    cpu-gpr-mov-smoke
     core-machine-gpr-push-pop-smoke
     core-machine-hlt-s49-smoke
     core-machine-imul2-smoke
@@ -2074,7 +2080,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-lgdt-lidt-smoke
     core-machine-lods-smoke
     core-machine-lss-lfs-lgs-smoke
-    core-machine-moffs-smoke
+    cpu-moffs-smoke
     core-machine-movs-smoke
     core-machine-movx-smoke
     core-machine-msw-s63-smoke

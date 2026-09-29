@@ -10,7 +10,7 @@ typedef struct cpu_instruction_fixture {
     t_cpuins instructions;
     core_machine_cpu_execution_context execution;
     core_machine_cpu_fault_snapshot fault;
-    lib_u8 memory[65536];
+    lib_u8 memory[131072];
 } cpu_instruction_fixture;
 
 static lib_status cpu_instruction_read(void *opaque, lib_u32 address,
@@ -87,6 +87,15 @@ static void cpu_instruction_prepare(cpu_instruction_fixture *fixture,
     core_machine_cpu_execution_load_segment(&fixture->execution,
         &fixture->cpu.data.ss, 0u);
     fixture->cpu.data.eip = 0u;
+}
+
+static inline lib_status cpu_instruction_run(cpu_instruction_fixture *fixture,
+    const lib_u8 *code, lib_u8 bytes, t_cpu *after)
+{
+    lib_memory_copy(fixture->memory, code, bytes);
+    core_machine_cpu_execution_refresh(&fixture->execution);
+    *after = fixture->cpu;
+    return fixture->execution.stop_requested ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
 }
 
 #endif

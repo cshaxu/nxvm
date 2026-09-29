@@ -2,9 +2,8 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S21 are accepted; there is no active S packet.
-S22 (GPR MOV/MOFFS) is next under the owner's automatic-S authorization.
-S22-S40 remain planned in the
+M5 T539 remains open. S1-S21 are accepted; S22 is admitted below.
+S23-S40 remain planned in the
 [CPU work packages](../etc/architecture/t539-cpu-work-packages.md).
 
 S21 implementation P1 `1049b9021` separates LEA/MOVX instruction invariants
@@ -23,7 +22,28 @@ S22-S37. Embedded CPU lifetime remains until S38; physical Shared relocation
 is S39; whole CPU acceptance is S40. S32 owns the unresolved 32-bit BOUND
 observation. None is silently closed or transferred to the next T.
 
-## Retained Progress
+## Active S22 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T539 S22, baseline S21 P2 bf8dd127c. Target NXVM only. |
+| Admission And Approval | Owner's automatic-S authorization and bounded CPU decomposition request; coordinator admits the GPR MOV/MOFFS receiving batch. No new Shared API or product behavior. |
+| Objective | Separate all GPR MOV/MOFFS instruction invariants from real board composition, removing private board-CPU access in the two original tests. |
+| Non-goals | No CPU algorithm/timing changes, public mutable CPU access, opaque lifetime cutover, Shared relocation, new framework, MyNES/INI/asset edits. |
+| Reference Baseline | bf8dd127c, clean intake; core_machine_gpr_mov_smoke.c and core_machine_moffs_smoke.c total 1,407 lines. Original family/case map is in S22 evidence. |
+| Candidate Proposal | [T539](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [work packages](../etc/architecture/t539-cpu-work-packages.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
+| Files And ABI Surface | Two original board tests, receiving CPU-owned tests and existing CPU fixture; necessary NXVM CMake/gate classification and task records. No production ABI changes. |
+| Applicable Rules | Product guide reading set; shared Execution/Architecture/Coding/Document; NXVM Architecture/Coding/Roadmap. CPU owns hidden state; board uses public operations and copied observations. No imports or firmware changes. |
+| Verification | Build both existing NXVM trees and run each complete unit suite without cross-tree desktop overlap. Run specialized gates, six manifests, documentation and diff checks. Develop against the four changed test targets. |
+| Expected Markers | Retain original GPR MOV T316/S31 and T401/S13/S47/S58 and MOFFS T316/S30/T401/S14; preserve 277 original loop contexts, register/memory rollback and real IRQ frames. CPU-only tests link x86-cpu, not core-machine. |
+| Asset Needs | Repository-owned instruction bytes only. No new build tree. Current eight 0539 EXEs stay valid if executable inputs remain unchanged; rebuild affected pairs if that changes. |
+| Reporting Requirements | Report ownership decision, all original-to-receiver mappings, discovered differences, counted source/test changes and actual verification; complete implementation P then coordinator actual-commit review. |
+| Stop Conditions | Stop for required new public contracts, lost profile/rollback case, instruction result or timing-grade changes, unrelated edits, or production repair beyond this migration. |
+| Exit Criteria | All 277 original contexts retained; chip cases independently executable; four protected-limit and four IRQ board cases use no private CPU layout. Complete verification and actual-diff review pass; target-scoped delivery pushed. CPU extraction itself remains open. |
+| Original Owner Request | Independent chip extraction, original handler/table style and behavior preserved; bounded S tasks, automatic admission. |
+| Similar-Issue Sweep | Search both files and includers for executor_cpu, executor_memory, legacy fixture and private includes; preserve byte/width/profile matrices and all terminal-fault/partial-effect assertions. Remaining raw consumers retain S23-S37 receivers. |
+
+## Accepted Progress
 
 | Task | Progress |
 | --- | --- |
