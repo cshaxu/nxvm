@@ -17,7 +17,7 @@ static void vm_display_s5_port_write(vm_machine *session, lib_u16 port,
 }
 
 static lib_i32 vm_display_s5_capture(vm_machine *session,
-    core_machine_guest_display_frame *frame, core_machine_display_kind expected_kind)
+    core_machine_guest_display_frame *frame, x86_video_kind expected_kind)
 {
     return vm_machine_publish_display(session, LIB_TRUE) == expected_kind &&
         test_vm_machine_capture_presentation(session, frame) == LIB_STATUS_OK;
@@ -50,8 +50,8 @@ lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
     static core_machine_guest_display_frame frame;
-    static core_machine_display_snapshot snapshot;
-    static core_machine_display_snapshot_observation observation;
+    static x86_video_snapshot snapshot;
+    static x86_video_snapshot_observation observation;
     core_machine_timeline_observation timeline;
     lib_u8 cga_even = 0x1bu;
     lib_u8 cga_odd = 0xe4u;
@@ -66,7 +66,7 @@ lib_i32 main(void)
         return 1;
     }
     lib_memory_set(&frame, 0, sizeof(frame));
-    failed |= !vm_display_s5_capture(session, &frame, CORE_MACHINE_DISPLAY_KIND_TEXT) ||
+    failed |= !vm_display_s5_capture(session, &frame, X86_VIDEO_KIND_TEXT) ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.palette_rgb[0u] != 0x000000u ||
         frame.palette_rgb[15u] != 0xffffffu;
@@ -80,7 +80,7 @@ lib_i32 main(void)
             CORE_MACHINE_VADP_VIDEO_BASE + 0x2000u, &cga_odd,
             sizeof(cga_odd)) != LIB_STATUS_OK;
     failed |= !vm_display_s5_capture(session, &frame,
-        CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4) ||
+        X86_VIDEO_KIND_CGA_320X200X4) ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
         frame.pixel_width != 320u || frame.pixel_height != 200u ||
         frame.pixels[0] != 0u || frame.pixels[1] != 1u ||
@@ -99,7 +99,7 @@ lib_i32 main(void)
             CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
             sizeof(ega_pixel)) != LIB_STATUS_OK ||
         !vm_display_s5_capture(session, &frame,
-            CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16) ||
+            X86_VIDEO_KIND_EGA_320X200X16) ||
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS ||
         frame.pixel_width != 320u || frame.pixel_height != 200u ||
         frame.pixels[0] != 15u || frame.pixels[1] != 0u ||
@@ -113,7 +113,7 @@ lib_i32 main(void)
         observation.generation != ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
     failed |= vm_machine_publish_display(session, LIB_FALSE) !=
-        CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        X86_VIDEO_KIND_EGA_320X200X16 ||
         test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
         session->display_snapshot_generation != ega_snapshot_generation;
@@ -127,7 +127,7 @@ lib_i32 main(void)
         observation.generation == ega_snapshot_generation;
     session->last_display_publish_milliseconds = 0u;
     failed |= vm_machine_publish_display(session, LIB_FALSE) !=
-        CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        X86_VIDEO_KIND_EGA_320X200X16 ||
         test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation <= cga_generation ||
         frame.pixels[0] != 0u || session->display_snapshot_generation !=
@@ -142,11 +142,11 @@ lib_i32 main(void)
         frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
         frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xffffffu ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
-            LIB_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;
+            LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT;
 
     failed |= !vm_display_s5_enable_planar(session) ||
         !vm_display_s5_capture(session, &frame,
-            CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16) ||
+            X86_VIDEO_KIND_EGA_320X200X16) ||
         frame.pixels[0] != 0u || frame.pixel_width != 320u ||
         frame.pixel_height != 200u;
 

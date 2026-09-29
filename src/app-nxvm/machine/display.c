@@ -30,7 +30,7 @@ static lib_i32 vm_machine_display_publish_is_due(vm_machine *machine, lib_i32 fo
 }
 
 static lib_i32 vm_machine_capture_display_snapshot(void *context,
-    core_machine_display_snapshot *out_snapshot)
+    x86_video_snapshot *out_snapshot)
 {
     vm_machine *session = (vm_machine *)context;
 
@@ -68,19 +68,19 @@ static void vm_machine_display_result(vm_machine *machine,
         LIB_STATUS_OK) machine->latest_frame_valid = LIB_TRUE;
 }
 
-core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
+x86_video_kind vm_machine_publish_display(vm_machine *machine,
     lib_i32 force)
 {
     core_machine_guest_display_frame frame;
-    core_machine_display_snapshot_observation observation;
+    x86_video_snapshot_observation observation;
     lib_u16 row;
     lib_u16 column;
     lib_i32 buffer_changed;
     lib_i32 cursor_changed;
 
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
 
-    if (machine == LIB_NULL) return CORE_MACHINE_DISPLAY_KIND_TEXT;
+    if (machine == LIB_NULL) return X86_VIDEO_KIND_TEXT;
     if (!vm_machine_display_publish_is_due(machine, force)) return machine->display_kind;
     if (!force && core_machine_observe_display_snapshot(machine->core_machine,
             machine->display_snapshot_generation_valid,
@@ -97,7 +97,7 @@ core_machine_display_kind vm_machine_publish_display(vm_machine *machine,
     if (!force && !buffer_changed && !cursor_changed) return snapshot.kind;
 
     lib_memory_set(&frame, 0, sizeof(frame));
-    frame.kind = snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ?
+    frame.kind = snapshot.kind != X86_VIDEO_KIND_TEXT ?
         CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS : CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
     frame.buffer_changed = buffer_changed;
     frame.cursor_changed = cursor_changed;

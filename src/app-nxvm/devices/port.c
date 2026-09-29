@@ -258,6 +258,22 @@ core_machine_port_provider_entry *core_machine_port_registration_begin(t_port *p
     return port->connect.providers;
 }
 
+void core_machine_port_unregister_owner(t_port *port, const void *owner)
+{
+    core_machine_port_provider_entry **link;
+
+    if (port == LIB_NULL || owner == LIB_NULL) return;
+    link = &port->connect.providers;
+    while (*link != LIB_NULL) {
+        core_machine_port_provider_entry *entry = *link;
+
+        if (entry->owner == owner) {
+            *link = entry->next;
+            lib_release(entry);
+        } else link = &entry->next;
+    }
+}
+
 lib_status core_machine_port_registration_status(const t_port *port)
 {
     return port == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :

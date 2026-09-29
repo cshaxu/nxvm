@@ -10,7 +10,7 @@ lib_i32 main(void)
     t_port port;
     t_ram memory;
     t_vadp vadp;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     lib_u8 pixel = 0xa0u;
     lib_u32 status;
     lib_i32 failed = 0;
@@ -30,7 +30,7 @@ lib_i32 main(void)
         CORE_MACHINE_VADP_VIDEO_BASE + 0x2000u, (lib_uptr)&pixel,
         sizeof(pixel)) != LIB_STATUS_OK;
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
-        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 ||
+        snapshot.kind != X86_VIDEO_KIND_CGA_640X200X2 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 1u || snapshot.pixels[1] != 0u ||
         snapshot.pixels[2] != 1u || snapshot.pixels[3] != 0u ||
@@ -41,7 +41,7 @@ lib_i32 main(void)
     core_machine_port_write(&port, 0x03d8u, 0x12u);
     core_machine_port_write(&port, 0x03d8u, 0x05u);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
-        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;
+        snapshot.kind != X86_VIDEO_KIND_TEXT;
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);

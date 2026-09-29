@@ -808,15 +808,18 @@ static void vm_byob_retirement_observe(void *context,
         trace->model40_memory_pattern_producer_active = LIB_FALSE;
     }
     if (observation->point.linear_pc == 0x000fbe83u && trace->machine != LIB_NULL) {
+        x86_video_bus_observation video = {0};
+
+        (void)x86_video_observe_bus(trace->machine->shared_vadp.chip, &video);
         trace->model40_memory_status_test_active = LIB_TRUE;
         trace->model40_memory_status_test_ax_entry =
             (lib_u16)trace->machine->executor_cpu.data.eax;
         trace->model40_memory_status_test_video_memory_disabled =
-            trace->machine->shared_vadp.data.compaq_cpu_video_memory_disabled;
+            video.cpu_memory_disabled;
         trace->model40_memory_status_test_graphics_6 =
-            trace->machine->shared_vadp.data.graphics[6u];
+            video.graphics_miscellaneous;
         trace->model40_memory_status_test_sequencer_0 =
-            trace->machine->shared_vadp.data.sequencer[0u];
+            video.sequencer_reset;
         trace->model40_memory_status_test_gdtr_base =
             trace->machine->executor_cpu.data.gdtr.base;
         trace->model40_memory_status_test_gdtr_limit =
@@ -1421,6 +1424,9 @@ static void vm_byob_model40_memory_write_observe(void *context,
         trace->model40_memory_b_window_last_pc = pc;
     }
     if (physical < 0x000b0002u && (lib_u64)physical + bytes > 0x000b0000u) {
+        x86_video_bus_observation video = {0};
+
+        (void)x86_video_observe_bus(trace->machine->shared_vadp.chip, &video);
         ++trace->model40_memory_b_first_word_writes;
         trace->model40_memory_b_first_word_retirements = trace->model40_retirements;
         trace->model40_memory_b_first_word_last_pc = pc;
@@ -1428,11 +1434,11 @@ static void vm_byob_model40_memory_write_observe(void *context,
             0x000b0000u, (lib_uptr)&trace->model40_memory_b_first_word_last_value,
             sizeof(trace->model40_memory_b_first_word_last_value));
         trace->model40_memory_b_first_word_graphics_6 =
-            trace->machine->shared_vadp.data.graphics[6u];
+            video.graphics_miscellaneous;
         trace->model40_memory_b_first_word_sequencer_0 =
-            trace->machine->shared_vadp.data.sequencer[0u];
+            video.sequencer_reset;
         trace->model40_memory_b_first_word_video_memory_disabled =
-            trace->machine->shared_vadp.data.compaq_cpu_video_memory_disabled;
+            video.cpu_memory_disabled;
     }
     if (physical >= 0x00fb0000u && physical < 0x00fc0000u) {
         if (trace->model40_memory_fb_page_writes == 0u)
@@ -1483,14 +1489,14 @@ static void vm_byob_model40_memory_write_observe(void *context,
     }
 }
 
-static lib_i32 vm_byob_snapshot_has(const core_machine_display_snapshot *snapshot,
+static lib_i32 vm_byob_snapshot_has(const x86_video_snapshot *snapshot,
     const char *text)
 {
     lib_size cell;
     lib_size length;
 
     if (snapshot == LIB_NULL || text == LIB_NULL ||
-        snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
+        snapshot->kind != X86_VIDEO_KIND_TEXT) return 0;
     length = lib_text_length(text);
     for (cell = 0u; cell + length <= (lib_size)snapshot->columns * snapshot->rows;
         ++cell) {
@@ -1499,12 +1505,12 @@ static lib_i32 vm_byob_snapshot_has(const core_machine_display_snapshot *snapsho
     return 0;
 }
 
-static lib_i32 vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_byob_snapshot_has_prompt(const x86_video_snapshot *snapshot)
 {
     lib_size cell;
     lib_size cells;
 
-    if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
+    if (snapshot == LIB_NULL || snapshot->kind != X86_VIDEO_KIND_TEXT) return 0;
     cells = (lib_size)snapshot->columns * snapshot->rows;
     for (cell = 0u; cell + 3u < cells; ++cell) {
         if (isalpha(snapshot->characters[cell]) &&
@@ -1609,7 +1615,7 @@ static lib_i32 vm_byob_memory_equal(core_machine *machine, lib_u32 left,
 }
 
 static lib_u32 vm_byob_snapshot_checksum(
-    const core_machine_display_snapshot *snapshot)
+    const x86_video_snapshot *snapshot)
 {
     lib_u32 checksum = 0u;
     lib_size cell;
@@ -1631,7 +1637,7 @@ int main(lib_i32 argc, char **argv)
     integration_ini_session ini_session = {0};
     vm_machine *session = LIB_NULL;
     core_machine_run_result result;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_trace_provider trace_provider;
     vm_byob_boot_trace trace = {0};

@@ -2,22 +2,28 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" vadp_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.h" vadp_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/video/video.c" vadp_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/video/video.h" vadp_header)
 
-string(FIND "${vadp_header}" "#define CORE_MACHINE_VADP_CRTC_REGISTER_COUNT 20u" count_position)
+string(FIND "${vadp_header}" "(X86_VIDEO_CRTC_EGA_LAST + 1u)" count_position)
 if(count_position EQUAL -1)
-    message(FATAL_ERROR "T314 CRTC register count is not 20")
+    message(FATAL_ERROR "CRTC storage must include the last supported EGA register")
+endif()
+
+string(FIND "${vadp_header}" "#define X86_VIDEO_CRTC_EGA_LAST 0x18u" last_position)
+if(last_position EQUAL -1)
+    message(FATAL_ERROR "CRTC supported EGA range changed without boundary review")
 endif()
 
 foreach(required IN ITEMS
-    "#define CORE_MACHINE_VADP_CRTC_OFFSET 0x13u"
-    "_Static_assert(CORE_MACHINE_VADP_CRTC_CURSOR_TOP <"
-    "CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM <"
-    "CORE_MACHINE_VADP_CRTC_START_HIGH + 1u <"
-    "CORE_MACHINE_VADP_CRTC_CURSOR_HIGH + 1u <"
-    "CORE_MACHINE_VADP_CRTC_OFFSET < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT"
-    "return index < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT &&"
+    "#define X86_VIDEO_CRTC_OFFSET 0x13u"
+    "_Static_assert(X86_VIDEO_CRTC_CURSOR_TOP <"
+    "X86_VIDEO_CRTC_CURSOR_BOTTOM <"
+    "X86_VIDEO_CRTC_START_HIGH + 1u <"
+    "X86_VIDEO_CRTC_CURSOR_HIGH + 1u <"
+    "X86_VIDEO_CRTC_OFFSET < X86_VIDEO_CRTC_REGISTER_COUNT"
+    "index >= X86_VIDEO_CRTC_REGISTER_COUNT) return LIB_FALSE;"
+    "return index <= X86_VIDEO_CRTC_EGA_LAST;"
     "adapter->data.crtc[high_index]"
     "adapter->data.crtc[low_index]"
     "adapter->data.crtc[adapter->data.crtc_index]")
@@ -27,14 +33,14 @@ foreach(required IN ITEMS
     endif()
 endforeach()
 
-string(FIND "${vadp_source}" "!core_machine_vadp_supported_crtc_index(high_index) ||" word_guard)
-string(FIND "${vadp_source}" "!core_machine_vadp_supported_crtc_index(low_index)" low_guard)
+string(FIND "${vadp_source}" "!x86_video_supported_crtc_index(adapter,\n            high_index) ||" word_guard)
+string(FIND "${vadp_source}" "!x86_video_supported_crtc_index(adapter, low_index)" low_guard)
 if(word_guard EQUAL -1 OR low_guard EQUAL -1)
     message(FATAL_ERROR "T314 CRTC word access is not predicate guarded")
 endif()
 
-string(FIND "${vadp_source}" "core_machine_vadp_supported_crtc_index(\n        adapter->data.crtc_index) ?" read_guard)
-string(FIND "${vadp_source}" "!core_machine_vadp_supported_crtc_index(adapter->data.crtc_index))" write_guard)
+string(FIND "${vadp_source}" "x86_video_crtc_index_readable(adapter,\n        adapter->data.crtc_index) ?" read_guard)
+string(FIND "${vadp_source}" "!x86_video_crtc_index_writable(adapter, adapter->data.crtc_index))" write_guard)
 if(read_guard EQUAL -1 OR write_guard EQUAL -1)
     message(FATAL_ERROR "T314 port CRTC access is not predicate guarded")
 endif()

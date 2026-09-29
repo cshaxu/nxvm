@@ -43,7 +43,7 @@ lib_i32 main(void)
         .preload_count = 1u};
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     vm_machine *session = LIB_NULL;
     lib_u32 instruction;
     lib_i32 passed = 0;
@@ -59,7 +59,7 @@ lib_i32 main(void)
         }
         if (core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) != LIB_STATUS_OK ||
-            snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4) {
+            snapshot.kind != X86_VIDEO_KIND_CGA_320X200X4) {
             continue;
         }
         if (snapshot.pixels[0] == 0u && snapshot.pixels[1] == 1u &&

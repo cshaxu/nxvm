@@ -48,6 +48,7 @@ static lib_i32 vm_model_339_selected_contract(void)
     core_machine_planar_parity_observation parity;
     core_machine_speaker_observation speaker;
     core_machine_memory_route memory_route;
+    x86_video_snapshot snapshot;
     vm_machine *session = LIB_NULL;
     lib_size memory_bytes = 0u;
     lib_u8 before = 0u;
@@ -68,11 +69,12 @@ static lib_i32 vm_model_339_selected_contract(void)
         vm_machine_destroy(session);
         return 1;
     }
-    failed |= (!session->core_machine->shared_vadp.data.text_glyphs.present ||
-        session->core_machine->shared_vadp.data.text_glyphs.bytes['A' *
-        CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS] != 0x81u ||
-        session->core_machine->shared_vadp.data.text_glyphs.bytes['A' *
-        CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS + 8u] != 0x42u) ? 0x2000 : 0;
+    failed |= (core_machine_capture_display_snapshot(session->core_machine,
+        &snapshot) != LIB_STATUS_OK || !snapshot.text_glyphs_present ||
+        snapshot.text_glyphs['A' *
+        X86_VIDEO_TEXT_GLYPH_ROWS] != 0x81u ||
+        snapshot.text_glyphs['A' *
+        X86_VIDEO_TEXT_GLYPH_ROWS + 8u] != 0x42u) ? 0x2000 : 0;
     failed |= (session->core_machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled ||
         session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled ||
         session->core_machine->transaction_contract.external_cycle_timing.page_bytes != 0u ||

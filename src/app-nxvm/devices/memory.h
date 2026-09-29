@@ -149,6 +149,9 @@ lib_status core_machine_memory_register_device_provider_and_write_observer(
     core_machine_memory_device_query query, void *owner,
     core_machine_memory_write_observer callback);
 void core_machine_memory_freeze_mappings(t_ram *ram);
+/* Exclusive construction/teardown only; remove this owner's device routes and
+ * write observers before destroying the callback context. */
+void core_machine_memory_unregister_owner(t_ram *ram, const void *owner);
 lib_status core_machine_memory_read_real_from(t_ram *ram, lib_u16 segment,
     lib_u16 offset, void *out_data, lib_size size);
 lib_status core_machine_memory_write_real_to(t_ram *ram, lib_u16 segment,

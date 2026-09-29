@@ -41,8 +41,8 @@ static void t386_s28_select_ega_320(vm_machine *session)
 lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
-    core_machine_display_snapshot snapshot;
-    core_machine_display_snapshot_observation observation;
+    x86_video_snapshot snapshot;
+    x86_video_snapshot_observation observation;
     lib_i32 failed = 0;
 
     failed |= vm_model40_fixture_create(&session) !=

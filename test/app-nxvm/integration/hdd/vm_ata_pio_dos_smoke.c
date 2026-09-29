@@ -275,11 +275,11 @@ static lib_i32 vm_ata253_install(lib_u8 *image, DWORD image_size)
     return 1;
 }
 
-static lib_i32 vm_ata253_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_ata253_has_prompt(const x86_video_snapshot *snapshot)
 {
     lib_size cell;
 
-    if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
+    if (snapshot == LIB_NULL || snapshot->kind != X86_VIDEO_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < 80u * 25u; ++cell) {
         if (isalpha(snapshot->characters[cell]) &&
             snapshot->characters[cell + 1u] == ':' &&
@@ -294,7 +294,7 @@ static lib_i32 vm_ata253_run_until(vm_machine *session, lib_u32 limit,
 {
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     lib_u32 executed = 0u;
 
     while (executed < limit) {
@@ -308,7 +308,7 @@ static lib_i32 vm_ata253_run_until(vm_machine *session, lib_u32 limit,
             if (vm_machine_waiting_advance(session, &result, &advanced) != LIB_STATUS_OK ||
                 !advanced) return 0;
         }
-        if (marker != 0u ? snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
+        if (marker != 0u ? snapshot.kind == X86_VIDEO_KIND_TEXT &&
                 snapshot.characters[VM_ATA253_MARKER_CELL] == marker :
             vm_ata253_has_prompt(&snapshot)) return 1;
         executed += budget.instructions;

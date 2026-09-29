@@ -117,11 +117,11 @@ static lib_status vm_cga_dos_install_on_overlay(integration_ini_session *session
     return installed ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
-static lib_i32 vm_cga_dos_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_cga_dos_has_prompt(const x86_video_snapshot *snapshot)
 {
     lib_size cell;
 
-    if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) {
+    if (snapshot == LIB_NULL || snapshot->kind != X86_VIDEO_KIND_TEXT) {
         return 0;
     }
     for (cell = 0u; cell + 3u < 80u * 25u; ++cell) {
@@ -138,7 +138,7 @@ static lib_i32 vm_cga_dos_run_until(vm_machine *session, lib_u32 limit,
 {
     core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     lib_u32 executed = 0u;
 
     while (executed < limit) {
@@ -156,7 +156,7 @@ static lib_i32 vm_cga_dos_run_until(vm_machine *session, lib_u32 limit,
             printf("CGA DOS prompt: instruction budget used=%u\n", executed);
             return 1;
         }
-        if (want_graphics && snapshot.kind == CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4 &&
+        if (want_graphics && snapshot.kind == X86_VIDEO_KIND_CGA_320X200X4 &&
             snapshot.pixels[0] == 0u && snapshot.pixels[1] == 1u &&
             snapshot.pixels[2] == 2u && snapshot.pixels[3] == 3u &&
             snapshot.pixels[320u] == 3u && snapshot.pixels[321u] == 2u &&
@@ -165,7 +165,7 @@ static lib_i32 vm_cga_dos_run_until(vm_machine *session, lib_u32 limit,
     }
     fprintf(stderr, "CGA DOS budget exhausted: stage=%s instructions=%u\n",
         want_graphics ? "program" : "boot", executed);
-    if (snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT) {
+    if (snapshot.kind == X86_VIDEO_KIND_TEXT) {
         lib_size cell;
         for (cell = 0u; cell < 2000u; ++cell) {
             fputc(snapshot.characters[cell] ? snapshot.characters[cell] : ' ', stderr);

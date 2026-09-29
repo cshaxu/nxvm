@@ -42,7 +42,7 @@ struct vm_machine {
     lib_u64 display_snapshot_generation;
     lib_u8 display_snapshot_generation_valid;
     lib_u64 last_display_publish_milliseconds;
-    core_machine_display_kind display_kind;
+    x86_video_kind display_kind;
     vm_machine_fault_outcome fault_outcome;
     /* The bounded runner owns this single fact for the existing Common
      * boolean driver result.  It distinguishes an abnormal executor unwind
@@ -57,7 +57,7 @@ struct vm_machine {
     vm_machine_config retained_config;
     lib_u8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
     lib_u8 cmos_seed_present;
-    core_machine_vadp_text_glyph_config text_glyphs;
+    x86_video_text_glyph_config text_glyphs;
     vm_profile_floppy_kind floppy_kind;
     vm_profile_floppy_kind fdd_media_kind;
     core_machine_fdc_terminal_observation model40_fdc_terminal_observation;

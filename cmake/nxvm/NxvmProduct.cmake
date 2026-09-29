@@ -82,7 +82,6 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/memory_interface.c
     src/app-nxvm/devices/media_interface.c
     src/app-nxvm/devices/port_interface.c
-    src/app-nxvm/devices/presentation_interface.c
     src/app-nxvm/devices/rom_mapping_interface.c
     src/app-nxvm/devices/trace_interface.c
     src/app-nxvm/devices/retirement_observation_interface.c
@@ -964,8 +963,6 @@ add_executable(core-machine-debug-smoke
 )
 target_link_libraries(core-machine-debug-smoke PRIVATE core-machine)
 
-add_executable(core-machine-presentation-smoke test/app-nxvm/unit/core/devices/presentation_smoke.c)
-target_link_libraries(core-machine-presentation-smoke PRIVATE core-machine)
 
 # T317 owns this exact source-to-target inventory.  Keep strict options on the
 # smoke executables themselves: core-machine is a linked dependency and is not
@@ -1125,7 +1122,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-entry-plan-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 if(POWERSHELL_EXECUTABLE)
@@ -1215,7 +1211,7 @@ add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(vm-machine-frame-smoke
@@ -1477,15 +1473,7 @@ add_executable(vm-keyboard-set1-mapper-smoke
     test/app-nxvm/unit/core/machine/vm_keyboard_set1_mapper_smoke.c
 )
 target_link_libraries(vm-keyboard-set1-mapper-smoke PRIVATE vm-profile)
-add_executable(core-machine-vadp-text-smoke
-    test/app-nxvm/unit/core/devices/core_machine_vadp_text_smoke.c
-)
-target_link_libraries(core-machine-vadp-text-smoke PRIVATE core-machine)
 
-add_executable(core-machine-vadp-text-status-smoke
-    test/app-nxvm/unit/core/devices/core_machine_vadp_text_status_smoke.c
-)
-target_link_libraries(core-machine-vadp-text-status-smoke PRIVATE core-machine)
 add_executable(core-machine-ega-external-port-smoke
     test/app-nxvm/unit/core/devices/core_machine_ega_external_port_smoke.c
 )
@@ -1527,42 +1515,22 @@ add_executable(core-machine-ega-controller-port-smoke
     test/app-nxvm/unit/core/devices/core_machine_ega_controller_port_smoke.c
 )
 target_link_libraries(core-machine-ega-controller-port-smoke PRIVATE core-machine)
-add_executable(core-machine-ega-crtc-boundary-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_ega_crtc_boundary_port_smoke.c
-)
-target_link_libraries(core-machine-ega-crtc-boundary-port-smoke PRIVATE core-machine)
+
 add_executable(core-machine-ega-planar-port-smoke
     test/app-nxvm/unit/core/devices/core_machine_ega_planar_port_smoke.c
 )
 target_link_libraries(core-machine-ega-planar-port-smoke PRIVATE core-machine)
-add_executable(core-machine-ega-mode10-contract-smoke
-    test/app-nxvm/unit/core/devices/core_machine_ega_mode10_contract_smoke.c
-)
-target_link_libraries(core-machine-ega-mode10-contract-smoke PRIVATE core-machine)
-add_executable(core-machine-compaq-ega-s6-smoke
-    test/app-nxvm/unit/core/devices/core_machine_compaq_ega_s6_smoke.c
-)
-target_link_libraries(core-machine-compaq-ega-s6-smoke PRIVATE core-machine)
 add_executable(core-machine-compaq-cecg-s9-smoke
     test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s9_smoke.c
 )
 target_link_libraries(core-machine-compaq-cecg-s9-smoke PRIVATE core-machine)
-add_executable(core-machine-compaq-cecg-s10-smoke
-    test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s10_smoke.c
-)
-target_link_libraries(core-machine-compaq-cecg-s10-smoke PRIVATE core-machine)
+
 add_executable(core-machine-compaq-cecg-s11-smoke
     test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s11_smoke.c
 )
 target_link_libraries(core-machine-compaq-cecg-s11-smoke PRIVATE core-machine)
-add_executable(core-machine-compaq-cecg-s12-smoke
-    test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s12_smoke.c
-)
-target_link_libraries(core-machine-compaq-cecg-s12-smoke PRIVATE core-machine)
-add_executable(core-machine-compaq-cecg-s13-smoke
-    test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s13_smoke.c
-)
-target_link_libraries(core-machine-compaq-cecg-s13-smoke PRIVATE core-machine)
+
+
 add_executable(core-machine-compaq-cecg-s28-smoke
     test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s28_smoke.c)
 target_link_libraries(core-machine-compaq-cecg-s28-smoke PRIVATE core-machine)
@@ -1959,8 +1927,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-mantle-shape-smoke
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
-    core-machine-vadp-text-smoke
-    core-machine-vadp-text-status-smoke
     core-machine-ega-external-port-smoke
     core-machine-display-authority-smoke
     core-machine-dma-rtc-authority-smoke
@@ -1969,15 +1935,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-ega-sequencer-port-smoke
     core-machine-ega-registration-transaction-smoke
     core-machine-ega-controller-port-smoke
-    core-machine-ega-crtc-boundary-port-smoke
     core-machine-ega-planar-port-smoke
-    core-machine-ega-mode10-contract-smoke
-    core-machine-compaq-ega-s6-smoke
     core-machine-compaq-cecg-s9-smoke
-    core-machine-compaq-cecg-s10-smoke
     core-machine-compaq-cecg-s11-smoke
-    core-machine-compaq-cecg-s12-smoke
-    core-machine-compaq-cecg-s13-smoke
     core-machine-compaq-cecg-s28-smoke
     vm-ega-sequencer-system-smoke
     vm-ega-controller-system-smoke
@@ -2132,7 +2092,6 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-80386-decoder-inventory-runner
     core-machine-80386-timing-manifest-runner
     core-machine-debug-smoke
-    core-machine-presentation-smoke
     core-machine-cpu-context-smoke
     vm-fdc-authority-smoke
     core-machine-cpu-fpu-profile-smoke

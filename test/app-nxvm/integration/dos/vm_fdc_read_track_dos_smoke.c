@@ -135,10 +135,10 @@ static lib_status vm_fdc242_install_on_overlay(
     return installed ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
-static lib_i32 vm_fdc242_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_fdc242_has_prompt(const x86_video_snapshot *snapshot)
 {
     lib_size index;
-    if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
+    if (snapshot == LIB_NULL || snapshot->kind != X86_VIDEO_KIND_TEXT) return 0;
     for (index = 0u; index + 3u < 2000u; ++index) {
         if (isalpha(snapshot->characters[index]) && snapshot->characters[index + 1u] == ':' &&
             snapshot->characters[index + 2u] == '\\' && snapshot->characters[index + 3u] == '>') return 1;
@@ -150,7 +150,7 @@ static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
     lib_u32 quantum, lib_i32 require_marker)
 {
     core_machine_run_budget budget = {quantum, 0u}; core_machine_run_result result;
-    core_machine_display_snapshot snapshot; lib_u32 used = 0u;
+    x86_video_snapshot snapshot; lib_u32 used = 0u;
     while (used < limit) {
         lib_i32 advanced = 0;
 
@@ -167,7 +167,7 @@ static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
             continue;
         if (core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) != LIB_STATUS_OK) return 0;
-        if (require_marker ? snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
+        if (require_marker ? snapshot.kind == X86_VIDEO_KIND_TEXT &&
                 snapshot.characters[VM_FDC242_MARKER_CELL] == 'F' &&
                 snapshot.characters[VM_FDC242_MARKER_CELL + 1u] == 'D' &&
                 snapshot.characters[VM_FDC242_MARKER_CELL + 2u] == 'C' :

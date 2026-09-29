@@ -46,7 +46,7 @@ struct vm_profile_machine_plan {
     lib_u8 memory_reconfigurable;
     lib_u8 cmos_seed[VM_MACHINE_CMOS_SEED_BYTES];
     lib_u8 cmos_seed_present;
-    core_machine_vadp_text_glyph_config text_glyphs;
+    x86_video_text_glyph_config text_glyphs;
     const core_machine_firmware_provider *firmware_provider;
     void *firmware_context;
     union {
@@ -96,11 +96,11 @@ static lib_status vm_profile_machine_plan_text_glyphs(vm_profile_machine_plan *p
     if (source.data == LIB_NULL || source.bytes != VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    for (character = 0u; character < CORE_MACHINE_DISPLAY_TEXT_GLYPH_COUNT;
+    for (character = 0u; character < X86_VIDEO_TEXT_GLYPH_COUNT;
          ++character) {
-        lib_memory_copy(&plan->text_glyphs.bytes[character * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS],
+        lib_memory_copy(&plan->text_glyphs.bytes[character * X86_VIDEO_TEXT_GLYPH_ROWS],
             &source.data[character * 8u], 8u);
-        lib_memory_copy(&plan->text_glyphs.bytes[character * CORE_MACHINE_DISPLAY_TEXT_GLYPH_ROWS + 8u],
+        lib_memory_copy(&plan->text_glyphs.bytes[character * X86_VIDEO_TEXT_GLYPH_ROWS + 8u],
             &source.data[VM_MACHINE_TEXT_GLYPH_ROW_PLANE_BYTES + character * 8u], 8u);
     }
     plan->text_glyphs.present = LIB_TRUE;
@@ -436,7 +436,7 @@ lib_status vm_profile_machine_plan_copy_cmos_seed(const vm_profile_machine_plan 
 }
 
 lib_status vm_profile_machine_plan_copy_text_glyphs(const vm_profile_machine_plan *plan,
-    core_machine_vadp_text_glyph_config *out_glyphs)
+    x86_video_text_glyph_config *out_glyphs)
 {
     if (plan == LIB_NULL || out_glyphs == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_glyphs = plan->text_glyphs;

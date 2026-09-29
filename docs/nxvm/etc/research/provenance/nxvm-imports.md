@@ -108,3 +108,14 @@ The owner subsequently approved a local test-only boundary correction for
 SoftPC to import. No imported production source is changed; evidence enumerates
 the eight differing test paths, including deletion of the cross-owner fixture
 and admission of INPUT_RESET in the native retirement regression.
+
+## T539 S15 Video Extraction
+
+Project-owned MIT source at 8831f05c5, app-nxvm/devices/vadp.c/h and the copied
+values in display_interface.h, moves to x86/devices/video. Existing copyright
+notices are retained. Original owner tests move from test/app-nxvm/unit/core/
+devices to test/x86/devices/video; board-only cases remain NXVM-owned. This is
+an owner-approved internal extraction, not imported emulator or vendor code.
+The [S15 evidence](../../evidence/t539-s15-video-extraction.md) identifies the
+transport, typed-memory, construction and verification changes. No original
+commercial ROM, media or generated firmware byte source enters Shared.

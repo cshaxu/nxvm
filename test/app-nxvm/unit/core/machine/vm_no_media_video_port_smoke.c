@@ -13,7 +13,7 @@
 #define VM_NO_MEDIA_TEXT_CELLS (80u * 25u)
 
 static lib_i32 vm_no_media_snapshot_has_text(
-    const core_machine_display_snapshot *snapshot, const char *text)
+    const x86_video_snapshot *snapshot, const char *text)
 {
     lib_size cell;
     lib_size character;
@@ -36,7 +36,7 @@ lib_i32 main(void)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_observation observation;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     lib_u8 opcode[2];
     lib_u8 functions[256] = {0};
     lib_u16 cursor;

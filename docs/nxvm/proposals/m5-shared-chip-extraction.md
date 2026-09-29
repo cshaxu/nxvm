@@ -104,6 +104,13 @@ No universal device framework, plugin registry or forwarding-only wrapper.
 
 ## Verification And Exit
 
+S15 consumes the video and related display ledger rows under its
+[boundary](../etc/architecture/t539-s15-video-extraction.md). The
+[evidence](../etc/evidence/t539-s15-video-extraction.md) records the independent
+chip, retained board/provider roles, removed dead helpers, complete original-case
+mapping and receiving verification. CPU/FPU and remaining ledger dispositions
+are still required; this batch does not narrow the task's completion predicate.
+
 The owner's S12 amendment additionally requires self-built BIOS source and
 construction under `src/app-nxvm/firmware`, and build-time ROM embedding for
 all four machine EXEs. Vendor originals remain external BYOB inputs; generated

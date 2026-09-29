@@ -37,7 +37,7 @@ lib_i32 main(void)
     };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     vm_machine *session = LIB_NULL;
     lib_u8 mode = 0u;
     lib_u32 instruction;
@@ -58,7 +58,7 @@ lib_i32 main(void)
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) != LIB_STATUS_OK) goto done;
-        if (snapshot.kind == CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 &&
+        if (snapshot.kind == X86_VIDEO_KIND_CGA_640X200X2 &&
             snapshot.pixels[0] == 1u && snapshot.pixels[1] == 0u &&
             snapshot.pixels[2] == 1u && snapshot.pixels[640u] == 0u &&
             snapshot.pixels[641u] == 1u && snapshot.palette_rgb[0] == 0u &&
@@ -67,7 +67,7 @@ lib_i32 main(void)
                 sizeof(mode)) == LIB_STATUS_OK && mode == 0x06u) {
             saw_cga = 1;
         }
-        if (saw_cga && snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
+        if (saw_cga && snapshot.kind == X86_VIDEO_KIND_TEXT &&
             core_machine_memory_read(session->core_machine, 0x0449u, &mode,
                 sizeof(mode)) == LIB_STATUS_OK && mode == 0x03u) {
             saw_text = 1;

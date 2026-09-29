@@ -77,6 +77,8 @@ void core_machine_port_write(t_port *port, lib_u16 port_id, lib_u32 value);
 void core_machine_port_initialize(t_port *port);
 void core_machine_port_reset(t_port *port);
 void core_machine_port_finalize(t_port *port);
+/* Exclusive construction/teardown; preserves routes belonging to other owners. */
+void core_machine_port_unregister_owner(t_port *port, const void *owner);
 core_machine_port_provider_entry *core_machine_port_registration_begin(t_port *port);
 lib_status core_machine_port_registration_status(const t_port *port);
 void core_machine_port_rollback_registration(t_port *port,

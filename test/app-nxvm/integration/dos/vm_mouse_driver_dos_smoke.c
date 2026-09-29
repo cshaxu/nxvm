@@ -247,11 +247,11 @@ static lib_status vm_mouse_dos_install_on_overlay(
     return installed ? LIB_STATUS_OK : LIB_STATUS_INTERNAL_ERROR;
 }
 
-static lib_i32 vm_mouse_dos_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_mouse_dos_has_prompt(const x86_video_snapshot *snapshot)
 {
     lib_size cell;
 
-    if (snapshot == LIB_NULL || snapshot->kind != CORE_MACHINE_DISPLAY_KIND_TEXT) return 0;
+    if (snapshot == LIB_NULL || snapshot->kind != X86_VIDEO_KIND_TEXT) return 0;
     for (cell = 0u; cell + 3u < 80u * 25u; ++cell) {
         if (isalpha(snapshot->characters[cell]) &&
             snapshot->characters[cell + 1u] == ':' &&
@@ -266,7 +266,7 @@ static lib_i32 vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
 {
     core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     lib_u32 executed = 0u;
 
     while (executed < limit) {
@@ -281,7 +281,7 @@ static lib_i32 vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
                 !advanced) return 0;
         }
         if (wanted == 0u ? vm_mouse_dos_has_prompt(&snapshot) :
-            snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
+            snapshot.kind == X86_VIDEO_KIND_TEXT &&
             snapshot.characters[VM_MOUSE_DOS_MARKER_CELL] == wanted) return 1;
         executed += budget.instructions;
     }
@@ -320,7 +320,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     integration_ini_session ini_session;
     vm_machine *session;
     core_machine_observation observation;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     static const lib_u8 expected[] = {
         0xfau, 0xaau, 0x00u, 0xfau, 0x00u, 0xfau,
         0xfau, 0xfau, 0xfau, 0xfau, 0xfau, 0x20u, 0x03u, 200u,
@@ -361,16 +361,16 @@ lib_i32 main(lib_i32 argc, char **argv)
     }
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
-            LIB_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
+            LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT ||
         snapshot.characters[VM_MOUSE_DOS_MARKER_CELL] == 'O') goto done;
     stage = 6;
     passed = vm_mouse_dos_run_until(session, VM_MOUSE_DOS_RUN_BUDGET, 'O');
     if (!passed && session != LIB_NULL) {
-        core_machine_display_snapshot snapshot;
+        x86_video_snapshot snapshot;
 
         if (core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) == LIB_STATUS_OK &&
-            snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT) {
+            snapshot.kind == X86_VIDEO_KIND_TEXT) {
             fprintf(stderr, "M5:T241:MOUSE-DRIVER:MARKER=%02X\n",
                 snapshot.characters[VM_MOUSE_DOS_MARKER_CELL]);
         }

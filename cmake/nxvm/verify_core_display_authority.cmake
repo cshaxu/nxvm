@@ -4,7 +4,8 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c" core_plan_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_display.c" core_display_source)
-set(core_source "${core_plan_source}${core_display_source}")
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" board_display_source)
+set(core_source "${core_plan_source}${core_display_source}${board_display_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
@@ -14,9 +15,9 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/display.c" display_source)
 
 foreach(required IN ITEMS "core_machine_display_config"
     "core_machine_configure_display" "core_machine_display_ports_are_vadp"
-    "core_machine_vadp_configure_text_timing"
-    "core_machine_vadp_configure_ega_sequencer"
-    "core_machine_vadp_configure_ega_controllers")
+    "x86_video_configure_text_timing"
+    "x86_video_configure_ega_sequencer"
+    "x86_video_configure_ega_controllers")
     string(FIND "${core_source}" "${required}" core_position)
     string(FIND "${core_header}" "${required}" header_position)
     if(core_position EQUAL -1 AND header_position EQUAL -1)
@@ -35,7 +36,7 @@ if(display_present_position EQUAL -1 OR configure_display_position EQUAL -1)
 endif()
 
 foreach(forbidden IN ITEMS "core_machine_profile_binding_configure_"
-    "core_machine_vadp_configure_" "core_machine_install_port_provider")
+    "core_machine_vadp_configure_" "x86_video_configure_" "core_machine_install_port_provider")
     foreach(vm_source IN ITEMS
         "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c"
         "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/display.c")

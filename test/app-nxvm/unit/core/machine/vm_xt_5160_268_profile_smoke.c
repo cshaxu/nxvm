@@ -122,7 +122,7 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
     core_machine *machine = LIB_NULL;
     core_machine_dma_request_binding binding = {0};
     core_machine_media_registry *media = LIB_NULL;
-    core_machine_display_snapshot snapshot = {0};
+    x86_video_snapshot snapshot = {0};
     const lib_u8 cells[] = { 'X', 0x1fu };
     lib_u8 open_bus_byte = 0u;
     lib_i32 failed = 0;
@@ -181,7 +181,7 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
         cells, sizeof(cells)) != LIB_STATUS_OK;
     failed |= !failed && core_machine_capture_display_snapshot(machine, &snapshot) !=
         LIB_STATUS_OK;
-    failed |= !failed && (snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
+    failed |= !failed && (snapshot.kind != X86_VIDEO_KIND_TEXT ||
         snapshot.characters[0] != 'X' || snapshot.attributes[0] != 0x1fu);
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);

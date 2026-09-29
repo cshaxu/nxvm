@@ -14,7 +14,7 @@ static lib_i32 vm_model_339_cga_topology(void)
     const vm_machine_config config = {
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339
     };
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     lib_u8 value = 0x5au;
     vm_machine *session = LIB_NULL;
     lib_i32 failed = vm_test_ibm_5170_session_create(&config, &session) != LIB_STATUS_OK ||
@@ -36,10 +36,11 @@ static lib_i32 vm_model_339_cga_topology(void)
             CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 7) |
         (core_machine_port_has_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_DATA) << 8) |
-        (session->core_machine->shared_vadp.data.ega_sequencer_configured << 9) |
-        ((!core_machine_vadp_capture_text_snapshot(&session->core_machine->shared_vadp,
-            &session->core_machine->executor_memory, &snapshot) ||
-            snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT) << 10) |
+        (x86_video_ega_aperture_contains(session->core_machine->shared_vadp.chip,
+            0xa0000u, 1u) << 9) |
+        ((core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
+            LIB_STATUS_OK ||
+            snapshot.kind != X86_VIDEO_KIND_TEXT) << 10) |
         (core_machine_memory_write(session->core_machine, 0x000a0000u,
             &value, sizeof(value)) != LIB_STATUS_OK) << 11 |
         (core_machine_memory_read(session->core_machine, 0x000a0000u,
@@ -62,8 +63,13 @@ static lib_i32 vm_default_ega_topology(void)
             CORE_MACHINE_VADP_PORT_COLOR) << 3) |
         (!core_machine_port_has_read(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 4) |
-        (!session->core_machine->shared_vadp.data.ega_sequencer_configured << 5) |
-        (!session->core_machine->shared_vadp.data.ega_controller_configured << 6);
+        (!x86_video_ega_aperture_contains(session->core_machine->shared_vadp.chip,
+            0xa0000u, 1u) << 5);
+    if (!failed) {
+        core_machine_port_write(&session->core_machine->executor_port, 0x3ceu, 6u);
+        failed |= (core_machine_port_read(&session->core_machine->executor_port,
+            0x3cfu) != 0x05u) << 6;
+    }
     vm_machine_destroy(session);
     return failed;
 }

@@ -38,6 +38,10 @@ T539 S9: [XT PPI/keyboard boundary](architecture/t539-s9-xt-boundary.md),
 and [extraction evidence](evidence/t539-s9-xt-extraction.md),
 chip/board ownership and refused-completion characterization before relocation.
 
+T539 S15: [video boundary](architecture/t539-s15-video-extraction.md) and
+[delivery evidence](evidence/t539-s15-video-extraction.md), sole chip ownership,
+original-case migration, construction rollback and eight receiving artifacts.
+
 | Current category | Owner | Purpose |
 | --- | --- | --- |
 | `architecture/` | Architecture owner | Supporting detailed rationale; each record explicitly states whether it is current or historical. |

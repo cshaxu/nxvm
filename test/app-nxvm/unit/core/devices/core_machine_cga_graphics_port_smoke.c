@@ -4,6 +4,7 @@
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
+#include "app-nxvm/devices/machine_interface.h"
 
 static lib_i32 core_machine_cga_graphics_write_byte(t_ram *memory,
     lib_u32 offset, lib_u8 value)
@@ -18,17 +19,19 @@ lib_i32 main(void)
     t_port port;
     t_ram memory;
     t_vadp vadp;
-    core_machine_display_snapshot snapshot;
-    core_machine_display_snapshot_observation observation;
+    x86_video_snapshot snapshot;
+    x86_video_snapshot_observation observation;
     lib_u64 generation;
     lib_i32 failed = 0;
+    const core_machine_display_config config = {
+        .text_timing = {48u, 8u, 8u}, .cga_vram_present = LIB_TRUE
+    };
 
     lib_memory_set(&memory, 0, sizeof(memory));
     core_machine_port_initialize(&port);
     failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
-    core_machine_vadp_initialize(&vadp, &port);
-    failed |= core_machine_vadp_configure_cga_memory(&vadp, &memory) !=
-        LIB_STATUS_OK;
+    failed |= core_machine_vadp_initialize(&vadp, &port) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_configure(&vadp, &memory, &config) != LIB_STATUS_OK;
     failed |= core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX) ||
         core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_MODE) ||
         core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_COLOR) ||
@@ -61,7 +64,7 @@ lib_i32 main(void)
     failed |= !core_machine_cga_graphics_write_byte(&memory, 0x2000u, 0xe4u);
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
-    failed |= snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4 ||
+    failed |= snapshot.kind != X86_VIDEO_KIND_CGA_320X200X4 ||
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u;
     failed |= snapshot.pixels[0] != 0u || snapshot.pixels[1] != 1u ||
         snapshot.pixels[2] != 2u || snapshot.pixels[3] != 3u;
@@ -71,12 +74,12 @@ lib_i32 main(void)
         snapshot.palette_rgb[1] != 0x00aa00u ||
         snapshot.palette_rgb[2] != 0xaa0000u ||
         snapshot.palette_rgb[3] != 0xaa5500u || !snapshot.buffer_changed;
-    core_machine_vadp_observe_snapshot(&vadp, LIB_FALSE, 0u, &observation);
+    x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     generation = observation.generation;
-    core_machine_vadp_observe_snapshot(&vadp, LIB_TRUE, generation, &observation);
+    x86_video_observe_snapshot(vadp.chip, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || observation.capture_required;
     failed |= !core_machine_cga_graphics_write_byte(&memory, 0u, 0xe4u);
-    core_machine_vadp_observe_snapshot(&vadp, LIB_TRUE, generation, &observation);
+    x86_video_observe_snapshot(vadp.chip, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || !observation.capture_required ||
         observation.generation == generation;
 
@@ -94,7 +97,7 @@ lib_i32 main(void)
 
     core_machine_port_write(&port, 0x03d8u, 0x1au);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
-        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 ||
+        snapshot.kind != X86_VIDEO_KIND_CGA_640X200X2 ||
         snapshot.palette_rgb[0] != 0x000000u ||
         snapshot.palette_rgb[1] != 0x000000u;
     core_machine_port_write(&port, 0x03d9u, 0x1fu);
@@ -103,14 +106,14 @@ lib_i32 main(void)
         snapshot.palette_rgb[1] != 0xffffffu || !snapshot.buffer_changed;
     core_machine_port_write(&port, 0x03dcu, 0u);
     failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) == 0u;
-    core_machine_vadp_reset(&vadp);
+    x86_video_reset(vadp.chip);
     failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
     core_machine_port_write(&port, 0x03d8u, 0x0du);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
-    failed |= snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;
-    core_machine_vadp_observe_snapshot(&vadp, LIB_FALSE, 0u, &observation);
+    failed |= snapshot.kind != X86_VIDEO_KIND_TEXT;
+    x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     generation = observation.generation;
-    core_machine_vadp_observe_snapshot(&vadp, LIB_TRUE, generation, &observation);
+    x86_video_observe_snapshot(vadp.chip, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || observation.capture_required;
     core_machine_port_write(&port, 0x03d8u, 0x05u);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||

@@ -49,7 +49,7 @@ void core_machine_display_provider_slot_destroy(
 
 lib_i32 core_machine_display_capture_snapshot_from(
     const core_machine_display_provider_slot *slot,
-    core_machine_display_snapshot *out_snapshot)
+    x86_video_snapshot *out_snapshot)
 {
     if (slot == LIB_NULL || slot->snapshot_provider == LIB_NULL || out_snapshot == LIB_NULL) {
         return 0;

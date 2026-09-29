@@ -130,9 +130,9 @@ typedef struct vm_profile_default_pc_at_descriptor {
     lib_u8 kbc_input_port_configured;
     lib_u8 kbc_input_port;
     lib_u32 rtc_ticks_per_second;
-    core_machine_vadp_text_timing cga_text_timing;
-    core_machine_vadp_ega_sequencer_config ega_sequencer;
-    core_machine_vadp_ega_controller_config ega_controllers;
+    x86_video_text_timing cga_text_timing;
+    x86_video_ega_sequencer_config ega_sequencer;
+    x86_video_ega_controller_config ega_controllers;
     lib_size default_memory_bytes;
     lib_u8 unpopulated_extended_memory;
     /* 8237A boundary-transfer workspace, expressed as a real-mode segment. */

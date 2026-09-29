@@ -308,3 +308,16 @@ P1 9020d8bba and P2 86e0f82cb are pushed. Coordinator actual-commit review
 accepts the complete HDC row, including the diagnostic pause/join correction,
 original-case ownership, unchanged silicon limits and target-separated delivery.
 The S14 packet is removed; T539 remains open for the remaining finite ledger.
+
+## S15: Independent Video Family
+
+The sole opaque register/VRAM/raster/frame owner moves to x86/devices/video.
+NXVM retains port/physical-memory attachment, copied presentation adaptation
+and failure-atomic construction. Dead presentation helpers and their isolated
+test are removed after caller proof. [Evidence](../etc/evidence/t539-s15-video-extraction.md)
+maps original cases, actual semantic-boundary review, 367/367 units and 20/20
+default integrations per width, six vendor boots once, tools-off 43/43, six
+manifests and eight artifact hashes. Source/test/build delta is +5362/-3957,
+net +1405; independent tests account for most growth. Shared P1 522d0b27f is
+pushed; NXVM P2 delivers receiver source, artifacts and evidence. Coordinator
+acceptance is pending; CPU/FPU and remaining ledger rows stay in T539.

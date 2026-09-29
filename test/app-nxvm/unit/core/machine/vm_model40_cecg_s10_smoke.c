@@ -12,7 +12,7 @@
 lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     static const lib_u8 text[] = { 'O', 0x07u, 'K', 0x07u };
     lib_i32 failed = 0;
 
@@ -22,7 +22,7 @@ lib_i32 main(void)
         failed |= core_machine_memory_write(session->core_machine,
             CORE_MACHINE_VADP_TEXT_BASE, text, sizeof(text)) != LIB_STATUS_OK ||
             core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
-                LIB_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
+                LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT ||
             snapshot.characters[0] != 'O' || snapshot.characters[1] != 'K';
     }
     if (!failed) {

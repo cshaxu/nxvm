@@ -1,38 +1,18 @@
-/* Copyright 2012-2014 Neko. */
-
+/* NXVM video board adapter: PC routes and borrowed backing-memory access. */
 #ifndef CORE_MACHINE_VADP_H
 #define CORE_MACHINE_VADP_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include "lib/types/types_interface.h"
-
-
-
-#include "app-nxvm/devices/display_interface.h"
+#include "x86/devices/video/video_interface.h"
 
 #define CORE_MACHINE_DEVICE_VADP "CGA Adapter"
 #define CORE_MACHINE_VADP_VIDEO_BASE 0x000b8000u
 #define CORE_MACHINE_VADP_VIDEO_BYTES 0x00004000u
 #define CORE_MACHINE_VADP_TEXT_BASE CORE_MACHINE_VADP_VIDEO_BASE
 #define CORE_MACHINE_VADP_TEXT_BYTES CORE_MACHINE_VADP_VIDEO_BYTES
-#define CORE_MACHINE_VADP_CRTC_EGA_LAST 0x18u
-#define CORE_MACHINE_VADP_CRTC_REGISTER_COUNT \
-    (CORE_MACHINE_VADP_CRTC_EGA_LAST + 1u)
 #define CORE_MACHINE_VADP_EGA_APERTURE_BASE 0x000a0000u
 #define CORE_MACHINE_VADP_EGA_APERTURE_BYTES 0x00010000u
 /* Register the full EGA CPU-decode span.  Graphics Controller register 6
  * selects a smaller active window inside this span. */
 #define CORE_MACHINE_VADP_EGA_CPU_DECODE_BYTES 0x00020000u
-#define CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT 5u
-#define CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT \
-    CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT
-#define CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT \
-    CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT
-#define CORE_MACHINE_VADP_EGA_PLANES 4u
-#define CORE_MACHINE_VADP_EGA_PLANE_BYTES CORE_MACHINE_VADP_EGA_APERTURE_BYTES
-#define CORE_MACHINE_VADP_EGA_ODD_EVEN_PAGE_BYTES 0x00004000u
 #define CORE_MACHINE_VADP_PORT_ATTRIBUTE 0x03c0u
 #define CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ 0x03c1u
 #define CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX 0x03c4u
@@ -67,131 +47,21 @@ extern "C" {
 #define CORE_MACHINE_VADP_PORT_COMPAQ_DISPLAY_TYPE 0x0bc6u
 #define CORE_MACHINE_VADP_PORT_COMPAQ_INITIAL_MODE 0x0fc6u
 
+
 typedef struct t_port t_port;
 typedef struct t_ram t_ram;
-
-typedef void *(*core_machine_vadp_allocate_zero)(void *context,
-    lib_size count, lib_size byte_count);
-
-typedef struct t_vadp_data {
-    core_machine_vadp_allocate_zero allocate_zero;
-    void *allocate_context;
-    lib_u8 crtc_index;
-    lib_u8 crtc[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT];
-    lib_u8 mode_control;
-    lib_u8 color_select;
-    core_machine_vadp_ega_personality ega_personality;
-    lib_u8 ega_external_configured;
-    lib_u8 ega_miscellaneous_output;
-    lib_u8 ega_feature_control;
-    core_machine_vadp_ega_sequencer_config ega_sequencer;
-    lib_u8 sequencer_index;
-    lib_u8 sequencer[CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT];
-    lib_u8 ega_sequencer_configured;
-    core_machine_vadp_ega_controller_config ega_controller;
-    lib_u8 graphics_index;
-    lib_u8 graphics[CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT];
-    lib_u8 attribute_index;
-    lib_u8 attribute[CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT];
-    lib_u8 attribute_data_phase;
-    lib_u8 attribute_display_enabled;
-    lib_u8 ega_status_diagnostic_high;
-    lib_u8 ega_controller_configured;
-    lib_u8 vga_configured;
-    lib_u8 vga_dac_mask;
-    lib_u8 vga_dac_read_index;
-    lib_u8 vga_dac_write_index;
-    lib_u8 vga_dac_read_component;
-    lib_u8 vga_dac_write_component;
-    lib_u8 vga_dac[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES][3u];
-    lib_u8 ega_planar_enabled;
-    lib_uptr ega_planar_vram;
-    lib_u8 ega_latches[CORE_MACHINE_VADP_EGA_PLANES];
-    lib_u64 captured_ega_dirty_generation;
-    core_machine_vadp_text_timing text_timing;
-    core_machine_vadp_text_glyph_config text_glyphs;
-    lib_u32 raster_phase;
-    lib_u8 crtc_initialized;
-    lib_u8 cga_logical_raster_started;
-    lib_u16 columns;
-    lib_u16 rows;
-    lib_i32 color_enabled;
-    core_machine_vadp_cecg_config cecg;
-    lib_u8 compaq_control_mode;
-    lib_u8 compaq_feature_control;
-    lib_u8 compaq_cpu_video_memory_disabled;
-    lib_u8 compaq_color_io_base;
-    lib_u8 compaq_clock_switch_select;
-    lib_u8 compaq_odd_even_high_page;
-    lib_u8 compaq_lightpen_latched;
-    lib_u8 cga_lightpen_latched;
-    lib_u64 dirty_generation;
-    lib_i32 captured;
-    core_machine_display_kind captured_kind;
-    lib_u8 captured_mode_control;
-    lib_u8 captured_color_select;
-    lib_u8 text_cells[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
-        CORE_MACHINE_DISPLAY_MAX_ROWS * 2u];
-    lib_u8 graphics_bytes[CORE_MACHINE_VADP_VIDEO_BYTES];
-    lib_u8 cga_vram[CORE_MACHINE_VADP_VIDEO_BYTES];
-    lib_u8 cga_memory_configured;
-    lib_u8 characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
-        CORE_MACHINE_DISPLAY_MAX_ROWS];
-    lib_u8 attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
-        CORE_MACHINE_DISPLAY_MAX_ROWS];
-    lib_u8 captured_cursor_top;
-    lib_u8 captured_cursor_bottom;
-    lib_u16 captured_cursor_address;
-    lib_u8 captured_cursor_x;
-    lib_u8 captured_cursor_y;
-    lib_u16 captured_columns;
-    lib_u16 captured_rows;
-    lib_u8 captured_text_cell_height;
-    lib_i32 captured_cursor_visible;
-} t_vadp_data;
+typedef struct core_machine_display_config core_machine_display_config;
 
 typedef struct t_vadp {
-    t_vadp_data data;
+    x86_video *chip;
+    t_port *port;
+    t_ram *memory;
 } t_vadp;
 
-void core_machine_vadp_initialize(t_vadp *adapter, t_port *port);
-void core_machine_vadp_set_allocate_zero(t_vadp *adapter,
-    core_machine_vadp_allocate_zero callback, void *context);
-void core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port);
-lib_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
-    t_port *port, core_machine_vadp_ega_personality personality);
-lib_status core_machine_vadp_configure_vga(t_vadp *adapter, t_port *port);
-lib_i32 core_machine_vadp_cecg_config_is_valid(
-    const core_machine_vadp_cecg_config *config);
-lib_status core_machine_vadp_configure_cecg(t_vadp *adapter,
-    const core_machine_vadp_cecg_config *config);
-lib_status core_machine_vadp_configure_cga_memory(t_vadp *adapter, t_ram *memory);
-void core_machine_vadp_reset(t_vadp *adapter);
-void core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
-    lib_u64 elapsed_ticks);
+lib_status core_machine_vadp_initialize(t_vadp *adapter, t_port *port);
+lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
+    const core_machine_display_config *config);
 void core_machine_vadp_finalize(t_vadp *adapter);
-
-lib_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
-    const core_machine_vadp_text_timing *timing);
-lib_status core_machine_vadp_configure_text_glyphs(t_vadp *adapter,
-    const core_machine_vadp_text_glyph_config *config);
-lib_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
-    t_ram *memory, const core_machine_vadp_ega_sequencer_config *config);
-lib_status core_machine_vadp_configure_ega_controllers(t_vadp *adapter,
-    const core_machine_vadp_ega_controller_config *config);
-lib_i32 core_machine_vadp_ega_aperture_contains(const t_vadp *adapter,
-    lib_u32 physical, lib_size bytes);
-lib_i32 core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
-    core_machine_display_snapshot *out_snapshot);
-void core_machine_vadp_observe_snapshot(const t_vadp *adapter,
-    lib_u8 acknowledged_generation_valid,
-    lib_u64 acknowledged_generation,
-    core_machine_display_snapshot_observation *out_observation);
 lib_i32 core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
-    core_machine_display_snapshot *out_snapshot);
-
-#ifdef __cplusplus
-}/*_EOCD_*/
-#endif
-
+    x86_video_snapshot *out_snapshot);
 #endif

@@ -3,6 +3,7 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/vadp.h"
 
 static lib_i32 t386_s9_invalid_cecg_is_failure_atomic(void)
@@ -13,11 +14,11 @@ static lib_i32 t386_s9_invalid_cecg_is_failure_atomic(void)
     lib_status status;
 
     machine_config.memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES;
-    display_config.text_timing = (core_machine_vadp_text_timing) {48u, 8u, 8u};
+    display_config.text_timing = (x86_video_text_timing) {48u, 8u, 8u};
     display_config.ega_present = LIB_TRUE;
     display_config.ega_personality =
-        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
-    display_config.ega_sequencer = (core_machine_vadp_ega_sequencer_config) {
+        X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
+    display_config.ega_sequencer = (x86_video_ega_sequencer_config) {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
         0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE };
     display_config.ports = (core_machine_display_port_topology) {
@@ -29,7 +30,7 @@ static lib_i32 t386_s9_invalid_cecg_is_failure_atomic(void)
     if (status == LIB_STATUS_OK) status = core_machine_configure_display(machine,
         &display_config);
     if (status == LIB_STATUS_INVALID_ARGUMENT) {
-        display_config.ega_personality = CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC;
+        display_config.ega_personality = X86_VIDEO_EGA_PERSONALITY_GENERIC;
         status = core_machine_configure_display(machine, &display_config);
     }
     core_machine_destroy(machine);
@@ -37,74 +38,63 @@ static lib_i32 t386_s9_invalid_cecg_is_failure_atomic(void)
 }
 lib_i32 main(void)
 {
-    const core_machine_vadp_cecg_config config = {
-        0x50u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
-        0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE
+    static const struct {
+        lib_bool generic;
+        lib_u16 address;
+        lib_bool write;
+        lib_bool present;
+    } expected[] = {
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT, LIB_FALSE, LIB_TRUE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_COMPAQ_DISPLAY_TYPE, LIB_FALSE, LIB_TRUE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_COMPAQ_INITIAL_MODE, LIB_FALSE, LIB_TRUE },
+        { LIB_TRUE, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT, LIB_FALSE, LIB_FALSE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE, LIB_FALSE, LIB_TRUE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE, LIB_TRUE, LIB_TRUE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET, LIB_TRUE, LIB_TRUE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET, LIB_TRUE, LIB_TRUE },
+        { LIB_TRUE, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE, LIB_FALSE, LIB_FALSE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL, LIB_TRUE, LIB_TRUE },
+        { LIB_TRUE, CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR, LIB_TRUE, LIB_TRUE },
+        { LIB_TRUE, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT, LIB_FALSE, LIB_FALSE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, LIB_TRUE, LIB_TRUE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_MONO_STATUS, LIB_FALSE, LIB_TRUE },
+        { LIB_TRUE, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, LIB_TRUE, LIB_TRUE },
+        { LIB_TRUE, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT, LIB_FALSE, LIB_FALSE },
+        { LIB_FALSE, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, LIB_FALSE, LIB_TRUE },
+        { LIB_TRUE, CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0, LIB_FALSE, LIB_TRUE },
+        { LIB_TRUE, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT, LIB_FALSE, LIB_FALSE },
     };
-    t_port port;
-    t_port generic_port;
-    t_vadp vadp;
-    t_vadp generic_vadp;
+    core_machine_display_config config = {
+        .text_timing = {48u, 8u, 8u},
+        .ega_present = LIB_TRUE,
+        .ega_sequencer = {0xa0000u, 0x10000u, 3u, 0u, 15u, 2u, LIB_TRUE},
+        .cecg = {0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+            0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE}
+    };
     lib_i32 failed = !t386_s9_invalid_cecg_is_failure_atomic();
 
-    core_machine_port_initialize(&port);
-    core_machine_port_initialize(&generic_port);
-    core_machine_vadp_initialize(&vadp, &port);
-    core_machine_vadp_initialize(&generic_vadp, &generic_port);
-    core_machine_vadp_configure_ega_ports(&vadp, &port);
-    core_machine_vadp_configure_ega_ports(&generic_vadp, &generic_port);
-    failed |= core_machine_vadp_configure_ega_personality(&generic_vadp,
-        &generic_port, CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != LIB_STATUS_OK;
-    failed |= core_machine_vadp_configure_ega_personality(&vadp, &port,
-        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) != LIB_STATUS_OK ||
-        core_machine_vadp_configure_cecg(&vadp, &config) != LIB_STATUS_OK;
-    failed |= !core_machine_port_has_read(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) ||
-        !core_machine_port_has_write(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) ||
-        !core_machine_port_has_write(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET) ||
-        !core_machine_port_has_write(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET) ||
-        core_machine_port_has_read(&generic_port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE);
-    failed |= core_machine_port_read(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0x50u ||
-        core_machine_port_read(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT) != 0x00u ||
-        core_machine_port_read(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_DISPLAY_TYPE) != 0x30u ||
-        core_machine_port_read(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_INITIAL_MODE) != 0x01u;
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE,
-        0x7fu);
-    failed |= core_machine_port_read(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0x7fu;
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE,
-        0xa5u);
-    failed |= core_machine_port_read(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0xa5u;
-    core_machine_port_write(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET, 0u);
-    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x06u) !=
-        0x04u;
-    core_machine_port_write(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET, 0u);
-    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x06u) !=
-        0x06u;
-    core_machine_vadp_reset(&vadp);
-    failed |= core_machine_port_read(&port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0x50u ||
-        (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x06u) != 0x04u;
+    for (lib_u8 generic = 0u; generic < 2u; ++generic) {
+        t_port port;
+        t_ram memory;
+        t_vadp adapter;
 
-    core_machine_vadp_finalize(&generic_vadp);
-    core_machine_vadp_finalize(&vadp);
-    core_machine_port_finalize(&generic_port);
-    core_machine_port_finalize(&port);
-    if (!failed) {
-        printf("M5:T386:S9:CECG-CONTRACT:OK\n");
-        return 0;
+        core_machine_port_initialize(&port);
+        if (core_machine_memory_initialize_for(&memory, 0x100000u, LIB_NULL) !=
+                LIB_STATUS_OK) return 1;
+        if (core_machine_vadp_initialize(&adapter, &port) != LIB_STATUS_OK) return 1;
+        config.ega_personality = generic ? X86_VIDEO_EGA_PERSONALITY_GENERIC :
+            X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
+        failed |= core_machine_vadp_configure(&adapter, &memory, &config) != LIB_STATUS_OK;
+        for (lib_size index = 0u; index < sizeof(expected) / sizeof(expected[0]); ++index) {
+            if (expected[index].generic != generic) continue;
+            failed |= (expected[index].write ?
+                core_machine_port_has_write(&port, expected[index].address) :
+                core_machine_port_has_read(&port, expected[index].address)) !=
+                    expected[index].present;
+        }
+        core_machine_vadp_finalize(&adapter);
+        core_machine_memory_finalize(&memory);
+        core_machine_port_finalize(&port);
     }
-    fprintf(stderr, "M5:T386:S9:CECG-CONTRACT:FAIL\n");
-    return 1;
+    return failed ? 1 : 0;
 }

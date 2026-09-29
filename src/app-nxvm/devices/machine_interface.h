@@ -305,15 +305,16 @@ typedef struct core_machine_display_port_topology {
 /* This remains a copied board declaration. Its output provider is registered
  * separately on the Core-owned plan. */
 typedef struct core_machine_display_config {
-    core_machine_vadp_text_timing text_timing;
-    core_machine_vadp_text_glyph_config text_glyphs;
+    x86_video_text_timing text_timing;
+    x86_video_text_glyph_config text_glyphs;
     lib_u8 cga_vram_present;
     lib_u8 ega_present;
-    core_machine_vadp_ega_personality ega_personality;
-    core_machine_vadp_cecg_config cecg;
-    core_machine_vadp_ega_sequencer_config ega_sequencer;
-    core_machine_vadp_ega_controller_config ega_controllers;
+    x86_video_ega_personality ega_personality;
+    x86_video_cecg_config cecg;
+    x86_video_ega_sequencer_config ega_sequencer;
+    x86_video_ega_controller_config ega_controllers;
     core_machine_display_port_topology ports;
+    lib_bool vga_present;
 } core_machine_display_config;
 
 #define CORE_MACHINE_RTC_DEFAULT_COUNT 6u
@@ -649,11 +650,11 @@ lib_status core_machine_mouse_receive_relative(core_machine *machine,
     lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons);
 
 lib_status core_machine_capture_display_snapshot(const core_machine *machine,
-    core_machine_display_snapshot *out_snapshot);
+    x86_video_snapshot *out_snapshot);
 lib_status core_machine_observe_display_snapshot(const core_machine *machine,
     lib_u8 acknowledged_generation_valid,
     lib_u64 acknowledged_generation,
-    core_machine_display_snapshot_observation *out_observation);
+    x86_video_snapshot_observation *out_observation);
 
 lib_status core_machine_configure_display(core_machine *machine,
     const core_machine_display_config *config);

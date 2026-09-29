@@ -3,22 +3,7 @@
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
-
-static lib_i32 allocation_failure;
-static lib_size allocation_attempts;
-
-static void *test_ega_registration_allocate_zero(void *context, lib_size count,
-    lib_size size)
-{
-    void *memory;
-
-    (void)context;
-    allocation_attempts++;
-    if (allocation_failure) return LIB_NULL;
-    memory = lib_allocate(count * size);
-    if (memory != LIB_NULL) lib_memory_set(memory, 0, count * size);
-    return memory;
-}
+#include "app-nxvm/devices/machine_interface.h"
 
 static void ignored_write(void *owner, lib_u32 physical,
     lib_uptr bytes)
@@ -26,6 +11,13 @@ static void ignored_write(void *owner, lib_u32 physical,
     (void)owner;
     (void)physical;
     (void)bytes;
+}
+
+static void sentinel_read(t_port *port, lib_u16 address, void *owner)
+{
+    (void)address;
+    (void)owner;
+    port->data.ioByte = 0x5au;
 }
 
 static lib_status ignored_read(void *owner, lib_u32 physical,
@@ -89,23 +81,28 @@ static lib_i32 initialize(t_vadp *adapter, t_ram *memory, t_port *port)
     core_machine_port_initialize(port);
     if (core_machine_memory_initialize_for(memory, 16u * 1024u * 1024u,
             LIB_NULL) != LIB_STATUS_OK) return 0;
-    core_machine_vadp_initialize(adapter, port);
-    core_machine_vadp_set_allocate_zero(adapter,
-        test_ega_registration_allocate_zero, LIB_NULL);
+    if (core_machine_vadp_initialize(adapter, port) != LIB_STATUS_OK) {
+        core_machine_memory_finalize(memory);
+        core_machine_port_finalize(port);
+        return 0;
+    }
     return 1;
 }
 
 static void finalize(t_vadp *adapter, t_ram *memory)
 {
+    t_port *port = adapter->port;
+
     core_machine_vadp_finalize(adapter);
     core_machine_memory_finalize(memory);
+    core_machine_port_finalize(port);
 }
 
 static lib_i32 is_unconfigured(const t_vadp *adapter, const t_ram *memory,
     lib_uptr observers, lib_uptr providers)
 {
-    return !adapter->data.ega_sequencer_configured &&
-        !adapter->data.ega_planar_enabled && adapter->data.ega_planar_vram == 0u &&
+    return adapter->memory == LIB_NULL &&
+        !x86_video_ega_aperture_contains(adapter->chip, 0xa0000u, 1u) &&
         memory->connect.write_observer_count == observers &&
         memory->connect.device_provider_count == providers;
 }
@@ -139,28 +136,19 @@ static lib_i32 register_observer_fillers(t_ram *memory, void *owner)
 
 lib_i32 main(void)
 {
-    const core_machine_vadp_ega_sequencer_config config = {
-        CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE
+    const core_machine_display_config config = {
+        .text_timing = { 3u, 2u, 1u },
+        .ega_present = LIB_TRUE,
+        .ega_personality = X86_VIDEO_EGA_PERSONALITY_GENERIC,
+        .ega_sequencer = { CORE_MACHINE_VADP_EGA_APERTURE_BASE,
+            CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
+            0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE }
     };
     t_vadp adapter;
     t_ram memory;
     t_port port;
     lib_i32 filler = 0;
     lib_i32 failed = 0;
-
-    if (!initialize(&adapter, &memory, &port)) return 1;
-    allocation_failure = 1;
-    failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,
-        &config) != LIB_STATUS_NO_MEMORY;
-    failed |= allocation_attempts != 1u || !is_unconfigured(&adapter, &memory,
-        0u, 0u);
-    allocation_failure = 0;
-    failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,
-        &config) != LIB_STATUS_OK;
-    failed |= memory.connect.write_observer_count != 1u ||
-        memory.connect.device_provider_count != 1u;
-    finalize(&adapter, &memory);
 
     if (!initialize(&adapter, &memory, &port)) return 1;
     {
@@ -190,7 +178,7 @@ lib_i32 main(void)
     if (!initialize(&adapter, &memory, &port)) return 1;
     failed |= !register_provider_fillers(&memory, &filler,
         CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
-    failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,
+    failed |= core_machine_vadp_configure(&adapter, &memory,
         &config) != LIB_STATUS_NO_MEMORY;
     failed |= !is_unconfigured(&adapter, &memory, 0u,
         CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
@@ -225,11 +213,77 @@ lib_i32 main(void)
     finalize(&adapter, &memory);
     if (!initialize(&adapter, &memory, &port)) return 1;
     failed |= !register_observer_fillers(&memory, &filler);
-    failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,
+    failed |= core_machine_vadp_configure(&adapter, &memory,
         &config) != LIB_STATUS_NO_MEMORY;
     failed |= !is_unconfigured(&adapter, &memory,
         CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY, 0u);
     finalize(&adapter, &memory);
+
+
+    /* Initial CGA construction also preserves routes installed before it. */
+    for (lib_size fail_at = 1u; fail_at <= 8u; ++fail_at) {
+        core_machine_port_test_allocation allocation = { fail_at, 0u };
+
+        core_machine_port_initialize(&port);
+        failed |= core_machine_port_add_read(&port, 0x80u, sentinel_read,
+            &filler) != LIB_STATUS_OK;
+        core_machine_port_set_test_allocation(&port, &allocation);
+        failed |= core_machine_vadp_initialize(&adapter, &port) != LIB_STATUS_NO_MEMORY;
+        failed |= allocation.attempts != fail_at || adapter.chip != LIB_NULL ||
+            core_machine_port_has_write(&port, 0x3d4u) ||
+            core_machine_port_read(&port, 0x80u) != 0x5au;
+        allocation.fail_at = 0u;
+        failed |= core_machine_vadp_initialize(&adapter, &port) != LIB_STATUS_OK;
+        core_machine_vadp_finalize(&adapter);
+        failed |= core_machine_port_has_write(&port, 0x3d4u) ||
+            core_machine_port_read(&port, 0x80u) != 0x5au;
+        core_machine_port_finalize(&port);
+    }
+
+    /* Every EGA/VGA port-allocation failure occurs after memory publication.
+     * Rollback must retain unrelated routes and permit a complete retry. */
+    for (lib_size variant = 0u; variant < 2u; ++variant) {
+        core_machine_display_config selected = config;
+        selected.vga_present = variant != 0u;
+        for (lib_size fail_at = 1u; fail_at <= (variant ? 27u : 20u); ++fail_at) {
+            core_machine_port_test_allocation allocation = { fail_at, 0u };
+            x86_video *original;
+
+            if (!initialize(&adapter, &memory, &port)) return 1;
+            original = adapter.chip;
+            failed |= core_machine_port_add_read(&port, 0x80u, sentinel_read,
+                &filler) != LIB_STATUS_OK;
+            failed |= !register_provider_fillers(&memory, &filler, 1u);
+            failed |= core_machine_memory_register_write_observer(&memory,
+                ignored_write, &filler) != LIB_STATUS_OK;
+            core_machine_port_set_test_allocation(&port, &allocation);
+            failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
+                LIB_STATUS_NO_MEMORY;
+            failed |= allocation.attempts != fail_at || adapter.chip != original ||
+                !is_unconfigured(&adapter, &memory, 1u, 1u) ||
+                core_machine_port_has_write(&port, 0x3c4u) ||
+                core_machine_port_has_write(&port, 0x3c9u) ||
+                !core_machine_port_has_write(&port, 0x3d4u) ||
+                core_machine_port_read(&port, 0x80u) != 0x5au;
+            allocation.fail_at = 0u;
+            failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
+                LIB_STATUS_OK;
+            failed |= memory.connect.device_provider_count != 2u ||
+                memory.connect.write_observer_count != 2u ||
+                !core_machine_port_has_write(&port, 0x3c4u) ||
+                core_machine_port_has_write(&port, 0x3c9u) != selected.vga_present;
+            core_machine_memory_freeze_mappings(&memory);
+            core_machine_vadp_finalize(&adapter);
+            failed |= memory.connect.device_provider_count != 1u ||
+                memory.connect.write_observer_count != 1u ||
+                core_machine_port_has_write(&port, 0x3c4u) ||
+                core_machine_port_has_write(&port, 0x3c9u) ||
+                core_machine_port_has_write(&port, 0x3d4u) ||
+                core_machine_port_read(&port, 0x80u) != 0x5au;
+            core_machine_memory_finalize(&memory);
+            core_machine_port_finalize(&port);
+        }
+    }
 
     if (failed) return 1;
     puts("M5:T395:S1:ROUTE-REGISTRY-SCALABILITY:OK");

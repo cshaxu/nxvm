@@ -14,7 +14,7 @@
 #define VM_DOS_VIDEO_DISPLAY_OBSERVATION_QUANTUM 256u
 #define VM_DOS_VIDEO_TEXT_CELLS (80u * 25u)
 
-static lib_i32 vm_dos_video_has_prompt(const core_machine_display_snapshot *snapshot)
+static lib_i32 vm_dos_video_has_prompt(const x86_video_snapshot *snapshot)
 {
     lib_size cell;
 
@@ -35,7 +35,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result = {0};
     core_machine_observation observation;
-    core_machine_display_snapshot snapshot;
+    x86_video_snapshot snapshot;
     t_cpu cpu;
     lib_u8 opcode[2];
     lib_u8 functions[256] = {0};

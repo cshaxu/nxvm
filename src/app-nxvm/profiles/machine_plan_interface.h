@@ -41,7 +41,7 @@ lib_u8 vm_profile_machine_plan_external_firmware(const vm_profile_machine_plan *
 lib_status vm_profile_machine_plan_copy_cmos_seed(const vm_profile_machine_plan *plan,
     lib_u8 *out_seed, lib_u8 *out_present);
 lib_status vm_profile_machine_plan_copy_text_glyphs(const vm_profile_machine_plan *plan,
-    core_machine_vadp_text_glyph_config *out_glyphs);
+    x86_video_text_glyph_config *out_glyphs);
 lib_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
     core_machine_plan *core_plan,
     core_machine_fdc_terminal_observation_provider terminal_observation);

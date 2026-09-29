@@ -516,6 +516,23 @@ void core_machine_memory_freeze_mappings(t_ram *ram)
 {
     if (ram != LIB_NULL) ram->connect.mappings_frozen = LIB_TRUE;
 }
+void core_machine_memory_unregister_owner(t_ram *ram, const void *owner)
+{
+    lib_size retained = 0u;
+
+    if (ram == LIB_NULL || owner == LIB_NULL) return;
+    for (lib_size index = 0u; index < ram->connect.device_provider_count; ++index) {
+        if (ram->connect.device_providers[index].owner != owner)
+            ram->connect.device_providers[retained++] = ram->connect.device_providers[index];
+    }
+    ram->connect.device_provider_count = retained;
+    retained = 0u;
+    for (lib_size index = 0u; index < ram->connect.write_observer_count; ++index) {
+        if (ram->connect.write_observers[index].owner != owner)
+            ram->connect.write_observers[retained++] = ram->connect.write_observers[index];
+    }
+    ram->connect.write_observer_count = retained;
+}
 static void core_machine_memory_read_a20(t_port *port, lib_u16 port_id,
     void *owner)
 {

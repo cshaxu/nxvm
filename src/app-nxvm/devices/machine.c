@@ -587,7 +587,14 @@ static lib_status core_machine_create_internal(
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     core_machine_memory_register_ports(&machine->executor_memory,
         &machine->executor_port);
-    core_machine_vadp_initialize(&machine->shared_vadp, &machine->executor_port);
+    {
+        lib_status status = core_machine_vadp_initialize(&machine->shared_vadp,
+            &machine->executor_port);
+        if (status != LIB_STATUS_OK) {
+            core_machine_destroy(machine);
+            return status;
+        }
+    }
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         lib_status status = core_machine_xt_ppi_keyboard_initialize(&machine->xt_ppi_keyboard,
             &config->xt_ppi_keyboard, &machine->executor_port);
@@ -823,7 +830,7 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     machine->d4_refresh_hold_pending = LIB_FALSE;
     machine->d4_refresh_pulse_active = LIB_FALSE;
     machine->d4_refresh_address = 0u;
-    core_machine_vadp_reset(&machine->shared_vadp);
+    x86_video_reset(machine->shared_vadp.chip);
 
     lib_atomic_i32_store_explicit(&machine->stop_requested, 0, LIB_MEMORY_ORDER_RELEASE);
     machine->fault_detail = 0u;
