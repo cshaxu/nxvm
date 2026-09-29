@@ -94,3 +94,14 @@ The sequential command has now terminated successfully (exit 0): x86 full unit
 passes 371/371 in 39.17 seconds. Diff whitespace and final documentation checks
 also pass. All S20 executor requirements are satisfied; delivery is ready for
 P1 and coordinator review, without claiming S21-S32 work complete.
+
+## Coordinator Acceptance
+
+Actual P1 af06a6259 is pushed and reviewed: seven NXVM-owned paths only; the
+four implementation paths match the +57/-2 test/gate review. Original cases
+remain, the IF value is unchanged, and no live CPU accessor or mirrored state
+was added. The gate's embedded-layout exception is restricted to machine.h;
+CPU-file exclusions require the exact owner directory. Full verification above
+satisfies S20, which is accepted. S21-S29 still own remaining private test
+consumers, S30 allocation and S31 relocation. T539 remains open; binaries remain
+the unchanged S18 baseline.

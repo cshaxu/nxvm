@@ -410,3 +410,17 @@ production code, Shared corpus, MyNES and INIs are unchanged. The
 [evidence](../etc/evidence/t539-s19-cpu-bus-boundary.md) maps each callback and
 requirement to code/tests. S19 packet is removed; S20 is next and T539 remains
 open. This accepts the bus package, not whole CPU extraction.
+
+## S20: CPU Observation And Adapter Acceptance
+
+NXVM P1 `af06a6259` qualifies the retained S18 observation adapters, removes a
+board test's unnecessary CPU-private include, proves snapshot lifetime across
+debug mutation/reset and adds five board-access negative controls. Coordinator
+actual-commit review accepts S20: all 371 units pass per width; 66 specialized
+steps, six manifests and documentation checks pass. The four test/gate paths
+add 57/remove 2 lines; production, artifacts, INIs, Shared and MyNES are
+unchanged. [Evidence](../etc/evidence/t539-s20-cpu-observation-adapters.md) maps
+entry/current, decode/fault, debug, FPU and observer-free paths. The active S20
+packet is removed; S21 is next under automatic authorization. Remaining raw
+instruction-test consumers and embedded lifetime keep their S21-S31 receivers;
+whole CPU acceptance remains S32, and T539 stays open.
