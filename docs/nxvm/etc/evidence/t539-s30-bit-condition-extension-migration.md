@@ -53,8 +53,9 @@ Complete repository-only unit suites pass 395/395 on x64 and x86 (from the
 389/389 baseline plus six CPU receivers). The 12 focused CPU/board tests pass.
 All 66 specialized gates pass in both widths, including T332/T344, T337, the
 CPU/PIC authority check and the strict direct-compilation matrix. Six unchanged
-Shared source/test corpus manifests pass. Documentation governance and the
-actual-commit review remain required before S30 acceptance.
+Shared source/test corpus manifests and documentation governance pass. Actual
+pushed P1 `442088410` contains exactly 23 NXVM-scoped paths, passes
+`git show --check`, and matches `origin/master` at review; S30 is accepted.
 
 The original direct-private `.c` search has 81 entries at S29 HEAD and 75 now;
 including the still-live shared fixture header gives the S29 recorded 82 and

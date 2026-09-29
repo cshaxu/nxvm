@@ -2,14 +2,26 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S29 are accepted; S30 is active. Its former eleven-file,
-7,000-plus-line arithmetic assignment is split into S30-S35 before
-implementation under the existing automatic-S authorization.
+M5 T539 remains open. S1-S30 are accepted. The former eleven-file,
+7,000-plus-line arithmetic assignment is split into S30-S35 under the
+existing automatic-S authorization; S31-S45 remain pending.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
-S30 implementation has dual-width 395/395 complete units and 66 specialized
-gates per width; [its context map](../etc/evidence/t539-s30-bit-condition-extension-migration.md)
-awaits a pushed implementation P and actual-commit acceptance review.
+
+## S30 Acceptance
+
+Actual pushed NXVM P1 `442088410` has exactly 23 scoped paths, passes
+`git show --check`, and equals `origin/master` at review. All 549 original
+contexts retain one receiver: 539 CPU-owned and ten board-owned. The 19
+code/test/build paths add 1,429/remove 1,506 lines (net -77); six CPU tests
+link only `x86-cpu`, while six board tests retain real faults or IRQ through
+Core-machine. Complete x64/x86 units pass 395/395 each, 66 specialized gates
+pass per width, six unchanged Shared manifests verify, and documentation
+governance passes. No production/API or executable input changed. See
+[S30 evidence](../etc/evidence/t539-s30-bit-condition-extension-migration.md).
+The S30 packet is closed; 76 original private-test consumers remain assigned
+to S31-S42. S43-S45 still own lifetime, physical relocation and whole-CPU
+acceptance.
 
 ## S29 Acceptance
 
@@ -24,27 +36,6 @@ production/API or executable input changed. See
 [S29 evidence](../etc/evidence/t539-s29-operand-prefix-migration.md). S29 is
 accepted; 82 original private consumers remain assigned to S30-S42. S43 owns
 opaque lifetime, S44 physical Shared relocation and S45 whole-CPU acceptance.
-
-## S30 Active Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, M5 T539 S30 after S29 P2 `3ebd70b97`; NXVM target only. |
-| Admission And Approval | Coordinator admission under the owner's automatic-S authorization; one session switches executor/coordinator roles. |
-| Objective | Move CPU-owned bit scan/test, double shift, IMUL2, SETcc and sign-extension assertions from six mixed test sources to CPU-only receivers; retain real board fault/IRQ observations. |
-| Non-goals | No CPU production/timing change, new public ABI, full old S30 arithmetic batch, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
-| Reference Baseline | Clean pushed `3ebd70b97`, complete units 389/389 per width. [Revised work packages](../etc/architecture/t539-cpu-work-packages.md) bound S30 to six sources; the other five original arithmetic sources belong to S31-S35. |
-| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | Six original test sources named by the inventory, CPU-only receiving tests, NXVM test registration/boundary gates and packet/history/evidence. Preserve every original profile, program, case and assertion receiver. |
-| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU private results stay CPU-owned; machine-delivered faults and physical IRQ stay board-owned. No external-source operation. |
-| Verification | Full x64/x86 builds and repository-only unit suites, specialized gates, six unchanged manifests, documentation/diff checks. Focused selection is local to this S and not a durable gate. |
-| Expected Markers | CPU receivers link only x86-cpu; board receivers use public machine operations without private CPU state; no duplicate old execution path. |
-| Asset Needs | Repository-only inputs and existing build trees; preserve the S18 local recovery artifact. No ROM/media/INI/EXE input change. |
-| Reporting Requirements | Original-case receiving map, exact changed paths and code line counts, dual-width results, pushed implementation and actual-commit review. |
-| Stop Conditions | Lost original case, unaccounted includer, new production/API requirement, or scope beyond the six sources requires packet revision before continuing. |
-| Exit Criteria | CPU/board ownership proved, all original scenarios retained, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. |
-| Original Owner Request | Split oversized CPU migration into traceable S tasks with automatic admission, preserving original semantics, code style and single-owner architecture. |
-| Similar-Issue Sweep | Inspect all six suites for inherited private fixture access, success polarity, hidden board effects and profile/timing claims; leave S31-S35 cases assigned, not presumed done. |
 
 ## S28 Acceptance
 
@@ -68,6 +59,7 @@ observation. None is silently closed or transferred to the next T.
 
 | Task | Progress |
 | --- | --- |
+| T539 S30 | Accepted: NXVM P1 442088410 migrates bit/condition/extension ownership. All 549 original contexts retain CPU/board receivers; units 395/395 per width. No production or asset change. |
 | T539 S29 | Accepted: NXVM P1 86fe95201 migrates operand/address and S64 prefix ownership. All 28 operand contexts and twelve prefix groups retain receivers; units 389/389 per width. No production or asset change. |
 | T539 S28 | Accepted: NXVM P1 fa092b95e migrates segment selector/SREG MOV test ownership. All 244 original contexts and three queries retained; units 387/387 per width. No production or asset change. |
 | T539 S27 | Accepted: NXVM P1 42d6c86e0 migrates far-pointer test ownership. All 117 original contexts retained; units 385/385 per width. No production or asset change. |
@@ -94,7 +86,7 @@ packages by the current work plan.
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0539 EXEs are committed in
 0067d80c4 with unchanged owner INIs. S18 evidence records hashes, PE architecture
-and verification limits. S19-S29 changed no executable inputs and require no
+and verification limits. S19-S30 changed no executable inputs and require no
 new artifact. Both reusable NXVM trees remain configured for default; the three
 bounded build/t539-s3 trees and S18 recovery patch remain needed for later CPU
 batches. Run native desktop test suites without cross-tree overlap.

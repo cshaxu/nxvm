@@ -645,5 +645,6 @@ retains actual PIC/IRQ delivery. Full x64 and x86 repository-only unit suites
 pass 395/395 each, and 66 specialized gates pass per width. Six unchanged
 Shared manifests verify. No production/API, firmware/INI/media or executable
 input changed. The [S30 evidence](../etc/evidence/t539-s30-bit-condition-extension-migration.md)
-contains the context map. Implementation awaits pushed-P actual-diff review;
+contains the context map. Actual-commit review accepts pushed P1 `442088410`
+with 23 scoped paths, 395/395 units and 66 gates per width. S30 closes here;
 T539 and CPU extraction remain open.

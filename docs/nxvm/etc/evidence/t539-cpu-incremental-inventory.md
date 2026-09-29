@@ -175,8 +175,8 @@ private CPU state. The S29 HEAD search counted 81 direct-private `.c` consumers
 plus one shared fixture header; S30 removes six `.c` consumers, leaving 75
 `.c` files plus that header, or 76 pending consumers assigned to S31-S42.
 [S30 evidence](t539-s30-bit-condition-extension-migration.md) records the
-receiving map and dual-width verification. Actual-commit review still owns
-acceptance; no part of S31-S45 is claimed here.
+receiving map and dual-width verification. Actual-commit review accepts pushed
+P1 `442088410`; no part of S31-S45 is claimed here.
 
 ### S31: 2 matching files
 
