@@ -92,6 +92,13 @@ that verifier is not an unassigned CPU consumer. See
 - `core_machine_push_immediate_smoke.c`
 - `core_machine_pusha_popa_smoke.c`
 
+S24 removes all three board-private CPU dependencies. The 198 original
+contexts have 190 CPU and 16 board executions: eight protected-fault contexts
+retain complementary private-cache and real-board assertions. No case is
+removed. See [S24 evidence](t539-s24-gpr-stack-migration.md). Current owns
+acceptance; 92 original direct consumers remain assigned to S25-S37, excluding
+the negative verifier's deliberate rejected-code strings.
+
 ### S25: 1 matching files
 
 - `core_machine_enter_leave_smoke.c`

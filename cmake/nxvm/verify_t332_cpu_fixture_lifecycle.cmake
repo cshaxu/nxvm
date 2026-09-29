@@ -28,6 +28,9 @@ set(project_t332_inherited_sources
     "test/app-nxvm/unit/core/devices/core_machine_interrupt_entry_smoke.c")
 set(project_t332_public_board_sources
     "test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_push_immediate_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_pusha_popa_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"

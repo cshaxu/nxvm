@@ -678,6 +678,12 @@ add_executable(core-machine-xchg-smoke test/app-nxvm/unit/core/devices/core_mach
 target_link_libraries(core-machine-xchg-smoke PRIVATE core-machine)
 add_executable(cpu-xchg-smoke test/app-nxvm/unit/core/devices/cpu_xchg_smoke.c)
 target_link_libraries(cpu-xchg-smoke PRIVATE x86-cpu)
+add_executable(cpu-gpr-push-pop-smoke test/app-nxvm/unit/core/devices/cpu_gpr_push_pop_smoke.c)
+target_link_libraries(cpu-gpr-push-pop-smoke PRIVATE x86-cpu)
+add_executable(cpu-push-immediate-smoke test/app-nxvm/unit/core/devices/cpu_push_immediate_smoke.c)
+target_link_libraries(cpu-push-immediate-smoke PRIVATE x86-cpu)
+add_executable(cpu-pusha-popa-smoke test/app-nxvm/unit/core/devices/cpu_pusha_popa_smoke.c)
+target_link_libraries(cpu-pusha-popa-smoke PRIVATE x86-cpu)
 add_executable(core-machine-sign-extend-smoke test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c)
 target_link_libraries(core-machine-sign-extend-smoke PRIVATE core-machine)
 add_executable(core-machine-moffs-smoke test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c)
@@ -1845,6 +1851,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-lea-smoke
     cpu-gpr-mov-smoke
     cpu-moffs-smoke
+    cpu-gpr-push-pop-smoke
+    cpu-push-immediate-smoke
+    cpu-pusha-popa-smoke
     cpu-xchg-smoke
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
@@ -2065,7 +2074,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-fpu-interface-s65-smoke
     core-machine-fs-gs-stack-smoke
     cpu-gpr-mov-smoke
-    core-machine-gpr-push-pop-smoke
+    cpu-gpr-push-pop-smoke
     core-machine-hlt-s49-smoke
     core-machine-imul2-smoke
     core-machine-imul-immediate-s56-smoke
@@ -2094,9 +2103,9 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-protected-data-access-s2-smoke
     core-machine-protected-far-s1-smoke
     core-machine-protected-ud-delivery-s1-smoke
-    core-machine-pusha-popa-smoke
+    cpu-pusha-popa-smoke
     core-machine-pushf-popf-s47-smoke
-    core-machine-push-immediate-smoke
+    cpu-push-immediate-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-s1-smoke
     core-machine-rotate-smoke

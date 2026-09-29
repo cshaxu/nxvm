@@ -1,100 +1,114 @@
 #include "support/pic_fixture.h"
-#include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "support/core_machine_board_fixture.h"
 #include "app-nxvm/devices/device_support.h"
-#include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include <stdio.h>
 
-typedef struct pusha_popa_machine
-{
+typedef struct pusha_popa_machine {
     core_machine *machine;
 } pusha_popa_machine;
 
-static void pusha_popa_reset(void *opaque)
-{
-    pusha_popa_machine *state = (pusha_popa_machine *)opaque;
-
-    if (state != LIB_NULL)
-        (void)test_core_machine_fixture_reset_real_mode(state->machine);
-}
-
-static const core_machine_execution_provider pusha_popa_provider = {
-    pusha_popa_reset, LIB_NULL
-};
-
-static lib_i32 pusha_popa_prepare(core_machine_cpu_profile profile,
-    pusha_popa_machine *state)
+static lib_i32 pusha_popa_prepare(core_machine_cpu_profile profile, pusha_popa_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = profile,
-        .fpu_profile = X86_FPU_PROFILE_NONE
+        .cpu_profile = profile, .fpu_profile = X86_FPU_PROFILE_NONE
     };
-
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    };
     lib_memory_set(state, 0, sizeof(*state));
-return test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &pusha_popa_provider, state, &state->machine) &&
-        test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
+    return core_machine_create(&config, &state->machine) == LIB_STATUS_OK &&
+        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        core_machine_reset(state->machine) == LIB_STATUS_OK &&
+        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
-static void pusha_popa_seed(pusha_popa_machine *state)
+static lib_status pusha_popa_seed(pusha_popa_machine *state, lib_u32 esp, lib_u32 eax)
 {
-    t_cpu *cpu = &state->machine->executor_cpu;
-
-    cpu->data.eax = 0xa1a23344u;
-    cpu->data.ecx = 0xb1b25566u;
-    cpu->data.edx = 0xc1c27788u;
-    cpu->data.ebx = 0xd1d299aau;
-    cpu->data.esp = 0x12348000u;
-    cpu->data.ebp = 0xe1e2bbcdu;
-    cpu->data.esi = 0xf1f2ddefu;
-    cpu->data.edi = 0x1122a5a5u;
-    cpu->data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF |
-        VCPU_EFLAGS_IF;
+    const core_machine_debug_register_patch registers = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ECX) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBX) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EBP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESI) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDI) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+        .values = {
+            [CORE_MACHINE_DEBUG_EAX] = eax, [CORE_MACHINE_DEBUG_ECX] = 0xb1b25566u,
+            [CORE_MACHINE_DEBUG_EDX] = 0xc1c27788u, [CORE_MACHINE_DEBUG_EBX] = 0xd1d299aau,
+            [CORE_MACHINE_DEBUG_ESP] = esp, [CORE_MACHINE_DEBUG_EBP] = 0xe1e2bbcdu,
+            [CORE_MACHINE_DEBUG_ESI] = 0xf1f2ddefu, [CORE_MACHINE_DEBUG_EDI] = 0x1122a5a5u,
+            [CORE_MACHINE_DEBUG_EFLAGS] = 0x245u
+        }
+    };
+    return core_machine_debug_patch_registers(state->machine, &registers);
 }
 
-static lib_i32 pusha_popa_run(pusha_popa_machine *state, const lib_u8 *code,
-    lib_u8 bytes, core_machine_run_budget budget, t_cpu *after,
-    core_machine_cpu_diagnostic *diagnostic, lib_status *status,
-    core_machine_run_result *result)
+static lib_i32 pusha_popa_boot_protected(pusha_popa_machine *state, lib_u8 limit_segment,
+    lib_u16 limit, lib_bool expdown)
 {
-    if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-        LIB_STATUS_OK)
-        return 0;
+    static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
+    lib_u8 gdt[] = {
+        0u,0u,0u,0u,0u,0u,0u,0u,
+        0xffu,0xffu,0u,0x20u,0u,0x9au,0u,0u,
+        0xffu,0xffu,0u,0x30u,0u,0x92u,0u,0u,
+        0xffu,0xffu,0u,0x40u,0u,0x92u,0u,0u
+    };
+    static const lib_u8 bootstrap[] = {
+        0x0fu,0x01u,0x16u,0x00u,0x01u,0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
+        0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0x00u,0x8eu,
+        0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
+    };
+    core_machine_run_result result;
 
-    *status = core_machine_run(state->machine, budget, result);
-    *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        LIB_STATUS_OK;
+    lib_i32 ready = core_machine_memory_write(state->machine, 0x0100u, pointer,
+        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
+        state->machine, 0x0300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
+        core_machine_memory_write(state->machine, 0u, bootstrap,
+        sizeof(bootstrap)) == LIB_STATUS_OK &&
+        core_machine_run(state->machine, (core_machine_run_budget){10u, 0u},
+        &result) == LIB_STATUS_OK && result.reason ==
+        CORE_MACHINE_STOP_BUDGET && result.executed == 10u;
+
+    const core_machine_debug_register reg = limit_segment == 0u ?
+        CORE_MACHINE_DEBUG_SS : CORE_MACHINE_DEBUG_DS;
+    const core_machine_debug_register_patch segment = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(reg),
+        .values = {
+            [CORE_MACHINE_DEBUG_SS] = 0x18u,
+            [CORE_MACHINE_DEBUG_DS] = 0x10u
+        }
+    };
+    lib_u8 descriptor = limit_segment == 0u ? 24u : 16u;
+
+    /* Prepare the original invalid-stack precondition at the paused boundary.
+     * Executing MOV SS with that ESP would fault before the tested instruction. */
+    if (!ready) return 0;
+    gdt[descriptor] = (lib_u8)limit;
+    gdt[descriptor + 1u] = (lib_u8)(limit >> 8);
+    if (limit_segment == 0u && expdown) gdt[descriptor + 5u] = 0x96u;
+    return core_machine_memory_write(state->machine, 0x0300u, gdt,
+        sizeof(gdt)) == LIB_STATUS_OK &&
+        core_machine_debug_patch_registers(state->machine, &segment) == LIB_STATUS_OK;
 }
 
-static lib_i32 pusha_popa_sregs_same(const t_cpu *before, const t_cpu *after)
+static lib_i32 pusha_popa_sregs_same(const core_machine_debug_cpu_snapshot *before, const core_machine_debug_cpu_snapshot *after)
 {
-    return lib_memory_compare(&before->data.es, &after->data.es,
-        sizeof(before->data.es)) == 0 && lib_memory_compare(&before->data.cs,
-        &after->data.cs, sizeof(before->data.cs)) == 0 && lib_memory_compare(
-        &before->data.ss, &after->data.ss, sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds, sizeof(before->data.ds)) ==
-        0 && lib_memory_compare(&before->data.fs, &after->data.fs,
-        sizeof(before->data.fs)) == 0 && lib_memory_compare(&before->data.gs,
-        &after->data.gs, sizeof(before->data.gs)) == 0;
-}
-
-static lib_i32 pusha_popa_cpu_same(const t_cpu *before, const t_cpu *after)
-{
-    return before->data.eax == after->data.eax &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.ebx == after->data.ebx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi &&
-        before->data.eip == after->data.eip &&
-        before->data.eflags == after->data.eflags &&
-        pusha_popa_sregs_same(before, after);
+    return lib_memory_compare(&before->es, &after->es,
+        sizeof(before->es)) == 0 && lib_memory_compare(&before->cs,
+        &after->cs, sizeof(before->cs)) == 0 && lib_memory_compare(
+        &before->ss, &after->ss, sizeof(before->ss)) == 0 &&
+        lib_memory_compare(&before->ds, &after->ds, sizeof(before->ds)) ==
+        0 && lib_memory_compare(&before->fs, &after->fs,
+        sizeof(before->fs)) == 0 && lib_memory_compare(&before->gs,
+        &after->gs, sizeof(before->gs)) == 0;
 }
 
 static lib_i32 pusha_popa_read_image(pusha_popa_machine *state, lib_u32 address,
@@ -106,12 +120,12 @@ static lib_i32 pusha_popa_read_image(pusha_popa_machine *state, lib_u32 address,
 }
 
 static lib_i32 pusha_popa_expect_push_image(pusha_popa_machine *state,
-    const t_cpu *before, lib_u32 stack, lib_u8 width)
+    const core_machine_debug_cpu_snapshot *before, lib_u32 stack, lib_u8 width)
 {
     const lib_u32 expected[] = {
-        before->data.edi, before->data.esi, before->data.ebp,
-        width == 2u ? before->data.sp : before->data.esp,
-        before->data.ebx, before->data.edx, before->data.ecx, before->data.eax
+        before->edi, before->esi, before->ebp,
+        width == 2u ? (lib_u16)before->esp : before->esp,
+        before->ebx, before->edx, before->ecx, before->eax
     };
     lib_u8 slot;
 
@@ -126,262 +140,12 @@ static lib_i32 pusha_popa_expect_push_image(pusha_popa_machine *state,
     return 1;
 }
 
-static lib_i32 pusha_popa_test_pusha_success(core_machine_cpu_profile profile,
-    const lib_u8 *code, lib_u8 bytes, lib_u8 width)
-{
-    pusha_popa_machine state;
-    t_cpu before;
-    t_cpu after;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_run_result result;
-    lib_status status;
-    lib_u32 stack = 0x8000u - 8u * width;
-    lib_u32 sentinel = 0xdeadbeefu;
-    lib_u8 slot;
-    lib_i32 failed = !pusha_popa_prepare(profile, &state);
-
-    if (!failed)
-    {
-        pusha_popa_seed(&state);
-        for (slot = 0u; slot != 8u; ++slot)
-            failed |= core_machine_memory_write(state.machine, stack + slot * width,
-                &sentinel, width) != LIB_STATUS_OK;
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !pusha_popa_run(&state, code, bytes,
-            (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,
-            &result) || status != LIB_STATUS_OK || result.reason !=
-            CORE_MACHINE_STOP_BUDGET || diagnostic.first_fault.valid ||
-            after.data.eip != bytes || after.data.eax != before.data.eax ||
-            after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
-            after.data.ebx != before.data.ebx || after.data.ebp != before.data.ebp ||
-            after.data.esi != before.data.esi || after.data.edi != before.data.edi ||
-            after.data.eflags != before.data.eflags || after.data.esp !=
-            ((before.data.esp & 0xffff0000u) | (lib_u16)(before.data.sp -
-            8u * width)) || !pusha_popa_sregs_same(&before, &after) ||
-            !pusha_popa_expect_push_image(&state, &before, stack, width);
-    }
-    core_machine_destroy(state.machine);
-    return !failed;
-}
-
-static lib_i32 pusha_popa_test_popa_success(core_machine_cpu_profile profile,
-    const lib_u8 *code, lib_u8 bytes, lib_u8 width)
-{
-    static const lib_u32 image[] = {0x0102a5a5u, 0x0304ddefu, 0x0506bbcdu,
-        0xdeadbeefu, 0x070899aau, 0x090a7788u, 0x0b0c5566u, 0x0d0e3344u};
-    pusha_popa_machine state;
-    t_cpu before;
-    t_cpu after;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_run_result result;
-    lib_status status;
-    lib_u8 slot;
-    lib_i32 failed = !pusha_popa_prepare(profile, &state);
-
-    if (!failed)
-    {
-        pusha_popa_seed(&state);
-        for (slot = 0u; slot != 8u; ++slot)
-            failed |= core_machine_memory_write(state.machine, 0x8000u + slot * width,
-                &image[slot], width) != LIB_STATUS_OK;
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !pusha_popa_run(&state, code, bytes,
-            (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,
-            &result) || status != LIB_STATUS_OK || result.reason !=
-            CORE_MACHINE_STOP_BUDGET || diagnostic.first_fault.valid ||
-            after.data.eip != bytes || after.data.eflags != before.data.eflags ||
-            after.data.edi != (width == 2u ? ((before.data.edi & 0xffff0000u) |
-            (image[0] & 0xffffu)) : image[0]) || after.data.esi != (width == 2u ?
-            ((before.data.esi & 0xffff0000u) | (image[1] & 0xffffu)) : image[1]) ||
-            after.data.ebp != (width == 2u ? ((before.data.ebp & 0xffff0000u) |
-            (image[2] & 0xffffu)) : image[2]) || after.data.ebx != (width == 2u ?
-            ((before.data.ebx & 0xffff0000u) | (image[4] & 0xffffu)) : image[4]) ||
-            after.data.edx != (width == 2u ? ((before.data.edx & 0xffff0000u) |
-            (image[5] & 0xffffu)) : image[5]) || after.data.ecx != (width == 2u ?
-            ((before.data.ecx & 0xffff0000u) | (image[6] & 0xffffu)) : image[6]) ||
-            after.data.eax != (width == 2u ? ((before.data.eax & 0xffff0000u) |
-            (image[7] & 0xffffu)) : image[7]) || after.data.esp !=
-            ((before.data.esp & 0xffff0000u) | (lib_u16)(before.data.sp +
-            8u * width)) || !pusha_popa_sregs_same(&before, &after);
-        for (slot = 0u; !failed && slot != 8u; ++slot)
-        {
-            lib_u32 observed;
-
-            failed |= !pusha_popa_read_image(&state, 0x8000u + slot * width,
-                width, &observed) || observed != (width == 2u ?
-                (image[slot] & 0xffffu) : image[slot]);
-        }
-    }
-    core_machine_destroy(state.machine);
-    return !failed;
-}
-
-static lib_i32 pusha_popa_test_defaults(void)
-{
-    static const core_machine_cpu_profile supported[] = {
-        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80386};
-    static const lib_u8 pusha[] = {0x60u};
-    static const lib_u8 popa[] = {0x61u};
-    lib_u8 profile;
-
-    for (profile = 0u; profile != sizeof(supported) / sizeof(supported[0]);
-         ++profile)
-    {
-        if (!pusha_popa_test_pusha_success(supported[profile], pusha,
-            sizeof(pusha), 2u) || !pusha_popa_test_popa_success(supported[profile],
-            popa, sizeof(popa), 2u))
-            return 0;
-    }
-    return 1;
-}
-
-static lib_i32 pusha_popa_test_attributes(void)
-{
-    static const lib_u8 pusha32[] = {0x66u, 0x60u};
-    static const lib_u8 popa32[] = {0x66u, 0x61u};
-    static const lib_u8 pusha67[] = {0x67u, 0x60u};
-    static const lib_u8 popa67[] = {0x67u, 0x61u};
-    static const lib_u8 pusha32_67[] = {0x66u, 0x67u, 0x60u};
-    static const lib_u8 popa32_67[] = {0x66u, 0x67u, 0x61u};
-
-    return pusha_popa_test_pusha_success(CORE_MACHINE_CPU_PROFILE_80386,
-        pusha32, sizeof(pusha32), 4u) && pusha_popa_test_popa_success(
-        CORE_MACHINE_CPU_PROFILE_80386, popa32, sizeof(popa32), 4u) &&
-        pusha_popa_test_pusha_success(CORE_MACHINE_CPU_PROFILE_80386, pusha67,
-        sizeof(pusha67), 2u) && pusha_popa_test_popa_success(
-        CORE_MACHINE_CPU_PROFILE_80386, popa67, sizeof(popa67), 2u) &&
-        pusha_popa_test_pusha_success(CORE_MACHINE_CPU_PROFILE_80386,
-        pusha32_67, sizeof(pusha32_67), 4u) && pusha_popa_test_popa_success(
-        CORE_MACHINE_CPU_PROFILE_80386, popa32_67, sizeof(popa32_67), 4u);
-}
-
-static lib_i32 pusha_popa_test_reject_case(core_machine_cpu_profile profile,
-    const lib_u8 *code, lib_u8 bytes)
-{
-    pusha_popa_machine state;
-    t_cpu before;
-    t_cpu after;
-    core_machine_cpu_diagnostic diagnostic;
-    core_machine_run_result result;
-    lib_status status;
-    static const lib_u8 image[32] = {
-        0xa5u, 0xb6u, 0xc7u, 0xd8u, 0xe9u, 0xfau, 0x0bu, 0x1cu,
-        0x2du, 0x3eu, 0x4fu, 0x50u, 0x61u, 0x72u, 0x83u, 0x94u,
-        0x95u, 0x86u, 0x77u, 0x68u, 0x59u, 0x4au, 0x3bu, 0x2cu,
-        0x1du, 0x0eu, 0xffu, 0xeeu, 0xddu, 0xccu, 0xbbu, 0xaau
-    };
-    lib_u8 observed[sizeof(image)];
-    lib_i32 failed = !pusha_popa_prepare(profile, &state);
-
-    if (!failed)
-    {
-        pusha_popa_seed(&state);
-        failed |= core_machine_memory_write(state.machine, 0x7fe0u, image,
-            sizeof(image)) != LIB_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x8000u, image, sizeof(image)) != LIB_STATUS_OK;
-        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
-            state.machine);
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !pusha_popa_run(&state, code, bytes,
-            (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,
-            &result) || status != LIB_STATUS_INTERNAL_ERROR || result.reason !=
-            CORE_MACHINE_STOP_FAULT || !diagnostic.first_fault.valid ||
-            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-            VCPUINS_EXCEPT_UD) || !pusha_popa_cpu_same(&before, &after) ||
-            core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x7fe0u, CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) != LIB_STATUS_OK ||
-            lib_memory_compare(observed, image, sizeof(image)) != 0 ||
-            core_machine_memory_read_physical(&state.machine->executor_memory,
-            0x8000u, CORE_MACHINE_REFERENCE_OF(observed), sizeof(observed)) != LIB_STATUS_OK ||
-            lib_memory_compare(observed, image, sizeof(image)) != 0;
-    }
-    core_machine_destroy(state.machine);
-    return !failed;
-}
-
-static lib_i32 pusha_popa_test_rejections(void)
-{
-    static const lib_u8 default_codes[][1] = {{0x60u}, {0x61u}};
-    static const lib_u8 attribute_codes[][3] = {
-        {0x66u, 0x60u, 0u}, {0x66u, 0x61u, 0u},
-        {0x67u, 0x60u, 0u}, {0x67u, 0x61u, 0u},
-        {0x66u, 0x67u, 0x60u}, {0x66u, 0x67u, 0x61u}
-    };
-    static const lib_u8 attribute_bytes[] = {2u, 2u, 2u, 2u, 3u, 3u};
-    static const lib_u8 lock_codes[][4] = {
-        {0xf0u, 0x60u, 0u, 0u}, {0xf0u, 0x61u, 0u, 0u},
-        {0xf0u, 0x66u, 0x60u, 0u}, {0xf0u, 0x66u, 0x61u, 0u},
-        {0xf0u, 0x67u, 0x60u, 0u}, {0xf0u, 0x67u, 0x61u, 0u},
-        {0xf0u, 0x66u, 0x67u, 0x60u}, {0xf0u, 0x66u, 0x67u, 0x61u}
-    };
-    static const lib_u8 lock_bytes[] = {2u, 2u, 3u, 3u, 3u, 3u, 4u, 4u};
-    static const core_machine_cpu_profile legacy[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
-        CORE_MACHINE_CPU_PROFILE_80286};
-    lib_u8 profile;
-    lib_u8 form;
-
-    for (form = 0u; form != sizeof(default_codes) / sizeof(default_codes[0]);
-         ++form)
-    {
-        if (!pusha_popa_test_reject_case(CORE_MACHINE_CPU_PROFILE_8086,
-            default_codes[form], sizeof(default_codes[form])))
-            return 0;
-    }
-    for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
-    {
-        for (form = 0u; form != sizeof(attribute_codes) /
-             sizeof(attribute_codes[0]); ++form)
-        {
-            if (!pusha_popa_test_reject_case(legacy[profile],
-                attribute_codes[form], attribute_bytes[form]))
-                return 0;
-        }
-    }
-    for (form = 0u; form != sizeof(lock_codes) / sizeof(lock_codes[0]); ++form)
-    {
-        if (!pusha_popa_test_reject_case(CORE_MACHINE_CPU_PROFILE_80386,
-            lock_codes[form], lock_bytes[form]))
-            return 0;
-    }
-    return 1;
-}
-
-static lib_i32 pusha_popa_boot_protected(pusha_popa_machine *state)
-{
-    static const lib_u8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
-    static const lib_u8 gdt[] = {
-        0u,0u,0u,0u,0u,0u,0u,0u,
-        0xffu,0xffu,0u,0x20u,0u,0x9au,0u,0u,
-        0xffu,0xffu,0u,0x30u,0u,0x92u,0u,0u,
-        0xffu,0xffu,0u,0x40u,0u,0x92u,0u,0u
-    };
-    static const lib_u8 bootstrap[] = {
-        0x0fu,0x01u,0x16u,0x00u,0x01u,0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
-        0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0x00u,0x8eu,
-        0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
-    };
-    static const lib_u8 halt[] = {0xf4u};
-    core_machine_run_result result;
-
-    return core_machine_memory_write(state->machine, 0x0100u, pointer,
-        sizeof(pointer)) == LIB_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x0300u, gdt, sizeof(gdt)) == LIB_STATUS_OK &&
-        core_machine_memory_write(state->machine, 0u, bootstrap,
-        sizeof(bootstrap)) == LIB_STATUS_OK && core_machine_memory_write(
-        state->machine, 0x2000u, halt, sizeof(halt)) == LIB_STATUS_OK &&
-        core_machine_run(state->machine, (core_machine_run_budget){96u, 0u},
-        &result) == LIB_STATUS_OK && result.reason ==
-        CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-}
-
 static lib_i32 pusha_popa_test_protected_pusha_limit(void)
 {
     static const lib_u8 code[] = {0x60u};
     pusha_popa_machine state;
-    t_cpu before;
-    t_cpu after;
+    core_machine_debug_cpu_snapshot before;
+    core_machine_debug_cpu_snapshot after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     lib_u16 expected[] = {0xa5a5u, 0x99aau, 0x7788u, 0x5566u, 0x3344u};
@@ -389,29 +153,27 @@ static lib_i32 pusha_popa_test_protected_pusha_limit(void)
     lib_i32 failed = !pusha_popa_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
-        failed |= !pusha_popa_boot_protected(&state);
+        failed |= !pusha_popa_boot_protected(&state, 0u, 0x18u, LIB_TRUE);
     if (!failed)
     {
-        pusha_popa_seed(&state);
-        state.machine->executor_cpu.data.ss.limit = 0x18u;
-        state.machine->executor_cpu.data.ss.seg.data.expdown = LIB_TRUE;
-        state.machine->executor_cpu.data.esp = 0x12340022u;
+        failed |= pusha_popa_seed(&state, 0x12340022u, 0xa1a23344u) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x4018u, expected,
             sizeof(expected)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x2000u, code, sizeof(code)) != LIB_STATUS_OK;
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
             &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
-        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            after.data.eip != 0u || after.data.eax != before.data.eax ||
-            after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
-            after.data.ebx != before.data.ebx || after.data.ebp != before.data.ebp ||
-            after.data.esi != before.data.esi || after.data.edi != before.data.edi ||
-            after.data.eflags != before.data.eflags || after.data.esp != before.data.esp ||
+            after.eip != 0u || after.eax != before.eax ||
+            after.ecx != before.ecx || after.edx != before.edx ||
+            after.ebx != before.ebx || after.ebp != before.ebp ||
+            after.esi != before.esi || after.edi != before.edi ||
+            after.eflags != before.eflags || after.esp != before.esp ||
             !pusha_popa_sregs_same(&before, &after);
         for (slot = 0u; !failed && slot != sizeof(expected) / sizeof(expected[0]); ++slot)
         {
@@ -431,37 +193,36 @@ static lib_i32 pusha_popa_test_protected_popa_limit(void)
     static const lib_u16 image[] = {0x1111u, 0x2222u, 0x3333u, 0x4444u,
         0x5555u, 0x6666u, 0x7777u, 0x8888u};
     pusha_popa_machine state;
-    t_cpu before;
-    t_cpu after;
+    core_machine_debug_cpu_snapshot before;
+    core_machine_debug_cpu_snapshot after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     lib_u8 slot;
     lib_i32 failed = !pusha_popa_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
-        failed |= !pusha_popa_boot_protected(&state);
+        failed |= !pusha_popa_boot_protected(&state, 0u, 0x1fu, LIB_FALSE);
     if (!failed)
     {
-        pusha_popa_seed(&state);
-        state.machine->executor_cpu.data.ss.limit = 0x1fu;
-        state.machine->executor_cpu.data.esp = 0x12340018u;
+        failed |= pusha_popa_seed(&state, 0x12340018u, 0xa1a23344u) != LIB_STATUS_OK;
         failed |= core_machine_memory_write(state.machine, 0x4018u, image,
             sizeof(image)) != LIB_STATUS_OK || core_machine_memory_write(
             state.machine, 0x2000u, code, sizeof(code)) != LIB_STATUS_OK;
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         failed |= core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
             &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
-        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
             diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            after.data.eip != 0u || after.data.eax != before.data.eax ||
-            after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
-            after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||
-            after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
-            after.data.edi != before.data.edi ||
-            after.data.eflags != before.data.eflags || !pusha_popa_sregs_same(
+            after.eip != 0u || after.eax != before.eax ||
+            after.ecx != before.ecx || after.edx != before.edx ||
+            after.ebx != before.ebx || after.esp != before.esp ||
+            after.ebp != before.ebp || after.esi != before.esi ||
+            after.edi != before.edi ||
+            after.eflags != before.eflags || !pusha_popa_sregs_same(
             &before, &after);
         for (slot = 0u; !failed && slot != sizeof(image) / sizeof(image[0]); ++slot)
         {
@@ -486,8 +247,8 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
         pusha_popa_machine state;
         core_machine_pic_irq_source source;
         core_machine_run_result result;
-        t_cpu before;
-        t_cpu after;
+        core_machine_debug_cpu_snapshot before;
+        core_machine_debug_cpu_snapshot after;
         lib_u16 offset = 0x100u;
         lib_u16 segment = 0u;
         lib_u16 frame_ip = 0u;
@@ -498,7 +259,7 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
 
         if (!failed)
         {
-            pusha_popa_seed(&state);
+            failed |= pusha_popa_seed(&state, 0x12348000u, 0xa1a23344u) != LIB_STATUS_OK;
             if (form != 0u)
                 failed |= core_machine_memory_write(state.machine, 0x8000u, image,
                     sizeof(image)) != LIB_STATUS_OK;
@@ -511,7 +272,6 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
         }
         if (!failed)
         {
-            state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
             lib_memory_set(&source, 0, sizeof(source));
             test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
@@ -519,29 +279,31 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
                 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
-            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
             failed |= core_machine_run(state.machine,
                 (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (lib_u16)after.data.esp,
+                after.ss.base + (lib_u16)after.esp,
                 CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
-                after.data.eip != 0x101u || frame_ip != 1u || !CORE_MACHINE_BIT_IS_SET(
+                after.eip != 0x101u || frame_ip != 1u || !CORE_MACHINE_BIT_IS_SET(
                 test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
                 CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
             if (form == 0u)
             {
-                failed |= after.data.esp != 0x12347feau || !pusha_popa_expect_push_image(
+                failed |= after.esp != 0x12347feau || !pusha_popa_expect_push_image(
                     &state, &before, 0x7ff0u, 2u);
             }
             else
             {
-                failed |= after.data.eax != 0xa1a28888u || after.data.ecx !=
-                    0xb1b27777u || after.data.edx != 0xc1c26666u || after.data.ebx !=
-                    0xd1d25555u || after.data.ebp != 0xe1e23333u || after.data.esi !=
-                    0xf1f22222u || after.data.edi != 0x11221111u || after.data.esp !=
+                failed |= after.eax != 0xa1a28888u || after.ecx !=
+                    0xb1b27777u || after.edx != 0xc1c26666u || after.ebx !=
+                    0xd1d25555u || after.ebp != 0xe1e23333u || after.esi !=
+                    0xf1f22222u || after.edi != 0x11221111u || after.esp !=
                     0x1234800au;
             }
         }
@@ -554,21 +316,6 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
 
 lib_i32 main(void)
 {
-    if (!pusha_popa_test_defaults())
-    {
-        printf("PUSHA-POPA stage=defaults\n");
-        return 1;
-    }
-    if (!pusha_popa_test_attributes())
-    {
-        printf("PUSHA-POPA stage=attributes\n");
-        return 1;
-    }
-    if (!pusha_popa_test_rejections())
-    {
-        printf("PUSHA-POPA stage=rejections\n");
-        return 1;
-    }
     if (!pusha_popa_test_protected_pusha_limit())
     {
         printf("PUSHA-POPA stage=protected-pusha\n");

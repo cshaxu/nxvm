@@ -488,3 +488,16 @@ checks pass. Seven test/build paths add 609/remove 688 lines. No production or
 EXE input change. The packet is removed; S24 is next. Remaining original private
 consumers number 95, with the negative verifier's intentional strings separately
 identified. T539 and whole CPU acceptance remain open.
+
+## S24: GPR Stack Consumer Migration
+
+Admitted at S23 P2 a9ca9a6f2 under automatic authorization. PUSH/POP,
+immediate PUSH and PUSHA/POPA retain 198 original contexts, with 190 CPU and
+16 board executions. Eight protected faults deliberately retain complementary
+private-cache and real-board assertions, rather than dropping cache checks
+unavailable through copied observations. The board receivers use guest GDT
+setup plus existing paused register operations; no production API changes.
+[S24 evidence](../etc/evidence/t539-s24-gpr-stack-migration.md) records the
+case map, initial bootstrap failure and correct receiving boundary. Complete
+units pass 379/379 per width; specialized gates and six manifests pass.
+Executor delivery awaits coordinator actual-commit review. T539 remains open.
