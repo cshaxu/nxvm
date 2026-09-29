@@ -648,3 +648,14 @@ input changed. The [S30 evidence](../etc/evidence/t539-s30-bit-condition-extensi
 contains the context map. Actual-commit review accepts pushed P1 `442088410`
 with 23 scoped paths, 395/395 units and 66 gates per width. S30 closes here;
 T539 and CPU extraction remain open.
+
+## S31 Admission: Immediate IMUL and Group-2 Rotate/Shift
+
+Under the owner's automatic-S authorization, S31 owns exactly the two mixed
+tests named by the [CPU work packages](../etc/architecture/t539-cpu-work-packages.md):
+immediate IMUL and Group-2 rotate/shift. CPU instruction and synthetic-cache
+observations move to CPU-only receivers; genuine protected-memory fault and
+PIC/IRQ observations remain board-owned. Preserve the original profile,
+operand, flag, #UD and delivery matrices without adding production ABI or a
+parallel executor. [Current](../states/CURRENT.md) holds its active packet;
+S32-S45 remain pending.
