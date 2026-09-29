@@ -176,13 +176,14 @@ foreach(project_t344_source IN LISTS project_t344_direct_sources)
     endif()
 endforeach()
 
-# These five tests share one public board setup rather than copying a
+# These six tests share one public board setup rather than copying a
 # constructor and descriptor bootstrap into each source.
 set(project_t344_public_limit_sources
     "test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c")
 set(project_t344_limit_helper
     "test/app-nxvm/unit/core/devices/support/cpu_board_limit_fixture.h")
@@ -214,4 +215,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 fixture shapes passed: 108 direct inventoried, 5 shared public-limit callers, 4 timing-manifest, 2 guest-table-load and 1 INTA constructor.")
+message(STATUS "T344 fixture shapes passed: 108 direct inventoried, 6 shared public-limit callers, 4 timing-manifest, 2 guest-table-load and 1 INTA constructor.")

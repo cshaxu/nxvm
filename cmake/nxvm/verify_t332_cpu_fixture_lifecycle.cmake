@@ -31,6 +31,8 @@ set(project_t332_public_board_sources
     "test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c"
@@ -56,6 +58,8 @@ set(project_t332_public_limit_sources
     "test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c")
 
 file(READ "${PROJECT_T332_SOURCE_DIR}/test/app-nxvm/unit/core/devices/support/cpu_board_limit_fixture.h"

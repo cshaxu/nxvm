@@ -648,6 +648,12 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 add_executable(core-machine-rotate-smoke test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c)
 target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
+add_executable(cpu-rotate-smoke test/app-nxvm/unit/core/devices/cpu_rotate_smoke.c)
+target_link_libraries(cpu-rotate-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(cpu-rotate-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-eflags-local-smoke test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c)
 target_link_libraries(core-machine-eflags-local-smoke PRIVATE x86-cpu)
 add_executable(core-machine-pushf-popf-smoke test/app-nxvm/unit/core/devices/core_machine_pushf_popf_smoke.c)
@@ -762,6 +768,13 @@ target_link_libraries(core-machine-imul2-smoke PRIVATE core-machine)
 add_executable(core-machine-imul-immediate-s56-smoke
     test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c)
 target_link_libraries(core-machine-imul-immediate-s56-smoke PRIVATE core-machine)
+add_executable(cpu-imul-immediate-s56-smoke
+    test/app-nxvm/unit/core/devices/cpu_imul_immediate_s56_smoke.c)
+target_link_libraries(cpu-imul-immediate-s56-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(cpu-imul-immediate-s56-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-lar-lsl-s57-smoke
     test/app-nxvm/unit/core/devices/core_machine_lar_lsl_s57_smoke.c)
 target_link_libraries(core-machine-lar-lsl-s57-smoke PRIVATE core-machine)
@@ -1908,6 +1921,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-inc-dec-smoke
     core-machine-legacy-alu-s2-smoke
     core-machine-rotate-smoke
+    cpu-rotate-smoke
     core-machine-eflags-local-smoke
     core-machine-pushf-popf-smoke
     core-machine-pushf-popf-s47-smoke
@@ -1947,6 +1961,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
     core-machine-imul-immediate-s56-smoke
+    cpu-imul-immediate-s56-smoke
     core-machine-lar-lsl-s57-smoke
     core-machine-verr-verw-s58-smoke
     core-machine-tf-db-s60-smoke
@@ -2126,7 +2141,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-gpr-push-pop-smoke
     core-machine-hlt-s49-smoke
     cpu-imul2-smoke
-    core-machine-imul-immediate-s56-smoke
+    cpu-imul-immediate-s56-smoke
     core-machine-inc-dec-smoke
     core-machine-iret-outer-s52-smoke
     core-machine-iret-s51-smoke
@@ -2156,7 +2171,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-push-immediate-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-s1-smoke
-    core-machine-rotate-smoke
+    cpu-rotate-smoke
     core-machine-scas-smoke
     cpu-segment-selector-smoke
     cpu-prefix-attributes-s64-smoke
