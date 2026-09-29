@@ -1,9 +1,7 @@
 # T539 S16: FPU Extraction Evidence
 
-Baseline c0722284b. Implementation verification is complete; coordinator
-actual-commit review and acceptance remain separate. T539 is not complete.
-Shared P1 5fa831a2b is committed and pushed; NXVM receiver delivery follows
-as the separate target P2.
+Baseline c0722284b. Shared P1 5fa831a2b and NXVM P2 9783297fb are committed
+and pushed. Coordinator actual-commit review accepts S16; T539 is not complete.
 
 ## Changed Owner And Original Cases
 
@@ -88,7 +86,7 @@ embedded firmware: XT x64 reaches installer-ready in 33.64 s and AT x64 in
 61.58 s, both exit 0. Model40 x64 exits 1 after 90.33 s at the probe's internal
 90-second wall bound: DOS 5 installer displays "Please wait. Setup is
 determining your system configuration." Last retired PC is 1CA3A; no synthetic
-F1 was supplied. This is not the existing installer-ready predicate and is
+F1 was supplied. This is not the existing installer-ready predicate and
 was not accepted. It was preserved while the other width completed, before
 attribution; no timeout expansion was made.
 
@@ -115,6 +113,15 @@ Final tools-off build is current and its suite passes 44/44 (3.91 s); all six
 manifest verifiers, x86 boundary and documentation governance pass afterward.
 
 ## Built Artifact Identities
+
+Coordinator reviewed the actual two implementation commits: complete original
+case mapping, unchanged arithmetic/timing, sole opaque lifetime and failure
+cleanup, public consumers, no retired production path, unchanged owner inputs,
+all receiving evidence and package manifests. The Model40 contrast is accepted
+as startup proof with its diagnostic-overhead limit explicit. Prevention:
+compare snapshots from the same frozen state; keep optional heavy observation
+distinct from guest terminal predicates. CPU extraction and the remaining
+finite inventory still require their own complete boundary/receiver proof.
 
 All eight Release products are rebuilt and deployed. PE machines are 014C
 (x86) or 8664 (x64); objdump confirms no compiler debug sections. Runtime

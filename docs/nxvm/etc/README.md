@@ -16,10 +16,9 @@ and [81-file migration inventory](evidence/t539-chip-migration-ledger.md);
 proposed boundaries and decision gates, not an implemented Shared ABI.
 
 T539 S16: [FPU boundary](architecture/t539-s16-fpu-extraction.md), opaque
-extension state, CPU-owned pairing and independent test migration. Current
-records its active status; no completion is implied by this index.
-The [working evidence](evidence/t539-s16-fpu-extraction.md) maps original cases
-and distinguishes completed verification from remaining closure work.
+extension state, CPU-owned pairing and independent test migration.
+The [evidence](evidence/t539-s16-fpu-extraction.md) maps original cases,
+verification limits and accepted delivery; Current owns task status.
 
 T539 S2: [concrete chip contracts](architecture/t539-boundary-contracts.md),
 including firmware-hook consumer proof and the approved first PIT extraction.

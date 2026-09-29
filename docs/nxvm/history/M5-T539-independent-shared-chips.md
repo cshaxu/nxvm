@@ -326,3 +326,24 @@ construction rollback and the caller-proven dead-helper retirement. Post-deliver
 standalone tests pass 43/43; final artifact hashes and untouched INIs agree.
 S15 closes and its active packet is removed. CPU/FPU and remaining ledger rows
 stay in T539; the next automatic admission still requires its boundary review.
+
+## S16: Independent FPU
+
+Shared P1 5fa831a2b and NXVM P2 9783297fb are pushed. The sole opaque
+Types-only FPU owns existing stack/status and completion intervals; CPU owns
+pairing/operand cycles and the machine owns instance lifetime. Old files and
+private consumers are removed. Original arithmetic/timing algorithms remain;
+independent tests receive chip-local assertions without losing machine cases.
+[Evidence](../etc/evidence/t539-s16-fpu-extraction.md) records 368/368 units
+and 20/20 default integrations per width, tools-off 44/44, all six manifests,
+specialized/document gates, eight artifacts and source-package net +211 lines
+including test/build growth. The paused EDIT assertion now compares one frozen
+state instead of a cadence-cached prior frame.
+
+XT/AT boots pass once per width. Model40's initial per-instruction diagnostic
+probes hit 90 seconds; one controlled contrast per width disables only that
+existing observer and reaches the same installer-ready predicate in 75.39 s
+and 88.77 s. Inputs, production source, time limit and guest execution remain
+unchanged; original failures stay visible. Coordinator actual-commit review
+accepts the complete FPU row and these verification limits. S16 closes and its
+packet is removed. CPU and all remaining ledger rows stay in T539.
