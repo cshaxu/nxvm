@@ -591,3 +591,13 @@ records the case map, ownership and verification. Full units pass 387/387
 per width; all 66 specialized gates and six unchanged manifests pass. No
 production/API or executable input changes. Executor delivery awaits
 coordinator actual-commit acceptance; CPU extraction and T539 remain open.
+
+### S28 Acceptance
+
+Coordinator actual-commit review accepts pushed NXVM P1 `fa092b95e`. The
+244-context and three-query receiving map, corrected 286 test polarity and
+EAX expectation, complete 387/387 units per width, 66 specialized gates,
+six unchanged manifests, documentation and diff checks meet the packet.
+Ten test/build paths add 2,065/remove 1,530 lines. Production and executable
+inputs remain unchanged. S28 closes; S29 is next. CPU extraction and T539
+remain open with 84 original private consumers assigned through S37.

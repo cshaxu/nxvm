@@ -85,3 +85,12 @@ not close S28 or the CPU/T539 ledger by itself.
 
 The ten test/build paths add 2,065 lines and remove 1,530, net +535. No
 production, firmware, INI, executable or protected asset file changes.
+
+## Coordinator Acceptance
+
+Actual pushed P1 `fa092b95e` has the scoped 14-path delta above. Its committed
+tree passes `git show --check`; the post-push worktree is clean and
+`origin/master` names that commit. The 244-context/three-query receiving map,
+corrected 286 assertions, complete dual-width units, specialized gates and
+unchanged manifests meet the S28 packet. S28 is accepted; S29 is next. This
+does not accept the remaining CPU extraction or close T539.
