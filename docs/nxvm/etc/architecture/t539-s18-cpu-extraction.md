@@ -2,7 +2,7 @@
 
 Baseline 25ec0f6c3. Current owns admission and acceptance. This document defines
 the final nine-file CPU boundary. The owner's 2026-09-29
-[S18-S40 decomposition](t539-cpu-work-packages.md) supersedes the original
+[S18-S45 decomposition](t539-cpu-work-packages.md) supersedes the original
 single-batch delivery requirement. Intermediate packages may close against
 their own complete briefs and full unit gates, but do not accept the CPU row.
 

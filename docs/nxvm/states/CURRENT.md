@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S29 are accepted; S30 is next. Its eleven planned
-arithmetic/bit-test sources exceed 7,000 lines, so intake must split that
-batch before implementation under the existing automatic-S authorization.
+M5 T539 remains open. S1-S29 are accepted; S30 is active. Its former eleven-file,
+7,000-plus-line arithmetic assignment is split into S30-S35 before
+implementation under the existing automatic-S authorization.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
 
@@ -19,7 +19,29 @@ extended CPU-boundary negatives, six unchanged manifests and documentation
 governance. The nine test/build paths add 1,514/remove 1,311 lines; no
 production/API or executable input changed. See
 [S29 evidence](../etc/evidence/t539-s29-operand-prefix-migration.md). S29 is
-accepted; 82 original private consumers remain assigned to later CPU work.
+accepted; 82 original private consumers remain assigned to S30-S42. S43 owns
+opaque lifetime, S44 physical Shared relocation and S45 whole-CPU acceptance.
+
+## S30 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, M5 T539 S30 after S29 P2 `3ebd70b97`; NXVM target only. |
+| Admission And Approval | Coordinator admission under the owner's automatic-S authorization; one session switches executor/coordinator roles. |
+| Objective | Move CPU-owned bit scan/test, double shift, IMUL2, SETcc and sign-extension assertions from six mixed test sources to CPU-only receivers; retain real board fault/IRQ observations. |
+| Non-goals | No CPU production/timing change, new public ABI, full old S30 arithmetic batch, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
+| Reference Baseline | Clean pushed `3ebd70b97`, complete units 389/389 per width. [Revised work packages](../etc/architecture/t539-cpu-work-packages.md) bound S30 to six sources; the other five original arithmetic sources belong to S31-S35. |
+| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
+| Files And ABI Surface | Six original test sources named by the inventory, CPU-only receiving tests, NXVM test registration/boundary gates and packet/history/evidence. Preserve every original profile, program, case and assertion receiver. |
+| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU private results stay CPU-owned; machine-delivered faults and physical IRQ stay board-owned. No external-source operation. |
+| Verification | Full x64/x86 builds and repository-only unit suites, specialized gates, six unchanged manifests, documentation/diff checks. Focused selection is local to this S and not a durable gate. |
+| Expected Markers | CPU receivers link only x86-cpu; board receivers use public machine operations without private CPU state; no duplicate old execution path. |
+| Asset Needs | Repository-only inputs and existing build trees; preserve the S18 local recovery artifact. No ROM/media/INI/EXE input change. |
+| Reporting Requirements | Original-case receiving map, exact changed paths and code line counts, dual-width results, pushed implementation and actual-commit review. |
+| Stop Conditions | Lost original case, unaccounted includer, new production/API requirement, or scope beyond the six sources requires packet revision before continuing. |
+| Exit Criteria | CPU/board ownership proved, all original scenarios retained, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. |
+| Original Owner Request | Split oversized CPU migration into traceable S tasks with automatic admission, preserving original semantics, code style and single-owner architecture. |
+| Similar-Issue Sweep | Inspect all six suites for inherited private fixture access, success polarity, hidden board effects and profile/timing claims; leave S31-S35 cases assigned, not presumed done. |
 
 ## S28 Acceptance
 
@@ -35,8 +57,8 @@ is closed, not carried into S29.
 CPU extraction itself is not accepted. The
 [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assigns the
 remaining 84 original direct private-test consumers and include dependents to
-S29-S37. Embedded CPU lifetime remains until S38; physical Shared relocation
-is S39; whole CPU acceptance is S40. S32 owns the unresolved 32-bit BOUND
+S30-S42. Embedded CPU lifetime remains until S43; physical Shared relocation
+is S44; whole CPU acceptance is S45. S37 owns the unresolved 32-bit BOUND
 observation. None is silently closed or transferred to the next T.
 
 ## Accepted Progress

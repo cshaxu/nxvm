@@ -155,23 +155,40 @@ original contexts retain 26 CPU and four board executions, with two fault
 contexts checked at both boundaries. The prefix suite's eleven CPU-owned
 groups and one real PIC/IRQ group keep their original program matrices. See
 [S29 evidence](t539-s29-operand-prefix-migration.md). Current owns acceptance;
-82 original private consumers remain assigned S30-S37.
+82 original private consumers remain assigned S30-S42. S30's original
+eleven-file, 7,000-plus-line assignment is subdivided before implementation;
+the single `inc_dec` source is shared across staged S33-S35, but remains one
+inventory file until its last private access is removed.
 
-### S30: 11 matching files
+### S30: 6 matching files
 
 - `core_machine_bit_scan_smoke.c`
 - `core_machine_bit_test_smoke.c`
 - `core_machine_double_shift_smoke.c`
 - `core_machine_imul2_smoke.c`
-- `core_machine_imul_immediate_s56_smoke.c`
-- `core_machine_inc_dec_smoke.c`
-- `core_machine_legacy_alu_s2_smoke.c`
-- `core_machine_legacy_lock_s1_smoke.c`
-- `core_machine_rotate_smoke.c`
 - `core_machine_setcc_smoke.c`
 - `core_machine_sign_extend_smoke.c`
 
-### S31: 12 matching files
+### S31: 2 matching files
+
+- `core_machine_imul_immediate_s56_smoke.c`
+- `core_machine_rotate_smoke.c`
+
+### S32: 2 matching files
+
+- `core_machine_legacy_alu_s2_smoke.c`
+- `core_machine_legacy_lock_s1_smoke.c`
+
+### S33-S35: 1 matching file, three non-overlapping case groups
+
+- `core_machine_inc_dec_smoke.c`
+
+S33 owns INC/DEC through DIV/IDIV; S34 owns TEST rm/reg through SBB; S35
+owns OR through XLAT and the Group-1 matrix. The source remains a live
+consumer until S35, so do not decrement the matching-file inventory at S33
+or S34 merely because some cases move.
+
+### S36: 12 matching files
 
 - `core_machine_cmps_smoke.c`
 - `core_machine_direct_flags_smoke.c`
@@ -186,7 +203,7 @@ groups and one real PIC/IRQ group keep their original program matrices. See
 - `core_machine_scas_smoke.c`
 - `core_machine_stos_smoke.c`
 
-### S32: 13 matching files
+### S37: 13 matching files
 
 - `core_machine_arpl_s53_smoke.c`
 - `core_machine_arpl_smoke.c`
@@ -202,7 +219,7 @@ groups and one real PIC/IRQ group keep their original program matrices. See
 - `core_machine_tf_db_s60_smoke.c`
 - `core_machine_verr_verw_s58_smoke.c`
 
-### S33: 5 matching files
+### S38: 5 matching files
 
 - `core_machine_protected_16_call_gate_s7_smoke.c`
 - `core_machine_protected_16_external_s4_smoke.c`
@@ -210,7 +227,7 @@ groups and one real PIC/IRQ group keep their original program matrices. See
 - `core_machine_protected_16_outer_iret_s6_smoke.c`
 - `core_machine_protected_16_outer_s5_smoke.c`
 
-### S34: 11 matching files
+### S39: 11 matching files
 
 - `core_machine_call_gate_privilege_entry_smoke.c`
 - `core_machine_call_gate_smoke.c`
@@ -224,7 +241,7 @@ groups and one real PIC/IRQ group keep their original program matrices. See
 - `core_machine_task_switch_smoke.c`
 - `core_machine_tss_iomap_port_smoke.c`
 
-### S35: 10 matching files
+### S40: 10 matching files
 
 - `core_machine_cli_sti_s48_smoke.c`
 - `core_machine_cli_sti_smoke.c`
@@ -237,7 +254,7 @@ groups and one real PIC/IRQ group keep their original program matrices. See
 - `core_machine_vm86_delivery_smoke.c`
 - `core_machine_vm86_iret_smoke.c`
 
-### S36: 16 matching files
+### S41: 16 matching files
 
 - `core_machine_80186_instruction_timing_ledger_smoke.c`
 - `core_machine_80186_timing_manifest_runner.c`
@@ -256,7 +273,7 @@ groups and one real PIC/IRQ group keep their original program matrices. See
 - `core_machine_t359_s5_timing_smoke.c`
 - `core_machine_t359_s6_timing_smoke.c`
 
-### S37: 4 matching files
+### S42: 4 matching files
 
 - `core_machine_fpu_interface_s65_smoke.c`
 - `cpu_profile_gate_smoke.c`
@@ -265,13 +282,13 @@ groups and one real PIC/IRQ group keep their original program matrices. See
 
 ## Include Dependency Closure
 
-The matching-file inventory is not the entire compile dependency graph. S33
+The matching-file inventory is not the entire compile dependency graph. S38
 must also keep the 80286/80386 timing runners building when their included
-16-bit gate/task/call fixtures change; S36 owns their subsequent timing-corpus
-migration. S34 includes outer-IRET's atomicity-fixture consumer. S35 additionally
+16-bit gate/task/call fixtures change; S41 owns their subsequent timing-corpus
+migration. S39 includes outer-IRET's atomicity-fixture consumer. S40 additionally
 includes `core_machine_interrupt_return_composition_s4_smoke.c` and
 `core_machine_vm86_lgdt_lidt_s5_smoke.c`, which inherit private setup through
-included source rather than a direct search hit. Protected IRET is in S35
+included source rather than a direct search hit. Protected IRET is in S40
 with its CLI/STI-dependent includer. Do not migrate one included source's return
 shape while leaving its includers with the old shape.
 

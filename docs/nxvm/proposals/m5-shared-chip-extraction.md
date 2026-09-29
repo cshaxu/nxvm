@@ -105,12 +105,12 @@ No universal device framework, plugin registry or forwarding-only wrapper.
 ## Verification And Exit
 
 The owner's 2026-09-29 amendment splits the oversized CPU batch into
-[S18-S40 work packages](../etc/architecture/t539-cpu-work-packages.md).
+[S18-S45 work packages](../etc/architecture/t539-cpu-work-packages.md).
 S18 recovers a green incremental baseline; subsequent packages migrate bounded
 consumer groups before the opaque-lifetime cutover and Shared relocation.
 The [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md) still governs
 the final result. Intermediate S acceptance is not acceptance of the CPU ledger
-row; S40 requires the old implementation removed and complete receiving proof.
+row; S45 requires the old implementation removed and complete receiving proof.
 
 S17 closes the CPU observation prerequisite under its
 [boundary review](../etc/architecture/t539-s17-cpu-observation.md): preview and

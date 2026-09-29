@@ -613,7 +613,8 @@ public ABI, Shared, MyNES or executable-input changes.
 receiving map and boundary decisions. Full units pass 389/389 per width; 66
 specialized gates, extended CPU boundary negatives and six unchanged corpus
 manifests pass. Executor delivery awaits actual-commit review. CPU extraction
-and T539 remain open with 82 original private consumers assigned S30-S37.
+and T539 remain open with 82 original private consumers assigned S30-S42
+under the subsequent size-review amendment.
 
 ### S29 Acceptance
 
@@ -623,5 +624,15 @@ groups at their owning boundaries. Full units pass 389/389 per width, with
 66 specialized gates, 72 migrated-board negative controls and six unchanged
 manifests. Nine test/build paths add 1,514/remove 1,311 lines, net +203;
 production and executable inputs are unchanged. S29 closes. The oversized
-S30 intake requires subdivision before implementation; CPU extraction and
-T539 remain open.
+S30 intake is divided into S30-S35 before implementation; the formerly
+planned later packages become S36-S45. CPU extraction and T539 remain open.
+
+## S30 Intake: Bit/Condition/Extension Tests
+
+The original eleven-source S30 arithmetic row exceeds 7,000 lines, with one
+mixed `inc_dec` source over 3,400 physical lines. Before implementation, the
+unadmitted row is divided into S30-S35; later planned work becomes S36-S45.
+S30 is admitted for bit scan/test, double shift, IMUL2, SETcc and sign
+extension only. Its six original suites must keep every case at a CPU or
+board receiver. The staged `inc_dec` suite stays assigned to S33-S35, not
+silently accepted or dropped. [Current](../states/CURRENT.md) owns the packet.
