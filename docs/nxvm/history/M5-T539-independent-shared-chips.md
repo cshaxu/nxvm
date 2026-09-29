@@ -545,3 +545,12 @@ case map, two distinct FS/GS public-board setups and original table comparison.
 Full units pass 382/382 per width; 66 specialized gates and six manifests pass.
 Nine test/build paths add 1,107/remove 783 lines. No production or artifact
 input changes. Executor delivery awaits coordinator actual-commit acceptance.
+
+### S26 Acceptance
+
+Coordinator actual-commit review accepts 587a91af9 after checking the complete
+test/build and documentation delta against all 164 original contexts and the
+18 complementary board executions. Latest full unit logs prove 382/382 per
+width with no failures. Scope, ownership, gate evidence and unchanged artifact
+inputs meet the packet. S26 closes; S27 is next. The CPU ledger and T539 remain
+open, with 89 original private consumers still assigned through S37.
