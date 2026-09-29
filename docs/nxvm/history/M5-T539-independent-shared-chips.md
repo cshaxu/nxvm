@@ -395,3 +395,18 @@ documentation checks are recorded in S18 evidence. Shared/MyNES/INIs are
 unchanged. The inventory preserves deferred work and assigns all remaining
 consumers to S19-S32; S24 owns the unresolved 32-bit BOUND observation.
 The S18 packet is removed. T539 stays open; S19 is the next planned package.
+
+## S19: CPU Bus Boundary Acceptance
+
+NXVM P1 `f1b43af46` qualifies the retained S18 bus without production changes.
+Coordinator actual-commit review accepts the memory/port failure matrices,
+observation-only behavior, FPU trace and cascaded INTA rejection/retry proof,
+and the nine-file gate with 72 negative controls. Existing reset/prefetch,
+operand-completion and interrupt-frame tests remain. Full units pass 371/371
+per width; all 66 specialized steps, six manifests and documentation pass.
+The newly direct-constructed PIC test is explicitly classified, not exempted.
+The six implementation test/build files add 334 and remove 9 lines. EXEs,
+production code, Shared corpus, MyNES and INIs are unchanged. The
+[evidence](../etc/evidence/t539-s19-cpu-bus-boundary.md) maps each callback and
+requirement to code/tests. S19 packet is removed; S20 is next and T539 remains
+open. This accepts the bus package, not whole CPU extraction.

@@ -103,3 +103,13 @@ coordinator actual-commit review; this record alone does not accept the S.
 Counted implementation footprint: six test/build/gate files, +334/-9 lines
 (net +325), excluding documentation. Growth is the explicit boundary matrices
 and negative controls, not a new production layer; production delta is zero.
+
+## Coordinator Acceptance
+
+Reviewed actual P1 `f1b43af46` after push: all nine changed paths belong to
+NXVM; no production replacement or duplicated owner is introduced. Test
+matrices retain failure side effects instead of assuming rollback, and gate
+negative controls restore their copied fixture after each rejection. Original
+tests and execution scope are preserved. Verification satisfies this bounded
+bus package. S19 is accepted; S20-S32 retain the rest of CPU migration and
+T539 remains open. Artifact baseline remains S18, since link inputs are identical.
