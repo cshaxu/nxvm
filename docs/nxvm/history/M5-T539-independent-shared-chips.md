@@ -523,3 +523,12 @@ use existing public CPU operations. No production/API/timing change.
 case map and actual differences. Full units pass 380/380 per width; 66
 specialized gates and six manifests pass. Seven test/build paths add 679/remove
 518 lines. Executor delivery awaits actual-commit coordinator review.
+
+### S25 Acceptance
+
+Coordinator actual-commit review accepts pushed NXVM P1 2cb8b64f7. All 53
+original contexts retain receivers; both widths pass 380/380 units. All 66
+specialized gates, six manifests and documentation/diff checks pass. Seven
+test/build paths add 679/remove 518 lines. No production or artifact input
+changes. The packet is removed; S26 is next. Remaining original private
+consumers number 91, assigned through S37. CPU and T539 acceptance remain open.

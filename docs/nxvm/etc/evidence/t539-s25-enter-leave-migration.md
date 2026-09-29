@@ -1,7 +1,7 @@
 # T539 S25: ENTER/LEAVE Test Migration
 
-Baseline 413375179. Current owns admission and acceptance. Implementation and
-verification are complete, awaiting actual-commit review; this consumes only the S25 entry in the
+Baseline 413375179. Coordinator actual-commit review accepts implementation
+P1 2cb8b64f7. Current owns task status; this consumes only the S25 entry in the
 [incremental inventory](t539-cpu-incremental-inventory.md).
 
 ## Original Coverage
@@ -88,3 +88,19 @@ is removed from the board file; instruction matrices have one CPU-owned home.
 No Shared, production, MyNES, INI or asset input changed, so the current eight
 0539 EXEs remain valid without a binary rebuild. Retained build trees and S18
 recovery patch remain needed for subsequent CPU batches.
+
+## Coordinator Acceptance
+
+Actual P1 review covers both complete C receivers, changed build/UD registrations,
+constructor/lifecycle and negative checks, and the original scenario map.
+Private cache equality is still checked at the CPU owner rather than inferred
+from incomplete copied segments. Original nested ENTER partial-write images,
+LEAVE rollback and real PIC delivery remain checked. The ten-instruction
+bootstrap budget removes the private halt-resume dependency, not an instruction
+scenario. No ABI or production behavior change is hidden in the test split.
+
+The active packet fields, S/P numbering, Queue and remaining-consumer receivers
+agree with the actual commit. Executor and coordinator roles were performed
+sequentially in one session; this is not an independent-agent review. S25 closes
+only its assigned consumer. The 91 original consumers, opaque allocation,
+physical Shared relocation and whole CPU/T539 acceptance remain pending.

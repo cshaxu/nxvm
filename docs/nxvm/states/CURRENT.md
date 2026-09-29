@@ -2,57 +2,25 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S24 are accepted; S25 (ENTER/LEAVE) is implemented
-and verified, awaiting coordinator actual-commit review.
-S26-S40 remain planned in the
+M5 T539 remains open. S1-S25 are accepted; no S packet is active.
+S26 (segment stack) is next in the
 [CPU work packages](../etc/architecture/t539-cpu-work-packages.md).
 
-## Active S25 Packet
+## Retained S25 Baseline
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T539 S25 after accepted S24 P2 413375179; no identifier reused. |
-| Admission And Approval | Owner's automatic-S authorization and CPU decomposition request; coordinator admits the planned ENTER/LEAVE batch. NXVM target only. |
-| Objective | Separate all original ENTER/LEAVE instruction/cache tests from actual PC-board protected-fault and PIC composition, removing the board test's private CPU access. |
-| Non-goals | No production handler/timing change, new API, opaque allocation, Shared relocation, firmware/media/INI/EXE change or MyNES change. |
-| Reference Baseline | 413375179, clean worktree, full units 379/379 per width; original core_machine_enter_leave_smoke.c is the coverage baseline. |
-| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [S25 work package](../etc/architecture/t539-cpu-work-packages.md). |
-| Files And ABI Surface | Original ENTER/LEAVE test and one CPU-owned receiver; NXVM build/UD-owner registration, fixture inventories, CPU boundary/negative checks and task records. Existing public operations/copied observations only; no ABI change. |
-| Applicable Rules | Shared execution, architecture, coding and documentation; NXVM architecture/layout; architecture-governance then coding-governance skills. Preserve original tables, loops, caches and partial memory effects; one state owner and one NXVM target per P. |
-| Verification | Fresh full builds in retained x64/x86 trees; full unit suites sequential between widths; specialized gates, all six manifests, documentation gate and diff check. Transient selection is the CPU and board ENTER/LEAVE pair. |
-| Expected Markers | All original contexts retain receivers; CPU target links x86-cpu only; board test has no private CPU reference; unit count increases by one. No production or asset diff. |
-| Asset Needs | Repository-only values; retain build/t539-s3 trees and the S18 recovery patch for later CPU batches. No new EXE or external integration required for test-only changes. |
-| Reporting Requirements | Report case reconciliation, substantive failures, code-size delta, pushed commits, complete verification and remaining CPU scope. [S25 evidence](../etc/evidence/t539-s25-enter-leave-migration.md) owns the case map. |
-| Stop Conditions | Stop for lost assertions, missing public contract requiring new API, semantic/timing change, unrelated worktree overlap, or Shared/MyNES/product-input edits. Do not weaken checks to pass. |
-| Exit Criteria | Complete original-case mapping, private board CPU dependency removed, builds/full units/gates pass, complete implementation pushed and actual-commit coordinator review accepted with governance P. T539 remains open. |
-| Original Owner Request | Extract independent chips without rewriting original handler style or losing CPU families; split oversized CPU migration into traceable bounded S deliveries; automatically admit each S. |
-| Similar-Issue Sweep | Search the original file, direct includers, CMake registrations and fixture/CPU boundary checks for executor_cpu and legacy fixture imports. Keep private cache assertions CPU-local, actual PIC/faulted RAM checks board-local. Remaining inventoried consumers retain S26-S37 receivers. |
-
-## S25 Executor Result
-
-All 53 original contexts retain receivers: 51 CPU and four board executions,
-including two complementary protected-fault scenarios. Full units pass
-380/380 per width; 66 specialized gates, six unchanged manifests and
+Coordinator actual-commit review accepts S25 implementation P1 `2cb8b64f7`.
+ENTER/LEAVE retains all 53 original contexts: 51 CPU and four board executions,
+including two complementary protected-fault receivers. Original instruction
+tables and complete cache/register comparison helpers remain. Complete units
+pass 380/380 per width; all 66 specialized gates, six unchanged manifests and
 documentation/diff checks pass. Seven test/build paths add 679/remove 518
-lines. No production or EXE input changes. See
-[S25 evidence](../etc/evidence/t539-s25-enter-leave-migration.md).
-
-## Retained S24 Baseline
-
-S24 implementation P1 `ff09b22a3` separates GPR stack chip invariants from
-board fault/IRQ composition. Coordinator actual-commit review accepts all
-198 original contexts: 190 CPU and 16 board executions, including eight
-complementary protected-fault receivers. Complete units pass 379/379 on each
-width; 66 specialized checks, six unchanged manifests and documentation/diff
-checks pass. Eleven test/build paths add 1,692/remove 1,232 lines, net +460.
-The increase retains full private-cache assertions alongside real-board
-observations, not a second production path. No production or EXE input changes.
-See [S24 evidence](../etc/evidence/t539-s24-gpr-stack-migration.md).
+lines, net +161. No production or executable input changes.
+See [S25 evidence](../etc/evidence/t539-s25-enter-leave-migration.md).
 
 CPU extraction itself is not accepted. The
 [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assigns the
 remaining 91 original direct private-test consumers and include dependents to
-S26-S37 after pending S25 delivery. Embedded CPU lifetime remains until S38; physical Shared relocation
+S26-S37. Embedded CPU lifetime remains until S38; physical Shared relocation
 is S39; whole CPU acceptance is S40. S32 owns the unresolved 32-bit BOUND
 observation. None is silently closed or transferred to the next T.
 
@@ -60,6 +28,7 @@ observation. None is silently closed or transferred to the next T.
 
 | Task | Progress |
 | --- | --- |
+| T539 S25 | Accepted: NXVM P1 2cb8b64f7 migrates ENTER/LEAVE test ownership. All 53 original contexts retained; units 380/380 per width. No production or asset change. |
 | T539 S24 | Accepted: NXVM P1 ff09b22a3 migrates GPR stack test ownership. All 198 original contexts retained; units 379/379 per width. No production or asset change. |
 | T539 S23 | Accepted: NXVM P1 5c2835936 migrates XCHG test ownership. All 101 original instruction contexts retained; units 376/376 per width. No production or asset change. |
 | T539 S22 | Accepted: NXVM P1 9e5382872 migrates GPR MOV/MOFFS test ownership. All 277 original contexts retained; units 375/375 per width. No production or asset change. |
@@ -81,7 +50,7 @@ packages by the current work plan.
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0539 EXEs are committed in
 0067d80c4 with unchanged owner INIs. S18 evidence records hashes, PE architecture
-and verification limits. S19-S24 changed no executable inputs and require no
+and verification limits. S19-S25 changed no executable inputs and require no
 new artifact. Both reusable NXVM trees remain configured for default; the three
 bounded build/t539-s3 trees and S18 recovery patch remain needed for later CPU
 batches. Run native desktop test suites without cross-tree overlap.
