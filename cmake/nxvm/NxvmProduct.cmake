@@ -710,6 +710,12 @@ add_executable(cpu-sreg-mov-smoke test/app-nxvm/unit/core/devices/cpu_sreg_mov_s
 target_link_libraries(cpu-sreg-mov-smoke PRIVATE x86-cpu)
 add_executable(cpu-segment-selector-smoke test/app-nxvm/unit/core/devices/cpu_segment_selector_smoke.c)
 target_link_libraries(cpu-segment-selector-smoke PRIVATE x86-cpu)
+add_executable(cpu-prefix-attributes-s64-smoke
+    test/app-nxvm/unit/core/devices/cpu_prefix_attributes_s64_smoke.c)
+target_link_libraries(cpu-prefix-attributes-s64-smoke PRIVATE x86-cpu)
+add_executable(cpu-operand-address-smoke
+    test/app-nxvm/unit/core/devices/cpu_operand_address_smoke.c)
+target_link_libraries(cpu-operand-address-smoke PRIVATE x86-cpu)
 add_executable(core-machine-movs-smoke test/app-nxvm/unit/core/devices/core_machine_movs_smoke.c)
 target_link_libraries(core-machine-movs-smoke PRIVATE core-machine)
 add_executable(core-machine-stos-smoke test/app-nxvm/unit/core/devices/core_machine_stos_smoke.c)
@@ -1879,6 +1885,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-lss-lfs-lgs-smoke
     cpu-sreg-mov-smoke
     cpu-segment-selector-smoke
+    cpu-prefix-attributes-s64-smoke
+    cpu-operand-address-smoke
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
     core-machine-legacy-alu-s2-smoke
@@ -2122,7 +2130,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-msw-s63-smoke
     core-machine-port-io-s55-smoke
     core-machine-port-strings-smoke
-    core-machine-prefix-attributes-s64-smoke
     core-machine-protected-16-gate-s3-smoke
     core-machine-protected-data-access-s2-smoke
     core-machine-protected-far-s1-smoke
@@ -2135,6 +2142,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-rotate-smoke
     core-machine-scas-smoke
     cpu-segment-selector-smoke
+    cpu-prefix-attributes-s64-smoke
     core-machine-setcc-smoke
     core-machine-sgdt-sidt-smoke
     core-machine-sign-extend-smoke

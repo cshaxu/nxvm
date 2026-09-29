@@ -150,6 +150,13 @@ acceptance; 84 original private consumers remain assigned S29-S37.
 - `core_machine_operand_address_smoke.c`
 - `core_machine_prefix_attributes_s64_smoke.c`
 
+S29 removes both board-private CPU dependencies. The operand suite's 28
+original contexts retain 26 CPU and four board executions, with two fault
+contexts checked at both boundaries. The prefix suite's eleven CPU-owned
+groups and one real PIC/IRQ group keep their original program matrices. See
+[S29 evidence](t539-s29-operand-prefix-migration.md). Current owns acceptance;
+82 original private consumers remain assigned S30-S37.
+
 ### S30: 11 matching files
 
 - `core_machine_bit_scan_smoke.c`

@@ -1,850 +1,33 @@
 #include "support/pic_fixture.h"
-#include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "support/core_machine_board_fixture.h"
 #include "app-nxvm/devices/device_support.h"
-
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
-
-#define PREFIX_ATTRIBUTES_S64_CMP_FLAGS (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | \
-    VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF)
+#include <stdio.h>
 
 typedef struct prefix_attributes_s64_machine {
     core_machine *machine;
 } prefix_attributes_s64_machine;
 
-static void prefix_attributes_s64_reset(void *opaque)
-{
-    prefix_attributes_s64_machine *state =
-        (prefix_attributes_s64_machine *)opaque;
-
-    if (state != LIB_NULL) {
-        (void)test_core_machine_fixture_reset_real_mode(state->machine);
-    }
-}
-
-static const core_machine_execution_provider prefix_attributes_s64_provider = {
-    prefix_attributes_s64_reset,
-    LIB_NULL
-};
-
-static lib_i32 prefix_attributes_s64_prepare(core_machine_cpu_profile profile,
-    prefix_attributes_s64_machine *state)
+static lib_i32 prefix_attributes_s64_prepare(prefix_attributes_s64_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = profile,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    };
 
-    if (state == LIB_NULL) {
-        return 0;
-    }
     lib_memory_set(state, 0, sizeof(*state));
-    return test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &prefix_attributes_s64_provider, state, &state->machine) &&
-        test_core_machine_fixture_prepare_real_mode_execution(
-                state->machine, 0u);
-}
-
-static lib_i32 prefix_attributes_s64_run(prefix_attributes_s64_machine *state,
-    const lib_u8 *code, lib_size code_size, lib_u32 instructions,
-    t_cpu *out_cpu, core_machine_cpu_diagnostic *out_diagnostic,
-    lib_status *out_status)
-{
-    core_machine_run_result result;
-
-    if (state == LIB_NULL || state->machine == LIB_NULL || code == LIB_NULL ||
-        out_cpu == LIB_NULL || out_diagnostic == LIB_NULL ||
-        out_status == LIB_NULL || core_machine_memory_write(state->machine,
-            state->machine->executor_cpu.data.cs.base +
-            state->machine->executor_cpu.data.eip, code, code_size) !=
-            LIB_STATUS_OK) {
-        return 0;
-    }
-    *out_status = core_machine_run(state->machine,
-        (core_machine_run_budget){ instructions, 0u }, &result);
-    *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) ==
-        LIB_STATUS_OK;
-}
-
-static lib_i32 prefix_attributes_s64_sregs_same(const t_cpu *before,
-    const t_cpu *after)
-{
-    return lib_memory_compare(&before->data.es, &after->data.es,
-        sizeof(before->data.es)) == 0 &&
-        lib_memory_compare(&before->data.cs, &after->data.cs,
-        sizeof(before->data.cs)) == 0 &&
-        lib_memory_compare(&before->data.ss, &after->data.ss,
-        sizeof(before->data.ss)) == 0 &&
-        lib_memory_compare(&before->data.ds, &after->data.ds,
-        sizeof(before->data.ds)) == 0 &&
-        lib_memory_compare(&before->data.fs, &after->data.fs,
-        sizeof(before->data.fs)) == 0 &&
-        lib_memory_compare(&before->data.gs, &after->data.gs,
-        sizeof(before->data.gs)) == 0;
-}
-
-static lib_i32 prefix_attributes_s64_cpu_same(const t_cpu *before,
-    const t_cpu *after)
-{
-    return before->data.eax == after->data.eax &&
-        before->data.ebx == after->data.ebx &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi &&
-        before->data.eip == after->data.eip &&
-        before->data.eflags == after->data.eflags &&
-        prefix_attributes_s64_sregs_same(before, after);
-}
-
-static lib_i32 prefix_attributes_s64_gprs_same_except_eax(const t_cpu *before,
-    const t_cpu *after)
-{
-    return before->data.ebx == after->data.ebx &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi;
-}
-
-static lib_i32 prefix_attributes_s64_gprs_same(const t_cpu *before,
-    const t_cpu *after)
-{
-    return before->data.eax == after->data.eax &&
-        before->data.ebx == after->data.ebx &&
-        before->data.ecx == after->data.ecx &&
-        before->data.edx == after->data.edx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi &&
-        before->data.edi == after->data.edi;
-}
-
-static lib_i32 prefix_attributes_s64_gprs_same_except_ecx_edi(
-    const t_cpu *before, const t_cpu *after)
-{
-    return before->data.eax == after->data.eax &&
-        before->data.ebx == after->data.ebx &&
-        before->data.edx == after->data.edx &&
-        before->data.esp == after->data.esp &&
-        before->data.ebp == after->data.ebp &&
-        before->data.esi == after->data.esi;
-}
-
-static lib_i32 prefix_attributes_s64_test_segments(void)
-{
-    static const lib_u8 prefixes[] = {
-        0x26u, 0x2eu, 0x36u, 0x3eu, 0x64u, 0x65u
-    };
-    const lib_u32 bases[] = {
-        0x10000u, 0x11000u, 0x12000u, 0x13000u, 0x14000u, 0x15000u
-    };
-    lib_u8 form;
-
-    for (form = 0u; form != sizeof(prefixes); ++form) {
-        prefix_attributes_s64_machine state;
-        core_machine_cpu_diagnostic diagnostic;
-        t_cpu before;
-        t_cpu after;
-        lib_status status;
-        lib_u8 source = (lib_u8)(0x40u + form);
-        const lib_u8 code[] = {
-            prefixes[form], 0x8au, 0x06u, 0x00u, 0x01u
-        };
-        lib_i32 failed = !prefix_attributes_s64_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-        if (!failed) {
-            state.machine->executor_cpu.data.es.base = bases[0u];
-            state.machine->executor_cpu.data.cs.base = bases[1u];
-            state.machine->executor_cpu.data.ss.base = bases[2u];
-            state.machine->executor_cpu.data.ds.base = bases[3u];
-            state.machine->executor_cpu.data.fs.base = bases[4u];
-            state.machine->executor_cpu.data.gs.base = bases[5u];
-            state.machine->executor_cpu.data.fs.flagValid = LIB_TRUE;
-            state.machine->executor_cpu.data.gs.flagValid = LIB_TRUE;
-            failed |= core_machine_memory_write(state.machine,
-                bases[form] + 0x100u, &source, sizeof(source)) !=
-                LIB_STATUS_OK;
-            state.machine->executor_cpu.data.eax = 0xaabbcc00u;
-            before = state.machine->executor_cpu;
-            failed |= !prefix_attributes_s64_run(&state, code, sizeof(code), 1u,
-                &after, &diagnostic, &status) || status != LIB_STATUS_OK ||
-                diagnostic.first_fault.valid || after.data.eip != sizeof(code) ||
-                after.data.eax != (0xaabbcc00u | source) ||
-                after.data.eflags != before.data.eflags ||
-                !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
-                !prefix_attributes_s64_sregs_same(&before, &after);
-        }
-        core_machine_destroy(state.machine);
-        if (failed) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-static lib_i32 prefix_attributes_s64_test_last_wins(void)
-{
-    static const lib_u8 code[] = { 0x2eu, 0x36u, 0x8au, 0x06u, 0x00u, 0x01u };
-    prefix_attributes_s64_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    t_cpu after;
-    lib_status status;
-    lib_u8 cs_source = 0x11u;
-    lib_u8 ss_source = 0x22u;
-    lib_i32 failed = !prefix_attributes_s64_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-    if (!failed) {
-        state.machine->executor_cpu.data.cs.base = 0x11000u;
-        state.machine->executor_cpu.data.ss.base = 0x12000u;
-        failed |= core_machine_memory_write(state.machine, 0x11100u,
-            &cs_source, sizeof(cs_source)) != LIB_STATUS_OK ||
-            core_machine_memory_write(state.machine, 0x12100u, &ss_source,
-                sizeof(ss_source)) != LIB_STATUS_OK ||
-            !prefix_attributes_s64_run(&state, code, sizeof(code), 1u, &after,
-                &diagnostic, &status) || status != LIB_STATUS_OK ||
-            diagnostic.first_fault.valid || after.data.eip != sizeof(code) ||
-            after.data.al != ss_source;
-    }
-    core_machine_destroy(state.machine);
-    return !failed;
-}
-
-static lib_i32 prefix_attributes_s64_test_attributes_and_lock(void)
-{
-    static const lib_u8 read_operand32[] = {
-        0x66u, 0x8bu, 0x06u, 0x00u, 0x01u
-    };
-    static const lib_u8 write_operand32[] = {
-        0x66u, 0x89u, 0x06u, 0x00u, 0x01u
-    };
-    static const lib_u8 read_address32[] = { 0x67u, 0x8au, 0x06u };
-    static const lib_u8 write_address32[] = { 0x67u, 0x88u, 0x06u };
-    static const lib_u8 read32[] = { 0x66u, 0x67u, 0x8bu, 0x06u };
-    static const lib_u8 write32[] = { 0x66u, 0x67u, 0x89u, 0x06u };
-    static const lib_u8 lock_add[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x01u };
-    static const lib_u8 lock_read[] = { 0xf0u, 0x8bu, 0x06u, 0x00u, 0x01u };
-    prefix_attributes_s64_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
-    t_cpu after;
-    lib_status status;
-    lib_u32 image = 0x11223344u;
-    lib_u32 other_image = 0u;
-    lib_u8 byte_image = 0u;
-    lib_u8 other_byte = 0u;
-    lib_u8 observed_byte = 0u;
-    lib_i32 failed = !prefix_attributes_s64_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-    if (!failed) {
-        state.machine->executor_cpu.data.esi = 0x0100u;
-        before = state.machine->executor_cpu;
-        failed |= core_machine_memory_write(state.machine, 0x0100u, &image,
-            sizeof(image)) != LIB_STATUS_OK || !prefix_attributes_s64_run(&state,
-            read32, sizeof(read32), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(read32) || after.data.eax != image ||
-            after.data.eflags != before.data.eflags ||
-            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
-            !prefix_attributes_s64_sregs_same(&before, &after);
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        &state);
-    if (!failed) {
-        image = 0x55667788u;
-        state.machine->executor_cpu.data.eax = 0xaabbccdd;
-        before = state.machine->executor_cpu;
-        failed |= core_machine_memory_write(state.machine, 0x0100u, &image,
-            sizeof(image)) != LIB_STATUS_OK ||
-            !prefix_attributes_s64_run(&state, read_operand32,
-                sizeof(read_operand32), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(read_operand32) ||
-            after.data.eax != image ||
-            after.data.eflags != before.data.eflags ||
-            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
-            !prefix_attributes_s64_sregs_same(&before, &after);
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        &state);
-    if (!failed) {
-        image = 0x11223344u;
-        state.machine->executor_cpu.data.eax = image;
-        before = state.machine->executor_cpu;
-        failed |= !prefix_attributes_s64_run(&state, write_operand32,
-            sizeof(write_operand32), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(write_operand32) ||
-            after.data.eax != before.data.eax ||
-            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
-            after.data.eflags != before.data.eflags ||
-            !prefix_attributes_s64_sregs_same(&before, &after) ||
-            core_machine_memory_read(state.machine, 0x0100u, &other_image,
-                sizeof(other_image)) != LIB_STATUS_OK || other_image != image;
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        &state);
-    if (!failed) {
-        byte_image = 0x6du;
-        other_byte = 0x2bu;
-        state.machine->executor_cpu.data.eax = 0xaabbcc00u;
-        state.machine->executor_cpu.data.esi = 0x00010100u;
-        before = state.machine->executor_cpu;
-        failed |= core_machine_memory_write(state.machine, 0x00010100u,
-            &byte_image, sizeof(byte_image)) != LIB_STATUS_OK ||
-            core_machine_memory_write(state.machine, 0x0100u, &other_byte,
-                sizeof(other_byte)) != LIB_STATUS_OK ||
-            !prefix_attributes_s64_run(&state, read_address32,
-                sizeof(read_address32), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(read_address32) ||
-            after.data.eax != 0xaabbcc6du ||
-            after.data.eflags != before.data.eflags ||
-            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
-            !prefix_attributes_s64_sregs_same(&before, &after) ||
-            core_machine_memory_read(state.machine, 0x00010100u,
-                &observed_byte,
-                sizeof(byte_image)) != LIB_STATUS_OK ||
-            observed_byte != byte_image ||
-            core_machine_memory_read(state.machine, 0x0100u, &observed_byte,
-                sizeof(other_byte)) != LIB_STATUS_OK ||
-            observed_byte != other_byte;
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        &state);
-    if (!failed) {
-        byte_image = 0x22u;
-        other_byte = 0x33u;
-        state.machine->executor_cpu.data.eax = 0xaabbcc6du;
-        state.machine->executor_cpu.data.esi = 0x00010100u;
-        before = state.machine->executor_cpu;
-        failed |= core_machine_memory_write(state.machine, 0x00010100u,
-            &byte_image, sizeof(byte_image)) != LIB_STATUS_OK ||
-            core_machine_memory_write(state.machine, 0x0100u, &other_byte,
-                sizeof(other_byte)) != LIB_STATUS_OK ||
-            !prefix_attributes_s64_run(&state, write_address32,
-                sizeof(write_address32), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(write_address32) ||
-            after.data.eax != before.data.eax ||
-            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
-            after.data.eflags != before.data.eflags ||
-            !prefix_attributes_s64_sregs_same(&before, &after) ||
-            core_machine_memory_read(state.machine, 0x00010100u, &byte_image,
-                sizeof(byte_image)) != LIB_STATUS_OK || byte_image != 0x6du ||
-            core_machine_memory_read(state.machine, 0x0100u, &other_byte,
-                sizeof(other_byte)) != LIB_STATUS_OK || other_byte != 0x33u;
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        &state);
-    if (!failed) {
-        state.machine->executor_cpu.data.esi = 0x0100u;
-        image = 0x11223344u;
-        state.machine->executor_cpu.data.eax = image;
-        before = state.machine->executor_cpu;
-        failed |= !prefix_attributes_s64_run(&state, write32, sizeof(write32),
-            1u, &after, &diagnostic, &status) || status != LIB_STATUS_OK ||
-            diagnostic.first_fault.valid || after.data.eip != sizeof(write32) ||
-            after.data.eax != before.data.eax ||
-            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
-            after.data.eflags != before.data.eflags ||
-            !prefix_attributes_s64_sregs_same(&before, &after) ||
-            core_machine_memory_read(state.machine, 0x0100u, &image,
-                sizeof(image)) != LIB_STATUS_OK || image != 0x11223344u;
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        &state);
-    if (!failed) {
-        image = 1u;
-        state.machine->executor_cpu.data.eax = 2u;
-        failed |= core_machine_memory_write(state.machine, 0x0100u, &image,
-            sizeof(image)) != LIB_STATUS_OK || !prefix_attributes_s64_run(&state,
-            lock_add, sizeof(lock_add), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(lock_add) ||
-            core_machine_memory_read(state.machine, 0x0100u, &image,
-                sizeof(image)) != LIB_STATUS_OK || image != 3u;
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        &state);
-    if (!failed) {
-        image = 0x55667788u;
-        failed |= core_machine_memory_write(state.machine, 0x0100u, &image,
-            sizeof(image)) != LIB_STATUS_OK;
-        before = state.machine->executor_cpu;
-        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
-            state.machine) || !prefix_attributes_s64_run(&state, lock_read,
-            sizeof(lock_read), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_INTERNAL_ERROR || !diagnostic.first_fault.valid ||
-            !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                VCPUINS_EXCEPT_UD) || !prefix_attributes_s64_cpu_same(&before,
-                    &after) || core_machine_memory_read_physical(
-                        &state.machine->executor_memory, 0x0100u,
-                        (lib_uptr)&image, sizeof(image)) !=
-                LIB_STATUS_OK || image != 0x55667788u;
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    {
-        static const core_machine_cpu_profile profiles[] = {
-            CORE_MACHINE_CPU_PROFILE_8086,
-            CORE_MACHINE_CPU_PROFILE_80186,
-            CORE_MACHINE_CPU_PROFILE_80286
-        };
-        static const lib_u8 forms[][6] = {
-            { 0x66u, 0x8bu, 0x06u, 0x00u, 0x01u, 0u },
-            { 0x67u, 0x8bu, 0x06u, 0x00u, 0x01u, 0u },
-            { 0x66u, 0x67u, 0x8bu, 0x06u, 0u, 0u }
-        };
-        static const lib_size lengths[] = { 5u, 5u, 4u };
-        lib_u8 profile;
-        lib_u8 form;
-
-        for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
-            ++profile) {
-            for (form = 0u; form != sizeof(forms) / sizeof(forms[0]);
-                ++form) {
-                failed = !prefix_attributes_s64_prepare(profiles[profile],
-                    &state);
-                if (!failed) {
-                    before = state.machine->executor_cpu;
-                    failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
-                        state.machine) || !prefix_attributes_s64_run(&state, forms[form],
-                        lengths[form], 1u, &after, &diagnostic, &status) ||
-                        status != LIB_STATUS_INTERNAL_ERROR ||
-                        !diagnostic.first_fault.valid ||
-                        !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
-                            VCPUINS_EXCEPT_UD) ||
-                        !prefix_attributes_s64_cpu_same(&before, &after);
-                }
-                core_machine_destroy(state.machine);
-                if (failed) {
-                    return 0;
-                }
-            }
-        }
-    }
-    return !failed;
-}
-
-static lib_i32 prefix_attributes_s64_test_lock_group_legality(void)
-{
-    static const lib_u8 forms[][7] = {
-        { 0xf0u, 0x0fu, 0xa3u, 0x06u, 0x00u, 0x01u, 0u },
-        { 0xf0u, 0x0fu, 0xbau, 0x26u, 0x00u, 0x01u, 0u },
-        { 0xf0u, 0xf6u, 0x06u, 0x00u, 0x01u, 0x01u, 0u },
-        { 0xf0u, 0xf7u, 0x06u, 0x00u, 0x01u, 0x01u, 0u },
-        { 0xf0u, 0xfeu, 0x16u, 0x00u, 0x01u, 0u, 0u },
-        { 0xf0u, 0xffu, 0x16u, 0x00u, 0x01u, 0u, 0u }
-    };
-    static const lib_size lengths[] = { 6u, 7u, 6u, 7u, 5u, 5u };
-    lib_u8 form;
-
-    for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
-        prefix_attributes_s64_machine state;
-        core_machine_cpu_diagnostic diagnostic;
-        t_cpu before;
-        t_cpu after;
-        lib_status status;
-        lib_u16 image = 0x1234u;
-        lib_i32 failed = !prefix_attributes_s64_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-        if (!failed) {
-            before = state.machine->executor_cpu;
-            failed |= core_machine_memory_write(state.machine, 0x0100u,
-                &image, sizeof(image)) != LIB_STATUS_OK ||
-                !test_core_machine_fixture_preflight_real_ud_terminal(
-                    state.machine) || !prefix_attributes_s64_run(&state,
-                    forms[form], lengths[form], 1u, &after, &diagnostic,
-                    &status) || status != LIB_STATUS_INTERNAL_ERROR ||
-                !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-                !prefix_attributes_s64_cpu_same(&before, &after) ||
-                core_machine_memory_read_physical(&state.machine->executor_memory,
-                    0x0100u, (lib_uptr)&image, sizeof(image)) !=
-                    LIB_STATUS_OK || image != 0x1234u;
-        }
-        core_machine_destroy(state.machine);
-        if (failed) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-static lib_i32 prefix_attributes_s64_test_lock_group_writes(void)
-{
-    static const lib_u8 forms[][5] = {
-        { 0xf0u, 0xf6u, 0x16u, 0x00u, 0x01u },
-        { 0xf0u, 0xf7u, 0x1eu, 0x00u, 0x01u },
-        { 0xf0u, 0xffu, 0x06u, 0x00u, 0x01u }
-    };
-    static const lib_u16 expected[] = {
-        0x12cbu, 0xedccu, 0x1235u
-    };
-    lib_u8 form;
-
-    for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
-        prefix_attributes_s64_machine state;
-        core_machine_cpu_diagnostic diagnostic;
-        t_cpu before;
-        t_cpu after;
-        lib_status status;
-        lib_u16 image = 0x1234u;
-        lib_i32 failed = !prefix_attributes_s64_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-        if (!failed) {
-            before = state.machine->executor_cpu;
-            failed |= core_machine_memory_write(state.machine, 0x0100u,
-                &image, sizeof(image)) != LIB_STATUS_OK ||
-                !prefix_attributes_s64_run(&state, forms[form],
-                    sizeof(forms[form]), 1u, &after, &diagnostic, &status) ||
-                status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-                after.data.eip != sizeof(forms[form]) ||
-                !prefix_attributes_s64_gprs_same(&before, &after) ||
-                !prefix_attributes_s64_sregs_same(&before, &after) ||
-                core_machine_memory_read_physical(&state.machine->executor_memory,
-                    0x0100u, (lib_uptr)&image, sizeof(image)) !=
-                    LIB_STATUS_OK || image != expected[form];
-        }
-        core_machine_destroy(state.machine);
-        if (failed) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-static lib_i32 prefix_attributes_s64_test_repeated_width_prefixes(void)
-{
-    static const lib_u8 operand_code[] = {
-        0x66u, 0x66u, 0xb8u, 0x78u, 0x56u, 0x34u, 0x12u
-    };
-    static const lib_u8 address_code[] = {
-        0x67u, 0x67u, 0x8au, 0x06u
-    };
-    prefix_attributes_s64_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
-    t_cpu after;
-    lib_status status;
-    lib_u8 selected = 0x5au;
-    lib_u8 unselected = 0x3cu;
-    lib_i32 failed = !prefix_attributes_s64_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-    if (!failed) {
-        before = state.machine->executor_cpu;
-        failed |= !prefix_attributes_s64_run(&state, operand_code,
-            sizeof(operand_code), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(operand_code) ||
-            after.data.eax != 0x12345678u ||
-            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
-            after.data.eflags != before.data.eflags ||
-            !prefix_attributes_s64_sregs_same(&before, &after);
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        &state);
-    if (!failed) {
-        state.machine->executor_cpu.data.eax = 0xaabbcc00u;
-        state.machine->executor_cpu.data.esi = 0x00010100u;
-        before = state.machine->executor_cpu;
-        failed |= core_machine_memory_write(state.machine, 0x00010100u,
-            &selected, sizeof(selected)) != LIB_STATUS_OK ||
-            core_machine_memory_write(state.machine, 0x0100u, &unselected,
-                sizeof(unselected)) != LIB_STATUS_OK ||
-            !prefix_attributes_s64_run(&state, address_code,
-                sizeof(address_code), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(address_code) ||
-            after.data.eax != 0xaabbcc5au ||
-            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
-            after.data.eflags != before.data.eflags ||
-            !prefix_attributes_s64_sregs_same(&before, &after);
-    }
-    core_machine_destroy(state.machine);
-    return !failed;
-}
-
-static lib_i32 prefix_attributes_s64_test_fixed_segment_and_register(void)
-{
-    static const lib_u8 fixed_segment[] = { 0x26u, 0xa4u };
-    static const lib_u8 register_only[] = {
-        0x66u, 0x67u, 0xb8u, 0x44u, 0x33u, 0x22u, 0x11u
-    };
-    prefix_attributes_s64_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
-    t_cpu after;
-    lib_status status;
-    lib_u8 source = 0x4du;
-    lib_u8 target = 0u;
-    lib_i32 failed = !prefix_attributes_s64_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-    if (!failed) {
-        state.machine->executor_cpu.data.ds.base = 0x10000u;
-        state.machine->executor_cpu.data.es.base = 0x11000u;
-        state.machine->executor_cpu.data.esi = 0x0100u;
-        state.machine->executor_cpu.data.edi = 0x0200u;
-        failed |= core_machine_memory_write(state.machine, 0x11100u, &source,
-            sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x11200u, &target, sizeof(target)) !=
-            LIB_STATUS_OK || !prefix_attributes_s64_run(&state, fixed_segment,
-                sizeof(fixed_segment), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(fixed_segment) || after.data.esi != 0x0101u ||
-            after.data.edi != 0x0201u || core_machine_memory_read(state.machine,
-                0x11200u, &target, sizeof(target)) != LIB_STATUS_OK ||
-            target != source;
-    }
-    core_machine_destroy(state.machine);
-    if (failed) {
-        return 0;
-    }
-
-    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-        &state);
-    if (!failed) {
-        before = state.machine->executor_cpu;
-        failed |= !prefix_attributes_s64_run(&state, register_only,
-            sizeof(register_only), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(register_only) ||
-            after.data.eax != 0x11223344u ||
-            after.data.ebx != before.data.ebx ||
-            after.data.ecx != before.data.ecx ||
-            after.data.edx != before.data.edx ||
-            after.data.esp != before.data.esp ||
-            after.data.ebp != before.data.ebp ||
-            after.data.esi != before.data.esi ||
-            after.data.edi != before.data.edi ||
-            after.data.eflags != before.data.eflags ||
-            !prefix_attributes_s64_sregs_same(&before, &after);
-    }
-    core_machine_destroy(state.machine);
-    return !failed;
-}
-
-static lib_i32 prefix_attributes_s64_test_rep_movs(void)
-{
-    static const lib_u8 code[] = { 0xf3u, 0xa4u, 0xf4u };
-    prefix_attributes_s64_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    t_cpu after;
-    lib_status status;
-    lib_u8 source[] = { 0x31u, 0x42u, 0x53u };
-    lib_u8 target[] = { 0u, 0u, 0u };
-    lib_i32 failed = !prefix_attributes_s64_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-    if (!failed) {
-        state.machine->executor_cpu.data.ds.base = 0x10000u;
-        state.machine->executor_cpu.data.es.base = 0x11000u;
-        state.machine->executor_cpu.data.esi = 0x0100u;
-        state.machine->executor_cpu.data.edi = 0x0200u;
-        state.machine->executor_cpu.data.ecx = 0x11220003u;
-        failed |= core_machine_memory_write(state.machine, 0x10100u, source,
-            sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x11200u, target, sizeof(target)) !=
-                LIB_STATUS_OK || !prefix_attributes_s64_run(&state, code,
-                    sizeof(code), 4u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(code) || after.data.esi != 0x0103u ||
-            after.data.edi != 0x0203u || after.data.ecx != 0x11220000u ||
-            core_machine_memory_read(state.machine, 0x11200u, target,
-                sizeof(target)) != LIB_STATUS_OK ||
-            lib_memory_compare(source, target, sizeof(source)) != 0;
-    }
-    core_machine_destroy(state.machine);
-    return !failed;
-}
-
-static lib_i32 prefix_attributes_s64_test_rep_edges(void)
-{
-    static const lib_u8 code[] = { 0xf3u, 0xa4u, 0xf4u };
-    const lib_u32 counts[] = { 0u, 1u };
-    lib_u8 form;
-
-    for (form = 0u; form != sizeof(counts) / sizeof(counts[0]); ++form) {
-        prefix_attributes_s64_machine state;
-        core_machine_cpu_diagnostic diagnostic;
-        t_cpu after;
-        lib_status status;
-        lib_u8 source = 0x5au;
-        lib_u8 target = 0xc3u;
-        lib_i32 failed = !prefix_attributes_s64_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-        if (!failed) {
-            state.machine->executor_cpu.data.esi = 0x0100u;
-            state.machine->executor_cpu.data.edi = 0x0200u;
-            state.machine->executor_cpu.data.ecx = 0x33440000u | counts[form];
-            failed |= core_machine_memory_write(state.machine, 0x0100u,
-                &source, sizeof(source)) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0x0200u, &target,
-                    sizeof(target)) != LIB_STATUS_OK ||
-                !prefix_attributes_s64_run(&state, code, sizeof(code),
-                    counts[form] + 2u, &after, &diagnostic, &status) ||
-                status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-                after.data.eip != sizeof(code) ||
-                after.data.ecx != 0x33440000u ||
-                after.data.esi != 0x0100u + counts[form] ||
-                after.data.edi != 0x0200u + counts[form] ||
-                core_machine_memory_read(state.machine, 0x0200u, &target,
-                    sizeof(target)) != LIB_STATUS_OK ||
-                target != (counts[form] ? source : 0xc3u);
-        }
-        core_machine_destroy(state.machine);
-        if (failed) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-static lib_i32 prefix_attributes_s64_test_repne_movs(void)
-{
-    static const lib_u8 code[] = { 0xf2u, 0xa4u };
-    prefix_attributes_s64_machine state;
-    core_machine_cpu_diagnostic diagnostic;
-    t_cpu after;
-    lib_status status;
-    lib_u8 source = 0x7eu;
-    lib_u8 target = 0u;
-    lib_i32 failed = !prefix_attributes_s64_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-    if (!failed) {
-        state.machine->executor_cpu.data.esi = 0x0100u;
-        state.machine->executor_cpu.data.edi = 0x0200u;
-        state.machine->executor_cpu.data.ecx = 0x55660001u;
-        failed |= core_machine_memory_write(state.machine, 0x0100u, &source,
-            sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x0200u, &target, sizeof(target)) !=
-            LIB_STATUS_OK || !prefix_attributes_s64_run(&state, code,
-                sizeof(code), 1u, &after, &diagnostic, &status) ||
-            status != LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            after.data.eip != sizeof(code) || after.data.esi != 0x0101u ||
-            after.data.edi != 0x0201u || after.data.ecx != 0x55660000u ||
-            core_machine_memory_read(state.machine, 0x0200u, &target,
-                sizeof(target)) != LIB_STATUS_OK || target != source;
-    }
-    core_machine_destroy(state.machine);
-    return !failed;
-}
-
-static lib_i32 prefix_attributes_s64_test_mixed_repeat_last_wins(void)
-{
-    static const lib_u8 forms[][3] = {
-        { 0xf2u, 0xf3u, 0xaeu },
-        { 0xf3u, 0xf2u, 0xaeu }
-    };
-    static const lib_u32 budgets[] = { 2u, 1u };
-    static const lib_u16 final_cx[] = { 0u, 1u };
-    static const lib_u16 final_di[] = { 0x0202u, 0x0201u };
-    lib_u8 form;
-
-    for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
-        prefix_attributes_s64_machine state;
-        core_machine_cpu_diagnostic diagnostic;
-        t_cpu before;
-        t_cpu after;
-        lib_status status;
-        lib_u8 image[] = { 0x3cu, 0x3cu };
-        lib_u8 observed[] = { 0u, 0u };
-        lib_i32 failed = !prefix_attributes_s64_prepare(
-            CORE_MACHINE_CPU_PROFILE_80386, &state);
-
-        if (!failed) {
-            state.machine->executor_cpu.data.eax = 0xaabbcc3cu;
-            state.machine->executor_cpu.data.edi = 0x77880200u;
-            state.machine->executor_cpu.data.ecx = 0x55660002u;
-            before = state.machine->executor_cpu;
-            failed |= core_machine_memory_write(state.machine, 0x0200u,
-                image, sizeof(image)) != LIB_STATUS_OK ||
-                !prefix_attributes_s64_run(&state, forms[form],
-                    sizeof(forms[form]), budgets[form], &after, &diagnostic,
-                    &status) || status != LIB_STATUS_OK ||
-                diagnostic.first_fault.valid ||
-                after.data.eip != sizeof(forms[form]) ||
-                after.data.ecx != (0x55660000u | final_cx[form]) ||
-                after.data.edi != (0x77880000u | final_di[form]) ||
-                !prefix_attributes_s64_gprs_same_except_ecx_edi(&before,
-                    &after) ||
-                (after.data.eflags & ~PREFIX_ATTRIBUTES_S64_CMP_FLAGS) !=
-                    (before.data.eflags & ~PREFIX_ATTRIBUTES_S64_CMP_FLAGS) ||
-                (after.data.eflags & PREFIX_ATTRIBUTES_S64_CMP_FLAGS) !=
-                    (VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) ||
-                !prefix_attributes_s64_sregs_same(&before, &after) ||
-                core_machine_memory_read(state.machine, 0x0200u, observed,
-                    sizeof(observed)) != LIB_STATUS_OK ||
-                lib_memory_compare(image, observed, sizeof(image)) != 0;
-        }
-        core_machine_destroy(state.machine);
-        if (failed) {
-            return 0;
-        }
-    }
-    return 1;
+    return core_machine_create(&config, &state->machine) == LIB_STATUS_OK &&
+        core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
+        core_machine_reset(state->machine) == LIB_STATUS_OK &&
+        core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
 }
 
 static lib_i32 prefix_attributes_s64_test_irq_no_shadow(void)
@@ -853,48 +36,61 @@ static lib_i32 prefix_attributes_s64_test_irq_no_shadow(void)
         0x3eu, 0x8au, 0x06u, 0x00u, 0x10u, 0x90u
     };
     static const lib_u8 hlt[] = { 0xf4u };
+    const core_machine_debug_register_patch registers = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
+        .values = {
+            [CORE_MACHINE_DEBUG_EAX] = 0xaabbcc00u,
+            [CORE_MACHINE_DEBUG_EFLAGS] = 0x202u
+        }
+    };
     prefix_attributes_s64_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
-    t_cpu after;
+    core_machine_debug_cpu_snapshot after = {0};
     lib_u16 vector_offset = 0x0100u;
     lib_u16 vector_segment = 0u;
     lib_u16 frame_ip = 0u;
     lib_u8 image = 0x6du;
-    lib_i32 failed = !prefix_attributes_s64_prepare(
-        CORE_MACHINE_CPU_PROFILE_80386, &state);
+    lib_i32 failed = !prefix_attributes_s64_prepare(&state);
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0x1000u, &image,
-            sizeof(image)) != LIB_STATUS_OK || core_machine_memory_write(
-                state.machine, 0x0080u, &vector_offset, sizeof(vector_offset)) !=
-                LIB_STATUS_OK || core_machine_memory_write(state.machine,
-                    0x0082u, &vector_segment, sizeof(vector_segment)) !=
-                LIB_STATUS_OK || core_machine_memory_write(state.machine,
-                    0x0100u, hlt, sizeof(hlt)) != LIB_STATUS_OK ||
-                core_machine_memory_write(state.machine, 0u, code,
-                    sizeof(code)) != LIB_STATUS_OK;
+            sizeof(image)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine, 0x0080u,
+                &vector_offset, sizeof(vector_offset)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine, 0x0082u,
+                &vector_segment, sizeof(vector_segment)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine, 0x0100u, hlt,
+                sizeof(hlt)) != LIB_STATUS_OK ||
+            core_machine_memory_write(state.machine, 0u, code,
+                sizeof(code)) != LIB_STATUS_OK ||
+            core_machine_debug_patch_registers(state.machine,
+                &registers) != LIB_STATUS_OK;
     }
     if (!failed) {
-        state.machine->executor_cpu.data.eax = 0xaabbcc00u;
-        state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
         lib_memory_set(&source, 0, sizeof(source));
         test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
+        core_machine_pic_irq_source_bind(&source,
+            &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (lib_u16)after.data.esp,
-            (lib_uptr)&frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
-            after.data.eip != 0x0101u || frame_ip != 5u ||
-            after.data.al != image || !CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            core_machine_memory_read(state.machine,
+                after.ss.base + (lib_u16)after.esp, &frame_ip,
+                sizeof(frame_ip)) != LIB_STATUS_OK ||
+            after.eip != 0x0101u || frame_ip != 5u ||
+            (after.eax & 0xffu) != image ||
+            !CORE_MACHINE_BIT_IS_SET(
+                test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+                VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(
+                test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
@@ -903,50 +99,6 @@ static lib_i32 prefix_attributes_s64_test_irq_no_shadow(void)
 
 lib_i32 main(void)
 {
-    if (!prefix_attributes_s64_test_segments()) {
-        fprintf(stderr, "S64 prefix segment grid failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_last_wins()) {
-        fprintf(stderr, "S64 prefix last-wins failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_attributes_and_lock()) {
-        fprintf(stderr, "S64 attribute/LOCK failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_lock_group_legality()) {
-        fprintf(stderr, "S64 LOCK group legality failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_lock_group_writes()) {
-        fprintf(stderr, "S64 LOCK group writes failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_repeated_width_prefixes()) {
-        fprintf(stderr, "S64 repeated width-prefix failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_fixed_segment_and_register()) {
-        fprintf(stderr, "S64 fixed-segment/register prefix failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_rep_movs()) {
-        fprintf(stderr, "S64 REP MOVS failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_rep_edges()) {
-        fprintf(stderr, "S64 REP edges failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_repne_movs()) {
-        fprintf(stderr, "S64 REPNE MOVS failed\n");
-        return 1;
-    }
-    if (!prefix_attributes_s64_test_mixed_repeat_last_wins()) {
-        fprintf(stderr, "S64 mixed repeat-prefix failed\n");
-        return 1;
-    }
     if (!prefix_attributes_s64_test_irq_no_shadow()) {
         fprintf(stderr, "S64 prefix IRQ failed\n");
         return 1;

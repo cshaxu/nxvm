@@ -42,7 +42,9 @@ set(project_t332_public_board_sources
     "test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c")
+    "test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c")
 
 function(project_t332_require_shared_lifecycle source)
     set(path "${PROJECT_T332_SOURCE_DIR}/${source}")

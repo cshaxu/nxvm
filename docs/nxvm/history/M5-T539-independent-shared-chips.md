@@ -601,3 +601,16 @@ six unchanged manifests, documentation and diff checks meet the packet.
 Ten test/build paths add 2,065/remove 1,530 lines. Production and executable
 inputs remain unchanged. S28 closes; S29 is next. CPU extraction and T539
 remain open with 84 original private consumers assigned through S37.
+
+## S29: Operand/Address and Prefix-Attribute Consumer Migration
+
+Admitted after S28 P2 `9a4d84c5b` under owner automatic-S authorization.
+The operand suite retains all 28 contexts: 26 CPU executions and four board
+executions, with two complementary fault receivers. Eleven S64 prefix groups
+are CPU-owned; the real PIC/IRQ group remains board-owned. No CPU production,
+public ABI, Shared, MyNES or executable-input changes.
+[S29 evidence](../etc/evidence/t539-s29-operand-prefix-migration.md) records the full
+receiving map and boundary decisions. Full units pass 389/389 per width; 66
+specialized gates, extended CPU boundary negatives and six unchanged corpus
+manifests pass. Executor delivery awaits actual-commit review. CPU extraction
+and T539 remain open with 82 original private consumers assigned S30-S37.

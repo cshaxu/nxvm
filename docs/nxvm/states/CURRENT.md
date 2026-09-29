@@ -2,9 +2,30 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S28 are accepted; S29 is next.
+M5 T539 remains open. S1-S28 are accepted; S29 is active.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
-retain S29-S40 as pending, not accepted CPU extraction.
+retain S30-S40 as pending, not accepted CPU extraction.
+
+## S29 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, M5 T539 S29 after S28 P2 9a4d84c5b; NXVM target only. |
+| Admission And Approval | Coordinator admission under owner's automatic-S authorization and CPU decomposition amendment; one session switches executor/coordinator roles. |
+| Objective | Move CPU-owned operand/address and prefix-attribute assertions into CPU-only receivers while retaining the original board port, fault-delivery and PIC/IRQ observations. |
+| Non-goals | No CPU semantics/timing change, new public ABI, Shared relocation, opaque-lifetime cutover, firmware, INI, MyNES or artifact-input change. |
+| Reference Baseline | Clean pushed 9a4d84c5b; complete units 387/387 per width. The original operand/address and S64 prefix files have 538 and 957 lines, respectively, with five and twelve named test groups. |
+| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU work packages](../etc/architecture/t539-cpu-work-packages.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
+| Files And ABI Surface | Two original smoke sources, CPU-owned receiving tests, NXVM test registration and boundary/fixture gates, packet/history/evidence. Preserve exact program arrays and original context receivers; add no public capability or second execution path. |
+| Applicable Rules | Product Task Reading Set, shared/NXVM architecture and coding, execution and documentation rules; architecture-governance then coding-governance. CPU state stays with CPU; physical ports, PIC and delivered machine faults stay board-owned. No external-source operation. |
+| Verification | Full x64/x86 build and repository-only unit suites; sequential native desktop suites, specialized gates, six unchanged manifests, documentation and diff checks. Transient focused selection: original/new operand/address and prefix tests, CPU-boundary negatives. |
+| Expected Markers | CPU receivers link only x86-cpu; original profile/prefix/program matrices retain mapped assertions; board tests use public machine operations for port and IRQ/fault composition, with no direct private CPU access. |
+| Asset Needs | Repository-only inputs; retain existing build/t539-s3 trees and S18 recovery artifact. No ROM, media, INI or executable input changes. |
+| Reporting Requirements | Record every original test-group/context receiver, distinct CPU/board assertions, exact changed paths and code line counts, dual-width verification, pushed implementation and actual-commit review. |
+| Stop Conditions | New production behavior/API need, lost context, unaccounted includer, or scope larger than the bounded package requires packet revision before continuing; failed complete gate blocks acceptance. |
+| Exit Criteria | Original context receiving proof, CPU-only ownership for internal attributes, public board port/IRQ/fault proof, no duplicate private path, complete units/gates, actual-commit acceptance and pushed implementation/governance Ps. |
+| Original Owner Request | Decompose oversized S18 CPU migration into independently traceable bounded S tasks, preserve original semantics and style, automatically admit each S. |
+| Similar-Issue Sweep | Inspect both suites and includers for private CPU/RAM/PIC access, hidden success polarity, repeated prefix precedence, and board-only side effects; assign remaining direct private consumers to S30-S37 without reclassifying them as done. |
 
 ## S28 Acceptance
 
