@@ -133,3 +133,22 @@ the admitted batch. The cross-tree desktop risk is retained in NXVM TODO for
 an explicitly admitted Shared review; a passing isolated run does not prove
 that concurrency defect fixed. Final S21 verification is x64 373/373 and x86
 373/373, with six unchanged manifests and the documentation/diff gates passing.
+
+## Coordinator Actual-Commit Acceptance
+
+Reviewed pushed NXVM P1 `1049b9021` after switching from executor to coordinator.
+The actual test/build diff preserves the original instruction tables, expected
+registers and faults, all 53 original contexts and the eight newly corrected
+opcode contexts. Public board operations replace private CPU access; artificial
+hidden-cache cases stay CPU-owned. IVT refusal and bounded bootstrap setup are
+explicit fixture changes, not unchanged hardware claims. No CPU algorithm,
+timing grade or production ABI changed. Gates retain exact constructor ownership
+and add negative boundary controls rather than exempting the moved tests.
+
+The 18 changed paths belong exclusively to NXVM. Source/test accounting remains
++626/-499 across ten paths; positive growth provides independently linkable
+CPU tests and boundary prevention. The source tree, Shared manifests and deployed
+artifacts are unchanged. Documentation maps every original consumer to the
+revised receiving plan; historical identifiers remain immutable. Current's
+packet is removed on acceptance, and S22 is next. T539 and the CPU ledger row
+remain open. Desktop-test isolation is explicitly retained in TODO.

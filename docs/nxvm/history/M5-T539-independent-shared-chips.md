@@ -437,3 +437,13 @@ timing grade, Shared corpus, MyNES, INI or executable input changes.
 [S21 evidence](../etc/evidence/t539-s21-lea-movx-migration.md) records the fixture
 mechanism differences, full verification and size accounting. Executor delivery
 is ready for coordinator actual-commit review; acceptance is not yet claimed.
+
+### S21 Acceptance
+
+Coordinator actual-commit review accepts pushed NXVM P1 `1049b9021`. Both widths
+pass all 373 units; 66 specialized steps, six manifests and documentation/diff
+checks pass. The evidence preserves a failed concurrent desktop run and the
+passing isolated x86 full run; its unproven concurrency cause is a TODO, not a
+claimed repair. Ten test/build paths add 626/remove 499 lines. The packet is
+removed; S22 is next, and T539 remains open through the planned CPU receiving
+audit. No production, asset, INI, Shared or MyNES change was required.
