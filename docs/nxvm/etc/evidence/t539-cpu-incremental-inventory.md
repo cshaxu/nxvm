@@ -114,6 +114,13 @@ acceptance; 91 original private consumers remain assigned to S26-S37.
 - `core_machine_legacy_sreg_stack_smoke.c`
 - `core_machine_fs_gs_stack_smoke.c`
 
+S26 implementation removes both board-private CPU dependencies. All 164
+original contexts remain in two CPU-only receivers; 18 complementary board
+executions retain PIC and machine-fault proof. The two FS/GS board receivers
+use valid public descriptor setup while the original inconsistent cache
+preconditions remain CPU-local. See [S26 evidence](t539-s26-segment-stack-migration.md).
+Current owns acceptance; 89 original private consumers remain assigned S27-S37.
+
 ### S27: 3 matching files
 
 - `core_machine_les_lds_s41_smoke.c`

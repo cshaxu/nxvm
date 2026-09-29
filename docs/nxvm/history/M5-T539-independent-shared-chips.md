@@ -532,3 +532,16 @@ specialized gates, six manifests and documentation/diff checks pass. Seven
 test/build paths add 679/remove 518 lines. No production or artifact input
 changes. The packet is removed; S26 is next. Remaining original private
 consumers number 91, assigned through S37. CPU and T539 acceptance remain open.
+
+## S26: Segment Stack Consumer Migration
+
+Admitted at S25 P2 430abfc54 under automatic authorization. The legacy and
+FS/GS segment-stack suites retain all 164 original contexts in CPU-only tests,
+with 18 complementary board executions. Six complete cache/register helpers
+remain unchanged; actual PIC acknowledgement and POP SS shadow remain tested.
+Private invalid-cache setup stays at the CPU owner rather than adding an API.
+[S26 evidence](../etc/evidence/t539-s26-segment-stack-migration.md) records the
+case map, two distinct FS/GS public-board setups and original table comparison.
+Full units pass 382/382 per width; 66 specialized gates and six manifests pass.
+Nine test/build paths add 1,107/remove 783 lines. No production or artifact
+input changes. Executor delivery awaits coordinator actual-commit acceptance.
