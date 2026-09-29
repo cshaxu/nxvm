@@ -48,7 +48,9 @@ it does not change runtime ownership before the corresponding cutover.
   RTC/calendar/register state to `x86/devices/rtc146818`, individual PIC
   state/priority to `x86/devices/pic8259`, DMA to `dma8237`, AT controller and
   endpoints to `kbc8042`/`keyboard`/`ps2mouse`, and qualified XT register/serial
-  mechanisms to `ppi8255`/`xtkeyboard`. NXVM retains cascade/source aggregation,
+  mechanisms to `ppi8255`/`xtkeyboard`, and the FDC command/PCN/cause mechanism
+  to `fdc8272`. NXVM retains the FDC PC registers, physical drive and record
+  provider, cascade/source aggregation,
   port attachment, index/NMI latches, seed/checksum, clock conversion and
   IRQ/refresh/speaker wiring. Current records each batch's acceptance; other
   chip extractions remain pending.

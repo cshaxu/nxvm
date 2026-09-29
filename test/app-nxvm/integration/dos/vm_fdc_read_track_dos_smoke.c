@@ -21,6 +21,7 @@
 #define VM_FDC242_IRQ_COUNT_OFFSET 0x02a0u
 #define VM_FDC242_RESULT_OFFSET 0x02a1u
 #define VM_FDC242_DISPLAY_OBSERVATION_QUANTUM 256u
+#define VM_FDC242_ST0_ABNORMAL 0x40u
 
 static lib_u16 vm_fdc242_fat_get(const lib_u8 *fat, lib_u16 cluster)
 {
@@ -244,7 +245,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         one_instruction.result[4] == 0u && one_instruction.result[5] == 0u &&
         one_instruction.result[6] == 0x13u && one_instruction.result[7] == 0x02u &&
         one_instruction.result[8] == 0x80u &&
-        one_instruction.off_result[0] == core_machine_fdc_ST0_ABNORMAL &&
+        one_instruction.off_result[0] == VM_FDC242_ST0_ABNORMAL &&
         one_instruction.off_result[1] == 0x04u && one_instruction.off_result[7] ==
         0x80u;
     if (!passed) {
@@ -268,7 +269,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             one_instruction.result[4] == 0u && one_instruction.result[5] == 0u &&
             one_instruction.result[6] == 0x13u && one_instruction.result[7] == 0x02u &&
             one_instruction.result[8] == 0x80u,
-            one_instruction.off_result[0] == core_machine_fdc_ST0_ABNORMAL &&
+            one_instruction.off_result[0] == VM_FDC242_ST0_ABNORMAL &&
             one_instruction.off_result[1] == 0x04u && one_instruction.off_result[7] ==
             0x80u,
             one_instruction.off_result[0], one_instruction.off_result[1],

@@ -11,14 +11,15 @@ static lib_i32 core_machine_dma_deadline_is_available(const core_machine *machin
 
 static lib_i32 core_machine_deadline_is_blocked(const core_machine *machine)
 {
+    lib_u64 due_tick;
     if (machine == LIB_NULL ||
         (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
             &machine->shared_dma_secondary) &&
          !core_machine_dma_deadline_is_available(machine))) {
         return 1;
     }
-    return machine->fdc.data.phase == core_machine_fdc_PHASE_PENDING_COMMAND ||
-        machine->fdc.data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE;
+    return core_machine_fdc_next_due_tick(&machine->fdc, &due_tick) == LIB_STATUS_OK &&
+        due_tick <= machine->elapsed_ticks;
 }
 
 static lib_i32 core_machine_fast_advance_is_blocked(const core_machine *machine)

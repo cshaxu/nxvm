@@ -1908,16 +1908,21 @@ int main(lib_i32 argc, char **argv)
             }
             goto done;
         }
-        if (session->core_machine->fdc.data.command_index != 0u ||
-            session->core_machine->fdc.data.phase != core_machine_fdc_PHASE_COMMAND) {
-            last_fdc_command = session->core_machine->fdc.data.cmd[0u];
-            lib_memory_copy(last_fdc_bytes, session->core_machine->fdc.data.cmd,
+        x86_fdc_observation fdc_observation;
+        if (x86_fdc_capture(session->core_machine->fdc.chip, &fdc_observation) != LIB_STATUS_OK) {
+            printf("BOOT-PROBE=fdc-observation-unavailable\n");
+            goto done;
+        }
+        if (fdc_observation.command_index != 0u ||
+            (fdc_observation.msr & 0x10u) != 0u) {
+            last_fdc_command = fdc_observation.command[0u];
+            lib_memory_copy(last_fdc_bytes, fdc_observation.command,
                 sizeof(last_fdc_bytes));
-            last_fdc_result[0u] = session->core_machine->fdc.data.st0;
-            last_fdc_result[1u] = session->core_machine->fdc.data.st1;
-            last_fdc_result[2u] = session->core_machine->fdc.data.st2;
-            last_fdc_phase = (lib_u8)session->core_machine->fdc.data.phase;
-            last_fdc_remaining = session->core_machine->fdc.data.transfer_remaining;
+            last_fdc_result[0u] = fdc_observation.st0;
+            last_fdc_result[1u] = fdc_observation.st1;
+            last_fdc_result[2u] = fdc_observation.st2;
+            last_fdc_phase = (lib_u8)fdc_observation.phase;
+            last_fdc_remaining = fdc_observation.transfer_remaining;
             last_dma = x86_dma_get_signals(session->core_machine->shared_dma_primary.device);
         }
         if (result.reason == CORE_MACHINE_STOP_FAULT) {
@@ -2505,22 +2510,25 @@ done:
         printf("PIT:out0=%u:out1=%u\n",
             (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 0u),
             (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 1u));
-        printf("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
-            (unsigned int)session->core_machine->fdc.data.phase,
-            (unsigned int)session->core_machine->fdc.data.dor,
-            (unsigned int)session->core_machine->fdc.data.msr,
-            (unsigned int)session->core_machine->fdc.data.st0,
-            (unsigned int)session->core_machine->fdc.data.st1,
-            (unsigned int)session->core_machine->fdc.data.st2,
-            (unsigned int)session->core_machine->fdc.data.reset_pending,
-            (unsigned int)session->core_machine->fdc.data.reset_sense_mask,
-            (unsigned int)session->core_machine->fdc.data.seek_result_count,
-            (unsigned int)session->core_machine->fdc.data.cylinder);
-        printf("BOOT-PROBE=fdc-result=%02X-length=%u-index=%u-st3=%02X\n",
-            (unsigned int)session->core_machine->fdc.data.ret[0u],
-            (unsigned int)session->core_machine->fdc.data.result_length,
-            (unsigned int)session->core_machine->fdc.data.result_index,
-            (unsigned int)session->core_machine->fdc.data.st3);
+        x86_fdc_observation fdc_observation;
+        if (x86_fdc_capture(session->core_machine->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
+            printf("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
+                (unsigned int)fdc_observation.phase,
+                (unsigned int)session->core_machine->fdc.data.dor,
+                (unsigned int)fdc_observation.msr,
+                (unsigned int)fdc_observation.st0,
+                (unsigned int)fdc_observation.st1,
+                (unsigned int)fdc_observation.st2,
+                (unsigned int)fdc_observation.reset_pending,
+                (unsigned int)fdc_observation.reset_sense_mask,
+                (unsigned int)fdc_observation.seek_result_count,
+                (unsigned int)fdc_observation.cylinder);
+            printf("BOOT-PROBE=fdc-result=%02X-length=%u-index=%u-st3=%02X\n",
+                (unsigned int)fdc_observation.result[0u],
+                (unsigned int)fdc_observation.result_length,
+                (unsigned int)fdc_observation.result_index,
+                (unsigned int)fdc_observation.st3);
+        }
         printf("BOOT-PROBE=last-fdc-command=%02X-phase=%u-st=%02X/%02X/%02X\n",
             (unsigned int)last_fdc_command, (unsigned int)last_fdc_phase,
             (unsigned int)last_fdc_result[0u], (unsigned int)last_fdc_result[1u],
@@ -3228,12 +3236,14 @@ done:
                 (unsigned int)waiting_interrupts_enabled,
                 (unsigned int)last_wait_advanced,
                 (unsigned int)waiting_linear_pc);
-            printf("BOOT-PROBE=waiting-fdc-phase=%u-hdc-phase=%u-dma-pending=%u\n",
-                (unsigned int)session->core_machine->fdc.data.phase,
-                (unsigned int)session->core_machine->hdc.data.phase,
-                (unsigned int)core_machine_dma_has_pending_request(
-                    &session->core_machine->shared_dma_primary,
-                    &session->core_machine->shared_dma_secondary));
+            if (x86_fdc_capture(session->core_machine->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
+                printf("BOOT-PROBE=waiting-fdc-phase=%u-hdc-phase=%u-dma-pending=%u\n",
+                    (unsigned int)fdc_observation.phase,
+                    (unsigned int)session->core_machine->hdc.data.phase,
+                    (unsigned int)core_machine_dma_has_pending_request(
+                        &session->core_machine->shared_dma_primary,
+                        &session->core_machine->shared_dma_secondary));
+            }
             {
                 lib_u64 ticks = 0u;
                 const lib_status status = x86_keyboard_ticks_until_repeat(

@@ -4,6 +4,22 @@
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/media_interface.h"
 
+static lib_bool fail_fdc_create;
+static lib_status port_assembly_create_fdc(const x86_fdc_connection *connection,
+    const x86_fdc_timing *timing, x86_fdc **out_fdc)
+{
+    if (fail_fdc_create) {
+        *out_fdc = LIB_NULL;
+        return LIB_STATUS_NO_MEMORY;
+    }
+    return x86_fdc_create(connection, timing, out_fdc);
+}
+
+/* Inject a failed dependency at the adapter's existing create boundary. */
+#define x86_fdc_create port_assembly_create_fdc
+#include "app-nxvm/devices/fdc.c"
+#undef x86_fdc_create
+
 typedef struct port_assembly_probe_state {
     lib_u32 value;
 } port_assembly_probe_state;
@@ -90,7 +106,7 @@ static lib_i32 port_assembly_create_failure(void)
     return port_assembly_fresh_default_create();
 }
 
-static lib_i32 port_assembly_fdc_transaction(void)
+static lib_i32 port_assembly_fdc_transaction(lib_size fail_at)
 {
     const core_machine_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
     const core_machine_dma_wiring wiring = { .fdc_channel = 2u,
@@ -104,9 +120,10 @@ static lib_i32 port_assembly_fdc_transaction(void)
             CORE_MACHINE_MEDIA_ID_INVALID}},
         .config = {.dor_port = 0x03f2u, .status_port = 0x03f4u,
             .data_port = 0x03f5u, .direction_port = 0x03f7u,
-            .control_port = 0x03f7u, .irq = 6u, .dma_channel = 2u}
+            .control_port = 0x03f7u, .diagnostic_port = 0x03f0u,
+            .irq = 6u, .dma_channel = 2u}
     };
-    core_machine_port_test_allocation allocation = { 2u, 0u };
+    core_machine_port_test_allocation allocation = { fail_at, 0u };
     core_machine *machine = LIB_NULL;
     core_machine_fdc fdc_zero = {0};
     core_machine_fdc_topology topology_zero = {0};
@@ -118,6 +135,7 @@ static lib_i32 port_assembly_fdc_transaction(void)
     topology.media_registry = media;
     topology.dma_request = request;
     if (!failed) {
+        fail_fdc_create = fail_at == 0u;
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_fdc(machine, &topology) != LIB_STATUS_NO_MEMORY ||
             machine->fdc_configured ||
@@ -126,8 +144,15 @@ static lib_i32 port_assembly_fdc_transaction(void)
                 sizeof(topology_zero)) != 0 ||
             core_machine_port_has_read(&machine->executor_port, 0x03f4u) ||
             core_machine_port_has_read(&machine->executor_port, 0x03f5u) ||
+            core_machine_port_has_read(&machine->executor_port, 0x03f7u) ||
+            core_machine_port_has_read(&machine->executor_port, 0x03f0u) ||
             core_machine_port_has_write(&machine->executor_port, 0x03f2u) ||
-            core_machine_port_has_write(&machine->executor_port, 0x03f5u);
+            core_machine_port_has_write(&machine->executor_port, 0x03f5u) ||
+            core_machine_port_has_write(&machine->executor_port, 0x03f7u) ||
+            core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                &machine->shared_dma_secondary);
+        failed |= fail_fdc_create && allocation.attempts != 0u;
+        fail_fdc_create = LIB_FALSE;
         allocation.fail_at = 0u;
         allocation.attempts = 0u;
         failed |= core_machine_configure_fdc(machine, &topology) != LIB_STATUS_OK ||
@@ -269,8 +294,12 @@ static lib_i32 port_assembly_pic_transaction(void)
 lib_i32 main(void)
 {
     lib_i32 failed = port_assembly_range_transaction() ||
-        port_assembly_create_failure() || port_assembly_fdc_transaction() ||
+        port_assembly_create_failure() ||
         port_assembly_pit_transaction() || port_assembly_pic_transaction();
+
+    /* Chip creation, then all seven routes, including the optional diagnostic. */
+    for (lib_size fail_at = 0u; fail_at <= 7u; ++fail_at)
+        failed |= port_assembly_fdc_transaction(fail_at);
 
     if (failed) return 1;
     puts("M5:T313:S3:PORT-ASSEMBLY:OK");

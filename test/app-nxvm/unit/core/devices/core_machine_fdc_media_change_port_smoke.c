@@ -1,3 +1,4 @@
+#include "support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -73,28 +74,26 @@ static void core_machine_fdc_change_command(core_machine_fdc *fdc, t_port *port,
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
 }
 
-static void core_machine_fdc_change_ack_irq(core_machine_fdc *fdc, t_port *port)
+static lib_bool core_machine_fdc_change_ack_irq(core_machine_fdc *fdc, t_port *port)
 {
-    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
-        if (fdc->data.seek_pending[drive]) {
-            core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[drive]);
-        }
-    }
+    if (!test_fdc_finish_seeks(fdc)) return LIB_FALSE;
     core_machine_fdc_change_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
     (void)core_machine_port_read(port, 0x03f5u);
     (void)core_machine_port_read(port, 0x03f5u);
+    return LIB_TRUE;
 }
 
-static void core_machine_fdc_change_drain_reset(core_machine_fdc *fdc, t_port *port)
+static lib_bool core_machine_fdc_change_drain_reset(core_machine_fdc *fdc, t_port *port)
 {
     lib_u8 drive;
 
     for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
-        core_machine_fdc_change_ack_irq(fdc, port);
+        if (!core_machine_fdc_change_ack_irq(fdc, port)) return LIB_FALSE;
     }
+    return LIB_TRUE;
 }
 
 int main(void)
@@ -164,14 +163,14 @@ int main(void)
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 core_machine_fdc_change_require(&failed, &first_failure, 1,
                     (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u);
-                core_machine_fdc_change_drain_reset(fdc, port);
+                failed |= !core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
-                core_machine_fdc_change_ack_irq(fdc, port);
+                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
                 core_machine_port_write(port, 0x03f2u, 0x2du);
                 core_machine_fdc_change_command(fdc, port, recalibrate_1,
                     sizeof(recalibrate_1));
-                core_machine_fdc_change_ack_irq(fdc, port);
+                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
 
                 core_machine_fdc_change_command(fdc, port, specify_dma,
                     sizeof(specify_dma));
@@ -180,24 +179,25 @@ int main(void)
                 drive1.present = LIB_FALSE;
                 (void)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 2,
-                    fdc->data.flagINTR || fdc->connect.irq_source.asserted ||
+                    !test_fdc_interrupt_matches(fdc, LIB_FALSE) ||
                     (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
                 core_machine_fdc_change_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
                 status = (lib_u8)core_machine_port_read(port, 0x03f5u);
                 core_machine_fdc_change_require(&failed, &first_failure, 3,
                     status != 0x80u ||
-                    (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) != 0u || fdc->data.flagINTR ||
-                    fdc->connect.irq_source.asserted);
+                    (core_machine_port_read(port, 0x03f4u) &
+                        (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) != 0u ||
+                    !test_fdc_interrupt_matches(fdc, LIB_FALSE));
                 drive1.present = LIB_TRUE;
                 (void)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 4,
-                    fdc->data.flagINTR || fdc->connect.irq_source.asserted);
-                core_machine_fdc_change_ack_irq(fdc, port);
+                    !test_fdc_interrupt_matches(fdc, LIB_FALSE));
+                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
 
                 ++drive0.generation;
                 (void)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 5,
-                    fdc->data.flagINTR || fdc->connect.irq_source.asserted);
+                    !test_fdc_interrupt_matches(fdc, LIB_FALSE));
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 (void)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 6,
@@ -206,10 +206,10 @@ int main(void)
                  * recalibration at Track0 cannot do so. */
                 core_machine_fdc_change_command(fdc, port,
                     (const lib_u8[]){0x0fu, 0u, 1u}, 3u);
-                core_machine_fdc_change_ack_irq(fdc, port);
+                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
                 core_machine_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
-                core_machine_fdc_change_ack_irq(fdc, port);
+                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
                 (void)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 7,
                     (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u);
@@ -224,8 +224,8 @@ int main(void)
                 ++drive1.generation;
                 (void)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 9,
-                    fdc->data.flagINTR || fdc->connect.irq_source.asserted);
-                core_machine_fdc_change_ack_irq(fdc, port);
+                    !test_fdc_interrupt_matches(fdc, LIB_FALSE));
+                failed |= !core_machine_fdc_change_ack_irq(fdc, port);
                 status = 0u;
                 core_machine_fdc_change_command(fdc, port, sense_1, sizeof(sense_1));
                 status = (lib_u8)core_machine_port_read(port, 0x03f5u);
@@ -236,13 +236,13 @@ int main(void)
                 drive1.present = LIB_TRUE;
                 (void)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 11,
-                    fdc->data.flagINTR || fdc->connect.irq_source.asserted);
+                    !test_fdc_interrupt_matches(fdc, LIB_FALSE));
                 core_machine_port_write(port, 0x03f2u, 0x00u);
                 core_machine_fdc_change_require(&failed, &first_failure, 12,
-                    fdc->data.flagINTR || fdc->connect.irq_source.asserted ||
-                    fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
+                    !test_fdc_interrupt_matches(fdc, LIB_FALSE) ||
+                    core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
-                core_machine_fdc_change_drain_reset(fdc, port);
+                failed |= !core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, specify_dma, sizeof(specify_dma));
                 core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
                 core_machine_fdc_change_require(&failed, &first_failure, 13,
@@ -250,8 +250,8 @@ int main(void)
                 core_machine_port_write(port, 0x03f2u, 0x0cu);
                 core_machine_fdc_change_require(&failed, &first_failure, 14,
                     (core_machine_port_read(port, 8u) & 0x40u) != 0u ||
-                    fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE);
-                core_machine_fdc_advance(fdc);
+                    core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB);
+                test_fdc_advance(fdc);
                 for (lib_u8 index = 0u; index < 7u; ++index) {
                     const lib_u8 value = (lib_u8)core_machine_port_read(port, 0x03f5u);
                     core_machine_fdc_change_require(&failed, &first_failure, 14,
@@ -259,28 +259,28 @@ int main(void)
                         (index == 1u && value != 0x04u));
                 }
                 core_machine_fdc_change_require(&failed, &first_failure, 14,
-                    fdc->data.phase != core_machine_fdc_PHASE_COMMAND ||
+                    core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM ||
                     fdc->connect.irq_source.asserted);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
-                core_machine_fdc_change_drain_reset(fdc, port);
+                failed |= !core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
                 core_machine_fdc_change_require(&failed, &first_failure, 15,
                     (core_machine_port_read(port, 8u) & 0x40u) == 0u);
                 core_machine_port_write(port, 0x03f2u, 0x00u);
                 core_machine_fdc_change_require(&failed, &first_failure, 16,
                     (core_machine_port_read(port, 8u) & 0x40u) != 0u ||
-                    fdc->data.flagINTR || fdc->connect.irq_source.asserted ||
-                    fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
+                    !test_fdc_interrupt_matches(fdc, LIB_FALSE) ||
+                    core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
-                core_machine_fdc_change_drain_reset(fdc, port);
+                failed |= !core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
-                core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[0u]);
+                failed |= !test_fdc_finish_seeks(fdc);
                 core_machine_fdc_change_require(&failed, &first_failure, 17,
-                    !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
+                    !test_fdc_interrupt_matches(fdc, LIB_TRUE));
                 core_machine_port_write(port, 0x03f2u, 0x00u);
                 core_machine_fdc_change_require(&failed, &first_failure, 17,
-                    fdc->data.flagINTR || fdc->connect.irq_source.asserted);
+                    !test_fdc_interrupt_matches(fdc, LIB_FALSE));
             }
         }
     }

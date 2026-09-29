@@ -1215,7 +1215,7 @@ add_library(core-machine-primitives ALIAS core-machine-executor)
 target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine-executor PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
 add_executable(vm-machine-frame-smoke
@@ -2482,6 +2482,12 @@ add_test(NAME unit.nxvm-firmware-build
         "-DWORK=${CMAKE_BINARY_DIR}/test/nxvm-firmware-build"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/product/firmware_build.cmake")
 set_tests_properties(unit.nxvm-firmware-build PROPERTIES LABELS unit TIMEOUT 30)
+add_test(NAME unit.fdc-boundary-negative
+    COMMAND "${CMAKE_COMMAND}"
+        "-DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
+        "-DWORK=${CMAKE_BINARY_DIR}/test/fdc-boundary-negative"
+        -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/core/devices/fdc_boundary_negative.cmake")
+set_tests_properties(unit.fdc-boundary-negative PROPERTIES LABELS unit TIMEOUT 30)
 
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
@@ -2634,7 +2640,8 @@ list(LENGTH project_t515_registered_cases project_t515_registered_case_count)
 if(NOT project_t515_registered_case_count EQUAL 1)
     message(FATAL_ERROR "Fixed product build must register exactly one matching boot row.")
 endif()
-set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS nxvm-firmware-embedding nxvm-firmware-build)
+set(PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
+    nxvm-firmware-embedding nxvm-firmware-build fdc-boundary-negative)
 if(POWERSHELL_EXECUTABLE)
     list(APPEND PROJECT_T344_UNIT_TEST_AUXILIARY_TESTS
         core-machine-8086-timing-results-s5

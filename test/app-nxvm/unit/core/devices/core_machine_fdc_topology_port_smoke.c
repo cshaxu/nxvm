@@ -1,3 +1,4 @@
+#include "support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -61,7 +62,7 @@ static void core_machine_fdc_topology_command(core_machine_fdc *fdc, t_port *por
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
 }
 
 static lib_i32 core_machine_fdc_topology_result(core_machine_fdc *fdc, t_port *port,
@@ -69,11 +70,11 @@ static lib_i32 core_machine_fdc_topology_result(core_machine_fdc *fdc, t_port *p
 {
     lib_size index;
 
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
-    return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
+    return (core_machine_port_read(port, 0x03f4u) & (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
 static lib_i32 core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, t_port *port,
@@ -85,7 +86,7 @@ static lib_i32 core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, t_po
     core_machine_fdc_topology_command(fdc, port, command, sizeof(command));
     if (core_machine_port_read(port, 0x03f5u) != expected) return 0;
     for (index = 1u; index < 512u; ++index) {
-        core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks + 128u);
+        if (!test_fdc_advance_ticks(fdc, 128u)) return 0;
         (void)core_machine_port_read(port, 0x03f5u);
     }
     return core_machine_fdc_topology_result(fdc, port, result, 7u) &&
@@ -157,14 +158,14 @@ int main(void)
             } else {
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 failed |= fdc->connect.irq_source.asserted ? 0x08 : 0;
-                core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
+                failed |= !test_fdc_advance_due(fdc) ? 0x08 : 0;
                 failed |= !fdc->connect.irq_source.asserted ? 0x08 : 0;
                 for (reset_drive = 0u; reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT;
                     ++reset_drive) {
                     core_machine_fdc_topology_command(fdc, port,
                         (const lib_u8[]){0x08u}, 1u);
                     failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
-                        result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
+                        result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || fdc->connect.irq_source.asserted) ? 0x08 : 0;
                 }
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
@@ -194,7 +195,7 @@ int main(void)
                 core_machine_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0xe6u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u);
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 7u) ||
-                    result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
+                    result[0] != TEST_FDC_ST0_ABNORMAL || result[1] != 0x04u ||
                     drive0.read_count != 512u || drive1.read_count != 512u) ? 0x40 : 0;
 
                 core_machine_port_write(port, 0x03f2u, 0x4eu);
@@ -205,21 +206,22 @@ int main(void)
                     result[0] != 0x22u) ? 0x80 : 0;
                 core_machine_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x07u, 2u}, 2u);
-                for (lib_u8 step = 0u; step < 77u && fdc->data.seek_pending[2u]; ++step)
-                    core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[2u]);
+                for (lib_u8 step = 0u; step < 77u &&
+                        (core_machine_port_read(port, 0x03f4u) & 0x04u) != 0u; ++step)
+                    failed |= !test_fdc_advance_due(fdc) ? 0x100 : 0;
                 core_machine_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x08u}, 1u);
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
-                    result[0] != (core_machine_fdc_ST0_ABNORMAL |
-                        VFDC_ST0_SEEK_END | VFDC_ST0_EQUIPMENT_CHECK | 2u) ||
+                    result[0] != (TEST_FDC_ST0_ABNORMAL |
+                        TEST_FDC_ST0_SEEK_END | TEST_FDC_ST0_EQUIPMENT_CHECK | 2u) ||
                     result[1] != 0u) ? 0x100 : 0;
                 core_machine_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x0fu, 2u, 1u}, 3u);
-                core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[2u]);
+                failed |= !test_fdc_advance_due(fdc) ? 0x200 : 0;
                 core_machine_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x08u}, 1u);
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
-                    result[0] != (VFDC_ST0_SEEK_END | 2u) ||
+                    result[0] != (TEST_FDC_ST0_SEEK_END | 2u) ||
                     result[1] != 1u) ? 0x200 : 0;
                 core_machine_fdc_topology_command(fdc, port, read_absent, sizeof(read_absent));
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 7u) ||
@@ -228,7 +230,11 @@ int main(void)
             }
         }
     }
-    if (fdc != LIB_NULL) diagnostic_phase = fdc->data.phase;
+    if (fdc != LIB_NULL) {
+        x86_fdc_observation observation;
+        if (x86_fdc_capture(fdc->chip, &observation) == LIB_STATUS_OK)
+            diagnostic_phase = observation.phase;
+    }
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     if (failed) {

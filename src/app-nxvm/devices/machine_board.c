@@ -993,8 +993,9 @@ lib_status core_machine_configure_fdc(core_machine *machine,
         &machine->shared_pic_master, &machine->shared_pic_slave,
         &machine->executor_port, &machine->fdc_topology.config,
         &machine->fdc_topology.observation_provider);
-    core_machine_fdc_initialize(&machine->fdc);
-    status = core_machine_port_registration_status(&machine->executor_port);
+    status = core_machine_fdc_initialize(&machine->fdc);
+    if (status == LIB_STATUS_OK)
+        status = core_machine_port_registration_status(&machine->executor_port);
     if (status != LIB_STATUS_OK) {
         core_machine_port_rollback_registration(&machine->executor_port,
             port_checkpoint);

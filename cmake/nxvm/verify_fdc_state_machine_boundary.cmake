@@ -4,6 +4,10 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.h" fdc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/fdc8272/fdc.c" chip_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/fdc8272/fdc.h" chip_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/fdc8272/fdc8272_interface.h" chip_interface)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_fdc_smoke.c"
     core_fixture)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.h" fdd_header)
@@ -32,16 +36,48 @@ foreach(required IN ITEMS "core_machine_configure_fdc"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_fdc_PHASE_COMMAND"
-    "core_machine_fdc_PHASE_RESULT" "core_machine_media_query"
+foreach(required IN ITEMS "x86_fdc_create" "x86_fdc_destroy" "core_machine_media_query"
     "core_machine_media_read_bytes" "core_machine_media_write_bytes"
-    "core_machine_media_format_sectors" "core_machine_fdc_request_assert"
+    "core_machine_media_format_sectors" "fdc->connect.dma_request_assert"
     "core_machine_pic_irq_source_assert")
     string(FIND "${fdc_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "FDC state-machine contract is incomplete: ${required}")
     endif()
 endforeach()
+
+foreach(required IN ITEMS "x86_fdc_PHASE_COMMAND" "x86_fdc_PHASE_RESULT"
+    "x86_fdc_next_due_tick" "x86_fdc_poll_ready" "x86_fdc_transfer_byte")
+    string(FIND "${chip_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "Shared FDC mechanism missing: ${required}")
+    endif()
+endforeach()
+foreach(forbidden IN ITEMS "app-nxvm" "core_machine_" "t_port" "media_registry"
+    "VFDC_DOR" "VFDC_CCR" "drive_cylinder")
+    string(FIND "${chip_source}${chip_header}${chip_interface}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "Shared FDC retains board ownership: ${forbidden}")
+    endif()
+endforeach()
+if(chip_interface MATCHES "struct[ \t\r\n]+x86_fdc[ \t\r\n]*\\{")
+    message(FATAL_ERROR "Shared FDC public layout is not opaque")
+endif()
+file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+foreach(path IN LISTS app_sources)
+    file(READ "${path}" source)
+    if(source MATCHES "x86/devices/fdc8272/fdc\\.[ch]" OR
+        source MATCHES "core_machine_fdc_PHASE_" OR
+        source MATCHES "fdc\\.data\\.(phase|seek_pending|pcn|cmd|ret|flagINTR)" OR
+        source MATCHES "fdc->data\\.(phase|seek_pending|pcn|cmd|ret|flagINTR)")
+        message(FATAL_ERROR "NXVM crosses the opaque FDC boundary: ${path}")
+    endif()
+endforeach()
+string(FIND "${scheduler_source}" "core_machine_fdc_next_due_tick" position)
+if(position EQUAL -1)
+    message(FATAL_ERROR "FDC scheduling must consume the chip deadline contract")
+endif()
 
 foreach(forbidden IN ITEMS "pCurrByte" "transCount" "transfer_read" "transfer_write")
     string(FIND "${fdd_header}" "${forbidden}" header_position)

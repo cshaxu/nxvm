@@ -1,3 +1,4 @@
+#include "../devices/support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include "support/kbc_fixture.h"
 #include <stdio.h>
@@ -123,29 +124,28 @@ lib_i32 main(void)
             0x03f2u, 0u);
         core_machine_port_write(&session->core_machine->executor_port,
             0x03f2u, 0x1cu);
-        core_machine_fdc_advance_at(&session->core_machine->fdc,
-            session->core_machine->fdc.data.reset_due_tick);
+        failed |= !test_fdc_advance_due(&session->core_machine->fdc);
         failed |= !session->core_machine->fdc.connect.irq_source.asserted;
         for (sense_status = 0u; sense_status < CORE_MACHINE_FDC_DRIVE_COUNT;
             ++sense_status) {
             core_machine_port_write(&session->core_machine->executor_port,
                 0x03f5u, 0x08u);
-            core_machine_fdc_advance(&session->core_machine->fdc);
+            test_fdc_advance(&session->core_machine->fdc);
             reset_status[sense_status] = (lib_u8)core_machine_port_read(
                 &session->core_machine->executor_port, 0x03f5u);
             sense_cylinder = (lib_u8)core_machine_port_read(
                 &session->core_machine->executor_port, 0x03f5u);
             failed |= reset_status[sense_status] !=
-                (core_machine_fdc_ST0_READY_CHANGE | sense_status) ||
+                (TEST_FDC_ST0_READY_CHANGE | sense_status) ||
                 sense_cylinder != 0u;
         }
         core_machine_port_write(&session->core_machine->executor_port, 0x03f5u, 0x08u);
-        core_machine_fdc_advance(&session->core_machine->fdc);
+        test_fdc_advance(&session->core_machine->fdc);
         sense_status = (lib_u8)core_machine_port_read(
             &session->core_machine->executor_port, 0x03f5u);
         failed |= sense_status != 0x80u ||
             (core_machine_port_read(&session->core_machine->executor_port, 0x03f4u) &
-            (VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_CB)) != VFDC_MSR_RQM;
+            (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_CB)) != TEST_FDC_MSR_RQM;
         if (failed) stage = 4;
     }
     if (!failed) {

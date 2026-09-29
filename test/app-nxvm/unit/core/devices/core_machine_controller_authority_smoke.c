@@ -1,3 +1,4 @@
+#include "support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -13,7 +14,7 @@ static void core_machine_controller_fdc_command(core_machine_fdc *fdc, t_port *p
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
 }
 
 static lib_i32 core_machine_controller_fdc_result(core_machine_fdc *fdc, t_port *port,
@@ -21,12 +22,12 @@ static lib_i32 core_machine_controller_fdc_result(core_machine_fdc *fdc, t_port 
 {
     lib_size index;
 
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
     return (core_machine_port_read(port, 0x03f4u) &
-        (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
+        (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
 static lib_i32 core_machine_controller_hdc_program_chs(core_machine *machine,
@@ -180,7 +181,7 @@ lib_i32 main(void)
                 }
             }
             if (core_machine_reset(machine) != LIB_STATUS_OK ||
-                machine->fdc.data.phase != core_machine_fdc_PHASE_COMMAND ||
+                core_machine_port_read(port, fdc_config.status_port) != TEST_FDC_MSR_RQM ||
                 machine->hdc.data.status != (CORE_MACHINE_HDC_STATUS_DRDY |
                     CORE_MACHINE_HDC_STATUS_DSC)) {
                 failed |= 0x10;

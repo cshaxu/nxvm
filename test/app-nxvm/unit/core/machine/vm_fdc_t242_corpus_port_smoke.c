@@ -1,3 +1,4 @@
+#include "../devices/support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -44,8 +45,8 @@ static void vm_fdc_t242_command(core_machine_fdc *fdc, t_port *port,
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
-    core_machine_fdc_advance(fdc);
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
+    test_fdc_advance(fdc);
 }
 
 lib_i32 main(void)
@@ -100,59 +101,62 @@ lib_i32 main(void)
     vm_fdc_t242_write_dma2(port);
     vm_fdc_t242_command(&session->core_machine->fdc, port, specify_dma, sizeof(specify_dma));
     vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
-    failed |= !session->core_machine->fdc.data.flagINTR;
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE);
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
-    failed |= result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
+    failed |= result[0] != TEST_FDC_ST0_ABNORMAL || result[1] != 0x04u;
     failed |= core_machine_memory_read(session->core_machine, 0x0500u, actual,
         sizeof(actual)) != LIB_STATUS_OK || lib_memory_compare(actual, untouched,
         sizeof(actual)) != 0;
     vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){0x08u}, 1u);
     (void)core_machine_port_read(port, 0x03f5u);
     (void)core_machine_port_read(port, 0x03f5u);
-    failed |= session->core_machine->fdc.data.flagINTR;
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_FALSE);
     core_machine_port_write(port, 0x03f2u, 0x2cu);
     vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
-    failed |= !session->core_machine->fdc.data.flagINTR;
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE);
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
-    failed |= result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
+    failed |= result[0] != TEST_FDC_ST0_ABNORMAL || result[1] != 0x04u;
     vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){0x08u}, 1u);
     (void)core_machine_port_read(port, 0x03f5u);
     (void)core_machine_port_read(port, 0x03f5u);
-    failed |= session->core_machine->fdc.data.flagINTR;
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_FALSE);
     core_machine_port_write(port, 0x03f2u, 0x1cu);
     vm_fdc_t242_write_dma2(port);
     vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
     stage = '5';
-    for (index = 0u; index < 1024u && !session->core_machine->fdc.data.flagINTR;
+    /* Bound phase-level progression for the entire 18-sector transfer,
+     * not merely 1024 events. Reaching this bound is never success. */
+    for (index = 0u; index < sizeof(expected) * 16u + 1024u &&
+            !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE);
             ++index) {
         if (core_machine_advance_to_next_deadline(session->core_machine,
                 &advanced) != LIB_STATUS_OK || !advanced) goto done;
     }
-    if (!session->core_machine->fdc.data.flagINTR ||
+    if (!test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE) ||
         core_machine_memory_read(session->core_machine, 0x0500u, actual,
             sizeof(actual)) != LIB_STATUS_OK) {
         goto done;
     }
     failed |= lib_memory_compare(expected, actual, sizeof(expected)) != 0;
     stage = '6';
-    if (session->core_machine->fdc.data.flagINTR) {
+    if (test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE)) {
         for (index = 0u; index < sizeof(result); ++index) {
             result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
         }
-        failed |= result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
+        failed |= result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
             result[2] != 0u || result[3] != 0u || result[4] != 0u ||
             result[5] != 0x13u || result[6] != 0x02u;
         vm_fdc_t242_command(&session->core_machine->fdc, port,
             (const lib_u8[]){0x08u}, 1u);
         (void)core_machine_port_read(port, 0x03f5u);
         (void)core_machine_port_read(port, 0x03f5u);
-        failed |= session->core_machine->fdc.data.flagINTR;
+        failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_FALSE);
     } else {
-        failed |= session->core_machine->fdc.data.phase != core_machine_fdc_PHASE_COMMAND;
+        failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM;
     }
     stage = '7';
 
@@ -163,20 +167,34 @@ lib_i32 main(void)
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
-    failed |= result[0] != core_machine_fdc_ST0_ABNORMAL ||
+    failed |= result[0] != TEST_FDC_ST0_ABNORMAL ||
         result[1] != 0x04u;
     vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){0x08u}, 1u);
     (void)core_machine_port_read(port, 0x03f5u);
     (void)core_machine_port_read(port, 0x03f5u);
-    failed |= session->core_machine->fdc.data.flagINTR;
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_FALSE);
 
+    stage = '8';
 done:
     if (session != LIB_NULL) {
-        final_intr = session->core_machine->fdc.data.flagINTR;
-        final_phase = session->core_machine->fdc.data.phase;
+        x86_fdc_observation observation = {0};
+        if (x86_fdc_capture(session->core_machine->fdc.chip, &observation) == LIB_STATUS_OK) {
+            final_intr = observation.interrupt_pending;
+            final_phase = observation.phase;
+        }
+        if (stage != '8') {
+            core_machine_time_observation time;
+            if (core_machine_capture_time_observation(session->core_machine, &time) == LIB_STATUS_OK) {
+                fprintf(stderr, "T242 progress: tick=%llu deadline=%llu valid=%u disposition=%u remaining=%u\n",
+                    (unsigned long long)time.elapsed_ticks,
+                    (unsigned long long)time.next_deadline_tick,
+                    time.next_deadline_valid, time.progress_disposition,
+                    observation.transfer_remaining);
+            }
+        }
     }
     vm_machine_destroy(session);
-    if (failed || session == LIB_NULL) {
+    if (failed || stage != '8') {
         fprintf(stderr,
             "T242 read-track failed at %c, reason=%d, executed=%llu data=%02x/%02x result=%02x %02x %02x %02x %02x %02x %02x intr=%d phase=%d\n",
             stage, run.reason, (unsigned long long)run.executed, actual[512],

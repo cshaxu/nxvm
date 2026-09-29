@@ -1,3 +1,4 @@
+#include "../devices/support/fdc_fixture.h"
 #include "../devices/support/dma_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
@@ -54,21 +55,21 @@ static void model40_fdc_command(core_machine_fdc *fdc, t_port *port,
     lib_size index;
     for (index = 0u; index < count; ++index)
         core_machine_port_write(port, 0x03f5u, bytes[index]);
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
 }
 
 static lib_i32 model40_fdc_result(core_machine_fdc *fdc, t_port *port,
     lib_u8 *result, lib_size count)
 {
     lib_size index;
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
         if ((core_machine_port_read(port, 0x03f4u) &
-            (VFDC_MSR_RQM | VFDC_MSR_DIO)) != (VFDC_MSR_RQM | VFDC_MSR_DIO))
+            (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO)) != (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO))
             return LIB_FALSE;
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
-    return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
+    return (core_machine_port_read(port, 0x03f4u) & (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
 static void model40_fdc_write_dma2(t_port *port, lib_u16 address,
@@ -138,20 +139,20 @@ lib_i32 main(void)
         core_machine_port_write(port, 0x0070u, 0x18u);
         failed |= core_machine_port_read(port, 0x0071u) != 0x04u;
         core_machine_port_write(port, 0x03f2u, 0x1cu);
-        core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
+        failed |= !test_fdc_advance_due(fdc);
         failed |= !fdc->connect.irq_source.asserted;
         model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
-            result[0] != core_machine_fdc_ST0_READY_CHANGE;
+            result[0] != TEST_FDC_ST0_READY_CHANGE;
         model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
-            result[0] != (core_machine_fdc_ST0_READY_CHANGE | 1u);
+            result[0] != (TEST_FDC_ST0_READY_CHANGE | 1u);
         model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
-            result[0] != (core_machine_fdc_ST0_READY_CHANGE | 2u);
+            result[0] != (TEST_FDC_ST0_READY_CHANGE | 2u);
         model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
-            result[0] != (core_machine_fdc_ST0_READY_CHANGE | 3u);
+            result[0] != (TEST_FDC_ST0_READY_CHANGE | 3u);
         model40_fdc_command(fdc, port, (const lib_u8[]){0x04u, 0x00u}, 2u);
         failed |= !model40_fdc_result(fdc, port, result, 1u) || result[0] != 0x38u;
         core_machine_port_write(port, 0x03f7u, 0u);
@@ -160,12 +161,11 @@ lib_i32 main(void)
         failed |= session->model40_fdc_terminal_observation_valid ||
             core_machine_port_read(port, 0x03f5u) != 0xa5u;
         for (index = 1u; index < 512u; ++index) {
-            core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks +
-                128u);
+            failed |= !test_fdc_advance_ticks(fdc, 128u);
             (void)core_machine_port_read(port, 0x03f5u);
         }
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
-            result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
+            result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
             result[5] != 16u || result[6] != 2u ||
             !session->model40_fdc_terminal_observation_valid ||
             session->model40_fdc_terminal_observation.command != 0xe6u ||
@@ -179,21 +179,20 @@ lib_i32 main(void)
                 &session->core_machine->shared_dma_primary,
                 &session->core_machine->shared_dma_secondary,
                 &session->core_machine->executor_memory, &session->core_machine->executor_port, 1u);
-            if (index + 1u < 512u) core_machine_fdc_advance_at(fdc,
-                fdc->data.elapsed_ticks + 128u);
+            if (index + 1u < 512u) failed |= !test_fdc_advance_ticks(fdc, 128u);
         }
-        failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
+        failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB ||
             core_machine_memory_read(session->core_machine, 0x0600u, &result[0],
                 sizeof(result[0])) != LIB_STATUS_OK || result[0] != 0xa5u;
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
-            result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
+            result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
             !session->model40_fdc_terminal_observation_valid ||
             !session->model40_fdc_terminal_observation.successful;
         vm_machine_reset(session);
         failed |= session->model40_fdc_terminal_observation_valid;
         model40_fdc_command(fdc, port, read_oob, sizeof(read_oob));
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
-            result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
+            result[0] != TEST_FDC_ST0_ABNORMAL || result[1] != 0x04u ||
             !session->model40_fdc_terminal_observation_valid ||
             session->model40_fdc_terminal_observation.successful ||
             session->model40_fdc_terminal_observation.result[0] != result[0] ||
@@ -201,26 +200,27 @@ lib_i32 main(void)
         failed |= vm_machine_fdd_remove_for(&session->fdd) != LIB_FALSE;
         core_machine_fdc_refresh(fdc);
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
-        failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE;
+        failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB;
         core_machine_port_write(port, 0x03f2u, 0u);
-        failed |= fdc->data.phase != core_machine_fdc_PHASE_COMMAND ||
+        failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM ||
             fdc->connect.irq_source.asserted;
         core_machine_port_write(port, 0x03f2u, 0x1cu);
-        core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
+        failed |= !test_fdc_advance_due(fdc);
         failed |= !fdc->connect.irq_source.asserted;
         for (index = 0u; index < 4u; ++index) {
             model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
             failed |= !model40_fdc_result(fdc, port, result, 2u) ||
-                result[0] != (core_machine_fdc_ST0_READY_CHANGE | index);
+                result[0] != (TEST_FDC_ST0_READY_CHANGE | index);
         }
         model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 1u) || result[0] != 0x80u;
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
-        core_machine_fdc_advance(fdc);
-        failed |= fdc->data.phase != core_machine_fdc_PHASE_RESULT ||
+        test_fdc_advance(fdc);
+        failed |= core_machine_port_read(port, 0x03f4u) !=
+            (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_CB) ||
             !fdc->connect.irq_source.asserted ||
             !model40_fdc_result(fdc, port, result, sizeof(result)) ||
-            result[0] != core_machine_fdc_ST0_ABNORMAL ||
+            result[0] != TEST_FDC_ST0_ABNORMAL ||
             result[1] != 0x04u || result[2] != 0u;
         model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 1u) ||

@@ -1,3 +1,4 @@
+#include "../devices/support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -18,21 +19,21 @@ static void fdc_command(core_machine_fdc *fdc, t_port *port,
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
-    core_machine_fdc_advance(fdc);
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
+    test_fdc_advance(fdc);
 }
 
 static lib_i32 fdc_read_result(core_machine_fdc *fdc, t_port *port, lib_u8 *result,
     lib_size count)
 {
     lib_size index;
-    core_machine_fdc_advance(fdc);
+    test_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
-        if ((core_machine_port_read(port, 0x03f4u) & VFDC_MSR_ReadyRead) !=
-            VFDC_MSR_ReadyRead) return LIB_FALSE;
+        if ((core_machine_port_read(port, 0x03f4u) & TEST_FDC_MSR_READY_READ) !=
+            TEST_FDC_MSR_READY_READ) return LIB_FALSE;
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
-    return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
+    return (core_machine_port_read(port, 0x03f4u) & (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) == 0u;
 }
 
 lib_i32 main(void)
@@ -61,9 +62,9 @@ lib_i32 main(void)
 
     /* No image is an FDC result, not a host or BIOS shortcut. */
     fdc_command(&session->core_machine->fdc, port, read_sector, sizeof(read_sector));
-    failed |= (core_machine_port_read(port, 0x03f4u) & VFDC_MSR_DIO) == 0u;
+    failed |= (core_machine_port_read(port, 0x03f4u) & TEST_FDC_MSR_DIO) == 0u;
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
-    failed |= (result[0] & core_machine_fdc_ST0_ABNORMAL) == 0u;
+    failed |= (result[0] & TEST_FDC_ST0_ABNORMAL) == 0u;
 
     vm_machine_fdd_create_for(&session->fdd);
     core_machine_fdc_refresh(&session->core_machine->fdc);
@@ -81,12 +82,12 @@ lib_i32 main(void)
     fdc_command(&session->core_machine->fdc, port, specify_non_dma, sizeof(specify_non_dma));
     fdc_command(&session->core_machine->fdc, port, format_track, sizeof(format_track));
     fdc_command(&session->core_machine->fdc, port, format_id, sizeof(format_id));
-    core_machine_fdc_advance(&session->core_machine->fdc);
+    test_fdc_advance(&session->core_machine->fdc);
     failed |= !core_machine_pic_scan_interrupt(
         session->core_machine->fdc.connect.irq_source.master,
         session->core_machine->fdc.connect.irq_source.slave);
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
-    failed |= result[0] != core_machine_fdc_ST0_NORMAL;
+    failed |= result[0] != TEST_FDC_ST0_NORMAL;
     fdc_command(&session->core_machine->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, 1u) ||
         result[0] != 0x80u;
@@ -107,14 +108,14 @@ lib_i32 main(void)
 
     fdc_command(&session->core_machine->fdc, port, read_sector, sizeof(read_sector));
     failed |= (core_machine_port_read(port, 0x03f4u) &
-        (VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_NDM)) !=
-        (VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_NDM);
+        (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_NDM)) !=
+        (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_NDM);
     failed |= core_machine_port_read(port, 0x03f5u) != 0xa5u;
     for (lib_u16 index = 1u; index < 512u; ++index) {
         (void)core_machine_port_read(port, 0x03f5u);
     }
     failed |= !fdc_read_result(&session->core_machine->fdc, port, result, sizeof(result));
-    failed |= result[0] != core_machine_fdc_ST0_NORMAL;
+    failed |= result[0] != TEST_FDC_ST0_NORMAL;
 
     vm_machine_destroy(session);
     if (failed) return 1;

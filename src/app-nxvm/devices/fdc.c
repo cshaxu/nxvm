@@ -1,76 +1,7 @@
 /* Copyright 2012-2026 Neko. */
-
-/* The neutral 8272A-compatible controller. Core owns DMA/PIC/RAM; this file
- * owns only the guest-visible floppy-controller state machine. */
-#include "lib/types/types_interface.h"
-#include "app-nxvm/devices/device_support.h"
-
-
-#include "app-nxvm/devices/dma_bus.h"
-#include "app-nxvm/devices/media_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/port.h"
+/* PC adapter: register decode, drive mechanics/media and chip wiring. */
 #include "app-nxvm/devices/fdc.h"
-
-#define core_machine_fdc_CMD_SPECIFY 0x03u
-#define core_machine_fdc_CMD_SENSE_DRIVE_STATUS 0x04u
-#define core_machine_fdc_CMD_RECALIBRATE 0x07u
-#define core_machine_fdc_CMD_SENSE_INTERRUPT 0x08u
-#define core_machine_fdc_CMD_SEEK 0x0fu
-#define core_machine_fdc_CMD_READ_ID 0x0au
-#define core_machine_fdc_CMD_WRITE_DATA 0x05u
-#define core_machine_fdc_CMD_READ_DATA 0x06u
-#define core_machine_fdc_CMD_WRITE_DELETED_DATA 0x09u
-#define core_machine_fdc_CMD_READ_DELETED_DATA 0x0cu
-#define core_machine_fdc_CMD_SCAN_EQUAL 0x11u
-#define core_machine_fdc_CMD_SCAN_LOW_OR_EQUAL 0x19u
-#define core_machine_fdc_CMD_SCAN_HIGH_OR_EQUAL 0x1du
-#define core_machine_fdc_CMD_FORMAT_TRACK 0x0du
-#define core_machine_fdc_CMD_READ_TRACK 0x02u
-
-#define core_machine_fdc_ST1_NO_DATA 0x04u
-#define core_machine_fdc_ST1_NOT_WRITABLE 0x02u
-#define core_machine_fdc_ST1_END_OF_CYLINDER 0x80u
-#define core_machine_fdc_ST2_WRONG_CYLINDER 0x10u
-#define core_machine_fdc_ST2_BAD_CYLINDER 0x02u
-
-#define core_machine_fdc_SCAN_EQUAL 0u
-#define core_machine_fdc_SCAN_LOW_OR_EQUAL 1u
-#define core_machine_fdc_SCAN_HIGH_OR_EQUAL 2u
-
-static lib_u8 core_machine_fdc_sector_size(lib_u8 code)
-{
-    return code == 2u ? 0x02u : 0xffu;
-}
-
-static lib_u8 core_machine_fdc_msr(const core_machine_fdc *fdc)
-{
-    lib_u8 value;
-    lib_u8 drive;
-
-    switch (fdc->data.phase) {
-    case core_machine_fdc_PHASE_PENDING_COMMAND:
-    case core_machine_fdc_PHASE_PENDING_COMPLETE:
-    case core_machine_fdc_PHASE_EXECUTION_WRITE_TAIL:
-        value = VFDC_MSR_CB; break;
-    case core_machine_fdc_PHASE_RESULT:
-        value = VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_CB; break;
-    case core_machine_fdc_PHASE_EXECUTION_READ:
-        value = fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_DIO |
-            VFDC_MSR_NDM | VFDC_MSR_CB : VFDC_MSR_CB; break;
-    case core_machine_fdc_PHASE_EXECUTION_WRITE:
-    case core_machine_fdc_PHASE_EXECUTION_SCAN:
-    case core_machine_fdc_PHASE_EXECUTION_FORMAT:
-        value = fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_NDM |
-            VFDC_MSR_CB : VFDC_MSR_CB; break;
-    default:
-        value = VFDC_MSR_RQM; break;
-    }
-    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
-        if (fdc->data.seek_pending[drive]) value |= VFDC_MSR_DB(drive);
-    }
-    return value;
-}
+#include "app-nxvm/devices/port.h"
 
 static core_machine_media_id core_machine_fdc_drive_media_id(
     const core_machine_fdc *fdc, lib_u8 drive)
@@ -78,13 +9,6 @@ static core_machine_media_id core_machine_fdc_drive_media_id(
     return fdc == LIB_NULL || drive >= CORE_MACHINE_FDC_DRIVE_COUNT ?
         CORE_MACHINE_MEDIA_ID_INVALID :
         fdc->connect.drives.media_id[drive];
-}
-
-static core_machine_media_id core_machine_fdc_selected_media_id(
-    const core_machine_fdc *fdc)
-{
-    return fdc == LIB_NULL ? CORE_MACHINE_MEDIA_ID_INVALID :
-        core_machine_fdc_drive_media_id(fdc, fdc->data.selected_drive);
 }
 
 static lib_i32 core_machine_fdc_drive_media_query(const core_machine_fdc *fdc,
@@ -99,14 +23,6 @@ static lib_i32 core_machine_fdc_drive_media_query(const core_machine_fdc *fdc,
             out_result) == LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_fdc_media_info(const core_machine_fdc *fdc,
-    core_machine_media_info *out_info, core_machine_media_result *out_result)
-{
-    return core_machine_fdc_drive_media_query(fdc, fdc->data.selected_drive,
-        out_info, out_result) &&
-        *out_result == CORE_MACHINE_MEDIA_RESULT_OK;
-}
-
 static lib_i32 core_machine_fdc_drive_media_ready(const core_machine_fdc *fdc,
     lib_u8 drive)
 {
@@ -115,23 +31,6 @@ static lib_i32 core_machine_fdc_drive_media_ready(const core_machine_fdc *fdc,
 
     return core_machine_fdc_drive_media_query(fdc, drive, &info, &result) &&
         result == CORE_MACHINE_MEDIA_RESULT_OK && info.present;
-}
-
-static lib_i32 core_machine_fdc_drive_status_ready(const core_machine_fdc *fdc,
-    lib_u8 drive)
-{
-    /* Board READY is independent of a mechanism, motor and inserted medium. */
-    return fdc != LIB_NULL && drive < CORE_MACHINE_FDC_DRIVE_COUNT &&
-        (fdc->connect.config.ready_mask & (1u << drive)) != 0u;
-}
-
-static void core_machine_fdc_sample_ready(core_machine_fdc *fdc)
-{
-    lib_u8 drive;
-
-    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
-        fdc->data.observed_ready[drive] = core_machine_fdc_drive_status_ready(fdc, drive);
-    }
 }
 
 static void core_machine_fdc_update_dir(core_machine_fdc *fdc)
@@ -173,1035 +72,308 @@ static void core_machine_fdc_observe_all_drives(core_machine_fdc *fdc)
     }
 }
 
-static lib_i32 core_machine_fdc_media_offset(const core_machine_fdc *fdc,
-    const core_machine_media_info *info, lib_u64 *out_offset)
-{
-    lib_u64 sector;
 
-    if (fdc == LIB_NULL || info == LIB_NULL || out_offset == LIB_NULL ||
-        fdc->data.head >= info->geometry.heads ||
-        fdc->data.cylinder >= info->geometry.cylinders ||
-        fdc->data.sector == 0u ||
-        fdc->data.sector > info->geometry.sectors_per_track ||
-        info->geometry.bytes_per_sector != 512u) return LIB_FALSE;
-    sector = ((lib_u64)fdc->data.cylinder * info->geometry.heads +
-        fdc->data.head) * info->geometry.sectors_per_track +
-        (fdc->data.sector - 1u);
-    *out_offset = sector * info->geometry.bytes_per_sector + fdc->data.byte_offset;
+static x86_fdc_pins core_machine_fdc_sample(void *context, lib_u8 unit)
+{
+    const core_machine_fdc *fdc = context;
+    const lib_u8 drive = fdc->data.dor & VFDC_DOR_DS;
+    core_machine_media_info info = {0};
+    core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    lib_bool media_ok = core_machine_fdc_drive_media_query(fdc, unit, &info, &result) &&
+        result == CORE_MACHINE_MEDIA_RESULT_OK;
+    return (x86_fdc_pins) {
+        .ready = (fdc->connect.config.ready_mask & (1u << unit)) != 0u,
+        .track_zero = (fdc->connect.drives.installed_mask & (1u << drive)) != 0u &&
+            ((fdc->drive_cylinder[drive] == 0u) !=
+            ((fdc->connect.drives.track_zero_active_low_mask & (1u << drive)) != 0u)),
+        .write_protected = media_ok &&
+            (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u,
+        .two_sided = (fdc->connect.drives.double_sided_mask & (1u << unit)) != 0u,
+        .data_available = unit == drive && (fdc->data.dor & VFDC_DOR_NRS) != 0u &&
+            (fdc->data.dor & VFDC_DOR_ME(drive)) != 0u &&
+            (fdc->connect.drives.installed_mask & (1u << drive)) != 0u &&
+            media_ok && info.present
+    };
+}
+
+static void core_machine_fdc_step(void *context, lib_u8 unit, lib_bool outward)
+{
+    core_machine_fdc *fdc = context;
+    const lib_u8 drive = fdc->data.dor & VFDC_DOR_DS;
+    const lib_u16 count = fdc->connect.drives.cylinder_count[drive];
+    (void)unit;
+    if ((fdc->connect.drives.installed_mask & (1u << drive)) == 0u) return;
+    if (outward) {
+        if (fdc->drive_cylinder[drive] != 0u) --fdc->drive_cylinder[drive];
+    } else if (fdc->drive_cylinder[drive] < (count == 0u ? 255u : count - 1u)) {
+        ++fdc->drive_cylinder[drive];
+    }
+    core_machine_fdc_observe_drive(fdc, drive);
+}
+
+static lib_bool core_machine_fdc_track(void *context, lib_u8 unit, lib_bool mfm,
+    x86_fdc_track *out_track)
+{
+    const core_machine_fdc *fdc = context;
+    const lib_u8 drive = fdc->data.dor & VFDC_DOR_DS;
+    static const lib_u32 rates[] = {500000u, 300000u, 250000u};
+    const lib_u8 rate = fdc->connect.config.control_port == 0u ? VFDC_CCR_RATE_250 : fdc->data.ccr;
+    core_machine_media_info info = {0};
+    core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    *out_track = (x86_fdc_track) {.cylinder = fdc->drive_cylinder[drive]};
+    if (!core_machine_fdc_drive_media_query(fdc, unit, &info, &result) ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        info.geometry.cylinders > 65535u || info.geometry.heads > 65535u ||
+        info.geometry.sectors_per_track > 65535u || info.geometry.bytes_per_sector > 65535u)
+        return LIB_FALSE;
+    out_track->cylinders = (lib_u16)info.geometry.cylinders;
+    out_track->heads = (lib_u16)info.geometry.heads;
+    out_track->sectors = (lib_u16)info.geometry.sectors_per_track;
+    out_track->bytes_per_sector = (lib_u16)info.geometry.bytes_per_sector;
+    if (rate >= sizeof(rates) / sizeof(rates[0])) return LIB_TRUE;
+    if (fdc->connect.drives.channel.sample != LIB_NULL)
+        out_track->id_readable = fdc->connect.drives.channel.sample(fdc->connect.drives.channel.context,
+            drive, &info.geometry, fdc->drive_cylinder[drive], rates[rate], mfm,
+            &out_track->cylinder);
+    else out_track->id_readable = out_track->cylinder < info.geometry.cylinders;
     return LIB_TRUE;
 }
 
-static void core_machine_fdc_deassert_dma(core_machine_fdc *fdc)
+static x86_fdc_record_result core_machine_fdc_record_result(lib_status status,
+    core_machine_media_result result)
 {
-    if (fdc->connect.dma_request_deassert != LIB_NULL) {
-        fdc->connect.dma_request_deassert(fdc->connect.dma_request_owner,
-            &fdc->connect.dma_request);
+    if (status != LIB_STATUS_OK) return X86_FDC_RECORD_FAILURE;
+    switch (result) {
+    case CORE_MACHINE_MEDIA_RESULT_OK: return X86_FDC_RECORD_OK;
+    case CORE_MACHINE_MEDIA_RESULT_READ_ONLY: return X86_FDC_RECORD_PROTECTED;
+    case CORE_MACHINE_MEDIA_RESULT_ABSENT:
+    case CORE_MACHINE_MEDIA_RESULT_CHANGED:
+    case CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE: return X86_FDC_RECORD_ABSENT;
+    default: return X86_FDC_RECORD_FAILURE;
     }
 }
 
-static lib_i32 core_machine_fdc_execution_active(const core_machine_fdc *fdc);
-
-static void core_machine_fdc_request_assert(core_machine_fdc *fdc)
+static lib_bool core_machine_fdc_record_offset(const core_machine_fdc *fdc,
+    lib_u8 unit, const x86_fdc_record *record, core_machine_media_info *info,
+    lib_u64 *out_offset)
 {
-    if (fdc->connect.dma_request_assert != LIB_NULL) {
-        fdc->connect.dma_request_assert(fdc->connect.dma_request_owner,
-            &fdc->connect.dma_request);
-    }
+    core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (!core_machine_fdc_drive_media_query(fdc, unit, info, &result) ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || record->head >= info->geometry.heads ||
+        record->cylinder >= info->geometry.cylinders || record->sector == 0u ||
+        record->sector > info->geometry.sectors_per_track ||
+        info->geometry.bytes_per_sector != 512u || record->offset >= 512u) return LIB_FALSE;
+    *out_offset = (((lib_u64)record->cylinder * info->geometry.heads +
+        record->head) * info->geometry.sectors_per_track + record->sector - 1u) *
+        512u + record->offset;
+    return LIB_TRUE;
 }
 
-static lib_u64 core_machine_fdc_timing_ticks(const core_machine_fdc *fdc,
-    lib_u64 microseconds)
+static x86_fdc_record_result core_machine_fdc_record_read(void *context, lib_u8 unit,
+    const x86_fdc_record *record, lib_u8 *out_byte)
 {
-    lib_u64 ticks_per_second;
-
-    if (fdc == LIB_NULL) return 0u;
-    ticks_per_second = fdc->connect.config.clock_ticks_per_second;
-    if (ticks_per_second == 0u || microseconds > UINT64_MAX / ticks_per_second) {
-        return 0u;
-    }
-    /* Round upward: a controller byte gate must not become visible before
-     * the selected macro-axis duration has elapsed. */
-    return (microseconds * ticks_per_second + 999999u) / 1000000u;
-}
-
-static lib_u64 core_machine_fdc_dma_byte_ticks(const core_machine_fdc *fdc)
-{
-    lib_u64 microseconds;
-
-    if (fdc == LIB_NULL) return 0u;
-    microseconds = (fdc->data.cmd[0] & 0x40u) != 0u ? 15u : 31u;
-    switch (fdc->data.ccr) {
-    case VFDC_CCR_RATE_500: break;
-    case VFDC_CCR_RATE_300: microseconds = (microseconds * 5u + 2u) / 3u; break;
-    /* The existing 250-kbps route has no sourced byte cadence.  It remains
-     * an accepted logical transfer mode, whose next-Core-step gate is
-     * selected below, rather than inventing a physical duration. */
-    case VFDC_CCR_RATE_250: return 0u;
-    default: return 0u;
-    }
-    return core_machine_fdc_timing_ticks(fdc, microseconds);
-}
-
-static lib_bool core_machine_fdc_track_id(const core_machine_fdc *fdc,
-    const core_machine_media_info *info, lib_u16 *out_cylinder)
-{
-    static const lib_u32 rates[] = {500000u, 300000u, 250000u};
-    const lib_u8 drive = fdc->data.dor & VFDC_DOR_DS;
-    const core_machine_fdc_channel_provider *channel = &fdc->connect.drives.channel;
-    const lib_u8 rate = fdc->connect.config.control_port == 0u ?
-        VFDC_CCR_RATE_250 : fdc->data.ccr;
-
-    if (rate >= sizeof(rates) / sizeof(rates[0])) return LIB_FALSE;
-    if (channel->sample != LIB_NULL) {
-        return channel->sample(channel->context, drive, &info->geometry,
-            fdc->drive_cylinder[drive], rates[rate],
-            (fdc->data.cmd[0] & 0x40u) != 0u, out_cylinder);
-    }
-    /* Synthetic logical providers have no recording density/pitch contract. */
-    *out_cylinder = fdc->drive_cylinder[drive];
-    return *out_cylinder < info->geometry.cylinders;
-}
-
-static void core_machine_fdc_schedule_dma_byte(core_machine_fdc *fdc)
-{
-    lib_u64 ticks = core_machine_fdc_dma_byte_ticks(fdc);
-
-    if (fdc == LIB_NULL || fdc->data.flagNDMA ||
-        (fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_READ &&
-        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_WRITE &&
-        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_WRITE_TAIL &&
-        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_SCAN &&
-        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_FORMAT)) return;
-    core_machine_fdc_deassert_dma(fdc);
-    /* No selected service-time conversion retains the existing logical
-     * handoff: each completed single-mode DMA service makes the next byte
-     * eligible on the next Core progression point.  Reasserting inside the
-     * DMA callback would be cleared by that same completed DMA service. */
-    if (ticks == 0u) {
-        fdc->data.next_dma_byte_tick = fdc->data.elapsed_ticks + 1u;
-        fdc->data.dma_byte_gate_pending = LIB_TRUE;
-        return;
-    }
-    fdc->data.next_dma_byte_tick = fdc->data.elapsed_ticks + ticks;
-    fdc->data.dma_byte_gate_pending = LIB_TRUE;
-}
-
-static lib_i32 core_machine_fdc_prepare_read_sector(core_machine_fdc *fdc);
-static lib_i32 core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latch,
-    lib_i32 write_to_media);
-
-static void core_machine_fdc_publish_due_dma_byte(core_machine_fdc *fdc)
-{
-    if (fdc == LIB_NULL || !fdc->data.dma_byte_gate_pending ||
-        fdc->data.elapsed_ticks < fdc->data.next_dma_byte_tick ||
-        !core_machine_fdc_execution_active(fdc)) return;
-    fdc->data.dma_byte_gate_pending = LIB_FALSE;
-    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE_TAIL) {
-        t_latch zero = {0};
-        (void)core_machine_fdc_transfer_byte(fdc, &zero, LIB_TRUE);
-        core_machine_fdc_schedule_dma_byte(fdc);
-        return;
-    }
-    /* The completed DMA byte may assert TC before another sector is needed.
-     * Inspect the next address mark only when publishing its first DRQ. */
-    if (fdc->data.byte_offset == 0u &&
-        (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ ||
-        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN) &&
-        !core_machine_fdc_prepare_read_sector(fdc)) return;
-    core_machine_fdc_request_assert(fdc);
-}
-
-static void core_machine_fdc_schedule_ndma_byte(core_machine_fdc *fdc)
-{
-    lib_u64 ticks = core_machine_fdc_dma_byte_ticks(fdc);
-
-    if (fdc == LIB_NULL || !fdc->data.flagNDMA || ticks == 0u ||
-        (fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_READ &&
-        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_WRITE &&
-        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_SCAN &&
-        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_FORMAT)) return;
-    fdc->data.next_ndma_byte_tick = fdc->data.elapsed_ticks + ticks;
-    fdc->data.ndma_byte_gate_pending = LIB_TRUE;
-}
-
-static void core_machine_fdc_publish_due_ndma_byte(core_machine_fdc *fdc)
-{
-    if (fdc == LIB_NULL || !fdc->data.ndma_byte_gate_pending ||
-        fdc->data.elapsed_ticks < fdc->data.next_ndma_byte_tick ||
-        !core_machine_fdc_execution_active(fdc)) return;
-    fdc->data.ndma_byte_gate_pending = LIB_FALSE;
-}
-
-static void core_machine_fdc_raise_irq(core_machine_fdc *fdc)
-{
-    if ((fdc->data.dor & VFDC_DOR_ENRQ) == 0u) return;
-    core_machine_pic_irq_source_assert(&fdc->connect.irq_source);
-    fdc->data.flagINTR = LIB_TRUE;
-}
-
-static void core_machine_fdc_cancel_execution(core_machine_fdc *fdc)
-{
-    core_machine_fdc_deassert_dma(fdc);
-    fdc->data.dma_byte_gate_pending = LIB_FALSE;
-    fdc->data.next_dma_byte_tick = 0u;
-    fdc->data.ndma_byte_gate_pending = LIB_FALSE;
-    fdc->data.next_ndma_byte_tick = 0u;
-    fdc->data.pending_st0 = 0u;
-    fdc->data.pending_st1 = 0u;
-    fdc->data.pending_st2 = 0u;
-    fdc->data.transfer_remaining = 0u;
-    fdc->data.byte_offset = 0u;
-    fdc->data.format_headers_remaining = 0u;
-}
-
-static lib_i32 core_machine_fdc_execution_active(const core_machine_fdc *fdc)
-{
-    return fdc != LIB_NULL && (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ ||
-        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE ||
-        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE_TAIL ||
-        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN ||
-        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT);
-}
-
-static void core_machine_fdc_command_phase(core_machine_fdc *fdc)
-{
-    fdc->data.phase = core_machine_fdc_PHASE_COMMAND;
-    fdc->data.command_length = 0u;
-    fdc->data.command_index = 0u;
-    fdc->data.result_length = 0u;
-    fdc->data.result_index = 0u;
-    fdc->data.pending_st0 = 0u;
-    fdc->data.pending_st1 = 0u;
-    fdc->data.pending_st2 = 0u;
-}
-
-static void core_machine_fdc_result_phase(core_machine_fdc *fdc, lib_u8 length)
-{
-    core_machine_fdc_deassert_dma(fdc);
-    fdc->data.phase = core_machine_fdc_PHASE_RESULT;
-    fdc->data.result_length = length;
-    fdc->data.result_index = 0u;
-}
-
-static void core_machine_fdc_set_result(core_machine_fdc *fdc, lib_u8 st0,
-    lib_u8 st1, lib_u8 st2)
-{
-    /* Table 12: IC is separate from Seek End and from HD/US identity. */
-    st0 |= fdc->data.cmd[1] & 0x07u;
-    fdc->data.st0 = st0;
-    fdc->data.st1 = st1;
-    fdc->data.st2 = st2;
-    fdc->data.ret[0] = st0;
-    fdc->data.ret[1] = st1;
-    fdc->data.ret[2] = st2;
-    fdc->data.ret[3] = (lib_u8)fdc->data.cylinder;
-    fdc->data.ret[4] = (lib_u8)fdc->data.head;
-    fdc->data.ret[5] = (lib_u8)fdc->data.sector;
-    fdc->data.ret[6] = 0x02u;
-}
-
-static void core_machine_fdc_publish_terminal_result(core_machine_fdc *fdc)
-{
-    core_machine_fdc_terminal_observation observation;
-
-    if (fdc == LIB_NULL || fdc->connect.observation_provider.callback == LIB_NULL) return;
-    observation.sequence = ++fdc->connect.observation_sequence;
-    observation.command = fdc->data.cmd[0];
-    observation.drive = fdc->data.selected_drive;
-    lib_memory_copy(observation.result, fdc->data.ret, sizeof(observation.result));
-    observation.successful = (fdc->data.st0 & 0xc0u) == core_machine_fdc_ST0_NORMAL &&
-        fdc->data.st1 == 0u;
-    fdc->connect.observation_provider.callback(fdc->connect.observation_provider.context,
-        &observation);
-}
-
-static void core_machine_fdc_complete_transfer_with_status(core_machine_fdc *fdc,
-    lib_u8 st0, lib_u8 st1)
-{
-    if (st1 != 0u || (st0 & 0xc0u) != 0u)
-        fdc->data.pending_st2 &= (lib_u8)~VFDC_ST2_SCAN_MATCH;
-    core_machine_fdc_deassert_dma(fdc);
-    /* A terminal DMA service may finish a command between byte gates.  The
-     * result phase owns no future byte transfer, so it must not retain the
-     * previous execution gate as a phantom deadline. */
-    fdc->data.dma_byte_gate_pending = LIB_FALSE;
-    fdc->data.next_dma_byte_tick = 0u;
-    fdc->data.ndma_byte_gate_pending = LIB_FALSE;
-    fdc->data.next_ndma_byte_tick = 0u;
-    fdc->data.pending_st0 = st0;
-    fdc->data.pending_st1 = st1;
-    fdc->data.phase = core_machine_fdc_PHASE_PENDING_COMPLETE;
-}
-
-static void core_machine_fdc_complete_transfer(core_machine_fdc *fdc,
-    lib_u8 st1)
-{
-    core_machine_fdc_complete_transfer_with_status(fdc, 0u, st1);
-}
-
-static void core_machine_fdc_complete_missing_input(core_machine_fdc *fdc)
-{
-    if (!core_machine_fdc_drive_status_ready(fdc, fdc->data.selected_drive)) {
-        core_machine_fdc_complete_transfer_with_status(fdc,
-            core_machine_fdc_ST0_ABNORMAL | core_machine_fdc_ST0_NOT_READY, 0u);
-        return;
-    }
-    core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-}
-
-static lib_bool core_machine_fdc_track_zero(const core_machine_fdc *fdc)
-{
-    const lib_u8 drive = fdc->data.dor & VFDC_DOR_DS;
-    return (fdc->connect.drives.installed_mask & (1u << drive)) != 0u &&
-        ((fdc->drive_cylinder[drive] == 0u) !=
-        ((fdc->connect.drives.track_zero_active_low_mask & (1u << drive)) != 0u));
-}
-
-static lib_u64 core_machine_fdc_step_ticks(const core_machine_fdc *fdc)
-{
-    return core_machine_fdc_timing_ticks(fdc, (lib_u64)(16u - fdc->data.srt) * 1000u);
-}
-
-static void core_machine_fdc_begin_seek(core_machine_fdc *fdc, lib_u16 target)
-{
-    lib_u8 drive = fdc->data.selected_drive;
-    lib_bool complete;
-
-    fdc->data.seek_target[drive] = target;
-    fdc->data.seek_recalibrate[drive] =
-        (fdc->data.cmd[0] & 0x1fu) == core_machine_fdc_CMD_RECALIBRATE;
-    fdc->data.seek_head[drive] = fdc->data.cmd[1] & 0x04u;
-    fdc->data.seek_steps[drive] = 0u;
-    if (fdc->data.seek_recalibrate[drive]) fdc->data.pcn[drive] = 0u;
-    complete = fdc->data.seek_recalibrate[drive] ?
-        core_machine_fdc_track_zero(fdc) : fdc->data.pcn[drive] == target;
-    fdc->data.seek_due_tick[drive] = fdc->data.elapsed_ticks +
-        (complete || !core_machine_fdc_drive_status_ready(fdc, drive) ?
-            0u : core_machine_fdc_step_ticks(fdc));
-    fdc->data.seek_pending[drive] = LIB_TRUE;
-    core_machine_fdc_command_phase(fdc);
-}
-
-static lib_i32 core_machine_fdc_drive_ready_for(const core_machine_fdc *fdc,
-    lib_u8 drive)
-{
-    return drive == (fdc->data.dor & VFDC_DOR_DS) &&
-        (fdc->data.dor & VFDC_DOR_NRS) != 0u &&
-        (fdc->data.dor & VFDC_DOR_ME(drive)) != 0u &&
-        (fdc->connect.drives.installed_mask & (1u << drive)) != 0u &&
-        core_machine_fdc_drive_status_ready(fdc, drive) &&
-        core_machine_fdc_drive_media_ready(fdc, drive);
-}
-
-static lib_i32 core_machine_fdc_drive_ready(const core_machine_fdc *fdc)
-{
-    return core_machine_fdc_drive_ready_for(fdc, fdc->data.selected_drive);
-}
-
-static lib_u8 core_machine_fdc_sector_step(const core_machine_fdc *fdc)
-{
-    return fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN &&
-        fdc->data.cmd[8] == 2u ? 2u : 1u;
-}
-
-static void core_machine_fdc_advance_position(core_machine_fdc *fdc)
-{
-    fdc->data.byte_offset++;
-    if (fdc->data.byte_offset < 512u) return;
-    fdc->data.byte_offset = 0u;
-    fdc->data.sector += core_machine_fdc_sector_step(fdc);
-}
-
-static void core_machine_fdc_complete_dma_data(core_machine_fdc *fdc)
-{
-    /* Intel Table 8 describes the ID after the final transferred sector,
-     * including TC within that sector; it does not move the physical head. */
-    if (fdc->data.byte_offset != 0u) ++fdc->data.sector;
-    fdc->data.byte_offset = 0u;
-    if (fdc->data.sector > fdc->data.eot) {
-        fdc->data.sector = 1u;
-        if ((fdc->data.cmd[0] & 0x80u) != 0u) {
-            if ((fdc->data.head & 1u) != 0u) ++fdc->data.cylinder;
-            fdc->data.head ^= 1u;
-        } else ++fdc->data.cylinder;
-    }
-    core_machine_fdc_complete_transfer(fdc, 0u);
-}
-
-static lib_i32 core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latch,
-    lib_i32 write_to_media)
-{
-    lib_u8 byte;
+    core_machine_fdc *fdc = context;
     core_machine_media_info info;
-    core_machine_media_result result;
-    core_machine_media_id media_id;
+    core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_ABSENT;
     lib_u64 offset;
-    lib_u64 logical_sector;
-    if (fdc->data.transfer_remaining == 0u) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        return LIB_TRUE;
-    }
-    if (!core_machine_fdc_drive_ready(fdc)) {
-        core_machine_fdc_complete_missing_input(fdc);
-        return LIB_TRUE;
-    }
-    if (!core_machine_fdc_media_info(fdc, &info, &result) ||
-        fdc->data.sector > fdc->data.eot ||
-        !core_machine_fdc_media_offset(fdc, &info, &offset)) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_END_OF_CYLINDER);
-        return LIB_TRUE;
-    }
-    media_id = core_machine_fdc_selected_media_id(fdc);
-    logical_sector = offset / info.geometry.bytes_per_sector;
-    if (fdc->data.byte_offset == 0u && write_to_media) {
-        if (core_machine_media_set_address_mark(fdc->connect.media_registry, media_id,
-            logical_sector, fdc->data.transfer_write_deleted ?
-            CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA :
-            CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA, &result) != LIB_STATUS_OK ||
-            result != CORE_MACHINE_MEDIA_RESULT_OK) {
-            core_machine_fdc_complete_transfer(fdc, result == CORE_MACHINE_MEDIA_RESULT_READ_ONLY ?
-                core_machine_fdc_ST1_NOT_WRITABLE : core_machine_fdc_ST1_NO_DATA);
-            return LIB_TRUE;
-        }
-    }
-    if (write_to_media) {
-        if (core_machine_media_write_bytes(fdc->connect.media_registry,
-            media_id, offset, &latch->data.byte, 1u, &result) !=
-            LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) {
-            core_machine_fdc_complete_transfer(fdc,
-                result == CORE_MACHINE_MEDIA_RESULT_READ_ONLY ?
-                core_machine_fdc_ST1_NOT_WRITABLE : core_machine_fdc_ST1_NO_DATA);
-            return LIB_TRUE;
-        }
-    } else if (core_machine_media_read_bytes(fdc->connect.media_registry,
-        media_id, offset, &byte, 1u, &result) != LIB_STATUS_OK ||
-        result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        return LIB_TRUE;
-    } else {
-        latch->data.byte = byte;
-    }
-    fdc->data.transfer_remaining--;
-    core_machine_fdc_advance_position(fdc);
-    if (fdc->data.transfer_remaining == 0u) {
-        if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE_TAIL)
-            core_machine_fdc_complete_dma_data(fdc);
-        else core_machine_fdc_complete_transfer(fdc, 0u);
-    }
-    else if (!write_to_media && fdc->data.flagNDMA && fdc->data.byte_offset == 0u)
-        (void)core_machine_fdc_prepare_read_sector(fdc);
-    return LIB_FALSE;
+    lib_status status;
+    if (!core_machine_fdc_record_offset(fdc, unit, record, &info, &offset))
+        return X86_FDC_RECORD_ABSENT;
+    status = core_machine_media_read_bytes(fdc->connect.media_registry,
+        core_machine_fdc_drive_media_id(fdc, unit), offset, out_byte, 1u, &result);
+    return core_machine_fdc_record_result(status, result);
 }
 
-static lib_i32 core_machine_fdc_prepare_read_sector(core_machine_fdc *fdc)
+static x86_fdc_record_result core_machine_fdc_record_write(void *context, lib_u8 unit,
+    const x86_fdc_record *record, lib_u8 byte)
 {
+    core_machine_fdc *fdc = context;
     core_machine_media_info info;
-    core_machine_media_result result;
-    core_machine_media_id media_id;
+    core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_ABSENT;
     lib_u64 offset;
-    lib_u64 logical_sector;
-    core_machine_media_address_mark mark;
-
-    while (fdc->data.transfer_remaining != 0u) {
-        if (!core_machine_fdc_media_info(fdc, &info, &result) ||
-            fdc->data.sector > fdc->data.eot ||
-            !core_machine_fdc_media_offset(fdc, &info, &offset)) {
-            core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_END_OF_CYLINDER);
-            return LIB_FALSE;
-        }
-        media_id = core_machine_fdc_selected_media_id(fdc);
-        logical_sector = offset / info.geometry.bytes_per_sector;
-        /* Flat providers without mark metadata describe ordinary Data marks. */
-        mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
-        if ((info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) != 0u &&
-            (core_machine_media_get_address_mark(fdc->connect.media_registry, media_id,
-                logical_sector, &mark, &result) != LIB_STATUS_OK ||
-            result != CORE_MACHINE_MEDIA_RESULT_OK)) {
-            core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-            return LIB_FALSE;
-        }
-        if ((mark == CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA) ==
-            fdc->data.transfer_expect_deleted) return LIB_TRUE;
-        if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN ||
-            (fdc->data.cmd[0] & 0x20u) == 0u ||
-            (fdc->data.cmd[0] & 0x1fu) == core_machine_fdc_CMD_READ_TRACK)
-            fdc->data.pending_st2 |= VFDC_ST2_CONTROL_MARK;
-        if ((fdc->data.cmd[0] & 0x1fu) == core_machine_fdc_CMD_READ_TRACK) return LIB_TRUE;
-        if ((fdc->data.cmd[0] & 0x20u) == 0u) {
-            /* READ/READ DELETED and SCAN end after this sector with SK=0. */
-            fdc->data.transfer_remaining = 512u;
-            return LIB_TRUE;
-        }
-        /* Skip without transferring payload or requesting a host byte. */
-        fdc->data.transfer_remaining -= 512u;
-        fdc->data.sector += core_machine_fdc_sector_step(fdc);
-        fdc->data.scan_sector_satisfies = LIB_TRUE;
-    }
-    if (fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_SCAN) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_END_OF_CYLINDER);
-        return LIB_FALSE;
-    }
-    fdc->data.pending_st2 = (fdc->data.pending_st2 & ~VFDC_ST2_SCAN_MATCH) |
-        VFDC_ST2_SCAN_MISMATCH;
-    core_machine_fdc_complete_transfer(fdc,
-        fdc->data.sector - core_machine_fdc_sector_step(fdc) == fdc->data.eot ?
-        0u : core_machine_fdc_ST1_END_OF_CYLINDER);
-    return LIB_FALSE;
+    lib_status status;
+    if (!core_machine_fdc_record_offset(fdc, unit, record, &info, &offset))
+        return X86_FDC_RECORD_ABSENT;
+    status = core_machine_media_write_bytes(fdc->connect.media_registry,
+        core_machine_fdc_drive_media_id(fdc, unit), offset, &byte, 1u, &result);
+    return core_machine_fdc_record_result(status, result);
 }
 
-static void core_machine_fdc_scan_byte(core_machine_fdc *fdc,
-    lib_u8 compare_byte)
+static x86_fdc_record_result core_machine_fdc_mark_read(void *context, lib_u8 unit,
+    const x86_fdc_record *record, lib_bool *out_deleted)
 {
-    lib_u8 media_byte;
+    core_machine_fdc *fdc = context;
     core_machine_media_info info;
-    core_machine_media_result result;
-    core_machine_media_id media_id;
+    core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    core_machine_media_address_mark mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
     lib_u64 offset;
-    lib_i32 byte_satisfies;
-
-    if (!core_machine_fdc_drive_ready(fdc)) {
-        core_machine_fdc_complete_missing_input(fdc);
-        return;
-    }
-    if (fdc->data.transfer_remaining == 0u) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        return;
-    }
-    if (!core_machine_fdc_media_info(fdc, &info, &result) ||
-        fdc->data.sector > fdc->data.eot ||
-        !core_machine_fdc_media_offset(fdc, &info, &offset)) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_END_OF_CYLINDER);
-        return;
-    }
-    media_id = core_machine_fdc_selected_media_id(fdc);
-    if (core_machine_media_read_bytes(fdc->connect.media_registry, media_id, offset,
-        &media_byte, 1u, &result) != LIB_STATUS_OK ||
-        result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        return;
-    }
-    byte_satisfies = compare_byte == 0xffu;
-    if (!byte_satisfies) {
-        /* Table 10 compares disk against processor data. SH means equality,
-         * not merely satisfaction of a Low/High-or-Equal command. */
-        if (compare_byte != media_byte)
-            fdc->data.pending_st2 &= (lib_u8)~VFDC_ST2_SCAN_MATCH;
-        switch (fdc->data.scan_mode) {
-        case core_machine_fdc_SCAN_EQUAL:
-            byte_satisfies = compare_byte == media_byte;
-            break;
-        case core_machine_fdc_SCAN_LOW_OR_EQUAL:
-            byte_satisfies = media_byte <= compare_byte;
-            break;
-        default:
-            byte_satisfies = media_byte >= compare_byte;
-            break;
-        }
-    }
-    if (!byte_satisfies) fdc->data.scan_sector_satisfies = LIB_FALSE;
-    fdc->data.transfer_remaining--;
-    core_machine_fdc_advance_position(fdc);
-    if (fdc->data.byte_offset != 0u) return;
-    if (fdc->data.scan_sector_satisfies) {
-        core_machine_fdc_complete_transfer(fdc, 0u);
-    } else if (fdc->data.transfer_remaining == 0u) {
-        fdc->data.pending_st2 |= VFDC_ST2_SCAN_MISMATCH;
-        core_machine_fdc_complete_transfer(fdc,
-            ((fdc->data.pending_st2 & VFDC_ST2_CONTROL_MARK) != 0u &&
-                (fdc->data.cmd[0] & 0x20u) == 0u) ||
-            fdc->data.sector - core_machine_fdc_sector_step(fdc) == fdc->data.eot ?
-            0u : core_machine_fdc_ST1_END_OF_CYLINDER);
-    } else {
-        fdc->data.scan_sector_satisfies = LIB_TRUE;
-        fdc->data.pending_st2 |= VFDC_ST2_SCAN_MATCH;
-        if (fdc->data.flagNDMA) (void)core_machine_fdc_prepare_read_sector(fdc);
-    }
+    lib_status status = LIB_STATUS_OK;
+    *out_deleted = LIB_FALSE;
+    if (!core_machine_fdc_record_offset(fdc, unit, record, &info, &offset))
+        return X86_FDC_RECORD_ABSENT;
+    if ((info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) == 0u)
+        return X86_FDC_RECORD_OK;
+    status = core_machine_media_get_address_mark(fdc->connect.media_registry,
+        core_machine_fdc_drive_media_id(fdc, unit), offset / 512u, &mark, &result);
+    *out_deleted = mark == CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
+    return core_machine_fdc_record_result(status, result);
 }
 
-static void core_machine_fdc_format_byte(core_machine_fdc *fdc, lib_u8 byte)
+static x86_fdc_record_result core_machine_fdc_mark_write(void *context, lib_u8 unit,
+    const x86_fdc_record *record, lib_bool deleted)
 {
+    core_machine_fdc *fdc = context;
     core_machine_media_info info;
-    core_machine_media_result result;
-    core_machine_media_id media_id;
-    lib_u64 logical_sector;
-    if (fdc->data.format_headers_remaining == 0u) return;
-    if (!core_machine_fdc_drive_ready(fdc)) {
-        core_machine_fdc_complete_missing_input(fdc);
-        return;
+    core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    lib_u64 offset;
+    lib_status status;
+    if (!core_machine_fdc_record_offset(fdc, unit, record, &info, &offset))
+        return X86_FDC_RECORD_ABSENT;
+    status = core_machine_media_set_address_mark(fdc->connect.media_registry,
+        core_machine_fdc_drive_media_id(fdc, unit), offset / 512u,
+        deleted ? CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA :
+            CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA, &result);
+    return core_machine_fdc_record_result(status, result);
+}
+
+static x86_fdc_record_result core_machine_fdc_record_format(void *context, lib_u8 unit,
+    const x86_fdc_record *record, lib_u8 fill)
+{
+    core_machine_fdc *fdc = context;
+    core_machine_media_info info;
+    core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    lib_u64 offset;
+    lib_status status;
+    if (!core_machine_fdc_record_offset(fdc, unit, record, &info, &offset))
+        return X86_FDC_RECORD_ABSENT;
+    status = core_machine_media_format_sectors(fdc->connect.media_registry,
+        core_machine_fdc_drive_media_id(fdc, unit), offset / 512u, 1u, fill, &result);
+    return core_machine_fdc_record_result(status, result);
+}
+
+static void core_machine_fdc_irq(void *context, lib_bool asserted)
+{
+    core_machine_fdc *fdc = context;
+    if (asserted) core_machine_pic_irq_source_assert(&fdc->connect.irq_source);
+    else core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+}
+
+static void core_machine_fdc_drq(void *context, lib_bool asserted)
+{
+    core_machine_fdc *fdc = context;
+    core_machine_fdc_dma_request_operation operation = asserted ?
+        fdc->connect.dma_request_assert : fdc->connect.dma_request_deassert;
+    if (operation != LIB_NULL) operation(fdc->connect.dma_request_owner, &fdc->connect.dma_request);
+}
+
+static void core_machine_fdc_terminal(void *context, const x86_fdc_terminal *result)
+{
+    core_machine_fdc *fdc = context;
+    core_machine_fdc_terminal_observation observation = {
+        .sequence = ++fdc->connect.observation_sequence, .command = result->command,
+        .drive = result->drive, .successful = result->successful
+    };
+    lib_memory_copy(observation.result, result->result, sizeof(observation.result));
+    if (fdc->connect.observation_provider.callback != LIB_NULL)
+        fdc->connect.observation_provider.callback(fdc->connect.observation_provider.context,
+            &observation);
+}
+
+static lib_u64 core_machine_fdc_duration(const core_machine_fdc *fdc, lib_u64 microseconds)
+{
+    lib_u64 frequency = fdc->connect.config.clock_ticks_per_second;
+    lib_u64 scaled;
+    if (frequency == 0u || microseconds > LIB_UINT64_MAX / frequency) return 0u;
+    scaled = frequency * microseconds;
+    return scaled / 1000000u + (scaled % 1000000u != 0u);
+}
+
+static x86_fdc_timing core_machine_fdc_timing(const core_machine_fdc *fdc)
+{
+    lib_u64 fm = 31u, mfm = 15u;
+    if (fdc->data.ccr == VFDC_CCR_RATE_300) {
+        fm = (fm * 5u + 2u) / 3u;
+        mfm = (mfm * 5u + 2u) / 3u;
+    } else if (fdc->data.ccr != VFDC_CCR_RATE_500) {
+        fm = 0u;
+        mfm = 0u;
     }
-    fdc->data.format_id[fdc->data.format_id_index++] = byte;
-    if (fdc->data.format_id_index != 4u) return;
-    fdc->data.format_id_index = 0u;
-    if (fdc->data.format_id[0] != fdc->data.cylinder ||
-        fdc->data.format_id[1] != fdc->data.head ||
-        fdc->data.format_id[3] != 2u ||
-        !core_machine_fdc_media_info(fdc, &info, &result) ||
-        fdc->data.format_id[2] == 0u ||
-        fdc->data.format_id[2] > info.geometry.sectors_per_track) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        return;
-    }
-    logical_sector = ((lib_u64)fdc->data.cylinder * info.geometry.heads +
-        fdc->data.head) * info.geometry.sectors_per_track +
-        fdc->data.format_id[2] - 1u;
-    media_id = core_machine_fdc_selected_media_id(fdc);
-    if (core_machine_media_format_sectors(fdc->connect.media_registry,
-        media_id, logical_sector, 1u, fdc->data.cmd[5], &result) !=
-        LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        core_machine_fdc_complete_transfer(fdc,
-            result == CORE_MACHINE_MEDIA_RESULT_READ_ONLY ?
-            core_machine_fdc_ST1_NOT_WRITABLE : core_machine_fdc_ST1_NO_DATA);
-        return;
-    }
-    fdc->data.format_headers_remaining--;
-    fdc->data.sector = fdc->data.format_id[2];
-    if (fdc->data.format_headers_remaining == 0u) core_machine_fdc_complete_transfer(fdc, 0u);
+    return (x86_fdc_timing) {
+        .reset_ticks = core_machine_fdc_duration(fdc, 1024u),
+        .step_numerator = fdc->connect.config.clock_ticks_per_second,
+        .step_denominator = 1000u,
+        .fm_byte_ticks = core_machine_fdc_duration(fdc, fm),
+        .mfm_byte_ticks = core_machine_fdc_duration(fdc, mfm)
+    };
 }
 
 static void core_machine_fdc_dma_read(void *owner, t_latch *latch)
 {
     core_machine_fdc *fdc = owner;
-    if (fdc != LIB_NULL && fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ) {
-        (void)core_machine_fdc_transfer_byte(fdc, latch, LIB_FALSE);
-        core_machine_fdc_schedule_dma_byte(fdc);
-    }
+    x86_fdc_dma_read(fdc->chip, &latch->data.byte);
 }
 
 static void core_machine_fdc_dma_write(void *owner, t_latch *latch)
 {
     core_machine_fdc *fdc = owner;
-    if (fdc == LIB_NULL) return;
-    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE) {
-        (void)core_machine_fdc_transfer_byte(fdc, latch, LIB_TRUE);
-        core_machine_fdc_schedule_dma_byte(fdc);
-    } else if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN) {
-        core_machine_fdc_scan_byte(fdc, latch->data.byte);
-        core_machine_fdc_schedule_dma_byte(fdc);
-    } else if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT) {
-        core_machine_fdc_format_byte(fdc, latch->data.byte);
-        core_machine_fdc_schedule_dma_byte(fdc);
-    }
+    x86_fdc_dma_write(fdc->chip, latch->data.byte);
 }
 
 static void core_machine_fdc_dma_terminal(void *owner, t_latch *latch)
 {
     core_machine_fdc *fdc = owner;
-    lib_u8 opcode;
     (void)latch;
-    if (fdc == LIB_NULL) return;
-    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE &&
-        fdc->data.byte_offset != 0u) {
-        /* Intel 6-232: TC stops host transfers, not the current data field.
-         * Finish its zero tail through the same byte service, without DRQ. */
-        fdc->data.phase = core_machine_fdc_PHASE_EXECUTION_WRITE_TAIL;
-        fdc->data.transfer_remaining = 512u - fdc->data.byte_offset;
-        core_machine_fdc_schedule_dma_byte(fdc);
-        return;
-    }
-    opcode = fdc->data.cmd[0] & 0x1fu;
-    if ((opcode == core_machine_fdc_CMD_READ_DATA ||
-        opcode == core_machine_fdc_CMD_READ_DELETED_DATA ||
-        opcode == core_machine_fdc_CMD_WRITE_DATA ||
-        opcode == core_machine_fdc_CMD_WRITE_DELETED_DATA) &&
-        (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ ||
-        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE ||
-        (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE &&
-        fdc->data.transfer_remaining == 0u && fdc->data.pending_st0 == 0u &&
-        fdc->data.pending_st1 == 0u && fdc->data.pending_st2 == 0u))) {
-        core_machine_fdc_complete_dma_data(fdc);
-        return;
-    }
-    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ ||
-        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN ||
-        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT) {
-        core_machine_fdc_complete_transfer(fdc, 0u);
-    }
+    x86_fdc_terminal_count(fdc->chip);
 }
-
-static const core_machine_dma_channel_provider core_machine_fdc_dma_channel = {
-    core_machine_fdc_dma_read, core_machine_fdc_dma_write, core_machine_fdc_dma_terminal
-};
 
 const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(void)
-{ return &core_machine_fdc_dma_channel; }
-
-static lib_u8 core_machine_fdc_command_length(lib_u8 opcode)
 {
-    switch (opcode & 0x1fu) {
-    case core_machine_fdc_CMD_SPECIFY: return 3u;
-    case core_machine_fdc_CMD_SENSE_DRIVE_STATUS: return 2u;
-    case core_machine_fdc_CMD_RECALIBRATE: return 2u;
-    case core_machine_fdc_CMD_SENSE_INTERRUPT: return 1u;
-    case core_machine_fdc_CMD_SEEK: return 3u;
-    case core_machine_fdc_CMD_READ_ID: return 2u;
-    case core_machine_fdc_CMD_WRITE_DATA:
-    case core_machine_fdc_CMD_READ_DATA:
-    case core_machine_fdc_CMD_WRITE_DELETED_DATA:
-    case core_machine_fdc_CMD_READ_DELETED_DATA:
-    case core_machine_fdc_CMD_SCAN_EQUAL:
-    case core_machine_fdc_CMD_SCAN_LOW_OR_EQUAL:
-    case core_machine_fdc_CMD_SCAN_HIGH_OR_EQUAL:
-    case core_machine_fdc_CMD_READ_TRACK: return 9u;
-    case core_machine_fdc_CMD_FORMAT_TRACK: return 6u;
-    default: return 1u;
-    }
+    static const core_machine_dma_channel_provider provider = {
+        core_machine_fdc_dma_read, core_machine_fdc_dma_write, core_machine_fdc_dma_terminal
+    };
+    return &provider;
 }
 
-static void core_machine_fdc_start_transfer(core_machine_fdc *fdc,
-    core_machine_fdc_phase phase, lib_i32 deleted_data, lib_u8 scan_mode)
+static void core_machine_fdc_read_status(t_port *port, lib_u16 id, void *owner)
 {
-    lib_u8 size = core_machine_fdc_sector_size(fdc->data.cmd[5]);
-    lib_u16 track;
-    core_machine_media_info info;
-    core_machine_media_result result;
-    fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
-    fdc->data.cylinder = fdc->data.cmd[2];
-    fdc->data.head = fdc->data.cmd[3];
-    fdc->data.sector = fdc->data.cmd[4];
-    fdc->data.eot = fdc->data.cmd[6];
-    fdc->data.byte_offset = 0u;
-    fdc->data.transfer_expect_deleted = phase == core_machine_fdc_PHASE_EXECUTION_READ &&
-        deleted_data;
-    fdc->data.transfer_write_deleted = phase == core_machine_fdc_PHASE_EXECUTION_WRITE &&
-        deleted_data;
-    fdc->data.scan_mode = scan_mode;
-    fdc->data.scan_sector_satisfies = LIB_TRUE;
-    if (!core_machine_fdc_drive_ready(fdc)) {
-        core_machine_fdc_complete_missing_input(fdc);
-        return;
-    }
-    if (size != 2u ||
-        !core_machine_fdc_media_info(fdc, &info, &result) ||
-        !core_machine_fdc_track_id(fdc, &info, &track) ||
-        fdc->data.head >= info.geometry.heads || fdc->data.sector == 0u ||
-        fdc->data.sector > fdc->data.eot) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        return;
-    }
-    /* Flat media IDs follow the physical track, not the command's C or PCN.
-     * Intel 6-234: data commands do not perform an implied seek. */
-    if (fdc->data.cylinder != track) {
-        fdc->data.cylinder = track;
-        fdc->data.pending_st2 |= core_machine_fdc_ST2_WRONG_CYLINDER;
-        if (fdc->data.cylinder == 0xffu)
-            fdc->data.pending_st2 |= core_machine_fdc_ST2_BAD_CYLINDER;
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        return;
-    }
-    fdc->data.phase = phase;
-    fdc->data.transfer_remaining = (lib_u32)((fdc->data.eot -
-        fdc->data.sector) / core_machine_fdc_sector_step(fdc) + 1u) * 512u;
-    if (phase == core_machine_fdc_PHASE_EXECUTION_SCAN) {
-        fdc->data.pending_st2 |= VFDC_ST2_SCAN_MATCH;
-    }
-    if ((phase == core_machine_fdc_PHASE_EXECUTION_SCAN ||
-        phase == core_machine_fdc_PHASE_EXECUTION_READ) &&
-        !core_machine_fdc_prepare_read_sector(fdc)) return;
-    if (!fdc->data.flagNDMA && (fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
-        core_machine_fdc_request_assert(fdc);
-    }
+    const core_machine_fdc *fdc = owner;
+    (void)id;
+    port->data.ioByte = x86_fdc_read_status(fdc->chip);
 }
 
-static void core_machine_fdc_start_read_track(core_machine_fdc *fdc)
+static void core_machine_fdc_read_data(t_port *port, lib_u16 id, void *owner)
 {
-    core_machine_media_info info;
-    core_machine_media_result result;
-    lib_u16 track;
-    fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
-    fdc->data.cylinder = fdc->data.cmd[2];
-    fdc->data.head = fdc->data.cmd[3];
-    fdc->data.sector = fdc->data.cmd[4];
-    fdc->data.eot = fdc->data.cmd[6];
-    fdc->data.byte_offset = 0u;
-    if (!core_machine_fdc_drive_ready(fdc)) {
-        core_machine_fdc_complete_missing_input(fdc);
-        return;
-    }
-    if (fdc->data.cmd[0] != 0x42u || fdc->data.flagNDMA ||
-        core_machine_fdc_sector_size(fdc->data.cmd[5]) != 2u ||
-        fdc->data.selected_drive != 0u ||
-        !core_machine_fdc_media_info(fdc, &info, &result) ||
-        !core_machine_fdc_track_id(fdc, &info, &track) ||
-        fdc->data.head >= info.geometry.heads ||
-        fdc->data.cylinder >= info.geometry.cylinders ||
-        fdc->data.cylinder != track ||
-        fdc->data.sector != 1u ||
-        fdc->data.eot != info.geometry.sectors_per_track) {
-        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        return;
-    }
-    fdc->data.transfer_remaining = (lib_u32)
-        info.geometry.sectors_per_track * 512u;
-    fdc->data.transfer_expect_deleted = LIB_FALSE;
-    fdc->data.phase = core_machine_fdc_PHASE_EXECUTION_READ;
-    if (!core_machine_fdc_prepare_read_sector(fdc)) return;
-    if ((fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
-        core_machine_fdc_request_assert(fdc);
-    }
+    core_machine_fdc *fdc = owner;
+    (void)id;
+    x86_fdc_read_data(fdc->chip, &port->data.ioByte);
 }
 
-static void core_machine_fdc_execute(core_machine_fdc *fdc)
+static void core_machine_fdc_write_data(t_port *port, lib_u16 id, void *owner)
 {
-    lib_u8 opcode = fdc->data.cmd[0] & 0x1fu;
-    core_machine_media_info info;
-    core_machine_media_result media_result;
-    lib_i32 media_ok;
-
-    /* Intel requires SIS after seek/recalibrate completion. Until then no
-     * new command may overwrite a result. While seeking, each unit has one
-     * operation: reject a duplicate rather than replacing its target/deadline.
-     * Together these admission rules bound outstanding results to four. */
-    if ((opcode != core_machine_fdc_CMD_SENSE_INTERRUPT &&
-            fdc->data.seek_result_count != 0u) ||
-        ((opcode == core_machine_fdc_CMD_SEEK ||
-            opcode == core_machine_fdc_CMD_RECALIBRATE) &&
-            fdc->data.seek_pending[fdc->data.cmd[1] & 3u])) {
-        fdc->data.ret[0] = 0x80u;
-        core_machine_fdc_result_phase(fdc, 1u);
-        return;
-    }
-
-    /* A command that changes controller activity supersedes reset's stale
-     * Sense Interrupt notifications.  Sense Interrupt itself is the sole
-     * command allowed to drain them. */
-    if (opcode != core_machine_fdc_CMD_SENSE_INTERRUPT &&
-        fdc->data.reset_sense_mask != 0u) {
-        fdc->data.reset_sense_mask = 0u;
-        fdc->data.reset_pending = LIB_FALSE;
-        core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
-    }
-    switch (opcode) {
-    case core_machine_fdc_CMD_SPECIFY:
-        fdc->data.hut = fdc->data.cmd[1] & 0x0fu;
-        fdc->data.srt = fdc->data.cmd[1] >> 4u;
-        fdc->data.hlt = fdc->data.cmd[2] >> 1u;
-        fdc->data.flagNDMA = (fdc->data.cmd[2] & 1u) != 0u;
-        fdc->data.ready_poll_enabled = LIB_TRUE;
-        core_machine_fdc_command_phase(fdc);
-        break;
-    case core_machine_fdc_CMD_SENSE_DRIVE_STATUS:
-        fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
-        fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
-        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
-        fdc->data.st3 = (fdc->data.selected_drive & 3u) |
-            (fdc->data.head << 2u) | (media_ok &&
-            (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u ? 0x40u : 0u) | (core_machine_fdc_drive_status_ready(fdc,
-                fdc->data.selected_drive) ?
-            0x20u : 0u) | ((fdc->connect.drives.double_sided_mask &
-            (1u << fdc->data.selected_drive)) != 0u ? 0x08u : 0u) |
-            (core_machine_fdc_track_zero(fdc) ? 0x10u : 0u);
-        fdc->data.ret[0] = fdc->data.st3;
-        core_machine_fdc_result_phase(fdc, 1u);
-        break;
-    case core_machine_fdc_CMD_RECALIBRATE:
-        fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
-        fdc->data.head = 0u; fdc->data.sector = 1u;
-        core_machine_fdc_begin_seek(fdc, 0u);
-        break;
-    case core_machine_fdc_CMD_SENSE_INTERRUPT:
-        if (fdc->data.reset_sense_mask != 0u) {
-            lib_u8 drive = 0u;
-
-            while ((fdc->data.reset_sense_mask & (1u << drive)) == 0u) ++drive;
-
-            fdc->data.ret[0] = core_machine_fdc_ST0_READY_CHANGE | drive;
-            fdc->data.ret[1] = fdc->data.pcn[drive];
-            fdc->data.reset_sense_mask &= (lib_u8)~(1u << drive);
-            fdc->data.flagINTR = LIB_FALSE;
-            core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
-        } else if (fdc->data.seek_result_count != 0u) {
-            lib_u8 index;
-
-            fdc->data.ret[0] = fdc->data.seek_result_st0[0u];
-            fdc->data.ret[1] = fdc->data.seek_result_cylinder[0u];
-            for (index = 1u; index < fdc->data.seek_result_count; ++index) {
-                fdc->data.seek_result_st0[index - 1u] = fdc->data.seek_result_st0[index];
-                fdc->data.seek_result_cylinder[index - 1u] = fdc->data.seek_result_cylinder[index];
-            }
-            fdc->data.seek_result_count--;
-            fdc->data.flagINTR = fdc->data.seek_result_count != 0u ||
-                fdc->data.ready_sense_mask != 0u;
-            if (!fdc->data.flagINTR) core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
-        } else if (fdc->data.ready_sense_mask != 0u) {
-            lib_u8 drive = 0u;
-            while ((fdc->data.ready_sense_mask & (1u << drive)) == 0u) ++drive;
-            fdc->data.ret[0] = core_machine_fdc_ST0_READY_CHANGE | drive |
-                (fdc->data.observed_ready[drive] ? 0u : core_machine_fdc_ST0_NOT_READY);
-            fdc->data.ret[1] = fdc->data.pcn[drive];
-            fdc->data.ready_sense_mask &= (lib_u8)~(1u << drive);
-            fdc->data.flagINTR = fdc->data.ready_sense_mask != 0u;
-            if (!fdc->data.flagINTR) core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
-        } else {
-            fdc->data.ret[0] = 0x80u;
-            /* No pending cause: reference-model invalid-command result. */
-            core_machine_fdc_result_phase(fdc, 1u);
-            break;
-        }
-        core_machine_fdc_result_phase(fdc, 2u);
-        break;
-    case core_machine_fdc_CMD_SEEK:
-        fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
-        fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
-        fdc->data.sector = 1u;
-        core_machine_fdc_begin_seek(fdc, fdc->data.cmd[2]);
-        break;
-    case core_machine_fdc_CMD_READ_ID:
-        fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
-        fdc->data.cylinder = fdc->drive_cylinder[fdc->data.dor & VFDC_DOR_DS];
-        fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
-        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
-        if (!core_machine_fdc_drive_ready(fdc) || !media_ok) {
-            core_machine_fdc_complete_missing_input(fdc);
-        } else if (!core_machine_fdc_track_id(fdc, &info, &fdc->data.cylinder) ||
-            fdc->data.head >= info.geometry.heads) {
-            core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        } else {
-            if (fdc->data.sector == 0u) fdc->data.sector = 1u;
-            core_machine_fdc_set_result(fdc, core_machine_fdc_ST0_NORMAL, 0u, 0u);
-            core_machine_fdc_result_phase(fdc, 7u);
-            core_machine_fdc_publish_terminal_result(fdc);
-            core_machine_fdc_raise_irq(fdc);
-        }
-        break;
-    case core_machine_fdc_CMD_READ_DATA:
-        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_READ,
-            LIB_FALSE, 0u);
-        break;
-    case core_machine_fdc_CMD_READ_TRACK:
-        core_machine_fdc_start_read_track(fdc);
-        break;
-    case core_machine_fdc_CMD_WRITE_DATA:
-        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_WRITE,
-            LIB_FALSE, 0u);
-        break;
-    case core_machine_fdc_CMD_READ_DELETED_DATA:
-        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_READ,
-            LIB_TRUE, 0u);
-        break;
-    case core_machine_fdc_CMD_WRITE_DELETED_DATA:
-        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_WRITE,
-            LIB_TRUE, 0u);
-        break;
-    case core_machine_fdc_CMD_SCAN_EQUAL:
-        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_SCAN,
-            LIB_FALSE, core_machine_fdc_SCAN_EQUAL);
-        break;
-    case core_machine_fdc_CMD_SCAN_LOW_OR_EQUAL:
-        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_SCAN,
-            LIB_FALSE, core_machine_fdc_SCAN_LOW_OR_EQUAL);
-        break;
-    case core_machine_fdc_CMD_SCAN_HIGH_OR_EQUAL:
-        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_SCAN,
-            LIB_FALSE, core_machine_fdc_SCAN_HIGH_OR_EQUAL);
-        break;
-    case core_machine_fdc_CMD_FORMAT_TRACK:
-        fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
-        fdc->data.cylinder = fdc->drive_cylinder[fdc->data.dor & VFDC_DOR_DS];
-        fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
-        fdc->data.sector = 1u;
-        fdc->data.eot = fdc->data.cmd[3];
-        fdc->data.format_headers_remaining = fdc->data.cmd[3];
-        fdc->data.format_id_index = 0u;
-        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
-        if (!core_machine_fdc_drive_ready(fdc)) {
-            core_machine_fdc_complete_missing_input(fdc);
-            break;
-        }
-        if (core_machine_fdc_sector_size(fdc->data.cmd[2]) != 2u ||
-            fdc->data.eot == 0u ||
-            !media_ok || !core_machine_fdc_track_id(fdc, &info, &fdc->data.cylinder) ||
-            fdc->data.eot > info.geometry.sectors_per_track) {
-            core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
-        } else {
-            fdc->data.phase = core_machine_fdc_PHASE_EXECUTION_FORMAT;
-            if (!fdc->data.flagNDMA && (fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
-                core_machine_fdc_request_assert(fdc);
-            }
-        }
-        break;
-    default:
-        fdc->data.ret[0] = 0x80u;
-        core_machine_fdc_result_phase(fdc, 1u);
-        break;
-    }
+    core_machine_fdc *fdc = owner;
+    (void)id;
+    x86_fdc_write_data(fdc->chip, port->data.ioByte);
 }
 
-static void core_machine_fdc_reset_controller(core_machine_fdc *fdc)
+static void core_machine_fdc_write_dor(t_port *port, lib_u16 id, void *owner)
 {
-    lib_u8 ccr = fdc->data.ccr;
-    lib_u8 hut = fdc->data.hut;
-    lib_u8 hlt = fdc->data.hlt;
-    lib_u8 srt = fdc->data.srt;
-    lib_u64 elapsed_ticks = fdc->data.elapsed_ticks;
-    lib_u8 initial_media_baseline_pending = fdc->data.initial_media_baseline_pending;
-    lib_u64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
-    lib_memory_copy(observed_media_generation, fdc->data.observed_media_generation,
-        sizeof(observed_media_generation));
-    core_machine_fdc_cancel_execution(fdc);
-    lib_memory_set(&fdc->data, 0u, sizeof(fdc->data));
-    fdc->data.ccr = ccr;
-    fdc->data.hut = hut;
-    fdc->data.hlt = hlt;
-    fdc->data.srt = srt;
-    fdc->data.elapsed_ticks = elapsed_ticks;
-    fdc->data.initial_media_baseline_pending = initial_media_baseline_pending;
-    lib_memory_copy(fdc->data.observed_media_generation, observed_media_generation,
-        sizeof(observed_media_generation));
-    core_machine_fdc_sample_ready(fdc);
-    core_machine_fdc_command_phase(fdc);
+    core_machine_fdc *fdc = owner;
+    (void)id;
+    fdc->data.dor = port->data.ioByte;
+    x86_fdc_set_service_enabled(fdc->chip, (fdc->data.dor & VFDC_DOR_ENRQ) != 0u);
+    x86_fdc_set_reset(fdc->chip, (fdc->data.dor & VFDC_DOR_NRS) != 0u);
+    core_machine_fdc_update_dir(fdc);
+    x86_fdc_refresh(fdc->chip);
 }
 
-static void core_machine_fdc_publish_due_reset(core_machine_fdc *fdc)
+static void core_machine_fdc_write_control(t_port *port, lib_u16 id, void *owner)
 {
-    if (fdc == LIB_NULL || !fdc->data.reset_pending ||
-        fdc->data.elapsed_ticks < fdc->data.reset_due_tick) return;
-    fdc->data.reset_pending = LIB_FALSE;
-    if (fdc->data.reset_sense_mask != 0u) core_machine_fdc_raise_irq(fdc);
-}
-
-static void core_machine_fdc_schedule_reset_completion(core_machine_fdc *fdc)
-{
-    /* Reset completion queues one Sense Interrupt Status result for every
-     * controller drive select.  This is controller state, not a sample of
-     * the board READY inputs: system firmware drains all four results even
-     * when fewer mechanical drives are fitted. */
-    fdc->data.reset_sense_mask = fdc->connect.config.ready_mask == 0u ? 0u :
-        (lib_u8)((1u << CORE_MACHINE_FDC_DRIVE_COUNT) - 1u);
-    fdc->data.reset_due_tick = fdc->data.elapsed_ticks +
-        core_machine_fdc_timing_ticks(fdc, 1024u);
-    fdc->data.reset_pending = fdc->data.reset_sense_mask != 0u;
-    core_machine_fdc_publish_due_reset(fdc);
-}
-
-static void core_machine_fdc_read_status(t_port *port, lib_u16 id,
-    void *owner)
-{
-    core_machine_fdc *fdc = owner; (void)port; (void)id;
-    fdc->connect.port->data.ioByte = core_machine_fdc_msr(fdc);
-}
-
-static void core_machine_fdc_read_data(t_port *port, lib_u16 id,
-    void *owner)
-{
-    core_machine_fdc *fdc = owner; t_latch latch;
-    (void)port; (void)id;
-    if (fdc->data.phase == core_machine_fdc_PHASE_RESULT) {
-        if (fdc->data.result_index == 0u && fdc->data.flagINTR &&
-            (fdc->data.cmd[0] & 0x1fu) != core_machine_fdc_CMD_SENSE_INTERRUPT &&
-            (fdc->data.cmd[0] & 0x1fu) != core_machine_fdc_CMD_SENSE_DRIVE_STATUS) {
-            fdc->data.flagINTR = fdc->data.seek_result_count != 0u ||
-                fdc->data.ready_sense_mask != 0u;
-            if (!fdc->data.flagINTR) core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
-        }
-        fdc->connect.port->data.ioByte = fdc->data.ret[fdc->data.result_index++];
-        if (fdc->data.result_index >= fdc->data.result_length) core_machine_fdc_command_phase(fdc);
-    } else if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ &&
-        fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending) {
-        latch.data.byte = 0u;
-        (void)core_machine_fdc_transfer_byte(fdc, &latch, LIB_FALSE);
-        core_machine_fdc_schedule_ndma_byte(fdc);
-        fdc->connect.port->data.ioByte = latch.data.byte;
-    }
+    core_machine_fdc *fdc = owner;
+    x86_fdc_timing timing;
+    (void)id;
+    fdc->data.ccr = port->data.ioByte & VFDC_CCR_RATE_MASK;
+    timing = core_machine_fdc_timing(fdc);
+    (void)x86_fdc_set_timing(fdc->chip, &timing);
 }
 
 static void core_machine_fdc_read_direction(t_port *port, lib_u16 id,
@@ -1213,74 +385,6 @@ static void core_machine_fdc_read_direction(t_port *port, lib_u16 id,
      * Sample it only when the guest observes the change-latch port. */
     core_machine_fdc_refresh(fdc);
     fdc->connect.port->data.ioByte = fdc->data.dir;
-}
-
-static void core_machine_fdc_write_dor(t_port *port, lib_u16 id,
-    void *owner)
-{
-    core_machine_fdc *fdc = owner;
-    lib_u8 dor = fdc->connect.port->data.ioByte;
-    lib_u8 old_dor = fdc->data.dor;
-    (void)port; (void)id;
-    if ((dor & VFDC_DOR_NRS) == 0u) {
-        core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
-        fdc->data.flagINTR = LIB_FALSE;
-        core_machine_fdc_reset_controller(fdc);
-    }
-    fdc->data.dor = dor;
-    if ((dor & VFDC_DOR_NRS) != 0u && (old_dor & VFDC_DOR_NRS) == 0u) {
-        core_machine_fdc_reset_controller(fdc);
-        fdc->data.dor = dor;
-        core_machine_fdc_schedule_reset_completion(fdc);
-    }
-    core_machine_fdc_update_dir(fdc);
-    if ((dor & VFDC_DOR_NRS) != 0u && core_machine_fdc_execution_active(fdc) &&
-        !core_machine_fdc_drive_ready(fdc)) {
-        core_machine_fdc_complete_missing_input(fdc);
-    }
-}
-
-static void core_machine_fdc_write_data(t_port *port, lib_u16 id,
-    void *owner)
-{
-    core_machine_fdc *fdc = owner; t_latch latch;
-    (void)port; (void)id;
-    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE && fdc->data.flagNDMA &&
-        !fdc->data.ndma_byte_gate_pending) {
-        latch.data.byte = fdc->connect.port->data.ioByte;
-        (void)core_machine_fdc_transfer_byte(fdc, &latch, LIB_TRUE);
-        core_machine_fdc_schedule_ndma_byte(fdc);
-        return;
-    }
-    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN && fdc->data.flagNDMA &&
-        !fdc->data.ndma_byte_gate_pending) {
-        core_machine_fdc_scan_byte(fdc, fdc->connect.port->data.ioByte);
-        core_machine_fdc_schedule_ndma_byte(fdc);
-        return;
-    }
-    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT && fdc->data.flagNDMA &&
-        !fdc->data.ndma_byte_gate_pending) {
-        core_machine_fdc_format_byte(fdc, fdc->connect.port->data.ioByte);
-        core_machine_fdc_schedule_ndma_byte(fdc);
-        return;
-    }
-    if (fdc->data.phase != core_machine_fdc_PHASE_COMMAND) return;
-    if (fdc->data.command_index == 0u) {
-        fdc->data.command_length = core_machine_fdc_command_length(
-            fdc->connect.port->data.ioByte);
-    }
-    if (fdc->data.command_index >= sizeof(fdc->data.cmd)) return;
-    fdc->data.cmd[fdc->data.command_index++] = fdc->connect.port->data.ioByte;
-    if (fdc->data.command_index == fdc->data.command_length) {
-        fdc->data.phase = core_machine_fdc_PHASE_PENDING_COMMAND;
-    }
-}
-
-static void core_machine_fdc_write_control(t_port *port, lib_u16 id,
-    void *owner)
-{
-    core_machine_fdc *fdc = owner; (void)port; (void)id;
-    fdc->data.ccr = fdc->connect.port->data.ioByte & VFDC_CCR_RATE_MASK;
 }
 
 static void core_machine_fdc_read_diagnostic(t_port *port, lib_u16 id,
@@ -1321,17 +425,30 @@ void core_machine_fdc_connect(core_machine_fdc *fdc,
     }
 }
 
-void core_machine_fdc_initialize(core_machine_fdc *fdc)
+lib_status core_machine_fdc_initialize(core_machine_fdc *fdc)
 {
-    if (fdc == LIB_NULL || fdc->connect.port == LIB_NULL) return;
+    lib_status status;
+    x86_fdc_connection connection;
+    x86_fdc_timing timing;
+    if (fdc == LIB_NULL || fdc->connect.port == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (fdc->chip != LIB_NULL) return LIB_STATUS_INVALID_STATE;
     lib_memory_set(fdc->drive_cylinder, 0u, sizeof(fdc->drive_cylinder));
     lib_memory_set(&fdc->data, 0u, sizeof(fdc->data));
     fdc->data.ccr = VFDC_CCR_RATE_250;
     core_machine_fdc_observe_all_drives(fdc);
-    core_machine_fdc_sample_ready(fdc);
     fdc->data.initial_media_baseline_pending = LIB_TRUE;
     core_machine_fdc_update_dir(fdc);
-    core_machine_fdc_command_phase(fdc);
+    timing = core_machine_fdc_timing(fdc);
+    connection = (x86_fdc_connection) {
+        .sample = core_machine_fdc_sample, .step = core_machine_fdc_step,
+        .track = core_machine_fdc_track, .read = core_machine_fdc_record_read,
+        .write = core_machine_fdc_record_write, .read_mark = core_machine_fdc_mark_read,
+        .write_mark = core_machine_fdc_mark_write, .format = core_machine_fdc_record_format,
+        .irq = core_machine_fdc_irq, .drq = core_machine_fdc_drq,
+        .terminal = core_machine_fdc_terminal, .context = fdc
+    };
+    status = x86_fdc_create(&connection, &timing, &fdc->chip);
+    if (status != LIB_STATUS_OK) return status;
     core_machine_port_add_read(fdc->connect.port, fdc->connect.config.status_port,
         core_machine_fdc_read_status, fdc);
     core_machine_port_add_read(fdc->connect.port, fdc->connect.config.data_port,
@@ -1352,184 +469,51 @@ void core_machine_fdc_initialize(core_machine_fdc *fdc)
         core_machine_port_add_write(fdc->connect.port, fdc->connect.config.control_port,
             core_machine_fdc_write_control, fdc);
     }
+    return LIB_STATUS_OK;
 }
-
 void core_machine_fdc_reset(core_machine_fdc *fdc)
 {
     if (fdc == LIB_NULL) return;
-    core_machine_fdc_deassert_dma(fdc);
-    core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
-    core_machine_fdc_reset_controller(fdc);
+    x86_fdc_reset(fdc->chip);
+    fdc->data.dor = 0u;
+    fdc->data.dir = 0u;
+    lib_memory_set(fdc->data.media_changed, 0u, sizeof(fdc->data.media_changed));
     if (fdc->data.initial_media_baseline_pending) {
-        /* A session attaches its selected boot medium before its first
-         * machine reset.  That construction-time state is not a hot swap. */
         core_machine_fdc_observe_all_drives(fdc);
         fdc->data.initial_media_baseline_pending = LIB_FALSE;
     }
 }
 
-void core_machine_fdc_advance(core_machine_fdc *fdc)
+void core_machine_fdc_advance_at(core_machine_fdc *fdc, lib_u64 elapsed_ticks)
 {
-    if (fdc == LIB_NULL || fdc->data.elapsed_ticks == UINT64_MAX) return;
-    core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks + 1u);
+    if (fdc != LIB_NULL) x86_fdc_advance_at(fdc->chip, elapsed_ticks);
 }
 
-static void core_machine_fdc_finish_seek(core_machine_fdc *fdc,
-    lib_u8 drive, lib_u8 status)
+lib_status core_machine_fdc_next_due_tick(const core_machine_fdc *fdc, lib_u64 *out_due_tick)
 {
-    const lib_u8 index = fdc->data.seek_result_count++;
-    fdc->data.seek_pending[drive] = LIB_FALSE;
-    fdc->data.seek_result_st0[index] = status | VFDC_ST0_SEEK_END |
-        fdc->data.seek_head[drive] | drive;
-    fdc->data.seek_result_cylinder[index] = fdc->data.pcn[drive];
-    core_machine_fdc_raise_irq(fdc);
-}
-
-static void core_machine_fdc_step_drive(core_machine_fdc *fdc, lib_bool outward)
-{
-    /* On the selected PC boards, DOR selects the physical drive; the chip's
-     * US outputs do not replace those board select lines. */
-    const lib_u8 drive = fdc->data.dor & VFDC_DOR_DS;
-    const lib_u16 count = fdc->connect.drives.cylinder_count[drive];
-    if ((fdc->connect.drives.installed_mask & (1u << drive)) == 0u) return;
-    if (outward) {
-        if (fdc->drive_cylinder[drive] != 0u) --fdc->drive_cylinder[drive];
-    } else if (fdc->drive_cylinder[drive] < (count == 0u ? 255u : count - 1u)) {
-        ++fdc->drive_cylinder[drive];
-    }
-    core_machine_fdc_observe_drive(fdc, drive);
-}
-
-static void core_machine_fdc_advance_seeks(core_machine_fdc *fdc)
-{
-    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
-        if (fdc->data.seek_pending[drive] &&
-            !core_machine_fdc_drive_status_ready(fdc, drive)) {
-            core_machine_fdc_finish_seek(fdc, drive,
-                core_machine_fdc_ST0_ABNORMAL | core_machine_fdc_ST0_NOT_READY);
-        }
-    }
-    for (;;) {
-        lib_u8 next = CORE_MACHINE_FDC_DRIVE_COUNT;
-        lib_u64 due = UINT64_MAX;
-        lib_bool complete;
-        for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
-            if (fdc->data.seek_pending[drive] && fdc->data.seek_due_tick[drive] <=
-                fdc->data.elapsed_ticks && (next == CORE_MACHINE_FDC_DRIVE_COUNT ||
-                fdc->data.seek_due_tick[drive] < due)) {
-                next = drive;
-                due = fdc->data.seek_due_tick[drive];
-            }
-        }
-        if (next == CORE_MACHINE_FDC_DRIVE_COUNT) return;
-        complete = fdc->data.seek_recalibrate[next] ? core_machine_fdc_track_zero(fdc) :
-            fdc->data.pcn[next] == fdc->data.seek_target[next];
-        if (!complete) {
-            const lib_bool outward = fdc->data.seek_recalibrate[next] ||
-                fdc->data.pcn[next] > fdc->data.seek_target[next];
-            core_machine_fdc_step_drive(fdc, outward);
-            ++fdc->data.seek_steps[next];
-            if (!fdc->data.seek_recalibrate[next]) {
-                if (outward) --fdc->data.pcn[next];
-                else ++fdc->data.pcn[next];
-            }
-            complete = fdc->data.seek_recalibrate[next] ? core_machine_fdc_track_zero(fdc) :
-                fdc->data.pcn[next] == fdc->data.seek_target[next];
-        }
-        if (complete) core_machine_fdc_finish_seek(fdc, next, core_machine_fdc_ST0_NORMAL);
-        else if (fdc->data.seek_recalibrate[next] && fdc->data.seek_steps[next] == 77u)
-            core_machine_fdc_finish_seek(fdc, next,
-                core_machine_fdc_ST0_ABNORMAL | VFDC_ST0_EQUIPMENT_CHECK);
-        else fdc->data.seek_due_tick[next] = due + core_machine_fdc_step_ticks(fdc);
-    }
-}
-
-void core_machine_fdc_advance_at(core_machine_fdc *fdc,
-    lib_u64 elapsed_ticks)
-{
-    if (fdc == LIB_NULL) return;
-    fdc->data.elapsed_ticks = elapsed_ticks;
-    if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMMAND) {
-        core_machine_fdc_execute(fdc);
-    } else if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE) {
-        core_machine_fdc_set_result(fdc, fdc->data.pending_st0 != 0u ?
-            fdc->data.pending_st0 : (fdc->data.pending_st1 == 0u ?
-            core_machine_fdc_ST0_NORMAL : core_machine_fdc_ST0_ABNORMAL),
-            fdc->data.pending_st1, fdc->data.pending_st2);
-        core_machine_fdc_result_phase(fdc, 7u);
-        core_machine_fdc_publish_terminal_result(fdc);
-        core_machine_fdc_raise_irq(fdc);
-    }
-    core_machine_fdc_publish_due_reset(fdc);
-    if (core_machine_fdc_execution_active(fdc) && !core_machine_fdc_drive_ready(fdc))
-        core_machine_fdc_complete_missing_input(fdc);
-    core_machine_fdc_advance_seeks(fdc);
-    core_machine_fdc_publish_due_dma_byte(fdc);
-    core_machine_fdc_publish_due_ndma_byte(fdc);
-}
-
-lib_status core_machine_fdc_next_due_tick(const core_machine_fdc *fdc,
-    lib_u64 *out_due_tick)
-{
-    lib_u64 due_tick = UINT64_MAX;
-    lib_u8 drive;
-
-    if (fdc == LIB_NULL || out_due_tick == LIB_NULL) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMMAND ||
-        fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE) {
-        *out_due_tick = fdc->data.elapsed_ticks;
-        return LIB_STATUS_OK;
-    }
-    if (fdc->data.reset_pending && fdc->data.reset_due_tick < due_tick) {
-        due_tick = fdc->data.reset_due_tick;
-    }
-    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
-        if (fdc->data.seek_pending[drive] && fdc->data.seek_due_tick[drive] < due_tick) {
-            due_tick = fdc->data.seek_due_tick[drive];
-        }
-    }
-    if (fdc->data.dma_byte_gate_pending && fdc->data.next_dma_byte_tick < due_tick) {
-        due_tick = fdc->data.next_dma_byte_tick;
-    }
-    if (fdc->data.ndma_byte_gate_pending && fdc->data.next_ndma_byte_tick < due_tick) {
-        due_tick = fdc->data.next_ndma_byte_tick;
-    }
-    if (due_tick == UINT64_MAX) return LIB_STATUS_INVALID_STATE;
-    *out_due_tick = due_tick;
-    return LIB_STATUS_OK;
+    return fdc == LIB_NULL ? LIB_STATUS_INVALID_ARGUMENT :
+        x86_fdc_next_due_tick(fdc->chip, out_due_tick);
 }
 
 void core_machine_fdc_refresh(core_machine_fdc *fdc)
 {
-    core_machine_media_info info;
-    core_machine_media_result result;
-    lib_u8 drive;
-    lib_u8 ready;
-
     if (fdc == LIB_NULL) return;
-    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+    for (lib_u8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        core_machine_media_info info;
+        core_machine_media_result result;
         if (core_machine_fdc_drive_media_query(fdc, drive, &info, &result) &&
-            fdc->data.observed_media_generation[drive] != info.generation) {
+            fdc->data.observed_media_generation[drive] != info.generation)
             fdc->data.media_changed[drive] = LIB_TRUE;
-        }
-        ready = core_machine_fdc_drive_status_ready(fdc, drive);
-        if (fdc->data.ready_poll_enabled && ready != fdc->data.observed_ready[drive] &&
-            (fdc->data.ready_sense_mask & (1u << drive)) == 0u) {
-            fdc->data.observed_ready[drive] = ready;
-            fdc->data.ready_sense_mask |= (lib_u8)(1u << drive);
-            core_machine_fdc_raise_irq(fdc);
-        }
     }
+    x86_fdc_poll_ready(fdc->chip);
     core_machine_fdc_update_dir(fdc);
 }
 
 void core_machine_fdc_finalize(core_machine_fdc *fdc)
 {
     if (fdc == LIB_NULL) return;
-    core_machine_fdc_deassert_dma(fdc);
-    core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+    x86_fdc_destroy(fdc->chip);
+    fdc->chip = LIB_NULL;
     lib_memory_set(&fdc->data, 0u, sizeof(fdc->data));
     lib_memory_set(&fdc->connect, 0u, sizeof(fdc->connect));
     lib_memory_set(fdc->drive_cylinder, 0u, sizeof(fdc->drive_cylinder));
