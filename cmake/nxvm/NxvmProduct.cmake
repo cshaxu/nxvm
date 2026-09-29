@@ -644,6 +644,20 @@ add_executable(cpu-bit-test-smoke test/app-nxvm/unit/core/devices/cpu_bit_test_s
 target_link_libraries(cpu-bit-test-smoke PRIVATE x86-cpu)
 add_executable(core-machine-inc-dec-smoke test/app-nxvm/unit/core/devices/core_machine_inc_dec_smoke.c)
 target_link_libraries(core-machine-inc-dec-smoke PRIVATE core-machine)
+add_executable(core-machine-inc-dec-first-group-board-smoke
+    test/app-nxvm/unit/core/devices/core_machine_inc_dec_first_group_board_smoke.c)
+target_link_libraries(core-machine-inc-dec-first-group-board-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-inc-dec-first-group-board-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(cpu-inc-dec-first-group-smoke
+    test/app-nxvm/unit/core/devices/cpu_inc_dec_first_group_smoke.c)
+target_link_libraries(cpu-inc-dec-first-group-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(cpu-inc-dec-first-group-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-legacy-alu-s2-smoke
     test/app-nxvm/unit/core/devices/core_machine_legacy_alu_s2_smoke.c)
 target_link_libraries(core-machine-legacy-alu-s2-smoke PRIVATE core-machine)
@@ -1930,6 +1944,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-bit-test-smoke
     cpu-bit-test-smoke
     core-machine-inc-dec-smoke
+    core-machine-inc-dec-first-group-board-smoke
+    cpu-inc-dec-first-group-smoke
     core-machine-legacy-alu-s2-smoke
     cpu-legacy-alu-s2-smoke
     core-machine-rotate-smoke
@@ -2155,6 +2171,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-imul2-smoke
     cpu-imul-immediate-s56-smoke
     core-machine-inc-dec-smoke
+    cpu-inc-dec-first-group-smoke
     core-machine-iret-outer-s52-smoke
     core-machine-iret-s51-smoke
     core-machine-lahf-sahf-smoke
