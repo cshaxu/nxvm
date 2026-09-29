@@ -4,7 +4,7 @@ Baseline 996a19a17. All 81 tracked files under `src/app-nxvm/devices` are listed
 exactly once below. Entries remain **designed, not migrated**, except the
 PIT row accepted by S3, RTC row accepted by S4, PIC row accepted by S5,
 DMA row accepted by S7, AT keyboard chain accepted by S8 and XT PPI/keyboard
-accepted by S9;
+accepted by S9 and FDC accepted by S13;
 the inventory stays finite.
 The [design review](../architecture/t539-independent-chip-design.md) supplies
 dependency details, proposed contracts, regression ownership and decision gates.

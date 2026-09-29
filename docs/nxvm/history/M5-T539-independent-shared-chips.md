@@ -268,3 +268,22 @@ The post-commit specialized aggregate passes and all eight deployed hashes
 still match the evidence. S12 closes and its packet is removed; FDC extraction,
 other chips and T539 remain open under the finite migration ledger. Reusable
 build trees remain needed for the immediately following FDC extraction.
+
+## S13: Independent 8272A Chip
+
+Shared P1 1d6dc5876 and NXVM P2 c18859898 are pushed. The command/PCN/cause
+owner and independent tests move to x86/devices/fdc8272; NXVM retains PC
+registers, physical drive/record services and PIC/DMA/port wiring. Private
+scheduler/diagnostic access and the old command implementation are removed.
+[Evidence](../etc/evidence/t539-s13-fdc-extraction.md) maps original tests,
+actual-diff corrections, failure rollback, 355/355 units and 20/20 default
+integrations per width, six final vendor boots once, tools-off 22/22, static
+gates, six manifests and eight final EXE hashes. Counted source/test/build
+change is +3300/-2297, net +1003, excluding manifests/docs/artifacts.
+
+Coordinator actual-commit review accepts the complete bounded FDC row,
+including command-entry recording qualification, distinct READY triggers and
+the unchanged flat-record/timing limits. No new silicon-completeness claim.
+The active S13 packet is removed on acceptance; T539 remains open for CPU/FPU,
+HDC, video and every remaining ledger disposition. MyNES link inputs, its
+0043 artifacts, external originals and owner INIs are unchanged.
