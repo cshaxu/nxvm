@@ -347,3 +347,22 @@ and 88.77 s. Inputs, production source, time limit and guest execution remain
 unchanged; original failures stay visible. Coordinator actual-commit review
 accepts the complete FPU row and these verification limits. S16 closes and its
 packet is removed. CPU and all remaining ledger rows stay in T539.
+
+## S17: CPU Observation Prerequisite
+
+Shared P1 cadaf0990 and NXVM P2 f85888d3e are pushed. CPU preview and timing
+descriptor reads now use one physical resolver with explicit observation intent;
+display backing capture follows it, while operational reads retain effects.
+Shared video calculates CPU-visible bytes without publishing read latches for
+inspection. [Evidence](../etc/evidence/t539-s17-cpu-observation.md) records every
+provider/caller disposition, new tests, original-handler preservation, 370/370
+units and 20/20 default integrations per width, tools-off 45/45, six vendor
+boots once, manifests/gates and eight 0539 artifacts. Source/test/CMake net
+growth is 283 lines, mainly bounded observation regressions.
+
+Coordinator reviewed the actual P1/P2 changes and accepts this prerequisite.
+The new test's missed constructor classification was repaired; no gate was
+removed. Both Model40 boots meet the unchanged 90-second bound with the existing
+observer-free probe. INIs, external masters and MyNES remain unchanged. S17's
+packet is removed; opaque CPU extraction and all remaining ledger dispositions
+stay in T539, not transferred or declared complete.

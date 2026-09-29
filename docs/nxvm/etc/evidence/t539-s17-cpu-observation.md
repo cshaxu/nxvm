@@ -145,7 +145,18 @@ stay external; embedded-ROM executables use the recorded owner authorization.
 | nxvm_at_0_5_0539_x64.exe | 9CE9CCDA30A7F40ECEB84FFA0D14C9C40CB0C71049043AA31CF5B0D65DF068D8 |
 | nxvm_at_0_5_0539_x86.exe | 22DC4E6D9415CB9C5FAB4EE0CA69D18D83027F8AB7A9163A33108C9EFEA23C91 |
 
-Shared P1 cadaf0990 is pushed. NXVM P2 carries the matching CPU/memory/provider
-callers, receiving tests, gates and eight artifacts. Coordinator actual-commit
-review follows that delivery; S17 does not close T539 or accept its still-pending
-CPU row.
+Shared P1 cadaf0990 and NXVM P2 f85888d3e are pushed. P2 owns the matching
+CPU/memory/provider callers, receiving tests, gates and eight artifact blobs.
+Coordinator actual-commit review accepts their complete S17 scope: all changed
+provider/test signatures, operational-versus-observational routing, CPU call
+sites, video latch behavior, CMake registration, fixture inventory, source gates,
+manifest coverage and documentation were checked. The deployed executable blobs
+equal the committed blobs; artifact architecture/version/hash checks match the
+table. Targets are separated and no INI, external master or MyNES change entered.
+
+The original owner objective remains chip extraction; S17 satisfies only its
+explicit prerequisite packet. CPU private peers, timing/board separation,
+firmware interception removal, generated catalogs and the other finite ledger
+dispositions still need their own proof. No completion claim is transferred to
+the later board task. Prevention is the CPU observational-call gate plus the two
+owner-local regressions; it does not substitute for runtime side-effect proof.
