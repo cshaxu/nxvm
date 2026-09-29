@@ -619,8 +619,13 @@ target_link_libraries(core-machine-prefix-attributes-s64-smoke PRIVATE core-mach
 add_executable(core-machine-legacy-lock-s1-smoke
     test/app-nxvm/unit/core/devices/core_machine_legacy_lock_s1_smoke.c)
 target_link_libraries(core-machine-legacy-lock-s1-smoke PRIVATE core-machine)
+add_executable(cpu-legacy-lock-s1-smoke
+    test/app-nxvm/unit/core/devices/cpu_legacy_lock_s1_smoke.c)
+target_link_libraries(cpu-legacy-lock-s1-smoke PRIVATE x86-cpu)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-legacy-lock-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(cpu-legacy-lock-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-setcc-smoke test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c)
@@ -642,8 +647,13 @@ target_link_libraries(core-machine-inc-dec-smoke PRIVATE core-machine)
 add_executable(core-machine-legacy-alu-s2-smoke
     test/app-nxvm/unit/core/devices/core_machine_legacy_alu_s2_smoke.c)
 target_link_libraries(core-machine-legacy-alu-s2-smoke PRIVATE core-machine)
+add_executable(cpu-legacy-alu-s2-smoke
+    test/app-nxvm/unit/core/devices/cpu_legacy_alu_s2_smoke.c)
+target_link_libraries(cpu-legacy-alu-s2-smoke PRIVATE x86-cpu)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-legacy-alu-s2-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(cpu-legacy-alu-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-rotate-smoke test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c)
@@ -1892,6 +1902,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-operand-address-smoke
     core-machine-prefix-attributes-s64-smoke
     core-machine-legacy-lock-s1-smoke
+    cpu-legacy-lock-s1-smoke
     core-machine-setcc-smoke
     cpu-setcc-smoke
     core-machine-movx-smoke
@@ -1920,6 +1931,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-bit-test-smoke
     core-machine-inc-dec-smoke
     core-machine-legacy-alu-s2-smoke
+    cpu-legacy-alu-s2-smoke
     core-machine-rotate-smoke
     cpu-rotate-smoke
     core-machine-eflags-local-smoke
@@ -2148,8 +2160,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-lahf-sahf-smoke
     core-machine-lar-lsl-s57-smoke
     cpu-lea-smoke
-    core-machine-legacy-lock-s1-smoke
-    core-machine-legacy-alu-s2-smoke
+    cpu-legacy-lock-s1-smoke
+    cpu-legacy-alu-s2-smoke
     cpu-legacy-sreg-stack-smoke
     cpu-les-lds-s41-smoke
     cpu-les-lds-smoke
