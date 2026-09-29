@@ -124,6 +124,20 @@ static lib_i32 retirement_pre_mode_snapshot_case(void)
                 (core_machine_cpu_snapshot_point)2, &current_cpu) !=
                 LIB_STATUS_INVALID_ARGUMENT ||
             current_cpu.eip != 0xfff3u;
+        /* Published copies survive later debug writes and CPU reset. Reset
+         * must not publish an old pending instruction as a new retirement. */
+        failed |= core_machine_debug_write_register(machine,
+            CORE_MACHINE_DEBUG_EAX, 0x12345678u) != LIB_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK || probe.count != 1u ||
+            probe.records[0].instruction_entry_cpu.eax != 1u ||
+            probe.records[0].current_cpu.eax != 1u ||
+            probe.records[0].instruction_entry_cpu.eip != 0xfff0u ||
+            probe.records[0].current_cpu.eip != 0xfff3u ||
+            (probe.records[0].instruction_entry_cpu.cr0 & VCPU_CR0_PE) != 0u ||
+            (probe.records[0].current_cpu.cr0 & VCPU_CR0_PE) == 0u ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &current_cpu) != LIB_STATUS_OK ||
+            current_cpu.eip != 0xfff0u || (current_cpu.cr0 & VCPU_CR0_PE) != 0u;
     }
     core_machine_destroy(machine);
     return failed;

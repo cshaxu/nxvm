@@ -48,3 +48,26 @@ foreach(name IN LISTS cpu_files)
     endforeach()
 endforeach()
 message(STATUS "CPU bus boundary: baseline and 72 negative controls pass")
+
+set(path "${WORK}/src/app-nxvm/devices/cpu_bus.c")
+file(READ "${path}" original)
+foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0;"
+        "machine->executor_cpu_instructions.data.except = 0;"
+        "machine->executor_cpu_execution.cpu = 0;"
+        "#include \"app-nxvm/devices/cpu.h\""
+        "#include \"app-nxvm/devices/cpu_instructions.h\"")
+    if(injection MATCHES "^#include")
+        set(expected "Board imports private CPU layout")
+    else()
+        set(expected "Board bypasses copied CPU operations")
+    endif()
+    file(WRITE "${path}" "${original}\n${injection}\n")
+    execute_process(COMMAND "${CMAKE_COMMAND}" "-DPROJECT_SOURCE_DIR=${WORK}"
+        -P "${gate}" RESULT_VARIABLE status OUTPUT_VARIABLE output ERROR_VARIABLE error)
+    file(WRITE "${path}" "${original}")
+    string(FIND "${output}${error}" "${expected}" match)
+    if(status EQUAL 0 OR match EQUAL -1)
+        message(FATAL_ERROR "Board negative ${injection} not specifically rejected: ${output}${error}")
+    endif()
+endforeach()
+message(STATUS "Board CPU observation boundary: five negative controls pass")

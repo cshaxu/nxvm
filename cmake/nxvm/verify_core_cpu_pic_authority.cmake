@@ -55,6 +55,25 @@ foreach(old_file pic.c pic.h pic_interface.h)
         message(FATAL_ERROR "Duplicate pre-extraction PIC path: ${old_file}")
     endif()
 endforeach()
+file(GLOB_RECURSE board_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+foreach(board_source IN LISTS board_sources)
+    get_filename_component(board_name "${board_source}" NAME)
+    get_filename_component(board_directory "${board_source}" DIRECTORY)
+    if(board_directory STREQUAL "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices" AND
+       board_name MATCHES "^cpu(_instructions|_timing|_timing_model|_trace|_interface)?\\.[ch]$")
+        continue()
+    endif()
+    file(READ "${board_source}" contents)
+    if(contents MATCHES "executor_cpu(_instructions|_execution)?[ \t\r\n]*(\\.|->)[ \t\r\n]*[a-zA-Z_]")
+        message(FATAL_ERROR "Board bypasses copied CPU operations: ${board_source}")
+    endif()
+    # Only the original embedded lifetime owner remains until S30.
+    if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" AND
+       contents MATCHES "#[ \t]*include[ \t]*[<\"]app-nxvm/devices/cpu(_instructions)?\\.h[>\"]")
+        message(FATAL_ERROR "Board imports private CPU layout: ${board_source}")
+    endif()
+endforeach()
 file(GLOB_RECURSE pic_consumers
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"

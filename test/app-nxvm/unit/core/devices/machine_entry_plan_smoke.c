@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/cpu.h"
 
 static lib_i32 prepare_machine(core_machine **out_machine)
 {
@@ -40,7 +39,7 @@ static core_machine_entry_plan make_plan(lib_u16 cs, lib_u16 ip,
     plan.state.ss = 0u;
     plan.state.ip = ip;
     plan.state.sp = 0x1000u;
-    plan.state.eflags = VCPU_EFLAGS_IF;
+    plan.state.eflags = 0x00000200u; /* IF: real-mode entry enables interrupts. */
     plan.entry_physical = physical;
     plan.entry_route = route;
     plan.preloads = preloads;

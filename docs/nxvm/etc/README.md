@@ -30,6 +30,9 @@ and [work evidence](evidence/t539-s18-cpu-extraction.md); the owner's
 single CPU batch. [Incremental inventory](evidence/t539-cpu-incremental-inventory.md)
 maps recovery, pending consumers and their receiving packages.
 
+T539 S20: [CPU observation and adapter evidence](evidence/t539-s20-cpu-observation-adapters.md)
+records the retained-consumer audit and copied-state lifetime proof.
+
 T539 S19: [CPU bus boundary evidence](evidence/t539-s19-cpu-bus-boundary.md)
 records callback coverage and transaction-order qualification after S18.
 

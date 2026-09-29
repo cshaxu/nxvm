@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S19 are accepted. There is no active S packet.
-S20-S32 remain planned under the owner's automatic-S authorization in the
+M5 T539 remains open. S1-S19 are accepted. S20 is active under the owner's
+automatic-S authorization; S21-S32 remain planned in the
 [CPU work packages](../etc/architecture/t539-cpu-work-packages.md).
 
 S18 implementation P1 `0067d80c4` recovers the green incremental baseline.
@@ -27,6 +27,27 @@ specialized steps, six manifests and documentation checks pass. Coordinator
 actual-commit review accepts S19; no production or executable input changed.
 See [S19 evidence](../etc/evidence/t539-s19-cpu-bus-boundary.md). S20 is next;
 opaque lifetime and Shared relocation remain S30/S31, not accepted here.
+
+### S20 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T539 S20; sole active NXVM S. |
+| Admission And Approval | Owner automatic-S authorization and approved S18-S32 work packages; coordinator admits after S19 acceptance d6922b97d. |
+| Objective | Qualify and finish copied CPU observations and board adapters: entry/current state, decode/fault/retirement, reset/debug/FPU and board fixture consumers; migrated consumers cannot access private CPU state. |
+| Non-goals | No instruction/decoder/timing rewrite, mirrored state, forwarding API, opaque allocation cutover or Shared relocation. Remaining instruction test groups stay S21-S29. |
+| Reference Baseline | Clean master/origin master d6922b97d; eight unchanged S18 0539 EXEs. |
+| Candidate Proposal | [Chip proposal](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [work packages](../etc/architecture/t539-cpu-work-packages.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
+| Files And ABI Surface | NXVM CPU observation/debug implementations and interface; devices debug.c, entry_plan_interface.c, retirement_observation_interface.c, trace_interface.c, memory_interface.c, machine/board/scheduler adapters; CPU-context, retirement, reset/debug/FPU and board support tests; corresponding gates, build registrations and task records. No Shared/MyNES/INI change. |
+| Applicable Rules | EXECUTION packet, full-unit and actual-commit review; DOCUMENT authority; architecture/coding governance skills, sole ownership, copied public values and original handler/table style; existing source policy unchanged. |
+| Verification | Map production consumers and exact private exceptions; retain all existing cases, test snapshot lifetime across mutation/reset, entry/current selection, invalid requests, fault/retirement copy semantics and observer-free behavior. Run both full units, applicable specialized/boundary gates, six manifests, documentation/diff checks. Rebuild eight EXEs and affected integration only if production link inputs change. |
+| Expected Markers | CPU owns live registers/decoder/fault state; adapters receive bounded copies or use existing operations; only S30 embedded allocation retains layout coupling; no test-only public pointer or duplicate observation path. |
+| Asset Needs | Existing build/t539-s3 trees and accepted external inputs; no acquisition or asset edits. |
+| Reporting Requirements | Distinguish already-retained S18 migration from new S20 fixes; report actual caller evidence, preservation and counted code delta. |
+| Stop Conditions | Unapproved functional/timing change, need for Shared/MyNES modifications, new L1/downgrade, or irresolvable ownership conflict. |
+| Exit Criteria | Every scoped consumer mapped and cleaned where needed; copied-state and failure regressions pass; complete units/gates/manifests and actual-diff review pass; commit/push and coordinator acceptance. |
+| Original Owner Request | Independent CPU extraction through bounded trackable packages, retaining CPU families and original implementation style. |
+| Similar-Issue Sweep | Every entry/current/fault/retirement observation and reset/debug/FPU board consumer; both production and fixture include/access paths, excluding explicitly assigned later instruction groups. |
 
 ## Retained Progress
 
