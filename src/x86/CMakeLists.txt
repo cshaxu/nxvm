@@ -42,6 +42,10 @@ add_library(x86-hdc STATIC devices/hdc/hdc.c)
 target_include_directories(x86-hdc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-hdc PUBLIC types)
 
+add_library(x86-fpu STATIC devices/fpu/fpu.c)
+target_include_directories(x86-fpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-fpu PUBLIC types)
+
 add_library(x86-video STATIC devices/video/video.c)
 target_include_directories(x86-video PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-video PUBLIC types)
