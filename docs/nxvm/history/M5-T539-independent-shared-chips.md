@@ -304,4 +304,7 @@ reset. Terminal Windows probes now confirm pause and join before sampling;
 the checkpoint retains its ATA predicate. The optional setup probe is built,
 not claimed runtime-qualified. No production lifecycle change, timing upgrade,
 ESDI addition, owner INI, external master or MyNES artifact change is included.
-Coordinator actual-commit acceptance remains separate from this delivery.
+P1 9020d8bba and P2 86e0f82cb are pushed. Coordinator actual-commit review
+accepts the complete HDC row, including the diagnostic pause/join correction,
+original-case ownership, unchanged silicon limits and target-separated delivery.
+The S14 packet is removed; T539 remains open for the remaining finite ledger.
