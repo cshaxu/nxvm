@@ -614,3 +614,14 @@ receiving map and boundary decisions. Full units pass 389/389 per width; 66
 specialized gates, extended CPU boundary negatives and six unchanged corpus
 manifests pass. Executor delivery awaits actual-commit review. CPU extraction
 and T539 remain open with 82 original private consumers assigned S30-S37.
+
+### S29 Acceptance
+
+Coordinator actual-commit review accepts pushed NXVM P1 `86fe95201`. The
+13-path committed delta preserves the 28 operand contexts and twelve prefix
+groups at their owning boundaries. Full units pass 389/389 per width, with
+66 specialized gates, 72 migrated-board negative controls and six unchanged
+manifests. Nine test/build paths add 1,514/remove 1,311 lines, net +203;
+production and executable inputs are unchanged. S29 closes. The oversized
+S30 intake requires subdivision before implementation; CPU extraction and
+T539 remain open.

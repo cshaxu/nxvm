@@ -62,3 +62,12 @@ accept S29, S18-S40 as a whole, or T539.
 
 The nine test/build paths add 1,514 lines and remove 1,311, net +203. The
 four documentation paths are the packet, inventory, evidence and history.
+
+## Coordinator Acceptance
+
+Actual pushed P1 `86fe95201` has the stated 13-path scope and passes
+`git show --check`; the post-push worktree is clean and `origin/master` names
+the commit. The full receiving map, public-board/private-CPU separation,
+complete dual-width units and specialized gates meet the S29 packet. S29 is
+accepted. The 82 remaining direct private consumers and the CPU/board
+lifetime and Shared relocation are not accepted by this review.

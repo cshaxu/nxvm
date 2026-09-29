@@ -2,30 +2,24 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S28 are accepted; S29 is active.
+M5 T539 remains open. S1-S29 are accepted; S30 is next. Its eleven planned
+arithmetic/bit-test sources exceed 7,000 lines, so intake must split that
+batch before implementation under the existing automatic-S authorization.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
-retain S30-S40 as pending, not accepted CPU extraction.
+retain the remaining CPU work as pending, not accepted CPU extraction.
 
-## S29 Active Packet
+## S29 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, M5 T539 S29 after S28 P2 9a4d84c5b; NXVM target only. |
-| Admission And Approval | Coordinator admission under owner's automatic-S authorization and CPU decomposition amendment; one session switches executor/coordinator roles. |
-| Objective | Move CPU-owned operand/address and prefix-attribute assertions into CPU-only receivers while retaining the original board port, fault-delivery and PIC/IRQ observations. |
-| Non-goals | No CPU semantics/timing change, new public ABI, Shared relocation, opaque-lifetime cutover, firmware, INI, MyNES or artifact-input change. |
-| Reference Baseline | Clean pushed 9a4d84c5b; complete units 387/387 per width. The original operand/address and S64 prefix files have 538 and 957 lines, respectively, with five and twelve named test groups. |
-| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU work packages](../etc/architecture/t539-cpu-work-packages.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | Two original smoke sources, CPU-owned receiving tests, NXVM test registration and boundary/fixture gates, packet/history/evidence. Preserve exact program arrays and original context receivers; add no public capability or second execution path. |
-| Applicable Rules | Product Task Reading Set, shared/NXVM architecture and coding, execution and documentation rules; architecture-governance then coding-governance. CPU state stays with CPU; physical ports, PIC and delivered machine faults stay board-owned. No external-source operation. |
-| Verification | Full x64/x86 build and repository-only unit suites; sequential native desktop suites, specialized gates, six unchanged manifests, documentation and diff checks. Transient focused selection: original/new operand/address and prefix tests, CPU-boundary negatives. |
-| Expected Markers | CPU receivers link only x86-cpu; original profile/prefix/program matrices retain mapped assertions; board tests use public machine operations for port and IRQ/fault composition, with no direct private CPU access. |
-| Asset Needs | Repository-only inputs; retain existing build/t539-s3 trees and S18 recovery artifact. No ROM, media, INI or executable input changes. |
-| Reporting Requirements | Record every original test-group/context receiver, distinct CPU/board assertions, exact changed paths and code line counts, dual-width verification, pushed implementation and actual-commit review. |
-| Stop Conditions | New production behavior/API need, lost context, unaccounted includer, or scope larger than the bounded package requires packet revision before continuing; failed complete gate blocks acceptance. |
-| Exit Criteria | Original context receiving proof, CPU-only ownership for internal attributes, public board port/IRQ/fault proof, no duplicate private path, complete units/gates, actual-commit acceptance and pushed implementation/governance Ps. |
-| Original Owner Request | Decompose oversized S18 CPU migration into independently traceable bounded S tasks, preserve original semantics and style, automatically admit each S. |
-| Similar-Issue Sweep | Inspect both suites and includers for private CPU/RAM/PIC access, hidden success polarity, repeated prefix precedence, and board-only side effects; assign remaining direct private consumers to S30-S37 without reclassifying them as done. |
+Actual pushed NXVM P1 `86fe95201` has exactly 13 scoped paths, passes
+`git show --check`, and equals `origin/master` at review. All 28 original
+operand contexts and all twelve original prefix groups retain CPU or board
+receivers; two fault contexts have complementary observations. x64 and x86
+builds and complete units pass 389/389 each, along with 66 specialized gates,
+extended CPU-boundary negatives, six unchanged manifests and documentation
+governance. The nine test/build paths add 1,514/remove 1,311 lines; no
+production/API or executable input changed. See
+[S29 evidence](../etc/evidence/t539-s29-operand-prefix-migration.md). S29 is
+accepted; 82 original private consumers remain assigned to later CPU work.
 
 ## S28 Acceptance
 
@@ -49,6 +43,7 @@ observation. None is silently closed or transferred to the next T.
 
 | Task | Progress |
 | --- | --- |
+| T539 S29 | Accepted: NXVM P1 86fe95201 migrates operand/address and S64 prefix ownership. All 28 operand contexts and twelve prefix groups retain receivers; units 389/389 per width. No production or asset change. |
 | T539 S28 | Accepted: NXVM P1 fa092b95e migrates segment selector/SREG MOV test ownership. All 244 original contexts and three queries retained; units 387/387 per width. No production or asset change. |
 | T539 S27 | Accepted: NXVM P1 42d6c86e0 migrates far-pointer test ownership. All 117 original contexts retained; units 385/385 per width. No production or asset change. |
 | T539 S26 | Accepted: NXVM P1 587a91af9 migrates segment-stack test ownership. All 164 original contexts retained; units 382/382 per width. No production or asset change. |
@@ -74,7 +69,7 @@ packages by the current work plan.
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0539 EXEs are committed in
 0067d80c4 with unchanged owner INIs. S18 evidence records hashes, PE architecture
-and verification limits. S19-S28 changed no executable inputs and require no
+and verification limits. S19-S29 changed no executable inputs and require no
 new artifact. Both reusable NXVM trees remain configured for default; the three
 bounded build/t539-s3 trees and S18 recovery patch remain needed for later CPU
 batches. Run native desktop test suites without cross-tree overlap.
