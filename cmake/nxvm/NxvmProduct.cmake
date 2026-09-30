@@ -1068,7 +1068,7 @@ add_executable(core-machine-call-gate-smoke
     test/app-nxvm/unit/core/devices/core_machine_call_gate_smoke.c)
 target_link_libraries(core-machine-call-gate-smoke PRIVATE core-machine)
 add_executable(core-machine-call-gate-privilege-entry-smoke
-    test/app-nxvm/unit/core/devices/core_machine_call_gate_privilege_entry_smoke.c)
+    test/app-nxvm/unit/core/devices/core_machine_call_gate_privilege_entry_board_smoke.c)
 target_link_libraries(core-machine-call-gate-privilege-entry-smoke PRIVATE core-machine)
 
 add_executable(core-machine-tss-iomap-port-smoke

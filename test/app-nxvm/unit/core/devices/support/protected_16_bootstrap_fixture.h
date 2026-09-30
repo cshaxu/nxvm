@@ -66,7 +66,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_install_gate(test_prot
 /* Enter protected ring 0 through guest instructions only. */
 static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_parity(
     test_protected_16_machine *state, core_machine_cpu_profile profile,
-    lib_i32 planar_parity)
+    lib_i32 planar_parity, lib_i32 default32)
 {
     static const lib_u8 reset_jump[] = {0xeau,0u,0u,0u,0u};
     static const lib_u8 gdt_pointer[] = {0x37u,0u,0u,0x03u,0u,0u};
@@ -106,6 +106,12 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
     lib_memory_copy(gdt, source_gdt, sizeof(gdt));
+    if (default32) {
+        gdt[14u] = 0x40u;
+        gdt[22u] = 0x40u;
+        gdt[30u] = 0x40u;
+        gdt[38u] = 0x40u;
+    }
     if (profile == CORE_MACHINE_CPU_PROFILE_80286) {
         gdt[40u] = 0x2bu;
         gdt[45u] = 0x81u;
@@ -139,7 +145,11 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
 }
 
 #define test_protected_16_prepare(state, profile) \
-    test_protected_16_prepare_with_planar_parity((state), (profile), LIB_FALSE)
+    test_protected_16_prepare_with_planar_parity((state), (profile), LIB_FALSE, LIB_FALSE)
+
+#define test_protected_32_prepare(state) \
+    test_protected_16_prepare_with_planar_parity((state), \
+        CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE, LIB_TRUE)
 
 /* The old fixtures wrote CPL 3 and TR caches directly.  This setup reaches
  * the same architectural state through LTR and IRET before exposing user code. */
@@ -184,6 +194,45 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_enter_user_with_tss(
         test_protected_16_write(state, TEST_PROTECTED_16_CODE_BASE + 0x0100u,
             user_loop, sizeof(user_loop)) && core_machine_run(state->machine,
             (core_machine_run_budget){13u,0u}, &result) == LIB_STATUS_OK &&
+        result.reason == CORE_MACHINE_STOP_BUDGET &&
+        test_protected_16_snapshot(state, &snapshot) &&
+        snapshot.cs.selector == 0x001bu && snapshot.ss.selector == 0x0023u &&
+        snapshot.cs.dpl == 3u && snapshot.ss.dpl == 3u &&
+        snapshot.tr.selector == 0x0028u && snapshot.tr.dpl == 0u &&
+        snapshot.eip == 0x0100u && snapshot.esp == 0x7000u;
+}
+
+/* The 80386 default-32 setup mirrors the 16-bit path above, but keeps every
+ * post-jump instruction correctly encoded for the descriptor's D bit. */
+static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_32_enter_user(
+    test_protected_16_machine *state)
+{
+    static const lib_u8 tss32_image[] = {
+        0u,0u,0u,0u,0u,0x80u,0u,0u,0x10u,0u
+    };
+    static const lib_u8 kernel_to_user[] = {
+        0x66u,0xb8u,0x28u,0u,0x0fu,0x00u,0xd8u,
+        0x68u,0x23u,0u,0u,0u,0x68u,0u,0x70u,0u,0u,
+        0x68u,0x02u,0x02u,0u,0u,0x68u,0x1bu,0u,0u,0u,
+        0x68u,0u,0x01u,0u,0u,0xcfu
+    };
+    static const lib_u8 user_loop[] = {0xebu,0xfeu};
+    static const lib_u8 tss_descriptor[] = {
+        0x67u,0u,0u,0x05u,0u,0x89u,0u,0u
+    };
+    core_machine_run_result result = {0};
+    core_machine_debug_cpu_snapshot snapshot = {0};
+
+    return state != LIB_NULL && state->machine != LIB_NULL &&
+        test_protected_16_write(state, TEST_PROTECTED_16_GDT_BASE + 40u,
+            tss_descriptor, sizeof(tss_descriptor)) &&
+        test_protected_16_write(state, 0x0500u, tss32_image,
+            sizeof(tss32_image)) && test_protected_16_write(state,
+            TEST_PROTECTED_16_CODE_BASE, kernel_to_user,
+            sizeof(kernel_to_user)) && test_protected_16_write(state,
+            TEST_PROTECTED_16_CODE_BASE + 0x0100u, user_loop,
+            sizeof(user_loop)) && core_machine_run(state->machine,
+            (core_machine_run_budget){8u,0u}, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET &&
         test_protected_16_snapshot(state, &snapshot) &&
         snapshot.cs.selector == 0x001bu && snapshot.ss.selector == 0x0023u &&

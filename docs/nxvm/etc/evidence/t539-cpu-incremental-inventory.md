@@ -338,21 +338,38 @@ complete receiving map and dual-width verification are recorded in
 - `core_machine_protected_16_outer_iret_s6_smoke.c`
 - `core_machine_protected_16_outer_s5_smoke.c`
 
-### S48: 11 matching files
+### S48: call-gate privilege entry, 1 matching file
 
-- `core_machine_call_gate_privilege_entry_smoke.c`
-- `core_machine_call_gate_smoke.c`
+- `core_machine_call_gate_privilege_entry_smoke.c` (retire into one public board receiver)
+
+### S49: control transfer, 1 matching file
+
 - `core_machine_control_transfer_smoke.c`
+
+### S50: IDT/privilege entry pair, 2 matching files
+
 - `core_machine_idt_privilege_entry_smoke.c`
-- `core_machine_iret_outer_s52_smoke.c`
+- `core_machine_protected_privilege_smoke.c`
+
+### S51: protected far/data pair, 2 matching files
+
 - `core_machine_protected_data_access_s2_smoke.c`
 - `core_machine_protected_far_s1_smoke.c`
-- `core_machine_protected_privilege_smoke.c`
+
+### S52: outer return pair, 2 matching files
+
+- `core_machine_iret_outer_s52_smoke.c`
 - `core_machine_protected_return_atomicity_smoke.c`
+
+### S53--S54: task-switch halves, 1 matching file
+
 - `core_machine_task_switch_smoke.c`
+
+### S55: TSS I/O-map port, 1 matching file
+
 - `core_machine_tss_iomap_port_smoke.c`
 
-### S49: 10 matching files
+### S56: 10 matching files
 
 - `core_machine_cli_sti_s48_smoke.c`
 - `core_machine_cli_sti_smoke.c`
@@ -365,8 +382,9 @@ complete receiving map and dual-width verification are recorded in
 - `core_machine_vm86_delivery_smoke.c`
 - `core_machine_vm86_iret_smoke.c`
 
-### S50: 16 matching files
+### S57: 16 matching files
 
+- `core_machine_call_gate_smoke.c` (80286 timing-runner includer)
 - `core_machine_80186_instruction_timing_ledger_smoke.c`
 - `core_machine_80186_timing_manifest_runner.c`
 - `core_machine_80286_instruction_timing_ledger_smoke.c`
@@ -384,7 +402,7 @@ complete receiving map and dual-width verification are recorded in
 - `core_machine_t359_s5_timing_smoke.c`
 - `core_machine_t359_s6_timing_smoke.c`
 
-### S51: 4 matching files
+### S58: 4 matching files
 
 - `core_machine_fpu_interface_s65_smoke.c`
 - `cpu_profile_gate_smoke.c`
@@ -395,11 +413,12 @@ complete receiving map and dual-width verification are recorded in
 
 The matching-file inventory is not the entire compile dependency graph. S47
 must also keep the 80286/80386 timing runners building when their included
-16-bit gate/task/call fixtures change; S50 owns their subsequent timing-corpus
-migration. S48 includes outer-IRET's atomicity-fixture consumer. S49 additionally
+16-bit gate/task/call fixtures change; S57 owns their subsequent timing-corpus
+migration, including the 80286 runner's direct `core_machine_call_gate_smoke.c`
+includer. S52 includes outer-IRET's atomicity-fixture consumer. S56 additionally
 includes `core_machine_interrupt_return_composition_s4_smoke.c` and
 `core_machine_vm86_lgdt_lidt_s5_smoke.c`, which inherit private setup through
-included source rather than a direct search hit. Protected IRET is in S49
+included source rather than a direct search hit. Protected IRET is in S56
 with its CLI/STI-dependent includer. Do not migrate one included source's return
 shape while leaving its includers with the old shape.
 

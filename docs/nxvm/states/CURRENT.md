@@ -8,7 +8,9 @@ only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
 its oversized FLAGS/string/port row was divided into S36-S39. At S40 intake,
 the 7,736-line descriptor/system row was divided into S40-S46 and the formerly planned
-S41-S48 became S47-S54. S48-S54 remain pending. Earlier
+S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
+transfer row was divided into S48-S55; later packages now run through S61.
+S48 is active and S49-S61 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -353,7 +355,28 @@ current specialized gates, the T344 constructor classification, documentation
 governance and diff checks pass.  The actual commit equals `origin/master` at
 review.  [S47 evidence](../etc/evidence/t539-s47-protected-16-fixture-migration.md)
 contains the receiver map and retained timing boundary.  S47 is accepted;
-T539 remains open for S48--S54.
+T539 remains open for S48--S61.
+
+## S48 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S48, Continuation. |
+| Admission And Approval | The owner authorized automatic admission of each bounded T539 S. At intake on 2026-09-30, the former eleven-file S48 row was divided before implementation. The direct `core_machine_call_gate_smoke.c` includer is retained with its 80286 timing runner in S57, so this packet consumes only the 776-line private privilege-entry source. |
+| Objective | Retire direct-private setup from the call-gate privilege-entry smoke source while retaining one public-board or CPU-local receiver for every architectural behavior it covers. |
+| Non-goals | No production or public API change; no Shared/MyNES/firmware/asset/INI/EXE change; no task-switch, return, IDT, far/data, timing or VM86 migration. |
+| Reference Baseline | S47 acceptance and evidence; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); public Core Debug/memory/run/PIC contracts. |
+| Candidate Proposal | Replace the pair's direct Core CPU/RAM/PIC access with one public protected-mode bootstrap fixture, real guest call-gate descriptors and public snapshots/diagnostics. Retire only assertions that mutate unconstructable cache representation; do not add a mutable CPU seam. |
+| Files And ABI Surface | Retire `core_machine_call_gate_privilege_entry_smoke.c`; add its public board receiver, target registration/gates, S48 evidence and state/work-package/inventory records. NXVM test/CMake/docs only; no ABI surface. |
+| Applicable Rules | NXVM architecture/coding/documentation guides; shared execution, architecture, coding and documentation rules named by `docs/nxvm/README.md`; one owner for each setup fact and no parallel private execution path. |
+| Verification | Build affected x64/x86 targets; run complete repository-only units once per width; current specialized gates, direct-private sweep, documentation governance and `git diff --check`. |
+| Expected Markers | Preserve current call-gate target success behavior, or map successor markers exactly in S48 evidence. |
+| Asset Needs | None; repository-only unit fixtures. No executable rebuild is required. |
+| Reporting Requirements | Record the source-function/case receiver map, public construction method, changed test-path count, full verification and similar-issue sweep. |
+| Stop Conditions | Stop for an unmapped architectural case, required production/API change, a disagreement with the CPU authority, or a dependency outside the call-gate pair. |
+| Exit Criteria | Each architectural privilege-entry case has exactly one public-board or CPU-local receiver; the named source is retired; no duplicate execution/setup path remains; required verification and actual-change review pass. |
+| Original Owner Request | Split the CPU migration into small, traceable S tasks, automatically admit each, and keep a single correct owner rather than accumulating private test paths. |
+| Similar-Issue Sweep | Audit all call-gate test consumers and included helpers for direct CPU/RAM/PIC/cache access; classify each as public receiver, CPU-local receiver or explicitly retired non-architectural representation assertion. |
 
 
 ## S29 Acceptance

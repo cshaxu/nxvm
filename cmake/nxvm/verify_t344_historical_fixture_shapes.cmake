@@ -5,7 +5,6 @@ endif()
 set(project_t344_migrated_sources
     "test/app-nxvm/unit/core/devices/core_machine_80286_protected_mode_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_paging_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_call_gate_privilege_entry_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_call_gate_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_descriptor_system_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_fpu_8087_smoke.c"
@@ -115,12 +114,12 @@ set(project_t344_retained_sources
 set(project_t344_inventory ${project_t344_migrated_sources}
     ${project_t344_retained_sources})
 list(LENGTH project_t344_inventory project_t344_inventory_count)
-if(NOT project_t344_inventory_count EQUAL 106)
-    message(FATAL_ERROR "T344 fixture-shape inventory must contain 106 direct constructors.")
+if(NOT project_t344_inventory_count EQUAL 105)
+    message(FATAL_ERROR "T344 fixture-shape inventory must contain 105 direct constructors.")
 endif()
 list(REMOVE_DUPLICATES project_t344_inventory)
 list(LENGTH project_t344_inventory project_t344_unique_count)
-if(NOT project_t344_unique_count EQUAL 106)
+if(NOT project_t344_unique_count EQUAL 105)
     message(FATAL_ERROR "T344 fixture-shape inventory contains a duplicate source.")
 endif()
 
@@ -155,12 +154,12 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # S42 retains real table loads, privilege delivery and IRQ routing.
     "test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 121)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 121 entries.")
+if(NOT project_t344_constructor_count EQUAL 120)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 120 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 121)
+if(NOT project_t344_constructor_unique_count EQUAL 120)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -179,8 +178,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 121)
-    message(FATAL_ERROR "T344 expected 121 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 120)
+    message(FATAL_ERROR "T344 expected 120 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)
@@ -218,6 +217,24 @@ foreach(project_t344_source IN LISTS project_t344_public_limit_sources)
     endif()
 endforeach()
 
+# S47/S48 public protected-mode receivers share one architectural bootstrap;
+# they must not recreate a private CPU or memory setup in each smoke source.
+set(project_t344_protected_bootstrap_sources
+    "test/app-nxvm/unit/core/devices/core_machine_protected_16_call_gate_board_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_protected_16_external_board_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_protected_16_gate_board_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_protected_16_outer_board_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_protected_16_outer_iret_board_smoke.c"
+    "test/app-nxvm/unit/core/devices/core_machine_call_gate_privilege_entry_board_smoke.c")
+foreach(project_t344_source IN LISTS project_t344_protected_bootstrap_sources)
+    file(READ "${PROJECT_T344_SOURCE_DIR}/${project_t344_source}"
+        project_t344_content)
+    if(NOT project_t344_content MATCHES "support/protected_16_bootstrap_fixture[.]h" OR
+        project_t344_content MATCHES "core_machine_create[ \\t\\r\\n]*\\(")
+        message(FATAL_ERROR "T344 protected bootstrap is not uniquely shared: ${project_t344_source}")
+    endif()
+endforeach()
+
 foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     file(READ "${PROJECT_T344_SOURCE_DIR}/${project_t344_source}"
         project_t344_content)
@@ -228,4 +245,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 fixture shapes passed: 106 direct inventoried, 6 shared public-limit callers, 4 timing-manifest, 2 guest-table-load, 1 INTA and 1 ARPL board constructor.")
+message(STATUS "T344 fixture shapes passed: 105 direct inventoried, 6 shared protected bootstrap callers, 6 shared public-limit callers, 4 timing-manifest, 2 guest-table-load, 1 INTA and 1 ARPL board constructor.")
