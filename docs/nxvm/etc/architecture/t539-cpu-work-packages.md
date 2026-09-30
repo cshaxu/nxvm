@@ -27,6 +27,12 @@ instruction families: FLAGS, string transfer, string scan/compare and port I/O.
 The formerly planned S37-S45 become S40-S48. Earlier accepted identifiers and
 their historical prospective references do not change.
 
+At S40 intake, the thirteen descriptor/system sources total 7,736 lines.
+`arpl_s53` directly includes the base ARPL source; the remaining files have
+independent source boundaries. Before implementation, split the unadmitted
+S40 row into seven instruction-family packages, S40-S46. Formerly planned
+S41-S48 become S47-S54. No accepted S18-S39 identifier changes.
+
 ## Recover A Deliverable Baseline First
 
 At the split's admission, the worktree contained uncommitted CPU bus, timing,
@@ -77,17 +83,23 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S37 | String transfer: MOVS and LODS, including REP, direction, address/operand width and timing cases. |
 | S38 | String scan/compare: STOS, SCAS and CMPS, including REP termination, flags and interruptibility. |
 | S39 | Port I/O: port instruction semantics, string I/O and port ownership. Retain board permission, IRQ and actual port transaction assertions. |
-| S40 | Descriptor/system tests: ARPL and its includer, BOUND, table-register instructions, LAR/LSL, VERR/VERW, CLTS/MSW and debug-register/TF cases. Use real guest setup for board tests; retain artificial cache cases at CPU owner. |
-| S41 | 16-bit protected-mode dependency group: gate base fixture and all six direct includers (external, call gate, outer return, outer IRET and two timing runners). Keep timing consumers buildable while the shared fixture changes. |
-| S42 | Protected transfer/return group: call gates, privilege entry, outer-return atomicity with its outer-IRET includer, task switch/TSS and protected data access. Preserve complete cache rollback and stack/descriptor side effects. |
-| S43 | Interrupt/VM86 dependency group: CLI/STI with HLT/INT/IRET/composition includers; protected IRET; interrupt-entry; VM86 delivery/IRET/table-load and hardware delivery. Migrate shared fixtures with all includers in one package. Preserve NMI/IRQ priority, masking, fault escalation and frames. |
-| S44 | Timing corpus: 8086/80186/80286/80386 ledgers and manifest runners, protected I/O and T359/normalization suites. Preserve all formula/catalog rows and measured deltas; remove generated production catalog dependency. |
-| S45 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
-| S46 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |
-| S47 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
-| S48 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
+| S40 | ARPL base plus S53 includer: two sources, 910 lines. Keep the includer and its original real/protected CPU and board cases in one change. |
+| S41 | BOUND S54: one source, 899 lines. Preserve bounds, width/profile, segment and fault/IRQ contexts. |
+| S42 | Table-register instructions: DTTR S61, LGDT/LIDT and SGDT/SIDT; three sources, 1,367 lines. Retain guest table loads, store width, segment/VM86 and IRQ/fault contexts. |
+| S43 | Descriptor-system suite: one source, 1,080 lines. Preserve the complete descriptor/table matrix and its original cache/rollback cases. |
+| S44 | Descriptor queries: LAR/LSL and VERR/VERW; two sources, 1,748 lines. Preserve visibility, privilege, selector and protected-fault outcomes. |
+| S45 | Control state: CLTS S62 and MSW S63; two sources, 726 lines. Preserve CR0/TS/PE, privilege, memory and interrupt cases. |
+| S46 | Debug state: MOV DR S59 and TF/#DB S60; two sources, 1,006 lines. Preserve breakpoint register, trap/fault delivery, RF/TF and IRQ order. |
+| S47 | 16-bit protected-mode dependency group: gate base fixture and all six direct includers (external, call gate, outer return, outer IRET and two timing runners). Keep timing consumers buildable while the shared fixture changes. |
+| S48 | Protected transfer/return group: call gates, privilege entry, outer-return atomicity with its outer-IRET includer, task switch/TSS and protected data access. Preserve complete cache rollback and stack/descriptor side effects. |
+| S49 | Interrupt/VM86 dependency group: CLI/STI with HLT/INT/IRET/composition includers; protected IRET; interrupt-entry; VM86 delivery/IRET/table-load and hardware delivery. Migrate shared fixtures with all includers in one package. Preserve NMI/IRQ priority, masking, fault escalation and frames. |
+| S50 | Timing corpus: 8086/80186/80286/80386 ledgers and manifest runners, protected I/O and T359/normalization suites. Preserve all formula/catalog rows and measured deltas; remove generated production catalog dependency. |
+| S51 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
+| S52 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |
+| S53 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
+| S54 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
-S19-S45 migrate consumers before S46; S47 follows S46. Existing in-progress edits
+S19-S51 migrate consumers before S52; S53 follows S52. Existing in-progress edits
 are inputs to these packages, not a reason to rerun or rewrite a verified
 algorithm. At admission, each brief lists exact files, original cases, includers
 and target-specific P boundaries. If a row proves oversized, subdivide it before
@@ -102,14 +114,14 @@ consumers and additional include-dependent consumers by receiving S.
 The original [S18 evidence](../evidence/t539-s18-cpu-extraction.md) remains the
 chronological record, with narrow test results explicitly distinct from S exit.
 Bus edits map to S19; copied observations and board tests to S20; EFLAGS to
-S36, REP to S37-S39; interrupt-entry/private rollback to S43; formula and
-target preparation to S44/S47; opaque allocation to S46. Other edits are assigned by the S18 inventory,
+S36, REP to S37-S39; interrupt-entry/private rollback to S49; formula and
+target preparation to S50/S53; opaque allocation to S52. Other edits are assigned by the S18 inventory,
 not dropped. Do not replay an already accepted change in a later P.
 
 Every S closes only after its complete applicable unit suites, fresh affected
 builds, boundary/manifests/document checks and actual-diff review pass. Rebuild
 affected x64/x86 deliverables under execution rules; no stale binary acceptance.
 Each P has one target (Shared or NXVM); MyNES/INI/assets inputs stay unchanged.
-T closure still requires full integration. S48 consolidates receiving proof; it
+T closure still requires full integration. S54 consolidates receiving proof; it
 does not defer earlier S unit gates. User-facing progress must state planned,
 active, verified or accepted, with remaining cases and evidence links.

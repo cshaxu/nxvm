@@ -269,23 +269,41 @@ direct-private `.c` test count falls from 61 to 58, plus the shared fixture
 header. [S39 evidence](t539-s39-port-io-migration.md) records the complete
 receiving map and verification.
 
-### S40: 13 matching files
+### S40: ARPL base and includer, 2 matching files
 
 - `core_machine_arpl_s53_smoke.c`
 - `core_machine_arpl_smoke.c`
+
+### S41: BOUND, 1 matching file
+
 - `core_machine_bound_s54_smoke.c`
-- `core_machine_clts_s62_smoke.c`
-- `core_machine_debug_mov_s59_smoke.c`
-- `core_machine_descriptor_system_smoke.c`
+
+### S42: Table-register instructions, 3 matching files
+
 - `core_machine_dttr_s61_smoke.c`
-- `core_machine_lar_lsl_s57_smoke.c`
 - `core_machine_lgdt_lidt_smoke.c`
-- `core_machine_msw_s63_smoke.c`
 - `core_machine_sgdt_sidt_smoke.c`
-- `core_machine_tf_db_s60_smoke.c`
+
+### S43: Descriptor system, 1 matching file
+
+- `core_machine_descriptor_system_smoke.c`
+
+### S44: Descriptor queries, 2 matching files
+
+- `core_machine_lar_lsl_s57_smoke.c`
 - `core_machine_verr_verw_s58_smoke.c`
 
-### S41: 5 matching files
+### S45: Control state, 2 matching files
+
+- `core_machine_clts_s62_smoke.c`
+- `core_machine_msw_s63_smoke.c`
+
+### S46: Debug state, 2 matching files
+
+- `core_machine_debug_mov_s59_smoke.c`
+- `core_machine_tf_db_s60_smoke.c`
+
+### S47: 5 matching files
 
 - `core_machine_protected_16_call_gate_s7_smoke.c`
 - `core_machine_protected_16_external_s4_smoke.c`
@@ -293,7 +311,7 @@ receiving map and verification.
 - `core_machine_protected_16_outer_iret_s6_smoke.c`
 - `core_machine_protected_16_outer_s5_smoke.c`
 
-### S42: 11 matching files
+### S48: 11 matching files
 
 - `core_machine_call_gate_privilege_entry_smoke.c`
 - `core_machine_call_gate_smoke.c`
@@ -307,7 +325,7 @@ receiving map and verification.
 - `core_machine_task_switch_smoke.c`
 - `core_machine_tss_iomap_port_smoke.c`
 
-### S43: 10 matching files
+### S49: 10 matching files
 
 - `core_machine_cli_sti_s48_smoke.c`
 - `core_machine_cli_sti_smoke.c`
@@ -320,7 +338,7 @@ receiving map and verification.
 - `core_machine_vm86_delivery_smoke.c`
 - `core_machine_vm86_iret_smoke.c`
 
-### S44: 16 matching files
+### S50: 16 matching files
 
 - `core_machine_80186_instruction_timing_ledger_smoke.c`
 - `core_machine_80186_timing_manifest_runner.c`
@@ -339,7 +357,7 @@ receiving map and verification.
 - `core_machine_t359_s5_timing_smoke.c`
 - `core_machine_t359_s6_timing_smoke.c`
 
-### S45: 4 matching files
+### S51: 4 matching files
 
 - `core_machine_fpu_interface_s65_smoke.c`
 - `cpu_profile_gate_smoke.c`
@@ -348,13 +366,13 @@ receiving map and verification.
 
 ## Include Dependency Closure
 
-The matching-file inventory is not the entire compile dependency graph. S41
+The matching-file inventory is not the entire compile dependency graph. S47
 must also keep the 80286/80386 timing runners building when their included
-16-bit gate/task/call fixtures change; S44 owns their subsequent timing-corpus
-migration. S42 includes outer-IRET's atomicity-fixture consumer. S43 additionally
+16-bit gate/task/call fixtures change; S50 owns their subsequent timing-corpus
+migration. S48 includes outer-IRET's atomicity-fixture consumer. S49 additionally
 includes `core_machine_interrupt_return_composition_s4_smoke.c` and
 `core_machine_vm86_lgdt_lidt_s5_smoke.c`, which inherit private setup through
-included source rather than a direct search hit. Protected IRET is in S43
+included source rather than a direct search hit. Protected IRET is in S49
 with its CLI/STI-dependent includer. Do not migrate one included source's return
 shape while leaving its includers with the old shape.
 
