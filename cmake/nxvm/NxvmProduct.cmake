@@ -892,6 +892,13 @@ target_link_libraries(core-machine-tf-db-s60-smoke PRIVATE core-machine)
 add_executable(core-machine-dttr-s61-smoke
     test/app-nxvm/unit/core/devices/core_machine_dttr_s61_smoke.c)
 target_link_libraries(core-machine-dttr-s61-smoke PRIVATE core-machine)
+add_executable(cpu-dttr-s61-smoke
+    test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c)
+target_link_libraries(cpu-dttr-s61-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(cpu-dttr-s61-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-clts-s62-smoke
     test/app-nxvm/unit/core/devices/core_machine_clts_s62_smoke.c)
 target_link_libraries(core-machine-clts-s62-smoke PRIVATE core-machine)
@@ -956,9 +963,30 @@ target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
 add_executable(core-machine-sgdt-sidt-smoke
     test/app-nxvm/unit/core/devices/core_machine_sgdt_sidt_smoke.c)
 target_link_libraries(core-machine-sgdt-sidt-smoke PRIVATE core-machine)
+add_executable(cpu-sgdt-sidt-smoke
+    test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c)
+target_link_libraries(cpu-sgdt-sidt-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(cpu-sgdt-sidt-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-lgdt-lidt-smoke
     test/app-nxvm/unit/core/devices/core_machine_lgdt_lidt_smoke.c)
 target_link_libraries(core-machine-lgdt-lidt-smoke PRIVATE core-machine)
+add_executable(cpu-lgdt-lidt-smoke
+    test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c)
+target_link_libraries(cpu-lgdt-lidt-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(cpu-lgdt-lidt-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(machine-table-register-board-smoke
+    test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c)
+target_link_libraries(machine-table-register-board-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(machine-table-register-board-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-vm86-delivery-smoke
     test/app-nxvm/unit/core/devices/core_machine_vm86_delivery_smoke.c)
 target_link_libraries(core-machine-vm86-delivery-smoke PRIVATE core-machine)
@@ -2108,6 +2136,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-arpl-smoke
     machine-arpl-board-smoke
     cpu-bound-smoke
+    cpu-dttr-s61-smoke
+    cpu-lgdt-lidt-smoke
+    cpu-sgdt-sidt-smoke
+    machine-table-register-board-smoke
     machine-bound-board-smoke
     core-machine-segment-selector-smoke
     core-machine-cpu-profile-gate-smoke
@@ -2242,6 +2274,9 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-arpl-smoke
     cpu-bit-test-smoke
     cpu-bound-smoke
+    cpu-dttr-s61-smoke
+    cpu-lgdt-lidt-smoke
+    cpu-sgdt-sidt-smoke
     core-machine-cli-sti-s48-smoke
     core-machine-clts-s62-smoke
     cpu-cmps-smoke
