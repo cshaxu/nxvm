@@ -21,6 +21,12 @@ row was divided into S30-S35 by independent instruction groups. The formerly
 planned S31-S40 become S36-S45. No accepted S18-S29 identifier is changed;
 earlier evidence retains its historical planned numbers.
 
+At S36 intake, its twelve FLAGS/string/port sources total about 7,000 lines.
+Before implementation, split that unadmitted row into S36-S39 by distinct
+instruction families: FLAGS, string transfer, string scan/compare and port I/O.
+The formerly planned S37-S45 become S40-S48. Earlier accepted identifiers and
+their historical prospective references do not change.
+
 ## Recover A Deliverable Baseline First
 
 At the split's admission, the worktree contained uncommitted CPU bus, timing,
@@ -67,18 +73,21 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S33 | First `core_machine_inc_dec_smoke.c` group: INC/DEC, NOT/NEG, accumulator TEST, MUL/IMUL and DIV/IDIV, through the original divide-fault cases. Move only their CPU-owned assertions; keep the still-unmigrated remainder active. |
 | S34 | Second `core_machine_inc_dec_smoke.c` group: TEST rm/reg and ADD/ADC/SBB forms, flags, profile and fault cases. Continue the same single production path and keep the remaining logical/compare groups active. |
 | S35 | Final `core_machine_inc_dec_smoke.c` group: OR/AND/SUB/XOR/CMP, decimal adjust, XLAT and Group-1 matrix. Remove its last private board-test access only after all original cases have receivers. |
-| S36 | FLAGS and string/I/O tests: direct flags, LAHF/SAHF, PUSHF/POPF including their includer, CMPS/LODS/MOVS/STOS/SCAS/REP and port strings/ownership. Retain profile matrices and board IRQ/port assertions. |
-| S37 | Descriptor/system tests: ARPL and its includer, BOUND, table-register instructions, LAR/LSL, VERR/VERW, CLTS/MSW and debug-register/TF cases. Use real guest setup for board tests; retain artificial cache cases at CPU owner. |
-| S38 | 16-bit protected-mode dependency group: gate base fixture and all six direct includers (external, call gate, outer return, outer IRET and two timing runners). Keep timing consumers buildable while the shared fixture changes. |
-| S39 | Protected transfer/return group: call gates, privilege entry, outer-return atomicity with its outer-IRET includer, task switch/TSS and protected data access. Preserve complete cache rollback and stack/descriptor side effects. |
-| S40 | Interrupt/VM86 dependency group: CLI/STI with HLT/INT/IRET/composition includers; protected IRET; interrupt-entry; VM86 delivery/IRET/table-load and hardware delivery. Migrate shared fixtures with all includers in one package. Preserve NMI/IRQ priority, masking, fault escalation and frames. |
-| S41 | Timing corpus: 8086/80186/80286/80386 ledgers and manifest runners, protected I/O and T359/normalization suites. Preserve all formula/catalog rows and measured deltas; remove generated production catalog dependency. |
-| S42 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
-| S43 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |
-| S44 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
-| S45 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
+| S36 | FLAGS: direct flags, LAHF/SAHF and PUSHF/POPF with its includer. Retain all profile and reserved-bit matrices; keep real exception/IRQ delivery board-owned. |
+| S37 | String transfer: MOVS and LODS, including REP, direction, address/operand width and timing cases. |
+| S38 | String scan/compare: STOS, SCAS and CMPS, including REP termination, flags and interruptibility. |
+| S39 | Port I/O: port instruction semantics, string I/O and port ownership. Retain board permission, IRQ and actual port transaction assertions. |
+| S40 | Descriptor/system tests: ARPL and its includer, BOUND, table-register instructions, LAR/LSL, VERR/VERW, CLTS/MSW and debug-register/TF cases. Use real guest setup for board tests; retain artificial cache cases at CPU owner. |
+| S41 | 16-bit protected-mode dependency group: gate base fixture and all six direct includers (external, call gate, outer return, outer IRET and two timing runners). Keep timing consumers buildable while the shared fixture changes. |
+| S42 | Protected transfer/return group: call gates, privilege entry, outer-return atomicity with its outer-IRET includer, task switch/TSS and protected data access. Preserve complete cache rollback and stack/descriptor side effects. |
+| S43 | Interrupt/VM86 dependency group: CLI/STI with HLT/INT/IRET/composition includers; protected IRET; interrupt-entry; VM86 delivery/IRET/table-load and hardware delivery. Migrate shared fixtures with all includers in one package. Preserve NMI/IRQ priority, masking, fault escalation and frames. |
+| S44 | Timing corpus: 8086/80186/80286/80386 ledgers and manifest runners, protected I/O and T359/normalization suites. Preserve all formula/catalog rows and measured deltas; remove generated production catalog dependency. |
+| S45 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
+| S46 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |
+| S47 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
+| S48 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
-S19-S42 migrate consumers before S43; S44 follows S43. Existing in-progress edits
+S19-S45 migrate consumers before S46; S47 follows S46. Existing in-progress edits
 are inputs to these packages, not a reason to rerun or rewrite a verified
 algorithm. At admission, each brief lists exact files, original cases, includers
 and target-specific P boundaries. If a row proves oversized, subdivide it before
@@ -92,15 +101,15 @@ consumers and additional include-dependent consumers by receiving S.
 
 The original [S18 evidence](../evidence/t539-s18-cpu-extraction.md) remains the
 chronological record, with narrow test results explicitly distinct from S exit.
-Bus edits map to S19; copied observations and board tests to S20; EFLAGS/REP to
-S36; interrupt-entry/private rollback to S40; formula and target preparation to
-S41/S44; opaque allocation to S43. Other edits are assigned by the S18 inventory,
+Bus edits map to S19; copied observations and board tests to S20; EFLAGS to
+S36, REP to S37-S39; interrupt-entry/private rollback to S43; formula and
+target preparation to S44/S47; opaque allocation to S46. Other edits are assigned by the S18 inventory,
 not dropped. Do not replay an already accepted change in a later P.
 
 Every S closes only after its complete applicable unit suites, fresh affected
 builds, boundary/manifests/document checks and actual-diff review pass. Rebuild
 affected x64/x86 deliverables under execution rules; no stale binary acceptance.
 Each P has one target (Shared or NXVM); MyNES/INI/assets inputs stay unchanged.
-T closure still requires full integration. S45 consolidates receiving proof; it
+T closure still requires full integration. S48 consolidates receiving proof; it
 does not defer earlier S unit gates. User-facing progress must state planned,
 active, verified or accepted, with remaining cases and evidence links.

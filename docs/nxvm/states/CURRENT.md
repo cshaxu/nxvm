@@ -5,7 +5,10 @@
 M5 T539 remains open. S1-S35 are accepted; S36 is active under automatic
 admission. The former
 eleven-file, 7,000-plus-line arithmetic assignment is split into S30-S35
-under the existing automatic-S authorization; S36-S45 remain pending.
+under the existing automatic-S authorization. At S36 intake, its oversized
+FLAGS/string/port row was divided into S36-S39; the former S37-S45 are now
+S40-S48. S36-S48 remain pending. Earlier accepted packets retain their
+historical prospective numbering; the linked work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
 
@@ -111,7 +114,7 @@ width, including T317/T332/T337/T344, CPU/PIC authority, the 403-row direct
 matrix, six unchanged Shared manifests and documentation governance. No
 production/API or executable input changed. [S35 evidence](../etc/evidence/t539-s35-final-inc-dec-migration.md)
 contains the receiving map. S35 is closed; 71 original private-test consumers
-remain assigned to S36-S42. S43-S45 retain lifetime, physical relocation and
+remain assigned to S36-S45. S46-S48 retain lifetime, physical relocation and
 whole-CPU acceptance.
 
 ## S36 Active Packet
@@ -120,20 +123,20 @@ whole-CPU acceptance.
 | --- | --- |
 | Identifier Mode | Continuation, M5 T539 S36 after accepted S35 P1 `0fc194460`; NXVM target only. |
 | Admission And Approval | Automatic-S authorization; one session separates executor and coordinator review. |
-| Objective | Reassign FLAGS and string/port I/O tests from private board access to CPU or public board owner, preserving every original profile, timing, IRQ and port assertion. |
+| Objective | Reassign direct FLAGS, LAHF/SAHF and PUSHF/POPF tests from private board access to CPU or public board owner, preserving every original profile, reserved-bit, timing, exception and IRQ assertion. |
 | Non-goals | No production CPU/timing algorithm, new public ABI, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
-| Reference Baseline | Clean pushed S35 P1 `0fc194460`, x64/x86 units 404/404. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assign twelve matching source files to S36. |
+| Reference Baseline | Clean pushed S35 P1 `0fc194460`, x64/x86 units 404/404. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assign four FLAGS source files to S36 after dividing the prior 12-file row. |
 | Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | `core_machine_cmps_smoke.c`, `core_machine_direct_flags_smoke.c`, `core_machine_lahf_sahf_smoke.c`, `core_machine_lods_smoke.c`, `core_machine_movs_smoke.c`, `core_machine_port_io_s55_smoke.c`, `core_machine_port_ownership_smoke.c`, `core_machine_port_strings_smoke.c`, `core_machine_pushf_popf_s47_smoke.c` and its `core_machine_pushf_popf_smoke.c` includer, `core_machine_scas_smoke.c`, `core_machine_stos_smoke.c`; their CPU/board receivers, NXVM registration/gates, test-local fixtures, inventory and evidence. |
-| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU flags/strings/port instruction semantics and timing stay CPU-owned; actual board IRQ/port transactions stay board-owned. Preserve includer ownership without parallel test execution. |
+| Files And ABI Surface | `core_machine_direct_flags_smoke.c`, `core_machine_lahf_sahf_smoke.c`, `core_machine_pushf_popf_s47_smoke.c` and its `core_machine_pushf_popf_smoke.c` includer; their CPU/board receivers, NXVM registration/gates, test-local fixtures, inventory and evidence. |
+| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU flags instruction semantics, profile and timing stay CPU-owned; actual board exception/IRQ delivery stays board-owned. Preserve includer ownership without parallel test execution. |
 | Verification | Full x64/x86 builds and repository-only unit suites; T317/T332/T337/T344, CPU/PIC authority, direct matrix, six unchanged manifests, documentation/diff checks. |
 | Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no private CPU state; one receiver per original S36 case, no duplicated execution path or surviving mixed-owner test. |
 | Asset Needs | Repository-only inputs; preserve the S18 local recovery artifact. No ROM/media/INI/EXE input change. |
 | Reporting Requirements | Original-case receiving map, exact changed paths and line counts, dual-width results, pushed P1 and independent actual-commit P2 review. |
-| Stop Conditions | Lost case, new production/API requirement, or scope beyond the assigned FLAGS/string/port group requires packet revision before continuing. |
+| Stop Conditions | Lost case, new production/API requirement, or scope beyond the assigned FLAGS group requires packet revision before continuing. |
 | Exit Criteria | S36 CPU/board ownership proved, all original cases retained, mixed-owner classifications deleted where exhausted, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. |
 | Original Owner Request | Split oversized CPU migration into traceable S tasks with automatic admission, preserving semantics, original code style and single-owner architecture. |
-| Similar-Issue Sweep | Inspect FLAGS generation profiles, REP interruptibility, string direction and address-size boundaries, port permission/fault paths, includer duplication and residual helper ownership. S37-S45 remain assigned, not presumed done. |
+| Similar-Issue Sweep | Inspect FLAGS generation profiles, reserved-bit and fault behavior, PUSHF/POPF includer duplication and residual helper ownership. String and port cases remain assigned to S37-S39; S40-S48 remain pending, not presumed done. |
 
 ## S29 Acceptance
 

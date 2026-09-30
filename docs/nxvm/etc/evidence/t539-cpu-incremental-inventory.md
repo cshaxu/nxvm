@@ -212,24 +212,33 @@ S33 owns INC/DEC through DIV/IDIV; S34 owns TEST rm/reg through SBB; S35
 owns OR through XLAT and the Group-1 matrix. S33 and S34 left the source
 live; S35 assigns its last cases and deletes it. The S32 count of 71
 direct-private `.c` consumers plus one fixture header falls to 70 `.c`
-files plus that header, or 71 pending consumers assigned to S36-S42.
+files plus that header, or 71 pending consumers assigned to S36-S45.
 
-### S36: 12 matching files
+### S36: 4 FLAGS matching files
 
-- `core_machine_cmps_smoke.c`
 - `core_machine_direct_flags_smoke.c`
 - `core_machine_lahf_sahf_smoke.c`
-- `core_machine_lods_smoke.c`
-- `core_machine_movs_smoke.c`
-- `core_machine_port_io_s55_smoke.c`
-- `core_machine_port_ownership_smoke.c`
-- `core_machine_port_strings_smoke.c`
 - `core_machine_pushf_popf_s47_smoke.c`
 - `core_machine_pushf_popf_smoke.c`
+
+### S37: 2 string-transfer matching files
+
+- `core_machine_lods_smoke.c`
+- `core_machine_movs_smoke.c`
+
+### S38: 3 string-scan/compare matching files
+
+- `core_machine_cmps_smoke.c`
 - `core_machine_scas_smoke.c`
 - `core_machine_stos_smoke.c`
 
-### S37: 13 matching files
+### S39: 3 port-I/O matching files
+
+- `core_machine_port_io_s55_smoke.c`
+- `core_machine_port_ownership_smoke.c`
+- `core_machine_port_strings_smoke.c`
+
+### S40: 13 matching files
 
 - `core_machine_arpl_s53_smoke.c`
 - `core_machine_arpl_smoke.c`
@@ -245,7 +254,7 @@ files plus that header, or 71 pending consumers assigned to S36-S42.
 - `core_machine_tf_db_s60_smoke.c`
 - `core_machine_verr_verw_s58_smoke.c`
 
-### S38: 5 matching files
+### S41: 5 matching files
 
 - `core_machine_protected_16_call_gate_s7_smoke.c`
 - `core_machine_protected_16_external_s4_smoke.c`
@@ -253,7 +262,7 @@ files plus that header, or 71 pending consumers assigned to S36-S42.
 - `core_machine_protected_16_outer_iret_s6_smoke.c`
 - `core_machine_protected_16_outer_s5_smoke.c`
 
-### S39: 11 matching files
+### S42: 11 matching files
 
 - `core_machine_call_gate_privilege_entry_smoke.c`
 - `core_machine_call_gate_smoke.c`
@@ -267,7 +276,7 @@ files plus that header, or 71 pending consumers assigned to S36-S42.
 - `core_machine_task_switch_smoke.c`
 - `core_machine_tss_iomap_port_smoke.c`
 
-### S40: 10 matching files
+### S43: 10 matching files
 
 - `core_machine_cli_sti_s48_smoke.c`
 - `core_machine_cli_sti_smoke.c`
@@ -280,7 +289,7 @@ files plus that header, or 71 pending consumers assigned to S36-S42.
 - `core_machine_vm86_delivery_smoke.c`
 - `core_machine_vm86_iret_smoke.c`
 
-### S41: 16 matching files
+### S44: 16 matching files
 
 - `core_machine_80186_instruction_timing_ledger_smoke.c`
 - `core_machine_80186_timing_manifest_runner.c`
@@ -299,7 +308,7 @@ files plus that header, or 71 pending consumers assigned to S36-S42.
 - `core_machine_t359_s5_timing_smoke.c`
 - `core_machine_t359_s6_timing_smoke.c`
 
-### S42: 4 matching files
+### S45: 4 matching files
 
 - `core_machine_fpu_interface_s65_smoke.c`
 - `cpu_profile_gate_smoke.c`
@@ -308,13 +317,13 @@ files plus that header, or 71 pending consumers assigned to S36-S42.
 
 ## Include Dependency Closure
 
-The matching-file inventory is not the entire compile dependency graph. S38
+The matching-file inventory is not the entire compile dependency graph. S41
 must also keep the 80286/80386 timing runners building when their included
-16-bit gate/task/call fixtures change; S41 owns their subsequent timing-corpus
-migration. S39 includes outer-IRET's atomicity-fixture consumer. S40 additionally
+16-bit gate/task/call fixtures change; S44 owns their subsequent timing-corpus
+migration. S42 includes outer-IRET's atomicity-fixture consumer. S43 additionally
 includes `core_machine_interrupt_return_composition_s4_smoke.c` and
 `core_machine_vm86_lgdt_lidt_s5_smoke.c`, which inherit private setup through
-included source rather than a direct search hit. Protected IRET is in S40
+included source rather than a direct search hit. Protected IRET is in S43
 with its CLI/STI-dependent includer. Do not migrate one included source's return
 shape while leaving its includers with the old shape.
 
