@@ -342,9 +342,10 @@ complete receiving map and dual-width verification are recorded in
 
 - `core_machine_call_gate_privilege_entry_smoke.c` (retire into one public board receiver)
 
-### S49: control transfer, 1 matching file
+### S49--S51: control transfer, 1 matching file
 
-- `core_machine_control_transfer_smoke.c`
+- `core_machine_control_transfer_smoke.c` (S49 branch/loop, S50 near call/return,
+  S51 far transfer)
 
 ### S50: IDT/privilege entry pair, 2 matching files
 

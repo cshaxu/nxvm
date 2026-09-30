@@ -9,8 +9,9 @@ split into S30-S35 under the existing automatic-S authorization. At S36 intake,
 its oversized FLAGS/string/port row was divided into S36-S39. At S40 intake,
 the 7,736-line descriptor/system row was divided into S40-S46 and the formerly planned
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
-transfer row was divided into S48-S55; later packages now run through S61.
-S48 is accepted, S49 is active and S50-S61 remain pending. Earlier
+transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
+control-transfer source into S49--S51; later packages now run through S63.
+S48 is accepted, S49 is active and S50-S63 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -383,13 +384,13 @@ S48 is accepted; T539 remains open for S49--S61.
 | --- | --- |
 | Identifier Mode | M5 T539 S49, Continuation. |
 | Admission And Approval | The owner authorized automatic admission of each bounded T539 S. |
-| Objective | Retire direct-private setup from `core_machine_control_transfer_smoke.c` while retaining each architectural near/far, protected and fault/IRQ behavior in one CPU-local or public-board receiver. |
-| Intake Boundary | The source is 1,181 lines. Before implementation, classify its independent families and split S49 further if one receiver would be oversized or would mix distinct CPU and board owners. |
-| Non-goals | No production/public API, Shared, firmware, asset, INI or EXE change; no IDT/privilege, far/data, return, task-switch, timing or VM86 migration outside an unavoidable direct includer closure. |
+| Objective | Retire direct-private setup from the branch/loop portion of `core_machine_control_transfer_smoke.c` while retaining each short/near conditional branch and LOOP/JCXZ behavior in one CPU-local or public-board receiver. |
+| Intake Boundary | The original 1,181-line source is split before implementation: S49 owns branch/loop and real-mode forms; S50 owns near call/return; S51 owns far transfers. This avoids a mixed private fixture and keeps each receiver's owner boundary inspectable. |
+| Non-goals | No near call/return (S50), far transfer (S51), production/public API, Shared, firmware, asset, INI or EXE change; no IDT/privilege, far/data, outer return, task-switch, timing or VM86 migration outside an unavoidable direct includer closure. |
 | Reference Baseline | S48 acceptance; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); applicable CPU and Core public-machine contracts. |
 | Verification | Affected x64/x86 targets, complete repository-only unit suite per width, specialized gates, direct-private sweep, documentation governance and `git diff --check`. |
 | Asset Needs | None; no EXE rebuild unless executable inputs change. |
-| Exit Criteria | Every original architectural family has one correct owner-local receiver, the named source is retired or honestly split, no private setup path remains, and all verification passes. |
+| Exit Criteria | Every S49 branch/loop family has one correct owner-local receiver; its portion is retired without leaving a private setup path; S50/S51 retain their distinct original families exactly once; all verification passes. |
 
 
 ## S29 Acceptance
