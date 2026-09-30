@@ -42,4 +42,8 @@ and T344's 403-row direct strict-compilation matrix (370 strict, 33 deferred).
 The six unchanged Shared manifests verify. `git diff --check` is clean.
 There is no tracked product binary change; S35 only reassigns test owners.
 
-Actual P1 commit review and P2 acceptance are recorded in the active packet.
+Actual pushed P1 `0fc194460` has ten scoped paths, passes `git show --check`,
+equals `origin/master` at independent review and adds 508/removes 733 lines
+(net -225). Excluding this 45-line evidence report, code/test/build changes
+add 463/remove 733 lines (net -270). P2 acceptance is recorded in the active
+packet. S36-S45 remain explicitly pending.
