@@ -353,10 +353,12 @@ complete receiving map and dual-width verification are recorded in
 - `core_machine_idt_privilege_entry_smoke.c`
 - `core_machine_protected_privilege_smoke.c`
 
-### S51: protected far/data pair, 2 matching files
+### S53: protected far/data receiver allocation
 
-- `core_machine_protected_data_access_s2_smoke.c`
-- `core_machine_protected_far_s1_smoke.c`
+- Retired `core_machine_protected_data_access_s2_smoke.c` into the CPU-local
+  `cpu_protected_data_access_smoke.c` plus its independent PIC board receiver.
+- Retired `core_machine_protected_far_s1_smoke.c` into the CPU-local
+  `cpu_protected_far_smoke.c` plus its independent PIC board receiver.
 
 ### S52: outer return pair, 2 matching files
 

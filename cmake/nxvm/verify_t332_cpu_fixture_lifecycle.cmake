@@ -9,8 +9,8 @@ endif()
 
 file(STRINGS "${PROJECT_T332_INVENTORY_FILE}" project_t332_inventory)
 list(LENGTH project_t332_inventory project_t332_count)
-if(NOT project_t332_count EQUAL 39)
-    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory must contain 39 owner smokes.")
+if(NOT project_t332_count EQUAL 41)
+    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory must contain 41 owner smokes.")
 endif()
 
 set(project_t332_wrapper_sources
@@ -68,12 +68,17 @@ set(project_t332_cpu_instruction_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
+    "test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
+    "test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c")
+set(project_t332_protected_cpu_fixture_sources
+    "test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
+    "test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c")
 set(project_t332_descriptor_query_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c")
@@ -124,6 +129,14 @@ function(project_t332_require_shared_lifecycle source)
         if(NOT content MATCHES "support/cpu_descriptor_query_fixture[.]h" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
             message(FATAL_ERROR "CPU-local descriptor-query test must use only its instruction fixture: ${source}")
+        endif()
+        return()
+    endif()
+    if(source IN_LIST project_t332_protected_cpu_fixture_sources)
+        if(NOT content MATCHES "support/cpu_protected_fixture[.]h" OR
+            NOT content MATCHES "cpu_protected_prepare" OR
+            content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \t]*\\(")
+            message(FATAL_ERROR "CPU-local protected test must use only its protected instruction fixture: ${source}")
         endif()
         return()
     endif()
@@ -182,4 +195,4 @@ if(NOT project_t332_positive MATCHES "test_core_machine_fixture_(create_bind_fre
     message(FATAL_ERROR "T332 CPU fixture lifecycle verifier self-check failed.")
 endif()
 
-message(STATUS "T332 CPU fixture lifecycle closure passed: 39 owners use shared setup, explicit public board setup or CPU-local fixtures.")
+message(STATUS "T332 CPU fixture lifecycle closure passed: 41 owners use shared setup, explicit public board setup or CPU-local fixtures.")

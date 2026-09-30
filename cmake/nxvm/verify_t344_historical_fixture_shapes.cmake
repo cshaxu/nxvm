@@ -67,8 +67,6 @@ set(project_t344_retained_sources
     # S47 retires S3 as a public smoke; the timing runners retain this one
     # private recipe until S50 migrates their timing-only construction.
     "test/app-nxvm/unit/core/devices/protected_16_timing_fixture.c"
-    "test/app-nxvm/unit/core/devices/core_machine_protected_data_access_s2_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_protected_far_s1_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_real_mode_386_address_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_real_mode_386_rep_cmps_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_real_mode_corpus_smoke.c"
@@ -112,12 +110,12 @@ set(project_t344_retained_sources
 set(project_t344_inventory ${project_t344_migrated_sources}
     ${project_t344_retained_sources})
 list(LENGTH project_t344_inventory project_t344_inventory_count)
-if(NOT project_t344_inventory_count EQUAL 103)
-    message(FATAL_ERROR "T344 fixture-shape inventory must contain 103 direct constructors.")
+if(NOT project_t344_inventory_count EQUAL 101)
+    message(FATAL_ERROR "T344 fixture-shape inventory must contain 101 direct constructors.")
 endif()
 list(REMOVE_DUPLICATES project_t344_inventory)
 list(LENGTH project_t344_inventory project_t344_unique_count)
-if(NOT project_t344_unique_count EQUAL 103)
+if(NOT project_t344_unique_count EQUAL 101)
     message(FATAL_ERROR "T344 fixture-shape inventory contains a duplicate source.")
 endif()
 
@@ -152,12 +150,12 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # S42 retains real table loads, privilege delivery and IRQ routing.
     "test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 118)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 118 entries.")
+if(NOT project_t344_constructor_count EQUAL 116)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 116 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 118)
+if(NOT project_t344_constructor_unique_count EQUAL 116)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -176,8 +174,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 118)
-    message(FATAL_ERROR "T344 expected 118 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 116)
+    message(FATAL_ERROR "T344 expected 116 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)
@@ -243,4 +241,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 fixture shapes passed: 103 direct inventoried, 6 shared protected bootstrap callers, 6 shared public-limit callers, 4 timing-manifest, 2 guest-table-load, 1 INTA and 1 ARPL board constructor.")
+message(STATUS "T344 fixture shapes passed: 101 direct inventoried, 6 shared protected bootstrap callers, 6 shared public-limit callers, 4 timing-manifest, 2 guest-table-load, 1 INTA and 1 ARPL board constructor.")

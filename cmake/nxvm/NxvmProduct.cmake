@@ -907,20 +907,18 @@ target_link_libraries(machine-idt-privilege-pic-board-smoke PRIVATE core-machine
 add_executable(machine-control-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_control_state_board_smoke.c)
 target_link_libraries(machine-control-state-board-smoke PRIVATE core-machine)
-add_executable(core-machine-protected-far-s1-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_far_s1_smoke.c)
-target_link_libraries(core-machine-protected-far-s1-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-protected-far-s1-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(core-machine-protected-data-access-s2-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_data_access_s2_smoke.c)
-target_link_libraries(core-machine-protected-data-access-s2-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-protected-data-access-s2-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
+add_executable(cpu-protected-far-smoke
+    test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c)
+target_link_libraries(cpu-protected-far-smoke PRIVATE x86-cpu)
+add_executable(cpu-protected-data-access-smoke
+    test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c)
+target_link_libraries(cpu-protected-data-access-smoke PRIVATE x86-cpu)
+add_executable(machine-protected-far-pic-board-smoke
+    test/app-nxvm/unit/core/devices/machine_protected_far_pic_board_smoke.c)
+target_link_libraries(machine-protected-far-pic-board-smoke PRIVATE core-machine-executor)
+add_executable(machine-protected-data-pic-board-smoke
+    test/app-nxvm/unit/core/devices/machine_protected_data_pic_board_smoke.c)
+target_link_libraries(machine-protected-data-pic-board-smoke PRIVATE core-machine-executor)
 add_executable(core-machine-protected-16-gate-s3-smoke
     test/app-nxvm/unit/core/devices/core_machine_protected_16_gate_board_smoke.c)
 target_link_libraries(core-machine-protected-16-gate-s3-smoke PRIVATE core-machine)
@@ -1181,6 +1179,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "cpu-control-transfer-near-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
     "cpu-control-transfer-far-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
     "cpu-idt-privilege-entry-smoke|test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
+    "cpu-protected-far-smoke|test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
+    "cpu-protected-data-access-smoke|test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c"
     "cpu-debug-state-smoke|test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c"
     "cpu-dttr-s61-smoke|test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
     "cpu-descriptor-system-smoke|test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
@@ -1215,8 +1215,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 39)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 39 entries.")
+if(NOT project_t317_inventory_count EQUAL 41)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 41 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1243,8 +1243,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 39 OR NOT project_t317_source_count EQUAL 39)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 39 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 41 OR NOT project_t317_source_count EQUAL 41)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 41 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2113,8 +2113,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-idt-privilege-entry-smoke
     machine-idt-privilege-pic-board-smoke
     machine-control-state-board-smoke
-    core-machine-protected-far-s1-smoke
-    core-machine-protected-data-access-s2-smoke
+    cpu-protected-far-smoke
+    cpu-protected-data-access-smoke
+    machine-protected-far-pic-board-smoke
+    machine-protected-data-pic-board-smoke
     core-machine-protected-16-gate-s3-smoke
     core-machine-protected-16-external-s4-smoke
     core-machine-protected-16-outer-s5-smoke
@@ -2317,8 +2319,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-port-io-smoke
     cpu-port-strings-smoke
     core-machine-protected-16-gate-s3-smoke
-    core-machine-protected-data-access-s2-smoke
-    core-machine-protected-far-s1-smoke
+    cpu-protected-data-access-smoke
+    cpu-protected-far-smoke
     core-machine-protected-ud-delivery-s1-smoke
     cpu-pusha-popa-smoke
     cpu-pushf-popf-smoke
@@ -2384,8 +2386,8 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     cpu-control-transfer-branch-smoke
     cpu-debug-state-smoke
     core-machine-protected-16-gate-s3-smoke
-    core-machine-protected-data-access-s2-smoke
-    core-machine-protected-far-s1-smoke
+    cpu-protected-data-access-smoke
+    cpu-protected-far-smoke
     core-machine-protected-ud-delivery-s1-smoke
     core-machine-task-switch-smoke
     core-machine-vm86-delivery-smoke
