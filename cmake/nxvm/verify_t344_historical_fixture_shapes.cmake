@@ -37,7 +37,7 @@ set(project_t344_retained_sources
     "test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_bound_s54_smoke.c"
+    "test/app-nxvm/unit/core/devices/machine_bound_board_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_control_transfer_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_controller_authority_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_auxiliary_pit_s3_smoke.c"

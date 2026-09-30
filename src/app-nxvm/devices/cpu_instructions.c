@@ -10796,17 +10796,16 @@ static void BOUND_R16_M16_16(core_machine_cpu_execution_context *context)
 {
     lib_i16 a16, l16, u16;
     lib_i32 a32, l32, u32;
+    lib_u8 modrm;
     CPU_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
-        CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize * 2));
-        if (!instruction_state.data.flagMem)
-        {
-            CPU_TRACE_BLOCK_BEGIN("flagMem(0)");
+        CPU_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
+            X86_CPU_REFERENCE_OF(modrm), 1));
+        if (_GetModRM_MOD(modrm) == 3)
             CPU_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-            CPU_TRACE_BLOCK_END;
-        }
+        CPU_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize * 2));
         switch (_GetOperandSize)
         {
         case 2:

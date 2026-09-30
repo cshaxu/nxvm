@@ -1018,13 +1018,18 @@ target_link_libraries(cpu-arpl-smoke PRIVATE x86-cpu)
 add_executable(machine-arpl-board-smoke
     test/app-nxvm/unit/core/devices/machine_arpl_board_smoke.c)
 target_link_libraries(machine-arpl-board-smoke PRIVATE core-machine)
+add_executable(cpu-bound-smoke
+    test/app-nxvm/unit/core/devices/cpu_bound_smoke.c)
+target_link_libraries(cpu-bound-smoke PRIVATE x86-cpu)
+add_executable(machine-bound-board-smoke
+    test/app-nxvm/unit/core/devices/machine_bound_board_smoke.c)
+target_link_libraries(machine-bound-board-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(cpu-arpl-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(machine-arpl-board-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(cpu-bound-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(machine-bound-board-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-bound-s54-smoke
-    test/app-nxvm/unit/core/devices/core_machine_bound_s54_smoke.c)
-target_link_libraries(core-machine-bound-s54-smoke PRIVATE core-machine)
 
 add_executable(core-machine-segment-selector-smoke
     test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c)
@@ -1152,7 +1157,6 @@ target_link_libraries(core-machine-debug-smoke PRIVATE core-machine)
 # evidence of strict compilation for a smoke source.
 function(project_configure_t317_strict_cpu_smokes)
 set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
-    "core-machine-bound-s54-smoke|test/app-nxvm/unit/core/devices/core_machine_bound_s54_smoke.c"
     "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
     "core-machine-cli-sti-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c"
     "core-machine-clts-s62-smoke|test/app-nxvm/unit/core/devices/core_machine_clts_s62_smoke.c"
@@ -1188,8 +1192,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 34)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 34 entries.")
+if(NOT project_t317_inventory_count EQUAL 33)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 33 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1216,8 +1220,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 34 OR NOT project_t317_source_count EQUAL 34)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 34 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 33 OR NOT project_t317_source_count EQUAL 33)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 33 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2103,7 +2107,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-80286-protected-mode-smoke
     cpu-arpl-smoke
     machine-arpl-board-smoke
-    core-machine-bound-s54-smoke
+    cpu-bound-smoke
+    machine-bound-board-smoke
     core-machine-segment-selector-smoke
     core-machine-cpu-profile-gate-smoke
     core-machine-protected-privilege-smoke
@@ -2236,7 +2241,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-80286-protected-mode-smoke
     cpu-arpl-smoke
     cpu-bit-test-smoke
-    core-machine-bound-s54-smoke
+    cpu-bound-smoke
     core-machine-cli-sti-s48-smoke
     core-machine-clts-s62-smoke
     cpu-cmps-smoke
