@@ -889,11 +889,14 @@ target_link_libraries(cpu-dttr-s61-smoke PRIVATE x86-cpu)
 add_executable(cpu-control-state-smoke
     test/app-nxvm/unit/core/devices/cpu_control_state_smoke.c)
 target_link_libraries(cpu-control-state-smoke PRIVATE x86-cpu)
+add_executable(cpu-control-transfer-branch-smoke
+    test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c)
+target_link_libraries(cpu-control-transfer-branch-smoke PRIVATE x86-cpu)
 add_executable(machine-control-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_control_state_board_smoke.c)
 target_link_libraries(machine-control-state-board-smoke PRIVATE core-machine)
 add_executable(core-machine-control-transfer-smoke
-    test/app-nxvm/unit/core/devices/core_machine_control_transfer_smoke.c)
+    test/app-nxvm/unit/core/devices/core_machine_control_transfer_near_far_smoke.c)
 target_link_libraries(core-machine-control-transfer-smoke PRIVATE core-machine)
 add_executable(core-machine-protected-far-s1-smoke
     test/app-nxvm/unit/core/devices/core_machine_protected_far_s1_smoke.c)
@@ -1168,6 +1171,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
     "core-machine-cli-sti-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c"
     "cpu-control-state-smoke|test/app-nxvm/unit/core/devices/cpu_control_state_smoke.c"
+    "cpu-control-transfer-branch-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c"
     "cpu-debug-state-smoke|test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c"
     "cpu-dttr-s61-smoke|test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
     "cpu-descriptor-system-smoke|test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
@@ -1202,8 +1206,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 35)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 35 entries.")
+if(NOT project_t317_inventory_count EQUAL 36)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 36 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1230,8 +1234,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 35 OR NOT project_t317_source_count EQUAL 35)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 35 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 36 OR NOT project_t317_source_count EQUAL 36)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 36 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2094,6 +2098,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-imul-immediate-s56-smoke
     cpu-imul-immediate-s56-smoke
     cpu-control-state-smoke
+    cpu-control-transfer-branch-smoke
     machine-control-state-board-smoke
     core-machine-control-transfer-smoke
     core-machine-protected-far-s1-smoke
@@ -2259,6 +2264,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-sgdt-sidt-smoke
     core-machine-cli-sti-s48-smoke
     cpu-control-state-smoke
+    cpu-control-transfer-branch-smoke
     machine-control-state-board-smoke
     cpu-cmps-smoke
     core-machine-control-transfer-smoke
@@ -2364,6 +2370,7 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     cpu-verr-verw-smoke
     core-machine-fpu-escape-smoke
     cpu-control-state-smoke
+    cpu-control-transfer-branch-smoke
     cpu-debug-state-smoke
     core-machine-protected-16-gate-s3-smoke
     core-machine-protected-data-access-s2-smoke

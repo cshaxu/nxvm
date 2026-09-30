@@ -345,7 +345,8 @@ complete receiving map and dual-width verification are recorded in
 ### S49--S51: control transfer, 1 matching file
 
 - `core_machine_control_transfer_smoke.c` (S49 branch/loop, S50 near call/return,
-  S51 far transfer)
+  S51 far transfer; S49 retires its branch/loop portion into the CPU receiver and
+  renames the retained S50/S51 input to `core_machine_control_transfer_near_far_smoke.c`)
 
 ### S50: IDT/privilege entry pair, 2 matching files
 
