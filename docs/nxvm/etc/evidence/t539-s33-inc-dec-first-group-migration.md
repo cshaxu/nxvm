@@ -24,7 +24,7 @@ access faults and 12 real-mode divide deliveries (six opcode forms across
 zero-divisor and quotient-overflow classes). Original flags, register, memory
 nonpublication, profile and 16/32-bit exception-frame assertions are retained.
 The board receiver has no `executor_cpu` or private machine-memory access.
-The remaining 16 original S34/S35 test functions retain their existing path;
+The remaining 32 original S34/S35 test functions retain their existing path;
 their private-access inventory remains open until S35.
 The historical T316/T401 first-group success banners move with the executing
 CPU tests, rather than remaining in the original test after its cases moved.
@@ -39,5 +39,8 @@ source/test manifests remain unchanged and pass. `git diff --check` passes.
 No tracked product binary changes: S33 only reassigns test ownership and
 registers the two new test executables.
 
-The implementation and actual-commit review hashes are recorded in the S33
-acceptance packet. S34/S35 remain explicitly pending.
+Actual pushed P1 `6ca7f61ac` has exactly six scoped paths, passes
+`git show --check`, and equals `origin/master` at independent review. It adds
+1,099/removes 1,041 lines overall; excluding the 43-line evidence report,
+the code/test/build/gate change adds 1,056/removes 1,041 (net +15). There is
+no tracked product binary. S34/S35 remain explicitly pending.
