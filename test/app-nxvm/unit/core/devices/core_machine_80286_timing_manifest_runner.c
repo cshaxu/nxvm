@@ -8,10 +8,10 @@
 #include "app-nxvm/devices/retirement_observation_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
-/* Reuse the retained DPL3 outer-return fixture; its main is not part of this
- * runner, but keeps the fixture's private helpers live under -Werror. */
+/* The timing corpus retains its private protected-state fixture until S50
+ * converts its own recipes; it is not the public S3--S7 receiver. */
 #define main timing_80286_manifest_retained_gate_main
-#include "core_machine_protected_16_gate_s3_smoke.c"
+#include "protected_16_timing_fixture.c"
 #undef main
 
 /* Reuse the retained protected-mode task-switch fixture so task-transfer

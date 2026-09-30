@@ -910,35 +910,35 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-gate-s3-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_16_gate_s3_smoke.c)
+    test/app-nxvm/unit/core/devices/core_machine_protected_16_gate_board_smoke.c)
 target_link_libraries(core-machine-protected-16-gate-s3-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-gate-s3-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-external-s4-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_16_external_s4_smoke.c)
+    test/app-nxvm/unit/core/devices/core_machine_protected_16_external_board_smoke.c)
 target_link_libraries(core-machine-protected-16-external-s4-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-external-s4-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-outer-s5-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_16_outer_s5_smoke.c)
+    test/app-nxvm/unit/core/devices/core_machine_protected_16_outer_board_smoke.c)
 target_link_libraries(core-machine-protected-16-outer-s5-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-outer-s5-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-outer-iret-s6-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_16_outer_iret_s6_smoke.c)
+    test/app-nxvm/unit/core/devices/core_machine_protected_16_outer_iret_board_smoke.c)
 target_link_libraries(core-machine-protected-16-outer-iret-s6-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-outer-iret-s6-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-protected-16-call-gate-s7-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_16_call_gate_s7_smoke.c)
+    test/app-nxvm/unit/core/devices/core_machine_protected_16_call_gate_board_smoke.c)
 target_link_libraries(core-machine-protected-16-call-gate-s7-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-call-gate-s7-smoke PRIVATE

@@ -67,7 +67,9 @@ set(project_t344_retained_sources
     "test/app-nxvm/unit/core/devices/machine_port_ownership_board_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_port_strings_board_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_planar_parity_nmi_s3_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_protected_16_gate_s3_smoke.c"
+    # S47 retires S3 as a public smoke; the timing runners retain this one
+    # private recipe until S50 migrates their timing-only construction.
+    "test/app-nxvm/unit/core/devices/protected_16_timing_fixture.c"
     "test/app-nxvm/unit/core/devices/core_machine_protected_data_access_s2_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_protected_far_s1_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_real_mode_386_address_smoke.c"

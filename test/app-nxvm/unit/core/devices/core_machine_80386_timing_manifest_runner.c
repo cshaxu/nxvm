@@ -8,11 +8,10 @@
 #include "app-nxvm/devices/retirement_observation_interface.h"
 #include "support/core_machine_cpu_fixture.h"
 
-/* S6 needs the same private, execution-frozen protected-mode fixture as the
- * retained gate smoke.  Keep it local to the runner; this does not widen the
- * shared fixture surface or turn an independent smoke into timing evidence. */
+/* The timing corpus retains its private protected-state fixture until S50
+ * converts its own recipes; it is not the public S3--S7 receiver. */
 #define main timing_80386_manifest_retained_gate_smoke_main
-#include "core_machine_protected_16_gate_s3_smoke.c"
+#include "protected_16_timing_fixture.c"
 #undef main
 
 #define main timing_80386_manifest_retained_task_switch_smoke_main

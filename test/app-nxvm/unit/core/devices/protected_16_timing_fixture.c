@@ -1,3 +1,5 @@
+/* Temporary S50 timing-only fixture.  S47 moved all S3--S7 behavior to the
+ * public-board fixture; this file remains solely for manifest recipes. */
 #include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
