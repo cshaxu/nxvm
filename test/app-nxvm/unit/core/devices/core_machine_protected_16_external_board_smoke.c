@@ -118,7 +118,7 @@ static lib_i32 s47_s4_outer_nmi(core_machine_cpu_profile profile, lib_u8 type)
     core_machine_planar_parity_observation parity = {0};
     lib_u16 frame[5u] = {0};
     lib_i32 failed = !test_protected_16_prepare_with_planar_parity(&state,
-        profile, LIB_TRUE) ||
+        profile, LIB_TRUE, LIB_FALSE) ||
         !test_protected_16_enter_user(&state, profile);
 
     if (!failed) {

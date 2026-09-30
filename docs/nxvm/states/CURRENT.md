@@ -423,8 +423,8 @@ S50 is accepted; T539 remains open for S51--S63.
 | --- | --- |
 | Identifier Mode | M5 T539 S51, Continuation. |
 | Admission And Approval | The owner authorized automatic admission of each bounded T539 S. |
-| Objective | Retire direct-private setup from the far-transfer portion of `core_machine_control_transfer_near_far_smoke.c` while retaining immediate/indirect and real-mode far forms, selector validation and far-return behavior in correct CPU-local or public-board receivers. |
-| Intake Boundary | S49 and S50 have retired all branch and near-transfer families. S51 owns the remaining far forms and legacy FF reserved forms; after it no mixed control-transfer source remains. |
+| Objective | Retire the final direct-private control-transfer source, preserving immediate/indirect and real-mode far forms, selector validation and far-return behavior in one correct CPU-local receiver. |
+| Intake Boundary | S49 and S50 have retired branch and protected near-transfer families. S51 owns the remaining far forms, the residual four-profile real-mode near-control rows and legacy FF reserved forms; after it no mixed control-transfer source remains. |
 | Non-goals | No production/public API, Shared, firmware, asset, INI or EXE change; no IDT/privilege, far/data, outer return, task-switch, timing or VM86 migration outside an unavoidable direct includer closure. |
 | Reference Baseline | S48 acceptance; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); applicable CPU and Core public-machine contracts. |
 | Verification | Affected x64/x86 targets, complete repository-only unit suite per width, specialized gates, direct-private sweep, documentation governance and `git diff --check`. |

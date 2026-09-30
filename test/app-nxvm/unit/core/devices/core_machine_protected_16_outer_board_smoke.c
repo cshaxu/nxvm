@@ -35,7 +35,7 @@ static lib_i32 s47_s5_outer_nmi(core_machine_cpu_profile profile,
     core_machine_planar_parity_observation parity = {0};
     lib_u16 frame[5u] = {0};
     lib_i32 failed = !test_protected_16_prepare_with_planar_parity(&state,
-        profile, LIB_TRUE) || !test_protected_16_enter_user_with_tss(&state,
+        profile, LIB_TRUE, LIB_FALSE) || !test_protected_16_enter_user_with_tss(&state,
         profile, tss32);
 
     if (!failed) {
