@@ -2,8 +2,10 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S40 are accepted; S41 is active under automatic
-admission. The former eleven-file, 7,000-plus-line arithmetic assignment is
+M5 T539 remains open. S1-S41 are accepted; S42 is active under automatic
+admission. S42 P1 `f598c6d55` and P2 `dd7d20cbf` establish its CPU and
+public-board receivers, but the three original sources remain until the real
+CPL-transition receiver replaces their remaining privilege coverage. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
 its oversized FLAGS/string/port row was divided into S36-S39. At S40 intake,
 the 7,736-line descriptor/system row was divided into S40-S46 and the formerly planned
@@ -228,7 +230,7 @@ header remain assigned to S42-S51. T539 remains open.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation, M5 T539 S42 after accepted S41 P1 `99ab4c002`; NXVM target only. |
+| Identifier Mode | Continuation, M5 T539 S42 after accepted S41 P1 `99ab4c002`; NXVM target only. P1 `f598c6d55` and P2 `dd7d20cbf` are pushed interim milestones, not S42 acceptance. |
 | Admission And Approval | Automatic-S authorization; one session separates executor and coordinator review. |
 | Objective | Migrate DTTR S61, LGDT/LIDT and SGDT/SIDT. Keep instruction decode, table-register values, store widths and CPU-local rejection/rollback in CPU receivers; retain guest descriptor/table setup, segment/VM86 context, delivered faults and PIC/IRQ in board receivers. |
 | Non-goals | No speculative descriptor implementation, broad decoder rewrite, new public ABI, Shared relocation, firmware, INI, MyNES or executable-input change unless a proven in-scope production defect requires packet revision. Descriptor-system and query suites remain S43-S44. |
