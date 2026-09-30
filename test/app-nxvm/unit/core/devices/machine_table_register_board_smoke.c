@@ -394,6 +394,92 @@ static lib_i32 table_register_board_dos_sgdt_discriminator(void)
     return 1;
 }
 
+/* The consumer selector is loaded by the guest after LGDT.  No test-side
+ * register patch may stand in for the instruction sequence under test. */
+static lib_i32 table_register_board_lgdt_consumer(void)
+{
+    static const lib_u8 gdt_pointer[] = {0x1fu,0,0,0x03u,0,0};
+    static const lib_u8 idt_pointer[] = {0x07u,0x01u,0,0x04u,0,0};
+    static const lib_u8 gdt[] = {
+        0,0,0,0,0,0,0,0,
+        0xffu,0xffu,0,0x20u,0,0x9au,0,0,
+        0xffu,0xffu,0,0x40u,0,0x92u,0,0,
+        0xffu,0xffu,0,0,0,0x92u,0,0
+    };
+    static const lib_u8 bootstrap[] = {
+        0x0fu,0x01u,0x16u,0x00u,0x01u,
+        0x0fu,0x01u,0x1eu,0x10u,0x01u,
+        0xb8u,0x01u,0,0x0fu,0x01u,0xf0u,
+        0xb8u,0x18u,0,0x8eu,0xd0u,0xbcu,0,0x80u,
+        0xb8u,0x10u,0,0x8eu,0xd8u,0xeau,0,0,0x08u,0
+    };
+    static const lib_u8 target[] = {
+        0xb8u,0x08u,0,0x0fu,0x01u,0x16u,0,0x02u,0x8eu,0xd8u,0xf4u
+    };
+    static const lib_u8 new_gdt_pointer[] = {0x0fu,0,0,0x05u,0,0};
+    static const lib_u8 new_data_descriptor[] = {
+        0xffu,0x0fu,0,0x40u,0,0x92u,0,0
+    };
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP),
+        .values = {[CORE_MACHINE_DEBUG_ESP] = 0x8000u}
+    };
+    core_machine *machine = LIB_NULL;
+    core_machine_run_result result = {0};
+    core_machine_cpu_diagnostic diagnostic = {0};
+    core_machine_debug_cpu_snapshot after = {0};
+    lib_u8 idt[0x108u] = {0};
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK;
+
+    idt[13u * 8u + 1u] = 0x01u;
+    idt[13u * 8u + 2u] = 0x08u;
+    idt[13u * 8u + 5u] = 0x8eu;
+    if (!failed)
+        failed = core_machine_debug_patch_registers(machine, &entry) !=
+                LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x0100u, gdt_pointer,
+                sizeof(gdt_pointer)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x0110u, idt_pointer,
+                sizeof(idt_pointer)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) !=
+                LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x0400u, idt, sizeof(idt)) !=
+                LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0u, bootstrap,
+                sizeof(bootstrap)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x2000u, target,
+                sizeof(target)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x4200u, new_gdt_pointer,
+                sizeof(new_gdt_pointer)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x0508u, new_data_descriptor,
+                sizeof(new_data_descriptor)) != LIB_STATUS_OK ||
+            core_machine_run(machine, (core_machine_run_budget){64u,0u},
+                &result) != LIB_STATUS_OK || core_machine_get_cpu_diagnostic(machine,
+                &diagnostic) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+    if (!failed)
+        failed = result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            diagnostic.first_fault.valid || after.gdtr.limit != 0x000fu ||
+            after.gdtr.base != 0x00000500u || after.ds.selector != 0x0008u ||
+            after.ds.base != 0x00004000u || after.ds.limit != 0x00000fffu ||
+            !after.ds.writable;
+    core_machine_destroy(machine);
+    return !failed;
+}
+
 lib_i32 main(void)
 {
     static const lib_u8 sgdt[] = {0x0fu,0x01u,0x06u,0x00u,0x30u};
@@ -409,10 +495,11 @@ lib_i32 main(void)
     lib_i32 f = table_register_board_segment_sources();
     lib_i32 g = table_register_board_source_limit();
     lib_i32 h = table_register_board_dos_sgdt_discriminator();
+    lib_i32 i = table_register_board_lgdt_consumer();
 
-    if (!a || !b || !c || !d || !e || !f || !g || !h) {
-        fprintf(stderr, "M5:T539:S42:table-register board failed sgdt=%d sidt=%d lgdt=%d lidt=%d ltr=%d segments=%d limit=%d dos=%d\n",
-            a, b, c, d, e, f, g, h);
+    if (!a || !b || !c || !d || !e || !f || !g || !h || !i) {
+        fprintf(stderr, "M5:T539:S42:table-register board failed sgdt=%d sidt=%d lgdt=%d lidt=%d ltr=%d segments=%d limit=%d dos=%d consumer=%d\n",
+            a, b, c, d, e, f, g, h, i);
         return 1;
     }
     puts("M5:T539:S42:TABLE-REGISTER-BOARD:OK");

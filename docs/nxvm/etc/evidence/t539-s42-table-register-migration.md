@@ -13,7 +13,7 @@ machine smokes are retired.  It is not S42 acceptance evidence.
 | LGDT/LIDT invalid forms and prefixes | `cpu-lgdt-lidt-smoke` | migrated |
 | LGDT/LIDT segment source | `machine-table-register-board-smoke` | migrated |
 | LGDT/LIDT source-limit rollback | `machine-table-register-board-smoke` | migrated |
-| LGDT/LIDT post-load descriptor consumer | board receiver | pending |
+| LGDT post-load descriptor consumer | `machine-table-register-board-smoke` | migrated |
 | LGDT/LIDT protected CPL rejection and exception gate | board receiver | pending |
 | SGDT/SIDT 286/386 store images, 66h/67h attributes | `cpu-sgdt-sidt-smoke` | migrated |
 | SGDT/SIDT real segment routes and VM86 store context | `cpu-sgdt-sidt-smoke` | migrated |
