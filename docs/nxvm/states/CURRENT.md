@@ -336,27 +336,24 @@ production/API, Shared, firmware, INI or executable input changed. The
 complete receiver map and validation record. S46 is accepted; T539 remains
 open for S47 and later packets.
 
-## S47 Active Packet
+## S47 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier / mode | M5 T539 S47, automatically admitted continuation implementation. |
-| Admission And Approval | The owner authorized automatic admission for bounded T539 CPU S tasks; this NXVM-only continuation consumes the next dependency-closed 16-bit protected-mode batch on 2026-09-30. |
-| Objective | Retire the direct-private 16-bit protected-mode gate fixture and all five direct includers without leaving a second setup or execution path. |
-| Precise scope | Consume `core_machine_protected_16_gate_s3_smoke.c`, `core_machine_protected_16_external_s4_smoke.c`, `core_machine_protected_16_outer_s5_smoke.c`, `core_machine_protected_16_outer_iret_s6_smoke.c` and `core_machine_protected_16_call_gate_s7_smoke.c`. The two timing runners retain their now-explicit `protected_16_timing_fixture.c` only until S50 migrates their own private recipe setup. |
-| Reference Baseline | This Current packet; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); S46 evidence; the public Core Debug/memory/run and PIC fixture contracts. |
-| Candidate design | Because all five consumers include the same private board fixture, migrate the group atomically. Keep descriptor, privilege, stack-switch, NMI/IRQ and protected-frame observations at the public Core-machine board boundary. Extract a CPU-only receiver only for a fact demonstrably independent of board setup; do not create a public mutable CPU accessor or duplicate the included fixture. |
-| Non-goals | No CPU production change, new public API, Shared/MyNES change, firmware/asset/INI/EXE update, timing reinterpretation or migration of S48-plus sources. |
-| Files And ABI Surface | NXVM tests, their CMake registration/gates, task-state and S47 evidence only. Production and public ABI remain unchanged. |
-| Applicable Rules | NXVM architecture/coding/documentation guides; shared execution, architecture, coding and documentation rules named by `docs/nxvm/README.md`. One test fixture owns setup, no parallel execution path remains. |
-| Verification | Build affected x86/x64 targets; run full repository-only units once per width; current specialized gates, direct-private sweep, documentation governance and `git diff --check`. Keep timing consumers buildable. |
-| Expected Markers | Preserve `M5:T323:S3:PROTECTED-16-GATE:OK` through `S7:PROTECTED-16-CALL-GATE:OK`, or record exact successor markers and their receiver map in S47 evidence. |
-| Asset Needs | None; repository-only unit fixtures only. No executable rebuild is required. |
-| Reporting Requirements | Record original case/includer to receiver map, public setup mechanism, changed test-path count, timing-runner continuity, full verification and similar-issue sweep. |
-| Stop conditions | Stop for an unmapped include-dependent case, a required production/ABI change, a timing-authority disagreement, or a scope expansion beyond the five named sources and their necessary build dependents. |
-| Exit criteria | Every original architectural case has exactly one public-board or CPU-local receiver; every direct-only cache-representation assertion is explicitly retired as non-architectural; all five sources are retired; no timing runner inherits the obsolete S3 fixture name or role; required verification and actual-change review pass. |
-| Original Owner Request | Split CPU migration into bounded automatically admitted S tasks, preserve all machine semantics and use one owner per fact without patch-on-patch duplication. |
-| Similar-Issue Sweep | Audit every direct and include-derived consumer of the former S3 fixture, including 80286/80386 timing runners, for private CPU/RAM setup and migrate the complete dependency closure together. |
+Actual pushed NXVM P1 `583ba9a6c` retires the five S3--S7 direct-private
+protected-mode smoke consumers.  Their official targets now share one public
+bootstrap fixture and preserve the five historical markers.  Architectural
+gate, external/NMI, outer-stack, IRET/RETF and call-gate contracts retain
+their public-board receivers; non-architectural cache mutations are retired,
+not recreated as a test seam.  The 80286/80386 timing runners retain only the
+renamed timing recipe for S50.
+
+The commit changes 18 NXVM paths, adding 1,028 and removing 1,297 lines
+(net -269), with no production/API, Shared, firmware, INI or executable input.
+Complete repository-only units pass 512/512 on x64 and x86; both widths'
+current specialized gates, the T344 constructor classification, documentation
+governance and diff checks pass.  The actual commit equals `origin/master` at
+review.  [S47 evidence](../etc/evidence/t539-s47-protected-16-fixture-migration.md)
+contains the receiver map and retained timing boundary.  S47 is accepted;
+T539 remains open for S48--S54.
 
 
 ## S29 Acceptance
