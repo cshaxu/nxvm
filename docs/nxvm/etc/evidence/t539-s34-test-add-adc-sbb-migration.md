@@ -40,5 +40,8 @@ strict-compilation matrix (369 strict, 33 deferred). The six Shared source/
 test manifests remain unchanged and verify. `git diff --check` is clean.
 There is no tracked product binary change; S34 only reassigns test owners.
 
-The implementation and actual-commit review hashes are recorded in the S34
-acceptance packet. S35-S45 remain explicitly pending.
+Actual pushed P1 `3b2d17d97` has exactly seven scoped paths, passes
+`git show --check`, and equals `origin/master` at independent review. It adds
+887/removes 881 lines overall; excluding the 44-line evidence report, the
+code/test/build change adds 843/removes 881 (net -38). No tracked product
+binary changed. S35-S45 remain explicitly pending.

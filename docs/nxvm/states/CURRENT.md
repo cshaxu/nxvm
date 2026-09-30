@@ -2,10 +2,10 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S33 are accepted; S34 is active under automatic
+M5 T539 remains open. S1-S34 are accepted; S35 is active under automatic
 admission. The former
 eleven-file, 7,000-plus-line arithmetic assignment is split into S30-S35
-under the existing automatic-S authorization; S34-S45 remain pending.
+under the existing automatic-S authorization; S35-S45 remain pending.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
 
@@ -76,26 +76,46 @@ original private-test consumers remain assigned to S34-S42, including the
 unmigrated S34/S35 functions in `core_machine_inc_dec_smoke.c`. S43-S45 retain
 lifetime, physical relocation and whole-CPU acceptance.
 
-## S34 Active Packet
+## S34 Acceptance
+
+Actual pushed NXVM P1 `3b2d17d97` has exactly seven scoped paths, passes
+`git show --check`, and equals `origin/master` at independent review. All 13
+original second-group functions retain one receiver each: 111 CPU instruction
+executions and eight public board faults. Two originally mixed functions were
+split at their fault sections. Code/test/build changes add 843/remove 881
+lines (net -38); the 44-line evidence report is separate. One CPU test links
+only `x86-cpu`; one board test uses public machine operations. The shared
+test-only board-fault helper removes duplicate S33/S34 checking logic while
+preserving the 23 S33 board cases. Complete x64/x86 builds and units pass
+403/403 per width; all 66 specialized gates pass per width, including
+T317/T332/T337/T344, CPU/PIC authority, the 402-row direct matrix, six
+unchanged Shared manifests and documentation governance. No production/API
+or executable input changed. [S34 evidence](../etc/evidence/t539-s34-test-add-adc-sbb-migration.md)
+contains the receiving map. S34 is closed; the last 19 `inc_dec` functions
+remain assigned to S35. The original private-test consumer inventory remains
+at 72 until that file is retired. S43-S45 still own lifetime, physical
+relocation and whole-CPU acceptance.
+
+## S35 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation, M5 T539 S34 after accepted S33 P1 `6ca7f61ac`; NXVM target only. |
+| Identifier Mode | Continuation, M5 T539 S35 after accepted S34 P1 `3b2d17d97`; NXVM target only. |
 | Admission And Approval | Automatic-S authorization; one session separates executor and coordinator review. |
-| Objective | Assign the second `core_machine_inc_dec_smoke.c` group, TEST r/m-reg through SBB boundaries including original fault cases, to CPU or board owner without losing profile, flags, fault or timing observations. Retain the unmigrated remainder for S35. |
-| Non-goals | No production CPU/timing algorithm, new public ABI, S35 arithmetic groups, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
-| Reference Baseline | Clean pushed S33 P1 `6ca7f61ac`, x64/x86 units 401/401. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) assign the second group of the remaining `inc_dec` source to S34. |
+| Objective | Assign the last `core_machine_inc_dec_smoke.c` group, OR/AND/SUB/XOR/CMP, decimal adjust, XLAT and Group-1 profile matrix, to CPU or board owner without losing any original case; retire the last mixed-owner source and its private-test inventory entry. |
+| Non-goals | No production CPU/timing algorithm, new public ABI, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
+| Reference Baseline | Clean pushed S34 P1 `3b2d17d97`, x64/x86 units 403/403. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) assign the remaining 19 `inc_dec` functions and source retirement to S35. |
 | Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | `core_machine_inc_dec_smoke.c`: its functions from `inc_dec_test_test_rm_reg_forms` through `inc_dec_test_sbb_boundaries`, CPU-only receiver(s), NXVM test registration/gates, test-local fixtures and evidence. Enumerate exact contexts and shared helpers before edits; preserve all functions from `inc_dec_test_or_rm_reg_forms` onward for S35. |
+| Files And ABI Surface | `core_machine_inc_dec_smoke.c`: its remaining functions from `inc_dec_test_or_rm_reg_forms` through `inc_dec_test_group1_profile_matrix`, CPU-only receiver(s), board receiver(s), NXVM test registration/gates, test-local fixtures, inventory and evidence. Enumerate exact contexts before edits; delete the old source only once all cases have receivers. |
 | Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU opcode/flags/profile/timing and synthetic cache cases stay CPU-owned; real divide-vector delivery, protected descriptor/access faults and bus observations stay board-owned. |
 | Verification | Full x64/x86 builds and repository-only unit suites; T317/T332/T337/T344, CPU/PIC authority, direct matrix, six unchanged manifests, documentation/diff checks. |
-| Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no newly introduced private CPU state; one receiver per S34 case, no duplicated execution path and no lost S35 case. |
+| Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no private CPU state; one receiver per S35 case, no duplicated execution path or surviving mixed-owner `inc_dec` test. |
 | Asset Needs | Repository-only inputs; preserve the S18 local recovery artifact. No ROM/media/INI/EXE input change. |
 | Reporting Requirements | Original-case receiving map, exact changed paths and line counts, dual-width results, pushed P1 and independent actual-commit P2 review. |
-| Stop Conditions | Lost case, new production/API requirement, or scope beyond the second arithmetic group requires packet revision before continuing. |
-| Exit Criteria | Second-group CPU/board ownership proved, all original second-group and residual cases retained, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. The `inc_dec` source remains an inventory consumer until S35. |
+| Stop Conditions | Lost case, new production/API requirement, or scope beyond the last arithmetic group requires packet revision before continuing. |
+| Exit Criteria | Final-group CPU/board ownership proved, all original cases retained, old mixed-owner source and classification deleted, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. |
 | Original Owner Request | Split oversized CPU migration into traceable S tasks with automatic admission, preserving semantics, original code style and single-owner architecture. |
-| Similar-Issue Sweep | Inspect protected descriptor faults, SBB flags and profile boundaries, public board snapshot equivalence and original timing assertions. S35 remains assigned, not presumed done. |
+| Similar-Issue Sweep | Inspect logical/compare protected faults, decimal-adjust real divide delivery, XLAT addressing, Group-1 profile/timing boundaries and residual helper ownership. S36-S45 remain assigned, not presumed done. |
 
 ## S29 Acceptance
 
