@@ -101,7 +101,10 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S55 | Task-switch 16-bit/task-gate half of `core_machine_task_switch_smoke.c` (through the 16-bit and task-gate families). Preserve task-stack, nested-task and task-gate rules without moving the later cross-width rows. |
 | S56a | Task-switch 32-bit decode: retire the four operand/address-size task-JMP forms from `core_machine_task_switch_smoke.c`. Keep the receiver CPU-local; do not carry TSS32 rejection, board IRQ delivery or cross-width images into this package. |
 | S56b | Task-switch TSS32 baseline/fault state: retire direct-TSS32 baseline, descriptor, LDT and fault rows into a CPU receiver. Exclude paging/debug/LOCK/nesting and public IRQ delivery. |
-| S56c | Task-switch TSS32 observable delivery: retire direct-TSS32 paging/debug, LOCK, nested/call/task-gate and pending-IRQ rows. Keep CPU state in the CPU receiver and use one public board receiver only for real PIC acknowledgement/order. |
+| S56c1 | Task-switch TSS32 CPU exceptional state: retire direct-TSS32 #DB and LOCK rows into a CPU-local receiver. |
+| S56c2 | Task-switch TSS32 paging state: retire direct-TSS32 paging and page-fault rows into a public Core paging receiver. The CPU fixture cannot supply Core's physical translation boundary. |
+| S56c3 | Task-switch TSS32 CPU nesting state: retire direct-TSS32 nested CALL/JMP, task-gate and nested-return rows into a CPU-local receiver. |
+| S56c4 | Task-switch TSS32 public IRQ delivery: retire the pending-IRQ row into one public Core/PIC board receiver, preserving IRR→ISR acknowledgement/order. |
 | S56d | Cross-width task state: retire the 16↔32 TSS transition and task-return rows. Preserve old/new TSS image width, backlink/nested state and return semantics without duplicating S55's 16-bit baseline. |
 | S57 | TSS I/O-map port source: `core_machine_tss_iomap_port_smoke.c` (291 lines). Preserve CPL/I/O-map authorization separately from task-switch state construction. |
 | S58 | Interrupt/VM86 dependency group: CLI/STI with HLT/INT/IRET/composition includers; protected IRET; interrupt-entry; VM86 delivery/IRET/table-load and hardware delivery. Migrate shared fixtures with all includers in one package. Preserve NMI/IRQ priority, masking, fault escalation and frames. |
@@ -112,7 +115,8 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S63 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
 S19-S58 migrate consumers before S59; S60 follows S59. S56 is deliberately
-subdivided into S56a-S56d: its original direct-TSS32 source combines decode,
+subdivided into S56a-S56d, with S56c further divided into S56c1-S56c4: its
+original direct-TSS32 source combines decode,
 state-image, public IRQ and cross-width responsibilities that cannot be
 reviewed or verified as one bounded receiver package. Existing in-progress edits
 are inputs to these packages, not a reason to rerun or rewrite a verified

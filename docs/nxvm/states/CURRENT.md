@@ -505,23 +505,23 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S63.
 
-## S56b Active Packet
+## S56c1 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S56b, Continuation. |
+| Identifier Mode | M5 T539 S56c1, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the direct-TSS32 baseline, descriptor, LDT and fault rows into one CPU-local receiver. |
-| Non-goals | Operand/address-size decode (S56a); paging/debug, LOCK, nested/call/task-gate and pending-IRQ rows (S56c); 16↔32 image/return rows (S56d); TSS I/O-map authorization (S57); CLI/STI/INT/IRET/VM86 group (S58); timing corpus, production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S56a acceptance; CPU work-package S56b; residual `core_machine_task_switch_smoke.c` only. |
+| Objective | Retire direct-TSS32 #DB and LOCK contexts into one CPU-local receiver. |
+| Non-goals | Operand/address-size decode (S56a); baseline/descriptor/LDT/fault state (S56b); paging/page-fault state (S56c2); nested/call/task-gate/return rows (S56c3); pending-IRQ row (S56c4); 16↔32 image/return rows (S56d); TSS I/O-map authorization (S57); CLI/STI/INT/IRET/VM86 group (S58); timing corpus, production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S56b acceptance; CPU work-package S56c1; residual `core_machine_task_switch_smoke.c` only. |
 | Files And ABI Surface | Residual task-switch source, uniquely owned CPU/public-board receivers, registrations, inventories and evidence only. No public ABI change. |
-| Applicable Rules | CPU receivers own TSS state/images, descriptors and task exceptions; public board receivers own only real IRQ/PIC delivery; each original context has one receiver; no alternate task-state path. |
+| Applicable Rules | CPU receivers own TSS state/images, descriptors and task exceptions; public Core receivers own physical paging translation; public board receivers own only real IRQ/PIC delivery; each original context has one receiver; no alternate task-state path. |
 | Verification | Exact residual-case ledger; focused receivers; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Stop Conditions | Stop if a direct-TSS32 state/fault row cannot be represented by the CPU fixture, or if it needs production/API/Shared change. |
-| Exit Criteria | Every S56b baseline, descriptor, LDT and fault context has one CPU-local receiver; no S56b private fixture path survives; all verification passes. |
+| Stop Conditions | Stop if a #DB or LOCK row cannot be represented by the CPU fixture, or if it needs production/API/Shared change. Paging is deliberately assigned to S56c2 because its physical translation owner is Core. |
+| Exit Criteria | Every S56c1 context has one CPU-local receiver; no S56c1 private fixture path survives; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | Classify every direct-TSS32 call by state-image/fault ownership before moving it; do not take paging, debug, LOCK, nested/task-gate, PIC or cross-width rows. |
+| Similar-Issue Sweep | The original S56c block is classified before implementation: #DB/LOCK is S56c1; paging is S56c2 because it requires the Core physical translation boundary; nesting/task gates are S56c3; public PIC delivery is S56c4. Do not take cross-width state images. |
 
 ## S56a Acceptance
 

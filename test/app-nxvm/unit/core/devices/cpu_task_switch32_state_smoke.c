@@ -54,7 +54,10 @@ typedef enum task32_case {
     TASK32_LDT_NOT_PRESENT,
     TASK32_LDT_SHORT,
     TASK32_LDT_BAD_CODE,
-    TASK32_LDT_BAD_DATA
+    TASK32_LDT_BAD_DATA,
+    TASK32_LOCK_DIRECT,
+    TASK32_LOCK_INDIRECT,
+    TASK32_DEBUG_TRAP
 } task32_case;
 
 static void task32_set_fault_gate(lib_u8 *idt, lib_u8 vector)
@@ -108,7 +111,7 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
     lib_u8 gdt[sizeof(gdt_base)];
     lib_u8 idt[0x70u] = {0};
     lib_u8 ldt[sizeof(ldt_base)];
-    lib_u8 source[sizeof(source_gprs) + 8u];
+    lib_u8 source[128u];
     lib_size source_bytes = sizeof(source_gprs);
     lib_u8 fault_vector = 10u;
     task32_state target = {
@@ -140,6 +143,25 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         source[sizeof(source_gprs) + 6u] = 0x30u;
         source[sizeof(source_gprs) + 7u] = 0u;
         source_bytes = sizeof(source_gprs) + 8u;
+    }
+    if (test_case == TASK32_LOCK_DIRECT || test_case == TASK32_LOCK_INDIRECT) {
+        source_bytes = sizeof(source_gprs);
+        source[source_bytes++] = 0xf0u;
+        source[source_bytes++] = test_case == TASK32_LOCK_DIRECT ? 0xeau : 0xffu;
+        if (test_case == TASK32_LOCK_DIRECT) {
+            source[source_bytes++] = 0u;
+            source[source_bytes++] = 0u;
+            source[source_bytes++] = 0x30u;
+            source[source_bytes++] = 0u;
+        } else {
+            source[source_bytes++] = 0x2eu;
+            source[source_bytes++] = 0u;
+            source[source_bytes++] = 0x52u;
+            fixture->memory[0x8200u] = 0u;
+            fixture->memory[0x8201u] = 0u;
+            fixture->memory[0x8202u] = 0x30u;
+            fixture->memory[0x8203u] = 0u;
+        }
     }
     if (test_case == TASK32_INDIRECT16 || test_case == TASK32_INDIRECT32 ||
         test_case == TASK32_INDIRECT_ADDRESS32 ||
@@ -187,7 +209,7 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         target.ss.selector = 0x20u;
         fault_vector = 12u;
     }
-    if (test_case >= TASK32_LDT_SUCCESS) {
+    if (test_case >= TASK32_LDT_SUCCESS && test_case <= TASK32_LDT_BAD_DATA) {
         target.es.selector = 0x14u;
         target.cs.selector = 0x0cu;
         target.ss.selector = 0x14u;
@@ -215,13 +237,30 @@ static void task32_prepare(cpu_instruction_fixture *fixture, task32_case test_ca
         sizeof(target_halt));
     lib_memory_copy(fixture->memory + TASK32_CODE_BASE, source, source_bytes);
     lib_memory_copy(fixture->memory, bootstrap, sizeof(bootstrap));
-    if (test_case >= TASK32_LDT_SUCCESS)
+    if (test_case >= TASK32_LDT_SUCCESS && test_case <= TASK32_LDT_BAD_DATA)
         lib_memory_copy(fixture->memory + 0x0900u, ldt, sizeof(ldt));
+    if (test_case == TASK32_DEBUG_TRAP) {
+        const lib_u16 debug_word = 1u;
+
+        idt[8u] = 0x80u;
+        idt[9u] = 0x01u;
+        idt[10u] = 0x08u;
+        idt[13u] = 0x8eu;
+        fixture->memory[TASK32_CODE_BASE + 0x180u] = 0x40u;
+        fixture->memory[TASK32_CODE_BASE + 0x181u] = 0xf4u;
+        lib_memory_copy(fixture->memory + TASK32_IDT_BASE, idt, sizeof(idt));
+        lib_memory_copy(fixture->memory + TASK32_B_BASE + 0x64u, &debug_word,
+            sizeof(debug_word));
+        cpu->data.dr0 = 0xffffffffu;
+        cpu->data.dr1 = 0xffffffffu;
+        cpu->data.dr2 = 0xffffffffu;
+        cpu->data.dr3 = 0xffffffffu;
+        cpu->data.dr7 = 0x000003ffu;
+    }
     cpu->data.idtr.flagValid = LIB_TRUE;
     cpu->data.idtr.sregtype = SREG_IDTR;
     cpu->data.idtr.base = TASK32_IDT_BASE;
     cpu->data.idtr.limit = (lib_u16)(sizeof(idt) - 1u);
-    if (test_case == TASK32_OLD_SHORT) gdt[0x28u] = 0x60u;
 }
 
 static void task32_refresh(cpu_instruction_fixture *fixture, task32_case test_case)
@@ -242,7 +281,12 @@ static lib_bool task32_is_ldt(task32_case test_case)
 
 static lib_bool task32_is_rejection(task32_case test_case)
 {
-    return test_case >= TASK32_INVALID_CODE;
+    return test_case >= TASK32_INVALID_CODE && test_case <= TASK32_LDT_BAD_DATA;
+}
+
+static lib_bool task32_is_special(task32_case test_case)
+{
+    return test_case >= TASK32_LOCK_DIRECT;
 }
 
 static lib_bool task32_expect(task32_case test_case)
@@ -264,7 +308,22 @@ static lib_bool task32_expect(task32_case test_case)
     snapshot = fixture.fault.valid ? &fixture.fault : &fixture.delivered_exception;
     lib_memory_copy(&outgoing, fixture.memory + TASK32_A_BASE + 0x1cu,
         sizeof(outgoing));
-    if (!rejection) return !fixture.fault.valid &&
+    if (test_case == TASK32_LOCK_DIRECT || test_case == TASK32_LOCK_INDIRECT)
+        return fixture.fault.valid &&
+            (fixture.fault.exception_mask & VCPUINS_EXCEPT_UD) != 0u &&
+            after.data.tr.selector == 0x28u && after.data.eax == 0x11111111u &&
+            after.data.ecx == 0x22222222u && after.data.edx == 0x33333333u &&
+            after.data.ebx == 0x44444444u && after.data.esp == 0x55550000u &&
+            after.data.ebp == 0x66666666u && after.data.esi == 0x77777777u &&
+            after.data.edi == 0x88888888u;
+    if (test_case == TASK32_DEBUG_TRAP)
+        return !fixture.fault.valid && fixture.delivered_exception.valid &&
+            (fixture.delivered_exception.exception_mask & VCPUINS_EXCEPT_DB) != 0u &&
+            after.data.tr.selector == 0x30u && after.data.eip == 0x182u &&
+            after.data.eax == 0xa1a12223u && after.data.esp == 0x7ff4u &&
+            (after.data.dr6 & 0x00008000u) != 0u &&
+            (after.data.dr7 & 0x000003ffu) == 0x000002aau;
+    if (!rejection && !task32_is_special(test_case)) return !fixture.fault.valid &&
         !fixture.delivered_exception.valid && after.data.flagHalt &&
         after.data.tr.selector == 0x30u && after.data.eip == 0x101u &&
         after.data.eax == 0xa1a12222u && after.data.ecx == 0xc1c13333u &&
@@ -301,12 +360,14 @@ int main(void)
         TASK32_INVALID_CODE, TASK32_TARGET_BUSY, TASK32_OLD_SHORT,
         TASK32_TARGET_SHORT, TASK32_STACK_LIMIT, TASK32_LDT_SUCCESS,
         TASK32_LDT_BAD_DESCRIPTOR, TASK32_LDT_NOT_PRESENT, TASK32_LDT_SHORT,
-        TASK32_LDT_BAD_CODE, TASK32_LDT_BAD_DATA
+        TASK32_LDT_BAD_CODE, TASK32_LDT_BAD_DATA, TASK32_LOCK_DIRECT,
+        TASK32_LOCK_INDIRECT, TASK32_DEBUG_TRAP
     };
     lib_size index;
 
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
         if (!task32_expect(cases[index])) {
+            fprintf(stderr, "task32 failed case=%u\n", (unsigned)cases[index]);
             fputs("M5:T539:S56b:TASK32-STATE:FAIL\n", stderr);
             return 1;
         }

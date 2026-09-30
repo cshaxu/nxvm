@@ -1128,25 +1128,10 @@ int main(void)
     failed |= task_switch_expect_t330_32_to_16(LIB_TRUE, LIB_FALSE,
         LIB_TRUE);
     failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_DEBUG_TRAP_SUCCESS, LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
         TASK_SWITCH_TSS32_PAGING_SUCCESS, LIB_FALSE, LIB_FALSE, LIB_FALSE,
         LIB_FALSE);
     failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
         TASK_SWITCH_TSS32_PAGING_TSS_FAULT, LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_TRUE, LIB_FALSE, LIB_FALSE,
-        LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_TRUE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_TRUE, LIB_FALSE, LIB_FALSE,
-        LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_TRUE, LIB_FALSE, LIB_TRUE,
-        LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_TRUE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_TRUE, LIB_FALSE, LIB_TRUE,
         LIB_FALSE);
     failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
         TASK_SWITCH_TSS32_REJECTION_NONE, LIB_FALSE, LIB_TRUE, LIB_FALSE,
