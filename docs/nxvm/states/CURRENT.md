@@ -11,7 +11,7 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; later packages now run through S63.
-S48-S52 are accepted, S53 is active and S54-S63 remain pending. Earlier
+S48-S53 are accepted and S54-S63 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -457,23 +457,19 @@ checks pass.  No EXE rebuild is required.  See [S52
 evidence](../etc/evidence/t539-s52-idt-privilege-receiver-map.md).  S52 is
 accepted; T539 remains open for S53--S63.
 
-## S53 Active Packet
+## S53 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | M5 T539 S53, Continuation. |
-| Admission And Approval | The owner authorized automatic admission of each bounded T539 S. |
-| Objective | Retire the protected far/data pair while preserving selector/cache validation, protected data-access semantics and all-or-nothing fault boundaries in their correct CPU-local or public-board receivers. |
-| Intake Boundary | `core_machine_protected_far_s1_smoke.c` and `core_machine_protected_data_access_s2_smoke.c` (934 lines at work-plan intake). Outer returns, task switches, protected I/O, interrupt/VM86 and timing-ledger rows remain assigned to later packets. |
-| Non-goals | No production/public API, Shared, firmware, asset, INI or EXE change; no migration outside the pair or its necessary direct-includer closure. |
-| Reference Baseline | S52 acceptance; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); applicable CPU descriptor, segmentation and public-machine contracts. |
-| Candidate Proposal | [T539 CPU migration work packages](../etc/architecture/t539-cpu-work-packages.md), S53 row. |
-| Files And ABI Surface | The two named NXVM unit sources, their receiver sources/CMake registrations, affected inventories and S53 evidence only. No production or public ABI surface changes. |
-| Applicable Rules | System Architecture: CPU owns CPU state and board tests use public contracts; Coding: do not create a parallel descriptor/cache model; Execution: exact case ledger, x64/x86 full-unit gate and actual-diff review; Documentation: Current/work-package/evidence updates. |
-| Verification | Exact source/case receiver map, affected x64/x86 targets, complete repository-only unit suite per width, specialized gates, direct-private sweep, documentation governance and `git diff --check`. |
-| Asset Needs | None; no EXE rebuild unless executable inputs change. |
-| Stop Conditions | Stop and revise this packet if a case needs a production/API or Shared change, or a source outside the named pair/direct includer closure; do not silently absorb later-S outer-return, task-switch, timing or VM86 behavior. |
-| Exit Criteria | Every S53 protected far/data family has one correct CPU-local or public-board receiver; both direct-private sources are retired without a private setup path; all verification passes. |
+P1 `89eeef93c` retires the 934-line protected far/data pair into two CPU-local
+receivers and two PIC board receivers.  The CPU cases retain descriptor/cache,
+data-access and all-or-nothing fault assertions; the board cases additionally
+prove real PIC IRR-to-ISR acknowledgement and interrupt-frame publication.
+No production/public API, Shared, firmware, asset, INI or EXE input changes.
+
+The focused receivers and complete repository-only x64/x86 unit suites pass.
+T317 confirms 41 strict CPU compile commands, T332 confirms 41 fixture owners,
+T344 confirms 101 direct constructors; direct-private, documentation-governance
+and diff checks pass.  The [S53 receiver map](../etc/evidence/t539-s53-protected-far-data-receiver-map.md)
+records the exact allocation.  S53 is accepted; T539 remains open for S54-S63.
 
 
 ## S29 Acceptance
