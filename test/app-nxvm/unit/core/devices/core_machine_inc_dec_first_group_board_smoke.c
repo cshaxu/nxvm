@@ -3,22 +3,11 @@
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/cpu_board_limit_fixture.h"
-
-typedef struct inc_dec_fault_case {
-    lib_u8 code[6];
-    lib_u8 bytes;
-    lib_bool writable;
-    lib_bool out_of_limit;
-    lib_u16 memory;
-    lib_u32 eax;
-    lib_u32 edx;
-    lib_u32 flags;
-} inc_dec_fault_case;
+#include "support/cpu_board_fault_fixture.h"
 
 static lib_i32 inc_dec_first_group_protected_faults(void)
 {
-    static const inc_dec_fault_case cases[] = {
+    static const test_cpu_board_fault_case cases[] = {
         {{0xffu,0x06u,0x10u,0u},4u,LIB_TRUE, LIB_TRUE, 0x7fffu,0u,0u,
             VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF},
         {{0xffu,0x06u,0x10u,0u},4u,LIB_FALSE,LIB_FALSE,0x7fffu,0u,0u,
@@ -46,52 +35,8 @@ static lib_i32 inc_dec_first_group_protected_faults(void)
             5u,0xaabbccddu,VCPU_EFLAGS_CF | VCPU_EFLAGS_OF}
     };
 
-    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]);
-        ++index) {
-        const inc_dec_fault_case *entry = &cases[index];
-        core_machine *machine = LIB_NULL;
-        core_machine_debug_cpu_snapshot after = {0};
-        core_machine_cpu_diagnostic diagnostic = {0};
-        core_machine_run_result result = {0};
-        core_machine_debug_register_patch patch = {0};
-        lib_u16 observed = 0u;
-        lib_i32 failed = !test_cpu_board_limit_prepare(&machine, entry->code,
-            entry->bytes, entry->writable, entry->out_of_limit);
-
-        if (!failed) {
-            patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EAX) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EDX) |
-                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS);
-            patch.values[CORE_MACHINE_DEBUG_EAX] = entry->eax;
-            patch.values[CORE_MACHINE_DEBUG_EDX] = entry->edx;
-            patch.values[CORE_MACHINE_DEBUG_EFLAGS] = entry->flags;
-            failed = core_machine_debug_patch_registers(machine, &patch) !=
-                    LIB_STATUS_OK ||
-                core_machine_memory_write(machine, 0x3010u, &entry->memory,
-                    sizeof(entry->memory)) != LIB_STATUS_OK ||
-                core_machine_run(machine, (core_machine_run_budget){1u,0u},
-                    &result) != LIB_STATUS_INTERNAL_ERROR ||
-                result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-                    LIB_STATUS_OK ||
-                core_machine_debug_capture_cpu_snapshot(machine,
-                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
-                !diagnostic.first_fault.valid ||
-                !(diagnostic.first_fault.exception_mask & VCPUINS_EXCEPT_DF) ||
-                core_machine_debug_read_real(machine, 0x0301u, 0u,
-                    &observed, sizeof(observed)) != LIB_STATUS_OK ||
-                observed != entry->memory || after.eax != entry->eax ||
-                after.edx != entry->edx || after.eflags != entry->flags ||
-                after.eip != 0u;
-        }
-        core_machine_destroy(machine);
-        if (failed) {
-            fprintf(stderr, "S33 protected fault case %u failed\n",
-                (unsigned)index);
-            return 0;
-        }
-    }
-    return 1;
+    return test_cpu_board_faults(cases,
+        sizeof(cases) / sizeof(cases[0]));
 }
 
 static lib_i32 inc_dec_first_group_divide_delivery(void)
