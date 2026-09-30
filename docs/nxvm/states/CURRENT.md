@@ -2,12 +2,12 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S37 are accepted; S38 is active under automatic
+M5 T539 remains open. S1-S38 are accepted; S39 is active under automatic
 admission. The former
 eleven-file, 7,000-plus-line arithmetic assignment is split into S30-S35
 under the existing automatic-S authorization. At S36 intake, its oversized
 FLAGS/string/port row was divided into S36-S39; the former S37-S45 are now
-S40-S48. S38-S48 remain pending. Earlier accepted packets retain their
+S40-S48. S39-S48 remain pending. Earlier accepted packets retain their
 historical prospective numbering; the linked work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
@@ -150,26 +150,44 @@ input changed. [S37 evidence](../etc/evidence/t539-s37-string-transfer-migration
 records the receiving map. S37 is accepted; 64 original direct-private `.c`
 test consumers plus one fixture header remain assigned to S38-S45.
 
-## S38 Active Packet
+## S38 Acceptance
+
+Actual pushed NXVM P1 `ae76a7c84` has exactly fifteen scoped paths, passes
+`git show --check`, and equals `origin/master` at independent actual-commit
+review. All 203 original STOS/SCAS/CMPS contexts retain CPU or public-board
+receivers. The three mixed-owner sources are retired; six replacement tests
+preserve historical success markers. Thirteen code/test/build/gate paths add
+1,682/remove 2,034 lines (net -352); the two evidence documents are separate.
+Complete x64/x86 builds and units pass 411/411 per width. Specialized gates
+pass 66 x64 and 68 x86 targets, including T317/T332/T337/T344, CPU/PIC
+authority and direct matrices of 410/409 rows. All eleven selected manifest
+tests, including six unchanged Shared manifests, documentation governance and
+diff checks pass. No production/API, Shared, firmware, INI or EXE input
+changed; the regenerated x86 EXE build side effect was removed. The
+[S38 evidence](../etc/evidence/t539-s38-string-scan-compare-migration.md)
+records the receiving map. S38 is accepted; 61 direct-private `.c` test
+consumers plus one fixture header remain assigned to S39-S45.
+
+## S39 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation, M5 T539 S38 after accepted S37 P1 `3c826c32d`; NXVM target only. |
+| Identifier Mode | Continuation, M5 T539 S39 after accepted S38 P1 `ae76a7c84`; NXVM target only. |
 | Admission And Approval | Automatic-S authorization; one session separates executor and coordinator review. |
-| Objective | Reassign STOS/SCAS/CMPS string scan/compare instruction cases to CPU and real guest memory/exception/IRQ delivery to public board owners, retaining every original profile, REP termination, flags, direction, width, segment, rejection, protected-limit and interruptibility context. |
-| Non-goals | No production CPU/string/timing algorithm, new public ABI, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
-| Reference Baseline | Clean pushed S37 P1 `3c826c32d`, x64/x86 units 408/408. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assign the three string scan/compare sources to S38. |
+| Objective | Reassign port-I/O and string-port instruction semantics to CPU owners while keeping board port mapping, transaction providers, external side effects and IRQ delivery with public board owners. Preserve architectural IOPL/TSS permission and every original profile, width, prefix, REP, fault and interruptibility context. |
+| Non-goals | No production CPU/port/timing algorithm, new public ABI, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. |
+| Reference Baseline | Clean pushed S38 P1 `ae76a7c84`, x64/x86 units 411/411. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assign the three port-I/O sources to S39. |
 | Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | `core_machine_stos_smoke.c`, `core_machine_scas_smoke.c` and `core_machine_cmps_smoke.c`; their CPU/board receivers, NXVM registration/gates, test-local fixtures, inventory and evidence. Existing public-only REP-CMPS integration retains its owner. |
-| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU REP/string semantics, profile and timing stay CPU-owned; actual board memory mapping, exception and IRQ delivery stay board-owned. No parallel execution path. |
+| Files And ABI Surface | `core_machine_port_io_s55_smoke.c`, `core_machine_port_ownership_smoke.c`, `core_machine_port_strings_smoke.c`; their CPU/board receivers, NXVM registration/gates, test-local fixtures, inventory and evidence. |
+| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU instruction/REP, IOPL/TSS checks and internal timing stay CPU-owned; actual port routing, providers, IRQ and external wait stay board-owned. No parallel execution path. |
 | Verification | Full x64/x86 builds and repository-only unit suites; T317/T332/T337/T344, CPU/PIC authority, direct matrix, six unchanged manifests, documentation/diff checks. |
-| Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no private CPU state; one receiver per original S38 case, no duplicated execution path or surviving mixed-owner test. |
+| Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no private CPU state; one receiver per original S39 case, no duplicated execution path or surviving mixed-owner test. |
 | Asset Needs | Repository-only inputs; preserve the S18 local recovery artifact. No ROM/media/INI/EXE input change. |
 | Reporting Requirements | Original-case receiving map, exact changed paths and line counts, dual-width results, pushed P1 and independent actual-commit P2 review. |
-| Stop Conditions | Lost case, new production/API requirement, or scope beyond STOS/SCAS/CMPS requires packet revision before continuing. |
-| Exit Criteria | S38 CPU/board ownership proved, all original cases retained, mixed-owner classifications deleted where exhausted, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. |
+| Stop Conditions | Lost case, new production/API requirement, or scope beyond the three port-I/O tests requires packet revision before continuing. |
+| Exit Criteria | S39 CPU/board ownership proved, all original cases retained, mixed-owner classifications deleted where exhausted, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. |
 | Original Owner Request | Split oversized CPU migration into traceable S tasks with automatic admission, preserving semantics, original code style and single-owner architecture. |
-| Similar-Issue Sweep | Inspect STOS/SCAS/CMPS REPZ/REPNZ termination, flags, index/count width, segment override, interrupt shadow and protected-limit behavior. Port cases remain assigned to S39; S40-S48 remain pending, not presumed done. |
+| Similar-Issue Sweep | Inspect scalar IN/OUT, string INS/OUTS REP, IOPL/TSS permission, width/address profiles, partial/failed transactions, wait and IRQ ordering. S40-S48 remain pending, not presumed done. |
 
 ## S29 Acceptance
 
@@ -198,8 +216,8 @@ is closed, not carried into S29.
 
 CPU extraction itself is not accepted. The
 [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assigns the
-remaining 64 original direct-private `.c` test consumers and one fixture
-header to S38-S45. Embedded CPU lifetime remains until S46; physical Shared
+remaining 61 original direct-private `.c` test consumers and one fixture
+header to S39-S45. Embedded CPU lifetime remains until S46; physical Shared
 relocation is S47; whole CPU acceptance is S48. S40 owns the unresolved
 32-bit BOUND observation. None is silently closed or transferred to the next T.
 
@@ -207,6 +225,7 @@ relocation is S47; whole CPU acceptance is S48. S40 owns the unresolved
 
 | Task | Progress |
 | --- | --- |
+| T539 S38 | Accepted: NXVM P1 ae76a7c84 migrates STOS/SCAS/CMPS ownership; all 203 original contexts retain CPU/board receivers; units 411/411 per width. No production or asset change. |
 | T539 S31 | Accepted: NXVM P1 38bc5b10c migrates immediate IMUL and Group-2 test ownership; all 335 original contexts retain CPU/board receivers; units 397/397 per width. No production or asset change. |
 | T539 S30 | Accepted: NXVM P1 442088410 migrates bit/condition/extension ownership. All 549 original contexts retain CPU/board receivers; units 395/395 per width. No production or asset change. |
 | T539 S29 | Accepted: NXVM P1 86fe95201 migrates operand/address and S64 prefix ownership. All 28 operand contexts and twelve prefix groups retain receivers; units 389/389 per width. No production or asset change. |
@@ -235,7 +254,7 @@ packages by the current work plan.
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0539 EXEs are committed in
 0067d80c4 with unchanged owner INIs. S18 evidence records hashes, PE architecture
-and verification limits. S19-S30 changed no executable inputs and require no
+and verification limits. S19-S38 changed no executable inputs and require no
 new artifact. Both reusable NXVM trees remain configured for default; the three
 bounded build/t539-s3 trees and S18 recovery patch remain needed for later CPU
 batches. Run native desktop test suites without cross-tree overlap.

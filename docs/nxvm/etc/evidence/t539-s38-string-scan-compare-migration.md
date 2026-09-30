@@ -47,5 +47,5 @@ The full build regenerated one tracked x86 EXE even though S38 changes no
 executable inputs; that build side effect was restored to its initially clean
 tracked version and is not part of S38.
 
-The pushed P1 actual-commit review and S38 acceptance are recorded in
-`docs/nxvm/states/CURRENT.md`.
+P1 implementation is pushed as `ae76a7c84`. Its actual-commit P2 review
+and S38 acceptance are recorded in `docs/nxvm/states/CURRENT.md`.
