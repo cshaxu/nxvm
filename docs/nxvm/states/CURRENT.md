@@ -201,26 +201,49 @@ changed; the regenerated x86 EXE build side effect was removed. The
 records the receiving map. S38 is accepted; 61 direct-private `.c` test
 consumers plus one fixture header remain assigned to S39-S45.
 
-## S41 Active Packet
+## S41 Acceptance
+
+Actual pushed NXVM P1 `99ab4c002` contains exactly eighteen scoped paths,
+passes `git show --check`, and equals `origin/master` at actual-commit review.
+The 899-line mixed BOUND source is retired. Its 247-line CPU receiver links
+only `x86-cpu`; its 335-line board receiver uses public machine operations,
+guest table construction and the real PIC. All original families retain one
+receiver: width/profile, size attributes, invalid forms, segment routes,
+signed boundaries, SIB/SS, VM86, real/protected faults and IRQ delivery.
+The BOUND-local predecode fixes the previously reproduced 32-bit register-only
+form from internal CPU error to terminal #UD without a new path or API.
+
+Eight code/test/build/gate paths add 609/remove 922 lines (net -313); evidence
+and task state are separate. Complete x64/x86 builds and units pass 414/414
+each. Both 67-target specialized gate aggregates pass per width, including
+T317/T332/T337/T344, CPU/PIC authority and the 413-row direct matrix. Six
+unchanged Shared manifests, documentation governance and diff checks pass.
+Because CPU production changed, all four runnable profiles have rebuilt,
+optimized, stripped T539 x64/x86 EXEs; their hashes and no-INI-change proof
+are recorded in [S41 evidence](../etc/evidence/t539-s41-bound-migration.md).
+S41 is accepted; 55 direct-private `.c` consumers plus the shared fixture
+header remain assigned to S42-S51. T539 remains open.
+
+## S42 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation, M5 T539 S41 after accepted S40 P1 `e4a7615d1`; NXVM target only. |
+| Identifier Mode | Continuation, M5 T539 S42 after accepted S41 P1 `99ab4c002`; NXVM target only. |
 | Admission And Approval | Automatic-S authorization; one session separates executor and coordinator review. |
-| Objective | Migrate the 899-line BOUND S54 mixed-owner test as one bounded package. Keep operand width, register/memory bounds and terminal instruction behavior CPU-local; keep guest segment access, delivered faults and PIC IRQ board-local. Resolve the recorded 32-bit BOUND observation against the original baseline before changing an expectation. |
-| Non-goals | No unproven production CPU algorithm or broad decoder rewrite, new public ABI, Shared relocation, opaque lifetime, firmware, INI, MyNES or executable-input change. Other descriptor/system families belong to S42-S46. The observed 32-bit register-form BOUND internal-error defect is included as a BOUND-local semantic correction, not a new execution path. |
-| Reference Baseline | Clean pushed S40 P1 `e4a7615d1`, x64/x86 units 413/413. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assign BOUND to S41. |
+| Objective | Migrate DTTR S61, LGDT/LIDT and SGDT/SIDT. Keep instruction decode, table-register values, store widths and CPU-local rejection/rollback in CPU receivers; retain guest descriptor/table setup, segment/VM86 context, delivered faults and PIC/IRQ in board receivers. |
+| Non-goals | No speculative descriptor implementation, broad decoder rewrite, new public ABI, Shared relocation, firmware, INI, MyNES or executable-input change unless a proven in-scope production defect requires packet revision. Descriptor-system and query suites remain S43-S44. |
+| Reference Baseline | Clean pushed S41 P1 `99ab4c002`, x64/x86 units 414/414. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assign these three sources to S42. |
 | Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | `core_machine_bound_s54_smoke.c`, its CPU/board receivers, BOUND-local predecode in `src/app-nxvm/devices/cpu_instructions.c`, NXVM registration/gates, test-local fixtures and evidence. No unrelated production or Shared files without a revised packet. |
-| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU BOUND operands and terminal faults stay CPU-owned; board memory, PIC and delivered exceptions stay board-owned. No parallel execution path. |
+| Files And ABI Surface | `core_machine_dttr_s61_smoke.c`, `core_machine_lgdt_lidt_smoke.c`, `core_machine_sgdt_sidt_smoke.c`, their CPU/board receivers, NXVM registration/gates, test-local fixtures and evidence. No unrelated production or Shared files without a revised packet. |
+| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU table-register semantics stay CPU-owned; machine memory, guest descriptor construction, fault delivery and PIC routing stay board-owned. No parallel execution path. |
 | Verification | Full x64/x86 builds and repository-only unit suites; T317/T332/T337/T344, CPU/PIC authority, direct matrix, six unchanged manifests, documentation/diff checks. |
-| Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no private CPU state; every original BOUND case has an explicit receiver. Both 16-bit and 32-bit register-only forms produce `#UD`, never an internal-error diagnostic; no successful BOUND changes its behavior. |
-| Asset Needs | Repository-only test inputs; preserve the S18 local recovery artifact. The BOUND-local production correction changes EXE source input, so rebuild and verify all four runnable profiles on x64/x86. No ROM, media or INI content change. |
-| Reporting Requirements | Original BOUND case map and operand-form finding, exact changed paths and line counts, dual-width results, pushed P1 and actual-commit P2 review. |
-| Stop Conditions | Lost BOUND case, unresolved baseline disagreement, production/API requirement beyond the proven BOUND-local predecode, or scope beyond the assigned source requires packet revision before continuing. |
-| Exit Criteria | S41 CPU/board ownership proved for BOUND, all original cases retained, operand-form finding closed, mixed-owner classifications deleted where exhausted, full unit/gates and actual-commit acceptance, pushed implementation/governance Ps. |
+| Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no private CPU state; every original case has one explicit receiver. Guest table load/store, segment/VM86 and delivered-fault assertions remain board-owned. |
+| Asset Needs | Repository-only inputs; preserve the S18 local recovery artifact. No executable rebuild unless a proven production input changes. |
+| Reporting Requirements | Original case map, exact changed paths/line counts, dual-width results, pushed P1 and actual-commit P2 review. |
+| Stop Conditions | Lost table-register case, unresolved baseline disagreement, production/API requirement beyond the assigned semantics, or an oversized dependency group requires packet revision before continuing. |
+| Exit Criteria | S42 CPU/board ownership is proved for all three sources, every original case is retained, exhausted mixed-owner classifications are deleted, full unit/gates and actual-commit acceptance are complete, and P commits are pushed. |
 | Original Owner Request | Split oversized CPU migration into traceable S tasks with automatic admission, preserving semantics, original code style and single-owner architecture. |
-| Similar-Issue Sweep | Inspect BOUND across operand/address sizes, profiles, memory-only encoding, segment bounds, rollback, fault delivery and PIC/IRQ cases. S42-S54 remain pending, not presumed done. |
+| Similar-Issue Sweep | Inspect DTTR/LGDT/LIDT/SGDT/SIDT across operand/address sizes, profiles, memory-only encoding, store width, guest tables, segment/VM86, privilege/limit faults, rollback and IRQ contexts. S43-S54 remain pending, not presumed done. |
 
 ## S29 Acceptance
 
