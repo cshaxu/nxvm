@@ -953,6 +953,9 @@ endif()
 add_executable(core-machine-descriptor-system-smoke
     test/app-nxvm/unit/core/devices/core_machine_descriptor_system_smoke.c)
 target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
+add_executable(cpu-descriptor-system-smoke
+    test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c)
+target_link_libraries(cpu-descriptor-system-smoke PRIVATE x86-cpu)
 add_executable(cpu-sgdt-sidt-smoke
     test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c)
 target_link_libraries(cpu-sgdt-sidt-smoke PRIVATE x86-cpu)
@@ -1169,6 +1172,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-clts-s62-smoke|test/app-nxvm/unit/core/devices/core_machine_clts_s62_smoke.c"
     "core-machine-debug-mov-s59-smoke|test/app-nxvm/unit/core/devices/core_machine_debug_mov_s59_smoke.c"
     "cpu-dttr-s61-smoke|test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
+    "cpu-descriptor-system-smoke|test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
     "core-machine-eflags-local-smoke|test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"
     "core-machine-fpu-interface-s65-smoke|test/app-nxvm/unit/core/devices/core_machine_fpu_interface_s65_smoke.c"
@@ -1201,8 +1205,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 35)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 35 entries.")
+if(NOT project_t317_inventory_count EQUAL 36)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 36 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1229,8 +1233,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 35 OR NOT project_t317_source_count EQUAL 35)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 35 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 36 OR NOT project_t317_source_count EQUAL 36)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 36 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2115,6 +2119,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-arpl-board-smoke
     cpu-bound-smoke
     cpu-dttr-s61-smoke
+    cpu-descriptor-system-smoke
     cpu-lgdt-lidt-smoke
     cpu-sgdt-sidt-smoke
     machine-table-register-board-smoke
@@ -2263,6 +2268,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-cpu-profile-gate-smoke
     core-machine-descriptor-system-smoke
+    cpu-descriptor-system-smoke
     core-machine-debug-mov-s59-smoke
     cpu-double-shift-smoke
     cpu-enter-leave-smoke
@@ -2356,6 +2362,7 @@ set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
     core-machine-tf-db-s60-smoke)
 set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     core-machine-cpu-context-smoke
+    cpu-descriptor-system-smoke
     core-machine-fpu-escape-smoke
     core-machine-msw-s63-smoke
     core-machine-protected-16-gate-s3-smoke
