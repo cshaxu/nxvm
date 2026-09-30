@@ -11,7 +11,7 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; later packages now run through S63.
-S48 and S49 are accepted, S50 is active and S51-S63 remain pending. Earlier
+S48-S50 are accepted, S51 is active and S52-S63 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -399,19 +399,37 @@ rebuild is required for test/CMake/docs-only input.  See [S49
 evidence](../etc/evidence/t539-s49-control-transfer-branch-migration.md).
 S49 is accepted; T539 remains open for S50--S63.
 
-## S50 Active Packet
+## S50 Acceptance
+
+Actual pushed NXVM P1 `64c261cf7` retires the direct-private near-transfer
+families into one `x86-cpu` receiver: direct and register-indirect CALL,
+RET/RET-immediate, 16/32-bit forms, indirect JMP and target-limit rollback.
+The CPU fixture explicitly supplies stack and instruction-retirement inputs;
+the retained Core source has no S50 helper, invocation or marker and now
+contains only S51 far-transfer families.
+
+Six NXVM paths add 203/remove 185 lines (net +18), with no production/API,
+Shared, firmware, INI or executable input change.  Complete repository-only
+units pass 418/418 on x64 and x86.  Both specialized-gate aggregates pass,
+including T317 strict compilation, the 37-owner T332 lifecycle check and the
+105-row retained T344 matrix; documentation governance and diff checks pass.
+No EXE rebuild is required for test/CMake/docs-only input.  See [S50
+evidence](../etc/evidence/t539-s50-control-transfer-near-migration.md).
+S50 is accepted; T539 remains open for S51--S63.
+
+## S51 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S50, Continuation. |
+| Identifier Mode | M5 T539 S51, Continuation. |
 | Admission And Approval | The owner authorized automatic admission of each bounded T539 S. |
-| Objective | Retire direct-private setup from the near-call/return portion of `core_machine_control_transfer_near_far_smoke.c` while retaining every direct/indirect CALL, RET and RET-immediate behavior in one CPU-local or public-board receiver. |
-| Intake Boundary | S49 has retired branch/loop and real-mode branch forms. S50 owns the direct/indirect near CALL and RET forms, operand-size variants and target-limit atomicity. S51 retains far transfers. This keeps each receiver's owner boundary inspectable. |
-| Non-goals | No far transfer (S51), production/public API, Shared, firmware, asset, INI or EXE change; no IDT/privilege, far/data, outer return, task-switch, timing or VM86 migration outside an unavoidable direct includer closure. |
+| Objective | Retire direct-private setup from the far-transfer portion of `core_machine_control_transfer_near_far_smoke.c` while retaining immediate/indirect and real-mode far forms, selector validation and far-return behavior in correct CPU-local or public-board receivers. |
+| Intake Boundary | S49 and S50 have retired all branch and near-transfer families. S51 owns the remaining far forms and legacy FF reserved forms; after it no mixed control-transfer source remains. |
+| Non-goals | No production/public API, Shared, firmware, asset, INI or EXE change; no IDT/privilege, far/data, outer return, task-switch, timing or VM86 migration outside an unavoidable direct includer closure. |
 | Reference Baseline | S48 acceptance; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); applicable CPU and Core public-machine contracts. |
 | Verification | Affected x64/x86 targets, complete repository-only unit suite per width, specialized gates, direct-private sweep, documentation governance and `git diff --check`. |
 | Asset Needs | None; no EXE rebuild unless executable inputs change. |
-| Exit Criteria | Every S50 near-call/return family has one correct owner-local receiver; its portion is retired without leaving a private setup path; S51 retains its distinct original family exactly once; all verification passes. |
+| Exit Criteria | Every S51 far-transfer family has one correct owner-local or public-board receiver; the final mixed control-transfer source is retired without a private setup path; all verification passes. |
 
 
 ## S29 Acceptance

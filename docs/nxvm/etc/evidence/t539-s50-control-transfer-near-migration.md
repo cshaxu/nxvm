@@ -17,11 +17,16 @@ now explicit test inputs rather than side effects of hidden Core setup.
 The retained Core source contains only S51 far-transfer families after this
 migration.  It has no near CALL/RET helper, invocation or success marker.
 
-## Acceptance evidence to complete this S
+## Acceptance evidence
 
-- Both widths build and run the CPU near receiver and retained far receiver.
-- Complete repository-only units and specialized gates pass on both widths.
-- T317/T332 inventories recognize the CPU-local receiver; no #UD category is
-  claimed because S50 has no #UD scenario.
-- Documentation governance and `git diff --check` pass.  This is test/CMake/
-  documentation work only, so no executable input or EXE rebuild is required.
+P1 `64c261cf7` changes six NXVM paths: 203 additions and 185 removals
+(net +18).  `git show --check` and the final worktree `git diff --check` pass.
+
+- x64 and x86 build and run the CPU near receiver and retained far receiver.
+- Complete repository-only unit suites pass 418/418 on x64 (61.95 seconds)
+  and x86 (56.22 seconds).
+- Both specialized-gate aggregates pass.  T317 compiles the new receiver with
+  strict warnings; T332 recognizes 37 lifecycle owners; T344 retains its
+  105 direct-constructor rows.  S50 makes no #UD claim because it has none.
+- Documentation governance passes.  This is test/CMake/documentation work
+  only, so no executable input changes and no EXE rebuild is required.
