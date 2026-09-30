@@ -889,16 +889,9 @@ target_link_libraries(core-machine-debug-mov-s59-smoke PRIVATE core-machine)
 add_executable(core-machine-tf-db-s60-smoke
     test/app-nxvm/unit/core/devices/core_machine_tf_db_s60_smoke.c)
 target_link_libraries(core-machine-tf-db-s60-smoke PRIVATE core-machine)
-add_executable(core-machine-dttr-s61-smoke
-    test/app-nxvm/unit/core/devices/core_machine_dttr_s61_smoke.c)
-target_link_libraries(core-machine-dttr-s61-smoke PRIVATE core-machine)
 add_executable(cpu-dttr-s61-smoke
     test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c)
 target_link_libraries(cpu-dttr-s61-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-dttr-s61-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(core-machine-clts-s62-smoke
     test/app-nxvm/unit/core/devices/core_machine_clts_s62_smoke.c)
 target_link_libraries(core-machine-clts-s62-smoke PRIVATE core-machine)
@@ -960,26 +953,12 @@ endif()
 add_executable(core-machine-descriptor-system-smoke
     test/app-nxvm/unit/core/devices/core_machine_descriptor_system_smoke.c)
 target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
-add_executable(core-machine-sgdt-sidt-smoke
-    test/app-nxvm/unit/core/devices/core_machine_sgdt_sidt_smoke.c)
-target_link_libraries(core-machine-sgdt-sidt-smoke PRIVATE core-machine)
 add_executable(cpu-sgdt-sidt-smoke
     test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c)
 target_link_libraries(cpu-sgdt-sidt-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-sgdt-sidt-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(core-machine-lgdt-lidt-smoke
-    test/app-nxvm/unit/core/devices/core_machine_lgdt_lidt_smoke.c)
-target_link_libraries(core-machine-lgdt-lidt-smoke PRIVATE core-machine)
 add_executable(cpu-lgdt-lidt-smoke
     test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c)
 target_link_libraries(cpu-lgdt-lidt-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-lgdt-lidt-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(machine-table-register-board-smoke
     test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c)
 target_link_libraries(machine-table-register-board-smoke PRIVATE core-machine)
@@ -1189,7 +1168,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c"
     "core-machine-clts-s62-smoke|test/app-nxvm/unit/core/devices/core_machine_clts_s62_smoke.c"
     "core-machine-debug-mov-s59-smoke|test/app-nxvm/unit/core/devices/core_machine_debug_mov_s59_smoke.c"
-    "core-machine-dttr-s61-smoke|test/app-nxvm/unit/core/devices/core_machine_dttr_s61_smoke.c"
+    "cpu-dttr-s61-smoke|test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
     "core-machine-eflags-local-smoke|test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"
     "core-machine-fpu-interface-s65-smoke|test/app-nxvm/unit/core/devices/core_machine_fpu_interface_s65_smoke.c"
@@ -1201,6 +1180,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-iret-outer-s52-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_outer_s52_smoke.c"
     "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
     "core-machine-lar-lsl-s57-smoke|test/app-nxvm/unit/core/devices/core_machine_lar_lsl_s57_smoke.c"
+    "cpu-lgdt-lidt-smoke|test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c"
     "core-machine-lea-smoke|test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
     "core-machine-legacy-sreg-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c"
     "core-machine-les-lds-s41-smoke|test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c"
@@ -1215,13 +1195,14 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-sign-extend-smoke|test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c"
     "core-machine-software-int-s50-smoke|test/app-nxvm/unit/core/devices/core_machine_software_int_s50_smoke.c"
     "core-machine-sreg-mov-smoke|test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c"
+    "cpu-sgdt-sidt-smoke|test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c"
     "core-machine-tf-db-s60-smoke|test/app-nxvm/unit/core/devices/core_machine_tf_db_s60_smoke.c"
     "core-machine-verr-verw-s58-smoke|test/app-nxvm/unit/core/devices/core_machine_verr_verw_s58_smoke.c"
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 33)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 33 entries.")
+if(NOT project_t317_inventory_count EQUAL 35)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 35 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1248,8 +1229,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 33 OR NOT project_t317_source_count EQUAL 33)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 33 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 35 OR NOT project_t317_source_count EQUAL 35)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 35 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2113,7 +2094,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-lar-lsl-s57-smoke
     core-machine-verr-verw-s58-smoke
     core-machine-tf-db-s60-smoke
-    core-machine-dttr-s61-smoke
     core-machine-clts-s62-smoke
     core-machine-msw-s63-smoke
     core-machine-control-transfer-smoke
@@ -2125,8 +2105,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-protected-16-outer-iret-s6-smoke
     core-machine-protected-16-call-gate-s7-smoke
     core-machine-descriptor-system-smoke
-    core-machine-sgdt-sidt-smoke
-    core-machine-lgdt-lidt-smoke
     core-machine-vm86-delivery-smoke
     core-machine-vm86-iret-smoke
     core-machine-interrupt-entry-smoke
@@ -2308,7 +2286,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-legacy-sreg-stack-smoke
     cpu-les-lds-s41-smoke
     cpu-les-lds-smoke
-    core-machine-lgdt-lidt-smoke
     cpu-lods-smoke
     cpu-lss-lfs-lgs-smoke
     cpu-moffs-smoke
@@ -2332,7 +2309,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-prefix-attributes-s64-smoke
     cpu-bit-scan-smoke
     cpu-setcc-smoke
-    core-machine-sgdt-sidt-smoke
     cpu-sign-extend-smoke
     core-machine-software-int-s50-smoke
     cpu-sreg-mov-smoke
@@ -3562,7 +3538,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-lgdt-lidt-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-cpu-pic-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-control-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

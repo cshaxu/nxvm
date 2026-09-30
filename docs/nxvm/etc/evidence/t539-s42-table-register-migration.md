@@ -1,7 +1,7 @@
 # M5 T539 S42 table-register migration map
 
-This working map records receiver ownership before the three original private
-machine smokes are retired.  It is not S42 acceptance evidence.
+This working map records receiver ownership for the three retired private
+machine smokes. It is not S42 acceptance evidence.
 
 | Original family | Receiver | Status |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ machine smokes are retired.  It is not S42 acceptance evidence.
 | LGDT/LIDT segment source | `machine-table-register-board-smoke` | migrated |
 | LGDT/LIDT source-limit rollback | `machine-table-register-board-smoke` | migrated |
 | LGDT post-load descriptor consumer | `machine-table-register-board-smoke` | migrated |
-| LGDT/LIDT protected CPL rejection and exception gate | board receiver | pending |
+| LGDT/LIDT protected CPL rejection and exception gate | `machine-table-register-board-smoke` | migrated |
 | SGDT/SIDT 286/386 store images, 66h/67h attributes | `cpu-sgdt-sidt-smoke` | migrated |
 | SGDT/SIDT real segment routes and VM86 store context | `cpu-sgdt-sidt-smoke` | migrated |
 | SGDT/SIDT invalid forms | `cpu-sgdt-sidt-smoke` | migrated |
@@ -22,10 +22,22 @@ machine smokes are retired.  It is not S42 acceptance evidence.
 | SGDT/SIDT DOS 80286/80386 discriminator | `machine-table-register-board-smoke` | migrated |
 | All four instructions with a pending PIC IRQ | `machine-table-register-board-smoke` | migrated |
 
-The original three sources remain the baseline until every pending board row
-has a public-machine receiver.  No row may be dropped during retirement.
+All original rows have one receiver, so the three original sources and their
+registrations are retired by this change. No row was dropped.
 
-Current x64 interim check: the three baseline smokes and the four new
-receivers pass together (7/7); the complete repository-only x64 unit set was
-then run with 418 registered unit tests.  These results are interim only:
-S42 remains open until the pending board rows replace the private sources.
+## Implementation Verification
+
+- Four receivers pass directly on x64 and x86:
+  `M5:T539:S42:DTTR-CPU:OK`, `LGDT-LIDT-CPU:OK`,
+  `SGDT-SIDT-CPU:OK`, and `TABLE-REGISTER-BOARD:OK`.
+- Repository-only unit suites pass once per width: **415/415** on x64 and
+  **415/415** on x86.
+- The complete specialized-gate aggregate passes once per width: **66/66**.
+  It includes the updated T317 35-owner strict-command audit, T332 fixture
+  lifecycle audit, T344 constructor/direct-compilation audits and CPU/PIC
+  authority closure.
+- The product EXE relinked while x86 tests were built, but because no
+  production input changed it was restored to its pre-S42 Git byte stream.
+
+Actual-commit review and acceptance remain separate from this implementation
+evidence.

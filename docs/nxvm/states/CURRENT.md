@@ -223,8 +223,10 @@ unchanged Shared manifests, documentation governance and diff checks pass.
 Because CPU production changed, all four runnable profiles have rebuilt,
 optimized, stripped T539 x64/x86 EXEs; their hashes and no-INI-change proof
 are recorded in [S41 evidence](../etc/evidence/t539-s41-bound-migration.md).
-S41 is accepted; 55 direct-private `.c` consumers plus the shared fixture
-header remain assigned to S42-S51. T539 remains open.
+S41 is accepted; S42 has retired its three table-register sources and passed
+dual-width verification, awaiting actual-commit review. On acceptance, 52
+direct-private `.c` consumers plus the shared fixture header remain assigned to
+S43-S51. T539 remains open.
 
 ## S42 Active Packet
 
@@ -236,7 +238,7 @@ header remain assigned to S42-S51. T539 remains open.
 | Non-goals | No speculative descriptor implementation, broad decoder rewrite, new public ABI, Shared relocation, firmware, INI, MyNES or executable-input change unless a proven in-scope production defect requires packet revision. Descriptor-system and query suites remain S43-S44. |
 | Reference Baseline | Clean pushed S41 P1 `99ab4c002`, x64/x86 units 414/414. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assign these three sources to S42. |
 | Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | `core_machine_dttr_s61_smoke.c`, `core_machine_lgdt_lidt_smoke.c`, `core_machine_sgdt_sidt_smoke.c`, their CPU/board receivers, NXVM registration/gates, test-local fixtures and evidence. No unrelated production or Shared files without a revised packet. |
+| Files And ABI Surface | Retired `core_machine_dttr_s61_smoke.c`, `core_machine_lgdt_lidt_smoke.c` and `core_machine_sgdt_sidt_smoke.c`; their CPU/board receivers, NXVM registration/gates, test-local fixtures and evidence. No unrelated production or Shared files without a revised packet. |
 | Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU table-register semantics stay CPU-owned; machine memory, guest descriptor construction, fault delivery and PIC routing stay board-owned. No parallel execution path. |
 | Verification | Full x64/x86 builds and repository-only unit suites; T317/T332/T337/T344, CPU/PIC authority, direct matrix, six unchanged manifests, documentation/diff checks. |
 | Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no private CPU state; every original case has one explicit receiver. Guest table load/store, segment/VM86 and delivered-fault assertions remain board-owned. |

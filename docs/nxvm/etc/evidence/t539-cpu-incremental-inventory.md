@@ -285,9 +285,17 @@ records the receiving map and dual-width verification.
 
 ### S42: Table-register instructions, 3 matching files
 
-- `core_machine_dttr_s61_smoke.c`
-- `core_machine_lgdt_lidt_smoke.c`
-- `core_machine_sgdt_sidt_smoke.c`
+- `core_machine_dttr_s61_smoke.c` (retired by S42)
+- `core_machine_lgdt_lidt_smoke.c` (retired by S42)
+- `core_machine_sgdt_sidt_smoke.c` (retired by S42)
+
+S42 moves instruction-local forms, attributes, invalid encodings and local
+rollback to the three CPU receivers. It moves actual guest table construction,
+memory source/store boundaries, privilege delivery, descriptor consumption and
+PIC context to `machine_table_register_board_smoke.c`. The pending direct-
+private `.c` count falls from 55 to 52, plus the shared fixture header. Its
+receiving map and final verification are recorded in
+[S42 evidence](t539-s42-table-register-migration.md).
 
 ### S43: Descriptor system, 1 matching file
 

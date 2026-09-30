@@ -480,6 +480,111 @@ static lib_i32 table_register_board_lgdt_consumer(void)
     return !failed;
 }
 
+/* Establish user CPL through the real outer IRET path.  The user instruction
+ * must fault through the ring-0 #GP gate; debug never manufactures CPL 3. */
+static lib_i32 table_register_board_cpl_reject(void)
+{
+    static const lib_u8 gdt_pointer[] = {0x2fu,0,0,0x03u,0,0};
+    static const lib_u8 idt_pointer[] = {0x07u,0x01u,0,0x04u,0,0};
+    static const lib_u8 gdt[] = {
+        0,0,0,0,0,0,0,0,
+        0xffu,0xffu,0,0x20u,0,0x9au,0,0,
+        0xffu,0xffu,0,0,0,0x92u,0,0,
+        0xffu,0xffu,0,0x30u,0,0xfau,0,0,
+        0xffu,0xffu,0,0,0,0xf2u,0,0,
+        0x2bu,0,0,0x05u,0,0x81u,0,0
+    };
+    static const lib_u8 bootstrap[] = {
+        0x0fu,0x01u,0x16u,0x00u,0x01u,
+        0x0fu,0x01u,0x1eu,0x10u,0x01u,
+        0xb8u,0x01u,0,0x0fu,0x01u,0xf0u,
+        0xb8u,0x10u,0,0x8eu,0xd0u,0xbcu,0,0x90u,
+        0xb8u,0x28u,0,0x0fu,0,0xd8u,
+        0x68u,0x23u,0,0x68u,0,0x80u,0x9cu,
+        0x68u,0x1bu,0,0x68u,0,0xcfu
+    };
+    static const lib_u8 handler = 0xf4u;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    lib_u8 profile, operation;
+
+    for (profile = 0u; profile != 2u; ++profile) for (operation = 0u;
+        operation != 2u; ++operation) {
+        const core_machine_config config = {
+            .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+            .cpu_profile = profiles[profile], .fpu_profile = X86_FPU_PROFILE_NONE
+        };
+        const core_machine_debug_register_patch entry = {
+            .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+                CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP),
+            .values = {[CORE_MACHINE_DEBUG_ESP] = 0x9000u}
+        };
+        lib_u8 user_code[] = {
+            0xb8u,0x23u,0,0x8eu,0xd8u,0x0fu,0x01u,0x16u,0,0x06u
+        };
+        lib_u8 idt[0x108u] = {0};
+        lib_u8 tss[6] = {0};
+        lib_u8 source[6] = {0x5au,0x5au,0x5au,0x5au,0x5au,0x5au};
+        core_machine *machine = LIB_NULL;
+        core_machine_run_result result = {0};
+        core_machine_cpu_diagnostic diagnostic = {0};
+        core_machine_debug_cpu_snapshot after = {0};
+        lib_u16 sp0 = 0x9000u, ss0 = 0x0010u;
+        lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK;
+
+        user_code[7u] |= operation << 3u;
+        idt[13u * 8u + 1u] = 0x01u;
+        idt[13u * 8u + 2u] = 0x08u;
+        idt[13u * 8u + 5u] = profiles[profile] ==
+            CORE_MACHINE_CPU_PROFILE_80286 ? 0x86u : 0x8eu;
+        lib_memory_copy(tss + 2u, &sp0, sizeof(sp0));
+        lib_memory_copy(tss + 4u, &ss0, sizeof(ss0));
+        if (!failed)
+            failed = core_machine_debug_patch_registers(machine, &entry) !=
+                    LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x0100u, gdt_pointer,
+                    sizeof(gdt_pointer)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x0110u, idt_pointer,
+                    sizeof(idt_pointer)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) !=
+                    LIB_STATUS_OK || core_machine_memory_write(machine, 0x0400u,
+                    idt, sizeof(idt)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x0500u, tss, sizeof(tss)) !=
+                    LIB_STATUS_OK || core_machine_memory_write(machine, 0u,
+                    bootstrap, sizeof(bootstrap)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x3000u, user_code,
+                    sizeof(user_code)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x2100u, &handler,
+                    sizeof(handler)) != LIB_STATUS_OK ||
+                core_machine_memory_write(machine, 0x0600u, source,
+                    sizeof(source)) != LIB_STATUS_OK ||
+                test_core_machine_fixture_run_after_delivery(machine,
+                    (core_machine_run_budget){64u,0u}, &result) != LIB_STATUS_OK ||
+                core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
+                    LIB_STATUS_OK || core_machine_debug_capture_cpu_snapshot(machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+        if (!failed)
+            failed = result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                diagnostic.first_fault.valid ||
+                !diagnostic.last_delivered_exception.valid ||
+                !(diagnostic.last_delivered_exception.exception_mask &
+                    VCPUINS_EXCEPT_GP) || after.eip != 0x0101u ||
+                after.cs.selector != 0x0008u || after.gdtr.base != 0x0300u ||
+                after.gdtr.limit != 0x002fu || after.idtr.base != 0x0400u ||
+                after.idtr.limit != 0x0107u;
+        core_machine_destroy(machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
 lib_i32 main(void)
 {
     static const lib_u8 sgdt[] = {0x0fu,0x01u,0x06u,0x00u,0x30u};
@@ -496,10 +601,11 @@ lib_i32 main(void)
     lib_i32 g = table_register_board_source_limit();
     lib_i32 h = table_register_board_dos_sgdt_discriminator();
     lib_i32 i = table_register_board_lgdt_consumer();
+    lib_i32 j = table_register_board_cpl_reject();
 
-    if (!a || !b || !c || !d || !e || !f || !g || !h || !i) {
-        fprintf(stderr, "M5:T539:S42:table-register board failed sgdt=%d sidt=%d lgdt=%d lidt=%d ltr=%d segments=%d limit=%d dos=%d consumer=%d\n",
-            a, b, c, d, e, f, g, h, i);
+    if (!a || !b || !c || !d || !e || !f || !g || !h || !i || !j) {
+        fprintf(stderr, "M5:T539:S42:table-register board failed sgdt=%d sidt=%d lgdt=%d lidt=%d ltr=%d segments=%d limit=%d dos=%d consumer=%d cpl=%d\n",
+            a, b, c, d, e, f, g, h, i, j);
         return 1;
     }
     puts("M5:T539:S42:TABLE-REGISTER-BOARD:OK");
