@@ -28,6 +28,7 @@ typedef enum task_switch_case {
     TASK_SWITCH_CASE_SHORT_TSS,
     TASK_SWITCH_CASE_STACK_LIMIT,
     TASK_SWITCH_CASE_INDIRECT_SUCCESS,
+    /* S59's 80386 timing includer still uses these construction recipes. */
     TASK_SWITCH_CASE_OPERAND32_SUCCESS,
     TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS,
     TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS,
@@ -295,41 +296,6 @@ static lib_i32 task_switch_install(task_switch_fixture *fixture,
                 indirect_pointer32, sizeof(indirect_pointer32))) &&
         write_bytes(fixture->machine, KERNEL_BASE + 0x100u, task_b_code,
             sizeof(task_b_code));
-}
-
-/* S56 retains only the four 80386 operand/address-size task-JMP forms. */
-static lib_i32 task_switch_expect_switch32(task_switch_case test_case)
-{
-    task_switch_fixture fixture;
-    core_machine_run_result result;
-    core_machine_cpu_diagnostic diagnostic;
-    t_cpu cpu;
-    lib_u16 marker = 0u;
-    lib_u16 saved_ip = 0u;
-    const lib_u16 expected_ip = test_case == TASK_SWITCH_CASE_OPERAND32_SUCCESS ?
-        0x000bu : test_case == TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS ?
-        0x0008u : test_case == TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS ?
-        0x000au : 0x000bu;
-    const core_machine_run_budget budget = {128u, 0u};
-    lib_i32 failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
-
-    if (!failed) {
-        failed |= !task_switch_install(&fixture, test_case) ||
-            core_machine_run(fixture.machine, budget, &result) != LIB_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-        cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
-        failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-            LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            diagnostic.last_delivered_exception.valid ||
-            core_machine_memory_read(fixture.machine, 0x3000u, &marker,
-                sizeof(marker)) != LIB_STATUS_OK || marker != 0x2222u ||
-            core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x0eu,
-                &saved_ip, sizeof(saved_ip)) != LIB_STATUS_OK ||
-            saved_ip != expected_ip || !cpu.data.tr.flagValid ||
-            cpu.data.tr.selector != 0x0030u || cpu.data.eax != 0xffff2222u;
-    }
-    core_machine_destroy(fixture.machine);
-    return failed;
 }
 
 typedef struct task_switch_smoke_tss32_selector {
@@ -1145,10 +1111,6 @@ int main(void)
 {
     lib_i32 failed = 0;
 
-    failed |= task_switch_expect_switch32(TASK_SWITCH_CASE_OPERAND32_SUCCESS);
-    failed |= task_switch_expect_switch32(TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS);
-    failed |= task_switch_expect_switch32(TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS);
-    failed |= task_switch_expect_switch32(TASK_SWITCH_CASE_INDIRECT_OPERAND_ADDRESS32_SUCCESS);
     failed |= task_switch_expect_t330_16_to_32(LIB_FALSE, LIB_FALSE,
         LIB_FALSE);
     failed |= task_switch_expect_t330_16_to_32(LIB_TRUE, LIB_FALSE,

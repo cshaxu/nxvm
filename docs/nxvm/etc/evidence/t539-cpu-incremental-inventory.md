@@ -369,10 +369,16 @@ complete receiving map and dual-width verification are recorded in
 
 - The 16-bit/task-gate contexts of `core_machine_task_switch_smoke.c` are
   retired into the CPU-only `cpu_task_switch16_smoke.c` and public
-  PIC-board `machine_task_switch16_pic_board_smoke.c` receivers. S56 retains
-  only four 80386 operand/address-size forms in the original source.
+  PIC-board `machine_task_switch16_pic_board_smoke.c` receivers.
 
-### S56: residual task-switch half, 1 matching file
+### S56a: accepted 80386 task-JMP decode, 1 matching file
+
+- The four functional `66h`/`67h` task-JMP rows are retired into CPU-only
+  `cpu_task_switch32_decode_smoke.c`, sharing the S55 CPU fixture rather than
+  duplicating a TSS image. The original construction recipes remain only for
+  the S59 80386 timing-runner includer; its original functional calls are gone.
+
+### S56b-S56d: residual task-switch half, 1 matching file
 
 - `core_machine_task_switch_smoke.c`
 

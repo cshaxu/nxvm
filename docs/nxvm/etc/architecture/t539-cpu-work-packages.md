@@ -99,7 +99,10 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S53 | Accepted: the protected far/data pair moved into CPU-local `cpu_protected_far_smoke.c` / `cpu_protected_data_access_smoke.c`, with separate PIC board receivers for each no-shadow delivery case. Selector/cache validation, data accesses and atomic fault boundaries remain covered. |
 | S54 | Outer return pair: `core_machine_iret_outer_s52_smoke.c` and `core_machine_protected_return_atomicity_smoke.c` (1,003 lines, including its includer closure). Preserve return frames and all-or-nothing failure behavior. |
 | S55 | Task-switch 16-bit/task-gate half of `core_machine_task_switch_smoke.c` (through the 16-bit and task-gate families). Preserve task-stack, nested-task and task-gate rules without moving the later cross-width rows. |
-| S56 | Task-switch 32-bit/cross-width half of `core_machine_task_switch_smoke.c`. Preserve 16↔32 TSS transitions, direct 32-bit TSS forms and their fault/IRQ ordering. |
+| S56a | Task-switch 32-bit decode: retire the four operand/address-size task-JMP forms from `core_machine_task_switch_smoke.c`. Keep the receiver CPU-local; do not carry TSS32 rejection, board IRQ delivery or cross-width images into this package. |
+| S56b | Task-switch TSS32 baseline/fault state: retire direct-TSS32 baseline, descriptor, LDT and fault rows into a CPU receiver. Exclude paging/debug/LOCK/nesting and public IRQ delivery. |
+| S56c | Task-switch TSS32 observable delivery: retire direct-TSS32 paging/debug, LOCK, nested/call/task-gate and pending-IRQ rows. Keep CPU state in the CPU receiver and use one public board receiver only for real PIC acknowledgement/order. |
+| S56d | Cross-width task state: retire the 16↔32 TSS transition and task-return rows. Preserve old/new TSS image width, backlink/nested state and return semantics without duplicating S55's 16-bit baseline. |
 | S57 | TSS I/O-map port source: `core_machine_tss_iomap_port_smoke.c` (291 lines). Preserve CPL/I/O-map authorization separately from task-switch state construction. |
 | S58 | Interrupt/VM86 dependency group: CLI/STI with HLT/INT/IRET/composition includers; protected IRET; interrupt-entry; VM86 delivery/IRET/table-load and hardware delivery. Migrate shared fixtures with all includers in one package. Preserve NMI/IRQ priority, masking, fault escalation and frames. |
 | S59 | Timing corpus: 8086/80186/80286/80386 ledgers and manifest runners, protected I/O, `core_machine_call_gate_smoke.c` as the 80286 runner includer, and T359/normalization suites. Preserve all formula/catalog rows and measured deltas; remove generated production catalog dependency. |
@@ -108,7 +111,10 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S62 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
 | S63 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
-S19-S58 migrate consumers before S59; S60 follows S59. Existing in-progress edits
+S19-S58 migrate consumers before S59; S60 follows S59. S56 is deliberately
+subdivided into S56a-S56d: its original direct-TSS32 source combines decode,
+state-image, public IRQ and cross-width responsibilities that cannot be
+reviewed or verified as one bounded receiver package. Existing in-progress edits
 are inputs to these packages, not a reason to rerun or rewrite a verified
 algorithm. At admission, each brief lists exact files, original cases, includers
 and target-specific P boundaries. If a row proves oversized, subdivide it before

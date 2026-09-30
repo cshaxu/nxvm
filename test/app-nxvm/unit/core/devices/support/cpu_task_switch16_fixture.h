@@ -27,7 +27,11 @@ typedef enum cpu_task16_case {
     CPU_TASK16_STACK_LIMIT,
     CPU_TASK16_IDT_GATE,
     CPU_TASK16_DOUBLE_FAULT_GATE,
-    CPU_TASK16_INDIRECT
+    CPU_TASK16_INDIRECT,
+    CPU_TASK16_OPERAND32,
+    CPU_TASK16_INDIRECT_OPERAND32,
+    CPU_TASK16_INDIRECT_ADDRESS32,
+    CPU_TASK16_INDIRECT_OPERAND_ADDRESS32
 } cpu_task16_case;
 
 static inline void cpu_task16_set_gate(lib_u8 *idt, lib_u8 vector,
@@ -68,7 +72,8 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     lib_u8 state[sizeof(target_state)];
     lib_u8 idt[0x70u] = {0};
     lib_u8 target_code[sizeof(target_code_base)];
-    lib_u8 source[] = {0xb8u,0x11u,0x11u,0xeau,0,0,0x30u,0,0xf4u};
+    lib_u8 source[12u] = {0xb8u,0x11u,0x11u,0xeau,0,0,0x30u,0,0xf4u};
+    lib_size source_bytes = 9u;
     t_cpu *const cpu = &fixture->cpu;
 
     lib_memory_copy(gdt, gdt_base, sizeof(gdt));
@@ -117,6 +122,50 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
         fixture->memory[0x5201u] = 0u;
         fixture->memory[0x5202u] = 0x30u;
         fixture->memory[0x5203u] = 0u;
+    }
+    if (test_case == CPU_TASK16_OPERAND32) {
+        const lib_u8 operand32[] = {
+            0xb8u,0x11u,0x11u,0x66u,0xeau,0,0,0,0,0x30u,0u
+        };
+        lib_memory_copy(source, operand32, sizeof(operand32));
+        source_bytes = sizeof(operand32);
+    }
+    if (test_case == CPU_TASK16_INDIRECT_OPERAND32) {
+        const lib_u8 operand32[] = {
+            0xb8u,0x11u,0x11u,0x66u,0xffu,0x2eu,0,0x22u
+        };
+        lib_memory_copy(source, operand32, sizeof(operand32));
+        source_bytes = sizeof(operand32);
+        fixture->memory[0x5200u] = 0u;
+        fixture->memory[0x5201u] = 0u;
+        fixture->memory[0x5202u] = 0u;
+        fixture->memory[0x5203u] = 0u;
+        fixture->memory[0x5204u] = 0x30u;
+        fixture->memory[0x5205u] = 0u;
+    }
+    if (test_case == CPU_TASK16_INDIRECT_ADDRESS32 ||
+        test_case == CPU_TASK16_INDIRECT_OPERAND_ADDRESS32) {
+        const lib_u8 address32[] = {
+            0xb8u,0x11u,0x11u,0x67u,0xffu,0x2du,0,0x22u,0,0
+        };
+        const lib_u8 operand_address32[] = {
+            0xb8u,0x11u,0x11u,0x66u,0x67u,0xffu,0x2du,0,0x22u,0,0
+        };
+        const lib_u8 *const encoded = test_case == CPU_TASK16_INDIRECT_ADDRESS32 ?
+            address32 : operand_address32;
+
+        source_bytes = test_case == CPU_TASK16_INDIRECT_ADDRESS32 ?
+            sizeof(address32) : sizeof(operand_address32);
+        lib_memory_copy(source, encoded, source_bytes);
+        fixture->memory[0x5200u] = 0u;
+        fixture->memory[0x5201u] = 0u;
+        fixture->memory[0x5202u] = test_case ==
+            CPU_TASK16_INDIRECT_OPERAND_ADDRESS32 ? 0u : 0x30u;
+        fixture->memory[0x5203u] = 0u;
+        if (test_case == CPU_TASK16_INDIRECT_OPERAND_ADDRESS32) {
+            fixture->memory[0x5204u] = 0x30u;
+            fixture->memory[0x5205u] = 0u;
+        }
     }
     if (test_case == CPU_TASK16_INVALID) source[6] = 0x40u;
     if (test_case == CPU_TASK16_NOT_PRESENT) gdt[6u * 8u + 5u] = 0x01u;
@@ -172,7 +221,7 @@ static inline void cpu_task16_configure(cpu_instruction_fixture *fixture,
     lib_memory_copy(fixture->memory + CPU_TASK16_CODE_BASE + 0x100u,
         target_code, sizeof(target_code));
     lib_memory_copy(fixture->memory + CPU_TASK16_CODE_BASE, source,
-        sizeof(source));
+        source_bytes);
     cpu->data.cr0 |= VCPU_CR0_PE;
     cpu->data.gdtr.flagValid = LIB_TRUE;
     cpu->data.gdtr.sregtype = SREG_GDTR;
