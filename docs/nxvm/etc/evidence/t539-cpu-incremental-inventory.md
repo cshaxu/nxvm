@@ -312,10 +312,18 @@ The two matching mixed sources are retired. Their instruction-local cases now
 belong to `cpu_lar_lsl_smoke.c` and `cpu_verr_verw_smoke.c`; the retained 80386
 timing runner owns the LSL page-granularity rows.
 
-### S45: Control state, 2 matching files
+### S45: Control state, accepted
 
 - `core_machine_clts_s62_smoke.c`
 - `core_machine_msw_s63_smoke.c`
+- `dt_test_msw_and_control_registers()` in
+  `core_machine_descriptor_system_smoke.c` (the sole retained S43 block)
+
+The two complete mixed sources and the retained block are retired.  The
+CPU-local receiver owns instruction semantics; the public Core/PIC receiver
+owns machine-observable IRQ, interrupt-frame and board-option cases.  The
+complete receiving map and dual-width verification are recorded in
+[S45 evidence](t539-s45-control-state-migration.md).
 
 ### S46: Debug state, 2 matching files
 

@@ -2,13 +2,13 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S44 are accepted. S43 P1 `4ff59cd5c` establishes its
+M5 T539 remains open. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
 its oversized FLAGS/string/port row was divided into S36-S39. At S40 intake,
 the 7,736-line descriptor/system row was divided into S40-S46 and the formerly planned
-S41-S48 became S47-S54. S45-S54 remain pending. Earlier
+S41-S48 became S47-S54. S46-S54 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -272,6 +272,37 @@ T337, T344, T388, CPU/PIC authority, direct matrix, manifest and documentation
 governance gates. The focused timing runner passes on x86; S44 evidence records
 the receiver map and verification. S44 is accepted; S45 owns control state and
 T539 remains open.
+
+## S45 Acceptance
+
+| Field | Contract |
+| --- | --- |
+| Identifier / mode | M5 T539 S45, accepted implementation. |
+| Admission and approval | The owner granted automatic admission for each bounded T539 S. This packet admits the next bounded CPU-control-state batch. |
+| Objective | Retire direct-private CPU access from CLTS/SMSW/LMSW/MOV-CR control-state tests while retaining one CPU-local or public-board receiver for every original case. |
+| Precise scope | Consume `core_machine_clts_s62_smoke.c`, `core_machine_msw_s63_smoke.c`, and only `dt_test_msw_and_control_registers()` from `core_machine_descriptor_system_smoke.c`. Cover CR0 TS/PE effects, CR2/CR3 reads and writes, real/protected/VM86 and CPL behavior, register and memory operands, prefixes/LOCK, faults and IRQ delivery. |
+| Non-goals | No CPU production change, new public API, Shared change, firmware/asset/INI/EXE update, timing reinterpretation, or migration of any remaining descriptor-system case. |
+| Reference baseline | `CURRENT.md`; `t539-cpu-work-packages.md`; `t539-cpu-incremental-inventory.md`; S43/S44 evidence; the existing x86 CPU and public Core-machine test contracts. |
+| Candidate implementation | Move instruction-local control semantics to an `x86-cpu` receiver using CPU-only fixtures. Retain actual fault delivery, memory boundary and PIC IRQ observations in public Core-machine receivers. Delete the old private sources only after the exact map is complete. |
+| Files and ABI surface | Test, CMake gate, task-state and evidence paths only. Production and ABI surface remain unchanged. |
+| Applicable rules | NXVM architecture/coding/documentation guides and shared execution, architecture, coding and documentation rules named by `docs/nxvm/README.md`. |
+| Verification | Both affected targets build and pass on x86/x64; repository-only units pass 416/416 per width; T317/T332/T337/T344/T345, CPU/PIC authority, direct-matrix, manifest, documentation and diff gates pass. |
+| Expected markers | Retain `M5:T316:S62:CLTS:OK` and `M5:T316:S63:MSW:OK`, or record their exact successor receiver markers in the evidence map. |
+| Asset needs | None; repository-only unit fixtures only. No executable rebuild is required. |
+| Reporting requirements | Record a complete original-case-to-receiver map, counted test-path delta, retained owner path, focused and full verification, and a similar-issue sweep. |
+| Stop conditions | Stop for a new production/ABI requirement, an unmapped original case, a disagreement between retained behavior and the CPU authority, or any necessary scope beyond the named control-state cases. |
+| Exit criteria | All named original cases have exactly one receiver; no named source retains direct-private CPU access; no duplicate production path is introduced; required verification and actual-change review pass. |
+| Original owner request | Split CPU migration into small, traceable S tasks; automatically admit each, preserve clean ownership boundaries, and avoid patch-on-patch extraction. |
+| Similar-issue sweep | Audit CLTS/SMSW/LMSW/MOV CR across all supported CPU profiles, operand and prefix forms, CR0/CR2/CR3 effects, privilege/VM86/fault rollback, memory and PIC delivery. |
+
+The two complete mixed sources and the retained descriptor-system block are
+retired with no duplicate execution path.  The CPU receiver owns only
+instruction-local state; the public board receiver owns actual PIC delivery,
+interrupt frames and the existing early-80386 board option.  The exact map and
+dual-width evidence are recorded in
+[S45 evidence](../etc/evidence/t539-s45-control-state-migration.md). T539
+remains open for S46 and later packets.
+
 
 ## S29 Acceptance
 

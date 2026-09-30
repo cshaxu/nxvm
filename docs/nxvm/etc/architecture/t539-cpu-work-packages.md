@@ -88,7 +88,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S42 | Table-register instructions: DTTR S61, LGDT/LIDT and SGDT/SIDT; three sources, 1,367 lines. Retain guest table loads, store width, segment/VM86 and IRQ/fault contexts. |
 | S43 | Accepted: descriptor-system cases moved to their CPU-only receiver; complete descriptor/table/cache/rollback coverage remains. The source's `SMSW/LMSW/CLTS/MOV CR` control-state block stays once in S45. |
 | S44 | Accepted: descriptor queries moved from two 1,748-line mixed sources to CPU-local LAR/LSL and VERR/VERW receivers. The retained 80386 board timing runner owns LSL's 21/25/22/26 page-granularity rows; public receivers retain descriptor-table, fault and IRQ behavior. |
-| S45 | Control state: CLTS S62 and MSW S63; two sources, 726 lines. Preserve CR0/TS/PE, privilege, memory and interrupt cases. |
+| S45 | Accepted: control state moved from CLTS S62, MSW S63 and the retained descriptor-system block to one CPU-local receiver and one public Core/PIC board receiver. Preserve CR0/TS/PE, CR2/CR3, privilege, memory and interrupt cases. |
 | S46 | Debug state: MOV DR S59 and TF/#DB S60; two sources, 1,006 lines. Preserve breakpoint register, trap/fault delivery, RF/TF and IRQ order. |
 | S47 | 16-bit protected-mode dependency group: gate base fixture and all six direct includers (external, call gate, outer return, outer IRET and two timing runners). Keep timing consumers buildable while the shared fixture changes. |
 | S48 | Protected transfer/return group: call gates, privilege entry, outer-return atomicity with its outer-IRET includer, task switch/TSS and protected data access. Preserve complete cache rollback and stack/descriptor side effects. |
