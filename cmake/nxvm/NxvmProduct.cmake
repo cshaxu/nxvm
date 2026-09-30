@@ -806,12 +806,24 @@ target_link_libraries(cpu-prefix-attributes-s64-smoke PRIVATE x86-cpu)
 add_executable(cpu-operand-address-smoke
     test/app-nxvm/unit/core/devices/cpu_operand_address_smoke.c)
 target_link_libraries(cpu-operand-address-smoke PRIVATE x86-cpu)
-add_executable(core-machine-movs-smoke test/app-nxvm/unit/core/devices/core_machine_movs_smoke.c)
-target_link_libraries(core-machine-movs-smoke PRIVATE core-machine)
+add_executable(cpu-movs-smoke test/app-nxvm/unit/core/devices/cpu_movs_smoke.c)
+target_link_libraries(cpu-movs-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(cpu-movs-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(machine-movs-board-smoke
+    test/app-nxvm/unit/core/devices/machine_movs_board_smoke.c)
+target_link_libraries(machine-movs-board-smoke PRIVATE core-machine)
 add_executable(core-machine-stos-smoke test/app-nxvm/unit/core/devices/core_machine_stos_smoke.c)
 target_link_libraries(core-machine-stos-smoke PRIVATE core-machine)
-add_executable(core-machine-lods-smoke test/app-nxvm/unit/core/devices/core_machine_lods_smoke.c)
-target_link_libraries(core-machine-lods-smoke PRIVATE core-machine)
+add_executable(cpu-lods-smoke test/app-nxvm/unit/core/devices/cpu_lods_smoke.c)
+target_link_libraries(cpu-lods-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(cpu-lods-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(machine-lods-board-smoke
+    test/app-nxvm/unit/core/devices/machine_lods_board_smoke.c)
+target_link_libraries(machine-lods-board-smoke PRIVATE core-machine)
 add_executable(core-machine-scas-smoke test/app-nxvm/unit/core/devices/core_machine_scas_smoke.c)
 target_link_libraries(core-machine-scas-smoke PRIVATE core-machine)
 add_executable(core-machine-pusha-popa-smoke
@@ -1133,10 +1145,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-legacy-sreg-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c"
     "core-machine-les-lds-s41-smoke|test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c"
     "core-machine-les-lds-smoke|test/app-nxvm/unit/core/devices/core_machine_les_lds_smoke.c"
-    "core-machine-lods-smoke|test/app-nxvm/unit/core/devices/core_machine_lods_smoke.c"
     "core-machine-lss-lfs-lgs-smoke|test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c"
     "core-machine-moffs-smoke|test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c"
-    "core-machine-movs-smoke|test/app-nxvm/unit/core/devices/core_machine_movs_smoke.c"
     "core-machine-msw-s63-smoke|test/app-nxvm/unit/core/devices/core_machine_msw_s63_smoke.c"
     "core-machine-port-io-s55-smoke|test/app-nxvm/unit/core/devices/core_machine_port_io_s55_smoke.c"
     "core-machine-port-strings-smoke|test/app-nxvm/unit/core/devices/core_machine_port_strings_smoke.c"
@@ -1154,8 +1164,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 42)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 42 entries.")
+if(NOT project_t317_inventory_count EQUAL 40)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 40 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1182,8 +1192,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 42 OR NOT project_t317_source_count EQUAL 42)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 42 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 40 OR NOT project_t317_source_count EQUAL 40)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 40 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2024,9 +2034,11 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-moffs-smoke
     core-machine-gpr-mov-smoke
     core-machine-sreg-mov-smoke
-    core-machine-movs-smoke
+    cpu-movs-smoke
+    machine-movs-board-smoke
     core-machine-stos-smoke
-    core-machine-lods-smoke
+    cpu-lods-smoke
+    machine-lods-board-smoke
     core-machine-scas-smoke
     core-machine-cmps-smoke
     core-machine-port-strings-smoke
@@ -2229,10 +2241,10 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-les-lds-s41-smoke
     cpu-les-lds-smoke
     core-machine-lgdt-lidt-smoke
-    core-machine-lods-smoke
+    cpu-lods-smoke
     cpu-lss-lfs-lgs-smoke
     cpu-moffs-smoke
-    core-machine-movs-smoke
+    cpu-movs-smoke
     core-machine-movx-smoke
     core-machine-msw-s63-smoke
     core-machine-port-io-s55-smoke

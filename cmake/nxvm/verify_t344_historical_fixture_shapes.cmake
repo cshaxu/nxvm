@@ -142,14 +142,17 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     "test/app-nxvm/unit/core/devices/core_machine_protected_ud_delivery_s1_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_real_ud_delivery_s1_smoke.c"
     # Board CPU-bus INTA admission/cascade proof without a firmware provider.
-    "test/app-nxvm/unit/core/devices/core_machine_pic_phase_s2_smoke.c")
+    "test/app-nxvm/unit/core/devices/core_machine_pic_phase_s2_smoke.c"
+    # S37 string transfer keeps real PIC and descriptor delivery board-owned.
+    "test/app-nxvm/unit/core/devices/machine_lods_board_smoke.c"
+    "test/app-nxvm/unit/core/devices/machine_movs_board_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 116)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 116 entries.")
+if(NOT project_t344_constructor_count EQUAL 118)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 118 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 116)
+if(NOT project_t344_constructor_unique_count EQUAL 118)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -168,8 +171,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 116)
-    message(FATAL_ERROR "T344 expected 116 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 118)
+    message(FATAL_ERROR "T344 expected 118 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)

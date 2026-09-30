@@ -234,8 +234,16 @@ records the receiving map and verification.
 
 ### S37: 2 string-transfer matching files
 
-- `core_machine_lods_smoke.c`
-- `core_machine_movs_smoke.c`
+- `core_machine_lods_smoke.c` (retired by S37)
+- `core_machine_movs_smoke.c` (retired by S37)
+
+The 119 original MOVS/LODS execution contexts retain CPU instruction or
+public-board receivers. CPU-local synthetic segment-cache faults complement
+the original guest-loaded descriptor and PIC cases; they are not a second
+production path. The S36 count of 66 direct-private `.c` tests plus one
+fixture header falls to 64 `.c` tests plus that header, or 65 pending
+consumers assigned to S38-S45. [S37 evidence](t539-s37-string-transfer-migration.md)
+records the complete case-family map and verification.
 
 ### S38: 3 string-scan/compare matching files
 

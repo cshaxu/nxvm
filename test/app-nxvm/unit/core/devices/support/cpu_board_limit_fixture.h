@@ -6,9 +6,8 @@
 #include "app-nxvm/devices/machine_interface.h"
 
 /* Board-owned descriptor loading and fault delivery, not a CPU cache edit. */
-static lib_i32 test_cpu_board_limit_prepare(core_machine **out_machine,
-    const lib_u8 *code, lib_size bytes, lib_bool writable,
-    lib_bool out_of_limit)
+static lib_i32 test_cpu_board_limit_prepare_exact(core_machine **out_machine,
+    const lib_u8 *code, lib_size bytes, lib_bool writable, lib_u16 ds_limit)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -37,8 +36,8 @@ static lib_i32 test_cpu_board_limit_prepare(core_machine **out_machine,
 
     if (out_machine == LIB_NULL || code == LIB_NULL || bytes == 0u) return 0;
     *out_machine = LIB_NULL;
-    gdt[16u] = out_of_limit ? 0x0fu : 0xffu;
-    gdt[17u] = out_of_limit ? 0u : 0xffu;
+    gdt[16u] = (lib_u8)ds_limit;
+    gdt[17u] = (lib_u8)(ds_limit >> 8u);
     gdt[21u] = writable ? 0x92u : 0x90u;
     if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -60,6 +59,14 @@ static lib_i32 test_cpu_board_limit_prepare(core_machine **out_machine,
     }
     *out_machine = machine;
     return 1;
+}
+
+static inline lib_i32 test_cpu_board_limit_prepare(core_machine **out_machine,
+    const lib_u8 *code, lib_size bytes, lib_bool writable,
+    lib_bool out_of_limit)
+{
+    return test_cpu_board_limit_prepare_exact(out_machine, code, bytes,
+        writable, out_of_limit ? 0x000fu : 0xffffu);
 }
 
 #endif
