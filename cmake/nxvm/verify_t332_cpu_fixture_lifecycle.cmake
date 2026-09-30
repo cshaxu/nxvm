@@ -16,12 +16,10 @@ endif()
 set(project_t332_wrapper_sources
     "test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_iret_outer_s52_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_software_int_s50_smoke.c")
 set(project_t332_inherited_sources
     "test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_protected_return_atomicity_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_protected_iret_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_interrupt_entry_smoke.c")
 set(project_t332_public_board_sources
@@ -67,6 +65,7 @@ set(project_t332_cpu_instruction_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
+    "test/app-nxvm/unit/core/devices/cpu_outer_return_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c"
@@ -79,6 +78,8 @@ set(project_t332_cpu_instruction_fixture_sources
 set(project_t332_protected_cpu_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c")
+set(project_t332_outer_return_cpu_fixture_sources
+    "test/app-nxvm/unit/core/devices/cpu_outer_return_smoke.c")
 set(project_t332_descriptor_query_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c")
@@ -137,6 +138,14 @@ function(project_t332_require_shared_lifecycle source)
             NOT content MATCHES "cpu_protected_prepare" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \t]*\\(")
             message(FATAL_ERROR "CPU-local protected test must use only its protected instruction fixture: ${source}")
+        endif()
+        return()
+    endif()
+    if(source IN_LIST project_t332_outer_return_cpu_fixture_sources)
+        if(NOT content MATCHES "support/cpu_outer_return_fixture[.]h" OR
+            NOT content MATCHES "cpu_outer_return_prepare[ \t\r\n]*\\(" OR
+            content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \t]*\\(")
+            message(FATAL_ERROR "CPU-local outer-return test must use its outer-return fixture: ${source}")
         endif()
         return()
     endif()

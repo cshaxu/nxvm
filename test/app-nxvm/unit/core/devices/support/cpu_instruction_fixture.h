@@ -10,6 +10,7 @@ typedef struct cpu_instruction_fixture {
     t_cpuins instructions;
     core_machine_cpu_execution_context execution;
     core_machine_cpu_fault_snapshot fault;
+    core_machine_cpu_fault_snapshot delivered_exception;
     lib_u8 memory[524288];
 } cpu_instruction_fixture;
 
@@ -60,7 +61,14 @@ static void cpu_instruction_fault(void *opaque,
     ((cpu_instruction_fixture *)opaque)->fault = *fault;
 }
 
+static void cpu_instruction_delivered_exception(void *opaque,
+    const core_machine_cpu_fault_snapshot *snapshot)
+{
+    ((cpu_instruction_fixture *)opaque)->delivered_exception = *snapshot;
+}
+
 static const core_machine_cpu_execution_diagnostic_provider cpu_instruction_diagnostics = {
+    .record_delivered_exception = cpu_instruction_delivered_exception,
     .record_fault = cpu_instruction_fault
 };
 

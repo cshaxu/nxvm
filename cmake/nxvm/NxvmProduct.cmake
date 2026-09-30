@@ -748,8 +748,6 @@ add_executable(core-machine-software-int-s50-smoke test/app-nxvm/unit/core/devic
 target_link_libraries(core-machine-software-int-s50-smoke PRIVATE core-machine)
 add_executable(core-machine-iret-s51-smoke test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c)
 target_link_libraries(core-machine-iret-s51-smoke PRIVATE core-machine)
-add_executable(core-machine-iret-outer-s52-smoke test/app-nxvm/unit/core/devices/core_machine_iret_outer_s52_smoke.c)
-target_link_libraries(core-machine-iret-outer-s52-smoke PRIVATE core-machine)
 add_executable(core-machine-fs-gs-stack-smoke test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c)
 target_link_libraries(core-machine-fs-gs-stack-smoke PRIVATE core-machine)
 add_executable(cpu-fs-gs-stack-smoke test/app-nxvm/unit/core/devices/cpu_fs_gs_stack_smoke.c)
@@ -907,6 +905,12 @@ target_link_libraries(machine-idt-privilege-pic-board-smoke PRIVATE core-machine
 add_executable(machine-control-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_control_state_board_smoke.c)
 target_link_libraries(machine-control-state-board-smoke PRIVATE core-machine)
+add_executable(cpu-outer-return-smoke
+    test/app-nxvm/unit/core/devices/cpu_outer_return_smoke.c)
+target_link_libraries(cpu-outer-return-smoke PRIVATE x86-cpu)
+add_executable(machine-outer-iret-pic-board-smoke
+    test/app-nxvm/unit/core/devices/machine_outer_iret_pic_board_smoke.c)
+target_link_libraries(machine-outer-iret-pic-board-smoke PRIVATE core-machine)
 add_executable(cpu-protected-far-smoke
     test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c)
 target_link_libraries(cpu-protected-far-smoke PRIVATE x86-cpu)
@@ -1064,9 +1068,6 @@ add_executable(machine-protected-privilege-board-smoke
     test/app-nxvm/unit/core/devices/machine_protected_privilege_board_smoke.c)
 target_link_libraries(machine-protected-privilege-board-smoke PRIVATE core-machine)
 
-add_executable(core-machine-protected-return-atomicity-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_return_atomicity_smoke.c)
-target_link_libraries(core-machine-protected-return-atomicity-smoke PRIVATE core-machine)
 add_executable(core-machine-protected-iret-smoke
     test/app-nxvm/unit/core/devices/core_machine_protected_iret_smoke.c)
 target_link_libraries(core-machine-protected-iret-smoke PRIVATE core-machine)
@@ -1097,10 +1098,8 @@ endif()
 foreach(target IN ITEMS
     core-machine-t359-s4-timing-smoke
     core-machine-interrupt-entry-smoke
-    core-machine-iret-outer-s52-smoke
     core-machine-vm86-delivery-smoke
     machine-protected-privilege-board-smoke
-    core-machine-protected-return-atomicity-smoke
     core-machine-call-gate-privilege-entry-smoke
     core-machine-tss-iomap-port-smoke
     core-machine-task-switch-smoke)
@@ -1194,7 +1193,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-gpr-push-pop-smoke|test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c"
     "core-machine-hlt-s49-smoke|test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c"
     "core-machine-imul-immediate-s56-smoke|test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
-    "core-machine-iret-outer-s52-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_outer_s52_smoke.c"
+    "cpu-outer-return-smoke|test/app-nxvm/unit/core/devices/cpu_outer_return_smoke.c"
     "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
     "cpu-lgdt-lidt-smoke|test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c"
     "core-machine-lea-smoke|test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
@@ -2068,7 +2067,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-hlt-s49-smoke
     core-machine-software-int-s50-smoke
     core-machine-iret-s51-smoke
-    core-machine-iret-outer-s52-smoke
+    cpu-outer-return-smoke
+    machine-outer-iret-pic-board-smoke
     core-machine-fs-gs-stack-smoke
     core-machine-lss-lfs-lgs-smoke
     core-machine-les-lds-smoke
@@ -2142,7 +2142,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-segment-selector-smoke
     core-machine-cpu-profile-gate-smoke
     machine-protected-privilege-board-smoke
-    core-machine-protected-return-atomicity-smoke
     core-machine-protected-iret-smoke
     core-machine-call-gate-smoke
     core-machine-call-gate-privilege-entry-smoke
@@ -2303,7 +2302,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-inc-dec-first-group-smoke
     cpu-inc-dec-second-group-smoke
     cpu-inc-dec-final-group-smoke
-    core-machine-iret-outer-s52-smoke
+    cpu-outer-return-smoke
     core-machine-iret-s51-smoke
     cpu-lea-smoke
     cpu-legacy-lock-s1-smoke

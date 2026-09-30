@@ -360,10 +360,10 @@ complete receiving map and dual-width verification are recorded in
 - Retired `core_machine_protected_far_s1_smoke.c` into the CPU-local
   `cpu_protected_far_smoke.c` plus its independent PIC board receiver.
 
-### S52: outer return pair, 2 matching files
+### S54: outer return pair, 2 matching files
 
-- `core_machine_iret_outer_s52_smoke.c`
-- `core_machine_protected_return_atomicity_smoke.c`
+- `cpu_outer_return_smoke.c` (CPU-local return and exception routes)
+- `machine_outer_iret_pic_board_smoke.c` (PIC IRR→ISR delivery route)
 
 ### S53--S54: task-switch halves, 1 matching file
 
