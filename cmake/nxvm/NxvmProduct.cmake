@@ -877,12 +877,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(cpu-imul-immediate-s56-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-lar-lsl-s57-smoke
-    test/app-nxvm/unit/core/devices/core_machine_lar_lsl_s57_smoke.c)
-target_link_libraries(core-machine-lar-lsl-s57-smoke PRIVATE core-machine)
-add_executable(core-machine-verr-verw-s58-smoke
-    test/app-nxvm/unit/core/devices/core_machine_verr_verw_s58_smoke.c)
-target_link_libraries(core-machine-verr-verw-s58-smoke PRIVATE core-machine)
 add_executable(core-machine-debug-mov-s59-smoke
     test/app-nxvm/unit/core/devices/core_machine_debug_mov_s59_smoke.c)
 target_link_libraries(core-machine-debug-mov-s59-smoke PRIVATE core-machine)
@@ -956,6 +950,12 @@ target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
 add_executable(cpu-descriptor-system-smoke
     test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c)
 target_link_libraries(cpu-descriptor-system-smoke PRIVATE x86-cpu)
+add_executable(cpu-lar-lsl-smoke
+    test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c)
+target_link_libraries(cpu-lar-lsl-smoke PRIVATE x86-cpu)
+add_executable(cpu-verr-verw-smoke
+    test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c)
+target_link_libraries(cpu-verr-verw-smoke PRIVATE x86-cpu)
 add_executable(cpu-sgdt-sidt-smoke
     test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c)
 target_link_libraries(cpu-sgdt-sidt-smoke PRIVATE x86-cpu)
@@ -1173,6 +1173,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-debug-mov-s59-smoke|test/app-nxvm/unit/core/devices/core_machine_debug_mov_s59_smoke.c"
     "cpu-dttr-s61-smoke|test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
     "cpu-descriptor-system-smoke|test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
+    "cpu-lar-lsl-smoke|test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c"
+    "cpu-verr-verw-smoke|test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c"
     "core-machine-eflags-local-smoke|test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"
     "core-machine-fpu-interface-s65-smoke|test/app-nxvm/unit/core/devices/core_machine_fpu_interface_s65_smoke.c"
@@ -1183,7 +1185,6 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-imul-immediate-s56-smoke|test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
     "core-machine-iret-outer-s52-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_outer_s52_smoke.c"
     "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
-    "core-machine-lar-lsl-s57-smoke|test/app-nxvm/unit/core/devices/core_machine_lar_lsl_s57_smoke.c"
     "cpu-lgdt-lidt-smoke|test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c"
     "core-machine-lea-smoke|test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
     "core-machine-legacy-sreg-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c"
@@ -1201,7 +1202,6 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-sreg-mov-smoke|test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c"
     "cpu-sgdt-sidt-smoke|test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c"
     "core-machine-tf-db-s60-smoke|test/app-nxvm/unit/core/devices/core_machine_tf_db_s60_smoke.c"
-    "core-machine-verr-verw-s58-smoke|test/app-nxvm/unit/core/devices/core_machine_verr_verw_s58_smoke.c"
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
@@ -2095,8 +2095,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-imul2-smoke
     core-machine-imul-immediate-s56-smoke
     cpu-imul-immediate-s56-smoke
-    core-machine-lar-lsl-s57-smoke
-    core-machine-verr-verw-s58-smoke
     core-machine-tf-db-s60-smoke
     core-machine-clts-s62-smoke
     core-machine-msw-s63-smoke
@@ -2120,6 +2118,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-bound-smoke
     cpu-dttr-s61-smoke
     cpu-descriptor-system-smoke
+    cpu-lar-lsl-smoke
+    cpu-verr-verw-smoke
     cpu-lgdt-lidt-smoke
     cpu-sgdt-sidt-smoke
     machine-table-register-board-smoke
@@ -2269,6 +2269,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-cpu-profile-gate-smoke
     core-machine-descriptor-system-smoke
     cpu-descriptor-system-smoke
+    cpu-lar-lsl-smoke
+    cpu-verr-verw-smoke
     core-machine-debug-mov-s59-smoke
     cpu-double-shift-smoke
     cpu-enter-leave-smoke
@@ -2285,7 +2287,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-inc-dec-final-group-smoke
     core-machine-iret-outer-s52-smoke
     core-machine-iret-s51-smoke
-    core-machine-lar-lsl-s57-smoke
     cpu-lea-smoke
     cpu-legacy-lock-s1-smoke
     cpu-legacy-alu-s2-smoke
@@ -2321,7 +2322,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-stos-smoke
     core-machine-task-switch-smoke
     core-machine-tf-db-s60-smoke
-    core-machine-verr-verw-s58-smoke
     core-machine-vm86-delivery-smoke
     cpu-xchg-smoke
     vm-dos-mem-fault-smoke
@@ -2363,6 +2363,8 @@ set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
 set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     core-machine-cpu-context-smoke
     cpu-descriptor-system-smoke
+    cpu-lar-lsl-smoke
+    cpu-verr-verw-smoke
     core-machine-fpu-escape-smoke
     core-machine-msw-s63-smoke
     core-machine-protected-16-gate-s3-smoke
@@ -2706,7 +2708,10 @@ add_test(NAME unit.cpu-bus-boundary-negative
         "-DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
         "-DWORK=${CMAKE_BINARY_DIR}/test/cpu-bus-boundary-negative"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/core/devices/cpu_bus_boundary_negative.cmake")
-set_tests_properties(unit.cpu-bus-boundary-negative PROPERTIES LABELS unit TIMEOUT 180)
+# This negative contract temporarily mutates a tracked CPU header, then restores
+# it.  It must not race the parallel unit readers of that same header.
+set_tests_properties(unit.cpu-bus-boundary-negative PROPERTIES
+    LABELS unit TIMEOUT 180 RUN_SERIAL TRUE)
 
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.

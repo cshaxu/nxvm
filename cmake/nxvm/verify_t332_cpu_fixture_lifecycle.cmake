@@ -64,8 +64,13 @@ set(project_t332_public_limit_sources
 set(project_t332_cpu_instruction_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
+    "test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c")
+    "test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c"
+    "test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c")
+set(project_t332_descriptor_query_fixture_sources
+    "test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c"
+    "test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c")
 
 file(READ "${PROJECT_T332_SOURCE_DIR}/test/app-nxvm/unit/core/devices/support/cpu_board_limit_fixture.h"
     project_t332_limit_helper)
@@ -106,6 +111,13 @@ function(project_t332_require_shared_lifecycle source)
             NOT content MATCHES "cpu_bus_prepare" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
             message(FATAL_ERROR "CPU-local FLAGS test must use its chip fixture without board lifecycle")
+        endif()
+        return()
+    endif()
+    if(source IN_LIST project_t332_descriptor_query_fixture_sources)
+        if(NOT content MATCHES "support/cpu_descriptor_query_fixture[.]h" OR
+            content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
+            message(FATAL_ERROR "CPU-local descriptor-query test must use only its instruction fixture: ${source}")
         endif()
         return()
     endif()

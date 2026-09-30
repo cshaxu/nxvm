@@ -8,8 +8,8 @@ than treating the opcode spellings as unrelated work:
 | Form group | Decode owner | Validation/materialization owner | Current-gate evidence |
 | --- | --- | --- | --- |
 | SLDT, STR, LLDT, LTR (`0F 00 /0`--`/3`) | `INS_0F_00`, `_d_modrm` | `_s_load_ldtr`, `_s_load_tr` | `current.core-machine-dttr-s61-smoke`; `current.core-machine-segment-selector-smoke` |
-| VERR, VERW (`0F 00 /4,/5`) | `INS_0F_00` | `_s_check_selector`, `_s_read_xdt` | `current.core-machine-verr-verw-s58-smoke`; selector owner |
-| LAR, LSL (`0F 02/03`) | `LAR_R32_RM32`, `LSL_R32_RM32` | `_s_check_selector`, `_s_read_xdt` | `current.core-machine-lar-lsl-s57-smoke`; selector owner |
+| VERR, VERW (`0F 00 /4,/5`) | `INS_0F_00` | `_s_check_selector`, `_s_read_xdt` | `cpu-verr-verw-smoke`; selector owner |
+| LAR, LSL (`0F 02/03`) | `LAR_R32_RM32`, `LSL_R32_RM32` | `_s_check_selector`, `_s_read_xdt` | `cpu-lar-lsl-smoke`; selector owner |
 | MOV Sreg and legacy segment stack | `MOV_RM16_SREG`, `MOV_SREG_RM16`, `_e_pop_sreg` | `_d_modrm_sreg`, `_ksa_load_sreg`, `_s_load_{es,ss,ds}` | `current.core-machine-sreg-mov-smoke`, `current.core-machine-legacy-sreg-stack-smoke`; selector owner |
 | LES/LDS (`C4/C5`) | `LES_R32_M16_32`, `LDS_R32_M16_32` | `_e_load_far`, selector preparation/load | `current.core-machine-les-lds-s41-smoke`; selector owner |
 

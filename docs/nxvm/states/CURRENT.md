@@ -2,13 +2,13 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S43 are accepted. S43 P1 `4ff59cd5c` establishes its
+M5 T539 remains open. S1-S44 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
 its oversized FLAGS/string/port row was divided into S36-S39. At S40 intake,
 the 7,736-line descriptor/system row was divided into S40-S46 and the formerly planned
-S41-S48 became S47-S54. S44-S54 remain pending. Earlier
+S41-S48 became S47-S54. S45-S54 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -256,6 +256,23 @@ manifest and documentation-governance gates. See
 S43 is accepted; S44 owns descriptor queries and S45 alone owns the retained
 control-state source portion. T539 remains open.
 
+## S44 Acceptance
+
+S44 retires the two 1,748-line mixed LAR/LSL and VERR/VERW sources. The
+CPU-only receivers retain every instruction-local selector, visibility,
+operand, prefix, rollback, VM86 and LDT result without a `core_machine`
+dependency. The retained 80386 board timing runner owns the four real
+page-granularity LSL rows (register/memory: 21/25/22/26 ticks); public Core
+receivers retain descriptor-table and IRQ delivery behavior. No production,
+Shared, firmware, INI or executable input changed.
+
+Repository-only units pass 416/416 on x64 and x86. Both specialized aggregates
+pass, including T317 (36 strict CPU receivers), T332 (36 fixture owners),
+T337, T344, T388, CPU/PIC authority, direct matrix, manifest and documentation
+governance gates. The focused timing runner passes on x86; S44 evidence records
+the receiver map and verification. S44 is accepted; S45 owns control state and
+T539 remains open.
+
 ## S29 Acceptance
 
 Actual pushed NXVM P1 `86fe95201` has exactly 13 scoped paths, passes
@@ -292,6 +309,7 @@ relocation is S53; whole CPU acceptance is S54. S41 owns the unresolved
 
 | Task | Progress |
 | --- | --- |
+| T539 S44 | Accepted: descriptor-query cases move to CPU-local LAR/LSL and VERR/VERW receivers; the retained 80386 board timing runner covers LSL 21/25/22/26 source ticks. Units 416/416 per width. No production or asset change. |
 | T539 S40 | Accepted: NXVM P1 e4a7615d1 migrates ARPL ownership; original base/S53 cases retain CPU/board receivers; units 413/413 per width. No production or asset change. |
 | T539 S39 | Accepted: NXVM P1 07019f588 migrates port I/O ownership; all 230 original scalar/string contexts retain CPU/board receivers; units 413/413 per width. No production or asset change. |
 | T539 S38 | Accepted: NXVM P1 ae76a7c84 migrates STOS/SCAS/CMPS ownership; all 203 original contexts retain CPU/board receivers; units 411/411 per width. No production or asset change. |

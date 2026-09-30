@@ -1109,6 +1109,75 @@ static lib_i32 timing_80386_manifest_run_s7_lar_lsl_recipes(void)
             lsl_m32_segment, sizeof(lsl_m32_segment), &selector, sizeof(selector), 22u);
 }
 
+/* The descriptor-query receiver owns the CPU-level page-granular value
+ * semantics.  Keep its two timing rows here, in the sole board-timing
+ * runner, so the retired mixed fixture cannot create a second board path. */
+static lib_i32 timing_80386_manifest_run_s7_lsl_granularity_recipes(void)
+{
+    static const lib_u8 lsl_register[] = { 0x0fu,0x03u,0xc8u };
+    static const lib_u8 lsl_memory[] = { 0x0fu,0x03u,0x0eu,0u,0x10u };
+    static const lib_u8 page_descriptor[] = {
+        0x10u,0u,0u,0x60u,0u,0x92u,0xc0u,0u
+    };
+    static const lib_u16 selectors[] = { 0x0010u,0x0020u,0x0010u,0x0020u };
+    static const lib_u64 expected_ticks[] = { 21u,25u,22u,26u };
+    const core_machine_retirement_observation_provider provider = {
+        timing_80386_manifest_capture_retirement, LIB_NULL
+    };
+    lib_u8 index;
+
+    for (index = 0u; index < 4u; ++index) {
+        core_machine_retirement_observation_provider active_provider = provider;
+        const lib_u8 *program = index < 2u ? lsl_register : lsl_memory;
+        const lib_size program_bytes = index < 2u ? sizeof(lsl_register) :
+            sizeof(lsl_memory);
+        core_machine_run_result run = { 0 };
+        timing_80386_manifest_capture capture = { { 0 }, 0u };
+        s3_gate_machine state;
+        t_cpu *cpu;
+        lib_status status;
+
+        if (!s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
+                VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE)) return 1;
+        cpu = &state.machine->executor_cpu;
+        cpu->data.ds.selector = 0x0010u;
+        cpu->data.ds.base = 0u;
+        cpu->data.ds.limit = 0xffffu;
+        cpu->data.ds.dpl = 0u;
+        cpu->data.ds.flagValid = LIB_TRUE;
+        cpu->data.ds.sregtype = SREG_DATA;
+        cpu->data.ds.seg.executable = LIB_FALSE;
+        cpu->data.ds.seg.data.writable = LIB_TRUE;
+        cpu->data.es = cpu->data.ds;
+        cpu->data.eflags = VCPU_EFLAGS_CF;
+        cpu->data.eax = selectors[index];
+        cpu->data.ecx = 0u;
+        cpu->data.gdtr.limit = 0x0027u;
+        if (!s3_gate_write(&state, S3_GDT_BASE + 0x20u, page_descriptor,
+                sizeof(page_descriptor)) ||
+            !s3_gate_write(&state, S3_CODE_BASE, program, program_bytes) ||
+            (index >= 2u && !s3_gate_write(&state, 0x1000u, &selectors[index],
+                sizeof(selectors[index])))) {
+            core_machine_destroy(state.machine);
+            return 1;
+        }
+        active_provider.context = &capture;
+        status = core_machine_set_retirement_observation_provider(state.machine,
+            &active_provider);
+        if (status == LIB_STATUS_OK) status = core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &run);
+        if (status != LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
+            run.executed != 1u || run.ticks != expected_ticks[index] ||
+            capture.count != 1u || capture.observation.source_ticks !=
+                expected_ticks[index]) {
+            core_machine_destroy(state.machine);
+            return 1;
+        }
+        core_machine_destroy(state.machine);
+    }
+    return 0;
+}
+
 static lib_i32 timing_80386_manifest_run_s7_verify_recipes(void)
 {
     static const lib_u8 verr_r[] = { 0x0fu, 0x00u, 0xe1u };
@@ -3712,6 +3781,7 @@ lib_i32 main(void)
     }
     if (timing_80386_manifest_run_s7_arpl_recipes() ||
         timing_80386_manifest_run_s7_lar_lsl_recipes() ||
+        timing_80386_manifest_run_s7_lsl_granularity_recipes() ||
         timing_80386_manifest_run_s7_verify_recipes() ||
         timing_80386_manifest_run_s7_clts_recipe() ||
         timing_80386_manifest_run_s7_descriptor_table_recipes() ||

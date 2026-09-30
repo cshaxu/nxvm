@@ -61,7 +61,6 @@ set(project_t344_retained_sources
     "test/app-nxvm/unit/core/devices/core_machine_80186_instruction_timing_ledger_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80286_instruction_timing_ledger_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_protected_io_timing_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_lar_lsl_s57_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_legacy_lock_s1_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_port_assembly_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_port_io_board_smoke.c"
@@ -82,7 +81,6 @@ set(project_t344_retained_sources
     "test/app-nxvm/unit/core/devices/core_machine_t359_s5_timing_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_t359_s6_timing_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_legacy_timing_normalization_s2_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_verr_verw_s58_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_xebec_wiring_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_xt_ppi_keyboard_smoke.c"
     "test/app-nxvm/unit/core/machine/core_mantle_shape_smoke.c"
@@ -115,12 +113,12 @@ set(project_t344_retained_sources
 set(project_t344_inventory ${project_t344_migrated_sources}
     ${project_t344_retained_sources})
 list(LENGTH project_t344_inventory project_t344_inventory_count)
-if(NOT project_t344_inventory_count EQUAL 108)
-    message(FATAL_ERROR "T344 fixture-shape inventory must contain 108 direct constructors.")
+if(NOT project_t344_inventory_count EQUAL 106)
+    message(FATAL_ERROR "T344 fixture-shape inventory must contain 106 direct constructors.")
 endif()
 list(REMOVE_DUPLICATES project_t344_inventory)
 list(LENGTH project_t344_inventory project_t344_unique_count)
-if(NOT project_t344_unique_count EQUAL 108)
+if(NOT project_t344_unique_count EQUAL 106)
     message(FATAL_ERROR "T344 fixture-shape inventory contains a duplicate source.")
 endif()
 
@@ -155,12 +153,12 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # S42 retains real table loads, privilege delivery and IRQ routing.
     "test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 123)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 123 entries.")
+if(NOT project_t344_constructor_count EQUAL 121)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 121 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 123)
+if(NOT project_t344_constructor_unique_count EQUAL 121)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -179,8 +177,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 123)
-    message(FATAL_ERROR "T344 expected 123 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 121)
+    message(FATAL_ERROR "T344 expected 121 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)
@@ -228,4 +226,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 fixture shapes passed: 108 direct inventoried, 6 shared public-limit callers, 4 timing-manifest, 2 guest-table-load, 1 INTA and 1 ARPL board constructor.")
+message(STATUS "T344 fixture shapes passed: 106 direct inventoried, 6 shared public-limit callers, 4 timing-manifest, 2 guest-table-load, 1 INTA and 1 ARPL board constructor.")

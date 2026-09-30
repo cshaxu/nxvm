@@ -128,7 +128,7 @@ not an allocation of later task identifiers.
 | BOUND `62 /r` signed range check | `BOUND_R16_M16_16` decodes memory-only ModRM through `_d_modrm` and reads the signed lower/upper pair through `_m_read_rm`; `_SetExcept_BR` now reaches the narrow `#BR` vector-5 delivery route in `ExecFinal`. | `core_machine_bound_s54_smoke` (`M5:T316:S54:BOUND:OK`) executes the bounded S54 vectors. | **Complete only for T316 S54**: BOUND r16,m16&16 and r32,m32&32 with the declared profile, attribute, signed-boundary, segment/EA, IVT/IDT `#BR`, operand-limit, VM86, and pending-PIC boundaries. General exception delivery, descriptor validation, and broader arithmetic/control-transfer behavior remain outside this slice. |
 | Immediate three-operand IMUL `69 /r iw/id`, `6B /r ib` | `IMUL_R32_RM32_I32`, `IMUL_R32_RM32_I8`, `_a_imul3`, `_d_modrm`, and r/m access routes. | `core_machine_imul_immediate_s56_smoke` (`M5:T316:S56:IMUL-IMM:OK`). | **Complete only for T316 S56**: 80186--80386 immediate three-operand IMUL, declared 16/32 operand/address attributes, signed product CF/OF boundary, r/m segment/source-limit, VM86, rejection, and PIC boundaries. One-operand IMUL, `0F AF`, MUL/DIV, and general FLAGS behavior remain outside this slice. |
 | LAR/LSL `0F 02 /r`, `0F 03 /r` selector inspection | `INS_0F`, `LAR_R32_RM32`, `LSL_R32_RM32`, selector/XDT and r/m read routes. | `core_machine-lar-lsl-s57-smoke` (`M5:T316:S57:LAR-LSL:OK`). | **Complete only for T316 S57's bounded LAR/LSL query forms**: protected GDT/LDT selector inspection, declared attribute/profile/LOCK and memory-source boundaries, VM86 rejection, and PIC delivery. VERR/VERW, selector loads, and broader descriptor architecture remain outside this slice. |
-| VERR/VERW `0F 00 /4,/5` selector accessibility | `INS_0F_00` VERR/VERW cases with selector/XDT and r/m read routes. | `core-machine-verr-verw-s58-smoke` (`M5:T316:S58:VERR-VERW:OK`). | **Complete only for T316 S58**: 80286/80386 protected selector accessibility, ZF-only result, GDT/LDT, declared prefix/profile/memory-source/fault/VM86/LOCK/PIC boundaries. The other `0F 00` forms and selector-load architecture remain outside this slice. |
+| VERR/VERW `0F 00 /4,/5` selector accessibility | `INS_0F_00` VERR/VERW cases with selector/XDT and r/m read routes. | `cpu-verr-verw-smoke` (`M5:T539:S44:VERR-VERW:OK`). | **Complete only for the query slice**: 80286/80386 protected selector accessibility, ZF-only result, GDT/LDT, declared prefix/profile/memory-source/fault/VM86/LOCK/PIC boundaries. The other `0F 00` forms and selector-load architecture remain outside this slice. |
 | SLDT/STR/LLDT/LTR 0F 00 /0--/3 descriptor-table/task-register transfers | INS_0F_00, _s_load_ldtr, _s_load_tr, selector/XDT and r/m routes. | core-machine-dttr-s61-smoke plus retained core-machine-descriptor-system-smoke. | **Complete only for T316 S61**: 80286/80386 CPL0 default forms, 66h fixed-width and 67h attribute/memory routing, register and memory store/load, LDTR null invalidation, LTR busy publication, profile/real-mode and LOCK rejection. Retained descriptor-system vectors provide type/TI/null/present and load-atomicity boundaries. Task switch, task gates, and descriptor redesign remain outside. |
 | CLTS `0F 06` CR0.TS control form | `INS_0F` profile gate and local `CLTS` handler; no operand decoder or shared control helper. | `core-machine-clts-s62-smoke` (`M5:T316:S62:CLTS:OK`) plus retained descriptor-system control evidence. | **Complete only for T316 S62**: 80286/80386 real and protected CPL0 TS clearing, 80386 prefix/LOCK classification, protected CPL3 and VM86 failure boundaries, and pending-IRQ no-shadow. LMSW/SMSW, MOV control registers, task switching, VME/PVI, and generalized privilege/interrupt redesign remain outside. |
 | SMSW/LMSW `0F 01 /4,/6` machine-status word forms | `INS_0F_01`, fixed `r/m16` decode, and `_s_load_cr0_msw`; no generic CR0 policy change. | `core-machine-msw-s63-smoke` (`M5:T316:S63:MSW:OK`) plus retained descriptor-system control evidence. | **Complete only for T316 S63**: 80286/80386 fixed 16-bit SMSW/LMSW register and memory forms, CR0 low-MSW/PE-stickiness boundary, protected privilege/VM86, attribute/LOCK, access-fault and pending-IRQ boundaries. Table-register forms, CLTS, MOV control registers, paging policy, task switching, VME/PVI and generic control-state redesign remain outside. |
@@ -1315,7 +1315,7 @@ and general arithmetic families remain outside this slice.
 
 ### T316 S57 - LAR/LSL selector attribute inspection
 
-`core-machine-lar-lsl-s57-smoke` covers only `0F 02 /r` LAR and `0F 03 /r`
+`cpu-lar-lsl-smoke` covers only `0F 02 /r` LAR and `0F 03 /r`
 selector queries. Protected default forms cover 80286/80386 register and
 memory selectors, null/non-present/RPL-denied ZF=0 retention, GDT and LDT
 sources, and granular LSL limits. The 80386 grid includes `66h`, `67h`,
@@ -1333,7 +1333,7 @@ remain outside S57.
 
 ### T316 S58 - VERR/VERW selector accessibility
 
-`core-machine-verr-verw-s58-smoke` covers only `0F 00 /4` VERR and
+`cpu-verr-verw-smoke` covers only `0F 00 /4` VERR and
 `/5` VERW: 80286/80386 protected outcomes, ZF-only publication, GDT/LDT,
 register plus DS/SS/`67h` memory selectors, no-IDT source-limit boundaries,
 real/VM86/profile and LOCK rejection, and protected IRQ0 no-shadow delivery.

@@ -306,10 +306,11 @@ S43 is accepted: its descriptor/table/cache cases moved to
 block remains in the original source as S45's sole input; S43 did not delete
 or duplicate it merely to retire a filename.
 
-### S44: Descriptor queries, 2 matching files
+### S44: Descriptor queries, accepted
 
-- `core_machine_lar_lsl_s57_smoke.c`
-- `core_machine_verr_verw_s58_smoke.c`
+The two matching mixed sources are retired. Their instruction-local cases now
+belong to `cpu_lar_lsl_smoke.c` and `cpu_verr_verw_smoke.c`; the retained 80386
+timing runner owns the LSL page-granularity rows.
 
 ### S45: Control state, 2 matching files
 
