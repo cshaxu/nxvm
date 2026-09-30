@@ -75,9 +75,9 @@ message(STATUS "CPU bus boundary: baseline and 72 negative controls pass")
 
 set(path "${WORK}/src/app-nxvm/devices/cpu_bus.c")
 file(READ "${path}" original)
-foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0;"
-        "machine->executor_cpu_instructions.data.except = 0;"
-        "machine->executor_cpu_execution.cpu = 0;"
+foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
+        "machine->executor_cpu_instructions.data.except = 0\;"
+        "machine->executor_cpu_execution.cpu = 0\;"
         "#include \"app-nxvm/devices/cpu.h\""
         "#include \"app-nxvm/devices/cpu_instructions.h\"")
     if(injection MATCHES "^#include")
@@ -112,7 +112,7 @@ foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
         core_machine_operand_address_smoke.c core_machine_prefix_attributes_s64_smoke.c)
     set(path "${WORK}/test/app-nxvm/unit/core/devices/${name}")
     file(READ "${path}" original)
-    foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0;"
+    foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
             "#include \"support/core_machine_cpu_fixture.h\""
             "#include \"app-nxvm/devices/cpu.h\""
             "#include \"app-nxvm/devices/cpu_instructions.h\"")

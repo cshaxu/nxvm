@@ -1086,6 +1086,12 @@ target_link_libraries(core-machine-tss-iomap-port-smoke PRIVATE core-machine)
 add_executable(core-machine-task-switch-smoke
     test/app-nxvm/unit/core/devices/core_machine_task_switch_smoke.c)
 target_link_libraries(core-machine-task-switch-smoke PRIVATE core-machine)
+add_executable(cpu-task-switch16-smoke
+    test/app-nxvm/unit/core/devices/cpu_task_switch16_smoke.c)
+target_link_libraries(cpu-task-switch16-smoke PRIVATE x86-cpu)
+add_executable(machine-task-switch16-pic-board-smoke
+    test/app-nxvm/unit/core/devices/machine_task_switch16_pic_board_smoke.c)
+target_link_libraries(machine-task-switch16-pic-board-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-task-switch-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -1194,6 +1200,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-hlt-s49-smoke|test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c"
     "core-machine-imul-immediate-s56-smoke|test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
     "cpu-outer-return-smoke|test/app-nxvm/unit/core/devices/cpu_outer_return_smoke.c"
+    "cpu-task-switch16-smoke|test/app-nxvm/unit/core/devices/cpu_task_switch16_smoke.c"
     "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
     "cpu-lgdt-lidt-smoke|test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c"
     "core-machine-lea-smoke|test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
@@ -1214,8 +1221,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 41)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 41 entries.")
+if(NOT project_t317_inventory_count EQUAL 42)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 42 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1242,8 +1249,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 41 OR NOT project_t317_source_count EQUAL 41)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 41 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 42 OR NOT project_t317_source_count EQUAL 42)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 42 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2069,6 +2076,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-iret-s51-smoke
     cpu-outer-return-smoke
     machine-outer-iret-pic-board-smoke
+    cpu-task-switch16-smoke
+    machine-task-switch16-pic-board-smoke
     core-machine-fs-gs-stack-smoke
     core-machine-lss-lfs-lgs-smoke
     core-machine-les-lds-smoke
