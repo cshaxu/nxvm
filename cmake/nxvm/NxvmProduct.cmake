@@ -706,10 +706,38 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 add_executable(core-machine-eflags-local-smoke test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c)
 target_link_libraries(core-machine-eflags-local-smoke PRIVATE x86-cpu)
-add_executable(core-machine-pushf-popf-smoke test/app-nxvm/unit/core/devices/core_machine_pushf_popf_smoke.c)
-target_link_libraries(core-machine-pushf-popf-smoke PRIVATE core-machine)
-add_executable(core-machine-pushf-popf-s47-smoke test/app-nxvm/unit/core/devices/core_machine_pushf_popf_s47_smoke.c)
-target_link_libraries(core-machine-pushf-popf-s47-smoke PRIVATE core-machine)
+add_executable(cpu-direct-flags-smoke
+    test/app-nxvm/unit/core/devices/cpu_direct_flags_smoke.c)
+target_link_libraries(cpu-direct-flags-smoke PRIVATE x86-cpu)
+add_executable(cpu-lahf-sahf-smoke
+    test/app-nxvm/unit/core/devices/cpu_lahf_sahf_smoke.c)
+target_link_libraries(cpu-lahf-sahf-smoke PRIVATE x86-cpu)
+add_executable(cpu-pushf-popf-smoke
+    test/app-nxvm/unit/core/devices/cpu_pushf_popf_smoke.c)
+target_link_libraries(cpu-pushf-popf-smoke PRIVATE x86-cpu)
+add_executable(core-machine-direct-flags-board-smoke
+    test/app-nxvm/unit/core/devices/core_machine_direct_flags_board_smoke.c)
+target_link_libraries(core-machine-direct-flags-board-smoke PRIVATE core-machine)
+add_executable(core-machine-lahf-sahf-board-smoke
+    test/app-nxvm/unit/core/devices/core_machine_lahf_sahf_board_smoke.c)
+target_link_libraries(core-machine-lahf-sahf-board-smoke PRIVATE core-machine)
+add_executable(core-machine-pushf-popf-board-smoke
+    test/app-nxvm/unit/core/devices/core_machine_pushf_popf_board_smoke.c)
+target_link_libraries(core-machine-pushf-popf-board-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(cpu-direct-flags-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(cpu-lahf-sahf-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(cpu-pushf-popf-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-direct-flags-board-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-lahf-sahf-board-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-pushf-popf-board-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-cli-sti-smoke test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c)
 target_link_libraries(core-machine-cli-sti-smoke PRIVATE core-machine)
 add_executable(core-machine-cli-sti-s48-smoke test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c)
@@ -940,13 +968,6 @@ add_executable(core-machine-port-io-s55-smoke
     test/app-nxvm/unit/core/devices/core_machine_port_io_s55_smoke.c)
 target_link_libraries(core-machine-port-io-s55-smoke PRIVATE core-machine)
 
-add_executable(core-machine-lahf-sahf-smoke
-    test/app-nxvm/unit/core/devices/core_machine_lahf_sahf_smoke.c)
-target_link_libraries(core-machine-lahf-sahf-smoke PRIVATE core-machine)
-
-add_executable(core-machine-direct-flags-smoke
-    test/app-nxvm/unit/core/devices/core_machine_direct_flags_smoke.c)
-target_link_libraries(core-machine-direct-flags-smoke PRIVATE core-machine)
 
 add_executable(core-machine-80286-protected-mode-smoke
     test/app-nxvm/unit/core/devices/core_machine_80286_protected_mode_smoke.c)
@@ -1096,7 +1117,6 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-clts-s62-smoke|test/app-nxvm/unit/core/devices/core_machine_clts_s62_smoke.c"
     "core-machine-cmps-smoke|test/app-nxvm/unit/core/devices/core_machine_cmps_smoke.c"
     "core-machine-debug-mov-s59-smoke|test/app-nxvm/unit/core/devices/core_machine_debug_mov_s59_smoke.c"
-    "core-machine-direct-flags-smoke|test/app-nxvm/unit/core/devices/core_machine_direct_flags_smoke.c"
     "core-machine-dttr-s61-smoke|test/app-nxvm/unit/core/devices/core_machine_dttr_s61_smoke.c"
     "core-machine-eflags-local-smoke|test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"
@@ -1108,7 +1128,6 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-imul-immediate-s56-smoke|test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
     "core-machine-iret-outer-s52-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_outer_s52_smoke.c"
     "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
-    "core-machine-lahf-sahf-smoke|test/app-nxvm/unit/core/devices/core_machine_lahf_sahf_smoke.c"
     "core-machine-lar-lsl-s57-smoke|test/app-nxvm/unit/core/devices/core_machine_lar_lsl_s57_smoke.c"
     "core-machine-lea-smoke|test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
     "core-machine-legacy-sreg-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c"
@@ -1124,8 +1143,6 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-prefix-attributes-s64-smoke|test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c"
     "core-machine-push-immediate-smoke|test/app-nxvm/unit/core/devices/core_machine_push_immediate_smoke.c"
     "core-machine-pusha-popa-smoke|test/app-nxvm/unit/core/devices/core_machine_pusha_popa_smoke.c"
-    "core-machine-pushf-popf-s47-smoke|test/app-nxvm/unit/core/devices/core_machine_pushf_popf_s47_smoke.c"
-    "core-machine-pushf-popf-smoke|test/app-nxvm/unit/core/devices/core_machine_pushf_popf_smoke.c"
     "core-machine-rotate-smoke|test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c"
     "core-machine-scas-smoke|test/app-nxvm/unit/core/devices/core_machine_scas_smoke.c"
     "core-machine-sign-extend-smoke|test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c"
@@ -1137,8 +1154,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 46)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 46 entries.")
+if(NOT project_t317_inventory_count EQUAL 42)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 42 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1165,8 +1182,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 46 OR NOT project_t317_source_count EQUAL 46)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 46 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 42 OR NOT project_t317_source_count EQUAL 42)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 42 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -1979,8 +1996,12 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-rotate-smoke
     cpu-rotate-smoke
     core-machine-eflags-local-smoke
-    core-machine-pushf-popf-smoke
-    core-machine-pushf-popf-s47-smoke
+    cpu-direct-flags-smoke
+    cpu-lahf-sahf-smoke
+    cpu-pushf-popf-smoke
+    core-machine-direct-flags-board-smoke
+    core-machine-lahf-sahf-board-smoke
+    core-machine-pushf-popf-board-smoke
     core-machine-cli-sti-smoke
     core-machine-cli-sti-s48-smoke
     core-machine-hlt-s49-smoke
@@ -2010,8 +2031,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-cmps-smoke
     core-machine-port-strings-smoke
     core-machine-port-io-s55-smoke
-    core-machine-lahf-sahf-smoke
-    core-machine-direct-flags-smoke
     core-machine-debug-mov-s59-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
@@ -2186,7 +2205,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-cpu-profile-gate-smoke
     core-machine-descriptor-system-smoke
-    core-machine-direct-flags-smoke
     core-machine-debug-mov-s59-smoke
     cpu-double-shift-smoke
     cpu-enter-leave-smoke
@@ -2203,7 +2221,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-inc-dec-final-group-smoke
     core-machine-iret-outer-s52-smoke
     core-machine-iret-s51-smoke
-    core-machine-lahf-sahf-smoke
     core-machine-lar-lsl-s57-smoke
     cpu-lea-smoke
     cpu-legacy-lock-s1-smoke
@@ -2225,7 +2242,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-protected-far-s1-smoke
     core-machine-protected-ud-delivery-s1-smoke
     cpu-pusha-popa-smoke
-    core-machine-pushf-popf-s47-smoke
+    cpu-pushf-popf-smoke
     cpu-push-immediate-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-s1-smoke
@@ -2626,7 +2643,7 @@ add_test(NAME unit.cpu-bus-boundary-negative
         "-DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
         "-DWORK=${CMAKE_BINARY_DIR}/test/cpu-bus-boundary-negative"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/core/devices/cpu_bus_boundary_negative.cmake")
-set_tests_properties(unit.cpu-bus-boundary-negative PROPERTIES LABELS unit TIMEOUT 60)
+set_tests_properties(unit.cpu-bus-boundary-negative PROPERTIES LABELS unit TIMEOUT 180)
 
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.

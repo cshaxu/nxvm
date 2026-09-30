@@ -9,8 +9,8 @@ endif()
 
 file(STRINGS "${PROJECT_T332_INVENTORY_FILE}" project_t332_inventory)
 list(LENGTH project_t332_inventory project_t332_count)
-if(NOT project_t332_count EQUAL 46)
-    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory must contain 46 owner smokes.")
+if(NOT project_t332_count EQUAL 42)
+    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory must contain 42 owner smokes.")
 endif()
 
 set(project_t332_wrapper_sources
@@ -153,4 +153,4 @@ if(NOT project_t332_positive MATCHES "test_core_machine_fixture_(create_bind_fre
     message(FATAL_ERROR "T332 CPU fixture lifecycle verifier self-check failed.")
 endif()
 
-message(STATUS "T332 CPU fixture lifecycle closure passed: 46 owners use shared setup, explicit public board setup or CPU-local fixtures.")
+message(STATUS "T332 CPU fixture lifecycle closure passed: 42 owners use shared setup, explicit public board setup or CPU-local fixtures.")

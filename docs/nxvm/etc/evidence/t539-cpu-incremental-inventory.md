@@ -221,6 +221,17 @@ files plus that header, or 71 pending consumers assigned to S36-S45.
 - `core_machine_pushf_popf_s47_smoke.c`
 - `core_machine_pushf_popf_smoke.c`
 
+S36 removes all four private-state test sources. CPU-only replacements are
+`cpu_direct_flags_smoke.c`, `cpu_lahf_sahf_smoke.c` and
+`cpu_pushf_popf_smoke.c`; real guest protected-mode and PIC IRQ receivers are
+the corresponding three `core_machine_*_board_smoke.c` files. The included
+PUSHF/POPF S21 source is retired with its S47 includer, not left as a second
+test path. The S35 count of 70 direct-private `.c` files plus one fixture
+header falls to 66 `.c` files plus that header, or 67 pending consumers
+assigned to S37-S45. The negative verifier's deliberate rejected-code strings
+are not a private-state consumer. [S36 evidence](t539-s36-flags-migration.md)
+records the receiving map and verification.
+
 ### S37: 2 string-transfer matching files
 
 - `core_machine_lods_smoke.c`
