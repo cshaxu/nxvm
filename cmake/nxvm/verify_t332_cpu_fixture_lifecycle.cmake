@@ -9,8 +9,8 @@ endif()
 
 file(STRINGS "${PROJECT_T332_INVENTORY_FILE}" project_t332_inventory)
 list(LENGTH project_t332_inventory project_t332_count)
-if(NOT project_t332_count EQUAL 43)
-    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory must contain 43 owner smokes.")
+if(NOT project_t332_count EQUAL 44)
+    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory must contain 44 owner smokes.")
 endif()
 
 set(project_t332_wrapper_sources
@@ -77,7 +77,10 @@ set(project_t332_cpu_instruction_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c")
 set(project_t332_task_switch16_cpu_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_task_switch16_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_task_switch32_decode_smoke.c")
+    "test/app-nxvm/unit/core/devices/cpu_task_switch32_decode_smoke.c"
+    )
+set(project_t332_task_switch32_cpu_fixture_sources
+    "test/app-nxvm/unit/core/devices/cpu_task_switch32_state_smoke.c")
 set(project_t332_protected_cpu_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c")
@@ -168,6 +171,14 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
+    if(source IN_LIST project_t332_task_switch32_cpu_fixture_sources)
+        if(NOT content MATCHES "support/cpu_instruction_fixture[.]h" OR
+            NOT content MATCHES "cpu_instruction_prepare[ \\t\\r\\n]*\\(" OR
+            content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")
+            message(FATAL_ERROR "CPU-local TSS32 state test must use its instruction fixture without board lifecycle: ${source}")
+        endif()
+        return()
+    endif()
     if(NOT "${content}" MATCHES "core_machine_(cpu|board)_fixture[.]h" OR
         NOT "${content}" MATCHES
         "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)")
@@ -215,4 +226,4 @@ if(NOT project_t332_positive MATCHES "test_core_machine_fixture_(create_bind_fre
     message(FATAL_ERROR "T332 CPU fixture lifecycle verifier self-check failed.")
 endif()
 
-message(STATUS "T332 CPU fixture lifecycle closure passed: 43 owners use shared setup, explicit public board setup or CPU-local fixtures.")
+message(STATUS "T332 CPU fixture lifecycle closure passed: 44 owners use shared setup, explicit public board setup or CPU-local fixtures.")

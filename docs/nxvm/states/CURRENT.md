@@ -505,23 +505,23 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S63.
 
-## S56a Active Packet
+## S56b Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S56a, Continuation. |
+| Identifier Mode | M5 T539 S56b, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the four residual 80386 operand/address-size task-JMP forms into a CPU-local receiver. |
-| Non-goals | Direct-TSS32 baseline/descriptor/LDT/fault rows (S56b); paging/debug, LOCK, nested/call/task-gate and pending-IRQ rows (S56c); 16↔32 image/return rows (S56d); TSS I/O-map authorization (S57); CLI/STI/INT/IRET/VM86 group (S58); timing corpus, production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S55 acceptance; CPU work-package S56a; residual `core_machine_task_switch_smoke.c` only. |
+| Objective | Retire the direct-TSS32 baseline, descriptor, LDT and fault rows into one CPU-local receiver. |
+| Non-goals | Operand/address-size decode (S56a); paging/debug, LOCK, nested/call/task-gate and pending-IRQ rows (S56c); 16↔32 image/return rows (S56d); TSS I/O-map authorization (S57); CLI/STI/INT/IRET/VM86 group (S58); timing corpus, production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S56a acceptance; CPU work-package S56b; residual `core_machine_task_switch_smoke.c` only. |
 | Files And ABI Surface | Residual task-switch source, uniquely owned CPU/public-board receivers, registrations, inventories and evidence only. No public ABI change. |
 | Applicable Rules | CPU receivers own TSS state/images, descriptors and task exceptions; public board receivers own only real IRQ/PIC delivery; each original context has one receiver; no alternate task-state path. |
 | Verification | Exact residual-case ledger; focused receivers; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Stop Conditions | Stop if an operand/address decode row cannot be represented by the compact CPU fixture, or if it needs production/API/Shared change. |
-| Exit Criteria | Every S56a operand/address task-JMP context has one CPU-local receiver; no S56a private fixture path survives; all verification passes. |
+| Stop Conditions | Stop if a direct-TSS32 state/fault row cannot be represented by the CPU fixture, or if it needs production/API/Shared change. |
+| Exit Criteria | Every S56b baseline, descriptor, LDT and fault context has one CPU-local receiver; no S56b private fixture path survives; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | The original S56 source was classified before implementation: decode is S56a; CPU-local baseline/descriptor/LDT/fault state is S56b; paging/debug/LOCK/nesting/board delivery is S56c; cross-width images are S56d. This preserves later S57-S63 identifiers. |
+| Similar-Issue Sweep | Classify every direct-TSS32 call by state-image/fault ownership before moving it; do not take paging, debug, LOCK, nested/task-gate, PIC or cross-width rows. |
 
 ## S56a Acceptance
 
@@ -537,6 +537,20 @@ pass 424/424 on x64 and x86; all 66 specialized gates, documentation governance
 and `git diff --check` pass. This is test/CMake/documentation-only work: no
 production/API, Shared, firmware, asset, INI or EXE input changed, so no EXE
 rebuild is required. S56a is accepted; T539 remains open for S56b-S63.
+
+## S56b Acceptance
+
+Direct TSS32 baseline, operand/address forms, descriptor/LDT state and fault
+rows now have one CPU-local receiver, `cpu_task_switch32_state_smoke.c`. Its
+fixture executes `LGDT` and `LTR`; it does not fabricate a TR cache. The
+[receiver map](../etc/evidence/t539-s56b-task-switch32-state-map.md) records
+the exact 17 contexts. The residual mixed source retains only S56c/S56d rows.
+
+Focused x64/x86 receivers and the retained mixed runner pass. Complete units
+pass 425/425 on x64 and x86; documentation governance and `git diff --check`
+pass. This is test/CMake/documentation-only work: no production/API, Shared,
+firmware, asset, INI or EXE input changed, so no EXE rebuild is required. S56b
+is accepted; T539 remains open for S56c-S63.
 
 ## S29 Acceptance
 

@@ -378,7 +378,15 @@ complete receiving map and dual-width verification are recorded in
   duplicating a TSS image. The original construction recipes remain only for
   the S59 80386 timing-runner includer; its original functional calls are gone.
 
-### S56b-S56d: residual task-switch half, 1 matching file
+### S56b: accepted TSS32 state/fault contexts, 1 matching file
+
+- Direct TSS32 baseline, operand/address forms, descriptor rejection, LDT
+  load/validation and state-image fault rows are retired into CPU-only
+  `cpu_task_switch32_state_smoke.c`. Its fixture executes the real CPU
+  `LGDT`/`LTR` bootstrap, so the cached task register is not synthesized by
+  the test.
+
+### S56c-S56d: residual task-switch half, 1 matching file
 
 - `core_machine_task_switch_smoke.c`
 
