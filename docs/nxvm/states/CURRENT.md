@@ -223,31 +223,22 @@ unchanged Shared manifests, documentation governance and diff checks pass.
 Because CPU production changed, all four runnable profiles have rebuilt,
 optimized, stripped T539 x64/x86 EXEs; their hashes and no-INI-change proof
 are recorded in [S41 evidence](../etc/evidence/t539-s41-bound-migration.md).
-S41 is accepted; S42 has retired its three table-register sources and passed
-dual-width verification, awaiting actual-commit review. On acceptance, 52
-direct-private `.c` consumers plus the shared fixture header remain assigned to
-S43-S51. T539 remains open.
+S41 and S42 are accepted. Fifty-two direct-private `.c` consumers plus the
+shared fixture header remain assigned to S43-S51. T539 remains open.
 
-## S42 Active Packet
+## S42 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, M5 T539 S42 after accepted S41 P1 `99ab4c002`; NXVM target only. P1 `f598c6d55` and P2 `dd7d20cbf` are pushed interim milestones, not S42 acceptance. |
-| Admission And Approval | Automatic-S authorization; one session separates executor and coordinator review. |
-| Objective | Migrate DTTR S61, LGDT/LIDT and SGDT/SIDT. Keep instruction decode, table-register values, store widths and CPU-local rejection/rollback in CPU receivers; retain guest descriptor/table setup, segment/VM86 context, delivered faults and PIC/IRQ in board receivers. |
-| Non-goals | No speculative descriptor implementation, broad decoder rewrite, new public ABI, Shared relocation, firmware, INI, MyNES or executable-input change unless a proven in-scope production defect requires packet revision. Descriptor-system and query suites remain S43-S44. |
-| Reference Baseline | Clean pushed S41 P1 `99ab4c002`, x64/x86 units 414/414. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assign these three sources to S42. |
-| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | Retired `core_machine_dttr_s61_smoke.c`, `core_machine_lgdt_lidt_smoke.c` and `core_machine_sgdt_sidt_smoke.c`; their CPU/board receivers, NXVM registration/gates, test-local fixtures and evidence. No unrelated production or Shared files without a revised packet. |
-| Applicable Rules | Product reading set, shared/NXVM architecture and coding, execution and documentation rules. CPU table-register semantics stay CPU-owned; machine memory, guest descriptor construction, fault delivery and PIC routing stay board-owned. No parallel execution path. |
-| Verification | Full x64/x86 builds and repository-only unit suites; T317/T332/T337/T344, CPU/PIC authority, direct matrix, six unchanged manifests, documentation/diff checks. |
-| Expected Markers | CPU receivers link only `x86-cpu`; board cases use public machine operations with no private CPU state; every original case has one explicit receiver. Guest table load/store, segment/VM86 and delivered-fault assertions remain board-owned. |
-| Asset Needs | Repository-only inputs; preserve the S18 local recovery artifact. No executable rebuild unless a proven production input changes. |
-| Reporting Requirements | Original case map, exact changed paths/line counts, dual-width results, pushed P1 and actual-commit P2 review. |
-| Stop Conditions | Lost table-register case, unresolved baseline disagreement, production/API requirement beyond the assigned semantics, or an oversized dependency group requires packet revision before continuing. |
-| Exit Criteria | S42 CPU/board ownership is proved for all three sources, every original case is retained, exhausted mixed-owner classifications are deleted, full unit/gates and actual-commit acceptance are complete, and P commits are pushed. |
-| Original Owner Request | Split oversized CPU migration into traceable S tasks with automatic admission, preserving semantics, original code style and single-owner architecture. |
-| Similar-Issue Sweep | Inspect DTTR/LGDT/LIDT/SGDT/SIDT across operand/address sizes, profiles, memory-only encoding, store width, guest tables, segment/VM86, privilege/limit faults, rollback and IRQ contexts. S43-S54 remain pending, not presumed done. |
+Coordinator actual-change review accepts pushed NXVM P4 `2935b5886`: exactly
+the three named table-register smoke sources and registrations are retired;
+CPU-only forms remain in their three `x86-cpu` receivers, while real guest and
+board contexts remain in `machine-table-register-board-smoke`. Test sources
+add 109/remove 1,370 lines (net -1,261); gate declarations add 33/remove 44.
+No production, Shared, firmware, INI or executable input changed. Complete
+x64/x86 repository-only units pass 415/415 per width; specialized gates pass
+66/66 per width. T317 has 35 strict receivers; T332 recognizes the three
+CPU-local instruction fixtures; T344 classifies the one public board
+constructor (123 total). Documentation governance and diff checks pass, and
+the reviewed commit equals `origin/master`. See [S42 evidence](../etc/evidence/t539-s42-table-register-migration.md).
 
 ## S29 Acceptance
 
