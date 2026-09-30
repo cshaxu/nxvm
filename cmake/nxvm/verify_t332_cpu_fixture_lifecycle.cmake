@@ -9,8 +9,8 @@ endif()
 
 file(STRINGS "${PROJECT_T332_INVENTORY_FILE}" project_t332_inventory)
 list(LENGTH project_t332_inventory project_t332_count)
-if(NOT project_t332_count EQUAL 38)
-    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory must contain 38 owner smokes.")
+if(NOT project_t332_count EQUAL 39)
+    message(FATAL_ERROR "T332 CPU fixture lifecycle inventory must contain 39 owner smokes.")
 endif()
 
 set(project_t332_wrapper_sources
@@ -67,6 +67,7 @@ set(project_t332_cpu_instruction_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
+    "test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c"
@@ -181,4 +182,4 @@ if(NOT project_t332_positive MATCHES "test_core_machine_fixture_(create_bind_fre
     message(FATAL_ERROR "T332 CPU fixture lifecycle verifier self-check failed.")
 endif()
 
-message(STATUS "T332 CPU fixture lifecycle closure passed: 38 owners use shared setup, explicit public board setup or CPU-local fixtures.")
+message(STATUS "T332 CPU fixture lifecycle closure passed: 39 owners use shared setup, explicit public board setup or CPU-local fixtures.")

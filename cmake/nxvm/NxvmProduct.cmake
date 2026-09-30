@@ -898,6 +898,12 @@ target_link_libraries(cpu-control-transfer-near-smoke PRIVATE x86-cpu)
 add_executable(cpu-control-transfer-far-smoke
     test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c)
 target_link_libraries(cpu-control-transfer-far-smoke PRIVATE x86-cpu)
+add_executable(cpu-idt-privilege-entry-smoke
+    test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c)
+target_link_libraries(cpu-idt-privilege-entry-smoke PRIVATE x86-cpu)
+add_executable(machine-idt-privilege-pic-board-smoke
+    test/app-nxvm/unit/core/devices/machine_idt_privilege_pic_board_smoke.c)
+target_link_libraries(machine-idt-privilege-pic-board-smoke PRIVATE core-machine-executor)
 add_executable(machine-control-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_control_state_board_smoke.c)
 target_link_libraries(machine-control-state-board-smoke PRIVATE core-machine)
@@ -990,9 +996,6 @@ endif()
 add_executable(core-machine-interrupt-entry-smoke
     test/app-nxvm/unit/core/devices/core_machine_interrupt_entry_smoke.c)
 target_link_libraries(core-machine-interrupt-entry-smoke PRIVATE core-machine)
-add_executable(core-machine-idt-privilege-entry-smoke
-    test/app-nxvm/unit/core/devices/core_machine_idt_privilege_entry_smoke.c)
-target_link_libraries(core-machine-idt-privilege-entry-smoke PRIVATE core-machine)
 add_executable(core-machine-real-mode-386-rep-cmps-smoke
     test/app-nxvm/unit/core/devices/core_machine_real_mode_386_rep_cmps_smoke.c)
 target_link_libraries(core-machine-real-mode-386-rep-cmps-smoke PRIVATE core-machine)
@@ -1059,9 +1062,9 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-protected-privilege-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_privilege_smoke.c)
-target_link_libraries(core-machine-protected-privilege-smoke PRIVATE core-machine)
+add_executable(machine-protected-privilege-board-smoke
+    test/app-nxvm/unit/core/devices/machine_protected_privilege_board_smoke.c)
+target_link_libraries(machine-protected-privilege-board-smoke PRIVATE core-machine)
 
 add_executable(core-machine-protected-return-atomicity-smoke
     test/app-nxvm/unit/core/devices/core_machine_protected_return_atomicity_smoke.c)
@@ -1098,7 +1101,7 @@ foreach(target IN ITEMS
     core-machine-interrupt-entry-smoke
     core-machine-iret-outer-s52-smoke
     core-machine-vm86-delivery-smoke
-    core-machine-protected-privilege-smoke
+    machine-protected-privilege-board-smoke
     core-machine-protected-return-atomicity-smoke
     core-machine-call-gate-privilege-entry-smoke
     core-machine-tss-iomap-port-smoke
@@ -1177,6 +1180,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "cpu-control-transfer-branch-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c"
     "cpu-control-transfer-near-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
     "cpu-control-transfer-far-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
+    "cpu-idt-privilege-entry-smoke|test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
     "cpu-debug-state-smoke|test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c"
     "cpu-dttr-s61-smoke|test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
     "cpu-descriptor-system-smoke|test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
@@ -1211,8 +1215,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 38)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 38 entries.")
+if(NOT project_t317_inventory_count EQUAL 39)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 39 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1239,8 +1243,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 38 OR NOT project_t317_source_count EQUAL 38)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 38 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 39 OR NOT project_t317_source_count EQUAL 39)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 39 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2106,6 +2110,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-control-transfer-branch-smoke
     cpu-control-transfer-near-smoke
     cpu-control-transfer-far-smoke
+    cpu-idt-privilege-entry-smoke
+    machine-idt-privilege-pic-board-smoke
     machine-control-state-board-smoke
     core-machine-protected-far-s1-smoke
     core-machine-protected-data-access-s2-smoke
@@ -2118,7 +2124,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-vm86-delivery-smoke
     core-machine-vm86-iret-smoke
     core-machine-interrupt-entry-smoke
-    core-machine-idt-privilege-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
     cpu-arpl-smoke
@@ -2134,7 +2139,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-bound-board-smoke
     core-machine-segment-selector-smoke
     core-machine-cpu-profile-gate-smoke
-    core-machine-protected-privilege-smoke
+    machine-protected-privilege-board-smoke
     core-machine-protected-return-atomicity-smoke
     core-machine-protected-iret-smoke
     core-machine-call-gate-smoke
