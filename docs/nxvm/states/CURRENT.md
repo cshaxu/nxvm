@@ -438,27 +438,24 @@ pass.  No EXE rebuild is required for test/CMake/docs-only input.  See [S51
 evidence](../etc/evidence/t539-s51-control-transfer-receiver-map.md).  S51 is
 accepted; T539 remains open for S52--S63.
 
-## S52 Active Packet
+## S52 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | M5 T539 S52, Continuation. |
-| Admission And Approval | The owner authorized automatic admission of each bounded T539 S. |
-| Objective | Retire the two direct-private IDT/privilege-entry sources while preserving DPL/CPL decisions, gate selection and exact interrupt-frame publication in correct CPU-local or public-board receivers. |
-| Intake Boundary | S51 retired the final control-transfer source. At intake S52 owned only `core_machine_idt_privilege_entry_smoke.c` and `core_machine_protected_privilege_smoke.c` (665 lines). Their three replacement receivers are `cpu_idt_privilege_entry_smoke.c`, `machine_idt_privilege_pic_board_smoke.c` and `machine_protected_privilege_board_smoke.c`; far/data, outer-return, task-switch, timing and VM86 rows remain assigned to later S packets. |
-| Non-goals | No production/public API, Shared, firmware, asset, INI or EXE change; no broad interrupt/VM86 migration outside a required direct includer closure. |
-| Reference Baseline | S51 acceptance; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); applicable CPU and Core public-machine contracts. |
-| Candidate Proposal | [T539 CPU migration work packages](../etc/architecture/t539-cpu-work-packages.md), S52 row. |
-| Files And ABI Surface | The two named NXVM unit sources, CPU/public-board receiver sources, their CMake registrations, T332/T344 inventories and S52 evidence only. No production or public ABI surface changes. |
-| Applicable Rules | System Architecture: one CPU state owner; Coding: receiver tests use the existing CPU fixture or a public board contract, never a new wrapper; Execution: exact source/case ledger, x64/x86 full-unit gate and actual-diff review; Documentation: Current/work-package/evidence updates. |
-| Verification | Exact source/case receiver map, affected x64/x86 targets, complete repository-only unit suite per width, specialized gates, direct-private sweep, documentation governance and `git diff --check`. |
-| Expected Markers | The replacement receiver(s) retain the applicable historical markers and add one `M5:T539:S52:*:OK` marker per owned semantic family. |
-| Asset Needs | None; no EXE rebuild unless executable inputs change. |
-| Reporting Requirements | Report the audited case split and receiving boundary before moving code; report any source family that requires a packet revision; deliver one pushed NXVM implementation P followed by actual-diff acceptance evidence. |
-| Stop Conditions | Stop and revise the packet if a case requires a production/API change, a Shared change, or a source outside the two named files/direct includer closure; do not silently move later-S interrupt, VM86, far/data or task-switch behavior. |
-| Exit Criteria | Every S52 IDT/privilege family has one correct CPU-local or public-board receiver; both direct-private sources are retired without a private setup path; all verification passes. |
-| Original Owner Request | Execute the bounded CPU extraction autonomously after the owner requested that the prior oversized CPU row be split into traceable S tasks. |
-| Similar-Issue Sweep | Search the two S52 sources and active CMake inventories for direct Core-private setup, classify every discovered family in the S52 map, and leave all later-S source matches explicitly assigned rather than duplicating a receiver. |
+Actual pushed NXVM P1 `bec9e0a70` retires both direct-private IDT and
+privilege-entry sources.  Their cases now have exactly three receivers:
+software `INT` DPL/gate/frame and rollback semantics are CPU-local;
+external-IRQ DPL bypass is an independent PIC board receiver; and full-Core
+delivery plus handler continuation uses only public Core operations.  No
+receiver borrows executor or shared-PIC fields, and no parallel private setup
+path remains.
+
+Ten NXVM paths add 487/remove 398 lines (net +89), with no production/API,
+Shared, firmware, asset, INI or executable input change.  Focused x64/x86
+receivers and complete repository-only units pass 419/419 per width.  Both
+specialized-gate aggregates, the 39-owner T332 lifecycle inventory, the
+103-row T344 matrix, documentation governance, direct-private sweep and diff
+checks pass.  No EXE rebuild is required.  See [S52
+evidence](../etc/evidence/t539-s52-idt-privilege-receiver-map.md).  S52 is
+accepted; T539 remains open for S53--S63.
 
 
 ## S29 Acceptance
