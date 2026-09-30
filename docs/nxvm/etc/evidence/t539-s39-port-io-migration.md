@@ -40,5 +40,5 @@ net minus 325; this 44-line evidence report is separate. The complete staged
 change adds 1,283 and removes 1,564 lines. `git diff --cached --check`
 passes. The full builds did not modify a tracked EXE.
 
-The implementation commit and actual-commit review are recorded in the
-current packet after their respective pushes. T539 remains open.
+Implementation P1 `07019f588` is pushed. Its actual-commit review and S39
+acceptance are recorded in `docs/nxvm/states/CURRENT.md`. T539 remains open.

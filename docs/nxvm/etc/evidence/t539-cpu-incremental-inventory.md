@@ -259,9 +259,15 @@ the receiving map and verification.
 
 ### S39: 3 port-I/O matching files
 
-- `core_machine_port_io_s55_smoke.c`
-- `core_machine_port_ownership_smoke.c`
-- `core_machine_port_strings_smoke.c`
+- `core_machine_port_io_s55_smoke.c` (retired by S39)
+- `core_machine_port_ownership_smoke.c` (renamed to its board owner by S39)
+- `core_machine_port_strings_smoke.c` (retired by S39)
+
+The 170 original scalar and sixty original string-port contexts retain CPU
+or public-board receivers; port ownership stays board-local. The pending
+direct-private `.c` test count falls from 61 to 58, plus the shared fixture
+header. [S39 evidence](t539-s39-port-io-migration.md) records the complete
+receiving map and verification.
 
 ### S40: 13 matching files
 
