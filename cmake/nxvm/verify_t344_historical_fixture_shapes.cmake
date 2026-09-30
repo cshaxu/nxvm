@@ -149,14 +149,16 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # S38 string scan/compare retains genuine board fault and IRQ delivery.
     "test/app-nxvm/unit/core/devices/machine_stos_board_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_scas_board_smoke.c"
-    "test/app-nxvm/unit/core/devices/machine_cmps_board_smoke.c")
+    "test/app-nxvm/unit/core/devices/machine_cmps_board_smoke.c"
+    # S40 retains guest GDT, delivered #GP frame and real PIC IRQ.
+    "test/app-nxvm/unit/core/devices/machine_arpl_board_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 121)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 121 entries.")
+if(NOT project_t344_constructor_count EQUAL 122)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 122 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 121)
+if(NOT project_t344_constructor_unique_count EQUAL 122)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -175,8 +177,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 121)
-    message(FATAL_ERROR "T344 expected 121 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 122)
+    message(FATAL_ERROR "T344 expected 122 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)
@@ -224,4 +226,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 fixture shapes passed: 108 direct inventoried, 6 shared public-limit callers, 4 timing-manifest, 2 guest-table-load and 1 INTA constructor.")
+message(STATUS "T344 fixture shapes passed: 108 direct inventoried, 6 shared public-limit callers, 4 timing-manifest, 2 guest-table-load, 1 INTA and 1 ARPL board constructor.")

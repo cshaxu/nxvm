@@ -1012,12 +1012,16 @@ add_executable(core-machine-80286-protected-mode-smoke
     test/app-nxvm/unit/core/devices/core_machine_80286_protected_mode_smoke.c)
 target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
 
-add_executable(core-machine-arpl-smoke
-    test/app-nxvm/unit/core/devices/core_machine_arpl_smoke.c)
-target_link_libraries(core-machine-arpl-smoke PRIVATE core-machine)
-add_executable(core-machine-arpl-s53-smoke
-    test/app-nxvm/unit/core/devices/core_machine_arpl_s53_smoke.c)
-target_link_libraries(core-machine-arpl-s53-smoke PRIVATE core-machine)
+add_executable(cpu-arpl-smoke
+    test/app-nxvm/unit/core/devices/cpu_arpl_smoke.c)
+target_link_libraries(cpu-arpl-smoke PRIVATE x86-cpu)
+add_executable(machine-arpl-board-smoke
+    test/app-nxvm/unit/core/devices/machine_arpl_board_smoke.c)
+target_link_libraries(machine-arpl-board-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(cpu-arpl-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(machine-arpl-board-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-bound-s54-smoke
     test/app-nxvm/unit/core/devices/core_machine_bound_s54_smoke.c)
 target_link_libraries(core-machine-bound-s54-smoke PRIVATE core-machine)
@@ -1075,7 +1079,6 @@ foreach(target IN ITEMS
     core-machine-debug-mov-s59-smoke
     core-machine-tf-db-s60-smoke
     core-machine-vm86-delivery-smoke
-    core-machine-arpl-s53-smoke
     core-machine-protected-privilege-smoke
     core-machine-protected-return-atomicity-smoke
     core-machine-call-gate-privilege-entry-smoke
@@ -1149,7 +1152,6 @@ target_link_libraries(core-machine-debug-smoke PRIVATE core-machine)
 # evidence of strict compilation for a smoke source.
 function(project_configure_t317_strict_cpu_smokes)
 set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
-    "core-machine-arpl-s53-smoke|test/app-nxvm/unit/core/devices/core_machine_arpl_s53_smoke.c"
     "core-machine-bound-s54-smoke|test/app-nxvm/unit/core/devices/core_machine_bound_s54_smoke.c"
     "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
     "core-machine-cli-sti-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c"
@@ -1186,8 +1188,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 35)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 35 entries.")
+if(NOT project_t317_inventory_count EQUAL 34)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 34 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1214,8 +1216,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 35 OR NOT project_t317_source_count EQUAL 35)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 35 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 34 OR NOT project_t317_source_count EQUAL 34)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 34 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2099,8 +2101,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-idt-privilege-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
-    core-machine-arpl-smoke
-    core-machine-arpl-s53-smoke
+    cpu-arpl-smoke
+    machine-arpl-board-smoke
     core-machine-bound-s54-smoke
     core-machine-segment-selector-smoke
     core-machine-cpu-profile-gate-smoke
@@ -2232,8 +2234,7 @@ list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
 # unit #UD source cannot silently bypass that classification.
 set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-80286-protected-mode-smoke
-    core-machine-arpl-s53-smoke
-    core-machine-arpl-smoke
+    cpu-arpl-smoke
     cpu-bit-test-smoke
     core-machine-bound-s54-smoke
     core-machine-cli-sti-s48-smoke
