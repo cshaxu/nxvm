@@ -301,9 +301,10 @@ receiving map and final verification are recorded in
 
 - `core_machine_descriptor_system_smoke.c`
 
-S43 owns descriptor/table/cache cases in this source. Its `SMSW/LMSW/CLTS/MOV
-CR` control-state block remains in the same source until S45 receives it; S43
-must not delete or duplicate that block merely to retire a filename.
+S43 is accepted: its descriptor/table/cache cases moved to
+`cpu_descriptor_system_smoke.c`. Its `SMSW/LMSW/CLTS/MOV CR` control-state
+block remains in the original source as S45's sole input; S43 did not delete
+or duplicate it merely to retire a filename.
 
 ### S44: Descriptor queries, 2 matching files
 

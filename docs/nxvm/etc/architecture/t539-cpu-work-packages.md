@@ -86,7 +86,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S40 | ARPL base plus S53 includer: two sources, 910 lines. Keep the includer and its original real/protected CPU and board cases in one change. |
 | S41 | BOUND S54: one source, 899 lines. Preserve bounds, width/profile, segment and fault/IRQ contexts. |
 | S42 | Table-register instructions: DTTR S61, LGDT/LIDT and SGDT/SIDT; three sources, 1,367 lines. Retain guest table loads, store width, segment/VM86 and IRQ/fault contexts. |
-| S43 | Descriptor-system portion of the mixed suite: preserve the complete descriptor/table matrix and its original cache/rollback cases. The source's `SMSW/LMSW/CLTS/MOV CR` control-state block stays once in S45; S43 may not claim source retirement merely for a filename. |
+| S43 | Accepted: descriptor-system cases moved to their CPU-only receiver; complete descriptor/table/cache/rollback coverage remains. The source's `SMSW/LMSW/CLTS/MOV CR` control-state block stays once in S45. |
 | S44 | Descriptor queries: LAR/LSL and VERR/VERW; two sources, 1,748 lines. Preserve visibility, privilege, selector and protected-fault outcomes. |
 | S45 | Control state: CLTS S62 and MSW S63; two sources, 726 lines. Preserve CR0/TS/PE, privilege, memory and interrupt cases. |
 | S46 | Debug state: MOV DR S59 and TF/#DB S60; two sources, 1,006 lines. Preserve breakpoint register, trap/fault delivery, RF/TF and IRQ order. |

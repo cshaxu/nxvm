@@ -21,18 +21,24 @@ receiver.
 No production source, public ABI, Shared component, firmware, INI or executable
 input changes in this package.
 
-## Focused evidence
+## Verification and acceptance
 
 - New CPU receiver: x64 strict compile/link/run passed and printed
   `M5:T539:S43:DESCRIPTOR-SYSTEM-CPU:OK`.
 - Retained S45 control source: rebuilt directly with the configured x64 strict
   compiler, linked against the existing Core libraries, and printed
   `M5:T304:CONTROL-STATE:OK`.
-- The retained source and new CPU receiver both pass x64 and x86 strict syntax
-  compilation with `-Wall -Wextra -Wpedantic -Werror`.
-- T332 CPU fixture lifecycle verifier passes with 36 owners. T317's generated
-  command inventory passes with 36 strict CPU receivers.
-- `git diff --check` passes.
+- The retained source and new CPU receiver pass x64 and x86 strict syntax
+  compilation with `-Wall -Wextra -Wpedantic -Werror`; the new x86 receiver
+  also links and runs with its S43 marker.
+- Complete repository-only units pass 457/457 on both x64 and x86. The x86
+  result is from a freshly configured MinGW Makefiles tree, so it includes the
+  new CTest registration rather than a stale generated test list.
+- Both specialized aggregates pass, including T317's 36 strict CPU receivers,
+  T332's 36 fixture owners, T337, T344, T345, CPU/PIC authority, direct-matrix,
+  manifest and documentation-governance gates.
+- `git diff --check` and actual-change review of P1 pass; the pushed commit is
+  `4ff59cd5c`.
 
-The S packet still requires the complete x64/x86 repository unit and specialized
-gate evidence before closure; focused evidence is not represented as closure.
+S43 is accepted. The retained control-state source is the single S45 input;
+there is no compatibility receiver or duplicate descriptor path.

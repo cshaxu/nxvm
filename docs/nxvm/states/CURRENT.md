@@ -2,14 +2,13 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S41 are accepted; S42 is active under automatic
-admission. S42 P1 `f598c6d55` and P2 `dd7d20cbf` establish its CPU and
-public-board receivers, but the three original sources remain until the real
-CPL-transition receiver replaces their remaining privilege coverage. The former eleven-file, 7,000-plus-line arithmetic assignment is
+M5 T539 remains open. S1-S43 are accepted. S43 P1 `4ff59cd5c` establishes its
+CPU-local descriptor receiver; the retained control-state source is assigned
+only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
 its oversized FLAGS/string/port row was divided into S36-S39. At S40 intake,
 the 7,736-line descriptor/system row was divided into S40-S46 and the formerly planned
-S41-S48 became S47-S54. S42-S54 remain pending after active S41. Earlier
+S41-S48 became S47-S54. S44-S54 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -240,26 +239,22 @@ CPU-local instruction fixtures; T344 classifies the one public board
 constructor (123 total). Documentation governance and diff checks pass, and
 the reviewed commit equals `origin/master`. See [S42 evidence](../etc/evidence/t539-s42-table-register-migration.md).
 
-## S43 Active Packet
+## S43 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, M5 T539 S43 after accepted S42 P5 `91f3ebb7d`; NXVM target only. |
-| Admission And Approval | Owner's automatic-S authorization for the already approved bounded CPU-work plan; one session separates executor and coordinator review. |
-| Objective | Migrate every descriptor/table/cache context from the mixed private `core_machine_descriptor_system_smoke.c` into exactly one CPU-local or public-board receiver. CPU owns instruction decode, architectural cache state, local rejection and rollback; board owns guest tables, physical memory, privilege transition, delivered fault and PIC/IRQ context. |
-| Non-goals | The source's `SMSW/LMSW/CLTS/MOV CR` control-state block remains S45 and prevents source retirement in S43. No descriptor-system production rewrite, new public ABI, speculative timing claim, Shared relocation, firmware, INI, MyNES or executable-input change. LAR/LSL/VERR/VERW remain S44; debug/protected-transfer dependency groups remain S46-S49. |
-| Reference Baseline | Clean pushed S42 P5 `91f3ebb7d`, x64/x86 units 415/415. [CPU work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md) assign the 1,080-line descriptor-system source to S43. |
-| Candidate Proposal | [Independent chips](../proposals/m5-shared-chip-extraction.md), [CPU boundary](../etc/architecture/t539-s18-cpu-extraction.md), [work packages](../etc/architecture/t539-cpu-work-packages.md) and [inventory](../etc/evidence/t539-cpu-incremental-inventory.md). |
-| Files And ABI Surface | The descriptor/table/cache portions of `core_machine_descriptor_system_smoke.c`, their CPU and public-board receivers, NXVM test registration/gates, test-local fixtures and S43 evidence only. The retained control-state portion is explicitly S45 input, not an S43 compatibility path. No production or Shared interface change without a revised packet. |
-| Applicable Rules | Product reading set; execution, architecture, coding and documentation rules; NXVM architecture/Coding authorities. CPU-local receivers link only `x86-cpu`; board receivers use public Core operations and real guest contexts. |
-| Verification | Full repository-only x64/x86 unit suites; T317/T332/T337/T344, CPU/PIC authority, direct matrix, six unchanged manifests, documentation governance and diff checks. Focused work may run the affected receivers only before the complete suites. |
-| Expected Markers | Every original descriptor/table/cache/rollback case is mapped once; CPU receiver has no `core_machine` dependency; board receiver has no private CPU/RAM access. Real table and privilege effects remain public-board assertions. The named control-state block remains once in its S45 source portion. |
-| Asset Needs | Repository-only inputs; retain the S18 recovery artifact. No executable rebuild unless a proven production input changes. |
-| Reporting Requirements | [S43 evidence](../etc/evidence/t539-s43-descriptor-system-migration.md): original-case receiving map, source/test line counts, dual-width results, complete-P push and actual-commit acceptance. |
-| Stop Conditions | A lost descriptor-system case, unresolved CPU-versus-board ownership, included-source dependency, production/API need beyond scope, or oversized indivisible receiver requires a packet revision before continuing. |
-| Exit Criteria | Every S43 descriptor/table/cache context has one receiver; the source's named S45 control-state remainder is explicit and no descriptor case remains there; complete units/gates and actual-change review pass; evidence/current transfer is committed and pushed. |
-| Original Owner Request | Split the oversized CPU migration into traceable S tasks with automatic admission, preserving semantics, original code style and one-owner architecture. |
-| Similar-Issue Sweep | Inspect every descriptor-system instruction/form across CPU profiles, operand widths, null/invalid selectors, descriptor type/presence/busy state, CPL/VM86, table/cache/control rollback, reset and real delivered-fault/IRQ context; transfer only named out-of-scope query/control/debug groups to S44-S49. |
+P1 `4ff59cd5c` moves every descriptor/table/cache case from the mixed source
+to the CPU-only `cpu_descriptor_system_smoke.c`; its retained original source
+now contains only S45's `SMSW/LMSW/CLTS/MOV CR` control-state cases. The new
+receiver links only `x86-cpu`; no descriptor case remains in the S45 input.
+The nine scoped P1 paths pass `git show --check` and equal `origin/master`.
+No production/API, Shared, firmware, INI or executable input changed.
+
+Complete repository-only units pass 457/457 on both x64 and x86. Both widths'
+specialized aggregate passes, including T317 (36 strict CPU receivers), T332
+(36 fixture owners), T337, T344, T345, CPU/PIC authority, direct-matrix,
+manifest and documentation-governance gates. See
+[S43 evidence](../etc/evidence/t539-s43-descriptor-system-migration.md).
+S43 is accepted; S44 owns descriptor queries and S45 alone owns the retained
+control-state source portion. T539 remains open.
 
 ## S29 Acceptance
 
