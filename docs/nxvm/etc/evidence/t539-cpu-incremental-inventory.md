@@ -365,11 +365,18 @@ complete receiving map and dual-width verification are recorded in
 - `cpu_outer_return_smoke.c` (CPU-local return and exception routes)
 - `machine_outer_iret_pic_board_smoke.c` (PIC IRR→ISR delivery route)
 
-### S53--S54: task-switch halves, 1 matching file
+### S55: accepted 16-bit/task-gate task-switch half
+
+- The 16-bit/task-gate contexts of `core_machine_task_switch_smoke.c` are
+  retired into the CPU-only `cpu_task_switch16_smoke.c` and public
+  PIC-board `machine_task_switch16_pic_board_smoke.c` receivers. S56 retains
+  only four 80386 operand/address-size forms in the original source.
+
+### S56: residual task-switch half, 1 matching file
 
 - `core_machine_task_switch_smoke.c`
 
-### S55: TSS I/O-map port, 1 matching file
+### S57: TSS I/O-map port, 1 matching file
 
 - `core_machine_tss_iomap_port_smoke.c`
 

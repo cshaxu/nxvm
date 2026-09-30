@@ -11,7 +11,7 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; later packages now run through S63.
-S48-S54 are accepted and S55-S63 remain pending. Earlier
+S48-S55 are accepted and S56-S63 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -490,6 +490,20 @@ documentation governance and diff checks pass. No EXE rebuild is required.
 The [S54 receiver map](../etc/evidence/t539-s54-outer-return-receiver-map.md)
 records the exact allocation. S54 is accepted; T539 remains open for S55-S63.
 
+## S55 Acceptance
+
+S55 retires the 16-bit/task-gate half of `core_machine_task_switch_smoke.c`.
+The CPU-only receiver covers direct and indirect task JMP, task CALL/GDT task
+gate, LDT, nested return, IDT/double-fault task gates and every named selector,
+presence, busy, short-TSS, stack and LOCK failure route. The sole board
+receiver covers a real PIC IRQ0 IRR→ISR acknowledgement after a task switch.
+All S55-only private helpers are deleted; the residual legacy source contains
+only S56's four 80386 operand/address-size forms. Complete units pass 423/423
+on x64 and x86; all 66 specialized gates, the repaired CPU-boundary negative
+test, Lib manifest and documentation governance pass. No production/API,
+Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
+required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
+records the exact allocation. S55 is accepted; T539 remains open for S56-S63.
 
 ## S29 Acceptance
 
