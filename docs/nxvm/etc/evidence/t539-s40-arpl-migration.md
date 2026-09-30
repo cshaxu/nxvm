@@ -36,5 +36,6 @@ Complete x64 and x86 builds pass. Both complete unit suites pass 413/413.
 The specialized-gate aggregate passes 66/66 on both widths; T344 direct
 compilation passes 412 rows on each width. Six unchanged Shared manifests pass 6/6 on both
 widths; documentation governance and `git diff --check` pass. No tracked EXE
-was modified. Implementation P1 and actual-commit coordinator review are
-recorded after push; CPU extraction as a whole remains open.
+was modified. Pushed implementation P1 is `e4a7615d1`; actual-commit review
+confirmed exactly nine scoped paths, `git show --check`, and equality with
+`origin/master`. CPU extraction as a whole remains open.

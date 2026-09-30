@@ -271,8 +271,13 @@ receiving map and verification.
 
 ### S40: ARPL base and includer, 2 matching files
 
-- `core_machine_arpl_s53_smoke.c`
-- `core_machine_arpl_smoke.c`
+- `core_machine_arpl_s53_smoke.c` (retired by S40)
+- `core_machine_arpl_smoke.c` (retired by S40)
+
+The original base and S53 cases have CPU-only or public-board receivers, and
+the direct source includer is removed. The pending direct-private `.c` count
+falls from 58 to 56, plus the common fixture header. [S40 evidence](t539-s40-arpl-migration.md)
+records the receiving map and dual-width verification.
 
 ### S41: BOUND, 1 matching file
 
