@@ -11,7 +11,7 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; later packages now run through S63.
-S48 is accepted, S49 is active and S50-S63 remain pending. Earlier
+S48 and S49 are accepted, S50 is active and S51-S63 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -378,19 +378,40 @@ diff checks pass.  No EXE rebuild is required for test/CMake/docs-only input.
 See [S48 evidence](../etc/evidence/t539-s48-call-gate-privilege-entry-migration.md).
 S48 is accepted; T539 remains open for S49--S61.
 
-## S49 Active Packet
+## S49 Acceptance
+
+Actual pushed NXVM P1 `19ea7597e` splits the former 1,181-line mixed
+control-transfer smoke at its instruction-family boundary.  The new
+CPU-local receiver owns all short/near Jcc, direct short/near JMP,
+LOOP/LOOPE/LOOPNE and JCXZ/JECXZ forms, their 16/32-bit code/address forms,
+the four real-mode CPU profiles, 80286 near-Jcc #UD and target-limit
+atomicity.  It links only `x86-cpu` and uses the CPU instruction fixture; no
+Core private machine field is exposed.  The renamed retained source contains
+only the pending S50 near-call/return and S51 far-transfer families, each
+once.
+
+Eight NXVM paths add 366/remove 398 lines (net -32), with no production/API,
+Shared, firmware, INI or executable input change.  Complete repository-only
+units pass 417/417 on x64 and x86.  Both specialized-gate aggregates,
+including the 36-owner T332 lifecycle check and the 105-row retained T344
+matrix, documentation governance and diff checks pass per width.  No EXE
+rebuild is required for test/CMake/docs-only input.  See [S49
+evidence](../etc/evidence/t539-s49-control-transfer-branch-migration.md).
+S49 is accepted; T539 remains open for S50--S63.
+
+## S50 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S49, Continuation. |
+| Identifier Mode | M5 T539 S50, Continuation. |
 | Admission And Approval | The owner authorized automatic admission of each bounded T539 S. |
-| Objective | Retire direct-private setup from the branch/loop portion of `core_machine_control_transfer_smoke.c` while retaining each short/near conditional branch and LOOP/JCXZ behavior in one CPU-local or public-board receiver. |
-| Intake Boundary | The original 1,181-line source is split before implementation: S49 owns branch/loop and real-mode forms; S50 owns near call/return; S51 owns far transfers. This avoids a mixed private fixture and keeps each receiver's owner boundary inspectable. |
-| Non-goals | No near call/return (S50), far transfer (S51), production/public API, Shared, firmware, asset, INI or EXE change; no IDT/privilege, far/data, outer return, task-switch, timing or VM86 migration outside an unavoidable direct includer closure. |
+| Objective | Retire direct-private setup from the near-call/return portion of `core_machine_control_transfer_near_far_smoke.c` while retaining every direct/indirect CALL, RET and RET-immediate behavior in one CPU-local or public-board receiver. |
+| Intake Boundary | S49 has retired branch/loop and real-mode branch forms. S50 owns the direct/indirect near CALL and RET forms, operand-size variants and target-limit atomicity. S51 retains far transfers. This keeps each receiver's owner boundary inspectable. |
+| Non-goals | No far transfer (S51), production/public API, Shared, firmware, asset, INI or EXE change; no IDT/privilege, far/data, outer return, task-switch, timing or VM86 migration outside an unavoidable direct includer closure. |
 | Reference Baseline | S48 acceptance; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); applicable CPU and Core public-machine contracts. |
 | Verification | Affected x64/x86 targets, complete repository-only unit suite per width, specialized gates, direct-private sweep, documentation governance and `git diff --check`. |
 | Asset Needs | None; no EXE rebuild unless executable inputs change. |
-| Exit Criteria | Every S49 branch/loop family has one correct owner-local receiver; its portion is retired without leaving a private setup path; S50/S51 retain their distinct original families exactly once; all verification passes. |
+| Exit Criteria | Every S50 near-call/return family has one correct owner-local receiver; its portion is retired without leaving a private setup path; S51 retains its distinct original family exactly once; all verification passes. |
 
 
 ## S29 Acceptance

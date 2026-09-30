@@ -17,14 +17,17 @@ the S50 near-call/return and S51 far-transfer families.  It remains the one
 historical direct-private construction input for those pending packages; S49
 does not preserve a second branch/loop path there.
 
-## Acceptance evidence to complete this S
+## Acceptance evidence
 
-- Both host widths build and run `cpu-control-transfer-branch-smoke` and the
+P1 `19ea7597e` changes eight NXVM paths: 366 additions and 398 removals
+(net -32).  `git show --check` and the final worktree `git diff --check` pass.
+
+- x64 and x86 each build and run `cpu-control-transfer-branch-smoke` and the
   retained `core-machine-control-transfer-smoke`.
-- The complete repository-only unit suite and specialized gates pass on both
-  widths.
-- The T344 retained-constructor inventory recognizes the renamed retained
-  source; no count is reduced merely by hiding a direct constructor.
-- Documentation governance and `git diff --check` pass.  This is test/CMake/
-  documentation work only, so no product executable input changes and no EXE
-  rebuild is required.
+- Complete repository-only unit suites pass 417/417 on x64 (62.93 seconds)
+  and x86 (57.54 seconds).
+- Both specialized-gate aggregates pass.  T332 recognizes 36 correct CPU
+  fixture owners; T344 recognizes 105 retained direct-constructor inputs and
+  the renamed retained source.  Neither count is reduced by a hidden path.
+- Documentation governance passes.  This is test/CMake/documentation work
+  only, so no product executable input changes and no EXE rebuild is required.
