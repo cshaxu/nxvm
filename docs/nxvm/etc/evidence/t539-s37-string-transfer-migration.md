@@ -32,8 +32,8 @@ other callers. No product executable input or Shared source/test changed.
 - Eleven tracked code/test/build/gate paths add 1,065 and remove 1,327
   lines, net minus 262 (`git diff --cached --numstat`, excluding these two
   documentation paths). Four replacement tests pass on x64 and x86. Complete
-  repository-only unit suites pass 408/408 per width after the final literal
-  LODS vector correction.
+  repository-only unit suites pass 408/408 per width after the final LODS
+  vector and fault-rollback assertions.
 - Both widths' 66-target specialized gate aggregate passed, including
   T317/T332/T337/T344, CPU/PIC authority, direct-compilation matrix (407
   rows), and documentation governance. Six unchanged Shared manifests passed
@@ -41,5 +41,5 @@ other callers. No product executable input or Shared source/test changed.
 - Remaining STOS/SCAS/CMPS and port cases stay assigned to S38-S39. S37
   changes no source algorithm, public ABI, firmware, profile, INI or EXE input.
 
-P1 implementation and actual-commit P2 review remain pending. This evidence
-does not itself accept S37.
+P1 implementation is pushed as `3c826c32d`. Its actual-commit P2 review and
+S37 acceptance are recorded in `docs/nxvm/states/CURRENT.md`.
