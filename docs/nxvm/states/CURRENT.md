@@ -471,6 +471,27 @@ T344 confirms 101 direct constructors; direct-private, documentation-governance
 and diff checks pass.  The [S53 receiver map](../etc/evidence/t539-s53-protected-far-data-receiver-map.md)
 records the exact allocation.  S53 is accepted; T539 remains open for S54-S63.
 
+## S54 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S54, Continuation. |
+| Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
+| Objective | Retire the outer-return pair while preserving outer RETF/IRET frames, cached segments, PIC delivery and all-or-nothing failures. |
+| Non-goals | No task-switch, VM86, timing-ledger, production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S53 acceptance; CPU work-package S54; protected-mode CPU and public-board contracts. |
+| Candidate Proposal | T539 CPU migration work packages, S54 row. |
+| Files And ABI Surface | Only `core_machine_iret_outer_s52_smoke.c`, its direct includer `core_machine_protected_return_atomicity_smoke.c`, receivers, registrations, inventories and evidence. No public ABI change. |
+| Applicable Rules | CPU owns CPU state; board checks use public contracts; no duplicate descriptor model; complete x64/x86 unit closure. |
+| Verification | Exact receiver ledger, focused receivers, full x64/x86 unit suites, applicable lifecycle/shape gates, direct-private sweep, documentation governance and diff check. |
+| Expected Markers | Retained historical S52 markers plus one S54 CPU/board marker per receiver. |
+| Asset Needs | None; test-only work requires no EXE rebuild. |
+| Reporting Requirements | Report receiver allocation, changes, all gates and any out-of-scope case before acceptance. |
+| Stop Conditions | Stop if migration needs production/API/Shared change or reaches task-switch/VM86/timing behavior. |
+| Exit Criteria | Both private sources are retired; every outer-return/failure case has exactly one CPU-local or public-board receiver; all verification passes. |
+| Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
+| Similar-Issue Sweep | Review the direct includer closure and all outer-return forms together; transfer every non-S54 behavior to its named later receiver. |
+
 
 ## S29 Acceptance
 
