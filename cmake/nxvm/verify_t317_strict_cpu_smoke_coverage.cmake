@@ -9,8 +9,8 @@ endif()
 
 file(STRINGS "${PROJECT_T317_STRICT_INVENTORY_FILE}" project_t317_inventory)
 list(LENGTH project_t317_inventory project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 40)
-    message(FATAL_ERROR "T317 strict CPU smoke audit requires exactly 40 inventory entries.")
+if(NOT project_t317_inventory_count EQUAL 37)
+    message(FATAL_ERROR "T317 strict CPU smoke audit requires exactly 37 inventory entries.")
 endif()
 
 set(project_t317_audited_targets)
@@ -60,4 +60,4 @@ foreach(project_t317_inventory_entry IN LISTS project_t317_inventory)
     endforeach()
 endforeach()
 
-message(STATUS "T317 strict CPU smoke command audit passed: 40 target-local compile commands.")
+message(STATUS "T317 strict CPU smoke command audit passed: 37 target-local compile commands.")

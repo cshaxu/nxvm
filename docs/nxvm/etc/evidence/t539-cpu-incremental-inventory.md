@@ -247,9 +247,15 @@ records the complete case-family map and verification.
 
 ### S38: 3 string-scan/compare matching files
 
-- `core_machine_cmps_smoke.c`
-- `core_machine_scas_smoke.c`
-- `core_machine_stos_smoke.c`
+- `core_machine_cmps_smoke.c` (retired by S38)
+- `core_machine_scas_smoke.c` (retired by S38)
+- `core_machine_stos_smoke.c` (retired by S38)
+
+The original 203 STOS/SCAS/CMPS contexts have CPU or public-board
+receivers, with complementary protected-fault assertions. The pending
+direct-private `.c` test count falls from 64 to 61, plus the shared fixture
+header. [S38 evidence](t539-s38-string-scan-compare-migration.md) records
+the receiving map and verification.
 
 ### S39: 3 port-I/O matching files
 

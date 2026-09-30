@@ -814,8 +814,14 @@ endif()
 add_executable(machine-movs-board-smoke
     test/app-nxvm/unit/core/devices/machine_movs_board_smoke.c)
 target_link_libraries(machine-movs-board-smoke PRIVATE core-machine)
-add_executable(core-machine-stos-smoke test/app-nxvm/unit/core/devices/core_machine_stos_smoke.c)
-target_link_libraries(core-machine-stos-smoke PRIVATE core-machine)
+add_executable(cpu-stos-smoke test/app-nxvm/unit/core/devices/cpu_stos_smoke.c)
+target_link_libraries(cpu-stos-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(cpu-stos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(machine-stos-board-smoke
+    test/app-nxvm/unit/core/devices/machine_stos_board_smoke.c)
+target_link_libraries(machine-stos-board-smoke PRIVATE core-machine)
 add_executable(cpu-lods-smoke test/app-nxvm/unit/core/devices/cpu_lods_smoke.c)
 target_link_libraries(cpu-lods-smoke PRIVATE x86-cpu)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -824,8 +830,14 @@ endif()
 add_executable(machine-lods-board-smoke
     test/app-nxvm/unit/core/devices/machine_lods_board_smoke.c)
 target_link_libraries(machine-lods-board-smoke PRIVATE core-machine)
-add_executable(core-machine-scas-smoke test/app-nxvm/unit/core/devices/core_machine_scas_smoke.c)
-target_link_libraries(core-machine-scas-smoke PRIVATE core-machine)
+add_executable(cpu-scas-smoke test/app-nxvm/unit/core/devices/cpu_scas_smoke.c)
+target_link_libraries(cpu-scas-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(cpu-scas-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(machine-scas-board-smoke
+    test/app-nxvm/unit/core/devices/machine_scas_board_smoke.c)
+target_link_libraries(machine-scas-board-smoke PRIVATE core-machine)
 add_executable(core-machine-pusha-popa-smoke
     test/app-nxvm/unit/core/devices/core_machine_pusha_popa_smoke.c)
 target_link_libraries(core-machine-pusha-popa-smoke PRIVATE core-machine)
@@ -969,9 +981,14 @@ add_executable(core-machine-real-mode-386-rep-cmps-smoke
     test/app-nxvm/unit/core/devices/core_machine_real_mode_386_rep_cmps_smoke.c)
 target_link_libraries(core-machine-real-mode-386-rep-cmps-smoke PRIVATE core-machine)
 
-add_executable(core-machine-cmps-smoke
-    test/app-nxvm/unit/core/devices/core_machine_cmps_smoke.c)
-target_link_libraries(core-machine-cmps-smoke PRIVATE core-machine)
+add_executable(cpu-cmps-smoke test/app-nxvm/unit/core/devices/cpu_cmps_smoke.c)
+target_link_libraries(cpu-cmps-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(cpu-cmps-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(machine-cmps-board-smoke
+    test/app-nxvm/unit/core/devices/machine_cmps_board_smoke.c)
+target_link_libraries(machine-cmps-board-smoke PRIVATE core-machine)
 
 add_executable(core-machine-port-strings-smoke
     test/app-nxvm/unit/core/devices/core_machine_port_strings_smoke.c)
@@ -1127,7 +1144,6 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
     "core-machine-cli-sti-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c"
     "core-machine-clts-s62-smoke|test/app-nxvm/unit/core/devices/core_machine_clts_s62_smoke.c"
-    "core-machine-cmps-smoke|test/app-nxvm/unit/core/devices/core_machine_cmps_smoke.c"
     "core-machine-debug-mov-s59-smoke|test/app-nxvm/unit/core/devices/core_machine_debug_mov_s59_smoke.c"
     "core-machine-dttr-s61-smoke|test/app-nxvm/unit/core/devices/core_machine_dttr_s61_smoke.c"
     "core-machine-eflags-local-smoke|test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c"
@@ -1154,18 +1170,16 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-push-immediate-smoke|test/app-nxvm/unit/core/devices/core_machine_push_immediate_smoke.c"
     "core-machine-pusha-popa-smoke|test/app-nxvm/unit/core/devices/core_machine_pusha_popa_smoke.c"
     "core-machine-rotate-smoke|test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c"
-    "core-machine-scas-smoke|test/app-nxvm/unit/core/devices/core_machine_scas_smoke.c"
     "core-machine-sign-extend-smoke|test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c"
     "core-machine-software-int-s50-smoke|test/app-nxvm/unit/core/devices/core_machine_software_int_s50_smoke.c"
     "core-machine-sreg-mov-smoke|test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c"
-    "core-machine-stos-smoke|test/app-nxvm/unit/core/devices/core_machine_stos_smoke.c"
     "core-machine-tf-db-s60-smoke|test/app-nxvm/unit/core/devices/core_machine_tf_db_s60_smoke.c"
     "core-machine-verr-verw-s58-smoke|test/app-nxvm/unit/core/devices/core_machine_verr_verw_s58_smoke.c"
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 40)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 40 entries.")
+if(NOT project_t317_inventory_count EQUAL 37)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 37 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1192,8 +1206,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 40 OR NOT project_t317_source_count EQUAL 40)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 40 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 37 OR NOT project_t317_source_count EQUAL 37)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 37 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -2036,11 +2050,14 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-sreg-mov-smoke
     cpu-movs-smoke
     machine-movs-board-smoke
-    core-machine-stos-smoke
+    cpu-stos-smoke
+    machine-stos-board-smoke
     cpu-lods-smoke
     machine-lods-board-smoke
-    core-machine-scas-smoke
-    core-machine-cmps-smoke
+    cpu-scas-smoke
+    machine-scas-board-smoke
+    cpu-cmps-smoke
+    machine-cmps-board-smoke
     core-machine-port-strings-smoke
     core-machine-port-io-s55-smoke
     core-machine-debug-mov-s59-smoke
@@ -2211,7 +2228,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-bound-s54-smoke
     core-machine-cli-sti-s48-smoke
     core-machine-clts-s62-smoke
-    core-machine-cmps-smoke
+    cpu-cmps-smoke
     core-machine-control-transfer-smoke
     core-machine-cpu-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
@@ -2259,7 +2276,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-s1-smoke
     cpu-rotate-smoke
-    core-machine-scas-smoke
+    cpu-scas-smoke
     cpu-segment-selector-smoke
     cpu-prefix-attributes-s64-smoke
     cpu-bit-scan-smoke
@@ -2268,7 +2285,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-sign-extend-smoke
     core-machine-software-int-s50-smoke
     cpu-sreg-mov-smoke
-    core-machine-stos-smoke
+    cpu-stos-smoke
     core-machine-task-switch-smoke
     core-machine-tf-db-s60-smoke
     core-machine-verr-verw-s58-smoke
