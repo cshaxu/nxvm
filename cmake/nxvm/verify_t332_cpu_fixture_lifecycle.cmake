@@ -62,6 +62,7 @@ set(project_t332_public_limit_sources
     "test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c")
 set(project_t332_cpu_instruction_fixture_sources
+    "test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_control_state_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"

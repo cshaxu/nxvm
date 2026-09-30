@@ -8,7 +8,7 @@ only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
 its oversized FLAGS/string/port row was divided into S36-S39. At S40 intake,
 the 7,736-line descriptor/system row was divided into S40-S46 and the formerly planned
-S41-S48 became S47-S54. S46-S54 remain pending. Earlier
+S41-S48 became S47-S54. S47-S54 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -302,6 +302,39 @@ interrupt frames and the existing early-80386 board option.  The exact map and
 dual-width evidence are recorded in
 [S45 evidence](../etc/evidence/t539-s45-control-state-migration.md). T539
 remains open for S46 and later packets.
+
+## S46 Acceptance
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S46, continuation implementation. |
+| Admission And Approval | The owner granted automatic admission for each bounded T539 S. This packet admits the next finite debug-state migration batch on 2026-09-30. Allowed target: NXVM only. |
+| Objective | Retire direct-private CPU access from MOV DR and TF/#DB test receivers while retaining one CPU-local or public-board receiver for every original semantic case. |
+| Non-goals | No CPU production change, new public API, Shared/MyNES change, firmware, asset, INI or EXE update, timing reinterpretation, or migration of any S47-plus source. |
+| Reference Baseline | This Current packet; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); S45 evidence; existing x86 CPU fixture and public Core-machine contracts. |
+| Candidate Proposal | Move MOV-DR register semantics, profile/operand/prefix/privilege rejection and synthetic state rollback to CPU-only fixtures. Retain actual exception vector delivery, #DB/#UD/IRQ ordering, trap frames, PIC acknowledgement and protected-IDT observation in public Core-machine receivers. Delete the old mixed sources only after the complete receiving map is proven. |
+| Files And ABI Surface | Consume only `core_machine_debug_mov_s59_smoke.c` and `core_machine_tf_db_s60_smoke.c`; add bounded CPU and board receivers plus CMake/gate/evidence/state paths as needed. Production and ABI surface remain unchanged. |
+| Applicable Rules | NXVM architecture and coding guides; shared execution, architecture, coding and documentation rules named by `docs/nxvm/README.md`. The tests retain one owner per fact and no parallel execution path. |
+| Verification | Build affected x86/x64 unit targets; run complete `ctest -L unit -j8` once per width; run T317/T332/T337/T344/T345, CPU/PIC authority, direct-matrix, manifest and documentation gates; run `git diff --check`. |
+| Expected Markers | Preserve the original test success coverage or record exact successor markers and original-case-to-receiver mapping in S46 evidence. |
+| Asset Needs | None; repository-only unit fixtures only. No executable rebuild is required. |
+| Reporting Requirements | Record every original case family, receiving owner, test-path delta, retained public board path, full verification and a similar-issue sweep. |
+| Stop Conditions | Stop for a new production/ABI requirement, an unmapped original case, a disagreement between retained behavior and CPU authority, or necessary scope beyond MOV DR and TF/#DB. |
+| Exit Criteria | All named original cases have exactly one receiver; neither named source retains direct-private CPU access; no duplicate production path is introduced; required verification and actual-change review pass. |
+| Original Owner Request | Implement chip/device architecture extraction in small automatically admitted S tasks with explicit ownership, preservation and no patch-on-patch duplication. |
+| Similar-Issue Sweep | Audit MOV DR and TF/#DB across supported CPU profiles, register forms, prefixes/LOCK, real/protected/VM86 privilege, rollback, exception vectors, trap frames and PIC ordering. |
+
+The two named direct-private sources are retired. `cpu-debug-state-smoke`
+owns MOV-DR transfer/rejection and CPU-local debug-register behavior through
+the shared instruction fixture; `machine-debug-state-board-smoke` owns real
+and protected exception delivery, interrupt frames and PIC ordering through
+the public Core-machine boundary. Complete x64/x86 unit suites pass 416/416
+per width, and the current specialized-gate aggregate passes per width. The
+T332 fixture inventory classifies the new CPU receiver explicitly; no
+production/API, Shared, firmware, INI or executable input changed. The
+[S46 evidence](../etc/evidence/t539-s46-debug-state-migration.md) retains the
+complete receiver map and validation record. S46 is accepted; T539 remains
+open for S47 and later packets.
 
 
 ## S29 Acceptance

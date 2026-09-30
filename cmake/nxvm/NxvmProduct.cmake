@@ -877,12 +877,12 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(cpu-imul-immediate-s56-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-debug-mov-s59-smoke
-    test/app-nxvm/unit/core/devices/core_machine_debug_mov_s59_smoke.c)
-target_link_libraries(core-machine-debug-mov-s59-smoke PRIVATE core-machine)
-add_executable(core-machine-tf-db-s60-smoke
-    test/app-nxvm/unit/core/devices/core_machine_tf_db_s60_smoke.c)
-target_link_libraries(core-machine-tf-db-s60-smoke PRIVATE core-machine)
+add_executable(cpu-debug-state-smoke
+    test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c)
+target_link_libraries(cpu-debug-state-smoke PRIVATE x86-cpu)
+add_executable(machine-debug-state-board-smoke
+    test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c)
+target_link_libraries(machine-debug-state-board-smoke PRIVATE core-machine)
 add_executable(cpu-dttr-s61-smoke
     test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c)
 target_link_libraries(cpu-dttr-s61-smoke PRIVATE x86-cpu)
@@ -1091,8 +1091,6 @@ foreach(target IN ITEMS
     core-machine-t359-s4-timing-smoke
     core-machine-interrupt-entry-smoke
     core-machine-iret-outer-s52-smoke
-    core-machine-debug-mov-s59-smoke
-    core-machine-tf-db-s60-smoke
     core-machine-vm86-delivery-smoke
     core-machine-protected-privilege-smoke
     core-machine-protected-return-atomicity-smoke
@@ -1170,7 +1168,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
     "core-machine-cli-sti-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c"
     "cpu-control-state-smoke|test/app-nxvm/unit/core/devices/cpu_control_state_smoke.c"
-    "core-machine-debug-mov-s59-smoke|test/app-nxvm/unit/core/devices/core_machine_debug_mov_s59_smoke.c"
+    "cpu-debug-state-smoke|test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c"
     "cpu-dttr-s61-smoke|test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
     "cpu-descriptor-system-smoke|test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
     "cpu-lar-lsl-smoke|test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c"
@@ -1200,7 +1198,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-software-int-s50-smoke|test/app-nxvm/unit/core/devices/core_machine_software_int_s50_smoke.c"
     "core-machine-sreg-mov-smoke|test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c"
     "cpu-sgdt-sidt-smoke|test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c"
-    "core-machine-tf-db-s60-smoke|test/app-nxvm/unit/core/devices/core_machine_tf_db_s60_smoke.c"
+    "machine-debug-state-board-smoke|test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c"
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
@@ -2088,13 +2086,13 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-port-strings-board-smoke
     cpu-port-io-smoke
     machine-port-io-board-smoke
-    core-machine-debug-mov-s59-smoke
+    cpu-debug-state-smoke
+    machine-debug-state-board-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
     core-machine-imul-immediate-s56-smoke
     cpu-imul-immediate-s56-smoke
-    core-machine-tf-db-s60-smoke
     cpu-control-state-smoke
     machine-control-state-board-smoke
     core-machine-control-transfer-smoke
@@ -2271,7 +2269,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-descriptor-system-smoke
     cpu-lar-lsl-smoke
     cpu-verr-verw-smoke
-    core-machine-debug-mov-s59-smoke
+    cpu-debug-state-smoke
+    machine-debug-state-board-smoke
     cpu-double-shift-smoke
     cpu-enter-leave-smoke
     core-machine-fpu-escape-smoke
@@ -2320,7 +2319,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-sreg-mov-smoke
     cpu-stos-smoke
     core-machine-task-switch-smoke
-    core-machine-tf-db-s60-smoke
     core-machine-vm86-delivery-smoke
     cpu-xchg-smoke
     vm-dos-mem-fault-smoke
@@ -2355,10 +2353,10 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
 # that rollback helper.  Keep these target lists exact: configure fails if an
 # inventoried owner has no one disposition.
 set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
-    core-machine-debug-mov-s59-smoke
+    machine-debug-state-board-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-s1-smoke
-    core-machine-tf-db-s60-smoke)
+    )
 set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     core-machine-cpu-context-smoke
     cpu-descriptor-system-smoke
@@ -2366,6 +2364,7 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     cpu-verr-verw-smoke
     core-machine-fpu-escape-smoke
     cpu-control-state-smoke
+    cpu-debug-state-smoke
     core-machine-protected-16-gate-s3-smoke
     core-machine-protected-data-access-s2-smoke
     core-machine-protected-far-s1-smoke
