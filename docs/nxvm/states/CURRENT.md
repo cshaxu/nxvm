@@ -11,7 +11,7 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; later packages now run through S63.
-S48-S50 are accepted, S51 is active and S52-S63 remain pending. Earlier
+S48-S51 are accepted, S52 is active and S53-S63 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -417,19 +417,40 @@ No EXE rebuild is required for test/CMake/docs-only input.  See [S50
 evidence](../etc/evidence/t539-s50-control-transfer-near-migration.md).
 S50 is accepted; T539 remains open for S51--S63.
 
-## S51 Active Packet
+## S51 Acceptance
+
+Actual pushed NXVM P1 `50cd002c1` retires the final mixed direct-private
+control-transfer source.  One `x86-cpu` receiver retains protected immediate
+and indirect far CALL/JMP, same-CPL RETF selector rejection and rollback, all
+four real-mode far/near forms, boundary far-pointer behavior and terminal
+reserved-`FF` #UD behavior.  It links only the CPU instruction fixture; no
+Core machine or board-private field is exposed.  The source is deleted, so no
+parallel control-transfer path remains.
+
+Ten NXVM paths add 462/remove 649 lines (net -187), with no production/API,
+Shared, firmware, INI or executable input.  The two protected-16 board callers
+only receive their already-required `default32 = false` test-helper argument,
+which restores the current helper contract without changing their scenarios.
+Fresh x64/x86 builds and complete repository-only units pass 418/418 per
+width.  The specialized gates, 38-owner T332 lifecycle check, 104-row T344
+inventory, documentation governance, direct-private sweep and diff checks
+pass.  No EXE rebuild is required for test/CMake/docs-only input.  See [S51
+evidence](../etc/evidence/t539-s51-control-transfer-receiver-map.md).  S51 is
+accepted; T539 remains open for S52--S63.
+
+## S52 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S51, Continuation. |
+| Identifier Mode | M5 T539 S52, Continuation. |
 | Admission And Approval | The owner authorized automatic admission of each bounded T539 S. |
-| Objective | Retire the final direct-private control-transfer source, preserving immediate/indirect and real-mode far forms, selector validation and far-return behavior in one correct CPU-local receiver. |
-| Intake Boundary | S49 and S50 have retired branch and protected near-transfer families. S51 owns the remaining far forms, the residual four-profile real-mode near-control rows and legacy FF reserved forms; after it no mixed control-transfer source remains. |
-| Non-goals | No production/public API, Shared, firmware, asset, INI or EXE change; no IDT/privilege, far/data, outer return, task-switch, timing or VM86 migration outside an unavoidable direct includer closure. |
-| Reference Baseline | S48 acceptance; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); applicable CPU and Core public-machine contracts. |
-| Verification | Affected x64/x86 targets, complete repository-only unit suite per width, specialized gates, direct-private sweep, documentation governance and `git diff --check`. |
+| Objective | Retire the two direct-private IDT/privilege-entry sources while preserving DPL/CPL decisions, gate selection and exact interrupt-frame publication in correct CPU-local or public-board receivers. |
+| Intake Boundary | S51 retired the final control-transfer source. S52 owns only `core_machine_idt_privilege_entry_smoke.c` and `core_machine_protected_privilege_smoke.c` (665 lines); far/data, outer-return, task-switch, timing and VM86 rows remain assigned to later S packets. |
+| Non-goals | No production/public API, Shared, firmware, asset, INI or EXE change; no broad interrupt/VM86 migration outside a required direct includer closure. |
+| Reference Baseline | S51 acceptance; [CPU work packages](../etc/architecture/t539-cpu-work-packages.md); [incremental inventory](../etc/evidence/t539-cpu-incremental-inventory.md); applicable CPU and Core public-machine contracts. |
+| Verification | Exact source/case receiver map, affected x64/x86 targets, complete repository-only unit suite per width, specialized gates, direct-private sweep, documentation governance and `git diff --check`. |
 | Asset Needs | None; no EXE rebuild unless executable inputs change. |
-| Exit Criteria | Every S51 far-transfer family has one correct owner-local or public-board receiver; the final mixed control-transfer source is retired without a private setup path; all verification passes. |
+| Exit Criteria | Every S52 IDT/privilege family has one correct CPU-local or public-board receiver; both direct-private sources are retired without a private setup path; all verification passes. |
 
 
 ## S29 Acceptance
