@@ -137,8 +137,6 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     ${project_t344_timing_manifest_sources}
     # S32 retains the ALU divide-vector frame at the public machine boundary.
     "test/app-nxvm/unit/core/devices/core_machine_legacy_alu_s2_smoke.c"
-    # S33 keeps protected faults and divide delivery at the public board edge.
-    "test/app-nxvm/unit/core/devices/core_machine_inc_dec_first_group_board_smoke.c"
     # These public CPU tests now execute guest table loads with the built-in
     # provider, rather than mutating CPU caches through a firmware fixture.
     "test/app-nxvm/unit/core/devices/core_machine_protected_ud_delivery_s1_smoke.c"
@@ -146,12 +144,12 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # Board CPU-bus INTA admission/cascade proof without a firmware provider.
     "test/app-nxvm/unit/core/devices/core_machine_pic_phase_s2_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 117)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 117 entries.")
+if(NOT project_t344_constructor_count EQUAL 116)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 116 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 117)
+if(NOT project_t344_constructor_unique_count EQUAL 116)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -170,8 +168,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 117)
-    message(FATAL_ERROR "T344 expected 117 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 116)
+    message(FATAL_ERROR "T344 expected 116 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)

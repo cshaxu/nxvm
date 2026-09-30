@@ -204,14 +204,15 @@ S33-S42. [S32 evidence](t539-s32-legacy-alu-lock-migration.md) records the
 receiving map and verification; actual-commit review accepts pushed P1
 `9f785a551`. S33-S45 remain unaccepted.
 
-### S33-S35: 1 matching file, three non-overlapping case groups
+### S33-S35: 1 original matching file, retired after three case groups
 
-- `core_machine_inc_dec_smoke.c`
+- `core_machine_inc_dec_smoke.c` (retired by S35)
 
 S33 owns INC/DEC through DIV/IDIV; S34 owns TEST rm/reg through SBB; S35
-owns OR through XLAT and the Group-1 matrix. The source remains a live
-consumer until S35, so do not decrement the matching-file inventory at S33
-or S34 merely because some cases move.
+owns OR through XLAT and the Group-1 matrix. S33 and S34 left the source
+live; S35 assigns its last cases and deletes it. The S32 count of 71
+direct-private `.c` consumers plus one fixture header falls to 70 `.c`
+files plus that header, or 71 pending consumers assigned to S36-S42.
 
 ### S36: 12 matching files
 

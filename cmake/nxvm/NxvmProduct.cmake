@@ -642,8 +642,6 @@ add_executable(core-machine-bit-test-smoke test/app-nxvm/unit/core/devices/core_
 target_link_libraries(core-machine-bit-test-smoke PRIVATE core-machine)
 add_executable(cpu-bit-test-smoke test/app-nxvm/unit/core/devices/cpu_bit_test_smoke.c)
 target_link_libraries(cpu-bit-test-smoke PRIVATE x86-cpu)
-add_executable(core-machine-inc-dec-smoke test/app-nxvm/unit/core/devices/core_machine_inc_dec_smoke.c)
-target_link_libraries(core-machine-inc-dec-smoke PRIVATE core-machine)
 add_executable(core-machine-inc-dec-first-group-board-smoke
     test/app-nxvm/unit/core/devices/core_machine_inc_dec_first_group_board_smoke.c)
 target_link_libraries(core-machine-inc-dec-first-group-board-smoke PRIVATE core-machine)
@@ -658,6 +656,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-inc-dec-second-group-board-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(core-machine-inc-dec-final-group-board-smoke
+    test/app-nxvm/unit/core/devices/core_machine_inc_dec_final_group_board_smoke.c)
+target_link_libraries(core-machine-inc-dec-final-group-board-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-inc-dec-final-group-board-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(cpu-inc-dec-first-group-smoke
     test/app-nxvm/unit/core/devices/cpu_inc_dec_first_group_smoke.c)
 target_link_libraries(cpu-inc-dec-first-group-smoke PRIVATE x86-cpu)
@@ -670,6 +675,13 @@ add_executable(cpu-inc-dec-second-group-smoke
 target_link_libraries(cpu-inc-dec-second-group-smoke PRIVATE x86-cpu)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(cpu-inc-dec-second-group-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(cpu-inc-dec-final-group-smoke
+    test/app-nxvm/unit/core/devices/cpu_inc_dec_final_group_smoke.c)
+target_link_libraries(cpu-inc-dec-final-group-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(cpu-inc-dec-final-group-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-legacy-alu-s2-smoke
@@ -1094,7 +1106,6 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-gpr-push-pop-smoke|test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c"
     "core-machine-hlt-s49-smoke|test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c"
     "core-machine-imul-immediate-s56-smoke|test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
-    "core-machine-inc-dec-smoke|test/app-nxvm/unit/core/devices/core_machine_inc_dec_smoke.c"
     "core-machine-iret-outer-s52-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_outer_s52_smoke.c"
     "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
     "core-machine-lahf-sahf-smoke|test/app-nxvm/unit/core/devices/core_machine_lahf_sahf_smoke.c"
@@ -1126,8 +1137,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 47)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 47 entries.")
+if(NOT project_t317_inventory_count EQUAL 46)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 46 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1154,8 +1165,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 47 OR NOT project_t317_source_count EQUAL 47)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 47 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 46 OR NOT project_t317_source_count EQUAL 46)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 46 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -1957,11 +1968,12 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-imul2-smoke
     core-machine-bit-test-smoke
     cpu-bit-test-smoke
-    core-machine-inc-dec-smoke
     core-machine-inc-dec-first-group-board-smoke
     core-machine-inc-dec-second-group-board-smoke
+    core-machine-inc-dec-final-group-board-smoke
     cpu-inc-dec-first-group-smoke
     cpu-inc-dec-second-group-smoke
+    cpu-inc-dec-final-group-smoke
     core-machine-legacy-alu-s2-smoke
     cpu-legacy-alu-s2-smoke
     core-machine-rotate-smoke
@@ -2186,9 +2198,9 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-hlt-s49-smoke
     cpu-imul2-smoke
     cpu-imul-immediate-s56-smoke
-    core-machine-inc-dec-smoke
     cpu-inc-dec-first-group-smoke
     cpu-inc-dec-second-group-smoke
+    cpu-inc-dec-final-group-smoke
     core-machine-iret-outer-s52-smoke
     core-machine-iret-s51-smoke
     core-machine-lahf-sahf-smoke
