@@ -19,6 +19,15 @@ The CPU receiver is `cpu_outer_return_smoke`; the board receiver is
 construction or PIC object; the latter has the sole real PIC assertion.  The
 former retired both intake sources, including the former direct `.c` include.
 
+## Verification
+
+Focused CPU and public-board receivers pass on x64 and x86. Complete
+repository-only unit suites pass 421/421 on each width. The current specialized
+gate aggregate passes, including the 41-command T317 strict compilation audit,
+the 41-owner T332 lifecycle audit and the 101-row T344 fixture-shape audit.
+Documentation governance and `git diff --check` pass. This is test/CMake/docs
+work only, so no product executable is rebuilt.
+
 ## Non-S54 transfer
 
 Task-switch, VM86 and generic interrupt/timing rows are not outer-return
