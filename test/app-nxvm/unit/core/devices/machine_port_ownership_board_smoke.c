@@ -4,7 +4,20 @@
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/media_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/core_machine_board_fixture.h"
+
+static lib_i32 port_probe_prepare_real_mode(core_machine *machine)
+{
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
+    };
+
+    return core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK;
+}
 
 typedef struct core_machine_port_probe_state {
     lib_u32 reads;
@@ -128,7 +141,9 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
     failed |= !failed && (core_machine_bus_read(machine, 0x03f2u, &value) !=
             LIB_STATUS_OK || value != 0x5au || state.reads != 1u ||
         core_machine_bus_write(machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
-        machine->fdc.data.dor != 0x1cu || state.writes != 0u);
+        state.writes != 0u ||
+        core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
+        value != 0x80u);
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     return failed;
@@ -203,7 +218,7 @@ lib_i32 main(void)
                 LIB_STATUS_OK ||
             core_machine_bus_read(machine, 0x00e0u, &value) != LIB_STATUS_OK ||
             value != 0xa5u ||
-            !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u) ||
+            !port_probe_prepare_real_mode(machine) ||
             core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
                 LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
@@ -219,7 +234,7 @@ lib_i32 main(void)
                 LIB_STATUS_OK || value != 0xa5u;
         port_state.write_status = LIB_STATUS_INTERNAL_ERROR;
         failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-            !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u) ||
+            !port_probe_prepare_real_mode(machine) ||
             core_machine_memory_write(machine, 0u, failing_program,
                 sizeof(failing_program)) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR;

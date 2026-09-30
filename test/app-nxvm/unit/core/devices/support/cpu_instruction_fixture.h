@@ -64,14 +64,15 @@ static const core_machine_cpu_execution_diagnostic_provider cpu_instruction_diag
     .record_fault = cpu_instruction_fault
 };
 
-static void cpu_instruction_prepare(cpu_instruction_fixture *fixture,
-    core_machine_cpu_profile profile)
+static void cpu_instruction_prepare_with_bus(cpu_instruction_fixture *fixture,
+    core_machine_cpu_profile profile,
+    const core_machine_cpu_bus_provider *bus, void *bus_context)
 {
     const core_machine_instruction_timing timing = { .base_ticks = 1u };
 
     lib_memory_set(fixture, 0, sizeof(*fixture));
     core_machine_cpu_execution_context_initialize(&fixture->execution,
-        &fixture->cpu, &fixture->instructions, &cpu_instruction_bus, fixture);
+        &fixture->cpu, &fixture->instructions, bus, bus_context);
     core_machine_cpu_execution_context_bind_profiles(&fixture->execution,
         profile, X86_FPU_PROFILE_NONE, LIB_FALSE, &timing);
     core_machine_cpu_state_initialize(&fixture->execution);
@@ -87,6 +88,13 @@ static void cpu_instruction_prepare(cpu_instruction_fixture *fixture,
     core_machine_cpu_execution_load_segment(&fixture->execution,
         &fixture->cpu.data.ss, 0u);
     fixture->cpu.data.eip = 0u;
+}
+
+static inline void cpu_instruction_prepare(cpu_instruction_fixture *fixture,
+    core_machine_cpu_profile profile)
+{
+    cpu_instruction_prepare_with_bus(fixture, profile,
+        &cpu_instruction_bus, fixture);
 }
 
 static inline lib_status cpu_instruction_run(cpu_instruction_fixture *fixture,

@@ -990,12 +990,22 @@ add_executable(machine-cmps-board-smoke
     test/app-nxvm/unit/core/devices/machine_cmps_board_smoke.c)
 target_link_libraries(machine-cmps-board-smoke PRIVATE core-machine)
 
-add_executable(core-machine-port-strings-smoke
-    test/app-nxvm/unit/core/devices/core_machine_port_strings_smoke.c)
-target_link_libraries(core-machine-port-strings-smoke PRIVATE core-machine)
-add_executable(core-machine-port-io-s55-smoke
-    test/app-nxvm/unit/core/devices/core_machine_port_io_s55_smoke.c)
-target_link_libraries(core-machine-port-io-s55-smoke PRIVATE core-machine)
+add_executable(cpu-port-io-smoke
+    test/app-nxvm/unit/core/devices/cpu_port_io_smoke.c)
+target_link_libraries(cpu-port-io-smoke PRIVATE x86-cpu)
+add_executable(cpu-port-strings-smoke
+    test/app-nxvm/unit/core/devices/cpu_port_strings_smoke.c)
+target_link_libraries(cpu-port-strings-smoke PRIVATE x86-cpu)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(cpu-port-io-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(cpu-port-strings-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(machine-port-io-board-smoke
+    test/app-nxvm/unit/core/devices/machine_port_io_board_smoke.c)
+target_link_libraries(machine-port-io-board-smoke PRIVATE core-machine)
+add_executable(machine-port-strings-board-smoke
+    test/app-nxvm/unit/core/devices/machine_port_strings_board_smoke.c)
+target_link_libraries(machine-port-strings-board-smoke PRIVATE core-machine)
 
 
 add_executable(core-machine-80286-protected-mode-smoke
@@ -1109,10 +1119,10 @@ add_executable(core-machine-configuration-smoke
 )
 target_link_libraries(core-machine-configuration-smoke PRIVATE core-machine)
 
-add_executable(core-machine-port-ownership-smoke
-    test/app-nxvm/unit/core/devices/core_machine_port_ownership_smoke.c
+add_executable(machine-port-ownership-board-smoke
+    test/app-nxvm/unit/core/devices/machine_port_ownership_board_smoke.c
 )
-target_link_libraries(core-machine-port-ownership-smoke PRIVATE core-machine)
+target_link_libraries(machine-port-ownership-board-smoke PRIVATE core-machine)
 
 add_executable(core-machine-trace-smoke
     test/app-nxvm/unit/core/devices/machine_trace_smoke.c
@@ -1164,8 +1174,6 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-lss-lfs-lgs-smoke|test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c"
     "core-machine-moffs-smoke|test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c"
     "core-machine-msw-s63-smoke|test/app-nxvm/unit/core/devices/core_machine_msw_s63_smoke.c"
-    "core-machine-port-io-s55-smoke|test/app-nxvm/unit/core/devices/core_machine_port_io_s55_smoke.c"
-    "core-machine-port-strings-smoke|test/app-nxvm/unit/core/devices/core_machine_port_strings_smoke.c"
     "core-machine-prefix-attributes-s64-smoke|test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c"
     "core-machine-push-immediate-smoke|test/app-nxvm/unit/core/devices/core_machine_push_immediate_smoke.c"
     "core-machine-pusha-popa-smoke|test/app-nxvm/unit/core/devices/core_machine_pusha_popa_smoke.c"
@@ -1178,8 +1186,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
-if(NOT project_t317_inventory_count EQUAL 37)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 37 entries.")
+if(NOT project_t317_inventory_count EQUAL 35)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 35 entries.")
 endif()
 
 set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
@@ -1206,8 +1214,8 @@ list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
 list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
-if(NOT project_t317_target_count EQUAL 37 OR NOT project_t317_source_count EQUAL 37)
-    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 37 unique targets and sources.")
+if(NOT project_t317_target_count EQUAL 35 OR NOT project_t317_source_count EQUAL 35)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 35 unique targets and sources.")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
@@ -1271,7 +1279,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-port-ownership-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(machine-port-ownership-board-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-firmware-capability-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-reset-rom-alias-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -2058,8 +2066,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-scas-board-smoke
     cpu-cmps-smoke
     machine-cmps-board-smoke
-    core-machine-port-strings-smoke
-    core-machine-port-io-s55-smoke
+    cpu-port-strings-smoke
+    machine-port-strings-board-smoke
+    cpu-port-io-smoke
+    machine-port-io-board-smoke
     core-machine-debug-mov-s59-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
@@ -2113,7 +2123,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-vm86-lgdt-lidt-s5-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
-    core-machine-port-ownership-smoke
+    machine-port-ownership-board-smoke
     core-machine-firmware-capability-smoke
     core-machine-reset-rom-alias-smoke
     core-machine-memory-device-registration-s16-smoke
@@ -2264,8 +2274,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-movs-smoke
     core-machine-movx-smoke
     core-machine-msw-s63-smoke
-    core-machine-port-io-s55-smoke
-    core-machine-port-strings-smoke
+    cpu-port-io-smoke
+    cpu-port-strings-smoke
     core-machine-protected-16-gate-s3-smoke
     core-machine-protected-data-access-s2-smoke
     core-machine-protected-far-s1-smoke
