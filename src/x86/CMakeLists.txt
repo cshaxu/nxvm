@@ -70,6 +70,27 @@ add_library(x86-xtkeyboard STATIC devices/xtkeyboard/keyboard.c)
 target_include_directories(x86-xtkeyboard PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-xtkeyboard PUBLIC types)
 
+# The canonical CPU corpus is introduced under a distinct target while NXVM
+# still owns the old consumer target.  The subsequent NXVM handoff retires
+# that consumer definition; this target never creates a second CPU instance.
+add_library(x86-cpu-shared STATIC
+    devices/cpu/cpu.c
+    devices/cpu/cpu_instructions.c
+    devices/cpu/cpu_timing.c
+    devices/cpu/cpu_timing_model.c)
+target_include_directories(x86-cpu-shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-cpu-shared PUBLIC types PRIVATE x86-fpu)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    # The legacy instruction engine was deliberately compiled without the
+    # shared strict-warning profile; its timing sources alone were strict.
+    # Preserve that diagnostic contract during the location-only cutover.
+    # The final CPU receiving audit owns eliminating this temporary exception.
+    set_source_files_properties(
+        devices/cpu/cpu.c
+        devices/cpu/cpu_instructions.c
+        PROPERTIES COMPILE_OPTIONS "-w")
+endif()
+
 if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)
 target_include_directories(x86-xasm32 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

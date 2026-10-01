@@ -11,6 +11,7 @@ There is no executor, Console, input loop or product state machine here.
 | --- | --- | --- |
 | debug | Original DOS/X command implementation and copied x86 protocol | debug_interface.h, protocol_interface.h |
 | xasm32 | x86 byte/text assembly and disassembly | xasm32_interface.h |
+| devices/cpu | 8086 through 80386 execution state, instruction decoding and CPU-local timing | cpu_interface.h |
 | devices/pit825x | 8253/8254 counters, register protocol, GATE/OUT and input-clock deadlines | pit825x_interface.h |
 | devices/rtc146818 | MC146818-compatible calendar, registers, IRQ/SQW and configured-time deadlines | rtc146818_interface.h |
 | devices/pic8259 | Single 8259 priority, ICW/OCW, interrupt selection/acknowledge and delivery deadlines | pic8259_interface.h |
@@ -29,6 +30,14 @@ Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
 only on Types. Public names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
 Build targets are x86-debug, x86-xasm32 and x86-<device-directory>. Private includes stay component-local;
 no native platform code or importing-product source dependency is allowed.
+
+CPU depends on Types and the FPU public interface. It owns one opaque execution
+context and accepts only copied profile values plus a callback-only bus; a board
+owns address mapping, port routing, interrupts and the clock that schedules
+execution. The source is the legacy instruction engine moved without semantic
+rewriting. Its two historical implementation files retain the old non-strict
+diagnostic scope during this location cutover; CPU receipt closes only after the
+final receiving audit removes that exception or records a justified successor.
 
 PIT depends only on Types. Its opaque instance owns counter state; the board
 owns port addresses, clock conversion and OUT consumers (interrupt, refresh,
