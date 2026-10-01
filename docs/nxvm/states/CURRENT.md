@@ -14,8 +14,8 @@ control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
 corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
-split into S78-S86 before implementation; S86 is the final acceptance. S48-S77 are accepted and S78-S86
-remain pending except the active S78. Earlier
+split into S78-S86 before implementation; S86 is the final acceptance. S48-S78 are accepted and S79-S86
+remain pending except the active S79. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -528,35 +528,47 @@ admitted NXVM profiles have rebuilt 0539 x64/x86 Release artifacts. The
 [S75 evidence](../etc/evidence/t539-s75-opaque-cpu-lifetime.md) records the
 boundary and artifact hashes. S75 is accepted; T539 remains open for S76-S82.
 
-## S78 Active Packet
+## S79 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S78, Automatically admitted continuation. |
-| Admission And Approval | The owner approved automatic admission of each bounded T539 S. This follows accepted S77 and consumes S78 in the approved [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Identifier Mode | M5 T539 S79, Automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic admission of each bounded T539 S. This follows accepted S78 and consumes S79 in the approved [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
 | Change Target | Shared receiver additions followed by NXVM retirement/consumer P commits only where an existing test path migrates. |
-| Objective | Move only the four CPU-owned basic-stack fixtures/tests—GPR PUSH/POP, immediate PUSH, PUSHA/POPA, and ENTER/LEAVE—to the canonical Shared CPU owner. |
-| Non-goals | Altering instruction semantics/timing, moving real memory/PIC/port board paths, changing profiles, moving segment/data/string/port groups assigned to S79-S82, or deleting the retained App CPU source path before S85. |
-| Reference Baseline | `669bd8fac` after S77: CPU arithmetic fixtures/tests have one Shared owner; board receivers and the temporary App forwarding fixture remain for their named later moves. |
-| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md), revised S78 basic-stack receiver row. |
-| Files And ABI Surface | `cpu_gpr_push_pop_smoke.c`, `cpu_push_immediate_smoke.c`, `cpu_pusha_popa_smoke.c`, and `cpu_enter_leave_smoke.c` with their `test/x86/devices/cpu/` successors. No public production CPU ABI, board callback, profile, firmware, or asset surface changes. |
+| Objective | Move only CPU-owned FS/GS and legacy segment-stack plus LES/LDS and LSS/LFS/LGS fixtures/tests to the canonical Shared CPU owner. |
+| Non-goals | Altering instruction semantics/timing, moving descriptor/IRQ board paths, changing profiles, moving segment/data/string/port groups assigned to S80-S82, or deleting the retained App CPU source path before S85. |
+| Reference Baseline | `1833731fa` after S78: CPU arithmetic and basic-stack fixtures/tests have one Shared owner; board receivers and the temporary App forwarding fixture remain for their named later moves. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md), revised S79 segment-stack/far-pointer receiver row. |
+| Files And ABI Surface | `cpu_fs_gs_stack_smoke.c`, `cpu_legacy_sreg_stack_smoke.c`, `cpu_les_lds_smoke.c`, `cpu_les_lds_s41_smoke.c`, and `cpu_lss_lfs_lgs_smoke.c` with Shared successors. No public production CPU ABI, board callback, profile, firmware, or asset surface changes. |
 | Applicable Rules | `docs/nxvm/design/ARCHITECTURE.md` Shared-device ownership; `docs/nxvm/design/CODING.md` mirrored test ownership; shared Architecture, Coding, Execution, and Documentation rules. |
-| Required Boundary | Shared tests may use only the opaque CPU contract and the Shared CPU fixture. Real Core memory, PIC, stack-fault/IRQ routing, profile wiring, and board cases stay NXVM tests. |
-| Verification | Classify candidates first; then run focused successor/retained board tests and complete repository-only units on x64/x86, Shared manifest/corpus checks, CPU authority, and documentation governance. Rebuild artifacts only if runtime inputs change. |
-| Expected Markers | Each of the four moved tests has one Shared registration, each retained board test has a named reason, and no NXVM private test fixture is imported into Shared. |
+| Required Boundary | Shared tests may use only the opaque CPU contract and the Shared CPU fixture. Real Core descriptor state, memory, PIC/IRQ delivery, profile wiring, and board cases stay NXVM tests. |
+| Verification | Run focused successor/retained board tests and complete repository-only units on x64/x86, Shared manifest/corpus checks, CPU authority, and documentation governance. Rebuild artifacts only if runtime inputs change. |
+| Expected Markers | Each of the five moved tests has one Shared registration, each retained board test has a named reason, and no NXVM private test fixture is imported into Shared. |
 | Asset Needs | None; this is repository-only test ownership work. |
-| Reporting Requirements | Record each moved/retained basic-stack candidate, sole fixture/recipe ownership, source/test line totals, and artifact determination. |
-| Stop Conditions | Stop and report if any apparently CPU-only basic-stack test requires a real Core board contract, if a public CPU contract is insufficient, or if moving it would duplicate a receiver. |
-| Exit Criteria | The bounded basic-stack group has one Shared owner, App duplicates are removed, board paths remain explicit, and all required checks pass. |
+| Reporting Requirements | Record each moved/retained segment-stack/far-pointer candidate, sole fixture/recipe ownership, source/test line totals, and artifact determination. |
+| Stop Conditions | Stop and report if any apparently CPU-only segment-stack/far-pointer test requires a real Core board contract, if a public CPU contract is insufficient, or if moving it would duplicate a receiver. |
+| Exit Criteria | The bounded segment-stack/far-pointer group has one Shared owner, App duplicates are removed, board paths remain explicit, and all required checks pass. |
 | Original Owner Request | Automatically continue bounded T539 chip extraction without leaving tails. |
-| Similar-Issue Sweep | Classify the entire 19-file transfer/data universe before changes; this S moves only its 1,858-line basic-stack subset, while S79-S82 own the remaining named groups. |
+| Similar-Issue Sweep | The 19-file transfer/data universe is classified. This S owns its 1,883-line segment-stack/far-pointer subset; S80-S82 own the remaining named groups. |
+
+## S78 Acceptance
+
+S78 moved the four 1,858-line CPU-only basic-stack tests to one Shared owner
+and deleted the duplicate NXVM paths. Real Core stack/fault/IRQ cases remain
+explicit NXVM board tests. The [S78 evidence](../etc/evidence/t539-s78-basic-stack-receivers.md)
+records receiver ownership and verification.
+
+Complete repository-only units pass 427/427 on x64 and x86, and Shared
+manifest/corpus, CPU/PIC authority, documentation governance, and diff checks
+pass. Test/CMake-only scope leaves S76's 0539 product artifacts current. S78 is
+accepted; T539 remains open for S79-S86.
 
 ## S77 Acceptance
 
 S77 established the first Shared CPU-only test receiver group: ten arithmetic,
 FLAGS, rotate, and direct-register sources plus their one real fixture now live
 under `test/x86/devices/cpu/`.  The historic NXVM fixture is only a forwarding
-include for explicitly assigned S78--S81 callers; it carries no state or test
+include for explicitly assigned S79--S85 callers; it carries no state or test
 registration.  Board paths stayed NXVM and are listed in the
 [S77 evidence](../etc/evidence/t539-s77-cpu-arithmetic-receivers.md).
 
