@@ -15,8 +15,8 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S98 and S98 is the final acceptance. S48-S88 are
-accepted and S89-S98 remain pending. The next package must be admitted from
+is then divided into S83-S100 and S100 is the final acceptance. S48-S88 are
+accepted and S89-S100 remain pending. The next package must be admitted from
 the bounded ledger; S89 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
@@ -87,11 +87,11 @@ S88 is accepted; T539 remains open for S89-S98.
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T539 S89, automatically admitted continuation. |
-| Objective | Classify and move only CPU-owned NMI, prefetch, paging-control and INVLPG rows from the residual execution-context test. |
-| Non-goals | Public IRQ/board wiring, firmware, production APIs, assets, INI, executables and unrelated residual CPU rows. |
+| Objective | Move only the CPU-owned NMI mask/delivery and prefetch-reservation rows from the residual execution-context test. |
+| Non-goals | Paging/INVLPG, protected fault/pending-event rows, public IRQ/board wiring, firmware, production APIs, assets, INI, executables and unrelated residual CPU rows. |
 | Files And ABI Surface | Split existing static functions by actual CPU responsibility; reuse existing CPU-local fixture and create no shared framework, board adapter or public API. Retain any concrete board path once in NXVM under a named later receiver. |
 | Verification | Record exact allocation; run focused x64/x86 successor and residual tests, complete x64/x86 units, applicable static gates, manifest/corpus, authority, documentation governance and diff checks. |
-| Exit Criteria | Every admitted CPU row has one Shared owner, every excluded row remains once in NXVM, neither width regresses, and full unit suites pass. |
+| Exit Criteria | Every admitted NMI/prefetch row has one Shared owner, every excluded row remains once in NXVM, neither width regresses, and full unit suites pass. |
 
 ## S86 Acceptance
 

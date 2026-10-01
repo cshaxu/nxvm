@@ -43,12 +43,14 @@ packet records retain their historical prospective numbering.
 At S82 intake, the remaining protected/system row contains more than thirty
 App CPU sources with distinct instruction, table, control, task-state and
 timing responsibilities. Before implementation, its unaccepted work is
-divided into numeric packages S83-S98: descriptor operands (S83), system
-tables (S84), control state (S85), debug registers (S86), three bounded
-execution-context groups (S87-S89), protected privilege/data/return (S90),
-task state (S91), ordinary instruction groups (S92-S94), residual
-classification (S95), timing/manifest (S96), legacy-path deletion (S97), and
-whole-CPU acceptance (S98). This refines only unaccepted work; S1-S82 retain
+divided into numeric packages S83-S100: descriptor operands (S83), system
+tables (S84), control state (S85), debug registers (S86), execution bus and
+observation (S87), lifecycle (S88), NMI/prefetch (S89), paging/INVLPG (S90),
+protected fault/event (S91), protected privilege/data/return (S92), task
+state (S93), ordinary instruction groups (S94/S96), operand/prefix (S95),
+residual classification (S97), timing/manifest (S98), legacy-path deletion
+(S99), and whole-CPU acceptance (S100). This refines only unaccepted work;
+S1-S82 retain
 their original numbers and evidence.
 
 ## Recover A Deliverable Baseline First
@@ -150,16 +152,18 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S86 | Accepted: MOV-DR, #DB and data-breakpoint rows move to the CPU-only Shared receiver. The named machine debug-state board path remains NXVM. |
 | S87 | Accepted: execution-context CPU bus, instruction-effect and copied retirement-observation rows move to one Shared receiver and fixture; residual lifecycle/timing and signal/prefetch/paging rows stay once in NXVM. |
 | S88 | Accepted: CPU reset, prepared-entry, two-instance lifecycle and repeat-timing rows move to one Shared receiver; signal/prefetch/paging rows remain once in NXVM. |
-| S89 | Execution-context signal/prefetch/paging receiver move: classify NMI, prefetch, paging-control and INVLPG rows from `cpu_execution_context_smoke.c`; retain every Core/board dependency under a named receiver. |
-| S90 | Protected privilege/data/return: classify and move eligible CPU-only IDT privilege, protected data/far and outer-return fixtures/tests; retain public paging, fault and IRQ paths in NXVM. |
-| S91 | Task-state receiver move: classify and move eligible 16/32-bit task-switch CPU fixtures/tests; retain public Core paging, hardware IRQ and board-state paths in NXVM. |
-| S92 | Ordinary CPU group one: move the bounded CPU-only bit scan/test, double-shift, IMUL2, MOVX, sign-extend, SETcc and LEA fixtures/tests. |
-| S93 | Operand/prefix receiver move: move the bounded CPU-only operand/address and prefix-attribute fixtures/tests, retaining any real board port/IRQ composition in NXVM. |
-| S94 | Ordinary CPU group two: move the bounded CPU-only legacy-LOCK and immediate-IMUL fixtures/tests without a blanket LOCK compatibility path. |
-| S95 | Residual CPU classification: classify the remaining CPU/FPU-profile, fault-diagnostic, IVT and fixture consumers; move every eligible Shared receiver or record its sole named NXVM board receiver before legacy deletion. |
-| S96 | CPU timing/manifest receiver move: migrate CPU-only timing/catalog inputs and runners, preserving formula rows and generated result contracts; leave board-time publication tests in NXVM. |
-| S97 | NXVM legacy-path deletion: switch all remaining consumers and static gates to the Shared API, delete retired App CPU sources/paths and prove no duplicate implementation remains. |
-| S98 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
+| S89 | Execution-context NMI/prefetch receiver move: move only NMI mask/delivery and prefetch-reservation rows from `cpu_execution_context_smoke.c`. |
+| S90 | Execution-context paging/INVLPG receiver move: move only 80186 LGDT availability, paging-control and INVLPG rows from the residual execution-context test. |
+| S91 | Execution-context protected fault/event receiver move: move only protected interrupt preparation, UD cache preservation and pending-event rollback rows; retain real board IRQ paths in NXVM. |
+| S92 | Protected privilege/data/return: classify and move eligible CPU-only IDT privilege, protected data/far and outer-return fixtures/tests; retain public paging, fault and IRQ paths in NXVM. |
+| S93 | Task-state receiver move: classify and move eligible 16/32-bit task-switch CPU fixtures/tests; retain public Core paging, hardware IRQ and board-state paths in NXVM. |
+| S94 | Ordinary CPU group one: move the bounded CPU-only bit scan/test, double-shift, IMUL2, MOVX, sign-extend, SETcc and LEA fixtures/tests. |
+| S95 | Operand/prefix receiver move: move the bounded CPU-only operand/address and prefix-attribute fixtures/tests, retaining any real board port/IRQ composition in NXVM. |
+| S96 | Ordinary CPU group two: move the bounded CPU-only legacy-LOCK and immediate-IMUL fixtures/tests without a blanket LOCK compatibility path. |
+| S97 | Residual CPU classification: classify the remaining CPU/FPU-profile, fault-diagnostic, IVT and fixture consumers; move every eligible Shared receiver or record its sole named NXVM board receiver before legacy deletion. |
+| S98 | CPU timing/manifest receiver move: migrate CPU-only timing/catalog inputs and runners, preserving formula rows and generated result contracts; leave board-time publication tests in NXVM. |
+| S99 | NXVM legacy-path deletion: switch all remaining consumers and static gates to the Shared API, delete retired App CPU sources/paths and prove no duplicate implementation remains. |
+| S100 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
 S19-S67 migrate consumers before S68; S69-S73 follow S68, then S74. The former S56
 work-package is deliberately expanded as S56-S62: its original direct-TSS32 source combines decode,
