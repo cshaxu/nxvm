@@ -16,7 +16,8 @@ into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
 is then divided into S83-S100 and S100 is the final acceptance. S48-S97 are
-accepted and S100 remains pending. S99 is the active package. Earlier
+accepted and S100 remains pending. The next package must be admitted from the
+bounded ledger. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -244,11 +245,10 @@ accepted; T539 remains open for S97-S100.
 ## S97 Acceptance
 
 The three direct CPU-only control-transfer receivers now have one Shared owner
-in `test/x86/devices/cpu`. `cpu_idt_privilege_entry_smoke` remains the one
-named NXVM owner because it directly requires App `device_support`; this
-boundary is recorded rather than hidden with a new Shared fixture or API.
-No production code, public API, firmware, asset, INI or executable input
-changed.
+in `test/x86/devices/cpu`. S97 initially classified the IDT privilege receiver
+as NXVM from its `device_support.h` include; S99 corrected that finding when it
+proved the include supplied only a generic bit-test macro. No production code,
+public API, firmware, asset, INI or executable input changed.
 
 Focused x64/x86 successor and retained-IDT tests pass **4/4** on each width.
 T317, CPU/PIC authority, Shared manifest/corpus and documentation governance
@@ -269,21 +269,19 @@ CPU/PIC authority, Shared manifest/corpus and documentation governance pass.
 See the [S98 evidence](../etc/evidence/t539-s98-timing-catalog-boundary.md).
 S98 is accepted; T539 remains open for S99-S100.
 
-## S99 Admission Packet
+## S99 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | M5 T539 S99, automatically admitted continuation. |
-| Admission And Approval | The owner approved automatic, bounded, strictly linear numeric T539 continuation tasks; S99 follows accepted S98. |
-| Objective | Remove the final retired App CPU test path: move the actually CPU-only IDT privilege receiver to Shared, replace the remaining forwarding fixture include with its canonical Shared include, and correct S97's mistaken dependency classification. |
-| Non-goals | Altering IDT privilege semantics, moving the real PIC board receiver, new Shared APIs/fixtures, production source, firmware, assets, INI and executables. |
-| Reference Baseline | `09b3b46de`, accepted S98. |
-| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
-| Files And ABI Surface | Move only `cpu_idt_privilege_entry_smoke.c`; delete only the one forwarding `support/cpu_instruction_fixture.h`; have the retained PIC-board test directly include the canonical Shared fixture and add the existing test-root include directory to its target. No behavior/API change. |
-| Applicable Rules | An unused App include is not an ownership dependency. A retained board receiver may consume the Shared fixture directly, but must not own a forwarding copy. |
-| Verification | Focused x64/x86 Shared IDT and retained PIC board tests, full x64/x86 units, T317/T332/static gates, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. |
-| Exit Criteria | No direct CPU-only App receiver or CPU fixture forwarder remains; IDT CPU semantics have one Shared owner, PIC board delivery has one NXVM owner, and both full unit suites pass. |
-| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
+S99 corrected S97's include-only false boundary: the IDT privilege CPU
+receiver now has one Shared owner. Its former App macro use is an equivalent
+local bit test, not a new API. The retained PIC-board receiver directly
+includes the canonical Shared fixture; the last NXVM fixture forwarding header
+is deleted. IDT CPU semantics and PIC delivery remain separate one-owner tests.
+
+Focused x64/x86 Shared IDT and retained PIC-board tests pass **2/2** on each
+width. T317, CPU/PIC authority, Shared manifest/corpus and documentation
+governance pass. Detached full unit suites pass **466/466** on x64 and x86.
+See the [S99 evidence](../etc/evidence/t539-s99-final-cpu-path-cleanup.md).
+S99 is accepted; T539 remains open for S100.
 
 ## S86 Acceptance
 
