@@ -17,11 +17,40 @@ transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
 is then divided into S83-S98 and S98 is the final acceptance. S48-S86 are
 accepted and S87-S98 remain pending. The next package must be admitted from
-the bounded ledger. Earlier
+the bounded ledger; S87 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
+
+## S87 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S87, automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic admission of bounded linear T539 S deliveries and required oversized CPU sources to be split by actual responsibility. This follows accepted S86. |
+| Objective | Extract only the CPU bus, instruction-effect and copied retirement-observation rows from the mixed execution-context test into one Shared CPU receiver. |
+| Non-goals | CPU create/reset/prepared-entry/lifecycle rows, NMI, prefetch, paging, INVLPG, public board wiring, CPU semantics/timing, production APIs, firmware, assets, INI and executable inputs. |
+| Reference Baseline | `42ec9a014` after S86; the ledger assigns execution-context bus/observation rows to S87 and reserves lifecycle for S88 and signal/prefetch/paging for S89. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the revised [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Split `cpu_execution_context_smoke.c` by existing static-function boundary. Move the already CPU-only `cpu_bus_fixture.h` to Shared and update its one retained NXVM FLAGS consumer to include it directly. Add one Shared successor with only bus/observation helpers and a minimal main; retain all other functions once in the NXVM residual source. Update registrations/manifests/static inventories; no production or public ABI change. |
+| Applicable Rules | NXVM architecture and coding authorities; Shared architecture/coding/execution/documentation rules; one owner per test behavior and no duplicate CPU setup path. |
+| Verification | Record the exact function allocation; prove the receiver uses only the existing CPU bus fixture; run focused x64/x86 receiver and residual tests, repository-only x64/x86 unit suites, T332 where applicable, Shared manifest/corpus, CPU/PIC authority, documentation governance and diff checks. Rebuild artifacts only if executable inputs change. |
+| Expected Markers | One `x86-cpu` receiver, one Shared CPU bus fixture, a residual NXVM test with the remaining functions, no copied bus/observation function in both files, and no new fixture/API. |
+| Asset Needs | None; repository-only test ownership split. |
+| Reporting Requirements | Record moved and retained static functions, source line totals, static-gate impact, test evidence and artifact determination. |
+| Stop Conditions | Stop and report if a candidate row needs public Core/board wiring, a new Shared fixture/API, or duplicated function/fixture setup. |
+| Exit Criteria | All admitted bus/observation rows have one Shared receiver, every remaining execution-context row stays once in the residual source with S88/S89 allocation, and required verification is recorded. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
+| Similar-Issue Sweep | S87 consumes only CPU bus/effect/retirement observation functions. S88 owns create/reset/prepared-entry/timing/lifecycle; S89 owns NMI, prefetch, paging-control and INVLPG. |
+
+Implementation P1/P2 is pushed as `ac70e400f` and `20feb7506`. Focused x64/x86
+receivers and all applicable static gates pass. The required complete unit runs
+each expose the same pre-existing `unit.cpu-bus-boundary-negative` CTest
+status-reporting failure even though its direct CMake invocation exits zero and
+prints every negative group as passing. The exact evidence is recorded in
+[S87 evidence](../etc/evidence/t539-s87-execution-bus-receiver.md); S87 stays
+active until that gate discrepancy is resolved.
 
 ## S86 Acceptance
 
