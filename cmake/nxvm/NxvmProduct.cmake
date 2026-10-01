@@ -943,20 +943,13 @@ target_link_libraries(machine-tss-iomap-port-authorization-smoke PRIVATE core-ma
 add_executable(machine-task-switch-cross-width-smoke
     test/app-nxvm/unit/core/devices/machine_task_switch_cross_width_smoke.c)
 target_link_libraries(machine-task-switch-cross-width-smoke PRIVATE core-machine)
-add_executable(cpu-task-switch16-smoke
-    test/app-nxvm/unit/core/devices/cpu_task_switch16_smoke.c)
-target_link_libraries(cpu-task-switch16-smoke PRIVATE x86-cpu)
-add_executable(cpu-task-switch32-decode-smoke
-    test/app-nxvm/unit/core/devices/cpu_task_switch32_decode_smoke.c)
-target_link_libraries(cpu-task-switch32-decode-smoke PRIVATE x86-cpu)
-add_executable(cpu-task-switch32-state-smoke
-    test/app-nxvm/unit/core/devices/cpu_task_switch32_state_smoke.c)
-target_link_libraries(cpu-task-switch32-state-smoke PRIVATE x86-cpu)
 add_executable(machine-task-switch32-paging-smoke
     test/app-nxvm/unit/core/devices/machine_task_switch32_paging_smoke.c)
 target_link_libraries(machine-task-switch32-paging-smoke PRIVATE core-machine)
 add_executable(machine-task-switch16-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_task_switch16_pic_board_smoke.c)
+target_include_directories(machine-task-switch16-pic-board-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(machine-task-switch16-pic-board-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-task-switch-cross-width-smoke PRIVATE
@@ -1068,9 +1061,9 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-hlt-s49-smoke|test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c"
     "core-machine-imul-immediate-s56-smoke|test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
     "x86-test-cpu_outer_return|devices/cpu/cpu_outer_return_smoke.c"
-    "cpu-task-switch16-smoke|test/app-nxvm/unit/core/devices/cpu_task_switch16_smoke.c"
-    "cpu-task-switch32-decode-smoke|test/app-nxvm/unit/core/devices/cpu_task_switch32_decode_smoke.c"
-    "cpu-task-switch32-state-smoke|test/app-nxvm/unit/core/devices/cpu_task_switch32_state_smoke.c"
+    "x86-test-cpu_task_switch16|devices/cpu/cpu_task_switch16_smoke.c"
+    "x86-test-cpu_task_switch32_decode|devices/cpu/cpu_task_switch32_decode_smoke.c"
+    "x86-test-cpu_task_switch32_state|devices/cpu/cpu_task_switch32_state_smoke.c"
     "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
     "x86-test-cpu_lgdt_lidt|devices/cpu/cpu_lgdt_lidt_smoke.c"
     "core-machine-lea-smoke|test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
@@ -1916,9 +1909,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-iret-s51-smoke
     x86-test-cpu_outer_return
     machine-outer-iret-pic-board-smoke
-    cpu-task-switch16-smoke
-    cpu-task-switch32-decode-smoke
-    cpu-task-switch32-state-smoke
+    x86-test-cpu_task_switch16
+    x86-test-cpu_task_switch32_decode
+    x86-test-cpu_task_switch32_state
     machine-task-switch16-pic-board-smoke
     core-machine-fs-gs-stack-smoke
     core-machine-lss-lfs-lgs-smoke
