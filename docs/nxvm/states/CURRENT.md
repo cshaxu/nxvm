@@ -526,22 +526,34 @@ admitted NXVM profiles have rebuilt 0539 x64/x86 Release artifacts. The
 [S75 evidence](../etc/evidence/t539-s75-opaque-cpu-lifetime.md) records the
 boundary and artifact hashes. S75 is accepted; T539 remains open for S76-S82.
 
-## S76 Active Packet
+## S77 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S76, Continuation. |
-| Change Targets | Shared then NXVM, with one target per P/commit. Shared owns the CPU corpus and its tests; NXVM owns consumers, product artifacts and task evidence. |
-| Objective | Establish the canonical Shared CPU source/API location and move its first bounded fixture group without changing CPU semantics, board CPU-bus wiring or product behavior. S76 cuts active consumers to that location; S77-S80 migrate the remaining test groups and S81 removes the retained historical App path. |
-| Non-goals | Altering CPU semantics, profile behavior, firmware/asset/INI inputs, or T539 S82 whole-CPU acceptance. |
-| Required Boundary | Shared CPU keeps an opaque execution owner and callback-only bus contract. NXVM provides its existing board bus and never imports CPU private layout. |
-| Verification | Shared manifest/corpus and independent build/tests; NXVM x64/x86 complete units and CPU-boundary gates; rebuild every affected NXVM product artifact. The preserved legacy CPU diagnostic exception is verified as location-only; S82 owns removal or an explicit retained exception. |
-| Expected P Order | A Shared P establishes the canonical CPU source/API and first CPU-only fixture group. An NXVM P consumes the new public location without creating a second runtime CPU path. |
-| Reporting Requirements | Record allocation/rollback ownership, removed layout exposure, focused and full-suite results, net delta and executable determination. |
-| Stop Conditions | Stop if migration needs a second CPU state owner, a mutable private accessor, or an unverified production semantic change. |
-| Exit Criteria | One opaque CPU owner supplies all former embedded lifetime paths; no legacy layout or mirror remains; all verification passes. |
+| Identifier Mode | M5 T539 S77, Automatically admitted continuation. |
+| Change Target | Shared. |
+| Objective | Move only CPU-owned 8086/80186 arithmetic, FLAGS, rotate and direct-register fixtures/tests to the canonical Shared CPU owner. |
+| Non-goals | Altering CPU semantics or timing, moving board fixtures, changing NXVM profile behavior, or deleting the retained App CPU source path before S81. |
+| Required Boundary | The moved tests may use the public opaque CPU contract and CPU-private fixture only where the Shared owner supplies it; no board CPU bus, PIC, memory or profile dependence may enter Shared. |
+| Verification | Shared manifest/corpus and focused successor tests on x64/x86; complete Shared and NXVM units on both widths. Rebuild a product artifact only if a linked runtime CPU input changes. |
+| Exit Criteria | One bounded CPU-only arithmetic receiver group lives under Shared; old consumer paths are removed; no second fixture or test recipe remains; all required checks pass. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S75 audits creation, destruction, reset, prepared execution and failure rollback together so no alternative CPU lifetime path remains. |
+| Similar-Issue Sweep | Classify every candidate by actual CPU-only versus board dependency before moving it; leave board cases explicit for S78-S80. |
+
+## S76 Acceptance
+
+S76 established `src/x86/devices/cpu/` as the canonical nine-file CPU corpus.
+`x86-cpu-shared` is the sole implementation target; NXVM's historic
+`x86-cpu` spelling is a CMake alias, not a wrapper or duplicate object path.
+All active NXVM consumers and static authority gates now use the canonical
+Shared headers/sources. The retained App CPU files are inert historical source
+only; S81 owns their physical deletion.
+
+Shared corpus, opaque contract, CPU-bus negative controls and focused timing
+runners pass on both widths. Complete repository-only NXVM units pass 427/427
+on each width. All eight 0539 profile/width artifacts were rebuilt and their
+PE architectures plus hashes are recorded in the [S76 evidence](../etc/evidence/t539-s76-shared-cpu-cutover.md).
+S76 is accepted; T539 remains open for S77-S82.
 
 ## S74 Acceptance
 
