@@ -1,7 +1,7 @@
 #ifndef TEST_PROTECTED_PIC_BOARD_FIXTURE_H
 #define TEST_PROTECTED_PIC_BOARD_FIXTURE_H
 
-#include "cpu_protected_fixture.h"
+#include "x86/devices/cpu/support/cpu_protected_fixture.h"
 #include "pic_fixture.h"
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/pic_bus.h"

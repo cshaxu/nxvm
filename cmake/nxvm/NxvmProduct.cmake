@@ -803,23 +803,20 @@ target_link_libraries(machine-idt-privilege-pic-board-smoke PRIVATE core-machine
 add_executable(machine-control-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_control_state_board_smoke.c)
 target_link_libraries(machine-control-state-board-smoke PRIVATE core-machine)
-add_executable(cpu-outer-return-smoke
-    test/app-nxvm/unit/core/devices/cpu_outer_return_smoke.c)
-target_link_libraries(cpu-outer-return-smoke PRIVATE x86-cpu)
 add_executable(machine-outer-iret-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_outer_iret_pic_board_smoke.c)
+target_include_directories(machine-outer-iret-pic-board-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(machine-outer-iret-pic-board-smoke PRIVATE core-machine)
-add_executable(cpu-protected-far-smoke
-    test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c)
-target_link_libraries(cpu-protected-far-smoke PRIVATE x86-cpu)
-add_executable(cpu-protected-data-access-smoke
-    test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c)
-target_link_libraries(cpu-protected-data-access-smoke PRIVATE x86-cpu)
 add_executable(machine-protected-far-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_protected_far_pic_board_smoke.c)
+target_include_directories(machine-protected-far-pic-board-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(machine-protected-far-pic-board-smoke PRIVATE core-machine-executor)
 add_executable(machine-protected-data-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_protected_data_pic_board_smoke.c)
+target_include_directories(machine-protected-data-pic-board-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(machine-protected-data-pic-board-smoke PRIVATE core-machine-executor)
 add_executable(core-machine-protected-16-gate-s3-smoke
     test/app-nxvm/unit/core/devices/core_machine_protected_16_gate_board_smoke.c)
@@ -1055,8 +1052,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "cpu-control-transfer-near-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
     "cpu-control-transfer-far-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
     "cpu-idt-privilege-entry-smoke|test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
-    "cpu-protected-far-smoke|test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
-    "cpu-protected-data-access-smoke|test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c"
+    "x86-test-cpu_protected_far|devices/cpu/cpu_protected_far_smoke.c"
+    "x86-test-cpu_protected_data_access|devices/cpu/cpu_protected_data_access_smoke.c"
     "x86-test-cpu_debug_state|devices/cpu/cpu_debug_state_smoke.c"
     "x86-test-cpu_dttr_s61|devices/cpu/cpu_dttr_s61_smoke.c"
     "x86-test-cpu_descriptor_system|devices/cpu/cpu_descriptor_system_smoke.c"
@@ -1070,7 +1067,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-gpr-push-pop-smoke|test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c"
     "core-machine-hlt-s49-smoke|test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c"
     "core-machine-imul-immediate-s56-smoke|test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
-    "cpu-outer-return-smoke|test/app-nxvm/unit/core/devices/cpu_outer_return_smoke.c"
+    "x86-test-cpu_outer_return|devices/cpu/cpu_outer_return_smoke.c"
     "cpu-task-switch16-smoke|test/app-nxvm/unit/core/devices/cpu_task_switch16_smoke.c"
     "cpu-task-switch32-decode-smoke|test/app-nxvm/unit/core/devices/cpu_task_switch32_decode_smoke.c"
     "cpu-task-switch32-state-smoke|test/app-nxvm/unit/core/devices/cpu_task_switch32_state_smoke.c"
@@ -1917,7 +1914,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-hlt-s49-smoke
     core-machine-software-int-s50-smoke
     core-machine-iret-s51-smoke
-    cpu-outer-return-smoke
+    x86-test-cpu_outer_return
     machine-outer-iret-pic-board-smoke
     cpu-task-switch16-smoke
     cpu-task-switch32-decode-smoke
@@ -1962,8 +1959,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-idt-privilege-entry-smoke
     machine-idt-privilege-pic-board-smoke
     machine-control-state-board-smoke
-    cpu-protected-far-smoke
-    cpu-protected-data-access-smoke
+    x86-test-cpu_protected_far
+    x86-test-cpu_protected_data_access
     machine-protected-far-pic-board-smoke
     machine-protected-data-pic-board-smoke
     core-machine-protected-16-gate-s3-smoke
@@ -2152,7 +2149,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_inc_dec_first_group
     x86-test-cpu_inc_dec_second_group
     x86-test-cpu_inc_dec_final_group
-    cpu-outer-return-smoke
+    x86-test-cpu_outer_return
     core-machine-iret-s51-smoke
     cpu-lea-smoke
     cpu-legacy-lock-s1-smoke
@@ -2168,8 +2165,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_port_io
     x86-test-cpu_port_strings
     core-machine-protected-16-gate-s3-smoke
-    cpu-protected-data-access-smoke
-    cpu-protected-far-smoke
+    x86-test-cpu_protected_data_access
+    x86-test-cpu_protected_far
     core-machine-protected-ud-delivery-s1-smoke
     x86-test-cpu_pusha_popa
     x86-test-cpu_pushf_popf
@@ -2234,8 +2231,8 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     cpu-control-transfer-branch-smoke
     x86-test-cpu_debug_state
     core-machine-protected-16-gate-s3-smoke
-    cpu-protected-data-access-smoke
-    cpu-protected-far-smoke
+    x86-test-cpu_protected_data_access
+    x86-test-cpu_protected_far
     core-machine-protected-ud-delivery-s1-smoke
     machine-task-switch-cross-width-smoke
     machine-vm86-delivery-smoke

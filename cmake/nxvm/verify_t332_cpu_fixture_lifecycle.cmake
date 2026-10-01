@@ -65,10 +65,10 @@ set(project_t332_cpu_instruction_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_outer_return_smoke.c"
+    "devices/cpu/cpu_outer_return_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c"
+    "devices/cpu/cpu_protected_far_smoke.c"
+    "devices/cpu/cpu_protected_data_access_smoke.c"
     "devices/cpu/cpu_descriptor_system_smoke.c"
     "devices/cpu/cpu_dttr_s61_smoke.c"
     "devices/cpu/cpu_lar_lsl_smoke.c"
@@ -82,10 +82,10 @@ set(project_t332_task_switch16_cpu_fixture_sources
 set(project_t332_task_switch32_cpu_fixture_sources
     "test/app-nxvm/unit/core/devices/cpu_task_switch32_state_smoke.c")
 set(project_t332_protected_cpu_fixture_sources
-    "test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c")
+    "devices/cpu/cpu_protected_far_smoke.c"
+    "devices/cpu/cpu_protected_data_access_smoke.c")
 set(project_t332_outer_return_cpu_fixture_sources
-    "test/app-nxvm/unit/core/devices/cpu_outer_return_smoke.c")
+    "devices/cpu/cpu_outer_return_smoke.c")
 set(project_t332_descriptor_query_fixture_sources
     "devices/cpu/cpu_lar_lsl_smoke.c"
     "devices/cpu/cpu_verr_verw_smoke.c")
