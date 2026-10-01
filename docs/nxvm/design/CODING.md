@@ -94,17 +94,18 @@ The three ordered [migration proposals](../states/QUEUE.md) target:
 src/
   lib/
   common/
-  x86/{devices,ibmpc,xasm32,debug}/
+  x86/{core,devices,ibmpc,xasm32,debug}/
   app-mypcxt/
   app-mypcat/
   app-mypcdeskpro386/
   app-nxvm/             default 386 only after cutover
 ```
 
-`app-mypc110` is future work, not an empty directory to create now. Real chip
-responsibilities move to devices; common PC board mechanisms move to ibmpc;
-product-specific assembly remains App-owned. Existing CPU implementation
-style and coherent file boundaries are preserved, not rewritten for renaming.
+`app-mypc110` is future work, not an empty directory to create now. The neutral
+x86 machine executor moves to `x86/core`; real chip responsibilities move to
+devices; common PC board mechanisms move to ibmpc; product-specific assembly
+remains App-owned. Existing CPU implementation style and coherent file
+boundaries are preserved, not rewritten for renaming.
 Matching shared tests live in `test/x86/{devices,ibmpc}`; each App owns its
 `test/app-<product>` unit/integration tree, documentation, tools and build entry.
 No source, test, firmware, INI or executable is relocated by this proposal-only

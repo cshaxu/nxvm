@@ -106,6 +106,12 @@ contract is identical.  A composition may call zero, one or several helpers.
 That preserves a single owner for each line while allowing later independent
 applications to reuse proven mechanics.
 
+The audit also establishes a prerequisite outside `ibmpc`: the present
+`app-nxvm/devices` directory includes the generic x86 executor (memory, port,
+transaction, timeline, CPU bus and plan application).  It must later receive a
+neutral `x86/core` home, rather than being mislabeled as IBM-PC board code.
+That extraction precedes independent App cutover; T540 does not move it.
+
 ## Candidate Boundaries For Later S Tasks
 
 1. Record an exact retained-adapter dependency ledger and classify each module

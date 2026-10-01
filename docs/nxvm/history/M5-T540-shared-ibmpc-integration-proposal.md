@@ -10,9 +10,12 @@ This is reusable PC assembly, not another chip library or a host executor.
 ## Ownership
 
 - `x86/devices` retains sole ownership of each chip's state and behavior.
-- `x86/ibmpc` owns the demonstrably shared PC memory/port routing, signal
-  wiring, construction/reset sequencing and guest-device scheduling mechanism.
-  It integrates chips only through their public contracts.
+- `x86/ibmpc` owns demonstrably shared IBM-PC port routing and signal wiring.
+  It integrates chips only through their public contracts. The generic x86
+  machine executor -- memory, ports, transactions, guest timeline, CPU bus and
+  plan application -- is not IBM-PC code; its required neutral receiver is
+  `x86/core`, established before independent Apps stop depending on the current
+  App-owned Core interface.
 - Common remains owner of host execution/lifecycle coordination; Lib remains
   owner of platform, file and audio services. There is no second lifecycle
   FIFO, host worker, scheduler time source, renderer or storage backend here.

@@ -197,10 +197,11 @@ the other two remain [implementation candidates](../states/QUEUE.md):
    each retains its state and internal timing. It does not own a PC profile,
    host executor, firmware workaround or peer chip's internals. Composition
    connects public memory/I/O cycles, signals and interrupt acknowledgement.
-2. `x86/ibmpc` owns the four machines' proven common PC assembly mechanisms:
-   board routing, wiring, construction/reset and one guest scheduler. It uses
-   independent chip contracts; product-specific topology and asset selection
-   stay in the App. No mirrored device state or second Common lifecycle loop.
+2. `x86/core` owns the neutral x86 machine executor and plan transaction;
+   `x86/ibmpc` owns the four machines' proven common PC board routing and
+   wiring. Both use independent chip contracts; product-specific topology and
+   asset selection stay in the App. No mirrored device state, product policy or
+   second Common lifecycle loop is introduced.
 3. Four independent Apps compose these shared capabilities: `app-mypcxt`
    (5160), `app-mypcat` (5170), `app-mypcdeskpro386` (Model 40), and
    `app-nxvm` (default 386). Later PC110 belongs to `app-mypc110` after its
