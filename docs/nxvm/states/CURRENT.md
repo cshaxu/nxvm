@@ -15,9 +15,8 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S100 and S100 is the final acceptance. S48-S95 are
-accepted and S97-S100 remain pending. The next package must be admitted from
-the bounded ledger. Earlier
+is then divided into S83-S100 and S100 is the final acceptance. S48-S96 are
+accepted and S98-S100 remain pending. S97 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -241,6 +240,22 @@ T317, CPU/PIC authority, Shared manifest/corpus and documentation governance
 pass. Detached full unit suites pass **462/462** on x64 and x86. See the
 [S96 evidence](../etc/evidence/t539-s96-lock-imul-receivers.md). S96 is
 accepted; T539 remains open for S97-S100.
+
+## S97 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S97, automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic, bounded, strictly linear numeric T539 continuation tasks; S97 follows accepted S96. |
+| Objective | Classify the residual direct `x86-cpu` receivers, moving each CPU-only control-transfer receiver to Shared and recording the sole named NXVM owner for the nonportable IDT privilege receiver. |
+| Non-goals | New Shared APIs/fixtures, conversion of App device support into a framework, production source, firmware, assets, INI and executables. |
+| Reference Baseline | `d936fc14d`, accepted S96. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Move only `cpu_control_transfer_branch_smoke.c`, `cpu_control_transfer_near_smoke.c` and `cpu_control_transfer_far_smoke.c` to `test/x86/devices/cpu`. Keep `cpu_idt_privilege_entry_smoke.c` in NXVM because it directly requires App `device_support`; record that boundary rather than duplicating or inventing a fixture. |
+| Applicable Rules | NXVM and Shared architecture/coding/execution/documentation rules; a receiver is Shared only when it has no App/Core board dependency. |
+| Verification | Focused x64/x86 successor and retained IDT tests, full x64/x86 units, T317/T332/static gates, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. |
+| Exit Criteria | Every residual direct receiver is either a sole Shared receiver or has one recorded NXVM owner, with no duplicate path and both full unit suites passing. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
 
 ## S86 Acceptance
 
