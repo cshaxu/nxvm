@@ -5,7 +5,7 @@
 #include "app-nxvm/devices/machine_interface.h"
 
 #define main vm86_lgdt_lidt_s5_vm86_delivery_main
-#include "core_machine_vm86_delivery_smoke.c"
+#include "machine_vm86_delivery_smoke.c"
 #undef main
 
 static lib_i32 vm86_lgdt_lidt_s5_case(lib_u8 reg)

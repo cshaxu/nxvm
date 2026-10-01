@@ -983,17 +983,17 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-table-register-board-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-vm86-delivery-smoke
-    test/app-nxvm/unit/core/devices/core_machine_vm86_delivery_smoke.c)
-target_link_libraries(core-machine-vm86-delivery-smoke PRIVATE core-machine)
+add_executable(machine-vm86-delivery-smoke
+    test/app-nxvm/unit/core/devices/machine_vm86_delivery_smoke.c)
+target_link_libraries(machine-vm86-delivery-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(core-machine-vm86-delivery-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(machine-vm86-delivery-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-vm86-iret-smoke
-    test/app-nxvm/unit/core/devices/core_machine_vm86_iret_smoke.c)
-target_link_libraries(core-machine-vm86-iret-smoke PRIVATE core-machine)
+add_executable(machine-vm86-iret-smoke
+    test/app-nxvm/unit/core/devices/machine_vm86_iret_smoke.c)
+target_link_libraries(machine-vm86-iret-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(core-machine-vm86-iret-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(machine-vm86-iret-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(machine-interrupt-entry-smoke
     test/app-nxvm/unit/core/devices/machine_interrupt_entry_smoke.c)
@@ -1115,7 +1115,7 @@ endif()
 foreach(target IN ITEMS
     core-machine-t359-s4-timing-smoke
     machine-interrupt-entry-smoke
-    core-machine-vm86-delivery-smoke
+    machine-vm86-delivery-smoke
     machine-protected-privilege-board-smoke
     core-machine-call-gate-privilege-entry-smoke
     machine-tss-iomap-port-authorization-smoke
@@ -1880,11 +1880,11 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-real-ud-delivery-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-hardware-delivery-s3-smoke
-    test/app-nxvm/unit/core/devices/core_machine_hardware_delivery_s3_smoke.c)
-target_link_libraries(core-machine-hardware-delivery-s3-smoke PRIVATE core-machine)
+add_executable(machine-hardware-delivery-s3-smoke
+    test/app-nxvm/unit/core/devices/machine_hardware_delivery_s3_smoke.c)
+target_link_libraries(machine-hardware-delivery-s3-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(core-machine-hardware-delivery-s3-smoke PRIVATE
+    target_compile_options(machine-hardware-delivery-s3-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-interrupt-return-composition-s4-smoke
@@ -1894,13 +1894,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-interrupt-return-composition-s4-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-vm86-lgdt-lidt-s5-smoke
-    test/app-nxvm/unit/core/devices/core_machine_vm86_lgdt_lidt_s5_smoke.c)
-target_link_libraries(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE core-machine)
-target_compile_definitions(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE
+add_executable(machine-vm86-lgdt-lidt-s5-smoke
+    test/app-nxvm/unit/core/devices/machine_vm86_lgdt_lidt_s5_smoke.c)
+target_link_libraries(machine-vm86-lgdt-lidt-s5-smoke PRIVATE core-machine)
+target_compile_definitions(machine-vm86-lgdt-lidt-s5-smoke PRIVATE
     CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE
+    target_compile_options(machine-vm86-lgdt-lidt-s5-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-int-ivt-smoke
@@ -2147,8 +2147,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-protected-16-outer-iret-s6-smoke
     core-machine-protected-16-call-gate-s7-smoke
     core-machine-descriptor-system-smoke
-    core-machine-vm86-delivery-smoke
-    core-machine-vm86-iret-smoke
+    machine-vm86-delivery-smoke
+    machine-vm86-iret-smoke
     machine-interrupt-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
@@ -2179,9 +2179,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-real-exception-final-s1-smoke
     core-machine-protected-ud-delivery-s1-smoke
     core-machine-real-ud-delivery-s1-smoke
-    core-machine-hardware-delivery-s3-smoke
+    machine-hardware-delivery-s3-smoke
     core-machine-interrupt-return-composition-s4-smoke
-    core-machine-vm86-lgdt-lidt-s5-smoke
+    machine-vm86-lgdt-lidt-s5-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
     machine-port-ownership-board-smoke
@@ -2361,7 +2361,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-software-int-s50-smoke
     cpu-sreg-mov-smoke
     cpu-stos-smoke
-    core-machine-vm86-delivery-smoke
+    machine-vm86-delivery-smoke
     cpu-xchg-smoke
     vm-dos-mem-fault-smoke
     vm-fault-outcome-runner-smoke)
@@ -2413,7 +2413,7 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     cpu-protected-far-smoke
     core-machine-protected-ud-delivery-s1-smoke
     machine-task-switch-cross-width-smoke
-    core-machine-vm86-delivery-smoke
+    machine-vm86-delivery-smoke
     vm-dos-mem-fault-smoke)
 
 foreach(t337_ud_target IN LISTS PROJECT_T337_UD_UNIT_TEST_TARGETS)

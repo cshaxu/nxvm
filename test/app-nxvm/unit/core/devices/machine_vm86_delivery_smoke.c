@@ -435,5 +435,6 @@ lib_i32 main(void)
             VM86_STACK_TOP) || !vm86_delivery_bad_ss0(0x0010u, 0x12u, VM86_STACK_TOP) ||
         !vm86_delivery_bad_ss0(0x0010u, 0x90u, VM86_STACK_TOP) ||
         !vm86_delivery_short_stack()) return 1;
-    printf("M5:T320:S1:VM86-DELIVERY:OK\n"); return 0;
+    printf("M5:T320:S1:VM86-DELIVERY:OK\n");
+    printf("M5:T539:S67:VM86:OK\n"); return 0;
 }

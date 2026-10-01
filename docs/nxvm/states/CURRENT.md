@@ -505,26 +505,44 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 
-## S67 Active Packet
+## S68 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S67, Continuation. |
+| Identifier Mode | M5 T539 S68, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the VM86 dependency group and its hardware-delivery includer, preserving VM86 frames, table loads, paging faults and hardware IRQ delivery. |
-| Non-goals | S56-S66 accepted task/I/O-map/CLI/IRET/INT work; timing corpus (S68); production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S66 acceptance; `core_machine_vm86_delivery_smoke.c`, `core_machine_vm86_iret_smoke.c`, `core_machine_vm86_lgdt_lidt_s5_smoke.c` and `core_machine_hardware_delivery_s3_smoke.c`. |
-| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S67 VM86 dependency group. |
-| Files And ABI Surface | Allocate all VM86 sources and their direct includes before editing; no public ABI change. |
-| Applicable Rules | Preserve VM86 frames, table loads, paging faults, hardware IRQ delivery and atomic state. Each original context has one receiver. |
-| Verification | Exact residual-case ledger; focused receiver; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
-| Expected Markers | A new S67 VM86 marker and retained VM86 markers. |
+| Objective | Retire timing-corpus direct-private consumers while preserving 8086/80186/80286/80386 ledger formulas, manifest rows, protected I/O timing and normalization contracts. |
+| Non-goals | S56-S67 accepted task/I/O-map/CLI/IRET/INT/VM86 work; remaining-consumer sweep (S69); production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S67 acceptance; timing ledgers and manifest runners; `core_machine_call_gate_smoke.c` as the 80286 timing includer. |
+| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S68 timing corpus. |
+| Files And ABI Surface | Allocate each timing source and direct include before editing; no public ABI change or generated production catalog dependency. |
+| Applicable Rules | Preserve source formulas, catalog rows, measured deltas and one receiver per original context. |
+| Verification | Exact residual-case ledger; focused timing runners; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
+| Expected Markers | Retained timing-runner markers or their exact successor receiver markers. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Reporting Requirements | Record all VM86 sources, all direct includes, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
-| Stop Conditions | Stop if a context requires production/API/Shared change. |
-| Exit Criteria | Each VM86 dependency context has one receiver; no retained fixture is orphaned or duplicated; all verification passes. |
+| Reporting Requirements | Record every timing source, includer, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
+| Stop Conditions | Stop if a context requires production/API/Shared change or a formula has no authority. |
+| Exit Criteria | Each timing context has one receiver; no catalog or measured row is orphaned, duplicated or reinterpreted; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S67 includes the hardware-delivery direct includer. S68 owns timing-only consumers. |
+| Similar-Issue Sweep | S68 includes all remaining timing-only direct consumers and their manifest runners. |
+
+## S67 Acceptance
+
+`machine_vm86_delivery_smoke.c`, `machine_vm86_iret_smoke.c`,
+`machine_vm86_lgdt_lidt_s5_smoke.c` and
+`machine_hardware_delivery_s3_smoke.c` are the sole named public Core-machine
+receivers for the VM86 dependency group. They retain VM86 interrupt frames,
+LGDT/LIDT validation, paging faults and real hardware IRQ delivery; direct
+includers reuse the same fixture rather than introduce another execution path.
+
+Focused x64/x86 receivers pass and emit `M5:T539:S67:VM86:OK` together with
+their retained historical VM86 markers. Complete repository-only unit suites
+pass 426/426 on x64 and x86. T344 registration and historical fixture shapes,
+T332 lifecycle, VM-machine lifecycle, Core CPU/PIC authority, documentation
+governance and diff checks pass on both widths. This is test/CMake/documentation
+work only: no production/API, Shared, firmware, asset, INI or EXE input changed,
+so no EXE rebuild is required. The [receiver map](../etc/evidence/t539-s67-vm86-receiver-map.md)
+records the complete allocation. S67 is accepted; T539 remains open for S68-S72.
 
 ## S66 Acceptance
 
