@@ -161,7 +161,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S95 | Accepted: CPU-only operand/address and prefix-attribute receivers move to Shared; Core-machine board paths remain NXVM. |
 | S96 | Accepted: CPU-only legacy-LOCK and immediate-IMUL fixtures/tests move to Shared; the Core-machine port/IOPL LOCK route remains NXVM and no blanket compatibility path is added. |
 | S97 | Accepted: CPU-only control-transfer branch/near/far receivers move to Shared; the App `device_support` dependent IDT privilege receiver remains the named NXVM owner. |
-| S98 | CPU timing/manifest receiver move: migrate CPU-only timing/catalog inputs and runners, preserving formula rows and generated result contracts; leave board-time publication tests in NXVM. |
+| S98 | Accepted: Shared retains the sole CPU timing implementation; NXVM retains the machine/profile, board-time and generated-result runner contracts. No synthetic Shared runner path is added. |
 | S99 | NXVM legacy-path deletion: switch all remaining consumers and static gates to the Shared API, delete retired App CPU sources/paths and prove no duplicate implementation remains. |
 | S100 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
