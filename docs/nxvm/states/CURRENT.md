@@ -2,7 +2,9 @@
 
 ## Current Work
 
-M5 T540 retains accepted S1-S3 design evidence; it has no active source packet.
+M5 T540 S4 is active: rename the independent Shared chip component from
+`x86/devices` to `x86/chips` and reconnect its NXVM consumer. S1-S3 design
+evidence remains accepted.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -27,7 +29,7 @@ the completed CPU extraction.
 | Task | Status |
 | --- | --- |
 | T539 | Closed: every finite chip-ledger row is either extracted to its sole Shared owner or retained with its stated board-only reason; S101 removed the last historical CPU copy. |
-| T540 | Open: S1-S3 establish the board boundary and flat future target names; no source move has been admitted. |
+| T540 S4 | Active: one structural Shared chip path and NXVM consumer migration. |
 
 ## T540 S1 Acceptance
 
@@ -69,6 +71,27 @@ changed ABI, runtime behavior, assets, INI inputs or executables.
 `git diff --check` and `Verify-DocumentationGovernance.ps1 -Product nxvm`
 passed. Coordinator review accepts `ed5634677`; this closure records the
 accepted naming boundary for later, separately admitted source moves.
+
+## T540 S4 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S4, the next linear S after accepted S3. |
+| Admission And Approval | The owner approved automatic admission of each bounded T540 S and selected `x86/chips` as the sole independent-chip destination; the prior S4 plan assigns this structural rename. Shared and NXVM are the declared targets. MyNES is a read-only receiving review because its link inputs exclude x86. |
+| Objective | Relocate the complete independent-chip source/test family from `src/x86/devices` and `test/x86/devices` to `chips`, repair every live source/build/test/tool reference, and remove the old path. |
+| Non-goals | Chip behavior or public-symbol changes, generic Core relocation, board-adapter extraction, profile/ROM/INI changes, new device framework, or MyNES edits. |
+| Reference Baseline | `30d12eeef`, accepted S3 flat component layout and T539 closed chip corpus. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [board audit](../etc/architecture/t540-ibmpc-board-audit.md), and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | Shared `src/x86`, `test/x86`, their CMake/manifest/static gates; NXVM direct includes, build paths, product-only tests/tools/static gates and task evidence. Public symbols and runtime ABI stay intact. Each P commit changes exactly one declared target. |
+| Applicable Rules | Architecture: single chip owner, Shared never imports App, and NXVM remains the sole board/host adapter. Coding: delete old include/build paths, no forwarding header or duplicate source. Execution: `git mv`, one target per P, complete units before S closure and dual-width receiving-product artifact review. Documentation: product-local packet/evidence and governance gate. Source policy is not triggered: no external source or binary is imported. |
+| Verification | Search live source/build/test/tool trees for the retired `x86/devices` path; verify both manifests and x86 corpus/negative gates; build and run complete x64/x86 repository-only units, focused chip and four-profile regressions; build/review affected NXVM x64/x86 runnable products and hashes; run documentation and diff checks. |
+| Expected Markers | One `src/x86/chips` implementation and `test/x86/chips` suite; no `src/x86/devices` or `test/x86/devices`, no forwarding include, and unchanged public symbols and chip behavior. |
+| Asset Needs | Existing BYOB build roots only for the affected NXVM executable rebuild; no new ROM/media input. MyNES artifact hashes must remain unchanged. |
+| Reporting Requirements | Record per-target P commits, moved-file and reference counts, added/removed/net tracked source/test lines, each width's unit and product build result, manifest/gate results, and artifact disposition. |
+| Stop Conditions | Stop before changing any chip semantics, product firmware, MyNES file, or public contract; revise the packet if the path migration reveals a new dependency owner. |
+| Exit Criteria | All chip files and references use the one `chips` path; Shared and NXVM compile and pass required tests on both widths; all affected runnable NXVM artifacts are reviewed and updated where changed; actual diff review finds no second chip owner or compatibility path. |
+| Original Owner Request | Put fully decoupled Intel/x86 chips in `src/x86/chips` for reuse by later PC and arcade Apps. |
+| Similar-Issue Sweep | Inspect every current source/test/CMake/static/tool include or literal of `x86/devices`, including negative probes and manifest inventory; distinguish historical documents from live paths. |
 
 ## S87 Admission Packet
 
