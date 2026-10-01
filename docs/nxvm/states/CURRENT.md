@@ -167,6 +167,27 @@ test remains. Focused x64/x86 and all static gates pass; detached units pass
 input changed. See [S91 evidence](../etc/evidence/t539-s91-execution-fault-event-receiver.md).
 S91 is accepted; T539 remains open for S92-S100.
 
+## S92 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S92, automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic, bounded, numeric T539 continuation tasks; S92 follows accepted S91. |
+| Objective | Move the three CPU-only protected data, far-transfer and outer-return receivers to Shared. |
+| Non-goals | PIC/IDT delivery, public paging, board transactions, 16-bit board gates, production APIs, firmware, assets, INI and executables. |
+| Reference Baseline | `7a02082d5`, accepted S91. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Move `cpu_protected_data_access_smoke.c`, `cpu_protected_far_smoke.c`, `cpu_outer_return_smoke.c` and only their CPU-local fixture dependencies to `test/x86/devices/cpu`; remove old App targets; no production/API change. |
+| Applicable Rules | NXVM and Shared architecture/coding/execution/documentation rules; CPU tests own chip semantics while PIC/board tests remain NXVM. |
+| Verification | Focused x64/x86 receivers, complete x64/x86 units, T332, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. |
+| Expected Markers | Three Shared CPU receivers, no duplicate App targets or fixtures, and unchanged named board receivers. |
+| Asset Needs | None; repository-only test ownership migration. |
+| Reporting Requirements | Record moved files/fixtures, retained board paths, test evidence and artifact determination. |
+| Stop Conditions | Stop if a candidate needs public machine, PIC/IRQ, physical paging, new Shared API or a duplicate fixture. |
+| Exit Criteria | Each admitted CPU-only receiver has one Shared owner; board paths remain once in NXVM; both full unit suites pass. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
+| Similar-Issue Sweep | S92 owns only the three CPU-only protected receivers; all IDT/PIC/gate paths remain named NXVM board receivers. |
+
 ## S86 Acceptance
 
 The 257-line CPU-only debug-state receiver—MOV-DR, debug exceptions and data
