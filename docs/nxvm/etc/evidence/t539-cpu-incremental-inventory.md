@@ -392,7 +392,7 @@ complete receiving map and dual-width verification are recorded in
 
 ### S63: TSS I/O-map port, 1 matching file
 
-- `core_machine_tss_iomap_port_smoke.c`
+- `machine_tss_iomap_port_authorization_smoke.c`
 
 ### S56: 10 matching files
 

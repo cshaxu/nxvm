@@ -1079,9 +1079,9 @@ add_executable(core-machine-call-gate-privilege-entry-smoke
     test/app-nxvm/unit/core/devices/core_machine_call_gate_privilege_entry_board_smoke.c)
 target_link_libraries(core-machine-call-gate-privilege-entry-smoke PRIVATE core-machine)
 
-add_executable(core-machine-tss-iomap-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_tss_iomap_port_smoke.c)
-target_link_libraries(core-machine-tss-iomap-port-smoke PRIVATE core-machine)
+add_executable(machine-tss-iomap-port-authorization-smoke
+    test/app-nxvm/unit/core/devices/machine_tss_iomap_port_authorization_smoke.c)
+target_link_libraries(machine-tss-iomap-port-authorization-smoke PRIVATE core-machine)
 
 add_executable(machine-task-switch-cross-width-smoke
     test/app-nxvm/unit/core/devices/machine_task_switch_cross_width_smoke.c)
@@ -1118,7 +1118,7 @@ foreach(target IN ITEMS
     core-machine-vm86-delivery-smoke
     machine-protected-privilege-board-smoke
     core-machine-call-gate-privilege-entry-smoke
-    core-machine-tss-iomap-port-smoke
+    machine-tss-iomap-port-authorization-smoke
     machine-task-switch-cross-width-smoke)
     target_compile_definitions(${target} PRIVATE
         CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
@@ -2169,7 +2169,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-protected-iret-smoke
     core-machine-call-gate-smoke
     core-machine-call-gate-privilege-entry-smoke
-    core-machine-tss-iomap-port-smoke
+    machine-tss-iomap-port-authorization-smoke
     machine-task-switch-cross-width-smoke
     machine-task-switch32-paging-smoke
     core-machine-80386-paging-smoke

@@ -9,7 +9,7 @@ set(project_t344_migrated_sources
     "test/app-nxvm/unit/core/devices/core_machine_descriptor_system_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_fpu_8087_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_task_switch_cross_width_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_tss_iomap_port_smoke.c"
+    "test/app-nxvm/unit/core/devices/machine_tss_iomap_port_authorization_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_vm86_delivery_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_vm86_iret_smoke.c"
     "test/app-nxvm/unit/core/devices/cpu_profile_gate_smoke.c"

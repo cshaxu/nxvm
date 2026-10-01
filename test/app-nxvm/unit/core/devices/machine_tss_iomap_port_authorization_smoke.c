@@ -287,5 +287,6 @@ int main(void)
         IOMAP_CASE_DENY_IN);
     if (failed) return 1;
     printf("M5:T260:S3:TSS-IOMAP:CORPUS:OK\n");
+    printf("M5:T539:S63:TSS-IOMAP:OK\n");
     return 0;
 }
