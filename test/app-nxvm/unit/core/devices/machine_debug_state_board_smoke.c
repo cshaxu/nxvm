@@ -1,6 +1,6 @@
 #include "support/pic_fixture.h"
 #include "support/core_machine_board_fixture.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/machine_cpu_fixture.h"
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/machine_interface.h"

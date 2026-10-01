@@ -7,7 +7,7 @@
 #include "app-nxvm/devices/cpu_instructions.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/machine_cpu_fixture.h"
 
 typedef struct fpu_interface_s65_machine {
     core_machine *machine;

@@ -119,7 +119,7 @@ function(project_t332_require_shared_lifecycle source)
                 endif()
             endforeach()
         endif()
-        if(content MATCHES "core_machine_bind_execution_provider|executor_cpu|core_machine_cpu_fixture")
+        if(content MATCHES "core_machine_bind_execution_provider|executor_cpu|machine_cpu_fixture")
             message(FATAL_ERROR "Public board fixture restores private CPU setup: ${source}")
         endif()
         return()
@@ -179,7 +179,7 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(NOT "${content}" MATCHES "core_machine_(cpu|board)_fixture[.]h" OR
+    if(NOT "${content}" MATCHES "(machine_cpu|core_machine_board)_fixture[.]h" OR
         NOT "${content}" MATCHES
         "test_core_machine_fixture_(create_bind_freeze_reset|bind_freeze_reset)")
         message(FATAL_ERROR "T332 CPU fixture source omits shared setup: ${source}")

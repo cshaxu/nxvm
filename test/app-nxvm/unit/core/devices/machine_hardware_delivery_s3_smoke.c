@@ -6,7 +6,7 @@
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/machine_cpu_fixture.h"
 
 /* Retained owners supply the detailed gate and VM86 frame matrices. */
 #define main hardware_delivery_s3_interrupt_entry_main

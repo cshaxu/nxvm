@@ -11,8 +11,8 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
-corpus into S68-S73; later packages now run through S77. S48-S73 are accepted
-and S74-S77 remain pending. Earlier
+corpus into S68-S73; later packages now run through S77. S48-S74 are accepted
+and S75-S77 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -506,26 +506,45 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 
-## S74 Active Packet
+## S75 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S74, Continuation. |
+| Identifier Mode | M5 T539 S75, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Sweep the remaining raw CPU consumers, reconcile the original-case inventory to zero unassigned cases, and retire the last mixed fixture only after its final caller moves. |
-| Non-goals | S73 accepted 80386 timing-manifest receiver; opaque CPU lifetime cutover (S75); production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S73 acceptance; the four S74 inventory entries in the CPU work package. |
-| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S74 remaining-consumer sweep. |
-| Files And ABI Surface | Allocate every remaining consumer and include dependency before editing; no public ABI change or generated production catalog dependency. |
-| Applicable Rules | Preserve source formulas, protected-port rows, measured deltas and one receiver per original context. |
-| Verification | Exact residual-case ledger; focused timing runners; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
-| Expected Markers | Retained timing-runner markers or their exact successor receiver markers. |
-| Asset Needs | None; test-only work requires no EXE rebuild. |
-| Reporting Requirements | Record both sources, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
-| Stop Conditions | Stop if a context requires production/API/Shared change or a formula has no authority. |
-| Exit Criteria | Each timing context has one receiver; no catalog or measured row is orphaned, duplicated or reinterpreted; all verification passes. |
+| Objective | Replace the embedded CPU/decoder lifetime with one opaque owned allocation, preserving create/destroy, prepared entry, reset rollback and board ownership without a mutable private pointer or state mirror. |
+| Non-goals | S74 accepted residual-receiver migration; S76 physical Shared relocation; firmware, asset, INI or unrelated profile work. |
+| Reference Baseline | S74 acceptance and the S75 opaque-lifetime row in the CPU work package. |
+| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S75 opaque CPU lifetime cutover. |
+| Files And ABI Surface | Audit every lifetime receiver before editing; stop and report if the intended boundary requires an unjustified public mutable CPU accessor or a duplicated state owner. |
+| Applicable Rules | The board owns one opaque CPU lifetime; execution and reset use that owner only; no mirror or compatibility path. |
+| Verification | Focused lifetime/reset tests; complete x64/x86 unit suites; lifecycle/authority gates; documentation governance and diff check. |
+| Expected Markers | Existing lifecycle and reset markers, or exact successor markers recorded in evidence. |
+| Asset Needs | Determine after intake whether executable inputs change; do not rebuild outputs merely for test-only work. |
+| Reporting Requirements | Record allocation/rollback ownership, removed layout exposure, focused and full-suite results, net delta and executable determination. |
+| Stop Conditions | Stop if migration needs a second CPU state owner, a mutable private accessor, or an unverified production semantic change. |
+| Exit Criteria | One opaque CPU owner supplies all former embedded lifetime paths; no legacy layout or mirror remains; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S74 reconciles the remaining CPU/FPU/profile consumers and their fixture dependency to zero unassigned cases. |
+| Similar-Issue Sweep | S75 audits creation, destruction, reset, prepared execution and failure rollback together so no alternative CPU lifetime path remains. |
+
+## S74 Acceptance
+
+`machine_cpu_profile_gate_smoke.c`, `machine_fpu_escape_smoke.c` and
+`machine_fpu_interface_s65_smoke.c` are now the sole Core-machine receivers
+for the remaining profile/FPU inputs.  `support/machine_cpu_fixture.h` is the
+one private prepared-state fixture; all 31 test-only consumers use it, with no
+compatibility include or second fixture path.  The CPU-boundary, T332 lifecycle
+and T344 shape gates recognize the successor names and still reject the private
+fixture outside its intended boundary.
+
+Focused successor receivers and the CPU-boundary negative gate pass on x86 and
+x64.  All affected consumers rebuilt on both widths.  Complete repository-only
+unit suites pass 426/426 on x86 in 100.66 seconds and 426/426 on x64 in 99.72
+seconds; Types, T344, T332, VM lifecycle, CPU/PIC authority, T388,
+documentation-governance and diff checks pass per width.  No production/API,
+Shared, firmware, asset, INI or executable input changed, so no product binary
+rebuild is required.  See the [S74 receiver map](../etc/evidence/t539-s74-remaining-consumer-fixture-map.md).
+S74 is accepted; T539 remains open for S75-S77.
 
 ## S73 Acceptance
 

@@ -41,7 +41,7 @@ cross-width verification, artifacts and actual-diff acceptance are recorded in
 
 ## Remaining Private Test Consumers
 
-Search: `rg -l 'executor_cpu\.|executor_cpu_instructions|support/core_machine_cpu_fixture.h' test/app-nxvm/unit`.
+Search: `rg -l 'executor_cpu\.|executor_cpu_instructions|support/machine_cpu_fixture.h' test/app-nxvm/unit`.
 The recovery snapshot has 100 matching files, all under
 `test/app-nxvm/unit/core/devices/`. Names below are relative to that directory.
 These are migration inputs, not 100 failing tests or a complete count of cases.
@@ -444,10 +444,10 @@ complete receiving map and dual-width verification are recorded in
 
 ### S74: remaining-consumer sweep, 4 matching files
 
-- `core_machine_fpu_interface_s65_smoke.c`
-- `cpu_profile_gate_smoke.c`
-- `fpu_escape_smoke.c`
-- `support/core_machine_cpu_fixture.h`
+- `machine_fpu_interface_s65_smoke.c`
+- `machine_cpu_profile_gate_smoke.c`
+- `machine_fpu_escape_smoke.c`
+- `support/machine_cpu_fixture.h`
 
 ## Include Dependency Closure
 

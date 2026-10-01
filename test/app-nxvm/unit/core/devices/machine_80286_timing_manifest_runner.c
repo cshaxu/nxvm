@@ -6,7 +6,7 @@
 #include "app-nxvm/devices/cpu_timing.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/retirement_observation_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/machine_cpu_fixture.h"
 
 /* The timing corpus retains its private protected-state fixture until S50
  * converts its own recipes; it is not the public S3--S7 receiver. */

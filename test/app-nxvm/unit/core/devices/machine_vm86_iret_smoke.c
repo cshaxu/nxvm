@@ -4,7 +4,7 @@
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/machine_cpu_fixture.h"
 
 #define VM86_IRET_CODE 0x0100u
 #define VM86_IRET_STACK 0x8000u

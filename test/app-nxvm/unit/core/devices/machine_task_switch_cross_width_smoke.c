@@ -7,7 +7,7 @@
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/machine_cpu_fixture.h"
 
 #define GDT_POINTER 0x0100u
 #define GDT_BASE 0x0300u

@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/cpu.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "support/core_machine_cpu_fixture.h"
+#include "support/machine_cpu_fixture.h"
 
 #define CALL_GATE_GDT_POINTER 0x0100u
 #define CALL_GATE_GDT_BASE 0x0300u

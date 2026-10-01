@@ -113,7 +113,7 @@ foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
     set(path "${WORK}/test/app-nxvm/unit/core/devices/${name}")
     file(READ "${path}" original)
     foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
-            "#include \"support/core_machine_cpu_fixture.h\""
+            "#include \"support/machine_cpu_fixture.h\""
             "#include \"app-nxvm/devices/cpu.h\""
             "#include \"app-nxvm/devices/cpu_instructions.h\"")
         file(WRITE "${path}" "${original}\n${injection}\n")

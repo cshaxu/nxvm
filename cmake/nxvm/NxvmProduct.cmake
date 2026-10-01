@@ -1204,7 +1204,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "cpu-verr-verw-smoke|test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c"
     "core-machine-eflags-local-smoke|test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"
-    "core-machine-fpu-interface-s65-smoke|test/app-nxvm/unit/core/devices/core_machine_fpu_interface_s65_smoke.c"
+    "machine-fpu-interface-s65-smoke|test/app-nxvm/unit/core/devices/machine_fpu_interface_s65_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c"
     "core-machine-gpr-mov-smoke|test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c"
     "core-machine-gpr-push-pop-smoke|test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c"
@@ -1281,7 +1281,7 @@ file(GENERATE
 
 # S2 consumes the S1 inventory above and no broader test or source surface.
 set(PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS
-    "test/support/core_machine_cpu_fixture.h")
+    "test/app-nxvm/unit/core/devices/support/machine_cpu_fixture.h")
 string(REPLACE ";" "\n" project_t317_type_support_contents
     "${PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS}")
 file(GENERATE
@@ -1846,16 +1846,16 @@ add_executable(core-machine-cpu-fpu-profile-smoke
     test/app-nxvm/unit/core/devices/cpu_fpu_profile_smoke.c)
 target_link_libraries(core-machine-cpu-fpu-profile-smoke PRIVATE
     core-machine)
-add_executable(core-machine-cpu-profile-gate-smoke
-    test/app-nxvm/unit/core/devices/cpu_profile_gate_smoke.c)
-target_link_libraries(core-machine-cpu-profile-gate-smoke PRIVATE
+add_executable(machine-cpu-profile-gate-smoke
+    test/app-nxvm/unit/core/devices/machine_cpu_profile_gate_smoke.c)
+target_link_libraries(machine-cpu-profile-gate-smoke PRIVATE
     core-machine)
-add_executable(core-machine-fpu-escape-smoke
-    test/app-nxvm/unit/core/devices/fpu_escape_smoke.c)
-target_link_libraries(core-machine-fpu-escape-smoke PRIVATE core-machine)
-add_executable(core-machine-fpu-interface-s65-smoke
-    test/app-nxvm/unit/core/devices/core_machine_fpu_interface_s65_smoke.c)
-target_link_libraries(core-machine-fpu-interface-s65-smoke PRIVATE core-machine)
+add_executable(machine-fpu-escape-smoke
+    test/app-nxvm/unit/core/devices/machine_fpu_escape_smoke.c)
+target_link_libraries(machine-fpu-escape-smoke PRIVATE core-machine)
+add_executable(machine-fpu-interface-s65-smoke
+    test/app-nxvm/unit/core/devices/machine_fpu_interface_s65_smoke.c)
+target_link_libraries(machine-fpu-interface-s65-smoke PRIVATE core-machine)
 add_executable(core-machine-fpu-8087-smoke
     test/app-nxvm/unit/core/devices/core_machine_fpu_8087_smoke.c)
 target_link_libraries(core-machine-fpu-8087-smoke PRIVATE core-machine)
@@ -2164,7 +2164,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-table-register-board-smoke
     machine-bound-board-smoke
     core-machine-segment-selector-smoke
-    core-machine-cpu-profile-gate-smoke
+    machine-cpu-profile-gate-smoke
     machine-protected-privilege-board-smoke
     machine-protected-iret-smoke
     machine-call-gate-smoke
@@ -2173,8 +2173,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-task-switch-cross-width-smoke
     machine-task-switch32-paging-smoke
     core-machine-80386-paging-smoke
-    core-machine-fpu-escape-smoke
-    core-machine-fpu-interface-s65-smoke
+    machine-fpu-escape-smoke
+    machine-fpu-interface-s65-smoke
     core-machine-fpu-8087-smoke
     core-machine-real-exception-final-s1-smoke
     core-machine-protected-ud-delivery-s1-smoke
@@ -2307,7 +2307,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-cmps-smoke
     core-machine-cpu-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
-    core-machine-cpu-profile-gate-smoke
+    machine-cpu-profile-gate-smoke
     core-machine-descriptor-system-smoke
     cpu-descriptor-system-smoke
     cpu-lar-lsl-smoke
@@ -2316,8 +2316,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     machine-debug-state-board-smoke
     cpu-double-shift-smoke
     cpu-enter-leave-smoke
-    core-machine-fpu-escape-smoke
-    core-machine-fpu-interface-s65-smoke
+    machine-fpu-escape-smoke
+    machine-fpu-interface-s65-smoke
     cpu-fs-gs-stack-smoke
     cpu-gpr-mov-smoke
     cpu-gpr-push-pop-smoke
@@ -2404,7 +2404,7 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     cpu-descriptor-system-smoke
     cpu-lar-lsl-smoke
     cpu-verr-verw-smoke
-    core-machine-fpu-escape-smoke
+    machine-fpu-escape-smoke
     cpu-control-state-smoke
     cpu-control-transfer-branch-smoke
     cpu-debug-state-smoke
