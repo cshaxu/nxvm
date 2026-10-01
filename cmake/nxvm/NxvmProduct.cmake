@@ -703,18 +703,8 @@ add_executable(core-machine-iret-s51-smoke test/app-nxvm/unit/core/devices/core_
 target_link_libraries(core-machine-iret-s51-smoke PRIVATE core-machine)
 add_executable(core-machine-fs-gs-stack-smoke test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c)
 target_link_libraries(core-machine-fs-gs-stack-smoke PRIVATE core-machine)
-add_executable(cpu-fs-gs-stack-smoke test/app-nxvm/unit/core/devices/cpu_fs_gs_stack_smoke.c)
-target_link_libraries(cpu-fs-gs-stack-smoke PRIVATE x86-cpu)
-add_executable(cpu-legacy-sreg-stack-smoke test/app-nxvm/unit/core/devices/cpu_legacy_sreg_stack_smoke.c)
-target_link_libraries(cpu-legacy-sreg-stack-smoke PRIVATE x86-cpu)
 add_executable(core-machine-lss-lfs-lgs-smoke test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c)
 target_link_libraries(core-machine-lss-lfs-lgs-smoke PRIVATE core-machine)
-add_executable(cpu-lss-lfs-lgs-smoke test/app-nxvm/unit/core/devices/cpu_lss_lfs_lgs_smoke.c)
-target_link_libraries(cpu-lss-lfs-lgs-smoke PRIVATE x86-cpu)
-add_executable(cpu-les-lds-smoke test/app-nxvm/unit/core/devices/cpu_les_lds_smoke.c)
-target_link_libraries(cpu-les-lds-smoke PRIVATE x86-cpu)
-add_executable(cpu-les-lds-s41-smoke test/app-nxvm/unit/core/devices/cpu_les_lds_s41_smoke.c)
-target_link_libraries(cpu-les-lds-s41-smoke PRIVATE x86-cpu)
 add_executable(core-machine-les-lds-smoke test/app-nxvm/unit/core/devices/core_machine_les_lds_smoke.c)
 target_link_libraries(core-machine-les-lds-smoke PRIVATE core-machine)
 
@@ -1976,11 +1966,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-movx-smoke
     cpu-lea-smoke
     cpu-moffs-smoke
-    cpu-fs-gs-stack-smoke
-    cpu-legacy-sreg-stack-smoke
-    cpu-les-lds-smoke
-    cpu-les-lds-s41-smoke
-    cpu-lss-lfs-lgs-smoke
     cpu-sreg-mov-smoke
     cpu-segment-selector-smoke
     cpu-prefix-attributes-s64-smoke
@@ -2235,7 +2220,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_enter_leave
     machine-fpu-escape-smoke
     machine-fpu-interface-s65-smoke
-    cpu-fs-gs-stack-smoke
+    x86-test-cpu_fs_gs_stack
     x86-test-cpu_gpr_mov
     x86-test-cpu_gpr_push_pop
     core-machine-hlt-s49-smoke
@@ -2249,11 +2234,11 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-lea-smoke
     cpu-legacy-lock-s1-smoke
     x86-test-cpu_legacy_alu_s2
-    cpu-legacy-sreg-stack-smoke
-    cpu-les-lds-s41-smoke
-    cpu-les-lds-smoke
+    x86-test-cpu_legacy_sreg_stack
+    x86-test-cpu_les_lds_s41
+    x86-test-cpu_les_lds
     cpu-lods-smoke
-    cpu-lss-lfs-lgs-smoke
+    x86-test-cpu_lss_lfs_lgs
     cpu-moffs-smoke
     cpu-movs-smoke
     core-machine-movx-smoke
