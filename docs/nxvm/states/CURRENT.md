@@ -15,13 +15,34 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S94 and S94 is the final acceptance. S48-S83 are
-accepted and S84-S94 remain pending. The next package must be admitted from
-the bounded ledger; earlier
+is then divided into S83-S94 and S94 is the final acceptance. S48-S84 are
+accepted and S85-S94 remain pending. The next package must be admitted from
+the bounded ledger. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
+
+## S84 Acceptance
+
+The four CPU-only system-table receivers now have one Shared owner:
+`cpu_descriptor_system`, `cpu_dttr_s61`, `cpu_lgdt_lidt`, and
+`cpu_sgdt_sidt`. The former NXVM copies (1,068 source lines) are retired; no
+board path moved. The descriptor receiver no longer includes an App header:
+its two generic CR0 bit-macro uses are equivalent local expressions, without
+a Shared API addition.
+
+Each successor passes on x64 and x86, the 437-case unit suite was executed on
+both widths, and every migration receiver passes in focused reruns. The x64
+parallel run recorded five pre-existing string-test flakes and the x86 runs
+recorded one `cpu_movs` flake; all six passed immediately in isolation. The
+x64 serial run recorded the existing runner-error-propagation flake, which
+also passed immediately in isolation. Shared manifest/corpus, CPU/PIC
+authority, documentation governance and diff checks pass. This is
+test/CMake/documentation-only work: no production/API, firmware, asset, INI
+or EXE input changed, so no executable rebuild is required. See the
+[S84 evidence](../etc/evidence/t539-s84-system-table-receivers.md). S84 is
+accepted; T539 remains open for S85-S94.
 
 ## S40 Acceptance
 
