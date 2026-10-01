@@ -62,11 +62,11 @@ set(project_t332_public_limit_sources
 set(project_t332_cpu_instruction_fixture_sources
     "devices/cpu/cpu_debug_state_smoke.c"
     "devices/cpu/cpu_control_state_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
+    "devices/cpu/cpu_control_transfer_branch_smoke.c"
+    "devices/cpu/cpu_control_transfer_near_smoke.c"
+    "devices/cpu/cpu_control_transfer_far_smoke.c"
     "devices/cpu/cpu_outer_return_smoke.c"
-    "test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
+    "devices/cpu/cpu_idt_privilege_entry_smoke.c"
     "devices/cpu/cpu_protected_far_smoke.c"
     "devices/cpu/cpu_protected_data_access_smoke.c"
     "devices/cpu/cpu_descriptor_system_smoke.c"
@@ -133,7 +133,7 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(source STREQUAL "test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c")
+    if(source STREQUAL "devices/cpu/cpu_eflags_local_smoke.c")
         if(NOT content MATCHES "support/cpu_bus_fixture[.]h" OR
             NOT content MATCHES "cpu_bus_prepare" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")

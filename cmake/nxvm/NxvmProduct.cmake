@@ -659,10 +659,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 add_executable(core-machine-rotate-smoke test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c)
 target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
-add_executable(core-machine-eflags-local-smoke test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c)
-target_include_directories(core-machine-eflags-local-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(core-machine-eflags-local-smoke PRIVATE x86-cpu)
 add_executable(core-machine-direct-flags-board-smoke
     test/app-nxvm/unit/core/devices/core_machine_direct_flags_board_smoke.c)
 target_link_libraries(core-machine-direct-flags-board-smoke PRIVATE core-machine)
@@ -1008,7 +1004,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "x86-test-cpu_descriptor_system|devices/cpu/cpu_descriptor_system_smoke.c"
     "x86-test-cpu_lar_lsl|devices/cpu/cpu_lar_lsl_smoke.c"
     "x86-test-cpu_verr_verw|devices/cpu/cpu_verr_verw_smoke.c"
-    "core-machine-eflags-local-smoke|test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c"
+    "x86-test-cpu_eflags_local|devices/cpu/cpu_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"
     "machine-fpu-interface-s65-smoke|test/app-nxvm/unit/core/devices/machine_fpu_interface_s65_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c"
@@ -1854,7 +1850,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-inc-dec-final-group-board-smoke
     core-machine-legacy-alu-s2-smoke
     core-machine-rotate-smoke
-    core-machine-eflags-local-smoke
+    x86-test-cpu_eflags_local
     core-machine-direct-flags-board-smoke
     core-machine-lahf-sahf-board-smoke
     core-machine-pushf-popf-board-smoke
