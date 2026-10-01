@@ -731,35 +731,15 @@ target_link_libraries(cpu-prefix-attributes-s64-smoke PRIVATE x86-cpu)
 add_executable(cpu-operand-address-smoke
     test/app-nxvm/unit/core/devices/cpu_operand_address_smoke.c)
 target_link_libraries(cpu-operand-address-smoke PRIVATE x86-cpu)
-add_executable(cpu-movs-smoke test/app-nxvm/unit/core/devices/cpu_movs_smoke.c)
-target_link_libraries(cpu-movs-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(cpu-movs-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(machine-movs-board-smoke
     test/app-nxvm/unit/core/devices/machine_movs_board_smoke.c)
 target_link_libraries(machine-movs-board-smoke PRIVATE core-machine)
-add_executable(cpu-stos-smoke test/app-nxvm/unit/core/devices/cpu_stos_smoke.c)
-target_link_libraries(cpu-stos-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(cpu-stos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(machine-stos-board-smoke
     test/app-nxvm/unit/core/devices/machine_stos_board_smoke.c)
 target_link_libraries(machine-stos-board-smoke PRIVATE core-machine)
-add_executable(cpu-lods-smoke test/app-nxvm/unit/core/devices/cpu_lods_smoke.c)
-target_link_libraries(cpu-lods-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(cpu-lods-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(machine-lods-board-smoke
     test/app-nxvm/unit/core/devices/machine_lods_board_smoke.c)
 target_link_libraries(machine-lods-board-smoke PRIVATE core-machine)
-add_executable(cpu-scas-smoke test/app-nxvm/unit/core/devices/cpu_scas_smoke.c)
-target_link_libraries(cpu-scas-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(cpu-scas-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(machine-scas-board-smoke
     test/app-nxvm/unit/core/devices/machine_scas_board_smoke.c)
 target_link_libraries(machine-scas-board-smoke PRIVATE core-machine)
@@ -927,11 +907,6 @@ add_executable(core-machine-real-mode-386-rep-cmps-smoke
     test/app-nxvm/unit/core/devices/core_machine_real_mode_386_rep_cmps_smoke.c)
 target_link_libraries(core-machine-real-mode-386-rep-cmps-smoke PRIVATE core-machine)
 
-add_executable(cpu-cmps-smoke test/app-nxvm/unit/core/devices/cpu_cmps_smoke.c)
-target_link_libraries(cpu-cmps-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(cpu-cmps-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(machine-cmps-board-smoke
     test/app-nxvm/unit/core/devices/machine_cmps_board_smoke.c)
 target_link_libraries(machine-cmps-board-smoke PRIVATE core-machine)
@@ -2002,15 +1977,10 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-moffs-smoke
     core-machine-gpr-mov-smoke
     core-machine-sreg-mov-smoke
-    cpu-movs-smoke
     machine-movs-board-smoke
-    cpu-stos-smoke
     machine-stos-board-smoke
-    cpu-lods-smoke
     machine-lods-board-smoke
-    cpu-scas-smoke
     machine-scas-board-smoke
-    cpu-cmps-smoke
     machine-cmps-board-smoke
     cpu-port-strings-smoke
     machine-port-strings-board-smoke
@@ -2197,7 +2167,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-control-transfer-branch-smoke
     cpu-control-transfer-far-smoke
     machine-control-state-board-smoke
-    cpu-cmps-smoke
+    x86-test-cpu_cmps
     core-machine-cpu-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     machine-cpu-profile-gate-smoke
@@ -2228,10 +2198,10 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_legacy_sreg_stack
     x86-test-cpu_les_lds_s41
     x86-test-cpu_les_lds
-    cpu-lods-smoke
+    x86-test-cpu_lods
     x86-test-cpu_lss_lfs_lgs
     x86-test-cpu_moffs
-    cpu-movs-smoke
+    x86-test-cpu_movs
     core-machine-movx-smoke
     cpu-port-io-smoke
     cpu-port-strings-smoke
@@ -2245,7 +2215,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-s1-smoke
     x86-test-cpu_rotate
-    cpu-scas-smoke
+    x86-test-cpu_scas
     x86-test-cpu_segment_selector
     cpu-prefix-attributes-s64-smoke
     cpu-bit-scan-smoke
@@ -2253,7 +2223,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-sign-extend-smoke
     core-machine-software-int-s50-smoke
     x86-test-cpu_sreg_mov
-    cpu-stos-smoke
+    x86-test-cpu_stos
     machine-vm86-delivery-smoke
     x86-test-cpu_xchg
     vm-dos-mem-fault-smoke
