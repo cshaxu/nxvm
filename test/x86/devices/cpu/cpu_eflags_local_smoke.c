@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "x86/devices/cpu/support/cpu_bus_fixture.h"
+#include "support/cpu_bus_fixture.h"
 
 static lib_i32 eflags_run(cpu_bus_fixture *state, lib_u8 opcode, t_cpu *after)
 {

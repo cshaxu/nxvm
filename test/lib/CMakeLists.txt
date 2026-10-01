@@ -64,6 +64,8 @@ if(WIN32)
     # Real native windows/consoles can affect the user's desktop even when hidden.
     set_property(TEST library.kvm_window_modal library.kvm_window_retirement
         library.console_broker_display APPEND PROPERTY LABELS desktop)
+    # Modal-message-loop assertions require exclusive ownership of the native desktop.
+    set_property(TEST library.kvm_window_modal PROPERTY RUN_SERIAL TRUE)
 endif()
 
 add_test(NAME library.types-layout
