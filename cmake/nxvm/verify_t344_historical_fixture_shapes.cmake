@@ -148,14 +148,16 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     # S40 retains guest GDT, delivered #GP frame and real PIC IRQ.
     "test/app-nxvm/unit/core/devices/machine_arpl_board_smoke.c"
     # S42 retains real table loads, privilege delivery and IRQ routing.
-    "test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c")
+    "test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c"
+    # S56c2 owns public Core paging and page-fault delivery.
+    "test/app-nxvm/unit/core/devices/machine_task_switch32_paging_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
-if(NOT project_t344_constructor_count EQUAL 116)
-    message(FATAL_ERROR "T344 constructor-source classification must contain 116 entries.")
+if(NOT project_t344_constructor_count EQUAL 117)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 117 entries.")
 endif()
 list(REMOVE_DUPLICATES project_t344_constructor_sources)
 list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
-if(NOT project_t344_constructor_unique_count EQUAL 116)
+if(NOT project_t344_constructor_unique_count EQUAL 117)
     message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
 endif()
 
@@ -174,8 +176,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 116)
-    message(FATAL_ERROR "T344 expected 116 classified direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 117)
+    message(FATAL_ERROR "T344 expected 117 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)

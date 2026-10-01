@@ -1044,41 +1044,8 @@ int main(void)
         TASK_SWITCH_TSS32_REJECTION_NONE, LIB_FALSE, LIB_TRUE, LIB_FALSE,
         LIB_FALSE);
     failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_INVALID_CODE, LIB_FALSE, LIB_FALSE,
-        LIB_TRUE, LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_TARGET_BUSY, LIB_FALSE, LIB_FALSE,
-        LIB_TRUE, LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_TARGET_SHORT, LIB_FALSE, LIB_FALSE,
-        LIB_TRUE, LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_STACK_LIMIT, LIB_FALSE, LIB_FALSE,
-        LIB_TRUE, LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_FALSE, LIB_FALSE, LIB_TRUE,
-        LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_TRUE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_FALSE, LIB_FALSE, LIB_TRUE,
-        LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_TRUE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_FALSE, LIB_FALSE, LIB_TRUE,
-        LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_FALSE, LIB_FALSE, LIB_TRUE,
-        LIB_TRUE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        LIB_TRUE);
-    failed |= task_switch_expect_tss32_direct(LIB_TRUE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NONE, LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        LIB_TRUE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
         TASK_SWITCH_TSS32_REJECTION_NONE, LIB_FALSE, LIB_TRUE, LIB_TRUE,
         LIB_FALSE);
-    failed |= task_switch_expect_tss32_direct(LIB_FALSE, LIB_FALSE, LIB_FALSE,
-        TASK_SWITCH_TSS32_REJECTION_NESTED_RETURN, LIB_FALSE, LIB_FALSE,
-        LIB_TRUE, LIB_FALSE);
     if (failed) return 1;
     printf("M5:T261:S2:TASK-SWITCH:OK\n");
     printf("M5:T261:S3:TASK-SWITCH:CORPUS:OK\n");
