@@ -8,7 +8,7 @@
 #include "support/core_machine_board_fixture.h"
 
 typedef struct rtc_cmos_s3_fixture {
-    t_port port;
+    core_machine machine;
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
     x86_rtc *rtc;
@@ -38,17 +38,19 @@ static lib_status rtc_cmos_s3_initialize(rtc_cmos_s3_fixture *fixture)
 {
     x86_rtc_config config = {4u, 0u, 0u};
 
-    core_machine_port_initialize(&fixture->port);
-    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
+    lib_memory_set(&fixture->machine, 0, sizeof(fixture->machine));
+    fixture->machine.lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_initialize(&fixture->machine.executor_port);
+    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->machine,
         CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
-    rtc_cmos_s3_initialize_pic(&fixture->port);
+    rtc_cmos_s3_initialize_pic(&fixture->machine.executor_port);
     core_machine_pic_irq_source_bind(&fixture->irq_source, &fixture->master,
         &fixture->slave, 8u);
     lib_status status = x86_rtc_create(&config, rtc_cmos_s3_output,
         &fixture->irq_source, &fixture->rtc);
     if (status != LIB_STATUS_OK) {
         core_machine_pic_finalize(&fixture->master, &fixture->slave);
-        core_machine_port_finalize(&fixture->port);
+        core_machine_port_finalize(&fixture->machine.executor_port);
     }
     return status;
 }
@@ -57,7 +59,7 @@ static void rtc_cmos_s3_finalize(rtc_cmos_s3_fixture *fixture)
 {
     x86_rtc_destroy(fixture->rtc);
     core_machine_pic_finalize(&fixture->master, &fixture->slave);
-    core_machine_port_finalize(&fixture->port);
+    core_machine_port_finalize(&fixture->machine.executor_port);
 }
 
 static lib_i32 rtc_cmos_s3_test_events_and_irq8(void)
@@ -91,8 +93,8 @@ static lib_i32 rtc_cmos_s3_test_events_and_irq8(void)
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_PF |
         X86_RTC_REG_C_AF | X86_RTC_REG_C_UF) ||
         fixture.irq_source.asserted;
-    core_machine_port_write(&fixture.port, 0x00a0u, 0x20u);
-    core_machine_port_write(&fixture.port, 0x0020u, 0x20u);
+    core_machine_port_write(&fixture.machine.executor_port, 0x00a0u, 0x20u);
+    core_machine_port_write(&fixture.machine.executor_port, 0x0020u, 0x20u);
     x86_rtc_advance(fixture.rtc, 4u);
     x86_rtc_write_register(fixture.rtc, X86_RTC_REG_B,
         X86_RTC_REG_B_24H);

@@ -155,35 +155,29 @@ lib_i32 core_machine_xt_ppi_keyboard_config_is_valid(
 
 lib_status core_machine_xt_ppi_keyboard_initialize(
     core_machine_xt_ppi_keyboard *keyboard,
-    const core_machine_xt_ppi_keyboard_config *config, t_port *port)
+    const core_machine_xt_ppi_keyboard_config *config, core_machine *machine)
 {
-    core_machine_port_provider_entry *checkpoint;
-    lib_u16 ports[4];
+    core_machine_port_route routes[4];
     lib_size index;
     lib_status status;
 
-    if (keyboard == LIB_NULL || port == LIB_NULL ||
+    if (keyboard == LIB_NULL || machine == LIB_NULL ||
         !core_machine_xt_ppi_keyboard_config_is_valid(config)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     status = x86_ppi8255_create(&keyboard->ppi);
     if (status != LIB_STATUS_OK) return status;
-    ports[0] = config->port_a;
-    ports[1] = config->port_b;
-    ports[2] = config->port_c;
-    ports[3] = config->control_port;
-    checkpoint = core_machine_port_registration_begin(port);
-    for (index = 0u; index < sizeof(ports) / sizeof(ports[0]); ++index) {
-        if (core_machine_port_add_read_provider(port, ports[index],
-                core_machine_xt_ppi_keyboard_read, keyboard) != LIB_STATUS_OK ||
-            core_machine_port_add_write_provider(port, ports[index],
-                core_machine_xt_ppi_keyboard_write, keyboard) != LIB_STATUS_OK) {
-            status = core_machine_port_registration_status(port);
-            core_machine_port_rollback_registration(port, checkpoint);
-            x86_ppi8255_destroy(keyboard->ppi);
-            keyboard->ppi = LIB_NULL;
-            return status;
-        }
+    for (index = 0u; index < 4u; ++index) {
+        routes[index] = (core_machine_port_route) {
+            (lib_u16)(config->port_a + index),
+            core_machine_xt_ppi_keyboard_read,
+            core_machine_xt_ppi_keyboard_write, keyboard, LIB_FALSE};
+    }
+    status = core_machine_install_port_routes(machine, routes, 4u);
+    if (status != LIB_STATUS_OK) {
+        x86_ppi8255_destroy(keyboard->ppi);
+        keyboard->ppi = LIB_NULL;
+        return status;
     }
     keyboard->config = *config;
     core_machine_xt_ppi_keyboard_reset(keyboard);

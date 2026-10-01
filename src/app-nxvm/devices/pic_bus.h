@@ -4,7 +4,7 @@
 #include "lib/types/types_interface.h"
 #include "x86/chips/pic8259/pic8259_interface.h"
 #include "app-nxvm/devices/pic_bus_interface.h"
-#include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/port_interface.h"
 
 /* Board endpoint, not chip state. Multiple source leases resolve to one input.
  * Pair links belong to this board adapter and never enter the shared chip. */
@@ -92,7 +92,8 @@ typedef struct core_machine_pic_irq_source {
 
 
 lib_status core_machine_pic_initialize(core_machine_pic_bus *master,
-    core_machine_pic_bus *slave, t_port *port, core_machine_pic_topology topology);
+    core_machine_pic_bus *slave, core_machine *machine,
+    core_machine_pic_topology topology);
 void core_machine_pic_reset(core_machine_pic_bus *master, core_machine_pic_bus *slave);
 void core_machine_pic_refresh(core_machine_pic_bus *master, core_machine_pic_bus *slave);
 void core_machine_pic_set_irq_timing(core_machine_pic_bus *master,

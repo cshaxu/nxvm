@@ -4,42 +4,45 @@
 
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/pit_bus.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
 
 typedef struct pic_lifecycle_fixture {
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
-    t_port port;
+    core_machine machine;
 } pic_lifecycle_fixture;
 
 static void pic_lifecycle_initialize(pic_lifecycle_fixture *fixture,
     lib_u8 icw1)
 {
-    core_machine_port_initialize(&fixture->port);
-    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
+    lib_memory_set(&fixture->machine, 0, sizeof(fixture->machine));
+    fixture->machine.lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_initialize(&fixture->machine.executor_port);
+    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->machine,
         CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_pic_reset(&fixture->master, &fixture->slave);
-    core_machine_port_write(&fixture->port, 0x0020u, icw1);
-    core_machine_port_write(&fixture->port, 0x0021u, 0x08u);
-    core_machine_port_write(&fixture->port, 0x0021u, 0x04u);
-    core_machine_port_write(&fixture->port, 0x0021u, 0x01u);
-    core_machine_port_write(&fixture->port, 0x00a0u, icw1);
-    core_machine_port_write(&fixture->port, 0x00a1u, 0x70u);
-    core_machine_port_write(&fixture->port, 0x00a1u, 0x02u);
-    core_machine_port_write(&fixture->port, 0x00a1u, 0x01u);
+    core_machine_port_write(&fixture->machine.executor_port, 0x0020u, icw1);
+    core_machine_port_write(&fixture->machine.executor_port, 0x0021u, 0x08u);
+    core_machine_port_write(&fixture->machine.executor_port, 0x0021u, 0x04u);
+    core_machine_port_write(&fixture->machine.executor_port, 0x0021u, 0x01u);
+    core_machine_port_write(&fixture->machine.executor_port, 0x00a0u, icw1);
+    core_machine_port_write(&fixture->machine.executor_port, 0x00a1u, 0x70u);
+    core_machine_port_write(&fixture->machine.executor_port, 0x00a1u, 0x02u);
+    core_machine_port_write(&fixture->machine.executor_port, 0x00a1u, 0x01u);
 }
 
 static void pic_lifecycle_finalize(pic_lifecycle_fixture *fixture)
 {
     core_machine_pic_finalize(&fixture->master, &fixture->slave);
-    core_machine_port_finalize(&fixture->port);
+    core_machine_port_finalize(&fixture->machine.executor_port);
 }
 
 static void pic_lifecycle_eoi(pic_lifecycle_fixture *fixture,
     lib_u8 slave)
 {
-    if (slave) core_machine_port_write(&fixture->port, 0x00a0u, 0x20u);
-    core_machine_port_write(&fixture->port, 0x0020u, 0x20u);
+    if (slave) core_machine_port_write(&fixture->machine.executor_port, 0x00a0u, 0x20u);
+    core_machine_port_write(&fixture->machine.executor_port, 0x0020u, 0x20u);
 }
 
 static lib_i32 pic_lifecycle_test_master_level(void)
@@ -112,25 +115,25 @@ static lib_i32 pic_lifecycle_test_pit_reset(void)
 
     pic_lifecycle_initialize(&fixture, 0x11u);
     core_machine_pic_irq_source_bind(&irq0, &fixture.master, &fixture.slave, 0u);
-    if (core_machine_pit_bus_create(&pit, &fixture.port,
+    if (core_machine_pit_bus_create(&pit, &fixture.machine,
             X86_PIT_PERSONALITY_8254, 0x0040u) != LIB_STATUS_OK) {
         pic_lifecycle_finalize(&fixture);
         return 1;
     }
     x86_pit_reset(pit.device);
     x86_pit_set_output(pit.device, 0u, core_machine_pic_timer_output, &irq0);
-    core_machine_port_write(&fixture.port, 0x0043u, 0x34u);
-    core_machine_port_write(&fixture.port, 0x0040u, 3u);
-    core_machine_port_write(&fixture.port, 0x0040u, 0u);
+    core_machine_port_write(&fixture.machine.executor_port, 0x0043u, 0x34u);
+    core_machine_port_write(&fixture.machine.executor_port, 0x0040u, 3u);
+    core_machine_port_write(&fixture.machine.executor_port, 0x0040u, 0u);
     /* The first clock transfers CR to CE; the IRQ0 edge is the fifth clock. */
     x86_pit_advance(pit.device, 5u);
     failed |= !irq0.asserted || fixture.master.asserted[0u] != 1u;
     core_machine_pic_reset(&fixture.master, &fixture.slave);
     x86_pit_reset(pit.device);
     failed |= irq0.asserted || fixture.master.asserted[0u] != 0u;
-    core_machine_port_write(&fixture.port, 0x0043u, 0x34u);
-    core_machine_port_write(&fixture.port, 0x0040u, 3u);
-    core_machine_port_write(&fixture.port, 0x0040u, 0u);
+    core_machine_port_write(&fixture.machine.executor_port, 0x0043u, 0x34u);
+    core_machine_port_write(&fixture.machine.executor_port, 0x0040u, 3u);
+    core_machine_port_write(&fixture.machine.executor_port, 0x0040u, 0u);
     x86_pit_advance(pit.device, 5u);
     failed |= !irq0.asserted || fixture.master.asserted[0u] != 1u ||
         (test_pic_read(&fixture.master, 0x0au) & VPIC_IRR_IRQ(0u)) == 0u;

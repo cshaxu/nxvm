@@ -337,24 +337,26 @@ static lib_bool xt_construction_rollback(void)
     for (lib_size fail_at = 1u; fail_at <= 8u; ++fail_at) {
         core_machine_xt_ppi_keyboard board = {0};
         core_machine_port_test_allocation allocation = {fail_at, 0u};
-        t_port port;
-        core_machine_port_initialize(&port);
-        failed |= core_machine_port_add_read(&port, 0x80u, xt_existing_port, &port) != LIB_STATUS_OK;
-        core_machine_port_set_test_allocation(&port, &allocation);
-        failed |= core_machine_xt_ppi_keyboard_initialize(&board, &config, &port) != LIB_STATUS_NO_MEMORY;
+        core_machine machine = {0};
+        t_port *port = &machine.executor_port;
+        machine.lifecycle = CORE_MACHINE_INITIALIZED;
+        core_machine_port_initialize(port);
+        failed |= core_machine_port_add_read(port, 0x80u, xt_existing_port, port) != LIB_STATUS_OK;
+        core_machine_port_set_test_allocation(port, &allocation);
+        failed |= core_machine_xt_ppi_keyboard_initialize(&board, &config, &machine) != LIB_STATUS_NO_MEMORY;
         failed |= board.ppi != LIB_NULL;
         for (lib_u16 address = 0x60u; address <= 0x63u; ++address) {
-            failed |= core_machine_port_has_read(&port, address) || core_machine_port_has_write(&port, address);
+            failed |= core_machine_port_has_read(port, address) || core_machine_port_has_write(port, address);
         }
-        failed |= core_machine_port_read(&port, 0x80u) != 0x5au;
-        core_machine_port_set_test_allocation(&port, LIB_NULL);
-        failed |= core_machine_xt_ppi_keyboard_initialize(&board, &config, &port) != LIB_STATUS_OK;
-        core_machine_port_write(&port, 0x63u, 0x80u);
-        core_machine_port_write(&port, 0x60u, 0xa5u);
-        failed |= core_machine_port_read(&port, 0x60u) != 0xa5u;
+        failed |= core_machine_port_read(port, 0x80u) != 0x5au;
+        core_machine_port_set_test_allocation(port, LIB_NULL);
+        failed |= core_machine_xt_ppi_keyboard_initialize(&board, &config, &machine) != LIB_STATUS_OK;
+        core_machine_port_write(port, 0x63u, 0x80u);
+        core_machine_port_write(port, 0x60u, 0xa5u);
+        failed |= core_machine_port_read(port, 0x60u) != 0xa5u;
         core_machine_xt_ppi_keyboard_finalize(&board);
         core_machine_xt_ppi_keyboard_finalize(&board);
-        core_machine_port_finalize(&port);
+        core_machine_port_finalize(port);
     }
     return failed;
 }

@@ -328,7 +328,7 @@ extern const core_machine_cpu_execution_diagnostic_provider
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
 void core_machine_board_cold_reset(core_machine *machine);
-void core_machine_board_register_a20_port(core_machine *machine);
+lib_status core_machine_board_register_a20_port(core_machine *machine);
 void core_machine_board_after_pit_reset(core_machine *machine);
 void core_machine_board_refresh_nmi(core_machine *machine);
 void core_machine_board_configure_xt_ppi_speaker(core_machine *machine);

@@ -26,30 +26,39 @@ void core_machine_pic_refresh(core_machine_pic_bus *master,
     x86_pic_set_inputs(master->device, pic_bus_levels(master), 0u, cascade);
 }
 
-static void pic_bus_read(t_port *port, lib_u16 port_id, void *owner)
+static lib_status pic_bus_read(void *owner, lib_u16 port_id,
+    lib_u32 *out_value)
 {
     core_machine_pic_bus *bus = owner;
-    x86_pic_read_register(bus->device, (lib_u8)(port_id & 1u),
-        &port->data.ioByte);
+    lib_u8 value = 0u;
+
+    if (bus == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    x86_pic_read_register(bus->device, (lib_u8)(port_id & 1u), &value);
+    *out_value = value;
+    return LIB_STATUS_OK;
 }
 
-static void pic_bus_write(t_port *port, lib_u16 port_id, void *owner)
+static lib_status pic_bus_write(void *owner, lib_u16 port_id, lib_u32 value)
 {
     core_machine_pic_bus *bus = owner;
+
+    if (bus == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     x86_pic_write_register(bus->device, (lib_u8)(port_id & 1u),
-        port->data.ioByte);
+        (lib_u8)value);
     core_machine_pic_refresh(bus->master, bus->slave);
+    return LIB_STATUS_OK;
 }
 
 lib_status core_machine_pic_initialize(core_machine_pic_bus *master,
-    core_machine_pic_bus *slave, t_port *port, core_machine_pic_topology topology)
+    core_machine_pic_bus *slave, core_machine *machine,
+    core_machine_pic_topology topology)
 {
-    core_machine_port_provider_entry *checkpoint;
+    core_machine_port_route routes[4];
     lib_status status;
     lib_u8 index;
     lib_u8 count;
     if (master == LIB_NULL || slave == LIB_NULL || master == slave ||
-        port == LIB_NULL || (topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
+        machine == LIB_NULL || (topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
         topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
@@ -63,20 +72,17 @@ lib_status core_machine_pic_initialize(core_machine_pic_bus *master,
         core_machine_pic_finalize(master, slave);
         return status;
     }
-    checkpoint = core_machine_port_registration_begin(port);
     count = topology == CORE_MACHINE_PIC_TOPOLOGY_CASCADED ? 4u : 2u;
     for (index = 0u; index < count; ++index) {
         core_machine_pic_bus *bus = index < 2u ? master : slave;
         lib_u16 address = (lib_u16)((index < 2u ? 0x20u : 0xa0u) + (index & 1u));
-        status = core_machine_port_add_read(port, address, pic_bus_read, bus);
-        if (status == LIB_STATUS_OK) {
-            status = core_machine_port_add_write(port, address, pic_bus_write, bus);
-        }
-        if (status != LIB_STATUS_OK) {
-            core_machine_port_rollback_registration(port, checkpoint);
-            core_machine_pic_finalize(master, slave);
-            return status;
-        }
+        routes[index] = (core_machine_port_route) {address, pic_bus_read,
+            pic_bus_write, bus, LIB_FALSE};
+    }
+    status = core_machine_install_port_routes(machine, routes, count);
+    if (status != LIB_STATUS_OK) {
+        core_machine_pic_finalize(master, slave);
+        return status;
     }
     return LIB_STATUS_OK;
 }

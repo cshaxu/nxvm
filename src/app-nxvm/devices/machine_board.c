@@ -5,34 +5,37 @@
 
 #define CORE_MACHINE_BOARD_A20_BIT 0x02u
 
-static void core_machine_board_read_a20(t_port *port, lib_u16 port_id,
-    void *owner)
+static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id,
+    lib_u32 *out_value)
 {
     t_ram *ram = (t_ram *)owner;
 
     (void)port_id;
-    if (ram == LIB_NULL) return;
-    port->data.ioByte = ram->data.flagA20 ? CORE_MACHINE_BOARD_A20_BIT : 0u;
+    if (ram == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_value = ram->data.flagA20 ? CORE_MACHINE_BOARD_A20_BIT : 0u;
+    return LIB_STATUS_OK;
 }
 
-static void core_machine_board_write_a20(t_port *port, lib_u16 port_id,
-    void *owner)
+static lib_status core_machine_board_write_a20(void *owner, lib_u16 port_id,
+    lib_u32 value)
 {
     t_ram *ram = (t_ram *)owner;
 
     (void)port_id;
-    if (ram == LIB_NULL) return;
-    ram->data.flagA20 = CORE_MACHINE_BIT_IS_SET(port->data.ioByte,
+    if (ram == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    ram->data.flagA20 = CORE_MACHINE_BIT_IS_SET(value,
         CORE_MACHINE_BOARD_A20_BIT);
+    return LIB_STATUS_OK;
 }
 
-void core_machine_board_register_a20_port(core_machine *machine)
+lib_status core_machine_board_register_a20_port(core_machine *machine)
 {
-    if (machine == LIB_NULL) return;
-    core_machine_port_add_read(&machine->executor_port, 0x0092u,
-        core_machine_board_read_a20, &machine->executor_memory);
-    core_machine_port_add_write(&machine->executor_port, 0x0092u,
-        core_machine_board_write_a20, &machine->executor_memory);
+    core_machine_port_route route;
+
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    route = (core_machine_port_route) {0x0092u, core_machine_board_read_a20,
+        core_machine_board_write_a20, &machine->executor_memory, LIB_FALSE};
+    return core_machine_install_port_routes(machine, &route, 1u);
 }
 
 static lib_i32 core_machine_rtc_cmos_config_is_valid(

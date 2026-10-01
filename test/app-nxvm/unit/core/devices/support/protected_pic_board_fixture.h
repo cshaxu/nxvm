@@ -5,11 +5,12 @@
 #include "pic_fixture.h"
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/pic_bus.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
 
 typedef struct protected_pic_board_fixture {
     cpu_instruction_fixture cpu;
-    t_port port;
+    core_machine machine;
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
 } protected_pic_board_fixture;
@@ -64,8 +65,9 @@ static inline lib_bool protected_pic_board_prepare(protected_pic_board_fixture *
     const lib_u8 handler[] = {0xf4u};
 
     lib_memory_set(board, 0, sizeof(*board));
-    core_machine_port_initialize(&board->port);
-    if (core_machine_pic_initialize(&board->master, &board->slave, &board->port,
+    board->machine.lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_initialize(&board->machine.executor_port);
+    if (core_machine_pic_initialize(&board->master, &board->slave, &board->machine,
         CORE_MACHINE_PIC_TOPOLOGY_SINGLE) != LIB_STATUS_OK) return LIB_FALSE;
     cpu_instruction_prepare_with_bus(&board->cpu, CORE_MACHINE_CPU_PROFILE_80386,
         &protected_pic_board_bus, board);
@@ -95,7 +97,7 @@ static inline lib_bool protected_pic_board_prepare(protected_pic_board_fixture *
 static inline void protected_pic_board_finalize(protected_pic_board_fixture *board)
 {
     core_machine_pic_finalize(&board->master, &board->slave);
-    core_machine_port_finalize(&board->port);
+    core_machine_port_finalize(&board->machine.executor_port);
 }
 
 static inline lib_bool protected_pic_board_raise(protected_pic_board_fixture *board)

@@ -17,6 +17,53 @@ void core_machine_bus_finalize(core_machine *machine)
     (void)machine;
 }
 
+static lib_status core_machine_install_port_route(t_port *port,
+    const core_machine_port_route *route)
+{
+    lib_status status = LIB_STATUS_OK;
+
+    if (route->read != LIB_NULL) {
+        status = route->wired_or_read ?
+            core_machine_port_add_read_wired_or_provider(port, route->address,
+                route->read, route->owner) :
+            core_machine_port_add_read_provider(port, route->address,
+                route->read, route->owner);
+    }
+    if (status == LIB_STATUS_OK && route->write != LIB_NULL) {
+        status = core_machine_port_add_write_provider(port, route->address,
+            route->write, route->owner);
+    }
+    return status;
+}
+
+lib_status core_machine_install_port_routes(core_machine *machine,
+    const core_machine_port_route *routes, lib_size count)
+{
+    core_machine_port_provider_entry *checkpoint;
+    lib_size index;
+
+    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
+    if (routes == LIB_NULL || count == 0u) return LIB_STATUS_INVALID_ARGUMENT;
+    for (index = 0u; index < count; ++index) {
+        if ((routes[index].read == LIB_NULL && routes[index].write == LIB_NULL) ||
+            (routes[index].wired_or_read && routes[index].read == LIB_NULL)) {
+            return LIB_STATUS_INVALID_ARGUMENT;
+        }
+    }
+    checkpoint = core_machine_port_registration_begin(&machine->executor_port);
+    for (index = 0u; index < count; ++index) {
+        lib_status status = core_machine_install_port_route(&machine->executor_port,
+            &routes[index]);
+
+        if (status != LIB_STATUS_OK) {
+            core_machine_port_rollback_registration(&machine->executor_port,
+                checkpoint);
+            return status;
+        }
+    }
+    return LIB_STATUS_OK;
+}
+
 lib_status core_machine_install_port_provider(
     core_machine *machine,
     lib_u16 first,
@@ -48,25 +95,15 @@ lib_status core_machine_install_port_provider(
     }
 
     for (port = first; port <= last; ++port) {
-        if (provider->read != LIB_NULL) {
-            lib_status status = core_machine_port_add_read_provider(
-                &machine->executor_port, (lib_u16)port, provider->read, owner);
+        core_machine_port_route route = {(lib_u16)port, provider->read,
+            provider->write, owner, LIB_FALSE};
+        lib_status status = core_machine_install_port_route(&machine->executor_port,
+            &route);
 
-            if (status != LIB_STATUS_OK) {
-                core_machine_port_rollback_registration(&machine->executor_port,
-                    checkpoint);
-                return status;
-            }
-        }
-        if (provider->write != LIB_NULL) {
-            lib_status status = core_machine_port_add_write_provider(
-                &machine->executor_port, (lib_u16)port, provider->write, owner);
-
-            if (status != LIB_STATUS_OK) {
-                core_machine_port_rollback_registration(&machine->executor_port,
-                    checkpoint);
-                return status;
-            }
+        if (status != LIB_STATUS_OK) {
+            core_machine_port_rollback_registration(&machine->executor_port,
+                checkpoint);
+            return status;
         }
     }
 

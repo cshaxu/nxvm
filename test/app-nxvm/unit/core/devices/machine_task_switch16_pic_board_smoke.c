@@ -1,12 +1,13 @@
 #include "x86/chips/cpu/support/cpu_task_switch16_fixture.h"
 #include "support/pic_fixture.h"
 #include "app-nxvm/devices/pic_bus.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
 #include <stdio.h>
 
 typedef struct task16_pic_board {
     cpu_instruction_fixture cpu;
-    t_port port;
+    core_machine machine;
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
 } task16_pic_board;
@@ -54,9 +55,10 @@ int main(void)
     task16_pic_board board = {0};
     core_machine_pic_irq_source irq = {0};
     t_cpu after = {0};
-    core_machine_port_initialize(&board.port);
+    board.machine.lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_initialize(&board.machine.executor_port);
     lib_bool failed = core_machine_pic_initialize(&board.master, &board.slave,
-        &board.port, CORE_MACHINE_PIC_TOPOLOGY_SINGLE) != LIB_STATUS_OK;
+        &board.machine, CORE_MACHINE_PIC_TOPOLOGY_SINGLE) != LIB_STATUS_OK;
     if (!failed) {
         cpu_instruction_prepare_with_bus(&board.cpu, CORE_MACHINE_CPU_PROFILE_80386,
             &task16_pic_bus, &board);
@@ -76,7 +78,7 @@ int main(void)
             (test_pic_read(&board.master, 0x0au) & 1u) != 0u;
     }
     core_machine_pic_finalize(&board.master, &board.slave);
-    core_machine_port_finalize(&board.port);
+    core_machine_port_finalize(&board.machine.executor_port);
     if (failed) { fputs("M5:T539:S55:TASK16-PIC:FAIL\n", stderr); return 1; }
     puts("M5:T539:S55:TASK16-PIC:OK");
     return 0;

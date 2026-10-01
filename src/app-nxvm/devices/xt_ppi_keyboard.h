@@ -5,7 +5,7 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/port_interface.h"
 #include "x86/chips/ppi8255/ppi8255_interface.h"
 
 typedef lib_u8 (*core_machine_xt_ppi_nmi_request)(void *owner);
@@ -42,7 +42,7 @@ lib_i32 core_machine_xt_ppi_keyboard_config_is_valid(
     const core_machine_xt_ppi_keyboard_config *config);
 lib_status core_machine_xt_ppi_keyboard_initialize(
     core_machine_xt_ppi_keyboard *keyboard,
-    const core_machine_xt_ppi_keyboard_config *config, t_port *port);
+    const core_machine_xt_ppi_keyboard_config *config, core_machine *machine);
 void core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
     core_machine_pic_bus *master, core_machine_pic_bus *slave);
 void core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keyboard,

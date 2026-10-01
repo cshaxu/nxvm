@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/pic_bus.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/port.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
@@ -27,7 +28,8 @@ static void rtc_output(void *context, lib_bool asserted)
 
 lib_i32 main(void)
 {
-    t_port port;
+    core_machine machine = {0};
+    t_port *port = &machine.executor_port;
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
     x86_rtc *rtc = LIB_NULL;
@@ -35,14 +37,15 @@ lib_i32 main(void)
     x86_rtc_config config = {50000u, 0u, 0u};
     lib_i32 failed = 0;
 
-    core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&master, &slave, &port,
+    machine.lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_initialize(port);
+    core_machine_pic_initialize(&master, &slave, &machine,
         CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
-    initialize_pic(&port);
+    initialize_pic(port);
     core_machine_pic_irq_source_bind(&irq_source, &master, &slave, 8u);
     if (x86_rtc_create(&config, rtc_output, &irq_source, &rtc) != LIB_STATUS_OK) {
         core_machine_pic_finalize(&master, &slave);
-        core_machine_port_finalize(&port);
+        core_machine_port_finalize(port);
         return 1;
     }
     x86_rtc_write_register(rtc, X86_RTC_REG_B,
@@ -65,7 +68,7 @@ lib_i32 main(void)
     if (x86_rtc_read_register(rtc, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au) failed = 1;
     x86_rtc_destroy(rtc);
     core_machine_pic_finalize(&master, &slave);
-    core_machine_port_finalize(&port);
+    core_machine_port_finalize(port);
     if (failed) return 1;
     puts("M5:T273:S2:CORE-RTC:OK");
     return 0;

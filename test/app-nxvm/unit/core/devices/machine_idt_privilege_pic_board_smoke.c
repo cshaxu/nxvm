@@ -2,6 +2,7 @@
 #include "support/pic_fixture.h"
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/pic_bus.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
 #include <stdio.h>
 
@@ -15,7 +16,7 @@
 
 typedef struct idt_pic_board {
     cpu_instruction_fixture cpu;
-    t_port port;
+    core_machine machine;
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
 } idt_pic_board;
@@ -80,8 +81,9 @@ static lib_bool idt_pic_prepare(idt_pic_board *board)
 
     if (board == LIB_NULL) return LIB_FALSE;
     lib_memory_set(board, 0, sizeof(*board));
-    core_machine_port_initialize(&board->port);
-    if (core_machine_pic_initialize(&board->master, &board->slave, &board->port,
+    board->machine.lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_initialize(&board->machine.executor_port);
+    if (core_machine_pic_initialize(&board->master, &board->slave, &board->machine,
             CORE_MACHINE_PIC_TOPOLOGY_SINGLE) != LIB_STATUS_OK) return LIB_FALSE;
     cpu_instruction_prepare_with_bus(&board->cpu, CORE_MACHINE_CPU_PROFILE_80386,
         &idt_pic_bus, board);
@@ -155,7 +157,7 @@ int main(void)
             CORE_MACHINE_BIT_IS_SET(test_pic_read(&board.master, 0x0au), 1u);
     }
     core_machine_pic_finalize(&board.master, &board.slave);
-    core_machine_port_finalize(&board.port);
+    core_machine_port_finalize(&board.machine.executor_port);
     if (failed) return 1;
     puts("M5:T307:IDT-PRIVILEGE-ENTRY:PIC:OK");
     return 0;

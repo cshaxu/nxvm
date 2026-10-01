@@ -5,6 +5,7 @@
 #include "app-nxvm/devices/hdc.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
 
 typedef struct core_machine_compaq_hdc_media {
@@ -103,7 +104,8 @@ lib_i32 main(void)
     core_machine_media_registry *registry = LIB_NULL;
     core_machine_hdc hdc = {0};
     core_machine_hdc empty_hdc = {0};
-    t_port port = {0};
+    core_machine machine = {0};
+    t_port *port = &machine.executor_port;
     t_port empty_port = {0};
     core_machine_pic_bus master = {0};
     core_machine_pic_bus slave = {0};
@@ -114,8 +116,9 @@ lib_i32 main(void)
     media.sector[1] = 0x12u;
     slave_media.sector[0] = 0x78u;
     slave_media.sector[1] = 0x56u;
-    core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&master, &slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
+    machine.lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_initialize(port);
+    core_machine_pic_initialize(&master, &slave, &machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     if (core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(registry, 1u, &media, &media_provider) !=
             LIB_STATUS_OK) {
@@ -128,51 +131,51 @@ lib_i32 main(void)
     } else {
         core_machine_hdc_connect(&hdc, registry, 1u, 2u, &master, &slave, &config);
         if (core_machine_hdc_initialize(&hdc) != LIB_STATUS_OK ||
-            !core_machine_compaq_hdc_install(&port, &hdc)) {
+            !core_machine_compaq_hdc_install(port, &hdc)) {
             failed |= 0x02;
         } else {
-            core_machine_port_write(&port, 0x01f2u, 1u);
-            core_machine_port_write(&port, 0x01f3u, 1u);
-            core_machine_port_write(&port, 0x01f6u, 0x2au);
-            core_machine_port_write(&port, 0x01f7u, 0x20u);
+            core_machine_port_write(port, 0x01f2u, 1u);
+            core_machine_port_write(port, 0x01f3u, 1u);
+            core_machine_port_write(port, 0x01f6u, 0x2au);
+            core_machine_port_write(port, 0x01f7u, 0x20u);
             hdc_service(&hdc);
-            value = core_machine_port_read(&port, 0x03f7u);
+            value = core_machine_port_read(port, 0x03f7u);
             failed |= value != 0x8au || !core_machine_hdc_irq_pending(&hdc);
-            value = core_machine_port_read(&port, 0x03f6u);
+            value = core_machine_port_read(port, 0x03f6u);
             failed |= (value & X86_HDC_STATUS_DRQ) == 0u ||
                 !core_machine_hdc_irq_pending(&hdc);
-            value = core_machine_port_read(&port, 0x01f7u);
+            value = core_machine_port_read(port, 0x01f7u);
             failed |= (value & X86_HDC_STATUS_DRQ) == 0u ||
                 core_machine_hdc_irq_pending(&hdc);
-            value = core_machine_port_read(&port, 0x01f0u);
+            value = core_machine_port_read(port, 0x01f0u);
             failed |= value != 0x1234u;
             for (lib_u16 index = 1u; index < 256u; ++index) {
-                (void)core_machine_port_read(&port, 0x01f0u);
+                (void)core_machine_port_read(port, 0x01f0u);
             }
             hdc_service(&hdc);
             failed |= !core_machine_hdc_irq_pending(&hdc);
 
-            core_machine_port_write(&port, 0x01f2u, 1u);
-            core_machine_port_write(&port, 0x01f3u, 1u);
-            core_machine_port_write(&port, 0x01f6u, 0x3au);
-            core_machine_port_write(&port, 0x01f7u, 0x20u);
+            core_machine_port_write(port, 0x01f2u, 1u);
+            core_machine_port_write(port, 0x01f3u, 1u);
+            core_machine_port_write(port, 0x01f6u, 0x3au);
+            core_machine_port_write(port, 0x01f7u, 0x20u);
             hdc_service(&hdc);
-            value = core_machine_port_read(&port, 0x01f0u);
+            value = core_machine_port_read(port, 0x01f0u);
             failed |= value != 0x5678u;
             for (lib_u16 index = 1u; index < 256u; ++index) {
-                (void)core_machine_port_read(&port, 0x01f0u);
+                (void)core_machine_port_read(port, 0x01f0u);
             }
             hdc_service(&hdc);
             failed |= !core_machine_hdc_irq_pending(&hdc);
 
-            core_machine_port_write(&port, 0x01f7u, 0x40u);
+            core_machine_port_write(port, 0x01f7u, 0x40u);
             hdc_service(&hdc);
-            failed |= (core_machine_port_read(&port, 0x03f6u) & X86_HDC_STATUS_ERR) !=
+            failed |= (core_machine_port_read(port, 0x03f6u) & X86_HDC_STATUS_ERR) !=
                 0u || !core_machine_hdc_irq_pending(&hdc);
-            core_machine_port_write(&port, 0x03f6u, X86_HDC_DEVICE_CONTROL_SRST);
-            core_machine_port_write(&port, 0x03f6u, 0u);
+            core_machine_port_write(port, 0x03f6u, X86_HDC_DEVICE_CONTROL_SRST);
+            core_machine_port_write(port, 0x03f6u, 0u);
             failed |= core_machine_hdc_irq_pending(&hdc) ||
-                core_machine_port_read(&port, 0x03f6u) !=
+                core_machine_port_read(port, 0x03f6u) !=
                     (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC);
 
             /* A fitted Compaq controller remains reset-ready with no mounted
@@ -195,14 +198,14 @@ lib_i32 main(void)
         fprintf(stderr, "M5:T386:S5:COMPAQ-HDC-ROUTE:FAIL %x status=%x error=%x phase=%u irq=%u chs=%x:%x:%x\n", failed, hdc_observe(&hdc).status, hdc_observe(&hdc).error, hdc_observe(&hdc).phase, hdc_observe(&hdc).irq_pending, hdc_observe(&hdc).cylinder_high, hdc_observe(&hdc).cylinder_low, hdc_observe(&hdc).sector_number);
         core_machine_hdc_finalize(&hdc);
         core_machine_media_registry_destroy(registry);
-        core_machine_port_finalize(&port);
+        core_machine_port_finalize(port);
         return 1;
     }
     core_machine_hdc_finalize(&empty_hdc);
     core_machine_port_finalize(&empty_port);
     core_machine_hdc_finalize(&hdc);
     core_machine_media_registry_destroy(registry);
-    core_machine_port_finalize(&port);
+    core_machine_port_finalize(port);
     puts("M5:T386:S5:COMPAQ-HDC-ROUTE:OK");
     puts("M5:T386:S5:PORT-WIRED-OR:OK");
     puts("M5:T430:S1:COMPAQ-HDC-DUAL-DRIVE:OK");

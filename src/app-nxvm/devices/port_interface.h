@@ -25,6 +25,23 @@ typedef struct core_machine_port_provider {
     core_machine_port_write_provider write;
 } core_machine_port_provider;
 
+/* The Core owns route storage. The caller retains each callback context until
+ * its routes are removed or the machine is destroyed. */
+typedef struct core_machine_port_route {
+    lib_u16 address;
+    core_machine_port_read_provider read;
+    core_machine_port_write_provider write;
+    void *owner;
+    lib_bool wired_or_read;
+} core_machine_port_route;
+
+/* All routes are installed or none are. Route order is observable only for
+ * explicit wired-OR contributors to an already installed read route. */
+lib_status core_machine_install_port_routes(
+    core_machine *machine,
+    const core_machine_port_route *routes,
+    lib_size count);
+
 lib_status core_machine_install_port_provider(
     core_machine *machine,
     lib_u16 first,

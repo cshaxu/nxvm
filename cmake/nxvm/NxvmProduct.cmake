@@ -76,11 +76,14 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/memory_interface.c
     src/app-nxvm/devices/media_interface.c
     src/app-nxvm/devices/port_interface.c
+    src/app-nxvm/devices/pic_bus.c
+    src/app-nxvm/devices/pit_bus.c
+    src/app-nxvm/devices/xt_ppi_keyboard.c
+    src/app-nxvm/devices/kbc.c
     src/app-nxvm/devices/rom_mapping_interface.c
     src/app-nxvm/devices/trace_interface.c
     src/app-nxvm/devices/retirement_observation_interface.c
     src/app-nxvm/devices/timeline.c
-    src/app-nxvm/devices/xt_ppi_keyboard.c
 )
 # This is the complete public core-machine runtime. It extends the primitive
 # storage/executor target below; it is not a second guest executor.
@@ -751,7 +754,7 @@ add_executable(machine-idt-privilege-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_idt_privilege_pic_board_smoke.c)
 target_include_directories(machine-idt-privilege-pic-board-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(machine-idt-privilege-pic-board-smoke PRIVATE core-machine-executor)
+target_link_libraries(machine-idt-privilege-pic-board-smoke PRIVATE core-machine)
 add_executable(machine-control-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_control_state_board_smoke.c)
 target_link_libraries(machine-control-state-board-smoke PRIVATE core-machine)
@@ -764,12 +767,12 @@ add_executable(machine-protected-far-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_protected_far_pic_board_smoke.c)
 target_include_directories(machine-protected-far-pic-board-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(machine-protected-far-pic-board-smoke PRIVATE core-machine-executor)
+target_link_libraries(machine-protected-far-pic-board-smoke PRIVATE core-machine)
 add_executable(machine-protected-data-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_protected_data_pic_board_smoke.c)
 target_include_directories(machine-protected-data-pic-board-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(machine-protected-data-pic-board-smoke PRIVATE core-machine-executor)
+target_link_libraries(machine-protected-data-pic-board-smoke PRIVATE core-machine)
 add_executable(core-machine-protected-16-gate-s3-smoke
     test/app-nxvm/unit/core/devices/core_machine_protected_16_gate_board_smoke.c)
 target_link_libraries(core-machine-protected-16-gate-s3-smoke PRIVATE core-machine)
@@ -1215,11 +1218,7 @@ set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/vadp.c
     src/app-nxvm/devices/port.c
     src/app-nxvm/devices/memory.c
-    src/app-nxvm/devices/pic_bus.c
-    src/app-nxvm/devices/pit_bus.c
     src/app-nxvm/devices/dma_bus.c
-    src/app-nxvm/devices/kbc.c
-    src/app-nxvm/devices/xt_ppi_keyboard.c
     src/app-nxvm/devices/transaction.c
 )
 add_library(core-machine-executor STATIC
@@ -3482,15 +3481,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/port.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/memory.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/transaction.c|machine-executor"
-    "x86-cpu|src/x86/chips/cpu/cpu.c|cpu"
-    "x86-cpu|src/x86/chips/cpu/cpu_instructions.c|cpu"
-    "x86-cpu|src/x86/chips/cpu/cpu_timing.c|cpu"
-    "x86-cpu|src/x86/chips/cpu/cpu_timing_model.c|cpu"
-    "core-machine-executor|src/app-nxvm/devices/pic_bus.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/pit_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/dma_bus.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/kbc.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/xt_ppi_keyboard.c|machine-executor"
     "vm-app|src/app-nxvm/product/command.c|console-product"
     "vm-app|src/app-nxvm/product/keyboard.c|keyboard-product"
     "vm-app|src/app-nxvm/product/startup.c|session-startup"

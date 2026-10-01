@@ -598,7 +598,13 @@ static lib_status core_machine_create_internal(
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
-    core_machine_board_register_a20_port(machine);
+    {
+        lib_status status = core_machine_board_register_a20_port(machine);
+        if (status != LIB_STATUS_OK) {
+            core_machine_destroy(machine);
+            return status;
+        }
+    }
     {
         lib_status status = core_machine_vadp_initialize(&machine->shared_vadp,
             &machine->executor_port);
@@ -609,7 +615,7 @@ static lib_status core_machine_create_internal(
     }
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         lib_status status = core_machine_xt_ppi_keyboard_initialize(&machine->xt_ppi_keyboard,
-            &config->xt_ppi_keyboard, &machine->executor_port);
+            &config->xt_ppi_keyboard, machine);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
             return status;
@@ -644,7 +650,7 @@ static lib_status core_machine_create_internal(
             &machine->executor_port, dma_controller_count);
         if (status == LIB_STATUS_OK) {
             status = core_machine_pic_initialize(&machine->shared_pic_master,
-                &machine->shared_pic_slave, &machine->executor_port, config->pic_topology);
+                &machine->shared_pic_slave, machine, config->pic_topology);
         }
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
@@ -657,10 +663,10 @@ static lib_status core_machine_create_internal(
         &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
     {
         lib_status status = core_machine_pit_bus_create(&machine->shared_pit,
-            &machine->executor_port, config->shared_pit_personality, 0x0040u);
+            machine, config->shared_pit_personality, 0x0040u);
         if (status == LIB_STATUS_OK && config->auxiliary_pit_present) {
             status = core_machine_pit_bus_create(&machine->auxiliary_pit,
-                &machine->executor_port, X86_PIT_PERSONALITY_8254,
+                machine, X86_PIT_PERSONALITY_8254,
                 config->auxiliary_pit_base_port);
             machine->auxiliary_pit_configured = status == LIB_STATUS_OK;
         }

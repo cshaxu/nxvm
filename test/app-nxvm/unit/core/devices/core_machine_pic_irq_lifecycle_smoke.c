@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/pic_bus.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
 
 static void initialize_pic(core_machine_pic_bus *master, core_machine_pic_bus *slave, t_port *port,
@@ -24,17 +25,19 @@ lib_i32 main(void)
 {
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
-    t_port port;
+    core_machine machine = {0};
+    t_port *port = &machine.executor_port;
     core_machine_pic_irq_source irq1;
     core_machine_pic_irq_source irq6;
     core_machine_pic_irq_source irq14;
     lib_i32 failed = 0;
 
-    core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&master, &slave, &port,
+    machine.lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_initialize(port);
+    core_machine_pic_initialize(&master, &slave, &machine,
         CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_pic_reset(&master, &slave);
-    initialize_pic(&master, &slave, &port, 0x11u);
+    initialize_pic(&master, &slave, port, 0x11u);
     core_machine_pic_irq_source_bind(&irq1, &master, &slave, 1u);
     core_machine_pic_irq_source_bind(&irq6, &master, &slave, 6u);
     core_machine_pic_irq_source_bind(&irq14, &master, &slave, 14u);
@@ -44,24 +47,24 @@ lib_i32 main(void)
     failed |= !core_machine_pic_scan_interrupt(&master, &slave);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x0eu;
     failed |= (test_pic_read(&master, 0x0bu) & VPIC_ISR_IRQ(6u)) == 0u;
-    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_port_write(port, 0x0020u, 0x20u);
 
     core_machine_pic_irq_source_assert(&irq6);
     core_machine_pic_irq_source_deassert(&irq6);
     core_machine_pic_irq_source_assert(&irq1);
     core_machine_pic_irq_source_deassert(&irq1);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x09u;
-    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_port_write(port, 0x0020u, 0x20u);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x0eu;
-    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_port_write(port, 0x0020u, 0x20u);
 
-    core_machine_port_write(&port, 0x0021u, VPIC_OCW1_IMR(6u));
+    core_machine_port_write(port, 0x0021u, VPIC_OCW1_IMR(6u));
     core_machine_pic_irq_source_assert(&irq6);
     core_machine_pic_irq_source_deassert(&irq6);
     failed |= core_machine_pic_scan_interrupt(&master, &slave);
-    core_machine_port_write(&port, 0x0021u, 0u);
+    core_machine_port_write(port, 0x0021u, 0u);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x0eu;
-    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_port_write(port, 0x0020u, 0x20u);
 
     core_machine_pic_irq_source_assert(&irq14);
     core_machine_pic_irq_source_deassert(&irq14);
@@ -69,15 +72,15 @@ lib_i32 main(void)
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x76u;
     failed |= (test_pic_read(&master, 0x0bu) & VPIC_ISR_IRQ(2u)) == 0u ||
         (test_pic_read(&slave, 0x0bu) & VPIC_ISR_IRQ(6u)) == 0u;
-    core_machine_port_write(&port, 0x00a0u, 0x20u);
-    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_port_write(port, 0x00a0u, 0x20u);
+    core_machine_port_write(port, 0x0020u, 0x20u);
 
     core_machine_pic_reset(&master, &slave);
-    initialize_pic(&master, &slave, &port, 0x19u);
+    initialize_pic(&master, &slave, port, 0x19u);
     core_machine_pic_irq_source_bind(&irq1, &master, &slave, 1u);
     core_machine_pic_irq_source_assert(&irq1);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x09u;
-    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_port_write(port, 0x0020u, 0x20u);
     core_machine_pic_refresh(&master, &slave);
     failed |= !core_machine_pic_scan_interrupt(&master, &slave);
     core_machine_pic_irq_source_deassert(&irq1);
@@ -85,26 +88,26 @@ lib_i32 main(void)
     failed |= core_machine_pic_scan_interrupt(&master, &slave);
 
     core_machine_pic_reset(&master, &slave);
-    initialize_pic(&master, &slave, &port, 0x19u);
+    initialize_pic(&master, &slave, port, 0x19u);
     core_machine_pic_irq_source_bind(&irq14, &master, &slave, 14u);
     core_machine_pic_irq_source_assert(&irq14);
     core_machine_pic_refresh(&master, &slave);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x76u;
     failed |= (test_pic_read(&master, 0x0bu) & VPIC_ISR_IRQ(2u)) == 0u ||
         (test_pic_read(&slave, 0x0bu) & VPIC_ISR_IRQ(6u)) == 0u;
-    core_machine_port_write(&port, 0x00a0u, 0x20u);
-    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_port_write(port, 0x00a0u, 0x20u);
+    core_machine_port_write(port, 0x0020u, 0x20u);
     core_machine_pic_refresh(&master, &slave);
     failed |= !core_machine_pic_scan_interrupt(&master, &slave);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x76u;
-    core_machine_port_write(&port, 0x00a0u, 0x20u);
-    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_port_write(port, 0x00a0u, 0x20u);
+    core_machine_port_write(port, 0x0020u, 0x20u);
     core_machine_pic_irq_source_deassert(&irq14);
     core_machine_pic_refresh(&master, &slave);
     failed |= core_machine_pic_scan_interrupt(&master, &slave);
 
     core_machine_pic_finalize(&master, &slave);
-    core_machine_port_finalize(&port);
+    core_machine_port_finalize(port);
     if (failed) return 1;
     printf("M5:T216:S1:PIC-IRQ-LIFECYCLE:OK\n");
     return 0;

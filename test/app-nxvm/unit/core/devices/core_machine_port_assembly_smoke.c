@@ -105,6 +105,48 @@ static lib_i32 port_assembly_range_transaction(void)
     return failed || port_assembly_fresh_default_create();
 }
 
+static lib_i32 port_assembly_batch_transaction(void)
+{
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES};
+    const core_machine_port_provider existing = {
+        port_assembly_read, port_assembly_write};
+    port_assembly_probe_state state = {0u};
+    core_machine_port_test_allocation allocation = {3u, 0u};
+    core_machine_port_route routes[] = {
+        {0x00e2u, port_assembly_read, port_assembly_write, &state, LIB_FALSE},
+        {0x00e4u, port_assembly_read, port_assembly_write, &state, LIB_FALSE}
+    };
+    core_machine *machine = LIB_NULL;
+    lib_u32 value = 0u;
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+
+    if (!failed) {
+        failed |= core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
+            &existing, &state) != LIB_STATUS_OK;
+        core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
+        failed |= core_machine_install_port_routes(machine, routes, 2u) !=
+            LIB_STATUS_NO_MEMORY;
+        failed |= !core_machine_port_has_read(&machine->executor_port, 0x00e0u) ||
+            core_machine_port_has_read(&machine->executor_port, 0x00e2u) ||
+            core_machine_port_has_write(&machine->executor_port, 0x00e2u) ||
+            core_machine_port_has_read(&machine->executor_port, 0x00e4u) ||
+            core_machine_port_has_write(&machine->executor_port, 0x00e4u);
+        allocation.fail_at = 0u;
+        failed |= core_machine_install_port_routes(machine, routes, 2u) !=
+            LIB_STATUS_OK;
+        failed |= core_machine_install_port_routes(machine, routes, 2u) !=
+            LIB_STATUS_INVALID_STATE;
+        failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK ||
+            core_machine_bus_write(machine, 0x00e4u, 0x3cu) != LIB_STATUS_OK ||
+            core_machine_bus_read(machine, 0x00e2u, &value) != LIB_STATUS_OK ||
+            value != 0x3cu;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static lib_i32 port_assembly_create_failure(void)
 {
     const core_machine_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
@@ -309,20 +351,22 @@ static lib_i32 port_assembly_pit_transaction(void)
 {
     lib_i32 failed = 0;
     for (lib_u32 fail_at = 1u; fail_at <= 7u; ++fail_at) {
-        t_port ports;
+        core_machine machine = {0};
+        t_port *ports = &machine.executor_port;
         core_machine_pit_bus bus = {0};
         core_machine_port_test_allocation allocation = {fail_at, 0u};
-        core_machine_port_initialize(&ports);
-        core_machine_port_set_test_allocation(&ports, &allocation);
-        failed |= core_machine_pit_bus_create(&bus, &ports,
+        machine.lifecycle = CORE_MACHINE_INITIALIZED;
+        core_machine_port_initialize(ports);
+        core_machine_port_set_test_allocation(ports, &allocation);
+        failed |= core_machine_pit_bus_create(&bus, &machine,
             X86_PIT_PERSONALITY_8254, 0x0048u) != LIB_STATUS_NO_MEMORY ||
             bus.device != LIB_NULL;
         for (lib_u16 port = 0x0048u; port <= 0x004bu; ++port) {
-            failed |= core_machine_port_has_read(&ports, port) ||
-                core_machine_port_has_write(&ports, port);
+            failed |= core_machine_port_has_read(ports, port) ||
+                core_machine_port_has_write(ports, port);
         }
         core_machine_pit_bus_destroy(&bus);
-        core_machine_port_finalize(&ports);
+        core_machine_port_finalize(ports);
     }
     return failed;
 }
@@ -332,23 +376,25 @@ static lib_i32 port_assembly_pic_transaction(void)
     const lib_u16 addresses[] = {0x20u, 0x21u, 0xa0u, 0xa1u};
     lib_i32 failed = 0;
     for (lib_u32 fail_at = 1u; fail_at <= 8u; ++fail_at) {
-        t_port ports;
+        core_machine machine = {0};
+        t_port *ports = &machine.executor_port;
         core_machine_pic_bus master = {0}, slave = {0};
         core_machine_port_test_allocation allocation = {fail_at, 0u};
-        core_machine_port_initialize(&ports);
-        core_machine_port_set_test_allocation(&ports, &allocation);
-        failed |= core_machine_pic_initialize(&master, &slave, &ports,
+        machine.lifecycle = CORE_MACHINE_INITIALIZED;
+        core_machine_port_initialize(ports);
+        core_machine_port_set_test_allocation(ports, &allocation);
+        failed |= core_machine_pic_initialize(&master, &slave, &machine,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_NO_MEMORY ||
             master.device != LIB_NULL || slave.device != LIB_NULL;
         for (lib_size index = 0u; index < sizeof(addresses) / sizeof(addresses[0]); ++index) {
-            failed |= core_machine_port_has_read(&ports, addresses[index]) ||
-                core_machine_port_has_write(&ports, addresses[index]);
+            failed |= core_machine_port_has_read(ports, addresses[index]) ||
+                core_machine_port_has_write(ports, addresses[index]);
         }
         allocation.fail_at = 0u;
-        failed |= core_machine_pic_initialize(&master, &slave, &ports,
+        failed |= core_machine_pic_initialize(&master, &slave, &machine,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK;
         core_machine_pic_finalize(&master, &slave);
-        core_machine_port_finalize(&ports);
+        core_machine_port_finalize(ports);
     }
     return failed;
 }
@@ -356,6 +402,7 @@ static lib_i32 port_assembly_pic_transaction(void)
 lib_i32 main(void)
 {
     lib_i32 failed = port_assembly_range_transaction() ||
+        port_assembly_batch_transaction() ||
         port_assembly_create_failure() ||
         port_assembly_pit_transaction() || port_assembly_pic_transaction();
 

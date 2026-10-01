@@ -1,12 +1,13 @@
 #include "x86/chips/cpu/support/cpu_outer_return_fixture.h"
 #include "support/pic_fixture.h"
 #include "app-nxvm/devices/pic_bus.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
 #include <stdio.h>
 
 typedef struct outer_iret_pic_board {
     cpu_instruction_fixture cpu;
-    t_port port;
+    core_machine machine;
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
 } outer_iret_pic_board;
@@ -68,8 +69,9 @@ static lib_bool outer_iret_pic_prepare(outer_iret_pic_board *board)
     lib_u8 *const gate = memory + CPU_OUTER_IDT_BASE + (lib_u16)vector * 8u;
 
     lib_memory_set(board, 0, sizeof(*board));
-    core_machine_port_initialize(&board->port);
-    if (core_machine_pic_initialize(&board->master, &board->slave, &board->port,
+    board->machine.lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_initialize(&board->machine.executor_port);
+    if (core_machine_pic_initialize(&board->master, &board->slave, &board->machine,
             CORE_MACHINE_PIC_TOPOLOGY_SINGLE) != LIB_STATUS_OK) return LIB_FALSE;
     cpu_instruction_prepare_with_bus(&board->cpu, CORE_MACHINE_CPU_PROFILE_80386,
         &outer_iret_pic_bus, board);
@@ -114,11 +116,11 @@ int main(void)
             after.data.esp, after.data.eflags, test_pic_read(&board.master, 0x0au),
             test_pic_read(&board.master, 0x0bu), board.cpu.fault.valid);
         core_machine_pic_finalize(&board.master, &board.slave);
-        core_machine_port_finalize(&board.port);
+        core_machine_port_finalize(&board.machine.executor_port);
         return 1;
     }
     core_machine_pic_finalize(&board.master, &board.slave);
-    core_machine_port_finalize(&board.port);
+    core_machine_port_finalize(&board.machine.executor_port);
     puts("M5:T539:S54:OUTER-IRET:PIC-BOARD:OK");
     return 0;
 }
