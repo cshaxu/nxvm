@@ -869,12 +869,6 @@ target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
 add_executable(cpu-descriptor-system-smoke
     test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c)
 target_link_libraries(cpu-descriptor-system-smoke PRIVATE x86-cpu)
-add_executable(cpu-lar-lsl-smoke
-    test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c)
-target_link_libraries(cpu-lar-lsl-smoke PRIVATE x86-cpu)
-add_executable(cpu-verr-verw-smoke
-    test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c)
-target_link_libraries(cpu-verr-verw-smoke PRIVATE x86-cpu)
 add_executable(cpu-sgdt-sidt-smoke
     test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c)
 target_link_libraries(cpu-sgdt-sidt-smoke PRIVATE x86-cpu)
@@ -923,22 +917,14 @@ add_executable(core-machine-80286-protected-mode-smoke
     test/app-nxvm/unit/core/devices/core_machine_80286_protected_mode_smoke.c)
 target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
 
-add_executable(cpu-arpl-smoke
-    test/app-nxvm/unit/core/devices/cpu_arpl_smoke.c)
-target_link_libraries(cpu-arpl-smoke PRIVATE x86-cpu)
 add_executable(machine-arpl-board-smoke
     test/app-nxvm/unit/core/devices/machine_arpl_board_smoke.c)
 target_link_libraries(machine-arpl-board-smoke PRIVATE core-machine)
-add_executable(cpu-bound-smoke
-    test/app-nxvm/unit/core/devices/cpu_bound_smoke.c)
-target_link_libraries(cpu-bound-smoke PRIVATE x86-cpu)
 add_executable(machine-bound-board-smoke
     test/app-nxvm/unit/core/devices/machine_bound_board_smoke.c)
 target_link_libraries(machine-bound-board-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-arpl-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(machine-arpl-board-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(cpu-bound-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(machine-bound-board-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -1090,8 +1076,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "cpu-debug-state-smoke|test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c"
     "cpu-dttr-s61-smoke|test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
     "cpu-descriptor-system-smoke|test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
-    "cpu-lar-lsl-smoke|test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c"
-    "cpu-verr-verw-smoke|test/app-nxvm/unit/core/devices/cpu_verr_verw_smoke.c"
+    "x86-test-cpu_lar_lsl|devices/cpu/cpu_lar_lsl_smoke.c"
+    "x86-test-cpu_verr_verw|devices/cpu/cpu_verr_verw_smoke.c"
     "core-machine-eflags-local-smoke|test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"
     "machine-fpu-interface-s65-smoke|test/app-nxvm/unit/core/devices/machine_fpu_interface_s65_smoke.c"
@@ -2005,13 +1991,13 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-interrupt-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
-    cpu-arpl-smoke
+    x86-test-cpu_arpl
     machine-arpl-board-smoke
-    cpu-bound-smoke
+    x86-test-cpu_bound
     cpu-dttr-s61-smoke
     cpu-descriptor-system-smoke
-    cpu-lar-lsl-smoke
-    cpu-verr-verw-smoke
+    x86-test-cpu_lar_lsl
+    x86-test-cpu_verr_verw
     cpu-lgdt-lidt-smoke
     cpu-sgdt-sidt-smoke
     machine-table-register-board-smoke
@@ -2146,9 +2132,9 @@ list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
 # unit #UD source cannot silently bypass that classification.
 set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-80286-protected-mode-smoke
-    cpu-arpl-smoke
+    x86-test-cpu_arpl
     cpu-bit-test-smoke
-    cpu-bound-smoke
+    x86-test-cpu_bound
     cpu-dttr-s61-smoke
     cpu-lgdt-lidt-smoke
     cpu-sgdt-sidt-smoke
@@ -2163,8 +2149,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     machine-cpu-profile-gate-smoke
     core-machine-descriptor-system-smoke
     cpu-descriptor-system-smoke
-    cpu-lar-lsl-smoke
-    cpu-verr-verw-smoke
+    x86-test-cpu_lar_lsl
+    x86-test-cpu_verr_verw
     cpu-debug-state-smoke
     machine-debug-state-board-smoke
     cpu-double-shift-smoke
@@ -2255,8 +2241,8 @@ set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
 set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     core-machine-cpu-context-smoke
     cpu-descriptor-system-smoke
-    cpu-lar-lsl-smoke
-    cpu-verr-verw-smoke
+    x86-test-cpu_lar_lsl
+    x86-test-cpu_verr_verw
     machine-fpu-escape-smoke
     cpu-control-state-smoke
     cpu-control-transfer-branch-smoke
