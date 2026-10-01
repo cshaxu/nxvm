@@ -16,8 +16,8 @@ into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
 is then divided into S83-S100 and S100 is the final acceptance. S48-S97 are
-accepted and S100 remains pending. The next package must be admitted from the
-bounded ledger. Earlier
+accepted and S100 is the active final acceptance package. Earlier accepted
+packets retain their historical prospective numbering; the linked
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -282,6 +282,22 @@ width. T317, CPU/PIC authority, Shared manifest/corpus and documentation
 governance pass. Detached full unit suites pass **466/466** on x64 and x86.
 See the [S99 evidence](../etc/evidence/t539-s99-final-cpu-path-cleanup.md).
 S99 is accepted; T539 remains open for S100.
+
+## S100 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S100, automatically admitted final continuation. |
+| Admission And Approval | The owner approved automatic, bounded, strictly linear numeric T539 continuation tasks; S100 follows accepted S99. |
+| Objective | Prove final CPU test ownership: each CPU-only receiver and fixture has one Shared owner; each machine, PIC, board-time and result-publication receiver has one named NXVM owner; no retired App CPU test path survives. |
+| Non-goals | Further CPU behavior/timing changes, new Shared APIs/frameworks, profile changes, firmware, assets, INI and executable changes. |
+| Reference Baseline | `dfe846cbc`, accepted S99. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Read-only inventory and evidence unless a real duplicate path is found. Verify no App target directly links `x86-cpu`, no App fixture forwards the Shared CPU fixture, and every retained App CPU-named receiver has a Core-machine/board/result owner. |
+| Applicable Rules | One owner per fact and behavior; Shared owns chip semantics and CPU-only fixtures, NXVM owns composition, board signal routes and product result artifacts. |
+| Verification | Full x64/x86 unit suites; full integration suite; T317/T332/static gates; Shared manifest/corpus; CPU/PIC authority; documentation governance; diff and inventory checks. |
+| Exit Criteria | The complete receiver map is evidenced, both unit widths and integration pass, no duplicate path remains, and T539 can close without an unallocated CPU boundary. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
 
 ## S86 Acceptance
 
