@@ -2,16 +2,16 @@
 
 ## Goal And Dependency
 
-Second ordered migration candidate, unnumbered and not admitted. After
-[independent chips](m5-shared-chip-extraction.md), extract the actual common
+Admitted as T540 after closed [independent chips](m5-shared-chip-extraction.md).
+Extract the neutral x86 executor and the actual common
 board mechanisms of XT, AT, DeskPro 386 and default PC/AT into the flat
 `src/x86/ibmpc-common`, `src/x86/ibmpc-at` and `src/x86/ibmpc-xt` components.
 This is reusable PC assembly, not another chip library or a host executor.
 
 ## Ownership
 
-- `x86/chips` is the future sole ownership location for each chip's state and
-  behavior; present `x86/devices` remains current until its explicit rename.
+- `x86/chips` is the sole ownership location for each extracted chip's state
+  and behavior; S4 removed the retired `x86/devices` source path.
 - `x86/ibmpc-common` owns demonstrably shared IBM-PC port routing and signal wiring.
   It integrates chips only through their public contracts. The generic x86
   machine executor -- memory, ports, transactions, guest timeline, CPU bus and
@@ -34,13 +34,16 @@ This is reusable PC assembly, not another chip library or a host executor.
 
 ## Coverage And Work Strategy
 
-The first S inventories the four construction graphs and the first candidate's
-retained non-chip files. Its durable ledger distinguishes common mechanisms,
+S1 inventoried the four construction graphs and retained non-chip files. Its
+durable ledger distinguishes common mechanisms,
 genuine machine differences and App/host adaptation. Include bus transactions,
 interrupt acknowledgement, DMA/refresh, firmware mapping, reset, time and
 failure cleanup; similarity of filenames is not proof of shared semantics.
 
-Extract and reconnect one complete dependency batch at a time. Finish with
+S2-S4 fixed the finite adapter ledger, target layout and chip path. S5 resolves
+the generic-Core/IBM-PC cut in its [source-inspected map](../etc/architecture/t540-s5-neutral-core-cut.md)
+before S6-S8 move Core ownership. Then extract and
+reconnect one complete board dependency batch at a time. Finish with
 NXVM using the shared implementation and delete its duplicate common board
 paths. Preserve one construction/rollback owner and one reset path. No generic
 board inheritance, universal event bus or new per-machine execution loops.

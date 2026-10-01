@@ -7,6 +7,10 @@ decision, but it cannot redefine current architecture, source layout, product
 UX, roadmap, rules, status, queue, or debt. Conflicts are resolved by the
 principal documents named in [the NXVM documentation guide](../README.md).
 
+T540 S5: [neutral Core source cut](architecture/t540-s5-neutral-core-cut.md)
+maps the mixed executor/IBM-PC fields and ordered S6-S8 receivers; Current
+owns admission and status.
+
 S7 receiving evidence: [T43 Shared repair artifacts](evidence/m6-t43-s7-receiving-artifacts.md); eight current NXVM binaries, hashes and complete dual-width unit proof.
 
 S10 receiving evidence: [T43 byte-boolean artifacts](evidence/m6-t43-s10-receiving-artifacts.md); rebuilt eight 0535 receivers and corrected test callback contracts.

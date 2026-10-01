@@ -4,6 +4,11 @@ This ledger is the finite S2 design universe.  It records a destination only
 after inspecting state ownership, all consumers, reset/finalize ordering and
 dependencies.  `Candidate` is deliberately not a permission to move source.
 
+The owner later admitted neutral Core extraction within T540. S2's
+"future/do not move in T540" timing is superseded by the source-inspected
+[S5 Core cut](t540-s5-neutral-core-cut.md); its state-owner and board-adapter
+observations are retained. Current owns the active S allocation.
+
 ## First-Principles Boundary
 
 `app-nxvm/devices` currently contains two different layers:

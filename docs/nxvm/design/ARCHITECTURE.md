@@ -41,26 +41,15 @@ it does not change runtime ownership before the corresponding cutover.
   and board-specific behavior.
   It constructs and destroys the selected machine through neutral device
   contracts; it does not depend on Common or Machine-adapter internals.
-- `app-nxvm/devices` owns CPU, memory, bus, devices, reset,
-  generic execution and faults and the sole guest
-  timeline. Generic mechanisms know hardware contracts, not product names.
-  T539 moves PIT 8253/8254 state and waveforms to `x86/devices/pit825x`,
-  RTC/calendar/register state to `x86/devices/rtc146818`, individual PIC
-  state/priority to `x86/devices/pic8259`, DMA to `dma8237`, AT controller and
-  endpoints to `kbc8042`/`keyboard`/`ps2mouse`, and qualified XT register/serial
-  mechanisms to `ppi8255`/`xtkeyboard`, and the FDC command/PCN/cause mechanism
-  to `fdc8272`, the explicit ATA/WD/Xebec command mechanisms to `hdc`, and
-  video register/VRAM/raster/frame mechanisms to `video`.
-  NXVM retains the FDC PC registers, physical drive and record provider,
-  HDC media-ID and port adaptation, video port/physical-memory installation
-  and borrowed backing-memory capture, cascade/source aggregation,
-  port attachment, index/NMI latches, seed/checksum, clock conversion and
-  IRQ/refresh/speaker wiring. Current records each batch's acceptance; other
-  chip extractions remain pending.
-  The S16 implementation moves FPU stack/status and extension timing to
-  `x86/devices/fpu`; CPU retains pair legality and operand cycles. Current
-  distinguishes receiving verification from acceptance. CPU extraction still
-  needs its separate physical-bus, interrupt and diagnostic boundary cutover.
+- `x86/chips` owns the extracted CPU, FPU, PIC, PIT, DMA, RTC, KBC, PPI,
+  keyboard, mouse, FDC, HDC and video chip mechanisms. T539 closed their
+  independent-chip source ownership; `app-nxvm/devices` retains the one mixed
+  x86 executor and IBM-PC board attachments until T540 moves each mechanism
+  to its proven owner. It still owns the sole guest timeline and plan
+  transaction today. Neither the neutral `x86/core` nor the flat
+  `x86/ibmpc-*` board receivers are implemented merely by naming them here.
+  Their source cut must keep chip state in `x86/chips`, guest execution time
+  in one Core, and profile/firmware/media choices in the App composition.
 - `common/machine` owns the shared execution/control protocol and paused-debug
   lease; `common/session` is the sole product-control reducer;
   `common/ui` binds Lib KVM and the Console broker.

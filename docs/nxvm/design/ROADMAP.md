@@ -26,12 +26,11 @@ Retain lawful external firmware composition and Console/debugger interaction.
 
 ## M5: Fixed Machine Builds And Shared Devices
 
-The next structural target is the three-step [Queue](../states/QUEUE.md):
-the future neutral `x86/core`, independent chips in `x86/chips` (current path:
-`x86/devices`), and shared PC board mechanisms in the flat `x86/ibmpc-*` components,
-then `app-mypcxt`, `app-mypcat`, `app-mypcdeskpro386` and default-386
-`app-nxvm`. The chip stage is admitted as T539, initially research/design only;
-the board and App stages remain unadmitted candidates. None is a completed migration.
+The structural sequence is closed T539 independent chips at `x86/chips`,
+active T540 neutral `x86/core` and flat `x86/ibmpc-*` board extraction, then
+the queued `app-mypcxt`, `app-mypcat`, `app-mypcdeskpro386` and default-386
+`app-nxvm` split. [Current](../states/CURRENT.md) records the accepted S
+boundaries and the remaining implementation work.
 Retained qualification work follows the new owners without reduced coverage.
 
 Retain all implemented XT, AT, DeskPro 386 and default PC/AT variants; inventory

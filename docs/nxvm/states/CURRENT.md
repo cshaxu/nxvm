@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 remains open. S1-S4 are accepted; S4 established the sole
-`x86/chips` source/test path and its NXVM consumer. S5 is the next planned
-bounded subtask and has not yet been admitted.
+M5 T540 remains open. S1-S5 are accepted; S5 fixed the neutral `x86/core`
+source cut before the first Core source move. S6 is the next bounded subtask
+and has not yet been admitted.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -30,6 +30,7 @@ the completed CPU extraction.
 | --- | --- |
 | T539 | Closed: every finite chip-ledger row is either extracted to its sole Shared owner or retained with its stated board-only reason; S101 removed the last historical CPU copy. |
 | T540 S4 | Accepted: one Shared chip path, reconnected NXVM consumer, both-width complete units and four-profile 0540 artifact pairs. |
+| T540 S5 | Accepted: source-inspected Core/board ownership and finite S6-S8 cut. |
 
 ## T540 S1 Acceptance
 
@@ -111,6 +112,47 @@ header or second chip implementation. [S4 evidence](../etc/evidence/t540-s4-chip
 records file and line counts, source commits, artifact SHA-256 values and the
 receiving-App disposition. T540's full external integration gate remains due
 at task closure; S4 is accepted without claiming the board extraction complete.
+
+## T540 S5 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S5, the next linear S after accepted S4. |
+| Admission And Approval | The owner approved automatic admission of bounded T540 S tasks and explicitly selected a neutral `x86/core` ahead of IBM-PC board extraction. Shared and NXVM documentation are the declared review targets; this S makes no source or executable change. |
+| Objective | Inspect the complete mixed `app-nxvm/devices` Core/board dependency cut, resolve the stale deferment of `x86/core`, and assign each file and coupled state group a finite S6-S8 receiver or board-retained reason. |
+| Non-goals | Moving or rewriting code, adding public API or callback framework, changing chip behavior/timing, profile/ROM/INI changes, MyNES edits, or claiming a complete Core cutover. |
+| Reference Baseline | S4 closure `45576e51e`, S1 board audit and S2 board-adapter ledger. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [board audit](../etc/architecture/t540-ibmpc-board-audit.md), and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | NXVM design/roadmap/status and T540 supporting ledger/proposal only; no C source, tests, CMake, assets, ABI or executable inputs. |
+| Applicable Rules | Shared execution, architecture, coding and documentation rules; NXVM system architecture and source layout. The source/research policy is not triggered: no external source or binary is used. |
+| Verification | Review the actual includes, state fields and build targets for generic and board families; reconcile every changed authority, run documentation governance and `git diff --check`. No synthetic runtime pass is claimed by a design-only S. |
+| Expected Markers | A finite owner map for S6-S8, an explicit one-clock/one-machine state rule, and no statement that `x86/core` must wait until after T540. |
+| Asset Needs | None. Current 0540 binaries remain the product baseline. |
+| Reporting Requirements | Name exact mixed files and state fields, dependency-direction risk, safe first source batch, retained board-only paths and the later verification gates. |
+| Stop Conditions | Stop if the only plausible cut requires a second machine state owner, an App include in Shared, or product-visible timing behavior change; revise the implementation plan rather than inventing a temporary compatibility facade. |
+| Exit Criteria | All Core/board candidate rows have one intended owner and ordered receiver; S6 can begin source extraction without guessing where the mixed scheduler, port 92h or plan transaction belongs. |
+| Original Owner Request | Establish `x86/core` and flat `x86/ibmpc-*` components so later independent PC Apps reuse the same chip and board mechanisms. |
+| Similar-Issue Sweep | Inspect `machine.h`, machine execution/plan/scheduler, memory/port/transaction/timeline/clock, CPU bus, firmware/debug/display, and all old App-only Core target sources for equivalent board leakage. |
+
+## T540 S5 Acceptance
+
+The [neutral Core cut](../etc/architecture/t540-s5-neutral-core-cut.md)
+inspected the mixed machine layout, scheduler, plan transaction, CPU bus and
+fixed 92h memory port rather than moving their files wholesale. It assigns
+pure clock/timeline/transaction mechanisms to S6, checked memory/port
+mechanisms with board port separation to S7, and the mixed execution lifetime
+and its related interfaces to S8. The IBM-PC device attachments and actual
+chip states retain distinct owners. S8 must be split into later linear S
+numbers at intake if its observed implementation batch cannot be reviewed as
+one complete cut.
+
+The principal Architecture, Coding and Roadmap documents now state the actual
+closed T539 chip path and active T540 Core/board sequence. S2's historical
+deferral is explicitly superseded without rewriting its source observations.
+No source, ABI, tests, build input, asset or INI changed; all eight 0540
+artifacts remain current. `git diff --check` and NXVM documentation governance
+passed. Actual-diff review found no new framework, compatibility facade or
+mirrored state. T540 remains open for implementation and external integration.
 
 ## S87 Admission Packet
 

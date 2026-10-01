@@ -1,5 +1,10 @@
 # T540 S1 IBM PC Board-Reuse Audit
 
+Historical S1 source/timing statements below predate the S4 chip rename and
+the owner's later admission of `x86/core` within T540. The current source path
+is `x86/chips`; the [S5 Core cut](t540-s5-neutral-core-cut.md) owns the
+updated extraction order. The hardware-boundary findings remain applicable.
+
 ## Decision
 
 Use a three-level board design, but create no source directory until a later
