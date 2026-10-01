@@ -185,7 +185,7 @@ static void x86_video_high_res_palette(const x86_video *adapter,
         x86_video_rgbi_color(adapter->data.color_select & 0x0fu) : 0u;
 }
 
-static void x86_video_active_ega_aperture(const x86_video *adapter,
+static lib_bool x86_video_active_ega_aperture(const x86_video *adapter,
     lib_u32 *out_base, lib_u32 *out_bytes);
 
 static lib_i32 x86_video_ega_output_active(const x86_video *adapter)
@@ -327,7 +327,8 @@ static lib_u32 x86_video_ega_planar_offset(const x86_video *adapter,
     if (x86_video_compaq_b000_compatibility_contains(adapter, physical, 1u)) {
         physical += 0x00008000u;
     }
-    x86_video_active_ega_aperture(adapter, &aperture_base, &aperture_bytes);
+    if (!x86_video_active_ega_aperture(adapter, &aperture_base,
+        &aperture_bytes)) return 0u;
     offset = physical - aperture_base;
     if (aperture_bytes == 0x00020000u) offset &= 0x0000ffffu;
     else if (aperture_bytes == 0x00008000u) offset &= 0x00007fffu;
@@ -662,17 +663,17 @@ static lib_u8 x86_video_attribute_mask(lib_u8 index)
     }
 }
 
-static void x86_video_active_ega_aperture(const x86_video *adapter,
+static lib_bool x86_video_active_ega_aperture(const x86_video *adapter,
     lib_u32 *out_base, lib_u32 *out_bytes)
 {
     lib_u8 map_select;
 
     if (adapter == LIB_NULL || out_base == LIB_NULL || out_bytes == LIB_NULL) {
-        return;
+        return LIB_FALSE;
     }
     *out_base = adapter->data.ega_sequencer.aperture_base;
     *out_bytes = adapter->data.ega_sequencer.aperture_bytes;
-    if (!adapter->data.ega_controller_configured) return;
+    if (!adapter->data.ega_controller_configured) return LIB_TRUE;
     map_select = (adapter->data.graphics[6] >> 2) & 0x03u;
     switch (map_select) {
     case 0u:
@@ -692,6 +693,7 @@ static void x86_video_active_ega_aperture(const x86_video *adapter,
         *out_bytes = 0x00008000u;
         break;
     }
+    return LIB_TRUE;
 }
 
 static void x86_video_reset_sequencer(x86_video *adapter)
@@ -753,8 +755,8 @@ static void x86_video_ega_write_observer(x86_video *adapter,
         lib_u32 aperture_base;
         lib_u32 aperture_bytes;
 
-        x86_video_active_ega_aperture(adapter, &aperture_base,
-            &aperture_bytes);
+        if (!x86_video_active_ega_aperture(adapter, &aperture_base,
+            &aperture_bytes)) return;
         aperture_end = (lib_u64)aperture_base + aperture_bytes;
         if ((lib_u64)physical < aperture_end &&
             (lib_u64)aperture_base < write_end) {
@@ -1871,8 +1873,8 @@ lib_i32 x86_video_ega_aperture_contains(const x86_video *adapter,
         lib_u32 aperture_base;
         lib_u32 aperture_bytes;
 
-        x86_video_active_ega_aperture(adapter, &aperture_base,
-            &aperture_bytes);
+        if (!x86_video_active_ega_aperture(adapter, &aperture_base,
+            &aperture_bytes)) return LIB_FALSE;
         aperture_end = (lib_u64)aperture_base + aperture_bytes;
         request_end = (lib_u64)physical + bytes;
         return physical >= aperture_base && request_end <= aperture_end;
