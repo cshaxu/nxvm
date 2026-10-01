@@ -12,8 +12,8 @@ S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
 corpus into S68-S73; the former oversized physical-relocation row is divided
-into S76-S81 and final acceptance is S82. S48-S75 are accepted and S76-S82
-remain pending except the active S76. Earlier
+into S76-S81 and final acceptance is S82. S48-S76 are accepted and S77-S82
+remain pending except the active S77. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -531,11 +531,19 @@ boundary and artifact hashes. S75 is accepted; T539 remains open for S76-S82.
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T539 S77, Automatically admitted continuation. |
-| Change Target | Shared. |
+| Admission And Approval | The owner approved automatic admission of each bounded T539 S. This continuation follows accepted S76; it consumes the S77 row in the approved [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Change Target | Shared P1 establishes the canonical receiver; NXVM P2/P3 retire its old registration and record the receiving proof. |
 | Objective | Move only CPU-owned 8086/80186 arithmetic, FLAGS, rotate and direct-register fixtures/tests to the canonical Shared CPU owner. |
 | Non-goals | Altering CPU semantics or timing, moving board fixtures, changing NXVM profile behavior, or deleting the retained App CPU source path before S81. |
+| Reference Baseline | `b74935101` after S76: canonical CPU sources/implementation target are Shared, while the historical App CPU source copy and all remaining receivers are retained for later bounded moves. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md), S77 CPU legacy/arithmetic receiver row. |
+| Files And ABI Surface | Candidate tests/fixtures under `test/app-nxvm/unit/core/devices/` and the successor `test/x86/devices/cpu/` owner directory. No public production CPU ABI, board callback, profile, firmware or asset surface changes. |
+| Applicable Rules | `docs/nxvm/design/ARCHITECTURE.md` Shared-device ownership; `docs/nxvm/design/CODING.md` mirrored test ownership; shared Architecture, Coding, Execution and Documentation rules. Evidence proves one CPU fixture/recipe owner and no board dependency imported into Shared. |
 | Required Boundary | The moved tests may use the public opaque CPU contract and CPU-private fixture only where the Shared owner supplies it; no board CPU bus, PIC, memory or profile dependence may enter Shared. |
 | Verification | Shared manifest/corpus and focused successor tests on x64/x86; complete Shared and NXVM units on both widths. Rebuild a product artifact only if a linked runtime CPU input changes. |
+| Expected Markers | The old App receiver paths are absent; successor tests are registered under the Shared x86 corpus; the CPU authority gate and corpus verifier pass without an App-private compatibility include. |
+| Asset Needs | None. This is repository-only CPU test/fixture migration; it neither reads external ROM/media nor changes product inputs. |
+| Reporting Requirements | Record the classified candidate universe and each retained board-dependent exception; report source/test added, removed and net lines; name the single retained fixture/recipe owner and artifact determination. |
 | Exit Criteria | One bounded CPU-only arithmetic receiver group lives under Shared; old consumer paths are removed; no second fixture or test recipe remains; all required checks pass. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
 | Similar-Issue Sweep | Classify every candidate by actual CPU-only versus board dependency before moving it; leave board cases explicit for S78-S80. |

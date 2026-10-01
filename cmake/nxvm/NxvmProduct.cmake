@@ -663,58 +663,17 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-inc-dec-final-group-board-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(cpu-inc-dec-first-group-smoke
-    test/app-nxvm/unit/core/devices/cpu_inc_dec_first_group_smoke.c)
-target_link_libraries(cpu-inc-dec-first-group-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-inc-dec-first-group-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(cpu-inc-dec-second-group-smoke
-    test/app-nxvm/unit/core/devices/cpu_inc_dec_second_group_smoke.c)
-target_link_libraries(cpu-inc-dec-second-group-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-inc-dec-second-group-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(cpu-inc-dec-final-group-smoke
-    test/app-nxvm/unit/core/devices/cpu_inc_dec_final_group_smoke.c)
-target_link_libraries(cpu-inc-dec-final-group-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-inc-dec-final-group-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(core-machine-legacy-alu-s2-smoke
     test/app-nxvm/unit/core/devices/core_machine_legacy_alu_s2_smoke.c)
 target_link_libraries(core-machine-legacy-alu-s2-smoke PRIVATE core-machine)
-add_executable(cpu-legacy-alu-s2-smoke
-    test/app-nxvm/unit/core/devices/cpu_legacy_alu_s2_smoke.c)
-target_link_libraries(cpu-legacy-alu-s2-smoke PRIVATE x86-cpu)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-legacy-alu-s2-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(cpu-legacy-alu-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-rotate-smoke test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c)
 target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
-add_executable(cpu-rotate-smoke test/app-nxvm/unit/core/devices/cpu_rotate_smoke.c)
-target_link_libraries(cpu-rotate-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-rotate-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(core-machine-eflags-local-smoke test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c)
 target_link_libraries(core-machine-eflags-local-smoke PRIVATE x86-cpu)
-add_executable(cpu-direct-flags-smoke
-    test/app-nxvm/unit/core/devices/cpu_direct_flags_smoke.c)
-target_link_libraries(cpu-direct-flags-smoke PRIVATE x86-cpu)
-add_executable(cpu-lahf-sahf-smoke
-    test/app-nxvm/unit/core/devices/cpu_lahf_sahf_smoke.c)
-target_link_libraries(cpu-lahf-sahf-smoke PRIVATE x86-cpu)
-add_executable(cpu-pushf-popf-smoke
-    test/app-nxvm/unit/core/devices/cpu_pushf_popf_smoke.c)
-target_link_libraries(cpu-pushf-popf-smoke PRIVATE x86-cpu)
 add_executable(core-machine-direct-flags-board-smoke
     test/app-nxvm/unit/core/devices/core_machine_direct_flags_board_smoke.c)
 target_link_libraries(core-machine-direct-flags-board-smoke PRIVATE core-machine)
@@ -725,12 +684,6 @@ add_executable(core-machine-pushf-popf-board-smoke
     test/app-nxvm/unit/core/devices/core_machine_pushf_popf_board_smoke.c)
 target_link_libraries(core-machine-pushf-popf-board-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-direct-flags-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(cpu-lahf-sahf-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(cpu-pushf-popf-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-direct-flags-board-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-lahf-sahf-board-smoke PRIVATE
@@ -772,8 +725,6 @@ add_executable(core-machine-lea-smoke test/app-nxvm/unit/core/devices/core_machi
 target_link_libraries(core-machine-lea-smoke PRIVATE core-machine)
 add_executable(core-machine-xchg-smoke test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c)
 target_link_libraries(core-machine-xchg-smoke PRIVATE core-machine)
-add_executable(cpu-xchg-smoke test/app-nxvm/unit/core/devices/cpu_xchg_smoke.c)
-target_link_libraries(cpu-xchg-smoke PRIVATE x86-cpu)
 add_executable(cpu-gpr-push-pop-smoke test/app-nxvm/unit/core/devices/cpu_gpr_push_pop_smoke.c)
 target_link_libraries(cpu-gpr-push-pop-smoke PRIVATE x86-cpu)
 add_executable(cpu-push-immediate-smoke test/app-nxvm/unit/core/devices/cpu_push_immediate_smoke.c)
@@ -788,8 +739,6 @@ add_executable(core-machine-moffs-smoke test/app-nxvm/unit/core/devices/core_mac
 target_link_libraries(core-machine-moffs-smoke PRIVATE core-machine)
 add_executable(core-machine-gpr-mov-smoke test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c)
 target_link_libraries(core-machine-gpr-mov-smoke PRIVATE core-machine)
-add_executable(cpu-gpr-mov-smoke test/app-nxvm/unit/core/devices/cpu_gpr_mov_smoke.c)
-target_link_libraries(cpu-gpr-mov-smoke PRIVATE x86-cpu)
 add_executable(cpu-moffs-smoke test/app-nxvm/unit/core/devices/cpu_moffs_smoke.c)
 target_link_libraries(cpu-moffs-smoke PRIVATE x86-cpu)
 add_executable(core-machine-sreg-mov-smoke test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c)
@@ -2034,7 +1983,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-movx-smoke
     cpu-movx-smoke
     cpu-lea-smoke
-    cpu-gpr-mov-smoke
     cpu-moffs-smoke
     cpu-gpr-push-pop-smoke
     cpu-push-immediate-smoke
@@ -2042,7 +1990,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-enter-leave-smoke
     cpu-fs-gs-stack-smoke
     cpu-legacy-sreg-stack-smoke
-    cpu-xchg-smoke
     cpu-les-lds-smoke
     cpu-les-lds-s41-smoke
     cpu-lss-lfs-lgs-smoke
@@ -2058,17 +2005,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-inc-dec-first-group-board-smoke
     core-machine-inc-dec-second-group-board-smoke
     core-machine-inc-dec-final-group-board-smoke
-    cpu-inc-dec-first-group-smoke
-    cpu-inc-dec-second-group-smoke
-    cpu-inc-dec-final-group-smoke
     core-machine-legacy-alu-s2-smoke
-    cpu-legacy-alu-s2-smoke
     core-machine-rotate-smoke
-    cpu-rotate-smoke
     core-machine-eflags-local-smoke
-    cpu-direct-flags-smoke
-    cpu-lahf-sahf-smoke
-    cpu-pushf-popf-smoke
     core-machine-direct-flags-board-smoke
     core-machine-lahf-sahf-board-smoke
     core-machine-pushf-popf-board-smoke
@@ -2309,19 +2248,19 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     machine-fpu-escape-smoke
     machine-fpu-interface-s65-smoke
     cpu-fs-gs-stack-smoke
-    cpu-gpr-mov-smoke
+    x86-test-cpu_gpr_mov
     cpu-gpr-push-pop-smoke
     core-machine-hlt-s49-smoke
     cpu-imul2-smoke
     cpu-imul-immediate-s56-smoke
-    cpu-inc-dec-first-group-smoke
-    cpu-inc-dec-second-group-smoke
-    cpu-inc-dec-final-group-smoke
+    x86-test-cpu_inc_dec_first_group
+    x86-test-cpu_inc_dec_second_group
+    x86-test-cpu_inc_dec_final_group
     cpu-outer-return-smoke
     core-machine-iret-s51-smoke
     cpu-lea-smoke
     cpu-legacy-lock-s1-smoke
-    cpu-legacy-alu-s2-smoke
+    x86-test-cpu_legacy_alu_s2
     cpu-legacy-sreg-stack-smoke
     cpu-les-lds-s41-smoke
     cpu-les-lds-smoke
@@ -2337,11 +2276,11 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-protected-far-smoke
     core-machine-protected-ud-delivery-s1-smoke
     cpu-pusha-popa-smoke
-    cpu-pushf-popf-smoke
+    x86-test-cpu_pushf_popf
     cpu-push-immediate-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-s1-smoke
-    cpu-rotate-smoke
+    x86-test-cpu_rotate
     cpu-scas-smoke
     cpu-segment-selector-smoke
     cpu-prefix-attributes-s64-smoke
@@ -2352,7 +2291,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-sreg-mov-smoke
     cpu-stos-smoke
     machine-vm86-delivery-smoke
-    cpu-xchg-smoke
+    x86-test-cpu_xchg
     vm-dos-mem-fault-smoke
     vm-fault-outcome-runner-smoke)
 
@@ -2407,13 +2346,12 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     vm-dos-mem-fault-smoke)
 
 foreach(t337_ud_target IN LISTS PROJECT_T337_UD_UNIT_TEST_TARGETS)
-    list(FIND PROJECT_UNIT_TEST_TARGETS "${t337_ud_target}"
-        t337_ud_current_index)
-    if(t337_ud_current_index LESS 0)
+    if(NOT TARGET ${t337_ud_target})
         message(FATAL_ERROR
-            "T337 #UD owner is not a unit target: ${t337_ud_target}")
+            "T337 #UD owner is not a registered test target: ${t337_ud_target}")
     endif()
     get_target_property(t337_ud_sources ${t337_ud_target} SOURCES)
+    get_target_property(t337_ud_source_dir ${t337_ud_target} SOURCE_DIR)
     set(t337_ud_found FALSE)
     set(t337_ud_terminal FALSE)
     set(t337_ud_delivery_marker FALSE)
@@ -2421,7 +2359,8 @@ foreach(t337_ud_target IN LISTS PROJECT_T337_UD_UNIT_TEST_TARGETS)
         if(IS_ABSOLUTE "${t337_ud_source}")
             set(t337_ud_source_path "${t337_ud_source}")
         else()
-            set(t337_ud_source_path "${CMAKE_SOURCE_DIR}/${t337_ud_source}")
+            set(t337_ud_source_path
+                "${t337_ud_source_dir}/${t337_ud_source}")
         endif()
         if(EXISTS "${t337_ud_source_path}")
             file(READ "${t337_ud_source_path}" t337_ud_source_text)
