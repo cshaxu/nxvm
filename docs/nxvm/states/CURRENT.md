@@ -15,8 +15,8 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S100 and S100 is the final acceptance. S48-S97 are
-accepted and S100 is the active final acceptance package. Earlier accepted
+is then divided into S83-S100 and S100 is the final acceptance. S48-S100 are
+accepted and T539 is closed. Earlier accepted
 packets retain their historical prospective numbering; the linked
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
@@ -298,6 +298,28 @@ S99 is accepted; T539 remains open for S100.
 | Verification | Full x64/x86 unit suites; full integration suite; T317/T332/static gates; Shared manifest/corpus; CPU/PIC authority; documentation governance; diff and inventory checks. |
 | Exit Criteria | The complete receiver map is evidenced, both unit widths and integration pass, no duplicate path remains, and T539 can close without an unallocated CPU boundary. |
 | Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
+
+## S100 Acceptance
+
+The final inventory found one remaining CPU-only EFLAGS receiver. It is now
+the Shared `x86.cpu_eflags_local` receiver and uses the canonical CPU bus
+fixture. No App target directly links `x86-cpu`; the remaining App sources
+with CPU fixtures are named machine/board owners and include canonical Shared
+fixtures directly rather than forwarding them. The timing ledger/manifests
+remain NXVM because they compose machine/profile time, board inputs and
+published result artifacts; no second Shared timing runner was created.
+
+The native modal-window unit test was also correctly declared CTest-exclusive:
+it owns a real nested Win32 message loop and was the only full-suite race. Its
+coverage and assertions remain unchanged.
+
+Full detached unit suites pass **467/467** on x64 and x86; the x64 external
+integration suite passes **20/20**. T317, T332, CPU/PIC authority, Shared
+manifest/corpus, documentation governance and diff checks pass. This is
+test/CMake/documentation-only work: no production/API, firmware, asset, INI
+or executable input changed, so no executable rebuild is required. See the
+[S100 evidence](../etc/evidence/t539-s100-whole-cpu-acceptance.md). S100 is
+accepted and T539 is closed.
 
 ## S86 Acceptance
 
