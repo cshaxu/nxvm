@@ -505,23 +505,45 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S63.
 
-## S56c2 Active Packet
+## S56c3 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S56c2, Continuation. |
+| Identifier Mode | M5 T539 S56c3, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire direct-TSS32 paging and page-fault contexts into one public-Core paging receiver. |
-| Non-goals | Operand/address-size decode (S56a); baseline/descriptor/LDT/fault state (S56b); #DB/LOCK (S56c1); nested/call/task-gate/return rows (S56c3); pending-IRQ row (S56c4); 16↔32 image/return rows (S56d); TSS I/O-map authorization (S57); CLI/STI/INT/IRET/VM86 group (S58); timing corpus, production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S56c1 acceptance; CPU work-package S56c2; residual `core_machine_task_switch_smoke.c` only. |
-| Files And ABI Surface | Residual task-switch source, uniquely owned CPU/public-board receivers, registrations, inventories and evidence only. No public ABI change. |
-| Applicable Rules | Core's public physical-memory and diagnostic contract owns paging translation and #PF delivery; the receiver must not access private executor fields or fabricate translations. Each original context has one receiver; no alternate task-state path. |
+| Objective | Retire direct-TSS32 nested CALL/JMP, task-gate and nested-return contexts into one CPU-local receiver. |
+| Non-goals | Operand/address-size decode (S56a); baseline/descriptor/LDT/fault state (S56b); #DB/LOCK (S56c1); paging/#PF (S56c2); pending-IRQ row (S56c4); 16↔32 image/return rows (S56d); TSS I/O-map authorization (S57); CLI/STI/INT/IRET/VM86 group (S58); timing corpus, production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S56c2 acceptance; CPU work-package S56c3; residual `core_machine_task_switch_smoke.c` only. |
+| Candidate Proposal | M5 shared-chip extraction proposal; T539 CPU work-package S56c3 nesting receiver. |
+| Files And ABI Surface | Residual task-switch source, uniquely owned CPU-local receiver, registrations, inventories and evidence only. No public ABI change. |
+| Applicable Rules | The receiver owns copied CPU memory, descriptors and TSS images; it must execute real guest table loads and task transitions, without Core/board/PIC construction or private cache fabrication. Each original context has one receiver; no alternate task-state path. |
 | Verification | Exact residual-case ledger; focused receiver; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
+| Expected Markers | A new S56c3 nesting marker; retained TSS task-switch corpus marker. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Stop Conditions | Stop if task-switch paging cannot be expressed through existing public Core mapping/diagnostic operations, or if it needs production/API/Shared change. |
-| Exit Criteria | Every S56c2 context has one public-Core receiver; no S56c2 direct-private fixture path survives; all verification passes. |
+| Reporting Requirements | Record every nesting/task-gate/return context, CPU fixture owner, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
+| Stop Conditions | Stop if a context requires a public board/PIC mapping or production/API/Shared change. |
+| Exit Criteria | Every S56c3 context has one CPU-local receiver; no S56c3 direct-private fixture path survives; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | The original S56c block is classified before implementation: #DB/LOCK is S56c1; paging is S56c2 because it requires the Core physical translation boundary; nesting/task gates are S56c3; public PIC delivery is S56c4. Do not take cross-width state images. |
+| Similar-Issue Sweep | The original S56c block is classified before implementation: #DB/LOCK is S56c1; paging is S56c2 because it requires the Core physical translation boundary; nesting/task gates are S56c3; public PIC delivery is S56c4. Cross-width state images and return rows stay S56d. |
+
+## S56c2 Acceptance
+
+The two direct TSS32 paging contexts now have one public-Core receiver,
+`machine_task_switch32_paging_smoke.c`.  It builds real guest page tables,
+GDT, IDT and TSS images through public physical-memory writes, performs guest
+`LGDT`/`LIDT`/`LMSW`/`LTR`, and observes a mapped target transition plus an
+unmapped target-TSS `#PF` through the public diagnostic and copied snapshot
+contracts.  The retained mixed source contains neither S56c2 page-table state
+nor private IDTR mutation.  The [receiver map](../etc/evidence/t539-s56c2-task-switch32-paging-receiver-map.md)
+records the exact boundary.
+
+Focused x64/x86 receivers and the retained task-switch corpus pass. Complete
+repository-only unit suites pass 426/426 on x64 and x86 when serially run;
+T317, T332, T344, Core CPU/PIC authority and lifecycle gates, documentation
+governance and `git diff --check` pass on both widths. This is
+test/CMake/documentation-only work: no production/API, Shared, firmware,
+asset, INI or EXE input changed, so no EXE rebuild is required. S56c2 is
+accepted; T539 remains open for S56c3-S63.
 
 ## S56a Acceptance
 

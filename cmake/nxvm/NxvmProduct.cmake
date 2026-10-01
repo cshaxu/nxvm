@@ -1095,11 +1095,16 @@ target_link_libraries(cpu-task-switch32-decode-smoke PRIVATE x86-cpu)
 add_executable(cpu-task-switch32-state-smoke
     test/app-nxvm/unit/core/devices/cpu_task_switch32_state_smoke.c)
 target_link_libraries(cpu-task-switch32-state-smoke PRIVATE x86-cpu)
+add_executable(machine-task-switch32-paging-smoke
+    test/app-nxvm/unit/core/devices/machine_task_switch32_paging_smoke.c)
+target_link_libraries(machine-task-switch32-paging-smoke PRIVATE core-machine)
 add_executable(machine-task-switch16-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_task_switch16_pic_board_smoke.c)
 target_link_libraries(machine-task-switch16-pic-board-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-task-switch-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(machine-task-switch32-paging-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -2166,6 +2171,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-call-gate-privilege-entry-smoke
     core-machine-tss-iomap-port-smoke
     core-machine-task-switch-smoke
+    machine-task-switch32-paging-smoke
     core-machine-80386-paging-smoke
     core-machine-fpu-escape-smoke
     core-machine-fpu-interface-s65-smoke
