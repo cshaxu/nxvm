@@ -15,13 +15,33 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S94 and S94 is the final acceptance. S48-S84 are
-accepted and S85-S94 remain pending. The next package must be admitted from
+is then divided into S83-S98 and S98 is the final acceptance. S48-S85 are
+accepted and S86-S98 remain pending. The next package must be admitted from
 the bounded ledger. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
+
+## S85 Acceptance
+
+The 392-line CPU-only CLTS/SMSW/LMSW/MOV-CR receiver now has one Shared
+`cpu_control_state` owner using the established instruction fixture. Its NXVM
+source and target are removed; `machine_control_state_board_smoke` remains the
+named public board receiver.
+
+The same intake found that T332's static lifecycle gate still resolved S83/S84
+Shared receivers as obsolete App paths. Its source resolver now recognizes the
+canonical `test/x86/devices/` inventory prefix, so the 44-owner gate verifies
+the real Shared files without a parallel inventory. Focused receivers and T332
+pass on x64/x86; each 438-case unit suite was executed. The x64 run recorded
+the existing `unit.vm-runner-error-propagation-smoke` flake and x86 recorded
+the existing `x86.cpu_movs` flake; both pass immediately in isolated reruns.
+Shared manifest/corpus, CPU/PIC authority, documentation governance and diff
+checks pass. This is test/CMake/documentation-only work: no production/API,
+firmware, asset, INI or EXE input changed, so no executable rebuild is
+required. See the [S85 evidence](../etc/evidence/t539-s85-control-state-receiver.md).
+S85 is accepted; T539 remains open for S86-S98.
 
 ## S84 Acceptance
 

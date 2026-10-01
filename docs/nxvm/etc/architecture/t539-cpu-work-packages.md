@@ -43,11 +43,12 @@ packet records retain their historical prospective numbering.
 At S82 intake, the remaining protected/system row contains more than thirty
 App CPU sources with distinct instruction, table, control, task-state and
 timing responsibilities. Before implementation, its unaccepted work is
-divided into numeric packages S83-S94: descriptor operands (S83), system
-tables (S84), control/debug (S85), protected privilege/data/return (S86),
-task state (S87), ordinary instruction groups (S88-S90), residual
-classification (S91), timing/manifest (S92), legacy-path deletion (S93), and
-whole-CPU acceptance (S94). This refines only unaccepted work; S1-S82 retain
+divided into numeric packages S83-S98: descriptor operands (S83), system
+tables (S84), control state (S85), debug registers (S86), three bounded
+execution-context groups (S87-S89), protected privilege/data/return (S90),
+task state (S91), ordinary instruction groups (S92-S94), residual
+classification (S95), timing/manifest (S96), legacy-path deletion (S97), and
+whole-CPU acceptance (S98). This refines only unaccepted work; S1-S82 retain
 their original numbers and evidence.
 
 ## Recover A Deliverable Baseline First
@@ -145,16 +146,20 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S82 | Port receiver move: migrate scalar and string port CPU-only fixtures/tests (two files, 642 lines) into Shared; retain actual port-routing and permission board paths. |
 | S83 | Protected descriptor operands: move `cpu_arpl_smoke.c`, `cpu_bound_smoke.c`, `cpu_lar_lsl_smoke.c`, `cpu_verr_verw_smoke.c`, and their one CPU-only descriptor-query fixture. Preserve selector/descriptor and fault semantics; board faults/IRQ stay NXVM. |
 | S84 | Accepted: the four CPU-only system-table receivers move to Shared. The descriptor test's two local CR0 expressions replace its sole App support-header dependency; no board path or public contract moved. |
-| S85 | Control/debug execution: classify and move eligible CPU-only `cpu_control_state_smoke.c`, `cpu_debug_state_smoke.c`, and `cpu_execution_context_smoke.c`; preserve Core/board diagnostic and scheduling observations outside Shared. |
-| S86 | Protected privilege/data/return: classify and move eligible CPU-only IDT privilege, protected data/far and outer-return fixtures/tests; retain public paging, fault and IRQ paths in NXVM. |
-| S87 | Task-state receiver move: classify and move eligible 16/32-bit task-switch CPU fixtures/tests; retain public Core paging, hardware IRQ and board-state paths in NXVM. |
-| S88 | Ordinary CPU group one: move the bounded CPU-only bit scan/test, double-shift, IMUL2, MOVX, sign-extend, SETcc and LEA fixtures/tests. |
-| S89 | Operand/prefix receiver move: move the bounded CPU-only operand/address and prefix-attribute fixtures/tests, retaining any real board port/IRQ composition in NXVM. |
-| S90 | Ordinary CPU group two: move the bounded CPU-only legacy-LOCK and immediate-IMUL fixtures/tests without a blanket LOCK compatibility path. |
-| S91 | Residual CPU classification: classify the remaining CPU/FPU-profile, fault-diagnostic, IVT and fixture consumers; move every eligible Shared receiver or record its sole named NXVM board receiver before legacy deletion. |
-| S92 | CPU timing/manifest receiver move: migrate CPU-only timing/catalog inputs and runners, preserving formula rows and generated result contracts; leave board-time publication tests in NXVM. |
-| S93 | NXVM legacy-path deletion: switch all remaining consumers and static gates to the Shared API, delete retired App CPU sources/paths and prove no duplicate implementation remains. |
-| S94 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
+| S85 | Control-state receiver move: migrate the CPU-only `cpu_control_state_smoke.c` CLTS/SMSW/LMSW/MOV-CR rows. Preserve public Core/board diagnostic and scheduling observations outside Shared. |
+| S86 | Debug-register receiver move: migrate CPU-only `cpu_debug_state_smoke.c` MOV-DR, #DB and data-breakpoint rows; retain any public Core/board diagnostic path. |
+| S87 | Execution-context bus/observation receiver move: classify and move only the bounded CPU bus, retirement-observation and instruction-effect rows from `cpu_execution_context_smoke.c`. |
+| S88 | Execution-context lifecycle/timing receiver move: classify and move only the bounded CPU reset, prepared-entry, timing and lifecycle rows from `cpu_execution_context_smoke.c`. |
+| S89 | Execution-context signal/prefetch/paging receiver move: classify NMI, prefetch, paging-control and INVLPG rows from `cpu_execution_context_smoke.c`; retain every Core/board dependency under a named receiver. |
+| S90 | Protected privilege/data/return: classify and move eligible CPU-only IDT privilege, protected data/far and outer-return fixtures/tests; retain public paging, fault and IRQ paths in NXVM. |
+| S91 | Task-state receiver move: classify and move eligible 16/32-bit task-switch CPU fixtures/tests; retain public Core paging, hardware IRQ and board-state paths in NXVM. |
+| S92 | Ordinary CPU group one: move the bounded CPU-only bit scan/test, double-shift, IMUL2, MOVX, sign-extend, SETcc and LEA fixtures/tests. |
+| S93 | Operand/prefix receiver move: move the bounded CPU-only operand/address and prefix-attribute fixtures/tests, retaining any real board port/IRQ composition in NXVM. |
+| S94 | Ordinary CPU group two: move the bounded CPU-only legacy-LOCK and immediate-IMUL fixtures/tests without a blanket LOCK compatibility path. |
+| S95 | Residual CPU classification: classify the remaining CPU/FPU-profile, fault-diagnostic, IVT and fixture consumers; move every eligible Shared receiver or record its sole named NXVM board receiver before legacy deletion. |
+| S96 | CPU timing/manifest receiver move: migrate CPU-only timing/catalog inputs and runners, preserving formula rows and generated result contracts; leave board-time publication tests in NXVM. |
+| S97 | NXVM legacy-path deletion: switch all remaining consumers and static gates to the Shared API, delete retired App CPU sources/paths and prove no duplicate implementation remains. |
+| S98 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
 S19-S67 migrate consumers before S68; S69-S73 follow S68, then S74. The former S56
 work-package is deliberately expanded as S56-S62: its original direct-TSS32 source combines decode,
