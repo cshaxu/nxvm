@@ -155,7 +155,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S89 | Accepted: execution-context NMI mask/delivery and prefetch-reservation rows move to the sole Shared receiver; the NXVM residual retains paging/INVLPG and fault/event rows. |
 | S90 | Accepted: execution-context 80186 LGDT availability, paging-control and INVLPG rows move to the sole Shared receiver; the NXVM residual retains fault/event rows. |
 | S91 | Accepted: protected interrupt preparation, UD cache preservation and pending-event rollback move to the sole Shared receiver; NXVM retains debug API and real board paths. |
-| S92 | Protected privilege/data/return: classify and move eligible CPU-only IDT privilege, protected data/far and outer-return fixtures/tests; retain public paging, fault and IRQ paths in NXVM. |
+| S92 | Accepted: CPU-only protected data-access, far-transfer and outer-return receivers plus their fixtures move to Shared; PIC/board interrupt paths remain NXVM. IDT privilege, paging and fault paths remain allocated to their named receivers. |
 | S93 | Task-state receiver move: classify and move eligible 16/32-bit task-switch CPU fixtures/tests; retain public Core paging, hardware IRQ and board-state paths in NXVM. |
 | S94 | Ordinary CPU group one: move the bounded CPU-only bit scan/test, double-shift, IMUL2, MOVX, sign-extend, SETcc and LEA fixtures/tests. |
 | S95 | Operand/prefix receiver move: move the bounded CPU-only operand/address and prefix-attribute fixtures/tests, retaining any real board port/IRQ composition in NXVM. |

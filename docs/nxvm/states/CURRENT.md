@@ -15,9 +15,9 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S100 and S100 is the final acceptance. S48-S88 are
-accepted and S92-S100 remain pending. The next package must be admitted from
-the bounded ledger; S92 is the active package. Earlier
+is then divided into S83-S100 and S100 is the final acceptance. S48-S92 are
+accepted and S93-S100 remain pending. The next package must be admitted from
+the bounded ledger. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -167,26 +167,20 @@ test remains. Focused x64/x86 and all static gates pass; detached units pass
 input changed. See [S91 evidence](../etc/evidence/t539-s91-execution-fault-event-receiver.md).
 S91 is accepted; T539 remains open for S92-S100.
 
-## S92 Active Packet
+## S92 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | M5 T539 S92, automatically admitted continuation. |
-| Admission And Approval | The owner approved automatic, bounded, numeric T539 continuation tasks; S92 follows accepted S91. |
-| Objective | Move the three CPU-only protected data, far-transfer and outer-return receivers to Shared. |
-| Non-goals | PIC/IDT delivery, public paging, board transactions, 16-bit board gates, production APIs, firmware, assets, INI and executables. |
-| Reference Baseline | `7a02082d5`, accepted S91. |
-| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
-| Files And ABI Surface | Move `cpu_protected_data_access_smoke.c`, `cpu_protected_far_smoke.c`, `cpu_outer_return_smoke.c` and only their CPU-local fixture dependencies to `test/x86/devices/cpu`; remove old App targets; no production/API change. |
-| Applicable Rules | NXVM and Shared architecture/coding/execution/documentation rules; CPU tests own chip semantics while PIC/board tests remain NXVM. |
-| Verification | Focused x64/x86 receivers, complete x64/x86 units, T332, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. |
-| Expected Markers | Three Shared CPU receivers, no duplicate App targets or fixtures, and unchanged named board receivers. |
-| Asset Needs | None; repository-only test ownership migration. |
-| Reporting Requirements | Record moved files/fixtures, retained board paths, test evidence and artifact determination. |
-| Stop Conditions | Stop if a candidate needs public machine, PIC/IRQ, physical paging, new Shared API or a duplicate fixture. |
-| Exit Criteria | Each admitted CPU-only receiver has one Shared owner; board paths remain once in NXVM; both full unit suites pass. |
-| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
-| Similar-Issue Sweep | S92 owns only the three CPU-only protected receivers; all IDT/PIC/gate paths remain named NXVM board receivers. |
+The CPU-only protected data-access, far-transfer and outer-return receivers,
+with their sole CPU-local fixtures, now have one Shared owner in
+`test/x86/devices/cpu`. NXVM removes the duplicated targets and source copies.
+Its retained PIC/board receivers continue to own interrupt delivery and use
+the Shared fixtures without recreating CPU setup.
+
+Focused x64/x86 receivers, T317/T332, CPU/PIC authority, Shared
+manifest/corpus and documentation governance pass. Detached full unit suites
+pass **447/447** on x64 and x86. This is test/CMake/documentation-only work:
+no production/API, firmware, asset, INI or EXE input changed. See the
+[S92 evidence](../etc/evidence/t539-s92-protected-receivers.md). S92 is
+accepted; T539 remains open for S93-S100.
 
 ## S86 Acceptance
 
