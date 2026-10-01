@@ -787,4 +787,3 @@ void core_machine_cpu_get_watchpoint(const core_machine_cpu_execution_context *c
         break;
     }
 }
-
