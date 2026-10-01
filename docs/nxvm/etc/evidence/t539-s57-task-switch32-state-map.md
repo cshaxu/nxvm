@@ -1,4 +1,4 @@
-# M5 T539 S56b — TSS32 state receiver map
+# M5 T539 S57 — TSS32 state receiver map
 
 | Context group | Receiver | Owner |
 | --- | --- | --- |
@@ -11,5 +11,5 @@ executes the CPU's real `LGDT`/`LTR` bootstrap before each row, then observes
 the target state or delivered CPU exception. It links only `x86-cpu`.
 
 Paging, debug-trap, LOCK, nested/call/task-gate, pending-PIC IRQ and 16↔32
-state-image rows remain in `core_machine_task_switch_smoke.c` for S56c/S56d.
+state-image rows remained in `core_machine_task_switch_smoke.c` for S58-S62.
 No board/PIC/VM state is present in this receiver.

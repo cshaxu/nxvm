@@ -1,4 +1,4 @@
-# M5 T539 S56c4 — TSS32 pending-IRQ receiver map
+# M5 T539 S61 — TSS32 pending-IRQ receiver map
 
 | Original context | Receiver | Observation |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ keyboard byte before execution.  Thus the tested route is KBC → PIC → CPU,
 not a test-only PIC assertion or a borrowed Core field.
 
 `core_machine_task_switch_smoke.c` no longer invokes either pending-IRQ row or
-contains the retired direct TSS32 runner.  The S59 timing recipe remains in its
+contains the retired direct TSS32 runner.  The S65 timing recipe remains in its
 own legacy construction paths; no private TSS32/PIC execution path survives.
 
 Focused x64/x86 receiver runs and the retained mixed corpus pass.  The full

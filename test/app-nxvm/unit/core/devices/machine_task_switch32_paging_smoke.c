@@ -183,7 +183,7 @@ int main(void)
         run_case(LIB_TRUE, LIB_FALSE, LIB_FALSE) ||
         run_case(LIB_FALSE, LIB_TRUE, LIB_FALSE) ||
         run_case(LIB_FALSE, LIB_TRUE, LIB_TRUE)) return 1;
-    puts("M5:T539:S56c2:TASK32-PAGING:OK");
-    puts("M5:T539:S56c4:TASK32-PENDING-IRQ:OK");
+    puts("M5:T539:S59:TASK32-PAGING:OK");
+    puts("M5:T539:S61:TASK32-PENDING-IRQ:OK");
     return 0;
 }

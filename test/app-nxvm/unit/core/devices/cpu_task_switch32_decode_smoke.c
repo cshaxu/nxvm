@@ -41,9 +41,9 @@ int main(void)
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
         if (!cpu_task32_expect_decode(cases[index].test_case,
                 cases[index].expected_saved_ip)) {
-            fputs("M5:T539:S56a:TASK32-DECODE:FAIL\n", stderr);
+            fputs("M5:T539:S56:TASK32-DECODE:FAIL\n", stderr);
             return 1;
         }
-    puts("M5:T539:S56a:TASK32-DECODE:OK");
+    puts("M5:T539:S56:TASK32-DECODE:OK");
     return 0;
 }

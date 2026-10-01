@@ -28,7 +28,7 @@ typedef enum task_switch_case {
     TASK_SWITCH_CASE_SHORT_TSS,
     TASK_SWITCH_CASE_STACK_LIMIT,
     TASK_SWITCH_CASE_INDIRECT_SUCCESS,
-    /* S59's 80386 timing includer still uses these construction recipes. */
+    /* S65's 80386 timing includer still uses these construction recipes. */
     TASK_SWITCH_CASE_OPERAND32_SUCCESS,
     TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS,
     TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS,
@@ -544,5 +544,6 @@ int main(void)
     printf("M5:T329:S5:TASK-RETURN:OK\n");
     printf("M5:T329:S6:TASK-LDT:OK\n");
     printf("M5:T330:S1:TASK-TRANSITION:OK\n");
+    printf("M5:T539:S62:TASK-CROSS-WIDTH:OK\n");
     return 0;
 }

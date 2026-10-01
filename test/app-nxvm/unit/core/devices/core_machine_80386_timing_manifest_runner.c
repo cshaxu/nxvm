@@ -15,7 +15,7 @@
 #undef main
 
 #define main timing_80386_manifest_retained_task_switch_smoke_main
-#include "core_machine_task_switch_smoke.c"
+#include "machine_task_switch_cross_width_smoke.c"
 #undef main
 
 #define TIMING_80386_MANIFEST_RESET_LINEAR 0xfffffff0u

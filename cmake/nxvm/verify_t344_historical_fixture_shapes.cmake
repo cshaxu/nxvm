@@ -8,7 +8,7 @@ set(project_t344_migrated_sources
     "test/app-nxvm/unit/core/devices/core_machine_call_gate_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_descriptor_system_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_fpu_8087_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_task_switch_smoke.c"
+    "test/app-nxvm/unit/core/devices/machine_task_switch_cross_width_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_tss_iomap_port_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_vm86_delivery_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_vm86_iret_smoke.c"
@@ -149,7 +149,7 @@ set(project_t344_constructor_sources ${project_t344_inventory}
     "test/app-nxvm/unit/core/devices/machine_arpl_board_smoke.c"
     # S42 retains real table loads, privilege delivery and IRQ routing.
     "test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c"
-    # S56c2 owns public Core paging and page-fault delivery.
+    # S59 owns public Core paging and page-fault delivery.
     "test/app-nxvm/unit/core/devices/machine_task_switch32_paging_smoke.c")
 list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
 if(NOT project_t344_constructor_count EQUAL 117)

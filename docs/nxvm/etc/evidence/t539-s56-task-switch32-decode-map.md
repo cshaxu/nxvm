@@ -1,4 +1,4 @@
-# M5 T539 S56a — 80386 task-JMP decode receiver map
+# M5 T539 S56 — 80386 task-JMP decode receiver map
 
 | Original context | Receiver | Owner | Observation |
 | --- | --- | --- | --- |
@@ -12,6 +12,6 @@ existing S55 fixture. It links only `x86-cpu`; it creates no board, PIC, VM or
 profile state.
 
 `core_machine_task_switch_smoke.c` no longer invokes these four functional
-contexts. Its encoding selector and byte recipes remain because the S59 80386
+contexts. Its encoding selector and byte recipes remain because the S65 80386
 timing manifest runner includes that source to derive timing-only recipes.
 That downstream inclusion is not a second functional receiver.

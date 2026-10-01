@@ -483,10 +483,10 @@ int main(void)
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index)
         if (!task32_expect(cases[index])) {
             fprintf(stderr, "task32 failed case=%u\n", (unsigned)cases[index]);
-            fputs("M5:T539:S56b:TASK32-STATE:FAIL\n", stderr);
+            fputs("M5:T539:S57:TASK32-STATE:FAIL\n", stderr);
             return 1;
         }
-    puts("M5:T539:S56b:TASK32-STATE:OK");
-    puts("M5:T539:S56c3:TASK32-NESTING:OK");
+    puts("M5:T539:S57:TASK32-STATE:OK");
+    puts("M5:T539:S60:TASK32-NESTING:OK");
     return 0;
 }

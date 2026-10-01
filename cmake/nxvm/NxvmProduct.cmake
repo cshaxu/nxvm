@@ -1083,9 +1083,9 @@ add_executable(core-machine-tss-iomap-port-smoke
     test/app-nxvm/unit/core/devices/core_machine_tss_iomap_port_smoke.c)
 target_link_libraries(core-machine-tss-iomap-port-smoke PRIVATE core-machine)
 
-add_executable(core-machine-task-switch-smoke
-    test/app-nxvm/unit/core/devices/core_machine_task_switch_smoke.c)
-target_link_libraries(core-machine-task-switch-smoke PRIVATE core-machine)
+add_executable(machine-task-switch-cross-width-smoke
+    test/app-nxvm/unit/core/devices/machine_task_switch_cross_width_smoke.c)
+target_link_libraries(machine-task-switch-cross-width-smoke PRIVATE core-machine)
 add_executable(cpu-task-switch16-smoke
     test/app-nxvm/unit/core/devices/cpu_task_switch16_smoke.c)
 target_link_libraries(cpu-task-switch16-smoke PRIVATE x86-cpu)
@@ -1102,7 +1102,7 @@ add_executable(machine-task-switch16-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_task_switch16_pic_board_smoke.c)
 target_link_libraries(machine-task-switch16-pic-board-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-task-switch-smoke PRIVATE
+    target_compile_options(machine-task-switch-cross-width-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(machine-task-switch32-paging-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -1119,7 +1119,7 @@ foreach(target IN ITEMS
     machine-protected-privilege-board-smoke
     core-machine-call-gate-privilege-entry-smoke
     core-machine-tss-iomap-port-smoke
-    core-machine-task-switch-smoke)
+    machine-task-switch-cross-width-smoke)
     target_compile_definitions(${target} PRIVATE
         CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
 endforeach()
@@ -2170,7 +2170,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-call-gate-smoke
     core-machine-call-gate-privilege-entry-smoke
     core-machine-tss-iomap-port-smoke
-    core-machine-task-switch-smoke
+    machine-task-switch-cross-width-smoke
     machine-task-switch32-paging-smoke
     core-machine-80386-paging-smoke
     core-machine-fpu-escape-smoke
@@ -2361,7 +2361,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-software-int-s50-smoke
     cpu-sreg-mov-smoke
     cpu-stos-smoke
-    core-machine-task-switch-smoke
     core-machine-vm86-delivery-smoke
     cpu-xchg-smoke
     vm-dos-mem-fault-smoke
@@ -2413,7 +2412,7 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     cpu-protected-data-access-smoke
     cpu-protected-far-smoke
     core-machine-protected-ud-delivery-s1-smoke
-    core-machine-task-switch-smoke
+    machine-task-switch-cross-width-smoke
     core-machine-vm86-delivery-smoke
     vm-dos-mem-fault-smoke)
 

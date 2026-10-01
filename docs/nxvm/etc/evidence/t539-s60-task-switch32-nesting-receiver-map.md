@@ -1,4 +1,4 @@
-# M5 T539 S56c3 — TSS32 nesting receiver map
+# M5 T539 S60 — TSS32 nesting receiver map
 
 | Original context | Receiver | Observation |
 | --- | --- | --- |
@@ -16,8 +16,8 @@ byte.  Its local case classifiers are bounded so LDT, debug/LOCK and later
 nested cases cannot leak into one another.
 
 The retained mixed `core_machine_task_switch_smoke.c` no longer invokes these
-eleven rows.  It retains only S56c4's two pending-IRQ rows and the S59 timing
-manifest recipe.  There is one CPU-local execution path for every S56c3
+eleven rows.  It retains only S61's two pending-IRQ rows and the S65 timing
+manifest recipe.  There is one CPU-local execution path for every S60
 context, with no alternate task-state fixture.
 
 This is test/documentation-only work.  No production/API, Shared, firmware,

@@ -371,14 +371,14 @@ complete receiving map and dual-width verification are recorded in
   retired into the CPU-only `cpu_task_switch16_smoke.c` and public
   PIC-board `machine_task_switch16_pic_board_smoke.c` receivers.
 
-### S56a: accepted 80386 task-JMP decode, 1 matching file
+### S56: accepted 80386 task-JMP decode, 1 matching file
 
 - The four functional `66h`/`67h` task-JMP rows are retired into CPU-only
   `cpu_task_switch32_decode_smoke.c`, sharing the S55 CPU fixture rather than
   duplicating a TSS image. The original construction recipes remain only for
-  the S59 80386 timing-runner includer; its original functional calls are gone.
+  the S65 80386 timing-runner includer; its original functional calls are gone.
 
-### S56b: accepted TSS32 state/fault contexts, 1 matching file
+### S57: accepted TSS32 state/fault contexts, 1 matching file
 
 - Direct TSS32 baseline, operand/address forms, descriptor rejection, LDT
   load/validation and state-image fault rows are retired into CPU-only
@@ -386,11 +386,11 @@ complete receiving map and dual-width verification are recorded in
   `LGDT`/`LTR` bootstrap, so the cached task register is not synthesized by
   the test.
 
-### S56c-S56d: residual task-switch half, 1 matching file
+### S58-S62: residual task-switch half, 1 matching file
 
 - `core_machine_task_switch_smoke.c`
 
-### S57: TSS I/O-map port, 1 matching file
+### S63: TSS I/O-map port, 1 matching file
 
 - `core_machine_tss_iomap_port_smoke.c`
 
@@ -407,7 +407,7 @@ complete receiving map and dual-width verification are recorded in
 - `core_machine_vm86_delivery_smoke.c`
 - `core_machine_vm86_iret_smoke.c`
 
-### S57: 16 matching files
+### S63: 16 matching files
 
 - `core_machine_call_gate_smoke.c` (80286 timing-runner includer)
 - `core_machine_80186_instruction_timing_ledger_smoke.c`
@@ -427,7 +427,7 @@ complete receiving map and dual-width verification are recorded in
 - `core_machine_t359_s5_timing_smoke.c`
 - `core_machine_t359_s6_timing_smoke.c`
 
-### S58: 4 matching files
+### S64: 4 matching files
 
 - `core_machine_fpu_interface_s65_smoke.c`
 - `cpu_profile_gate_smoke.c`
@@ -438,7 +438,7 @@ complete receiving map and dual-width verification are recorded in
 
 The matching-file inventory is not the entire compile dependency graph. S47
 must also keep the 80286/80386 timing runners building when their included
-16-bit gate/task/call fixtures change; S57 owns their subsequent timing-corpus
+16-bit gate/task/call fixtures change; S63 owns their subsequent timing-corpus
 migration, including the 80286 runner's direct `core_machine_call_gate_smoke.c`
 includer. S52 includes outer-IRET's atomicity-fixture consumer. S56 additionally
 includes `core_machine_interrupt_return_composition_s4_smoke.c` and

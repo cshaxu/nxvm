@@ -1,11 +1,11 @@
-# M5 T539 S56c2 — TSS32 paging receiver map
+# M5 T539 S59 — TSS32 paging receiver map
 
 | Original context | Receiver | Owner | Observation |
 | --- | --- | --- | --- |
 | TSS32 task jump loads a paging target | `machine_task_switch32_paging_smoke` | public Core | target TR `0030h`, CR3 `00004000h`, EAX `00001234h`, then HLT |
 | Target TSS itself crosses an unmapped page | `machine_task_switch32_paging_smoke` | public Core | delivered `#PF`, retained source TR `0028h`/CR3 `00001000h`, then the real IDT handler HLT |
 
-These are the two S56c2 rows because paging translation, page-table memory and
+These are the two S59 rows because paging translation, page-table memory and
 page-fault delivery belong to the Core machine's public physical-memory and
 execution contracts.  The receiver uses only the public machine lifecycle,
 entry plan, physical-memory writes, `core_machine_run()`, diagnostic record and
@@ -20,12 +20,12 @@ bounded public run to execute the already-delivered `#PF` handler through HLT.
 That is Core's documented public execution boundary, not a second exception
 path or a test-only Core API.
 
-`core_machine_task_switch_smoke.c` no longer contains S56c2 paging state,
+`core_machine_task_switch_smoke.c` no longer contains S59 paging state,
 private IDTR mutation, direct page-table setup, or paging assertions.  Its
 remaining TSS task-switch corpus is retained for rows owned by later packages
-and the S59 timing manifest include.  The original S56c block is otherwise
-partitioned without overlap: S56c1 owns debug-trap/LOCK, S56c2 owns paging,
-S56c3 owns nesting/task-gate/return, and S56c4 owns pending PIC delivery.
+and the S65 timing manifest include. The original exceptional group is otherwise
+partitioned without overlap: S58 owns debug-trap/LOCK, S59 owns paging,
+S60 owns nesting/task-gate/return, and S61 owns pending PIC delivery.
 
 This is test/CMake/documentation-only work.  No production/API, Shared,
 firmware, asset, INI or executable input changes; an EXE rebuild is not

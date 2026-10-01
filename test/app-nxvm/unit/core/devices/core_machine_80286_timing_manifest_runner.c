@@ -17,7 +17,7 @@
 /* Reuse the retained protected-mode task-switch fixture so task-transfer
  * observations exercise the product mechanism rather than a shadow state. */
 #define main timing_80286_manifest_retained_task_switch_main
-#include "core_machine_task_switch_smoke.c"
+#include "machine_task_switch_cross_width_smoke.c"
 #undef main
 
 /* Reuse the retained 80286 call-gate bootstrap for both same- and
