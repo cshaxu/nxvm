@@ -585,21 +585,21 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-80286-instruction-timing-ledger-smoke
-    test/app-nxvm/unit/core/devices/core_machine_80286_instruction_timing_ledger_smoke.c)
-target_link_libraries(core-machine-80286-instruction-timing-ledger-smoke PRIVATE
+add_executable(machine-80286-instruction-timing-ledger-smoke
+    test/app-nxvm/unit/core/devices/machine_80286_instruction_timing_ledger_smoke.c)
+target_link_libraries(machine-80286-instruction-timing-ledger-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-80286-instruction-timing-ledger-smoke PRIVATE
+    target_compile_options(machine-80286-instruction-timing-ledger-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-80386-protected-io-timing-smoke
-    test/app-nxvm/unit/core/devices/core_machine_80386_protected_io_timing_smoke.c)
-target_link_libraries(core-machine-80386-protected-io-timing-smoke PRIVATE
+add_executable(machine-80386-protected-io-timing-smoke
+    test/app-nxvm/unit/core/devices/machine_80386_protected_io_timing_smoke.c)
+target_link_libraries(machine-80386-protected-io-timing-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-80386-protected-io-timing-smoke PRIVATE
+    target_compile_options(machine-80386-protected-io-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -2031,8 +2031,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-8088-timing-manifest-runner
     machine-80186-instruction-timing-ledger-smoke
     machine-legacy-timing-normalization-s2-smoke
-    core-machine-80286-instruction-timing-ledger-smoke
-    core-machine-80386-protected-io-timing-smoke
+    machine-80286-instruction-timing-ledger-smoke
+    machine-80386-protected-io-timing-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke

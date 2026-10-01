@@ -11,8 +11,8 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
-corpus into S68-S73; later packages now run through S77. S48-S70 are accepted
-and S71-S77 remain pending. Earlier
+corpus into S68-S73; later packages now run through S77. S48-S71 are accepted
+and S72-S77 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -506,17 +506,17 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 
-## S71 Active Packet
+## S72 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S71, Continuation. |
+| Identifier Mode | M5 T539 S72, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the 80286 timing ledger and 80386 protected-I/O timing receiver while preserving source formulas, protected-port rows, measured results and one receiver per original context. |
-| Non-goals | S70 accepted 80186 timing; 80286 manifest/call-gate includer (S72); 80386 manifest (S73); remaining-consumer sweep (S74); production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S70 acceptance; `core_machine_80286_instruction_timing_ledger_smoke.c` and `core_machine_80386_protected_io_timing_smoke.c`. |
-| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S71 80286 ledger and protected I/O. |
-| Files And ABI Surface | Allocate both timing sources before editing; no public ABI change or generated production catalog dependency. |
+| Objective | Retire the 80286 timing-manifest runner and its direct call-gate includer while preserving formulas, manifest rows, measured results and one receiver per original context. |
+| Non-goals | S71 accepted 80286 ledger/protected-I/O timing; 80386 manifest (S73); remaining-consumer sweep (S74); production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S71 acceptance; `core_machine_80286_timing_manifest_runner.c` and `core_machine_call_gate_smoke.c`. |
+| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S72 80286 manifest and call-gate includer. |
+| Files And ABI Surface | Allocate both direct receiver/includer sources before editing; no public ABI change or generated production catalog dependency. |
 | Applicable Rules | Preserve source formulas, protected-port rows, measured deltas and one receiver per original context. |
 | Verification | Exact residual-case ledger; focused timing runners; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
 | Expected Markers | Retained timing-runner markers or their exact successor receiver markers. |
@@ -525,7 +525,24 @@ records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 | Stop Conditions | Stop if a context requires production/API/Shared change or a formula has no authority. |
 | Exit Criteria | Each timing context has one receiver; no catalog or measured row is orphaned, duplicated or reinterpreted; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S68 intake found 17 files/20,417 lines and split them into S68-S73; S71 owns its ledger and protected-I/O timing rows. |
+| Similar-Issue Sweep | S68 intake found 17 files/20,417 lines and split them into S68-S73; S72 owns the 80286 manifest/call-gate include closure. |
+
+## S71 Acceptance
+
+`machine_80286_instruction_timing_ledger_smoke.c` and
+`machine_80386_protected_io_timing_smoke.c` are the sole Core-machine
+receivers for their 80286 ledger and 80386 protected-I/O timing contexts.
+They retain the source formulas, protected-port rows and measured results
+without adding a generated production dependency or a second recipe path.
+
+Focused x64/x86 receivers pass; complete repository-only unit suites pass
+426/426 on x86 in 103.32 seconds and 426/426 on x64 in 103.50 seconds. T344
+registration and historical fixture shapes, T332 lifecycle, VM-machine
+lifecycle, Core CPU/PIC authority, T388 lexeme and physical eligibility,
+documentation governance and diff checks pass. No Shared source, firmware,
+asset, INI or EXE input changed, so no product binary rebuild is required.
+The [S71 receiver map](../etc/evidence/t539-s71-80286-protected-io-timing-receiver-map.md)
+records the exact scope. S71 is accepted; T539 remains open for S72-S77.
 
 ## S70 Acceptance
 

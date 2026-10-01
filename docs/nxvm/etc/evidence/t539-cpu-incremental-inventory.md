@@ -430,8 +430,8 @@ complete receiving map and dual-width verification are recorded in
 
 ### S71: 80286 ledger and protected I/O, 2 matching files
 
-- `core_machine_80286_instruction_timing_ledger_smoke.c`
-- `core_machine_80386_protected_io_timing_smoke.c`
+- `machine_80286_instruction_timing_ledger_smoke.c`
+- `machine_80386_protected_io_timing_smoke.c`
 
 ### S72: 80286 manifest and call-gate includer, 2 matching files
 
