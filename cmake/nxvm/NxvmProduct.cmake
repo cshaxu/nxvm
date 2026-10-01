@@ -786,9 +786,6 @@ target_link_libraries(cpu-debug-state-smoke PRIVATE x86-cpu)
 add_executable(machine-debug-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c)
 target_link_libraries(machine-debug-state-board-smoke PRIVATE core-machine)
-add_executable(cpu-control-state-smoke
-    test/app-nxvm/unit/core/devices/cpu_control_state_smoke.c)
-target_link_libraries(cpu-control-state-smoke PRIVATE x86-cpu)
 add_executable(cpu-control-transfer-branch-smoke
     test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c)
 target_link_libraries(cpu-control-transfer-branch-smoke PRIVATE x86-cpu)
@@ -1054,7 +1051,7 @@ function(project_configure_t317_strict_cpu_smokes)
 set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
     "machine-cli-sti-interrupt-smoke|test/app-nxvm/unit/core/devices/machine_cli_sti_interrupt_smoke.c"
-    "cpu-control-state-smoke|test/app-nxvm/unit/core/devices/cpu_control_state_smoke.c"
+    "x86-test-cpu_control_state|devices/cpu/cpu_control_state_smoke.c"
     "cpu-control-transfer-branch-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c"
     "cpu-control-transfer-near-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
     "cpu-control-transfer-far-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
@@ -1957,7 +1954,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-imul2-smoke
     core-machine-imul-immediate-s56-smoke
     cpu-imul-immediate-s56-smoke
-    cpu-control-state-smoke
+    x86-test-cpu_control_state
     cpu-control-transfer-branch-smoke
     cpu-control-transfer-near-smoke
     cpu-control-transfer-far-smoke
@@ -2127,7 +2124,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_lgdt_lidt
     x86-test-cpu_sgdt_sidt
     core-machine-cli-sti-s48-smoke
-    cpu-control-state-smoke
+    x86-test-cpu_control_state
     cpu-control-transfer-branch-smoke
     cpu-control-transfer-far-smoke
     machine-control-state-board-smoke
@@ -2232,7 +2229,7 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     x86-test-cpu_lar_lsl
     x86-test-cpu_verr_verw
     machine-fpu-escape-smoke
-    cpu-control-state-smoke
+    x86-test-cpu_control_state
     cpu-control-transfer-branch-smoke
     cpu-debug-state-smoke
     core-machine-protected-16-gate-s3-smoke
