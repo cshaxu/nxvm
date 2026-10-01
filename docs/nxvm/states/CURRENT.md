@@ -14,8 +14,10 @@ control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
 corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
-split into S78-S86 before implementation; S86 is the final acceptance. S48-S82 are accepted and S83-S86
-remain pending. The next package must be bounded before admission; earlier
+split into S78-S86 before implementation; the remaining protected/system row
+is then divided into S83-S94 and S94 is the final acceptance. S48-S83 are
+accepted and S84-S94 remain pending. The next package must be admitted from
+the bounded ledger; earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -549,7 +551,20 @@ board tests. Complete repository-only units pass 429/429 on x64 and x86.
 CPU/PIC authority, Shared manifest/corpus, documentation governance, and diff
 checks pass. This test/CMake-only scope changes no firmware, asset, INI, or EXE
 input. See the [S82 evidence](../etc/evidence/t539-s82-port-receivers.md).
-S82 is accepted; T539 remains open for S83-S86.
+S82 is accepted; T539 remains open for S83-S94 after the protected/system
+work-package split.
+
+## S83 Acceptance
+
+S83 moved the four 1,143-line protected descriptor-operand suites and their
+sole 121-line descriptor-query fixture to one Shared CPU owner. NXVM removes
+the duplicate tests and its static inventories use the same Shared targets.
+The named ARPL/BOUND public-board receivers retain real board semantics.
+Complete repository-only units pass 433/433 on x64 and x86. CPU/PIC authority,
+Shared manifest/corpus, documentation governance, and diff checks pass. This
+test/CMake-only scope changes no firmware, asset, INI, or EXE input. See the
+[S83 evidence](../etc/evidence/t539-s83-descriptor-operands.md). S83 is
+accepted; T539 remains open for S84-S94.
 
 ## S80 Acceptance
 
