@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_ENTRY_PLAN_INTERFACE_H
 #define CORE_MACHINE_ENTRY_PLAN_INTERFACE_H
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/cpu_interface.h"
+#include "x86/devices/cpu/cpu_interface.h"
 
 
 #include "app-nxvm/devices/memory_interface.h"

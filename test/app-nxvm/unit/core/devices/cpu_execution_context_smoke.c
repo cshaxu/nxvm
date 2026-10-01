@@ -3,10 +3,10 @@
 
 
 
-#include "app-nxvm/devices/cpu.h"
+#include "x86/devices/cpu/cpu.h"
 
-#include "app-nxvm/devices/cpu_instructions.h"
-#include "app-nxvm/devices/cpu_timing.h"
+#include "x86/devices/cpu/cpu_instructions.h"
+#include "x86/devices/cpu/cpu_timing.h"
 
 typedef struct cpu_reset_case {
     core_machine_cpu_profile profile;

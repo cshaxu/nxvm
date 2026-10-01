@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "app-nxvm/devices/cpu.h"
+#include "x86/devices/cpu/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "support/cpu_board_fault_fixture.h"

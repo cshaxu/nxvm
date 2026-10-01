@@ -2,8 +2,8 @@
 #define TEST_CPU_BUS_FIXTURE_H
 
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/cpu_instructions.h"
+#include "x86/devices/cpu/cpu.h"
+#include "x86/devices/cpu/cpu_instructions.h"
 
 typedef struct cpu_bus_fixture {
     t_cpu cpu;

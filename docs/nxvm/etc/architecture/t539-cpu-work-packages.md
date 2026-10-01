@@ -126,8 +126,13 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S73 | 80386 timing corpus: 80386 manifest runner. Preserve source formulas, catalog rows and measured deltas. |
 | S74 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
 | S75 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |
-| S76 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
-| S77 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
+| S76 | Shared CPU source/API cutover: establish the canonical nine-file CPU corpus in `x86/devices/cpu`, move its first bounded fixtures, update manifests/corpus rules and prove independent tools-off build/test. Preserve the one opaque execution owner and callback-only bus contract. |
+| S77 | CPU legacy/arithmetic receiver move: migrate the CPU-only 8086/80186 arithmetic, FLAGS, rotate and direct-register fixtures/tests into the Shared CPU owner; preserve the existing table/handler style and no board test moves. |
+| S78 | CPU transfer/data receiver move: migrate CPU-only stack, segment, data, string and port fixtures/tests into the Shared CPU owner; leave real memory/PIC/port board paths in NXVM. |
+| S79 | CPU protected/system receiver move: migrate CPU-only descriptor, control, privilege and task-transition fixtures/tests into the Shared CPU owner; retain board faults, paging and IRQ tests in NXVM. |
+| S80 | CPU timing/manifest receiver move: migrate CPU-only timing/catalog inputs and runners, preserving formula rows and generated result contracts; leave board-time publication tests in NXVM. |
+| S81 | NXVM legacy-path deletion: move the final eligible CPU-only fixtures/tests, switch all NXVM consumers and static gates to the Shared API, delete retired App CPU sources/paths and prove no duplicate implementation remains. |
+| S82 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
 S19-S67 migrate consumers before S68; S69-S73 follow S68, then S74. The former S56
 work-package is deliberately expanded as S56-S62: its original direct-TSS32 source combines decode,

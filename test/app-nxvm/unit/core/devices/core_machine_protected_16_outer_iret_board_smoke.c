@@ -1,5 +1,5 @@
 #include "support/protected_16_bootstrap_fixture.h"
-#include "app-nxvm/devices/cpu.h"
+#include "x86/devices/cpu/cpu.h"
 #include <stdio.h>
 
 #define S47_S6_STACK_POINTER 0x12348000u

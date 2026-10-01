@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/cpu_instructions.h"
+#include "x86/devices/cpu/cpu_instructions.h"
 
 /* S7 records the actual lexical decoder universe before comparing it with the
  * 80286 manual ledger.  It is an audit producer, not a timing test. */

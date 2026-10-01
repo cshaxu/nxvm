@@ -33,7 +33,7 @@ set(paths src/app-nxvm/machine/machine.c src/app-nxvm/devices/machine.c
     test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c)
 foreach(name IN LISTS cpu_files)
-    list(APPEND paths "src/app-nxvm/devices/${name}")
+    list(APPEND paths "src/x86/devices/cpu/${name}")
 endforeach()
 foreach(path IN LISTS paths)
     get_filename_component(directory "${WORK}/${path}" DIRECTORY)
@@ -48,7 +48,7 @@ if(NOT status EQUAL 0)
 endif()
 
 foreach(name IN LISTS cpu_files)
-    set(path "${WORK}/src/app-nxvm/devices/${name}")
+    set(path "${WORK}/src/x86/devices/cpu/${name}")
     file(READ "${path}" original)
     foreach(token IN ITEMS t_ram t_port core_machine_transaction
             firmware_interrupt software_interrupt core_machine_pic_scan_interrupt
@@ -78,8 +78,8 @@ file(READ "${path}" original)
 foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
         "machine->executor_cpu_instructions.data.except = 0\;"
         "machine->executor_cpu_execution.cpu = 0\;"
-        "#include \"app-nxvm/devices/cpu.h\""
-        "#include \"app-nxvm/devices/cpu_instructions.h\"")
+        "#include \"x86/devices/cpu/cpu.h\""
+        "#include \"x86/devices/cpu/cpu_instructions.h\"")
     if(injection MATCHES "^#include")
         set(expected "Board imports private CPU layout")
     else()
@@ -114,8 +114,8 @@ foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
     file(READ "${path}" original)
     foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
             "#include \"support/machine_cpu_fixture.h\""
-            "#include \"app-nxvm/devices/cpu.h\""
-            "#include \"app-nxvm/devices/cpu_instructions.h\"")
+            "#include \"x86/devices/cpu/cpu.h\""
+            "#include \"x86/devices/cpu/cpu_instructions.h\"")
         file(WRITE "${path}" "${original}\n${injection}\n")
         execute_process(COMMAND "${CMAKE_COMMAND}" "-DPROJECT_SOURCE_DIR=${WORK}"
             -P "${gate}" RESULT_VARIABLE status OUTPUT_VARIABLE output ERROR_VARIABLE error)

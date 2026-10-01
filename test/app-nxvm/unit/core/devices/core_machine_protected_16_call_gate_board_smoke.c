@@ -1,5 +1,5 @@
 #include "support/protected_16_bootstrap_fixture.h"
-#include "app-nxvm/devices/cpu.h"
+#include "x86/devices/cpu/cpu.h"
 #include <stdio.h>
 
 #define S47_S7_GATE_SELECTOR 0x0033u

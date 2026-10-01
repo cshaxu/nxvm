@@ -2,7 +2,7 @@
 #define TEST_CPU_BOARD_FAULT_FIXTURE_H
 
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/cpu.h"
+#include "x86/devices/cpu/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "cpu_board_limit_fixture.h"

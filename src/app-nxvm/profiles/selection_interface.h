@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "app-nxvm/devices/cpu_interface.h"
+#include "x86/devices/cpu/cpu_interface.h"
 #include "x86/devices/fpu/fpu_interface.h"
 #include "lib/storage/medium_interface.h"
 

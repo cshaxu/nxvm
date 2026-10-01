@@ -4,9 +4,9 @@
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/cpu_instructions.h"
-#include "app-nxvm/devices/cpu_timing.h"
+#include "x86/devices/cpu/cpu.h"
+#include "x86/devices/cpu/cpu_instructions.h"
+#include "x86/devices/cpu/cpu_timing.h"
 #include "app-nxvm/devices/retirement_observation_interface.h"
 #include "support/machine_cpu_fixture.h"
 

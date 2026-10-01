@@ -3,7 +3,7 @@
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/cpu_timing.h"
+#include "x86/devices/cpu/cpu_timing.h"
 #include "support/machine_cpu_fixture.h"
 
 #define TIMING_80286_RESET_LINEAR 0x00fffff0u

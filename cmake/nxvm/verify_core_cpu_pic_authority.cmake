@@ -35,7 +35,7 @@ foreach(token IN ITEMS
 endforeach()
 foreach(cpu_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
         cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
-    file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/${cpu_file}" contents)
+    file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/cpu/${cpu_file}" contents)
     if(contents MATCHES "core_machine_pic_|shared_pic_|bind_pic|pic8259/")
         message(FATAL_ERROR "CPU retains a concrete PIC dependency: ${cpu_file}")
     endif()
@@ -44,7 +44,7 @@ foreach(cpu_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions
     endif()
     string(REGEX MATCHALL "#[ \t]*include[ \t]*[<\"][^>\"]+[>\"]" cpu_includes "${contents}")
     foreach(cpu_include IN LISTS cpu_includes)
-        if(NOT cpu_include MATCHES "[<\"](lib/types/[^>\"]+|x86/devices/fpu/fpu_interface\\.h|app-nxvm/devices/cpu(_interface|_instructions|_timing|_trace)?\\.h)[>\"]$")
+        if(NOT cpu_include MATCHES "[<\"](lib/types/[^>\"]+|x86/devices/fpu/fpu_interface\\.h|x86/devices/cpu/cpu(_interface|_instructions|_timing|_trace)?\\.h)[>\"]$")
             message(FATAL_ERROR "CPU imports outside its neutral boundary: ${cpu_file}: ${cpu_include}")
         endif()
     endforeach()
@@ -70,7 +70,7 @@ foreach(board_source IN LISTS board_sources)
     endif()
     # CPU storage is private to cpu.c; no board header imports its layout.
     if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" AND
-       contents MATCHES "#[ \t]*include[ \t]*[<\"]app-nxvm/devices/cpu(_instructions)?\\.h[>\"]")
+       contents MATCHES "#[ \t]*include[ \t]*[<\"]x86/devices/cpu/cpu(_instructions)?\\.h[>\"]")
         message(FATAL_ERROR "Board imports private CPU layout: ${board_source}")
     endif()
 endforeach()
@@ -89,7 +89,7 @@ foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c
         core_machine_sreg_mov_smoke.c
         core_machine_operand_address_smoke.c core_machine_prefix_attributes_s64_smoke.c)
     file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/${board_test}" contents)
-    if(contents MATCHES "executor_cpu|machine_cpu_fixture|app-nxvm/devices/cpu(_instructions)?\\.h")
+    if(contents MATCHES "executor_cpu|machine_cpu_fixture|x86/devices/cpu/cpu(_instructions)?\\.h")
         message(FATAL_ERROR "Migrated board test bypasses CPU boundary: ${board_test}")
     endif()
 endforeach()

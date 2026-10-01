@@ -5,7 +5,7 @@
 
 #include <windows.h>
 
-#include "app-nxvm/devices/cpu_interface.h"
+#include "x86/devices/cpu/cpu_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/lifecycle.h"

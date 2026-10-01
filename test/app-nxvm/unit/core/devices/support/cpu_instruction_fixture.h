@@ -1,8 +1,8 @@
 #ifndef TEST_CPU_INSTRUCTION_FIXTURE_H
 #define TEST_CPU_INSTRUCTION_FIXTURE_H
 
-#include "app-nxvm/devices/cpu.h"
-#include "app-nxvm/devices/cpu_instructions.h"
+#include "x86/devices/cpu/cpu.h"
+#include "x86/devices/cpu/cpu_instructions.h"
 
 /* CPU-owned instruction tests: real storage, no PC board or address aliases. */
 typedef struct cpu_instruction_fixture {

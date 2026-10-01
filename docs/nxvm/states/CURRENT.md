@@ -11,8 +11,9 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
-corpus into S68-S73; later packages now run through S77. S48-S75 are accepted
-and S76-S77 remain pending. Earlier
+corpus into S68-S73; the former oversized physical-relocation row is divided
+into S76-S81 and final acceptance is S82. S48-S75 are accepted and S76-S82
+remain pending except the active S76. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -523,7 +524,19 @@ both x64 and x86; lifetime, CPU/PIC authority and historical-fixture gates pass
 on both widths. Because production executable inputs changed, all four
 admitted NXVM profiles have rebuilt 0539 x64/x86 Release artifacts. The
 [S75 evidence](../etc/evidence/t539-s75-opaque-cpu-lifetime.md) records the
-boundary and artifact hashes. S75 is accepted; T539 remains open for S76-S77.
+boundary and artifact hashes. S75 is accepted; T539 remains open for S76-S82.
+
+## S76 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S76, Continuation. |
+| Change Targets | Shared then NXVM, with one target per P/commit. Shared owns the CPU corpus and its tests; NXVM owns consumers, product artifacts and task evidence. |
+| Objective | Establish the canonical Shared CPU source/API location and move its first bounded fixture group without changing CPU semantics, board CPU-bus wiring or product behavior. S76 cuts active consumers to that location; S77-S80 migrate the remaining test groups and S81 removes the retained historical App path. |
+| Non-goals | Altering CPU semantics, profile behavior, firmware/asset/INI inputs, or T539 S82 whole-CPU acceptance. |
+| Required Boundary | Shared CPU keeps an opaque execution owner and callback-only bus contract. NXVM provides its existing board bus and never imports CPU private layout. |
+| Verification | Shared manifest/corpus and independent build/tests; NXVM x64/x86 complete units and CPU-boundary gates; rebuild every affected NXVM product artifact. The preserved legacy CPU diagnostic exception is verified as location-only; S82 owns removal or an explicit retained exception. |
+| Expected P Order | A Shared P establishes the canonical CPU source/API and first CPU-only fixture group. An NXVM P consumes the new public location without creating a second runtime CPU path. |
 | Reporting Requirements | Record allocation/rollback ownership, removed layout exposure, focused and full-suite results, net delta and executable determination. |
 | Stop Conditions | Stop if migration needs a second CPU state owner, a mutable private accessor, or an unverified production semantic change. |
 | Exit Criteria | One opaque CPU owner supplies all former embedded lifetime paths; no legacy layout or mirror remains; all verification passes. |

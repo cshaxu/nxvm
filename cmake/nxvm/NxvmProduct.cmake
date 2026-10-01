@@ -1403,20 +1403,10 @@ set(VM_MEDIA_SOURCES
     src/app-nxvm/machine/media/fdd.c
     src/app-nxvm/machine/media/hdd.c
 )
-add_library(x86-cpu STATIC
-    src/app-nxvm/devices/cpu.c
-    src/app-nxvm/devices/cpu_instructions.c
-    src/app-nxvm/devices/cpu_timing.c
-    src/app-nxvm/devices/cpu_timing_model.c
-)
-target_include_directories(x86-cpu PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(x86-cpu PUBLIC types PRIVATE x86-fpu)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    set_source_files_properties(
-        src/app-nxvm/devices/cpu_timing.c
-        src/app-nxvm/devices/cpu_timing_model.c
-        PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra;-Wpedantic;-Werror")
-endif()
+# The Shared CPU target is the sole CPU implementation linked by NXVM.  The
+# compatibility alias retains the established consumer target name without a
+# forwarding library or a second compiled source set.
+add_library(x86-cpu ALIAS x86-cpu-shared)
 
 set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/display.c
@@ -3715,8 +3705,10 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/port.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/memory.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/transaction.c|machine-executor"
-    "x86-cpu|src/app-nxvm/devices/cpu.c|cpu"
-    "x86-cpu|src/app-nxvm/devices/cpu_instructions.c|cpu"
+    "x86-cpu|src/x86/devices/cpu/cpu.c|cpu"
+    "x86-cpu|src/x86/devices/cpu/cpu_instructions.c|cpu"
+    "x86-cpu|src/x86/devices/cpu/cpu_timing.c|cpu"
+    "x86-cpu|src/x86/devices/cpu/cpu_timing_model.c|cpu"
     "core-machine-executor|src/app-nxvm/devices/pic_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/pit_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/dma_bus.c|machine-executor"
