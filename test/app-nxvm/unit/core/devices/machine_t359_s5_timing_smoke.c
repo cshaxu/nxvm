@@ -80,11 +80,11 @@ static lib_i32 t359_s5_run(core_machine *machine, t359_s5_state *state,
             sizeof(row->memory)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x00002000u, &row->memory,
             sizeof(row->memory)) != LIB_STATUS_OK) return 0;
-    machine->executor_cpu.data.eflags = row->eflags;
-    machine->executor_cpu.data.eax = row->eax;
-    machine->executor_cpu.data.ecx = row->ecx;
-    machine->executor_cpu.data.esi = row->esi;
-    machine->executor_cpu.data.fs.base = T359_S5_DATA;
+    (*test_core_machine_fixture_cpu(machine)).data.eflags = row->eflags;
+    (*test_core_machine_fixture_cpu(machine)).data.eax = row->eax;
+    (*test_core_machine_fixture_cpu(machine)).data.ecx = row->ecx;
+    (*test_core_machine_fixture_cpu(machine)).data.esi = row->esi;
+    (*test_core_machine_fixture_cpu(machine)).data.fs.base = T359_S5_DATA;
     return core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
         result.ticks == row->ticks && result.elapsed_ticks == row->ticks &&

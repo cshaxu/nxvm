@@ -69,9 +69,9 @@ static lib_i32 hardware_delivery_s3_real_priority(void)
         core_machine_memory_write(state.machine, 0x0120u, handler,
             sizeof(handler)) != LIB_STATUS_OK;
     if (!failed) {
-        state.machine->executor_cpu.data.esp = 0x00008000u;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.esp = 0x00008000u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI = LIB_TRUE;
         test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -81,11 +81,11 @@ static lib_i32 hardware_delivery_s3_real_priority(void)
             &result);
         failed |= status != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            state.machine->executor_cpu.data.eip != 0x0101u ||
-            state.machine->executor_cpu.data.esp != 0x00007ffau ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
-            state.machine->executor_cpu.data.flagNMI ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0101u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.esp != 0x00007ffau ||
+            CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_IF) ||
+            CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_TF) ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI ||
             !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
             CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
@@ -111,8 +111,8 @@ static lib_i32 hardware_delivery_s3_protected_priority(void)
 
     lib_memory_set(&irq, 0, sizeof(irq));
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI = LIB_TRUE;
         test_pic_program_vector(&state.machine->shared_pic_master, IE_VECTOR);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -126,7 +126,7 @@ static lib_i32 hardware_delivery_s3_protected_priority(void)
             after.data.esp != IE_STACK_BASE - 12u ||
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) ||
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_TF) ||
-            state.machine->executor_cpu.data.flagNMI ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI ||
             !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
             CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
             !ie_read(&state, IE_STACK_BASE - 12u, frame, sizeof(frame)) ||
@@ -160,9 +160,9 @@ static lib_i32 hardware_delivery_s3_vm86_pic_matches(
         VPIC_ISR_IRQ(0u));
 
     if (nmi_masked) {
-        return state->machine->executor_cpu.data.flagNMI && !irq_pending && irq_active;
+        return (*test_core_machine_fixture_cpu(state->machine)).data.flagNMI && !irq_pending && irq_active;
     }
-    return !state->machine->executor_cpu.data.flagNMI && irq_pending && !irq_active;
+    return !(*test_core_machine_fixture_cpu(state->machine)).data.flagNMI && irq_pending && !irq_active;
 }
 
 static lib_i32 hardware_delivery_s3_vm86_priority(lib_i32 mask_nmi)
@@ -176,8 +176,8 @@ static lib_i32 hardware_delivery_s3_vm86_priority(lib_i32 mask_nmi)
 
     lib_memory_set(&irq, 0, sizeof(irq));
     if (!failed) {
-        state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
-        state.machine->executor_cpu.data.flagMaskNMI = mask_nmi ? LIB_TRUE : LIB_FALSE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.flagMaskNMI = mask_nmi ? LIB_TRUE : LIB_FALSE;
         test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -190,11 +190,11 @@ static lib_i32 hardware_delivery_s3_vm86_priority(lib_i32 mask_nmi)
             (core_machine_run_budget){ 8u, 0u }, &result);
         failed |= status != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            state.machine->executor_cpu.data.eip != 0x0101u ||
-            state.machine->executor_cpu.data.esp != VM86_STACK_TOP - 36u ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_VM) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0101u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.esp != VM86_STACK_TOP - 36u ||
+            CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_VM) ||
+            CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_IF) ||
+            CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_TF) ||
             !hardware_delivery_s3_vm86_pic_matches(&state, mask_nmi) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
                 VM86_STACK_TOP - 36u, (lib_uptr)frame,

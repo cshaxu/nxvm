@@ -105,21 +105,21 @@ static lib_i32 timing_s7_allow_permission(core_machine *machine, lib_i32 vm86,
     lib_u16 iomap_base = TIMING_S7_IOMAP_BASE;
 
     if (machine == LIB_NULL) return 0;
-    machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
-    machine->executor_cpu.data.eflags = vm86 ?
+    (*test_core_machine_fixture_cpu(machine)).data.cr0 |= VCPU_CR0_PE;
+    (*test_core_machine_fixture_cpu(machine)).data.eflags = vm86 ?
         VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL : 0u;
-    machine->executor_cpu.data.cs.selector = 0x001bu;
-    machine->executor_cpu.data.cs.dpl = 3u;
-    machine->executor_cpu.data.ss.dpl = 3u;
-    machine->executor_cpu.data.ds.selector = 0x0023u;
-    machine->executor_cpu.data.ds.dpl = 3u;
-    machine->executor_cpu.data.es.selector = 0x0023u;
-    machine->executor_cpu.data.es.dpl = 3u;
-    machine->executor_cpu.data.tr.flagValid = LIB_TRUE;
-    machine->executor_cpu.data.tr.selector = 0x0028u;
-    machine->executor_cpu.data.tr.base = TIMING_S7_TSS_BASE;
-    machine->executor_cpu.data.tr.limit = 0x00ffu;
-    machine->executor_cpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
+    (*test_core_machine_fixture_cpu(machine)).data.cs.selector = 0x001bu;
+    (*test_core_machine_fixture_cpu(machine)).data.cs.dpl = 3u;
+    (*test_core_machine_fixture_cpu(machine)).data.ss.dpl = 3u;
+    (*test_core_machine_fixture_cpu(machine)).data.ds.selector = 0x0023u;
+    (*test_core_machine_fixture_cpu(machine)).data.ds.dpl = 3u;
+    (*test_core_machine_fixture_cpu(machine)).data.es.selector = 0x0023u;
+    (*test_core_machine_fixture_cpu(machine)).data.es.dpl = 3u;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.flagValid = LIB_TRUE;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.selector = 0x0028u;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.base = TIMING_S7_TSS_BASE;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.limit = 0x00ffu;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
     return core_machine_memory_write(machine, TIMING_S7_TSS_BASE + 0x66u,
         &iomap_base, sizeof(iomap_base)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, TIMING_S7_TSS_BASE + iomap_base +
@@ -138,16 +138,16 @@ static lib_i32 timing_s7_run_form(const timing_s7_form *form, lib_i32 mode)
         !timing_s7_load(machine, form->opcode);
 
     if (!failed && mode == 0) {
-        machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
-        machine->executor_cpu.data.cs.selector = 0x0008u;
-        machine->executor_cpu.data.cs.dpl = 0u;
-        machine->executor_cpu.data.eflags = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.cr0 |= VCPU_CR0_PE;
+        (*test_core_machine_fixture_cpu(machine)).data.cs.selector = 0x0008u;
+        (*test_core_machine_fixture_cpu(machine)).data.cs.dpl = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.eflags = 0u;
     }
     if (!failed && mode != 0) failed |= !timing_s7_allow_permission(machine,
         mode == 2, 0u);
     if (!failed) {
-        machine->executor_cpu.data.eax = 0x11223344u;
-        machine->executor_cpu.data.edx = 0x000000e0u;
+        (*test_core_machine_fixture_cpu(machine)).data.eax = 0x11223344u;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0x000000e0u;
         failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != ticks || result.elapsed_ticks != ticks ||
@@ -221,9 +221,9 @@ static lib_i32 timing_s7_test_permission_strings(void)
                     !timing_s7_allow_permission(machine, vm86, bitmap);
 
                 if (!failed) {
-                    machine->executor_cpu.data.edx = 0x000000e0u;
-                    machine->executor_cpu.data.esi = 0x00000200u;
-                    machine->executor_cpu.data.edi = 0x00000100u;
+                    (*test_core_machine_fixture_cpu(machine)).data.edx = 0x000000e0u;
+                    (*test_core_machine_fixture_cpu(machine)).data.esi = 0x00000200u;
+                    (*test_core_machine_fixture_cpu(machine)).data.edi = 0x00000100u;
                     failed |= core_machine_memory_write(machine, 0x0200u, &source,
                         sizeof(source)) != LIB_STATUS_OK;
                 }
@@ -232,19 +232,19 @@ static lib_i32 timing_s7_test_permission_strings(void)
                         result.reason != CORE_MACHINE_STOP_BUDGET ||
                         result.executed != 1u ||
                         (forms[index].input ? state.reads != 1u || state.writes != 0u ||
-                            machine->executor_cpu.data.edi != 0x00000101u ||
+                            (*test_core_machine_fixture_cpu(machine)).data.edi != 0x00000101u ||
                             core_machine_memory_read(machine, 0x0100u, &destination,
                                 sizeof(destination)) != LIB_STATUS_OK || destination != 0x5au :
                             state.reads != 0u || state.writes != 1u ||
-                            machine->executor_cpu.data.esi != 0x00000201u);
+                            (*test_core_machine_fixture_cpu(machine)).data.esi != 0x00000201u);
                 }
                 if (!failed && bitmap != 0u) {
                     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
                         result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
                         result.ticks != 0u || result.elapsed_ticks != 0u ||
                         state.reads != 0u || state.writes != 0u ||
-                        machine->executor_cpu.data.esi != 0x00000200u ||
-                        machine->executor_cpu.data.edi != 0x00000100u;
+                        (*test_core_machine_fixture_cpu(machine)).data.esi != 0x00000200u ||
+                        (*test_core_machine_fixture_cpu(machine)).data.edi != 0x00000100u;
                 }
                 core_machine_destroy(machine);
                 if (failed) return 0;
@@ -265,7 +265,7 @@ static lib_i32 timing_s7_test_permission_budget(void)
         !timing_s7_load(machine, 0xecu) ||
         !timing_s7_allow_permission(machine, 0, 0u);
 
-    if (!failed) machine->executor_cpu.data.edx = 0x000000e0u;
+    if (!failed) (*test_core_machine_fixture_cpu(machine)).data.edx = 0x000000e0u;
     if (!failed) {
         failed |= core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||

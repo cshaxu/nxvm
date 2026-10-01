@@ -33,7 +33,7 @@ lib_status core_machine_set_retirement_observation_provider(
     if (provider != LIB_NULL) machine->retirement_observation.provider = *provider;
     machine->retirement_observation.pending = LIB_FALSE;
     core_machine_cpu_execution_context_bind_diagnostic_provider(
-        &machine->executor_cpu_execution,
+        machine->executor_cpu_execution,
         (provider != LIB_NULL || machine->retirement_time_contract ==
             CORE_MACHINE_RETIREMENT_TIME_PHYSICAL) ?
             &core_machine_cpu_diagnostic_provider :
@@ -145,7 +145,7 @@ static void core_machine_retirement_observation_capture_context(
         break;
     }
     if (observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN &&
-        core_machine_cpu_execution_preview_lexeme(&machine->executor_cpu_execution,
+        core_machine_cpu_execution_preview_lexeme(machine->executor_cpu_execution,
             &next_lexeme) && next_lexeme.available) {
         observation->next_lexeme_components = next_lexeme.component_count;
     }
@@ -226,9 +226,9 @@ void core_machine_retirement_observation_capture_eligibility_key(
     lib_u8 escape_opcode = 0xffu;
 
     if (machine == LIB_NULL) return;
-    timing = core_machine_cpu_capture_timing(&machine->executor_cpu_execution);
+    timing = core_machine_cpu_capture_timing(machine->executor_cpu_execution);
     observation = &machine->retirement_observation.pending_observation;
-    core_machine_cpu_execution_copy_observation(&machine->executor_cpu_execution, &data);
+    core_machine_cpu_execution_copy_observation(machine->executor_cpu_execution, &data);
     if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ) {
         observation->io_value = observation->io_bytes == 1u ?
             (data.eax & 0xffu) : observation->io_bytes == 2u ?
@@ -268,7 +268,7 @@ void core_machine_retirement_observation_publish(core_machine *machine,
     core_machine_retirement_observation *observation;
 
     if (machine == LIB_NULL) return;
-    timing = core_machine_cpu_capture_timing(&machine->executor_cpu_execution);
+    timing = core_machine_cpu_capture_timing(machine->executor_cpu_execution);
     state = &machine->retirement_observation;
     if (state->provider.callback == LIB_NULL || !state->pending) return;
     observation = &state->pending_observation;
@@ -283,12 +283,12 @@ void core_machine_retirement_observation_publish(core_machine *machine,
     observation->source_timing_form_id = timing.form_id;
     observation->timing_key_id = timing.key_id;
     observation->formula_inputs = timing.formula_inputs;
-    core_machine_cpu_execution_copy_observation(&machine->executor_cpu_execution, &data);
+    core_machine_cpu_execution_copy_observation(machine->executor_cpu_execution, &data);
     core_machine_retirement_observation_capture_context(machine, &data, observation);
     observation->repeat_phase = timing.repeat_phase;
-    (void)core_machine_cpu_debug_capture_snapshot(&machine->executor_cpu_execution,
+    (void)core_machine_cpu_debug_capture_snapshot(machine->executor_cpu_execution,
         CORE_MACHINE_CPU_SNAPSHOT_INSTRUCTION_ENTRY, &observation->instruction_entry_cpu);
-    (void)core_machine_cpu_debug_capture_snapshot(&machine->executor_cpu_execution,
+    (void)core_machine_cpu_debug_capture_snapshot(machine->executor_cpu_execution,
         CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &observation->current_cpu);
     state->provider.callback(state->provider.context, observation);
     state->pending = LIB_FALSE;

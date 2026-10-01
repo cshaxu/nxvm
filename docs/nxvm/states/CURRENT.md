@@ -11,8 +11,8 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
-corpus into S68-S73; later packages now run through S77. S48-S74 are accepted
-and S75-S77 remain pending. Earlier
+corpus into S68-S73; later packages now run through S77. S48-S75 are accepted
+and S76-S77 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -506,21 +506,24 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 
-## S75 Active Packet
+## S75 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | M5 T539 S75, Continuation. |
-| Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Replace the embedded CPU/decoder lifetime with one opaque owned allocation, preserving create/destroy, prepared entry, reset rollback and board ownership without a mutable private pointer or state mirror. |
-| Non-goals | S74 accepted residual-receiver migration; S76 physical Shared relocation; firmware, asset, INI or unrelated profile work. |
-| Reference Baseline | S74 acceptance and the S75 opaque-lifetime row in the CPU work package. |
-| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S75 opaque CPU lifetime cutover. |
-| Files And ABI Surface | Audit every lifetime receiver before editing; stop and report if the intended boundary requires an unjustified public mutable CPU accessor or a duplicated state owner. |
-| Applicable Rules | The board owns one opaque CPU lifetime; execution and reset use that owner only; no mirror or compatibility path. |
-| Verification | Focused lifetime/reset tests; complete x64/x86 unit suites; lifecycle/authority gates; documentation governance and diff check. |
-| Expected Markers | Existing lifecycle and reset markers, or exact successor markers recorded in evidence. |
-| Asset Needs | Determine after intake whether executable inputs change; do not rebuild outputs merely for test-only work. |
+S75 replaces the board's embedded CPU, decoder and execution layout with one
+`core_machine_cpu_execution_context *` lifetime. `cpu.c` owns its allocation
+and destruction; the board only creates it with its CPU-bus provider, binds its
+existing profile/FPU/diagnostic inputs, and passes that same opaque context to
+prepared entry, reset, execution and destruction. No public mutable CPU
+accessor, layout mirror or compatibility path was added.
+
+The CPU test fixture is the only private-layout consumer: it borrows the
+opaque owner's CPU/decoder exclusively to prepare historical instruction-state
+inputs. Production headers now import the opaque CPU interface rather than the
+private decoder definition. Complete repository-only units pass 426/426 on
+both x64 and x86; lifetime, CPU/PIC authority and historical-fixture gates pass
+on both widths. Because production executable inputs changed, all four
+admitted NXVM profiles have rebuilt 0539 x64/x86 Release artifacts. The
+[S75 evidence](../etc/evidence/t539-s75-opaque-cpu-lifetime.md) records the
+boundary and artifact hashes. S75 is accepted; T539 remains open for S76-S77.
 | Reporting Requirements | Record allocation/rollback ownership, removed layout exposure, focused and full-suite results, net delta and executable determination. |
 | Stop Conditions | Stop if migration needs a second CPU state owner, a mutable private accessor, or an unverified production semantic change. |
 | Exit Criteria | One opaque CPU owner supplies all former embedded lifetime paths; no legacy layout or mirror remains; all verification passes. |

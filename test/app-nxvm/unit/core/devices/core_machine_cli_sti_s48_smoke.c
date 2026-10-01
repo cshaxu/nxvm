@@ -55,7 +55,7 @@ static lib_i32 cli_sti_s48_test_80286_defaults(void)
             &state);
 
         if (!failed) {
-            state.machine->executor_cpu.data.eflags = preserved |
+            (*test_core_machine_fixture_cpu(state.machine)).data.eflags = preserved |
                 (opcodes[opcode_index] == 0xfau ? VCPU_EFLAGS_IF : 0u);
             before = test_core_machine_fixture_capture_cpu_after_run(
                 state.machine);
@@ -98,7 +98,7 @@ static lib_i32 cli_sti_s48_test_80286_irq_contracts(void)
             sizeof(cli_nop)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags |= VCPU_EFLAGS_IF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         lib_memory_set(&source, 0, sizeof(source));
         core_machine_pic_irq_source_bind(&source,
@@ -138,7 +138,7 @@ static lib_i32 cli_sti_s48_test_80286_irq_contracts(void)
             sizeof(sti_nop)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        state.machine->executor_cpu.data.eflags &= ~VCPU_EFLAGS_IF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags &= ~VCPU_EFLAGS_IF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         lib_memory_set(&source, 0, sizeof(source));
         test_pic_program_vector(&state.machine->shared_pic_master, (lib_u8)vector);
@@ -271,7 +271,7 @@ static lib_i32 cli_sti_s48_test_386_prefix_and_lock(void)
                 code[2] = opcode;
             }
             if (!failed) {
-                state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
+                (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF |
                     VCPU_EFLAGS_DF | VCPU_EFLAGS_OF |
                     (opcode == 0xfau ? VCPU_EFLAGS_IF : 0u);
                 before = test_core_machine_fixture_capture_cpu_after_run(

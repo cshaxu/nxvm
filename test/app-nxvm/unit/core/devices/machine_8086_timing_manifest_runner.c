@@ -293,9 +293,9 @@ static lib_i32 timing_manifest_run_lock_companion(
     failed = !timing_manifest_prepare(&machine, &capture, locked_program,
         program_bytes + 1u);
     if (!failed) {
-        machine->executor_cpu.data.eflags = initial_eflags;
-        machine->executor_cpu.data.cx = initial_cx;
-        machine->executor_cpu.data.dx = initial_dx;
+        (*test_core_machine_fixture_cpu(machine)).data.eflags = initial_eflags;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = initial_cx;
+        (*test_core_machine_fixture_cpu(machine)).data.dx = initial_dx;
         failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, expected_ticks + 2u) || capture.count != 1u ||
@@ -342,9 +342,9 @@ static lib_i32 timing_manifest_run_exact_recipe_with_inputs_and_formula(
         !prepared;
 
     if (!failed) {
-        machine->executor_cpu.data.eflags = initial_eflags;
-        machine->executor_cpu.data.cx = initial_cx;
-        machine->executor_cpu.data.dx = initial_dx;
+        (*test_core_machine_fixture_cpu(machine)).data.eflags = initial_eflags;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = initial_cx;
+        (*test_core_machine_fixture_cpu(machine)).data.dx = initial_dx;
         lib_status status = core_machine_run(machine, budget, &run);
 
         failed |= status != LIB_STATUS_OK ||
@@ -503,14 +503,14 @@ static lib_i32 timing_manifest_run_l3_memory_recipe_with_inputs_internal(
         (lib_u32)recipe->program[opcode_index + 2u] |
             ((lib_u32)recipe->program[opcode_index + 3u] << 8u);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
         failed = core_machine_memory_write(machine, memory_linear, &recipe->memory_value,
             sizeof(recipe->memory_value)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        machine->executor_cpu.data.ax = recipe->initial_ax;
-        machine->executor_cpu.data.cx = recipe->initial_cx;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = recipe->initial_ax;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = recipe->initial_cx;
         failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
@@ -523,8 +523,8 @@ static lib_i32 timing_manifest_run_l3_memory_recipe_with_inputs_internal(
                     required_inputs | extra_required_inputs)) !=
                 timing_manifest_required_inputs_for_profile(
                     required_inputs | extra_required_inputs) ||
-            machine->executor_cpu.data.ax != recipe->expected_ax ||
-            machine->executor_cpu.data.cx != recipe->expected_cx ||
+            (*test_core_machine_fixture_cpu(machine)).data.ax != recipe->expected_ax ||
+            (*test_core_machine_fixture_cpu(machine)).data.cx != recipe->expected_cx ||
             core_machine_memory_read(machine, memory_linear, &memory_value,
                 sizeof(memory_value)) != LIB_STATUS_OK ||
             memory_value != recipe->expected_memory_value;
@@ -533,8 +533,8 @@ static lib_i32 timing_manifest_run_l3_memory_recipe_with_inputs_internal(
         printf("I86 memory ticks=%llu source=%llu origin=%d inputs=%u ax=%u cx=%u mem=%u count=%u\n",
             run.ticks, capture.observation.source_ticks,
             capture.observation.timing_origin, capture.observation.formula_inputs,
-            machine == LIB_NULL ? 0u : machine->executor_cpu.data.ax,
-            machine == LIB_NULL ? 0u : machine->executor_cpu.data.cx,
+            machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.ax,
+            machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.cx,
             memory_value, capture.count);
         printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
     }
@@ -635,15 +635,15 @@ static lib_i32 timing_manifest_run_string_primitive_with_prefix_internal(
         !timing_manifest_prepare(&machine, &capture, program, program_bytes);
 
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
         failed = core_machine_memory_write(machine, source_linear, &source_word,
             sizeof(source_word)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        machine->executor_cpu.data.si = (lib_u16)source_linear;
-        machine->executor_cpu.data.di = (lib_u16)destination_linear;
-        machine->executor_cpu.data.ax = 0x1234u;
+        (*test_core_machine_fixture_cpu(machine)).data.si = (lib_u16)source_linear;
+        (*test_core_machine_fixture_cpu(machine)).data.di = (lib_u16)destination_linear;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 0x1234u;
         failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
@@ -668,7 +668,7 @@ static lib_i32 timing_manifest_run_string_primitive_with_prefix_internal(
                     source_word : recipe->opcode == 0xaau ? 0x0034u : 0x1234u);
         }
         if (!failed && (recipe->opcode == 0xacu || recipe->opcode == 0xadu)) {
-            failed = machine->executor_cpu.data.ax != (word ? source_word :
+            failed = (*test_core_machine_fixture_cpu(machine)).data.ax != (word ? source_word :
                 (lib_u16)(0x1200u | (source_word & 0x00ffu)));
         }
         if (!failed) {
@@ -680,17 +680,17 @@ static lib_i32 timing_manifest_run_string_primitive_with_prefix_internal(
             const lib_u16 expected_di = recipe->opcode == 0xacu ||
                 recipe->opcode == 0xadu ? (lib_u16)destination_linear :
                 (lib_u16)(destination_linear + step);
-            failed = machine->executor_cpu.data.si != expected_si ||
-                machine->executor_cpu.data.di != expected_di;
+            failed = (*test_core_machine_fixture_cpu(machine)).data.si != expected_si ||
+                (*test_core_machine_fixture_cpu(machine)).data.di != expected_di;
         }
     }
     if (failed) {
         printf("I86 string ticks=%llu source=%llu inputs=%u phase=%d ax=%u si=%u di=%u\n",
             run.ticks, capture.observation.source_ticks,
             capture.observation.formula_inputs, capture.observation.repeat_phase,
-            machine == LIB_NULL ? 0u : machine->executor_cpu.data.ax,
-            machine == LIB_NULL ? 0u : machine->executor_cpu.data.si,
-            machine == LIB_NULL ? 0u : machine->executor_cpu.data.di);
+            machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.ax,
+            machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.si,
+            machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.di);
         printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
     }
     core_machine_destroy(machine);
@@ -802,8 +802,8 @@ static lib_i32 timing_manifest_run_repeat_recipe(
         !timing_manifest_prepare(&machine, &capture, program, program_bytes);
 
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
         failed = core_machine_memory_write(machine, recipe->odd_addresses ? 0x1001u :
             0x1000u, &source_word,
             sizeof(source_word)) != LIB_STATUS_OK;
@@ -821,10 +821,10 @@ static lib_i32 timing_manifest_run_repeat_recipe(
             sizeof(destination_word)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        machine->executor_cpu.data.si = recipe->odd_addresses ? 0x1001u : 0x1000u;
-        machine->executor_cpu.data.di = recipe->odd_addresses ? 0x1101u : 0x1100u;
-        machine->executor_cpu.data.ax = 0x1234u;
-        machine->executor_cpu.data.cx = 2u;
+        (*test_core_machine_fixture_cpu(machine)).data.si = recipe->odd_addresses ? 0x1001u : 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = recipe->odd_addresses ? 0x1101u : 0x1100u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 0x1234u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 2u;
         failed = timing_manifest_run_repeat_step(machine, &capture, recipe,
             CORE_MACHINE_RETIREMENT_REPEAT_FIRST, recipe->first_ticks) ||
             timing_manifest_run_repeat_step(machine, &capture, recipe,
@@ -840,7 +840,7 @@ static lib_i32 timing_manifest_run_repeat_recipe(
         failed = !timing_manifest_prepare(&machine, &capture, program, program_bytes);
     }
     if (!failed) {
-        machine->executor_cpu.data.cx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 0u;
         failed = timing_manifest_run_repeat_step(machine, &capture, recipe,
             CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks);
     }
@@ -951,14 +951,14 @@ static lib_i32 timing_manifest_probe_xlat_function(void)
         &capture, program, sizeof(program));
 
     if (!failed) {
-        machine->executor_cpu.data.bx = 0x0010u;
-        machine->executor_cpu.data.al = 0x0004u;
+        (*test_core_machine_fixture_cpu(machine)).data.bx = 0x0010u;
+        (*test_core_machine_fixture_cpu(machine)).data.al = 0x0004u;
         failed = core_machine_memory_write(machine, 0x0014u, &expected_value,
                 sizeof(expected_value)) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, 11u) || capture.count != 1u ||
-            machine->executor_cpu.data.al != expected_value ||
+            (*test_core_machine_fixture_cpu(machine)).data.al != expected_value ||
             !timing_manifest_ticks_match(capture.observation.source_ticks, 11u) ||
             !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
@@ -980,16 +980,16 @@ static lib_i32 timing_manifest_probe_pop_cs_function(void)
         &capture, program, sizeof(program));
 
     if (!failed) {
-        machine->executor_cpu.data.sp = 0x0200u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x0200u;
         failed = core_machine_memory_write(machine,
-                machine->executor_cpu.data.ss.base + 0x0200u, new_cs,
+                (*test_core_machine_fixture_cpu(machine)).data.ss.base + 0x0200u, new_cs,
                 sizeof(new_cs)) != LIB_STATUS_OK ||
             core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             !timing_manifest_ticks_match(run.ticks, 8u) || capture.count != 1u ||
-            machine->executor_cpu.data.cs.selector != 0x1234u ||
-            machine->executor_cpu.data.cs.base != 0x12340u ||
-            machine->executor_cpu.data.sp != 0x0202u ||
+            (*test_core_machine_fixture_cpu(machine)).data.cs.selector != 0x1234u ||
+            (*test_core_machine_fixture_cpu(machine)).data.cs.base != 0x12340u ||
+            (*test_core_machine_fixture_cpu(machine)).data.sp != 0x0202u ||
             !timing_manifest_ticks_match(capture.observation.source_ticks, 8u) ||
             !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
     }
@@ -1034,13 +1034,13 @@ static lib_i32 timing_manifest_probe_alu_function(void)
             recipes[index].program, sizeof(recipes[index].program));
 
         if (!failed) {
-            machine->executor_cpu.data.ax = recipes[index].ax;
-            machine->executor_cpu.data.bx = recipes[index].bx;
-            machine->executor_cpu.data.eflags = recipes[index].eflags;
+            (*test_core_machine_fixture_cpu(machine)).data.ax = recipes[index].ax;
+            (*test_core_machine_fixture_cpu(machine)).data.bx = recipes[index].bx;
+            (*test_core_machine_fixture_cpu(machine)).data.eflags = recipes[index].eflags;
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-                run.executed != 1u || machine->executor_cpu.data.ax !=
+                run.executed != 1u || (*test_core_machine_fixture_cpu(machine)).data.ax !=
                     recipes[index].expected_ax ||
-                (machine->executor_cpu.data.eflags & observed_mask) !=
+                ((*test_core_machine_fixture_cpu(machine)).data.eflags & observed_mask) !=
                     recipes[index].expected_flags;
         }
         core_machine_destroy(machine);
@@ -1088,12 +1088,12 @@ static lib_i32 timing_manifest_probe_adjustment_function(void)
             recipes[index].program, recipes[index].bytes);
 
         if (!failed) {
-            machine->executor_cpu.data.ax = recipes[index].ax;
+            (*test_core_machine_fixture_cpu(machine)).data.ax = recipes[index].ax;
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-                run.executed != 1u || machine->executor_cpu.data.ax !=
-                    recipes[index].expected_ax || machine->executor_cpu.data.dx !=
+                run.executed != 1u || (*test_core_machine_fixture_cpu(machine)).data.ax !=
+                    recipes[index].expected_ax || (*test_core_machine_fixture_cpu(machine)).data.dx !=
                     recipes[index].expected_dx ||
-                (machine->executor_cpu.data.eflags & recipes[index].observed_flags) !=
+                ((*test_core_machine_fixture_cpu(machine)).data.eflags & recipes[index].observed_flags) !=
                     recipes[index].expected_flags;
         }
         core_machine_destroy(machine);
@@ -1121,35 +1121,35 @@ static lib_i32 timing_manifest_probe_data_stack_function(void)
 
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-            machine->executor_cpu.data.ax != 0x1234u;
+            (*test_core_machine_fixture_cpu(machine)).data.ax != 0x1234u;
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed && timing_manifest_prepare(&machine, &capture, xchg, sizeof(xchg))) {
-        machine->executor_cpu.data.ax = 0x1234u;
-        machine->executor_cpu.data.bx = 0x5678u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 0x1234u;
+        (*test_core_machine_fixture_cpu(machine)).data.bx = 0x5678u;
         failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-            machine->executor_cpu.data.ax != 0x5678u ||
-            machine->executor_cpu.data.bx != 0x1234u;
+            (*test_core_machine_fixture_cpu(machine)).data.ax != 0x5678u ||
+            (*test_core_machine_fixture_cpu(machine)).data.bx != 0x1234u;
     } else if (!failed) failed = 1;
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed && timing_manifest_prepare(&machine, &capture, push, sizeof(push))) {
-        machine->executor_cpu.data.ax = pushed;
-        machine->executor_cpu.data.sp = 0x8000u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = pushed;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x8000u;
         failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-            machine->executor_cpu.data.sp != 0x7ffeu ||
+            (*test_core_machine_fixture_cpu(machine)).data.sp != 0x7ffeu ||
             core_machine_memory_read(machine, 0x7ffeu, &observed, sizeof(observed)) !=
                 LIB_STATUS_OK || observed != pushed;
     } else if (!failed) failed = 1;
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed && timing_manifest_prepare(&machine, &capture, pop, sizeof(pop))) {
-        machine->executor_cpu.data.sp = 0x8000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x8000u;
         failed = core_machine_memory_write(machine, 0x8000u, &pushed, sizeof(pushed)) !=
                 LIB_STATUS_OK || core_machine_run(machine, budget, &run) !=
-                LIB_STATUS_OK || machine->executor_cpu.data.bx != pushed ||
-            machine->executor_cpu.data.sp != 0x8002u;
+                LIB_STATUS_OK || (*test_core_machine_fixture_cpu(machine)).data.bx != pushed ||
+            (*test_core_machine_fixture_cpu(machine)).data.sp != 0x8002u;
     } else if (!failed) failed = 1;
     core_machine_destroy(machine);
     if (failed) printf("M5:T435:S5:I86-FUNCTION:FAIL:DATA-STACK\n");
@@ -1186,13 +1186,13 @@ static lib_i32 timing_manifest_probe_group3_function(void)
             recipes[index].program, sizeof(recipes[index].program));
 
         if (!failed) {
-            machine->executor_cpu.data.ax = recipes[index].ax;
-            machine->executor_cpu.data.bx = recipes[index].bx;
-            machine->executor_cpu.data.dx = recipes[index].program[0] == 0xf7u &&
+            (*test_core_machine_fixture_cpu(machine)).data.ax = recipes[index].ax;
+            (*test_core_machine_fixture_cpu(machine)).data.bx = recipes[index].bx;
+            (*test_core_machine_fixture_cpu(machine)).data.dx = recipes[index].program[0] == 0xf7u &&
                 recipes[index].program[1] == 0xfbu ? 0xffffu : 0u;
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-                run.executed != 1u || machine->executor_cpu.data.ax !=
-                    recipes[index].expected_ax || machine->executor_cpu.data.dx !=
+                run.executed != 1u || (*test_core_machine_fixture_cpu(machine)).data.ax !=
+                    recipes[index].expected_ax || (*test_core_machine_fixture_cpu(machine)).data.dx !=
                     recipes[index].expected_dx;
         }
         core_machine_destroy(machine);
@@ -1231,17 +1231,17 @@ static lib_i32 timing_manifest_probe_branch_function(void)
             recipes[index].program, sizeof(recipes[index].program));
 
         if (!failed) {
-            machine->executor_cpu.data.cx = recipes[index].cx;
-            machine->executor_cpu.data.eflags = recipes[index].eflags;
+            (*test_core_machine_fixture_cpu(machine)).data.cx = recipes[index].cx;
+            (*test_core_machine_fixture_cpu(machine)).data.eflags = recipes[index].eflags;
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-                run.executed != 1u || machine->executor_cpu.data.ip !=
-                    recipes[index].expected_ip || machine->executor_cpu.data.cx !=
+                run.executed != 1u || (*test_core_machine_fixture_cpu(machine)).data.ip !=
+                    recipes[index].expected_ip || (*test_core_machine_fixture_cpu(machine)).data.cx !=
                     recipes[index].expected_cx;
         }
         if (failed) {
             printf("M5:T435:S5:I86-FUNCTION:FAIL:BRANCH:%u:ip=%u:cx=%u\n",
-                (unsigned)index, machine == LIB_NULL ? 0u : machine->executor_cpu.data.ip,
-                machine == LIB_NULL ? 0u : machine->executor_cpu.data.cx);
+                (unsigned)index, machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.ip,
+                machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.cx);
             core_machine_destroy(machine);
             return 1;
         }
@@ -1279,9 +1279,9 @@ static lib_i32 timing_manifest_probe_flag_function(void)
             &recipes[index].opcode, 1u);
 
         if (!failed) {
-            machine->executor_cpu.data.eflags = recipes[index].initial_flags;
+            (*test_core_machine_fixture_cpu(machine)).data.eflags = recipes[index].initial_flags;
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-                run.executed != 1u || (machine->executor_cpu.data.eflags & observed) !=
+                run.executed != 1u || ((*test_core_machine_fixture_cpu(machine)).data.eflags & observed) !=
                     recipes[index].expected_flags;
         }
         core_machine_destroy(machine);
@@ -1319,11 +1319,11 @@ static lib_i32 timing_manifest_probe_compare_function(void)
             recipes[index].program, sizeof(recipes[index].program));
 
         if (!failed) {
-            machine->executor_cpu.data.ax = recipes[index].ax;
-            machine->executor_cpu.data.bx = recipes[index].bx;
+            (*test_core_machine_fixture_cpu(machine)).data.ax = recipes[index].ax;
+            (*test_core_machine_fixture_cpu(machine)).data.bx = recipes[index].bx;
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-                run.executed != 1u || machine->executor_cpu.data.ax !=
-                    recipes[index].ax || (machine->executor_cpu.data.eflags & observed) !=
+                run.executed != 1u || (*test_core_machine_fixture_cpu(machine)).data.ax !=
+                    recipes[index].ax || ((*test_core_machine_fixture_cpu(machine)).data.eflags & observed) !=
                     recipes[index].expected_flags;
         }
         core_machine_destroy(machine);
@@ -1360,11 +1360,11 @@ static lib_i32 timing_manifest_probe_unary_function(void)
             recipes[index].program, recipes[index].program[1] == 0u ? 1u : 2u);
 
         if (!failed) {
-            machine->executor_cpu.data.ax = recipes[index].ax;
-            machine->executor_cpu.data.eflags = recipes[index].initial_flags;
+            (*test_core_machine_fixture_cpu(machine)).data.ax = recipes[index].ax;
+            (*test_core_machine_fixture_cpu(machine)).data.eflags = recipes[index].initial_flags;
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-                machine->executor_cpu.data.ax != recipes[index].expected_ax ||
-                (machine->executor_cpu.data.eflags & observed) != recipes[index].expected_flags;
+                (*test_core_machine_fixture_cpu(machine)).data.ax != recipes[index].expected_ax ||
+                ((*test_core_machine_fixture_cpu(machine)).data.eflags & observed) != recipes[index].expected_flags;
         }
         core_machine_destroy(machine);
         if (failed) return 1;
@@ -1385,17 +1385,17 @@ static lib_i32 timing_manifest_probe_lahf_sahf_function(void)
     lib_i32 failed = !timing_manifest_prepare(&machine, &capture, &lahf, 1u);
 
     if (!failed) {
-        machine->executor_cpu.data.ax = 0x1200u;
-        machine->executor_cpu.data.eflags = flags;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 0x1200u;
+        (*test_core_machine_fixture_cpu(machine)).data.eflags = flags;
         failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-            machine->executor_cpu.data.ax != 0xd700u;
+            (*test_core_machine_fixture_cpu(machine)).data.ax != 0xd700u;
     }
     core_machine_destroy(machine);
     machine = LIB_NULL;
     if (!failed && timing_manifest_prepare(&machine, &capture, &sahf, 1u)) {
-        machine->executor_cpu.data.ax = 0xd700u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 0xd700u;
         failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
-            (machine->executor_cpu.data.eflags & flags) != flags;
+            ((*test_core_machine_fixture_cpu(machine)).data.eflags & flags) != flags;
     } else if (!failed) failed = 1;
     core_machine_destroy(machine);
     return failed;
@@ -1969,16 +1969,16 @@ static lib_i32 timing_manifest_probe_group3_l2(void)
                 sizeof(operand16) : sizeof(operand8)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            machine->executor_cpu.data.ax = 2u;
-            machine->executor_cpu.data.bx = 3u;
-            machine->executor_cpu.data.dx = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.ax = 2u;
+            (*test_core_machine_fixture_cpu(machine)).data.bx = 3u;
+            (*test_core_machine_fixture_cpu(machine)).data.dx = 0u;
             if (division) {
-                machine->executor_cpu.data.ax = 6u;
+                (*test_core_machine_fixture_cpu(machine)).data.ax = 6u;
             }
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe.expected_ticks) || capture.count != 1u ||
-                machine->executor_cpu.data.ax != (division ? 2u : 6u) ||
+                (*test_core_machine_fixture_cpu(machine)).data.ax != (division ? 2u : 6u) ||
                 !timing_manifest_ticks_match(capture.observation.source_ticks, recipe.expected_ticks) ||
                 !timing_manifest_origin_match(capture.observation.timing_origin, recipe.expected_origin) ||
                 (capture.observation.formula_inputs &
@@ -1991,8 +1991,8 @@ static lib_i32 timing_manifest_probe_group3_l2(void)
             printf("I86 G3 ticks=%llu source=%llu origin=%d inputs=%u ax=%u dx=%u count=%u\n",
                 run.ticks, capture.observation.source_ticks,
                 capture.observation.timing_origin, capture.observation.formula_inputs,
-                machine == LIB_NULL ? 0u : machine->executor_cpu.data.ax,
-                machine == LIB_NULL ? 0u : machine->executor_cpu.data.dx,
+                machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.ax,
+                machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.dx,
                 capture.count);
             printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe.key_id);
             core_machine_destroy(machine);
@@ -2058,13 +2058,13 @@ static lib_i32 timing_manifest_probe_group3_l2(void)
                 sizeof(operand16) : sizeof(operand8)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            machine->executor_cpu.data.ax = division ? 6u : 2u;
-            machine->executor_cpu.data.bx = 3u;
-            machine->executor_cpu.data.dx = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.ax = division ? 6u : 2u;
+            (*test_core_machine_fixture_cpu(machine)).data.bx = 3u;
+            (*test_core_machine_fixture_cpu(machine)).data.dx = 0u;
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe.expected_ticks) || capture.count != 1u ||
-                machine->executor_cpu.data.ax != (division ? 2u : 6u) ||
+                (*test_core_machine_fixture_cpu(machine)).data.ax != (division ? 2u : 6u) ||
                 !timing_manifest_ticks_match(capture.observation.source_ticks, recipe.expected_ticks) ||
                 !timing_manifest_origin_match(capture.observation.timing_origin, recipe.expected_origin) ||
                 (capture.observation.formula_inputs &
@@ -2165,12 +2165,12 @@ static lib_i32 timing_manifest_probe_group3_memory_contexts(void)
                 recipe->word ? sizeof(operand16) : sizeof(operand8)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            machine->executor_cpu.data.ax = recipe->division ? 6u : 2u;
-            machine->executor_cpu.data.dx = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.ax = recipe->division ? 6u : 2u;
+            (*test_core_machine_fixture_cpu(machine)).data.dx = 0u;
             failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
                 run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
                 !timing_manifest_ticks_match(run.ticks, recipe->expected_ticks) || capture.count != 1u ||
-                machine->executor_cpu.data.ax != (recipe->division ? 2u : 6u) ||
+                (*test_core_machine_fixture_cpu(machine)).data.ax != (recipe->division ? 2u : 6u) ||
                 !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) ||
                 (capture.observation.formula_inputs &
                     (CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND |
@@ -2220,8 +2220,8 @@ static lib_i32 timing_manifest_probe_group3_memory_contexts(void)
                     sizeof(operand8)) != LIB_STATUS_OK;
             }
             if (!locked_failed) {
-                locked_machine->executor_cpu.data.ax = recipe->division ? 6u : 2u;
-                locked_machine->executor_cpu.data.dx = 0u;
+                (*test_core_machine_fixture_cpu(locked_machine)).data.ax = recipe->division ? 6u : 2u;
+                (*test_core_machine_fixture_cpu(locked_machine)).data.dx = 0u;
                 locked_failed = core_machine_run(locked_machine, budget, &locked_run) !=
                         LIB_STATUS_OK ||
                     locked_run.reason != CORE_MACHINE_STOP_BUDGET ||
@@ -2229,7 +2229,7 @@ static lib_i32 timing_manifest_probe_group3_memory_contexts(void)
                     !timing_manifest_ticks_match(locked_run.ticks,
                         recipe->expected_ticks + 2u) ||
                     locked_capture.count != 1u ||
-                    locked_machine->executor_cpu.data.ax !=
+                    (*test_core_machine_fixture_cpu(locked_machine)).data.ax !=
                         (recipe->division ? 2u : 6u) ||
                     !timing_manifest_origin_match(locked_capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC) ||
                     (locked_capture.observation.formula_inputs &
@@ -3262,7 +3262,7 @@ static lib_i32 timing_manifest_probe_pointer_load_forms(void)
                      CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS)) !=
                     (CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
                      CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS) ||
-                machine->executor_cpu.data.bx != 0x1000u;
+                (*test_core_machine_fixture_cpu(machine)).data.bx != 0x1000u;
         }
         if (failed) {
             printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-LEA-M\n");
@@ -3320,11 +3320,11 @@ static lib_i32 timing_manifest_probe_pointer_load_forms(void)
                 !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
                 (capture.observation.formula_inputs & recipe->required_formula_inputs) !=
                     recipe->required_formula_inputs ||
-                machine->executor_cpu.data.bx != 0x2000u ||
+                (*test_core_machine_fixture_cpu(machine)).data.bx != 0x2000u ||
                 (recipe->opcode == 0xc5u &&
-                    machine->executor_cpu.data.ds.selector != 0x0800u) ||
+                    (*test_core_machine_fixture_cpu(machine)).data.ds.selector != 0x0800u) ||
                 (recipe->opcode == 0xc4u &&
-                    machine->executor_cpu.data.es.selector != 0x0800u);
+                    (*test_core_machine_fixture_cpu(machine)).data.es.selector != 0x0800u);
         }
         if (failed) {
             printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
@@ -3452,8 +3452,8 @@ static lib_i32 timing_manifest_run_indirect_control_recipe(
             recipe->program_bytes);
 
     if (!failed) {
-        machine->executor_cpu.data.ax = recipe->target_ip;
-        machine->executor_cpu.data.sp = 0x8000u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = recipe->target_ip;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x8000u;
         if (recipe->pointer_address != 0u) {
             failed = !timing_manifest_write_word(machine, recipe->pointer_address,
                 recipe->target_ip);
@@ -3478,17 +3478,17 @@ static lib_i32 timing_manifest_run_indirect_control_recipe(
                 (capture.observation.formula_inputs &
                     recipe->required_formula_inputs) !=
                     recipe->required_formula_inputs) ||
-            machine->executor_cpu.data.eip != recipe->target_ip ||
+            (*test_core_machine_fixture_cpu(machine)).data.eip != recipe->target_ip ||
             (recipe->target_cs != 0u &&
-                machine->executor_cpu.data.cs.selector != recipe->target_cs) ||
-            machine->executor_cpu.data.sp != recipe->expected_sp;
+                (*test_core_machine_fixture_cpu(machine)).data.cs.selector != recipe->target_cs) ||
+            (*test_core_machine_fixture_cpu(machine)).data.sp != recipe->expected_sp;
     }
     if (failed) {
         printf("I86 indirect ticks=%llu origin=%d ip=%u cs=%u sp=%u form=%u key=%u\n",
             run.ticks, capture.observation.timing_origin,
-            machine == LIB_NULL ? 0u : machine->executor_cpu.data.eip,
-            machine == LIB_NULL ? 0u : machine->executor_cpu.data.cs.selector,
-            machine == LIB_NULL ? 0u : machine->executor_cpu.data.sp,
+            machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.eip,
+            machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.cs.selector,
+            machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.sp,
             capture.observation.source_timing_form_id,
             capture.observation.timing_key_id);
         printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
@@ -3672,7 +3672,7 @@ static lib_i32 timing_manifest_probe_return_forms(void)
                 recipe->program_bytes);
 
         if (!failed) {
-            machine->executor_cpu.data.sp = 0x8000u;
+            (*test_core_machine_fixture_cpu(machine)).data.sp = 0x8000u;
             for (word_index = 0u; word_index < recipe->frame_word_count; ++word_index) {
                 failed |= !timing_manifest_write_word(machine,
                     0x8000u + (lib_u32)word_index * 2u,
@@ -3690,17 +3690,17 @@ static lib_i32 timing_manifest_probe_return_forms(void)
                     CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
                 capture.observation.timing_key_id ==
                     CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
-                machine->executor_cpu.data.eip != recipe->target_ip ||
+                (*test_core_machine_fixture_cpu(machine)).data.eip != recipe->target_ip ||
                 (recipe->target_cs != 0u &&
-                    machine->executor_cpu.data.cs.selector != recipe->target_cs) ||
-                machine->executor_cpu.data.sp != recipe->expected_sp;
+                    (*test_core_machine_fixture_cpu(machine)).data.cs.selector != recipe->target_cs) ||
+                (*test_core_machine_fixture_cpu(machine)).data.sp != recipe->expected_sp;
         }
         if (failed) {
             printf("I86 return ticks=%llu origin=%d ip=%u cs=%u sp=%u form=%u key=%u\n",
                 run.ticks, capture.observation.timing_origin,
-                machine == LIB_NULL ? 0u : machine->executor_cpu.data.eip,
-                machine == LIB_NULL ? 0u : machine->executor_cpu.data.cs.selector,
-                machine == LIB_NULL ? 0u : machine->executor_cpu.data.sp,
+                machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.eip,
+                machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.cs.selector,
+                machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.sp,
                 capture.observation.source_timing_form_id,
                 capture.observation.timing_key_id);
             printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:%s\n", recipe->key_id);
@@ -3755,8 +3755,8 @@ static lib_i32 timing_manifest_probe_software_interrupt_forms(void)
                 recipe->program_bytes);
 
         if (!failed) {
-            machine->executor_cpu.data.sp = 0x8000u;
-            machine->executor_cpu.data.eflags = recipe->initial_eflags;
+            (*test_core_machine_fixture_cpu(machine)).data.sp = 0x8000u;
+            (*test_core_machine_fixture_cpu(machine)).data.eflags = recipe->initial_eflags;
             if (recipe->vector != 0u) {
                 failed = !timing_manifest_write_word(machine,
                     (lib_u32)recipe->vector * 4u, recipe->expected_ip) ||
@@ -3775,17 +3775,17 @@ static lib_i32 timing_manifest_probe_software_interrupt_forms(void)
                     CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
                 capture.observation.timing_key_id ==
                     CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
-                machine->executor_cpu.data.eip != recipe->expected_ip ||
-                machine->executor_cpu.data.sp != recipe->expected_sp ||
+                (*test_core_machine_fixture_cpu(machine)).data.eip != recipe->expected_ip ||
+                (*test_core_machine_fixture_cpu(machine)).data.sp != recipe->expected_sp ||
                 (recipe->vector != 0u &&
-                    machine->executor_cpu.data.cs.selector != 0xf000u);
+                    (*test_core_machine_fixture_cpu(machine)).data.cs.selector != 0xf000u);
         }
         if (failed) {
             printf("I86 int ticks=%llu origin=%d ip=%u cs=%u sp=%u control=%d form=%u key=%u\n",
                 run.ticks, capture.observation.timing_origin,
-                machine == LIB_NULL ? 0u : machine->executor_cpu.data.eip,
-                machine == LIB_NULL ? 0u : machine->executor_cpu.data.cs.selector,
-                machine == LIB_NULL ? 0u : machine->executor_cpu.data.sp,
+                machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.eip,
+                machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.cs.selector,
+                machine == LIB_NULL ? 0u : (*test_core_machine_fixture_cpu(machine)).data.sp,
                 capture.observation.control_outcome,
                 capture.observation.source_timing_form_id,
                 capture.observation.timing_key_id);
@@ -3901,7 +3901,7 @@ static lib_i32 timing_manifest_probe_memory_stack_forms(void)
                 recipe->program_bytes);
 
         if (!failed) {
-            machine->executor_cpu.data.sp = 0x8000u;
+            (*test_core_machine_fixture_cpu(machine)).data.sp = 0x8000u;
             failed = !timing_manifest_write_word(machine,
                 recipe->push ? recipe->memory_address : 0x8000u, transfer_word);
         }
@@ -3914,7 +3914,7 @@ static lib_i32 timing_manifest_probe_memory_stack_forms(void)
                 !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
                 (capture.observation.formula_inputs & recipe->required_formula_inputs) !=
                     recipe->required_formula_inputs ||
-                machine->executor_cpu.data.sp != (recipe->push ? 0x7ffeu : 0x8002u) ||
+                (*test_core_machine_fixture_cpu(machine)).data.sp != (recipe->push ? 0x7ffeu : 0x8002u) ||
                 core_machine_memory_read(machine,
                     recipe->push ? 0x7ffeu : recipe->memory_address,
                     &observed, sizeof(observed)) != LIB_STATUS_OK ||
@@ -3949,7 +3949,7 @@ static lib_i32 timing_manifest_probe_hlt(void)
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             !timing_manifest_origin_match(capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
-            !machine->executor_cpu.data.flagHalt;
+            !(*test_core_machine_fixture_cpu(machine)).data.flagHalt;
     }
     if (failed) printf("M5:T435:S4:I86-MANIFEST-RECIPE:FAIL:I86-FLAG-HLT\n");
     core_machine_destroy(machine);
@@ -3976,7 +3976,7 @@ static lib_i32 timing_manifest_probe_hlt(void)
                 !timing_manifest_origin_match(locked_capture.observation.timing_origin, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
                 (locked_capture.observation.formula_inputs &
                     CORE_MACHINE_CPU_TIMING_INPUT_LOCK) == 0u ||
-                !locked_machine->executor_cpu.data.flagHalt;
+                !(*test_core_machine_fixture_cpu(locked_machine)).data.flagHalt;
         }
         core_machine_destroy(locked_machine);
         if (locked_failed) {

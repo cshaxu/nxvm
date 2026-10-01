@@ -4,6 +4,23 @@
 
 /* Private prepared-state operations for CPU execution corpus fixtures. */
 #include "core_machine_board_fixture.h"
+#include "app-nxvm/devices/cpu_instructions.h"
+
+/* This test-only borrow does not cross a production boundary: the board keeps
+ * only the opaque execution owner, and tests use this fixture solely to build
+ * historical instruction-state inputs. */
+static inline t_cpu *test_core_machine_fixture_cpu(core_machine *machine)
+{
+    return machine == LIB_NULL || machine->executor_cpu_execution == LIB_NULL ?
+        LIB_NULL : machine->executor_cpu_execution->cpu;
+}
+
+static inline const t_cpuins *test_core_machine_fixture_instructions(
+    const core_machine *machine)
+{
+    return machine == LIB_NULL || machine->executor_cpu_execution == LIB_NULL ?
+        LIB_NULL : machine->executor_cpu_execution->instructions;
+}
 
 static inline lib_i32 test_core_machine_fixture_reset_real_mode(core_machine *machine)
 {
@@ -11,8 +28,9 @@ static inline lib_i32 test_core_machine_fixture_reset_real_mode(core_machine *ma
     core_machine_cpu_execution_context *execution;
 
     if (machine == LIB_NULL) return 0;
-    cpu = &machine->executor_cpu;
-    execution = &machine->executor_cpu_execution;
+    cpu = test_core_machine_fixture_cpu(machine);
+    execution = machine->executor_cpu_execution;
+    if (cpu == LIB_NULL || execution == LIB_NULL) return 0;
     return core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) == 0 &&
         core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) == 0 &&
         core_machine_cpu_execution_load_segment(execution, &cpu->data.es, 0u) == 0 &&
@@ -23,8 +41,10 @@ static inline lib_i32 test_core_machine_fixture_reset_real_mode(core_machine *ma
 static inline lib_i32 test_core_machine_fixture_set_control_zero(
     core_machine *machine, lib_u32 value)
 {
-    if (machine == LIB_NULL) return 0;
-    machine->executor_cpu.data.cr0 = value;
+    t_cpu *cpu = test_core_machine_fixture_cpu(machine);
+
+    if (cpu == LIB_NULL) return 0;
+    cpu->data.cr0 = value;
     return 1;
 }
 
@@ -33,7 +53,9 @@ static inline t_cpu test_core_machine_fixture_capture_cpu_after_run(
 {
     t_cpu observation = {0};
 
-    if (machine != LIB_NULL) observation = machine->executor_cpu;
+    t_cpu *cpu = test_core_machine_fixture_cpu(machine);
+
+    if (cpu != LIB_NULL) observation = *cpu;
     return observation;
 }
 
@@ -41,9 +63,12 @@ static inline t_cpu test_core_machine_fixture_capture_cpu_after_run(
 static inline lib_i32 test_core_machine_fixture_capture_instruction_exception(
     const core_machine *machine, lib_u32 *out_mask, lib_u32 *out_code)
 {
-    if (machine == LIB_NULL || out_mask == LIB_NULL || out_code == LIB_NULL) return 0;
-    *out_mask = machine->executor_cpu_instructions.data.except;
-    *out_code = machine->executor_cpu_instructions.data.excode;
+    const t_cpuins *instructions = test_core_machine_fixture_instructions(machine);
+
+    if (instructions == LIB_NULL || out_mask == LIB_NULL || out_code == LIB_NULL)
+        return 0;
+    *out_mask = instructions->data.except;
+    *out_code = instructions->data.excode;
     return 1;
 }
 
@@ -51,8 +76,8 @@ static inline lib_i32 test_core_machine_fixture_prepare_real_mode_execution(
     core_machine *machine, lib_u32 eip)
 {
     if (!test_core_machine_fixture_reset_real_mode(machine)) return 0;
-    machine->executor_cpu.data.eip = eip;
-    machine->executor_cpu.data.flagHalt = LIB_FALSE;
+    test_core_machine_fixture_cpu(machine)->data.eip = eip;
+    test_core_machine_fixture_cpu(machine)->data.flagHalt = LIB_FALSE;
     return 1;
 }
 
@@ -66,9 +91,11 @@ static inline lib_i32 test_core_machine_fixture_prepare_real_mode_execution(
 static inline lib_i32 test_core_machine_fixture_preflight_real_ud_terminal(
     core_machine *machine)
 {
-    if (machine == LIB_NULL) return 0;
-    if (machine->executor_cpu.data.idtr.limit >= 0x18u) {
-        machine->executor_cpu.data.idtr.limit = 0x17u;
+    t_cpu *cpu = test_core_machine_fixture_cpu(machine);
+
+    if (cpu == LIB_NULL) return 0;
+    if (cpu->data.idtr.limit >= 0x18u) {
+        cpu->data.idtr.limit = 0x17u;
     }
     return 1;
 }
@@ -76,9 +103,11 @@ static inline lib_i32 test_core_machine_fixture_preflight_real_ud_terminal(
 static inline void test_core_machine_fixture_resume_after_halt_at(
     core_machine *machine, lib_u32 eip)
 {
-    if (machine == LIB_NULL) return;
-    machine->executor_cpu.data.flagHalt = LIB_FALSE;
-    machine->executor_cpu.data.eip = eip;
+    t_cpu *cpu = test_core_machine_fixture_cpu(machine);
+
+    if (cpu == LIB_NULL) return;
+    cpu->data.flagHalt = LIB_FALSE;
+    cpu->data.eip = eip;
 }
 
 #ifdef CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT
@@ -90,7 +119,7 @@ static inline lib_i32 test_core_machine_fixture_read_linear(
     lib_size bytes)
 {
     return machine != LIB_NULL && core_machine_cpu_execution_read_linear(
-        &machine->executor_cpu_execution, address, destination, bytes) == 0;
+        machine->executor_cpu_execution, address, destination, bytes) == 0;
 }
 
 

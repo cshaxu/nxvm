@@ -105,9 +105,9 @@ static lib_i32 t359_s2_seed_words(core_machine *machine, void *opaque)
     const t359_s2_word_seed *seed = (const t359_s2_word_seed *)opaque;
 
     if (machine == LIB_NULL || seed == LIB_NULL) return 0;
-    machine->executor_cpu.data.ax = seed->ax;
-    machine->executor_cpu.data.cx = seed->cx;
-    machine->executor_cpu.data.dx = seed->dx;
+    (*test_core_machine_fixture_cpu(machine)).data.ax = seed->ax;
+    (*test_core_machine_fixture_cpu(machine)).data.cx = seed->cx;
+    (*test_core_machine_fixture_cpu(machine)).data.dx = seed->dx;
     return !seed->write_memory || core_machine_memory_write(machine,
         seed->memory_address, &seed->memory, sizeof(seed->memory)) ==
         LIB_STATUS_OK;
@@ -135,10 +135,10 @@ static lib_i32 t359_s2_test_profile_rows(core_machine_cpu_profile profile,
 
     if (!failed) {
         failed |= !t359_s2_run(machine, add_register, sizeof(add_register),
-            add_register_ticks, &state) || machine->executor_cpu.data.ax != 0u;
+            add_register_ticks, &state) || (*test_core_machine_fixture_cpu(machine)).data.ax != 0u;
     }
     if (!failed) {
-        machine->executor_cpu.data.cx = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 1u;
         failed |= core_machine_memory_write(machine, 0x1000u, &memory_value,
             sizeof(memory_value)) != LIB_STATUS_OK || !t359_s2_run(machine,
             add_memory, sizeof(add_memory), add_memory_ticks, &state);
@@ -153,8 +153,8 @@ static lib_i32 t359_s2_test_profile_rows(core_machine_cpu_profile profile,
             mov_immediate_ticks, &state);
     }
     if (!failed) {
-        machine->executor_cpu.data.bp = 0x1000u;
-        machine->executor_cpu.data.si = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.si = 1u;
         failed |= !t359_s2_run(machine, lea, sizeof(lea), lea_ticks, &state);
     }
     if (!failed) {
@@ -178,7 +178,7 @@ static lib_i32 t359_s2_test_setcc(void)
 
     if (!failed) {
         failed |= !t359_s2_run(machine, set_register, sizeof(set_register), 4u,
-            &state) || machine->executor_cpu.data.al != 1u;
+            &state) || (*test_core_machine_fixture_cpu(machine)).data.al != 1u;
     }
     if (!failed) {
         failed |= !t359_s2_run(machine, set_memory, sizeof(set_memory), 5u,

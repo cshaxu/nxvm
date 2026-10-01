@@ -17,7 +17,7 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" core_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_bus.c" bus_source)
 string(FIND "${core_source}"
-    "&core_machine_cpu_bus, machine);" core_cpu_bus_bind)
+    "core_machine_cpu_create(&core_machine_cpu_bus," core_cpu_bus_bind)
 if(core_cpu_bus_bind EQUAL -1)
     message(FATAL_ERROR "Core board does not bind the CPU bus provider")
 endif()
@@ -68,7 +68,7 @@ foreach(board_source IN LISTS board_sources)
     if(contents MATCHES "executor_cpu(_instructions|_execution)?[ \t\r\n]*(\\.|->)[ \t\r\n]*[a-zA-Z_]")
         message(FATAL_ERROR "Board bypasses copied CPU operations: ${board_source}")
     endif()
-    # Only the original embedded lifetime owner remains until the allocation cutover.
+    # CPU storage is private to cpu.c; no board header imports its layout.
     if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" AND
        contents MATCHES "#[ \t]*include[ \t]*[<\"]app-nxvm/devices/cpu(_instructions)?\\.h[>\"]")
         message(FATAL_ERROR "Board imports private CPU layout: ${board_source}")

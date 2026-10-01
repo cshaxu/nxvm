@@ -79,7 +79,7 @@ lib_i32 main(void)
 
     /* Reset preview selects high ROM without A20 wrap or callback side effects. */
     failed |= !core_machine_cpu_execution_preview_lexeme(
-        &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
+        machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
         lexeme.byte_count != 1u || probe.reads != 0u || probe.parity != 0u;
     failed |= core_machine_memory_read_reset_physical(memory, 0xfffffff0u,
         (lib_uptr)bytes, 1u) != LIB_STATUS_OK || bytes[0] != 0x90u || probe.reads != 1u;
@@ -88,7 +88,7 @@ lib_i32 main(void)
     failed |= core_machine_memory_inspect_physical(memory, 0x1001u,
         (lib_uptr)bytes, 1u, LIB_FALSE) != LIB_STATUS_IO_ERROR || probe.reads != 0u;
     failed |= core_machine_cpu_execution_preview_lexeme(
-        &machine->executor_cpu_execution, &lexeme) || lexeme.available ||
+        machine->executor_cpu_execution, &lexeme) || lexeme.available ||
         probe.reads != 0u;
     probe.status = LIB_STATUS_OK;
     failed |= core_machine_memory_inspect_physical(memory, 0x101001u,
@@ -123,9 +123,9 @@ lib_i32 main(void)
                 &cr0) != LIB_STATUS_OK ||
             core_machine_debug_write_register(machine, CORE_MACHINE_DEBUG_CR0,
                 cr0 | VCPU_CR0_PG | VCPU_CR0_PE) != LIB_STATUS_OK;
-        core_machine_cpu_execution_invalidate_prefetch(&machine->executor_cpu_execution);
+        core_machine_cpu_execution_invalidate_prefetch(machine->executor_cpu_execution);
         failed |= !core_machine_cpu_execution_preview_lexeme(
-            &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
+            machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
             lexeme.byte_count != 1u;
         failed |= core_machine_memory_inspect_physical(memory, 0x3000u,
             (lib_uptr)&copied, sizeof(copied), LIB_FALSE) != LIB_STATUS_OK ||

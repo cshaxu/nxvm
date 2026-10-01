@@ -30,7 +30,7 @@ static void real_final_reset(void *opaque)
     };
     if (state != LIB_NULL) state->reset_status =
         core_machine_cpu_debug_patch_registers(
-            &state->machine->executor_cpu_execution, &entry);
+            state->machine->executor_cpu_execution, &entry);
 }
 
 static const core_machine_execution_provider real_final_provider = {

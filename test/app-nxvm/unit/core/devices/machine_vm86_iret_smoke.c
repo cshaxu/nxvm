@@ -60,7 +60,7 @@ static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
         core_machine_memory_write(state->machine, VM86_IRET_STACK, frame,
             sizeof(frame)) != LIB_STATUS_OK)
         return 0;
-    cpu = &state->machine->executor_cpu;
+    cpu = &(*test_core_machine_fixture_cpu(state->machine));
     cpu->data.cr0 = VCPU_CR0_PE;
     cpu->data.eflags = VCPU_EFLAGS_IF;
     cpu->data.cs.flagValid = LIB_TRUE; cpu->data.cs.selector = 0x0008u;
@@ -101,16 +101,16 @@ static lib_i32 vm86_iret_success(const lib_u8 *instruction,
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
-            state.machine->executor_cpu.data.eflags !=
+            (*test_core_machine_fixture_cpu(state.machine)).data.eflags !=
                 (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF | 0x02u) ||
-            state.machine->executor_cpu.data.eip != 0x0011u ||
-            state.machine->executor_cpu.data.esp != 0x00001234u ||
-            !vm86_iret_cache(&state.machine->executor_cpu.data.cs, 0x0200u, SREG_CODE) ||
-            !vm86_iret_cache(&state.machine->executor_cpu.data.ss, 0x0300u, SREG_STACK) ||
-            !vm86_iret_cache(&state.machine->executor_cpu.data.es, 0x0500u, SREG_DATA) ||
-            !vm86_iret_cache(&state.machine->executor_cpu.data.ds, 0x0400u, SREG_DATA) ||
-            !vm86_iret_cache(&state.machine->executor_cpu.data.fs, 0x0600u, SREG_DATA) ||
-            !vm86_iret_cache(&state.machine->executor_cpu.data.gs, 0x0700u, SREG_DATA);
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0011u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.esp != 0x00001234u ||
+            !vm86_iret_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.cs, 0x0200u, SREG_CODE) ||
+            !vm86_iret_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.ss, 0x0300u, SREG_STACK) ||
+            !vm86_iret_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.es, 0x0500u, SREG_DATA) ||
+            !vm86_iret_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.ds, 0x0400u, SREG_DATA) ||
+            !vm86_iret_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.fs, 0x0600u, SREG_DATA) ||
+            !vm86_iret_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.gs, 0x0700u, SREG_DATA);
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -150,20 +150,20 @@ static lib_i32 vm86_iret_paging_success(void)
                 0x2000u | VM86_IRET_PAGE_FLAGS) ||
             !vm86_iret_write_u32(state.machine, VM86_IRET_PAGE_TABLE + 8u * 4u,
                 0x8000u | VM86_IRET_PAGE_FLAGS);
-        state.machine->executor_cpu.data.cr3 = VM86_IRET_PAGE_DIRECTORY;
-        state.machine->executor_cpu.data.cr0 |= VCPU_CR0_PG;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cr3 = VM86_IRET_PAGE_DIRECTORY;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cr0 |= VCPU_CR0_PG;
         failed |= core_machine_run(state.machine,
                 (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
                 LIB_STATUS_OK || diagnostic.first_fault.valid ||
-            state.machine->executor_cpu.data.cr3 != VM86_IRET_PAGE_DIRECTORY ||
-            state.machine->executor_cpu.data.eip != 0x0011u ||
-            state.machine->executor_cpu.data.esp != 0x00001234u ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags,
+            (*test_core_machine_fixture_cpu(state.machine)).data.cr3 != VM86_IRET_PAGE_DIRECTORY ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0011u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.esp != 0x00001234u ||
+            !CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags,
                 VCPU_EFLAGS_VM) || !vm86_iret_cache(
-                &state.machine->executor_cpu.data.cs, 0x0200u, SREG_CODE) ||
-            !vm86_iret_cache(&state.machine->executor_cpu.data.ss, 0x0300u,
+                &(*test_core_machine_fixture_cpu(state.machine)).data.cs, 0x0200u, SREG_CODE) ||
+            !vm86_iret_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.ss, 0x0300u,
                 SREG_STACK);
     }
     core_machine_destroy(state.machine);

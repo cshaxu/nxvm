@@ -120,10 +120,10 @@ static lib_i32 t359_s4_load(core_machine *machine,
             sizeof(compare)) != LIB_STATUS_OK) {
         return 0;
     }
-    machine->executor_cpu.data.si = 0x1000u;
-    machine->executor_cpu.data.di = 0x1100u;
-    machine->executor_cpu.data.dx = T359_S4_PORT;
-    machine->executor_cpu.data.ax = 0x0011u;
+    (*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u;
+    (*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u;
+    (*test_core_machine_fixture_cpu(machine)).data.dx = T359_S4_PORT;
+    (*test_core_machine_fixture_cpu(machine)).data.ax = 0x0011u;
     return 1;
 }
 
@@ -133,21 +133,21 @@ static lib_i32 t359_s4_allow_permission(core_machine *machine, lib_i32 vm86)
     const lib_u8 bitmap = 0u;
 
     if (machine == LIB_NULL) return 0;
-    machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
-    machine->executor_cpu.data.eflags = vm86 ?
+    (*test_core_machine_fixture_cpu(machine)).data.cr0 |= VCPU_CR0_PE;
+    (*test_core_machine_fixture_cpu(machine)).data.eflags = vm86 ?
         VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL : 0u;
-    machine->executor_cpu.data.cs.selector = 0x001bu;
-    machine->executor_cpu.data.cs.dpl = 3u;
-    machine->executor_cpu.data.ss.dpl = 3u;
-    machine->executor_cpu.data.ds.selector = 0x0023u;
-    machine->executor_cpu.data.ds.dpl = 3u;
-    machine->executor_cpu.data.es.selector = 0x0023u;
-    machine->executor_cpu.data.es.dpl = 3u;
-    machine->executor_cpu.data.tr.flagValid = LIB_TRUE;
-    machine->executor_cpu.data.tr.selector = 0x0028u;
-    machine->executor_cpu.data.tr.base = T359_S4_TSS_BASE;
-    machine->executor_cpu.data.tr.limit = 0x00ffu;
-    machine->executor_cpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
+    (*test_core_machine_fixture_cpu(machine)).data.cs.selector = 0x001bu;
+    (*test_core_machine_fixture_cpu(machine)).data.cs.dpl = 3u;
+    (*test_core_machine_fixture_cpu(machine)).data.ss.dpl = 3u;
+    (*test_core_machine_fixture_cpu(machine)).data.ds.selector = 0x0023u;
+    (*test_core_machine_fixture_cpu(machine)).data.ds.dpl = 3u;
+    (*test_core_machine_fixture_cpu(machine)).data.es.selector = 0x0023u;
+    (*test_core_machine_fixture_cpu(machine)).data.es.dpl = 3u;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.flagValid = LIB_TRUE;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.selector = 0x0028u;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.base = T359_S4_TSS_BASE;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.limit = 0x00ffu;
+    (*test_core_machine_fixture_cpu(machine)).data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
     return core_machine_memory_write(machine, T359_S4_TSS_BASE + 0x66u,
         &iomap_base, sizeof(iomap_base)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, T359_S4_TSS_BASE + iomap_base +
@@ -228,7 +228,7 @@ static lib_i32 t359_s4_test_rep_movs(core_machine_cpu_profile profile,
         lib_u64 ticks = setup + iteration * counts[index];
 
         failed |= !t359_s4_load(machine, program, sizeof(program));
-        if (!failed) machine->executor_cpu.data.cx = (lib_u16)counts[index];
+        if (!failed) (*test_core_machine_fixture_cpu(machine)).data.cx = (lib_u16)counts[index];
         if (!failed) failed |= !t359_s4_run(machine, &state, instructions, ticks);
     }
     core_machine_destroy(machine);
@@ -244,9 +244,9 @@ static lib_i32 t359_s4_test_rep_cmps_stop(core_machine_cpu_profile profile,
     lib_i32 failed = !t359_s4_prepare(profile, &machine, &state);
 
     if (!failed) failed |= !t359_s4_load(machine, program, sizeof(program)) ||
-        ((machine->executor_cpu.data.cx = 3u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.cx = 3u), 0) ||
         !t359_s4_run(machine, &state, 2u, setup + 2u * iteration) ||
-        machine->executor_cpu.data.cx != 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx != 1u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -286,10 +286,10 @@ static lib_i32 t359_s4_test_rep_basic_strings(core_machine_cpu_profile profile,
 
             failed |= !t359_s4_load(machine, program, sizeof(program));
             if (!failed) {
-                machine->executor_cpu.data.cx = (lib_u16)counts[count];
+                (*test_core_machine_fixture_cpu(machine)).data.cx = (lib_u16)counts[count];
                 if (rows[row].opcode == 0xaeu) {
-                    machine->executor_cpu.data.di = 0x1000u;
-                    machine->executor_cpu.data.ax = 0u;
+                    (*test_core_machine_fixture_cpu(machine)).data.di = 0x1000u;
+                    (*test_core_machine_fixture_cpu(machine)).data.ax = 0u;
                 }
             }
             if (!failed) failed |= !t359_s4_run(machine, &state, instructions,
@@ -330,7 +330,7 @@ static lib_i32 t359_s4_test_rep_port_strings(core_machine_cpu_profile profile,
             failed |= !t359_s4_load(machine, program, sizeof(program));
             if (!failed) {
                 state.input = 0x5au;
-                machine->executor_cpu.data.cx = (lib_u16)counts[count];
+                (*test_core_machine_fixture_cpu(machine)).data.cx = (lib_u16)counts[count];
             }
             if (!failed) failed |= !t359_s4_run(machine, &state, instructions,
                 ticks) || (opcodes[opcode] == 0x6cu ?
@@ -352,7 +352,7 @@ static lib_i32 t359_s4_test_rep_ins_80386(void)
     if (!failed) failed |= !t359_s4_load(machine, program, sizeof(program));
     if (!failed) {
         state.input = 0x5au;
-        machine->executor_cpu.data.cx = 3u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 3u;
         failed |= !t359_s4_run(machine, &state, 3u, 31u) || state.reads != 3u;
     }
     core_machine_destroy(machine);
@@ -397,16 +397,16 @@ static lib_i32 t359_s4_test_80386_string_port_modes(void)
         if (!failed && mode != 0) failed |= !t359_s4_allow_permission(machine,
             mode == 2);
         if (!failed && mode == 0) {
-            machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
-            machine->executor_cpu.data.cs.selector = 0x0008u;
-            machine->executor_cpu.data.cs.dpl = 0u;
-            machine->executor_cpu.data.ss.selector = 0x0010u;
-            machine->executor_cpu.data.ss.dpl = 0u;
-            machine->executor_cpu.data.ds.selector = 0x0010u;
-            machine->executor_cpu.data.ds.dpl = 0u;
-            machine->executor_cpu.data.es.selector = 0x0010u;
-            machine->executor_cpu.data.es.dpl = 0u;
-            machine->executor_cpu.data.eflags = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.cr0 |= VCPU_CR0_PE;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.selector = 0x0008u;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.dpl = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.ss.selector = 0x0010u;
+            (*test_core_machine_fixture_cpu(machine)).data.ss.dpl = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.ds.selector = 0x0010u;
+            (*test_core_machine_fixture_cpu(machine)).data.ds.dpl = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.es.selector = 0x0010u;
+            (*test_core_machine_fixture_cpu(machine)).data.es.dpl = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.eflags = 0u;
         }
         if (!failed) {
             state.input = 0x5au;
@@ -417,16 +417,16 @@ static lib_i32 t359_s4_test_80386_string_port_modes(void)
         if (!failed && mode != 0) failed |= !t359_s4_allow_permission(machine,
             mode == 2);
         if (!failed && mode == 0) {
-            machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
-            machine->executor_cpu.data.cs.selector = 0x0008u;
-            machine->executor_cpu.data.cs.dpl = 0u;
-            machine->executor_cpu.data.ss.selector = 0x0010u;
-            machine->executor_cpu.data.ss.dpl = 0u;
-            machine->executor_cpu.data.ds.selector = 0x0010u;
-            machine->executor_cpu.data.ds.dpl = 0u;
-            machine->executor_cpu.data.es.selector = 0x0010u;
-            machine->executor_cpu.data.es.dpl = 0u;
-            machine->executor_cpu.data.eflags = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.cr0 |= VCPU_CR0_PE;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.selector = 0x0008u;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.dpl = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.ss.selector = 0x0010u;
+            (*test_core_machine_fixture_cpu(machine)).data.ss.dpl = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.ds.selector = 0x0010u;
+            (*test_core_machine_fixture_cpu(machine)).data.ds.dpl = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.es.selector = 0x0010u;
+            (*test_core_machine_fixture_cpu(machine)).data.es.dpl = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.eflags = 0u;
         }
         if (!failed) failed |= !t359_s4_run(machine, &state, 1u,
             output_ticks[mode]) || state.reads != 0u || state.writes != 1u;
@@ -447,7 +447,7 @@ static lib_i32 t359_s4_test_80186_preflight(void)
     lib_i32 failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80186, &machine,
         &state) || !t359_s4_load(machine, program, sizeof(program));
 
-    if (!failed) machine->executor_cpu.data.cx = 1u;
+    if (!failed) (*test_core_machine_fixture_cpu(machine)).data.cx = 1u;
     if (!failed) {
         failed |= core_machine_run(machine, insufficient, &result) !=
             LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
@@ -474,7 +474,7 @@ static lib_i32 t359_s4_test_repeat_continuation_reset(void)
     lib_i32 failed = !t359_s4_prepare(CORE_MACHINE_CPU_PROFILE_80386, &machine,
         &state) || !t359_s4_load(machine, program, sizeof(program));
 
-    if (!failed) machine->executor_cpu.data.cx = 3u;
+    if (!failed) (*test_core_machine_fixture_cpu(machine)).data.cx = 3u;
     if (!failed) failed |= !t359_s4_run(machine, &state, 1u, 9u);
     if (!failed) {
         failed |= core_machine_run(machine, one, &result) != LIB_STATUS_OK ||
@@ -484,7 +484,7 @@ static lib_i32 t359_s4_test_repeat_continuation_reset(void)
     }
     if (!failed) failed |= !t359_s4_load(machine, program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.cx = 3u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 3u;
         failed |= !t359_s4_run(machine, &state, 1u, 9u);
     }
     core_machine_destroy(machine);
@@ -511,9 +511,9 @@ static lib_i32 t359_s4_test_80386_attributes_and_failure(void)
     if (!failed) failed |= !t359_s4_load(machine, repne_cmps,
         sizeof(repne_cmps));
     if (!failed) {
-        machine->executor_cpu.data.cx = 3u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 3u;
         failed |= !t359_s4_run(machine, &state, 1u, 14u) ||
-            machine->executor_cpu.data.cx != 2u;
+            (*test_core_machine_fixture_cpu(machine)).data.cx != 2u;
     }
     if (!failed) failed |= !t359_s4_load(machine, input, sizeof(input));
     if (!failed) {

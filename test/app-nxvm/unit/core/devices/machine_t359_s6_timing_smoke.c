@@ -44,11 +44,11 @@ static void t359_s6_enter_protected(core_machine *machine)
     t_cpu_data_sreg data = { 0 };
 
     if (machine == LIB_NULL) return;
-    CORE_MACHINE_BIT_SET(machine->executor_cpu.data.cr0, VCPU_CR0_PE);
-    machine->executor_cpu.data.gdtr.flagValid = LIB_TRUE;
-    machine->executor_cpu.data.gdtr.sregtype = SREG_GDTR;
-    machine->executor_cpu.data.gdtr.base = 0x0300u;
-    machine->executor_cpu.data.gdtr.limit = 0x0017u;
+    CORE_MACHINE_BIT_SET((*test_core_machine_fixture_cpu(machine)).data.cr0, VCPU_CR0_PE);
+    (*test_core_machine_fixture_cpu(machine)).data.gdtr.flagValid = LIB_TRUE;
+    (*test_core_machine_fixture_cpu(machine)).data.gdtr.sregtype = SREG_GDTR;
+    (*test_core_machine_fixture_cpu(machine)).data.gdtr.base = 0x0300u;
+    (*test_core_machine_fixture_cpu(machine)).data.gdtr.limit = 0x0017u;
     data.selector = 0x0008u;
     data.base = 0u;
     data.limit = 0xffffu;
@@ -57,14 +57,14 @@ static void t359_s6_enter_protected(core_machine *machine)
     data.sregtype = SREG_CODE;
     data.seg.executable = LIB_TRUE;
     data.seg.exec.readable = LIB_TRUE;
-    machine->executor_cpu.data.cs = data;
+    (*test_core_machine_fixture_cpu(machine)).data.cs = data;
     data.selector = 0x0010u;
     data.sregtype = SREG_DATA;
     data.seg.executable = LIB_FALSE;
     data.seg.data.writable = LIB_TRUE;
-    machine->executor_cpu.data.ds = data;
+    (*test_core_machine_fixture_cpu(machine)).data.ds = data;
     data.sregtype = SREG_STACK;
-    machine->executor_cpu.data.ss = data;
+    (*test_core_machine_fixture_cpu(machine)).data.ss = data;
 }
 
 static lib_i32 t359_s6_prepare(core_machine **out_machine, t359_s6_state *state)
@@ -115,8 +115,8 @@ static lib_i32 t359_s6_run(core_machine *machine, t359_s6_state *state,
         core_machine_memory_write(machine, T359_S6_DATA, &data, sizeof(data)) !=
             LIB_STATUS_OK) return 0;
     t359_s6_enter_protected(machine);
-    machine->executor_cpu.data.eip = 0u;
-    machine->executor_cpu.data.eax = row->eax;
+    (*test_core_machine_fixture_cpu(machine)).data.eip = 0u;
+    (*test_core_machine_fixture_cpu(machine)).data.eax = row->eax;
     status = core_machine_run(machine, budget, &result);
     return status == LIB_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&

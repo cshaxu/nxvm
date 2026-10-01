@@ -308,7 +308,7 @@ static void core_machine_arbitration_advance(core_machine *machine,
         machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_NONE &&
         machine->transaction.hold_owner == CORE_MACHINE_TRANSACTION_OWNER_NONE) {
         core_machine_cpu_execution_advance_prefetch_reservation(
-            &machine->executor_cpu_execution);
+            machine->executor_cpu_execution);
     }
     if (dma_ticks != 0u) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_DMA_ADVANCE,

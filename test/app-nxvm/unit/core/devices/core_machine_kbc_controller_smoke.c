@@ -521,7 +521,7 @@ static void core_machine_kbc_cpu_reset(void *opaque)
 
     if (fixture != LIB_NULL)
         fixture->reset_status = core_machine_cpu_debug_patch_registers(
-            &fixture->machine->executor_cpu_execution, &entry);
+            fixture->machine->executor_cpu_execution, &entry);
 }
 
 static const core_machine_execution_provider core_machine_kbc_cpu_provider = {

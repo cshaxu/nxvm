@@ -83,7 +83,7 @@ static void paging_reset(void *opaque)
     };
     if (state != LIB_NULL) state->reset_status =
         core_machine_cpu_debug_patch_registers(
-            &state->machine->executor_cpu_execution, &entry);
+            state->machine->executor_cpu_execution, &entry);
 }
 
 static const core_machine_execution_provider paging_provider = {
@@ -214,7 +214,7 @@ static lib_i32 paging_resume_at(core_machine *machine, lib_u16 cs,
         .eax = cpu.eax, .ebx = cpu.ebx, .ecx = cpu.ecx, .edx = cpu.edx,
         .esi = cpu.esi, .edi = cpu.edi, .ebp = cpu.ebp, .eflags = flags
     };
-    if (core_machine_cpu_prepare_entry(&machine->executor_cpu_execution,
+    if (core_machine_cpu_prepare_entry(machine->executor_cpu_execution,
             &state, &entry) != LIB_STATUS_OK) return 0;
     core_machine_cpu_finish_entry(entry, LIB_TRUE);
     return 1;

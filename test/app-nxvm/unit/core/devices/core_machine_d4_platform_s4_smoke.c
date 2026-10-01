@@ -170,8 +170,8 @@ lib_i32 main(void)
         elapsed_before_shutdown = machine->elapsed_ticks;
         failed |= core_machine_debug_write_register(machine,
             CORE_MACHINE_DEBUG_EIP, 0x0000fff0u) != LIB_STATUS_OK ||
-            !core_machine_cpu_is_halted(&machine->executor_cpu_execution);
-        core_machine_cpu_execution_request_shutdown(&machine->executor_cpu_execution);
+            !core_machine_cpu_is_halted(machine->executor_cpu_execution);
+        core_machine_cpu_execution_request_shutdown(machine->executor_cpu_execution);
         failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},
             &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_RESET_REQUESTED ||

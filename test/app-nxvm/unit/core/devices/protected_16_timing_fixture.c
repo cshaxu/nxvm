@@ -95,7 +95,7 @@ static lib_i32 s3_gate_prepare(s3_gate_machine *state,
         state->machine = LIB_NULL;
         return 0;
     }
-    cpu = &state->machine->executor_cpu;
+    cpu = &(*test_core_machine_fixture_cpu(state->machine));
     cpu->data.cr0 = VCPU_CR0_PE;
     cpu->data.gdtr.flagValid = LIB_TRUE;
     cpu->data.gdtr.sregtype = SREG_GDTR;
@@ -177,14 +177,14 @@ static lib_i32 s3_gate_success(core_machine_cpu_profile profile,
                 &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
-            diagnostic.first_fault.valid || state.machine->executor_cpu.data.eip !=
-                S3_HANDLER + 1u || state.machine->executor_cpu.data.esp !=
+            diagnostic.first_fault.valid || (*test_core_machine_fixture_cpu(state.machine)).data.eip !=
+                S3_HANDLER + 1u || (*test_core_machine_fixture_cpu(state.machine)).data.esp !=
                 S3_STACK_TOP - 6u || !s3_gate_gprs_same(&before,
-                &state.machine->executor_cpu) || !s3_gate_non_target_sregs_same(
-                &before, &state.machine->executor_cpu) ||
-            !CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_CF) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
-            (CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) !=
+                &(*test_core_machine_fixture_cpu(state.machine))) || !s3_gate_non_target_sregs_same(
+                &before, &(*test_core_machine_fixture_cpu(state.machine))) ||
+            !CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_CF) ||
+            CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_TF) ||
+            (CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_IF) !=
                 expect_if) || !s3_gate_read(&state, S3_STACK_TOP - 6u, frame,
                 sizeof(frame)) || frame[0] != return_ip || frame[1] != 0x0008u ||
             frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF) ||
@@ -311,8 +311,8 @@ static lib_i32 s3_gate_error_frame(void)
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_GP ||
-            state.machine->executor_cpu.data.eip != S3_HANDLER + 1u ||
-            state.machine->executor_cpu.data.esp != S3_STACK_TOP - 8u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != S3_HANDLER + 1u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.esp != S3_STACK_TOP - 8u ||
             !s3_gate_read(&state, S3_STACK_TOP - 8u, frame, sizeof(frame)) ||
             frame[0] != 0x000au || frame[1] !=
                 diagnostic.last_delivered_exception.point.eip || frame[2] != 0x0008u || frame[3] !=
@@ -334,7 +334,7 @@ static lib_i32 s3_gate_external_irq(void)
 
     lib_memory_set(&source, 0, sizeof(source));
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
         core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
             &state.machine->shared_pic_slave, 0u);
@@ -344,10 +344,10 @@ static lib_i32 s3_gate_external_irq(void)
             core_machine_run(state.machine, (core_machine_run_budget){16u,0u},
                 &result) != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-            state.machine->executor_cpu.data.eip != S3_HANDLER + 1u ||
-            state.machine->executor_cpu.data.esp != S3_STACK_TOP - 6u ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
-            CORE_MACHINE_BIT_IS_SET(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_TF) ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != S3_HANDLER + 1u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.esp != S3_STACK_TOP - 6u ||
+            CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_IF) ||
+            CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_TF) ||
             !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || !s3_gate_read(&state, S3_STACK_TOP - 6u,

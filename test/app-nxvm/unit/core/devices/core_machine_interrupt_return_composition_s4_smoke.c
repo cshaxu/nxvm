@@ -14,7 +14,7 @@
 static void interrupt_return_composition_s4_seed(cli_sti_machine *state,
     lib_u32 flags)
 {
-    t_cpu *cpu = &state->machine->executor_cpu;
+    t_cpu *cpu = &(*test_core_machine_fixture_cpu(state->machine));
 
     cpu->data.eax = 0xaabbccddu;
     cpu->data.ecx = 0x11223344u;

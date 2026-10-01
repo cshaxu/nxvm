@@ -1484,7 +1484,7 @@ static lib_i32 preview_test_cpu_fetch_nonpublication(void)
         cancelled = machine->transaction.cancelled_count;
         trace_count = machine->trace.count;
         failed |= !core_machine_cpu_execution_preview_lexeme(
-            &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
+            machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
             lexeme.byte_count != sizeof(program) || lexeme.component_count != 3u ||
             core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0 ||
@@ -1556,7 +1556,7 @@ static lib_i32 preview_test_limited_fetch_nonpublication(void)
         cancelled = machine->transaction.cancelled_count;
         trace_count = machine->trace.count;
         failed |= core_machine_cpu_execution_preview_lexeme(
-            &machine->executor_cpu_execution, &lexeme) || lexeme.available ||
+            machine->executor_cpu_execution, &lexeme) || lexeme.available ||
             core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0 ||
             machine->transaction.committed_count != committed ||
@@ -1599,7 +1599,7 @@ static lib_i32 preview_test_taken_jcc_target(void)
             failed = 1;
         } else if (core_machine_capture_observation(machine, &before) !=
             LIB_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
-                &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
+                machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
             lexeme.byte_count != 2u || lexeme.component_count != 2u ||
             core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0) {
@@ -1645,7 +1645,7 @@ static lib_i32 preview_test_taken_near_jcc_target(void)
             failed = 1;
         } else if (core_machine_capture_observation(machine, &before) !=
             LIB_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
-                &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
+                machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
             lexeme.byte_count != 1u || lexeme.component_count != 1u ||
             core_machine_capture_observation(machine, &after) != LIB_STATUS_OK ||
             lib_memory_compare(&before, &after, sizeof(before)) != 0) {
@@ -1672,7 +1672,7 @@ static lib_i32 preview_test_cr_mov_mod_quirk(void)
         failed|=core_machine_cpu_instruction_lexeme_scan(programs[index],7u,
             CORE_MACHINE_CPU_PROFILE_80386,LIB_TRUE,&lexeme)||
             core_machine_memory_write(machine,PREVIEW_RESET_PHYSICAL,programs[index],7u)!=LIB_STATUS_OK||
-            !core_machine_cpu_execution_preview_lexeme(&machine->executor_cpu_execution,&lexeme)||
+            !core_machine_cpu_execution_preview_lexeme(machine->executor_cpu_execution,&lexeme)||
             !lexeme.available||lexeme.byte_count!=3u||lexeme.component_count!=3u;
     }
     core_machine_destroy(machine); return failed;

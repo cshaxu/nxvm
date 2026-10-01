@@ -883,7 +883,7 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
         const lib_u16 handler[] = { 0xfff5u, 0xf000u };
         const lib_u8 handler_code[] = { 0x00u, 0xc0u };
 
-        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
         status = core_machine_memory_write(machine, 3u * 4u, handler,
             sizeof(handler));
@@ -897,13 +897,13 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
     if (status == LIB_STATUS_OK) {
         const lib_u16 operand = 1u;
 
-        machine->executor_cpu.data.eax = 1u;
-        machine->executor_cpu.data.ecx = 2u;
-        machine->executor_cpu.data.edx = 0u;
-        machine->executor_cpu.data.ebp = 0x0800u;
-        machine->executor_cpu.data.esi = 0x0800u;
+        (*test_core_machine_fixture_cpu(machine)).data.eax = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = 2u;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.ebp = 0x0800u;
+        (*test_core_machine_fixture_cpu(machine)).data.esi = 0x0800u;
         if (timing_80286_manifest_is_dx_port(key_id)) {
-            machine->executor_cpu.data.edx = 0x00e0u;
+            (*test_core_machine_fixture_cpu(machine)).data.edx = 0x00e0u;
         }
         status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
@@ -920,20 +920,20 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
             sizeof(bounds));
     }
     if (status == LIB_STATUS_OK && timing_80286_manifest_uses_stack(key_id)) {
-        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
     }
     if (status == LIB_STATUS_OK &&
         timing_80286_manifest_is_ret_near_next_byte(key_id)) {
         const lib_u16 return_ip = 0xfff5u;
 
-        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
         status = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, &return_ip, sizeof(return_ip));
     }
     if (status == LIB_STATUS_OK && lib_text_compare(key_id,
             "I286-STACK-LEAVE") == 0) {
-        machine->executor_cpu.data.ebp = TIMING_80286_MANIFEST_STACK_LINEAR;
+        (*test_core_machine_fixture_cpu(machine)).data.ebp = TIMING_80286_MANIFEST_STACK_LINEAR;
     }
     if (status == LIB_STATUS_OK && timing_80286_manifest_uses_far_target(key_id)) {
         static const lib_u8 one_byte_target[] = { 0x90u };
@@ -948,14 +948,14 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
             target_bytes);
     }
     if (status == LIB_STATUS_OK && timing_80286_manifest_flags_active) {
-        machine->executor_cpu.data.eflags = timing_80286_manifest_eflags;
+        (*test_core_machine_fixture_cpu(machine)).data.eflags = timing_80286_manifest_eflags;
     }
     if (status == LIB_STATUS_OK && (lib_text_compare(key_id, "I286-XLAT") == 0 ||
             lib_text_compare(key_id, "I286-XLAT-SEGMENT") == 0)) {
         static const lib_u8 value[] = { 0x5au };
 
-        machine->executor_cpu.data.ebx = 0x1000u;
-        machine->executor_cpu.data.eax = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.ebx = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.eax = 1u;
         status = core_machine_memory_write(machine, 0x1001u, value, sizeof(value));
     }
     if (status == LIB_STATUS_OK) status =
@@ -1016,7 +1016,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
     if (status == LIB_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
     if (status == LIB_STATUS_OK) status = core_machine_reset(machine);
     if (status == LIB_STATUS_OK) {
-        machine->executor_cpu.data.cr0 = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.cr0 = 0u;
         status = test_core_machine_fixture_reset_real_mode(machine) ?
             LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT;
     }
@@ -1102,7 +1102,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
             "I286-STACK-POP-SEG-PM") == 0) {
         const lib_u16 selector = 0x0010u;
 
-        machine->executor_cpu.data.sp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
         status = core_machine_memory_write(machine, 0x4000u, &selector,
             sizeof(selector));
     }
@@ -1111,7 +1111,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         const lib_u16 return_frame[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
-        machine->executor_cpu.data.sp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
         status = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame));
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
@@ -1122,7 +1122,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         const lib_u16 return_frame[] = { 0x0010u, 0x0008u, 0x0002u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
-        machine->executor_cpu.data.sp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
         status = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame));
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
@@ -1132,7 +1132,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
             "I286-CALL-FAR-DIRECT-PM-NEXT-BYTE-2") == 0) {
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
-        machine->executor_cpu.data.sp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
         status = core_machine_memory_write(machine, 0x2010u, target,
             sizeof(target));
     }
@@ -1152,16 +1152,16 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
         const lib_u16 pointer[] = { 0x0010u, 0x0008u };
         const lib_u8 target[] = { 0x00u, 0xc0u };
 
-        machine->executor_cpu.data.sp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
         status = core_machine_memory_write(machine, 0x4000u, pointer,
             sizeof(pointer));
         if (status == LIB_STATUS_OK) status = core_machine_memory_write(machine,
             0x2010u, target, sizeof(target));
     }
     if (status == LIB_STATUS_OK) {
-        machine->executor_cpu.data.eax = operand;
-        machine->executor_cpu.data.ebp = 0x0800u;
-        machine->executor_cpu.data.esi = 0x0800u;
+        (*test_core_machine_fixture_cpu(machine)).data.eax = operand;
+        (*test_core_machine_fixture_cpu(machine)).data.ebp = 0x0800u;
+        (*test_core_machine_fixture_cpu(machine)).data.esi = 0x0800u;
         machine->elapsed_ticks = 0u;
         test_core_machine_fixture_resume_after_halt_at(machine, 0u);
     }
@@ -1272,14 +1272,14 @@ static lib_i32 timing_80286_manifest_run_repeat_recipe(
     failed = !timing_80286_manifest_prepare(&machine, &capture, first_key,
         program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
-        machine->executor_cpu.data.di = source_odd ? 0x1100u :
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.si = source_odd ? 0x1001u : 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u;
-        machine->executor_cpu.data.ax = 1u;
-        machine->executor_cpu.data.edx = 0x00e0u;
-        machine->executor_cpu.data.cx = 2u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0x00e0u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 2u;
         destination = recipe->prefix == 0xf3u ? source : 0u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
             &source, sizeof(source)) != LIB_STATUS_OK ||
@@ -1312,8 +1312,8 @@ static lib_i32 timing_80286_manifest_run_repeat_recipe(
     if (!failed) failed = !timing_80286_manifest_prepare(&machine, &capture,
         zero_key, program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.edx = 0x00e0u;
-        machine->executor_cpu.data.cx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0x00e0u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 0u;
         failed = timing_80286_manifest_run_repeat_step(machine, &capture, zero_key,
             CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks,
             0u);
@@ -1346,13 +1346,13 @@ static lib_i32 timing_80286_manifest_run_string_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             recipe->program, recipe->bytes);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
-        machine->executor_cpu.data.di = source_odd ? 0x1100u :
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.si = source_odd ? 0x1001u : 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u;
-        machine->executor_cpu.data.ax = value;
-        machine->executor_cpu.data.edx = 0x00e0u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = value;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0x00e0u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
             &value, sizeof(value)) != LIB_STATUS_OK || core_machine_memory_write(
             machine, source_odd ? 0x1100u : odd_word ? 0x1101u : 0x1100u,
@@ -1449,14 +1449,14 @@ static lib_i32 timing_80286_manifest_run_repeat_base_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
-        machine->executor_cpu.data.di = source_odd ? 0x1100u :
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.si = source_odd ? 0x1001u : 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u;
-        machine->executor_cpu.data.ax = value;
-        machine->executor_cpu.data.edx = 0x00e0u;
-        machine->executor_cpu.data.cx = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = value;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0x00e0u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 1u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
             &value, sizeof(value)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, source_odd ? 0x1100u :
@@ -1660,7 +1660,7 @@ static lib_i32 timing_80286_manifest_run_ret_imm_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
         failed = core_machine_memory_write(machine, TIMING_80286_MANIFEST_STACK_LINEAR,
             &return_ip, sizeof(return_ip)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0x000ffff5u, target[next_bytes],
@@ -1768,7 +1768,7 @@ static lib_i32 timing_80286_manifest_run_into_next_byte_recipe(lib_i32 taken,
             run.ticks != (taken ? 24u : 3u) + next_bytes || capture.count != 1u ||
             capture.observation.source_ticks !=
                 (taken ? 24u : 3u) + next_bytes ||
-            machine->executor_cpu.data.eip != (taken ? 0xfff5u : 0xfff1u) ||
+            (*test_core_machine_fixture_cpu(machine)).data.eip != (taken ? 0xfff5u : 0xfff1u) ||
             capture.observation.timing_origin !=
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
@@ -1859,7 +1859,7 @@ static lib_i32 timing_80286_manifest_run_indirect_call_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
         failed = core_machine_memory_write(machine, 0x1000u, &target_ip,
             sizeof(target_ip)) != LIB_STATUS_OK || core_machine_memory_write(machine,
@@ -1907,7 +1907,7 @@ static lib_i32 timing_80286_manifest_run_far_call_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
         failed = core_machine_memory_write(machine, 0x000ffff5u,
             target[next_bytes], next_bytes) != LIB_STATUS_OK;
@@ -1955,7 +1955,7 @@ static lib_i32 timing_80286_manifest_run_far_indirect_call_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
         failed = core_machine_memory_write(machine, 0x1000u, far_pointer,
             sizeof(far_pointer)) != LIB_STATUS_OK || core_machine_memory_write(machine,
@@ -2004,7 +2004,7 @@ static lib_i32 timing_80286_manifest_run_far_ret_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
         failed = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, return_frame,
             sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
@@ -2053,7 +2053,7 @@ static lib_i32 timing_80286_manifest_run_iret_next_byte_recipe(
         !timing_80286_manifest_prepare(&machine, &capture, key_id,
             program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
         failed = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, return_frame,
             sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
@@ -2102,7 +2102,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_memory_call_next_byte_rec
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             key_id, program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
         failed = core_machine_memory_write(machine, 0x4000u, pointer,
             sizeof(pointer)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
@@ -2149,7 +2149,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_call_next_byte_recipe(
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             key_id, program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
         failed = core_machine_memory_write(machine, 0x2010u,
             target[next_bytes], next_bytes) != LIB_STATUS_OK;
     }
@@ -2243,7 +2243,7 @@ static lib_i32 timing_80286_manifest_run_protected_far_ret_next_byte_recipe(
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             key_id, program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
         failed = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
@@ -2291,7 +2291,7 @@ static lib_i32 timing_80286_manifest_run_protected_iret_next_byte_recipe(
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
             key_id, program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.sp = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
         failed = core_machine_memory_write(machine, 0x4000u, return_frame,
             sizeof(return_frame)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x2010u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
@@ -2349,9 +2349,9 @@ static lib_i32 timing_80286_manifest_run_protected_outer_ret_recipe(
             sizeof(retf)) || !s3_gate_write(&state, S3_CODE_BASE + 0x10u,
             target[next_bytes], next_bytes) || !s3_gate_write(&state, S3_STACK_TOP,
             frame, sizeof(frame));
-        state.machine->executor_cpu.data.gdtr.limit = 39u;
-        state.machine->executor_cpu.data.esp = 0x12348000u;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.gdtr.limit = 39u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.esp = 0x12348000u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF;
         if (!failed) failed = core_machine_set_retirement_observation_provider(
             state.machine, &capture_provider) != LIB_STATUS_OK;
     }
@@ -2410,9 +2410,9 @@ static lib_i32 timing_80286_manifest_run_protected_outer_iret_recipe(
             sizeof(iret)) || !s3_gate_write(&state, S3_CODE_BASE + 0x10u,
             target[next_bytes], next_bytes) || !s3_gate_write(&state, S3_STACK_TOP,
             frame, sizeof(frame));
-        state.machine->executor_cpu.data.gdtr.limit = 39u;
-        state.machine->executor_cpu.data.esp = 0x12348000u;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.gdtr.limit = 39u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.esp = 0x12348000u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF;
         if (!failed) failed = core_machine_set_retirement_observation_provider(
             state.machine, &provider) != LIB_STATUS_OK;
     }
@@ -2461,21 +2461,21 @@ static lib_i32 timing_80286_manifest_run_task_transfer_recipe(
     if (!failed && task_case == TASK_SWITCH_CASE_IDT_TASK_GATE) {
         failed = !write_bytes(fixture.machine, IDT_BASE + 3u * 8u,
             idt_task_gate, sizeof(idt_task_gate));
-        fixture.machine->executor_cpu.data.idtr.flagValid = LIB_TRUE;
-        fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
-        fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
-        fixture.machine->executor_cpu.data.idtr.limit = 0x001fu;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.idtr.flagValid = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.idtr.sregtype = SREG_IDTR;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.idtr.base = IDT_BASE;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.idtr.limit = 0x001fu;
     }
     if (!failed) failed = core_machine_memory_write(fixture.machine,
         KERNEL_BASE + 0x100u, target[next_bytes], next_bytes) != LIB_STATUS_OK;
     for (steps = 0u; !failed && steps < 32u &&
-            (fixture.machine->executor_cpu.data.cs.selector != 0x0008u ||
-            fixture.machine->executor_cpu.data.eip != 3u); ++steps) {
+            ((*test_core_machine_fixture_cpu(fixture.machine)).data.cs.selector != 0x0008u ||
+            (*test_core_machine_fixture_cpu(fixture.machine)).data.eip != 3u); ++steps) {
         failed = core_machine_run(fixture.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u;
     }
-    if (!failed && (fixture.machine->executor_cpu.data.cs.selector != 0x0008u ||
-            fixture.machine->executor_cpu.data.eip != 3u)) failed = 1;
+    if (!failed && ((*test_core_machine_fixture_cpu(fixture.machine)).data.cs.selector != 0x0008u ||
+            (*test_core_machine_fixture_cpu(fixture.machine)).data.eip != 3u)) failed = 1;
     if (!failed && key_id != LIB_NULL) failed =
         timing_80286_manifest_find(key_id) == LIB_NULL ||
         core_machine_set_retirement_observation_provider(fixture.machine,
@@ -2483,7 +2483,7 @@ static lib_i32 timing_80286_manifest_run_task_transfer_recipe(
     if (!failed) failed = core_machine_run(fixture.machine, step, &run) !=
         LIB_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
         run.executed != 1u || run.ticks != base_ticks + next_bytes ||
-        fixture.machine->executor_cpu.data.tr.selector != 0x0030u;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector != 0x0030u;
     if (!failed && key_id != LIB_NULL) failed = capture.count != 1u ||
         capture.observation.source_ticks != run.ticks ||
         capture.observation.timing_origin !=
@@ -2494,7 +2494,7 @@ static lib_i32 timing_80286_manifest_run_task_transfer_recipe(
         printf("M5:T436:S6:I286-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x\n",
             key_id != LIB_NULL ? key_id : "task-gate", run.ticks,
             capture.observation.source_ticks, capture.count,
-            fixture.machine != LIB_NULL ? fixture.machine->executor_cpu.data.tr.selector : 0u);
+            fixture.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector : 0u);
     } else {
         printf("M5:T436:S6:I286-TASK-OBSERVED:%s:ticks=%llu\n",
             key_id != LIB_NULL ? key_id : "task-gate", run.ticks);
@@ -2532,13 +2532,13 @@ static lib_i32 timing_80286_manifest_run_call_gate_recipe(const char *key_id,
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !call_gate_prepare(&state) || !call_gate_install(&state);
     for (steps = 0u; !failed && steps < 48u &&
-            (state.machine->executor_cpu.data.cs.selector != 0x001bu ||
-            state.machine->executor_cpu.data.eip != 0u); ++steps) {
+            ((*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x001bu ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0u); ++steps) {
         failed = core_machine_run(state.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u;
     }
-    if (!failed && (state.machine->executor_cpu.data.cs.selector != 0x001bu ||
-            state.machine->executor_cpu.data.eip != 0u)) failed = 1;
+    if (!failed && ((*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x001bu ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0u)) failed = 1;
     if (!failed && same_privilege) failed = !call_gate_write(&state,
         CALL_GATE_GDT_BASE + 48u + 2u, target_selector, sizeof(target_selector));
     if (!failed) failed = !call_gate_write(&state, CALL_GATE_USER_CODE_BASE,
@@ -2555,9 +2555,9 @@ static lib_i32 timing_80286_manifest_run_call_gate_recipe(const char *key_id,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector !=
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector !=
             (same_privilege ? 0x001bu : 0x0008u) ||
-        state.machine->executor_cpu.data.eip != 0x0100u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0100u;
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -2598,8 +2598,8 @@ static lib_i32 timing_80286_manifest_run_protected_int_same_recipe(
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != S3_HANDLER;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != S3_HANDLER;
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -2633,22 +2633,22 @@ static lib_i32 timing_80286_manifest_run_protected_int_more_recipe(
     failed = timing_80286_manifest_find(key_id) == LIB_NULL ||
         !call_gate_prepare(&state) || !call_gate_install(&state);
     for (steps = 0u; !failed && steps < 48u &&
-            (state.machine->executor_cpu.data.cs.selector != 0x001bu ||
-            state.machine->executor_cpu.data.eip != 0u); ++steps) {
+            ((*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x001bu ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0u); ++steps) {
         failed = core_machine_run(state.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u;
     }
-    if (!failed && (state.machine->executor_cpu.data.cs.selector != 0x001bu ||
-            state.machine->executor_cpu.data.eip != 0u)) failed = 1;
+    if (!failed && ((*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x001bu ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0u)) failed = 1;
     if (!failed) failed = !call_gate_write(&state, 0x0400u + 0x60u * 8u, gate,
         sizeof(gate)) || !call_gate_write(&state, CALL_GATE_USER_CODE_BASE,
         interrupt, sizeof(interrupt)) || !call_gate_write(&state,
         CALL_GATE_KERNEL_BASE + 0x100u, target[next_bytes], next_bytes);
     if (!failed) {
-        state.machine->executor_cpu.data.idtr.flagValid = LIB_TRUE;
-        state.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
-        state.machine->executor_cpu.data.idtr.base = 0x0400u;
-        state.machine->executor_cpu.data.idtr.limit = 0x0307u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.idtr.flagValid = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.idtr.sregtype = SREG_IDTR;
+        (*test_core_machine_fixture_cpu(state.machine)).data.idtr.base = 0x0400u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.idtr.limit = 0x0307u;
         failed = core_machine_set_retirement_observation_provider(state.machine,
             &provider) != LIB_STATUS_OK;
     }
@@ -2660,8 +2660,8 @@ static lib_i32 timing_80286_manifest_run_protected_int_more_recipe(
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != 0x0100u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0100u;
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -2691,13 +2691,13 @@ static lib_i32 timing_80286_manifest_run_task_iret_recipe(const char *key_id,
         !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80286) ||
         !task_switch_install(&fixture, TASK_SWITCH_CASE_NESTED_RETURN);
     for (steps = 0u; !failed && steps < 32u &&
-            (fixture.machine->executor_cpu.data.tr.selector != 0x0030u ||
-            fixture.machine->executor_cpu.data.eip != 0x0100u); ++steps) {
+            ((*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector != 0x0030u ||
+            (*test_core_machine_fixture_cpu(fixture.machine)).data.eip != 0x0100u); ++steps) {
         failed = core_machine_run(fixture.machine, step, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u;
     }
-    if (!failed && (fixture.machine->executor_cpu.data.tr.selector != 0x0030u ||
-            fixture.machine->executor_cpu.data.eip != 0x0100u)) failed = 1;
+    if (!failed && ((*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector != 0x0030u ||
+            (*test_core_machine_fixture_cpu(fixture.machine)).data.eip != 0x0100u)) failed = 1;
     if (!failed) failed = !write_bytes(fixture.machine, KERNEL_BASE + 0x100u,
         iret, sizeof(iret)) || !write_bytes(fixture.machine, KERNEL_BASE + 8u,
         target[next_bytes], next_bytes) ||
@@ -2711,13 +2711,13 @@ static lib_i32 timing_80286_manifest_run_task_iret_recipe(const char *key_id,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        fixture.machine->executor_cpu.data.tr.selector != 0x0028u ||
-        fixture.machine->executor_cpu.data.eip != 8u;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector != 0x0028u ||
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.eip != 8u;
     if (failed) {
         printf("M5:T436:S6:I286-IRET-TASK-DETAIL:%s:run=%llu:source=%llu:count=%u:tr=%04x:eip=%04x\n",
             key_id, run.ticks, capture.observation.source_ticks, capture.count,
-            fixture.machine != LIB_NULL ? fixture.machine->executor_cpu.data.tr.selector : 0u,
-            fixture.machine != LIB_NULL ? fixture.machine->executor_cpu.data.eip : 0u);
+            fixture.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector : 0u,
+            fixture.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(fixture.machine)).data.eip : 0u);
     }
     core_machine_destroy(fixture.machine);
     return failed;
@@ -2784,13 +2784,13 @@ static lib_i32 timing_80286_manifest_run_control(
         !timing_80286_manifest_prepare(&machine, &capture, recipe->key_id,
             program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.ecx = timing_80286_manifest_control_cx(
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = timing_80286_manifest_control_cx(
             recipe->key_id);
         failed = core_machine_run(machine, budget, &run) != LIB_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != recipe->ticks || capture.count != 1u ||
             capture.observation.source_ticks != recipe->ticks ||
-            machine->executor_cpu.data.eip !=
+            (*test_core_machine_fixture_cpu(machine)).data.eip !=
                 (recipe->opcode == 0xceu ? 0xfff5u :
                 timing_80286_manifest_key_has_token(recipe->key_id, "-TAKEN") ?
                     0xfff3u : 0xfff2u) ||

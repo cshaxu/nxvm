@@ -74,9 +74,9 @@ static lib_i32 t362_s2_run_case(const t362_s2_case *test_case)
             test_case->program, test_case->program_bytes) != LIB_STATUS_OK;
 
     if (!failed) {
-        machine->executor_cpu.data.ax = 2u;
-        machine->executor_cpu.data.cx = 2u;
-        machine->executor_cpu.data.dx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 2u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 2u;
+        (*test_core_machine_fixture_cpu(machine)).data.dx = 0u;
         failed |= test_case->memory && core_machine_memory_write(machine,
             T362_S2_OPERAND_LINEAR, &operand, sizeof(operand)) != LIB_STATUS_OK;
         failed |= test_case->memory && core_machine_memory_write(machine,
@@ -244,9 +244,9 @@ static lib_i32 t362_s2_test_fault_nonpublication(void)
             handler, sizeof(handler)) != LIB_STATUS_OK;
 
     if (!failed) {
-        machine->executor_cpu.data.ax = 2u;
-        machine->executor_cpu.data.dx = 0u;
-        machine->executor_cpu.data.cx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 2u;
+        (*test_core_machine_fixture_cpu(machine)).data.dx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 0u;
         {
             lib_status status = core_machine_run(machine, budget, &result);
 
@@ -254,13 +254,13 @@ static lib_i32 t362_s2_test_fault_nonpublication(void)
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
                 result.executed != 0u || result.ticks != 0u ||
                 result.elapsed_ticks != 0u || state.advanced_ticks != 0u ||
-                machine->executor_cpu.data.eip != 0x0100u;
+                (*test_core_machine_fixture_cpu(machine)).data.eip != 0x0100u;
             status = core_machine_run(machine, budget, &result);
             failed |= status != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 result.executed != 1u || result.ticks != 2u ||
                 result.elapsed_ticks != 2u || state.advanced_ticks != 2u ||
-                machine->executor_cpu.data.eip != 0x0101u;
+                (*test_core_machine_fixture_cpu(machine)).data.eip != 0x0101u;
         }
     }
     core_machine_destroy(machine);

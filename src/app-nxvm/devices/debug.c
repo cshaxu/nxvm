@@ -37,7 +37,7 @@ lib_status core_machine_debug_capture_cpu_snapshot(const core_machine *machine,
 
     if (out_snapshot == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     return status == LIB_STATUS_OK ?
-        core_machine_cpu_debug_capture_snapshot(&machine->executor_cpu_execution,
+        core_machine_cpu_debug_capture_snapshot(machine->executor_cpu_execution,
             point, out_snapshot) : status;
 }
 
@@ -82,7 +82,7 @@ lib_status core_machine_debug_capture_instruction_observation(const core_machine
     lib_status status = core_machine_debug_require_boundary(machine);
 
     return status == LIB_STATUS_OK ?
-        core_machine_cpu_debug_capture_instruction(&machine->executor_cpu_execution,
+        core_machine_cpu_debug_capture_instruction(machine->executor_cpu_execution,
             out_observation) : status;
 }
 
@@ -92,7 +92,7 @@ lib_status core_machine_debug_read_register(const core_machine *machine,
     lib_status status = core_machine_debug_require_boundary(machine);
 
     return status == LIB_STATUS_OK ?
-        core_machine_cpu_debug_read_register(&machine->executor_cpu_execution,
+        core_machine_cpu_debug_read_register(machine->executor_cpu_execution,
             register_id, out_value) : status;
 }
 
@@ -114,7 +114,7 @@ lib_status core_machine_debug_patch_registers(core_machine *machine,
     lib_status status = core_machine_debug_require_boundary(machine);
 
     return status == LIB_STATUS_OK ?
-        core_machine_cpu_debug_patch_registers(&machine->executor_cpu_execution,
+        core_machine_cpu_debug_patch_registers(machine->executor_cpu_execution,
             patch) : status;
 }
 
@@ -125,7 +125,7 @@ lib_status core_machine_debug_get_code_default_size(const core_machine *machine,
     if (status != LIB_STATUS_OK || out_default_size == LIB_NULL) return
         status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
     *out_default_size = core_machine_cpu_get_code_default_size(
-        &machine->executor_cpu_execution);
+        machine->executor_cpu_execution);
     return LIB_STATUS_OK;
 }
 
@@ -135,7 +135,7 @@ lib_status core_machine_debug_get_code_base(const core_machine *machine,
     lib_status status = core_machine_debug_require_boundary(machine);
     if (status != LIB_STATUS_OK || out_base == LIB_NULL) return
         status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
-    *out_base = core_machine_cpu_get_code_base(&machine->executor_cpu_execution);
+    *out_base = core_machine_cpu_get_code_base(machine->executor_cpu_execution);
     return LIB_STATUS_OK;
 }
 
@@ -144,7 +144,7 @@ lib_status core_machine_debug_read_linear(core_machine *machine, lib_u32 address
 {
     lib_status status = core_machine_debug_require_boundary(machine);
     if (status != LIB_STATUS_OK) return status;
-    return core_machine_cpu_read_linear(&machine->executor_cpu_execution, address,
+    return core_machine_cpu_read_linear(machine->executor_cpu_execution, address,
         out_data, size) == 0 ? LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
 }
 
@@ -153,7 +153,7 @@ lib_status core_machine_debug_write_linear(core_machine *machine, lib_u32 addres
 {
     lib_status status = core_machine_debug_require_boundary(machine);
     if (status != LIB_STATUS_OK) return status;
-    return core_machine_cpu_write_linear(&machine->executor_cpu_execution, address,
+    return core_machine_cpu_write_linear(machine->executor_cpu_execution, address,
         data, size) == 0 ? LIB_STATUS_OK : LIB_STATUS_INVALID_STATE;
 }
 
@@ -209,7 +209,7 @@ lib_status core_machine_debug_set_watchpoint(core_machine *machine,
     lib_status status = core_machine_debug_require_boundary(machine);
     if (status != LIB_STATUS_OK || kind > CORE_MACHINE_DEBUG_WATCH_EXECUTE)
         return status != LIB_STATUS_OK ? status : LIB_STATUS_INVALID_ARGUMENT;
-    core_machine_cpu_set_watchpoint(&machine->executor_cpu_execution,
+    core_machine_cpu_set_watchpoint(machine->executor_cpu_execution,
         (core_machine_cpu_watchpoint)kind, address);
     return LIB_STATUS_OK;
 }
@@ -220,7 +220,7 @@ lib_status core_machine_debug_clear_watchpoint(core_machine *machine,
     lib_status status = core_machine_debug_require_boundary(machine);
     if (status != LIB_STATUS_OK || kind > CORE_MACHINE_DEBUG_WATCH_EXECUTE)
         return status != LIB_STATUS_OK ? status : LIB_STATUS_INVALID_ARGUMENT;
-    core_machine_cpu_clear_watchpoint(&machine->executor_cpu_execution,
+    core_machine_cpu_clear_watchpoint(machine->executor_cpu_execution,
         (core_machine_cpu_watchpoint)kind);
     return LIB_STATUS_OK;
 }
@@ -234,7 +234,7 @@ lib_status core_machine_debug_get_watchpoint(core_machine *machine,
     if (status != LIB_STATUS_OK || kind > CORE_MACHINE_DEBUG_WATCH_EXECUTE ||
         out_enabled == LIB_NULL || out_address == LIB_NULL)
         return status != LIB_STATUS_OK ? status : LIB_STATUS_INVALID_ARGUMENT;
-    core_machine_cpu_get_watchpoint(&machine->executor_cpu_execution,
+    core_machine_cpu_get_watchpoint(machine->executor_cpu_execution,
         (core_machine_cpu_watchpoint)kind, out_enabled, out_address);
     return LIB_STATUS_OK;
 }

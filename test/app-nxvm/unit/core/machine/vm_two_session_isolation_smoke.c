@@ -22,7 +22,7 @@ static lib_bool sessions_are_isolated(core_machine *first, core_machine *second)
     lib_u32 index;
 
     if (first == LIB_NULL || second == LIB_NULL || first == second ||
-        &first->executor_cpu_execution == &second->executor_cpu_execution ||
+        first->executor_cpu_execution == second->executor_cpu_execution ||
         &first->executor_memory == &second->executor_memory ||
         &first->executor_port == &second->executor_port ||
         &first->shared_rtc == &second->shared_rtc ||

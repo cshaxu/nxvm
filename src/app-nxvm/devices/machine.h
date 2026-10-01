@@ -7,7 +7,7 @@
 
 
 
-#include "app-nxvm/devices/cpu_instructions.h"
+#include "app-nxvm/devices/cpu_interface.h"
 #include "x86/devices/fpu/fpu_interface.h"
 
 #include "app-nxvm/devices/execution_provider.h"
@@ -209,9 +209,9 @@ struct core_machine {
     core_machine_cpu_profile cpu_profile;
     lib_u8 cpu_80386_cr_mov_ignores_mod;
     x86_fpu *fpu;
-    t_cpu executor_cpu;
-    t_cpuins executor_cpu_instructions;
-    core_machine_cpu_execution_context executor_cpu_execution;
+    /* The CPU owns its architectural/decoder layout.  The board owns exactly
+     * one opaque execution lifetime and never mirrors those fields. */
+    core_machine_cpu_execution_context *executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
     core_machine_pic_bus shared_pic_master;

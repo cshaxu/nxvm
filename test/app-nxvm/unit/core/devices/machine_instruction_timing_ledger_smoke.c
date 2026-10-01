@@ -338,7 +338,7 @@ static lib_i32 timing_ledger_physical_far_jmp_memory(lib_i32 protected_mode)
         core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR + 14u,
             target, sizeof(target)) != LIB_STATUS_OK;
 
-    if (!failed && protected_mode) machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
+    if (!failed && protected_mode) (*test_core_machine_fixture_cpu(machine)).data.cr0 |= VCPU_CR0_PE;
     if (!failed) {
         failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
@@ -485,22 +485,22 @@ static lib_i32 timing_ledger_test_memory(void)
         failed |= !timing_ledger_load(machine, mov_read, sizeof(mov_read)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
                 LIB_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
-            machine->executor_cpu.data.cx != value;
+            (*test_core_machine_fixture_cpu(machine)).data.cx != value;
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, mov_write, sizeof(mov_write)) ||
-            ((machine->executor_cpu.data.cx = value), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.cx = value), 0) ||
             !timing_ledger_execute(machine, 1u, 2u, &state);
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, moffs_read, sizeof(moffs_read)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
                 LIB_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
-            machine->executor_cpu.data.ax != value;
+            (*test_core_machine_fixture_cpu(machine)).data.ax != value;
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, moffs_write, sizeof(moffs_write)) ||
-            ((machine->executor_cpu.data.ax = value), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.ax = value), 0) ||
             !timing_ledger_execute(machine, 1u, 2u, &state);
     }
     core_machine_destroy(machine);
@@ -528,12 +528,12 @@ static lib_i32 timing_ledger_test_ports(void)
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, in_dx, sizeof(in_dx)) ||
-            ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.dx = 0x00e0u), 0) ||
             !timing_ledger_execute(machine, 1u, 13u, &state) || state.reads != 2u;
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, out_dx, sizeof(out_dx)) ||
-            ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.dx = 0x00e0u), 0) ||
             !timing_ledger_execute(machine, 1u, 11u, &state) || state.writes != 2u;
     }
     core_machine_destroy(machine);
@@ -552,21 +552,21 @@ static lib_i32 timing_ledger_test_jcc_and_repeat(void)
 
     if (!failed) {
         failed |= !timing_ledger_load(machine, taken, sizeof(taken)) ||
-            ((machine->executor_cpu.data.eflags |= VCPU_EFLAGS_ZF), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.eflags |= VCPU_EFLAGS_ZF), 0) ||
             !timing_ledger_execute(machine, 1u, 8u, &state);
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, not_taken, sizeof(not_taken)) ||
-            ((machine->executor_cpu.data.eflags |= VCPU_EFLAGS_ZF), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.eflags |= VCPU_EFLAGS_ZF), 0) ||
             !timing_ledger_execute(machine, 1u, 3u, &state);
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, rep_movsb, sizeof(rep_movsb)) ||
             core_machine_memory_write(machine, 0x1000u, source, sizeof(source)) !=
                 LIB_STATUS_OK ||
-            ((machine->executor_cpu.data.cx = 3u),
-                (machine->executor_cpu.data.si = 0x1000u),
-                (machine->executor_cpu.data.di = 0x1100u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.cx = 3u),
+                ((*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u),
+                ((*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u), 0) ||
             !timing_ledger_execute(machine, 3u, 17u, &state);
     }
     core_machine_destroy(machine);
@@ -615,7 +615,7 @@ static lib_i32 timing_ledger_test_budget_overflow_and_reset(void)
         failed |= core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
-            machine->executor_cpu.data.eip != 0xfff0u || state.advanced_ticks != 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.eip != 0xfff0u || state.advanced_ticks != 0u;
     }
     if (!failed) {
         failed |= core_machine_run(machine, sufficient, &result) != LIB_STATUS_OK ||

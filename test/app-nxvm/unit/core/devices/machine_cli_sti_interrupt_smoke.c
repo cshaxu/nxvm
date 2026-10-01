@@ -80,7 +80,7 @@ static lib_i32 cli_sti_test_real_forms(void)
             lib_i32 failed = !cli_sti_prepare(profiles[profile], &state);
 
             if (!failed) {
-                state.machine->executor_cpu.data.eflags = initial;
+                (*test_core_machine_fixture_cpu(state.machine)).data.eflags = initial;
                 failed |= !cli_sti_run(&state, &opcodes[opcode], 1u, 1u, &after) ||
                     after.data.eip != 1u || after.data.eflags != expected;
             }
@@ -374,7 +374,7 @@ static lib_i32 cli_sti_install_gp_gate(cli_sti_machine *state)
         0xffu,0xffu,0,0,0,0x92u,0xcfu,0
     };
     lib_u8 gate[8] = { 0 };
-    t_cpu *cpu = &state->machine->executor_cpu;
+    t_cpu *cpu = &(*test_core_machine_fixture_cpu(state->machine));
 
     gate[0] = 0x00u;
     gate[1] = 0x01u;
@@ -437,22 +437,22 @@ static lib_i32 cli_sti_run_vm86(cli_sti_machine *state, const lib_u8 *code,
         core_machine_memory_write(state->machine, 0u, code, bytes) != LIB_STATUS_OK ||
         !cli_sti_install_gp_gate(state))
         return 0;
-    state->machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
-    state->machine->executor_cpu.data.eflags = eflags;
-    state->machine->executor_cpu.data.esp = 0x8000u;
-    state->machine->executor_cpu.data.eip = 0u;
-    state->machine->executor_cpu.data.cs.selector = 0u;
-    state->machine->executor_cpu.data.cs.base = 0u;
-    state->machine->executor_cpu.data.cs.limit = 0xffffu;
-    state->machine->executor_cpu.data.cs.dpl = 3u;
-    state->machine->executor_cpu.data.cs.flagValid = LIB_TRUE;
-    state->machine->executor_cpu.data.cs.seg.exec.defsize = LIB_FALSE;
-    state->machine->executor_cpu.data.ss.selector = 0u;
-    state->machine->executor_cpu.data.ss.base = 0u;
-    state->machine->executor_cpu.data.ss.limit = 0xffffu;
-    state->machine->executor_cpu.data.ss.dpl = 3u;
-    state->machine->executor_cpu.data.ss.flagValid = LIB_TRUE;
-    state->machine->executor_cpu.data.ss.seg.data.big = LIB_FALSE;
+    (*test_core_machine_fixture_cpu(state->machine)).data.cr0 |= VCPU_CR0_PE;
+    (*test_core_machine_fixture_cpu(state->machine)).data.eflags = eflags;
+    (*test_core_machine_fixture_cpu(state->machine)).data.esp = 0x8000u;
+    (*test_core_machine_fixture_cpu(state->machine)).data.eip = 0u;
+    (*test_core_machine_fixture_cpu(state->machine)).data.cs.selector = 0u;
+    (*test_core_machine_fixture_cpu(state->machine)).data.cs.base = 0u;
+    (*test_core_machine_fixture_cpu(state->machine)).data.cs.limit = 0xffffu;
+    (*test_core_machine_fixture_cpu(state->machine)).data.cs.dpl = 3u;
+    (*test_core_machine_fixture_cpu(state->machine)).data.cs.flagValid = LIB_TRUE;
+    (*test_core_machine_fixture_cpu(state->machine)).data.cs.seg.exec.defsize = LIB_FALSE;
+    (*test_core_machine_fixture_cpu(state->machine)).data.ss.selector = 0u;
+    (*test_core_machine_fixture_cpu(state->machine)).data.ss.base = 0u;
+    (*test_core_machine_fixture_cpu(state->machine)).data.ss.limit = 0xffffu;
+    (*test_core_machine_fixture_cpu(state->machine)).data.ss.dpl = 3u;
+    (*test_core_machine_fixture_cpu(state->machine)).data.ss.flagValid = LIB_TRUE;
+    (*test_core_machine_fixture_cpu(state->machine)).data.ss.seg.data.big = LIB_FALSE;
     status = core_machine_run(state->machine, (core_machine_run_budget){ 1u, 0u }, &result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == LIB_STATUS_OK &&
@@ -481,8 +481,8 @@ static lib_i32 cli_sti_test_protected_success(void)
             lib_i32 failed = !cli_sti_prepare_protected(&state);
 
             if (!failed) {
-                state.machine->executor_cpu.data.cs.dpl = cpl;
-                state.machine->executor_cpu.data.eflags = initial;
+                (*test_core_machine_fixture_cpu(state.machine)).data.cs.dpl = cpl;
+                (*test_core_machine_fixture_cpu(state.machine)).data.eflags = initial;
                 failed |= core_machine_memory_write(state.machine, 0x2000u,
                         &opcodes[opcode], 1u) != LIB_STATUS_OK;
                 test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
@@ -521,8 +521,8 @@ static lib_i32 cli_sti_test_protected_reject(void)
             failed |= !cli_sti_install_gp_gate(&state);
         }
         if (!failed) {
-            state.machine->executor_cpu.data.cs.dpl = 3u;
-            state.machine->executor_cpu.data.eflags = flags;
+            (*test_core_machine_fixture_cpu(state.machine)).data.cs.dpl = 3u;
+            (*test_core_machine_fixture_cpu(state.machine)).data.eflags = flags;
             failed |= core_machine_memory_write(state.machine, 0x2000u,
                     &opcodes[opcode], 1u) != LIB_STATUS_OK;
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);

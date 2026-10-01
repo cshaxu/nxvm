@@ -86,7 +86,7 @@ static lib_i32 t359_s3_seed_pop(core_machine *machine, void *opaque)
 
     (void)opaque;
     if (machine == LIB_NULL) return 0;
-    machine->executor_cpu.data.sp = 0x1000u;
+    (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1000u;
     return core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) ==
         LIB_STATUS_OK;
 }
@@ -95,7 +95,7 @@ static lib_i32 t359_s3_seed_loop_not_taken(core_machine *machine, void *opaque)
 {
     (void)opaque;
     if (machine == LIB_NULL) return 0;
-    machine->executor_cpu.data.cx = 1u;
+    (*test_core_machine_fixture_cpu(machine)).data.cx = 1u;
     return 1;
 }
 
@@ -106,8 +106,8 @@ static lib_i32 t359_s3_seed_transfer(core_machine *machine, void *opaque)
 
     (void)opaque;
     if (machine == LIB_NULL) return 0;
-    machine->executor_cpu.data.ax = target;
-    machine->executor_cpu.data.sp = 0x1020u;
+    (*test_core_machine_fixture_cpu(machine)).data.ax = target;
+    (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1020u;
     return core_machine_memory_write(machine, 0x1000u, &target,
         sizeof(target)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, 0x000ffff5u, &nop, sizeof(nop)) ==
@@ -126,7 +126,7 @@ static lib_i32 t359_s3_seed_interrupt(core_machine *machine, void *opaque)
 
     if (machine == LIB_NULL || setup == LIB_NULL) return 0;
     vector = (lib_u32)setup->vector * 4u;
-    if (setup->set_overflow) machine->executor_cpu.data.eflags |= VCPU_EFLAGS_OF;
+    if (setup->set_overflow) (*test_core_machine_fixture_cpu(machine)).data.eflags |= VCPU_EFLAGS_OF;
     return
         core_machine_memory_write(machine, vector, &offset,
             sizeof(offset)) == LIB_STATUS_OK &&
@@ -143,7 +143,7 @@ static lib_i32 t359_s3_seed_iret(core_machine *machine, void *opaque)
 
     (void)opaque;
     if (machine == LIB_NULL) return 0;
-    machine->executor_cpu.data.sp = 0x1020u;
+    (*test_core_machine_fixture_cpu(machine)).data.sp = 0x1020u;
     return core_machine_memory_write(machine, 0x1020u, frame,
         sizeof(frame)) == LIB_STATUS_OK &&
         core_machine_memory_write(machine, 0x000ffff5u, &nop,
@@ -174,11 +174,11 @@ static lib_i32 t359_s3_test_profile_rows(core_machine_cpu_profile profile,
     if (!failed) {
         failed |= !t359_s3_run(machine, call_near, sizeof(call_near),
             call_ticks, &state, LIB_NULL, LIB_NULL) ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, jmp_near, sizeof(jmp_near), jmp_ticks,
-            &state, LIB_NULL, LIB_NULL) || machine->executor_cpu.data.ip != 0xfff3u;
+            &state, LIB_NULL, LIB_NULL) || (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff3u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, push_register, sizeof(push_register),
@@ -187,12 +187,12 @@ static lib_i32 t359_s3_test_profile_rows(core_machine_cpu_profile profile,
     if (!failed) {
         failed |= !t359_s3_run(machine, pop_register, sizeof(pop_register),
             pop_ticks, &state, t359_s3_seed_pop, LIB_NULL) ||
-            machine->executor_cpu.data.ax != 0x1234u;
+            (*test_core_machine_fixture_cpu(machine)).data.ax != 0x1234u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, loop_not_taken, sizeof(loop_not_taken),
             loop_ticks, &state, t359_s3_seed_loop_not_taken, LIB_NULL) ||
-            machine->executor_cpu.data.cx != 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.cx != 0u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, jcxz_not_taken,
@@ -282,27 +282,27 @@ static lib_i32 t359_s3_test_transfer_shapes(core_machine_cpu_profile profile,
     if (!failed) {
         failed |= !t359_s3_run(machine, call_register, sizeof(call_register),
             call_register_ticks, &state, t359_s3_seed_transfer, LIB_NULL) ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, call_memory, sizeof(call_memory),
             call_memory_ticks, &state, t359_s3_seed_transfer, LIB_NULL) ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, jmp_register, sizeof(jmp_register),
             jmp_register_ticks, &state, t359_s3_seed_transfer, LIB_NULL) ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, jmp_memory, sizeof(jmp_memory),
             jmp_memory_ticks, &state, t359_s3_seed_transfer, LIB_NULL) ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, ret_near, sizeof(ret_near), ret_ticks,
             &state, t359_s3_seed_transfer, LIB_NULL) ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, push_memory, sizeof(push_memory),
@@ -311,7 +311,7 @@ static lib_i32 t359_s3_test_transfer_shapes(core_machine_cpu_profile profile,
     if (!failed) {
         failed |= !t359_s3_run(machine, pop_memory, sizeof(pop_memory),
             pop_memory_ticks, &state, t359_s3_seed_transfer, LIB_NULL) ||
-            machine->executor_cpu.data.ip != 0xfff4u;
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff4u;
     }
     core_machine_destroy(machine);
     return failed;
@@ -333,14 +333,14 @@ static lib_i32 t359_s3_test_far_direct(core_machine_cpu_profile profile,
     if (!failed) {
         failed |= !t359_s3_run(machine, call_far, sizeof(call_far), call_ticks,
             &state, t359_s3_seed_transfer, LIB_NULL) ||
-            machine->executor_cpu.data.cs.selector != 0xf000u ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.selector != 0xf000u ||
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, jmp_far, sizeof(jmp_far), jmp_ticks,
             &state, t359_s3_seed_transfer, LIB_NULL) ||
-            machine->executor_cpu.data.cs.selector != 0xf000u ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.selector != 0xf000u ||
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     core_machine_destroy(machine);
     return failed;
@@ -366,14 +366,14 @@ static lib_i32 t359_s3_test_real_interrupt_rows(core_machine_cpu_profile profile
     if (!failed) {
         failed |= !t359_s3_run(machine, int_immediate, sizeof(int_immediate),
             int_ticks, &state, t359_s3_seed_interrupt, (void *)&int_setup) ||
-            machine->executor_cpu.data.cs.selector != 0xf000u ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.selector != 0xf000u ||
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, int3, sizeof(int3), int3_ticks, &state,
             t359_s3_seed_interrupt, (void *)&int3_setup) ||
-            machine->executor_cpu.data.cs.selector != 0xf000u ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.selector != 0xf000u ||
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, into_clear, sizeof(into_clear),
@@ -383,14 +383,14 @@ static lib_i32 t359_s3_test_real_interrupt_rows(core_machine_cpu_profile profile
         failed |= !t359_s3_run(machine, into_taken, sizeof(into_taken),
             into_taken_ticks, &state, t359_s3_seed_interrupt,
             (void *)&into_setup) ||
-            machine->executor_cpu.data.cs.selector != 0xf000u ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.selector != 0xf000u ||
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, iret, sizeof(iret), iret_ticks,
             &state, t359_s3_seed_iret, LIB_NULL) ||
-            machine->executor_cpu.data.cs.selector != 0xf000u ||
-            machine->executor_cpu.data.ip != 0xfff5u;
+            (*test_core_machine_fixture_cpu(machine)).data.cs.selector != 0xf000u ||
+            (*test_core_machine_fixture_cpu(machine)).data.ip != 0xfff5u;
     }
     core_machine_destroy(machine);
     return failed;

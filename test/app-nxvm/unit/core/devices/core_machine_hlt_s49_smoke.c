@@ -37,7 +37,7 @@ static lib_i32 hlt_s49_sregs_preserved(const t_cpu *before,
 
 static void hlt_s49_seed(cli_sti_machine *state)
 {
-    t_cpu *cpu = &state->machine->executor_cpu;
+    t_cpu *cpu = &(*test_core_machine_fixture_cpu(state->machine));
 
     cpu->data.eax = 0xaabbccddu;
     cpu->data.ecx = 0x11223344u;
@@ -280,7 +280,7 @@ static lib_i32 hlt_s49_test_protected(void)
     failed = !cli_sti_prepare_protected(&state);
     if (!failed) {
         hlt_s49_seed(&state);
-        state.machine->executor_cpu.data.cs.dpl = 3u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.dpl = 3u;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed = core_machine_memory_write(state.machine, 0x2000u, code,
@@ -322,22 +322,22 @@ static lib_i32 hlt_s49_test_vm86(void)
     }
     if (!failed) {
         hlt_s49_seed(&state);
-        state.machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
-        state.machine->executor_cpu.data.eflags = flags;
-        state.machine->executor_cpu.data.esp = 0x00008000u;
-        state.machine->executor_cpu.data.eip = 0u;
-        state.machine->executor_cpu.data.cs.selector = 0u;
-        state.machine->executor_cpu.data.cs.base = 0u;
-        state.machine->executor_cpu.data.cs.limit = 0xffffu;
-        state.machine->executor_cpu.data.cs.dpl = 3u;
-        state.machine->executor_cpu.data.cs.flagValid = LIB_TRUE;
-        state.machine->executor_cpu.data.cs.seg.exec.defsize = LIB_FALSE;
-        state.machine->executor_cpu.data.ss.selector = 0u;
-        state.machine->executor_cpu.data.ss.base = 0u;
-        state.machine->executor_cpu.data.ss.limit = 0xffffu;
-        state.machine->executor_cpu.data.ss.dpl = 3u;
-        state.machine->executor_cpu.data.ss.flagValid = LIB_TRUE;
-        state.machine->executor_cpu.data.ss.seg.data.big = LIB_FALSE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cr0 |= VCPU_CR0_PE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = flags;
+        (*test_core_machine_fixture_cpu(state.machine)).data.esp = 0x00008000u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.base = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.limit = 0xffffu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.dpl = 3u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.flagValid = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.seg.exec.defsize = LIB_FALSE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.base = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.limit = 0xffffu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.dpl = 3u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.flagValid = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.seg.data.big = LIB_FALSE;
         status = core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -385,7 +385,7 @@ static lib_i32 hlt_s49_test_irq(void)
     }
     if (!failed) {
         hlt_s49_seed(&state);
-        state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags |= VCPU_EFLAGS_IF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         lib_memory_set(&source, 0, sizeof(source));
         test_pic_program_vector(&state.machine->shared_pic_master, (lib_u8)vector);
@@ -435,7 +435,7 @@ static lib_i32 hlt_s49_test_irq(void)
     }
     if (!failed) {
         hlt_s49_seed(&state);
-        state.machine->executor_cpu.data.eflags &= ~VCPU_EFLAGS_IF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags &= ~VCPU_EFLAGS_IF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         lib_memory_set(&source, 0, sizeof(source));
         core_machine_pic_irq_source_bind(&source,

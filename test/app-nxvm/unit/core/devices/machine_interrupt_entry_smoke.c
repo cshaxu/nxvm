@@ -130,7 +130,7 @@ static lib_i32 ie_prepare(interrupt_entry_machine *state,
         state->machine = LIB_NULL;
         return 0;
     }
-    cpu = &state->machine->executor_cpu;
+    cpu = &(*test_core_machine_fixture_cpu(state->machine));
     cpu->data.cr0 = VCPU_CR0_PE;
     cpu->data.gdtr.flagValid = LIB_TRUE;
     cpu->data.gdtr.sregtype = SREG_GDTR;
@@ -301,8 +301,8 @@ static lib_i32 ie_prepare_user_code(interrupt_entry_machine *state)
             sizeof(code_access)) || !ie_write(state,
             IE_IDT_BASE + IE_VECTOR * 8u + 2u, selector, sizeof(selector)))
         return 0;
-    state->machine->executor_cpu.data.cs.selector = 0x000bu;
-    state->machine->executor_cpu.data.cs.dpl = 3u;
+    (*test_core_machine_fixture_cpu(state->machine)).data.cs.selector = 0x000bu;
+    (*test_core_machine_fixture_cpu(state->machine)).data.cs.dpl = 3u;
     return 1;
 }
 
@@ -327,7 +327,7 @@ static lib_i32 ie_test_software_frontends(void)
 
         if (!failed) {
             if (vectors[index] == 0x04u) flags |= VCPU_EFLAGS_OF;
-            state.machine->executor_cpu.data.eflags = flags;
+            (*test_core_machine_fixture_cpu(state.machine)).data.eflags = flags;
             failed |= !ie_install_gate(&state, vectors[index], 0x0008u,
                     (lib_u8)(0xe0u | VCPU_DESC_SYS_TYPE_TRAPGATE_32)) ||
                 !ie_write(&state, IE_CODE_BASE, programs[index],
@@ -351,7 +351,7 @@ static lib_i32 ie_test_software_frontends(void)
             VCPU_DESC_SYS_TYPE_INTGATE_32);
 
         if (!failed) {
-            state.machine->executor_cpu.data.eflags = 0x00000202u;
+            (*test_core_machine_fixture_cpu(state.machine)).data.eflags = 0x00000202u;
             failed |= !ie_install_gate(&state, 0x04u, 0x0008u,
                     (lib_u8)(0xe0u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
                 !ie_write(&state, IE_CODE_BASE, into_clear, sizeof(into_clear)) ||
@@ -379,7 +379,7 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
         VCPU_DESC_SYS_TYPE_INTGATE_32);
 
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = 0x00000202u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = 0x00000202u;
         failed |= !ie_prepare_user_code(&state) ||
             !ie_install_gate(&state, vector, 0x000bu,
                 reject ? 0x80u : (lib_u8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
@@ -394,7 +394,7 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
         } else if (!failed) {
-            state.machine->executor_cpu.data.flagNMI = LIB_TRUE;
+            (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI = LIB_TRUE;
         }
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !ie_run_external(&state, reject, &after, &diagnostic);
@@ -403,11 +403,11 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
                 after.data.esp != IE_STACK_BASE - 12u ||
                 (!CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), 1u) && !nmi) ||
                 CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), 1u) ||
-                state.machine->executor_cpu.data.flagNMI;
+                (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI;
         } else if (!failed) {
             failed |= after.data.cs.selector != before.data.cs.selector ||
                 after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
-                (nmi ? !state.machine->executor_cpu.data.flagNMI :
+                (nmi ? !(*test_core_machine_fixture_cpu(state.machine)).data.flagNMI :
                     (!CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu), 1u) ||
                      CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au), 1u)));
         }
@@ -462,9 +462,9 @@ static lib_i32 ie_test_fault_delivery(lib_u32 mask, lib_u8 vector,
 
     if (!failed) {
         if (user_source) failed |= !ie_prepare_user_code(&state);
-        if (!user_source) state.machine->executor_cpu.data.eflags = 0x00000202u;
+        if (!user_source) (*test_core_machine_fixture_cpu(state.machine)).data.eflags = 0x00000202u;
         if (mask == VCPUINS_EXCEPT_SS || mask == VCPUINS_EXCEPT_NP) {
-            state.machine->executor_cpu.data.gdtr.limit = 0x001fu;
+            (*test_core_machine_fixture_cpu(state.machine)).data.gdtr.limit = 0x001fu;
             failed |= !ie_write(&state, IE_GDT_BASE + 24u, ss_descriptor,
                 sizeof(ss_descriptor));
         }
@@ -501,7 +501,7 @@ static lib_i32 ie_test_t305_fault_delivery(void)
         VCPU_DESC_SYS_TYPE_INTGATE_32);
 
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = 0x00000202u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = 0x00000202u;
         failed |= !ie_install_gate(&state, IE_VECTOR, 0x0008u, 0x80u) ||
             !ie_install_gate(&state, 0x0du, 0x0008u,
                 (lib_u8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
@@ -549,7 +549,7 @@ static lib_i32 ie_test_fault_delivery_failure(
                 sizeof(not_present_access));
         }
         if (!failed && failure == INTERRUPT_ENTRY_DELIVERY_STACK_LIMIT)
-            state.machine->executor_cpu.data.ss.limit = IE_STACK_BASE - 2u;
+            (*test_core_machine_fixture_cpu(state.machine)).data.ss.limit = IE_STACK_BASE - 2u;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !ie_read(&state, IE_GDT_BASE + 13u, &access_before,
             sizeof(access_before)) || !ie_read(&state, IE_STACK_BASE - 16u,

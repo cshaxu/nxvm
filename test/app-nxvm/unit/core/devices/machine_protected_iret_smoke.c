@@ -80,7 +80,7 @@ static lib_i32 iret_prepare(iret_machine *state, iret_negative negative,
         state->machine = LIB_NULL;
         return 0;
     }
-    cpu = &state->machine->executor_cpu;
+    cpu = &(*test_core_machine_fixture_cpu(state->machine));
     cpu->data.cr0 = VCPU_CR0_PE;
     cpu->data.gdtr.flagValid = LIB_TRUE;
     cpu->data.gdtr.sregtype = SREG_GDTR;

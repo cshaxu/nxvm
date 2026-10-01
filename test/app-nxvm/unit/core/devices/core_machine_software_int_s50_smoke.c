@@ -49,7 +49,7 @@ static lib_i32 software_int_s50_sregs_same(const t_cpu *before,
 
 static void software_int_s50_seed(cli_sti_machine *state, lib_u32 flags)
 {
-    t_cpu *cpu = &state->machine->executor_cpu;
+    t_cpu *cpu = &(*test_core_machine_fixture_cpu(state->machine));
 
     cpu->data.eax = 0xaabbccddu;
     cpu->data.ecx = 0x11223344u;
@@ -451,7 +451,7 @@ static lib_i32 software_int_s50_test_protected(void)
                 0xeeu);
             failed |= !ie_write(&state, IE_CODE_BASE, code,
                 forms[form].bytes);
-            state.machine->executor_cpu.data.eflags = flags;
+            (*test_core_machine_fixture_cpu(state.machine)).data.eflags = flags;
             failed |= !ie_run(&state, 0, &after, &diagnostic);
             failed |= diagnostic.first_fault.valid;
             failed |= after.data.cs.selector != 0x0008u;
@@ -484,7 +484,7 @@ static lib_i32 software_int_s50_test_protected(void)
                 0x8eu);
             failed |= !ie_write(&state, IE_CODE_BASE, code,
                 forms[form].bytes);
-            state.machine->executor_cpu.data.eflags = 0x00000302u |
+            (*test_core_machine_fixture_cpu(state.machine)).data.eflags = 0x00000302u |
                 (forms[form].requires_overflow ? VCPU_EFLAGS_OF : 0u);
             before = test_core_machine_fixture_capture_cpu_after_run(
                 state.machine);
@@ -536,8 +536,8 @@ static lib_i32 software_int_s50_test_protected_faults_and_vm86(void)
     failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
         VCPU_DESC_SYS_TYPE_INTGATE_32);
     if (!failed) {
-        state.machine->executor_cpu.data.cs.dpl = 3u;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_VM |
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.dpl = 3u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_VM |
             VCPU_EFLAGS_CF;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed = !ie_run(&state, 1, &after, &diagnostic);

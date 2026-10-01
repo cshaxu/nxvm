@@ -86,7 +86,7 @@ static lib_i32 dt_run(descriptor_system_machine *state, const lib_u8 *code,
     core_machine_cpu_diagnostic diagnostic;
 
     if (expect_fault && expect_exception == VCPUINS_EXCEPT_UD &&
-        !CORE_MACHINE_BIT_IS_SET(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        !CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state->machine)).data.cr0, VCPU_CR0_PE) &&
         !test_core_machine_fixture_preflight_real_ud_terminal(state->machine))
         return 0;
     if (!dt_write(state, 0u, code, bytes) ||
@@ -98,7 +98,7 @@ static lib_i32 dt_run(descriptor_system_machine *state, const lib_u8 *code,
             LIB_STATUS_OK) return 0;
     if (expect_fault && state->machine->cpu_profile >=
             CORE_MACHINE_CPU_PROFILE_80386 &&
-        CORE_MACHINE_BIT_IS_SET(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state->machine)).data.cr0, VCPU_CR0_PE) &&
         (expect_exception == VCPUINS_EXCEPT_TS ||
             expect_exception == VCPUINS_EXCEPT_NP ||
             expect_exception == VCPUINS_EXCEPT_SS ||
@@ -113,7 +113,7 @@ static lib_i32 dt_run(descriptor_system_machine *state, const lib_u8 *code,
 static void dt_enter_protected(descriptor_system_machine *state,
     lib_u8 cpl)
 {
-    t_cpu *cpu = &state->machine->executor_cpu;
+    t_cpu *cpu = &(*test_core_machine_fixture_cpu(state->machine));
 
     CORE_MACHINE_BIT_SET(cpu->data.cr0, VCPU_CR0_PE);
     cpu->data.cs.selector = (lib_u16)(0x0008u | cpl);
@@ -143,7 +143,7 @@ static lib_i32 dt_test_c7_segment_override_real_mode(void)
     lib_i32 failed = !dt_prepare(&state);
 
     if (!failed) {
-        state.machine->executor_cpu.data.ebx = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ebx = 0u;
         failed = !dt_run(&state, code, sizeof(code), 0, 0u) ||
             !dt_read(&state, 2u, (lib_u8 *)&observed, sizeof(observed)) ||
             observed != 0xffffu;
@@ -173,28 +173,28 @@ static lib_i32 dt_test_leave_protected_mode(void)
 
     if (!failed) {
         dt_enter_protected(&state, 0u);
-        state.machine->executor_cpu.data.cs.seg.exec.defsize = LIB_TRUE;
-        state.machine->executor_cpu.data.ds.seg.data.big = LIB_TRUE;
-        state.machine->executor_cpu.data.es.seg.data.big = LIB_TRUE;
-        state.machine->executor_cpu.data.ss.seg.data.big = LIB_TRUE;
-        state.machine->executor_cpu.data.eax = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.seg.exec.defsize = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds.seg.data.big = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.es.seg.data.big = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.seg.data.big = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eax = 0u;
         failed = !dt_run(&state, code, sizeof(code), 0, 0u) ||
-            state.machine->executor_cpu.data.cr0 != 0u ||
-            state.machine->executor_cpu.data.cs.selector != 0u ||
-            state.machine->executor_cpu.data.cs.base != 0u ||
-            state.machine->executor_cpu.data.cs.limit != 0xffffu ||
-            !state.machine->executor_cpu.data.cs.flagValid ||
-            !state.machine->executor_cpu.data.cs.seg.accessed ||
-            !state.machine->executor_cpu.data.cs.seg.executable ||
-            state.machine->executor_cpu.data.cs.seg.exec.defsize ||
-            state.machine->executor_cpu.data.cs.seg.exec.conform ||
-            !state.machine->executor_cpu.data.cs.seg.exec.readable ||
-            state.machine->executor_cpu.data.ebx != 0x00000048u ||
-            !dt_real_data_cache(&state.machine->executor_cpu.data.es, 0x0048u,
+            (*test_core_machine_fixture_cpu(state.machine)).data.cr0 != 0u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.cs.base != 0u ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.cs.limit != 0xffffu ||
+            !(*test_core_machine_fixture_cpu(state.machine)).data.cs.flagValid ||
+            !(*test_core_machine_fixture_cpu(state.machine)).data.cs.seg.accessed ||
+            !(*test_core_machine_fixture_cpu(state.machine)).data.cs.seg.executable ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.cs.seg.exec.defsize ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.cs.seg.exec.conform ||
+            !(*test_core_machine_fixture_cpu(state.machine)).data.cs.seg.exec.readable ||
+            (*test_core_machine_fixture_cpu(state.machine)).data.ebx != 0x00000048u ||
+            !dt_real_data_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.es, 0x0048u,
                 SREG_DATA) ||
-            !dt_real_data_cache(&state.machine->executor_cpu.data.ss, 0x0048u,
+            !dt_real_data_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.ss, 0x0048u,
                 SREG_STACK) ||
-            !dt_real_data_cache(&state.machine->executor_cpu.data.ds, 0x0048u,
+            !dt_real_data_cache(&(*test_core_machine_fixture_cpu(state.machine)).data.ds, 0x0048u,
                 SREG_DATA);
     }
     core_machine_destroy(state.machine);

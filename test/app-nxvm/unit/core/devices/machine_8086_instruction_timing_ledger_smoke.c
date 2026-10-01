@@ -200,11 +200,11 @@ static lib_i32 timing_8086_test_memory(void)
         failed |= !timing_8086_load(machine, read_direct, sizeof(read_direct)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
                 LIB_STATUS_OK || !timing_8086_execute(machine, 1u, 14u, &state) ||
-            machine->executor_cpu.data.cx != value;
+            (*test_core_machine_fixture_cpu(machine)).data.cx != value;
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, write_direct, sizeof(write_direct)) ||
-            ((machine->executor_cpu.data.cx = value), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.cx = value), 0) ||
             !timing_8086_execute(machine, 1u, 15u, &state);
     }
     if (!failed) {
@@ -220,8 +220,8 @@ static lib_i32 timing_8086_test_memory(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, read_indexed, sizeof(read_indexed)) ||
-            ((machine->executor_cpu.data.bp = 0u),
-                (machine->executor_cpu.data.di = 0u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.bp = 0u),
+                ((*test_core_machine_fixture_cpu(machine)).data.di = 0u), 0) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
                 LIB_STATUS_OK || !timing_8086_execute(machine, 1u, 20u, &state);
     }
@@ -233,14 +233,14 @@ static lib_i32 timing_8086_test_memory(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, moffs_write_odd,
-            sizeof(moffs_write_odd)) || ((machine->executor_cpu.data.ax = value), 0) ||
+            sizeof(moffs_write_odd)) || (((*test_core_machine_fixture_cpu(machine)).data.ax = value), 0) ||
             !timing_8086_execute(machine, 1u, 14u, &state);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, lock_add_memory,
             sizeof(lock_add_memory)) ||
             core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
-                LIB_STATUS_OK || ((machine->executor_cpu.data.ax = 1u), 0) ||
+                LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.ax = 1u), 0) ||
             !timing_8086_execute(machine, 1u, 24u, &state);
     }
     if (!failed) {
@@ -375,7 +375,7 @@ static lib_i32 timing_8086_test_segment_and_pointer_transfers(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, sreg_from_register,
-            sizeof(sreg_from_register)) || ((machine->executor_cpu.data.ax = segment),
+            sizeof(sreg_from_register)) || (((*test_core_machine_fixture_cpu(machine)).data.ax = segment),
                 0) || !timing_8086_execute(machine, 1u, 2u, &state);
     }
     if (!failed) {
@@ -460,50 +460,50 @@ static lib_i32 timing_8086_test_group3_operand_model(void)
     } while (0)
 
     TIMING_8086_GROUP3_REGISTER_CASE(mul_r8, 71u,
-        (machine->executor_cpu.data.ax = 2u, machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 2u, (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_REGISTER_CASE(mul_r8, 70u,
-        (machine->executor_cpu.data.ax = 0u, machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 0u, (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_REGISTER_CASE(mul_r8, 77u,
-        (machine->executor_cpu.data.ax = 0xffu, machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 0xffu, (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_REGISTER_CASE(mul_r16, 119u,
-        (machine->executor_cpu.data.ax = 2u, machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 2u, (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_REGISTER_CASE(imul_r8, 91u,
-        (machine->executor_cpu.data.ax = 2u, machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 2u, (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_REGISTER_CASE(imul_r8, 98u,
-        (machine->executor_cpu.data.ax = 0x80u, machine->executor_cpu.data.bx = 1u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 0x80u, (*test_core_machine_fixture_cpu(machine)).data.bx = 1u));
     TIMING_8086_GROUP3_REGISTER_CASE(imul_r16, 139u,
-        (machine->executor_cpu.data.ax = 2u, machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 2u, (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_REGISTER_CASE(div_r8, 81u,
-        (machine->executor_cpu.data.ax = 6u, machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 6u, (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_REGISTER_CASE(div_r8, 80u,
-        (machine->executor_cpu.data.ax = 0u, machine->executor_cpu.data.bx = 1u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 0u, (*test_core_machine_fixture_cpu(machine)).data.bx = 1u));
     TIMING_8086_GROUP3_REGISTER_CASE(div_r8, 88u,
-        (machine->executor_cpu.data.ax = 0xffu, machine->executor_cpu.data.bx = 1u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 0xffu, (*test_core_machine_fixture_cpu(machine)).data.bx = 1u));
     TIMING_8086_GROUP3_REGISTER_CASE(div_r16, 145u,
-        (machine->executor_cpu.data.dx = 0u, machine->executor_cpu.data.ax = 6u,
-            machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.dx = 0u, (*test_core_machine_fixture_cpu(machine)).data.ax = 6u,
+            (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_REGISTER_CASE(idiv_r8, 111u,
-        (machine->executor_cpu.data.ax = 6u, machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 6u, (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_REGISTER_CASE(idiv_r16, 175u,
-        (machine->executor_cpu.data.dx = 0u, machine->executor_cpu.data.ax = 6u,
-            machine->executor_cpu.data.bx = 3u));
+        ((*test_core_machine_fixture_cpu(machine)).data.dx = 0u, (*test_core_machine_fixture_cpu(machine)).data.ax = 6u,
+            (*test_core_machine_fixture_cpu(machine)).data.bx = 3u));
     TIMING_8086_GROUP3_MEMORY_CASE(mul_m8, 83u,
-        (machine->executor_cpu.data.ax = 2u), &operand8, sizeof(operand8));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 2u), &operand8, sizeof(operand8));
     TIMING_8086_GROUP3_MEMORY_CASE(mul_m16, 131u,
-        (machine->executor_cpu.data.ax = 2u), &operand16, sizeof(operand16));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 2u), &operand16, sizeof(operand16));
     TIMING_8086_GROUP3_MEMORY_CASE(imul_m8, 103u,
-        (machine->executor_cpu.data.ax = 2u), &operand8, sizeof(operand8));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 2u), &operand8, sizeof(operand8));
     TIMING_8086_GROUP3_MEMORY_CASE(imul_m16, 151u,
-        (machine->executor_cpu.data.ax = 2u), &operand16, sizeof(operand16));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 2u), &operand16, sizeof(operand16));
     TIMING_8086_GROUP3_MEMORY_CASE(div_m8, 93u,
-        (machine->executor_cpu.data.ax = 6u), &operand8, sizeof(operand8));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 6u), &operand8, sizeof(operand8));
     TIMING_8086_GROUP3_MEMORY_CASE(div_m16, 157u,
-        (machine->executor_cpu.data.dx = 0u, machine->executor_cpu.data.ax = 6u),
+        ((*test_core_machine_fixture_cpu(machine)).data.dx = 0u, (*test_core_machine_fixture_cpu(machine)).data.ax = 6u),
         &operand16, sizeof(operand16));
     TIMING_8086_GROUP3_MEMORY_CASE(idiv_m8, 123u,
-        (machine->executor_cpu.data.ax = 6u), &operand8, sizeof(operand8));
+        ((*test_core_machine_fixture_cpu(machine)).data.ax = 6u), &operand8, sizeof(operand8));
     TIMING_8086_GROUP3_MEMORY_CASE(idiv_m16, 187u,
-        (machine->executor_cpu.data.dx = 0u, machine->executor_cpu.data.ax = 6u),
+        ((*test_core_machine_fixture_cpu(machine)).data.dx = 0u, (*test_core_machine_fixture_cpu(machine)).data.ax = 6u),
         &operand16, sizeof(operand16));
 
 #undef TIMING_8086_GROUP3_MEMORY_CASE
@@ -545,7 +545,7 @@ static lib_i32 timing_8086_test_group2_forms(void)
         }
         if (!failed) {
             failed |= !timing_8086_load(machine, register_cl,
-                sizeof(register_cl)) || ((machine->executor_cpu.data.cx = 2u), 0) ||
+                sizeof(register_cl)) || (((*test_core_machine_fixture_cpu(machine)).data.cx = 2u), 0) ||
                 !timing_8086_execute(machine, 1u, 16u, &state);
         }
         if (!failed) {
@@ -556,7 +556,7 @@ static lib_i32 timing_8086_test_group2_forms(void)
         if (!failed) {
             failed |= !timing_8086_load(machine, memory_cl, sizeof(memory_cl)) ||
                 core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
-                    LIB_STATUS_OK || ((machine->executor_cpu.data.cx = 2u), 0) ||
+                    LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.cx = 2u), 0) ||
                 !timing_8086_execute(machine, 1u, 34u, &state);
         }
         core_machine_destroy(machine);
@@ -586,12 +586,12 @@ static lib_i32 timing_8086_test_control_repeat_and_ports(void)
 
     if (!failed) {
         failed |= !timing_8086_load(machine, taken, sizeof(taken)) ||
-            ((machine->executor_cpu.data.eflags |= VCPU_EFLAGS_ZF), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.eflags |= VCPU_EFLAGS_ZF), 0) ||
             !timing_8086_execute(machine, 1u, 16u, &state);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, not_taken, sizeof(not_taken)) ||
-            ((machine->executor_cpu.data.eflags |= VCPU_EFLAGS_ZF), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.eflags |= VCPU_EFLAGS_ZF), 0) ||
             !timing_8086_execute(machine, 1u, 4u, &state);
     }
     if (!failed) {
@@ -605,25 +605,25 @@ static lib_i32 timing_8086_test_control_repeat_and_ports(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, movsw, sizeof(movsw)) ||
-            ((machine->executor_cpu.data.si = 0x1001u),
-                (machine->executor_cpu.data.di = 0x1101u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.si = 0x1001u),
+                ((*test_core_machine_fixture_cpu(machine)).data.di = 0x1101u), 0) ||
             !timing_8086_execute(machine, 1u, 26u, &state);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, rep_movsb, sizeof(rep_movsb)) ||
             core_machine_memory_write(machine, 0x1000u, source, sizeof(source)) !=
-                LIB_STATUS_OK || ((machine->executor_cpu.data.cx = 3u),
-                (machine->executor_cpu.data.si = 0x1000u),
-                (machine->executor_cpu.data.di = 0x1100u), 0) ||
+                LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.cx = 3u),
+                ((*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u),
+                ((*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u), 0) ||
             !timing_8086_execute(machine, 3u, 60u, &state);
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, segment_rep_movsb,
             sizeof(segment_rep_movsb)) || core_machine_memory_write(machine,
                 0x1000u, source, sizeof(source)) != LIB_STATUS_OK ||
-            ((machine->executor_cpu.data.cx = 3u),
-                (machine->executor_cpu.data.si = 0x1000u),
-                (machine->executor_cpu.data.di = 0x1100u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.cx = 3u),
+                ((*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u),
+                ((*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u), 0) ||
             !timing_8086_execute(machine, 3u, 66u, &state);
     }
     if (!failed) {
@@ -632,7 +632,7 @@ static lib_i32 timing_8086_test_control_repeat_and_ports(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, in_dx, sizeof(in_dx)) ||
-            ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.dx = 0x00e0u), 0) ||
             !timing_8086_execute(machine, 1u, 8u, &state) || state.reads != 2u;
     }
     if (!failed) {
@@ -642,7 +642,7 @@ static lib_i32 timing_8086_test_control_repeat_and_ports(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, out_dx, sizeof(out_dx)) ||
-            ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.dx = 0x00e0u), 0) ||
             !timing_8086_execute(machine, 1u, 8u, &state) || state.writes != 2u;
     }
     core_machine_destroy(machine);
@@ -692,9 +692,9 @@ static lib_i32 timing_8086_test_fallback_fault_budget_and_overflow(void)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, maximum, sizeof(maximum)) ||
-            ((machine->executor_cpu.data.bp = 1u),
-                (machine->executor_cpu.data.di = 0u),
-                (machine->executor_cpu.data.cx = 0x5aa5u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.bp = 1u),
+                ((*test_core_machine_fixture_cpu(machine)).data.di = 0u),
+                ((*test_core_machine_fixture_cpu(machine)).data.cx = 0x5aa5u), 0) ||
             core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
             result.ticks != 0u || !timing_8086_execute(machine, 1u, 27u, &state);

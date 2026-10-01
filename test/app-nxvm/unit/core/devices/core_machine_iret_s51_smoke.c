@@ -28,7 +28,7 @@ static lib_i32 iret_s51_sregs_same(const t_cpu *before, const t_cpu *after)
 
 static void iret_s51_seed(cli_sti_machine *state, lib_u32 flags)
 {
-    t_cpu *cpu = &state->machine->executor_cpu;
+    t_cpu *cpu = &(*test_core_machine_fixture_cpu(state->machine));
 
     cpu->data.eax = 0xaabbccddu;
     cpu->data.ecx = 0x11223344u;
@@ -86,7 +86,7 @@ static lib_i32 iret_s51_real_case(core_machine_cpu_profile profile,
         failed |= core_machine_memory_write(state.machine, return_ip, &hlt,
             sizeof(hlt)) != LIB_STATUS_OK;
         if (wrap_stack) {
-            const lib_u32 stack_base = state.machine->executor_cpu.data.ss.base;
+            const lib_u32 stack_base = (*test_core_machine_fixture_cpu(state.machine)).data.ss.base;
 
             failed |= wide || core_machine_memory_write(state.machine,
                 stack_base + 0xfffeu, frame16, sizeof(frame16[0u])) != LIB_STATUS_OK;
@@ -104,7 +104,7 @@ static lib_i32 iret_s51_real_case(core_machine_cpu_profile profile,
     }
     if (!failed) {
         iret_s51_seed(&state, flags);
-        if (wrap_stack) state.machine->executor_cpu.data.sp = 0xfffeu;
+        if (wrap_stack) (*test_core_machine_fixture_cpu(state.machine)).data.sp = 0xfffeu;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK;
@@ -198,7 +198,7 @@ static lib_i32 iret_s51_test_80286_stack_boundary(void)
     }
     if (!failed) {
         iret_s51_seed(&state, VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);
-        state.machine->executor_cpu.data.sp = 0xffffu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.sp = 0xffffu;
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);

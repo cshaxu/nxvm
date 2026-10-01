@@ -75,7 +75,7 @@ static void core_machine_planar_parity_refresh_nmi(core_machine *machine)
         machine->planar_parity_latched &&
         (machine->planar_parity_port_b & 0x04u) != 0u &&
         !machine->planar_parity_nmi_signaled &&
-        core_machine_cpu_request_nmi(&machine->executor_cpu_execution)) {
+        core_machine_cpu_request_nmi(machine->executor_cpu_execution)) {
         machine->planar_parity_nmi_signaled = LIB_TRUE;
     }
 }
@@ -224,7 +224,7 @@ static void core_machine_d4_platform_refresh_nmi(core_machine *machine)
         ((machine->d4_platform_port_b & 0x04u) == 0u &&
         machine->d4_platform_failsafe_latched);
     if (pending && !machine->d4_platform_nmi_signaled &&
-        core_machine_cpu_request_nmi(&machine->executor_cpu_execution)) {
+        core_machine_cpu_request_nmi(machine->executor_cpu_execution)) {
         machine->d4_platform_nmi_signaled = LIB_TRUE;
     }
 }

@@ -124,12 +124,12 @@ static lib_i32 timing_80286_xlat(void)
     core_machine *machine = LIB_NULL;
     lib_i32 failed = !timing_80286_prepare(&machine, &state) ||
         !timing_80286_load(machine, program, sizeof(program)) ||
-        ((machine->executor_cpu.data.ebx = 0x1000u),
-            (machine->executor_cpu.data.eax = 1u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.ebx = 0x1000u),
+            ((*test_core_machine_fixture_cpu(machine)).data.eax = 1u), 0) ||
         core_machine_memory_write(machine, 0x1001u, value, sizeof(value)) !=
             LIB_STATUS_OK || !timing_80286_run(machine, &state, 1u, 5u) ||
-        CORE_MACHINE_MASK_U8(machine->executor_cpu.data.eax) != value[0] ||
-        core_machine_cpu_capture_timing(&machine->executor_cpu_execution).
+        CORE_MACHINE_MASK_U8((*test_core_machine_fixture_cpu(machine)).data.eax) != value[0] ||
+        core_machine_cpu_capture_timing(machine->executor_cpu_execution).
             source_timing_unallocated;
 
     core_machine_destroy(machine);
@@ -149,17 +149,17 @@ static lib_i32 timing_80286_lahf_sahf(void)
     lib_i32 failed = !timing_80286_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80286_load(machine, lahf, sizeof(lahf)) ||
-        ((machine->executor_cpu.data.eax = 0x11223344u),
-            (machine->executor_cpu.data.eflags = transferred), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.eax = 0x11223344u),
+            ((*test_core_machine_fixture_cpu(machine)).data.eflags = transferred), 0) ||
         !timing_80286_run(machine, &state, 1u, 2u) ||
-        machine->executor_cpu.data.eax != 0x1122d744u ||
-        machine->executor_cpu.data.eflags != transferred;
+        (*test_core_machine_fixture_cpu(machine)).data.eax != 0x1122d744u ||
+        (*test_core_machine_fixture_cpu(machine)).data.eflags != transferred;
     if (!failed) failed |= !timing_80286_load(machine, sahf, sizeof(sahf)) ||
-        ((machine->executor_cpu.data.eax = 0x1122d744u),
-            (machine->executor_cpu.data.eflags = preserved), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.eax = 0x1122d744u),
+            ((*test_core_machine_fixture_cpu(machine)).data.eflags = preserved), 0) ||
         !timing_80286_run(machine, &state, 1u, 2u) ||
-        machine->executor_cpu.data.eax != 0x1122d744u ||
-        machine->executor_cpu.data.eflags != (preserved | transferred);
+        (*test_core_machine_fixture_cpu(machine)).data.eax != 0x1122d744u ||
+        (*test_core_machine_fixture_cpu(machine)).data.eflags != (preserved | transferred);
     core_machine_destroy(machine);
     return failed;
 }
@@ -172,10 +172,10 @@ static lib_i32 timing_80286_sreg_store(void)
     lib_i32 failed = !timing_80286_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80286_load(machine, store_ds_ax,
-        sizeof(store_ds_ax)) || ((machine->executor_cpu.data.eax =
-        0xaabb0000u), (machine->executor_cpu.data.ds.selector = 0x1357u), 0) ||
+        sizeof(store_ds_ax)) || (((*test_core_machine_fixture_cpu(machine)).data.eax =
+        0xaabb0000u), ((*test_core_machine_fixture_cpu(machine)).data.ds.selector = 0x1357u), 0) ||
         !timing_80286_run(machine, &state, 1u, 2u) ||
-        machine->executor_cpu.data.eax != 0xaabb1357u;
+        (*test_core_machine_fixture_cpu(machine)).data.eax != 0xaabb1357u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -194,36 +194,36 @@ static lib_i32 timing_80286_sreg_load(void)
     lib_i32 failed = !timing_80286_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80286_load(machine, load_es_ax,
-        sizeof(load_es_ax)) || ((machine->executor_cpu.data.eax =
+        sizeof(load_es_ax)) || (((*test_core_machine_fixture_cpu(machine)).data.eax =
         0xaabb1357u), 0) || !timing_80286_run(machine, &state, 1u, 2u) ||
-        machine->executor_cpu.data.es.selector != selector ||
-        machine->executor_cpu.data.es.base != 0x13570u;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector != selector ||
+        (*test_core_machine_fixture_cpu(machine)).data.es.base != 0x13570u;
     if (!failed) failed |= !timing_80286_load(machine, load_ss_ax,
-        sizeof(load_ss_ax)) || ((machine->executor_cpu.data.eax =
+        sizeof(load_ss_ax)) || (((*test_core_machine_fixture_cpu(machine)).data.eax =
         0xaabb1357u), 0) || !timing_80286_run(machine, &state, 1u, 2u) ||
-        machine->executor_cpu.data.ss.selector != selector ||
-        machine->executor_cpu.data.ss.base != 0x13570u;
+        (*test_core_machine_fixture_cpu(machine)).data.ss.selector != selector ||
+        (*test_core_machine_fixture_cpu(machine)).data.ss.base != 0x13570u;
     if (!failed) failed |= !timing_80286_load(machine, load_ds_ax,
-        sizeof(load_ds_ax)) || ((machine->executor_cpu.data.eax =
+        sizeof(load_ds_ax)) || (((*test_core_machine_fixture_cpu(machine)).data.eax =
         0xaabb1357u), 0) || !timing_80286_run(machine, &state, 1u, 2u) ||
-        machine->executor_cpu.data.ds.selector != selector ||
-        machine->executor_cpu.data.ds.base != 0x13570u;
+        (*test_core_machine_fixture_cpu(machine)).data.ds.selector != selector ||
+        (*test_core_machine_fixture_cpu(machine)).data.ds.base != 0x13570u;
     if (!failed) failed |= !timing_80286_load(machine, load_ds_even,
         sizeof(load_ds_even)) || core_machine_memory_write(machine, 0x1000u,
         &selector, sizeof(selector)) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 5u) ||
-        machine->executor_cpu.data.ds.selector != selector;
+        (*test_core_machine_fixture_cpu(machine)).data.ds.selector != selector;
     if (!failed) failed |= !timing_80286_load(machine, load_ds_odd,
         sizeof(load_ds_odd)) || core_machine_memory_write(machine, 0x1001u,
         &selector, sizeof(selector)) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 7u) ||
-        machine->executor_cpu.data.ds.selector != selector;
+        (*test_core_machine_fixture_cpu(machine)).data.ds.selector != selector;
     if (!failed) failed |= !timing_80286_load(machine, load_ds_indexed,
-        sizeof(load_ds_indexed)) || ((machine->executor_cpu.data.bp = 0x1000u),
-        (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
+        sizeof(load_ds_indexed)) || (((*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) || core_machine_memory_write(
             machine, 0x1001u, &selector, sizeof(selector)) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 8u) ||
-        machine->executor_cpu.data.ds.selector != selector;
+        (*test_core_machine_fixture_cpu(machine)).data.ds.selector != selector;
     core_machine_destroy(machine);
     return failed;
 }
@@ -244,7 +244,7 @@ static lib_i32 timing_80286_boot_protected(core_machine *machine,
     static const lib_u8 halt[] = { 0xf4u };
     core_machine_run_result result;
 
-    machine->executor_cpu.data.cr0 = 0u;
+    (*test_core_machine_fixture_cpu(machine)).data.cr0 = 0u;
     return test_core_machine_fixture_reset_real_mode(machine) &&
         core_machine_memory_write(machine, 0x100u, gdt_pointer,
             sizeof(gdt_pointer)) == LIB_STATUS_OK &&
@@ -278,7 +278,7 @@ static lib_i32 timing_80286_boot_protected_system(core_machine *machine,
     static const lib_u8 halt[] = { 0xf4u };
     core_machine_run_result result;
 
-    machine->executor_cpu.data.cr0 = 0u;
+    (*test_core_machine_fixture_cpu(machine)).data.cr0 = 0u;
     return test_core_machine_fixture_reset_real_mode(machine) &&
         core_machine_memory_write(machine, 0x100u, gdt_pointer,
             sizeof(gdt_pointer)) == LIB_STATUS_OK &&
@@ -305,33 +305,33 @@ static lib_i32 timing_80286_sreg_load_protected(void)
         !timing_80286_boot_protected(machine, &state);
 
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, direct,
-        sizeof(direct)) != LIB_STATUS_OK || ((machine->executor_cpu.data.eax =
+        sizeof(direct)) != LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.eax =
         0xaabb0010u), 0) || ((test_core_machine_fixture_resume_after_halt_at(
             machine, 0u)), !timing_80286_run(machine, &state, 1u, 17u)) ||
-        machine->executor_cpu.data.ds.selector != selector;
+        (*test_core_machine_fixture_cpu(machine)).data.ds.selector != selector;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, memory_even,
         sizeof(memory_even)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x4000u, &selector, sizeof(selector)) != LIB_STATUS_OK ||
         ((machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 19u)) ||
-        machine->executor_cpu.data.es.selector != selector;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector != selector;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, memory_odd,
         sizeof(memory_odd)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x4001u, &selector, sizeof(selector)) != LIB_STATUS_OK ||
         ((machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 21u)) ||
-        machine->executor_cpu.data.es.selector != selector;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector != selector;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, memory_indexed,
-        sizeof(memory_indexed)) != LIB_STATUS_OK || ((machine->executor_cpu.data.bp =
-            0x1000u), (machine->executor_cpu.data.si = 0u), 0) ||
+        sizeof(memory_indexed)) != LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.bp =
+            0x1000u), ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) ||
         core_machine_memory_write(machine, 0x4001u, &selector, sizeof(selector)) !=
             LIB_STATUS_OK || ((machine->elapsed_ticks = 0u),
             (state.advanced_ticks = 0u), 0) ||
             ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 22u)) ||
-        machine->executor_cpu.data.es.selector != selector;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector != selector;
     core_machine_destroy(machine);
     return failed;
 }
@@ -352,26 +352,26 @@ static lib_i32 timing_80286_les_lds(void)
         sizeof(les_direct)) || core_machine_memory_write(machine, 0x1000u,
         real_pointer, sizeof(real_pointer)) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 7u) ||
-        machine->executor_cpu.data.ax != 0x3344u ||
-        machine->executor_cpu.data.es.selector != 0x1234u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax != 0x3344u ||
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector != 0x1234u;
     if (!failed) failed |= !timing_80286_load(machine, lds_direct,
         sizeof(lds_direct)) || core_machine_memory_write(machine, 0x1000u,
         real_pointer, sizeof(real_pointer)) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 7u) ||
-        machine->executor_cpu.data.ax != 0x3344u ||
-        machine->executor_cpu.data.ds.selector != 0x1234u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax != 0x3344u ||
+        (*test_core_machine_fixture_cpu(machine)).data.ds.selector != 0x1234u;
     if (!failed) failed |= !timing_80286_load(machine, les_indexed,
-        sizeof(les_indexed)) || ((machine->executor_cpu.data.bp = 0x1000u),
-        (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
+        sizeof(les_indexed)) || (((*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) || core_machine_memory_write(
             machine, 0x1001u, real_pointer, sizeof(real_pointer)) !=
             LIB_STATUS_OK || !timing_80286_run(machine, &state, 1u, 12u) ||
-        machine->executor_cpu.data.es.selector != 0x1234u;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector != 0x1234u;
     if (!failed) failed |= !timing_80286_load(machine, lds_indexed,
-        sizeof(lds_indexed)) || ((machine->executor_cpu.data.bp = 0x1000u),
-        (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
+        sizeof(lds_indexed)) || (((*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) || core_machine_memory_write(
             machine, 0x1001u, real_pointer, sizeof(real_pointer)) !=
             LIB_STATUS_OK || !timing_80286_run(machine, &state, 1u, 12u) ||
-        machine->executor_cpu.data.ds.selector != 0x1234u;
+        (*test_core_machine_fixture_cpu(machine)).data.ds.selector != 0x1234u;
     if (!failed) failed |= !timing_80286_boot_protected(machine, &state);
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         les_direct, sizeof(les_direct)) != LIB_STATUS_OK ||
@@ -379,8 +379,8 @@ static lib_i32 timing_80286_les_lds(void)
             sizeof(protected_pointer)) != LIB_STATUS_OK ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 21u)) ||
-        machine->executor_cpu.data.ax != 0x3344u ||
-        machine->executor_cpu.data.es.selector != 0x0010u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax != 0x3344u ||
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector != 0x0010u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         lds_direct, sizeof(lds_direct)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x4000u, protected_pointer,
@@ -388,28 +388,28 @@ static lib_i32 timing_80286_les_lds(void)
         ((machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 21u)) ||
-        machine->executor_cpu.data.ax != 0x3344u ||
-        machine->executor_cpu.data.ds.selector != 0x0010u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax != 0x3344u ||
+        (*test_core_machine_fixture_cpu(machine)).data.ds.selector != 0x0010u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         les_indexed, sizeof(les_indexed)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.bp = 0x1000u),
-        (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
+        (((*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) || core_machine_memory_write(
             machine, 0x4001u, protected_pointer, sizeof(protected_pointer)) !=
             LIB_STATUS_OK || ((machine->elapsed_ticks = 0u),
             (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 26u)) ||
-        machine->executor_cpu.data.es.selector != 0x0010u;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector != 0x0010u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         lds_indexed, sizeof(lds_indexed)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.bp = 0x1000u),
-        (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
+        (((*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) || core_machine_memory_write(
             machine, 0x4001u, protected_pointer, sizeof(protected_pointer)) !=
             LIB_STATUS_OK || ((machine->elapsed_ticks = 0u),
             (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 26u)) ||
-        machine->executor_cpu.data.ds.selector != 0x0010u;
+        (*test_core_machine_fixture_cpu(machine)).data.ds.selector != 0x0010u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -432,13 +432,13 @@ static lib_i32 timing_80286_sreg_stack(void)
 
     for (index = 0u; !failed && index < sizeof(push_ops); ++index) {
         failed |= !timing_80286_load(machine, &push_ops[index], 1u) ||
-            ((machine->executor_cpu.data.esp = 0x8000u),
-            (machine->executor_cpu.data.es.selector = real_selectors[0]),
-            (machine->executor_cpu.data.cs.selector = real_selectors[1]),
-            (machine->executor_cpu.data.ss.selector = real_selectors[2]),
-            (machine->executor_cpu.data.ds.selector = real_selectors[3]), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.esp = 0x8000u),
+            ((*test_core_machine_fixture_cpu(machine)).data.es.selector = real_selectors[0]),
+            ((*test_core_machine_fixture_cpu(machine)).data.cs.selector = real_selectors[1]),
+            ((*test_core_machine_fixture_cpu(machine)).data.ss.selector = real_selectors[2]),
+            ((*test_core_machine_fixture_cpu(machine)).data.ds.selector = real_selectors[3]), 0) ||
             !timing_80286_run(machine, &state, 1u, 3u) ||
-            machine->executor_cpu.data.esp != 0x7ffeu ||
+            (*test_core_machine_fixture_cpu(machine)).data.esp != 0x7ffeu ||
             core_machine_memory_read(machine, 0x7ffeu, &image, sizeof(image)) !=
                 LIB_STATUS_OK || image != real_selectors[index];
     }
@@ -446,24 +446,24 @@ static lib_i32 timing_80286_sreg_stack(void)
         const lib_u16 selector = (lib_u16)(0x5555u + index);
 
         failed |= !timing_80286_load(machine, &pop_ops[index], 1u) ||
-            ((machine->executor_cpu.data.esp = 0x8000u), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.esp = 0x8000u), 0) ||
             core_machine_memory_write(machine, 0x8000u, &selector,
                 sizeof(selector)) != LIB_STATUS_OK ||
             !timing_80286_run(machine, &state, 1u, 5u) ||
-            machine->executor_cpu.data.esp != 0x8002u ||
-            (index == 0u ? machine->executor_cpu.data.es.selector :
-            index == 1u ? machine->executor_cpu.data.ss.selector :
-            machine->executor_cpu.data.ds.selector) != selector;
+            (*test_core_machine_fixture_cpu(machine)).data.esp != 0x8002u ||
+            (index == 0u ? (*test_core_machine_fixture_cpu(machine)).data.es.selector :
+            index == 1u ? (*test_core_machine_fixture_cpu(machine)).data.ss.selector :
+            (*test_core_machine_fixture_cpu(machine)).data.ds.selector) != selector;
     }
     if (!failed) failed |= !timing_80286_boot_protected(machine, &state);
     for (index = 0u; !failed && index < sizeof(push_ops); ++index) {
         failed |= core_machine_memory_write(machine, 0x2000u, &push_ops[index],
-            1u) != LIB_STATUS_OK || ((machine->executor_cpu.data.esp = 0x8000u),
-            (machine->executor_cpu.data.es.selector = 0x0010u),
+            1u) != LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.esp = 0x8000u),
+            ((*test_core_machine_fixture_cpu(machine)).data.es.selector = 0x0010u),
             (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
             ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
             !timing_80286_run(machine, &state, 1u, 3u)) ||
-            machine->executor_cpu.data.esp != 0x7ffeu ||
+            (*test_core_machine_fixture_cpu(machine)).data.esp != 0x7ffeu ||
             core_machine_memory_read_physical(&machine->executor_memory, 0xaffeu,
                 CORE_MACHINE_REFERENCE_OF(image), sizeof(image)) != LIB_STATUS_OK ||
             image != protected_selectors[index];
@@ -472,16 +472,16 @@ static lib_i32 timing_80286_sreg_stack(void)
         const lib_u16 selector = 0x0010u;
 
         failed |= core_machine_memory_write(machine, 0x2000u, &pop_ops[index],
-            1u) != LIB_STATUS_OK || ((machine->executor_cpu.data.esp = 0x8000u),
+            1u) != LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.esp = 0x8000u),
             (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
             core_machine_memory_write_physical(&machine->executor_memory, 0xb000u,
                 CORE_MACHINE_REFERENCE_OF(selector), sizeof(selector)) != LIB_STATUS_OK ||
             ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
             !timing_80286_run(machine, &state, 1u, 20u)) ||
-            machine->executor_cpu.data.esp != 0x8002u ||
-            (index == 0u ? machine->executor_cpu.data.es.selector :
-            index == 1u ? machine->executor_cpu.data.ss.selector :
-            machine->executor_cpu.data.ds.selector) != selector;
+            (*test_core_machine_fixture_cpu(machine)).data.esp != 0x8002u ||
+            (index == 0u ? (*test_core_machine_fixture_cpu(machine)).data.es.selector :
+            index == 1u ? (*test_core_machine_fixture_cpu(machine)).data.ss.selector :
+            (*test_core_machine_fixture_cpu(machine)).data.ds.selector) != selector;
     }
     core_machine_destroy(machine);
     return failed;
@@ -499,41 +499,41 @@ static lib_i32 timing_80286_bound(void)
 
     if (!failed) failed |= !timing_80286_load(machine, direct, sizeof(direct)) ||
         core_machine_memory_write(machine, 0x1000u, bounds, sizeof(bounds)) !=
-            LIB_STATUS_OK || ((machine->executor_cpu.data.eax = 0xaabb0002u),
-            (machine->executor_cpu.data.eflags = flags), 0) ||
+            LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.eax = 0xaabb0002u),
+            ((*test_core_machine_fixture_cpu(machine)).data.eflags = flags), 0) ||
         !timing_80286_run(machine, &state, 1u, 13u) ||
-        machine->executor_cpu.data.eax != 0xaabb0002u ||
-        machine->executor_cpu.data.eflags != flags;
+        (*test_core_machine_fixture_cpu(machine)).data.eax != 0xaabb0002u ||
+        (*test_core_machine_fixture_cpu(machine)).data.eflags != flags;
     if (!failed) failed |= !timing_80286_load(machine, indexed, sizeof(indexed)) ||
-        ((machine->executor_cpu.data.ebp = 0x1000u),
-        (machine->executor_cpu.data.esi = 0u),
-        (machine->executor_cpu.data.eax = 0xaabb0002u),
-        (machine->executor_cpu.data.eflags = flags), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.ebp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u),
+        ((*test_core_machine_fixture_cpu(machine)).data.eax = 0xaabb0002u),
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags = flags), 0) ||
         core_machine_memory_write(machine, 0x1001u, bounds, sizeof(bounds)) !=
             LIB_STATUS_OK || !timing_80286_run(machine, &state, 1u, 13u) ||
-        machine->executor_cpu.data.eax != 0xaabb0002u ||
-        machine->executor_cpu.data.eflags != flags;
+        (*test_core_machine_fixture_cpu(machine)).data.eax != 0xaabb0002u ||
+        (*test_core_machine_fixture_cpu(machine)).data.eflags != flags;
     if (!failed) failed |= !timing_80286_boot_protected(machine, &state);
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, direct,
         sizeof(direct)) != LIB_STATUS_OK || core_machine_memory_write(machine,
         0x4000u, bounds, sizeof(bounds)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.eax = 0xaabb0002u),
-        (machine->executor_cpu.data.eflags = flags), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.eax = 0xaabb0002u),
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags = flags), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 13u)) ||
-        machine->executor_cpu.data.eax != 0xaabb0002u ||
-        machine->executor_cpu.data.eflags != flags;
+        (*test_core_machine_fixture_cpu(machine)).data.eax != 0xaabb0002u ||
+        (*test_core_machine_fixture_cpu(machine)).data.eflags != flags;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, indexed,
-        sizeof(indexed)) != LIB_STATUS_OK || ((machine->executor_cpu.data.ebp =
-        0x1000u), (machine->executor_cpu.data.esi = 0u),
-        (machine->executor_cpu.data.eax = 0xaabb0002u),
-        (machine->executor_cpu.data.eflags = flags),
+        sizeof(indexed)) != LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.ebp =
+        0x1000u), ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u),
+        ((*test_core_machine_fixture_cpu(machine)).data.eax = 0xaabb0002u),
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags = flags),
         (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         core_machine_memory_write(machine, 0x4001u, bounds, sizeof(bounds)) !=
             LIB_STATUS_OK || ((test_core_machine_fixture_resume_after_halt_at(
             machine, 0u)), !timing_80286_run(machine, &state, 1u, 13u)) ||
-        machine->executor_cpu.data.eax != 0xaabb0002u ||
-        machine->executor_cpu.data.eflags != flags;
+        (*test_core_machine_fixture_cpu(machine)).data.eax != 0xaabb0002u ||
+        (*test_core_machine_fixture_cpu(machine)).data.eflags != flags;
     core_machine_destroy(machine);
     return failed;
 }
@@ -551,35 +551,35 @@ static lib_i32 timing_80286_arpl(void)
 
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         register_form, sizeof(register_form)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.eax = 0x0001u),
-        (machine->executor_cpu.data.ecx = 0x0003u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.eax = 0x0001u),
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx = 0x0003u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 10u)) ||
-        (machine->executor_cpu.data.eax & 0xffffu) != 0x0003u ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.eax & 0xffffu) != 0x0003u ||
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
     selector = 0x0001u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, direct,
         sizeof(direct)) != LIB_STATUS_OK || core_machine_memory_write(machine,
         0x4000u, &selector, sizeof(selector)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.ecx = 0x0003u),
+        (((*test_core_machine_fixture_cpu(machine)).data.ecx = 0x0003u),
         (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 11u)) ||
         core_machine_memory_read(machine, 0x4000u, &selector, sizeof(selector)) !=
             LIB_STATUS_OK || selector != 0x0003u ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
     selector = 0x0003u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, indexed,
         sizeof(indexed)) != LIB_STATUS_OK || core_machine_memory_write(machine,
         0x4001u, &selector, sizeof(selector)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.ebp = 0x1000u),
-        (machine->executor_cpu.data.esi = 0u), (machine->executor_cpu.data.ecx =
+        (((*test_core_machine_fixture_cpu(machine)).data.ebp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u), ((*test_core_machine_fixture_cpu(machine)).data.ecx =
         0x0001u), (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 11u)) ||
         core_machine_memory_read(machine, 0x4001u, &selector, sizeof(selector)) !=
             LIB_STATUS_OK || selector != 0x0003u ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) != 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) != 0u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -597,10 +597,10 @@ static lib_i32 timing_80286_verr_verw(void)
 
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         verr_register, sizeof(verr_register)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.eax = selector), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.eax = selector), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 14u)) ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         verw_direct, sizeof(verw_direct)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x4000u, &selector, sizeof(selector)) !=
@@ -608,16 +608,16 @@ static lib_i32 timing_80286_verr_verw(void)
             (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 16u)) ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         verr_indexed, sizeof(verr_indexed)) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x4001u, &selector, sizeof(selector)) !=
-            LIB_STATUS_OK || ((machine->executor_cpu.data.ebp = 0x1000u),
-            (machine->executor_cpu.data.esi = 0u), (machine->elapsed_ticks = 0u),
+            LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.ebp = 0x1000u),
+            ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u), (machine->elapsed_ticks = 0u),
             (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 17u)) ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -635,37 +635,37 @@ static lib_i32 timing_80286_lar(void)
 
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         register_form, sizeof(register_form)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.eax = selector),
-        (machine->executor_cpu.data.ecx = 0u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.eax = selector),
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 14u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0x9300u ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
-    if (!failed) failed |= ((machine->executor_cpu.data.eax = 0x0018u),
-        (machine->executor_cpu.data.ecx = 0x3456u),
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx & 0xffffu) != 0x9300u ||
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
+    if (!failed) failed |= (((*test_core_machine_fixture_cpu(machine)).data.eax = 0x0018u),
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx = 0x3456u),
         (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 14u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0x3456u ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) != 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx & 0xffffu) != 0x3456u ||
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) != 0u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, direct,
         sizeof(direct)) != LIB_STATUS_OK || core_machine_memory_write(machine,
         0x4000u, &selector, sizeof(selector)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.ecx = 0u), (machine->elapsed_ticks = 0u),
+        (((*test_core_machine_fixture_cpu(machine)).data.ecx = 0u), (machine->elapsed_ticks = 0u),
         (state.advanced_ticks = 0u), 0) || ((test_core_machine_fixture_resume_after_halt_at(
         machine, 0u)), !timing_80286_run(machine, &state, 1u, 16u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0x9300u ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx & 0xffffu) != 0x9300u ||
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, indexed,
         sizeof(indexed)) != LIB_STATUS_OK || core_machine_memory_write(machine,
         0x4001u, &selector, sizeof(selector)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.ebp = 0x1000u),
-        (machine->executor_cpu.data.esi = 0u), (machine->executor_cpu.data.ecx = 0u),
+        (((*test_core_machine_fixture_cpu(machine)).data.ebp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u), ((*test_core_machine_fixture_cpu(machine)).data.ecx = 0u),
         (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 17u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0x9300u ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx & 0xffffu) != 0x9300u ||
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -683,37 +683,37 @@ static lib_i32 timing_80286_lsl(void)
 
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         register_form, sizeof(register_form)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.eax = selector),
-        (machine->executor_cpu.data.ecx = 0u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.eax = selector),
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 14u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0xffffu ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
-    if (!failed) failed |= ((machine->executor_cpu.data.eax = 0x0018u),
-        (machine->executor_cpu.data.ecx = 0x3456u),
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx & 0xffffu) != 0xffffu ||
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
+    if (!failed) failed |= (((*test_core_machine_fixture_cpu(machine)).data.eax = 0x0018u),
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx = 0x3456u),
         (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 14u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0x3456u ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) != 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx & 0xffffu) != 0x3456u ||
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) != 0u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, direct,
         sizeof(direct)) != LIB_STATUS_OK || core_machine_memory_write(machine,
         0x4000u, &selector, sizeof(selector)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.ecx = 0u), (machine->elapsed_ticks = 0u),
+        (((*test_core_machine_fixture_cpu(machine)).data.ecx = 0u), (machine->elapsed_ticks = 0u),
         (state.advanced_ticks = 0u), 0) || ((test_core_machine_fixture_resume_after_halt_at(
         machine, 0u)), !timing_80286_run(machine, &state, 1u, 16u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0xffffu ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx & 0xffffu) != 0xffffu ||
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, indexed,
         sizeof(indexed)) != LIB_STATUS_OK || core_machine_memory_write(machine,
         0x4001u, &selector, sizeof(selector)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.ebp = 0x1000u),
-        (machine->executor_cpu.data.esi = 0u), (machine->executor_cpu.data.ecx = 0u),
+        (((*test_core_machine_fixture_cpu(machine)).data.ebp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u), ((*test_core_machine_fixture_cpu(machine)).data.ecx = 0u),
         (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 17u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0xffffu ||
-        (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.ecx & 0xffffu) != 0xffffu ||
+        ((*test_core_machine_fixture_cpu(machine)).data.eflags & VCPU_EFLAGS_ZF) == 0u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -729,25 +729,25 @@ static lib_i32 timing_80286_smsw(void)
     lib_i32 failed = !timing_80286_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80286_load(machine, register_form,
-        sizeof(register_form)) || ((machine->executor_cpu.data.cr0 = 0x000cu),
-        (machine->executor_cpu.data.eax = 0u), 0) || !timing_80286_run(machine,
-        &state, 1u, 2u) || (machine->executor_cpu.data.eax & 0xffffu) != 0x000cu;
+        sizeof(register_form)) || (((*test_core_machine_fixture_cpu(machine)).data.cr0 = 0x000cu),
+        ((*test_core_machine_fixture_cpu(machine)).data.eax = 0u), 0) || !timing_80286_run(machine,
+        &state, 1u, 2u) || ((*test_core_machine_fixture_cpu(machine)).data.eax & 0xffffu) != 0x000cu;
     if (!failed) failed |= !timing_80286_load(machine, direct, sizeof(direct)) ||
-        ((machine->executor_cpu.data.cr0 = 0x000cu), 0) || !timing_80286_run(machine,
+        (((*test_core_machine_fixture_cpu(machine)).data.cr0 = 0x000cu), 0) || !timing_80286_run(machine,
         &state, 1u, 3u) || core_machine_memory_read(machine, 0x1000u, &msw,
         sizeof(msw)) != LIB_STATUS_OK || msw != 0x000cu;
     if (!failed) failed |= !timing_80286_load(machine, indexed, sizeof(indexed)) ||
-        ((machine->executor_cpu.data.cr0 = 0x000cu),
-        (machine->executor_cpu.data.ebp = 0x1000u),
-        (machine->executor_cpu.data.esi = 0u), 0) || !timing_80286_run(machine,
+        (((*test_core_machine_fixture_cpu(machine)).data.cr0 = 0x000cu),
+        ((*test_core_machine_fixture_cpu(machine)).data.ebp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u), 0) || !timing_80286_run(machine,
         &state, 1u, 4u) || core_machine_memory_read(machine, 0x1001u, &msw,
         sizeof(msw)) != LIB_STATUS_OK || msw != 0x000cu;
     if (!failed) failed |= !timing_80286_boot_protected(machine, &state) ||
         core_machine_memory_write(machine, 0x2000u, register_form,
-        sizeof(register_form)) != LIB_STATUS_OK || ((machine->executor_cpu.data.eax = 0u),
+        sizeof(register_form)) != LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.eax = 0u),
         0) || ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 2u)) ||
-        (machine->executor_cpu.data.eax & 0xffffu) != 0x0001u;
+        ((*test_core_machine_fixture_cpu(machine)).data.eax & 0xffffu) != 0x0001u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, direct,
         sizeof(direct)) != LIB_STATUS_OK || ((machine->elapsed_ticks = 0u),
         (state.advanced_ticks = 0u), 0) || ((test_core_machine_fixture_resume_after_halt_at(
@@ -755,8 +755,8 @@ static lib_i32 timing_80286_smsw(void)
         core_machine_memory_read(machine, 0x4000u, &msw, sizeof(msw)) !=
         LIB_STATUS_OK || msw != 0x0001u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, indexed,
-        sizeof(indexed)) != LIB_STATUS_OK || ((machine->executor_cpu.data.ebp = 0x1000u),
-        (machine->executor_cpu.data.esi = 0u), (machine->elapsed_ticks = 0u),
+        sizeof(indexed)) != LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.ebp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u), (machine->elapsed_ticks = 0u),
         (state.advanced_ticks = 0u), 0) || ((test_core_machine_fixture_resume_after_halt_at(
         machine, 0u)), !timing_80286_run(machine, &state, 1u, 4u)) ||
         core_machine_memory_read(machine, 0x4001u, &msw, sizeof(msw)) !=
@@ -778,14 +778,14 @@ static lib_i32 timing_80286_sldt_str(void)
 
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         sldt_register, sizeof(sldt_register)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.ldtr.selector = 0x0010u),
-        (machine->executor_cpu.data.eax = 0u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.ldtr.selector = 0x0010u),
+        ((*test_core_machine_fixture_cpu(machine)).data.eax = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 2u)) ||
-        (machine->executor_cpu.data.eax & 0xffffu) != 0x0010u;
+        ((*test_core_machine_fixture_cpu(machine)).data.eax & 0xffffu) != 0x0010u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         str_direct, sizeof(str_direct)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.tr.selector = 0x0008u),
+        (((*test_core_machine_fixture_cpu(machine)).data.tr.selector = 0x0008u),
         (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 3u)) ||
@@ -793,9 +793,9 @@ static lib_i32 timing_80286_sldt_str(void)
         LIB_STATUS_OK || selector != 0x0008u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
         sldt_indexed, sizeof(sldt_indexed)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.ldtr.selector = 0x0010u),
-        (machine->executor_cpu.data.ebp = 0x1000u),
-        (machine->executor_cpu.data.esi = 0u), (machine->elapsed_ticks = 0u),
+        (((*test_core_machine_fixture_cpu(machine)).data.ldtr.selector = 0x0010u),
+        ((*test_core_machine_fixture_cpu(machine)).data.ebp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u), (machine->elapsed_ticks = 0u),
         (state.advanced_ticks = 0u), 0) || ((test_core_machine_fixture_resume_after_halt_at(
         machine, 0u)), !timing_80286_run(machine, &state, 1u, 4u)) ||
         core_machine_memory_read(machine, 0x4001u, &selector, sizeof(selector)) !=
@@ -815,29 +815,29 @@ static lib_i32 timing_80286_lmsw(void)
     lib_i32 failed = !timing_80286_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80286_load(machine, register_form,
-        sizeof(register_form)) || ((machine->executor_cpu.data.eax = 0u), 0) ||
+        sizeof(register_form)) || (((*test_core_machine_fixture_cpu(machine)).data.eax = 0u), 0) ||
         !timing_80286_run(machine, &state, 1u, 3u) ||
-        (machine->executor_cpu.data.cr0 & 0xffffu) != 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.cr0 & 0xffffu) != 0u;
     if (!failed) failed |= !timing_80286_load(machine, direct, sizeof(direct)) ||
         core_machine_memory_write(machine, 0x1000u, &protected_msw,
         sizeof(protected_msw)) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 6u) ||
-        (machine->executor_cpu.data.cr0 & 0xffffu) != 0x0001u;
+        ((*test_core_machine_fixture_cpu(machine)).data.cr0 & 0xffffu) != 0x0001u;
     if (!failed) failed |= !timing_80286_boot_protected(machine, &state) ||
         core_machine_memory_write(machine, 0x2000u, register_form,
         sizeof(register_form)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.eax = protected_msw), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.eax = protected_msw), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 3u)) ||
-        (machine->executor_cpu.data.cr0 & 0xffffu) != 0x0001u;
+        ((*test_core_machine_fixture_cpu(machine)).data.cr0 & 0xffffu) != 0x0001u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, indexed,
         sizeof(indexed)) != LIB_STATUS_OK || core_machine_memory_write(machine,
         0x4001u, &protected_msw, sizeof(protected_msw)) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.ebp = 0x1000u),
-        (machine->executor_cpu.data.esi = 0u), (machine->elapsed_ticks = 0u),
+        (((*test_core_machine_fixture_cpu(machine)).data.ebp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.esi = 0u), (machine->elapsed_ticks = 0u),
         (state.advanced_ticks = 0u), 0) || ((test_core_machine_fixture_resume_after_halt_at(
         machine, 0u)), !timing_80286_run(machine, &state, 1u, 7u)) ||
-        (machine->executor_cpu.data.cr0 & 0xffffu) != 0x0001u;
+        ((*test_core_machine_fixture_cpu(machine)).data.cr0 & 0xffffu) != 0x0001u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -855,27 +855,27 @@ static lib_i32 timing_80286_table_control(void)
     lib_i32 failed = !timing_80286_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80286_load(machine, sgdt, sizeof(sgdt)) ||
-        ((machine->executor_cpu.data.gdtr.limit = 0x1357u),
-        (machine->executor_cpu.data.gdtr.base = 0x00123400u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.gdtr.limit = 0x1357u),
+        ((*test_core_machine_fixture_cpu(machine)).data.gdtr.base = 0x00123400u), 0) ||
         !timing_80286_run(machine, &state, 1u, 11u);
     if (!failed) failed |= !timing_80286_load(machine, sidt, sizeof(sidt)) ||
-        ((machine->executor_cpu.data.idtr.limit = 0x1357u),
-        (machine->executor_cpu.data.idtr.base = 0x00123400u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.idtr.limit = 0x1357u),
+        ((*test_core_machine_fixture_cpu(machine)).data.idtr.base = 0x00123400u), 0) ||
         !timing_80286_run(machine, &state, 1u, 12u);
     if (!failed) failed |= !timing_80286_load(machine, lgdt, sizeof(lgdt)) ||
         core_machine_memory_write(machine, 0x1000u, table, sizeof(table)) !=
             LIB_STATUS_OK || !timing_80286_run(machine, &state, 1u, 11u) ||
-        machine->executor_cpu.data.gdtr.limit != 0x1357u ||
-        machine->executor_cpu.data.gdtr.base != 0x00123400u;
+        (*test_core_machine_fixture_cpu(machine)).data.gdtr.limit != 0x1357u ||
+        (*test_core_machine_fixture_cpu(machine)).data.gdtr.base != 0x00123400u;
     if (!failed) failed |= !timing_80286_load(machine, lidt, sizeof(lidt)) ||
         core_machine_memory_write(machine, 0x1000u, table, sizeof(table)) !=
             LIB_STATUS_OK || !timing_80286_run(machine, &state, 1u, 12u) ||
-        machine->executor_cpu.data.idtr.limit != 0x1357u ||
-        machine->executor_cpu.data.idtr.base != 0x00123400u;
+        (*test_core_machine_fixture_cpu(machine)).data.idtr.limit != 0x1357u ||
+        (*test_core_machine_fixture_cpu(machine)).data.idtr.base != 0x00123400u;
     if (!failed) failed |= !timing_80286_load(machine, clts, sizeof(clts)) ||
-        ((machine->executor_cpu.data.cr0 = VCPU_CR0_TS), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.cr0 = VCPU_CR0_TS), 0) ||
         !timing_80286_run(machine, &state, 1u, 2u) ||
-        (machine->executor_cpu.data.cr0 & VCPU_CR0_TS) != 0u;
+        ((*test_core_machine_fixture_cpu(machine)).data.cr0 & VCPU_CR0_TS) != 0u;
     core_machine_destroy(machine);
     return failed;
 }
@@ -909,13 +909,13 @@ static lib_i32 timing_80286_ldt_task_registers(void)
         }
         failed |= core_machine_memory_write(machine, 0x2000u, forms[index],
             sizes[index]) != LIB_STATUS_OK ||
-            ((machine->executor_cpu.data.eax = selectors[index]), 0) ||
+            (((*test_core_machine_fixture_cpu(machine)).data.eax = selectors[index]), 0) ||
             (index & 1u && core_machine_memory_write(machine, 0x3400u,
                 &selectors[index], sizeof(selectors[index])) != LIB_STATUS_OK) ||
             ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
             !timing_80286_run(machine, &state, 1u, ticks[index])) ||
-            (index < 2u ? machine->executor_cpu.data.ldtr.selector !=
-                ldt_selector : machine->executor_cpu.data.tr.selector !=
+            (index < 2u ? (*test_core_machine_fixture_cpu(machine)).data.ldtr.selector !=
+                ldt_selector : (*test_core_machine_fixture_cpu(machine)).data.tr.selector !=
                 tss_selector);
         core_machine_destroy(machine);
     }
@@ -961,44 +961,44 @@ static lib_i32 timing_80286_memory(void)
         sizeof(direct_read)) || core_machine_memory_write(machine, 0x1000u,
         &value, sizeof(value)) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 5u) ||
-        machine->executor_cpu.data.cx != value;
+        (*test_core_machine_fixture_cpu(machine)).data.cx != value;
     if (!failed) failed |= !timing_80286_load(machine, direct_write,
-        sizeof(direct_write)) || ((machine->executor_cpu.data.cx = value), 0) ||
+        sizeof(direct_write)) || (((*test_core_machine_fixture_cpu(machine)).data.cx = value), 0) ||
         !timing_80286_run(machine, &state, 1u, 3u);
     if (!failed) failed |= !timing_80286_load(machine, indexed_odd_read,
-        sizeof(indexed_odd_read)) || ((machine->executor_cpu.data.bp = 0x1000u),
-        (machine->executor_cpu.data.si = 0u), 0) ||
+        sizeof(indexed_odd_read)) || (((*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) ||
         core_machine_memory_write(machine, 0x1001u, &value, sizeof(value)) !=
             LIB_STATUS_OK || !timing_80286_run(machine, &state, 1u, 8u) ||
-        machine->executor_cpu.data.cx != value;
+        (*test_core_machine_fixture_cpu(machine)).data.cx != value;
     if (!failed) failed |= !timing_80286_load(machine, moffs_read,
         sizeof(moffs_read)) || core_machine_memory_write(machine, 0x1001u,
         &value, sizeof(value)) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 7u);
     if (!failed) failed |= !timing_80286_load(machine, moffs_write,
-        sizeof(moffs_write)) || ((machine->executor_cpu.data.ax = value), 0) ||
+        sizeof(moffs_write)) || (((*test_core_machine_fixture_cpu(machine)).data.ax = value), 0) ||
         !timing_80286_run(machine, &state, 1u, 5u);
     if (!failed) failed |= !timing_80286_load(machine, xlat, sizeof(xlat)) ||
-        ((machine->executor_cpu.data.bx = 0x1000u),
-            (machine->executor_cpu.data.al = 1u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.bx = 0x1000u),
+            ((*test_core_machine_fixture_cpu(machine)).data.al = 1u), 0) ||
         core_machine_memory_write(machine, 0x1001u, &xlat_value,
             sizeof(xlat_value)) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 5u) ||
-        machine->executor_cpu.data.al != xlat_value;
+        (*test_core_machine_fixture_cpu(machine)).data.al != xlat_value;
     if (!failed) failed |= !timing_80286_load(machine, sreg_store_even,
-        sizeof(sreg_store_even)) || ((machine->executor_cpu.data.ds.selector =
+        sizeof(sreg_store_even)) || (((*test_core_machine_fixture_cpu(machine)).data.ds.selector =
         sreg_value), 0) || !timing_80286_run(machine, &state, 1u, 3u) ||
         core_machine_memory_read(machine, 0x1000u, &sreg_read,
             sizeof(sreg_read)) != LIB_STATUS_OK || sreg_read != sreg_value;
     if (!failed) failed |= !timing_80286_load(machine, sreg_store_odd,
-        sizeof(sreg_store_odd)) || ((machine->executor_cpu.data.ds.selector =
+        sizeof(sreg_store_odd)) || (((*test_core_machine_fixture_cpu(machine)).data.ds.selector =
         sreg_value), 0) || !timing_80286_run(machine, &state, 1u, 5u) ||
         core_machine_memory_read(machine, 0x1001u, &sreg_read,
             sizeof(sreg_read)) != LIB_STATUS_OK || sreg_read != sreg_value;
     if (!failed) failed |= !timing_80286_load(machine, sreg_store_indexed,
-        sizeof(sreg_store_indexed)) || ((machine->executor_cpu.data.ds.selector =
-        sreg_value), (machine->executor_cpu.data.bp = 0x1000u),
-        (machine->executor_cpu.data.si = 0u), 0) ||
+        sizeof(sreg_store_indexed)) || (((*test_core_machine_fixture_cpu(machine)).data.ds.selector =
+        sreg_value), ((*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) ||
         !timing_80286_run(machine, &state, 1u, 6u) ||
         core_machine_memory_read(machine, 0x1001u, &sreg_read,
             sizeof(sreg_read)) != LIB_STATUS_OK || sreg_read != sreg_value;
@@ -1022,31 +1022,31 @@ static lib_i32 timing_80286_control_ports(void)
     lib_i32 failed = !timing_80286_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80286_load(machine, taken, sizeof(taken)) ||
-        ((machine->executor_cpu.data.eflags |= VCPU_EFLAGS_ZF), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.eflags |= VCPU_EFLAGS_ZF), 0) ||
         !timing_80286_run(machine, &state, 1u, 7u);
     if (!failed) failed |= !timing_80286_load(machine, not_taken,
-        sizeof(not_taken)) || ((machine->executor_cpu.data.eflags |=
+        sizeof(not_taken)) || (((*test_core_machine_fixture_cpu(machine)).data.eflags |=
         VCPU_EFLAGS_ZF), 0) || !timing_80286_run(machine, &state, 1u, 3u);
     if (!failed) failed |= !timing_80286_load(machine, movsb, sizeof(movsb)) ||
         core_machine_memory_write(machine, 0x1000u, source, 1u) != LIB_STATUS_OK ||
-        ((machine->executor_cpu.data.si = 0x1000u),
-            (machine->executor_cpu.data.di = 0x1100u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u),
+            ((*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u), 0) ||
         !timing_80286_run(machine, &state, 1u, 5u);
     if (!failed) failed |= !timing_80286_load(machine, rep, sizeof(rep)) ||
         core_machine_memory_write(machine, 0x1000u, source, sizeof(source)) !=
-            LIB_STATUS_OK || ((machine->executor_cpu.data.cx = 3u),
-            (machine->executor_cpu.data.si = 0x1000u),
-            (machine->executor_cpu.data.di = 0x1100u), 0) ||
+            LIB_STATUS_OK || (((*test_core_machine_fixture_cpu(machine)).data.cx = 3u),
+            ((*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u),
+            ((*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u), 0) ||
         !timing_80286_run(machine, &state, 3u, 17u);
     if (!failed) failed |= !timing_80286_load(machine, out_imm, sizeof(out_imm)) ||
         !timing_80286_run(machine, &state, 1u, 3u) || state.writes != 1u;
     if (!failed) failed |= !timing_80286_load(machine, out_dx, sizeof(out_dx)) ||
-        ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.dx = 0x00e0u), 0) ||
         !timing_80286_run(machine, &state, 1u, 3u) || state.writes != 2u;
     if (!failed) failed |= !timing_80286_load(machine, in_imm, sizeof(in_imm)) ||
         !timing_80286_run(machine, &state, 1u, 5u) || state.reads != 1u;
     if (!failed) failed |= !timing_80286_load(machine, in_dx, sizeof(in_dx)) ||
-        ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
+        (((*test_core_machine_fixture_cpu(machine)).data.dx = 0x00e0u), 0) ||
         !timing_80286_run(machine, &state, 1u, 5u) || state.reads != 2u;
     core_machine_destroy(machine);
     return failed;
@@ -1084,25 +1084,25 @@ static lib_i32 timing_80286_boundaries(void)
     if (!failed) failed |= !timing_80286_load(machine, shift_word_memory,
         sizeof(shift_word_memory)) || !timing_80286_run(machine, &state, 1u, 7u);
     if (!failed) failed |= !timing_80286_load(machine, shift_indexed_memory,
-        sizeof(shift_indexed_memory)) || ((machine->executor_cpu.data.bp = 0x1000u),
-        (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
+        sizeof(shift_indexed_memory)) || (((*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) || core_machine_memory_write(
             machine, 0x1001u, source, 1u) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 8u);
     if (!failed) failed |= !timing_80286_load(machine, shift_cl,
-        sizeof(shift_cl)) || ((machine->executor_cpu.data.cx = 4u), 0) ||
+        sizeof(shift_cl)) || (((*test_core_machine_fixture_cpu(machine)).data.cx = 4u), 0) ||
         !timing_80286_run(machine, &state, 1u, 9u);
     if (!failed) failed |= !timing_80286_load(machine, shift_count,
         sizeof(shift_count)) || !timing_80286_run(machine, &state, 1u, 9u);
     if (!failed) failed |= !timing_80286_load(machine, shift_cl_memory,
-        sizeof(shift_cl_memory)) || ((machine->executor_cpu.data.cx = 4u), 0) ||
+        sizeof(shift_cl_memory)) || (((*test_core_machine_fixture_cpu(machine)).data.cx = 4u), 0) ||
         !timing_80286_run(machine, &state, 1u, 12u);
     if (!failed) failed |= !timing_80286_load(machine, shift_count_memory,
-        sizeof(shift_count_memory)) || ((machine->executor_cpu.data.bp = 0x1000u),
-        (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
+        sizeof(shift_count_memory)) || (((*test_core_machine_fixture_cpu(machine)).data.bp = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0u), 0) || core_machine_memory_write(
             machine, 0x1001u, source, 1u) != LIB_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 13u);
     if (!failed) failed |= !timing_80286_load(machine, shift_cl,
-        sizeof(shift_cl)) || ((machine->executor_cpu.data.cx = 0x24u), 0) ||
+        sizeof(shift_cl)) || (((*test_core_machine_fixture_cpu(machine)).data.cx = 0x24u), 0) ||
         !timing_80286_run(machine, &state, 1u, 9u);
     if (!failed) failed |= !timing_80286_load(machine, shift_undefined,
         sizeof(shift_undefined)) || !test_core_machine_fixture_preflight_real_ud_terminal(
@@ -1124,9 +1124,9 @@ static lib_i32 timing_80286_boundaries(void)
         result.reason != CORE_MACHINE_STOP_REQUESTED || result.executed != 0u ||
         result.ticks != 0u || state.advanced_ticks != 0u;
     if (!failed) failed |= !timing_80286_load(machine, maximum,
-        sizeof(maximum)) || ((machine->executor_cpu.data.cx = 1u),
-        (machine->executor_cpu.data.si = 0x1000u),
-        (machine->executor_cpu.data.di = 0x1100u), 0) ||
+        sizeof(maximum)) || (((*test_core_machine_fixture_cpu(machine)).data.cx = 1u),
+        ((*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u),
+        ((*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u), 0) ||
         core_machine_memory_write(machine, 0x1000u, source, sizeof(source)) !=
             LIB_STATUS_OK ||
         core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||

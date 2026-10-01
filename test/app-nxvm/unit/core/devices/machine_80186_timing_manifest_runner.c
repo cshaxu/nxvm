@@ -303,30 +303,30 @@ static lib_i32 timing_80186_manifest_prepare(core_machine **out_machine,
     /* Keep arithmetic recipes on their successful-retirement path: a nonzero
      * accumulator divisor and a zero high half avoid an incidental #DE. */
     if (status == LIB_STATUS_OK) {
-        machine->executor_cpu.data.ax = 1u;
-        machine->executor_cpu.data.dx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.dx = 0u;
     }
     if (status == LIB_STATUS_OK && timing_80186_manifest_flags_active) {
-        machine->executor_cpu.data.eflags = timing_80186_manifest_eflags;
+        (*test_core_machine_fixture_cpu(machine)).data.eflags = timing_80186_manifest_eflags;
     }
     if (status == LIB_STATUS_OK && inputs != LIB_NULL) {
         lib_u32 memory_value = inputs->memory_value;
 
-        machine->executor_cpu.data.cx = inputs->cx;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = inputs->cx;
         if (inputs->memory_value != 0u) status = core_machine_memory_write(machine,
             inputs->memory_address, &memory_value, sizeof(memory_value));
     }
     if (status == LIB_STATUS_OK && timing_80186_manifest_is_return_recipe(key_id)) {
         const lib_u16 frame[] = { 0xfff5u, 0xf000u, 0x0002u };
 
-        machine->executor_cpu.data.sp = TIMING_80186_MANIFEST_STACK_LINEAR;
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80186_MANIFEST_STACK_LINEAR;
         status = core_machine_memory_write(machine,
             TIMING_80186_MANIFEST_STACK_LINEAR, frame, sizeof(frame));
     }
     if (status == LIB_STATUS_OK && timing_80186_manifest_is_interrupt_recipe(key_id)) {
         const lib_u16 handler[] = { 0xfff5u, 0xf000u };
 
-        machine->executor_cpu.data.sp = TIMING_80186_MANIFEST_STACK_LINEAR +
+        (*test_core_machine_fixture_cpu(machine)).data.sp = TIMING_80186_MANIFEST_STACK_LINEAR +
             TIMING_80186_MANIFEST_STACK_BYTES;
         status = core_machine_memory_write(machine, 3u * 4u, handler,
             sizeof(handler));
@@ -573,18 +573,18 @@ static lib_i32 timing_80186_manifest_run_repeat_recipe(
         !timing_80186_manifest_prepare(&machine, &capture, program,
             sizeof(program), LIB_NULL, recipe->key_id);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
         destination = recipe->prefix == 0xf3u ? source : 0u;
         failed = core_machine_memory_write(machine, 0x1000u, &source,
             sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x1100u, &destination, sizeof(destination)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        machine->executor_cpu.data.si = 0x1000u;
-        machine->executor_cpu.data.di = 0x1100u;
-        machine->executor_cpu.data.ax = 1u;
-        machine->executor_cpu.data.cx = 2u;
+        (*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 2u;
         failed = timing_80186_manifest_run_repeat_step(machine, &capture,
             recipe->key_id,
             CORE_MACHINE_RETIREMENT_REPEAT_FIRST, recipe->first_ticks, 0u) ||
@@ -598,7 +598,7 @@ static lib_i32 timing_80186_manifest_run_repeat_recipe(
     if (!failed) failed = !timing_80186_manifest_prepare(&machine, &capture,
         program, sizeof(program), LIB_NULL, recipe->key_id);
     if (!failed) {
-        machine->executor_cpu.data.cx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 0u;
         failed = timing_80186_manifest_run_repeat_step(machine, &capture, zero_key,
             CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks, 0u);
     }
@@ -607,18 +607,18 @@ static lib_i32 timing_80186_manifest_run_repeat_recipe(
     if (!failed) failed = !timing_80186_manifest_prepare(&machine, &capture,
         program, sizeof(program), LIB_NULL, first_key);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
         destination = recipe->prefix == 0xf3u ? source : 0u;
         failed = core_machine_memory_write(machine, 0x1000u, &source,
             sizeof(source)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x1100u, &destination, sizeof(destination)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        machine->executor_cpu.data.si = 0x1000u;
-        machine->executor_cpu.data.di = 0x1100u;
-        machine->executor_cpu.data.ax = 1u;
-        machine->executor_cpu.data.cx = 2u;
+        (*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 2u;
         failed = timing_80186_manifest_run_repeat_step(machine, &capture, first_key,
             CORE_MACHINE_RETIREMENT_REPEAT_FIRST, recipe->first_ticks, 0u);
     }
@@ -673,13 +673,13 @@ static lib_i32 timing_80186_manifest_run_repeat_phase_context(
     failed = !timing_80186_manifest_prepare(&machine, &capture, program, bytes,
         LIB_NULL, first_key);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
-        machine->executor_cpu.data.di = source_odd ? 0x1100u :
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.si = source_odd ? 0x1001u : 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u;
-        machine->executor_cpu.data.ax = value;
-        machine->executor_cpu.data.cx = 2u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = value;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 2u;
         destination = recipe->prefix == 0xf3u ? value : 0u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
             &value, sizeof(value)) != LIB_STATUS_OK ||
@@ -709,7 +709,7 @@ static lib_i32 timing_80186_manifest_run_repeat_phase_context(
     if (!failed) failed = !timing_80186_manifest_prepare(&machine, &capture,
         program, bytes, LIB_NULL, zero_key);
     if (!failed) {
-        machine->executor_cpu.data.cx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 0u;
         failed = timing_80186_manifest_run_repeat_step(machine, &capture, zero_key,
             CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, zero_ticks,
             segment_override ? CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE : 0u);
@@ -741,12 +741,12 @@ static lib_i32 timing_80186_manifest_run_repeat_segment_recipe(
     failed = !timing_80186_manifest_prepare(&machine, &capture, program,
         sizeof(program), LIB_NULL, key_id);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = 0x1000u;
-        machine->executor_cpu.data.di = 0x1100u;
-        machine->executor_cpu.data.ax = value;
-        machine->executor_cpu.data.cx = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.si = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = value;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 1u;
         failed = core_machine_memory_write(machine, 0x1000u, &value,
             sizeof(value)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x1100u, &value, sizeof(value)) != LIB_STATUS_OK;
@@ -778,11 +778,11 @@ static lib_i32 timing_80186_manifest_run_string_odd_recipe(const char *key_id,
         !timing_80186_manifest_prepare(&machine, &capture, program,
             sizeof(program), LIB_NULL, key_id);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
-        machine->executor_cpu.data.di = source_odd ? 0x1100u : 0x1101u;
-        machine->executor_cpu.data.ax = value;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.si = source_odd ? 0x1001u : 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = source_odd ? 0x1100u : 0x1101u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = value;
         failed = core_machine_memory_write(machine, 0x1000u, &value,
             sizeof(value)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x1100u, &value, sizeof(value)) != LIB_STATUS_OK;
@@ -821,10 +821,10 @@ static lib_i32 timing_80186_manifest_run_string_segment_odd_recipe(
         !timing_80186_manifest_prepare(&machine, &capture, program,
             sizeof(program), LIB_NULL, key_id);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = 0x1001u;
-        machine->executor_cpu.data.di = 0x1100u;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.si = 0x1001u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = 0x1100u;
         failed = core_machine_memory_write(machine, 0x1001u, &value,
             sizeof(value)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x1100u, &value, sizeof(value)) != LIB_STATUS_OK;
@@ -868,12 +868,12 @@ static lib_i32 timing_80186_manifest_run_repeat_odd_recipe(
         !timing_80186_manifest_prepare(&machine, &capture, program,
             sizeof(program), LIB_NULL, key_id);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
-        machine->executor_cpu.data.di = source_odd ? 0x1100u : 0x1101u;
-        machine->executor_cpu.data.ax = value;
-        machine->executor_cpu.data.cx = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.si = source_odd ? 0x1001u : 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = source_odd ? 0x1100u : 0x1101u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = value;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 1u;
         failed = core_machine_memory_write(machine, 0x1000u, &value,
             sizeof(value)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x1100u, &value, sizeof(value)) != LIB_STATUS_OK;
@@ -911,12 +911,12 @@ static lib_i32 timing_80186_manifest_run_repeat_segment_odd_recipe(
     failed = !timing_80186_manifest_prepare(&machine, &capture, program,
         sizeof(program), LIB_NULL, key_id);
     if (!failed) {
-        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
-        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
-        machine->executor_cpu.data.di = source_odd ? 0x1100u : 0x1101u;
-        machine->executor_cpu.data.ax = value;
-        machine->executor_cpu.data.cx = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.es.base = (*test_core_machine_fixture_cpu(machine)).data.ds.base;
+        (*test_core_machine_fixture_cpu(machine)).data.es.selector = (*test_core_machine_fixture_cpu(machine)).data.ds.selector;
+        (*test_core_machine_fixture_cpu(machine)).data.si = source_odd ? 0x1001u : 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.di = source_odd ? 0x1100u : 0x1101u;
+        (*test_core_machine_fixture_cpu(machine)).data.ax = value;
+        (*test_core_machine_fixture_cpu(machine)).data.cx = 1u;
         failed = core_machine_memory_write(machine, 0x1000u, &value,
             sizeof(value)) != LIB_STATUS_OK || core_machine_memory_write(machine,
             0x1100u, &value, sizeof(value)) != LIB_STATUS_OK;

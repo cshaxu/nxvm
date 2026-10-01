@@ -429,7 +429,7 @@ static lib_i32 prefetch_grant_contract(void)
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
-        prefetch_observed_cpu = &machine->executor_cpu_execution;
+        prefetch_observed_cpu = machine->executor_cpu_execution;
         prefetch_grants = 0u;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK;
         failed |= prefetch_grants != 1u ||

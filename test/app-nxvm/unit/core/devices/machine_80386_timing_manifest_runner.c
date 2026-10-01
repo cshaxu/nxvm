@@ -542,8 +542,8 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
             "I386-XLAT")) {
         static const lib_u8 xlat_value[] = { 0x5au };
 
-        machine->executor_cpu.data.ebx = 0x1000u;
-        machine->executor_cpu.data.eax = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.ebx = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.eax = 1u;
         status = core_machine_memory_write(machine, 0x1001u, xlat_value,
             sizeof(xlat_value));
     }
@@ -557,7 +557,7 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
                 "-MULTIPLIER-HIGH")) {
             multiplier = 0x8000u;
         }
-        machine->executor_cpu.data.ecx = multiplier;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = multiplier;
         status = core_machine_memory_write(machine, 0x1000u, &multiplier,
             sizeof(multiplier));
     }
@@ -567,9 +567,9 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
           key_id[8] == 'V'))) {
         static const lib_u32 divisor = 2u;
 
-        machine->executor_cpu.data.eax = 4u;
-        machine->executor_cpu.data.edx = 0u;
-        machine->executor_cpu.data.ecx = divisor;
+        (*test_core_machine_fixture_cpu(machine)).data.eax = 4u;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = divisor;
         status = core_machine_memory_write(machine, 0x1000u, &divisor,
             sizeof(divisor));
     }
@@ -577,13 +577,13 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
         (key_id[7] == 'F' || key_id[7] == 'R')) {
         static const lib_u32 scanned_value = 2u;
 
-        machine->executor_cpu.data.ecx = scanned_value;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = scanned_value;
         status = core_machine_memory_write(machine, 0x1000u, &scanned_value,
             sizeof(scanned_value));
     }
     if (status == LIB_STATUS_OK && key_id[5] == 'S' && key_id[6] == 'H' &&
         key_id[7] == 'L' && (key_id[8] == 'D' || key_id[8] == 'R')) {
-        machine->executor_cpu.data.ecx = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = 1u;
     }
     if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-IN-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -592,22 +592,22 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
             "I386-STRING-OUTS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-INS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-OUTS"))) {
-        machine->executor_cpu.data.edx = 0x00e0u;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0x00e0u;
     }
     if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-STRING-") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-"))) {
         static const lib_u32 string_input = 0x11223344u;
 
-        machine->executor_cpu.data.esi = 0x1000u;
-        machine->executor_cpu.data.edi = 0x1100u;
-        machine->executor_cpu.data.ecx = timing_80386_manifest_key_has_prefix(
+        (*test_core_machine_fixture_cpu(machine)).data.esi = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.edi = 0x1100u;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = timing_80386_manifest_key_has_prefix(
             key_id, "I386-REP-") ? 1u : 0u;
         if (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-ZERO")) {
-            machine->executor_cpu.data.ecx = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.ecx = 0u;
         } else if (timing_80386_manifest_key_has_suffix(key_id,
                 "-REP-PHASE-CONTINUE")) {
-            machine->executor_cpu.data.ecx = 2u;
+            (*test_core_machine_fixture_cpu(machine)).data.ecx = 2u;
         }
         status = core_machine_memory_write(machine, 0x1000u, &string_input,
             sizeof(string_input));
@@ -618,7 +618,7 @@ static lib_status timing_80386_manifest_prepare_recipe_machine(
                 sizeof(string_input));
         }
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-REP-SCAS-REPE")) {
-            machine->executor_cpu.data.eax = string_input;
+            (*test_core_machine_fixture_cpu(machine)).data.eax = string_input;
         }
     }
     return status;
@@ -766,8 +766,8 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
             "I386-XLAT")) {
         static const lib_u8 xlat_value[] = { 0x5au };
 
-        machine->executor_cpu.data.ebx = 0x1000u;
-        machine->executor_cpu.data.eax = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.ebx = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.eax = 1u;
         status = core_machine_memory_write(machine, 0x1001u, xlat_value,
             sizeof(xlat_value));
     }
@@ -783,7 +783,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
             multiplier = 0x8000u;
         }
 
-        machine->executor_cpu.data.ecx = multiplier;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = multiplier;
         status = core_machine_memory_write(machine, 0x1000u, &multiplier,
             sizeof(multiplier));
     }
@@ -793,9 +793,9 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
           key_id[8] == 'V'))) {
         static const lib_u32 divisor = 2u;
 
-        machine->executor_cpu.data.eax = 4u;
-        machine->executor_cpu.data.edx = 0u;
-        machine->executor_cpu.data.ecx = divisor;
+        (*test_core_machine_fixture_cpu(machine)).data.eax = 4u;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0u;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = divisor;
         status = core_machine_memory_write(machine, 0x1000u, &divisor,
             sizeof(divisor));
     }
@@ -803,13 +803,13 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         (key_id[7] == 'F' || key_id[7] == 'R')) {
         static const lib_u32 scanned_value = 2u;
 
-        machine->executor_cpu.data.ecx = scanned_value;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = scanned_value;
         status = core_machine_memory_write(machine, 0x1000u, &scanned_value,
             sizeof(scanned_value));
     }
     if (status == LIB_STATUS_OK && key_id[5] == 'S' && key_id[6] == 'H' &&
         key_id[7] == 'L' && (key_id[8] == 'D' || key_id[8] == 'R')) {
-        machine->executor_cpu.data.ecx = 1u;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = 1u;
     }
     if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-IN-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -818,19 +818,19 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
             "I386-STRING-OUTS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-INS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-OUTS"))) {
-        machine->executor_cpu.data.edx = 0x00e0u;
+        (*test_core_machine_fixture_cpu(machine)).data.edx = 0x00e0u;
     }
     if (status == LIB_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-STRING-") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-"))) {
         static const lib_u32 string_input = 0x11223344u;
 
-        machine->executor_cpu.data.esi = 0x1000u;
-        machine->executor_cpu.data.edi = 0x1100u;
-        machine->executor_cpu.data.ecx = timing_80386_manifest_key_has_prefix(
+        (*test_core_machine_fixture_cpu(machine)).data.esi = 0x1000u;
+        (*test_core_machine_fixture_cpu(machine)).data.edi = 0x1100u;
+        (*test_core_machine_fixture_cpu(machine)).data.ecx = timing_80386_manifest_key_has_prefix(
             key_id, "I386-REP-") ? 1u : 0u;
         if (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-ZERO")) {
-            machine->executor_cpu.data.ecx = 0u;
+            (*test_core_machine_fixture_cpu(machine)).data.ecx = 0u;
         }
         status = core_machine_memory_write(machine, 0x1000u, &string_input,
             sizeof(string_input));
@@ -841,7 +841,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
                 sizeof(string_input));
         }
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-REP-SCAS-REPE")) {
-            machine->executor_cpu.data.eax = string_input;
+            (*test_core_machine_fixture_cpu(machine)).data.eax = string_input;
         }
     }
     if (status == LIB_STATUS_OK && timing_80386_manifest_key_has_prefix(key_id,
@@ -878,19 +878,19 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
             flags = (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JP-")) == taken ?
                 VCPU_EFLAGS_PF : 0u;
         }
-        machine->executor_cpu.data.eflags = flags;
+        (*test_core_machine_fixture_cpu(machine)).data.eflags = flags;
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JCXZ-")) {
-            machine->executor_cpu.data.ecx = taken ? 0u : 1u;
+            (*test_core_machine_fixture_cpu(machine)).data.ecx = taken ? 0u : 1u;
         } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JECXZ-")) {
-            machine->executor_cpu.data.ecx = taken ? 0u : 1u;
+            (*test_core_machine_fixture_cpu(machine)).data.ecx = taken ? 0u : 1u;
         } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-LOOP")) {
-            machine->executor_cpu.data.ecx = taken ? 2u : 1u;
+            (*test_core_machine_fixture_cpu(machine)).data.ecx = taken ? 2u : 1u;
         }
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-LOOPE-") &&
-            taken) machine->executor_cpu.data.eflags = VCPU_EFLAGS_ZF;
+            taken) (*test_core_machine_fixture_cpu(machine)).data.eflags = VCPU_EFLAGS_ZF;
     }
     if (status == LIB_STATUS_OK && lib_text_compare(key_id, "I386-INTO-REAL") == 0) {
-        machine->executor_cpu.data.eflags = VCPU_EFLAGS_OF;
+        (*test_core_machine_fixture_cpu(machine)).data.eflags = VCPU_EFLAGS_OF;
     }
     if (status == LIB_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &active_provider);
@@ -945,7 +945,7 @@ static lib_i32 timing_80386_manifest_run_s7_protected_recipe(
         program == LIB_NULL || program_bytes == 0u) return 1;
     if (!s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE)) return 1;
-    cpu = &state.machine->executor_cpu;
+    cpu = &(*test_core_machine_fixture_cpu(state.machine));
     cpu->data.ds.selector = 0x0010u;
     cpu->data.ds.base = 0u;
     cpu->data.ds.limit = 0xffffu;
@@ -1138,7 +1138,7 @@ static lib_i32 timing_80386_manifest_run_s7_lsl_granularity_recipes(void)
 
         if (!s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
                 VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE)) return 1;
-        cpu = &state.machine->executor_cpu;
+        cpu = &(*test_core_machine_fixture_cpu(state.machine));
         cpu->data.ds.selector = 0x0010u;
         cpu->data.ds.base = 0u;
         cpu->data.ds.limit = 0xffffu;
@@ -1573,7 +1573,7 @@ static lib_i32 timing_80386_manifest_run_s4_repeat_continuation(
         const lib_u16 return_frame[] = { 0xfff5u, 0xf000u, 0x0002u };
         const lib_u16 handler[] = { 0xfff5u, 0xf000u };
 
-        machine->executor_cpu.data.esp = 0x00001000u;
+        (*test_core_machine_fixture_cpu(machine)).data.esp = 0x00001000u;
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-RET-") ||
             lib_text_compare(key_id, "I386-IRET-REAL") == 0) {
             status = core_machine_memory_write(machine, 0x1000u, return_frame,
@@ -1825,14 +1825,14 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipe(const char *key_id,
         !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
-        state.machine->executor_cpu.data.ds = state.machine->executor_cpu.data.ss;
-        state.machine->executor_cpu.data.ds.sregtype = SREG_DATA;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds = (*test_core_machine_fixture_cpu(state.machine)).data.ss;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds.sregtype = SREG_DATA;
     }
     if (!failed && call_gate) {
         gate[5] = (lib_u8)(0x80u | (gate32 ?
             VCPU_DESC_SYS_TYPE_CALLGATE_32 : VCPU_DESC_SYS_TYPE_CALLGATE_16));
-        state.machine->executor_cpu.data.gdtr.limit = 55u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.gdtr.limit = 55u;
     }
     if (!failed) failed = (call_gate && !s3_gate_write(&state, S3_GDT_BASE + 48u,
         gate, sizeof(gate))) || !s3_gate_write(&state, S3_CODE_BASE, program,
@@ -1848,12 +1848,12 @@ static lib_i32 timing_80386_manifest_run_s6_direct_recipe(const char *key_id,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != 0x0010u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0010u;
     if (failed) printf("M5:T437:S6:I386-PROTECTED-DIRECT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -1884,14 +1884,14 @@ static lib_i32 timing_80386_manifest_run_s6_memory_recipe(const char *key_id,
         !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
-        state.machine->executor_cpu.data.ds = state.machine->executor_cpu.data.ss;
-        state.machine->executor_cpu.data.ds.sregtype = SREG_DATA;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds = (*test_core_machine_fixture_cpu(state.machine)).data.ss;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds.sregtype = SREG_DATA;
     }
     if (!failed && call_gate) {
         gate[5] = (lib_u8)(0x80u | (gate32 ?
             VCPU_DESC_SYS_TYPE_CALLGATE_32 : VCPU_DESC_SYS_TYPE_CALLGATE_16));
-        state.machine->executor_cpu.data.gdtr.limit = 55u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.gdtr.limit = 55u;
     }
     if (!failed) failed = (call_gate && !s3_gate_write(&state, S3_GDT_BASE + 48u,
         gate, sizeof(gate))) || !s3_gate_write(&state, S3_CODE_BASE, program,
@@ -1908,12 +1908,12 @@ static lib_i32 timing_80386_manifest_run_s6_memory_recipe(const char *key_id,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != 0x0010u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0010u;
     if (failed) printf("M5:T437:S6:I386-PROTECTED-MEMORY-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -1937,7 +1937,7 @@ static lib_i32 timing_80386_manifest_run_s6_return_recipe(const char *key_id,
         timing_80386_manifest_find(key_id) == LIB_NULL ||
         !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
-    if (!failed) state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+    if (!failed) (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF;
     if (!failed) failed = !s3_gate_write(&state, S3_CODE_BASE, program,
         program_bytes) || !s3_gate_write(&state, S3_STACK_TOP, frame, frame_bytes) ||
         !s3_gate_write(&state, S3_CODE_BASE + 0x10u, target, sizeof(target)) ||
@@ -1951,12 +1951,12 @@ static lib_i32 timing_80386_manifest_run_s6_return_recipe(const char *key_id,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != 0x0010u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0010u;
     if (failed) printf("M5:T437:S6:I386-PROTECTED-RETURN-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -1978,7 +1978,7 @@ static lib_i32 timing_80386_manifest_run_s6_interrupt_recipe(const char *key_id,
         timing_80386_manifest_find(key_id) == LIB_NULL ||
         !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
-    if (!failed) state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
+    if (!failed) (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF |
         (vector == 4u ? VCPU_EFLAGS_OF : 0u);
     if (!failed && vector != S3_VECTOR) failed = !s3_gate_install(&state, vector,
         0x0008u, VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
@@ -1994,12 +1994,12 @@ static lib_i32 timing_80386_manifest_run_s6_interrupt_recipe(const char *key_id,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != S3_HANDLER;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != S3_HANDLER;
     if (failed) printf("M5:T437:S6:I386-PROTECTED-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -2013,12 +2013,15 @@ static lib_i32 timing_80386_manifest_prepare_outer_call_gate(s3_gate_machine *st
     lib_u8 tss[16u] = { 0u };
     lib_u8 tss_descriptor[8u] = { 0u };
     lib_u8 gate[8u] = { 0u };
+    t_cpu *cpu;
     t_cpu_data_sreg *tr;
 
     if (!s3_gate_prepare(state, CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE) ||
         !s3_gate_write(state, S3_GDT_BASE + 32u, user_data,
             sizeof(user_data))) return 0;
+    cpu = test_core_machine_fixture_cpu(state->machine);
+    if (cpu == LIB_NULL) return 0;
     tss[4u] = 0u;
     tss[5u] = 0x70u;
     tss[8u] = 0x10u;
@@ -2032,12 +2035,12 @@ static lib_i32 timing_80386_manifest_prepare_outer_call_gate(s3_gate_machine *st
     gate[4] = parameters;
     gate[5] = (lib_u8)(0xe0u | (gate32 ?
         VCPU_DESC_SYS_TYPE_CALLGATE_32 : VCPU_DESC_SYS_TYPE_CALLGATE_16));
-    state->machine->executor_cpu.data.gdtr.limit = 55u;
+    cpu->data.gdtr.limit = 55u;
     if (!s3_gate_write(state, 0x0500u, tss, sizeof(tss)) ||
         !s3_gate_write(state, S3_GDT_BASE + 40u, tss_descriptor,
             sizeof(tss_descriptor)) || !s3_gate_write(state, S3_GDT_BASE + 48u,
                 gate, sizeof(gate))) return 0;
-    tr = &state->machine->executor_cpu.data.tr;
+    tr = &cpu->data.tr;
     lib_memory_set(tr, 0, sizeof(*tr));
     tr->flagValid = LIB_TRUE;
     tr->selector = 0x0028u;
@@ -2045,10 +2048,10 @@ static lib_i32 timing_80386_manifest_prepare_outer_call_gate(s3_gate_machine *st
     tr->base = 0x0500u;
     tr->limit = sizeof(tss) - 1u;
     tr->sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
-    state->machine->executor_cpu.data.ss.selector = 0x0023u;
-    state->machine->executor_cpu.data.ss.dpl = 3u;
-    state->machine->executor_cpu.data.ds = state->machine->executor_cpu.data.ss;
-    state->machine->executor_cpu.data.ds.sregtype = SREG_DATA;
+    cpu->data.ss.selector = 0x0023u;
+    cpu->data.ss.dpl = 3u;
+    cpu->data.ds = cpu->data.ss;
+    cpu->data.ds.sregtype = SREG_DATA;
     return 1;
 }
 
@@ -2072,7 +2075,7 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_recipe(
         parameters > 2u || timing_80386_manifest_find(key_id) == LIB_NULL ||
         !timing_80386_manifest_prepare_outer_call_gate(&state, parameters,
             timing_80386_manifest_key_has_suffix(key_id, "-SIZE32"));
-    if (!failed) state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+    if (!failed) (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF;
     if (!failed) failed = !s3_gate_write(&state, S3_CODE_BASE, program,
         program_bytes) || (parameters != 0u && !s3_gate_write(&state,
             S3_STACK_TOP, arguments, parameters * sizeof(arguments[0]))) ||
@@ -2089,14 +2092,14 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_recipe(
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != 0x0100u ||
-        state.machine->executor_cpu.data.ss.selector != 0x0010u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0100u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector != 0x0010u;
     if (failed) printf("M5:T437:S6:I386-PROTECTED-OUTER-GATE-DETAIL:%s:status=%d:reason=%d:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x:ss=%04x\n",
         key_id, (lib_i32)run_status, (lib_i32)run.reason, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.ss.selector : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -2122,7 +2125,7 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_memory_recipe(
         timing_80386_manifest_find(key_id) == LIB_NULL ||
         !timing_80386_manifest_prepare_outer_call_gate(&state, parameters,
             timing_80386_manifest_key_has_suffix(key_id, "-SIZE32"));
-    if (!failed) state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+    if (!failed) (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF;
     if (!failed) failed = !s3_gate_write(&state, S3_CODE_BASE, program,
         program_bytes) || !s3_gate_write(&state, 0x4000u, pointer, pointer_bytes) ||
         (parameters != 0u && !s3_gate_write(&state, S3_STACK_TOP, arguments,
@@ -2138,14 +2141,14 @@ static lib_i32 timing_80386_manifest_run_s6_outer_call_gate_memory_recipe(
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != 0x0100u ||
-        state.machine->executor_cpu.data.ss.selector != 0x0010u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0100u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector != 0x0010u;
     if (failed) printf("M5:T437:S6:I386-PROTECTED-OUTER-GATE-MEMORY-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x:ss=%04x\n",
         key_id, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.ss.selector : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -2157,6 +2160,7 @@ static lib_i32 timing_80386_manifest_prepare_inner_interrupt(s3_gate_machine *st
     lib_u8 tss[8u] = { 0u };
     lib_u8 descriptor[8u] = { 7u,0u,0u,5u,0u,
         0x80u | VCPU_DESC_SYS_TYPE_TSS_16_BUSY,0u,0u };
+    t_cpu *cpu;
     t_cpu_data_sreg *tr;
 
     if (!s3_gate_prepare(state, CORE_MACHINE_CPU_PROFILE_80386, LIB_TRUE,
@@ -2164,13 +2168,15 @@ static lib_i32 timing_80386_manifest_prepare_inner_interrupt(s3_gate_machine *st
         !s3_gate_write(state, S3_GDT_BASE + 32u, user_data, sizeof(user_data)) ||
         !s3_gate_install(state, vector, 0x0008u,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 3u, LIB_TRUE)) return 0;
+    cpu = test_core_machine_fixture_cpu(state->machine);
+    if (cpu == LIB_NULL) return 0;
     tss[2u] = 0u;
     tss[3u] = 0x70u;
     tss[4u] = 0x10u;
     if (!s3_gate_write(state, 0x0500u, tss, sizeof(tss)) || !s3_gate_write(
             state, S3_GDT_BASE + 40u, descriptor, sizeof(descriptor))) return 0;
-    state->machine->executor_cpu.data.gdtr.limit = 47u;
-    tr = &state->machine->executor_cpu.data.tr;
+    cpu->data.gdtr.limit = 47u;
+    tr = &cpu->data.tr;
     lib_memory_set(tr, 0, sizeof(*tr));
     tr->flagValid = LIB_TRUE;
     tr->selector = 0x0028u;
@@ -2178,8 +2184,8 @@ static lib_i32 timing_80386_manifest_prepare_inner_interrupt(s3_gate_machine *st
     tr->base = 0x0500u;
     tr->limit = sizeof(tss) - 1u;
     tr->sys.type = VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
-    state->machine->executor_cpu.data.ss.selector = 0x0023u;
-    state->machine->executor_cpu.data.ss.dpl = 3u;
+    cpu->data.ss.selector = 0x0023u;
+    cpu->data.ss.dpl = 3u;
     return 1;
 }
 
@@ -2199,7 +2205,7 @@ static lib_i32 timing_80386_manifest_run_s6_inner_interrupt_recipe(
         timing_80386_manifest_find(key_id) == LIB_NULL ||
         !timing_80386_manifest_prepare_inner_interrupt(&state, vector);
 
-    if (!failed) state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
+    if (!failed) (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF |
         (vector == 4u ? VCPU_EFLAGS_OF : 0u);
     if (!failed) failed = !s3_gate_write(&state, S3_CODE_BASE, program,
         program_bytes) || !s3_gate_write(&state, S3_CODE_BASE + S3_HANDLER,
@@ -2211,12 +2217,12 @@ static lib_i32 timing_80386_manifest_run_s6_inner_interrupt_recipe(
         capture.observation.source_ticks != 100u ||
         capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != S3_HANDLER;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != S3_HANDLER;
     if (failed) printf("M5:T437:S6:I386-PROTECTED-INNER-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -2277,11 +2283,11 @@ static lib_i32 timing_80386_manifest_run_s6_task_recipe(const char *key_id,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        fixture.machine->executor_cpu.data.tr.selector != 0x0030u;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector != 0x0030u;
     if (failed) printf("M5:T437:S6:I386-TASK-DETAIL:%s:bootstrap=%llu/%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
         key_id, bootstrap.ticks, bootstrap.executed, run.ticks,
         capture.observation.source_ticks, capture.count, fixture.machine != LIB_NULL ?
-        fixture.machine->executor_cpu.data.tr.selector : 0u);
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector : 0u);
     core_machine_destroy(fixture.machine);
     return failed;
 }
@@ -2313,8 +2319,8 @@ static lib_i32 timing_80386_manifest_run_s6_iret_task_recipe(const char *key_id)
         bootstrap.executed != bootstrap_budget.instructions;
     if (!failed) failed = core_machine_run(fixture.machine, one_instruction,
         &enter_task) != LIB_STATUS_OK || enter_task.reason != CORE_MACHINE_STOP_BUDGET ||
-        enter_task.executed != 1u || fixture.machine->executor_cpu.data.tr.selector !=
-            0x0030u || !CORE_MACHINE_BIT_IS_SET(fixture.machine->executor_cpu.data.eflags,
+        enter_task.executed != 1u || (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector !=
+            0x0030u || !CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(fixture.machine)).data.eflags,
                 VCPU_EFLAGS_NT);
     if (!failed) failed = !write_bytes(fixture.machine, KERNEL_BASE + 0x100u,
         iret, iret_bytes) || core_machine_set_retirement_observation_provider(
@@ -2325,10 +2331,10 @@ static lib_i32 timing_80386_manifest_run_s6_iret_task_recipe(const char *key_id)
         capture.observation.source_ticks != 275u ||
         capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        fixture.machine->executor_cpu.data.tr.selector != 0x0028u;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector != 0x0028u;
     if (failed) printf("M5:T437:S6:I386-IRET-TASK-DETAIL:%s:bootstrap=%llu:enter=%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
         key_id, bootstrap.executed, enter_task.ticks, run.ticks, capture.observation.source_ticks,
-        capture.count, fixture.machine != LIB_NULL ? fixture.machine->executor_cpu.data.tr.selector : 0u);
+        capture.count, fixture.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector : 0u);
     core_machine_destroy(fixture.machine);
     return failed;
 }
@@ -2358,16 +2364,16 @@ static lib_i32 timing_80386_manifest_run_s6_task_interrupt_recipe(
         (lib_u32)vector * 8u, task_gate, sizeof(task_gate)) ||
         !write_bytes(fixture.machine, KERNEL_BASE + 3u, program, program_bytes);
     if (!failed) {
-        fixture.machine->executor_cpu.data.idtr.flagValid = LIB_TRUE;
-        fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
-        fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
-        fixture.machine->executor_cpu.data.idtr.limit =
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.idtr.flagValid = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.idtr.sregtype = SREG_IDTR;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.idtr.base = IDT_BASE;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.idtr.limit =
             (lib_u16)((lib_u16)vector * 8u + 7u);
         failed = core_machine_run(fixture.machine, bootstrap_budget, &bootstrap) !=
             LIB_STATUS_OK || bootstrap.reason != CORE_MACHINE_STOP_BUDGET ||
             bootstrap.executed != bootstrap_budget.instructions;
     }
-    if (!failed && overflow) fixture.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_OF;
+    if (!failed && overflow) (*test_core_machine_fixture_cpu(fixture.machine)).data.eflags |= VCPU_EFLAGS_OF;
     if (!failed) failed = core_machine_set_retirement_observation_provider(
         fixture.machine, &provider) != LIB_STATUS_OK || core_machine_run(
             fixture.machine, one_instruction, &run) != LIB_STATUS_OK ||
@@ -2378,11 +2384,11 @@ static lib_i32 timing_80386_manifest_run_s6_task_interrupt_recipe(
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        fixture.machine->executor_cpu.data.tr.selector != 0x0030u;
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector != 0x0030u;
     if (failed) printf("M5:T437:S6:I386-TASK-INTERRUPT-DETAIL:%s:bootstrap=%llu/%llu:run=%llu:source=%llu:count=%u:tr=%04x\n",
         key_id, bootstrap.ticks, bootstrap.executed, run.ticks,
         capture.observation.source_ticks, capture.count, fixture.machine != LIB_NULL ?
-        fixture.machine->executor_cpu.data.tr.selector : 0u);
+        (*test_core_machine_fixture_cpu(fixture.machine)).data.tr.selector : 0u);
     core_machine_destroy(fixture.machine);
     return failed;
 }
@@ -2401,6 +2407,7 @@ static lib_i32 timing_80386_manifest_run_s6_vm86_interrupt_recipe(const char *ke
     };
     core_machine_run_result run = { 0 };
     s3_gate_machine state;
+    t_cpu *cpu;
     t_cpu_data_sreg *tr;
     lib_i32 failed = key_id == LIB_NULL || code == LIB_NULL || code_bytes == 0u ||
         timing_80386_manifest_find(key_id) == LIB_NULL ||
@@ -2416,8 +2423,12 @@ static lib_i32 timing_80386_manifest_run_s6_vm86_interrupt_recipe(const char *ke
         !s3_gate_write(&state, S3_GDT_BASE + 40u, tss_descriptor,
             sizeof(tss_descriptor));
     if (!failed) {
-        state.machine->executor_cpu.data.gdtr.limit = 47u;
-        tr = &state.machine->executor_cpu.data.tr;
+        cpu = test_core_machine_fixture_cpu(state.machine);
+        if (cpu == LIB_NULL) failed = 1;
+    }
+    if (!failed) {
+        cpu->data.gdtr.limit = 47u;
+        tr = &cpu->data.tr;
         lib_memory_set(tr, 0, sizeof(*tr));
         tr->flagValid = LIB_TRUE;
         tr->selector = 0x0028u;
@@ -2425,13 +2436,13 @@ static lib_i32 timing_80386_manifest_run_s6_vm86_interrupt_recipe(const char *ke
         tr->base = 0x0500u;
         tr->limit = sizeof(tss) - 1u;
         tr->sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
-        state.machine->executor_cpu.data.cs.selector = 0x0200u;
-        state.machine->executor_cpu.data.cs.base = S3_CODE_BASE;
-        state.machine->executor_cpu.data.cs.dpl = 3u;
-        state.machine->executor_cpu.data.ss.selector = 0u;
-        state.machine->executor_cpu.data.ss.base = 0u;
-        state.machine->executor_cpu.data.ss.dpl = 3u;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_VM |
+        cpu->data.cs.selector = 0x0200u;
+        cpu->data.cs.base = S3_CODE_BASE;
+        cpu->data.cs.dpl = 3u;
+        cpu->data.ss.selector = 0u;
+        cpu->data.ss.base = 0u;
+        cpu->data.ss.dpl = 3u;
+        cpu->data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_VM |
             VCPU_EFLAGS_IOPL | (vector == 4u ? VCPU_EFLAGS_OF : 0u);
     }
     if (!failed) failed = !s3_gate_write(&state, S3_CODE_BASE, code, code_bytes) ||
@@ -2444,12 +2455,12 @@ static lib_i32 timing_80386_manifest_run_s6_vm86_interrupt_recipe(const char *ke
         capture.observation.source_ticks != 120u ||
         capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x0008u ||
-        state.machine->executor_cpu.data.eip != S3_HANDLER;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0008u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != S3_HANDLER;
     if (failed) printf("M5:T437:S6:I386-VM86-INTERRUPT-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:eip=%08x\n",
         key_id, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -2473,7 +2484,7 @@ static lib_i32 timing_80386_manifest_run_s6_iret_vm86_recipe(const char *key_id)
         !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
 
-    if (!failed) state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+    if (!failed) (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF;
     if (!failed) failed = !s3_gate_write(&state, S3_CODE_BASE, iret, sizeof(iret)) ||
         !s3_gate_write(&state, S3_STACK_TOP, frame, sizeof(frame)) ||
         !s3_gate_write(&state, S3_CODE_BASE + 0x10u, target, sizeof(target)) ||
@@ -2485,16 +2496,16 @@ static lib_i32 timing_80386_manifest_run_s6_iret_vm86_recipe(const char *key_id)
         capture.observation.source_ticks != 60u ||
         capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition != CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        (state.machine->executor_cpu.data.eflags & VCPU_EFLAGS_VM) == 0u ||
-        state.machine->executor_cpu.data.cs.selector != 0x0200u ||
-        state.machine->executor_cpu.data.cs.base != S3_CODE_BASE ||
-        state.machine->executor_cpu.data.eip != 0x10u;
+        ((*test_core_machine_fixture_cpu(state.machine)).data.eflags & VCPU_EFLAGS_VM) == 0u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0200u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.base != S3_CODE_BASE ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x10u;
     if (failed) printf("M5:T437:S6:I386-IRET-VM86-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:base=%08x:eip=%08x:eflags=%08x\n",
         key_id, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.base : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eflags : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.base : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eflags : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }
@@ -2520,8 +2531,8 @@ static lib_i32 timing_80386_manifest_run_s6_outer_return_recipe(const char *key_
         !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, LIB_FALSE,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE);
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
-        state.machine->executor_cpu.data.gdtr.limit = 39u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF;
+        (*test_core_machine_fixture_cpu(state.machine)).data.gdtr.limit = 39u;
     }
     if (!failed) failed = !s3_gate_write(&state, S3_GDT_BASE + 32u, user_data,
         sizeof(user_data)) || !s3_gate_write(&state, S3_CODE_BASE, program,
@@ -2538,14 +2549,14 @@ static lib_i32 timing_80386_manifest_run_s6_outer_return_recipe(const char *key_
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
         capture.observation.timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
-        state.machine->executor_cpu.data.cs.selector != 0x001bu ||
-        state.machine->executor_cpu.data.ss.selector != 0x0023u ||
-        state.machine->executor_cpu.data.eip != 0x0010u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x001bu ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector != 0x0023u ||
+        (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x0010u;
     if (failed) printf("M5:T437:S6:I386-PROTECTED-OUTER-RETURN-DETAIL:%s:run=%llu:source=%llu:count=%u:cs=%04x:ss=%04x:eip=%08x\n",
         key_id, run.ticks, capture.observation.source_ticks, capture.count,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.cs.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.ss.selector : 0u,
-        state.machine != LIB_NULL ? state.machine->executor_cpu.data.eip : 0u);
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector : 0u,
+        state.machine != LIB_NULL ? (*test_core_machine_fixture_cpu(state.machine)).data.eip : 0u);
     core_machine_destroy(state.machine);
     return failed;
 }

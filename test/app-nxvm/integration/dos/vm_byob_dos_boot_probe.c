@@ -1333,7 +1333,7 @@ static void vm_byob_model40_memory_write_observe(void *context,
     if (trace == LIB_NULL || trace->machine == LIB_NULL) return;
     /* This synchronous board callback observes the write-time PC, not the
      * previous retirement. It cannot execute or mutate the borrowed CPU. */
-    core_machine_cpu_capture_state(&trace->machine->executor_cpu_execution, &cpu);
+    core_machine_cpu_capture_state(trace->machine->executor_cpu_execution, &cpu);
     pc = cpu.cs_base + cpu.eip;
     if (physical <= 0x00000042u &&
         (lib_u64)physical + bytes > 0x00000040u) {

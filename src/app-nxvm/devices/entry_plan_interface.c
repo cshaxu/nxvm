@@ -25,7 +25,7 @@ lib_status core_machine_apply_entry_plan(core_machine *machine,
     expected_physical = ((lib_u32)plan->state.cs << 4) + plan->state.ip;
     if (plan->entry_physical != expected_physical)
         return LIB_STATUS_INVALID_ARGUMENT;
-    status = core_machine_cpu_prepare_entry(&machine->executor_cpu_execution,
+    status = core_machine_cpu_prepare_entry(machine->executor_cpu_execution,
         &plan->state, &candidate);
     if (status != LIB_STATUS_OK) return status;
     if (core_machine_memory_query(machine,

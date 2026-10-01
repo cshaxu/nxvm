@@ -85,8 +85,8 @@ static lib_i32 fpu_interface_s65_success(const lib_u8 *code, lib_size size,
     lib_i32 failed = !fpu_interface_s65_prepare(profile, fpu_profile, &state);
 
     if (!failed) {
-        state.machine->executor_cpu.data.cr0 = cr0;
-        before = state.machine->executor_cpu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cr0 = cr0;
+        before = (*test_core_machine_fixture_cpu(state.machine));
         failed |= !fpu_interface_s65_run(&state, code, size, &after,
             &diagnostic, &status) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != size ||
@@ -132,7 +132,7 @@ static lib_i32 fpu_interface_s65_mf(void)
         X86_FPU_PROFILE_80387, &state);
 
     if (!failed) {
-        state.machine->executor_cpu.data.esp = 0x00008000u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.esp = 0x00008000u;
         failed |= core_machine_memory_write(state.machine, 0x0040u,
             &handler_offset, sizeof(handler_offset)) != LIB_STATUS_OK ||
             core_machine_memory_write(state.machine, 0x0042u, &handler_segment,
@@ -142,7 +142,7 @@ static lib_i32 fpu_interface_s65_mf(void)
         x86_fpu_load_control_word(state.machine->fpu, 0x037eu);
         failed |= x86_fpu_store_m32(state.machine->fpu, &(lib_u32){0}) !=
             X86_FPU_EXECUTE_COMPLETED || !x86_fpu_wait_pending(state.machine->fpu);
-        before = state.machine->executor_cpu;
+        before = (*test_core_machine_fixture_cpu(state.machine));
         failed |= !fpu_interface_s65_run(&state, wait, sizeof(wait), &after,
             &diagnostic, &status) || status != LIB_STATUS_OK ||
             diagnostic.first_fault.valid ||
@@ -183,7 +183,7 @@ static lib_i32 fpu_interface_s65_reject(const lib_u8 *code, lib_size size,
     if (!failed) {
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
             state.machine);
-        before = state.machine->executor_cpu;
+        before = (*test_core_machine_fixture_cpu(state.machine));
         failed |= !fpu_interface_s65_run(&state, code, size, &after,
             &diagnostic, &status) || status != LIB_STATUS_INTERNAL_ERROR ||
             !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
@@ -206,7 +206,7 @@ static lib_i32 fpu_interface_s65_handoff(core_machine_cpu_profile cpu,
     lib_i32 failed = !fpu_interface_s65_prepare(cpu, profile, &state);
 
     if (!failed) {
-        before = state.machine->executor_cpu;
+        before = (*test_core_machine_fixture_cpu(state.machine));
         failed |= core_machine_memory_write(state.machine, 0u, fadd_wait,
             sizeof(fadd_wait)) != LIB_STATUS_OK;
         status = core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
@@ -273,7 +273,7 @@ static lib_i32 fpu_interface_s65_incompatible(void)
 
     if (!failed) {
         failed |= !test_core_machine_fixture_preflight_real_ud_terminal(state.machine);
-        before = state.machine->executor_cpu;
+        before = (*test_core_machine_fixture_cpu(state.machine));
         failed |= !fpu_interface_s65_run(&state, fninit, sizeof(fninit), &after,
             &diagnostic, &status) || status != LIB_STATUS_INTERNAL_ERROR ||
             !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
@@ -309,7 +309,7 @@ static lib_i32 fpu_interface_s65_nm_delivery(const lib_u8 *code,
             sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        state.machine->executor_cpu.data.cr0 = cr0;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cr0 = cr0;
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
@@ -364,8 +364,8 @@ static lib_i32 fpu_interface_s65_irq(const lib_u8 *instruction,
             sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_IF;
-        before = state.machine->executor_cpu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags |= VCPU_EFLAGS_IF;
+        before = (*test_core_machine_fixture_cpu(state.machine));
         lib_memory_set(&irq, 0, sizeof(irq));
         test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
@@ -405,25 +405,25 @@ static lib_i32 fpu_interface_s65_vm86(void)
         X86_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
-        state.machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_VM |
+        (*test_core_machine_fixture_cpu(state.machine)).data.cr0 |= VCPU_CR0_PE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_VM |
             VCPU_EFLAGS_IOPL | VCPU_EFLAGS_IF | VCPU_EFLAGS_CF;
-        state.machine->executor_cpu.data.cs.selector = 0u;
-        state.machine->executor_cpu.data.cs.base = 0u;
-        state.machine->executor_cpu.data.cs.limit = 0xffffu;
-        state.machine->executor_cpu.data.cs.dpl = 3u;
-        state.machine->executor_cpu.data.cs.flagValid = LIB_TRUE;
-        state.machine->executor_cpu.data.ds.selector = 0u;
-        state.machine->executor_cpu.data.ds.base = 0u;
-        state.machine->executor_cpu.data.ds.limit = 0xffffu;
-        state.machine->executor_cpu.data.ds.dpl = 3u;
-        state.machine->executor_cpu.data.ds.flagValid = LIB_TRUE;
-        state.machine->executor_cpu.data.ss.selector = 0u;
-        state.machine->executor_cpu.data.ss.base = 0u;
-        state.machine->executor_cpu.data.ss.limit = 0xffffu;
-        state.machine->executor_cpu.data.ss.dpl = 3u;
-        state.machine->executor_cpu.data.ss.flagValid = LIB_TRUE;
-        before = state.machine->executor_cpu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.base = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.limit = 0xffffu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.dpl = 3u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cs.flagValid = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds.selector = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds.base = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds.limit = 0xffffu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds.dpl = 3u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ds.flagValid = LIB_TRUE;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.base = 0u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.limit = 0xffffu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.dpl = 3u;
+        (*test_core_machine_fixture_cpu(state.machine)).data.ss.flagValid = LIB_TRUE;
+        before = (*test_core_machine_fixture_cpu(state.machine));
         failed |= core_machine_memory_write(state.machine, 0u, esc,
             sizeof(esc)) != LIB_STATUS_OK;
         status = core_machine_run(state.machine,
@@ -497,8 +497,8 @@ static lib_i32 fpu_interface_s65_protected_nm(void)
     }
     if (!failed) {
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
-        state.machine->executor_cpu.data.cr0 |= VCPU_CR0_EM;
-        before = state.machine->executor_cpu;
+        (*test_core_machine_fixture_cpu(state.machine)).data.cr0 |= VCPU_CR0_EM;
+        before = (*test_core_machine_fixture_cpu(state.machine));
         failed |= core_machine_memory_write(state.machine, FPU_S65_CODE_BASE, esc,
             sizeof(esc)) != LIB_STATUS_OK || core_machine_run(state.machine,
             (core_machine_run_budget){64u,0u}, &result) != LIB_STATUS_OK ||

@@ -11,7 +11,7 @@ _Static_assert(CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG + 1u ==
 
 lib_u32 core_machine_linear_pc(const core_machine *machine)
 {
-    return core_machine_cpu_linear_pc(&machine->executor_cpu_execution);
+    return core_machine_cpu_linear_pc(machine->executor_cpu_execution);
 }
 
 static lib_i32 core_machine_retirement_qualification_contains(
@@ -47,14 +47,14 @@ static lib_u8 core_machine_xt_ppi_request_nmi(void *owner)
     core_machine *machine = (core_machine *)owner;
 
     return machine != LIB_NULL &&
-        core_machine_cpu_request_nmi(&machine->executor_cpu_execution);
+        core_machine_cpu_request_nmi(machine->executor_cpu_execution);
 }
 
 static void core_machine_kbc_request_reset(void *owner)
 {
     core_machine *machine = owner;
 
-    core_machine_cpu_execution_request_reset(&machine->executor_cpu_execution);
+    core_machine_cpu_execution_request_reset(machine->executor_cpu_execution);
 }
 
 static void core_machine_xt_ppi_update_speaker(void *owner,
@@ -74,7 +74,7 @@ static lib_i32 core_machine_publish_successful_retirement(core_machine *machine)
         machine->cpu_retirement_source_ticks);
     return machine->retirement_time_contract != CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
         (machine->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL &&
-         !core_machine_cpu_capture_timing(&machine->executor_cpu_execution).
+         !core_machine_cpu_capture_timing(machine->executor_cpu_execution).
              source_timing_unallocated &&
          core_machine_retirement_qualification_contains(machine));
 }
@@ -288,7 +288,7 @@ lib_status core_machine_get_cpu_state(
         machine->lifecycle == CORE_MACHINE_RUNNING) {
         return LIB_STATUS_INVALID_STATE;
     }
-    core_machine_cpu_capture_state(&machine->executor_cpu_execution, out_state);
+    core_machine_cpu_capture_state(machine->executor_cpu_execution, out_state);
     return LIB_STATUS_OK;
 }
 
@@ -541,25 +541,32 @@ static lib_status core_machine_create_internal(
     core_machine_cpu_diagnostic_initialize(machine);
     core_machine_retirement_observation_initialize(machine);
 
-    core_machine_cpu_execution_context_initialize(&machine->executor_cpu_execution,
-        &machine->executor_cpu, &machine->executor_cpu_instructions,
-        &core_machine_cpu_bus, machine);
+    {
+        lib_status status = core_machine_cpu_create(&core_machine_cpu_bus,
+            machine, &machine->executor_cpu_execution);
+
+        if (status != LIB_STATUS_OK) {
+            x86_fpu_destroy(machine->fpu);
+            lib_release(machine);
+            return status;
+        }
+    }
     core_machine_cpu_execution_context_bind_profiles(
-        &machine->executor_cpu_execution, machine->cpu_profile,
+        machine->executor_cpu_execution, machine->cpu_profile,
         x86_fpu_get_profile(machine->fpu), machine->cpu_80386_cr_mov_ignores_mod,
         &instruction_timing);
     core_machine_cpu_execution_context_bind_fpu(
-        &machine->executor_cpu_execution, machine->fpu);
+        machine->executor_cpu_execution, machine->fpu);
     core_machine_cpu_execution_context_bind_external_cycle_provider(
-        &machine->executor_cpu_execution, core_machine_cpu_external_cycle_trace,
+        machine->executor_cpu_execution, core_machine_cpu_external_cycle_trace,
         machine);
     core_machine_cpu_execution_context_bind_diagnostic_provider(
-        &machine->executor_cpu_execution,
+        machine->executor_cpu_execution,
         machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ?
             &core_machine_cpu_diagnostic_provider :
             &core_machine_cpu_fault_diagnostic_provider,
         machine);
-    core_machine_cpu_state_initialize(&machine->executor_cpu_execution);
+    core_machine_cpu_state_initialize(machine->executor_cpu_execution);
     core_machine_port_initialize(&machine->executor_port);
     core_machine_port_set_test_allocation(&machine->executor_port,
         port_test_allocation);
@@ -802,7 +809,7 @@ lib_status core_machine_create_with_test_port_allocation(
 static lib_status core_machine_cold_reset(core_machine *machine)
 {
     lib_status status;
-    core_machine_cpu_state_reset(&machine->executor_cpu_execution);
+    core_machine_cpu_state_reset(machine->executor_cpu_execution);
     x86_fpu_reset(machine->fpu);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
@@ -894,7 +901,7 @@ static lib_status core_machine_cold_reset(core_machine *machine)
 static void core_machine_processor_reset(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
-    core_machine_cpu_state_reset(&machine->executor_cpu_execution);
+    core_machine_cpu_state_reset(machine->executor_cpu_execution);
     machine->cpu_retirement_wait_pending = LIB_FALSE;
     machine->cpu_retirement_wait_ticks = 0u;
     machine->cpu_retirement_completion_ticks = 0u;
@@ -1044,7 +1051,7 @@ lib_status core_machine_run(
              * the board before D4 can consume the event. */
             if (machine->d4_platform_configured &&
                 core_machine_cpu_execution_consume_shutdown_request(
-                    &machine->executor_cpu_execution)) {
+                    machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 core_machine_processor_reset(machine);
                 machine->lifecycle = CORE_MACHINE_STOPPED;
@@ -1053,7 +1060,7 @@ lib_status core_machine_run(
                 return LIB_STATUS_OK;
             }
             if (core_machine_cpu_execution_consume_debug_pause_request(
-                    &machine->executor_cpu_execution)) {
+                    machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_PAUSED;
                 result->linear_pc = core_machine_linear_pc(machine);
@@ -1061,7 +1068,7 @@ lib_status core_machine_run(
             }
             if (lib_atomic_i32_load_explicit(&machine->stop_requested, LIB_MEMORY_ORDER_ACQUIRE) ||
                 core_machine_cpu_execution_consume_stop_request(
-                    &machine->executor_cpu_execution)) {
+                    machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 {
                     lib_status status = core_machine_cold_reset(machine);
@@ -1074,7 +1081,7 @@ lib_status core_machine_run(
                 return LIB_STATUS_OK;
             }
             if (core_machine_cpu_execution_consume_reset_request(
-                    &machine->executor_cpu_execution)) {
+                    machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 core_machine_processor_reset(machine);
                 machine->lifecycle = CORE_MACHINE_STOPPED;
@@ -1115,7 +1122,7 @@ lib_status core_machine_run(
                             CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT) !=
                         LIB_STATUS_OK) return LIB_STATUS_INTERNAL_ERROR;
                     result->elapsed_ticks = machine->elapsed_ticks;
-                if (core_machine_cpu_is_halted(&machine->executor_cpu_execution)) {
+                if (core_machine_cpu_is_halted(machine->executor_cpu_execution)) {
                     machine->lifecycle = CORE_MACHINE_PAUSED;
                     result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                     result->linear_pc = core_machine_linear_pc(machine);
@@ -1171,13 +1178,13 @@ lib_status core_machine_run(
             }
             {
                 lib_bool was_halted = core_machine_cpu_is_halted(
-                    &machine->executor_cpu_execution);
+                    machine->executor_cpu_execution);
 
                 machine->external_cycle_round_ticks = 0u;
                 /* A completed instruction round cannot inherit an undeclared
                  * external-cycle overlap into the next CPU refresh. */
                 core_machine_external_cycle_invalidate(machine);
-                core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
+                core_machine_cpu_execution_refresh(machine->executor_cpu_execution);
                 if (machine->lifecycle == CORE_MACHINE_FAULTED) {
                     result->reason = CORE_MACHINE_STOP_FAULT;
                     result->linear_pc = core_machine_linear_pc(machine);
@@ -1186,7 +1193,7 @@ lib_status core_machine_run(
                     return LIB_STATUS_INTERNAL_ERROR;
                 }
                 if (core_machine_cpu_execution_consume_instruction_fault_delivery(
-                        &machine->executor_cpu_execution)) {
+                        machine->executor_cpu_execution)) {
                     /* The synchronous exception frame and vector are committed, but
                      * the faulting instruction did not retire.  The handler starts
                      * at the next public execution round, without publishing CPU
@@ -1198,7 +1205,7 @@ lib_status core_machine_run(
                     return LIB_STATUS_OK;
                 }
                 if (was_halted && core_machine_cpu_is_halted(
-                        &machine->executor_cpu_execution)) {
+                        machine->executor_cpu_execution)) {
                     machine->lifecycle = CORE_MACHINE_PAUSED;
                     result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                     result->linear_pc = core_machine_linear_pc(machine);
@@ -1207,7 +1214,7 @@ lib_status core_machine_run(
                 }
                 if (machine->transaction_contract.cpu_prefetch_reservation_enabled) {
                     core_machine_cpu_execution_reserve_prefetch(
-                        &machine->executor_cpu_execution);
+                        machine->executor_cpu_execution);
                 }
             }
             {
@@ -1215,7 +1222,7 @@ lib_status core_machine_run(
                 lib_u64 instruction_ticks;
 
                 if (!core_machine_cpu_timing_select(
-                        &machine->executor_cpu_execution, &timing_result) ||
+                        machine->executor_cpu_execution, &timing_result) ||
                     machine->external_cycle_round_overflow) {
                     (void)core_machine_report_fault(machine, 0x54494d45u);
                     result->reason = CORE_MACHINE_STOP_FAULT;
@@ -1270,13 +1277,13 @@ lib_status core_machine_run(
                 result->elapsed_ticks = machine->elapsed_ticks;
             }
             if (core_machine_cpu_execution_consume_debug_pause_request(
-                    &machine->executor_cpu_execution)) {
+                    machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_PAUSED;
                 result->linear_pc = core_machine_linear_pc(machine);
                 return core_machine_complete_run_boundary(machine, result);
             }
-            if (core_machine_cpu_is_halted(&machine->executor_cpu_execution)) {
+            if (core_machine_cpu_is_halted(machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 result->linear_pc = core_machine_linear_pc(machine);
@@ -1381,7 +1388,7 @@ lib_status core_machine_set_nmi_mask(core_machine *machine, lib_i32 masked)
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    core_machine_cpu_set_nmi_mask(&machine->executor_cpu_execution,
+    core_machine_cpu_set_nmi_mask(machine->executor_cpu_execution,
         masked ? LIB_TRUE : LIB_FALSE);
     if (!masked) {
         core_machine_board_refresh_nmi(machine);
@@ -1395,7 +1402,7 @@ lib_status core_machine_get_nmi_mask(const core_machine *machine,
     if (machine == LIB_NULL || out_masked == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    *out_masked = core_machine_cpu_nmi_is_masked(&machine->executor_cpu_execution);
+    *out_masked = core_machine_cpu_nmi_is_masked(machine->executor_cpu_execution);
     return LIB_STATUS_OK;
 }
 
@@ -1511,7 +1518,7 @@ void core_machine_destroy(core_machine *machine)
         core_machine_pic_finalize(&machine->shared_pic_master,
             &machine->shared_pic_slave);
         core_machine_vadp_finalize(&machine->shared_vadp);
-        core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
+        core_machine_cpu_destroy(machine->executor_cpu_execution);
         x86_fpu_destroy(machine->fpu);
         core_machine_port_finalize(&machine->executor_port);
         core_machine_memory_finalize(&machine->executor_memory);

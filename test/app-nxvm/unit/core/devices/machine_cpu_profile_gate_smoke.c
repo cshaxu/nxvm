@@ -148,7 +148,7 @@ static lib_i32 run_8088_prefetch_capacity(void)
             sizeof(program)) != LIB_STATUS_OK;
         failed |= core_machine_run(state.machine, budget, &result) !=
             LIB_STATUS_OK;
-        execution = &state.machine->executor_cpu_execution;
+        execution = state.machine->executor_cpu_execution;
         failed |= execution->prefetch_capacity != 4u ||
             execution->prefetch_count != 4u;
         core_machine_cpu_execution_reserve_prefetch(execution);
@@ -181,7 +181,7 @@ static lib_i32 run_8088_prefetch_control_and_self_modify(void)
         failed |= core_machine_memory_write(state.machine, 0u, self_modifying,
             sizeof(self_modifying)) != LIB_STATUS_OK;
         failed |= core_machine_run(state.machine, budget, &result) != LIB_STATUS_OK;
-        execution = &state.machine->executor_cpu_execution;
+        execution = state.machine->executor_cpu_execution;
         failed |= execution->prefetch_count != 4u || execution->prefetch_bytes[3] !=
             0xc6u;
         /* A byte already owned by the 8088 queue remains stale after the
