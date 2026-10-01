@@ -619,13 +619,8 @@ target_link_libraries(core-machine-prefix-attributes-s64-smoke PRIVATE core-mach
 add_executable(core-machine-legacy-lock-s1-smoke
     test/app-nxvm/unit/core/devices/core_machine_legacy_lock_s1_smoke.c)
 target_link_libraries(core-machine-legacy-lock-s1-smoke PRIVATE core-machine)
-add_executable(cpu-legacy-lock-s1-smoke
-    test/app-nxvm/unit/core/devices/cpu_legacy_lock_s1_smoke.c)
-target_link_libraries(cpu-legacy-lock-s1-smoke PRIVATE x86-cpu)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-legacy-lock-s1-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(cpu-legacy-lock-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(core-machine-setcc-smoke test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c)
@@ -753,13 +748,6 @@ target_link_libraries(core-machine-imul2-smoke PRIVATE core-machine)
 add_executable(core-machine-imul-immediate-s56-smoke
     test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c)
 target_link_libraries(core-machine-imul-immediate-s56-smoke PRIVATE core-machine)
-add_executable(cpu-imul-immediate-s56-smoke
-    test/app-nxvm/unit/core/devices/cpu_imul_immediate_s56_smoke.c)
-target_link_libraries(cpu-imul-immediate-s56-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(cpu-imul-immediate-s56-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(machine-debug-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c)
 target_link_libraries(machine-debug-state-board-smoke PRIVATE core-machine)
@@ -1858,7 +1846,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-operand-address-smoke
     core-machine-prefix-attributes-s64-smoke
     core-machine-legacy-lock-s1-smoke
-    cpu-legacy-lock-s1-smoke
+    x86-test-cpu_legacy_lock_s1
     core-machine-setcc-smoke
     x86-test-cpu_setcc
     core-machine-movx-smoke
@@ -1922,7 +1910,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
     core-machine-imul-immediate-s56-smoke
-    cpu-imul-immediate-s56-smoke
+    x86-test-cpu_imul_immediate_s56
     x86-test-cpu_control_state
     cpu-control-transfer-branch-smoke
     cpu-control-transfer-near-smoke
@@ -2116,14 +2104,14 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_gpr_push_pop
     core-machine-hlt-s49-smoke
     x86-test-cpu_imul2
-    cpu-imul-immediate-s56-smoke
+    x86-test-cpu_imul_immediate_s56
     x86-test-cpu_inc_dec_first_group
     x86-test-cpu_inc_dec_second_group
     x86-test-cpu_inc_dec_final_group
     x86-test-cpu_outer_return
     core-machine-iret-s51-smoke
     x86-test-cpu_lea
-    cpu-legacy-lock-s1-smoke
+    x86-test-cpu_legacy_lock_s1
     x86-test-cpu_legacy_alu_s2
     x86-test-cpu_legacy_sreg_stack
     x86-test-cpu_les_lds_s41
