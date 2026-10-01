@@ -15,9 +15,9 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S98 and S98 is the final acceptance. S48-S87 are
-accepted and S88-S98 remain pending. The next package must be admitted from
-the bounded ledger; S88 is the active package. Earlier
+is then divided into S83-S98 and S98 is the final acceptance. S48-S88 are
+accepted and S89-S98 remain pending. The next package must be admitted from
+the bounded ledger; S89 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -61,7 +61,7 @@ work: no production/API, firmware, asset, INI or EXE input changed. See the
 [S87 evidence](../etc/evidence/t539-s87-execution-bus-receiver.md). S87 is
 accepted; T539 remains open for S88-S98.
 
-## S88 Active Packet
+## S88 Admission Packet
 
 | Field | Required record |
 | --- | --- |
@@ -71,6 +71,27 @@ accepted; T539 remains open for S88-S98.
 | Files And ABI Surface | Split only existing static functions from `cpu_execution_context_smoke.c`; reuse existing CPU-local fixtures or add no fixture/API unless the current code proves one is necessary. Retain every S89 row once in NXVM. |
 | Verification | Record exact function allocation; run focused x64/x86 successor and residual tests, complete x64/x86 repository-only units, relevant static gates, manifests/corpus, authority, documentation governance and diff checks. |
 | Exit Criteria | Every admitted lifecycle/timing row has one Shared receiver, all non-admitted rows remain once in NXVM, no duplicate fixture/setup path or public ABI is introduced, and both full unit runs pass. |
+
+## S88 Acceptance
+
+The CPU-only reset, prepared-entry, two-instance isolation and repeat-timing
+rows now have one Shared lifecycle receiver. The NXVM residual no longer
+contains a timing or lifecycle implementation; it retains only named S89 and
+later work. Focused receivers and all static gates pass; detached process-owned
+full units pass **441/441** on x64 and x86. No production/API, firmware, asset,
+INI or EXE input changed. See [S88 evidence](../etc/evidence/t539-s88-execution-lifecycle-receiver.md).
+S88 is accepted; T539 remains open for S89-S98.
+
+## S89 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S89, automatically admitted continuation. |
+| Objective | Classify and move only CPU-owned NMI, prefetch, paging-control and INVLPG rows from the residual execution-context test. |
+| Non-goals | Public IRQ/board wiring, firmware, production APIs, assets, INI, executables and unrelated residual CPU rows. |
+| Files And ABI Surface | Split existing static functions by actual CPU responsibility; reuse existing CPU-local fixture and create no shared framework, board adapter or public API. Retain any concrete board path once in NXVM under a named later receiver. |
+| Verification | Record exact allocation; run focused x64/x86 successor and residual tests, complete x64/x86 units, applicable static gates, manifest/corpus, authority, documentation governance and diff checks. |
+| Exit Criteria | Every admitted CPU row has one Shared owner, every excluded row remains once in NXVM, neither width regresses, and full unit suites pass. |
 
 ## S86 Acceptance
 
