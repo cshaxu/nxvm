@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S8 is active: replace the 92h, PIC, PIT and XT PPI raw-port
-registration with one Core-owned bounded route batch. S1-S7 are accepted;
-T540 remains open. Shared Core and board code have not moved.
+M5 T540 S8 is accepted: 92h, PIC, PIT and XT PPI use the one Core-owned
+atomic typed route batch. S1-S8 are accepted; T540 remains open. The next
+bounded port batch is S9; Shared Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -33,7 +33,7 @@ the completed CPU extraction.
 | T540 S5 | Accepted: source-inspected Core/board ownership and finite S6-S8 cut. |
 | T540 S6 | Accepted: 92h has one board-owned route; both-width complete units and all eight 0540 products pass. |
 | T540 S7 | Accepted: source-inspected Core/board state and API handoff before physical relocation. |
-| T540 S8 | Active: first complete port registration cut for 92h, PIC, PIT and XT PPI. |
+| T540 S8 | Accepted: first complete port registration cut for 92h, PIC, PIT and XT PPI; x64/x86 complete units and all eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -210,26 +210,23 @@ NXVM documentation governance pass. No C, test, CMake, asset or executable
 input changed; the eight verified S6 0540 executables remain current. S7
 does not claim runtime verification or T540 completion.
 
-## T540 S8 Admission Packet
+## T540 S8 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S8, next unused numeric S after accepted S7. |
-| Admission And Approval | The owner approved automatic admission of bounded T540 S tasks and the S7 source-inspected Core/board handoff. NXVM source, tests, documentation and all four selected machine artifacts are the only change targets; Shared and MyNES remain read-only in this batch. |
-| Objective | Give the Core port owner one atomic, typed, noncontiguous route-batch operation, then migrate the complete 92h, PIC, PIT and XT PPI production registrations to it and delete their raw `t_port` callback/registration paths. |
-| Non-goals | Chip algorithms, port address or bus-width changes, KBC/FDC/DMA/VADP/HDC/RTC migration, RAM/A20 signal migration, source relocation to Shared, new guest timing grade, firmware/INI/media change, MyNES changes. |
-| Reference Baseline | S7 pushed commit `62da35eda`; [S7 handoff](../etc/architecture/t540-s7-core-board-handoff.md) and existing 0540 x64/x86 four-machine product pair. |
-| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and [S7 Core/board handoff](../etc/architecture/t540-s7-core-board-handoff.md). |
-| Files And ABI Surface | `src/app-nxvm/devices` Core port public interface/owner, board 92h/PIC/PIT/XT PPI adapters and construction callers; matching `test/app-nxvm/unit/core/devices` fixtures and regressions; NXVM evidence/current status and affected product binaries. No Shared public ABI in S8. |
-| Applicable Rules | Architecture: one Core port table, opaque typed cross-boundary operation, board owns chip attachments. Coding: delete old paths, no duplicate registrar or facade. Execution: one target per commit, both-width unit and artifact gates, actual-diff review. Documentation: one Current authority and governance gate. Source/research policy not triggered: no external source or assets added. |
-| Verification | Focused route atomicity, allocation-failure rollback, 92h A20, PIC single/cascaded, PIT read/write/auxiliary and XT PPI tests; complete repository-only x64/x86 unit suites; four selected profile x64/x86 optimized Release builds and binary updates; documentation/architecture/static checks and diff check. |
-| Expected Markers | Board adapters receive only an opaque Core handle and typed provider values; no `t_port *` in migrated PIC/PIT/XT PPI declarations; one atomic route batch preserves unrelated registrations and reports exact failures; old raw callback functions are gone. |
-| Asset Needs | Reuse the S6 four-profile lawful build inputs; no new ROM/media source, no INI edit. Update the eight 0540 executables because linked code changes. |
-| Reporting Requirements | Record files and net code change, removed legacy path inventory, focused and full test results, four-profile both-width artifact identities, commit/push and remaining S9/S10 port families. |
-| Stop Conditions | Stop for an unapproved product-visible port behavior change, a requirement to expose private `t_port` across the intended Shared boundary, or missing build inputs that cannot be safely recovered. |
-| Exit Criteria | All four named routes use the sole typed batch registrar with no raw board callback path; existing and new rollback/behavior tests pass; all mandatory S code gates and artifact pairs pass; actual diff is reviewed and committed/pushed without touching MyNES. |
-| Original Owner Request | Extract neutral x86 Core and real shared IBM PC board wiring before dividing four NXVM products, with minimal one-owner code and automatic numeric S admission. |
-| Similar-Issue Sweep | Search every live board port registration and test caller. Migrate the four named families now; retain KBC/FDC/DMA/VADP/HDC/RTC with exact S9/S10 receiver and no additional port table owner. |
+NXVM implementation P1 `8f2fa4a6a` replaces the four assigned raw board-port
+registrations with one typed atomic route batch. The Core port table remains
+the sole owner; no Shared or MyNES code or artifact is in P1. PIC/PIT/XT
+adapters and their existing KBC caller have one current Core runtime link
+owner, with no circular static-library dependency. The full actual diff was
+reviewed against the S8 packet and the [S8 evidence](../etc/evidence/t540-s8-port-route-batch.md).
+
+Focused route/rollback and board regressions pass. Complete x64 and x86 units
+pass 467/467 each. Four fixed NXVM profile pairs rebuild as optimized,
+stripped 0540 products with the eight verified hashes in the evidence; their
+INIs remain unchanged. NXVM documentation governance, the T345 ownership
+verifier and its self-test, CMake source-owner configuration and diff checks
+pass. S9 receives KBC/FDC/DMA ports; S10 receives VADP/HDC/RTC ports. T540's
+neutral Core move, Shared board extraction and external integration gate remain
+open; S8 makes no timing-grade claim.
 
 ## S87 Admission Packet
 
