@@ -15,8 +15,10 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S100 and S100 is the final acceptance. S48-S100 are
-accepted and T539 is closed. Earlier accepted
+is then divided into S83-S100 and S100 is the final receiving audit. S48-S100
+are accepted. S101 corrects the audit's discovered stale CPU-source-copy gap;
+T539 remains open until that bounded cleanup and its whole-ledger closure
+review complete. Earlier accepted
 packets retain their historical prospective numbering; the linked
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
@@ -319,7 +321,29 @@ manifest/corpus, documentation governance and diff checks pass. This is
 test/CMake/documentation-only work: no production/API, firmware, asset, INI
 or executable input changed, so no executable rebuild is required. See the
 [S100 evidence](../etc/evidence/t539-s100-whole-cpu-acceptance.md). S100 is
-accepted and T539 is closed.
+accepted. Its follow-up source-copy gap is owned by active S101; T539 remains
+open.
+
+## S101 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S101, automatic corrective continuation after the S100 closure audit found uncompiled duplicate CPU source files. |
+| Admission And Approval | The owner approved automatic admission of every bounded linear T539 S. This corrective packet follows S100 and consumes only the verified duplicate-copy gap. |
+| Objective | Remove the obsolete `src/app-nxvm/devices/cpu*` historical CPU corpus so `src/x86/devices/cpu` is the sole source implementation, then repair only the static checks that still require the deleted copies. |
+| Non-goals | CPU behavior/timing changes, public API changes, board composition changes, firmware, assets, INI, executable rebuilds, or any non-CPU device/board extraction. |
+| Reference Baseline | `aa4bd579c`, where S100 accepted receiver ownership but its closure audit found the uncompiled nine-file CPU copy still present. |
+| Candidate Proposal | [Independent Shared chips](../proposals/m5-shared-chip-extraction.md), the [finite chip ledger](../etc/evidence/t539-chip-migration-ledger.md), and the [CPU work packages](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Delete only `cpu.c`, `cpu.h`, `cpu_interface.h`, `cpu_instructions.c`, `cpu_instructions.h`, `cpu_timing.c`, `cpu_timing.h`, `cpu_timing_model.c`, and `cpu_trace.h` from `src/app-nxvm/devices`. Update only CMake/static-negative inventories that name those historical copies. No exported symbol, API, implementation, fixture, or runtime source is added. |
+| Applicable Rules | NXVM architecture/coding/documentation/execution rules; Shared source boundary; one implementation path, no dead source copy, and chip-to-board dependency direction. |
+| Verification | Source/CMake inventory proves no App CPU copy or include remains; x64/x86 focused CPU/negative checks; x64/x86 full unit suites; T317/T332/CPU-PIC authority/manifest/corpus/documentation gates; final T539 integration and actual-diff review. Rebuild executable artifacts only if an executable input truly changes. |
+| Expected Markers | One canonical CPU corpus under `src/x86/devices/cpu`, no `src/app-nxvm/devices/cpu*` file, no static verifier expecting a duplicate, and no new board or CPU path. |
+| Asset Needs | None; repository-only source ownership correction. |
+| Reporting Requirements | Record the deleted nine files, every updated static verifier, source/test net change, retained canonical owner, full verification, and artifact determination. |
+| Stop Conditions | Stop and report if any live build or product consumer still includes an App CPU copy, if deletion requires a behavior/API change, or if a non-CPU ledger row must be changed. |
+| Exit Criteria | The exact duplicate corpus is gone; every affected static gate now proves the canonical Shared owner; all required verification passes; and the T-level ledger review has no remaining unallocated chip disposition. |
+| Original Owner Request | Implement independent, genuinely decoupled Intel-chip components in `src/x86/devices`, leaving NXVM only board integration; do not retain duplicate paths. |
+| Similar-Issue Sweep | Sweep the full nine-file CPU corpus, all CMake/static verifiers and all App includes for stale historical-copy references; do not repair only one source file. |
 
 ## S86 Acceptance
 

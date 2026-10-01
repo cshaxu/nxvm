@@ -2,7 +2,7 @@
 
 ## Result
 
-T539 closes with one CPU-only receiver and fixture owner: Shared
+S100 closes its receiver-ownership audit with one CPU-only receiver and fixture owner: Shared
 `test/x86/devices/cpu`. The final `cpu_eflags_local` receiver was moved from
 the App test tree and now uses the existing CPU bus fixture. No production
 source, public API, firmware, asset, INI or executable input changed.
@@ -11,7 +11,9 @@ source, public API, firmware, asset, INI or executable input changed.
 
 - Shared has 68 CPU smoke sources under `test/x86/devices/cpu`.
 - The App CMake inventory has no executable target directly linked to
-  `x86-cpu`.
+`x86-cpu`. A subsequent closure audit found the old uncompiled App CPU source
+copy still on disk; S101 owns its physical deletion, so this evidence does not
+close T539.
 - Retained App consumers use canonical Shared fixtures only for concrete
   machine/board behavior: execution-context lifecycle, PIC delivery, task
   switching and protected-board setup. There is no forwarding fixture header.

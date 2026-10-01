@@ -163,7 +163,8 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S97 | Accepted: CPU-only control-transfer branch/near/far receivers move to Shared. S99 corrects S97's initial IDT include-only classification and moves that CPU-only receiver too. |
 | S98 | Accepted: Shared retains the sole CPU timing implementation; NXVM retains the machine/profile, board-time and generated-result runner contracts. No synthetic Shared runner path is added. |
 | S99 | Accepted: IDT privilege CPU receiver moves to Shared; the final App CPU-fixture forwarder is deleted, and the PIC-board receiver directly consumes the canonical Shared fixture. |
-| S100 | Accepted: final whole-CPU receiving audit. CPU-only receivers and fixtures have one Shared owner; machine/profile timing and board/result consumers remain NXVM. Cross-width units, required integration and the complete ledger review pass without a second timing path or executable rebuild. |
+| S100 | Accepted: final whole-CPU receiver audit. CPU-only receivers and fixtures have one Shared owner; machine/profile timing and board/result consumers remain NXVM. Its closure review found an uncompiled historical App CPU source copy; S101 owns physical deletion and the corrected T-level completion review. |
+| S101 | Active corrective closure: delete the nine-file historical App CPU copy and update only static inventories that still name it. Prove the sole canonical Shared CPU corpus, then repeat the whole-ledger closure review. |
 
 S19-S67 migrate consumers before S68; S69-S73 follow S68, then S74. The former S56
 work-package is deliberately expanded as S56-S62: its original direct-TSS32 source combines decode,
