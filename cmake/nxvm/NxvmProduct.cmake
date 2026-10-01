@@ -911,16 +911,6 @@ add_executable(machine-cmps-board-smoke
     test/app-nxvm/unit/core/devices/machine_cmps_board_smoke.c)
 target_link_libraries(machine-cmps-board-smoke PRIVATE core-machine)
 
-add_executable(cpu-port-io-smoke
-    test/app-nxvm/unit/core/devices/cpu_port_io_smoke.c)
-target_link_libraries(cpu-port-io-smoke PRIVATE x86-cpu)
-add_executable(cpu-port-strings-smoke
-    test/app-nxvm/unit/core/devices/cpu_port_strings_smoke.c)
-target_link_libraries(cpu-port-strings-smoke PRIVATE x86-cpu)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(cpu-port-io-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(cpu-port-strings-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(machine-port-io-board-smoke
     test/app-nxvm/unit/core/devices/machine_port_io_board_smoke.c)
 target_link_libraries(machine-port-io-board-smoke PRIVATE core-machine)
@@ -1982,9 +1972,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-lods-board-smoke
     machine-scas-board-smoke
     machine-cmps-board-smoke
-    cpu-port-strings-smoke
+    x86-test-cpu_port_strings
     machine-port-strings-board-smoke
-    cpu-port-io-smoke
+    x86-test-cpu_port_io
     machine-port-io-board-smoke
     cpu-debug-state-smoke
     machine-debug-state-board-smoke
@@ -2203,8 +2193,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_moffs
     x86-test-cpu_movs
     core-machine-movx-smoke
-    cpu-port-io-smoke
-    cpu-port-strings-smoke
+    x86-test-cpu_port_io
+    x86-test-cpu_port_strings
     core-machine-protected-16-gate-s3-smoke
     cpu-protected-data-access-smoke
     cpu-protected-far-smoke
