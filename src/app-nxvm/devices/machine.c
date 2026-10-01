@@ -598,8 +598,7 @@ static lib_status core_machine_create_internal(
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
-    core_machine_memory_register_ports(&machine->executor_memory,
-        &machine->executor_port);
+    core_machine_board_register_a20_port(machine);
     {
         lib_status status = core_machine_vadp_initialize(&machine->shared_vadp,
             &machine->executor_port);

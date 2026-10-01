@@ -92,6 +92,27 @@ lib_i32 main(void)
     result |= expect_status(core_machine_memory_read(first, 0x100000u, &value, 1u),
                             LIB_STATUS_OK);
     result |= value != 0x11u;
+    result |= expect_status(core_machine_bus_read(first, 0x0092u, &port_value),
+                            LIB_STATUS_OK);
+    result |= port_value != 0u;
+    result |= expect_status(core_machine_bus_write(first, 0x0092u, 0x02u),
+                            LIB_STATUS_OK);
+    result |= expect_status(core_machine_bus_read(first, 0x0092u, &port_value),
+                            LIB_STATUS_OK);
+    result |= port_value != 0x02u;
+    value = 0u;
+    result |= expect_status(core_machine_memory_read(first, 0x100000u, &value, 1u),
+                            LIB_STATUS_OK);
+    result |= value != 0x22u;
+    result |= expect_status(core_machine_bus_read(second, 0x0092u, &port_value),
+                            LIB_STATUS_OK);
+    result |= port_value != 0u;
+    result |= expect_status(core_machine_bus_write(first, 0x0092u, 0u),
+                            LIB_STATUS_OK);
+    value = 0u;
+    result |= expect_status(core_machine_memory_read(first, 0x100000u, &value, 1u),
+                            LIB_STATUS_OK);
+    result |= value != 0x11u;
     value = 0xffu;
     result |= expect_status(core_machine_memory_read(second, 0u, &value, 1u),
                             LIB_STATUS_OK);

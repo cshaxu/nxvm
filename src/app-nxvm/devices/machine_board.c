@@ -3,6 +3,38 @@
 
 #include "app-nxvm/devices/machine.h"
 
+#define CORE_MACHINE_BOARD_A20_BIT 0x02u
+
+static void core_machine_board_read_a20(t_port *port, lib_u16 port_id,
+    void *owner)
+{
+    t_ram *ram = (t_ram *)owner;
+
+    (void)port_id;
+    if (ram == LIB_NULL) return;
+    port->data.ioByte = ram->data.flagA20 ? CORE_MACHINE_BOARD_A20_BIT : 0u;
+}
+
+static void core_machine_board_write_a20(t_port *port, lib_u16 port_id,
+    void *owner)
+{
+    t_ram *ram = (t_ram *)owner;
+
+    (void)port_id;
+    if (ram == LIB_NULL) return;
+    ram->data.flagA20 = CORE_MACHINE_BIT_IS_SET(port->data.ioByte,
+        CORE_MACHINE_BOARD_A20_BIT);
+}
+
+void core_machine_board_register_a20_port(core_machine *machine)
+{
+    if (machine == LIB_NULL) return;
+    core_machine_port_add_read(&machine->executor_port, 0x0092u,
+        core_machine_board_read_a20, &machine->executor_memory);
+    core_machine_port_add_write(&machine->executor_port, 0x0092u,
+        core_machine_board_write_a20, &machine->executor_memory);
+}
+
 static lib_i32 core_machine_rtc_cmos_config_is_valid(
     const core_machine_rtc_cmos_config *config)
 {

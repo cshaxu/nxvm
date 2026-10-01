@@ -71,3 +71,22 @@ a forwarding facade or a second reset/plan path.
   artifacts. S8 additionally compares all four profile construction/reset,
   CPU interrupt and halted-deadline regressions. T540 closes only after its
   full external integration suite and final sole-owner audit.
+
+## S6 Intake Correction
+
+The first proposed S6 move is not safe as a separate Shared target:
+`core_machine_timeline` exposes its event heap and
+`core_machine_transaction_state` exposes mutable transaction counters because
+both are presently embedded in the one private `core_machine`. Moving only
+their `.c/.h` files would either export those private layouts across components
+or add an opaque allocation/forwarding layer solely for the staged move.
+Neither improves the final architecture. Their sole owner remains the neutral
+Core instance, so they move with that instance after the board fields are
+separated.
+
+S6 therefore removes the fixed 92h A20 port from `memory.c` and installs it
+once from the existing IBM-PC board owner, preserving the current route on all
+four profiles. This is the first actual source cut needed before neutral memory
+can move. S7/S8 intake must reallocate the remaining Core source batches
+according to private-state ownership; the S5 table is historical intent, not
+permission to publish private structs or create a temporary facade.

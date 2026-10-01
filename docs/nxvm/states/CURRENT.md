@@ -2,9 +2,10 @@
 
 ## Current Work
 
-M5 T540 remains open. S1-S5 are accepted; S5 fixed the neutral `x86/core`
-source cut before the first Core source move. S6 is the next bounded subtask
-and has not yet been admitted.
+M5 T540 S6 is accepted: the fixed 92h A20 port route moved from neutral memory
+storage to the existing IBM-PC board owner. S1-S6 are accepted; T540 remains
+open. S7 intake must revise the prospective S7/S8 Core batches around the one
+private machine-state owner before another source move.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -31,6 +32,7 @@ the completed CPU extraction.
 | T539 | Closed: every finite chip-ledger row is either extracted to its sole Shared owner or retained with its stated board-only reason; S101 removed the last historical CPU copy. |
 | T540 S4 | Accepted: one Shared chip path, reconnected NXVM consumer, both-width complete units and four-profile 0540 artifact pairs. |
 | T540 S5 | Accepted: source-inspected Core/board ownership and finite S6-S8 cut. |
+| T540 S6 | Accepted: 92h has one board-owned route; both-width complete units and all eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -153,6 +155,44 @@ No source, ABI, tests, build input, asset or INI changed; all eight 0540
 artifacts remain current. `git diff --check` and NXVM documentation governance
 passed. Actual-diff review found no new framework, compatibility facade or
 mirrored state. T540 remains open for implementation and external integration.
+
+## T540 S6 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S6, next unused linear S after S5. |
+| Admission And Approval | Automatic bounded-S authorization applies. S6 intake found that moving only timeline/transaction would expose mutable private Core layouts or add a transient wrapper; the [S5 cut amendment](../etc/architecture/t540-s5-neutral-core-cut.md) records the narrower first board/Core seam. NXVM is the only changed target; Shared and MyNES are read-only receiving reviews. |
+| Objective | Remove the fixed port 92h callbacks and registration from the generic memory mechanism; install the identical read/write route once from the existing IBM-PC board owner during the same machine construction step. |
+| Non-goals | A20 electrical behavior change, changing which current profile has 92h, a new public getter/setter or adapter framework, moving private timeline/transaction state alone, ROM/INI/asset changes, or MyNES edits. |
+| Reference Baseline | S5 acceptance `de382a478`, complete 0540 product artifact pairs. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S5 Core cut](../etc/architecture/t540-s5-neutral-core-cut.md), and [board ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | `src/app-nxvm/devices/{memory.c,memory.h,machine_board.c,machine.c,machine.h}`, focused owner-local test and the active NXVM evidence; no Shared source, no public symbol addition. |
+| Applicable Rules | Architecture: one route/one A20 state owner. Coding: remove old function and bit constant rather than forwarding. Execution: full both-width unit suites, focused port/board tests and all four dual-width 0540 product artifact review; documentation gate. Source policy is not triggered. |
+| Verification | Compare port 92h read/write and memory A20 wrapping before/after, run relevant focused unit cases, full x64/x86 repository-only units, static/build gates, eight optimized Release product builds and hashes, `git diff --check` and documentation governance. |
+| Expected Markers | `memory.c` has no fixed I/O address or port callback; `machine_board.c` owns one 92h route; machine construction calls it in the previous registration position; no old `core_machine_memory_register_ports` remains. |
+| Asset Needs | Existing BYOB roots for the four product builds; no new external input. Preserve all owner INIs. |
+| Reporting Requirements | Record actual source/test added, removed and net lines, owner/path diff, x64/x86 units and artifact hashes or unchanged-hash disposition. |
+| Stop Conditions | Stop before altering route availability or timing, public Core A20 debug semantics, KBC A20 behavior or adding a second mutable A20 copy. |
+| Exit Criteria | The one 92h board route is relocated without observable behavior change, all required gates pass, and no unrelated product or Shared corpus changed. |
+| Original Owner Request | Build a neutral shared x86 Core and separate IBM-PC board wiring before splitting the four PC Apps. |
+| Similar-Issue Sweep | Check other fixed I/O addresses in proposed neutral memory/port/timeline/transaction files and retain their board allocation for the next S intake. |
+
+## T540 S6 Acceptance
+
+The [S6 evidence](../etc/evidence/t540-s6-a20-board-port.md) records the sole
+92h route after the move, removal of the old memory-local registration path,
+and a two-machine A20 regression. The five production files add 34/remove 33
+lines; the owner-local test adds 21 lines. No Shared or MyNES source or binary
+changed, and all adjacent NXVM INIs remain unchanged.
+
+Focused x64/x86 tests and complete repository-only units pass 467/467 per
+width. All four fixed profiles rebuilt as optimized x64/x86 0540 products and
+passed PE architecture checks; their eight SHA-256 values are in the evidence.
+`git diff --check` and NXVM documentation governance pass. S6 does not claim
+that neutral Core extraction or the T540 external integration gate is done.
+The S5 prospective S6 mechanism-only move is superseded by its recorded intake
+correction; S7 must first derive the private-state cut without a temporary
+wrapper, second machine owner or board logic in `x86/core`.
 
 ## S87 Admission Packet
 

@@ -11,7 +11,6 @@ extern "C" {
 
 #include "app-nxvm/devices/memory_interface.h"
 
-typedef struct t_port t_port;
 typedef struct core_machine_memory_test_allocation
     core_machine_memory_test_allocation;
 
@@ -89,7 +88,6 @@ struct core_machine_memory_test_allocation {
 };
 
 #define VRAM_BIT_A20  0x00100000
-#define VRAM_FLAG_A20 0x02
 
 
 lib_status core_machine_memory_read_physical(t_ram *ram, lib_u32 physical,
@@ -114,7 +112,6 @@ lib_status core_machine_memory_initialize_for(t_ram *ram, lib_size bytes,
     core_machine_memory_test_allocation *test_allocation);
 void core_machine_memory_reset(t_ram *ram);
 void core_machine_memory_finalize(t_ram *ram);
-void core_machine_memory_register_ports(t_ram *ram, t_port *port);
 lib_status core_machine_memory_set_a20_wrap_policy(t_ram *ram,
     core_machine_a20_wrap_policy policy);
 

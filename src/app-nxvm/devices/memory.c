@@ -7,7 +7,6 @@
 
 
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/port.h"
 
 /* Allocates memory for virtual machine ram */
 static lib_u32 core_machine_memory_wrap_a20(const t_ram *ram,
@@ -533,25 +532,6 @@ void core_machine_memory_unregister_owner(t_ram *ram, const void *owner)
     }
     ram->connect.write_observer_count = retained;
 }
-static void core_machine_memory_read_a20(t_port *port, lib_u16 port_id,
-    void *owner)
-{
-    t_ram *ram = (t_ram *)owner;
-
-    (void)port_id;
-    if (ram == LIB_NULL) return;
-    port->data.ioByte = ram->data.flagA20 ? VRAM_FLAG_A20 : 0u;
-}
-static void core_machine_memory_write_a20(t_port *port, lib_u16 port_id,
-    void *owner)
-{
-    t_ram *ram = (t_ram *)owner;
-
-    (void)port_id;
-    if (ram == LIB_NULL) return;
-    ram->data.flagA20 = CORE_MACHINE_BIT_IS_SET(port->data.ioByte, VRAM_FLAG_A20);
-}
-
 static lib_status core_machine_memory_read_routed(t_ram *ram, lib_u32 physical,
     lib_uptr destination, lib_uptr byte, lib_bool observe_only)
 {
@@ -780,14 +760,6 @@ lib_status core_machine_memory_set_a20_wrap_policy(t_ram *ram,
     ram->connect.a20_wrap_policy = policy;
     return LIB_STATUS_OK;
 }
-void core_machine_memory_register_ports(t_ram *ram, t_port *port)
-{
-    core_machine_port_add_read(port, 0x0092,
-        core_machine_memory_read_a20, ram);
-    core_machine_port_add_write(port, 0x0092,
-        core_machine_memory_write_a20, ram);
-}
-
 lib_status core_machine_memory_read_real_from(t_ram *ram, lib_u16 segment,
     lib_u16 offset, void *out_data, lib_size size)
 {
