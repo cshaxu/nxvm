@@ -62,11 +62,15 @@ static lib_i32 install_pages(core_machine *machine, lib_bool fault_case)
     return write_u32(machine, 0x1000u, 0xa003u);
 }
 
-static lib_i32 install(core_machine *machine, lib_bool fault_case)
+static lib_i32 install(core_machine *machine, lib_bool fault_case,
+    lib_bool pending_irq, lib_bool nested)
 {
     static const lib_u8 gdt_pointer[] = { 0x47u,0u,0u,0x03u,0u,0u };
     static const lib_u8 bootstrap[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u, 0x0fu,0x01u,0x1eu,0x80u,0x01u,
+        0xb0u,0x11u,0xe6u,0x20u, 0xb0u,0x20u,0xe6u,0x21u,
+        0xb0u,0x04u,0xe6u,0x21u, 0xb0u,0x01u,0xe6u,0x21u,
+        0xb0u,0xfdu,0xe6u,0x21u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x28u,0x00u,0x0fu,0x00u,0xd8u, 0xb8u,0x10u,0x00u,0x8eu,0xd0u,
         0x8eu,0xd8u,0x8eu,0xc0u,0x8eu,0xe0u,0x8eu,0xe8u,0xbcu,0x00u,0x80u,
@@ -82,10 +86,13 @@ static lib_i32 install(core_machine *machine, lib_bool fault_case)
         0x66u,0xb8u,0x01u,0x00u,0x00u,0x80u,0x0fu,0x22u,0xc0u,
         0xeau,0u,0u,0x30u,0u
     };
+    static const lib_u8 source_irq_jmp[] = { 0xeau,0u,0u,0x30u,0u };
+    static const lib_u8 source_irq_call[] = { 0x9au,0u,0u,0x30u,0u };
     static const lib_u8 target_code[] = { 0x66u,0xb8u,0x34u,0x12u,0u,0u,0xf4u };
     static const lib_u8 halt[] = { 0xf4u };
     static const lib_u8 idtr[] = { 0x77u,0u,0x00u,0x04u,0u,0u };
     const lib_u8 fault_gate[] = { 0x80u,0x01u,0x08u,0u,0u,0x86u,0u,0u };
+    const lib_u8 irq_gate[] = { 0x80u,0x01u,0x08u,0u,0u,0x86u,0u,0u };
     lib_u8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xff,0xff,0,0x20,0,0x9a,0,0,
         0xff,0xff,0,0x30,0,0x92,0,0, 0,0,0,0,0,0,0,0,
@@ -95,14 +102,16 @@ static lib_i32 install(core_machine *machine, lib_bool fault_case)
     };
     const task_tss32_state target = {
         .cr3 = fault_case ? 0x1000u : 0x4000u, .eip = 0x100u,
-        .eflags = 0x2u, .eax = 0xa1a12222u, .ecx = 0xc1c13333u,
+        .eflags = pending_irq ? 0x202u : 0x2u, .eax = 0xa1a12222u, .ecx = 0xc1c13333u,
         .edx = 0xd1d14444u, .ebx = 0xb1b15555u, .esp = 0x8000u,
         .ebp = 0xe1e16666u, .esi = 0xf1f17777u, .edi = 0x81818888u,
         .es = {0x10u,0u}, .cs = {0x08u,0u}, .ss = {0x10u,0u},
         .ds = {0x10u,0u}, .fs = {0x10u,0u}, .gs = {0x10u,0u}
     };
-    const lib_u8 *source = fault_case ? source_fault : source_success;
-    const lib_size source_bytes = fault_case ? sizeof(source_fault) : sizeof(source_success);
+    const lib_u8 *source = pending_irq ? (nested ? source_irq_call : source_irq_jmp) :
+        (fault_case ? source_fault : source_success);
+    const lib_size source_bytes = pending_irq ? (nested ? sizeof(source_irq_call) :
+        sizeof(source_irq_jmp)) : (fault_case ? sizeof(source_fault) : sizeof(source_success));
 
     if (!write_bytes(machine, GDT_POINTER, gdt_pointer, sizeof(gdt_pointer)) ||
         !write_bytes(machine, GDT_BASE, gdt, sizeof(gdt)) ||
@@ -111,9 +120,12 @@ static lib_i32 install(core_machine *machine, lib_bool fault_case)
         !write_bytes(machine, 0u, bootstrap, sizeof(bootstrap)) ||
         !write_bytes(machine, KERNEL_BASE, source, source_bytes) ||
         !write_bytes(machine, (fault_case ? 0x7000u : TASK_B_BASE) + 0x1cu,
-            &target, sizeof(target)) || !install_pages(machine, fault_case)) return 0;
+        &target, sizeof(target)) || !install_pages(machine, fault_case)) return 0;
     if (fault_case) return write_bytes(machine, IDT_BASE + 14u * 8u, fault_gate,
         sizeof(fault_gate)) && write_bytes(machine, KERNEL_BASE + 0x180u,
+        halt, sizeof(halt));
+    if (pending_irq) return write_bytes(machine, IDT_BASE + 0x21u * 8u, irq_gate,
+        sizeof(irq_gate)) && write_bytes(machine, KERNEL_BASE + 0x180u,
         halt, sizeof(halt));
     return write_u32(machine, 0x4000u, 0xc003u) &&
         write_u32(machine, 0xc000u + 2u * 4u, 0xb003u) &&
@@ -135,7 +147,7 @@ static lib_i32 run_until_waiting_for_interrupt(core_machine *machine,
     return 0;
 }
 
-static lib_i32 run_case(lib_bool fault_case)
+static lib_i32 run_case(lib_bool fault_case, lib_bool pending_irq, lib_bool nested)
 {
     core_machine *machine = LIB_NULL;
     core_machine_run_result result = {0};
@@ -143,7 +155,9 @@ static lib_i32 run_case(lib_bool fault_case)
     core_machine_debug_cpu_snapshot cpu = {0};
     lib_i32 failed = !prepare(&machine);
 
-    if (!failed) failed |= !install(machine, fault_case);
+    if (!failed) failed |= !install(machine, fault_case, pending_irq, nested);
+    if (!failed && pending_irq) failed |= core_machine_keyboard_receive_native_byte(
+        machine, 0x1eu) != LIB_STATUS_OK;
     if (!failed) {
         failed |= !run_until_waiting_for_interrupt(machine, &result) ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
@@ -153,6 +167,9 @@ static lib_i32 run_case(lib_bool fault_case)
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_PF ||
             cpu.eip != 0x181u || cpu.tr.selector != 0x28u || cpu.cr3 != 0x1000u;
+        else if (pending_irq) failed |= diagnostic.first_fault.valid ||
+            diagnostic.last_delivered_exception.valid || cpu.tr.selector != 0x30u ||
+            cpu.eip != 0x181u || cpu.eax != 0xa1a12222u;
         else failed |= diagnostic.first_fault.valid || cpu.tr.selector != 0x30u ||
             cpu.eax != 0x00001234u || cpu.cr3 != 0x4000u;
     }
@@ -162,7 +179,11 @@ static lib_i32 run_case(lib_bool fault_case)
 
 int main(void)
 {
-    if (run_case(LIB_FALSE) || run_case(LIB_TRUE)) return 1;
+    if (run_case(LIB_FALSE, LIB_FALSE, LIB_FALSE) ||
+        run_case(LIB_TRUE, LIB_FALSE, LIB_FALSE) ||
+        run_case(LIB_FALSE, LIB_TRUE, LIB_FALSE) ||
+        run_case(LIB_FALSE, LIB_TRUE, LIB_TRUE)) return 1;
     puts("M5:T539:S56c2:TASK32-PAGING:OK");
+    puts("M5:T539:S56c4:TASK32-PENDING-IRQ:OK");
     return 0;
 }

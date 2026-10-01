@@ -505,26 +505,46 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S63.
 
-## S56c4 Active Packet
+## S56d Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S56c4, Continuation. |
+| Identifier Mode | M5 T539 S56d, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the two pending-IRQ TSS32 contexts into their single board receiver. |
-| Non-goals | S56a-S56c3 accepted receiver work; 16↔32 image/return rows (S56d); TSS I/O-map authorization (S57); CLI/STI/INT/IRET/VM86 group (S58); timing corpus, production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S56c3 acceptance; residual `core_machine_task_switch_smoke.c` pending-IRQ rows only. |
-| Candidate Proposal | M5 shared-chip extraction proposal; T539 CPU work-package S56c4 board delivery receiver. |
-| Files And ABI Surface | Move the ordinary and nested pending-IRQ TSS32 rows into one board receiver using public PIC delivery; no public ABI change. |
-| Applicable Rules | The board receiver owns public PIC delivery and Core execution only; it must not recreate a CPU-private task-state fixture. Each original context has one receiver. |
+| Objective | Retire the residual 16↔32 TSS transition and task-return rows into receivers that preserve image width, backlink/nested state and return semantics. |
+| Non-goals | S56a-S56c4 accepted receiver work; TSS I/O-map authorization (S57); CLI/STI/INT/IRET/VM86 group (S58); timing corpus, production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S56c4 acceptance; residual cross-width rows in `core_machine_task_switch_smoke.c`. |
+| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S56d cross-width task state. |
+| Files And ABI Surface | Move only the 16↔32 state-image and task-return contexts to their one appropriate receiver; no public ABI change. |
+| Applicable Rules | Preserve actual old/new TSS image widths, backlink and nested return behavior. Do not duplicate S55's 16-bit baseline. Each original context has one receiver. |
 | Verification | Exact residual-case ledger; focused receiver; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
-| Expected Markers | A new S56c4 pending-IRQ marker; retained TSS task-switch corpus marker. |
+| Expected Markers | A new S56d cross-width marker; retained TSS task-switch corpus marker. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Reporting Requirements | Record both pending-IRQ contexts, board receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
+| Reporting Requirements | Record every cross-width context, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
 | Stop Conditions | Stop if a context requires production/API/Shared change. |
-| Exit Criteria | Both S56c4 contexts have one board receiver; no pending-IRQ direct-private fixture path survives; all verification passes. |
+| Exit Criteria | Each cross-width context has one receiver; no duplicate legacy state-image or return fixture path survives; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | The original S56c block is classified before implementation: #DB/LOCK is S56c1; paging is S56c2; nesting/task gates are S56c3; public PIC delivery is S56c4. Cross-width state images and return rows stay S56d. |
+| Similar-Issue Sweep | The original S56c block is accepted: #DB/LOCK is S56c1; paging is S56c2; nesting/task gates are S56c3; public PIC delivery is S56c4. S56d owns only cross-width state images and return rows. |
+
+## S56c4 Acceptance
+
+The ordinary TSS32 far-JMP and nested TSS32 far-CALL rows with a pending IRQ
+now have one board/Core receiver, `machine_task_switch32_paging_smoke.c`.
+It uses guest I/O to initialise and unmask the master PIC, injects a real
+keyboard byte through the public Core board input, and observes the resulting
+KBC-to-PIC-to-CPU delivery while executing the real task transfer. The
+legacy mixed runner no longer contains its direct-private pending-IRQ helper.
+
+Focused x64/x86 receivers and the retained corpus pass. Complete serial unit
+suites pass **426/426** on x64 and **426/426** on x86. The directly invoked
+T344 historical-shape and Core lifecycle scripts pass; documentation
+governance and `git diff --check` pass. The CMake/Ninja batch invocation for
+the remaining static targets stalled without CPU progress on this host, so it
+is deliberately not recorded as a passing result. This is test and
+documentation-only work: no production/API, Shared, firmware, asset, INI or
+EXE input changed, so no EXE rebuild is required. The [receiver map](../etc/evidence/t539-s56c4-task-switch32-pending-irq-receiver-map.md)
+records the two contexts and their sole delivery route. S56c4 is accepted;
+T539 remains open for S56d-S63.
 
 ## S56c3 Acceptance
 
