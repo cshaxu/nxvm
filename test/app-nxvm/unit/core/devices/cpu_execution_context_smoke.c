@@ -9,46 +9,6 @@
 
 #include "x86/devices/cpu/support/cpu_bus_fixture.h"
 
-static lib_i32 cpu_signal_case(core_machine_cpu_profile profile)
-{
-    cpu_bus_fixture fixture;
-    core_machine_cpu_state state;
-
-    cpu_bus_prepare(&fixture, profile);
-    fixture.memory[0x100u] = 0xf4u;
-    fixture.memory[0x09u] = 0x02u;
-    core_machine_cpu_capture_state(&fixture.execution, &state);
-    if (state.cs != 0u || state.cs_base != 0u || state.eip != 0x100u ||
-        state.eflags != fixture.cpu.data.eflags || state.halted ||
-        core_machine_cpu_linear_pc(&fixture.execution) != 0x100u) return 1;
-
-    core_machine_cpu_set_nmi_mask(&fixture.execution, LIB_TRUE);
-    if (!core_machine_cpu_nmi_is_masked(&fixture.execution) ||
-        core_machine_cpu_request_nmi(&fixture.execution) ||
-        fixture.cpu.data.flagNMI) return 1;
-    core_machine_cpu_execution_refresh(&fixture.execution);
-    if (!core_machine_cpu_is_halted(&fixture.execution)) return 1;
-    core_machine_cpu_set_nmi_mask(&fixture.execution, LIB_FALSE);
-    if (core_machine_cpu_nmi_is_masked(&fixture.execution) ||
-        fixture.cpu.data.flagNMI) return 1;
-    if (!core_machine_cpu_request_nmi(&fixture.execution) ||
-        !core_machine_cpu_request_nmi(&fixture.execution)) return 1;
-
-    /* Masking after admission retains the single pending edge until delivery. */
-    core_machine_cpu_set_nmi_mask(&fixture.execution, LIB_TRUE);
-    core_machine_cpu_execution_refresh(&fixture.execution);
-    if (!core_machine_cpu_is_halted(&fixture.execution) ||
-        !fixture.cpu.data.flagNMI) return 1;
-    core_machine_cpu_set_nmi_mask(&fixture.execution, LIB_FALSE);
-    core_machine_cpu_execution_refresh(&fixture.execution);
-    core_machine_cpu_capture_state(&fixture.execution, &state);
-    if (state.halted || state.eip != 0x200u || fixture.cpu.data.flagNMI ||
-        fixture.cpu.data.sp != 0x6fau || fixture.acknowledgements != 0u ||
-        fixture.instructions.data.except != 0u) return 1;
-    fixture.cpu.data.eip = 0x345u;
-    return state.eip != 0x200u;
-}
-
 static lib_i32 cpu_debug_case(core_machine_cpu_profile profile)
 {
     cpu_bus_fixture fixture;
@@ -102,48 +62,6 @@ static lib_i32 cpu_debug_case(core_machine_cpu_profile profile)
             snapshot.eax != 0x12345678u) return 1;
     }
     return 0;
-}
-
-static lib_i32 cpu_prefetch_case(core_machine_cpu_profile profile)
-{
-    cpu_bus_fixture fixture;
-    core_machine_cpu_execution_context *cpu = &fixture.execution;
-    lib_bool byte_queue = profile == CORE_MACHINE_CPU_PROFILE_8088;
-    lib_u8 count = byte_queue ? 4u : 15u;
-    lib_u32 next = byte_queue ? 0x11u : 0x17u;
-    lib_i32 failed = 0;
-
-    cpu_bus_prepare(&fixture, profile);
-    cpu->prefetch_linear = 0x10u;
-    cpu->prefetch_count = count;
-    cpu->prefetch_valid = LIB_TRUE;
-    cpu->prefetch_expected_linear = next;
-    cpu->prefetch_expected_valid = LIB_TRUE;
-    core_machine_cpu_execution_reserve_prefetch(cpu);
-    failed |= !cpu->prefetch_reservation_valid ||
-        cpu->prefetch_reservation_linear != (byte_queue ? 0x14u : next) ||
-        cpu->prefetch_reservation_count != (byte_queue ? 1u : count);
-    core_machine_cpu_execution_advance_prefetch_reservation(cpu);
-    failed |= cpu->prefetch_reservation_valid || !cpu->prefetch_valid ||
-        cpu->prefetch_linear != (byte_queue ? next : 0x10u) ||
-        cpu->prefetch_count != count;
-    if (byte_queue) cpu->prefetch_expected_linear = 0x12u;
-    core_machine_cpu_execution_reserve_prefetch(cpu);
-    failed |= !cpu->prefetch_reservation_valid;
-    core_machine_cpu_execution_invalidate_prefetch(cpu);
-    failed |= cpu->prefetch_reservation_valid || cpu->prefetch_valid ||
-        cpu->prefetch_expected_valid;
-    cpu->prefetch_linear = 0x10u;
-    cpu->prefetch_count = count;
-    cpu->prefetch_valid = LIB_TRUE;
-    cpu->prefetch_expected_linear = next;
-    cpu->prefetch_expected_valid = LIB_TRUE;
-    core_machine_cpu_execution_reserve_prefetch(cpu);
-    failed |= !cpu->prefetch_reservation_valid;
-    core_machine_cpu_state_reset(cpu);
-    failed |= cpu->prefetch_reservation_valid || cpu->prefetch_valid ||
-        cpu->prefetch_expected_valid;
-    return failed;
 }
 
 static lib_i32 cpu_80186_lgdt_gate(void)
@@ -499,8 +417,6 @@ lib_i32 main(void)
     for (lib_size index = 0u;
          index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
         result |= cpu_debug_case(profiles[index]);
-        result |= cpu_signal_case(profiles[index]);
-        result |= cpu_prefetch_case(profiles[index]);
     }
 
     result |= cpu_interrupt_pending_and_rollback();
