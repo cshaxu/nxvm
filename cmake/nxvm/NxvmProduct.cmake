@@ -561,18 +561,18 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-80386-timing-manifest-runner
-    test/app-nxvm/unit/core/devices/core_machine_80386_timing_manifest_runner.c)
-target_link_libraries(core-machine-80386-timing-manifest-runner PRIVATE
+add_executable(machine-80386-timing-manifest-runner
+    test/app-nxvm/unit/core/devices/machine_80386_timing_manifest_runner.c)
+target_link_libraries(machine-80386-timing-manifest-runner PRIVATE
     core-machine)
-target_compile_definitions(core-machine-80386-timing-manifest-runner PRIVATE
+target_compile_definitions(machine-80386-timing-manifest-runner PRIVATE
     PROJECT_TEST_80386_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80386-timing-results.json")
-add_dependencies(core-machine-80386-timing-manifest-runner
+add_dependencies(machine-80386-timing-manifest-runner
     cpu-timing-manifest-catalog)
-target_include_directories(core-machine-80386-timing-manifest-runner PRIVATE
+target_include_directories(machine-80386-timing-manifest-runner PRIVATE
     "${CMAKE_BINARY_DIR}/generated")
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-80386-timing-manifest-runner PRIVATE
+    target_compile_options(machine-80386-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -2382,7 +2382,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-80186-decoder-inventory-runner
     core-machine-80286-decoder-inventory-runner
     core-machine-80386-decoder-inventory-runner
-    core-machine-80386-timing-manifest-runner
+    machine-80386-timing-manifest-runner
     core-machine-debug-smoke
     core-machine-cpu-context-smoke
     vm-fdc-authority-smoke

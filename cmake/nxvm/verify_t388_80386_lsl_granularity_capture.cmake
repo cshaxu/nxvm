@@ -6,7 +6,7 @@ set(machine_model "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_timing_model.c
 set(cpu "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_instructions.c")
 set(header "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_instructions.h")
 set(smoke "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/cpu_lar_lsl_smoke.c")
-set(timing_runner "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_80386_timing_manifest_runner.c")
+set(timing_runner "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/machine_80386_timing_manifest_runner.c")
 set(evidence "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s8-80386-lsl-granularity-capture.md")
 foreach(path IN ITEMS "${machine}" "${cpu}" "${header}" "${smoke}" "${timing_runner}" "${evidence}")
     if(NOT EXISTS "${path}")

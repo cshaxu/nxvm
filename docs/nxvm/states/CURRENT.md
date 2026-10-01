@@ -11,8 +11,8 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
-corpus into S68-S73; later packages now run through S77. S48-S72 are accepted
-and S73-S77 remain pending. Earlier
+corpus into S68-S73; later packages now run through S77. S48-S73 are accepted
+and S74-S77 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -506,17 +506,17 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 
-## S73 Active Packet
+## S74 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S73, Continuation. |
+| Identifier Mode | M5 T539 S74, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the 80386 timing-manifest runner while preserving source formulas, manifest/catalog rows, measured results and one receiver per original context. |
-| Non-goals | S72 accepted 80286 manifest/call-gate include closure; remaining-consumer sweep (S74); production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S72 acceptance; `core_machine_80386_timing_manifest_runner.c`. |
-| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S73 80386 timing corpus. |
-| Files And ABI Surface | Allocate the direct timing receiver before editing; no public ABI change or generated production catalog dependency. |
+| Objective | Sweep the remaining raw CPU consumers, reconcile the original-case inventory to zero unassigned cases, and retire the last mixed fixture only after its final caller moves. |
+| Non-goals | S73 accepted 80386 timing-manifest receiver; opaque CPU lifetime cutover (S75); production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S73 acceptance; the four S74 inventory entries in the CPU work package. |
+| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S74 remaining-consumer sweep. |
+| Files And ABI Surface | Allocate every remaining consumer and include dependency before editing; no public ABI change or generated production catalog dependency. |
 | Applicable Rules | Preserve source formulas, protected-port rows, measured deltas and one receiver per original context. |
 | Verification | Exact residual-case ledger; focused timing runners; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
 | Expected Markers | Retained timing-runner markers or their exact successor receiver markers. |
@@ -525,7 +525,23 @@ records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 | Stop Conditions | Stop if a context requires production/API/Shared change or a formula has no authority. |
 | Exit Criteria | Each timing context has one receiver; no catalog or measured row is orphaned, duplicated or reinterpreted; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S68 intake found 17 files/20,417 lines and split them into S68-S73; S73 owns the remaining 80386 timing-manifest receiver. |
+| Similar-Issue Sweep | S74 reconciles the remaining CPU/FPU/profile consumers and their fixture dependency to zero unassigned cases. |
+
+## S73 Acceptance
+
+`machine_80386_timing_manifest_runner.c` is the sole Core-machine receiver
+for the 80386 timing-manifest context. It retains source formulas,
+manifest/catalog rows and measured results without adding a generated
+production dependency or a second recipe path.
+
+Focused x64/x86 receivers pass; complete repository-only unit suites pass
+426/426 on x86 in 98.16 seconds and 426/426 on x64 in 98.08 seconds. T344
+registration and historical fixture shapes, T332 lifecycle, VM-machine
+lifecycle, Core CPU/PIC authority, T388 lexeme and physical eligibility,
+documentation governance and diff checks pass. No Shared source, firmware,
+asset, INI or EXE input changed, so no product binary rebuild is required.
+The [S73 receiver map](../etc/evidence/t539-s73-80386-timing-receiver-map.md)
+records the exact scope. S73 is accepted; T539 remains open for S74-S77.
 
 ## S72 Acceptance
 

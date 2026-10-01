@@ -440,7 +440,7 @@ complete receiving map and dual-width verification are recorded in
 
 ### S73: 80386 timing corpus, 1 matching file
 
-- `core_machine_80386_timing_manifest_runner.c`
+- `machine_80386_timing_manifest_runner.c`
 
 ### S74: remaining-consumer sweep, 4 matching files
 
