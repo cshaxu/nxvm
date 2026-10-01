@@ -14,8 +14,8 @@ control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
 corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
-split into S78-S86 before implementation; S86 is the final acceptance. S48-S79 are accepted and S80-S86
-remain pending except the active S80. Earlier
+split into S78-S86 before implementation; S86 is the final acceptance. S48-S80 are accepted and S81-S86
+remain pending except the active S81. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -528,28 +528,39 @@ admitted NXVM profiles have rebuilt 0539 x64/x86 Release artifacts. The
 [S75 evidence](../etc/evidence/t539-s75-opaque-cpu-lifetime.md) records the
 boundary and artifact hashes. S75 is accepted; T539 remains open for S76-S82.
 
-## S80 Active Packet
+## S81 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S80, Automatically admitted continuation. |
-| Admission And Approval | The owner approved automatic admission of each bounded T539 S. This follows accepted S79 and consumes S80 in the approved [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Identifier Mode | M5 T539 S81, Automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic admission of each bounded T539 S. This follows accepted S80 and consumes S81 in the approved [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
 | Change Target | Shared receiver additions followed by NXVM retirement/consumer P commits only where an existing test path migrates. |
-| Objective | Move only CPU-owned SREG/selector and MOFFS fixtures/tests to the canonical Shared CPU owner. |
-| Non-goals | Altering instruction semantics/timing, moving public memory/fault/IRQ board paths, changing profiles, moving strings/ports assigned to S81-S82, or deleting the retained App CPU source path before S85. |
-| Reference Baseline | `594fd1d4c` after S79: CPU arithmetic, basic-stack, segment-stack, and far-pointer fixtures/tests have one Shared owner. |
-| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md), revised S80 segment/data receiver row. |
-| Files And ABI Surface | `cpu_sreg_mov_smoke.c`, `cpu_segment_selector_smoke.c`, and `cpu_moffs_smoke.c` with Shared successors. No public production CPU ABI, board callback, profile, firmware, or asset surface changes. |
+| Objective | Move only CPU-owned MOVS/LODS/STOS/SCAS/CMPS fixtures/tests to the canonical Shared CPU owner. |
+| Non-goals | Altering instruction semantics/timing, moving real Core memory, interruptibility, PIC/IRQ, profile behavior, or port work assigned to S82. |
+| Reference Baseline | `a5f7a9ae4` after S80: CPU arithmetic, stack, segment, far-pointer, and segment/data fixtures/tests have one Shared owner. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md), revised S81 string receiver row. |
+| Files And ABI Surface | `cpu_movs_smoke.c`, `cpu_lods_smoke.c`, `cpu_stos_smoke.c`, `cpu_scas_smoke.c`, and `cpu_cmps_smoke.c` with Shared successors. No public production CPU ABI, board callback, profile, firmware, or asset surface changes. |
 | Applicable Rules | `docs/nxvm/design/ARCHITECTURE.md` Shared-device ownership; `docs/nxvm/design/CODING.md` mirrored test ownership; shared Architecture, Coding, Execution, and Documentation rules. |
-| Required Boundary | Shared tests may use only the opaque CPU contract and the Shared CPU fixture. Real Core descriptor state, memory, PIC/IRQ delivery, profile wiring, and board cases stay NXVM tests. |
+| Required Boundary | Shared tests may use only the opaque CPU contract and the Shared CPU fixture. Real Core memory, interruptibility, PIC/IRQ delivery, profile wiring, and board cases stay NXVM tests. |
 | Verification | Run focused successor/retained board tests and complete repository-only units on x64/x86, Shared manifest/corpus checks, CPU authority, and documentation governance. Rebuild artifacts only if runtime inputs change. |
 | Expected Markers | Each of the five moved tests has one Shared registration, each retained board test has a named reason, and no NXVM private test fixture is imported into Shared. |
 | Asset Needs | None; this is repository-only test ownership work. |
-| Reporting Requirements | Record each moved/retained segment-stack/far-pointer candidate, sole fixture/recipe ownership, source/test line totals, and artifact determination. |
-| Stop Conditions | Stop and report if any apparently CPU-only segment-stack/far-pointer test requires a real Core board contract, if a public CPU contract is insufficient, or if moving it would duplicate a receiver. |
-| Exit Criteria | The bounded segment-stack/far-pointer group has one Shared owner, App duplicates are removed, board paths remain explicit, and all required checks pass. |
+| Reporting Requirements | Record each moved/retained string candidate, sole fixture/recipe ownership, source/test line totals, and artifact determination. |
+| Stop Conditions | Stop and report if any apparently CPU-only string test requires a real Core board contract, if a public CPU contract is insufficient, or if moving it would duplicate a receiver. |
+| Exit Criteria | The bounded string group has one Shared owner, App duplicates are removed, board paths remain explicit, and all required checks pass. |
 | Original Owner Request | Automatically continue bounded T539 chip extraction without leaving tails. |
-| Similar-Issue Sweep | The 19-file transfer/data universe is classified. This S owns its 1,883-line segment-stack/far-pointer subset; S80-S82 own the remaining named groups. |
+| Similar-Issue Sweep | The 19-file transfer/data universe is classified. This S owns its 1,804-line string subset; S82 owns the remaining port group. |
+
+## S80 Acceptance
+
+S80 moved three 2,105-line CPU-only segment/data tests to one Shared owner and
+deleted NXVM duplicates. Public Core memory/fault/IRQ observations remain NXVM
+tests. See the [S80 evidence](../etc/evidence/t539-s80-segment-data-receivers.md).
+
+Complete x64/x86 repository-only units pass 427/427. Shared manifest/corpus,
+CPU/PIC authority, documentation governance, and diff checks pass. This
+test/CMake-only scope leaves the S76 0539 artifacts current. S80 is accepted;
+T539 remains open for S81-S86.
 
 ## S79 Acceptance
 
