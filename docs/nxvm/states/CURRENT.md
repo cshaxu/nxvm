@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S4 is active: rename the independent Shared chip component from
-`x86/devices` to `x86/chips` and reconnect its NXVM consumer. S1-S3 design
-evidence remains accepted.
+M5 T540 remains open. S1-S4 are accepted; S4 established the sole
+`x86/chips` source/test path and its NXVM consumer. S5 is the next planned
+bounded subtask and has not yet been admitted.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -29,7 +29,7 @@ the completed CPU extraction.
 | Task | Status |
 | --- | --- |
 | T539 | Closed: every finite chip-ledger row is either extracted to its sole Shared owner or retained with its stated board-only reason; S101 removed the last historical CPU copy. |
-| T540 S4 | Active: one structural Shared chip path and NXVM consumer migration. |
+| T540 S4 | Accepted: one Shared chip path, reconnected NXVM consumer, both-width complete units and four-profile 0540 artifact pairs. |
 
 ## T540 S1 Acceptance
 
@@ -92,6 +92,25 @@ accepted naming boundary for later, separately admitted source moves.
 | Exit Criteria | All chip files and references use the one `chips` path; Shared and NXVM compile and pass required tests on both widths; all affected runnable NXVM artifacts are reviewed and updated where changed; actual diff review finds no second chip owner or compatibility path. |
 | Original Owner Request | Put fully decoupled Intel/x86 chips in `src/x86/chips` for reuse by later PC and arcade Apps. |
 | Similar-Issue Sweep | Inspect every current source/test/CMake/static/tool include or literal of `x86/devices`, including negative probes and manifest inventory; distinguish historical documents from live paths. |
+
+## T540 S4 Acceptance
+
+The Shared chip tree and suite have one `chips` location; the old `devices`
+path has no live source, build, test or tool reference. Shared P2
+`c4d2fc29d` moved the corpus and repaired its manifests and gates. NXVM P3
+`e8ea2ddc8` reconnected the product and advanced the artifact revision; NXVM
+P4 `0483f1df1` deployed all eight verified 0540 EXEs and retired the
+superseded 0539 pairs. No chip algorithm, public symbol, board wiring, INI or
+MyNES input changed.
+
+Shared standalone tests passed 119/119 on each width. The full repository-only
+unit suite passed 467/467 on each width. Both manifests, the x86 corpus and
+negative gates, both-width Release builds, PE checks, `git diff --check`, and
+documentation governance passed. The actual diff review found no compatibility
+header or second chip implementation. [S4 evidence](../etc/evidence/t540-s4-chip-path-migration.md)
+records file and line counts, source commits, artifact SHA-256 values and the
+receiving-App disposition. T540's full external integration gate remains due
+at task closure; S4 is accepted without claiming the board extraction complete.
 
 ## S87 Admission Packet
 
@@ -1493,12 +1512,10 @@ packages by the current work plan.
 ## Current Technical Baseline
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
-runnable. Eight optimized compiler-debug-stripped 0539 EXEs are committed in
-0067d80c4 with unchanged owner INIs. S18 evidence records hashes, PE architecture
-and verification limits. S19-S39 changed no executable inputs and require no
-new artifact. Both reusable NXVM trees remain configured for default; the three
-bounded build/t539-s3 trees and S18 recovery patch remain needed for later CPU
-batches. Run native desktop test suites without cross-tree overlap.
+runnable. Eight optimized compiler-debug-stripped 0540 EXEs are committed in
+0483f1df1 with unchanged owner INIs. S4 evidence records hashes, PE
+architecture and verification limits. The 0539 pairs remain in Git history.
+Run native desktop test suites without cross-tree overlap.
 
 Lib/Common retain 268464d49. Shared x86 PIT is accepted at 24162ac93, RTC at
 8a8435648, PIC at d6dc6ca3a, DMA at 53b4be21d, AT keyboard at eb1e2e208,
