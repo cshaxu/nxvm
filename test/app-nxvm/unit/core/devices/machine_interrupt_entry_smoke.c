@@ -609,5 +609,6 @@ int main(void)
     if (failed) return 1;
     printf("M5:T305:INTERRUPT-ENTRY:OK\n");
     printf("M5:T308:S2:SAME-CPL-ERROR-DELIVERY:OK\n");
+    printf("M5:T539:S66:INT-ENTRY:OK\n");
     return 0;
 }

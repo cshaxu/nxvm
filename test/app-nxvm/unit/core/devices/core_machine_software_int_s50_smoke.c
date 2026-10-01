@@ -7,7 +7,7 @@
 #undef main
 
 #define main interrupt_entry_main
-#include "core_machine_interrupt_entry_smoke.c"
+#include "machine_interrupt_entry_smoke.c"
 #undef main
 
 typedef struct software_int_form {

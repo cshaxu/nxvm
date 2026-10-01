@@ -21,7 +21,7 @@ set(project_t332_wrapper_sources
 set(project_t332_inherited_sources
     "test/app-nxvm/unit/core/devices/machine_cli_sti_interrupt_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_protected_iret_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_interrupt_entry_smoke.c")
+    "test/app-nxvm/unit/core/devices/machine_interrupt_entry_smoke.c")
 set(project_t332_public_board_sources
     "test/app-nxvm/unit/core/devices/core_machine_legacy_alu_s2_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_legacy_lock_s1_smoke.c"

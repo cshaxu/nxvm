@@ -10,7 +10,7 @@
 
 /* Retained owners supply the detailed gate and VM86 frame matrices. */
 #define main hardware_delivery_s3_interrupt_entry_main
-#include "core_machine_interrupt_entry_smoke.c"
+#include "machine_interrupt_entry_smoke.c"
 #undef main
 #define main hardware_delivery_s3_vm86_delivery_main
 #include "core_machine_vm86_delivery_smoke.c"

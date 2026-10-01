@@ -505,26 +505,43 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 
-## S66 Active Packet
+## S67 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S66, Continuation. |
+| Identifier Mode | M5 T539 S67, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the software-INT entry dependency group and its direct includer, preserving DPL/gate validation, NMI/IRQ priority, masking and fault escalation. |
-| Non-goals | S56-S65 accepted task/I/O-map/CLI/IRET work; VM86 (S67), timing corpus (S68); production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S65 acceptance; `core_machine_interrupt_entry_smoke.c` and `core_machine_software_int_s50_smoke.c`. |
-| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S66 INT entry dependency group. |
-| Files And ABI Surface | Allocate both INT sources and their direct includes before editing; no public ABI change. |
-| Applicable Rules | Preserve software-INT DPL/gate selection, NMI/IRQ priority and masking, fault escalation and atomic state. Each original context has one receiver. |
+| Objective | Retire the VM86 dependency group and its hardware-delivery includer, preserving VM86 frames, table loads, paging faults and hardware IRQ delivery. |
+| Non-goals | S56-S66 accepted task/I/O-map/CLI/IRET/INT work; timing corpus (S68); production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S66 acceptance; `core_machine_vm86_delivery_smoke.c`, `core_machine_vm86_iret_smoke.c`, `core_machine_vm86_lgdt_lidt_s5_smoke.c` and `core_machine_hardware_delivery_s3_smoke.c`. |
+| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S67 VM86 dependency group. |
+| Files And ABI Surface | Allocate all VM86 sources and their direct includes before editing; no public ABI change. |
+| Applicable Rules | Preserve VM86 frames, table loads, paging faults, hardware IRQ delivery and atomic state. Each original context has one receiver. |
 | Verification | Exact residual-case ledger; focused receiver; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
-| Expected Markers | A new S66 INT-entry marker and retained INT markers. |
+| Expected Markers | A new S67 VM86 marker and retained VM86 markers. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Reporting Requirements | Record both INT sources, all direct includes, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
+| Reporting Requirements | Record all VM86 sources, all direct includes, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
 | Stop Conditions | Stop if a context requires production/API/Shared change. |
-| Exit Criteria | Each INT-entry dependency context has one receiver; no retained fixture is orphaned or duplicated; all verification passes. |
+| Exit Criteria | Each VM86 dependency context has one receiver; no retained fixture is orphaned or duplicated; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S66 includes the software-INT direct includer. S67 separately owns VM86 dependency groups; S68 owns timing-only consumers. |
+| Similar-Issue Sweep | S67 includes the hardware-delivery direct includer. S68 owns timing-only consumers. |
+
+## S66 Acceptance
+
+`machine_interrupt_entry_smoke.c` is the unique named Core-machine receiver
+for GDT/IDT gate construction, software-INT entry, PIC/NMI delivery and
+fault escalation.  Its direct S66 software-INT includer reuses this setup;
+the S67 hardware-delivery includer receives only the mechanical new filename
+and retains all VM86 behavior for its own package.
+
+Focused x64/x86 receiver and both includers pass and emit
+`M5:T539:S66:INT-ENTRY:OK`.  Complete repository-only unit suites pass 426/426
+on both widths.  T332 lifecycle, T344 registration and historical fixture
+shapes, VM lifecycle, Core CPU/PIC authority, documentation governance and
+`git diff --check` pass on both widths.  This is test/CMake/documentation-only
+work: no production/API, Shared, firmware, asset, INI or EXE input changed, so
+no EXE rebuild is required.  The [receiver map](../etc/evidence/t539-s66-int-entry-receiver-map.md)
+records the allocation.  S66 is accepted; T539 remains open for S67-S72.
 
 ## S65 Acceptance
 

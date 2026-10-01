@@ -995,9 +995,9 @@ target_link_libraries(core-machine-vm86-iret-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-vm86-iret-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-interrupt-entry-smoke
-    test/app-nxvm/unit/core/devices/core_machine_interrupt_entry_smoke.c)
-target_link_libraries(core-machine-interrupt-entry-smoke PRIVATE core-machine)
+add_executable(machine-interrupt-entry-smoke
+    test/app-nxvm/unit/core/devices/machine_interrupt_entry_smoke.c)
+target_link_libraries(machine-interrupt-entry-smoke PRIVATE core-machine)
 add_executable(core-machine-real-mode-386-rep-cmps-smoke
     test/app-nxvm/unit/core/devices/core_machine_real_mode_386_rep_cmps_smoke.c)
 target_link_libraries(core-machine-real-mode-386-rep-cmps-smoke PRIVATE core-machine)
@@ -1114,7 +1114,7 @@ endif()
 # latter only after the zero-retirement delivery boundary.
 foreach(target IN ITEMS
     core-machine-t359-s4-timing-smoke
-    core-machine-interrupt-entry-smoke
+    machine-interrupt-entry-smoke
     core-machine-vm86-delivery-smoke
     machine-protected-privilege-board-smoke
     core-machine-call-gate-privilege-entry-smoke
@@ -2149,7 +2149,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-descriptor-system-smoke
     core-machine-vm86-delivery-smoke
     core-machine-vm86-iret-smoke
-    core-machine-interrupt-entry-smoke
+    machine-interrupt-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
     cpu-arpl-smoke
