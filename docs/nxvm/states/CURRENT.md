@@ -15,9 +15,8 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S100 and S100 is the final acceptance. S48-S96 are
-accepted and S98-S100 remain pending. The next package must be admitted from
-the bounded ledger. Earlier
+is then divided into S83-S100 and S100 is the final acceptance. S48-S97 are
+accepted and S99-S100 remain pending. S98 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -256,6 +255,22 @@ T317, CPU/PIC authority, Shared manifest/corpus and documentation governance
 pass. Detached full unit suites pass **465/465** on x64 and x86. See the
 [S97 evidence](../etc/evidence/t539-s97-residual-cpu-classification.md). S97
 is accepted; T539 remains open for S98-S100.
+
+## S98 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S98, automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic, bounded, strictly linear numeric T539 continuation tasks; S98 follows accepted S97. |
+| Objective | Audit CPU timing/catalog runners against the Shared boundary: move only a receiver that is demonstrably CPU-only; retain board-time publication and generated-result contracts in NXVM. |
+| Non-goals | Creating a second timing execution path, synthetic Shared machine fixtures, changing timing formulas or manifests, production source, firmware, assets, INI and executables. |
+| Reference Baseline | `bb60d9dbd`, accepted S97. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Audit `machine_*timing*` runners and the generated catalog contract. Existing evidence shows they directly own App `core-machine`, device support, board-time publication or generated result artifacts; preserve these receivers once in NXVM unless a CPU-only source is found. |
+| Applicable Rules | Shared CPU implementation remains in `src/x86`; test runners that compose a machine or publish board-level result artifacts remain NXVM. No new fixture/API/framework to manufacture portability. |
+| Verification | Record each receiver's owner and dependency; run full x64/x86 units, relevant timing/catalog gates, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. |
+| Exit Criteria | Every timing/catalog receiver has one evidenced owner; no duplicate timing route, fixture or result contract is added; both full unit suites pass. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
 
 ## S86 Acceptance
 
