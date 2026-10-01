@@ -159,7 +159,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S93 | Accepted: CPU-only 16/32-bit task-switch state receivers and their fixture move to Shared; cross-width, public Core paging, hardware IRQ and board-state paths remain NXVM. |
 | S94 | Accepted: CPU-only bit scan/test, double-shift, IMUL2, MOVX, sign-extend, SETcc and LEA fixtures/tests move to Shared; same-named Core-machine board receivers remain NXVM. |
 | S95 | Accepted: CPU-only operand/address and prefix-attribute receivers move to Shared; Core-machine board paths remain NXVM. |
-| S96 | Ordinary CPU group two: move the bounded CPU-only legacy-LOCK and immediate-IMUL fixtures/tests without a blanket LOCK compatibility path. |
+| S96 | Accepted: CPU-only legacy-LOCK and immediate-IMUL fixtures/tests move to Shared; the Core-machine port/IOPL LOCK route remains NXVM and no blanket compatibility path is added. |
 | S97 | Residual CPU classification: classify the remaining CPU/FPU-profile, fault-diagnostic, IVT and fixture consumers; move every eligible Shared receiver or record its sole named NXVM board receiver before legacy deletion. |
 | S98 | CPU timing/manifest receiver move: migrate CPU-only timing/catalog inputs and runners, preserving formula rows and generated result contracts; leave board-time publication tests in NXVM. |
 | S99 | NXVM legacy-path deletion: switch all remaining consumers and static gates to the Shared API, delete retired App CPU sources/paths and prove no duplicate implementation remains. |
