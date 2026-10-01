@@ -511,21 +511,32 @@ records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T539 S69, Continuation. |
-| Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the 8086 timing ledger and manifest runner while preserving source formulas, catalog rows, measured results and one receiver per original context. |
-| Non-goals | S68 accepted common timing baseline; 80186/80286/80386 timing (S70-S73); remaining-consumer sweep (S74); production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S68 acceptance; `core_machine_8086_instruction_timing_ledger_smoke.c` and `core_machine_8086_timing_manifest_runner.c`. |
+| Admission And Approval | Owner authorized automatic bounded S work and expressly approved the reviewed Shared helper repair. |
+| Objective | First restore the clean Shared x86-video aperture compiler gate, then retire the 8086 timing ledger and manifest runner while preserving source formulas, catalog rows, measured results and one receiver per original context. |
+| Non-goals | EGA/VGA mapping or profile behavior changes; public API changes; 80186/80286/80386 timing (S70-S73); remaining-consumer sweep (S74); firmware, asset, INI or EXE work. |
+| Reference Baseline | S68 acceptance; `machine_8086_instruction_timing_ledger_smoke.c` and `machine_8086_timing_manifest_runner.c`. |
 | Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S69 8086 timing corpus. |
-| Files And ABI Surface | Allocate both 8086 timing sources and generated catalog include before editing; no public ABI change or generated production catalog dependency. |
-| Applicable Rules | Preserve source formulas, manifest catalog rows, measured deltas and one receiver per original context. |
-| Verification | Exact residual-case ledger; focused timing runners; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
+| Files And ABI Surface | P1: private `x86_video_active_ega_aperture()` and its three callers, with no public ABI change. P2: both 8086 timing sources and generated catalog include, with no generated production catalog dependency. |
+| Applicable Rules | P1 preserves valid aperture mapping, offsets and dirty observation exactly; P2 preserves source formulas, manifest catalog rows, measured deltas and one receiver per original context. |
+| Verification | P1 focused x86-video tests plus complete x64/x86 units; P2 exact residual-case ledger and focused timing runners; both run lifecycle/shape/authority gates, documentation governance and diff check. |
 | Expected Markers | Retained timing-runner markers or their exact successor receiver markers. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Reporting Requirements | Record both 8086 sources, generated catalog include, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
-| Stop Conditions | Stop if a context requires production/API/Shared change or a formula has no authority. |
-| Exit Criteria | Each timing context has one receiver; no catalog or measured row is orphaned, duplicated or reinterpreted; all verification passes. |
+| Reporting Requirements | P1 records all three helper callers and valid-path preservation; P2 records both timing sources, generated catalog include and receiver. Each P records focused/full-suite results, net diff and no-EXE determination. |
+| Stop Conditions | Stop if P1 needs a public API, hardware-profile behavior change or a second video owner; stop P2 if a formula has no authority. |
+| Exit Criteria | P1 has explicit failure handling at every helper caller with valid mappings unchanged; P2 has one receiver per timing context with no orphaned, duplicated or reinterpreted catalog or measured row; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S68 intake found 17 files/20,417 lines and split them into S68-S73; no lettered subtask is used. S69 owns all 8086 timing rows. |
+| Similar-Issue Sweep | P1 covers planar offset, EGA write observer and public aperture containment. S68 intake found 17 files/20,417 lines and split them into S68-S73; S69 owns all 8086 timing rows. |
+
+## S69 P1 Acceptance
+
+P1 corrected the private Shared `x86_video_active_ega_aperture()` failure
+contract before the timing receiver rename. The helper now reports invalid
+arguments and each of its planar-offset, write-observer and containment
+callers has one explicit failure result. Valid aperture maps, offsets and
+dirty observation are unchanged. The P1 commit is `429407e84`; dual-width EGA
+focused tests, complete 426/426 unit suites, all applicable gates and
+documentation governance passed. No public API, asset, INI or EXE input
+changed. P2 remains active.
 
 ## S68 Acceptance
 

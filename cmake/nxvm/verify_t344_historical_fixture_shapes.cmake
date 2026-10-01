@@ -54,7 +54,7 @@ set(project_t344_retained_sources
     "test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_instruction_timing_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_instruction_timing_ledger_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_8086_instruction_timing_ledger_smoke.c"
+    "test/app-nxvm/unit/core/devices/machine_8086_instruction_timing_ledger_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80186_instruction_timing_ledger_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80286_instruction_timing_ledger_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_protected_io_timing_smoke.c"
@@ -124,7 +124,7 @@ endif()
 # historical fixture shapes.  Name them here so a new direct constructor
 # cannot hide behind the historical count.
 set(project_t344_timing_manifest_sources
-    "test/app-nxvm/unit/core/devices/core_machine_8086_timing_manifest_runner.c"
+    "test/app-nxvm/unit/core/devices/machine_8086_timing_manifest_runner.c"
     "test/app-nxvm/unit/core/devices/core_machine_80186_timing_manifest_runner.c"
     "test/app-nxvm/unit/core/devices/core_machine_80286_timing_manifest_runner.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_timing_manifest_runner.c")

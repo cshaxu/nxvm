@@ -420,8 +420,8 @@ complete receiving map and dual-width verification are recorded in
 
 ### S69: 8086 timing corpus, 2 matching files
 
-- `core_machine_8086_instruction_timing_ledger_smoke.c`
-- `core_machine_8086_timing_manifest_runner.c`
+- `machine_8086_instruction_timing_ledger_smoke.c`
+- `machine_8086_timing_manifest_runner.c`
 
 ### S70: 80186 timing corpus, 2 matching files
 
