@@ -786,9 +786,6 @@ target_link_libraries(cpu-debug-state-smoke PRIVATE x86-cpu)
 add_executable(machine-debug-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c)
 target_link_libraries(machine-debug-state-board-smoke PRIVATE core-machine)
-add_executable(cpu-dttr-s61-smoke
-    test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c)
-target_link_libraries(cpu-dttr-s61-smoke PRIVATE x86-cpu)
 add_executable(cpu-control-state-smoke
     test/app-nxvm/unit/core/devices/cpu_control_state_smoke.c)
 target_link_libraries(cpu-control-state-smoke PRIVATE x86-cpu)
@@ -866,15 +863,6 @@ endif()
 add_executable(core-machine-descriptor-system-smoke
     test/app-nxvm/unit/core/devices/core_machine_descriptor_system_smoke.c)
 target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
-add_executable(cpu-descriptor-system-smoke
-    test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c)
-target_link_libraries(cpu-descriptor-system-smoke PRIVATE x86-cpu)
-add_executable(cpu-sgdt-sidt-smoke
-    test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c)
-target_link_libraries(cpu-sgdt-sidt-smoke PRIVATE x86-cpu)
-add_executable(cpu-lgdt-lidt-smoke
-    test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c)
-target_link_libraries(cpu-lgdt-lidt-smoke PRIVATE x86-cpu)
 add_executable(machine-table-register-board-smoke
     test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c)
 target_link_libraries(machine-table-register-board-smoke PRIVATE core-machine)
@@ -1074,8 +1062,8 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "cpu-protected-far-smoke|test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
     "cpu-protected-data-access-smoke|test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c"
     "cpu-debug-state-smoke|test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c"
-    "cpu-dttr-s61-smoke|test/app-nxvm/unit/core/devices/cpu_dttr_s61_smoke.c"
-    "cpu-descriptor-system-smoke|test/app-nxvm/unit/core/devices/cpu_descriptor_system_smoke.c"
+    "x86-test-cpu_dttr_s61|devices/cpu/cpu_dttr_s61_smoke.c"
+    "x86-test-cpu_descriptor_system|devices/cpu/cpu_descriptor_system_smoke.c"
     "x86-test-cpu_lar_lsl|devices/cpu/cpu_lar_lsl_smoke.c"
     "x86-test-cpu_verr_verw|devices/cpu/cpu_verr_verw_smoke.c"
     "core-machine-eflags-local-smoke|test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c"
@@ -1091,7 +1079,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "cpu-task-switch32-decode-smoke|test/app-nxvm/unit/core/devices/cpu_task_switch32_decode_smoke.c"
     "cpu-task-switch32-state-smoke|test/app-nxvm/unit/core/devices/cpu_task_switch32_state_smoke.c"
     "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
-    "cpu-lgdt-lidt-smoke|test/app-nxvm/unit/core/devices/cpu_lgdt_lidt_smoke.c"
+    "x86-test-cpu_lgdt_lidt|devices/cpu/cpu_lgdt_lidt_smoke.c"
     "core-machine-lea-smoke|test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
     "core-machine-legacy-sreg-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c"
     "core-machine-les-lds-s41-smoke|test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c"
@@ -1105,7 +1093,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-sign-extend-smoke|test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c"
     "core-machine-software-int-s50-smoke|test/app-nxvm/unit/core/devices/core_machine_software_int_s50_smoke.c"
     "core-machine-sreg-mov-smoke|test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c"
-    "cpu-sgdt-sidt-smoke|test/app-nxvm/unit/core/devices/cpu_sgdt_sidt_smoke.c"
+    "x86-test-cpu_sgdt_sidt|devices/cpu/cpu_sgdt_sidt_smoke.c"
     "machine-debug-state-board-smoke|test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c"
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
@@ -1994,12 +1982,12 @@ set(PROJECT_UNIT_TEST_TARGETS
     x86-test-cpu_arpl
     machine-arpl-board-smoke
     x86-test-cpu_bound
-    cpu-dttr-s61-smoke
-    cpu-descriptor-system-smoke
+    x86-test-cpu_dttr_s61
+    x86-test-cpu_descriptor_system
     x86-test-cpu_lar_lsl
     x86-test-cpu_verr_verw
-    cpu-lgdt-lidt-smoke
-    cpu-sgdt-sidt-smoke
+    x86-test-cpu_lgdt_lidt
+    x86-test-cpu_sgdt_sidt
     machine-table-register-board-smoke
     machine-bound-board-smoke
     core-machine-segment-selector-smoke
@@ -2135,9 +2123,9 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_arpl
     cpu-bit-test-smoke
     x86-test-cpu_bound
-    cpu-dttr-s61-smoke
-    cpu-lgdt-lidt-smoke
-    cpu-sgdt-sidt-smoke
+    x86-test-cpu_dttr_s61
+    x86-test-cpu_lgdt_lidt
+    x86-test-cpu_sgdt_sidt
     core-machine-cli-sti-s48-smoke
     cpu-control-state-smoke
     cpu-control-transfer-branch-smoke
@@ -2148,7 +2136,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-cpu-fault-diagnostic-smoke
     machine-cpu-profile-gate-smoke
     core-machine-descriptor-system-smoke
-    cpu-descriptor-system-smoke
+    x86-test-cpu_descriptor_system
     x86-test-cpu_lar_lsl
     x86-test-cpu_verr_verw
     cpu-debug-state-smoke
@@ -2240,7 +2228,7 @@ set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
     )
 set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     core-machine-cpu-context-smoke
-    cpu-descriptor-system-smoke
+    x86-test-cpu_descriptor_system
     x86-test-cpu_lar_lsl
     x86-test-cpu_verr_verw
     machine-fpu-escape-smoke
