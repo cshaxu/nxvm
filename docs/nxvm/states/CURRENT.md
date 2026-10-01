@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S2 is active: it records the retained board-adapter dependency ledger
-before any source move. M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
+M5 T540 retains its completed S1/S2 design evidence; no source-move packet is
+active yet. M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
@@ -27,7 +27,7 @@ the completed CPU extraction.
 | Task | Status |
 | --- | --- |
 | T539 | Closed: every finite chip-ledger row is either extracted to its sole Shared owner or retained with its stated board-only reason; S101 removed the last historical CPU copy. |
-| T540 S2 | Active: classify each retained board adapter by state owner, caller graph, lifetime and exact future `x86/ibmpc` or product destination; no source move is admitted. |
+| T540 | Open: S1/S2 accepted the family boundary and full adapter ledger; a future source packet must first establish neutral `x86/core`, then extract individual PC-board mechanisms. |
 
 ## T540 S1 Acceptance
 
@@ -44,26 +44,18 @@ No source, ABI, asset, INI or executable input changed.  `git diff --check`
 and `Verify-DocumentationGovernance.ps1 -Product nxvm` passed.  Coordinator
 review accepted `caaa6e337`; the required S1 governance closure follows.
 
-## T540 S2 Admission Packet
+## T540 S2 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | M5 T540 S2, automatic continuation under the owner's standing authorization for bounded linear S tasks. |
-| Admission And Approval | The owner approved T540 board-layer design and authorized automatic S admission. S1 established the family boundary; S2 records the concrete adapter ledger before source extraction. |
-| Objective | Classify every retained `app-nxvm/devices` board adapter that appears relevant to IBM-PC integration: its mutable-state owner, current consumers, reset/finalize and failure boundary, neutral dependencies, exact destination, and test owner. |
-| Non-goals | Moving source, changing behavior or ABI, creating empty `x86/ibmpc` directories, generic board registries, profile inheritance, firmware/assets/INI changes, or a runtime/executable build. |
-| Reference Baseline | `d712dae23`, accepted T540 S1 board graph. |
-| Candidate Proposal | [Shared IBM PC board integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and [S1 board audit](../etc/architecture/t540-ibmpc-board-audit.md). |
-| Files And ABI Surface | Documentation/evidence only: inspect `src/app-nxvm/devices`, four Profile construction paths, CMake ownership and existing tests. Add a durable adapter ledger; no production/public interface. |
-| Applicable Rules | One owner per state/route/failure boundary; dependencies only toward neutral capabilities; Shared has no machine switch or App-private pointer; retain product regressions. |
-| Verification | Exhaustive static adapter inventory, caller/include/build inspection, profile/test owner map, documentation governance and diff checks. No executable rebuild for design-only work. |
-| Expected Markers | Every apparent board adapter has one disposition: `x86/ibmpc/common`, `x86/ibmpc/xt`, `x86/ibmpc/at`, retained product-Core, retained machine composition, or deferred with an explicit proof gap. |
-| Asset Needs | None. |
-| Reporting Requirements | Report the initial extraction batch, intentionally retained adapters, the Model-40 shortcut disposition, exact test migration plan and any stop condition. |
-| Stop Conditions | Stop and report if an alleged shared adapter needs profile/asset/media policy, exposes private Core state across a public boundary, has divergent reset/rollback semantics, or would duplicate a still-live owner. |
-| Exit Criteria | The ledger covers the scoped adapter inventory with evidence-backed dispositions and yields bounded source S packages without a catch-all migration. |
-| Original Owner Request | Design a reusable board layer so later independent IBM-PC Apps can share real mechanisms without conflating XT, AT, Default and DeskPro 386 boards. |
-| Similar-Issue Sweep | Inspect all retained board adapters, not just PIT/PIC/DMA; compare all four current Profile paths and their product regression owners. |
+S2 reviewed the full retained adapter surface and recorded each mechanism's
+state owner, current consumers, destination and required regression boundary in
+[`t540-board-adapter-ledger.md`](../etc/architecture/t540-board-adapter-ledger.md).
+It established that generic x86 Core must move to neutral `x86/core` before
+the future independent PC Apps can exist, while `x86/ibmpc` stays limited to
+actual IBM-PC wiring.  No source, ABI, asset, INI or executable input changed.
+
+`git diff --check` and `Verify-DocumentationGovernance.ps1 -Product nxvm`
+passed.  Coordinator review accepted `fd36e8412`; the required S2 governance
+closure follows.
 
 ## S87 Admission Packet
 
