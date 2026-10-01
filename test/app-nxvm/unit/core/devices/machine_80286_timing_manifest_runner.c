@@ -23,7 +23,7 @@
 /* Reuse the retained 80286 call-gate bootstrap for both same- and
  * more-privileged transfer observations. */
 #define main timing_80286_manifest_retained_call_gate_main
-#include "core_machine_call_gate_smoke.c"
+#include "machine_call_gate_smoke.c"
 #undef main
 
 #define TIMING_80286_MANIFEST_RESET_LINEAR 0x00fffff0u

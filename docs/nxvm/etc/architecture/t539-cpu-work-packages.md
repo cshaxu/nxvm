@@ -122,7 +122,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S69 | 8086 timing corpus: 8086 ledger and manifest runner. Preserve source formulas, manifest catalog rows and timing results. |
 | S70 | 80186 timing corpus: 80186 ledger and manifest runner. Preserve source formulas, manifest catalog rows and timing results. |
 | S71 | 80286 ledger and protected I/O: 80286 ledger plus 80386 protected-I/O timing receiver. Preserve all formula and protected-port rows. |
-| S72 | 80286 manifest and call-gate includer: 80286 manifest runner and its direct `core_machine_call_gate_smoke.c` includer. Preserve manifest/catalog rows and existing public call-gate construction. |
+| S72 | 80286 manifest and call-gate includer: 80286 manifest runner and its direct `machine_call_gate_smoke.c` includer. Preserve manifest/catalog rows and existing public call-gate construction. |
 | S73 | 80386 timing corpus: 80386 manifest runner. Preserve source formulas, catalog rows and measured deltas. |
 | S74 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
 | S75 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |

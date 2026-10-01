@@ -5,7 +5,7 @@ endif()
 set(project_t344_migrated_sources
     "test/app-nxvm/unit/core/devices/core_machine_80286_protected_mode_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_paging_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_call_gate_smoke.c"
+    "test/app-nxvm/unit/core/devices/machine_call_gate_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_descriptor_system_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_fpu_8087_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_task_switch_cross_width_smoke.c"
@@ -126,7 +126,7 @@ endif()
 set(project_t344_timing_manifest_sources
     "test/app-nxvm/unit/core/devices/machine_8086_timing_manifest_runner.c"
     "test/app-nxvm/unit/core/devices/machine_80186_timing_manifest_runner.c"
-    "test/app-nxvm/unit/core/devices/core_machine_80286_timing_manifest_runner.c"
+    "test/app-nxvm/unit/core/devices/machine_80286_timing_manifest_runner.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_timing_manifest_runner.c")
 set(project_t344_constructor_sources ${project_t344_inventory}
     ${project_t344_timing_manifest_sources}

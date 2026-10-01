@@ -511,18 +511,18 @@ endif()
 
 # S10 starts the 80286 generated-key runner with real retirement observations.
 # It does not write the final result document until every legal recipe exists.
-add_executable(core-machine-80286-timing-manifest-runner
-    test/app-nxvm/unit/core/devices/core_machine_80286_timing_manifest_runner.c)
-target_link_libraries(core-machine-80286-timing-manifest-runner PRIVATE
+add_executable(machine-80286-timing-manifest-runner
+    test/app-nxvm/unit/core/devices/machine_80286_timing_manifest_runner.c)
+target_link_libraries(machine-80286-timing-manifest-runner PRIVATE
     core-machine)
-target_compile_definitions(core-machine-80286-timing-manifest-runner PRIVATE
+target_compile_definitions(machine-80286-timing-manifest-runner PRIVATE
     PROJECT_TEST_80286_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80286-timing-results.json")
-add_dependencies(core-machine-80286-timing-manifest-runner
+add_dependencies(machine-80286-timing-manifest-runner
     cpu-timing-manifest-catalog)
-target_include_directories(core-machine-80286-timing-manifest-runner PRIVATE
+target_include_directories(machine-80286-timing-manifest-runner PRIVATE
     "${CMAKE_BINARY_DIR}/generated")
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-80286-timing-manifest-runner PRIVATE
+    target_compile_options(machine-80286-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -1072,9 +1072,9 @@ add_executable(machine-protected-iret-smoke
     test/app-nxvm/unit/core/devices/machine_protected_iret_smoke.c)
 target_link_libraries(machine-protected-iret-smoke PRIVATE core-machine)
 
-add_executable(core-machine-call-gate-smoke
-    test/app-nxvm/unit/core/devices/core_machine_call_gate_smoke.c)
-target_link_libraries(core-machine-call-gate-smoke PRIVATE core-machine)
+add_executable(machine-call-gate-smoke
+    test/app-nxvm/unit/core/devices/machine_call_gate_smoke.c)
+target_link_libraries(machine-call-gate-smoke PRIVATE core-machine)
 add_executable(core-machine-call-gate-privilege-entry-smoke
     test/app-nxvm/unit/core/devices/core_machine_call_gate_privilege_entry_board_smoke.c)
 target_link_libraries(core-machine-call-gate-privilege-entry-smoke PRIVATE core-machine)
@@ -2167,7 +2167,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-cpu-profile-gate-smoke
     machine-protected-privilege-board-smoke
     machine-protected-iret-smoke
-    core-machine-call-gate-smoke
+    machine-call-gate-smoke
     core-machine-call-gate-privilege-entry-smoke
     machine-tss-iomap-port-authorization-smoke
     machine-task-switch-cross-width-smoke
@@ -2378,7 +2378,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-instance-smoke
     core-machine-explicit-time-s4-smoke
     machine-80186-timing-manifest-runner
-    core-machine-80286-timing-manifest-runner
+    machine-80286-timing-manifest-runner
     core-machine-80186-decoder-inventory-runner
     core-machine-80286-decoder-inventory-runner
     core-machine-80386-decoder-inventory-runner

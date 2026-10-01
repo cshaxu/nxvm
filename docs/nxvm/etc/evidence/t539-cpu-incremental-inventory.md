@@ -435,8 +435,8 @@ complete receiving map and dual-width verification are recorded in
 
 ### S72: 80286 manifest and call-gate includer, 2 matching files
 
-- `core_machine_80286_timing_manifest_runner.c`
-- `core_machine_call_gate_smoke.c` (80286 timing-runner includer)
+- `machine_80286_timing_manifest_runner.c`
+- `machine_call_gate_smoke.c` (80286 timing-runner includer)
 
 ### S73: 80386 timing corpus, 1 matching file
 
@@ -454,7 +454,7 @@ complete receiving map and dual-width verification are recorded in
 The matching-file inventory is not the entire compile dependency graph. S47
 must also keep the 80286/80386 timing runners building when their included
 16-bit gate/task/call fixtures change; S72 owns the 80286 runner's direct
-`core_machine_call_gate_smoke.c` includer. S52 includes outer-IRET's
+`machine_call_gate_smoke.c` includer. S52 includes outer-IRET's
 atomicity-fixture consumer. S64 includes
 `core_machine_interrupt_return_composition_s4_smoke.c`; S65 includes the
 protected-IRET includer; S67 includes `core_machine_vm86_lgdt_lidt_s5_smoke.c`
