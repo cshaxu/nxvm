@@ -50,7 +50,7 @@ S2 reviewed the full retained adapter surface and recorded each mechanism's
 state owner, current consumers, destination and required regression boundary in
 [`t540-board-adapter-ledger.md`](../etc/architecture/t540-board-adapter-ledger.md).
 It established that generic x86 Core must move to neutral `x86/core` before
-the future independent PC Apps can exist, while `x86/ibmpc` stays limited to
+the future independent PC Apps can exist, while the flat `x86/ibmpc-*` layers stay limited to
 actual IBM-PC wiring.  No source, ABI, asset, INI or executable input changed.
 
 `git diff --check` and `Verify-DocumentationGovernance.ps1 -Product nxvm`

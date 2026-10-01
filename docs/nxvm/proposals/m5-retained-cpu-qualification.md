@@ -14,7 +14,8 @@ route and sole `assets/nxvm/<profile>/` deployment at the current baseline.
 This candidate follows the queued [chip extraction](m5-shared-chip-extraction.md),
 [board integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and
 [App split](m5-independent-pc-apps.md). CPU semantics/tests then belong to
-`src/x86/devices` and `test/x86/devices`, with board coverage owned by the four
+the future `src/x86/chips` and `test/x86/chips` (current canonical paths remain
+`src/x86/devices` and `test/x86/devices` until their explicit rename), with board coverage owned by the four
 Apps. Use their admitted deployment map rather than hard-coding the old paths.
 Neither extraction nor qualification restores runtime CPU/profile/YAML
 selection or treats a successful product boot as CPU completeness proof.

@@ -6,9 +6,11 @@ Use a three-level board design, but create no source directory until a later
 source S proves a concrete shared implementation:
 
 ```text
-x86/ibmpc/common     proven PC wiring/mechanics shared without board policy
-x86/ibmpc/xt         IBM 5160-only board wiring and 8-bit-era mechanisms
-x86/ibmpc/at         proven AT-family wiring, never a model switch container
+x86/chips            independent chip mechanisms (current path: x86/devices)
+x86/core             neutral x86 machine executor and plan transaction
+x86/ibmpc-common     proven PC wiring/mechanics shared without board policy
+x86/ibmpc-xt         IBM 5160-only board wiring and 8-bit-era mechanisms
+x86/ibmpc-at         proven AT-family wiring, never a model switch container
 app composition       one thin machine-specific construction/asset/topology owner
 ```
 
@@ -51,14 +53,14 @@ The current implementation gives a more precise boundary than the broad
 - `profiles/xt/xt_5160_268.c` constructs a one-DMA, single-PIC, 8253,
   XT-PPI-keyboard machine.  It also owns the 4.772727 MHz board input, 360 KiB
   floppy selection, Xebec attachment and XT absent-memory map.  This is a
-  distinct `ibmpc/xt` construction family, not an argument to add flags to an
+  distinct `ibmpc-xt` construction family, not an argument to add flags to an
   AT constructor.
 - `profiles/default_profile/pc_at_profile.c` already contains both Default
   PC/AT and IBM 5170 descriptors, and shares one descriptor-to-topology path.
   That proves useful reuse, but the descriptor chooses CPU/time values, video
   apertures, Port-B refresh behavior, CMOS defaults, HDC personality, FDC
   geometry, firmware roles and route leaves.  The whole file therefore cannot
-  move to `x86/ibmpc/at`: doing so would make Shared own product/profile policy.
+  move to `x86/ibmpc-at`: doing so would make Shared own product/profile policy.
 - `profiles/model40/model40.c` currently begins from
   `vm_profile_ibm_5170_values_create()` before replacing Model-40 values.
   This is an existing implementation shortcut, not proof that Model 40 is an
@@ -78,7 +80,7 @@ The current implementation gives a more precise boundary than the broad
   rather than chip state.  Their potential destination is determined by their
   actual public dependencies and reset order: a module that needs only the
   Core port/transaction contracts and independent chips may become
-  `x86/ibmpc/*`; a module that needs product media, firmware or profile data
+  `x86/ibmpc-*`; a module that needs product media, firmware or profile data
   must remain beneath the product composition boundary.
 - `devices/machine_plan.c` is the unique Core-plan application transaction.
   It currently creates memory mappings and configures display, DMA, RTC, FDC,
@@ -92,9 +94,11 @@ The current implementation gives a more precise boundary than the broad
 The eventual directories are deliberately capability-oriented:
 
 ```text
-src/x86/ibmpc/common/  one demonstrated IBM-PC wiring mechanism
-src/x86/ibmpc/xt/      XT-only PPI/DIP/NMI/refresh and 8-bit board mechanics
-src/x86/ibmpc/at/      demonstrated AT electrical mechanisms only
+src/x86/chips/          independent chips after the explicit rename
+src/x86/core/           neutral x86 machine executor
+src/x86/ibmpc-common/   one demonstrated IBM-PC wiring mechanism
+src/x86/ibmpc-xt/       XT-only PPI/DIP/NMI/refresh and 8-bit board mechanics
+src/x86/ibmpc-at/       demonstrated AT electrical mechanisms only
 src/app-nxvm/profiles/ one composition per selected machine
 ```
 
@@ -120,9 +124,9 @@ That extraction precedes independent App cutover; T540 does not move it.
 2. Extract one minimal, already-identical board mechanism at a time, retaining
    its one owner and one rollback path.  The first source package must not
    introduce a generic board object, callback registry or machine enum.
-3. Extract XT-specific PPI/keyboard/NMI/refresh mechanics to `x86/ibmpc/xt`
+3. Extract XT-specific PPI/keyboard/NMI/refresh mechanics to `x86/ibmpc-xt`
    only after its port, PIT and PIC dependency boundary is explicit.
-4. Extract the smallest directly-proven AT wiring slice to `x86/ibmpc/at`;
+4. Extract the smallest directly-proven AT wiring slice to `x86/ibmpc-at`;
    reconnect 5170 and Default independently.  Model 40 joins only after a
    direct call/lifetime comparison for that exact slice.
 5. Resolve the Model-40-from-5170 values shortcut as an explicit composition
@@ -142,11 +146,11 @@ That extraction precedes independent App cutover; T540 does not move it.
 - `src/app-nxvm/devices/xt_ppi_keyboard.c` is explicitly XT wiring around
   `x86/ppi8255` and `x86/xtkeyboard`.
 - `src/x86/CMakeLists.txt` already builds independent chip targets; no
-  `x86/ibmpc` target currently exists.
+  flat `x86/ibmpc-*` targets currently exist.
 - `test/app-nxvm/unit/core/machine/vm_xt_5160_268_profile_smoke.c`, the
   5170/direct-plan and Default-PC/AT composition smokes, and the Model-40
   D4/FDC/HDC/CMOS smokes already form the product regression boundary.  A
-  later extraction must add a focused `test/x86/ibmpc` mechanism test only
+  later extraction must add a focused flat `test/x86/ibmpc-*` mechanism test only
   when a new public board module exists; it must retain these per-machine
   tests rather than replace them with one generic profile matrix.
 

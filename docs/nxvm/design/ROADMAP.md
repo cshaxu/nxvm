@@ -27,7 +27,8 @@ Retain lawful external firmware composition and Console/debugger interaction.
 ## M5: Fixed Machine Builds And Shared Devices
 
 The next structural target is the three-step [Queue](../states/QUEUE.md):
-independent chips in `x86/devices`, shared PC board mechanisms in `x86/ibmpc`,
+the future neutral `x86/core`, independent chips in `x86/chips` (current path:
+`x86/devices`), and shared PC board mechanisms in the flat `x86/ibmpc-*` components,
 then `app-mypcxt`, `app-mypcat`, `app-mypcdeskpro386` and default-386
 `app-nxvm`. The chip stage is admitted as T539, initially research/design only;
 the board and App stages remain unadmitted candidates. None is a completed migration.

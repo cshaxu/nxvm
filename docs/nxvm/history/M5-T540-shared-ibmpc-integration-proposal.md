@@ -4,13 +4,15 @@
 
 Second ordered migration candidate, unnumbered and not admitted. After
 [independent chips](m5-shared-chip-extraction.md), extract the actual common
-board mechanisms of XT, AT, DeskPro 386 and default PC/AT into `src/x86/ibmpc`.
+board mechanisms of XT, AT, DeskPro 386 and default PC/AT into the flat
+`src/x86/ibmpc-common`, `src/x86/ibmpc-at` and `src/x86/ibmpc-xt` components.
 This is reusable PC assembly, not another chip library or a host executor.
 
 ## Ownership
 
-- `x86/devices` retains sole ownership of each chip's state and behavior.
-- `x86/ibmpc` owns demonstrably shared IBM-PC port routing and signal wiring.
+- `x86/chips` is the future sole ownership location for each chip's state and
+  behavior; present `x86/devices` remains current until its explicit rename.
+- `x86/ibmpc-common` owns demonstrably shared IBM-PC port routing and signal wiring.
   It integrates chips only through their public contracts. The generic x86
   machine executor -- memory, ports, transactions, guest timeline, CPU bus and
   plan application -- is not IBM-PC code; its required neutral receiver is
@@ -47,7 +49,8 @@ board inheritance, universal event bus or new per-machine execution loops.
 
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
-- Common board contract tests live in `test/x86/ibmpc`; specific machine
+- Common board contract tests live with their flat receiver under
+  `test/x86/ibmpc-common`, `test/x86/ibmpc-at` or `test/x86/ibmpc-xt`; specific machine
   composition/firmware tests remain product-local. Units use synthetic owned
   inputs, not external files; integration retains all four real machine sets.
 - Every ledger member has a verified shared implementation or a justified

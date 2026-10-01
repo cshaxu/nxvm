@@ -33,7 +33,7 @@ does not prove complete original chipset documentation or a bootable emulator.
    chipset/device admit a separate bounded implementation task, including
    coupled downstream repairs; no incremental BIOS-compatibility patches.
 3. Compose selected hardware under `src/app-mypc110`, reusing qualified
-   `x86/devices` chips and matching `x86/ibmpc` mechanisms with one guest
+   `x86/core`, `x86/chips` and matching flat `x86/ibmpc-*` mechanisms with one guest
    timeline, media path and display owner. Share only where semantics match;
    do not inherit another machine's board identity or copy its runner.
 4. Qualify the PC110 product through real firmware/media and both host

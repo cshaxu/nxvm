@@ -18,8 +18,8 @@ Later `src/app-mypc110` is the receiver of the separate
 ## Design
 
 Each App owns its entry/configuration/CLI composition, board-specific assembly,
-asset roles and Common Machine binding. Apps consume `x86/devices` and
-`x86/ibmpc`; no App imports another App's headers, source, private state or
+asset roles and Common Machine binding. Apps consume `x86/core`, `x86/chips`
+and the appropriate flat `x86/ibmpc-*` component; no App imports another App's headers, source, private state or
 executable. Common and Lib retain their existing neutral responsibilities.
 
 Do not copy the former whole NXVM product four times. Reuse the existing

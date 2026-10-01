@@ -21,6 +21,7 @@ S2 expands the family decision into a finite adapter ledger.  It distinguishes
 the App-owned generic x86 machine executor from IBM-PC board attachments: the
 former has a required neutral `x86/core` receiver before independent Apps can
 be real; the latter may move one proven mechanism at a time to
-`x86/ibmpc/{common,xt,at}`.  It introduces no source directory, ABI or runtime
+the flat `x86/ibmpc-common`, `x86/ibmpc-at` and `x86/ibmpc-xt` components. It
+introduces no source directory, ABI or runtime
 change.  Its completion record identifies the first safe source batches and
 the profile regressions that remain product-owned.

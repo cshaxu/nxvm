@@ -193,12 +193,13 @@ The owner-approved planning direction has three ordered stages. The first is
 [T539](../proposals/m5-shared-chip-extraction.md), executing staged chip extraction;
 the other two remain [implementation candidates](../states/QUEUE.md):
 
-1. `x86/devices` owns independent chips, including CPU, PIC, PIT and DMA;
+1. `x86/chips` is the target owner of independent chips, including CPU, PIC, PIT and DMA;
    each retains its state and internal timing. It does not own a PC profile,
    host executor, firmware workaround or peer chip's internals. Composition
    connects public memory/I/O cycles, signals and interrupt acknowledgement.
 2. `x86/core` owns the neutral x86 machine executor and plan transaction;
-   `x86/ibmpc` owns the four machines' proven common PC board routing and
+   `x86/ibmpc-common`, `x86/ibmpc-at` and `x86/ibmpc-xt` own the four machines'
+   proven common/family-specific PC board routing and
    wiring. Both use independent chip contracts; product-specific topology and
    asset selection stay in the App. No mirrored device state, product policy or
    second Common lifecycle loop is introduced.

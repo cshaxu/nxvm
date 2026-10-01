@@ -14,9 +14,9 @@ the selected external BYOB assets and adjacent NXVM.ini through the production
 route.
 
 The preceding [three-stage migration](m5-independent-pc-apps.md) changes owners,
-not this task's purpose. Observe shared `x86/devices` CPU contracts through the
-existing public Debug/adapter route. Shared chip/board tests belong to
-`test/x86/{devices,ibmpc}`; specific machine and production-INI tests belong to
+not this task's purpose. Observe shared `x86/chips` CPU contracts through the
+existing public Debug/adapter route. Shared Core/chip/board tests belong to the
+matching flat `test/x86/{core,chips,ibmpc-common,ibmpc-at,ibmpc-xt}` component; specific machine and production-INI tests belong to
 their independent App. Never retain a dependency on removed app-nxvm internals.
 
 ## Batches
