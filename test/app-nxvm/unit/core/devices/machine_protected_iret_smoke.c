@@ -239,5 +239,6 @@ lib_i32 main(void)
         !iret_test_failure(IRET_NEGATIVE_CODE_DPL, VCPUINS_EXCEPT_DF, 0u) ||
         !iret_test_failure(IRET_NEGATIVE_STACK_LIMIT, VCPUINS_EXCEPT_DF, 0u)) return 1;
     printf("M5:T306:S2:SAME-CPL-IRET:OK\n");
+    printf("M5:T539:S65:PROTECTED-IRET:OK\n");
     return 0;
 }

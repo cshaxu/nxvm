@@ -505,26 +505,44 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 
-## S65 Active Packet
+## S66 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S65, Continuation. |
+| Identifier Mode | M5 T539 S66, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the protected-IRET dependency group and its direct includer, preserving real/protected/outer frames, validation and all-or-nothing faults. |
-| Non-goals | S56-S64 accepted task/I/O-map/CLI work; INT entry (S66), VM86 (S67), timing corpus (S68); production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S64 acceptance; `core_machine_protected_iret_smoke.c` and `core_machine_iret_s51_smoke.c`. |
-| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S65 protected-IRET dependency group. |
-| Files And ABI Surface | Allocate both IRET sources and their direct includes before editing; no public ABI change. |
-| Applicable Rules | Preserve real/protected/outer return frames, validation, fault escalation and atomic state. Each original context has one receiver. |
+| Objective | Retire the software-INT entry dependency group and its direct includer, preserving DPL/gate validation, NMI/IRQ priority, masking and fault escalation. |
+| Non-goals | S56-S65 accepted task/I/O-map/CLI/IRET work; VM86 (S67), timing corpus (S68); production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S65 acceptance; `core_machine_interrupt_entry_smoke.c` and `core_machine_software_int_s50_smoke.c`. |
+| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S66 INT entry dependency group. |
+| Files And ABI Surface | Allocate both INT sources and their direct includes before editing; no public ABI change. |
+| Applicable Rules | Preserve software-INT DPL/gate selection, NMI/IRQ priority and masking, fault escalation and atomic state. Each original context has one receiver. |
 | Verification | Exact residual-case ledger; focused receiver; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
-| Expected Markers | A new S65 protected-IRET marker and retained IRET markers. |
+| Expected Markers | A new S66 INT-entry marker and retained INT markers. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Reporting Requirements | Record both IRET sources, all direct includes, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
+| Reporting Requirements | Record both INT sources, all direct includes, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
 | Stop Conditions | Stop if a context requires production/API/Shared change. |
-| Exit Criteria | Each protected-IRET dependency context has one receiver; no retained fixture is orphaned or duplicated; all verification passes. |
+| Exit Criteria | Each INT-entry dependency context has one receiver; no retained fixture is orphaned or duplicated; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S65 includes the protected-IRET direct includer. S66-S67 separately own INT and VM86 dependency groups; S68 owns timing-only consumers. |
+| Similar-Issue Sweep | S66 includes the software-INT direct includer. S67 separately owns VM86 dependency groups; S68 owns timing-only consumers. |
+
+## S65 Acceptance
+
+`machine_protected_iret_smoke.c` is the unique named Core-machine receiver for
+the protected IRET dependency group.  It preserves real/protected/outer IRET
+frame construction, validation and all-or-nothing fault delivery through public
+machine setup.  Its sole direct includer,
+`core_machine_iret_s51_smoke.c`, reuses that receiver rather than duplicating
+the descriptor and frame setup.
+
+Focused x64/x86 receiver and includer runs pass and emit
+`M5:T539:S65:PROTECTED-IRET:OK`.  Complete repository-only unit suites pass
+426/426 on both widths.  T332 lifecycle, T344 registration and historical
+fixture shapes, VM lifecycle, Core CPU/PIC authority, documentation governance
+and `git diff --check` pass on both widths.  This is test/CMake/documentation-
+only work: no production/API, Shared, firmware, asset, INI or EXE input changed,
+so no EXE rebuild is required.  The [receiver map](../etc/evidence/t539-s65-protected-iret-receiver-map.md)
+records the allocation.  S65 is accepted; T539 remains open for S66-S72.
 
 ## S64 Acceptance
 

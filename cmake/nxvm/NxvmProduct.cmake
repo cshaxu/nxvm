@@ -1068,9 +1068,9 @@ add_executable(machine-protected-privilege-board-smoke
     test/app-nxvm/unit/core/devices/machine_protected_privilege_board_smoke.c)
 target_link_libraries(machine-protected-privilege-board-smoke PRIVATE core-machine)
 
-add_executable(core-machine-protected-iret-smoke
-    test/app-nxvm/unit/core/devices/core_machine_protected_iret_smoke.c)
-target_link_libraries(core-machine-protected-iret-smoke PRIVATE core-machine)
+add_executable(machine-protected-iret-smoke
+    test/app-nxvm/unit/core/devices/machine_protected_iret_smoke.c)
+target_link_libraries(machine-protected-iret-smoke PRIVATE core-machine)
 
 add_executable(core-machine-call-gate-smoke
     test/app-nxvm/unit/core/devices/core_machine_call_gate_smoke.c)
@@ -2166,7 +2166,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-segment-selector-smoke
     core-machine-cpu-profile-gate-smoke
     machine-protected-privilege-board-smoke
-    core-machine-protected-iret-smoke
+    machine-protected-iret-smoke
     core-machine-call-gate-smoke
     core-machine-call-gate-privilege-entry-smoke
     machine-tss-iomap-port-authorization-smoke

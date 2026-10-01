@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #define main protected_iret_s2_main
-#include "core_machine_protected_iret_smoke.c"
+#include "machine_protected_iret_smoke.c"
 #undef main
 
 #define main cli_sti_s22_main
