@@ -16,8 +16,8 @@ into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
 is then divided into S83-S100 and S100 is the final acceptance. S48-S88 are
-accepted and S90-S100 remain pending. The next package must be admitted from
-the bounded ledger; S90 is the active package. Earlier
+accepted and S91-S100 remain pending. The next package must be admitted from
+the bounded ledger; S91 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -124,6 +124,38 @@ accepted; T539 remains open for S90-S100.
 | Exit Criteria | Every admitted paging/INVLPG row has one Shared owner, all excluded rows remain once in NXVM, neither width regresses, and full unit suites pass. |
 | Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
 | Similar-Issue Sweep | S90 consumes only CPU-local paging/INVLPG and 80186 gate rows. S91 retains fault/pending-event rows; public Core paging and board IRQ paths remain named NXVM receivers. |
+
+## S90 Acceptance
+
+The 80186 LGDT-gate, paging-control, INVLPG and CR0 mutable-control helpers
+now have one Shared `cpu_execution_paging` receiver. NXVM deletes all seven
+helpers and calls, retaining only debug and named S91 fault/event work.
+Focused x64/x86 receivers, T332, authority, manifest/corpus, documentation
+governance and diff gates pass; detached full units pass **443/443** on x64
+and x86. No production/API, firmware, asset, INI or executable input changed.
+See [S90 evidence](../etc/evidence/t539-s90-execution-paging-receiver.md).
+S90 is accepted; T539 remains open for S91-S100.
+
+## S91 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S91, automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic, bounded, numeric T539 continuation tasks; S91 is the next linear package after accepted S90. |
+| Objective | Move only CPU-owned protected interrupt preparation, UD cache-preservation and pending-event rollback rows from the residual execution-context test. |
+| Non-goals | Public Core paging, PIC IRQ delivery, board transactions, firmware, production APIs, assets, INI, executables and unrelated CPU rows. |
+| Reference Baseline | `d8e3665ec`, accepted S90; the residual source contains debug and S91 fault/event rows only. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Split existing CPU-local static functions by responsibility, reusing the existing CPU bus fixture with no framework, board adapter or public API. |
+| Applicable Rules | NXVM and Shared architecture/coding/execution/documentation rules; one owner per CPU-only behavior and no duplicate fixture path. |
+| Verification | Record allocation; run focused x64/x86 successor and residual tests, complete x64/x86 units, T332, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. Rebuild artifacts only if executable inputs change. |
+| Expected Markers | One `x86-cpu` fault/event receiver, a residual NXVM test containing only debug, and no new fixture/API. |
+| Asset Needs | None; repository-only ownership migration. |
+| Reporting Requirements | Record moved/retained functions, test evidence, static-gate impact and artifact determination. |
+| Stop Conditions | Stop and report if a row requires public Core paging, PIC/board wiring, a new Shared API or a duplicate fixture path. |
+| Exit Criteria | Every admitted fault/event row has one Shared owner, excluded rows remain once in NXVM, neither width regresses, and full unit suites pass. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
+| Similar-Issue Sweep | S91 consumes only artificial-IDT CPU fault/event rows; public IRQ and Core paging paths remain named NXVM receivers. |
 
 ## S86 Acceptance
 
