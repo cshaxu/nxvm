@@ -17,7 +17,7 @@ transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
 is then divided into S83-S100 and S100 is the final acceptance. S48-S92 are
 accepted and S93-S100 remain pending. The next package must be admitted from
-the bounded ledger. Earlier
+the bounded ledger; S93 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -181,6 +181,27 @@ pass **447/447** on x64 and x86. This is test/CMake/documentation-only work:
 no production/API, firmware, asset, INI or EXE input changed. See the
 [S92 evidence](../etc/evidence/t539-s92-protected-receivers.md). S92 is
 accepted; T539 remains open for S93-S100.
+
+## S93 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S93, automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic, bounded, numeric T539 continuation tasks; S93 follows accepted S92. |
+| Objective | Move the three CPU-only 16/32-bit task-switch receivers and their single CPU fixture to Shared. |
+| Non-goals | Cross-width task state, public Core paging, PIC/IRQ delivery, TSS I/O authorization, board construction, production APIs, firmware, assets, INI and executables. |
+| Reference Baseline | `54d9e783d`, accepted S92. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Move only `cpu_task_switch16_smoke.c`, `cpu_task_switch32_decode_smoke.c`, `cpu_task_switch32_state_smoke.c` and `cpu_task_switch16_fixture.h` to `test/x86/devices/cpu`; remove App targets; make the one retained PIC board receiver include the Shared fixture. No production or public API change. |
+| Applicable Rules | NXVM and Shared architecture/coding/execution/documentation rules; CPU tests own CPU state semantics while public Core paging and IRQ board tests stay NXVM. |
+| Verification | Focused x64/x86 receivers, complete x64/x86 units, T317/T332, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. |
+| Expected Markers | Three Shared CPU task-state receivers, one Shared fixture, no duplicate App target or fixture, and unchanged named board receivers. |
+| Asset Needs | None; repository-only test ownership migration. |
+| Reporting Requirements | Record source/fixture allocation, retained board paths, test evidence and artifact determination. |
+| Stop Conditions | Stop if a candidate needs public machine, PIC/IRQ, physical paging, a new Shared API or a duplicate fixture. |
+| Exit Criteria | Each admitted CPU-only receiver has one Shared owner; all excluded board paths remain once in NXVM; both full unit suites pass. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
+| Similar-Issue Sweep | S93 owns only CPU-only 16/32-bit task-switch state. Cross-width, paging, PIC/IRQ and TSS I/O board paths remain named NXVM receivers. |
 
 ## S86 Acceptance
 
