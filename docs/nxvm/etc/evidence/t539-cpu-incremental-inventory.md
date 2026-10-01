@@ -425,8 +425,8 @@ complete receiving map and dual-width verification are recorded in
 
 ### S70: 80186 timing corpus, 2 matching files
 
-- `core_machine_80186_instruction_timing_ledger_smoke.c`
-- `core_machine_80186_timing_manifest_runner.c`
+- `machine_80186_instruction_timing_ledger_smoke.c`
+- `machine_80186_timing_manifest_runner.c`
 
 ### S71: 80286 ledger and protected I/O, 2 matching files
 

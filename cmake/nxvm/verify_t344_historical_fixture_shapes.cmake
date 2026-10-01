@@ -55,7 +55,7 @@ set(project_t344_retained_sources
     "test/app-nxvm/unit/core/devices/machine_instruction_timing_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_instruction_timing_ledger_smoke.c"
     "test/app-nxvm/unit/core/devices/machine_8086_instruction_timing_ledger_smoke.c"
-    "test/app-nxvm/unit/core/devices/core_machine_80186_instruction_timing_ledger_smoke.c"
+    "test/app-nxvm/unit/core/devices/machine_80186_instruction_timing_ledger_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80286_instruction_timing_ledger_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_protected_io_timing_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_legacy_lock_s1_smoke.c"
@@ -125,7 +125,7 @@ endif()
 # cannot hide behind the historical count.
 set(project_t344_timing_manifest_sources
     "test/app-nxvm/unit/core/devices/machine_8086_timing_manifest_runner.c"
-    "test/app-nxvm/unit/core/devices/core_machine_80186_timing_manifest_runner.c"
+    "test/app-nxvm/unit/core/devices/machine_80186_timing_manifest_runner.c"
     "test/app-nxvm/unit/core/devices/core_machine_80286_timing_manifest_runner.c"
     "test/app-nxvm/unit/core/devices/core_machine_80386_timing_manifest_runner.c")
 set(project_t344_constructor_sources ${project_t344_inventory}

@@ -482,30 +482,30 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-80186-instruction-timing-ledger-smoke
-    test/app-nxvm/unit/core/devices/core_machine_80186_instruction_timing_ledger_smoke.c)
-target_link_libraries(core-machine-80186-instruction-timing-ledger-smoke PRIVATE
+add_executable(machine-80186-instruction-timing-ledger-smoke
+    test/app-nxvm/unit/core/devices/machine_80186_instruction_timing_ledger_smoke.c)
+target_link_libraries(machine-80186-instruction-timing-ledger-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-80186-instruction-timing-ledger-smoke PRIVATE
+    target_compile_options(machine-80186-instruction-timing-ledger-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 # This is intentionally not a unit target yet: it records only the
 # real I186 recipes currently migrated to the manifest-result mechanism.
-add_executable(core-machine-80186-timing-manifest-runner
-    test/app-nxvm/unit/core/devices/core_machine_80186_timing_manifest_runner.c)
-target_link_libraries(core-machine-80186-timing-manifest-runner PRIVATE
+add_executable(machine-80186-timing-manifest-runner
+    test/app-nxvm/unit/core/devices/machine_80186_timing_manifest_runner.c)
+target_link_libraries(machine-80186-timing-manifest-runner PRIVATE
     core-machine)
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/test-results")
-target_compile_definitions(core-machine-80186-timing-manifest-runner PRIVATE
+target_compile_definitions(machine-80186-timing-manifest-runner PRIVATE
     PROJECT_TEST_80186_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80186-timing-results.json")
-add_dependencies(core-machine-80186-timing-manifest-runner
+add_dependencies(machine-80186-timing-manifest-runner
     cpu-timing-manifest-catalog)
-target_include_directories(core-machine-80186-timing-manifest-runner PRIVATE
+target_include_directories(machine-80186-timing-manifest-runner PRIVATE
     "${CMAKE_BINARY_DIR}/generated")
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-80186-timing-manifest-runner PRIVATE
+    target_compile_options(machine-80186-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -2029,7 +2029,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-8086-instruction-timing-ledger-smoke
     machine-8086-timing-manifest-runner
     machine-8088-timing-manifest-runner
-    core-machine-80186-instruction-timing-ledger-smoke
+    machine-80186-instruction-timing-ledger-smoke
     machine-legacy-timing-normalization-s2-smoke
     core-machine-80286-instruction-timing-ledger-smoke
     core-machine-80386-protected-io-timing-smoke
@@ -2377,7 +2377,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     vm-app-ini-smoke
     core-machine-instance-smoke
     core-machine-explicit-time-s4-smoke
-    core-machine-80186-timing-manifest-runner
+    machine-80186-timing-manifest-runner
     core-machine-80286-timing-manifest-runner
     core-machine-80186-decoder-inventory-runner
     core-machine-80286-decoder-inventory-runner
