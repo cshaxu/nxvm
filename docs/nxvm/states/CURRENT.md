@@ -15,13 +15,29 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S98 and S98 is the final acceptance. S48-S85 are
-accepted and S86-S98 remain pending. The next package must be admitted from
+is then divided into S83-S98 and S98 is the final acceptance. S48-S86 are
+accepted and S87-S98 remain pending. The next package must be admitted from
 the bounded ledger. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
+
+## S86 Acceptance
+
+The 257-line CPU-only debug-state receiver—MOV-DR, debug exceptions and data
+breakpoints—now has one Shared `cpu_debug_state` owner using the established
+instruction fixture. Its NXVM source and target are removed;
+`machine_debug_state_board_smoke` remains the named public-board receiver.
+T332 now maps the debug receiver through the canonical `devices/cpu/` entry.
+
+Focused successors and T332 pass on x64 and x86. Both current full
+repository-only unit logs contain 439 passing tests and zero failed-test
+records. CPU/PIC authority, Shared manifest/corpus, documentation governance
+and diff checks pass. This is test/CMake/documentation-only work: no
+production/API, firmware, asset, INI or EXE input changed, so no executable
+rebuild is required. See the [S86 evidence](../etc/evidence/t539-s86-debug-state-receiver.md).
+S86 is accepted; T539 remains open for S87-S98.
 
 ## S85 Acceptance
 
