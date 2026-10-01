@@ -15,9 +15,8 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S100 and S100 is the final acceptance. S48-S94 are
-accepted and S96-S100 remain pending. The next package must be admitted from
-the bounded ledger. Earlier
+is then divided into S83-S100 and S100 is the final acceptance. S48-S95 are
+accepted and S97-S100 remain pending. S96 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -227,6 +226,23 @@ T317, CPU/PIC authority, Shared manifest/corpus and documentation governance
 pass. Detached full unit suites pass **460/460** on x64 and x86. See the
 [S95 evidence](../etc/evidence/t539-s95-operand-prefix-receivers.md). S95 is
 accepted; T539 remains open for S96-S100.
+
+## S96 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S96, automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic, bounded, strictly linear numeric T539 continuation tasks; S96 follows accepted S95. |
+| Objective | Move the direct CPU-only legacy-LOCK and immediate-IMUL encoding receivers to the Shared CPU corpus. |
+| Non-goals | Core-machine port/IOPL LOCK wiring, timing/manifest receivers, public APIs, production source, firmware, assets, INI and executables. |
+| Reference Baseline | `24828f9c2`, accepted S95. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Move only `cpu_legacy_lock_s1_smoke.c` and `cpu_imul_immediate_s56_smoke.c` to `test/x86/devices/cpu`, reusing the existing Shared instruction fixture. Remove only their NXVM targets and registrations. |
+| Applicable Rules | NXVM and Shared architecture/coding/execution/documentation rules; direct `x86-cpu` tests own CPU encoding and exception semantics, while Core-machine tests own port/IOPL board routes. |
+| Verification | Focused x64/x86 Shared and retained board tests, full x64/x86 units, relevant T317/T332/static gates, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. |
+| Exit Criteria | Each admitted receiver has one Shared owner, excluded Core-machine paths remain once in NXVM, and both full unit suites pass. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
+| Similar-Issue Sweep | S96 consumes every direct `x86-cpu` receiver in this LOCK/immediate-IMUL family; no blanket LOCK compatibility path or board-route copy is introduced. |
 
 ## S86 Acceptance
 
