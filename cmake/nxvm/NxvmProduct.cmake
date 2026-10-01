@@ -630,18 +630,10 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 add_executable(core-machine-setcc-smoke test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c)
 target_link_libraries(core-machine-setcc-smoke PRIVATE core-machine)
-add_executable(cpu-setcc-smoke test/app-nxvm/unit/core/devices/cpu_setcc_smoke.c)
-target_link_libraries(cpu-setcc-smoke PRIVATE x86-cpu)
 add_executable(core-machine-movx-smoke test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c)
 target_link_libraries(core-machine-movx-smoke PRIVATE core-machine)
-add_executable(cpu-movx-smoke test/app-nxvm/unit/core/devices/cpu_movx_smoke.c)
-target_link_libraries(cpu-movx-smoke PRIVATE x86-cpu)
-add_executable(cpu-lea-smoke test/app-nxvm/unit/core/devices/cpu_lea_smoke.c)
-target_link_libraries(cpu-lea-smoke PRIVATE x86-cpu)
 add_executable(core-machine-bit-test-smoke test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c)
 target_link_libraries(core-machine-bit-test-smoke PRIVATE core-machine)
-add_executable(cpu-bit-test-smoke test/app-nxvm/unit/core/devices/cpu_bit_test_smoke.c)
-target_link_libraries(cpu-bit-test-smoke PRIVATE x86-cpu)
 add_executable(core-machine-inc-dec-first-group-board-smoke
     test/app-nxvm/unit/core/devices/core_machine_inc_dec_first_group_board_smoke.c)
 target_link_libraries(core-machine-inc-dec-first-group-board-smoke PRIVATE core-machine)
@@ -719,8 +711,6 @@ add_executable(core-machine-xchg-smoke test/app-nxvm/unit/core/devices/core_mach
 target_link_libraries(core-machine-xchg-smoke PRIVATE core-machine)
 add_executable(core-machine-sign-extend-smoke test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c)
 target_link_libraries(core-machine-sign-extend-smoke PRIVATE core-machine)
-add_executable(cpu-sign-extend-smoke test/app-nxvm/unit/core/devices/cpu_sign_extend_smoke.c)
-target_link_libraries(cpu-sign-extend-smoke PRIVATE x86-cpu)
 add_executable(core-machine-moffs-smoke test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c)
 target_link_libraries(core-machine-moffs-smoke PRIVATE core-machine)
 add_executable(core-machine-gpr-mov-smoke test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c)
@@ -762,14 +752,8 @@ add_executable(core-machine-legacy-sreg-stack-smoke
 target_link_libraries(core-machine-legacy-sreg-stack-smoke PRIVATE core-machine)
 add_executable(core-machine-double-shift-smoke test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c)
 target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
-add_executable(cpu-double-shift-smoke test/app-nxvm/unit/core/devices/cpu_double_shift_smoke.c)
-target_link_libraries(cpu-double-shift-smoke PRIVATE x86-cpu)
 add_executable(core-machine-bit-scan-smoke test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c)
 target_link_libraries(core-machine-bit-scan-smoke PRIVATE core-machine)
-add_executable(cpu-bit-scan-smoke test/app-nxvm/unit/core/devices/cpu_bit_scan_smoke.c)
-target_link_libraries(cpu-bit-scan-smoke PRIVATE x86-cpu)
-add_executable(cpu-imul2-smoke test/app-nxvm/unit/core/devices/cpu_imul2_smoke.c)
-target_link_libraries(cpu-imul2-smoke PRIVATE x86-cpu)
 add_executable(core-machine-imul2-smoke test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c)
 target_link_libraries(core-machine-imul2-smoke PRIVATE core-machine)
 add_executable(core-machine-imul-immediate-s56-smoke
@@ -1882,17 +1866,17 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-legacy-lock-s1-smoke
     cpu-legacy-lock-s1-smoke
     core-machine-setcc-smoke
-    cpu-setcc-smoke
+    x86-test-cpu_setcc
     core-machine-movx-smoke
-    cpu-movx-smoke
-    cpu-lea-smoke
+    x86-test-cpu_movx
+    x86-test-cpu_lea
     cpu-prefix-attributes-s64-smoke
     cpu-operand-address-smoke
-    cpu-bit-scan-smoke
-    cpu-double-shift-smoke
-    cpu-imul2-smoke
+    x86-test-cpu_bit_scan
+    x86-test-cpu_double_shift
+    x86-test-cpu_imul2
     core-machine-bit-test-smoke
-    cpu-bit-test-smoke
+    x86-test-cpu_bit_test
     core-machine-inc-dec-first-group-board-smoke
     core-machine-inc-dec-second-group-board-smoke
     core-machine-inc-dec-final-group-board-smoke
@@ -1925,7 +1909,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-lea-smoke
     core-machine-xchg-smoke
     core-machine-sign-extend-smoke
-    cpu-sign-extend-smoke
+    x86-test-cpu_sign_extend
     core-machine-moffs-smoke
     core-machine-gpr-mov-smoke
     core-machine-sreg-mov-smoke
@@ -2109,7 +2093,7 @@ list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
 set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-80286-protected-mode-smoke
     x86-test-cpu_arpl
-    cpu-bit-test-smoke
+    x86-test-cpu_bit_test
     x86-test-cpu_bound
     x86-test-cpu_dttr_s61
     x86-test-cpu_lgdt_lidt
@@ -2129,7 +2113,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_verr_verw
     x86-test-cpu_debug_state
     machine-debug-state-board-smoke
-    cpu-double-shift-smoke
+    x86-test-cpu_double_shift
     x86-test-cpu_enter_leave
     machine-fpu-escape-smoke
     machine-fpu-interface-s65-smoke
@@ -2137,14 +2121,14 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_gpr_mov
     x86-test-cpu_gpr_push_pop
     core-machine-hlt-s49-smoke
-    cpu-imul2-smoke
+    x86-test-cpu_imul2
     cpu-imul-immediate-s56-smoke
     x86-test-cpu_inc_dec_first_group
     x86-test-cpu_inc_dec_second_group
     x86-test-cpu_inc_dec_final_group
     x86-test-cpu_outer_return
     core-machine-iret-s51-smoke
-    cpu-lea-smoke
+    x86-test-cpu_lea
     cpu-legacy-lock-s1-smoke
     x86-test-cpu_legacy_alu_s2
     x86-test-cpu_legacy_sreg_stack
@@ -2170,9 +2154,9 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_scas
     x86-test-cpu_segment_selector
     cpu-prefix-attributes-s64-smoke
-    cpu-bit-scan-smoke
-    cpu-setcc-smoke
-    cpu-sign-extend-smoke
+    x86-test-cpu_bit_scan
+    x86-test-cpu_setcc
+    x86-test-cpu_sign_extend
     core-machine-software-int-s50-smoke
     x86-test-cpu_sreg_mov
     x86-test-cpu_stos
