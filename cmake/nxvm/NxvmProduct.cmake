@@ -717,12 +717,6 @@ add_executable(core-machine-gpr-mov-smoke test/app-nxvm/unit/core/devices/core_m
 target_link_libraries(core-machine-gpr-mov-smoke PRIVATE core-machine)
 add_executable(core-machine-sreg-mov-smoke test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c)
 target_link_libraries(core-machine-sreg-mov-smoke PRIVATE core-machine)
-add_executable(cpu-prefix-attributes-s64-smoke
-    test/app-nxvm/unit/core/devices/cpu_prefix_attributes_s64_smoke.c)
-target_link_libraries(cpu-prefix-attributes-s64-smoke PRIVATE x86-cpu)
-add_executable(cpu-operand-address-smoke
-    test/app-nxvm/unit/core/devices/cpu_operand_address_smoke.c)
-target_link_libraries(cpu-operand-address-smoke PRIVATE x86-cpu)
 add_executable(machine-movs-board-smoke
     test/app-nxvm/unit/core/devices/machine_movs_board_smoke.c)
 target_link_libraries(machine-movs-board-smoke PRIVATE core-machine)
@@ -1870,8 +1864,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-movx-smoke
     x86-test-cpu_movx
     x86-test-cpu_lea
-    cpu-prefix-attributes-s64-smoke
-    cpu-operand-address-smoke
+    x86-test-cpu_prefix_attributes_s64
+    x86-test-cpu_operand_address
     x86-test-cpu_bit_scan
     x86-test-cpu_double_shift
     x86-test-cpu_imul2
@@ -2153,7 +2147,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_rotate
     x86-test-cpu_scas
     x86-test-cpu_segment_selector
-    cpu-prefix-attributes-s64-smoke
+    x86-test-cpu_prefix_attributes_s64
     x86-test-cpu_bit_scan
     x86-test-cpu_setcc
     x86-test-cpu_sign_extend
