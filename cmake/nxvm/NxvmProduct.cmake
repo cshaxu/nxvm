@@ -751,11 +751,10 @@ target_link_libraries(core-machine-imul-immediate-s56-smoke PRIVATE core-machine
 add_executable(machine-debug-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c)
 target_link_libraries(machine-debug-state-board-smoke PRIVATE core-machine)
-add_executable(cpu-idt-privilege-entry-smoke
-    test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c)
-target_link_libraries(cpu-idt-privilege-entry-smoke PRIVATE x86-cpu)
 add_executable(machine-idt-privilege-pic-board-smoke
     test/app-nxvm/unit/core/devices/machine_idt_privilege_pic_board_smoke.c)
+target_include_directories(machine-idt-privilege-pic-board-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(machine-idt-privilege-pic-board-smoke PRIVATE core-machine-executor)
 add_executable(machine-control-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_control_state_board_smoke.c)
@@ -1001,7 +1000,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "x86-test-cpu_control_transfer_branch|devices/cpu/cpu_control_transfer_branch_smoke.c"
     "x86-test-cpu_control_transfer_near|devices/cpu/cpu_control_transfer_near_smoke.c"
     "x86-test-cpu_control_transfer_far|devices/cpu/cpu_control_transfer_far_smoke.c"
-    "cpu-idt-privilege-entry-smoke|test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
+    "x86-test-cpu_idt_privilege_entry|devices/cpu/cpu_idt_privilege_entry_smoke.c"
     "x86-test-cpu_protected_far|devices/cpu/cpu_protected_far_smoke.c"
     "x86-test-cpu_protected_data_access|devices/cpu/cpu_protected_data_access_smoke.c"
     "x86-test-cpu_debug_state|devices/cpu/cpu_debug_state_smoke.c"
@@ -1906,7 +1905,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     x86-test-cpu_control_transfer_branch
     x86-test-cpu_control_transfer_near
     x86-test-cpu_control_transfer_far
-    cpu-idt-privilege-entry-smoke
+    x86-test-cpu_idt_privilege_entry
     machine-idt-privilege-pic-board-smoke
     machine-control-state-board-smoke
     x86-test-cpu_protected_far
