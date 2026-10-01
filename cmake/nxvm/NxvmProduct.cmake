@@ -725,12 +725,6 @@ add_executable(core-machine-lea-smoke test/app-nxvm/unit/core/devices/core_machi
 target_link_libraries(core-machine-lea-smoke PRIVATE core-machine)
 add_executable(core-machine-xchg-smoke test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c)
 target_link_libraries(core-machine-xchg-smoke PRIVATE core-machine)
-add_executable(cpu-gpr-push-pop-smoke test/app-nxvm/unit/core/devices/cpu_gpr_push_pop_smoke.c)
-target_link_libraries(cpu-gpr-push-pop-smoke PRIVATE x86-cpu)
-add_executable(cpu-push-immediate-smoke test/app-nxvm/unit/core/devices/cpu_push_immediate_smoke.c)
-target_link_libraries(cpu-push-immediate-smoke PRIVATE x86-cpu)
-add_executable(cpu-pusha-popa-smoke test/app-nxvm/unit/core/devices/cpu_pusha_popa_smoke.c)
-target_link_libraries(cpu-pusha-popa-smoke PRIVATE x86-cpu)
 add_executable(core-machine-sign-extend-smoke test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c)
 target_link_libraries(core-machine-sign-extend-smoke PRIVATE core-machine)
 add_executable(cpu-sign-extend-smoke test/app-nxvm/unit/core/devices/cpu_sign_extend_smoke.c)
@@ -791,8 +785,6 @@ target_link_libraries(core-machine-pusha-popa-smoke PRIVATE core-machine)
 add_executable(core-machine-enter-leave-smoke
     test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c)
 target_link_libraries(core-machine-enter-leave-smoke PRIVATE core-machine)
-add_executable(cpu-enter-leave-smoke test/app-nxvm/unit/core/devices/cpu_enter_leave_smoke.c)
-target_link_libraries(cpu-enter-leave-smoke PRIVATE x86-cpu)
 add_executable(core-machine-gpr-push-pop-smoke
     test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c)
 target_link_libraries(core-machine-gpr-push-pop-smoke PRIVATE core-machine)
@@ -1984,10 +1976,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     cpu-movx-smoke
     cpu-lea-smoke
     cpu-moffs-smoke
-    cpu-gpr-push-pop-smoke
-    cpu-push-immediate-smoke
-    cpu-pusha-popa-smoke
-    cpu-enter-leave-smoke
     cpu-fs-gs-stack-smoke
     cpu-legacy-sreg-stack-smoke
     cpu-les-lds-smoke
@@ -2244,12 +2232,12 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-debug-state-smoke
     machine-debug-state-board-smoke
     cpu-double-shift-smoke
-    cpu-enter-leave-smoke
+    x86-test-cpu_enter_leave
     machine-fpu-escape-smoke
     machine-fpu-interface-s65-smoke
     cpu-fs-gs-stack-smoke
     x86-test-cpu_gpr_mov
-    cpu-gpr-push-pop-smoke
+    x86-test-cpu_gpr_push_pop
     core-machine-hlt-s49-smoke
     cpu-imul2-smoke
     cpu-imul-immediate-s56-smoke
@@ -2275,9 +2263,9 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-protected-data-access-smoke
     cpu-protected-far-smoke
     core-machine-protected-ud-delivery-s1-smoke
-    cpu-pusha-popa-smoke
+    x86-test-cpu_pusha_popa
     x86-test-cpu_pushf_popf
-    cpu-push-immediate-smoke
+    x86-test-cpu_push_immediate
     core-machine-real-mode-corpus-smoke
     core-machine-real-ud-delivery-s1-smoke
     x86-test-cpu_rotate
