@@ -375,60 +375,60 @@ add_executable(core-machine-real-mode-tick-smoke
     test/app-nxvm/unit/core/devices/core_machine_real_mode_tick_smoke.c)
 target_link_libraries(core-machine-real-mode-tick-smoke PRIVATE core-machine)
 
-add_executable(core-machine-instruction-timing-smoke
-    test/app-nxvm/unit/core/devices/core_machine_instruction_timing_smoke.c)
-target_link_libraries(core-machine-instruction-timing-smoke PRIVATE core-machine)
+add_executable(machine-instruction-timing-smoke
+    test/app-nxvm/unit/core/devices/machine_instruction_timing_smoke.c)
+target_link_libraries(machine-instruction-timing-smoke PRIVATE core-machine)
 
 add_executable(core-machine-cpu-timing-preview-smoke
     test/app-nxvm/unit/core/devices/core_machine_cpu_timing_preview_smoke.c)
 target_link_libraries(core-machine-cpu-timing-preview-smoke PRIVATE core-machine)
 
-add_executable(core-machine-instruction-timing-ledger-smoke
-    test/app-nxvm/unit/core/devices/core_machine_instruction_timing_ledger_smoke.c)
-target_link_libraries(core-machine-instruction-timing-ledger-smoke PRIVATE
+add_executable(machine-instruction-timing-ledger-smoke
+    test/app-nxvm/unit/core/devices/machine_instruction_timing_ledger_smoke.c)
+target_link_libraries(machine-instruction-timing-ledger-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-instruction-timing-ledger-smoke PRIVATE
+    target_compile_options(machine-instruction-timing-ledger-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-t359-s2-timing-smoke
-    test/app-nxvm/unit/core/devices/core_machine_t359_s2_timing_smoke.c)
-target_link_libraries(core-machine-t359-s2-timing-smoke PRIVATE core-machine)
+add_executable(machine-t359-s2-timing-smoke
+    test/app-nxvm/unit/core/devices/machine_t359_s2_timing_smoke.c)
+target_link_libraries(machine-t359-s2-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-t359-s2-timing-smoke PRIVATE
+    target_compile_options(machine-t359-s2-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-t359-s3-timing-smoke
-    test/app-nxvm/unit/core/devices/core_machine_t359_s3_timing_smoke.c)
-target_link_libraries(core-machine-t359-s3-timing-smoke PRIVATE core-machine)
+add_executable(machine-t359-s3-timing-smoke
+    test/app-nxvm/unit/core/devices/machine_t359_s3_timing_smoke.c)
+target_link_libraries(machine-t359-s3-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-t359-s3-timing-smoke PRIVATE
+    target_compile_options(machine-t359-s3-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-t359-s4-timing-smoke
-    test/app-nxvm/unit/core/devices/core_machine_t359_s4_timing_smoke.c)
-target_link_libraries(core-machine-t359-s4-timing-smoke PRIVATE core-machine)
+add_executable(machine-t359-s4-timing-smoke
+    test/app-nxvm/unit/core/devices/machine_t359_s4_timing_smoke.c)
+target_link_libraries(machine-t359-s4-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-t359-s4-timing-smoke PRIVATE
+    target_compile_options(machine-t359-s4-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-t359-s5-timing-smoke
-    test/app-nxvm/unit/core/devices/core_machine_t359_s5_timing_smoke.c)
-target_link_libraries(core-machine-t359-s5-timing-smoke PRIVATE core-machine)
+add_executable(machine-t359-s5-timing-smoke
+    test/app-nxvm/unit/core/devices/machine_t359_s5_timing_smoke.c)
+target_link_libraries(machine-t359-s5-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-t359-s5-timing-smoke PRIVATE
+    target_compile_options(machine-t359-s5-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-t359-s6-timing-smoke
-    test/app-nxvm/unit/core/devices/core_machine_t359_s6_timing_smoke.c)
-target_link_libraries(core-machine-t359-s6-timing-smoke PRIVATE core-machine)
+add_executable(machine-t359-s6-timing-smoke
+    test/app-nxvm/unit/core/devices/machine_t359_s6_timing_smoke.c)
+target_link_libraries(machine-t359-s6-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-t359-s6-timing-smoke PRIVATE
+    target_compile_options(machine-t359-s6-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -576,12 +576,12 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-legacy-timing-normalization-s2-smoke
-    test/app-nxvm/unit/core/devices/core_machine_legacy_timing_normalization_s2_smoke.c)
-target_link_libraries(core-machine-legacy-timing-normalization-s2-smoke PRIVATE
+add_executable(machine-legacy-timing-normalization-s2-smoke
+    test/app-nxvm/unit/core/devices/machine_legacy_timing_normalization_s2_smoke.c)
+target_link_libraries(machine-legacy-timing-normalization-s2-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-legacy-timing-normalization-s2-smoke PRIVATE
+    target_compile_options(machine-legacy-timing-normalization-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -1113,7 +1113,7 @@ endif()
 # owners against the fixture adapter so their retained assertions observe the
 # latter only after the zero-retirement delivery boundary.
 foreach(target IN ITEMS
-    core-machine-t359-s4-timing-smoke
+    machine-t359-s4-timing-smoke
     machine-interrupt-entry-smoke
     machine-vm86-delivery-smoke
     machine-protected-privilege-board-smoke
@@ -2018,19 +2018,19 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-planar-parity-nmi-s3-smoke
     core-machine-input-display-s5-smoke
     core-machine-real-mode-tick-smoke
-    core-machine-instruction-timing-smoke
+    machine-instruction-timing-smoke
     core-machine-cpu-timing-preview-smoke
-    core-machine-instruction-timing-ledger-smoke
-    core-machine-t359-s2-timing-smoke
-    core-machine-t359-s3-timing-smoke
-    core-machine-t359-s4-timing-smoke
-    core-machine-t359-s5-timing-smoke
-    core-machine-t359-s6-timing-smoke
+    machine-instruction-timing-ledger-smoke
+    machine-t359-s2-timing-smoke
+    machine-t359-s3-timing-smoke
+    machine-t359-s4-timing-smoke
+    machine-t359-s5-timing-smoke
+    machine-t359-s6-timing-smoke
     core-machine-8086-instruction-timing-ledger-smoke
     core-machine-8086-timing-manifest-runner
     core-machine-8088-timing-manifest-runner
     core-machine-80186-instruction-timing-ledger-smoke
-    core-machine-legacy-timing-normalization-s2-smoke
+    machine-legacy-timing-normalization-s2-smoke
     core-machine-80286-instruction-timing-ledger-smoke
     core-machine-80386-protected-io-timing-smoke
     core-machine-real-mode-corpus-smoke

@@ -407,27 +407,42 @@ complete receiving map and dual-width verification are recorded in
 - `core_machine_vm86_delivery_smoke.c`
 - `core_machine_vm86_iret_smoke.c`
 
-### S68: 16 matching files
+### S68: common timing baseline, 8 matching files
 
-- `core_machine_call_gate_smoke.c` (80286 timing-runner includer)
-- `core_machine_80186_instruction_timing_ledger_smoke.c`
-- `core_machine_80186_timing_manifest_runner.c`
-- `core_machine_80286_instruction_timing_ledger_smoke.c`
-- `core_machine_80286_timing_manifest_runner.c`
-- `core_machine_80386_protected_io_timing_smoke.c`
-- `core_machine_80386_timing_manifest_runner.c`
+- `machine_instruction_timing_ledger_smoke.c`
+- `machine_instruction_timing_smoke.c`
+- `machine_legacy_timing_normalization_s2_smoke.c`
+- `machine_t359_s2_timing_smoke.c`
+- `machine_t359_s3_timing_smoke.c`
+- `machine_t359_s4_timing_smoke.c`
+- `machine_t359_s5_timing_smoke.c`
+- `machine_t359_s6_timing_smoke.c`
+
+### S69: 8086 timing corpus, 2 matching files
+
 - `core_machine_8086_instruction_timing_ledger_smoke.c`
 - `core_machine_8086_timing_manifest_runner.c`
-- `core_machine_instruction_timing_ledger_smoke.c`
-- `core_machine_instruction_timing_smoke.c`
-- `core_machine_legacy_timing_normalization_s2_smoke.c`
-- `core_machine_t359_s2_timing_smoke.c`
-- `core_machine_t359_s3_timing_smoke.c`
-- `core_machine_t359_s4_timing_smoke.c`
-- `core_machine_t359_s5_timing_smoke.c`
-- `core_machine_t359_s6_timing_smoke.c`
 
-### S69: 4 matching files
+### S70: 80186 timing corpus, 2 matching files
+
+- `core_machine_80186_instruction_timing_ledger_smoke.c`
+- `core_machine_80186_timing_manifest_runner.c`
+
+### S71: 80286 ledger and protected I/O, 2 matching files
+
+- `core_machine_80286_instruction_timing_ledger_smoke.c`
+- `core_machine_80386_protected_io_timing_smoke.c`
+
+### S72: 80286 manifest and call-gate includer, 2 matching files
+
+- `core_machine_80286_timing_manifest_runner.c`
+- `core_machine_call_gate_smoke.c` (80286 timing-runner includer)
+
+### S73: 80386 timing corpus, 1 matching file
+
+- `core_machine_80386_timing_manifest_runner.c`
+
+### S74: remaining-consumer sweep, 4 matching files
 
 - `core_machine_fpu_interface_s65_smoke.c`
 - `cpu_profile_gate_smoke.c`
@@ -438,9 +453,9 @@ complete receiving map and dual-width verification are recorded in
 
 The matching-file inventory is not the entire compile dependency graph. S47
 must also keep the 80286/80386 timing runners building when their included
-16-bit gate/task/call fixtures change; S63 owns their subsequent timing-corpus
-migration, including the 80286 runner's direct `core_machine_call_gate_smoke.c`
-includer. S52 includes outer-IRET's atomicity-fixture consumer. S64 includes
+16-bit gate/task/call fixtures change; S72 owns the 80286 runner's direct
+`core_machine_call_gate_smoke.c` includer. S52 includes outer-IRET's
+atomicity-fixture consumer. S64 includes
 `core_machine_interrupt_return_composition_s4_smoke.c`; S65 includes the
 protected-IRET includer; S67 includes `core_machine_vm86_lgdt_lidt_s5_smoke.c`
 and hardware delivery, which inherit private setup through included sources.

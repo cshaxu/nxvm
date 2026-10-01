@@ -33,6 +33,13 @@ independent source boundaries. Before implementation, split the unadmitted
 S40 row into seven instruction-family packages, S40-S46. Formerly planned
 S41-S48 become S47-S54. No accepted S18-S39 identifier changes.
 
+At S68 intake, the listed timing corpus contains seventeen files, not sixteen,
+totalling 20,417 lines. It is divided into bounded numeric packages: common
+baseline/T359 normalization (S68), 8086 (S69), 80186 (S70), 80286 ledger and
+protected I/O (S71), 80286 manifest plus call-gate includer (S72), and 80386
+manifest (S73). The former unadmitted S69-S72 rows become S74-S77. Accepted
+packet records retain their historical prospective numbering.
+
 ## Recover A Deliverable Baseline First
 
 At the split's admission, the worktree contained uncommitted CPU bus, timing,
@@ -91,7 +98,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S45 | Accepted: control state moved from CLTS S68, MSW S69 and the retained descriptor-system block to one CPU-local receiver and one public Core/PIC board receiver. Preserve CR0/TS/PE, CR2/CR3, privilege, memory and interrupt cases. |
 | S46 | Debug state: MOV DR S65 and TF/#DB S66; two sources, 1,006 lines. Preserve breakpoint register, trap/fault delivery, RF/TF and IRQ order. |
 | S47 | 16-bit protected-mode dependency group: gate base fixture and all six direct includers (external, call gate, outer return, outer IRET and two timing runners). Keep timing consumers buildable while the shared fixture changes. |
-| S48 | Call-gate privilege entry: retire `core_machine_call_gate_privilege_entry_smoke.c` (776 lines) into one public board receiver. Preserve outer gate entry, parameter transfer, descriptor rejection and fault-delivery boundaries. The smaller `core_machine_call_gate_smoke.c` remains with its 80286 timing-runner includer in S69. |
+| S48 | Call-gate privilege entry: retire `core_machine_call_gate_privilege_entry_smoke.c` (776 lines) into one public board receiver. Preserve outer gate entry, parameter transfer, descriptor rejection and fault-delivery boundaries. The smaller `core_machine_call_gate_smoke.c` remains with its 80286 timing-runner includer in S72. |
 | S49 | Control-transfer branch family from `core_machine_control_transfer_smoke.c`: short/near Jcc, direct short/near JMP, LOOP/JCXZ, 16/32 address forms, four real-mode profiles, 80286 near-Jcc #UD and branch atomicity. Retire this portion into `cpu_control_transfer_branch_smoke.c`, which links only `x86-cpu`. |
 | S50 | Accepted: direct/indirect CALL, RET/RET-immediate, operand-size forms, target-limit atomicity and companion indirect-JMP boundaries move to `cpu_control_transfer_near_smoke.c`. |
 | S51 | Accepted: `cpu_control_transfer_far_smoke.c` retires the final mixed source while preserving far CALL/JMP/RETF immediate/indirect and real-mode forms, selector validation, same-CPL return validation, residual four-profile real-mode near-control and legacy FF reserved rows. |
@@ -111,13 +118,18 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S65 | Protected IRET dependency group: `machine_protected_iret_smoke.c` and its `core_machine_iret_s51_smoke.c` includer. Preserve real/protected/outer IRET frames, validation and all-or-nothing fault delivery. |
 | S66 | INT entry dependency group: `machine_interrupt_entry_smoke.c` and `core_machine_software_int_s50_smoke.c`. Preserve software-INT DPL, gate selection, NMI/IRQ priority, masking and escalation; no VM86 helper moves here. |
 | S67 | VM86 dependency group: `machine_vm86_delivery_smoke.c`, `machine_vm86_iret_smoke.c`, `machine_vm86_lgdt_lidt_s5_smoke.c` and their `machine_hardware_delivery_s3_smoke.c` includer. Preserve VM86 frames, table loads, paging faults and hardware IRQ delivery. |
-| S68 | Timing corpus: 8086/80186/80286/80386 ledgers and manifest runners, protected I/O, `core_machine_call_gate_smoke.c` as the 80286 runner includer, and T359/normalization suites. Preserve all formula/catalog rows and measured deltas; remove generated production catalog dependency. |
-| S69 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
-| S70 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |
-| S71 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
-| S72 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
+| S68 | Common timing baseline: `machine_instruction_timing_ledger_smoke.c`, `machine_instruction_timing_smoke.c`, `machine_legacy_timing_normalization_s2_smoke.c`, and T359 S2-S6. Preserve formula rows, measured deltas and normalization semantics. |
+| S69 | 8086 timing corpus: 8086 ledger and manifest runner. Preserve source formulas, manifest catalog rows and timing results. |
+| S70 | 80186 timing corpus: 80186 ledger and manifest runner. Preserve source formulas, manifest catalog rows and timing results. |
+| S71 | 80286 ledger and protected I/O: 80286 ledger plus 80386 protected-I/O timing receiver. Preserve all formula and protected-port rows. |
+| S72 | 80286 manifest and call-gate includer: 80286 manifest runner and its direct `core_machine_call_gate_smoke.c` includer. Preserve manifest/catalog rows and existing public call-gate construction. |
+| S73 | 80386 timing corpus: 80386 manifest runner. Preserve source formulas, catalog rows and measured deltas. |
+| S74 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
+| S75 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |
+| S76 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
+| S77 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
-S19-S67 migrate consumers before S68; S69 follows S68. The former S56
+S19-S67 migrate consumers before S68; S69-S73 follow S68, then S74. The former S56
 work-package is deliberately expanded as S56-S62: its original direct-TSS32 source combines decode,
 state-image, public IRQ and cross-width responsibilities that cannot be
 reviewed or verified as one bounded receiver package. Existing in-progress edits
@@ -136,7 +148,7 @@ The original [S18 evidence](../evidence/t539-s18-cpu-extraction.md) remains the
 chronological record, with narrow test results explicitly distinct from S exit.
 Bus edits map to S19; copied observations and board tests to S20; EFLAGS to
 S36, REP to S37-S39; interrupt-entry/private rollback to S66; formula and
-target preparation to S68/S69; opaque allocation to S70. Other edits are assigned by the S18 inventory,
+target preparation to S68-S73; opaque allocation to S75. Other edits are assigned by the S18 inventory,
 not dropped. Do not replay an already accepted change in a later P.
 
 Every S closes only after its complete applicable unit suites, fresh affected

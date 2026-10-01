@@ -10,8 +10,9 @@ its oversized FLAGS/string/port row was divided into S36-S39. At S40 intake,
 the 7,736-line descriptor/system row was divided into S40-S46 and the formerly planned
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
-control-transfer source into S49--S51; later packages now run through S69.
-S48-S55 are accepted and S56-S72 remain pending. Earlier
+control-transfer source into S49--S51; S68 intake divides the 20,417-line timing
+corpus into S68-S73; later packages now run through S77. S48-S68 are accepted
+and S69-S77 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -505,26 +506,46 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 
-## S68 Active Packet
+## S69 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S68, Continuation. |
+| Identifier Mode | M5 T539 S69, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire timing-corpus direct-private consumers while preserving 8086/80186/80286/80386 ledger formulas, manifest rows, protected I/O timing and normalization contracts. |
-| Non-goals | S56-S67 accepted task/I/O-map/CLI/IRET/INT/VM86 work; remaining-consumer sweep (S69); production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S67 acceptance; timing ledgers and manifest runners; `core_machine_call_gate_smoke.c` as the 80286 timing includer. |
-| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S68 timing corpus. |
-| Files And ABI Surface | Allocate each timing source and direct include before editing; no public ABI change or generated production catalog dependency. |
-| Applicable Rules | Preserve source formulas, catalog rows, measured deltas and one receiver per original context. |
+| Objective | Retire the 8086 timing ledger and manifest runner while preserving source formulas, catalog rows, measured results and one receiver per original context. |
+| Non-goals | S68 accepted common timing baseline; 80186/80286/80386 timing (S70-S73); remaining-consumer sweep (S74); production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S68 acceptance; `core_machine_8086_instruction_timing_ledger_smoke.c` and `core_machine_8086_timing_manifest_runner.c`. |
+| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S69 8086 timing corpus. |
+| Files And ABI Surface | Allocate both 8086 timing sources and generated catalog include before editing; no public ABI change or generated production catalog dependency. |
+| Applicable Rules | Preserve source formulas, manifest catalog rows, measured deltas and one receiver per original context. |
 | Verification | Exact residual-case ledger; focused timing runners; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
 | Expected Markers | Retained timing-runner markers or their exact successor receiver markers. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Reporting Requirements | Record every timing source, includer, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
+| Reporting Requirements | Record both 8086 sources, generated catalog include, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
 | Stop Conditions | Stop if a context requires production/API/Shared change or a formula has no authority. |
 | Exit Criteria | Each timing context has one receiver; no catalog or measured row is orphaned, duplicated or reinterpreted; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S68 includes all remaining timing-only direct consumers and their manifest runners. |
+| Similar-Issue Sweep | S68 intake found 17 files/20,417 lines and split them into S68-S73; no lettered subtask is used. S69 owns all 8086 timing rows. |
+
+## S68 Acceptance
+
+`machine_instruction_timing_smoke.c`, `machine_instruction_timing_ledger_smoke.c`,
+`machine_legacy_timing_normalization_s2_smoke.c` and
+`machine_t359_s2_timing_smoke.c` through `machine_t359_s6_timing_smoke.c`
+are the sole named Core-machine receivers for the common timing baseline.
+They retain the original formula rows, execution-provider observations and
+normalization assertions without changing a timing algorithm or production API.
+
+Focused x64/x86 receivers pass and retain `M5:T265:S3:INSTRUCTION-TIMING:OK`,
+`M5:T357:S3:INSTRUCTION-TIMING-LEDGER:OK`,
+`M5:T362:S2:LEGACY-TIMING-NORMALIZATION:OK`, and all T359 S2-S6 markers.
+Complete repository-only unit suites pass 426/426 on x86 and x64. T344
+registration and historical fixture shapes, T332 lifecycle, VM-machine
+lifecycle, Core CPU/PIC authority, T388 lexeme and physical-eligibility gates,
+documentation governance and diff checks pass. This is test/CMake/documentation
+work only: no production/API, Shared, firmware, asset, INI or EXE input changed,
+so no EXE rebuild is required. The [receiver map](../etc/evidence/t539-s68-timing-baseline-receiver-map.md)
+records the complete allocation. S68 is accepted; T539 remains open for S69-S77.
 
 ## S67 Acceptance
 
