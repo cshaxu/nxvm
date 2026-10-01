@@ -780,9 +780,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(cpu-imul-immediate-s56-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(cpu-debug-state-smoke
-    test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c)
-target_link_libraries(cpu-debug-state-smoke PRIVATE x86-cpu)
 add_executable(machine-debug-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c)
 target_link_libraries(machine-debug-state-board-smoke PRIVATE core-machine)
@@ -1058,7 +1055,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "cpu-idt-privilege-entry-smoke|test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
     "cpu-protected-far-smoke|test/app-nxvm/unit/core/devices/cpu_protected_far_smoke.c"
     "cpu-protected-data-access-smoke|test/app-nxvm/unit/core/devices/cpu_protected_data_access_smoke.c"
-    "cpu-debug-state-smoke|test/app-nxvm/unit/core/devices/cpu_debug_state_smoke.c"
+    "x86-test-cpu_debug_state|devices/cpu/cpu_debug_state_smoke.c"
     "x86-test-cpu_dttr_s61|devices/cpu/cpu_dttr_s61_smoke.c"
     "x86-test-cpu_descriptor_system|devices/cpu/cpu_descriptor_system_smoke.c"
     "x86-test-cpu_lar_lsl|devices/cpu/cpu_lar_lsl_smoke.c"
@@ -1947,7 +1944,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-port-strings-board-smoke
     x86-test-cpu_port_io
     machine-port-io-board-smoke
-    cpu-debug-state-smoke
+    x86-test-cpu_debug_state
     machine-debug-state-board-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
@@ -2136,7 +2133,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_descriptor_system
     x86-test-cpu_lar_lsl
     x86-test-cpu_verr_verw
-    cpu-debug-state-smoke
+    x86-test-cpu_debug_state
     machine-debug-state-board-smoke
     cpu-double-shift-smoke
     x86-test-cpu_enter_leave
@@ -2231,7 +2228,7 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     machine-fpu-escape-smoke
     x86-test-cpu_control_state
     cpu-control-transfer-branch-smoke
-    cpu-debug-state-smoke
+    x86-test-cpu_debug_state
     core-machine-protected-16-gate-s3-smoke
     cpu-protected-data-access-smoke
     cpu-protected-far-smoke
