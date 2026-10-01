@@ -40,10 +40,14 @@ genuine machine differences and App/host adaptation. Include bus transactions,
 interrupt acknowledgement, DMA/refresh, firmware mapping, reset, time and
 failure cleanup; similarity of filenames is not proof of shared semantics.
 
-S2-S4 fixed the finite adapter ledger, target layout and chip path. S5 resolves
-the generic-Core/IBM-PC cut in its [source-inspected map](../etc/architecture/t540-s5-neutral-core-cut.md)
-before S6-S8 move Core ownership. Then extract and
-reconnect one complete board dependency batch at a time. Finish with
+S2-S4 fixed the finite adapter ledger, target layout and chip path. S5 first
+mapped the generic-Core/IBM-PC cut; S6 removed fixed port 92h from generic
+memory. [S7's private-state handoff](../etc/architecture/t540-s7-core-board-handoff.md)
+corrects the earlier S7/S8 file-move order: raw port/RAM layouts, board
+deadlines, PIC acknowledgement and reset ordering must have one bounded
+receiver before the neutral Core can move. Its prospective linear S8-S15
+batches are admitted one at a time from current source evidence. Then extract
+and reconnect one complete board dependency batch at a time. Finish with
 NXVM using the shared implementation and delete its duplicate common board
 paths. Preserve one construction/rollback owner and one reset path. No generic
 board inheritance, universal event bus or new per-machine execution loops.

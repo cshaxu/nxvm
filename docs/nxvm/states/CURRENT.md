@@ -2,10 +2,9 @@
 
 ## Current Work
 
-M5 T540 S6 is accepted: the fixed 92h A20 port route moved from neutral memory
-storage to the existing IBM-PC board owner. S1-S6 are accepted; T540 remains
-open. S7 intake must revise the prospective S7/S8 Core batches around the one
-private machine-state owner before another source move.
+M5 T540 S1-S7 are accepted; T540 remains open. S7 fixed the Core/IBM-PC
+private-state handoff and finite migration order. S8 is the next numeric
+source batch, not yet admitted. Shared Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -33,6 +32,7 @@ the completed CPU extraction.
 | T540 S4 | Accepted: one Shared chip path, reconnected NXVM consumer, both-width complete units and four-profile 0540 artifact pairs. |
 | T540 S5 | Accepted: source-inspected Core/board ownership and finite S6-S8 cut. |
 | T540 S6 | Accepted: 92h has one board-owned route; both-width complete units and all eight 0540 products pass. |
+| T540 S7 | Accepted: source-inspected Core/board state and API handoff before physical relocation. |
 
 ## T540 S1 Acceptance
 
@@ -193,6 +193,21 @@ that neutral Core extraction or the T540 external integration gate is done.
 The S5 prospective S6 mechanism-only move is superseded by its recorded intake
 correction; S7 must first derive the private-state cut without a temporary
 wrapper, second machine owner or board logic in `x86/core`.
+
+## T540 S7 Acceptance
+
+The [Core/board handoff](../etc/architecture/t540-s7-core-board-handoff.md)
+records one opaque Core owner, one board attachment, the required bounded
+port/memory/time/reset exchanges and prospective linear S8-S15 source batches.
+The previous file-first relocation order is superseded; `machine_display.c`
+remains board-facing. The inspected port and RAM searches found 23 and 19
+files respectively; seven production files directly access named board
+fields, with 142 matching references in the three mixed Core/board files.
+
+The actual S7 changes are NXVM documentation only. `git diff --check` and
+NXVM documentation governance pass. No C, test, CMake, asset or executable
+input changed; the eight verified S6 0540 executables remain current. S7
+does not claim runtime verification or T540 completion.
 
 ## S87 Admission Packet
 

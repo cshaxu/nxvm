@@ -90,3 +90,8 @@ four profiles. This is the first actual source cut needed before neutral memory
 can move. S7/S8 intake must reallocate the remaining Core source batches
 according to private-state ownership; the S5 table is historical intent, not
 permission to publish private structs or create a temporary facade.
+
+The [S7 handoff](t540-s7-core-board-handoff.md) is that reallocation. It also
+corrects the prospective destination of the mixed display observation: the
+VADP-facing capture remains board-facing, while Core retains only neutral
+execution/observation state.
