@@ -16,8 +16,7 @@ into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
 is then divided into S83-S100 and S100 is the final acceptance. S48-S97 are
-accepted and S99-S100 remain pending. The next package must be admitted from
-the bounded ledger. Earlier
+accepted and S100 remains pending. S99 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -269,6 +268,22 @@ The CPU timing-manifest catalog, x64/x86 full units (**465/465** each), T317,
 CPU/PIC authority, Shared manifest/corpus and documentation governance pass.
 See the [S98 evidence](../etc/evidence/t539-s98-timing-catalog-boundary.md).
 S98 is accepted; T539 remains open for S99-S100.
+
+## S99 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S99, automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic, bounded, strictly linear numeric T539 continuation tasks; S99 follows accepted S98. |
+| Objective | Remove the final retired App CPU test path: move the actually CPU-only IDT privilege receiver to Shared, replace the remaining forwarding fixture include with its canonical Shared include, and correct S97's mistaken dependency classification. |
+| Non-goals | Altering IDT privilege semantics, moving the real PIC board receiver, new Shared APIs/fixtures, production source, firmware, assets, INI and executables. |
+| Reference Baseline | `09b3b46de`, accepted S98. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Move only `cpu_idt_privilege_entry_smoke.c`; delete only the one forwarding `support/cpu_instruction_fixture.h`; have the retained PIC-board test directly include the canonical Shared fixture and add the existing test-root include directory to its target. No behavior/API change. |
+| Applicable Rules | An unused App include is not an ownership dependency. A retained board receiver may consume the Shared fixture directly, but must not own a forwarding copy. |
+| Verification | Focused x64/x86 Shared IDT and retained PIC board tests, full x64/x86 units, T317/T332/static gates, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. |
+| Exit Criteria | No direct CPU-only App receiver or CPU fixture forwarder remains; IDT CPU semantics have one Shared owner, PIC board delivery has one NXVM owner, and both full unit suites pass. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
 
 ## S86 Acceptance
 
