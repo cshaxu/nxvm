@@ -394,7 +394,7 @@ complete receiving map and dual-width verification are recorded in
 
 - `machine_tss_iomap_port_authorization_smoke.c`
 
-### S56: 10 matching files
+### S64-S67: 10 matching files
 
 - `core_machine_cli_sti_s48_smoke.c`
 - `core_machine_cli_sti_smoke.c`
@@ -407,7 +407,7 @@ complete receiving map and dual-width verification are recorded in
 - `core_machine_vm86_delivery_smoke.c`
 - `core_machine_vm86_iret_smoke.c`
 
-### S63: 16 matching files
+### S68: 16 matching files
 
 - `core_machine_call_gate_smoke.c` (80286 timing-runner includer)
 - `core_machine_80186_instruction_timing_ledger_smoke.c`
@@ -427,7 +427,7 @@ complete receiving map and dual-width verification are recorded in
 - `core_machine_t359_s5_timing_smoke.c`
 - `core_machine_t359_s6_timing_smoke.c`
 
-### S64: 4 matching files
+### S69: 4 matching files
 
 - `core_machine_fpu_interface_s65_smoke.c`
 - `cpu_profile_gate_smoke.c`
@@ -440,12 +440,12 @@ The matching-file inventory is not the entire compile dependency graph. S47
 must also keep the 80286/80386 timing runners building when their included
 16-bit gate/task/call fixtures change; S63 owns their subsequent timing-corpus
 migration, including the 80286 runner's direct `core_machine_call_gate_smoke.c`
-includer. S52 includes outer-IRET's atomicity-fixture consumer. S56 additionally
-includes `core_machine_interrupt_return_composition_s4_smoke.c` and
-`core_machine_vm86_lgdt_lidt_s5_smoke.c`, which inherit private setup through
-included source rather than a direct search hit. Protected IRET is in S56
-with its CLI/STI-dependent includer. Do not migrate one included source's return
-shape while leaving its includers with the old shape.
+includer. S52 includes outer-IRET's atomicity-fixture consumer. S64 includes
+`core_machine_interrupt_return_composition_s4_smoke.c`; S65 includes the
+protected-IRET includer; S67 includes `core_machine_vm86_lgdt_lidt_s5_smoke.c`
+and hardware delivery, which inherit private setup through included sources.
+Do not migrate one included source's return shape while leaving its includers
+with the old shape.
 
 The CPU-owner bus/context and EFLAGS tests, migrated board/machine tests and
 integration probes remain required regressions even though they no longer

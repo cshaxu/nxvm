@@ -7,7 +7,7 @@
 #undef main
 
 #define main cli_sti_s22_main
-#include "core_machine_cli_sti_smoke.c"
+#include "machine_cli_sti_interrupt_smoke.c"
 #undef main
 
 static lib_i32 iret_s51_sregs_same(const t_cpu *before, const t_cpu *after)

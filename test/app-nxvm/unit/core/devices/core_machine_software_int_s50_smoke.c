@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #define main cli_sti_s22_main
-#include "core_machine_cli_sti_smoke.c"
+#include "machine_cli_sti_interrupt_smoke.c"
 #undef main
 
 #define main interrupt_entry_main

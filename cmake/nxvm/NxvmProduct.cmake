@@ -738,8 +738,8 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-pushf-popf-board-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-cli-sti-smoke test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c)
-target_link_libraries(core-machine-cli-sti-smoke PRIVATE core-machine)
+add_executable(machine-cli-sti-interrupt-smoke test/app-nxvm/unit/core/devices/machine_cli_sti_interrupt_smoke.c)
+target_link_libraries(machine-cli-sti-interrupt-smoke PRIVATE core-machine)
 add_executable(core-machine-cli-sti-s48-smoke test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c)
 target_link_libraries(core-machine-cli-sti-s48-smoke PRIVATE core-machine)
 add_executable(core-machine-hlt-s49-smoke test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c)
@@ -1189,7 +1189,7 @@ target_link_libraries(core-machine-debug-smoke PRIVATE core-machine)
 function(project_configure_t317_strict_cpu_smokes)
 set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
-    "core-machine-cli-sti-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c"
+    "machine-cli-sti-interrupt-smoke|test/app-nxvm/unit/core/devices/machine_cli_sti_interrupt_smoke.c"
     "cpu-control-state-smoke|test/app-nxvm/unit/core/devices/cpu_control_state_smoke.c"
     "cpu-control-transfer-branch-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c"
     "cpu-control-transfer-near-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
@@ -2082,7 +2082,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-direct-flags-board-smoke
     core-machine-lahf-sahf-board-smoke
     core-machine-pushf-popf-board-smoke
-    core-machine-cli-sti-smoke
+    machine-cli-sti-interrupt-smoke
     core-machine-cli-sti-s48-smoke
     core-machine-hlt-s49-smoke
     core-machine-software-int-s50-smoke

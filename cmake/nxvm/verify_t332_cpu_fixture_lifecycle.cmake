@@ -19,7 +19,7 @@ set(project_t332_wrapper_sources
     "test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_software_int_s50_smoke.c")
 set(project_t332_inherited_sources
-    "test/app-nxvm/unit/core/devices/core_machine_cli_sti_smoke.c"
+    "test/app-nxvm/unit/core/devices/machine_cli_sti_interrupt_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_protected_iret_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_interrupt_entry_smoke.c")
 set(project_t332_public_board_sources

@@ -8,7 +8,7 @@
 
 /* The retained CLI/STI fixture supplies the real-mode machine lifecycle. */
 #define main interrupt_return_composition_s4_cli_sti_main
-#include "core_machine_cli_sti_smoke.c"
+#include "machine_cli_sti_interrupt_smoke.c"
 #undef main
 
 static void interrupt_return_composition_s4_seed(cli_sti_machine *state,

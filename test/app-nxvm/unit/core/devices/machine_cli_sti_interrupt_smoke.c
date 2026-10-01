@@ -630,5 +630,6 @@ lib_i32 main(void)
     if (!cli_sti_test_vm86())
         return 1;
     printf("M5:T316:S22:CLI-STI:OK\n");
+    printf("M5:T539:S64:CLI-STI-INTERRUPT:OK\n");
     return 0;
 }

@@ -107,14 +107,17 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S61 | Task-switch TSS32 public IRQ delivery: retire the pending-IRQ row into one public Core/PIC board receiver, preserving IRR→ISR acknowledgement/order. |
 | S62 | Cross-width task state: retire the 16↔32 TSS transition and task-return rows. Preserve old/new TSS image width, backlink/nested state and return semantics without duplicating S55's 16-bit baseline. |
 | S63 | TSS I/O-map port source: `machine_tss_iomap_port_authorization_smoke.c`. Preserve CPL/I/O-map authorization separately from task-switch state construction. |
-| S64 | Interrupt/VM86 dependency group: CLI/STI with HLT/INT/IRET/composition includers; protected IRET; interrupt-entry; VM86 delivery/IRET/table-load and hardware delivery. Migrate shared fixtures with all includers in one package. Preserve NMI/IRQ priority, masking, fault escalation and frames. |
-| S65 | Timing corpus: 8086/80186/80286/80386 ledgers and manifest runners, protected I/O, `core_machine_call_gate_smoke.c` as the 80286 runner includer, and T359/normalization suites. Preserve all formula/catalog rows and measured deltas; remove generated production catalog dependency. |
-| S66 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
-| S67 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |
-| S68 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
-| S69 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
+| S64 | CLI/STI dependency group: `machine_cli_sti_interrupt_smoke.c` with its direct CLI/STI consumers (`core_machine_cli_sti_s48_smoke.c`, `core_machine_hlt_s49_smoke.c` and `core_machine_interrupt_return_composition_s4_smoke.c`). Preserve IF/shadow, HLT wake, NMI/IRQ priority and real/protected fault frames. |
+| S65 | Protected IRET dependency group: `core_machine_protected_iret_smoke.c` and its `core_machine_iret_s51_smoke.c` includer. Preserve real/protected/outer IRET frames, validation and all-or-nothing fault delivery. |
+| S66 | INT entry dependency group: `core_machine_interrupt_entry_smoke.c` and `core_machine_software_int_s50_smoke.c`. Preserve software-INT DPL, gate selection, NMI/IRQ priority, masking and escalation; no VM86 helper moves here. |
+| S67 | VM86 dependency group: `core_machine_vm86_delivery_smoke.c`, `core_machine_vm86_iret_smoke.c`, `core_machine_vm86_lgdt_lidt_s5_smoke.c` and their `core_machine_hardware_delivery_s3_smoke.c` includer. Preserve VM86 frames, table loads, paging faults and hardware IRQ delivery. |
+| S68 | Timing corpus: 8086/80186/80286/80386 ledgers and manifest runners, protected I/O, `core_machine_call_gate_smoke.c` as the 80286 runner includer, and T359/normalization suites. Preserve all formula/catalog rows and measured deltas; remove generated production catalog dependency. |
+| S69 | Remaining-consumer sweep: profile gating, CPU/FPU escape, paging/fault diagnostics and any uncategorized raw CPU consumer. Reconcile the original-case inventory to zero unassigned cases; delete the legacy mixed fixture only after its last caller moves. |
+| S70 | Opaque CPU lifetime cutover: create/destroy, prepared entry, reset rollback and board ownership. Remove embedded CPU/decoder layout without exposing a mutable private pointer or maintaining a mirror. Full corpus must still build. |
+| S71 | Physical Shared relocation: all nine CPU files, CPU-owned fixtures/tests and generated inputs move to x86; update sole build target, manifests and boundary checks. Delete old App implementations and prove independent tools-off build/test. |
+| S72 | Whole CPU receiving audit: cross-width units, required integration, one vendor boot per profile/width, eight 0539 EXEs, actual-diff and complete ledger review. Accept the CPU row only here; separately assess remaining T539 exit criteria. |
 
-S19-S64 migrate consumers before S65; S66 follows S65. The former S56
+S19-S67 migrate consumers before S68; S69 follows S68. The former S56
 work-package is deliberately expanded as S56-S62: its original direct-TSS32 source combines decode,
 state-image, public IRQ and cross-width responsibilities that cannot be
 reviewed or verified as one bounded receiver package. Existing in-progress edits
@@ -132,14 +135,14 @@ consumers and additional include-dependent consumers by receiving S.
 The original [S18 evidence](../evidence/t539-s18-cpu-extraction.md) remains the
 chronological record, with narrow test results explicitly distinct from S exit.
 Bus edits map to S19; copied observations and board tests to S20; EFLAGS to
-S36, REP to S37-S39; interrupt-entry/private rollback to S56; formula and
-target preparation to S69/S66; opaque allocation to S65. Other edits are assigned by the S18 inventory,
+S36, REP to S37-S39; interrupt-entry/private rollback to S66; formula and
+target preparation to S68/S69; opaque allocation to S70. Other edits are assigned by the S18 inventory,
 not dropped. Do not replay an already accepted change in a later P.
 
 Every S closes only after its complete applicable unit suites, fresh affected
 builds, boundary/manifests/document checks and actual-diff review pass. Rebuild
 affected x64/x86 deliverables under execution rules; no stale binary acceptance.
 Each P has one target (Shared or NXVM); MyNES/INI/assets inputs stay unchanged.
-T closure still requires full integration. S67 consolidates receiving proof; it
+T closure still requires full integration. S72 consolidates receiving proof; it
 does not defer earlier S unit gates. User-facing progress must state planned,
 active, verified or accepted, with remaining cases and evidence links.

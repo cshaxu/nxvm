@@ -11,7 +11,7 @@ the 7,736-line descriptor/system row was divided into S40-S46 and the formerly p
 S41-S48 became S47-S54. At S48 intake, the former 6,724-line protected
 transfer row was divided into S48-S55; S49 intake further divides the 1,181-line
 control-transfer source into S49--S51; later packages now run through S69.
-S48-S55 are accepted and S56-S69 remain pending. Earlier
+S48-S55 are accepted and S56-S72 remain pending. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -505,26 +505,44 @@ Shared, firmware, asset, INI or EXE input changed, so no EXE rebuild is
 required. The [S55 receiver map](../etc/evidence/t539-s55-task-switch16-receiver-map.md)
 records the exact allocation. S55 is accepted; T539 remains open for S56-S69.
 
-## S64 Active Packet
+## S65 Active Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T539 S64, Continuation. |
+| Identifier Mode | M5 T539 S65, Continuation. |
 | Admission And Approval | Owner authorized automatic admission for bounded T539 S work. |
-| Objective | Retire the CLI/STI/INT/IRET/VM86 dependency group with every direct includer and preserve interrupt delivery, frames, masking and fault escalation. |
-| Non-goals | S56-S63 accepted task/I/O-map work; timing corpus (S65); production/API, Shared, firmware, asset, INI or EXE work. |
-| Reference Baseline | S63 acceptance; the interrupt/VM86 group listed by the T539 work package. |
-| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S64 interrupt/VM86 dependency group. |
-| Files And ABI Surface | Allocate every shared fixture and direct includer before editing; no public ABI change. |
-| Applicable Rules | Preserve NMI/IRQ priority, masking, fault escalation and real/protected/VM86 frames. Each original context has one receiver. |
+| Objective | Retire the protected-IRET dependency group and its direct includer, preserving real/protected/outer frames, validation and all-or-nothing faults. |
+| Non-goals | S56-S64 accepted task/I/O-map/CLI work; INT entry (S66), VM86 (S67), timing corpus (S68); production/API, Shared, firmware, asset, INI or EXE work. |
+| Reference Baseline | S64 acceptance; `core_machine_protected_iret_smoke.c` and `core_machine_iret_s51_smoke.c`. |
+| Candidate Proposal | [T539 CPU work packages](../etc/architecture/t539-cpu-work-packages.md): S65 protected-IRET dependency group. |
+| Files And ABI Surface | Allocate both IRET sources and their direct includes before editing; no public ABI change. |
+| Applicable Rules | Preserve real/protected/outer return frames, validation, fault escalation and atomic state. Each original context has one receiver. |
 | Verification | Exact residual-case ledger; focused receiver; complete x64/x86 unit suites; lifecycle/shape/authority gates; documentation governance and diff check. |
-| Expected Markers | A new S64 dependency-group marker and retained interrupt/VM86 markers. |
+| Expected Markers | A new S65 protected-IRET marker and retained IRET markers. |
 | Asset Needs | None; test-only work requires no EXE rebuild. |
-| Reporting Requirements | Record every grouped source/includer, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
+| Reporting Requirements | Record both IRET sources, all direct includes, receiver, focused and full-suite results, net test-code delta, and no-EXE determination in evidence and closure. |
 | Stop Conditions | Stop if a context requires production/API/Shared change. |
-| Exit Criteria | Each dependency context has one receiver; no retained fixture is orphaned or duplicated; all verification passes. |
+| Exit Criteria | Each protected-IRET dependency context has one receiver; no retained fixture is orphaned or duplicated; all verification passes. |
 | Original Owner Request | Automatically continue bounded T539 chip-extraction S work without leaving tails. |
-| Similar-Issue Sweep | S64 is a dependency group: all affected direct includers must move with their shared fixture. It does not absorb S65 timing-only consumers. |
+| Similar-Issue Sweep | S65 includes the protected-IRET direct includer. S66-S67 separately own INT and VM86 dependency groups; S68 owns timing-only consumers. |
+
+## S64 Acceptance
+
+`machine_cli_sti_interrupt_smoke.c` is the unique named Core-machine receiver
+for real/protected/VM86 CLI/STI construction, IF/shadow, PIC IRQ/mask and
+guest-visible frame behavior. Its direct S64 includers—80286 CLI/STI, HLT and
+INT-to-IRET-to-IRQ composition—reuse that receiver rather than rebuilding a
+second execution-provider or IRQ setup. Later IRET and software-INT sources
+received only the required mechanical filename update; their behavior remains
+allocated to S65 and S66.
+
+Focused x64/x86 runs emit `M5:T539:S64:CLI-STI-INTERRUPT:OK`; final serial
+repository-only units pass **426/426** on x64 and x86. T332 lifecycle, T344
+registration and fixture shape, VM lifecycle, Core CPU/PIC authority,
+documentation governance and `git diff --check` pass. This is test/CMake/
+documentation-only work: no production/API, Shared, firmware, asset, INI or
+EXE input changed, so no EXE rebuild is required. The [receiver map](../etc/evidence/t539-s64-cli-sti-receiver-map.md)
+records every context. S64 is accepted; T539 remains open for S65-S72.
 
 ## S63 Acceptance
 

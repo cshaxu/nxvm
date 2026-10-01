@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 #define main cli_sti_s22_main
-#include "core_machine_cli_sti_smoke.c"
+#include "machine_cli_sti_interrupt_smoke.c"
 #undef main
 
 static lib_i32 hlt_s49_gprs_preserved(const t_cpu *before, const t_cpu *after)
