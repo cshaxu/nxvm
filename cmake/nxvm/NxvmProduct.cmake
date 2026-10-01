@@ -2130,7 +2130,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     cpu-control-transfer-far-smoke
     machine-control-state-board-smoke
     x86-test-cpu_cmps
-    core-machine-cpu-context-smoke
+    x86-test-cpu_execution_fault_event
     core-machine-cpu-fault-diagnostic-smoke
     machine-cpu-profile-gate-smoke
     core-machine-descriptor-system-smoke
@@ -2209,7 +2209,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-80386-decoder-inventory-runner
     machine-80386-timing-manifest-runner
     core-machine-debug-smoke
-    core-machine-cpu-context-smoke
+    x86-test-cpu_execution_fault_event
     vm-fdc-authority-smoke
     core-machine-cpu-fpu-profile-smoke
     core-machine-cpu-fpu-profile-closure-smoke)
@@ -2225,7 +2225,7 @@ set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
     core-machine-real-ud-delivery-s1-smoke
     )
 set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
-    core-machine-cpu-context-smoke
+    x86-test-cpu_execution_fault_event
     x86-test-cpu_descriptor_system
     x86-test-cpu_lar_lsl
     x86-test-cpu_verr_verw
