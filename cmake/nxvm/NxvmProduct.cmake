@@ -751,15 +751,6 @@ target_link_libraries(core-machine-imul-immediate-s56-smoke PRIVATE core-machine
 add_executable(machine-debug-state-board-smoke
     test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c)
 target_link_libraries(machine-debug-state-board-smoke PRIVATE core-machine)
-add_executable(cpu-control-transfer-branch-smoke
-    test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c)
-target_link_libraries(cpu-control-transfer-branch-smoke PRIVATE x86-cpu)
-add_executable(cpu-control-transfer-near-smoke
-    test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c)
-target_link_libraries(cpu-control-transfer-near-smoke PRIVATE x86-cpu)
-add_executable(cpu-control-transfer-far-smoke
-    test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c)
-target_link_libraries(cpu-control-transfer-far-smoke PRIVATE x86-cpu)
 add_executable(cpu-idt-privilege-entry-smoke
     test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c)
 target_link_libraries(cpu-idt-privilege-entry-smoke PRIVATE x86-cpu)
@@ -1007,9 +998,9 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
     "machine-cli-sti-interrupt-smoke|test/app-nxvm/unit/core/devices/machine_cli_sti_interrupt_smoke.c"
     "x86-test-cpu_control_state|devices/cpu/cpu_control_state_smoke.c"
-    "cpu-control-transfer-branch-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_branch_smoke.c"
-    "cpu-control-transfer-near-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_near_smoke.c"
-    "cpu-control-transfer-far-smoke|test/app-nxvm/unit/core/devices/cpu_control_transfer_far_smoke.c"
+    "x86-test-cpu_control_transfer_branch|devices/cpu/cpu_control_transfer_branch_smoke.c"
+    "x86-test-cpu_control_transfer_near|devices/cpu/cpu_control_transfer_near_smoke.c"
+    "x86-test-cpu_control_transfer_far|devices/cpu/cpu_control_transfer_far_smoke.c"
     "cpu-idt-privilege-entry-smoke|test/app-nxvm/unit/core/devices/cpu_idt_privilege_entry_smoke.c"
     "x86-test-cpu_protected_far|devices/cpu/cpu_protected_far_smoke.c"
     "x86-test-cpu_protected_data_access|devices/cpu/cpu_protected_data_access_smoke.c"
@@ -1912,9 +1903,9 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-imul-immediate-s56-smoke
     x86-test-cpu_imul_immediate_s56
     x86-test-cpu_control_state
-    cpu-control-transfer-branch-smoke
-    cpu-control-transfer-near-smoke
-    cpu-control-transfer-far-smoke
+    x86-test-cpu_control_transfer_branch
+    x86-test-cpu_control_transfer_near
+    x86-test-cpu_control_transfer_far
     cpu-idt-privilege-entry-smoke
     machine-idt-privilege-pic-board-smoke
     machine-control-state-board-smoke
@@ -2082,8 +2073,8 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_sgdt_sidt
     core-machine-cli-sti-s48-smoke
     x86-test-cpu_control_state
-    cpu-control-transfer-branch-smoke
-    cpu-control-transfer-far-smoke
+    x86-test-cpu_control_transfer_branch
+    x86-test-cpu_control_transfer_far
     machine-control-state-board-smoke
     x86-test-cpu_cmps
     x86-test-cpu_execution_fault_event
@@ -2187,7 +2178,7 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     x86-test-cpu_verr_verw
     machine-fpu-escape-smoke
     x86-test-cpu_control_state
-    cpu-control-transfer-branch-smoke
+    x86-test-cpu_control_transfer_branch
     x86-test-cpu_debug_state
     core-machine-protected-16-gate-s3-smoke
     x86-test-cpu_protected_data_access
