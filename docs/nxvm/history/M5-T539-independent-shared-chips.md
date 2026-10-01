@@ -4,7 +4,22 @@
 
 Owner admitted the first [migration proposal](../proposals/m5-shared-chip-extraction.md)
 after Td S174 (996a19a17), requesting research/design before source changes.
-T538 is closed; T539 remains open. Current records admission and execution status.
+T538 is closed; T539 closes with S101. Current records the final execution
+status and the finite-ledger evidence.
+
+## S101: Final Historical CPU Copy Removal And T539 Closure
+
+S100's receiver audit found that an obsolete, uncompiled nine-file App CPU
+corpus still existed beside the canonical `src/x86/devices/cpu` implementation.
+S101 deleted that corpus, corrected the static verifiers and proved no live App
+CPU source or include remains. The retained `cpu_bus.c` is the board adapter;
+the sole remaining old include spelling is a deliberately injected negative
+test input. Full units pass **467/467** on x64 and x86, x64 integration passes
+**20/20**, and all authority, corpus, manifest, executor and governance gates
+pass. No executable input changed. See the [S101 evidence](../etc/evidence/t539-s101-cpu-source-cleanup.md).
+
+Every row in the finite devices ledger now has a final extracted or board-only
+disposition. T539 is closed.
 
 ## S1: Boundary Research And Design
 

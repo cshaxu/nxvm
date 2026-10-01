@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M5 T539 remains open. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
+M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
@@ -16,14 +16,16 @@ into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
 is then divided into S83-S100 and S100 is the final receiving audit. S48-S100
-are accepted. S101 corrects the audit's discovered stale CPU-source-copy gap;
-T539 remains open until that bounded cleanup and its whole-ledger closure
-review complete. Earlier accepted
-packets retain their historical prospective numbering; the linked
-accepted packets retain their historical prospective numbering; the linked
-work plan owns current numbers.
-The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
-retain the remaining CPU work as pending, not accepted CPU extraction.
+are accepted. S101 deleted the audit's discovered stale CPU-source-copy gap,
+updated its static inventories and completed the final whole-ledger review.
+Earlier accepted packets retain their historical prospective numbering; the
+linked work plan owns the current sequence. The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
+and [S101 evidence](../etc/evidence/t539-s101-cpu-source-cleanup.md) record
+the completed CPU extraction.
+
+| Task | Status |
+| --- | --- |
+| T539 | Closed: every finite chip-ledger row is either extracted to its sole Shared owner or retained with its stated board-only reason; S101 removed the last historical CPU copy. |
 
 ## S87 Admission Packet
 
@@ -324,26 +326,27 @@ or executable input changed, so no executable rebuild is required. See the
 accepted. Its follow-up source-copy gap is owned by active S101; T539 remains
 open.
 
-## S101 Active Packet
+## S101 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | M5 T539 S101, automatic corrective continuation after the S100 closure audit found uncompiled duplicate CPU source files. |
-| Admission And Approval | The owner approved automatic admission of every bounded linear T539 S. This corrective packet follows S100 and consumes only the verified duplicate-copy gap. |
-| Objective | Remove the obsolete `src/app-nxvm/devices/cpu*` historical CPU corpus so `src/x86/devices/cpu` is the sole source implementation, then repair only the static checks that still require the deleted copies. |
-| Non-goals | CPU behavior/timing changes, public API changes, board composition changes, firmware, assets, INI, executable rebuilds, or any non-CPU device/board extraction. |
-| Reference Baseline | `aa4bd579c`, where S100 accepted receiver ownership but its closure audit found the uncompiled nine-file CPU copy still present. |
-| Candidate Proposal | [Independent Shared chips](../proposals/m5-shared-chip-extraction.md), the [finite chip ledger](../etc/evidence/t539-chip-migration-ledger.md), and the [CPU work packages](../etc/architecture/t539-cpu-work-packages.md). |
-| Files And ABI Surface | Delete only `cpu.c`, `cpu.h`, `cpu_interface.h`, `cpu_instructions.c`, `cpu_instructions.h`, `cpu_timing.c`, `cpu_timing.h`, `cpu_timing_model.c`, and `cpu_trace.h` from `src/app-nxvm/devices`. Update only CMake/static-negative inventories that name those historical copies. No exported symbol, API, implementation, fixture, or runtime source is added. |
-| Applicable Rules | NXVM architecture/coding/documentation/execution rules; Shared source boundary; one implementation path, no dead source copy, and chip-to-board dependency direction. |
-| Verification | Source/CMake inventory proves no App CPU copy or include remains; x64/x86 focused CPU/negative checks; x64/x86 full unit suites; T317/T332/CPU-PIC authority/manifest/corpus/documentation gates; final T539 integration and actual-diff review. Rebuild executable artifacts only if an executable input truly changes. |
-| Expected Markers | One canonical CPU corpus under `src/x86/devices/cpu`, no `src/app-nxvm/devices/cpu*` file, no static verifier expecting a duplicate, and no new board or CPU path. |
-| Asset Needs | None; repository-only source ownership correction. |
-| Reporting Requirements | Record the deleted nine files, every updated static verifier, source/test net change, retained canonical owner, full verification, and artifact determination. |
-| Stop Conditions | Stop and report if any live build or product consumer still includes an App CPU copy, if deletion requires a behavior/API change, or if a non-CPU ledger row must be changed. |
-| Exit Criteria | The exact duplicate corpus is gone; every affected static gate now proves the canonical Shared owner; all required verification passes; and the T-level ledger review has no remaining unallocated chip disposition. |
-| Original Owner Request | Implement independent, genuinely decoupled Intel-chip components in `src/x86/devices`, leaving NXVM only board integration; do not retain duplicate paths. |
-| Similar-Issue Sweep | Sweep the full nine-file CPU corpus, all CMake/static verifiers and all App includes for stale historical-copy references; do not repair only one source file. |
+S101 removes the exact nine-file obsolete App CPU corpus. The source implementation
+is now solely `src/x86/devices/cpu`; NXVM retains `cpu_bus.c` only as the named
+board adapter. The CPU/PIC authority gate now rejects any reintroduced historical
+CPU source, and the CPU-boundary negative fixture begins with a clean owned work
+tree so a prior run cannot masquerade as a source duplicate. The two legacy
+verification tools now inspect the canonical CPU paths.
+
+The similar-issue sweep found no live App CPU copy or include. The only remaining
+old-path spelling is an intentionally injected forbidden include in the Shared
+negative test; `cpu_bus.c` references are the retained board adapter, not a CPU
+implementation. The finite chip ledger has no unallocated disposition.
+
+Focused x64/x86 CPU-boundary and decoder-ledger checks pass. Full repository-only
+unit suites pass **467/467** on x64 and x86; the x64 external integration suite
+passes **20/20**. T317, T332, CPU/PIC authority, x86 corpus, all six manifests,
+executor closure, documentation governance and `git diff --check` pass. This
+changes only deleted dead source, static verification, tests, tools and evidence:
+no runtime source, public API, firmware, asset, INI or executable input changes,
+so no EXE rebuild is required. See [S101 evidence](../etc/evidence/t539-s101-cpu-source-cleanup.md).
 
 ## S86 Acceptance
 
