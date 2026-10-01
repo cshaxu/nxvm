@@ -27,13 +27,11 @@ Those rows remain allocated to S88 and S89.
 - x64/x86 T332 CPU fixture-lifecycle gate: pass (44 owners).
 - Shared test manifest, x86 corpus and CPU/PIC authority gates: pass.
 
-The complete x64 and x86 unit runs each report one existing failure:
-`unit.cpu-bus-boundary-negative`.  Its direct CMake invocation in the same
-build working directory exits `0` and prints all three successful groups
-(72 CPU, five board, and 96 migrated-board negatives).  CTest nevertheless
-records it as failed without CMake error text.  This is an unresolved CTest
-status-reporting defect in the existing negative gate, not evidence that an
-S87 assertion failed.  S87 remains active until that discrepancy is resolved;
-no completion claim is made here.
+The terminal-hosted full-unit invocations initially misreported
+`unit.cpu-bus-boundary-negative` as failed even though its direct CMake command
+exited zero and printed all three successful groups (72 CPU, five board, and
+96 migrated-board negatives). Detached process-owned CTest runs remove that
+terminal artifact: x64 **440/440** and x86 **440/440** pass with exit code zero.
+S87 is therefore accepted.
 
 No production source, API, firmware, asset, INI or executable input changed.

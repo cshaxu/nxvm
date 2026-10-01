@@ -15,15 +15,15 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S98 and S98 is the final acceptance. S48-S86 are
-accepted and S87-S98 remain pending. The next package must be admitted from
-the bounded ledger; S87 is the active package. Earlier
+is then divided into S83-S98 and S98 is the final acceptance. S48-S87 are
+accepted and S88-S98 remain pending. The next package must be admitted from
+the bounded ledger; S88 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
 retain the remaining CPU work as pending, not accepted CPU extraction.
 
-## S87 Active Packet
+## S87 Admission Packet
 
 | Field | Required record |
 | --- | --- |
@@ -44,13 +44,33 @@ retain the remaining CPU work as pending, not accepted CPU extraction.
 | Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
 | Similar-Issue Sweep | S87 consumes only CPU bus/effect/retirement observation functions. S88 owns create/reset/prepared-entry/timing/lifecycle; S89 owns NMI, prefetch, paging-control and INVLPG. |
 
-Implementation P1/P2 is pushed as `ac70e400f` and `20feb7506`. Focused x64/x86
-receivers and all applicable static gates pass. The required complete unit runs
-each expose the same pre-existing `unit.cpu-bus-boundary-negative` CTest
-status-reporting failure even though its direct CMake invocation exits zero and
-prints every negative group as passing. The exact evidence is recorded in
-[S87 evidence](../etc/evidence/t539-s87-execution-bus-receiver.md); S87 stays
-active until that gate discrepancy is resolved.
+## S87 Acceptance
+
+The former `cpu_bus_cases()` function is now solely the Shared
+`cpu_execution_bus` receiver. Its one CPU-local fixture is likewise solely
+Shared; NXVM's residual context and FLAGS-local tests include it directly, and
+the former App fixture copy and function call are deleted. Lifecycle/timing,
+signal/prefetch/paging and public-board rows remain once in NXVM for S88/S89.
+
+Focused x64/x86 Shared and NXVM receivers, T332, Shared manifest/corpus and
+CPU/PIC authority gates pass. The original terminal-hosted full-unit runs
+misreported the long CMake negative gate as failed. Detached, process-owned
+full-unit verification fixes that execution artefact: x64 **440/440** and x86
+**440/440** both pass with exit code zero. This is test/CMake/documentation-only
+work: no production/API, firmware, asset, INI or EXE input changed. See the
+[S87 evidence](../etc/evidence/t539-s87-execution-bus-receiver.md). S87 is
+accepted; T539 remains open for S88-S98.
+
+## S88 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S88, automatically admitted continuation. |
+| Objective | Extract only CPU reset, prepared-entry, instance-lifecycle and timing rows from the residual execution-context test into bounded Shared receivers. |
+| Non-goals | NMI, prefetch, paging, INVLPG, public board wiring, production APIs, firmware, assets, INI and executables. |
+| Files And ABI Surface | Split only existing static functions from `cpu_execution_context_smoke.c`; reuse existing CPU-local fixtures or add no fixture/API unless the current code proves one is necessary. Retain every S89 row once in NXVM. |
+| Verification | Record exact function allocation; run focused x64/x86 successor and residual tests, complete x64/x86 repository-only units, relevant static gates, manifests/corpus, authority, documentation governance and diff checks. |
+| Exit Criteria | Every admitted lifecycle/timing row has one Shared receiver, all non-admitted rows remain once in NXVM, no duplicate fixture/setup path or public ABI is introduced, and both full unit runs pass. |
 
 ## S86 Acceptance
 

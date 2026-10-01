@@ -148,7 +148,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S84 | Accepted: the four CPU-only system-table receivers move to Shared. The descriptor test's two local CR0 expressions replace its sole App support-header dependency; no board path or public contract moved. |
 | S85 | Control-state receiver move: migrate the CPU-only `cpu_control_state_smoke.c` CLTS/SMSW/LMSW/MOV-CR rows. Preserve public Core/board diagnostic and scheduling observations outside Shared. |
 | S86 | Accepted: MOV-DR, #DB and data-breakpoint rows move to the CPU-only Shared receiver. The named machine debug-state board path remains NXVM. |
-| S87 | Execution-context bus/observation receiver move: classify and move only the bounded CPU bus, retirement-observation and instruction-effect rows from `cpu_execution_context_smoke.c`. |
+| S87 | Accepted: execution-context CPU bus, instruction-effect and copied retirement-observation rows move to one Shared receiver and fixture; residual lifecycle/timing and signal/prefetch/paging rows stay once in NXVM. |
 | S88 | Execution-context lifecycle/timing receiver move: classify and move only the bounded CPU reset, prepared-entry, timing and lifecycle rows from `cpu_execution_context_smoke.c`. |
 | S89 | Execution-context signal/prefetch/paging receiver move: classify NMI, prefetch, paging-control and INVLPG rows from `cpu_execution_context_smoke.c`; retain every Core/board dependency under a named receiver. |
 | S90 | Protected privilege/data/return: classify and move eligible CPU-only IDT privilege, protected data/far and outer-return fixtures/tests; retain public paging, fault and IRQ paths in NXVM. |
