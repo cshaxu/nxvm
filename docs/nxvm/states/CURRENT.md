@@ -16,8 +16,8 @@ into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
 is then divided into S83-S100 and S100 is the final acceptance. S48-S88 are
-accepted and S91-S100 remain pending. The next package must be admitted from
-the bounded ledger; S91 is the active package. Earlier
+accepted and S92-S100 remain pending. The next package must be admitted from
+the bounded ledger; S92 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -156,6 +156,16 @@ S90 is accepted; T539 remains open for S91-S100.
 | Exit Criteria | Every admitted fault/event row has one Shared owner, excluded rows remain once in NXVM, neither width regresses, and full unit suites pass. |
 | Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
 | Similar-Issue Sweep | S91 consumes only artificial-IDT CPU fault/event rows; public IRQ and Core paging paths remain named NXVM receivers. |
+
+## S91 Acceptance
+
+The three protected fault/event helpers now have one Shared
+`cpu_execution_fault_event` receiver. NXVM deletes the duplicate helpers and
+transfers the T337 #UD inventory to that receiver; its independent debug API
+test remains. Focused x64/x86 and all static gates pass; detached units pass
+**444/444** on both widths. No production/API, firmware, asset, INI or EXE
+input changed. See [S91 evidence](../etc/evidence/t539-s91-execution-fault-event-receiver.md).
+S91 is accepted; T539 remains open for S92-S100.
 
 ## S86 Acceptance
 
