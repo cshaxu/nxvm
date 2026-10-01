@@ -157,7 +157,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S91 | Accepted: protected interrupt preparation, UD cache preservation and pending-event rollback move to the sole Shared receiver; NXVM retains debug API and real board paths. |
 | S92 | Accepted: CPU-only protected data-access, far-transfer and outer-return receivers plus their fixtures move to Shared; PIC/board interrupt paths remain NXVM. IDT privilege, paging and fault paths remain allocated to their named receivers. |
 | S93 | Accepted: CPU-only 16/32-bit task-switch state receivers and their fixture move to Shared; cross-width, public Core paging, hardware IRQ and board-state paths remain NXVM. |
-| S94 | Ordinary CPU group one: move the bounded CPU-only bit scan/test, double-shift, IMUL2, MOVX, sign-extend, SETcc and LEA fixtures/tests. |
+| S94 | Accepted: CPU-only bit scan/test, double-shift, IMUL2, MOVX, sign-extend, SETcc and LEA fixtures/tests move to Shared; same-named Core-machine board receivers remain NXVM. |
 | S95 | Operand/prefix receiver move: move the bounded CPU-only operand/address and prefix-attribute fixtures/tests, retaining any real board port/IRQ composition in NXVM. |
 | S96 | Ordinary CPU group two: move the bounded CPU-only legacy-LOCK and immediate-IMUL fixtures/tests without a blanket LOCK compatibility path. |
 | S97 | Residual CPU classification: classify the remaining CPU/FPU-profile, fault-diagnostic, IVT and fixture consumers; move every eligible Shared receiver or record its sole named NXVM board receiver before legacy deletion. |

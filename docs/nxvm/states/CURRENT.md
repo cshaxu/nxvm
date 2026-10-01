@@ -15,9 +15,9 @@ corpus into S68-S73; the former oversized physical-relocation row is divided
 into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
-is then divided into S83-S100 and S100 is the final acceptance. S48-S93 are
-accepted and S94-S100 remain pending. The next package must be admitted from
-the bounded ledger; S94 is the active package. Earlier
+is then divided into S83-S100 and S100 is the final acceptance. S48-S94 are
+accepted and S95-S100 remain pending. The next package must be admitted from
+the bounded ledger. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -198,26 +198,20 @@ no production/API, firmware, asset, INI or EXE input changed. See the
 [S93 evidence](../etc/evidence/t539-s93-task-state-receivers.md). S93 is
 accepted; T539 remains open for S94-S100.
 
-## S94 Admission Packet
+## S94 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | M5 T539 S94, automatically admitted continuation. |
-| Admission And Approval | The owner approved automatic, bounded, numeric T539 continuation tasks; S94 follows accepted S93. |
-| Objective | Move the eight CPU-only bit/shift/IMUL2/MOVX/sign-extend/SETcc/LEA receivers and their sole operand-probe fixture to Shared. |
-| Non-goals | Same-named `core_machine_*` board receivers, public Core memory/IRQ/fault paths, production APIs, firmware, assets, INI and executables. |
-| Reference Baseline | `82874e2ad`, accepted S93. |
-| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
-| Files And ABI Surface | Move only `cpu_setcc_smoke.c`, `cpu_movx_smoke.c`, `cpu_lea_smoke.c`, `cpu_bit_test_smoke.c`, `cpu_sign_extend_smoke.c`, `cpu_double_shift_smoke.c`, `cpu_bit_scan_smoke.c`, `cpu_imul2_smoke.c` and `cpu_operand_probe_fixture.h` to `test/x86/devices/cpu`; remove only their App targets. No board receiver, production source or public API changes. |
-| Applicable Rules | NXVM and Shared architecture/coding/execution/documentation rules; direct `x86-cpu` tests own instruction semantics while Core-machine tests own real board routes. |
-| Verification | Focused x64/x86 receivers and retained board tests, complete x64/x86 units, T317/T332, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. |
-| Expected Markers | Eight Shared CPU receivers, one Shared operand fixture, no duplicate App target or fixture, and unchanged named Core-machine receivers. |
-| Asset Needs | None; repository-only test ownership migration. |
-| Reporting Requirements | Record the complete moved/retained source allocation, test evidence and artifact determination. |
-| Stop Conditions | Stop if an alleged CPU-only source needs public machine, IRQ, physical mapping, a new Shared API or a duplicate fixture. |
-| Exit Criteria | Every admitted receiver has one Shared owner, all excluded Core-machine paths remain once in NXVM, and both full unit suites pass. |
-| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
-| Similar-Issue Sweep | S94 consumes every direct `x86-cpu` receiver in this instruction family and its only fixture; similarly named Core-machine cases explicitly remain NXVM. |
+The eight CPU-only bit-scan/test, double-shift, IMUL2, MOVX, sign-extend,
+SETcc and LEA receivers, with their sole operand-probe fixture, now have one
+Shared owner in `test/x86/devices/cpu`. NXVM deletes the duplicate targets and
+source copies. The named `core_machine_*` receivers remain NXVM board owners;
+no production code, public API, firmware, asset, INI or executable input
+changed.
+
+Focused x64/x86 Shared and retained board receivers pass **16/16** on each
+width. T317/T332, CPU/PIC authority, Shared manifest/corpus and documentation
+governance pass. Detached full unit suites pass **458/458** on x64 and x86.
+See the [S94 evidence](../etc/evidence/t539-s94-cpu-instruction-receivers.md).
+S94 is accepted; T539 remains open for S95-S100.
 
 ## S86 Acceptance
 
