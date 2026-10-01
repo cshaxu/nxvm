@@ -12,7 +12,7 @@ The completed fixed-product cutover has made XT, AT, DeskPro and default PC/AT f
 products. Each uses external BYOB firmware, one adjacent NXVM.ini runtime-media
 route and sole `assets/nxvm/<profile>/` deployment at the current baseline.
 This candidate follows the queued [chip extraction](m5-shared-chip-extraction.md),
-[board integration](m5-shared-ibmpc-integration.md) and
+[board integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and
 [App split](m5-independent-pc-apps.md). CPU semantics/tests then belong to
 `src/x86/devices` and `test/x86/devices`, with board coverage owned by the four
 Apps. Use their admitted deployment map rather than hard-coding the old paths.

@@ -162,4 +162,4 @@ split Apps or move protected assets. It may not silently retire hardware or
 degrade timing. Stop for new licensing, public-contract or product-behavior
 decisions outside the admitted batch.
 
-Next: [shared IBM PC integration](m5-shared-ibmpc-integration.md).
+Next: [shared IBM PC integration](../history/M5-T540-shared-ibmpc-integration-proposal.md).

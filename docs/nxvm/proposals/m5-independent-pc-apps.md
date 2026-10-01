@@ -4,7 +4,7 @@
 
 Third ordered migration candidate, unnumbered and not admitted. After
 [shared chips](m5-shared-chip-extraction.md) and
-[shared PC integration](m5-shared-ibmpc-integration.md), replace the four-machine
+[shared PC integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), replace the four-machine
 NXVM product shell with four top-level products:
 
 - `src/app-mypcxt`: existing IBM 5160 XT.

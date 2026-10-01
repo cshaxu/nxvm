@@ -2,7 +2,8 @@
 
 ## Current Work
 
-M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
+M5 T540 S1 is active: it audits the common IBM-PC board boundary before any
+source move. M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
@@ -26,6 +27,28 @@ the completed CPU extraction.
 | Task | Status |
 | --- | --- |
 | T539 | Closed: every finite chip-ledger row is either extracted to its sole Shared owner or retained with its stated board-only reason; S101 removed the last historical CPU copy. |
+| T540 S1 | Active: classify the four current board construction graphs into shared-PC, XT-only, proven AT-common and machine-specific responsibilities; no source move is admitted. |
+
+## T540 S1 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T540 S1, New task admission. |
+| Admission And Approval | The owner approved the next queue candidate and requested an architecture audit before board-code extraction. |
+| Objective | Establish a factual, per-machine board graph and a minimal destination design for later `x86/ibmpc` extraction. Answer whether XT requires its own board layer and identify only proven AT-common mechanisms. |
+| Non-goals | Moving source, changing behavior, synthesizing a universal AT configuration, splitting Apps, adding PC110 implementation, changing firmware/assets/INI/executables, or upgrading timing grades. |
+| Reference Baseline | `0412c9ffa`, closed T539 with independent chips in `src/x86/devices`. |
+| Candidate Proposal | [Shared IBM PC board integration](../history/M5-T540-shared-ibmpc-integration-proposal.md). |
+| Files And ABI Surface | Documentation and evidence only. Inspect Profiles, Machine adapter, retained board-device files, CMake targets and tests; add no production or public interface. |
+| Applicable Rules | One owner per board state/path; neutral dependencies only; no model-name switches in Shared; preserve XT/AT/Compaq distinctions where electrical topology differs. |
+| Verification | Static inventory of each board's construction/wiring; source/test owner map; documentation governance and diff checks. No executable rebuild for this design-only S. |
+| Expected Markers | A concise destination graph: `x86/ibmpc/common` only for proven shared mechanisms, `x86/ibmpc/xt` for XT wiring, `x86/ibmpc/at` for proven AT wiring, and thin product compositions for every machine. |
+| Asset Needs | None. |
+| Reporting Requirements | Name exact shared candidates, XT-only mechanisms, AT-common candidates, Model-40/default exceptions, proposed later S boundaries and stop conditions. |
+| Stop Conditions | Stop before implementation if actual profiles do not share one behavior/lifetime, a proposed boundary needs an App-private pointer, or Model 40 requires a new product/board contract. |
+| Exit Criteria | The audit is evidence-backed, distinguishes similarity from true shared ownership, and yields bounded extraction packages without a catch-all board framework. |
+| Original Owner Request | Extract reusable board-level PC code so later XT, AT, DeskPro 386, default and PC110 Apps can reuse it without duplicate board implementations. |
+| Similar-Issue Sweep | Inspect all four current profile construction graphs and all retained `app-nxvm/devices` board adapters; classify every apparent duplicate before proposing a move. |
 
 ## S87 Admission Packet
 
