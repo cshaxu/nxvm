@@ -673,6 +673,8 @@ endif()
 add_executable(core-machine-rotate-smoke test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c)
 target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
 add_executable(core-machine-eflags-local-smoke test/app-nxvm/unit/core/devices/core_machine_eflags_local_smoke.c)
+target_include_directories(core-machine-eflags-local-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(core-machine-eflags-local-smoke PRIVATE x86-cpu)
 add_executable(core-machine-direct-flags-board-smoke
     test/app-nxvm/unit/core/devices/core_machine_direct_flags_board_smoke.c)
@@ -1365,6 +1367,8 @@ target_link_libraries(vm-control-lifecycle-smoke PRIVATE
 add_executable(core-machine-cpu-context-smoke
     test/app-nxvm/unit/core/devices/cpu_execution_context_smoke.c
 )
+target_include_directories(core-machine-cpu-context-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/test")
 target_link_libraries(core-machine-cpu-context-smoke PRIVATE
     x86-cpu
 )
