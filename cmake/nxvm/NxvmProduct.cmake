@@ -723,14 +723,8 @@ add_executable(core-machine-moffs-smoke test/app-nxvm/unit/core/devices/core_mac
 target_link_libraries(core-machine-moffs-smoke PRIVATE core-machine)
 add_executable(core-machine-gpr-mov-smoke test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c)
 target_link_libraries(core-machine-gpr-mov-smoke PRIVATE core-machine)
-add_executable(cpu-moffs-smoke test/app-nxvm/unit/core/devices/cpu_moffs_smoke.c)
-target_link_libraries(cpu-moffs-smoke PRIVATE x86-cpu)
 add_executable(core-machine-sreg-mov-smoke test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c)
 target_link_libraries(core-machine-sreg-mov-smoke PRIVATE core-machine)
-add_executable(cpu-sreg-mov-smoke test/app-nxvm/unit/core/devices/cpu_sreg_mov_smoke.c)
-target_link_libraries(cpu-sreg-mov-smoke PRIVATE x86-cpu)
-add_executable(cpu-segment-selector-smoke test/app-nxvm/unit/core/devices/cpu_segment_selector_smoke.c)
-target_link_libraries(cpu-segment-selector-smoke PRIVATE x86-cpu)
 add_executable(cpu-prefix-attributes-s64-smoke
     test/app-nxvm/unit/core/devices/cpu_prefix_attributes_s64_smoke.c)
 target_link_libraries(cpu-prefix-attributes-s64-smoke PRIVATE x86-cpu)
@@ -1965,9 +1959,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-movx-smoke
     cpu-movx-smoke
     cpu-lea-smoke
-    cpu-moffs-smoke
-    cpu-sreg-mov-smoke
-    cpu-segment-selector-smoke
     cpu-prefix-attributes-s64-smoke
     cpu-operand-address-smoke
     cpu-bit-scan-smoke
@@ -2239,7 +2230,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_les_lds
     cpu-lods-smoke
     x86-test-cpu_lss_lfs_lgs
-    cpu-moffs-smoke
+    x86-test-cpu_moffs
     cpu-movs-smoke
     core-machine-movx-smoke
     cpu-port-io-smoke
@@ -2255,13 +2246,13 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     core-machine-real-ud-delivery-s1-smoke
     x86-test-cpu_rotate
     cpu-scas-smoke
-    cpu-segment-selector-smoke
+    x86-test-cpu_segment_selector
     cpu-prefix-attributes-s64-smoke
     cpu-bit-scan-smoke
     cpu-setcc-smoke
     cpu-sign-extend-smoke
     core-machine-software-int-s50-smoke
-    cpu-sreg-mov-smoke
+    x86-test-cpu_sreg_mov
     cpu-stos-smoke
     machine-vm86-delivery-smoke
     x86-test-cpu_xchg
