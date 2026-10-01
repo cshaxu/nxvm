@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 retains its completed S1/S2 design evidence; no source-move packet is
-active yet. M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
+M5 T540 S3 is active: it renames the approved future shared-component target
+layout without moving source. M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
 split into S30-S35 under the existing automatic-S authorization. At S36 intake,
@@ -27,7 +27,7 @@ the completed CPU extraction.
 | Task | Status |
 | --- | --- |
 | T539 | Closed: every finite chip-ledger row is either extracted to its sole Shared owner or retained with its stated board-only reason; S101 removed the last historical CPU copy. |
-| T540 | Open: S1/S2 accepted the family boundary and full adapter ledger; a future source packet must first establish neutral `x86/core`, then extract individual PC-board mechanisms. |
+| T540 S3 | Active: record the flat target names `x86/chips`, `x86/core`, `x86/ibmpc-common`, `x86/ibmpc-at` and `x86/ibmpc-xt`; current sources remain unmoved. |
 
 ## T540 S1 Acceptance
 
@@ -56,6 +56,27 @@ actual IBM-PC wiring.  No source, ABI, asset, INI or executable input changed.
 `git diff --check` and `Verify-DocumentationGovernance.ps1 -Product nxvm`
 passed.  Coordinator review accepted `fd36e8412`; the required S2 governance
 closure follows.
+
+## T540 S3 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T540 S3, automatic continuation under the owner's standing authorization for bounded linear S tasks. |
+| Admission And Approval | The owner selected flat future component names: rename the planned `x86/devices` target to `x86/chips` and replace nested `x86/ibmpc/{common,at,xt}` with sibling components `x86/ibmpc-common`, `x86/ibmpc-at`, `x86/ibmpc-xt`. |
+| Objective | Make every live NXVM design, proposal, roadmap and queue reference name the same approved future component layout, while preserving historical evidence and current source truth. |
+| Non-goals | Moving or renaming current source/test directories, changing CMake targets/ABI/runtime behavior, creating empty directories, rebuilding executables, or rewriting historical T539 evidence. |
+| Reference Baseline | `7e8798d52`, accepted T540 S2 adapter ledger. |
+| Candidate Proposal | [Shared IBM PC board integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [board audit](../etc/architecture/t540-ibmpc-board-audit.md) and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | Living NXVM design/proposal/roadmap/state documentation only; no source or public interface. |
+| Applicable Rules | Current-source truth is distinct from future target; one canonical component name per future responsibility; no misleading compatibility aliases or duplicate target names. |
+| Verification | Search all live NXVM planning/design/state documents for stale future names, preserve historical paths as history, run documentation governance and diff checks. |
+| Expected Markers | The planned target is `x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug}` with mirrored future tests, while present source remains accurately called `x86/devices`. |
+| Asset Needs | None. |
+| Reporting Requirements | State the final target tree, explain current-versus-future naming, identify every updated live authority and confirm no source move occurred. |
+| Stop Conditions | Stop if a reference is historical evidence rather than a living design, or if a rename would falsely claim that the current source tree already moved. |
+| Exit Criteria | All live future-layout authorities agree on the approved flat names; historical evidence and current-tree descriptions remain truthful. |
+| Original Owner Request | Use `x86/chips`, `x86/core`, `x86/ibmpc-common`, `x86/ibmpc-at` and `x86/ibmpc-xt` as the future component layout. |
+| Similar-Issue Sweep | Inspect all NXVM active design, roadmap, queue/proposal and current-state references to planned `x86/devices`/`x86/ibmpc` layout. |
 
 ## S87 Admission Packet
 
