@@ -60,35 +60,35 @@ set(project_t332_public_limit_sources
     "test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c"
     "test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c")
 set(project_t332_cpu_instruction_fixture_sources
-    "devices/cpu/cpu_debug_state_smoke.c"
-    "devices/cpu/cpu_control_state_smoke.c"
-    "devices/cpu/cpu_control_transfer_branch_smoke.c"
-    "devices/cpu/cpu_control_transfer_near_smoke.c"
-    "devices/cpu/cpu_control_transfer_far_smoke.c"
-    "devices/cpu/cpu_outer_return_smoke.c"
-    "devices/cpu/cpu_idt_privilege_entry_smoke.c"
-    "devices/cpu/cpu_protected_far_smoke.c"
-    "devices/cpu/cpu_protected_data_access_smoke.c"
-    "devices/cpu/cpu_descriptor_system_smoke.c"
-    "devices/cpu/cpu_dttr_s61_smoke.c"
-    "devices/cpu/cpu_lar_lsl_smoke.c"
-    "devices/cpu/cpu_lgdt_lidt_smoke.c"
-    "devices/cpu/cpu_sgdt_sidt_smoke.c"
-    "devices/cpu/cpu_verr_verw_smoke.c")
+    "chips/cpu/cpu_debug_state_smoke.c"
+    "chips/cpu/cpu_control_state_smoke.c"
+    "chips/cpu/cpu_control_transfer_branch_smoke.c"
+    "chips/cpu/cpu_control_transfer_near_smoke.c"
+    "chips/cpu/cpu_control_transfer_far_smoke.c"
+    "chips/cpu/cpu_outer_return_smoke.c"
+    "chips/cpu/cpu_idt_privilege_entry_smoke.c"
+    "chips/cpu/cpu_protected_far_smoke.c"
+    "chips/cpu/cpu_protected_data_access_smoke.c"
+    "chips/cpu/cpu_descriptor_system_smoke.c"
+    "chips/cpu/cpu_dttr_s61_smoke.c"
+    "chips/cpu/cpu_lar_lsl_smoke.c"
+    "chips/cpu/cpu_lgdt_lidt_smoke.c"
+    "chips/cpu/cpu_sgdt_sidt_smoke.c"
+    "chips/cpu/cpu_verr_verw_smoke.c")
 set(project_t332_task_switch16_cpu_fixture_sources
-    "devices/cpu/cpu_task_switch16_smoke.c"
-    "devices/cpu/cpu_task_switch32_decode_smoke.c"
+    "chips/cpu/cpu_task_switch16_smoke.c"
+    "chips/cpu/cpu_task_switch32_decode_smoke.c"
     )
 set(project_t332_task_switch32_cpu_fixture_sources
-    "devices/cpu/cpu_task_switch32_state_smoke.c")
+    "chips/cpu/cpu_task_switch32_state_smoke.c")
 set(project_t332_protected_cpu_fixture_sources
-    "devices/cpu/cpu_protected_far_smoke.c"
-    "devices/cpu/cpu_protected_data_access_smoke.c")
+    "chips/cpu/cpu_protected_far_smoke.c"
+    "chips/cpu/cpu_protected_data_access_smoke.c")
 set(project_t332_outer_return_cpu_fixture_sources
-    "devices/cpu/cpu_outer_return_smoke.c")
+    "chips/cpu/cpu_outer_return_smoke.c")
 set(project_t332_descriptor_query_fixture_sources
-    "devices/cpu/cpu_lar_lsl_smoke.c"
-    "devices/cpu/cpu_verr_verw_smoke.c")
+    "chips/cpu/cpu_lar_lsl_smoke.c"
+    "chips/cpu/cpu_verr_verw_smoke.c")
 
 file(READ "${PROJECT_T332_SOURCE_DIR}/test/app-nxvm/unit/core/devices/support/cpu_board_limit_fixture.h"
     project_t332_limit_helper)
@@ -133,7 +133,7 @@ function(project_t332_require_shared_lifecycle source)
         endif()
         return()
     endif()
-    if(source STREQUAL "devices/cpu/cpu_eflags_local_smoke.c")
+    if(source STREQUAL "chips/cpu/cpu_eflags_local_smoke.c")
         if(NOT content MATCHES "support/cpu_bus_fixture[.]h" OR
             NOT content MATCHES "cpu_bus_prepare" OR
             content MATCHES "core_machine_(create|bind_execution_provider|freeze_execution_providers)[ \\t]*\\(")

@@ -8,7 +8,7 @@
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
-#include "x86/devices/rtc146818/rtc146818_interface.h"
+#include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "support/rom/session_assets.h"
 
 static void cmos_write(t_port *port, lib_u8 reg, lib_u8 value)

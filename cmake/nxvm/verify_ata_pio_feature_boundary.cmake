@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/hdc/hdc.c" hdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/hdc/hdc.c" hdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/hdc.c" hdc_adapter)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
     profile_header)

@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "x86/devices/rtc146818/rtc146818_interface.h"
+#include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "support/core_machine_board_fixture.h"
 
 static lib_i32 machine_explicit_time_prepare(core_machine **out_machine)

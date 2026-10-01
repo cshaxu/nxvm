@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "x86/devices/cpu/cpu.h"
+#include "x86/chips/cpu/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 

@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(machine "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c")
-set(timing "${PROJECT_SOURCE_DIR}/src/x86/devices/cpu/cpu_timing.c")
+set(timing "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_timing.c")
 foreach(path IN ITEMS "${machine}" "${timing}")
     if(NOT EXISTS "${path}")
         message(FATAL_ERROR "T435 S3 timing seam input is missing: ${path}")

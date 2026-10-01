@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/devices/cpu/cpu_instructions.h"
+#include "x86/chips/cpu/cpu_instructions.h"
 #include "app-nxvm/devices/machine_interface.h"
 
 static lib_i32 verify_machine_profiles(core_machine_cpu_profile cpu_profile,

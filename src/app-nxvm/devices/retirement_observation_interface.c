@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 
 #include "app-nxvm/devices/machine.h"
-#include "x86/devices/cpu/cpu_interface.h"
+#include "x86/chips/cpu/cpu_interface.h"
 
 void core_machine_retirement_observation_initialize(core_machine *machine)
 {

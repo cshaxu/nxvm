@@ -7,9 +7,9 @@
 extern "C" {
 #endif
 #include "lib/types/types_interface.h"
-#include "x86/devices/ps2mouse/ps2mouse_interface.h"
-#include "x86/devices/keyboard/keyboard_interface.h"
-#include "x86/devices/kbc8042/kbc8042_interface.h"
+#include "x86/chips/ps2mouse/ps2mouse_interface.h"
+#include "x86/chips/keyboard/keyboard_interface.h"
+#include "x86/chips/kbc8042/kbc8042_interface.h"
 
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"

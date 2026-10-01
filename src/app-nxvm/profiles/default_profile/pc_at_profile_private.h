@@ -3,8 +3,8 @@
 #include "lib/types/types_interface.h"
 
 
-#include "x86/devices/cpu/cpu_interface.h"
-#include "x86/devices/fpu/fpu_interface.h"
+#include "x86/chips/cpu/cpu_interface.h"
+#include "x86/chips/fpu/fpu_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/profiles/profile_contract_interface.h"

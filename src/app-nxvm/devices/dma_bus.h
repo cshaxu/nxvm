@@ -8,7 +8,7 @@ extern "C"
 {
 #endif
 #include "lib/types/types_interface.h"
-#include "x86/devices/dma8237/dma8237_interface.h"
+#include "x86/chips/dma8237/dma8237_interface.h"
 
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/port.h"

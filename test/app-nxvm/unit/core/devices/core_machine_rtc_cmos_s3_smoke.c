@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"
-#include "x86/devices/rtc146818/rtc146818_interface.h"
+#include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "support/core_machine_board_fixture.h"
 
 typedef struct rtc_cmos_s3_fixture {

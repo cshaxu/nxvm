@@ -2,7 +2,7 @@
 #ifndef CORE_MACHINE_PIC_BUS_H
 #define CORE_MACHINE_PIC_BUS_H
 #include "lib/types/types_interface.h"
-#include "x86/devices/pic8259/pic8259_interface.h"
+#include "x86/chips/pic8259/pic8259_interface.h"
 #include "app-nxvm/devices/pic_bus_interface.h"
 #include "app-nxvm/devices/port.h"
 

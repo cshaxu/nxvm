@@ -3,8 +3,8 @@
 #include "lib/types/types_interface.h"
 
 
-#include "x86/devices/cpu/cpu_interface.h"
-#include "x86/devices/fpu/fpu_interface.h"
+#include "x86/chips/cpu/cpu_interface.h"
+#include "x86/chips/fpu/fpu_interface.h"
 #include "lib/storage/medium_interface.h"
 
 typedef enum vm_machine_profile_kind {

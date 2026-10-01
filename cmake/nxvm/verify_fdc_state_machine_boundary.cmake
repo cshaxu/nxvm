@@ -4,9 +4,9 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.h" fdc_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/fdc8272/fdc.c" chip_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/fdc8272/fdc.h" chip_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/fdc8272/fdc8272_interface.h" chip_interface)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.c" chip_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.h" chip_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc8272_interface.h" chip_interface)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_fdc_smoke.c"
     core_fixture)
@@ -67,7 +67,7 @@ file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
 foreach(path IN LISTS app_sources)
     file(READ "${path}" source)
-    if(source MATCHES "x86/devices/fdc8272/fdc\\.[ch]" OR
+    if(source MATCHES "x86/chips/fdc8272/fdc\\.[ch]" OR
         source MATCHES "core_machine_fdc_PHASE_" OR
         source MATCHES "fdc\\.data\\.(phase|seek_pending|pcn|cmd|ret|flagINTR)" OR
         source MATCHES "fdc->data\\.(phase|seek_pending|pcn|cmd|ret|flagINTR)")

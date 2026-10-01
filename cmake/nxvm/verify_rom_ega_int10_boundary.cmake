@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/video/video.c" vadp_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/video/video.c" vadp_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/display.c" display_source)
 
 if(display_source MATCHES "ega_planar_vram|executor_memory|core_machine_vadp")

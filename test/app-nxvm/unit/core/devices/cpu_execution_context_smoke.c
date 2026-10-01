@@ -3,11 +3,11 @@
 
 
 
-#include "x86/devices/cpu/cpu.h"
+#include "x86/chips/cpu/cpu.h"
 
-#include "x86/devices/cpu/cpu_instructions.h"
+#include "x86/chips/cpu/cpu_instructions.h"
 
-#include "x86/devices/cpu/support/cpu_bus_fixture.h"
+#include "x86/chips/cpu/support/cpu_bus_fixture.h"
 
 static lib_i32 cpu_debug_case(core_machine_cpu_profile profile)
 {

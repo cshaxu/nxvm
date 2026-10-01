@@ -2,7 +2,7 @@
 #define TEST_PROTECTED_16_BOOTSTRAP_FIXTURE_H
 
 #include "lib/types/types_interface.h"
-#include "x86/devices/cpu/cpu_interface.h"
+#include "x86/chips/cpu/cpu_interface.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 

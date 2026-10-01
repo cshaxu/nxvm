@@ -2,7 +2,7 @@
 #define TEST_CPU_BOARD_LIMIT_FIXTURE_H
 
 #include "core_machine_board_fixture.h"
-#include "x86/devices/cpu/cpu.h"
+#include "x86/chips/cpu/cpu.h"
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/machine_interface.h"
 

@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/devices/cpu/cpu_instructions.h"
+#include "x86/chips/cpu/cpu_instructions.h"
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory.h"

@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_HDC_H
 #define CORE_MACHINE_HDC_H
 #include "lib/types/types_interface.h"
-#include "x86/devices/hdc/hdc_interface.h"
+#include "x86/chips/hdc/hdc_interface.h"
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/media_interface.h"

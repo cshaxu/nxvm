@@ -2,10 +2,10 @@
 #define CORE_MACHINE_INTERFACE_H
 
 
-#include "x86/devices/cpu/cpu_interface.h"
+#include "x86/chips/cpu/cpu_interface.h"
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/display_interface.h"
-#include "x86/devices/fpu/fpu_interface.h"
+#include "x86/chips/fpu/fpu_interface.h"
 #include "app-nxvm/devices/execution_provider.h"
 #include "app-nxvm/devices/firmware_interface.h"
 #include "app-nxvm/devices/lifecycle_interface.h"

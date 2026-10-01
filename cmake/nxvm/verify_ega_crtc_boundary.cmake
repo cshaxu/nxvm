@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/video/video.c" vadp_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/video/video.h" vadp_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/video/video.c" vadp_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/video/video.h" vadp_header)
 
 string(FIND "${vadp_header}" "(X86_VIDEO_CRTC_EGA_LAST + 1u)" count_position)
 if(count_position EQUAL -1)

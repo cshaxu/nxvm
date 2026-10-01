@@ -1,5 +1,5 @@
 #include "support/protected_16_bootstrap_fixture.h"
-#include "x86/devices/cpu/cpu.h"
+#include "x86/chips/cpu/cpu.h"
 #include <stdio.h>
 
 #define S47_VECTOR 0x30u

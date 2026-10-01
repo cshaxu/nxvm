@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_RETIREMENT_OBSERVATION_INTERFACE_H
 #define CORE_MACHINE_RETIREMENT_OBSERVATION_INTERFACE_H
 
-#include "x86/devices/cpu/cpu_interface.h"
+#include "x86/chips/cpu/cpu_interface.h"
 #include "lib/types/types_interface.h"
 
 #ifdef __cplusplus

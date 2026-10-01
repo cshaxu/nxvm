@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/entry_plan_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/media_interface.h"
-#include "x86/devices/rtc146818/rtc146818_interface.h"
+#include "x86/chips/rtc146818/rtc146818_interface.h"
 
 typedef struct mantle_fixture {
     x86_rtc *rtc;

@@ -13,9 +13,9 @@ set(paths
     src/app-nxvm/machine/machine_devices.c
     src/app-nxvm/machine/media/fdd.c
     src/app-nxvm/machine/media/fdd.h
-    src/x86/devices/fdc8272/fdc.c
-    src/x86/devices/fdc8272/fdc.h
-    src/x86/devices/fdc8272/fdc8272_interface.h
+    src/x86/chips/fdc8272/fdc.c
+    src/x86/chips/fdc8272/fdc.h
+    src/x86/chips/fdc8272/fdc8272_interface.h
     test/app-nxvm/unit/core/devices/core_machine_fdc_smoke.c)
 foreach(path IN LISTS paths)
     get_filename_component(directory "${WORK}/${path}" DIRECTORY)
@@ -35,11 +35,11 @@ endforeach()
 foreach(case RANGE 0 6)
     set(gate "${fdc_gate}")
     if(case EQUAL 0)
-        set(path src/x86/devices/fdc8272/fdc.c)
+        set(path src/x86/chips/fdc8272/fdc.c)
         set(injection "#include \"app-nxvm/devices/port.h\"")
         set(expected "Shared FDC retains board ownership")
     elseif(case EQUAL 1)
-        set(path src/x86/devices/fdc8272/fdc8272_interface.h)
+        set(path src/x86/chips/fdc8272/fdc8272_interface.h)
         set(injection "struct x86_fdc { lib_u8 phase; };")
         set(expected "Shared FDC public layout is not opaque")
     elseif(case EQUAL 2)
@@ -48,7 +48,7 @@ foreach(case RANGE 0 6)
         set(expected "NXVM crosses the opaque FDC boundary")
     elseif(case EQUAL 3)
         set(path src/app-nxvm/devices/machine_scheduler.c)
-        set(injection "#include \"x86/devices/fdc8272/fdc.h\"")
+        set(injection "#include \"x86/chips/fdc8272/fdc.h\"")
         set(expected "NXVM crosses the opaque FDC boundary")
     elseif(case EQUAL 4)
         set(path src/app-nxvm/devices/fdc.c)

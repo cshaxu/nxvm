@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/devices/cpu/cpu_instructions.h"
+#include "x86/chips/cpu/cpu_instructions.h"
 
 static lib_i32 valid_cpu_profile(core_machine_cpu_profile profile)
 {

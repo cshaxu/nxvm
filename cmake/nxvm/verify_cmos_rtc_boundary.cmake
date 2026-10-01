@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/x86/devices/rtc146818/rtc.c" rtc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/rtc146818/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"

@@ -1,7 +1,7 @@
 /* Machine display-provider binding; video values belong to the device. */
 #ifndef CORE_MACHINE_DISPLAY_INTERFACE_H
 #define CORE_MACHINE_DISPLAY_INTERFACE_H
-#include "x86/devices/video/video_values_interface.h"
+#include "x86/chips/video/video_values_interface.h"
 
 typedef void (*core_machine_display_provider)(void *context);
 

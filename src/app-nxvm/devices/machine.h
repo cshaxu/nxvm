@@ -7,8 +7,8 @@
 
 
 
-#include "x86/devices/cpu/cpu_interface.h"
-#include "x86/devices/fpu/fpu_interface.h"
+#include "x86/chips/cpu/cpu_interface.h"
+#include "x86/chips/fpu/fpu_interface.h"
 
 #include "app-nxvm/devices/execution_provider.h"
 
@@ -32,7 +32,7 @@
 
 #include "app-nxvm/devices/d4_memory.h"
 
-#include "x86/devices/rtc146818/rtc146818_interface.h"
+#include "x86/chips/rtc146818/rtc146818_interface.h"
 
 #include "app-nxvm/devices/fdc.h"
 
@@ -41,7 +41,7 @@
 #include "app-nxvm/devices/kbc.h"
 
 #include "app-nxvm/devices/xt_ppi_keyboard.h"
-#include "x86/devices/xtkeyboard/xtkeyboard_interface.h"
+#include "x86/chips/xtkeyboard/xtkeyboard_interface.h"
 
 #include "app-nxvm/devices/vadp.h"
 

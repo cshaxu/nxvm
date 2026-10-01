@@ -1,4 +1,4 @@
-#include "x86/devices/cpu/support/cpu_outer_return_fixture.h"
+#include "x86/chips/cpu/support/cpu_outer_return_fixture.h"
 #include "support/pic_fixture.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/port.h"

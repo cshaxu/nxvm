@@ -2,10 +2,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(t359_source "${PROJECT_SOURCE_DIR}/src/x86/devices/cpu/cpu_instructions.c")
+set(t359_source "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_instructions.c")
 set(t359_machine "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c")
-set(t359_timing_model "${PROJECT_SOURCE_DIR}/src/x86/devices/cpu/cpu_timing_model.c")
-set(t359_timing "${PROJECT_SOURCE_DIR}/src/x86/devices/cpu/cpu_timing.c")
+set(t359_timing_model "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_timing_model.c")
+set(t359_timing "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_timing.c")
 set(t359_inventory
     "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md")
 set(t359_s2_ledger

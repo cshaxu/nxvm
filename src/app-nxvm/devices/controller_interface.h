@@ -12,7 +12,7 @@
 #define CORE_MACHINE_XEBEC_TYPE_2_HEADS 4u
 #define CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK 17u
 
-#include "x86/devices/pit825x/pit825x_interface.h"
+#include "x86/chips/pit825x/pit825x_interface.h"
 
 /* A controller may retain this frozen core-issued nonce, but never DMA
  * registers, guest memory, a controller implementation pointer, or an address.

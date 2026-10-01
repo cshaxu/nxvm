@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/devices/cpu/cpu_instructions.h"
+#include "x86/chips/cpu/cpu_instructions.h"
 
 /* S8 records the 80386DX lexical decoder universe.  It is audit evidence,
  * not a timing or semantic conformance test. */

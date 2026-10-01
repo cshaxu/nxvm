@@ -4,7 +4,7 @@
 
 /* Private prepared-state operations for CPU execution corpus fixtures. */
 #include "core_machine_board_fixture.h"
-#include "x86/devices/cpu/cpu_instructions.h"
+#include "x86/chips/cpu/cpu_instructions.h"
 
 /* This test-only borrow does not cross a production boundary: the board keeps
  * only the opaque execution owner, and tests use this fixture solely to build

@@ -992,19 +992,19 @@ function(project_configure_t317_strict_cpu_smokes)
 set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
     "machine-cli-sti-interrupt-smoke|test/app-nxvm/unit/core/devices/machine_cli_sti_interrupt_smoke.c"
-    "x86-test-cpu_control_state|devices/cpu/cpu_control_state_smoke.c"
-    "x86-test-cpu_control_transfer_branch|devices/cpu/cpu_control_transfer_branch_smoke.c"
-    "x86-test-cpu_control_transfer_near|devices/cpu/cpu_control_transfer_near_smoke.c"
-    "x86-test-cpu_control_transfer_far|devices/cpu/cpu_control_transfer_far_smoke.c"
-    "x86-test-cpu_idt_privilege_entry|devices/cpu/cpu_idt_privilege_entry_smoke.c"
-    "x86-test-cpu_protected_far|devices/cpu/cpu_protected_far_smoke.c"
-    "x86-test-cpu_protected_data_access|devices/cpu/cpu_protected_data_access_smoke.c"
-    "x86-test-cpu_debug_state|devices/cpu/cpu_debug_state_smoke.c"
-    "x86-test-cpu_dttr_s61|devices/cpu/cpu_dttr_s61_smoke.c"
-    "x86-test-cpu_descriptor_system|devices/cpu/cpu_descriptor_system_smoke.c"
-    "x86-test-cpu_lar_lsl|devices/cpu/cpu_lar_lsl_smoke.c"
-    "x86-test-cpu_verr_verw|devices/cpu/cpu_verr_verw_smoke.c"
-    "x86-test-cpu_eflags_local|devices/cpu/cpu_eflags_local_smoke.c"
+    "x86-test-cpu_control_state|chips/cpu/cpu_control_state_smoke.c"
+    "x86-test-cpu_control_transfer_branch|chips/cpu/cpu_control_transfer_branch_smoke.c"
+    "x86-test-cpu_control_transfer_near|chips/cpu/cpu_control_transfer_near_smoke.c"
+    "x86-test-cpu_control_transfer_far|chips/cpu/cpu_control_transfer_far_smoke.c"
+    "x86-test-cpu_idt_privilege_entry|chips/cpu/cpu_idt_privilege_entry_smoke.c"
+    "x86-test-cpu_protected_far|chips/cpu/cpu_protected_far_smoke.c"
+    "x86-test-cpu_protected_data_access|chips/cpu/cpu_protected_data_access_smoke.c"
+    "x86-test-cpu_debug_state|chips/cpu/cpu_debug_state_smoke.c"
+    "x86-test-cpu_dttr_s61|chips/cpu/cpu_dttr_s61_smoke.c"
+    "x86-test-cpu_descriptor_system|chips/cpu/cpu_descriptor_system_smoke.c"
+    "x86-test-cpu_lar_lsl|chips/cpu/cpu_lar_lsl_smoke.c"
+    "x86-test-cpu_verr_verw|chips/cpu/cpu_verr_verw_smoke.c"
+    "x86-test-cpu_eflags_local|chips/cpu/cpu_eflags_local_smoke.c"
     "core-machine-enter-leave-smoke|test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"
     "machine-fpu-interface-s65-smoke|test/app-nxvm/unit/core/devices/machine_fpu_interface_s65_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c"
@@ -1012,12 +1012,12 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-gpr-push-pop-smoke|test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c"
     "core-machine-hlt-s49-smoke|test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c"
     "core-machine-imul-immediate-s56-smoke|test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
-    "x86-test-cpu_outer_return|devices/cpu/cpu_outer_return_smoke.c"
-    "x86-test-cpu_task_switch16|devices/cpu/cpu_task_switch16_smoke.c"
-    "x86-test-cpu_task_switch32_decode|devices/cpu/cpu_task_switch32_decode_smoke.c"
-    "x86-test-cpu_task_switch32_state|devices/cpu/cpu_task_switch32_state_smoke.c"
+    "x86-test-cpu_outer_return|chips/cpu/cpu_outer_return_smoke.c"
+    "x86-test-cpu_task_switch16|chips/cpu/cpu_task_switch16_smoke.c"
+    "x86-test-cpu_task_switch32_decode|chips/cpu/cpu_task_switch32_decode_smoke.c"
+    "x86-test-cpu_task_switch32_state|chips/cpu/cpu_task_switch32_state_smoke.c"
     "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
-    "x86-test-cpu_lgdt_lidt|devices/cpu/cpu_lgdt_lidt_smoke.c"
+    "x86-test-cpu_lgdt_lidt|chips/cpu/cpu_lgdt_lidt_smoke.c"
     "core-machine-lea-smoke|test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
     "core-machine-legacy-sreg-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c"
     "core-machine-les-lds-s41-smoke|test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c"
@@ -1031,7 +1031,7 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "core-machine-sign-extend-smoke|test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c"
     "core-machine-software-int-s50-smoke|test/app-nxvm/unit/core/devices/core_machine_software_int_s50_smoke.c"
     "core-machine-sreg-mov-smoke|test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c"
-    "x86-test-cpu_sgdt_sidt|devices/cpu/cpu_sgdt_sidt_smoke.c"
+    "x86-test-cpu_sgdt_sidt|chips/cpu/cpu_sgdt_sidt_smoke.c"
     "machine-debug-state-board-smoke|test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c"
     "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
 
@@ -2616,7 +2616,7 @@ endforeach()
 endif()
 
 set(PROJECT_CURRENT_VM_RUNTIME_PATH
-    "${CMAKE_BINARY_DIR}/vm-0-5-0539.exe")
+    "${CMAKE_BINARY_DIR}/vm-0-5-0540.exe")
 configure_file("${CMAKE_SOURCE_DIR}/assets/nxvm/${NXVM_PRODUCT_PROFILE}/NXVM.ini"
     "${CMAKE_BINARY_DIR}/NXVM.ini" COPYONLY)
 function(project_add_t533_console_integration_test target)
@@ -2830,8 +2830,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0539)
-add_current_vm_artifact(vm-0-5-0539 "0.5.0539")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0540)
+add_current_vm_artifact(vm-0-5-0540 "0.5.0540")
 if(TARGET run-integration-tests)
     add_dependencies(run-integration-tests ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 endif()
@@ -3482,10 +3482,10 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/port.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/memory.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/transaction.c|machine-executor"
-    "x86-cpu|src/x86/devices/cpu/cpu.c|cpu"
-    "x86-cpu|src/x86/devices/cpu/cpu_instructions.c|cpu"
-    "x86-cpu|src/x86/devices/cpu/cpu_timing.c|cpu"
-    "x86-cpu|src/x86/devices/cpu/cpu_timing_model.c|cpu"
+    "x86-cpu|src/x86/chips/cpu/cpu.c|cpu"
+    "x86-cpu|src/x86/chips/cpu/cpu_instructions.c|cpu"
+    "x86-cpu|src/x86/chips/cpu/cpu_timing.c|cpu"
+    "x86-cpu|src/x86/chips/cpu/cpu_timing_model.c|cpu"
     "core-machine-executor|src/app-nxvm/devices/pic_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/pit_bus.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/dma_bus.c|machine-executor"

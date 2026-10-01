@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/devices/cpu/cpu_instructions.h"
+#include "x86/chips/cpu/cpu_instructions.h"
 
 /* A decoder-boundary inventory is intentionally separate from the timing
  * manifest: this runner reports what the current lexical decoder accepts,
