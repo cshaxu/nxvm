@@ -109,11 +109,21 @@ accepted; T539 remains open for S90-S100.
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T539 S90, automatically admitted continuation. |
+| Admission And Approval | The owner approved automatic, bounded, numeric T539 continuation tasks; S90 is the next linear package after accepted S89. |
 | Objective | Move only 80186 LGDT availability, paging-control and INVLPG rows from the residual execution-context test to bounded Shared CPU receivers. |
 | Non-goals | Protected fault/pending-event rows, public paging/board wiring, firmware, production APIs, assets, INI, executables and unrelated residual CPU rows. |
-| Files And ABI Surface | Split existing static functions by CPU responsibility; reuse the CPU-local fixture and add no shared framework, board adapter or public API. |
-| Verification | Record allocation; run focused x64/x86 successor and residual tests, complete x64/x86 units, applicable static gates, manifest/corpus, authority, documentation governance and diff checks. |
+| Reference Baseline | `30fa60856`, accepted S89; the residual source contains S90 paging/INVLPG and S91 fault/event rows only. |
+| Candidate Proposal | [Independent Shared chips](../history/M5-T539-independent-shared-chips.md) and the [CPU work package ledger](../etc/architecture/t539-cpu-work-packages.md). |
+| Files And ABI Surface | Split only `cpu_80186_lgdt_gate()`, `cpu_paging_prepare()`, `cpu_paging_control_gate()`, `cpu_paging_control_forms()`, `cpu_paging_invlpg_case()`, `cpu_paging_invlpg_rejection()` and `cpu_paging_cr0_mutable_controls()` to one Shared successor. Reuse the CPU-local fixture; no production, public API, framework or board adapter changes. |
+| Applicable Rules | NXVM and Shared architecture/coding/execution/documentation rules; one owner per CPU-only test behavior, no duplicate fixture path and no public board assertion in Shared. |
+| Verification | Record allocation; run focused x64/x86 successor and residual tests, complete x64/x86 units, T332, manifest/corpus, CPU/PIC authority, documentation governance and diff checks. Rebuild artifacts only if executable inputs change. |
+| Expected Markers | One `x86-cpu` paging/INVLPG receiver, one NXVM residual source with only debug and S91 rows, no duplicate helper/function and no new fixture/API. |
+| Asset Needs | None; repository-only ownership migration. |
+| Reporting Requirements | Record moved and retained functions, focused/full test evidence, static-gate impact and artifact determination. |
+| Stop Conditions | Stop and report if a row requires public Core paging, physical mapping, IRQ/board wiring, a new Shared API or a duplicate fixture path. |
 | Exit Criteria | Every admitted paging/INVLPG row has one Shared owner, all excluded rows remain once in NXVM, neither width regresses, and full unit suites pass. |
+| Original Owner Request | Continue independent-chip extraction through strictly linear numeric S tasks with bounded, visible ownership. |
+| Similar-Issue Sweep | S90 consumes only CPU-local paging/INVLPG and 80186 gate rows. S91 retains fault/pending-event rows; public Core paging and board IRQ paths remain named NXVM receivers. |
 
 ## S86 Acceptance
 
