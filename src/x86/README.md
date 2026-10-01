@@ -11,20 +11,20 @@ There is no executor, Console, input loop or product state machine here.
 | --- | --- | --- |
 | debug | Original DOS/X command implementation and copied x86 protocol | debug_interface.h, protocol_interface.h |
 | xasm32 | x86 byte/text assembly and disassembly | xasm32_interface.h |
-| devices/cpu | 8086 through 80386 execution state, instruction decoding and CPU-local timing | cpu_interface.h |
-| devices/pit825x | 8253/8254 counters, register protocol, GATE/OUT and input-clock deadlines | pit825x_interface.h |
-| devices/rtc146818 | MC146818-compatible calendar, registers, IRQ/SQW and configured-time deadlines | rtc146818_interface.h |
-| devices/pic8259 | Single 8259 priority, ICW/OCW, interrupt selection/acknowledge and delivery deadlines | pic8259_interface.h |
-| devices/dma8237 | Single 8237A register protocol, requests, priority and input-clock service phases | dma8237_interface.h |
-| devices/kbc8042 | Qualified AT controller transport, translation, command/register and IRQ behavior | kbc8042_interface.h |
-| devices/keyboard | AT keyboard commands, BAT, scan-set, LEDs and typematic | keyboard_interface.h |
-| devices/ps2mouse | Existing three-byte AUX command/report protocol | ps2mouse_interface.h |
-| devices/ppi8255 | Qualified Mode-0 direction, output latches and BSR | ppi8255_interface.h |
-| devices/xtkeyboard | XT nine-bit serial delivery, FIFO and reset/BAT | xtkeyboard_interface.h |
-| devices/fdc8272 | 8272 command phases, drive positions and interrupt causes | fdc8272_interface.h |
-| devices/hdc | ATA, Compaq/WD, WD1003 and Xebec command/state families | hdc_interface.h |
-| devices/video | Video registers, VRAM, raster state and copied frames | video_interface.h, video_values_interface.h |
-| devices/fpu | Existing partial 8087 arithmetic and 8087/287/387 extension completion model | fpu_interface.h |
+| chips/cpu | 8086 through 80386 execution state, instruction decoding and CPU-local timing | cpu_interface.h |
+| chips/pit825x | 8253/8254 counters, register protocol, GATE/OUT and input-clock deadlines | pit825x_interface.h |
+| chips/rtc146818 | MC146818-compatible calendar, registers, IRQ/SQW and configured-time deadlines | rtc146818_interface.h |
+| chips/pic8259 | Single 8259 priority, ICW/OCW, interrupt selection/acknowledge and delivery deadlines | pic8259_interface.h |
+| chips/dma8237 | Single 8237A register protocol, requests, priority and input-clock service phases | dma8237_interface.h |
+| chips/kbc8042 | Qualified AT controller transport, translation, command/register and IRQ behavior | kbc8042_interface.h |
+| chips/keyboard | AT keyboard commands, BAT, scan-set, LEDs and typematic | keyboard_interface.h |
+| chips/ps2mouse | Existing three-byte AUX command/report protocol | ps2mouse_interface.h |
+| chips/ppi8255 | Qualified Mode-0 direction, output latches and BSR | ppi8255_interface.h |
+| chips/xtkeyboard | XT nine-bit serial delivery, FIFO and reset/BAT | xtkeyboard_interface.h |
+| chips/fdc8272 | 8272 command phases, drive positions and interrupt causes | fdc8272_interface.h |
+| chips/hdc | ATA, Compaq/WD, WD1003 and Xebec command/state families | hdc_interface.h |
+| chips/video | Video registers, VRAM, raster state and copied frames | video_interface.h, video_values_interface.h |
+| chips/fpu | Existing partial 8087 arithmetic and 8087/287/387 extension completion model | fpu_interface.h |
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
 only on Types. Public names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.

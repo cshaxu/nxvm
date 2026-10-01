@@ -22,7 +22,7 @@ executor/paused lease through the neutral `test/common/machine_fixture` and an
 x86-owned fake protocol. It preserves the original register and CLI assertions
 without duplicating the fixture's thread loop or neutral lifecycle scenarios.
 
-`devices/pit825x` covers 8253 read-back exclusion, 8254 register read-back,
+`chips/pit825x` covers 8253 read-back exclusion, 8254 register read-back,
 all six counter modes and aliases, GATE transitions, binary/BCD zero loads,
 rewrite boundaries, deadlines, instance isolation and output release at
 reset/destroy. Tests use only the opaque public chip API. Board port decoding,
@@ -30,7 +30,7 @@ clock ratios and PIC/refresh/speaker wiring remain receiving-product tests.
 The same entry with `-DX86_BUILD_TOOLS=OFF` builds the chip suite independently
 of Common, Debug and all product sources.
 
-`devices/rtc146818` retains calendar/SET/12-hour/BCD, phase/reset, divider,
+`chips/rtc146818` retains calendar/SET/12-hour/BCD, phase/reset, divider,
 SQW and alarm-deadline cases. Contract tests exercise IRQ release, invalid
 selectors, no-event results and all 256 month inputs in binary and BCD through
 both deadline preview and actual midnight advancement. Invalid dates are a

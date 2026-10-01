@@ -18,55 +18,55 @@ if(X86_BUILD_TOOLS AND NOT TARGET common-machine)
     add_subdirectory("${X86_COMMON_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/common")
 endif()
 
-add_library(x86-pit825x STATIC devices/pit825x/pit.c)
+add_library(x86-pit825x STATIC chips/pit825x/pit.c)
 target_include_directories(x86-pit825x PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-pit825x PUBLIC types)
 
-add_library(x86-rtc146818 STATIC devices/rtc146818/rtc.c)
+add_library(x86-rtc146818 STATIC chips/rtc146818/rtc.c)
 target_include_directories(x86-rtc146818 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-rtc146818 PUBLIC types)
 
-add_library(x86-pic8259 STATIC devices/pic8259/pic.c)
+add_library(x86-pic8259 STATIC chips/pic8259/pic.c)
 target_include_directories(x86-pic8259 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-pic8259 PUBLIC types)
 
-add_library(x86-dma8237 STATIC devices/dma8237/dma.c)
+add_library(x86-dma8237 STATIC chips/dma8237/dma.c)
 target_include_directories(x86-dma8237 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-dma8237 PUBLIC types)
 
-add_library(x86-fdc8272 STATIC devices/fdc8272/fdc.c)
+add_library(x86-fdc8272 STATIC chips/fdc8272/fdc.c)
 target_include_directories(x86-fdc8272 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-fdc8272 PUBLIC types)
 
-add_library(x86-hdc STATIC devices/hdc/hdc.c)
+add_library(x86-hdc STATIC chips/hdc/hdc.c)
 target_include_directories(x86-hdc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-hdc PUBLIC types)
 
-add_library(x86-fpu STATIC devices/fpu/fpu.c)
+add_library(x86-fpu STATIC chips/fpu/fpu.c)
 target_include_directories(x86-fpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-fpu PUBLIC types)
 
-add_library(x86-video STATIC devices/video/video.c)
+add_library(x86-video STATIC chips/video/video.c)
 target_include_directories(x86-video PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-video PUBLIC types)
 
-add_library(x86-ps2mouse STATIC devices/ps2mouse/mouse.c)
+add_library(x86-ps2mouse STATIC chips/ps2mouse/mouse.c)
 target_include_directories(x86-ps2mouse PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-ps2mouse PUBLIC types)
 
-add_library(x86-keyboard STATIC devices/keyboard/keyboard.c)
+add_library(x86-keyboard STATIC chips/keyboard/keyboard.c)
 target_include_directories(x86-keyboard PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-keyboard PUBLIC types)
 
-add_library(x86-kbc8042 STATIC devices/kbc8042/controller.c)
+add_library(x86-kbc8042 STATIC chips/kbc8042/controller.c)
 target_include_directories(x86-kbc8042 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-kbc8042 PUBLIC types PRIVATE x86-keyboard)
 
-add_library(x86-ppi8255 STATIC devices/ppi8255/ppi.c)
+add_library(x86-ppi8255 STATIC chips/ppi8255/ppi.c)
 target_include_directories(x86-ppi8255 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-ppi8255 PUBLIC types)
 
-add_library(x86-xtkeyboard STATIC devices/xtkeyboard/keyboard.c)
+add_library(x86-xtkeyboard STATIC chips/xtkeyboard/keyboard.c)
 target_include_directories(x86-xtkeyboard PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-xtkeyboard PUBLIC types)
 
@@ -74,10 +74,10 @@ target_link_libraries(x86-xtkeyboard PUBLIC types)
 # still owns the old consumer target.  The subsequent NXVM handoff retires
 # that consumer definition; this target never creates a second CPU instance.
 add_library(x86-cpu-shared STATIC
-    devices/cpu/cpu.c
-    devices/cpu/cpu_instructions.c
-    devices/cpu/cpu_timing.c
-    devices/cpu/cpu_timing_model.c)
+    chips/cpu/cpu.c
+    chips/cpu/cpu_instructions.c
+    chips/cpu/cpu_timing.c
+    chips/cpu/cpu_timing_model.c)
 target_include_directories(x86-cpu-shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-cpu-shared PUBLIC types PRIVATE x86-fpu)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -86,8 +86,8 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     # Preserve that diagnostic contract during the location-only cutover.
     # The final CPU receiving audit owns eliminating this temporary exception.
     set_source_files_properties(
-        devices/cpu/cpu.c
-        devices/cpu/cpu_instructions.c
+        chips/cpu/cpu.c
+        chips/cpu/cpu_instructions.c
         PROPERTIES COMPILE_OPTIONS "-w")
 endif()
 
