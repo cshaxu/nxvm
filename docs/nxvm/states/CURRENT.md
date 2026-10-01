@@ -16,8 +16,8 @@ into S76-S81 and final acceptance is S82. S78 intake found that the former
 transfer/data row contains 19 files and 8,292 lines, so its unaccepted work is
 split into S78-S86 before implementation; the remaining protected/system row
 is then divided into S83-S100 and S100 is the final acceptance. S48-S88 are
-accepted and S89-S100 remain pending. The next package must be admitted from
-the bounded ledger; S89 is the active package. Earlier
+accepted and S90-S100 remain pending. The next package must be admitted from
+the bounded ledger; S90 is the active package. Earlier
 accepted packets retain their historical prospective numbering; the linked
 work plan owns current numbers.
 The [CPU work packages](../etc/architecture/t539-cpu-work-packages.md)
@@ -80,7 +80,7 @@ contains a timing or lifecycle implementation; it retains only named S89 and
 later work. Focused receivers and all static gates pass; detached process-owned
 full units pass **441/441** on x64 and x86. No production/API, firmware, asset,
 INI or EXE input changed. See [S88 evidence](../etc/evidence/t539-s88-execution-lifecycle-receiver.md).
-S88 is accepted; T539 remains open for S89-S98.
+S88 is accepted; T539 remains open for S89-S100.
 
 ## S89 Active Packet
 
@@ -92,6 +92,28 @@ S88 is accepted; T539 remains open for S89-S98.
 | Files And ABI Surface | Split existing static functions by actual CPU responsibility; reuse existing CPU-local fixture and create no shared framework, board adapter or public API. Retain any concrete board path once in NXVM under a named later receiver. |
 | Verification | Record exact allocation; run focused x64/x86 successor and residual tests, complete x64/x86 units, applicable static gates, manifest/corpus, authority, documentation governance and diff checks. |
 | Exit Criteria | Every admitted NMI/prefetch row has one Shared owner, every excluded row remains once in NXVM, neither width regresses, and full unit suites pass. |
+
+## S89 Acceptance
+
+`cpu_signal_case()` and `cpu_prefetch_case()` now have exactly one Shared
+receiver, `cpu_execution_signal_prefetch`. The NXVM residual deletes both
+functions and calls, retaining only named S90/S91 work. Focused x64/x86
+receivers, T332, authority, manifest/corpus, documentation governance and
+diff gates pass; detached full unit suites pass **442/442** on x64 and x86.
+No production/API, firmware, asset, INI or executable input changed. See the
+[S89 evidence](../etc/evidence/t539-s89-signal-prefetch-receiver.md). S89 is
+accepted; T539 remains open for S90-S100.
+
+## S90 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | M5 T539 S90, automatically admitted continuation. |
+| Objective | Move only 80186 LGDT availability, paging-control and INVLPG rows from the residual execution-context test to bounded Shared CPU receivers. |
+| Non-goals | Protected fault/pending-event rows, public paging/board wiring, firmware, production APIs, assets, INI, executables and unrelated residual CPU rows. |
+| Files And ABI Surface | Split existing static functions by CPU responsibility; reuse the CPU-local fixture and add no shared framework, board adapter or public API. |
+| Verification | Record allocation; run focused x64/x86 successor and residual tests, complete x64/x86 units, applicable static gates, manifest/corpus, authority, documentation governance and diff checks. |
+| Exit Criteria | Every admitted paging/INVLPG row has one Shared owner, all excluded rows remain once in NXVM, neither width regresses, and full unit suites pass. |
 
 ## S86 Acceptance
 

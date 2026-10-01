@@ -152,7 +152,7 @@ Each row names a reviewable result, not permission to add new CPU functionality.
 | S86 | Accepted: MOV-DR, #DB and data-breakpoint rows move to the CPU-only Shared receiver. The named machine debug-state board path remains NXVM. |
 | S87 | Accepted: execution-context CPU bus, instruction-effect and copied retirement-observation rows move to one Shared receiver and fixture; residual lifecycle/timing and signal/prefetch/paging rows stay once in NXVM. |
 | S88 | Accepted: CPU reset, prepared-entry, two-instance lifecycle and repeat-timing rows move to one Shared receiver; signal/prefetch/paging rows remain once in NXVM. |
-| S89 | Execution-context NMI/prefetch receiver move: move only NMI mask/delivery and prefetch-reservation rows from `cpu_execution_context_smoke.c`. |
+| S89 | Accepted: execution-context NMI mask/delivery and prefetch-reservation rows move to the sole Shared receiver; the NXVM residual retains paging/INVLPG and fault/event rows. |
 | S90 | Execution-context paging/INVLPG receiver move: move only 80186 LGDT availability, paging-control and INVLPG rows from the residual execution-context test. |
 | S91 | Execution-context protected fault/event receiver move: move only protected interrupt preparation, UD cache preservation and pending-event rollback rows; retain real board IRQ paths in NXVM. |
 | S92 | Protected privilege/data/return: classify and move eligible CPU-only IDT privilege, protected data/far and outer-return fixtures/tests; retain public paging, fault and IRQ paths in NXVM. |
