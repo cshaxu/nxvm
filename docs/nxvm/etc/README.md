@@ -14,6 +14,9 @@ owns admission and status.
 T540 S67: [neutral validation owner](evidence/t540-s67-neutral-validation-owner.md)
 records the five verbatim implementation moves and their receiving proof.
 
+T540 S68: [board lifecycle handoff](evidence/t540-s68-board-lifecycle-handoff.md)
+records the four private phase bindings and their unchanged execution order.
+
 S7 receiving evidence: [T43 Shared repair artifacts](evidence/m6-t43-s7-receiving-artifacts.md); eight current NXVM binaries, hashes and complete dual-width unit proof.
 
 S10 receiving evidence: [T43 byte-boolean artifacts](evidence/m6-t43-s10-receiving-artifacts.md); rebuilt eight 0535 receivers and corrected test callback contracts.

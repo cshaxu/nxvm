@@ -91,6 +91,7 @@ typedef lib_bool (*core_machine_board_pic_pending_provider)(void *owner);
 typedef lib_u8 (*core_machine_board_pic_acknowledge_provider)(void *owner);
 typedef lib_bool (*core_machine_board_shutdown_reset_provider)(
     const core_machine *machine);
+typedef void (*core_machine_board_phase_provider)(core_machine *machine);
 
 struct core_machine_firmware_context {
     core_machine *machine;
@@ -179,6 +180,10 @@ struct core_machine {
     core_machine_board_ticks_provider board_rtc_provider;
     core_machine_board_ticks_provider board_peripheral_provider;
     void *board_owner;
+    core_machine_board_phase_provider board_reset_devices_provider;
+    core_machine_board_phase_provider board_reset_clocks_provider;
+    core_machine_board_phase_provider board_refresh_nmi_provider;
+    core_machine_board_phase_provider board_finalize_devices_provider;
 };
 
 lib_status core_machine_bus_initialize(core_machine *machine);

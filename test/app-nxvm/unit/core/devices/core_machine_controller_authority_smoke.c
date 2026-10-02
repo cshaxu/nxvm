@@ -9,6 +9,99 @@
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/port.h"
 
+typedef struct board_phase_probe {
+    core_machine *machine;
+    lib_u32 calls[4];
+    lib_u32 reset_phase;
+    lib_bool failed;
+} board_phase_probe;
+
+static void board_phase_reset_devices(core_machine *machine)
+{
+    board_phase_probe *probe = machine->board_owner;
+    ++probe->calls[0];
+    probe->failed |= machine != probe->machine || probe->reset_phase != 0u ||
+        machine->elapsed_ticks != 17u;
+    probe->reset_phase = 1u;
+    core_machine_board_reset_devices(machine);
+}
+
+static void board_phase_reset_clocks(core_machine *machine)
+{
+    board_phase_probe *probe = machine->board_owner;
+    ++probe->calls[1];
+    probe->failed |= machine != probe->machine || probe->reset_phase != 1u ||
+        machine->elapsed_ticks != 0u;
+    probe->reset_phase = 2u;
+    core_machine_board_reset_clocks(machine);
+}
+
+static void board_phase_refresh_nmi(core_machine *machine)
+{
+    board_phase_probe *probe = machine->board_owner;
+    ++probe->calls[2];
+    probe->failed |= machine != probe->machine ||
+        core_machine_cpu_nmi_is_masked(machine->executor_cpu_execution);
+    core_machine_board_refresh_nmi(machine);
+}
+
+static void board_phase_finalize_devices(core_machine *machine)
+{
+    board_phase_probe *probe = machine->board_owner;
+    ++probe->calls[3];
+    probe->failed |= machine != probe->machine || machine->board == LIB_NULL ||
+        machine->firmware_provider != LIB_NULL;
+    core_machine_board_finalize_devices(machine);
+    probe->failed |= machine->board != LIB_NULL;
+}
+
+static lib_i32 verify_board_phases(const core_machine_config *config)
+{
+    core_machine *machine = LIB_NULL;
+    board_phase_probe probe = {0};
+
+    if (core_machine_create(config, &machine) != LIB_STATUS_OK) return 1;
+    probe.machine = machine;
+    probe.failed = machine->board_reset_devices_provider !=
+            core_machine_board_reset_devices ||
+        machine->board_reset_clocks_provider != core_machine_board_reset_clocks ||
+        machine->board_refresh_nmi_provider != core_machine_board_refresh_nmi ||
+        machine->board_finalize_devices_provider != core_machine_board_finalize_devices;
+    machine->board_owner = &probe;
+    machine->board_reset_devices_provider = board_phase_reset_devices;
+    machine->board_reset_clocks_provider = board_phase_reset_clocks;
+    machine->board_refresh_nmi_provider = board_phase_refresh_nmi;
+    machine->board_finalize_devices_provider = board_phase_finalize_devices;
+    machine->elapsed_ticks = 17u;
+    if (core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_set_nmi_mask(machine, 1) != LIB_STATUS_OK ||
+        probe.calls[2] != 0u ||
+        core_machine_set_nmi_mask(machine, 0) != LIB_STATUS_OK) probe.failed = LIB_TRUE;
+    core_machine_destroy(machine);
+    return probe.failed || probe.reset_phase != 2u || probe.calls[0] != 1u ||
+        probe.calls[1] != 1u || probe.calls[2] != 1u || probe.calls[3] != 1u;
+}
+
+static lib_i32 verify_partial_board_cleanup(void)
+{
+    const core_machine_executor_config executor = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .ticks_per_instruction = 1u
+    };
+    const core_machine_config invalid_board = {
+        .clock_plan.pit = {1u, 0u}
+    };
+    core_machine *machine = LIB_NULL;
+
+    if (core_machine_neutral_create(&executor, LIB_NULL, LIB_NULL, &machine) !=
+            LIB_STATUS_OK) return 1;
+    /* Board construction failure owns and destroys the unpublished Core. */
+    return core_machine_board_create(machine, &invalid_board) !=
+        LIB_STATUS_INVALID_ARGUMENT;
+}
+
 static void core_machine_controller_fdc_command(core_machine_fdc *fdc, t_port *port,
     const lib_u8 *bytes, lib_size count)
 {
@@ -116,7 +209,7 @@ lib_i32 main(void)
     lib_status dma_status = LIB_STATUS_OK;
     lib_status fdc_status = LIB_STATUS_OK;
     lib_status hdc_status = LIB_STATUS_OK;
-    lib_i32 failed = 0;
+    lib_i32 failed = verify_board_phases(&config) || verify_partial_board_cleanup();
 
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
         core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;

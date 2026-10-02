@@ -152,6 +152,10 @@ lib_status core_machine_board_create(core_machine *machine,
         core_machine_destroy(machine);
         return LIB_STATUS_NO_MEMORY;
     }
+    machine->board_reset_devices_provider = core_machine_board_reset_devices;
+    machine->board_reset_clocks_provider = core_machine_board_reset_clocks;
+    machine->board_refresh_nmi_provider = core_machine_board_refresh_nmi;
+    machine->board_finalize_devices_provider = core_machine_board_finalize_devices;
     if (core_machine_board_initialize_clocks(machine,
             &config->clock_plan) != LIB_STATUS_OK) {
         core_machine_destroy(machine);

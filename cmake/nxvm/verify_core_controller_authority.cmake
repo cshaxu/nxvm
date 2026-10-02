@@ -38,13 +38,31 @@ endforeach()
 file(READ "${machine_lifecycle_source}" machine_lifecycle_text)
 foreach(forbidden IN ITEMS "const core_machine_config *"
     "config->clock_plan" "core_machine_create_internal("
-    "core_machine_board_create(machine, config)")
+    "core_machine_board_create(machine, config)" "machine_board_state.h"
+    "core_machine_board_reset_devices(" "core_machine_board_reset_clocks("
+    "core_machine_board_refresh_nmi(" "core_machine_board_finalize_devices(")
     string(FIND "${machine_lifecycle_text}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "Neutral constructor retains board input: ${forbidden}")
     endif()
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" private_header)
+foreach(phase IN ITEMS reset_devices reset_clocks refresh_nmi finalize_devices)
+    string(FIND "${machine_lifecycle_text}"
+        "machine->board_${phase}_provider(machine)" call_position)
+    string(FIND "${machine_board_text}"
+        "machine->board_${phase}_provider = core_machine_board_${phase};" bind_position)
+    if(call_position EQUAL -1 OR bind_position EQUAL -1)
+        message(FATAL_ERROR "Core board phase lacks its sole binding/call: ${phase}")
+    endif()
+endforeach()
+string(FIND "${machine_board_text}"
+    "machine->board_finalize_devices_provider =" finalize_binding)
+string(FIND "${machine_board_text}"
+    "core_machine_board_initialize_clocks(" clock_initialization)
+if(clock_initialization EQUAL -1 OR finalize_binding GREATER clock_initialization)
+    message(FATAL_ERROR "Board cleanup must bind before fallible clock initialization")
+endif()
 string(REGEX MATCH "typedef struct core_machine_executor_config \\{[^}]*\\}"
     executor_config "${private_header}")
 if(NOT executor_config)

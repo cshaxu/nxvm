@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M5 T540 S68 is active: remove the four remaining direct Core-to-board
+M5 T540 S68 is active: complete receiving review for the four Core-to-board
 lifecycle/signal calls. S1-S67 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
@@ -2366,6 +2366,13 @@ compilation and Shared physical relocation.
 | Original Owner Request | Reusable neutral x86 Core and flat IBM-PC common/AT/XT components with unique state and execution owners, strict numeric S tracking and no layered patches. |
 | Similar-Issue Sweep | All direct board references in neutral Core, fourteen existing provider bindings, allocation before/after clock initialization, neutral-create failures, cold/processor-only reset, NMI unmask and the sole destroy route. |
 
+S68 implementation is complete, pending actual-commit review. The
+[receiving evidence](../etc/evidence/t540-s68-board-lifecycle-handoff.md)
+records four private phase bindings, unchanged board bodies/order, complete
+469/469 units per width, specialized/dependency/documentation checks, eight
+rebuilt 0540 products and eight one-shot external boot checkpoints. Shared,
+MyNES and owner INIs remain unchanged. S69-S70 and T540 remain open.
+
 ## S87 Admission Packet
 
 | Field | Required record |
@@ -3767,7 +3774,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S67 with unchanged owner INIs; S67 evidence records their hashes, PE
+T540 S68 with unchanged owner INIs; S68 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

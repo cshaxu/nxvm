@@ -1,7 +1,6 @@
 #include "lib/types/types_interface.h"
 
 #include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
 #include "x86/chips/cpu/cpu_interface.h"
 
 #define CORE_MACHINE_L1_COMPATIBILITY_MAXIMUM_STEPS 16u
@@ -515,7 +514,9 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     x86_fpu_reset(machine->fpu);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
-    core_machine_board_reset_devices(machine);
+    if (machine->board_reset_devices_provider != LIB_NULL) {
+        machine->board_reset_devices_provider(machine);
+    }
 
     lib_atomic_i32_store_explicit(&machine->stop_requested, 0, LIB_MEMORY_ORDER_RELEASE);
     machine->fault_detail = 0u;
@@ -543,7 +544,9 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     machine->retirement_eligibility_key_valid = LIB_FALSE;
     core_machine_transaction_reset(&machine->transaction);
     core_machine_timeline_reset(&machine->timeline);
-    core_machine_board_reset_clocks(machine);
+    if (machine->board_reset_clocks_provider != LIB_NULL) {
+        machine->board_reset_clocks_provider(machine);
+    }
     core_machine_clock_domain_reset(&machine->provider_clock);
     machine->entry_plan_applied = LIB_FALSE;
     core_machine_cpu_diagnostic_reset(machine);
@@ -1058,8 +1061,8 @@ lib_status core_machine_set_nmi_mask(core_machine *machine, lib_i32 masked)
     }
     core_machine_cpu_set_nmi_mask(machine->executor_cpu_execution,
         masked ? LIB_TRUE : LIB_FALSE);
-    if (!masked) {
-        core_machine_board_refresh_nmi(machine);
+    if (!masked && machine->board_refresh_nmi_provider != LIB_NULL) {
+        machine->board_refresh_nmi_provider(machine);
     }
     return LIB_STATUS_OK;
 }
@@ -1101,7 +1104,9 @@ void core_machine_destroy(core_machine *machine)
         machine->firmware_context.machine = LIB_NULL;
         machine->firmware_provider = LIB_NULL;
         machine->firmware_provider_context = LIB_NULL;
-        core_machine_board_finalize_devices(machine);
+        if (machine->board_finalize_devices_provider != LIB_NULL) {
+            machine->board_finalize_devices_provider(machine);
+        }
         core_machine_cpu_destroy(machine->executor_cpu_execution);
         x86_fpu_destroy(machine->fpu);
         core_machine_port_finalize(&machine->executor_port);
