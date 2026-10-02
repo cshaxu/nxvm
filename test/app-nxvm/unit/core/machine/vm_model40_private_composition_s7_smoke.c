@@ -91,8 +91,8 @@ lib_i32 main(void)
         !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
         !speaker.output || core_machine_bus_write(session->core_machine, 0x0061u,
             0x0fu) != LIB_STATUS_OK ||
-        session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
-        session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        session->core_machine_plan->configuration.memory_bytes != 2u * 1024u * 1024u ||
+        session->core_machine_plan->configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
         !kbc_test_command_matches(&session->core_machine->shared_kbc,
             &session->core_machine->executor_port, 0x20u,

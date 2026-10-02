@@ -313,11 +313,13 @@ lib_status vm_machine_storage_initialize(vm_machine *machine)
     if (machine->profile_plan == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    status = core_machine_plan_create(&machine->core_machine_config,
+    status = core_machine_plan_create(
+        vm_profile_machine_plan_core_config_get(machine->profile_plan),
         &machine->core_machine_plan);
     if (status != LIB_STATUS_OK) return status;
     status = core_machine_plan_set_controller_timing_rules(
-        machine->core_machine_plan, &machine->controller_timing_rules);
+        machine->core_machine_plan,
+        vm_profile_machine_plan_timing_rules_get(machine->profile_plan));
     if (status != LIB_STATUS_OK) return status;
     status = core_machine_media_registry_create(&machine->media_registry);
     if (status != LIB_STATUS_OK) {
@@ -397,8 +399,6 @@ static lib_status vm_machine_create_from_plan(const vm_machine_config *config,
         return LIB_STATUS_NO_MEMORY;
     }
     session->profile_plan = plan;
-    session->core_machine_config = *vm_profile_machine_plan_core_config_get(session->profile_plan);
-    session->controller_timing_rules = *vm_profile_machine_plan_timing_rules_get(session->profile_plan);
     session->floppy_kind = vm_profile_machine_plan_drive_floppy_get(session->profile_plan);
     session->fdd_media_kind = vm_profile_machine_plan_media_floppy_get(session->profile_plan);
     if (!vm_profile_machine_plan_hdc_present(session->profile_plan) &&
@@ -465,7 +465,6 @@ lib_status vm_machine_reconfigure_memory(vm_machine *session,
     status = core_machine_reconfigure_memory(session->core_machine, memory_bytes);
     if (status != LIB_STATUS_OK) return status;
     session->retained_config.memory_bytes = memory_bytes;
-    session->core_machine_config.memory_bytes = memory_bytes;
     vm_machine_debug_reset(&session->debug);
     vm_machine_publish_display(session, 1);
     return LIB_STATUS_OK;

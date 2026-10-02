@@ -53,10 +53,10 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         generic->clock_plan.rtc.numerator != 1u ||
         generic->clock_plan.rtc.denominator != 1u ||
         generic->rtc_ticks_per_second != 50000u;
-    failed |= session->core_machine_config.memory_bytes != 512u * 1024u ||
-        session->core_machine_config.time_axis.kind !=
+    failed |= session->core_machine_plan->configuration.memory_bytes != 512u * 1024u ||
+        session->core_machine_plan->configuration.time_axis.kind !=
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
-        session->controller_timing_rules.dma_service !=
+        session->core_machine_plan->controller_timing.dma_service !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
         session->core_machine->dma_clock.numerator != 3u ||
         session->core_machine->dma_clock.denominator != 8u ||

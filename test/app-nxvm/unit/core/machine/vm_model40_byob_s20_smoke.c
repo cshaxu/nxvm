@@ -50,14 +50,14 @@ lib_i32 main(void)
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL ||
-        !vm_profile_machine_plan_is_model40(session->profile_plan) || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
-        session->core_machine_config.retirement_time_contract !=
+        !vm_profile_machine_plan_is_model40(session->profile_plan) || session->core_machine_plan->configuration.memory_bytes != 2u * 1024u * 1024u ||
+        session->core_machine_plan->configuration.retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
-        session->core_machine_config.l1_compatibility_policy !=
+        session->core_machine_plan->configuration.l1_compatibility_policy !=
             CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS ||
-        session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
-        session->core_machine_config.fpu_profile != X86_FPU_PROFILE_NONE ||
-        !session->core_machine_config.cpu_80386_cr_mov_ignores_mod ||
+        session->core_machine_plan->configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        session->core_machine_plan->configuration.fpu_profile != X86_FPU_PROFILE_NONE ||
+        !session->core_machine_plan->configuration.cpu_80386_cr_mov_ignores_mod ||
         core_machine_capture_time_observation(session->core_machine,
             &time_observation) != LIB_STATUS_OK || !time_observation.pacing_time_available ||
         time_observation.pacing_ticks_per_second != 16000000u || time_observation.physical_time_available ||
@@ -90,7 +90,6 @@ lib_i32 main(void)
         LIB_STATUS_INVALID_STATE;
     failed |= !failed && (core_machine_get_memory_bytes(session->core_machine,
         &memory_bytes) != LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
-        session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->retained_config.memory_bytes != retained_memory_bytes);
     failed |= !failed && (core_machine_run(session->core_machine,
         (core_machine_run_budget) {1u, 0u}, &result) != LIB_STATUS_OK ||

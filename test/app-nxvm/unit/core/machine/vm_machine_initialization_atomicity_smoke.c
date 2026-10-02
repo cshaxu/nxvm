@@ -5,6 +5,7 @@
 #include "app-nxvm/machine/runner.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 #include "app-nxvm/profiles/byob/blob.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
@@ -115,32 +116,32 @@ static lib_i32 verify_create_materialization(
 
     failed |= vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
         default_session == LIB_NULL ||
-        default_session->core_machine_config.memory_bytes !=
+        default_session->core_machine_plan->configuration.memory_bytes !=
             profile->default_memory_bytes ||
-        default_session->core_machine_config.cpu_profile != profile->cpu_profile ||
-        default_session->core_machine_config.fpu_profile != profile->fpu_profile ||
-        lib_memory_compare(&default_session->controller_timing_rules,
+        default_session->core_machine_plan->configuration.cpu_profile != profile->cpu_profile ||
+        default_session->core_machine_plan->configuration.fpu_profile != profile->fpu_profile ||
+        lib_memory_compare(&default_session->core_machine_plan->controller_timing,
             &profile->controller_timing_rules,
-            sizeof(default_session->controller_timing_rules)) != 0 ||
-        !profile_timing_is_materialized(&default_session->core_machine_config,
+            sizeof(default_session->core_machine_plan->controller_timing)) != 0 ||
+        !profile_timing_is_materialized(&default_session->core_machine_plan->configuration,
             profile) || !session_core_config_is_applied(default_session,
             profile->default_memory_bytes, profile->cpu_profile,
             profile->fpu_profile);
     failed |= !failed && (vm_test_default_pc_at_session_create(&overrides, &configured_session) !=
         LIB_STATUS_OK || configured_session == LIB_NULL ||
-        configured_session->core_machine_config.memory_bytes !=
+        configured_session->core_machine_plan->configuration.memory_bytes !=
             overrides.memory_bytes ||
-        configured_session->core_machine_config.cpu_profile !=
+        configured_session->core_machine_plan->configuration.cpu_profile !=
             overrides.cpu_profile ||
-        configured_session->core_machine_config.fpu_profile !=
+        configured_session->core_machine_plan->configuration.fpu_profile !=
             overrides.fpu_profile ||
         configured_session->retained_config.memory_bytes != overrides.memory_bytes ||
         configured_session->retained_config.cpu_profile != overrides.cpu_profile ||
         configured_session->retained_config.fpu_profile != overrides.fpu_profile ||
-        lib_memory_compare(&configured_session->controller_timing_rules,
+        lib_memory_compare(&configured_session->core_machine_plan->controller_timing,
             &profile->controller_timing_rules,
-            sizeof(configured_session->controller_timing_rules)) != 0 ||
-        !profile_timing_is_materialized(&configured_session->core_machine_config,
+            sizeof(configured_session->core_machine_plan->controller_timing)) != 0 ||
+        !profile_timing_is_materialized(&configured_session->core_machine_plan->configuration,
             profile) || !session_core_config_is_applied(configured_session,
             overrides.memory_bytes, overrides.cpu_profile, overrides.fpu_profile));
     vm_machine_destroy(configured_session);

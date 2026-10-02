@@ -23,8 +23,6 @@ struct vm_machine {
     lib_i32 active;
     /* Non-owning App-composition link. */
     common_machine *executor;
-    core_machine_config core_machine_config;
-    core_machine_controller_timing_rules controller_timing_rules;
     core_machine_plan *core_machine_plan;
     vm_profile_machine_plan *profile_plan;
     core_machine *core_machine;

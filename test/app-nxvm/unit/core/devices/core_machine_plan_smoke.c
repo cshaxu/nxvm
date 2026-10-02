@@ -179,6 +179,7 @@ static lib_i32 plan_rejects_invalid_transaction_contract_before_publication(void
 
     configuration.transaction_contract.external_cycle_timing.page_bytes = 3u;
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_plan_validate(plan) != LIB_STATUS_OK;
     failed |= core_machine_create_from_plan(plan, &machine) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);

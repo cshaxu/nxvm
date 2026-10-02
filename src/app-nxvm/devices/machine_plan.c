@@ -166,8 +166,6 @@ lib_status core_machine_plan_validate(const core_machine_plan *plan)
         (plan->configuration.keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
         !core_machine_xt_ppi_keyboard_config_is_valid(
             &plan->configuration.xt_ppi_keyboard)) ||
-        !core_machine_transaction_contract_is_valid(
-            &plan->configuration.transaction_contract) ||
         !core_machine_controller_timing_rules_are_valid(plan)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
