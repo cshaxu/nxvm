@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S13 is active: make the AT Port-B and D4 routes Core-owned and
-failure-atomic with parity storage. S1-S12 are accepted; T540 remains open.
+M5 T540 S13 is accepted: AT Port-B and D4 routes are Core-owned and
+failure-atomic with parity storage. S1-S13 are accepted; T540 remains open.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -39,6 +39,7 @@ the completed CPU extraction.
 | T540 S10 | Accepted: KBC 60h/64h use one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S11 | Accepted: FDC uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S12 | Accepted: RTC/CMOS uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
+| T540 S13 | Accepted: planar-parity and D4 Port-B routes are atomic; x64/x86 complete units and all eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -386,6 +387,26 @@ exit requirement. No new timing grade is claimed.
 | Exit Criteria | Both 61h personalities use one Core route each; no raw board port checkpoint remains for them; every failure leaves prior Core and board state intact; both-width unit/product gates pass with no second path. |
 | Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal, individually tracked chip/board cuts. |
 | Similar-Issue Sweep | Search all Port-B/board adapters for direct port-table registration and parity-memory rollback; consume the planar-parity/D4 hits, assign HDC and VADP to later bounded S and Core-private storage to the neutral-Core cut. |
+
+## T540 S13 Acceptance
+
+Implementation P1 `24da4b5f9` replaces both raw Port-B providers and
+checkpoints with one Core-owned typed route apiece. Planar parity prepares its
+RAM store before route publication, releases it on failure through the same
+owner-local cleanup used by final destruction, and changes board latches and
+PIT callbacks only after successful publication. D4 follows the same
+publish-before-state order without a parity store. Focused route-allocation
+and retry cases cover both personalities and both allocation positions;
+existing tests retain the electrical and signal behavior.
+
+Complete repository-only unit suites pass 467/467 on x64 and 467/467 on x86.
+The Port-B static gate, documentation governance, eight optimized 0540
+profile-specific product builds, PE architecture and no-debug checks, and
+staged diff check pass. The [S13 evidence](../etc/evidence/t540-s13-board-port-b-routes.md)
+records the changed-line accounting, all eight artifact hashes and receiving
+HDC/VADP work. S13 changes NXVM only; Shared and MyNES remain untouched.
+Neutral Core relocation, shared IBM-PC board extraction and the full external
+integration gate remain open T540 work.
 
 ## S87 Admission Packet
 
