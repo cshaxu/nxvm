@@ -797,7 +797,7 @@ static void vm_byob_retirement_observe(void *context,
     if (observation->point.linear_pc == 0x000fbe83u && trace->machine != LIB_NULL) {
         x86_video_bus_observation video = {0};
 
-        (void)x86_video_observe_bus(trace->machine->shared_vadp.chip, &video);
+        (void)x86_video_observe_bus(trace->machine->board->shared_vadp.chip, &video);
         trace->model40_memory_status_test_active = LIB_TRUE;
         trace->model40_memory_status_test_ax_entry =
             (lib_u16)observation->current_cpu.eax;
@@ -1414,7 +1414,7 @@ static void vm_byob_model40_memory_write_observe(void *context,
     if (physical < 0x000b0002u && (lib_u64)physical + bytes > 0x000b0000u) {
         x86_video_bus_observation video = {0};
 
-        (void)x86_video_observe_bus(trace->machine->shared_vadp.chip, &video);
+        (void)x86_video_observe_bus(trace->machine->board->shared_vadp.chip, &video);
         ++trace->model40_memory_b_first_word_writes;
         trace->model40_memory_b_first_word_retirements = trace->model40_retirements;
         trace->model40_memory_b_first_word_last_pc = pc;

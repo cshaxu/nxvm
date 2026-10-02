@@ -224,7 +224,6 @@ struct core_machine {
     t_ram executor_memory;
     t_port executor_port;
     x86_xt_keyboard *xt_keyboard;
-    t_vadp shared_vadp;
     const core_machine_firmware_provider *firmware_provider;
     void *firmware_provider_context;
     core_machine_firmware_context firmware_context;

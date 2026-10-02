@@ -4,6 +4,14 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c" core_plan_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_display.c" core_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" machine_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
+if(machine_header MATCHES "t_vadp[ \t]+shared_vadp;" OR
+    NOT board_header MATCHES "t_vadp[ \t]+shared_vadp;" OR
+    scheduler_source MATCHES "board->shared_vadp")
+    message(FATAL_ERROR "VADP instance must have one board owner")
+endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" board_display_source)
 set(core_source "${core_plan_source}${core_display_source}${board_display_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h" core_header)

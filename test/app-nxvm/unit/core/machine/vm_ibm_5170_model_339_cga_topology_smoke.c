@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/machine/lifecycle.h"
@@ -36,7 +37,7 @@ static lib_i32 vm_model_339_cga_topology(void)
             CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 7) |
         (core_machine_port_has_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_DATA) << 8) |
-        (x86_video_ega_aperture_contains(session->core_machine->shared_vadp.chip,
+        (x86_video_ega_aperture_contains(session->core_machine->board->shared_vadp.chip,
             0xa0000u, 1u) << 9) |
         ((core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
             LIB_STATUS_OK ||
@@ -63,7 +64,7 @@ static lib_i32 vm_default_ega_topology(void)
             CORE_MACHINE_VADP_PORT_COLOR) << 3) |
         (!core_machine_port_has_read(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 4) |
-        (!x86_video_ega_aperture_contains(session->core_machine->shared_vadp.chip,
+        (!x86_video_ega_aperture_contains(session->core_machine->board->shared_vadp.chip,
             0xa0000u, 1u) << 5);
     if (!failed) {
         core_machine_port_write(&session->core_machine->executor_port, 0x3ceu, 6u);

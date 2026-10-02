@@ -143,7 +143,7 @@ lib_status core_machine_board_create(core_machine *machine,
         }
     }
     {
-        lib_status status = core_machine_vadp_initialize(&machine->shared_vadp,
+        lib_status status = core_machine_vadp_initialize(&machine->board->shared_vadp,
             machine);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
@@ -778,7 +778,7 @@ void core_machine_board_reset_devices(core_machine *machine)
     machine->d4_refresh_hold_pending = LIB_FALSE;
     machine->d4_refresh_pulse_active = LIB_FALSE;
     machine->d4_refresh_address = 0u;
-    x86_video_reset(machine->shared_vadp.chip);
+    x86_video_reset(machine->board->shared_vadp.chip);
 }
 
 void core_machine_board_finalize_devices(core_machine *machine)
@@ -797,7 +797,7 @@ void core_machine_board_finalize_devices(core_machine *machine)
     } else core_machine_kbc_finalize(&machine->board->shared_kbc);
     core_machine_pic_finalize(&machine->board->shared_pic_master,
         &machine->board->shared_pic_slave);
-    core_machine_vadp_finalize(&machine->shared_vadp);
+    core_machine_vadp_finalize(&machine->board->shared_vadp);
     lib_release(machine->board);
     machine->board = LIB_NULL;
 }
