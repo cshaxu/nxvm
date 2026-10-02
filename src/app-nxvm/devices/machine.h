@@ -196,12 +196,6 @@ struct core_machine {
     lib_u8 xt_ppi_speaker_gate;
     lib_u8 xt_ppi_speaker_data_enabled;
     lib_u8 speaker_output;
-    core_machine_d4_platform_config d4_platform_config;
-    lib_u8 d4_platform_port_b;
-    lib_u8 d4_platform_configured;
-    lib_u8 d4_platform_iochk_latched;
-    lib_u8 d4_platform_failsafe_latched;
-    lib_u8 d4_platform_nmi_signaled;
     core_machine_absent_memory absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;

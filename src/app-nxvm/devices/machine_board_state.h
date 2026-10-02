@@ -28,6 +28,12 @@ struct core_machine_board_state {
     lib_u8 planar_parity_configured;
     lib_u8 planar_parity_latched;
     lib_u8 planar_parity_nmi_signaled;
+    core_machine_d4_platform_config d4_platform_config;
+    lib_u8 d4_platform_port_b;
+    lib_u8 d4_platform_configured;
+    lib_u8 d4_platform_iochk_latched;
+    lib_u8 d4_platform_failsafe_latched;
+    lib_u8 d4_platform_nmi_signaled;
     t_vadp shared_vadp;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
