@@ -647,9 +647,9 @@ static lib_u8 core_machine_speaker_source_value(
     const core_machine *machine)
 {
     if (machine == LIB_NULL) return 0u;
-    if (machine->xt_ppi_speaker_configured) return
-        (machine->xt_ppi_speaker_gate ? 0x01u : 0u) |
-        (machine->xt_ppi_speaker_data_enabled ? 0x02u : 0u);
+    if (machine->board->xt_ppi_speaker_configured) return
+        (machine->board->xt_ppi_speaker_gate ? 0x01u : 0u) |
+        (machine->board->xt_ppi_speaker_data_enabled ? 0x02u : 0u);
     if (machine->board->d4_platform_configured) return machine->board->d4_platform_port_b;
     if (machine->board->planar_parity_configured) return machine->board->planar_parity_port_b;
     return 0u;
@@ -661,7 +661,7 @@ static void core_machine_speaker_refresh(core_machine *machine)
 
     if (machine == LIB_NULL) return;
     value = core_machine_speaker_source_value(machine);
-    machine->speaker_output = (value & 0x02u) != 0u &&
+    machine->board->speaker_output = (value & 0x02u) != 0u &&
         ((value & 0x01u) == 0u ||
         x86_pit_get_output(machine->board->shared_pit.device, 2u));
 }
@@ -759,9 +759,9 @@ void core_machine_board_reset_devices(core_machine *machine)
     machine->board->planar_parity_port_b = machine->board->planar_parity_configured ? 0x04u : 0u;
     machine->board->planar_parity_latched = LIB_FALSE;
     machine->board->planar_parity_nmi_signaled = LIB_FALSE;
-    machine->speaker_output = LIB_FALSE;
-    machine->xt_ppi_speaker_gate = LIB_FALSE;
-    machine->xt_ppi_speaker_data_enabled = LIB_FALSE;
+    machine->board->speaker_output = LIB_FALSE;
+    machine->board->xt_ppi_speaker_gate = LIB_FALSE;
+    machine->board->xt_ppi_speaker_data_enabled = LIB_FALSE;
     machine->board->d4_platform_port_b = machine->board->d4_platform_configured ? 0x0fu : 0u;
     machine->board->d4_platform_iochk_latched = LIB_FALSE;
     machine->board->d4_platform_failsafe_latched = LIB_FALSE;
@@ -805,7 +805,7 @@ void core_machine_board_finalize_devices(core_machine *machine)
 void core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
-    machine->xt_ppi_speaker_configured = LIB_TRUE;
+    machine->board->xt_ppi_speaker_configured = LIB_TRUE;
     x86_pit_set_output(machine->board->shared_pit.device, 2u,
         core_machine_speaker_timer_output, machine);
     core_machine_board_set_xt_ppi_speaker(machine, LIB_FALSE, LIB_FALSE);
@@ -814,9 +814,9 @@ void core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
 void core_machine_board_set_xt_ppi_speaker(core_machine *machine,
     lib_u8 timer_gate, lib_u8 data_enabled)
 {
-    if (machine == LIB_NULL || !machine->xt_ppi_speaker_configured) return;
-    machine->xt_ppi_speaker_gate = timer_gate;
-    machine->xt_ppi_speaker_data_enabled = data_enabled;
+    if (machine == LIB_NULL || !machine->board->xt_ppi_speaker_configured) return;
+    machine->board->xt_ppi_speaker_gate = timer_gate;
+    machine->board->xt_ppi_speaker_data_enabled = data_enabled;
     core_machine_speaker_set_gate(machine,
         (timer_gate ? 0x01u : 0u) | (data_enabled ? 0x02u : 0u));
 }
@@ -1292,13 +1292,13 @@ lib_status core_machine_get_speaker_observation(const core_machine *machine,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     value = core_machine_speaker_source_value(machine);
-    out_observation->configured = machine->xt_ppi_speaker_configured ||
+    out_observation->configured = machine->board->xt_ppi_speaker_configured ||
         machine->board->d4_platform_configured || machine->board->planar_parity_configured;
     out_observation->timer_gate = (value & 0x01u) != 0u;
     out_observation->data_enabled = (value & 0x02u) != 0u;
     out_observation->timer_output = x86_pit_get_output(
         machine->board->shared_pit.device, 2u);
-    out_observation->output = machine->speaker_output;
+    out_observation->output = machine->board->speaker_output;
     return LIB_STATUS_OK;
 }
 lib_status core_machine_configure_absent_memory(core_machine *machine,

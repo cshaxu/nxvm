@@ -38,6 +38,10 @@ struct core_machine_board_state {
     lib_u8 d4_refresh_hold_pending;
     lib_u8 d4_refresh_pulse_active;
     lib_u8 d4_refresh_address;
+    lib_u8 xt_ppi_speaker_configured;
+    lib_u8 xt_ppi_speaker_gate;
+    lib_u8 xt_ppi_speaker_data_enabled;
+    lib_u8 speaker_output;
     t_vadp shared_vadp;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;

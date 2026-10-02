@@ -192,10 +192,6 @@ struct core_machine {
     core_machine_time_axis time_axis;
     core_machine_l1_compatibility_policy l1_compatibility_policy;
     core_machine_board_state *board;
-    lib_u8 xt_ppi_speaker_configured;
-    lib_u8 xt_ppi_speaker_gate;
-    lib_u8 xt_ppi_speaker_data_enabled;
-    lib_u8 speaker_output;
     core_machine_absent_memory absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
