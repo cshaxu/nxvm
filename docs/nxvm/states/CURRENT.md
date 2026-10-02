@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S32 is active: isolate the neutral Core constructor's preflight,
-allocation, CPU/FPU, transaction, timeline, memory and port setup.
-S1-S31 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S33 is active: isolate board controller creation, frozen topology
+application and first-failure rollback from the neutral Core constructor.
+S1-S32 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -60,7 +60,8 @@ the completed CPU extraction.
 | T540 S29 | Accepted: copied PIC signals and Core CPU locality event; both-width units and eight boots pass. |
 | T540 S30 | Accepted: source-only mixed plan/reset ownership audit and bounded S31-S38 receivers. |
 | T540 S31 | Accepted: VM config/rules mirrors deleted; the frozen board plan owns composition and Core alone validates its transaction input before allocation. Dual-width units and eight boots pass. |
-| T540 S32 | Active: neutral Core constructor and early-failure boundary. |
+| T540 S32 | Accepted: one private neutral Core create phase retains preflight, allocation, CPU/FPU, time, transaction, bus, RAM and port failures; dual-width units and eight boots pass. |
+| T540 S33 | Active: board controller construction and topology application. |
 
 ## T540 S1 Acceptance
 
@@ -1132,6 +1133,39 @@ T540 remains open.
 | Exit Criteria | Neutral Core preflight/allocation and setup have one owner, all original early failures and rollback survive, focused/full checks pass, and reviewed P1 plus governance P2 close S32. |
 | Original Owner Request | Build reusable neutral `x86/core` and flat IBM-PC board layers without code duplication, using linear numeric S deliveries. |
 | Similar-Issue Sweep | Check every create entry point, allocation failure, CPU/FPU and memory/port setup branch, copied qualification lifetime, and partial initialization cleanup. |
+
+## T540 S32 Acceptance
+
+Actual-diff review accepts NXVM P1 `c5e8022d7`. One private neutral phase
+now owns CPU/FPU, time, transaction, bus, port and memory setup, while the
+original public create entry points and the board controller order remain
+unchanged. The [S32 evidence](../etc/evidence/t540-s32-neutral-construction.md)
+records exact early failures and the net +18 source lines. Complete x64/x86
+units pass **469/469** per width, specialized gates pass, **8/8** single-run
+external boots pass, and eight optimized 0540 products have correct PE width
+and no `.debug` sections. No Shared/MyNES, INI, firmware or timing-grade
+change. S33 owns board construction and topology application; T540 stays open.
+
+## T540 S33 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S33, next linear S after accepted S32. |
+| Admission And Approval | Owner's automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Isolate IBM-PC board controller creation and frozen plan topology application around the one neutral Core construction route, preserving success-only publication and first-failure rollback. |
+| Non-goals | Cold/processor-only reset (S34), teardown restructuring (S35), ROM/entry/trace (S36), physical Shared move (S38), profile values, timing formulas, INI/firmware/media changes. |
+| Reference Baseline | S32 P1 `c5e8022d7`, [S32 evidence](../etc/evidence/t540-s32-neutral-construction.md), dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S30 intake](../etc/evidence/t540-s30-plan-reset-intake.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | Inspect `src/app-nxvm/devices/{machine.c,machine_plan.c,machine_board.c}` and direct plan/rollback tests. Keep one private board assembly phase after the neutral create result; `create_from_plan` still validates before allocation and applies topology through the sole existing route. |
+| Applicable Rules | Preserve port checkpoint; DMA before PIC before PIT; PIT0 to IRQ0 binding; XT PPI versus AT 8042 exclusive branch; PIT1 unbound until post-reset wiring; topology order memory aliases, absent/parity/D4/display/DMA/RTC/FDC/HDC; abort on first failure, destroy one partial machine, leave result null. |
+| Verification | Focused board registration, plan-invalid, topology, rollback and four-profile tests; full x64/x86 repository-only units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 products with PE/hash/no-debug proof if code changes. |
+| Expected Markers | One board constructor phase and one topology apply route, no duplicated port registration or controller state, and no board dependency in the neutral Core phase. |
+| Asset Needs | Existing owner-provided external firmware/media for the fixed boot checkpoint only; no new protected input or owner INI change. |
+| Reporting Requirements | Record actual controller/topology order and failure rollback diff, complete checks, artifact hashes and any work retained for S34-S36. |
+| Stop Conditions | Stop before generic board framework, second constructor/rollback, changed clock or device behavior, Shared/MyNES edits, or an oversized mixed reset/destructor rewrite. |
+| Exit Criteria | Board create and topology apply each have one owner and one route, all original failure/publication semantics survive, verification passes, and actual-diff P1 plus governance P2 close S33. |
+| Original Owner Request | Extract a neutral reusable x86 Core and flat IBM-PC board mechanisms with no divergence or patch-over-patch code. |
+| Similar-Issue Sweep | Review every board port registration, XT/AT controller choice, auxiliary PIT, topology setter, failure return and plan publication caller across four profiles. |
 
 ## S87 Admission Packet
 
