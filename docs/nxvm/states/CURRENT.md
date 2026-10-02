@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S14 is accepted: all HDC personality routes, including XT and
-Compaq 3F7 wired-OR, use the Core-owned atomic batch. S1-S14 are accepted;
-T540 remains open. S15 owns staged VADP ports.
+M5 T540 S15 is active: make the initial CGA and staged EGA/Compaq/VGA VADP
+port routes Core-owned and failure-atomic. S1-S14 are accepted; T540 remains
+open.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -444,6 +444,27 @@ eight optimized 0540 products pass architecture/no-debug checks. The
 matrix and executable hashes. S14 changes NXVM only and is accepted. S15
 receives staged VADP ports; neutral Core, IBM-PC board extraction and the full
 external integration gate remain open T540 work.
+
+## T540 S15 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S15, next linear S after accepted S14. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 S work applies. The accepted S12 refinement assigns remaining staged VADP ports to S15. Target: NXVM only; Shared and MyNES remain read-only. |
+| Objective | Publish initial CGA and staged EGA generic/Compaq/VGA port routes through the one Core-owned typed batch; preserve candidate-chip and memory-route preparation, exact original port directions, and failure-atomic candidate rollback. |
+| Non-goals | Video register semantics, CGA/EGA/VGA geometry or timing, VADP memory-map extraction (S16), board signals, physical Core/board relocation, new generic device framework, Shared/MyNES edits, product profile, firmware, INI or media changes. |
+| Reference Baseline | Accepted S14 governance commit `8b3e7a48c`, both-width complete units 467/467, HDC-focused 11/11 and eight optimized 0540 artifacts. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S7 handoff and S12 refinement](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | NXVM `devices/{vadp,port_interface,machine}` and owner-local CGA/EGA/Compaq/VGA route/rollback tests, affected CMake boundary gates, S15 evidence and eight 0540 artifacts. The VADP adapter may receive only a bounded Core machine capability for port publication; no `t_port` or port-entry checkpoint remains in it. Test fixtures change to consume that production contract rather than keeping a raw alternate path. |
+| Applicable Rules | One VADP video-chip owner and one Core port table. Prepare candidate chip and its existing memory routes before publishing all selected EGA/Compaq/VGA routes in one atomic batch. Initial CGA routes are published once during creation. A failed candidate leaves the original chip, original CGA routes, memory owners and display-configured state intact; successful publication then swaps the chip. Preserve all port read/write and Compaq overlap behavior. |
+| Verification | Inject each initial and staged route-allocation failure and memory-registration failure; prove no partial route, memory owner or candidate state and successful retry. Run focused CGA/EGA/Compaq/VGA and display-authority tests, complete x64/x86 repository-only units, affected static gates, eight optimized Release products with hash/PE/no-debug proof, documentation governance and staged diff checks. |
+| Expected Markers | No `t_port`, raw `core_machine_port_add_*` or external registration checkpoint in the VADP adapter. Each successful configuration has one selected port route set; no second registration path, duplicate chip state, changed graphics result or new timing claim. |
+| Asset Needs | Existing selected BYOB build roots only for approved embedded-ROM executables; preserve adjacent INIs and all MyNES files. |
+| Reporting Requirements | Record all affected test receivers, actual production/test added/removed/net lines, candidate failure order, port-direction and Compaq overlap proof, eight artifact hashes and the remaining S16 memory receiver. |
+| Stop Conditions | Split an oversized unstarted remainder into the next numeric S before implementation; stop before adding a second VADP port path, changing video semantics/timing, moving memory maps prematurely or modifying Shared/MyNES. Revise the packet for any material scope expansion. |
+| Exit Criteria | Initial and staged VADP ports use the one Core typed batch; failed candidate and allocation paths preserve old chip/routes and leave no new memory or port owner; old raw VADP port registration is deleted; dual-width tests/products and documentation gates pass. |
+| Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal and individually tracked board cuts before extracting them for independent PC Apps. |
+| Similar-Issue Sweep | Search all VADP board adapters and tests for raw `t_port`, port add/checkpoints, candidate memory and port rollback. S15 consumes port hits; retain bounded VADP/ROM/D4 memory attachments for S16 and Core-private table for the neutral-Core move. |
 
 ## S87 Admission Packet
 
