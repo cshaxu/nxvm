@@ -112,7 +112,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
     if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
-        x86_xt_keyboard_ticks_until_event(machine->xt_keyboard,
+        x86_xt_keyboard_ticks_until_event(machine->board->xt_keyboard,
             &device_ticks) == LIB_STATUS_OK) {
         if (device_ticks == 0u) out_observation->immediate_due = LIB_TRUE;
         else if (out_observation->source_ticks == 0u ||

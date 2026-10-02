@@ -2110,7 +2110,7 @@ int main(lib_i32 argc, char **argv)
                         printf("BOOT-PROBE=xt-ppi-pb=%02X-drive=%02X\n",
                             (unsigned int)pins.latch, (unsigned int)pins.output_mask);
                     }
-                    if (x86_xt_keyboard_ticks_until_event(session->core_machine->xt_keyboard,
+                    if (x86_xt_keyboard_ticks_until_event(session->core_machine->board->xt_keyboard,
                             &next) == LIB_STATUS_OK) {
                         printf("BOOT-PROBE=xt-keyboard-next=%llu\n", (unsigned long long)next);
                     }

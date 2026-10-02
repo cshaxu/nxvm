@@ -223,7 +223,6 @@ struct core_machine {
     core_machine_cpu_execution_context *executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
-    x86_xt_keyboard *xt_keyboard;
     const core_machine_firmware_provider *firmware_provider;
     void *firmware_provider_context;
     core_machine_firmware_context firmware_context;

@@ -294,7 +294,7 @@ static lib_i32 core_machine_xt_keyboard_refused_completion(lib_bool bat,
     failed |= !failed && core_machine_advance_time(machine, 25u) != LIB_STATUS_OK;
     /* A refused completed frame cannot acquire another 255 serial bits. */
     failed |= !failed && x86_xt_keyboard_ticks_until_event(
-        machine->xt_keyboard, &deadline) != LIB_STATUS_UNSUPPORTED;
+        machine->board->xt_keyboard, &deadline) != LIB_STATUS_UNSUPPORTED;
     if (reset_pending) {
         failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
         failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) != LIB_STATUS_OK;

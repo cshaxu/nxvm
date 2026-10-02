@@ -22,6 +22,7 @@ struct core_machine_board_state {
     core_machine_hdc hdc;
     t_kbc shared_kbc;
     core_machine_xt_ppi_keyboard xt_ppi_keyboard;
+    x86_xt_keyboard *xt_keyboard;
     t_vadp shared_vadp;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;

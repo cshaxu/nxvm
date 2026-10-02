@@ -167,7 +167,7 @@ lib_status core_machine_board_create(core_machine *machine,
             };
             status = x86_xt_keyboard_create(&timing,
                 core_machine_xt_keyboard_deliver, &machine->board->xt_ppi_keyboard,
-                &machine->xt_keyboard);
+                &machine->board->xt_keyboard);
             if (status != LIB_STATUS_OK) {
                 core_machine_destroy(machine);
                 return status;
@@ -223,7 +223,7 @@ lib_status core_machine_board_create(core_machine *machine,
         core_machine_xt_ppi_keyboard_bind_speaker(&machine->board->xt_ppi_keyboard,
             core_machine_xt_ppi_update_speaker, machine);
         core_machine_xt_ppi_keyboard_bind_keyboard_observer(&machine->board->xt_ppi_keyboard,
-            core_machine_xt_keyboard_lines, machine->xt_keyboard,
+            core_machine_xt_keyboard_lines, machine->board->xt_keyboard,
             core_machine_xt_keyboard_released);
     } else {
         core_machine_kbc_bind_core_services(&machine->board->shared_kbc,
@@ -275,7 +275,7 @@ lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
     }
     if (machine->board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        return x86_xt_keyboard_receive_native_bytes(machine->xt_keyboard,
+        return x86_xt_keyboard_receive_native_bytes(machine->board->xt_keyboard,
             &native_byte, 1u);
     }
     return core_machine_kbc_submit_native_byte(&machine->board->shared_kbc, native_byte);
@@ -304,7 +304,7 @@ lib_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
     }
     if (machine->board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        return x86_xt_keyboard_receive_native_bytes(machine->xt_keyboard,
+        return x86_xt_keyboard_receive_native_bytes(machine->board->xt_keyboard,
             native_bytes, count);
     }
     return core_machine_kbc_submit_native_bytes(&machine->board->shared_kbc, native_bytes, count);
@@ -745,7 +745,7 @@ void core_machine_board_reset_devices(core_machine *machine)
     core_machine_d4_memory_reset(machine);
     if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_reset(&machine->board->xt_ppi_keyboard);
-        x86_xt_keyboard_reset(machine->xt_keyboard);
+        x86_xt_keyboard_reset(machine->board->xt_keyboard);
     } else {
         core_machine_kbc_reset(&machine->board->shared_kbc);
         if (machine->board->kbc_input_port_configured) {
@@ -792,7 +792,7 @@ void core_machine_board_finalize_devices(core_machine *machine)
         &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary);
     x86_rtc_destroy(machine->board->shared_rtc);
     if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        x86_xt_keyboard_destroy(machine->xt_keyboard);
+        x86_xt_keyboard_destroy(machine->board->xt_keyboard);
         core_machine_xt_ppi_keyboard_finalize(&machine->board->xt_ppi_keyboard);
     } else core_machine_kbc_finalize(&machine->board->shared_kbc);
     core_machine_pic_finalize(&machine->board->shared_pic_master,
