@@ -16,6 +16,8 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" core_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_bus.c" bus_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c"
+    board_source)
 string(FIND "${core_source}"
     "core_machine_cpu_create(&core_machine_cpu_bus," core_cpu_bus_bind)
 if(core_cpu_bus_bind EQUAL -1)
@@ -24,13 +26,21 @@ endif()
 foreach(token IN ITEMS
     ".interrupt_pending = core_machine_cpu_bus_interrupt_pending"
     ".acknowledge_interrupt = core_machine_cpu_bus_acknowledge_interrupt"
-    "core_machine_pic_scan_interrupt(&machine->shared_pic_master,"
-    "core_machine_pic_get_interrupt(&machine->shared_pic_master,"
-    "&machine->shared_pic_slave)"
+    "board_pic_pending_provider(machine->board_owner)"
+    "board_pic_acknowledge_provider(machine->board_owner)"
     "CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE")
     string(FIND "${bus_source}" "${token}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "CPU/PIC board bus contract is missing: ${token}")
+    endif()
+endforeach()
+foreach(token IN ITEMS
+    "core_machine_pic_scan_interrupt(&machine->shared_pic_master,"
+    "core_machine_pic_get_interrupt(&machine->shared_pic_master,"
+    "&machine->shared_pic_slave)")
+    string(FIND "${board_source}" "${token}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "Board PIC signal contract is missing: ${token}")
     endif()
 endforeach()
 foreach(cpu_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h

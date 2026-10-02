@@ -149,7 +149,7 @@ static void core_machine_d4_refresh_output(void *opaque, lib_u8 asserted)
             machine->d4_refresh_pulse_active = LIB_FALSE;
         } else if (!machine->d4_refresh_pulse_active) {
             machine->d4_refresh_pulse_active = LIB_TRUE;
-            core_machine_external_cycle_invalidate(machine);
+            core_machine_cpu_bus_refresh_pulse(machine);
             machine->d4_refresh_hold_pending = LIB_TRUE;
         }
     }

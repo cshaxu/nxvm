@@ -139,6 +139,8 @@ typedef core_machine_board_pit_ticks (*core_machine_board_pit_ticks_provider)(
     void *owner, lib_u64 source_ticks);
 typedef void (*core_machine_board_pit_pic_provider)(void *owner,
     core_machine_board_pit_ticks ticks);
+typedef lib_bool (*core_machine_board_pic_pending_provider)(void *owner);
+typedef lib_u8 (*core_machine_board_pic_acknowledge_provider)(void *owner);
 
 struct core_machine_firmware_context {
     core_machine *machine;
@@ -284,6 +286,8 @@ struct core_machine {
     core_machine_board_dma_advance_provider board_dma_advance_provider;
     core_machine_board_pit_ticks_provider board_pit_ticks_provider;
     core_machine_board_pit_pic_provider board_pit_pic_provider;
+    core_machine_board_pic_pending_provider board_pic_pending_provider;
+    core_machine_board_pic_acknowledge_provider board_pic_acknowledge_provider;
     core_machine_board_media_provider board_media_provider;
     core_machine_board_ticks_provider board_rtc_provider;
     core_machine_board_ticks_provider board_peripheral_provider;
@@ -380,6 +384,9 @@ core_machine_board_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
     lib_u64 source_ticks);
 void core_machine_board_pit_pic_advance(void *owner,
     core_machine_board_pit_ticks ticks);
+lib_bool core_machine_board_pic_pending(void *owner);
+lib_u8 core_machine_board_pic_acknowledge(void *owner);
+void core_machine_cpu_bus_refresh_pulse(void *core_owner);
 void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
     lib_u64 due_tick);
 void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks);

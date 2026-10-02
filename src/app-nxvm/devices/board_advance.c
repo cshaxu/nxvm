@@ -57,6 +57,22 @@ void core_machine_board_pit_pic_advance(void *owner,
         0u, 0u, 0u);
 }
 
+lib_bool core_machine_board_pic_pending(void *owner)
+{
+    core_machine *machine = owner;
+    if (machine == LIB_NULL) return LIB_FALSE;
+    return core_machine_pic_scan_interrupt(&machine->shared_pic_master,
+        &machine->shared_pic_slave) ? LIB_TRUE : LIB_FALSE;
+}
+
+lib_u8 core_machine_board_pic_acknowledge(void *owner)
+{
+    core_machine *machine = owner;
+    if (machine == LIB_NULL) return 0u;
+    return core_machine_pic_get_interrupt(&machine->shared_pic_master,
+        &machine->shared_pic_slave);
+}
+
 void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
     lib_u64 due_tick)
 {

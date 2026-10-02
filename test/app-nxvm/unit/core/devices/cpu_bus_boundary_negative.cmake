@@ -8,7 +8,7 @@ file(REMOVE_RECURSE "${WORK}")
 set(cpu_files cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
     cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
 set(paths src/app-nxvm/machine/machine.c src/app-nxvm/devices/machine.c
-    src/app-nxvm/devices/cpu_bus.c
+    src/app-nxvm/devices/cpu_bus.c src/app-nxvm/devices/board_advance.c
     test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c

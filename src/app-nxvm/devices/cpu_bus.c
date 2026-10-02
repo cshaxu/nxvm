@@ -115,8 +115,8 @@ static lib_bool core_machine_cpu_bus_interrupt_pending(void *opaque)
 {
     core_machine *machine = (core_machine *)opaque;
 
-    return core_machine_pic_scan_interrupt(&machine->shared_pic_master,
-        &machine->shared_pic_slave) ? LIB_TRUE : LIB_FALSE;
+    return machine->board_pic_pending_provider != LIB_NULL ?
+        machine->board_pic_pending_provider(machine->board_owner) : LIB_FALSE;
 }
 
 static lib_status core_machine_cpu_bus_acknowledge_interrupt(void *opaque,
@@ -129,11 +129,17 @@ static lib_status core_machine_cpu_bus_acknowledge_interrupt(void *opaque,
 
     if (status != LIB_STATUS_OK) return status;
     /* The PIC owns the IRR-to-ISR transition before CPU vector consumption. */
-    *vector = core_machine_pic_get_interrupt(&machine->shared_pic_master,
-        &machine->shared_pic_slave);
+    *vector = machine->board_pic_acknowledge_provider != LIB_NULL ?
+        machine->board_pic_acknowledge_provider(machine->board_owner) : 0u;
     core_machine_transaction_set_value(&machine->transaction, *vector);
     core_machine_transaction_commit(&machine->transaction);
     return LIB_STATUS_OK;
+}
+
+void core_machine_cpu_bus_refresh_pulse(void *core_owner)
+{
+    core_machine *machine = core_owner;
+    if (machine != LIB_NULL) core_machine_external_cycle_invalidate(machine);
 }
 
 static void core_machine_cpu_bus_extension_command(void *opaque,

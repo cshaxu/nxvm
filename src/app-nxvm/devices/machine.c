@@ -480,6 +480,8 @@ static lib_status core_machine_create_internal(
     machine->board_dma_advance_provider = core_machine_board_dma_advance;
     machine->board_pit_ticks_provider = core_machine_board_pit_ticks_advance;
     machine->board_pit_pic_provider = core_machine_board_pit_pic_advance;
+    machine->board_pic_pending_provider = core_machine_board_pic_pending;
+    machine->board_pic_acknowledge_provider = core_machine_board_pic_acknowledge;
     machine->board_media_provider = core_machine_board_media_advance;
     machine->board_rtc_provider = core_machine_board_rtc_advance;
     machine->board_peripheral_provider = core_machine_board_peripheral_advance;

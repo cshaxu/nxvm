@@ -121,6 +121,18 @@ static void scheduler_board_pit_pic(void *owner,
     core_machine_board_pit_pic_advance(probe->machine, ticks);
 }
 
+static lib_bool scheduler_board_pic_pending(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    return core_machine_board_pic_pending(probe->machine);
+}
+
+static lib_u8 scheduler_board_pic_acknowledge(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    return core_machine_board_pic_acknowledge(probe->machine);
+}
+
 typedef struct scheduler_deadline_probe {
     core_machine_board_deadline_observation value;
     lib_u32 calls;
@@ -171,6 +183,8 @@ lib_i32 main(void)
     machine->board_dma_advance_provider = scheduler_board_dma_advance;
     machine->board_pit_ticks_provider = scheduler_board_pit_ticks;
     machine->board_pit_pic_provider = scheduler_board_pit_pic;
+    machine->board_pic_pending_provider = scheduler_board_pic_pending;
+    machine->board_pic_acknowledge_provider = scheduler_board_pic_acknowledge;
     machine->board_owner = &board_probe;
 
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
