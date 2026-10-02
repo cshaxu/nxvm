@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S10 is active: migrate KBC's 60h/64h routes to the Core-owned typed,
-atomic port batch. S1-S9 are accepted; T540 remains open. Shared Core and board
-code have not moved.
+M5 T540 S1-S10 are accepted; T540 remains open. KBC's 60h/64h routes use
+the Core-owned typed, atomic port batch. FDC is next at S11; Shared Core and
+board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -35,6 +35,7 @@ the completed CPU extraction.
 | T540 S7 | Accepted: source-inspected Core/board state and API handoff before physical relocation. |
 | T540 S8 | Accepted: first complete port registration cut for 92h, PIC, PIT and XT PPI; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S9 | Accepted: DMA uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
+| T540 S10 | Accepted: KBC 60h/64h use one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -225,9 +226,9 @@ pass 467/467 each. Four fixed NXVM profile pairs rebuild as optimized,
 stripped 0540 products with the eight verified hashes in the evidence; their
 INIs remain unchanged. NXVM documentation governance, the T345 ownership
 verifier and its self-test, CMake source-owner configuration and diff checks
-pass. S9 receives KBC/FDC/DMA ports; S10 receives VADP/HDC/RTC ports. T540's
-neutral Core move, Shared board extraction and external integration gate remain
-open; S8 makes no timing-grade claim.
+pass. The later S7 handoff assigns DMA, KBC, FDC and remaining routes to
+S9-S12 respectively. T540's neutral Core move, Shared board extraction and
+external integration gate remain open; S8 makes no timing-grade claim.
 
 ## T540 S9 Acceptance
 
@@ -267,6 +268,24 @@ remain open T540 work; S9 makes no new timing-grade claim.
 | Exit Criteria | KBC has one typed Core route batch with no raw port-table execution/registration dependency; collision and allocation failures leave no partial route or leaked chip; both-width tests and product artifacts pass, and no second KBC port path remains. |
 | Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components before splitting four PC Apps, admitting bounded numeric S tasks automatically without patch-on-patch architecture. |
 | Similar-Issue Sweep | Search every NXVM board adapter and test for raw `t_port` callbacks, `core_machine_port_add_*` and registration checkpoints. S10 consumes all KBC port hits; FDC is S11, VADP/HDC/RTC/board routes S12, and KBC memory/signal pointers S14. Record the residual owner and receiver in S10 evidence. |
+
+## T540 S10 Acceptance
+
+Coordinator review of NXVM implementation P1 `98a3fe04a` inspected the
+actual source, test, documentation and eight artifact changes against the S10
+packet. KBC publishes only the 60h/64h typed Core route batch; no raw KBC port
+callback, direct registration or local checkpoint remains. Existing KBC
+protocol, IRQ and signal functions remain in their original owners. The
+[S10 evidence](../etc/evidence/t540-s10-kbc-port-routes.md) records the
+failure boundary, source/test delta, successor allocations and artifact hashes.
+
+Focused KBC and port tests pass on both widths; full x64 and x86 repository-only
+units pass 467/467 each. The T345 ownership verifier and negative self-test,
+documentation governance and diff checks pass. All four profile-specific
+Release pairs have the expected PE width and no `.debug` section. No Shared,
+MyNES, INI or media input changed. FDC and remaining board ports stay assigned
+to S11-S12; neutral Core, board extraction and T-level external integration
+remain open. S10 makes no new timing-grade claim.
 
 ## S87 Admission Packet
 
