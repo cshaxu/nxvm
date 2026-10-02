@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S22 is active: publish copied IBM-PC board device deadlines to the
-single Core guest timeline without changing event order or timing claims.
-S1-S21 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S23 is active: move ordered IBM-PC board advancement behind one
+bounded Core-to-board effect seam without changing the sole guest timeline.
+S1-S22 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -50,7 +50,8 @@ the completed CPU extraction.
 | T540 S19 | Accepted: bounded Core A20 signal and absent-memory fallback route, without raw RAM in board adapters; dual-width units, gates, external boots and eight 0540 products pass. |
 | T540 S20 | Accepted: one bounded Core DMA bus-cycle operation; no board-facing RAM or transaction pointers, with dual-width units and eight boot checkpoints passing. |
 | T540 S21 | Accepted: source-inspected scheduler/PIC ownership and divided the oversized move into linear S22-S26 receivers. |
-| T540 S22 | Active: copied board deadlines feed the one Core time observation, retaining immediate and L1-blocking disposition. |
+| T540 S22 | Accepted: copied board deadlines feed the one Core time observation, retaining immediate and L1-blocking disposition; dual-width units and eight boots pass. |
+| T540 S23 | Active: Core time settlement calls ordered board-advance phases through one bounded effect seam. |
 
 ## T540 S1 Acceptance
 
@@ -739,6 +740,44 @@ deadline publication only.
 | Exit Criteria | One copied board deadline publication replaces Core's direct chip query path; full/focused verification, external boots and products pass; coordinator actual-diff review accepts implementation P and governance P records closure. |
 | Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board layers before splitting PC Apps, with a single guest timeline and no patch-over-patch behavior. |
 | Similar-Issue Sweep | Inspect every chip deadline query and the immediate/L1-blocked decisions, not just PIT; retain Core timeline and FPU completion as neutral, and classify every other board query or explicitly defer it with a unique owner reason. |
+
+## T540 S22 Acceptance
+
+P1 `dbef7f81e` removes every IBM-PC device-deadline query from Core's
+observation path and binds one copied board provider. Core still owns
+`elapsed_ticks`, timeline and FPU completion, and alone chooses the minimum
+and advances time. The [S22 evidence](../etc/evidence/t540-s22-copied-board-deadlines.md)
+records the exact query move, immediate/L1/blocked cases, line counts and
+eight product hashes. Actual staged and committed review found 19 scoped
+paths: NXVM source/tests/gates/evidence and exactly eight optimized 0540
+EXEs; no MyNES, Shared, INI, firmware or external original changed.
+
+Full x64 and x86 repository-only units passed **469/469** each; specialized
+gates passed **75/75**; all four external boots passed once in each width
+(**8/8**). All eight products have the expected PE width and zero `.debug`
+sections. Documentation governance and diff hygiene passed. S22 is accepted;
+T540 remains open. S23 receives the still-mixed ordered board effects.
+
+## T540 S23 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S23, the next linear S after accepted S22. |
+| Admission And Approval | The owner's automatic admission of bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES are read-only. |
+| Objective | Move IBM-PC device-advance effects behind one ordered, bounded Core-to-board call while Core retains the only tick settlement and FPU/CPU timing. Preserve all three causal phases. |
+| Non-goals | PIC CPU INTA handoff (S24), mixed plan/reset (S25), neutral Core physical move (S26), device timing formulas, profile/INI/media/firmware changes, generic event framework or second time loop. |
+| Reference Baseline | Accepted S22 P1 `dbef7f81e`, [S22 evidence](../etc/evidence/t540-s22-copied-board-deadlines.md) and [S21 source intake](../etc/evidence/t540-s21-scheduler-pic-intake.md); dual-width units 469/469, specialized gates 75/75, eight external boots and eight Release products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md), [board adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and S21/S22 evidence. |
+| Files And ABI Surface | Inspect `devices/machine_scheduler.c` advancement phases and direct chip APIs. Extract only board effects to a private board-owned implementation; Core calls it with copied tick/delta facts, without handing timeline mutation or CPU transaction ownership to the board. Update direct tests/gates and eight products. |
+| Applicable Rules | One Core guest clock, one settlement order, no copied owner state, no parallel advance route. Keep DMA HOLD/refresh/PIT/PIC arbitration before FDC/HDC/RTC readiness, then XT keyboard/KBC/PIC/video peripheral effects; retain FPU and prefetch Core authority. |
+| Verification | Focused DMA, refresh, PIT, IRQ, FDC/HDC, KBC, XT keyboard, video, FPU and prefetch-order tests; complete dual-width repository-only units, specialized/documentation gates, four external boots once per width and eight optimized 0540 products with hashes/PE/no-debug proof. |
+| Expected Markers | Core publication invokes one board advancement seam for the original ordered phase effects, but still owns time and FPU/CPU settlement. Old direct chip-advance calls in Core are deleted in the same P. |
+| Asset Needs | Existing external owner-provided assets only for boot checkpoints and products; no new or changed ROM, media, INI or font. |
+| Reporting Requirements | Record original and receiving effect calls, exact phase order, failure/overflow behavior, before/after line counts, focused/full verification, eight boots and product hashes; transfer PIC CPU bridge to S24. |
+| Stop Conditions | Stop before event-order reinterpretation, new physical timing claim, second scheduler, Shared/MyNES edits, protected asset modification or an unresolved board/Core owner ambiguity. |
+| Exit Criteria | Single ordered board-effect seam with no parallel Core chip-advance path; all source and external gates pass; coordinator actual-diff review accepts P1 and governance P2 records closure. |
+| Original Owner Request | Make neutral `x86/core` and reusable IBM-PC board layers available before splitting PC Apps, with flat owner boundaries and linear numeric S tasks. |
+| Similar-Issue Sweep | Inspect all three advance phases and every direct chip effect, including indirect PIC/refresh/HOLD effects; identify Core-only FPU/prefetch cases explicitly rather than moving them by file proximity. |
 
 ## S87 Admission Packet
 
