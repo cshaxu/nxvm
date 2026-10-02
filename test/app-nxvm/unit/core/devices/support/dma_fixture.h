@@ -1,6 +1,7 @@
 #ifndef TEST_NXVM_DMA_FIXTURE_H
 #define TEST_NXVM_DMA_FIXTURE_H
 #include "port_owner_fixture.h"
+#include "app-nxvm/devices/dma_bus.h"
 
 /* Keep the legacy port-only chip fixtures synthetic while exercising DMA's
  * single production registration path through a Core-owned port table. */

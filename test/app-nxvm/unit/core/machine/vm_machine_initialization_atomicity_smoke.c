@@ -6,6 +6,7 @@
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 #include "app-nxvm/profiles/byob/blob.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"

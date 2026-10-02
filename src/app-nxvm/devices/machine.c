@@ -1,6 +1,7 @@
 #include "lib/types/types_interface.h"
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "x86/chips/cpu/cpu_interface.h"
 
 #define CORE_MACHINE_L1_COMPATIBILITY_MAXIMUM_STEPS 16u

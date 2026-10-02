@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/media_interface.h"
 
 static const core_machine_config core_machine_dma_binding_token_config = {

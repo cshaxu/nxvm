@@ -24,61 +24,12 @@
 
 #include "app-nxvm/devices/port.h"
 
-#include "app-nxvm/devices/pic_bus.h"
-
-#include "app-nxvm/devices/pit_bus.h"
-
-#include "app-nxvm/devices/dma_bus.h"
-
-#include "app-nxvm/devices/d4_memory.h"
-
-#include "x86/chips/rtc146818/rtc146818_interface.h"
-
-#include "app-nxvm/devices/fdc.h"
-
-#include "app-nxvm/devices/hdc.h"
-
-#include "app-nxvm/devices/kbc.h"
-
-#include "app-nxvm/devices/xt_ppi_keyboard.h"
-#include "x86/chips/xtkeyboard/xtkeyboard_interface.h"
-
-#include "app-nxvm/devices/vadp.h"
-
 #define CORE_MACHINE_TRACE_CAPACITY 32u
 #define CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY 8u
 #define CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY 128u
 #ifndef CORE_MACHINE_RUNTIME_TRACE_ENABLED
 #define CORE_MACHINE_RUNTIME_TRACE_ENABLED 1
 #endif
-
-typedef struct core_machine_fdc_topology {
-    const core_machine_media_registry *media_registry;
-    core_machine_fdc_drive_bindings drives;
-    core_machine_dma_request_binding dma_request;
-    core_machine_fdc_config config;
-    core_machine_fdc_terminal_observation_provider observation_provider;
-} core_machine_fdc_topology;
-
-typedef struct core_machine_hdc_topology {
-    const core_machine_media_registry *media_registry;
-    core_machine_media_id media_id;
-    core_machine_media_id slave_media_id;
-    core_machine_hdc_config config;
-} core_machine_hdc_topology;
-
-struct core_machine_plan {
-    core_machine_config configuration;
-    core_machine_plan_topology topology;
-    core_machine_timing_declaration declarations[
-        CORE_MACHINE_TIMING_CAPABILITY_COUNT];
-    lib_size declaration_count;
-    core_machine_controller_timing_rules controller_timing;
-    core_machine_d4_memory_config d4_memory;
-    const core_machine_media_registry *media_registry;
-    core_machine_display_provider_slot *display_provider;
-    core_machine_fdc_terminal_observation_provider fdc_observation_provider;
-};
 
 typedef struct core_machine_trace_state {
     core_machine_trace_provider provider;
@@ -105,11 +56,6 @@ typedef struct core_machine_immutable_rom_mapping {
     lib_u8 *image;
     lib_u8 owns_image;
 } core_machine_immutable_rom_mapping;
-
-typedef struct core_machine_absent_memory {
-    core_machine_absent_memory_config config;
-    lib_u8 configured;
-} core_machine_absent_memory;
 
 typedef struct core_machine_board_state core_machine_board_state;
 
@@ -285,10 +231,6 @@ lib_status core_machine_create_with_test_memory_allocation(
 lib_status core_machine_create_with_test_port_allocation(
     const core_machine_config *config, core_machine **out_machine,
     core_machine_port_test_allocation *test_allocation);
-lib_status core_machine_configure_fdc(core_machine *machine,
-    const core_machine_fdc_topology *topology);
-lib_status core_machine_configure_hdc(core_machine *machine,
-    const core_machine_hdc_topology *topology);
 lib_u32 core_machine_linear_pc(const core_machine *machine);
 void core_machine_external_cycle_invalidate(core_machine *machine);
 extern const core_machine_cpu_bus_provider core_machine_cpu_bus;
@@ -312,41 +254,9 @@ extern const core_machine_cpu_execution_diagnostic_provider
  * observer or a physical retirement contract actually needs it. */
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
-void core_machine_board_reset_devices(core_machine *machine);
-lib_i32 core_machine_board_config_is_valid(const core_machine_config *config);
-lib_status core_machine_board_create(core_machine *machine,
-    const core_machine_config *config);
-void core_machine_board_finalize_devices(core_machine *machine);
-lib_bool core_machine_board_shutdown_resets(const core_machine *machine);
-lib_status core_machine_board_initialize_clocks(core_machine *machine,
-    const core_machine_clock_plan *plan);
-void core_machine_board_reset_clocks(core_machine *machine);
 lib_status core_machine_reconfigure_memory_core(core_machine *machine,
     lib_size memory_bytes);
-void core_machine_board_deadline_observe(void *owner, lib_u64 now,
-    core_machine_board_deadline_observation *out_observation);
-lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address);
-void core_machine_board_refresh_complete(void *owner);
-lib_u64 core_machine_board_dma_ticks(void *owner, lib_u64 source_ticks);
-lib_bool core_machine_board_dma_request(void *owner);
-void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks);
-core_machine_board_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
-    lib_u64 source_ticks);
-void core_machine_board_pit_pic_advance(void *owner,
-    core_machine_board_pit_ticks ticks);
-lib_bool core_machine_board_pic_pending(void *owner);
-lib_u8 core_machine_board_pic_acknowledge(void *owner);
 void core_machine_cpu_bus_refresh_pulse(void *core_owner);
-void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
-    lib_u64 due_tick);
-void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks);
-void core_machine_board_peripheral_advance(void *owner, lib_u64 source_ticks);
-lib_status core_machine_board_register_a20_port(core_machine *machine);
-void core_machine_board_after_pit_reset(core_machine *machine);
-void core_machine_board_refresh_nmi(core_machine *machine);
-void core_machine_board_configure_xt_ppi_speaker(core_machine *machine);
-void core_machine_board_set_xt_ppi_speaker(core_machine *machine,
-    lib_u8 timer_gate, lib_u8 data_enabled);
 typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT,
     CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT,
@@ -365,9 +275,6 @@ void core_machine_capture_time_observation_private(const core_machine *machine,
 lib_status core_machine_firmware_invoke(core_machine *machine,
     lib_i32 configuring, lib_i32 track_operation_failures,
     lib_status (*callback)(void *, core_machine_firmware_context *));
-lib_status core_machine_plan_validate(const core_machine_plan *plan);
-lib_status core_machine_plan_apply_topology(core_machine *machine,
-    const core_machine_plan *plan);
 lib_i32 core_machine_retirement_time_contract_is_valid(
     core_machine_retirement_time_contract contract);
 lib_i32 core_machine_timing_capability_is_valid(
