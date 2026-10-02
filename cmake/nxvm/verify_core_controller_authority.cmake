@@ -21,7 +21,7 @@ set(machine_text "${machine_board_text}${machine_lifecycle_text}${machine_plan_t
 foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_hdc"
     "core_machine_fdc_connect" "core_machine_fdc_initialize"
     "core_machine_hdc_connect" "core_machine_hdc_initialize"
-    "core_machine_install_port_provider" "core_machine_fdc_reset"
+    "core_machine_install_port_routes" "core_machine_fdc_reset"
     "core_machine_hdc_reset" "core_machine_fdc_finalize"
     "core_machine_hdc_finalize")
     string(FIND "${machine_text}" "${required}" position)
@@ -48,7 +48,8 @@ foreach(source IN LISTS vm_machine_sources)
         "core_machine_fdc_finalize" "core_machine_hdc_connect"
         "core_machine_hdc_initialize" "core_machine_hdc_reset"
         "core_machine_hdc_refresh" "core_machine_hdc_finalize"
-        "core_machine_hdc_port_provider" "core_machine_install_port_provider")
+        "core_machine_hdc_port_provider" "core_machine_install_port_provider"
+        "core_machine_install_port_routes")
         string(FIND "${source_text}" "${forbidden}" position)
         if(NOT position EQUAL -1)
             message(FATAL_ERROR "T296 S4 VM machine retains controller authority: ${source}: ${forbidden}")

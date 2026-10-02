@@ -100,7 +100,7 @@ foreach(operation core_machine_create core_machine_freeze_execution_providers
 endforeach()
 
 function(project_t332_source_path source out)
-    if(source MATCHES "^devices/")
+    if(source MATCHES "^(devices|chips)/")
         set(path "${PROJECT_T332_SOURCE_DIR}/test/x86/${source}")
     else()
         set(path "${PROJECT_T332_SOURCE_DIR}/${source}")

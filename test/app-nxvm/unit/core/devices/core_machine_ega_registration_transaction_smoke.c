@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/devices/machine_interface.h"
 
@@ -78,12 +78,14 @@ static lib_status priority_query(void *owner, lib_u32 physical,
         access != CORE_MACHINE_MEMORY_ACCESS_READ) return LIB_STATUS_INTERNAL_ERROR;
     return provider->decline ? LIB_STATUS_UNSUPPORTED : LIB_STATUS_OK;
 }
-static lib_i32 initialize(t_vadp *adapter, t_ram *memory, t_port *port)
+static lib_i32 initialize(t_vadp *adapter, t_ram *memory, core_machine *machine)
 {
+    t_port *port = &machine->executor_port;
+
     core_machine_port_initialize(port);
     if (core_machine_memory_initialize_for(memory, 16u * 1024u * 1024u,
             LIB_NULL) != LIB_STATUS_OK) return 0;
-    if (core_machine_vadp_initialize(adapter, port) != LIB_STATUS_OK) {
+    if (core_machine_vadp_initialize(adapter, machine) != LIB_STATUS_OK) {
         core_machine_memory_finalize(memory);
         core_machine_port_finalize(port);
         return 0;
@@ -93,7 +95,7 @@ static lib_i32 initialize(t_vadp *adapter, t_ram *memory, t_port *port)
 
 static void finalize(t_vadp *adapter, t_ram *memory)
 {
-    t_port *port = adapter->port;
+    t_port *port = &adapter->machine->executor_port;
 
     core_machine_vadp_finalize(adapter);
     core_machine_memory_finalize(memory);
@@ -146,13 +148,17 @@ lib_i32 main(void)
             CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
             0x03u, 0x00u, 0x0fu, 0x02u, LIB_TRUE }
     };
+    const x86_video_cecg_config compaq = {
+        0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
+        0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE };
     t_vadp adapter;
     t_ram memory;
-    t_port port;
+    core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
+    t_port *port = &machine.executor_port;
     lib_i32 filler = 0;
     lib_i32 failed = 0;
 
-    if (!initialize(&adapter, &memory, &port)) return 1;
+    if (!initialize(&adapter, &memory, &machine)) return 1;
     {
         core_machine_memory_test_allocation allocation = { LIB_TRUE, 0u };
 
@@ -177,7 +183,7 @@ lib_i32 main(void)
                 CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY;
     }
     finalize(&adapter, &memory);
-    if (!initialize(&adapter, &memory, &port)) return 1;
+    if (!initialize(&adapter, &memory, &machine)) return 1;
     failed |= !register_provider_fillers(&memory, &filler,
         CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
     failed |= core_machine_vadp_configure(&adapter, &memory,
@@ -186,7 +192,7 @@ lib_i32 main(void)
         CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
     finalize(&adapter, &memory);
 
-    if (!initialize(&adapter, &memory, &port)) return 1;
+    if (!initialize(&adapter, &memory, &machine)) return 1;
     {
         priority_provider first = { 0x3cu, LIB_FALSE };
         priority_provider overlay = { 0xa5u, LIB_FALSE };
@@ -213,7 +219,7 @@ lib_i32 main(void)
         failed |= memory.connect.device_provider_count != 2u;
     }
     finalize(&adapter, &memory);
-    if (!initialize(&adapter, &memory, &port)) return 1;
+    if (!initialize(&adapter, &memory, &machine)) return 1;
     failed |= !register_observer_fillers(&memory, &filler);
     failed |= core_machine_vadp_configure(&adapter, &memory,
         &config) != LIB_STATUS_NO_MEMORY;
@@ -226,65 +232,98 @@ lib_i32 main(void)
     for (lib_size fail_at = 1u; fail_at <= 8u; ++fail_at) {
         core_machine_port_test_allocation allocation = { fail_at, 0u };
 
-        core_machine_port_initialize(&port);
-        failed |= core_machine_port_add_read(&port, 0x80u, sentinel_read,
+        core_machine_port_initialize(port);
+        failed |= core_machine_port_add_read(port, 0x80u, sentinel_read,
             &filler) != LIB_STATUS_OK;
-        core_machine_port_set_test_allocation(&port, &allocation);
-        failed |= core_machine_vadp_initialize(&adapter, &port) != LIB_STATUS_NO_MEMORY;
+        core_machine_port_set_test_allocation(port, &allocation);
+        failed |= core_machine_vadp_initialize(&adapter, &machine) != LIB_STATUS_NO_MEMORY;
         failed |= allocation.attempts != fail_at || adapter.chip != LIB_NULL ||
-            core_machine_port_has_write(&port, 0x3d4u) ||
-            core_machine_port_read(&port, 0x80u) != 0x5au;
+            core_machine_port_has_write(port, 0x3d4u) ||
+            core_machine_port_read(port, 0x80u) != 0x5au;
         allocation.fail_at = 0u;
-        failed |= core_machine_vadp_initialize(&adapter, &port) != LIB_STATUS_OK;
+        failed |= core_machine_vadp_initialize(&adapter, &machine) != LIB_STATUS_OK;
         core_machine_vadp_finalize(&adapter);
-        failed |= core_machine_port_has_write(&port, 0x3d4u) ||
-            core_machine_port_read(&port, 0x80u) != 0x5au;
-        core_machine_port_finalize(&port);
+        failed |= core_machine_port_has_write(port, 0x3d4u) ||
+            core_machine_port_read(port, 0x80u) != 0x5au;
+        core_machine_port_finalize(port);
     }
 
-    /* Every EGA/VGA port-allocation failure occurs after memory publication.
+    /* Every EGA/Compaq/VGA port-allocation failure occurs after memory publication.
      * Rollback must retain unrelated routes and permit a complete retry. */
-    for (lib_size variant = 0u; variant < 2u; ++variant) {
+    for (lib_size variant = 0u; variant < 3u; ++variant) {
         core_machine_display_config selected = config;
-        selected.vga_present = variant != 0u;
+        selected.vga_present = variant == 1u;
+        if (variant == 2u) {
+            selected.ega_personality =
+                X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
+            selected.cecg = compaq;
+        }
         for (lib_size fail_at = 1u; fail_at <= (variant ? 27u : 20u); ++fail_at) {
             core_machine_port_test_allocation allocation = { fail_at, 0u };
             x86_video *original;
 
-            if (!initialize(&adapter, &memory, &port)) return 1;
+            if (!initialize(&adapter, &memory, &machine)) return 1;
             original = adapter.chip;
-            failed |= core_machine_port_add_read(&port, 0x80u, sentinel_read,
+            failed |= core_machine_port_add_read(port, 0x80u, sentinel_read,
                 &filler) != LIB_STATUS_OK;
             failed |= !register_provider_fillers(&memory, &filler, 1u);
             failed |= core_machine_memory_register_write_observer(&memory,
                 ignored_write, &filler) != LIB_STATUS_OK;
-            core_machine_port_set_test_allocation(&port, &allocation);
+            core_machine_port_set_test_allocation(port, &allocation);
             failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
                 LIB_STATUS_NO_MEMORY;
             failed |= allocation.attempts != fail_at || adapter.chip != original ||
                 !is_unconfigured(&adapter, &memory, 1u, 1u) ||
-                core_machine_port_has_write(&port, 0x3c4u) ||
-                core_machine_port_has_write(&port, 0x3c9u) ||
-                !core_machine_port_has_write(&port, 0x3d4u) ||
-                core_machine_port_read(&port, 0x80u) != 0x5au;
+                core_machine_port_has_write(port, 0x3c4u) ||
+                core_machine_port_has_write(port, 0x3c9u) ||
+                core_machine_port_has_read(port, 0x7c6u) ||
+                !core_machine_port_has_write(port, 0x3d4u) ||
+                core_machine_port_read(port, 0x80u) != 0x5au;
             allocation.fail_at = 0u;
             failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
                 LIB_STATUS_OK;
             failed |= memory.connect.device_provider_count != 2u ||
                 memory.connect.write_observer_count != 2u ||
-                !core_machine_port_has_write(&port, 0x3c4u) ||
-                core_machine_port_has_write(&port, 0x3c9u) != selected.vga_present;
+                !core_machine_port_has_write(port, 0x3c4u) ||
+                core_machine_port_has_write(port, 0x3c9u) != selected.vga_present ||
+                core_machine_port_has_read(port, 0x7c6u) != (variant == 2u);
             core_machine_memory_freeze_mappings(&memory);
             core_machine_vadp_finalize(&adapter);
             failed |= memory.connect.device_provider_count != 1u ||
                 memory.connect.write_observer_count != 1u ||
-                core_machine_port_has_write(&port, 0x3c4u) ||
-                core_machine_port_has_write(&port, 0x3c9u) ||
-                core_machine_port_has_write(&port, 0x3d4u) ||
-                core_machine_port_read(&port, 0x80u) != 0x5au;
+                core_machine_port_has_write(port, 0x3c4u) ||
+                core_machine_port_has_write(port, 0x3c9u) ||
+                core_machine_port_has_read(port, 0x7c6u) ||
+                core_machine_port_has_write(port, 0x3d4u) ||
+                core_machine_port_read(port, 0x80u) != 0x5au;
             core_machine_memory_finalize(&memory);
-            core_machine_port_finalize(&port);
+            core_machine_port_finalize(port);
         }
+    }
+
+    /* A collision on the final Compaq route cannot publish its earlier
+     * routes or replace the active CGA chip. */
+    {
+        core_machine_display_config selected = config;
+        x86_video *original;
+
+        selected.ega_personality =
+            X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
+        selected.cecg = compaq;
+        if (!initialize(&adapter, &memory, &machine)) return 1;
+        original = adapter.chip;
+        failed |= core_machine_port_add_read(port, 0xfc6u, sentinel_read,
+            &filler) != LIB_STATUS_OK;
+        failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
+            LIB_STATUS_INVALID_STATE;
+        failed |= adapter.chip != original ||
+            !is_unconfigured(&adapter, &memory, 0u, 0u) ||
+            core_machine_port_has_write(port, 0x3c4u) ||
+            core_machine_port_read(port, 0xfc6u) != 0x5au;
+        core_machine_port_unregister_owner(port, &filler);
+        failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
+            LIB_STATUS_OK;
+        finalize(&adapter, &memory);
     }
 
     if (failed) return 1;

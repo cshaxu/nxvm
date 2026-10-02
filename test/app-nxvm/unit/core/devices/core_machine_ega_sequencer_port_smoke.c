@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/devices/machine_interface.h"
 
@@ -36,7 +36,8 @@ lib_i32 main(void)
          * 64 KiB A0000 window as the original sequencer-only fixture. */
         .ega_controllers = { .graphics = { [6] = 0x05u } }
     };
-    t_port port;
+    core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
+    t_port *port = &machine.executor_port;
     t_ram memory;
     t_vadp vadp;
     lib_u8 value = 0u;
@@ -45,24 +46,24 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     lib_memory_set(&memory, 0, sizeof(memory));
-    core_machine_port_initialize(&port);
+    core_machine_port_initialize(port);
     failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
-    failed |= core_machine_vadp_initialize(&vadp, &port) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_initialize(&vadp, &machine) != LIB_STATUS_OK;
     failed |= core_machine_vadp_configure(&vadp, &memory, &config) != LIB_STATUS_OK;
-    failed |= core_machine_port_read(&port, 0x03c4u) != 0u;
-    failed |= core_machine_port_read(&port, 0x03c5u) != 0x03u;
+    failed |= core_machine_port_read(port, 0x03c4u) != 0u;
+    failed |= core_machine_port_read(port, 0x03c5u) != 0x03u;
 
-    core_machine_port_write(&port, 0x03c4u, 1u);
-    core_machine_port_write(&port, 0x03c5u, 0xffu);
-    failed |= core_machine_port_read(&port, 0x03c5u) != 0x3du;
-    core_machine_port_write(&port, 0x03c4u, 2u);
-    core_machine_port_write(&port, 0x03c5u, 0xa5u);
-    failed |= core_machine_port_read(&port, 0x03c5u) != 0x05u;
-    core_machine_port_write(&port, 0x03c4u, 3u);
-    core_machine_port_write(&port, 0x03c5u, 0xffu);
-    failed |= core_machine_port_read(&port, 0x03c5u) != 0x3fu;
-    core_machine_port_write(&port, 0x03c4u, 2u);
-    failed |= core_machine_port_read(&port, 0x03c5u) != 0x05u;
+    core_machine_port_write(port, 0x03c4u, 1u);
+    core_machine_port_write(port, 0x03c5u, 0xffu);
+    failed |= core_machine_port_read(port, 0x03c5u) != 0x3du;
+    core_machine_port_write(port, 0x03c4u, 2u);
+    core_machine_port_write(port, 0x03c5u, 0xa5u);
+    failed |= core_machine_port_read(port, 0x03c5u) != 0x05u;
+    core_machine_port_write(port, 0x03c4u, 3u);
+    core_machine_port_write(port, 0x03c5u, 0xffu);
+    failed |= core_machine_port_read(port, 0x03c5u) != 0x3fu;
+    core_machine_port_write(port, 0x03c4u, 2u);
+    failed |= core_machine_port_read(port, 0x03c5u) != 0x05u;
 
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     dirty_generation = observation.generation;
@@ -88,7 +89,7 @@ lib_i32 main(void)
 
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
-    core_machine_port_finalize(&port);
+    core_machine_port_finalize(port);
     if (failed) return 1;
     printf("M5:T235:S1:EGA-SEQUENCER:PORT:OK\n");
     printf("M5:T480:S3:EGA-VGA-COMMON:OK\n");

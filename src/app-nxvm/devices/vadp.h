@@ -48,17 +48,17 @@
 #define CORE_MACHINE_VADP_PORT_COMPAQ_INITIAL_MODE 0x0fc6u
 
 
-typedef struct t_port t_port;
 typedef struct t_ram t_ram;
+typedef struct core_machine core_machine;
 typedef struct core_machine_display_config core_machine_display_config;
 
 typedef struct t_vadp {
     x86_video *chip;
-    t_port *port;
+    core_machine *machine;
     t_ram *memory;
 } t_vadp;
 
-lib_status core_machine_vadp_initialize(t_vadp *adapter, t_port *port);
+lib_status core_machine_vadp_initialize(t_vadp *adapter, core_machine *machine);
 lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
     const core_machine_display_config *config);
 void core_machine_vadp_finalize(t_vadp *adapter);

@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/devices/machine_interface.h"
 
@@ -16,7 +16,8 @@ static lib_i32 core_machine_cga_graphics_write_byte(t_ram *memory,
 
 lib_i32 main(void)
 {
-    t_port port;
+    core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
+    t_port *port = &machine.executor_port;
     t_ram memory;
     t_vadp vadp;
     x86_video_snapshot snapshot;
@@ -28,38 +29,38 @@ lib_i32 main(void)
     };
 
     lib_memory_set(&memory, 0, sizeof(memory));
-    core_machine_port_initialize(&port);
+    core_machine_port_initialize(port);
     failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
-    failed |= core_machine_vadp_initialize(&vadp, &port) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_initialize(&vadp, &machine) != LIB_STATUS_OK;
     failed |= core_machine_vadp_configure(&vadp, &memory, &config) != LIB_STATUS_OK;
-    failed |= core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX) ||
-        core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_MODE) ||
-        core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_COLOR) ||
-        !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) ||
-        !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_STATUS) ||
-        !core_machine_port_has_write(&port, 0x03dbu) ||
-        !core_machine_port_has_write(&port, 0x03dcu);
+    failed |= core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX) ||
+        core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_MODE) ||
+        core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_COLOR) ||
+        !core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_CRTC_DATA) ||
+        !core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_STATUS) ||
+        !core_machine_port_has_write(port, 0x03dbu) ||
+        !core_machine_port_has_write(port, 0x03dcu);
 
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x00u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x38u);
-    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0u;
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
-    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0x3fu;
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0xeeu);
-    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0x3fu;
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x10u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
-    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0u;
-    core_machine_port_write(&port, 0x03dbu, 0u);
-    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
-    core_machine_port_write(&port, 0x03dcu, 0u);
-    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) == 0u;
-    core_machine_port_write(&port, 0x03dbu, 0u);
-    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x00u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x38u);
+    failed |= core_machine_port_read(port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0u;
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
+    failed |= core_machine_port_read(port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0x3fu;
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0xeeu);
+    failed |= core_machine_port_read(port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0x3fu;
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x10u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
+    failed |= core_machine_port_read(port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0u;
+    core_machine_port_write(port, 0x03dbu, 0u);
+    failed |= (core_machine_port_read(port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
+    core_machine_port_write(port, 0x03dcu, 0u);
+    failed |= (core_machine_port_read(port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) == 0u;
+    core_machine_port_write(port, 0x03dbu, 0u);
+    failed |= (core_machine_port_read(port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
 
-    core_machine_port_write(&port, 0x03d8u, 0x0au);
-    core_machine_port_write(&port, 0x03d9u, 0x00u);
+    core_machine_port_write(port, 0x03d8u, 0x0au);
+    core_machine_port_write(port, 0x03d9u, 0x00u);
     failed |= !core_machine_cga_graphics_write_byte(&memory, 0u, 0x1bu);
     failed |= !core_machine_cga_graphics_write_byte(&memory, 0x2000u, 0xe4u);
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
@@ -83,45 +84,45 @@ lib_i32 main(void)
     failed |= !observation.generation_reliable || !observation.capture_required ||
         observation.generation == generation;
 
-    core_machine_port_write(&port, 0x03d9u, 0x20u);
+    core_machine_port_write(port, 0x03d9u, 0x20u);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.palette_rgb[1] != 0x00aaaau ||
         snapshot.palette_rgb[2] != 0xaa00aau ||
         snapshot.palette_rgb[3] != 0xaaaaaau || !snapshot.buffer_changed;
 
-    core_machine_port_write(&port, 0x03d9u, 0x10u);
+    core_machine_port_write(port, 0x03d9u, 0x10u);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.palette_rgb[1] != 0x55ff55u ||
         snapshot.palette_rgb[2] != 0xff5555u ||
         snapshot.palette_rgb[3] != 0xffff55u || !snapshot.buffer_changed;
 
-    core_machine_port_write(&port, 0x03d8u, 0x1au);
+    core_machine_port_write(port, 0x03d8u, 0x1au);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != X86_VIDEO_KIND_CGA_640X200X2 ||
         snapshot.palette_rgb[0] != 0x000000u ||
         snapshot.palette_rgb[1] != 0x000000u;
-    core_machine_port_write(&port, 0x03d9u, 0x1fu);
+    core_machine_port_write(port, 0x03d9u, 0x1fu);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.palette_rgb[0] != 0x000000u ||
         snapshot.palette_rgb[1] != 0xffffffu || !snapshot.buffer_changed;
-    core_machine_port_write(&port, 0x03dcu, 0u);
-    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) == 0u;
+    core_machine_port_write(port, 0x03dcu, 0u);
+    failed |= (core_machine_port_read(port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) == 0u;
     x86_video_reset(vadp.chip);
-    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
-    core_machine_port_write(&port, 0x03d8u, 0x0du);
+    failed |= (core_machine_port_read(port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
+    core_machine_port_write(port, 0x03d8u, 0x0du);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.kind != X86_VIDEO_KIND_TEXT;
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     generation = observation.generation;
     x86_video_observe_snapshot(vadp.chip, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || observation.capture_required;
-    core_machine_port_write(&port, 0x03d8u, 0x05u);
+    core_machine_port_write(port, 0x03d8u, 0x05u);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.characters[0] != 0x20u || snapshot.attributes[0] != 0u;
 
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
-    core_machine_port_finalize(&port);
+    core_machine_port_finalize(port);
     if (failed) return 1;
     printf("M5:T228:S1:CGA:PORT:OK\n");
     return 0;

@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/vadp.h"
 
@@ -74,27 +74,28 @@ lib_i32 main(void)
     lib_i32 failed = !t386_s9_invalid_cecg_is_failure_atomic();
 
     for (lib_u8 generic = 0u; generic < 2u; ++generic) {
-        t_port port;
+        core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
+    t_port *port = &machine.executor_port;
         t_ram memory;
         t_vadp adapter;
 
-        core_machine_port_initialize(&port);
+        core_machine_port_initialize(port);
         if (core_machine_memory_initialize_for(&memory, 0x100000u, LIB_NULL) !=
                 LIB_STATUS_OK) return 1;
-        if (core_machine_vadp_initialize(&adapter, &port) != LIB_STATUS_OK) return 1;
+        if (core_machine_vadp_initialize(&adapter, &machine) != LIB_STATUS_OK) return 1;
         config.ega_personality = generic ? X86_VIDEO_EGA_PERSONALITY_GENERIC :
             X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
         failed |= core_machine_vadp_configure(&adapter, &memory, &config) != LIB_STATUS_OK;
         for (lib_size index = 0u; index < sizeof(expected) / sizeof(expected[0]); ++index) {
             if (expected[index].generic != generic) continue;
             failed |= (expected[index].write ?
-                core_machine_port_has_write(&port, expected[index].address) :
-                core_machine_port_has_read(&port, expected[index].address)) !=
+                core_machine_port_has_write(port, expected[index].address) :
+                core_machine_port_has_read(port, expected[index].address)) !=
                     expected[index].present;
         }
         core_machine_vadp_finalize(&adapter);
         core_machine_memory_finalize(&memory);
-        core_machine_port_finalize(&port);
+        core_machine_port_finalize(port);
     }
     return failed ? 1 : 0;
 }

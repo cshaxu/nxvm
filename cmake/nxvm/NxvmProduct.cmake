@@ -85,6 +85,7 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/trace_interface.c
     src/app-nxvm/devices/retirement_observation_interface.c
     src/app-nxvm/devices/timeline.c
+    src/app-nxvm/devices/vadp.c
 )
 # This is the complete public core-machine runtime. It extends the primitive
 # storage/executor target below; it is not a second guest executor.
@@ -1216,7 +1217,6 @@ add_library(x86-cpu ALIAS x86-cpu-shared)
 
 set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/display.c
-    src/app-nxvm/devices/vadp.c
     src/app-nxvm/devices/port.c
     src/app-nxvm/devices/memory.c
     src/app-nxvm/devices/transaction.c
@@ -3100,6 +3100,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying HDC atomic routes and 3F7 wired-OR"
         VERBATIM)
 
+    add_custom_target(verify-vadp-port-routes
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_vadp_port_routes.cmake"
+        COMMENT "Verifying VADP Core-owned atomic port routes"
+        VERBATIM)
+
     add_custom_target(verify-rational-clock-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rational_clock_boundary.cmake"
@@ -3302,6 +3308,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-cmos-rtc-boundary
     verify-board-port-b-boundary
     verify-hdc-port-routes
+    verify-vadp-port-routes
     verify-rational-clock-boundary
     verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary
@@ -3491,7 +3498,6 @@ file(GENERATE
 # next admission condition.
 set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/display.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/vadp.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/port.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/memory.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/transaction.c|machine-executor"
@@ -3528,7 +3534,7 @@ file(GENERATE
 set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
     core-machine-executor
-    x86-cpu
+    x86-cpu-shared
     common-machine
     x86-xasm32
     x86-debug

@@ -607,7 +607,7 @@ static lib_status core_machine_create_internal(
     }
     {
         lib_status status = core_machine_vadp_initialize(&machine->shared_vadp,
-            &machine->executor_port);
+            machine);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
             return status;

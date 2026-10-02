@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/devices/machine_interface.h"
 
@@ -32,7 +32,8 @@ lib_i32 main(void)
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u }
     };
-    t_port port;
+    core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
+    t_port *port = &machine.executor_port;
     t_ram memory;
     t_vadp vadp;
     x86_video_snapshot snapshot;
@@ -46,65 +47,65 @@ lib_i32 main(void)
     };
 
     lib_memory_set(&memory, 0, sizeof(memory));
-    core_machine_port_initialize(&port);
+    core_machine_port_initialize(port);
     failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
-    failed |= core_machine_vadp_initialize(&vadp, &port) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_initialize(&vadp, &machine) != LIB_STATUS_OK;
     config.ega_sequencer = sequencer;
     config.ega_controllers = controllers;
     failed |= core_machine_vadp_configure(&vadp, &memory, &config) != LIB_STATUS_OK;
     x86_video_reset(vadp.chip);
-    failed |= !core_machine_port_has_read(&port,
+    failed |= !core_machine_port_has_read(port,
         CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0) ||
-        !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) ||
-        !core_machine_port_has_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) ||
-        !core_machine_port_has_write(&port,
+        !core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) ||
+        !core_machine_port_has_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) ||
+        !core_machine_port_has_write(port,
         CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT) ||
-        !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_MONO_STATUS) ||
-        !core_machine_port_has_write(&port,
+        !core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_MONO_STATUS) ||
+        !core_machine_port_has_write(port,
         CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_MONO) ||
-        !core_machine_port_has_write(&port,
+        !core_machine_port_has_write(port,
         CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR) ||
-        (core_machine_port_read(&port,
+        (core_machine_port_read(port,
         CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0) & 0x7fu) != 0u;
 
-    ega_write_crtc(&port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, 0x0eu, 0x12u);
-    failed |= ega_read_crtc(&port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, 0x0eu) !=
-        0x12u || ega_read_crtc(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu) !=
+    ega_write_crtc(port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, 0x0eu, 0x12u);
+    failed |= ega_read_crtc(port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, 0x0eu) !=
+        0x12u || ega_read_crtc(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu) !=
         0u;
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT,
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT,
         0x01u);
-    ega_write_crtc(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu, 0x34u);
-    failed |= ega_read_crtc(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu) !=
-        0x34u || ega_read_crtc(&port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX,
+    ega_write_crtc(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu, 0x34u);
+    failed |= ega_read_crtc(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu) !=
+        0x34u || ega_read_crtc(port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX,
         0x0eu) != 0u;
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_MONO,
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_MONO,
         0x03u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR,
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR,
         0x02u);
     /* Feature-control storage is verified by the independent chip case. */
 
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_WRITE_INDEX, 2u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x7fu);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x15u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x2au);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_READ_INDEX, 2u);
-    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) !=
-        0x3fu || core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) !=
-        0x15u || core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) !=
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_WRITE_INDEX, 2u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x7fu);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x15u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x2au);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_READ_INDEX, 2u);
+    failed |= core_machine_port_read(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) !=
+        0x3fu || core_machine_port_read(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) !=
+        0x15u || core_machine_port_read(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) !=
         0x2au;
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK, 0xa5u);
-    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) !=
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK, 0xa5u);
+    failed |= core_machine_port_read(port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) !=
         0xa5u;
 
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX, 4u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA, 0x0eu);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 5u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x40u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-    (void)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x01u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX, 4u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA, 0x0eu);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 5u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x40u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
+    (void)core_machine_port_read(port, CORE_MACHINE_VADP_PORT_STATUS);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x01u);
     failed |= core_machine_memory_write_physical(&memory,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, (lib_uptr)chain4_bytes,
         sizeof(chain4_bytes)) != LIB_STATUS_OK;
@@ -118,21 +119,21 @@ lib_i32 main(void)
     vga_generation = observation.generation;
     x86_video_observe_snapshot(vadp.chip, LIB_TRUE, vga_generation, &observation);
     failed |= !observation.generation_reliable || observation.capture_required;
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x1fu);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x1fu);
     x86_video_observe_snapshot(vadp.chip, LIB_TRUE, vga_generation, &observation);
     failed |= !observation.generation_reliable || !observation.capture_required ||
         observation.generation == vga_generation;
 
-    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
-    (void)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
+    (void)core_machine_port_read(port, CORE_MACHINE_VADP_PORT_STATUS);
     x86_video_reset(vadp.chip);
-    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) != 0xffu ||
-        ega_read_crtc(&port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, 0x0eu) !=
+    failed |= core_machine_port_read(port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) != 0xffu ||
+        ega_read_crtc(port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, 0x0eu) !=
         0u;
 
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
-    core_machine_port_finalize(&port);
+    core_machine_port_finalize(port);
     if (failed) {
         fprintf(stderr, "M5:T466:S2:EGA-EXTERNAL-PORT:FAIL\n");
         return 1;

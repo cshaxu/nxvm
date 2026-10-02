@@ -2,7 +2,6 @@
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/port.h"
 
 typedef struct video_port_route {
     lib_u16 address;
@@ -107,35 +106,36 @@ static x86_video_register video_register(lib_u16 address)
     }
 }
 
-static void video_read(t_port *port, lib_u16 address, void *context)
+static lib_status video_read(void *context, lib_u16 address, lib_u32 *out_value)
+{
+    t_vadp *adapter = context;
+    lib_u8 value = (lib_u8)*out_value;
+    lib_status status = x86_video_register_read(adapter->chip,
+        video_register(address), &value);
+
+    if (status == LIB_STATUS_OK) *out_value = (*out_value & ~0xffu) | value;
+    return status;
+}
+
+static lib_status video_write(void *context, lib_u16 address, lib_u32 value)
 {
     t_vadp *adapter = context;
 
-    (void)x86_video_register_read(adapter->chip, video_register(address),
-        &port->data.ioByte);
+    return x86_video_register_write(adapter->chip, video_register(address),
+        (lib_u8)value);
 }
 
-static void video_write(t_port *port, lib_u16 address, void *context)
-{
-    t_vadp *adapter = context;
-
-    (void)x86_video_register_write(adapter->chip, video_register(address),
-        port->data.ioByte);
-}
-
-static lib_status register_ports(t_vadp *adapter,
-    const video_port_route *routes, lib_size count)
+static lib_size append_ports(core_machine_port_route *routes, lib_size offset,
+    const video_port_route *ports, lib_size count, t_vadp *adapter)
 {
     for (lib_size index = 0u; index < count; ++index) {
-        lib_status status = routes[index].write ?
-            core_machine_port_add_write(adapter->port, routes[index].address,
-                video_write, adapter) :
-            core_machine_port_add_read(adapter->port, routes[index].address,
-                video_read, adapter);
-
-        if (status != LIB_STATUS_OK) return status;
+        routes[offset + index] = (core_machine_port_route) {
+            .address = ports[index].address,
+            .read = ports[index].write ? LIB_NULL : video_read,
+            .write = ports[index].write ? video_write : LIB_NULL,
+            .owner = adapter};
     }
-    return LIB_STATUS_OK;
+    return offset + count;
 }
 
 static lib_status cga_read(void *context, lib_u32 address,
@@ -191,25 +191,24 @@ static void notify_write(void *context, lib_u32 address, lib_uptr bytes)
     x86_video_notify_memory_write(context, address, bytes);
 }
 
-lib_status core_machine_vadp_initialize(t_vadp *adapter, t_port *port)
+lib_status core_machine_vadp_initialize(t_vadp *adapter, core_machine *machine)
 {
-    core_machine_port_provider_entry *checkpoint;
+    core_machine_port_route routes[sizeof(cga_ports) / sizeof(cga_ports[0])];
     lib_status status;
 
-    if (adapter == LIB_NULL || port == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (adapter == LIB_NULL || machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     lib_memory_set(adapter, 0u, sizeof(*adapter));
-    status = core_machine_port_registration_status(port);
-    if (status != LIB_STATUS_OK) return status;
     status = x86_video_create(&adapter->chip);
     if (status != LIB_STATUS_OK) return status;
-    adapter->port = port;
-    checkpoint = core_machine_port_registration_begin(port);
-    status = register_ports(adapter, cga_ports, sizeof(cga_ports) / sizeof(cga_ports[0]));
+    adapter->machine = machine;
+    (void)append_ports(routes, 0u, cga_ports,
+        sizeof(cga_ports) / sizeof(cga_ports[0]), adapter);
+    status = core_machine_install_port_routes(machine, routes,
+        sizeof(routes) / sizeof(routes[0]));
     if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(port, checkpoint);
         x86_video_destroy(adapter->chip);
         adapter->chip = LIB_NULL;
-        adapter->port = LIB_NULL;
+        adapter->machine = LIB_NULL;
     }
     return status;
 }
@@ -218,7 +217,11 @@ lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
     const core_machine_display_config *config)
 {
     x86_video *candidate = LIB_NULL;
-    core_machine_port_provider_entry *checkpoint;
+    core_machine_port_route routes[
+        sizeof(ega_ports) / sizeof(ega_ports[0]) +
+        sizeof(compaq_ports) / sizeof(compaq_ports[0]) +
+        sizeof(vga_ports) / sizeof(vga_ports[0])];
+    lib_size route_count = 0u;
     lib_status status;
 
     if (adapter == LIB_NULL || adapter->chip == LIB_NULL || memory == LIB_NULL ||
@@ -229,7 +232,6 @@ lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
         return LIB_STATUS_INVALID_ARGUMENT;
     status = x86_video_create(&candidate);
     if (status != LIB_STATUS_OK) return status;
-    checkpoint = core_machine_port_registration_begin(adapter->port);
     status = x86_video_configure_text_timing(candidate, &config->text_timing);
     if (status == LIB_STATUS_OK)
         status = x86_video_configure_text_glyphs(candidate, &config->text_glyphs);
@@ -260,23 +262,24 @@ lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
                 CORE_MACHINE_VADP_EGA_CPU_DECODE_BYTES, planar_read, planar_write,
                 planar_query, candidate, notify_write) :
             core_machine_memory_register_write_observer(memory, notify_write, candidate);
-        if (status == LIB_STATUS_OK)
-            status = register_ports(adapter, ega_ports,
-                sizeof(ega_ports) / sizeof(ega_ports[0]));
         if (status == LIB_STATUS_OK) {
             const lib_bool compaq = config->ega_personality ==
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
-            status = register_ports(adapter, compaq ? compaq_ports : generic_ports,
+            route_count = append_ports(routes, route_count, ega_ports,
+                sizeof(ega_ports) / sizeof(ega_ports[0]), adapter);
+            route_count = append_ports(routes, route_count,
+                compaq ? compaq_ports : generic_ports,
                 compaq ? sizeof(compaq_ports) / sizeof(compaq_ports[0]) :
-                sizeof(generic_ports) / sizeof(generic_ports[0]));
+                sizeof(generic_ports) / sizeof(generic_ports[0]), adapter);
         }
     }
     if (status == LIB_STATUS_OK && config->vga_present)
-        status = register_ports(adapter, vga_ports,
-            sizeof(vga_ports) / sizeof(vga_ports[0]));
+        route_count = append_ports(routes, route_count, vga_ports,
+            sizeof(vga_ports) / sizeof(vga_ports[0]), adapter);
+    if (status == LIB_STATUS_OK && route_count != 0u)
+        status = core_machine_install_port_routes(adapter->machine, routes, route_count);
     if (status != LIB_STATUS_OK) {
         core_machine_memory_unregister_owner(memory, candidate);
-        core_machine_port_rollback_registration(adapter->port, checkpoint);
         x86_video_destroy(candidate);
         return status;
     }
@@ -289,7 +292,8 @@ lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
 void core_machine_vadp_finalize(t_vadp *adapter)
 {
     if (adapter == LIB_NULL) return;
-    core_machine_port_unregister_owner(adapter->port, adapter);
+    if (adapter->machine != LIB_NULL)
+        (void)core_machine_remove_port_routes(adapter->machine, adapter);
     core_machine_memory_unregister_owner(adapter->memory, adapter->chip);
     x86_video_destroy(adapter->chip);
     lib_memory_set(adapter, 0u, sizeof(*adapter));

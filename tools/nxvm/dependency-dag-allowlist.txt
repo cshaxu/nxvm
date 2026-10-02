@@ -32,5 +32,4 @@ src/app-nxvm/profiles/profile_contract_interface.h|app-nxvm/devices
 src/app-nxvm/profiles/model40/composition.c|app-nxvm/devices
 src/app-nxvm/profiles/model40/composition_interface.h|app-nxvm/devices
 src/app-nxvm/profiles/model40/model40_private.h|app-nxvm/devices
-src/app-nxvm/profiles/selection_interface.h|app-nxvm/devices
 src/app-nxvm/profiles/xt/xt_5160_268.h|app-nxvm/devices
