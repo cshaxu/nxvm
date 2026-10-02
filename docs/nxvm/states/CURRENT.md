@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S57 is active: move XT speaker gate/output state to the sole board
-attachment. S1-S56 are accepted;
+M5 T540 S58 is active: move absent-memory window state to the sole board
+attachment. S1-S57 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -77,7 +77,8 @@ the completed CPU extraction.
 | T540 S54 | Accepted: five planar-parity state fields moved into the sole board attachment; dual-width complete units, gates and eight boot checkpoints pass. |
 | T540 S55 | Accepted: D4 platform/Port-B/NMI state moved into the sole board attachment; dual-width complete units, gates and eight boot checkpoints pass. |
 | T540 S56 | Accepted: three D4 refresh electrical fields moved into the sole board attachment; Core HOLD stays bounded, gates and eight boots pass. |
-| T540 S53 | Active: remaining board electrical latches and callback receiver. |
+| T540 S57 | Accepted: four XT speaker electrical fields moved into the sole board attachment; both-width units, gates and eight boots pass. |
+| T540 S58 | Active: absent-memory window owner receiver. |
 
 ## T540 S1 Acceptance
 
@@ -2011,6 +2012,36 @@ open.
 | Exit Criteria | P1/P2 pushed; both-width verification, eight boots and artifact evidence pass; worktree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | XT PPI gate/data, PIT speaker output, Port-B, reset and copied speaker observation. |
+
+## T540 S57 Acceptance
+
+The four XT PPI speaker fields are board-owned; the existing PPI/PIT/Port-B
+signal and copied observation paths are unchanged. P1 `1825a1859` is pushed.
+Both-width complete units pass 469/469, both specialized gate sets pass,
+and all eight fixed-profile boots pass once each. The optimized 0540 products
+are rebuilt and PE/no-debug verified. The [S57 evidence](../etc/evidence/t540-s57-speaker-owner.md)
+records the exact diff and artifact hashes. T540 remains open.
+
+## T540 S58 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S58, next linear S after accepted S57. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move only the configured absent-memory windows to the sole board attachment while retaining the existing typed Core memory route, open-bus priority and rollback contract. |
+| Non-goals | Callback/firmware audit (S59), neutral header (S60), physical Shared move (S61), absent-memory behavior or priority change. |
+| Reference Baseline | S57 P1 `1825a1859`, [S57 evidence](../etc/evidence/t540-s57-speaker-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Existing absent-memory window array and its board-owned configuration/read/write/query consumers; no new route API or fallback policy. |
+| Applicable Rules | Board owns physical absent-window configuration; Core owns typed memory arbitration, not a second copy. |
+| Verification | Full x64/x86 units, specialized/documentation gates, affected absent-memory regressions, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | No configured absent-memory array remains flat in `core_machine`; board alone owns each window and the route owner pointer retains its lifetime. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Window registration/rollback and pointer-lifetime audit, exact diff, tests and artifact hashes. |
+| Stop Conditions | Stop for a changed open-bus priority, second owner or cross-target change; split if actual surface exceeds one bounded S. |
+| Exit Criteria | P1/P2 pushed; both-width verification, eight boots and artifact evidence pass; worktree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | Absent-window configuration, Core typed memory registration, route owner pointer, open-bus fallback and rollback. |
 
 ## S87 Admission Packet
 
