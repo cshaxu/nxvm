@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S56 is active: move D4 refresh request state to the sole board
-attachment while retaining neutral Core HOLD servicing. S1-S55 are accepted;
+M5 T540 S57 is active: move XT speaker gate/output state to the sole board
+attachment. S1-S56 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -76,6 +76,7 @@ the completed CPU extraction.
 | T540 S53 | Accepted: residual XT keyboard chip pointer moved to board; remaining electrical/callback row split into S54-S59. Dual-width 469/469 units, gates and eight boot checkpoints pass. |
 | T540 S54 | Accepted: five planar-parity state fields moved into the sole board attachment; dual-width complete units, gates and eight boot checkpoints pass. |
 | T540 S55 | Accepted: D4 platform/Port-B/NMI state moved into the sole board attachment; dual-width complete units, gates and eight boot checkpoints pass. |
+| T540 S56 | Accepted: three D4 refresh electrical fields moved into the sole board attachment; Core HOLD stays bounded, gates and eight boots pass. |
 | T540 S53 | Active: remaining board electrical latches and callback receiver. |
 
 ## T540 S1 Acceptance
@@ -1978,6 +1979,38 @@ remain for S56. T540 remains open.
 | Exit Criteria | P1/P2 pushed; both-width verification, eight boots and artifact evidence pass; worktree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | PIT refresh output, DMA request, HOLD/acknowledge, deadline, reset and observer consumers. |
+
+## T540 S56 Acceptance
+
+The three D4 refresh electrical fields are board-owned; Core continues to
+service only the bounded request/HOLD/transaction/completion contract. P1
+`71efa3bb5` is pushed. Both-width full units pass 469/469, the updated
+existing refresh ownership verifier and both specialized gate sets pass, and
+all eight fixed-profile boots pass once each. The optimized 0540 products
+are rebuilt and PE/no-debug verified. The [S56 evidence](../etc/evidence/t540-s56-d4-refresh-owner.md)
+records the gate correction, exact diff and artifact hashes. T540 remains
+open.
+
+## T540 S57 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S57, next linear S after accepted S56. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move XT PPI speaker configuration, timer gate, data enable and observed output to the sole board attachment; retain the existing PIT/PPI/Port-B signal path. |
+| Non-goals | Absent-memory routes (S58), callback/firmware audit (S59), neutral header (S60), physical Shared move (S61), speaker waveform or host-audio behavior change. |
+| Reference Baseline | S56 P1 `71efa3bb5`, [S56 evidence](../etc/evidence/t540-s56-d4-refresh-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Four flat speaker fields, board PPI/PIT/Port-B consumer, reset and copied observation; no host presenter or chip waveform edit. |
+| Applicable Rules | One board owner for speaker electrical state; copied observation remains a value, not a second state path. |
+| Verification | Full x64/x86 units, specialized/documentation gates, speaker-focused regressions, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | No XT speaker mutable field remains flat in `core_machine`; board alone owns gate, data and output state. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Signal consumer audit, exact diff, tests and artifact hashes. |
+| Stop Conditions | Stop for a speaker semantic conflict, second owner or cross-target change; split if actual surface exceeds one bounded S. |
+| Exit Criteria | P1/P2 pushed; both-width verification, eight boots and artifact evidence pass; worktree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | XT PPI gate/data, PIT speaker output, Port-B, reset and copied speaker observation. |
 
 ## S87 Admission Packet
 
