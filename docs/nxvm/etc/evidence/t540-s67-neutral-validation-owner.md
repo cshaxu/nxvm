@@ -24,8 +24,9 @@ and rejects their return to board plan. Production changes are relocation only:
 65 added / 63 removed lines, including spacing; the prevention gate adds ten
 lines. The three tracked production/gate paths add 75/remove 63 lines, net +12:
 two spacing lines separate the relocated functions and ten lines enforce their
-owner. There is no new runtime logic. This removes a measured board-plan implementation dependency, not the
-remaining lifecycle handoff or the whole Core/board coupling.
+owner. There is no new runtime logic. This removes a measured board-plan
+implementation dependency, not the remaining lifecycle handoff or the whole
+Core/board coupling.
 
 ## Verification and receiving boundaries
 
@@ -59,3 +60,12 @@ architecture and zero `.debug` sections. Their SHA-256 identities are:
 S68 retains the four direct reset-device, reset-clock, NMI-refresh and
 finalization calls. S69 must prove independent neutral compilation; S70 owns
 physical Shared relocation. T540 and the IBM-PC board extraction remain open.
+
+## Actual P1 acceptance
+
+Coordinator review accepts pushed P1 `5db0fc37b`: fourteen NXVM paths,
+clean `git show --check`, five exact original definitions at their sole neutral
+owner, and unchanged caller/declaration inventory. Source/gate delta and all
+eight artifact identities match this record. HEAD equals `origin/master` and
+the worktree is clean at review; no Shared/MyNES or INI path appears in P1.
+S67 closes only this five-validator ledger batch; S68-S70 remain required.
