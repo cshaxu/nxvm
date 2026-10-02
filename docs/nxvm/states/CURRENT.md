@@ -2,8 +2,9 @@
 
 ## Current Work
 
-M5 T540 S73 is active: keep refresh PIT initialization with its board owner.
-S1-S72 are accepted. Firmware/attachment and physical movement remain open.
+M5 T540 S1-S73 are accepted; no implementation S is active.
+S73 closes board refresh PIT initialization without Core port borrowing.
+Firmware/attachment and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -93,7 +94,7 @@ the completed CPU extraction.
 | T540 S70 | Accepted: all board NMI/reset signal sites use opaque Core operations; both-width units/gates and eight single boots pass. |
 | T540 S71 | Accepted: RAM aliases and parity construction use Core-owned publication and rollback; dual-width units/gates and eight single boots pass. |
 | T540 S72 | Accepted: sole Core route transaction and candidate destruction; every constructor port allocation failure, dual-width units/gates and eight single boots pass. |
-| T540 S73 | Active: three refresh PIT initialization writes use the chip contract, without borrowing Core port scratch state. |
+| T540 S73 | Accepted: all refresh PIT initialization callers use the chip contract; dual-width units/gates and eight single boots pass, with no Core port borrowing. |
 
 ## T540 S1 Acceptance
 
@@ -2485,26 +2486,18 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
-## T540 S73 Active Packet
+## T540 S73 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S73, next numeric receiver after accepted S72 P2. |
-| Admission And Approval | Owner standing automatic bounded-S admission in approved T540; NXVM source/test/gate/docs/artifacts only. Shared, MyNES, INIs and external masters remain read-only. |
-| Objective | Remove Board's three refresh-programming accesses to Core port internals; board configuration/reset directly uses the sole PIT chip contract, while guest bus cycles retain sole Core dispatch. |
-| Non-goals | Chip algorithms, guest timing or behavior, firmware/provider attachment, physical move, new API, MyNES build and INI changes. |
-| Reference Baseline | S72 P2 `58f149940`; source proves all three callers are construction/configuration or cold reset, where the old final zero scratch value is not publicly observable before Core reset. |
-| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S73 evidence](../etc/evidence/t540-s73-board-refresh-pit.md). |
-| Files And ABI Surface | machine_board.c refresh helper, existing port-assembly matrix, controller-authority gate and task documentation/artifacts; no ABI addition. |
-| Applicable Rules | Board initializes its own chip through public contract; Core alone owns guest port dispatch/scratch. Preserve write sequence, callbacks, reset order and single state. No forwarding facade or second PIT algorithm. |
-| Verification | Existing planar/D4 matrix verifies count 18 at configuration and repeated cold reset, Core scratch reset and public bus programming; full x64/x86 units/gates, independent neutral proofs, eight optimized stripped 0540 products and one boot each. |
-| Expected Markers | Existing port-assembly and neutral Core markers; no executor_port access in Board/plan source; no non-owner raw port read/write in production. |
-| Asset Needs | Existing unchanged owner INIs and external overlay media only; no acquisition or master writes. |
-| Reporting Requirements | Three callers, scratch/access-width observability proof, chip dispatch equivalence, counted code delta, all verification/artifact identities, retained firmware/attachment and physical-move receivers. |
-| Stop Conditions | Any public observer can access the discarded construction scratch value, a reset callback observes a changed value, invalid chip inputs occur, or guest behavior changes. Revise the boundary before further work. |
-| Exit Criteria | Whole three-caller batch proven, all verification/artifacts/boots, complete P1 push and actual coordinator review, pure P2 push and clean tree. T540 remains open. |
-| Original Owner Request | Neutral x86 Core and flat reusable IBM-PC boards without raw internal state, second dispatcher, unnecessary wrapper or nonnumeric S identifier. |
-| Similar-Issue Sweep | All production raw port read/write calls are these three Board writes plus Core definitions. Retained private test helpers remain a separate direct-test classification receiver before relocation. |
+Coordinator actual-change review accepts pushed P1 `dd5b611f2`: all sixteen
+changed files match the NXVM-only packet. The three board refresh writes use
+the existing PIT algorithm; no Core/private port dependency, new API or timing
+change remains in that batch. The [S73 evidence](../etc/evidence/t540-s73-board-refresh-pit.md)
+records construction/repeated-reset matrix proof, x64/x86 470/470 units,
+specialized gates, independent Core proofs, eight one-shot boots and artifact
+identities. All eight current hashes match that evidence. Shared, MyNES and
+INIs are unchanged. S73 is accepted; T540 remains open for firmware/attachment,
+direct-test classification and physical relocation. No next implementation
+is admitted by this governance closure.
 
 ## S87 Admission Packet
 
