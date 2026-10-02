@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S34 is active: separate the single cold-reset sequence into Core and
-board stages while retaining processor-only reset and firmware failure state.
-S1-S33 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S35 is active: separate the sole teardown by Core and board owners,
+including immutable ROM image versus alias ownership. S1-S34 are accepted;
+T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -62,7 +62,8 @@ the completed CPU extraction.
 | T540 S31 | Accepted: VM config/rules mirrors deleted; the frozen board plan owns composition and Core alone validates its transaction input before allocation. Dual-width units and eight boots pass. |
 | T540 S32 | Accepted: one private neutral Core create phase retains preflight, allocation, CPU/FPU, time, transaction, bus, RAM and port failures; dual-width units and eight boots pass. |
 | T540 S33 | Accepted: private board creation retains port/device order, while the sole validated create-from-plan and topology rollback live with board plan; dual-width units and eight boots pass. |
-| T540 S34 | Active: cold reset and processor-only reset boundary. |
+| T540 S34 | Accepted: one board-device cold-reset phase retains order; Core firmware-failure and processor-only reset remain intact; dual-width units and eight boots pass. |
+| T540 S35 | Active: partial-failure and final teardown ownership. |
 
 ## T540 S1 Acceptance
 
@@ -1201,6 +1202,40 @@ receives reset ownership. T540 remains open.
 | Exit Criteria | Core/board cold-reset ownership is explicit with original order and failure result, processor-only reset is unchanged, verification passes and actual-diff P1 plus governance P2 close S34. |
 | Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique owners and no patch-over-patch compatibility routes. |
 | Similar-Issue Sweep | Check every reset entry point, board post-PIT callback, firmware-failure return, 8042 pulse, D4/XT/AT signal and partial reset observation across four profiles. |
+
+## T540 S34 Acceptance
+
+Actual-diff review accepts NXVM P1 `728553d8e`. The one cold-reset path now
+calls a private board-device phase at its original sequence point; the former
+board-state wrapper was inlined rather than preserved as a second reset path.
+The [S34 evidence](../etc/evidence/t540-s34-reset-boundary.md) records the
+exact order and net -2 production lines. Processor-only reset and firmware
+failure lifecycle remain unchanged. Final-source x64/x86 units pass **469/469**
+per width, specialized gates pass, all eight single-run external boot
+checkpoints pass, and eight optimized 0540 products have correct PE width and
+no `.debug` sections. No Shared/MyNES, owner INI, protected firmware or timing
+grade changed. S35 receives teardown; T540 remains open.
+
+## T540 S35 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S35, next linear S after accepted S34. |
+| Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Split the sole partial-failure and final destruction sequence by neutral Core versus IBM-PC board ownership, including immutable ROM image versus alias, without another destructor. |
+| Non-goals | Constructor/reset changes (accepted S31-S34), ROM/entry/trace qualification (S36), physical Shared move (S38), timing/profile/INI/firmware/media changes. |
+| Reference Baseline | S34 P1 `728553d8e`, [S34 evidence](../etc/evidence/t540-s34-reset-boundary.md), dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S30 intake](../etc/evidence/t540-s30-plan-reset-intake.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | Inspect `src/app-nxvm/devices/{machine.c,machine_board.c,machine.h}`, ROM mapping ownership, every early create/apply failure and direct teardown tests. Keep `core_machine_destroy` the one public route; one private board-finalize stage may release only board-owned resources. |
+| Applicable Rules | Retain reverse-safe partial teardown, firmware provider revocation before any release, board PIT/HDC/FDC/DMA/RTC/keyboard/PIC/VADP order, neutral CPU/FPU/port/memory/trace/bus release, and exactly-once freeing only for immutable ROM mappings with `owns_image`; aliases never free another mapping's image. |
+| Verification | Focused partial-constructor, port rollback, plan-apply failure, ROM alias/owner and final destructor tests; full x64/x86 repository-only units, specialized/documentation gates, one boot per profile/width and eight optimized 0540 products with PE/hash/no-debug proof for code change. |
+| Expected Markers | One public destructor, one bounded private board teardown and one neutral Core teardown path; no second cleanup owner or ROM image double-free. |
+| Asset Needs | Existing owner-provided external firmware/media for fixed boot checkpoints only; no new protected input or owner INI change. |
+| Reporting Requirements | Record exact teardown order, early-failure reachability, ROM image/alias ownership, focused/full checks and product hashes; assign ROM/entry/trace qualification to S36. |
+| Stop Conditions | Stop before second destructor, moved ownership without rollback proof, generic board framework, Shared/MyNES edits or oversized ROM/entry rewrite. |
+| Exit Criteria | Partial and final destruction use the one public route with explicit Core/board owners and original order, no double free, required verification passes, and actual-diff P1 plus governance P2 close S35. |
+| Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique owners and no patch-over-patch compatibility routes. |
+| Similar-Issue Sweep | Check all early create failures, topology rollback, public destroy callers, every board chip finalizer, ROM alias `owns_image` flag and post-destroy state across all four profiles. |
 
 ## S87 Admission Packet
 
