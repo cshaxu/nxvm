@@ -188,8 +188,8 @@ lib_i32 main(void)
                     hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_DMA_READ ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) == 0u)
                     failed |= 0x100;
-                test_dma_transfers(&machine->shared_dma_latch,
-                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                test_dma_transfers(&machine->board->shared_dma_latch,
+                    &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
                     machine, &machine->executor_port, sizeof(dma_bytes));
                 if (!failed && (core_machine_memory_read_physical(&machine->executor_memory,
                     0x2200u, (lib_uptr)dma_bytes, sizeof(dma_bytes)) !=
@@ -205,7 +205,7 @@ lib_i32 main(void)
                 for (index = 0u; index < sizeof(read_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, read_dcb[index]);
                 hdc_service(&machine->hdc);
-                dma_provider->terminal_count(&machine->hdc, &machine->shared_dma_latch);
+                dma_provider->terminal_count(&machine->hdc, &machine->board->shared_dma_latch);
                 if (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_RESPONSE ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0x02u) failed |= 0x800;
@@ -226,8 +226,8 @@ lib_i32 main(void)
                     hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_DMA_WRITE ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) == 0u)
                     failed |= 0x2000;
-                test_dma_transfers(&machine->shared_dma_latch,
-                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                test_dma_transfers(&machine->board->shared_dma_latch,
+                    &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
                     machine, &machine->executor_port, sizeof(dma_bytes));
                 if (!failed && (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_RESPONSE ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0u ||
@@ -278,7 +278,7 @@ lib_i32 main(void)
                 if ((core_machine_port_read(&machine->executor_port, 8u) & 0x80u) == 0u) {
                     failed |= 0x20000;
                 }
-                dma_provider->terminal_count(&machine->hdc, &machine->shared_dma_latch);
+                dma_provider->terminal_count(&machine->hdc, &machine->board->shared_dma_latch);
                 (void)core_machine_port_read(&machine->executor_port, 0x0320u);
             }
             if (!failed) {

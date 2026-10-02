@@ -6,6 +6,7 @@
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/fdc.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/lifecycle.h"
@@ -175,9 +176,9 @@ lib_i32 main(void)
         model40_fdc_write_dma2(port, 0x0600u, 511u);
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
         for (index = 0u; index < 512u; ++index) {
-            test_dma_transfers(&session->core_machine->shared_dma_latch,
-                &session->core_machine->shared_dma_primary,
-                &session->core_machine->shared_dma_secondary,
+            test_dma_transfers(&session->core_machine->board->shared_dma_latch,
+                &session->core_machine->board->shared_dma_primary,
+                &session->core_machine->board->shared_dma_secondary,
                 session->core_machine, &session->core_machine->executor_port, 1u);
             if (index + 1u < 512u) failed |= !test_fdc_advance_ticks(fdc, 128u);
         }

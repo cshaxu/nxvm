@@ -3,6 +3,7 @@
 
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/transaction.h"
 #include "support/core_machine_board_fixture.h"
@@ -112,15 +113,15 @@ static lib_i32 competition_dma_wait_contract(void)
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed |= core_machine_dma_bind_channel(&machine->shared_dma_latch,
-        &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u,
+    failed |= core_machine_dma_bind_channel(&machine->board->shared_dma_latch,
+        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary, 2u,
         &provider, &source, &binding) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0x11234u, &value, 1u) != LIB_STATUS_OK;
     competition_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(&machine->shared_dma_primary,
-        &machine->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(&machine->board->shared_dma_primary,
+        &machine->board->shared_dma_secondary, &binding);
     failed |= core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
     failed |= core_machine_advance_time(machine, 2u) != LIB_STATUS_OK;
     failed |= core_machine_memory_read(machine, 0x11234u, &value, 1u) != LIB_STATUS_OK ||
@@ -184,8 +185,8 @@ lib_i32 main(void)
         LIB_STATUS_OK || !d4_observation.configured;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed |= core_machine_dma_bind_channel(&machine->shared_dma_latch,
-        &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u,
+    failed |= core_machine_dma_bind_channel(&machine->board->shared_dma_latch,
+        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary, 2u,
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
     failed |= core_machine_transaction_hold_request(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK;
@@ -202,8 +203,8 @@ lib_i32 main(void)
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
         LIB_STATUS_OK;
     competition_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(&machine->shared_dma_primary,
-        &machine->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(&machine->board->shared_dma_primary,
+        &machine->board->shared_dma_secondary, &binding);
     failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||

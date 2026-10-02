@@ -56,7 +56,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     *out_observation = (core_machine_board_deadline_observation){0};
     if (machine == LIB_NULL) return;
     dma_pending = core_machine_dma_has_pending_request(
-        &machine->shared_dma_primary, &machine->shared_dma_secondary) ?
+        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary) ?
         LIB_TRUE : LIB_FALSE;
     dma_qualified = machine->timing_plan_copied &&
         machine->timing_plan.configuration.clock_plan.dma.numerator != 0u &&

@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 
 static const core_machine_timing_seam plan_expected_seams[
     CORE_MACHINE_TIMING_CAPABILITY_COUNT] = {
@@ -376,16 +377,16 @@ static lib_i32 plan_source_dma_deadline_is_schedulable(void)
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != LIB_STATUS_OK;
     failed |= !failed && core_machine_create_from_plan(plan, &machine) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_dma_bind_channel(&machine->shared_dma_latch,
-        &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u, &provider,
+    failed |= !failed && core_machine_dma_bind_channel(&machine->board->shared_dma_latch,
+        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary, 2u, &provider,
         LIB_NULL, &binding) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     core_machine_port_write(&machine->executor_port, 0x000bu, 0x46u);
     core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
-    core_machine_dma_request_assert(&machine->shared_dma_primary,
-        &machine->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(&machine->board->shared_dma_primary,
+        &machine->board->shared_dma_secondary, &binding);
     failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
         LIB_STATUS_OK;
     failed |= !failed && (!observation.next_deadline_valid ||
@@ -394,8 +395,8 @@ static lib_i32 plan_source_dma_deadline_is_schedulable(void)
     failed |= !failed && core_machine_advance_to_next_deadline(machine, &advanced) !=
         LIB_STATUS_OK;
     failed |= !failed && (!advanced || machine->elapsed_ticks != 3u);
-    core_machine_dma_request_deassert(&machine->shared_dma_primary,
-        &machine->shared_dma_secondary, &binding);
+    core_machine_dma_request_deassert(&machine->board->shared_dma_primary,
+        &machine->board->shared_dma_secondary, &binding);
     core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;

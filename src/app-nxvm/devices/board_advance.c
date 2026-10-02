@@ -41,16 +41,16 @@ lib_bool core_machine_board_dma_request(void *owner)
 {
     const core_machine *machine = owner;
     if (machine == LIB_NULL) return LIB_FALSE;
-    return core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-        &machine->shared_dma_secondary) ? LIB_TRUE : LIB_FALSE;
+    return core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
+        &machine->board->shared_dma_secondary) ? LIB_TRUE : LIB_FALSE;
 }
 
 void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks)
 {
     core_machine *machine = owner;
     if (machine == LIB_NULL) return;
-    core_machine_dma_advance_transaction(&machine->shared_dma_latch,
-        &machine->shared_dma_primary, &machine->shared_dma_secondary,
+    core_machine_dma_advance_transaction(&machine->board->shared_dma_latch,
+        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
         machine, dma_ticks);
 }
 

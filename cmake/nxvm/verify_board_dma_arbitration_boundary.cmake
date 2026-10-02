@@ -8,6 +8,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" creation)
 foreach(forbidden "machine->dma_clock" "machine->board->dma_clock"
     "machine->shared_dma_primary"
     "machine->shared_dma_secondary" "machine->shared_dma_latch"
+    "machine->board->shared_dma_primary" "machine->board->shared_dma_secondary"
+    "machine->board->shared_dma_latch"
     "core_machine_dma_has_pending_request(" "core_machine_dma_advance_transaction(")
     string(FIND "${core}" "${forbidden}" position)
     if(NOT position LESS 0)

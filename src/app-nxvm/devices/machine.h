@@ -223,9 +223,6 @@ struct core_machine {
     core_machine_cpu_execution_context *executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
-    t_latch shared_dma_latch;
-    t_dma shared_dma_primary;
-    t_dma shared_dma_secondary;
     x86_rtc *shared_rtc;
     lib_u8 rtc_selected_register;
     core_machine_fdc fdc;

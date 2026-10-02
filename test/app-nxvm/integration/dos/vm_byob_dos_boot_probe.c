@@ -1920,7 +1920,7 @@ int main(lib_i32 argc, char **argv)
             last_fdc_result[2u] = fdc_observation.st2;
             last_fdc_phase = (lib_u8)fdc_observation.phase;
             last_fdc_remaining = fdc_observation.transfer_remaining;
-            last_dma = x86_dma_get_signals(session->core_machine->shared_dma_primary.device);
+            last_dma = x86_dma_get_signals(session->core_machine->board->shared_dma_primary.device);
         }
         if (result.reason == CORE_MACHINE_STOP_FAULT) {
             printf("BOOT-PROBE=guest-fault\n");
@@ -2086,7 +2086,7 @@ int main(lib_i32 argc, char **argv)
                     (unsigned int)(current_cpu.eflags & 0xffffu));
                 {
                     x86_dma_signals dma = x86_dma_get_signals(
-                        session->core_machine->shared_dma_primary.device);
+                        session->core_machine->board->shared_dma_primary.device);
                     printf("BOOT-PROBE=post-dma-eligible=%02X-active=%u-enabled=%u\n",
                         (unsigned int)dma.requests, (unsigned int)dma.active_channel,
                         (unsigned int)dma.enabled);
@@ -3252,8 +3252,8 @@ done:
                     (unsigned int)fdc_observation.phase,
                     (unsigned int)hdc_observe(&session->core_machine->hdc).phase,
                     (unsigned int)core_machine_dma_has_pending_request(
-                        &session->core_machine->shared_dma_primary,
-                        &session->core_machine->shared_dma_secondary));
+                        &session->core_machine->board->shared_dma_primary,
+                        &session->core_machine->board->shared_dma_secondary));
             }
             {
                 lib_u64 ticks = 0u;

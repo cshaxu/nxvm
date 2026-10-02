@@ -25,11 +25,11 @@ lib_i32 main(void)
             CORE_MACHINE_DMA_CONTROLLER_COUNT ||
         session->core_machine->board->dma_wiring.cascade_channel !=
             CORE_MACHINE_DMA_CASCADE_CHANNEL ||
-        session->core_machine->shared_dma_primary.connect.peer !=
-            &session->core_machine->shared_dma_secondary ||
-        session->core_machine->shared_dma_secondary.connect.peer !=
-            &session->core_machine->shared_dma_primary ||
-        session->core_machine->shared_dma_primary.connect.device_owner[2u] !=
+        session->core_machine->board->shared_dma_primary.connect.peer !=
+            &session->core_machine->board->shared_dma_secondary ||
+        session->core_machine->board->shared_dma_secondary.connect.peer !=
+            &session->core_machine->board->shared_dma_primary ||
+        session->core_machine->board->shared_dma_primary.connect.device_owner[2u] !=
             &session->core_machine->fdc ||
         !core_machine_port_has_write(&session->core_machine->executor_port,
             0x00d6u) || !core_machine_port_has_write(
@@ -49,16 +49,16 @@ lib_i32 main(void)
     core_machine_port_write(&session->core_machine->executor_port, 0x0009u,
         0x06u);
     if (!core_machine_dma_has_pending_request(
-            &session->core_machine->shared_dma_primary,
-            &session->core_machine->shared_dma_secondary)) {
+            &session->core_machine->board->shared_dma_primary,
+            &session->core_machine->board->shared_dma_secondary)) {
         failed = 1;
         goto done;
     }
 
     vm_machine_reset(session);
     if (core_machine_dma_has_pending_request(
-            &session->core_machine->shared_dma_primary,
-            &session->core_machine->shared_dma_secondary)) {
+            &session->core_machine->board->shared_dma_primary,
+            &session->core_machine->board->shared_dma_secondary)) {
         failed = 1;
         goto done;
     }

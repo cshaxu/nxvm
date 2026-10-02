@@ -3,6 +3,7 @@
 
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
@@ -120,8 +121,8 @@ static lib_i32 vm_timing_qualification_assert_case(
     }
     if (!failed) {
         core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
-        core_machine_dma_request_assert(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary, &request);
+        core_machine_dma_request_assert(&machine->board->shared_dma_primary,
+            &machine->board->shared_dma_secondary, &request);
         status = core_machine_capture_time_observation(machine, &observation);
         if (status != LIB_STATUS_OK || !observation.next_deadline_valid ||
             observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE) {

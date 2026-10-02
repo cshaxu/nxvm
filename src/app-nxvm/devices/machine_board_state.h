@@ -13,6 +13,9 @@ struct core_machine_board_state {
     core_machine_pit_bus shared_pit;
     core_machine_pit_bus auxiliary_pit;
     lib_u8 auxiliary_pit_configured;
+    t_latch shared_dma_latch;
+    t_dma shared_dma_primary;
+    t_dma shared_dma_secondary;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain auxiliary_pit_clock;

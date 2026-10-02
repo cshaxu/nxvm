@@ -112,12 +112,12 @@ int main(void)
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
-        machine->shared_dma_primary.connect.device_owner[2u] != &machine->fdc ||
-        machine->shared_dma_primary.connect.device_owner[0u] != machine ||
+        machine->board->shared_dma_primary.connect.device_owner[2u] != &machine->fdc ||
+        machine->board->shared_dma_primary.connect.device_owner[0u] != machine ||
         machine->board->refresh_dma_request.core_token == 0u ||
         machine->board->refresh_dma_request.channel != 0u ||
-        core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary) ||
+        core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
+            &machine->board->shared_dma_secondary) ||
         core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) !=
             0x5au) {
         failed = 1;

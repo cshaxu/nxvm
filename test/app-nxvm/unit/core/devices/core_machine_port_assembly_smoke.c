@@ -237,8 +237,8 @@ static lib_i32 port_assembly_fdc_transaction(lib_size fail_at)
             core_machine_port_has_write(&machine->executor_port, 0x03f2u) ||
             core_machine_port_has_write(&machine->executor_port, 0x03f5u) ||
             core_machine_port_has_write(&machine->executor_port, 0x03f7u) ||
-            core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-                &machine->shared_dma_secondary);
+            core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
+                &machine->board->shared_dma_secondary);
         failed |= fail_fdc_create && allocation.attempts != 0u;
         fail_fdc_create = LIB_FALSE;
         allocation.fail_at = 0u;
@@ -424,8 +424,8 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
                     CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR, CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS,
                     CORE_MACHINE_XEBEC_TYPE_2_HEADS, CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK}};
             if (busy_dma) failed |= core_machine_dma_bind_channel(
-                &machine->shared_dma_latch, &machine->shared_dma_primary,
-                &machine->shared_dma_secondary, 3u, &blocker,
+                &machine->board->shared_dma_latch, &machine->board->shared_dma_primary,
+                &machine->board->shared_dma_secondary, 3u, &blocker,
                 &blocker_binding, &blocker_binding) != LIB_STATUS_OK;
         }
     }
@@ -456,10 +456,10 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
         if (compaq) failed |= !machine->board->fdc_configured ||
             !core_machine_port_has_read(&machine->executor_port, 0x03f7u);
         if (xebec) failed |= machine->board->hdc_dma_request.core_token != 0u ||
-            core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-                &machine->shared_dma_secondary);
+            core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
+                &machine->board->shared_dma_secondary);
         if (busy_dma) failed |= blocker_binding.core_token == 0u ||
-            machine->shared_dma_primary.connect.device_owner[3] != &blocker_binding;
+            machine->board->shared_dma_primary.connect.device_owner[3] != &blocker_binding;
         fail_hdc_create = LIB_FALSE;
         allocation.fail_at = 0u;
         allocation.attempts = 0u;
