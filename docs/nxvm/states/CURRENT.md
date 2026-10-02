@@ -2,9 +2,8 @@
 
 ## Current Work
 
-M5 T540 S42 is active: inspect the mixed private state/header and Core/board
-constructor-execution functions before an owner-safe physical split. S1-S41
-are accepted;
+M5 T540 S43 is active: move the remaining board constructor and callbacks
+out of `machine.c` without adding a second create path. S1-S42 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -71,7 +70,8 @@ the completed CPU extraction.
 | T540 S39 | Accepted: high-reset RAM alias and parity resize veto are board-owned; Core retains one checked memory operation; dual-width units and eight boots pass. |
 | T540 S40 | Accepted: D4 shutdown reset choice and native XT/8042 input dispatch are board-owned; dual-width units and eight boots pass. |
 | T540 S41 | Accepted: six named board clocks moved with their advance/deadline owner; Core retains provider clock and one timeline; dual-width units and eight boots pass. |
-| T540 S42 | Active: mixed private-state and source split intake. |
+| T540 S42 | Accepted: finite private Core/board ownership ledger assigns all mixed state groups and source stages to linear receivers. |
+| T540 S43 | Active: remaining board constructor/callback separation. |
 
 ## T540 S1 Acceptance
 
@@ -1497,6 +1497,43 @@ T540 remains open.
 | Exit Criteria | The complete remaining mixed state/source is assigned to bounded linear S receivers with no unallocated rows, governance passes, and S42 source-only P1 plus P2 closure is recorded. |
 | Original Owner Request | Prepare reusable neutral x86 Core and IBM-PC board mechanisms so four fixed PC Apps and future PC110 can share them without divergent machine paths. |
 | Similar-Issue Sweep | Check every `machine.h` direct include, constructor/reset/run/destroy call, board callback and product test fixture for hidden board-state coupling. |
+
+## T540 S42 Acceptance
+
+Source-only NXVM P1 `78974cff4` records the
+[private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md).
+The audit found one mixed `core_machine` private structure and a mixed
+`machine.c`; 18 production sources under `src/app-nxvm/devices` and 114
+product test files/fixture headers directly include the private header.
+Every contiguous state group and remaining mixed constructor/callback stage
+has one Core or board owner and a numeric receiver. S43 handles constructor
+and callback extraction, S44-S47 the board attachment/private-state split,
+and S48 the now-prospective physical neutral move. The earlier S37 S43 move
+was a plan, never executed. No code, test, Shared/MyNES, binary or owner
+asset changed. `git diff --check` and NXVM documentation governance pass;
+S41's dual-width 469/469 units and eight boot checkpoints remain the last
+code baseline. T540 remains open.
+
+## T540 S43 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S43, next linear S after accepted S42. |
+| Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Put the remaining XT/KBC/PPI callbacks, board-config validation and sole board constructor in the existing `machine_board.c` owner; keep Core `machine.c` to neutral construction and lifecycle orchestration. |
+| Non-goals | Private-state field move (S44-S47), physical Shared relocation (S48), new board framework, second machine/create route, timing or chip behavior change. |
+| Reference Baseline | S42 P1 `78974cff4`, [S42 ledger](../etc/architecture/t540-s42-private-state-ledger.md), S41 dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and [S42 ownership ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | `src/app-nxvm/devices/{machine.c,machine_board.c,machine.h}` plus exact static inventories/tests that name moved functions. Internal linkage only; public create/configuration ABI unchanged. |
+| Applicable Rules | One candidate allocation, one board port checkpoint, unchanged chip order, one success publication and one rollback/destructor. XT/8042 signaling remains board-owned. |
+| Verification | Full x64/x86 repository-only units, specialized/documentation gates, one external boot per fixed profile/width, eight optimized 0540 products with PE/hash/no-debug evidence; actual-diff review before P1/P2 closure. |
+| Expected Markers | No board-specific constructor or keyboard/PPI callback definition in neutral `machine.c`; no second create or board state mirror. |
+| Asset Needs | Existing owner-provided firmware/media only for unchanged boot checks; no new input or owner INI edit. |
+| Reporting Requirements | Exact moved functions/lines, constructor failure and callback-order equivalence, tests/artifact hashes, retained S44-S48 work. |
+| Stop Conditions | Stop before a generic framework or unsafe private-state move; split into next linear numeric receiver if actual diff exceeds one owner boundary. |
+| Exit Criteria | One board constructor owns all remaining board callbacks/validation; neutral create invokes it once; dual-width verification and artifacts pass; actual P1 and governance P2 are pushed with a clean tree. |
+| Original Owner Request | Extract independent chips and board mechanisms without diverging the four fixed PC products. |
+| Similar-Issue Sweep | Check XT and AT keyboard creation/reset, PPI speaker/NMI, port registration rollback, destruction after partial board creation and all four profile boots. |
 
 ## S87 Admission Packet
 
