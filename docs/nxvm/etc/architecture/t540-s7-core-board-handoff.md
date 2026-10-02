@@ -154,13 +154,26 @@ They are divided before implementation:
 | --- | --- |
 | S19 | Route KBC and 92h A20 through one bounded Core signal without exposing `t_ram`; register the absent-memory fallback through Core's typed memory route. Preserve running KBC writes, 92h reads, open-bus priority and configuration rollback. |
 | S20 | Replace DMA's raw RAM/transaction arguments with one bounded Core bus-cycle operation, retaining HOLD, query/begin/device/memory/device/commit order and primary-only/paired topology. |
-| S21 | Separate board deadline/advance and PIC acknowledge from Core's single CPU bus/timeline. |
-| S22 | Separate mixed plan/create/reset/destroy at the private state owner. |
-| S23 | Move the neutral Core and its direct tests to `src/x86/core` and `test/x86/core`; remove the App source copy. |
-| S24 onward | Move only proven common, AT and XT board mechanisms to their flat Shared receivers, then run the T-wide ledger and external integration gate. |
 
-These later numbers remain prospective until their own intake. No suffix S
-identifiers or parallel memory/transaction owner is introduced.
+S21 source intake found that its original combined receiver spans three
+distinct contracts: copied board deadlines, ordered device advance phases,
+and CPU INTA-to-PIC selection. Moving all three in one code packet would
+either expose mutable board layouts to neutral Core or create a second event
+loop. The remaining work is therefore divided by owner before implementation:
+
+| Linear receiver | Complete boundary |
+| --- | --- |
+| S21 | Audit each current deadline, advance and PIC caller; freeze the Core/board contract and regression map without a source move. |
+| S22 | Publish board device deadlines as copied values to the single Core timeline; retain immediate/L1 fallback disposition and current min-order. |
+| S23 | Move the ordered arbitration, readiness and peripheral device effects behind one bounded board advance contract; Core alone advances guest time and calls those phases in the existing order. |
+| S24 | Make CPU interrupt-pending and INTA call one board PIC service contract while Core retains CPU transaction begin/value/commit; dispose of the existing DMA-HOLD locality trace policy at its actual owner. |
+| S25 | Separate mixed plan/create/reset/destroy at the private state owner. |
+| S26 | Move the neutral Core and its direct tests to `src/x86/core` and `test/x86/core`; remove the App source copy. |
+| S27 onward | Move only proven common, AT and XT board mechanisms to their flat Shared receivers, then run the T-wide ledger and external integration gate. |
+
+These numbers remain prospective until their own intake. No suffix S
+identifiers, parallel scheduler, event bus or memory/transaction owner is
+introduced.
 
 Every code S runs the complete repository-only x64/x86 unit suites, affected
 four-profile Release pairs, applicable Shared receivers/manifests, and the
