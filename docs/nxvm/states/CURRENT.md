@@ -1643,6 +1643,40 @@ owner INIs are untouched. T540 remains open.
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | Both PIT instances, IRQ0, refresh, speaker, auxiliary PIT, board reset and failed construction. |
 
+## T540 S46 Acceptance
+
+Actual-diff review accepts NXVM P1 `5a34e2acf`. The
+[S46 evidence](../etc/evidence/t540-s46-pit-owner.md) records the primary
+and auxiliary PIT pair plus configured bit moved into the sole board
+attachment. Frozen plan ratios and all Gate/OUT, IRQ0, DMA refresh,
+speaker, auxiliary PIT, reset and finalization behavior remain unchanged.
+Complete x64/x86 repository-only units pass **469/469** each; specialized
+gates pass. The four fixed-profile external boot probes pass **8/8**, once
+per width. Eight optimized 0540 products have the expected PE widths and no
+`.debug` sections; hashes are in the evidence. Shared/MyNES and owner INIs
+are untouched. T540 remains open.
+
+## T540 S47 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S47, next linear S after accepted S46. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move the DMA latch and primary/secondary controller instances from flat `core_machine` into the sole board attachment; preserve one DMA lifetime and all DRQ/refresh/terminal-count wiring. |
+| Non-goals | RTC, FDC, HDC, keyboard and VADP (S48–S52), board electrical/callback split (S53), final neutral header (S54), physical Shared move (S55), DMA behavior or timing change. |
+| Reference Baseline | S46 P1 `5a34e2acf`, [S46 evidence](../etc/evidence/t540-s46-pit-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Current DMA-instance references occur in three production and thirteen direct test files. Retarget only these and their exact source inventories. |
+| Applicable Rules | One board attachment, no copied DMA phase or controller state; keep chip registration, request/acknowledge, refresh, reset and destruction order unchanged. |
+| Verification | Full x64/x86 units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | DMA latch and both controller instances no longer occupy flat Core storage; board alone owns their lifetime. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Exact moved fields and references, constructor/reset/finalization equivalence, diff size, tests and artifact hashes. |
+| Stop Conditions | Stop before pulling another chip into S47, altering DMA semantics, or adding a second owner/access path. |
+| Exit Criteria | DMA owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | Primary/secondary DMA, latch, refresh, FDC/HDC DRQ, terminal count, board reset and failed construction. |
+
 ## S87 Admission Packet
 
 | Field | Required record |
