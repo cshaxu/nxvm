@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S33 is active: isolate board controller creation, frozen topology
-application and first-failure rollback from the neutral Core constructor.
-S1-S32 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S34 is active: separate the single cold-reset sequence into Core and
+board stages while retaining processor-only reset and firmware failure state.
+S1-S33 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -61,7 +61,8 @@ the completed CPU extraction.
 | T540 S30 | Accepted: source-only mixed plan/reset ownership audit and bounded S31-S38 receivers. |
 | T540 S31 | Accepted: VM config/rules mirrors deleted; the frozen board plan owns composition and Core alone validates its transaction input before allocation. Dual-width units and eight boots pass. |
 | T540 S32 | Accepted: one private neutral Core create phase retains preflight, allocation, CPU/FPU, time, transaction, bus, RAM and port failures; dual-width units and eight boots pass. |
-| T540 S33 | Active: board controller construction and topology application. |
+| T540 S33 | Accepted: private board creation retains port/device order, while the sole validated create-from-plan and topology rollback live with board plan; dual-width units and eight boots pass. |
+| T540 S34 | Active: cold reset and processor-only reset boundary. |
 
 ## T540 S1 Acceptance
 
@@ -1166,6 +1167,40 @@ change. S33 owns board construction and topology application; T540 stays open.
 | Exit Criteria | Board create and topology apply each have one owner and one route, all original failure/publication semantics survive, verification passes, and actual-diff P1 plus governance P2 close S33. |
 | Original Owner Request | Extract a neutral reusable x86 Core and flat IBM-PC board mechanisms with no divergence or patch-over-patch code. |
 | Similar-Issue Sweep | Review every board port registration, XT/AT controller choice, auxiliary PIT, topology setter, failure return and plan publication caller across four profiles. |
+
+## T540 S33 Acceptance
+
+Actual-diff review accepts NXVM P1 `134c8e722`. The private board-create phase
+keeps the original controller and port order; the sole plan validation,
+topology application and rollback route now resides in the board-plan source.
+The [S33 evidence](../etc/evidence/t540-s33-board-construction.md) records
+the exact owner/failure order and net +14 production lines. Final-source
+x64/x86 units pass **469/469** per width, specialized gates pass, the eight
+single-run external boot checkpoints pass, and all eight optimized 0540
+products have correct PE width and no `.debug` sections. Shared, MyNES,
+owner INIs, firmware and timing grades are unchanged. S33 is accepted; S34
+receives reset ownership. T540 remains open.
+
+## T540 S34 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S34, next linear S after accepted S33. |
+| Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Split the one cold reset at its existing Core/board sequence points while retaining the separate CPU-local processor reset, firmware failure lifecycle and exact board signal order. |
+| Non-goals | Constructor/topology changes (accepted S31-S33), teardown restructure (S35), entry/ROM/trace qualification (S36), physical Shared move (S38), timing/profile/INI/firmware/media changes. |
+| Reference Baseline | S33 P1 `134c8e722`, [S33 evidence](../etc/evidence/t540-s33-board-construction.md), dual-width 469/469 units, specialized gates, 8/8 boot checkpoints and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S30 intake](../etc/evidence/t540-s30-plan-reset-intake.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | Inspect `src/app-nxvm/devices/{machine.c,machine_board.c}` and reset/firmware/processor-pulse callers and tests. One cold-reset public route may call private Core and board stages at original sequence points; no second reset implementation. |
+| Applicable Rules | Preserve CPU/FPU→port/memory/D4→keyboard→DMA/RTC→board state→FDC/HDC→PIC/PIT→post-PIT wiring→video→Core counters/transaction/timeline/clocks→providers→firmware→STOPPED/trace. Firmware failure remains INITIALIZED; processor-only reset preserves RAM, board devices and scheduled time. |
+| Verification | Focused cold-reset, 8042 processor-pulse, firmware-failure, XT/AT/Model40 D4/PIT/IRQ regressions; full x64/x86 repository-only units, specialized/documentation gates, one boot per profile/width and eight optimized 0540 products with PE/hash/no-debug proof for code change. |
+| Expected Markers | One Core reset owner, bounded board reset effects in original order, one processor-only CPU-local reset, no duplicated state or second guest clock. |
+| Asset Needs | Existing owner-provided external firmware/media for fixed boot checkpoints only; no new protected input or owner INI change. |
+| Reporting Requirements | Record exact reset stage/order diff, firmware-error lifecycle, processor-only preservation, focused/full checks and product hashes; assign teardown to S35. |
+| Stop Conditions | Stop before a second reset route, board state in neutral Core, timing-grade change, Shared/MyNES edits or oversized teardown/ROM changes outside this S. |
+| Exit Criteria | Core/board cold-reset ownership is explicit with original order and failure result, processor-only reset is unchanged, verification passes and actual-diff P1 plus governance P2 close S34. |
+| Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique owners and no patch-over-patch compatibility routes. |
+| Similar-Issue Sweep | Check every reset entry point, board post-PIT callback, firmware-failure return, 8042 pulse, D4/XT/AT signal and partial reset observation across four profiles. |
 
 ## S87 Admission Packet
 
