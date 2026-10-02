@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S44 is active: move board clock/topology state toward one board
-attachment without a mirrored fact. S1-S43 are accepted;
+M5 T540 S50 is active: move the HDC controller instance into the sole board
+attachment without a mirrored fact. S1-S49 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -72,7 +72,8 @@ the completed CPU extraction.
 | T540 S41 | Accepted: six named board clocks moved with their advance/deadline owner; Core retains provider clock and one timeline; dual-width units and eight boots pass. |
 | T540 S42 | Accepted: finite private Core/board ownership ledger assigns all mixed state groups and source stages to linear receivers. |
 | T540 S43 | Accepted: remaining board constructor/callback separation, dual-width units/gates and eight boot checkpoints. |
-| T540 S44 | Active: first board-attachment state receiver. |
+| T540 S44-S49 | Accepted: board attachment, PIC/PIT/DMA/RTC/FDC instance receivers; dual-width complete units, gates and eight boot checkpoints at each code receiver. |
+| T540 S50 | Active: board-owned HDC instance receiver. |
 
 ## T540 S1 Acceptance
 
@@ -1745,6 +1746,40 @@ Shared/MyNES and owner INIs are untouched. T540 remains open.
 | Exit Criteria | FDC owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | FDC ports, drive selection, DMA/IRQ, media-change observation, deadline, reset and failed construction. |
+
+## T540 S49 Acceptance
+
+Actual-diff review accepts NXVM P1 `7e21979dd`. The
+[S49 evidence](../etc/evidence/t540-s49-fdc-owner.md) records the sole FDC
+controller instance moved into the board attachment, with frozen topology
+and integration observation kept distinct. DMA/IRQ/media-change wiring,
+ports, deadline, reset, failed-construction rollback and finalization retain
+their existing order. Complete x64/x86 repository-only units pass **469/469**
+each; specialized gates pass. The four fixed-profile external boot probes
+pass **8/8**, once per width. Eight optimized 0540 products have the
+expected PE widths and no `.debug` sections; hashes are in the evidence.
+Shared/MyNES and owner INIs are untouched. T540 remains open.
+
+## T540 S50 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S50, next linear S after accepted S49. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move the HDC controller instance from flat `core_machine` into the sole board attachment; preserve ATA, XT Xebec and Model-40 personalities on their existing one-controller path. |
+| Non-goals | Keyboard and VADP (S51-S52), board electrical/callback split (S53), final neutral header (S54), physical Shared move (S55), HDC personality, media or timing changes. |
+| Reference Baseline | S49 P1 `7e21979dd`, [S49 evidence](../etc/evidence/t540-s49-fdc-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Inventory direct HDC-instance consumers before changing source. The frozen plan's HDC configuration and integration observers are distinct values, not controller instances. Keep public chip and Core interfaces unchanged. |
+| Applicable Rules | One board attachment, no copied command/DRQ/IRQ/media state; preserve construction, route installation, reset, deadline, media service and destruction order across all three personalities. |
+| Verification | Full x64/x86 units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | HDC controller no longer occupies flat Core storage; board alone owns its lifetime. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Exact moved field/references, personality and failure-path equivalence, diff size, tests and artifact hashes. |
+| Stop Conditions | Stop before pulling another chip into S50, altering HDC semantics, or adding a second owner/access path. |
+| Exit Criteria | HDC owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | ATA, Xebec and Model-40 route/IRQ/DRQ/media/deadline/reset/finalization consumers. |
 
 ## S87 Admission Packet
 
