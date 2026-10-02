@@ -3138,6 +3138,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying Core-owned A20 signal and absent-memory fallback"
         VERBATIM)
 
+    add_custom_target(verify-dma-core-cycle-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_dma_core_cycle_boundary.cmake"
+        COMMENT "Verifying Core-owned DMA memory and transaction cycle"
+        VERBATIM)
+
     add_custom_target(verify-rational-clock-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rational_clock_boundary.cmake"
@@ -3345,6 +3351,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-d4-memory-routes
     verify-rom-memory-routes
     verify-a20-fallback-routes
+    verify-dma-core-cycle-boundary
     verify-rational-clock-boundary
     verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary

@@ -49,7 +49,7 @@ static lib_u16 test_dma_register_word(t_port *port, lib_bool secondary,
  * is intentional; unlike boot diagnostics it may reset the byte flip-flop.
  * M2M half-cycle tests use explicit clock counts instead of this helper. */
 static inline void test_dma_transfers(t_latch *latch, t_dma *primary, t_dma *secondary,
-    t_ram *memory, t_port *port, lib_u64 transfers)
+    core_machine *machine, t_port *port, lib_u64 transfers)
 {
     lib_u64 transfer;
     for (transfer = 0u; transfer < transfers; ++transfer) {
@@ -63,7 +63,7 @@ static inline void test_dma_transfers(t_latch *latch, t_dma *primary, t_dma *sec
         for (clock = 0u; clock < 16u; ++clock) {
             lib_bool changed = LIB_FALSE;
             core_machine_dma_advance_transaction(latch, primary, secondary,
-                memory, LIB_NULL, 1u);
+                machine, 1u);
             for (selector = 0u; selector < registers; ++selector) {
                 changed |= before[selector] != test_dma_register_word(port,
                     selector >= 8u, selector & 7u);

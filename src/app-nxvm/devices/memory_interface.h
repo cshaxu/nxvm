@@ -72,6 +72,9 @@ typedef struct core_machine_memory_parity_config {
     core_machine_memory_parity_fault_observer fault;
 } core_machine_memory_parity_config;
 
+typedef void (*core_machine_dma_device_effect)(void *owner,
+    lib_u8 channel, lib_u16 *value);
+
 /* Publish routes, optional parity and optional write observer as one owner
  * transaction. Replacement routes override lower ROM/RAM only when queried
  * as present; reset overlays decode before ordinary A20 routing. An
@@ -115,6 +118,14 @@ lib_status core_machine_set_a20(
 lib_status core_machine_signal_a20(core_machine *machine, lib_bool enabled);
 lib_status core_machine_observe_a20(const core_machine *machine,
     lib_bool *out_enabled);
+
+/* One Core-owned DMA memory transaction. Device effects occur only between
+ * begin and memory, or between memory and commit, respectively. */
+lib_status core_machine_dma_memory_cycle(core_machine *machine,
+    lib_u32 physical, lib_u8 bytes, lib_u8 channel,
+    core_machine_memory_access access, lib_u16 *value,
+    core_machine_dma_device_effect before_memory,
+    core_machine_dma_device_effect after_memory, void *device_owner);
 
 #ifdef __cplusplus
 }

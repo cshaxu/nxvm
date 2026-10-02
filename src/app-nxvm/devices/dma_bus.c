@@ -1,8 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 #include "app-nxvm/devices/dma_bus.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/transaction.h"
+#include "app-nxvm/devices/memory_interface.h"
 
 /* This only issues opaque binding nonces. It never selects a DMA instance. */
 static lib_atomic_uptr core_machine_dma_next_request_token = 1u;
@@ -112,10 +110,33 @@ static lib_status dma_port_write(void *owner, lib_u16 port_id, lib_u32 value)
 typedef struct dma_cycle_context {
     t_dma *controller;
     t_latch *latch;
-    t_ram *ram;
-    core_machine_transaction_state *transaction;
+    core_machine *machine;
     lib_bool word;
 } dma_cycle_context;
+
+static void dma_device_before_memory(void *owner, lib_u8 channel,
+    lib_u16 *value)
+{
+    dma_cycle_context *context = owner;
+    t_dma *dma = context->controller;
+    if (dma->connect.read_provider[channel] != LIB_NULL)
+        dma->connect.read_provider[channel](dma->connect.device_owner[channel],
+            context->latch);
+    *value = context->word ? context->latch->data.word :
+        context->latch->data.byte;
+}
+
+static void dma_device_after_memory(void *owner, lib_u8 channel,
+    lib_u16 *value)
+{
+    dma_cycle_context *context = owner;
+    t_dma *dma = context->controller;
+    if (context->word) context->latch->data.word = *value;
+    else context->latch->data.byte = (lib_u8)*value;
+    if (dma->connect.write_provider[channel] != LIB_NULL)
+        dma->connect.write_provider[channel](dma->connect.device_owner[channel],
+            context->latch);
+}
 
 static lib_status dma_bus_cycle(void *owner, x86_dma_cycle kind,
     lib_u8 channel, lib_u16 address, lib_u8 *byte)
@@ -126,12 +147,9 @@ static lib_status dma_bus_cycle(void *owner, x86_dma_cycle kind,
     lib_bool word = context->word && !memory_only;
     lib_bool write = kind == X86_DMA_DEVICE_TO_MEMORY || kind == X86_DMA_MEMORY_WRITE;
     lib_u8 page = dma->data.page[channel];
-    lib_uptr bytes = word ? 2u : 1u;
-    lib_uptr buffer = memory_only ? lib_pointer_to_uptr(byte) :
-        (word ? lib_pointer_to_uptr(&context->latch->data.word) :
-            lib_pointer_to_uptr(&context->latch->data.byte));
+    lib_u8 bytes = word ? 2u : 1u;
+    lib_u16 value = memory_only && write ? *byte : 0u;
     lib_u32 physical;
-    core_machine_memory_route route;
     lib_status status;
     if (kind == X86_DMA_VERIFY) {
         if (dma->connect.read_provider[channel] != LIB_NULL) {
@@ -142,32 +160,14 @@ static lib_status dma_bus_cycle(void *owner, x86_dma_cycle kind,
     }
     if (word) page &= 0xfeu;
     physical = ((lib_u32)page << 16) + (word ? (lib_u32)address << 1 : address);
-    status = core_machine_memory_query_physical(context->ram, physical, bytes,
-        write ? CORE_MACHINE_MEMORY_ACCESS_WRITE : CORE_MACHINE_MEMORY_ACCESS_READ,
-        &route);
-    if (status != LIB_STATUS_OK) return status;
-    if (context->transaction != LIB_NULL) {
-        status = core_machine_transaction_begin(context->transaction,
-            CORE_MACHINE_TRANSACTION_OWNER_DMA,
-            write ? CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE :
-                CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ,
-            physical, (lib_u32)bytes, channel);
-        if (status != LIB_STATUS_OK) return status;
-    }
-    if (kind == X86_DMA_DEVICE_TO_MEMORY && dma->connect.read_provider[channel] != LIB_NULL) {
-        dma->connect.read_provider[channel](dma->connect.device_owner[channel], context->latch);
-    }
-    status = write ? core_machine_memory_write_physical(context->ram, physical, buffer, bytes) :
-        core_machine_memory_read_physical(context->ram, physical, buffer, bytes);
-    if (status != LIB_STATUS_OK) {
-        core_machine_transaction_cancel(context->transaction);
-        return status;
-    }
-    if (kind == X86_DMA_MEMORY_TO_DEVICE && dma->connect.write_provider[channel] != LIB_NULL) {
-        dma->connect.write_provider[channel](dma->connect.device_owner[channel], context->latch);
-    }
-    core_machine_transaction_commit(context->transaction);
-    return LIB_STATUS_OK;
+    status = core_machine_dma_memory_cycle(context->machine, physical, bytes,
+        channel, write ? CORE_MACHINE_MEMORY_ACCESS_WRITE :
+            CORE_MACHINE_MEMORY_ACCESS_READ, &value,
+        kind == X86_DMA_DEVICE_TO_MEMORY ? dma_device_before_memory : LIB_NULL,
+        kind == X86_DMA_MEMORY_TO_DEVICE ? dma_device_after_memory : LIB_NULL,
+        context);
+    if (status == LIB_STATUS_OK && memory_only && !write) *byte = (lib_u8)value;
+    return status;
 }
 
 static void dma_bus_terminal(void *owner, lib_u8 channel)
@@ -180,10 +180,10 @@ static void dma_bus_terminal(void *owner, lib_u8 channel)
     }
 }
 
-static void dma_bus_advance(t_dma *dma, t_latch *latch, t_ram *ram,
-    core_machine_transaction_state *transaction, lib_bool word)
+static void dma_bus_advance(t_dma *dma, t_latch *latch,
+    core_machine *machine, lib_bool word)
 {
-    dma_cycle_context context = { dma, latch, ram, transaction, word };
+    dma_cycle_context context = { dma, latch, machine, word };
     x86_dma_bus bus = { dma_bus_cycle, dma_bus_terminal, &context };
     x86_dma_advance(dma->device, &bus);
 }
@@ -363,7 +363,7 @@ void core_machine_dma_reset(t_latch *latch, t_dma *primary, t_dma *secondary)
 }
 
 static void core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
-    t_dma *secondary, t_ram *ram, core_machine_transaction_state *transaction)
+    t_dma *secondary, core_machine *machine)
 {
     x86_dma_signals first = x86_dma_get_signals(primary->device);
     x86_dma_signals second;
@@ -371,7 +371,7 @@ static void core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
     lib_u8 channel;
     if (secondary->device == LIB_NULL) {
         if (!first.enabled) return;
-        if (first.active_channel < 4u) dma_bus_advance(primary, latch, ram, transaction, LIB_FALSE);
+        if (first.active_channel < 4u) dma_bus_advance(primary, latch, machine, LIB_FALSE);
         else if (first.requests) x86_dma_grant(primary->device,
             x86_dma_select(primary->device, first.requests), LIB_FALSE);
         return;
@@ -380,9 +380,9 @@ static void core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
     if (!second.enabled) return;
     if (second.active_channel < 4u) {
         if (second.active_channel != 0u) {
-            dma_bus_advance(secondary, latch, ram, transaction, LIB_TRUE);
+            dma_bus_advance(secondary, latch, machine, LIB_TRUE);
         } else if (first.enabled && first.active_channel < 4u) {
-            dma_bus_advance(primary, latch, ram, transaction, LIB_FALSE);
+            dma_bus_advance(primary, latch, machine, LIB_FALSE);
             if (x86_dma_get_signals(primary->device).active_channel == 4u) {
                 x86_dma_release(secondary->device);
             }
@@ -390,7 +390,7 @@ static void core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
         return;
     }
     if (first.enabled && first.active_channel < 4u) {
-        dma_bus_advance(primary, latch, ram, transaction, LIB_FALSE);
+        dma_bus_advance(primary, latch, machine, LIB_FALSE);
         return;
     }
     requests = second.requests & 0x0eu;
@@ -420,14 +420,13 @@ lib_i32 core_machine_dma_has_pending_request(const t_dma *primary, const t_dma *
 }
 
 void core_machine_dma_advance_transaction(t_latch *latch, t_dma *primary,
-    t_dma *secondary, t_ram *ram, core_machine_transaction_state *transaction,
-    lib_u64 elapsed_ticks)
+    t_dma *secondary, core_machine *machine, lib_u64 elapsed_ticks)
 {
     lib_u64 tick;
     if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
-        primary->device == LIB_NULL || ram == LIB_NULL) return;
+        primary->device == LIB_NULL || machine == LIB_NULL) return;
     for (tick = 0u; tick < elapsed_ticks; ++tick) {
-        core_machine_dma_advance_one(latch, primary, secondary, ram, transaction);
+        core_machine_dma_advance_one(latch, primary, secondary, machine);
     }
 }
 

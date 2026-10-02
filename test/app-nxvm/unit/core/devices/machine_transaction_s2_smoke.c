@@ -5,6 +5,7 @@
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/memory.h"
+#include "app-nxvm/devices/memory_interface.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/transaction.h"
 #include "support/core_machine_board_fixture.h"
@@ -27,6 +28,61 @@ typedef struct transaction_state_probe {
     core_machine_transaction_owner owner;
     core_machine_transaction_kind kind;
 } transaction_state_probe;
+
+typedef struct dma_cycle_probe {
+    core_machine *machine;
+    lib_u32 before_count;
+    lib_u32 after_count;
+    lib_u32 failed_write_count;
+    lib_bool begin_seen_before_device;
+    lib_bool memory_seen_before_device;
+} dma_cycle_probe;
+
+static void dma_cycle_before(void *owner, lib_u8 channel, lib_u16 *value)
+{
+    dma_cycle_probe *probe = owner;
+    (void)channel;
+    ++probe->before_count;
+    probe->begin_seen_before_device =
+        probe->machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_DMA;
+    *value = 0x66u;
+}
+
+static void dma_cycle_after(void *owner, lib_u8 channel, lib_u16 *value)
+{
+    dma_cycle_probe *probe = owner;
+    lib_u8 observed = 0u;
+    (void)channel;
+    ++probe->after_count;
+    probe->memory_seen_before_device =
+        core_machine_memory_read_physical(&probe->machine->executor_memory,
+            0x11235u, (lib_uptr)&observed, 1u) == LIB_STATUS_OK &&
+        observed == (lib_u8)*value;
+}
+
+static lib_status dma_cycle_failing_read(void *owner, lib_u32 physical,
+    lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
+{
+    (void)owner; (void)physical; (void)destination; (void)bytes;
+    (void)observe_only;
+    return LIB_STATUS_IO_ERROR;
+}
+
+static lib_status dma_cycle_failing_write(void *owner, lib_u32 physical,
+    lib_uptr source, lib_uptr bytes)
+{
+    dma_cycle_probe *probe = owner;
+    (void)physical; (void)source; (void)bytes;
+    ++probe->failed_write_count;
+    return LIB_STATUS_IO_ERROR;
+}
+
+static lib_status dma_cycle_failing_query(void *owner, lib_u32 physical,
+    lib_uptr bytes, core_machine_memory_access access)
+{
+    (void)owner; (void)physical; (void)bytes; (void)access;
+    return LIB_STATUS_OK;
+}
 
 static void transaction_trace(void *opaque,
     const core_machine_trace_event *event)
@@ -208,11 +264,13 @@ lib_i32 main(void)
     t_latch latch = {0};
     t_dma primary = {0};
     t_dma secondary = {0};
-    t_ram memory = {0};
+    core_machine dma_machine = {0};
     t_port port;
     core_machine_dma_request_binding binding = {0};
     core_machine_transaction_state transaction;
     transaction_state_probe state_probe = {0};
+    dma_cycle_probe dma_probe = {0};
+    lib_u16 cycle_value = 0u;
     dma_source source = {0xa5u};
     lib_u32 external_begin = 0u;
     lib_u32 external_commit = 0u;
@@ -293,10 +351,11 @@ lib_i32 main(void)
         state_probe.kind != CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE;
 
     core_machine_port_initialize(&port);
-    failed |= core_machine_memory_initialize_for(&memory, 2u * 1024u * 1024u,
+    failed |= core_machine_memory_initialize_for(&dma_machine.executor_memory,
+        2u * 1024u * 1024u,
         LIB_NULL) != LIB_STATUS_OK;
     if (test_dma_initialize(&latch, &primary, &secondary, &port, 2u) != LIB_STATUS_OK) {
-        core_machine_memory_finalize(&memory);
+        core_machine_memory_finalize(&dma_machine.executor_memory);
         core_machine_port_finalize(&port);
         core_machine_destroy(machine);
         return 1;
@@ -306,26 +365,53 @@ lib_i32 main(void)
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
     transaction_dma_program_channel2(&port);
     core_machine_dma_request_assert(&primary, &secondary, &binding);
-    core_machine_transaction_initialize(&transaction);
+    core_machine_transaction_initialize(&dma_machine.transaction);
     lib_memory_set(&state_probe, 0, sizeof(state_probe));
-    core_machine_transaction_bind_trace(&transaction, transaction_state_trace,
+    core_machine_transaction_bind_trace(&dma_machine.transaction, transaction_state_trace,
         &state_probe);
     /* 8237A normal timing selects the channel, then completes S1..S4 before
      * the actual memory write.  One transaction tick is one controller phase. */
-    core_machine_dma_advance_transaction(&latch, &primary, &secondary, &memory,
-        &transaction, 5u);
-    failed |= transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
-        transaction.committed_count != 1u;
+    core_machine_dma_advance_transaction(&latch, &primary, &secondary,
+        &dma_machine, 5u);
+    failed |= dma_machine.transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
+        dma_machine.transaction.committed_count != 1u;
     failed |= state_probe.begin_count != 1u || state_probe.commit_count != 1u ||
         state_probe.cancel_count != 0u ||
         state_probe.owner != CORE_MACHINE_TRANSACTION_OWNER_DMA ||
         state_probe.kind != CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE;
-    failed |= core_machine_memory_read_physical(&memory, 0x11234u,
+    failed |= core_machine_memory_read_physical(&dma_machine.executor_memory, 0x11234u,
         (lib_uptr)&data, 1u) != LIB_STATUS_OK || data != 0xa5u;
+
+    dma_probe.machine = &dma_machine;
+    failed |= core_machine_dma_memory_cycle(&dma_machine, 0x200000u, 1u, 2u,
+        CORE_MACHINE_MEMORY_ACCESS_WRITE, &cycle_value,
+        dma_cycle_before, dma_cycle_after, &dma_probe) == LIB_STATUS_OK;
+    failed |= dma_probe.before_count != 0u || dma_probe.after_count != 0u ||
+        dma_machine.transaction.committed_count != 1u ||
+        dma_machine.transaction.cancelled_count != 0u;
+    failed |= core_machine_dma_memory_cycle(&dma_machine, 0x11235u, 1u, 2u,
+        CORE_MACHINE_MEMORY_ACCESS_WRITE, &cycle_value,
+        dma_cycle_before, dma_cycle_after, &dma_probe) != LIB_STATUS_OK;
+    failed |= dma_probe.before_count != 1u || dma_probe.after_count != 1u ||
+        !dma_probe.begin_seen_before_device ||
+        !dma_probe.memory_seen_before_device ||
+        dma_machine.transaction.committed_count != 2u;
+    failed |= core_machine_memory_register_device_provider(
+        &dma_machine.executor_memory, 0x11240u, 1u,
+        dma_cycle_failing_read, dma_cycle_failing_write,
+        dma_cycle_failing_query, &dma_probe) != LIB_STATUS_OK;
+    failed |= core_machine_dma_memory_cycle(&dma_machine, 0x11240u, 1u, 2u,
+        CORE_MACHINE_MEMORY_ACCESS_WRITE, &cycle_value,
+        dma_cycle_before, dma_cycle_after, &dma_probe) != LIB_STATUS_IO_ERROR;
+    failed |= dma_probe.before_count != 2u || dma_probe.after_count != 1u ||
+        dma_probe.failed_write_count != 1u ||
+        dma_machine.transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
+        dma_machine.transaction.committed_count != 2u ||
+        dma_machine.transaction.cancelled_count != 1u;
 
     core_machine_port_finalize(&port);
     core_machine_dma_finalize(&latch, &primary, &secondary);
-    core_machine_memory_finalize(&memory);
+    core_machine_memory_finalize(&dma_machine.executor_memory);
     core_machine_destroy(machine);
     if (failed != 0) return 1;
     printf("M5:T354:S2:TRANSACTION:OK\n");

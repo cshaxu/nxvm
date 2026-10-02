@@ -178,7 +178,7 @@ lib_i32 main(void)
             test_dma_transfers(&session->core_machine->shared_dma_latch,
                 &session->core_machine->shared_dma_primary,
                 &session->core_machine->shared_dma_secondary,
-                &session->core_machine->executor_memory, &session->core_machine->executor_port, 1u);
+                session->core_machine, &session->core_machine->executor_port, 1u);
             if (index + 1u < 512u) failed |= !test_fdc_advance_ticks(fdc, 128u);
         }
         failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB ||

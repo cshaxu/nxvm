@@ -17,8 +17,6 @@ extern "C"
 
     typedef lib_u8 t_page;
     typedef struct t_latch t_latch;
-    typedef struct t_ram t_ram;
-    typedef struct core_machine_transaction_state core_machine_transaction_state;
     typedef void (*core_machine_dma_device_provider)(void *owner, t_latch *latch);
 
     typedef struct core_machine_dma_channel_provider {
@@ -69,8 +67,7 @@ lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     void core_machine_dma_reset(t_latch *latch, t_dma *primary,
                                   t_dma *secondary);
     void core_machine_dma_advance_transaction(t_latch *latch,
-        t_dma *primary, t_dma *secondary, t_ram *ram,
-        core_machine_transaction_state *transaction,
+        t_dma *primary, t_dma *secondary, core_machine *machine,
         lib_u64 elapsed_ticks);
     lib_i32 core_machine_dma_has_pending_request(const t_dma *primary,
         const t_dma *secondary);

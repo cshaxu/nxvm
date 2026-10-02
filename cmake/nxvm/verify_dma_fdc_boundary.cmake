@@ -6,6 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.h" fdc_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c" devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.c" dma_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory_interface.c" core_memory_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
 
 foreach(forbidden IN ITEMS "dma_primary" "dma_secondary" "dma_latch"
@@ -22,11 +23,13 @@ string(FIND "${fdc_source}" "fdc->connect.dma_request_assert" assert_position)
 string(FIND "${board_source}" "core_machine_configure_dma" composition_position)
 string(FIND "${board_source}" "core_machine_dma_bind_channel" binding_owner_position)
 string(FIND "${devices_source}" "core_machine_dma_bind_channel" vm_binding_position)
-string(FIND "${dma_source}" "core_machine_memory_write_physical" write_position)
-string(FIND "${dma_source}" "core_machine_memory_read_physical" read_position)
+string(FIND "${dma_source}" "core_machine_dma_memory_cycle" cycle_position)
+string(FIND "${core_memory_source}" "core_machine_memory_write_physical" write_position)
+string(FIND "${core_memory_source}" "core_machine_memory_read_physical" read_position)
 if(binding_position EQUAL -1 OR assert_position EQUAL -1 OR
     composition_position EQUAL -1 OR binding_owner_position EQUAL -1 OR
-    NOT vm_binding_position EQUAL -1 OR write_position EQUAL -1 OR
+    NOT vm_binding_position EQUAL -1 OR cycle_position EQUAL -1 OR
+    write_position EQUAL -1 OR
     read_position EQUAL -1)
     message(FATAL_ERROR "DMA/FDC ownership route is incomplete")
 endif()

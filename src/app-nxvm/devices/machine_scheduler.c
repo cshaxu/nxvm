@@ -218,14 +218,14 @@ static void core_machine_dma_grant_advance(core_machine *machine)
                 CORE_MACHINE_TRANSACTION_OWNER_DMA) == LIB_STATUS_OK) {
             core_machine_dma_advance_transaction(&machine->shared_dma_latch,
                 &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                &machine->executor_memory, &machine->transaction, 1u);
+                machine, 1u);
         }
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
     } else {
         core_machine_dma_advance_transaction(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
-            &machine->executor_memory, &machine->transaction, 1u);
+            machine, 1u);
     }
 }
 static void core_machine_d4_refresh_hold_advance(core_machine *machine)
@@ -292,14 +292,14 @@ static void core_machine_arbitration_advance(core_machine *machine,
                 CORE_MACHINE_TRANSACTION_OWNER_DMA) == LIB_STATUS_OK) {
             core_machine_dma_advance_transaction(&machine->shared_dma_latch,
                 &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                &machine->executor_memory, &machine->transaction, dma_ticks);
+                machine, dma_ticks);
         }
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
     } else {
         core_machine_dma_advance_transaction(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
-            &machine->executor_memory, &machine->transaction, dma_ticks);
+            machine, dma_ticks);
     }
     if (machine->transaction_contract.cpu_prefetch_reservation_enabled && !refresh_pending &&
         !machine->d4_refresh_hold_pending &&

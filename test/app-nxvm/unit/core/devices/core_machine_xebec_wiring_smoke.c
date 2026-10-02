@@ -189,7 +189,7 @@ lib_i32 main(void)
                     failed |= 0x100;
                 test_dma_transfers(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->executor_memory, &machine->executor_port, sizeof(dma_bytes));
+                    machine, &machine->executor_port, sizeof(dma_bytes));
                 if (!failed && (core_machine_memory_read_physical(&machine->executor_memory,
                     0x2200u, (lib_uptr)dma_bytes, sizeof(dma_bytes)) !=
                     LIB_STATUS_OK || dma_bytes[0] != 0u || dma_bytes[511] != 0xffu ||
@@ -227,7 +227,7 @@ lib_i32 main(void)
                     failed |= 0x2000;
                 test_dma_transfers(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->executor_memory, &machine->executor_port, sizeof(dma_bytes));
+                    machine, &machine->executor_port, sizeof(dma_bytes));
                 if (!failed && (hdc_observe(&machine->hdc).xebec_phase != X86_XEBEC_PHASE_RESPONSE ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0u ||
                     (core_machine_port_read(&machine->executor_port, 8u) & 0x80u) != 0u ||

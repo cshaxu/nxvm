@@ -229,3 +229,43 @@ lib_status core_machine_observe_a20(const core_machine *machine,
     *out_enabled = machine->executor_memory.data.flagA20 ? LIB_TRUE : LIB_FALSE;
     return LIB_STATUS_OK;
 }
+
+lib_status core_machine_dma_memory_cycle(core_machine *machine,
+    lib_u32 physical, lib_u8 bytes, lib_u8 channel,
+    core_machine_memory_access access, lib_u16 *value,
+    core_machine_dma_device_effect before_memory,
+    core_machine_dma_device_effect after_memory, void *device_owner)
+{
+    core_machine_memory_route route;
+    lib_status status;
+
+    if (machine == LIB_NULL || value == LIB_NULL || (bytes != 1u && bytes != 2u) ||
+        (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
+         access != CORE_MACHINE_MEMORY_ACCESS_WRITE))
+        return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_memory_query_physical(&machine->executor_memory,
+        physical, bytes, access, &route);
+    if (status != LIB_STATUS_OK) return status;
+    status = core_machine_transaction_begin(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_DMA,
+        access == CORE_MACHINE_MEMORY_ACCESS_WRITE ?
+            CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE :
+            CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ,
+        physical, bytes, channel);
+    if (status != LIB_STATUS_OK) return status;
+    if (before_memory != LIB_NULL)
+        before_memory(device_owner, channel, value);
+    status = access == CORE_MACHINE_MEMORY_ACCESS_WRITE ?
+        core_machine_memory_write_physical(&machine->executor_memory,
+            physical, (lib_uptr)value, bytes) :
+        core_machine_memory_read_physical(&machine->executor_memory,
+            physical, (lib_uptr)value, bytes);
+    if (status != LIB_STATUS_OK) {
+        core_machine_transaction_cancel(&machine->transaction);
+        return status;
+    }
+    if (after_memory != LIB_NULL)
+        after_memory(device_owner, channel, value);
+    core_machine_transaction_commit(&machine->transaction);
+    return LIB_STATUS_OK;
+}
