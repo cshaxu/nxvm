@@ -219,7 +219,7 @@ static lib_i32 plan_controller_timing_rules_are_copied_and_validated(void)
     failed |= !failed && core_machine_get_timing_disposition(machine,
         CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK;
     failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-    failed |= !failed && machine->timing_plan.controller_timing.pit_clock !=
+    failed |= !failed && machine->board->controller_timing.pit_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     core_machine_destroy(machine);
     core_machine_plan_destroy(plan);

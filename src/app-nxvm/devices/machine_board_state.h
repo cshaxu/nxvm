@@ -21,6 +21,7 @@ struct core_machine_board_state {
     core_machine_fdc fdc;
     core_machine_hdc hdc;
     core_machine_d4_memory d4_memory;
+    core_machine_controller_timing_rules controller_timing;
     t_kbc shared_kbc;
     core_machine_xt_ppi_keyboard xt_ppi_keyboard;
     x86_xt_keyboard *xt_keyboard;
@@ -46,6 +47,7 @@ struct core_machine_board_state {
     core_machine_absent_memory absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     t_vadp shared_vadp;
     core_machine_clock_domain dma_clock;
+    lib_u8 dma_clock_explicit;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain auxiliary_pit_clock;
     core_machine_clock_domain rtc_clock;

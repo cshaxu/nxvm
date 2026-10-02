@@ -92,6 +92,9 @@ lib_status core_machine_board_create(core_machine *machine,
         core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    machine->board->dma_clock_explicit =
+        config->clock_plan.dma.numerator != 0u &&
+        config->clock_plan.dma.denominator != 0u;
 
     dma_controller_count = config->dma_controller_count == 0u ?
         CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;

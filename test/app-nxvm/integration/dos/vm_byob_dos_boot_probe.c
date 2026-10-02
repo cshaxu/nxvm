@@ -3268,7 +3268,7 @@ done:
                     &session->core_machine->board->shared_kbc, &ticks);
                 printf("BOOT-PROBE=waiting-kbc-deadline-status=%u-ticks=%llu-pit-rule=%u\n",
                     (unsigned int)status, (unsigned long long)ticks,
-                    (unsigned int)session->core_machine->timing_plan.controller_timing.pit_clock);
+                    (unsigned int)session->core_machine->board->controller_timing.pit_clock);
             }
         }
         if (post_resume_required) printf("BOOT-PROBE=post-resume-required\n");

@@ -296,6 +296,7 @@ lib_status core_machine_create_from_plan(const core_machine_plan *plan,
     core_machine **out_machine)
 {
     lib_status status;
+    lib_size index;
 
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = LIB_NULL;
@@ -310,27 +311,16 @@ lib_status core_machine_create_from_plan(const core_machine_plan *plan,
         *out_machine = LIB_NULL;
         return status;
     }
-    (*out_machine)->timing_plan = *plan;
-    /* Configuration-owned retirement qualification is already copied by
-     * create; the plan copy must retain no caller-owned pointer. */
-    (*out_machine)->timing_plan.configuration.retirement_qualification = LIB_NULL;
-    (*out_machine)->timing_plan_copied = LIB_TRUE;
-    return LIB_STATUS_OK;
-}
-
-const core_machine_timing_declaration *
-core_machine_plan_declaration_find(const core_machine_plan *plan,
-    core_machine_timing_capability capability)
-{
-    lib_size index;
-
-    if (plan == LIB_NULL) return LIB_NULL;
     for (index = 0u; index < plan->declaration_count; ++index) {
-        if (plan->declarations[index].capability == capability) {
-            return &plan->declarations[index];
-        }
+        const core_machine_timing_declaration *declaration =
+            &plan->declarations[index];
+
+        (*out_machine)->timing_declarations[declaration->capability] =
+            *declaration;
     }
-    return LIB_NULL;
+    (*out_machine)->board->controller_timing = plan->controller_timing;
+    (*out_machine)->timing_declarations_copied = LIB_TRUE;
+    return LIB_STATUS_OK;
 }
 
 lib_status core_machine_plan_create(const core_machine_config *configuration,

@@ -451,17 +451,12 @@ lib_status core_machine_get_timing_disposition(const core_machine *machine,
     core_machine_timing_capability capability,
     core_machine_timing_disposition *out_disposition)
 {
-    const core_machine_timing_declaration *declaration;
-
     if (machine == LIB_NULL || out_disposition == LIB_NULL ||
-        !machine->timing_plan_copied ||
+        !machine->timing_declarations_copied ||
         !core_machine_timing_capability_is_valid(capability)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    declaration = core_machine_plan_declaration_find(&machine->timing_plan,
-        capability);
-    if (declaration == LIB_NULL) return LIB_STATUS_INVALID_STATE;
-    *out_disposition = declaration->disposition;
+    *out_disposition = machine->timing_declarations[capability].disposition;
     return LIB_STATUS_OK;
 }
 
@@ -470,17 +465,11 @@ lib_status core_machine_get_timing_declaration(const core_machine *machine,
     core_machine_timing_declaration *out_declaration)
 {
     if (machine == LIB_NULL || out_declaration == LIB_NULL ||
-        !machine->timing_plan_copied ||
+        !machine->timing_declarations_copied ||
         !core_machine_timing_capability_is_valid(capability)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    {
-        const core_machine_timing_declaration *declaration =
-            core_machine_plan_declaration_find(&machine->timing_plan, capability);
-
-        if (declaration == LIB_NULL) return LIB_STATUS_INVALID_STATE;
-        *out_declaration = *declaration;
-    }
+    *out_declaration = machine->timing_declarations[capability];
     return LIB_STATUS_OK;
 }
 

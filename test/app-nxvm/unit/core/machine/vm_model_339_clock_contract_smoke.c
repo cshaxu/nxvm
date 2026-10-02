@@ -73,13 +73,13 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         session->core_machine->board->rtc_cmos_config.ticks_per_second != 32768u ||
         session->core_machine->board->rtc_cmos_config.timing.provenance !=
             CORE_MACHINE_RTC_TIMING_L3_SOURCE;
-    failed |= session->core_machine->timing_plan.controller_timing.dma_clock !=
+    failed |= session->core_machine->board->controller_timing.dma_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
-        session->core_machine->timing_plan.controller_timing.dma_service !=
+        session->core_machine->board->controller_timing.dma_service !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
-        session->core_machine->timing_plan.controller_timing.pit_clock !=
+        session->core_machine->board->controller_timing.pit_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
-        session->core_machine->timing_plan.controller_timing.rtc_clock !=
+        session->core_machine->board->controller_timing.rtc_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     {
         core_machine_timing_disposition disposition;

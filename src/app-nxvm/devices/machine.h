@@ -160,8 +160,9 @@ struct core_machine {
     lib_u32 fault_detail;
     lib_u64 elapsed_ticks;
     core_machine_timeline timeline;
-    core_machine_plan timing_plan;
-    lib_u8 timing_plan_copied;
+    core_machine_timing_declaration timing_declarations[
+        CORE_MACHINE_TIMING_CAPABILITY_COUNT];
+    lib_u8 timing_declarations_copied;
     core_machine_transaction_state transaction;
     core_machine_transaction_contract transaction_contract;
     lib_u32 external_cycle_page_tag;
@@ -378,6 +379,4 @@ lib_i32 core_machine_external_access_wait_windows_are_valid(
 lib_i32 core_machine_transaction_contract_is_valid(
     const core_machine_transaction_contract *contract);
 lib_i32 core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
-const core_machine_timing_declaration *core_machine_plan_declaration_find(
-    const core_machine_plan *plan, core_machine_timing_capability capability);
 #endif
