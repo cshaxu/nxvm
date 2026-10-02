@@ -261,6 +261,16 @@ lib_status core_machine_memory_enable_parity(t_ram *ram, lib_size bytes,
     return LIB_STATUS_OK;
 }
 
+void core_machine_memory_release_parity(t_ram *ram)
+{
+    if (ram == LIB_NULL) return;
+    if (ram->connect.parity != 0u) lib_release((void *)ram->connect.parity);
+    ram->connect.parity = 0u;
+    ram->connect.parity_bytes = 0u;
+    ram->connect.parity_fault = LIB_NULL;
+    ram->connect.parity_owner = LIB_NULL;
+}
+
 lib_status core_machine_memory_register_mapping(t_ram *ram,
     lib_u32 physical_start,
     lib_u32 backing_start, lib_size bytes, lib_u8 selected)
@@ -739,7 +749,7 @@ void core_machine_memory_finalize(t_ram *ram)
     if (ram->connect.backing != 0u) {
         lib_release((void *)ram->connect.backing);
     }
-    if (ram->connect.parity != 0u) lib_release((void *)ram->connect.parity);
+    core_machine_memory_release_parity(ram);
     lib_release(ram->connect.device_providers);
     ram->connect.device_providers = LIB_NULL;
     ram->connect.device_provider_count = 0u;

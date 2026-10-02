@@ -313,6 +313,47 @@ static lib_i32 port_assembly_rtc_collision(void)
     return failed;
 }
 
+static lib_i32 port_assembly_port_b_transaction(lib_bool d4, lib_size fail_at)
+{
+    const core_machine_config config = {
+        .memory_bytes = 512u * 1024u, .auxiliary_pit_present = LIB_TRUE,
+        .auxiliary_pit_base_port = 0x0048u
+    };
+    const core_machine_planar_parity_config parity = {
+        .port = CORE_MACHINE_PC_AT_PORT_B, .memory_bytes = 512u * 1024u,
+        .refresh_status_source =
+            CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1
+    };
+    const core_machine_d4_platform_config d4_config = {
+        CORE_MACHINE_PC_AT_PORT_B, 0u
+    };
+    core_machine_port_test_allocation allocation = {fail_at, 0u};
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+
+    if (!failed) {
+        core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
+        failed |= (d4 ? core_machine_configure_d4_platform(machine, &d4_config) :
+            core_machine_configure_planar_parity(machine, &parity)) !=
+                LIB_STATUS_NO_MEMORY ||
+            machine->planar_parity_configured || machine->d4_platform_configured ||
+            machine->executor_memory.connect.parity != 0u ||
+            machine->planar_parity_port_b != 0u || machine->d4_platform_port_b != 0u ||
+            core_machine_port_has_read(&machine->executor_port, CORE_MACHINE_PC_AT_PORT_B) ||
+            core_machine_port_has_write(&machine->executor_port, CORE_MACHINE_PC_AT_PORT_B);
+        allocation.fail_at = 0u;
+        allocation.attempts = 0u;
+        failed |= (d4 ? core_machine_configure_d4_platform(machine, &d4_config) :
+            core_machine_configure_planar_parity(machine, &parity)) != LIB_STATUS_OK ||
+            !core_machine_port_has_read(&machine->executor_port,
+                CORE_MACHINE_PC_AT_PORT_B) ||
+            !core_machine_port_has_write(&machine->executor_port,
+                CORE_MACHINE_PC_AT_PORT_B);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
     lib_size fail_at)
 {
@@ -475,6 +516,9 @@ lib_i32 main(void)
 
     failed = port_assembly_rtc_transaction(1u) || port_assembly_rtc_transaction(2u) ||
         port_assembly_rtc_collision();
+    for (lib_u32 d4 = 0u; d4 <= 1u; ++d4)
+        for (lib_size fail_at = 1u; fail_at <= 2u; ++fail_at)
+            failed |= port_assembly_port_b_transaction((lib_bool)d4, fail_at);
     for (lib_u32 protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO;
         protocol <= CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT; ++protocol) {
         const lib_size routes = protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ? 7u :

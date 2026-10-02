@@ -119,6 +119,7 @@ lib_status core_machine_memory_set_a20_wrap_policy(t_ram *ram,
 lib_status core_machine_memory_allocate_for(t_ram *ram, lib_size bytes);
 lib_status core_machine_memory_enable_parity(t_ram *ram, lib_size bytes,
     core_machine_memory_parity_fault_observer fault, void *owner);
+void core_machine_memory_release_parity(t_ram *ram);
 lib_status core_machine_memory_register_mapping(t_ram *ram,
     lib_u32 physical_start,
     lib_u32 backing_start, lib_size bytes, lib_u8 selected);

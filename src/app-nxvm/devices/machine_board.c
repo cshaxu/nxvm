@@ -387,10 +387,6 @@ static lib_status core_machine_d4_platform_port_write(void *owner,
     return LIB_STATUS_OK;
 }
 
-static const core_machine_port_provider core_machine_d4_platform_port_provider = {
-    core_machine_d4_platform_port_read,
-    core_machine_d4_platform_port_write
-};
 static void core_machine_fdc_dma_request_assert(void *owner,
     const core_machine_dma_request_binding *binding)
 {
@@ -611,9 +607,7 @@ lib_status core_machine_enable_memory_parity(core_machine *machine,
 lib_status core_machine_configure_planar_parity(core_machine *machine,
     const core_machine_planar_parity_config *config)
 {
-    core_machine_port_provider provider = { core_machine_planar_parity_port_read,
-        core_machine_planar_parity_port_write };
-    core_machine_port_provider_entry *checkpoint;
+    core_machine_port_route route;
     lib_status status;
 
     if (!core_machine_configuration_is_open(machine) || machine->planar_parity_configured)
@@ -628,15 +622,22 @@ lib_status core_machine_configure_planar_parity(core_machine *machine,
             config->refresh_status_toggle_ticks == 0u) ||
         (config->memory_bytes != 0u && config->memory_bytes >
             machine->executor_memory.connect.installed_bytes) ||
-        core_machine_port_has_read(&machine->executor_port,
-            config->port) || core_machine_port_has_write(&machine->executor_port,
-            config->port)) return LIB_STATUS_INVALID_ARGUMENT;
-    checkpoint = core_machine_port_registration_begin(&machine->executor_port);
-    status = core_machine_install_port_provider(machine, config->port, config->port,
-        &provider, machine);
+        machine->d4_platform_configured) return LIB_STATUS_INVALID_ARGUMENT;
+    if (config->memory_bytes != 0u) {
+        status = core_machine_memory_enable_parity(&machine->executor_memory,
+            config->memory_bytes, core_machine_planar_parity_memory_fault, machine);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    route = (core_machine_port_route) {
+        .address = config->port,
+        .read = core_machine_planar_parity_port_read,
+        .write = core_machine_planar_parity_port_write, .owner = machine
+    };
+    status = core_machine_install_port_routes(machine, &route, 1u);
     if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
-        return status;
+        if (config->memory_bytes != 0u)
+            core_machine_memory_release_parity(&machine->executor_memory);
+        return status == LIB_STATUS_INVALID_STATE ? LIB_STATUS_INVALID_ARGUMENT : status;
     }
     machine->planar_parity_config = *config;
     machine->planar_parity_port_b = 0x04u;
@@ -645,39 +646,30 @@ lib_status core_machine_configure_planar_parity(core_machine *machine,
         core_machine_speaker_timer_output, machine);
     core_machine_pc_at_refresh_timer_program(machine);
     core_machine_speaker_set_gate(machine, machine->planar_parity_port_b);
-    if (config->memory_bytes != 0u) {
-        status = core_machine_memory_enable_parity(&machine->executor_memory,
-            config->memory_bytes, core_machine_planar_parity_memory_fault, machine);
-        if (status != LIB_STATUS_OK) {
-            machine->planar_parity_configured = LIB_FALSE;
-            core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
-            return status;
-        }
-    }
     return LIB_STATUS_OK;
 }
 
 lib_status core_machine_configure_d4_platform(core_machine *machine,
     const core_machine_d4_platform_config *config)
 {
-    core_machine_port_provider_entry *checkpoint;
+    core_machine_port_route route;
     lib_status status;
 
     if (!core_machine_configuration_is_open(machine) ||
         machine->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
     if (config == LIB_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
         config->failsafe_pit_counter >= 3u || !machine->auxiliary_pit_configured ||
-        core_machine_port_has_read(&machine->executor_port, config->port) ||
-        core_machine_port_has_write(&machine->executor_port, config->port)) {
+        machine->planar_parity_configured) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    checkpoint = core_machine_port_registration_begin(&machine->executor_port);
-    status = core_machine_install_port_provider(machine, config->port, config->port,
-        &core_machine_d4_platform_port_provider, machine);
-    if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
-        return status;
-    }
+    route = (core_machine_port_route) {
+        .address = config->port,
+        .read = core_machine_d4_platform_port_read,
+        .write = core_machine_d4_platform_port_write, .owner = machine
+    };
+    status = core_machine_install_port_routes(machine, &route, 1u);
+    if (status != LIB_STATUS_OK)
+        return status == LIB_STATUS_INVALID_STATE ? LIB_STATUS_INVALID_ARGUMENT : status;
     machine->d4_platform_config = *config;
     machine->d4_platform_port_b = 0x0fu;
     machine->d4_platform_configured = LIB_TRUE;

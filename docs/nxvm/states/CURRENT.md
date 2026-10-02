@@ -2,10 +2,10 @@
 
 ## Current Work
 
-M5 T540 S12 is accepted: RTC/CMOS index and data ports use one Core-owned
-typed route batch. S1-S12 are accepted; T540 remains open. The oversized
-former S12 port batch is split into linear receivers. Shared Core and board
-code have not moved.
+M5 T540 S13 is active: make the AT Port-B and D4 routes Core-owned and
+failure-atomic with parity storage. S1-S12 are accepted; T540 remains open.
+The oversized former S12 port batch is split into linear receivers. Shared
+Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -365,6 +365,27 @@ S12 changes only NXVM. Port-B/D4, HDC and VADP remain separately assigned
 to prospective S13-S15; memory, signal, deadline, reset, neutral Core and
 board extraction follow. The full external integration gate is still a T540
 exit requirement. No new timing grade is claimed.
+
+## T540 S13 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S13, next linear S after accepted S12. |
+| Admission And Approval | Owner-approved automatic admission of bounded numeric T540 subtasks applies. S12 source intake assigns the two mutually exclusive AT Port-B personalities and their distinct parity rollback to S13. Target: NXVM only; Shared and MyNES are read-only receiving reviews. |
+| Objective | Publish planar-parity and D4 Port-B routes through the Core-owned typed batch; make parity allocation, route publication and board-state publication failure-atomic; delete the raw board checkpoint and redundant availability path without changing speaker, refresh, failsafe or NMI semantics. |
+| Non-goals | Chip PIT/parity behavior or timing changes, RTC/HDC/VADP ports, DMA/KBC memory and signal decoupling, neutral Core/board physical relocation, profile/firmware/INI/media changes, Shared or MyNES edits. |
+| Reference Baseline | Accepted S12 governance commit `8c75ae95c`, dual-width full units 467/467 and eight optimized 0540 artifacts. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S7 handoff and S12 refinement](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | NXVM `devices/{machine_board,memory}` implementation/internal headers, owner-local Port-B/parity/D4/port-assembly tests, affected static gates, S13 evidence and eight 0540 artifacts. No public Shared contract or product configuration change. |
+| Applicable Rules | Core owns the one port table and atomic route publication; RAM parity storage has one owner and must be released if Port-B route publication fails. Perform all potentially failing preparation before board latches/PIT output callbacks are changed. Keep the 61h personality exclusivity and one guest-time path. Both full unit widths, artifacts, actual-diff review and documentation gate apply. The source policy permits rebuilding the existing owner-approved embedded-ROM EXEs only. |
+| Verification | Focused planar parity, D4, Port-B exclusivity, NMI/refresh/failsafe and injected allocation/collision rollback tests; both-width complete repository-only units; relevant static boundary gates; eight optimized Release artifacts with hash/PE/no-debug check; `git diff --check` and NXVM documentation governance. |
+| Expected Markers | Each personality has one typed route on 61h with no external port-table checkpoint. On parity allocation or route failure, no new route, parity allocation, board-configured flag, speaker/PIT mutation or leaked state remains. Successful Port-B behavior matches the original tests. |
+| Asset Needs | Existing selected BYOB build roots only; preserve adjacent NXVM.ini and all MyNES files. |
+| Reporting Requirements | Record source/test paths and added/removed/net lines, before/after failure order, relevant regressions, eight artifact hashes, actual-diff review and residual route receivers. |
+| Stop Conditions | Stop before adding generic device/transaction framework, changing parity electrical behavior, altering guest timing, modifying HDC/VADP/RTC or Shared/MyNES, or publishing a second mutable parity owner. Revise the packet if a bounded rollback cannot be achieved. |
+| Exit Criteria | Both 61h personalities use one Core route each; no raw board port checkpoint remains for them; every failure leaves prior Core and board state intact; both-width unit/product gates pass with no second path. |
+| Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal, individually tracked chip/board cuts. |
+| Similar-Issue Sweep | Search all Port-B/board adapters for direct port-table registration and parity-memory rollback; consume the planar-parity/D4 hits, assign HDC and VADP to later bounded S and Core-private storage to the neutral-Core cut. |
 
 ## S87 Admission Packet
 
