@@ -2,9 +2,10 @@
 
 ## Current Work
 
-M5 T540 S16 is active: make VADP memory routes and observational snapshot
-backing Core-bounded without changing video semantics. S1-S15 are accepted;
-T540 remains open for D4/ROM memory, neutral Core and IBM-PC board extraction.
+M5 T540 S16 is accepted: VADP memory routes and observational snapshot
+backing are Core-bounded without changing video semantics. S1-S16 are
+accepted; T540 remains open for D4/ROM memory, neutral Core and IBM-PC board
+extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -43,6 +44,7 @@ the completed CPU extraction.
 | T540 S13 | Accepted: planar-parity and D4 Port-B routes are atomic; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S14 | Accepted: all HDC personality ports use a Core-owned typed batch; Compaq 3F7 wired-OR and XT rollback remain intact. |
 | T540 S15 | Accepted: CGA and staged EGA/Compaq/VGA ports use Core-owned atomic batches; both-width units, focused EGA integration, gates and eight 0540 products pass. |
+| T540 S16 | Accepted: VADP CGA/planar memory routes and EGA observer use one Core owner transaction; snapshots use copied Core inspection. |
 
 ## T540 S1 Acceptance
 
@@ -501,6 +503,19 @@ Core and board relocation remain open.
 | Exit Criteria | VADP uses only bounded Core memory operations for configuration and copied inspection; all candidate failure paths are atomic; the old raw VADP memory path is deleted; dual-width tests/products and static/documentation gates pass. |
 | Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal and individually tracked cuts before extracting them for independent PC Apps. |
 | Similar-Issue Sweep | Search VADP and tests for all raw `t_ram` mapping, write observer, unregister and snapshot inspection calls. S16 consumes VADP hits; retain D4 windows/parity for S17 and ROM/reset aliases for S18. |
+
+## T540 S16 Acceptance
+
+P1 `1fc8b2054` is pushed. The [S16 evidence](../etc/evidence/t540-s16-vadp-memory-routes.md)
+records the actual source and test diff, candidate provider/observer rollback,
+duplicate-owner rejection, port-batch failure recovery, copied observational
+snapshot path, both-width 467/467 complete units, focused EGA planar DOS
+integration 1/1 per width, specialized and documentation gates, and eight
+optimized 0540 executable identities. Coordinator actual-diff review confirms
+one Core mapping table, one VADP chip owner, and no raw memory access in the
+VADP adapter. Only NXVM-owned files changed; Shared, MyNES and adjacent INIs
+remain untouched. S17 owns D4 memory/parity, S18 owns ROM/reset aliases;
+neutral Core and IBM-PC board relocation remain open.
 
 ## S87 Admission Packet
 
