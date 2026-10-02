@@ -42,6 +42,7 @@ struct core_machine_board_state {
     lib_u8 xt_ppi_speaker_gate;
     lib_u8 xt_ppi_speaker_data_enabled;
     lib_u8 speaker_output;
+    core_machine_absent_memory absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     t_vadp shared_vadp;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;

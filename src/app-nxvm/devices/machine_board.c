@@ -1317,8 +1317,8 @@ lib_status core_machine_configure_absent_memory(core_machine *machine,
     }
     absent = LIB_NULL;
     for (index = 0u; index < CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT; ++index) {
-        if (!machine->absent_memory[index].configured) {
-            absent = &machine->absent_memory[index];
+        if (!machine->board->absent_memory[index].configured) {
+            absent = &machine->board->absent_memory[index];
             break;
         }
     }

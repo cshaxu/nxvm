@@ -3,6 +3,7 @@
 
 #include "app-nxvm/devices/firmware_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_interface.h"
 
 static lib_status reset_rom_configure(void *opaque,
@@ -95,11 +96,11 @@ static lib_i32 absent_fallback_run(void)
     machine->executor_memory.connect.device_provider_test_allocation = &allocation;
     failed |= core_machine_configure_absent_memory(machine, &absent) !=
         LIB_STATUS_NO_MEMORY || allocation.attempts != 1u ||
-        machine->absent_memory[0].configured ||
+        machine->board->absent_memory[0].configured ||
         machine->executor_memory.connect.device_provider_count != 0u;
     machine->executor_memory.connect.device_provider_test_allocation = LIB_NULL;
     failed |= core_machine_configure_absent_memory(machine, &absent) !=
-        LIB_STATUS_OK || !machine->absent_memory[0].configured;
+        LIB_STATUS_OK || !machine->board->absent_memory[0].configured;
     failed |= core_machine_register_immutable_rom_mapping(machine,
         absent.physical_start, &rom_byte, 1u) != LIB_STATUS_OK;
     failed |= core_machine_memory_read_physical(&machine->executor_memory,
