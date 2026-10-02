@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S29 is active: isolate CPU PIC INTA and DMA-HOLD locality from board
-signal owners without changing interrupt or prefetch order.
-S1-S28 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S30 is active: separate mixed plan/reset Core invariants from
+IBM-PC board configuration and cold-reset effects before physical relocation.
+S1-S29 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -57,7 +57,8 @@ the completed CPU extraction.
 | T540 S26 | Accepted: copied board D4 refresh request and success-only completion around Core HOLD/transaction; both-width units and eight boots pass. |
 | T540 S27 | Accepted: board DMA clock/request/chip effects around Core wait/HOLD/grant and prefetch; both-width units and eight boots pass. |
 | T540 S28 | Accepted: board PIT/PIC post-prefetch tail with earlier copied clock ticks; both-width units and eight boots pass. |
-| T540 S29 | Active: CPU PIC INTA and DMA-HOLD locality owner boundary. |
+| T540 S29 | Accepted: copied PIC signals and Core CPU locality event; both-width units and eight boots pass. |
+| T540 S30 | Active: mixed plan/reset ownership audit and bounded receivers. |
 
 ## T540 S1 Acceptance
 
@@ -1013,6 +1014,48 @@ INTA and DMA-HOLD locality. T540 remains open.
 | Exit Criteria | One source-audited CPU/board signal boundary with unchanged PIC INTA and HOLD locality; full verification and eight products if code changes; actual-diff P1 and governance P2 close S29. |
 | Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board components with flat ownership, linear numeric S and no patch-over-patch path. |
 | Similar-Issue Sweep | Inspect all PIC IRQ/INTA callbacks and DMA HOLD/prefetch invalidations, including XT versus AT paths and reset; leave plan/reset assigned to S30. |
+
+## T540 S29 Acceptance
+
+NXVM P1 `ace7c0fa6` gives the board the original PIC pending scan and
+acknowledge operations as copied values. Core still starts, values and
+commits the sole CPU INTA transaction. A D4 refresh edge now notifies the
+named Core CPU-bus event, which performs the same prefetch-locality
+invalidation at the original call site. DMA HOLD acknowledge locality stays
+in Core. The staged diff was 19 NXVM paths, 172 lines added and 9 removed,
+including the updated historical CPU/PIC authority gate and its full
+negative fixture, new S29 gate, and eight optimized product updates.
+
+Focused scheduler, PIC phase/lifecycle, prefetch locality and historical
+negative controls passed. Final-source x64 and x86 complete units passed
+**469/469** each; specialized gates passed; all four external boot
+checkpoints passed once per width (**8/8**). Eight Release products have
+the expected PE format, zero `.debug` sections and recorded SHA-256 hashes.
+Documentation governance and staged diff checks passed. The
+[S29 evidence](../etc/evidence/t540-s29-pic-cpu-locality.md) records the
+call order and hashes. S29 is accepted; S30 receives mixed plan/reset.
+T540 remains open.
+
+## T540 S30 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S30, the next linear S after accepted S29. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 S tasks applies. Target NXVM only for intake; a later Shared move requires its own scoped P. MyNES remains read-only. |
+| Objective | Inspect mixed machine plan/construction/reset sources, identify exact neutral Core and board-only owners, and implement only bounded owner separation needed before S31 neutral Core relocation. Split oversized source moves into linear numeric S receivers if inspection proves the batch too large. |
+| Non-goals | Physical Core move (S31 or later), board family extraction (S32 onward), controller timing formulas, profile/INI/firmware/media changes or a new framework. |
+| Reference Baseline | Accepted S29 P1 `ace7c0fa6`, [S25 arbitration intake](../etc/evidence/t540-s25-arbitration-intake.md), dual-width 469/469 units, specialized gates, eight external boots and eight optimized products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and accepted S22-S29 evidence. |
+| Files And ABI Surface | Read `devices/{machine,machine_plan,machine_board,entry_plan_interface,rom_mapping_interface,trace_interface}` plus constructors, reset fixtures and profile bindings. Record exact owner, reset lifetime and rollback for each mixed field/call. |
+| Applicable Rules | One Core timeline/executor/transaction owner, one board wiring/chip owner, frozen profile plan, no raw Core state exported to board or guest device state copied into Core. Preserve construction and reset order and failure rollback. |
+| Verification | For source-only intake: complete owner/call inventory, documentation governance and diff check. For code: focused creation/reset/plan/rollback, full dual-width units, specialized gates, eight boot checkpoints and eight optimized products with PE/hash/no-debug proof. |
+| Expected Markers | Each mixed plan/reset effect has a unique owner and finite receiver; no unassigned Core/board field remains before physical relocation. |
+| Asset Needs | Existing owner-provided external firmware/media only if code receivers rebuild/test products; no new protected assets or INI edits. |
+| Reporting Requirements | Record source line inventory, original call/reset/rollback order, owner decisions, bounded linear S receivers, actual diff and verification; preserve T540 open status. |
+| Stop Conditions | Stop before moving an oversized mixed source wholesale, changing chip/reset semantics without source review, editing MyNES, or crossing Shared scope in one NXVM commit. |
+| Exit Criteria | Audited finite Core/board plan/reset ownership and each bounded receiver implemented or explicitly assigned; no hidden dual path; verification matches actual code scope and P1/P2 close S30. |
+| Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board components with flat ownership, linear numeric S and no patch-over-patch path. |
+| Similar-Issue Sweep | Inspect all construction, reset, failure cleanup and plan/profile inputs, including XT, 5170, Model 40 and default; no board-specific branch may silently enter neutral Core. |
 
 ## S87 Admission Packet
 
