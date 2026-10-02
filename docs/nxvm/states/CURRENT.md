@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S38 is active: move the F0000h firmware role and reset-alias
-composition to the IBM-PC board owner. S1-S37 are accepted;
+M5 T540 S39 is active: move high-reset RAM fallback and board-specific memory
+reconfigure veto out of the neutral Core construction/resize path. S1-S38 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -66,7 +66,8 @@ the completed CPU extraction.
 | T540 S35 | Accepted: the sole destructor delegates board releases and reuses ROM route rollback for owner-only image release; dual-width units and eight boots pass. |
 | T540 S36 | Accepted: entry, ROM and trace implementations use Core state only; unused board helper include removed; dual-width units and eight boots pass. |
 | T540 S37 | Accepted: S31-S36 actual-diff/caller audit froze a finite neutral Core/board file ledger and identified owner-sized pre-move receivers. |
-| T540 S38 | Active: F0000h firmware/reset-alias board ownership. |
+| T540 S38 | Accepted: F0000h alias derivation and sole firmware bind continuation moved to board owner with one rollback; dual-width units and eight boots pass. |
+| T540 S39 | Active: reset RAM fallback and board memory resize boundary. |
 
 ## T540 S1 Acceptance
 
@@ -1348,6 +1349,42 @@ the last code baseline. T540 stays open.
 | Exit Criteria | Board/firmware composition solely owns the F0000h role and alias choice, Core solely owns mapping storage/rollback, behavior and checks pass, and actual-diff P1 plus governance P2 close S38. |
 | Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique state/data ownership and no patch-over-patch path. |
 | Similar-Issue Sweep | Check every firmware bind/reset, 286/386 alias, fallback/no-firmware test and failure rollback caller across four profiles. |
+
+## T540 S38 Acceptance
+
+Actual-diff review accepts NXVM P1 `69057d2e9`. The
+[S38 evidence](../etc/evidence/t540-s38-board-firmware-alias.md) records
+the F0000h source/alias functions and one public firmware bind continuation
+at the board owner. The two old failure-cleanup branches collapsed to one
+ROM rollback and provider revocation. Generic firmware operation guards and
+the immutable ROM mapping table remain at Core; no extra binding or alias
+route exists. Production code net deletes 13 lines. Final-source x64/x86
+units pass **469/469** per width, specialized gates pass, all eight single-run
+external boot checkpoints pass, and eight optimized 0540 products have
+correct PE width and no `.debug` sections. Shared/MyNES, owner INIs,
+protected firmware and timing grades are unchanged. S39 receives the
+distinct RAM fallback/resize boundary; T540 remains open.
+
+## T540 S39 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S39, next linear S after accepted S38. |
+| Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Move the firmware-less high reset RAM alias and the planar-parity memory-reconfiguration veto to board composition while keeping Core's checked memory-route and allocation mechanics single-owned. |
+| Non-goals | Firmware ROM alias already accepted S38, D4 shutdown/input dispatch (S40), named board clocks/private-state split (S41-S42), physical Shared move (S43), new asset/ROM inputs or memory-size policy change. |
+| Reference Baseline | S38 P1 `69057d2e9`, [S38 evidence](../etc/evidence/t540-s38-board-firmware-alias.md), [S37 ledger](../etc/architecture/t540-s37-core-relocation-ledger.md), dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S30 intake](../etc/evidence/t540-s30-plan-reset-intake.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md). |
+| Files And ABI Surface | Inspect `src/app-nxvm/devices/{machine.c,machine_board.c,machine.h,memory_interface.c}` and firmware-less reset/memory-reconfigure tests. Move the existing high mapping composition to the board-create phase before publication; separate board veto from neutral RAM route/allocation only where needed. |
+| Applicable Rules | For 286/386 with at least 1 MiB, preserve the original high physical alias to F0000h backing and its failure status; 8086/8088/80186 remain unchanged. Do not duplicate RAM bytes. Parity-configured board continues to reject resizing, and Core alone validates mapping bounds and performs allocation/cold reset. |
+| Verification | Focused reset-ROM fallback, memory resize, planar parity and partial-create rollback tests; full x64/x86 repository-only units, specialized/documentation gates, one external boot per profile/width and eight optimized 0540 products with PE/hash/no-debug proof. |
+| Expected Markers | No F0000h board-address composition or planar-parity field check inside the eventual neutral Core portion; one Core memory reconfigure operation and one board veto, no shadow memory state. |
+| Asset Needs | Existing owner-provided external firmware/media for boot checks only; no new protected input or owner INI change. |
+| Reporting Requirements | Record exact alias/reset/resize order, failure rollback, focused/full checks, artifact hashes and retained S40-S43 work. |
+| Stop Conditions | Stop before a second memory map, guessed profile frequency, Shared/MyNES edit, changed RAM reset contents or a broad private-state move outside this S. |
+| Exit Criteria | Board-only address/veto choices no longer reside in neutral Core flow, checked route/allocation behavior is unchanged, verification passes, and actual-diff P1 plus governance P2 close S39. |
+| Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique owners and no patch-over-patch paths. |
+| Similar-Issue Sweep | Check no-firmware fixtures, 8086/286/386 reset vectors, memory resize callers, parity/D4 topology and early construction failures across four profiles. |
 
 ## S87 Admission Packet
 
