@@ -121,6 +121,17 @@ lib_status core_machine_bind_firmware_provider(core_machine *machine,
     return status;
 }
 
+lib_status core_machine_reconfigure_memory(core_machine *machine,
+    lib_size memory_bytes)
+{
+    if (machine == LIB_NULL ||
+        (machine->planar_parity_configured &&
+         machine->planar_parity_config.memory_bytes != 0u)) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    return core_machine_reconfigure_memory_core(machine, memory_bytes);
+}
+
 static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id,
     lib_u32 *out_value)
 {

@@ -152,6 +152,12 @@ static lib_i32 core_machine_valid_fpu_profile(x86_fpu_profile profile)
         profile <= X86_FPU_PROFILE_80387;
 }
 
+static lib_size core_machine_resolve_memory_bytes(const core_machine_config *config)
+{
+    return config->memory_bytes == 0u ?
+        CORE_MACHINE_DEFAULT_MEMORY_BYTES : config->memory_bytes;
+}
+
 lib_i32 core_machine_configuration_is_open(const core_machine *machine)
 {
     return machine != LIB_NULL &&
@@ -363,8 +369,7 @@ static lib_status core_machine_neutral_create(
     core_machine_instruction_timing instruction_timing;
     lib_size memory_bytes;
 
-    memory_bytes = config->memory_bytes == 0u ?
-        CORE_MACHINE_DEFAULT_MEMORY_BYTES : config->memory_bytes;
+    memory_bytes = core_machine_resolve_memory_bytes(config);
 
     machine = (core_machine *)lib_allocate_zero(1u, sizeof(*machine));
     if (machine == LIB_NULL) {
@@ -484,19 +489,6 @@ static lib_status core_machine_neutral_create(
         core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    /* A firmware-less Core fixture may deliberately supply reset bytes through
-     * ordinary backing RAM.  Firmware-backed machines take the reset-only ROM
-     * provider route in the CPU owner before this fallback is consulted. */
-    if (memory_bytes >= 0x00100000u &&
-        (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
-         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
-        core_machine_memory_register_mapping(&machine->executor_memory,
-            machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
-                0x00ff0000u : 0xffff0000u,
-            0x000f0000u, 0x00010000u, LIB_FALSE) != LIB_STATUS_OK) {
-        core_machine_destroy(machine);
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
     *out_machine = machine;
     return LIB_STATUS_OK;
 }
@@ -534,6 +526,18 @@ static lib_status core_machine_board_create(core_machine *machine,
     machine->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
     machine->kbc_input_port_configured = config->kbc_input_port_configured;
     machine->kbc_input_port = config->kbc_input_port;
+    /* Firmware-less fixtures may supply reset bytes from ordinary board RAM.
+     * Firmware-backed machines install the reset-only ROM overlay later. */
+    if (core_machine_resolve_memory_bytes(config) >= 0x00100000u &&
+        (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
+         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
+        core_machine_memory_register_mapping(&machine->executor_memory,
+            machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+                0x00ff0000u : 0xffff0000u,
+            0x000f0000u, 0x00010000u, LIB_FALSE) != LIB_STATUS_OK) {
+        core_machine_destroy(machine);
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     {
         lib_status status = core_machine_board_register_a20_port(machine);
@@ -825,7 +829,7 @@ static void core_machine_processor_reset(core_machine *machine)
     machine->retirement_eligibility_key_valid = LIB_FALSE;
 }
 
-lib_status core_machine_reconfigure_memory(core_machine *machine,
+lib_status core_machine_reconfigure_memory_core(core_machine *machine,
     lib_size memory_bytes)
 {
     lib_uptr index;
@@ -833,8 +837,6 @@ lib_status core_machine_reconfigure_memory(core_machine *machine,
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         !machine->execution_provider_frozen ||
         machine->lifecycle != CORE_MACHINE_STOPPED ||
-        (machine->planar_parity_configured &&
-         machine->planar_parity_config.memory_bytes != 0u) ||
         memory_bytes < CORE_MACHINE_MINIMUM_MEMORY_BYTES ||
         memory_bytes > CORE_MACHINE_MAXIMUM_MEMORY_BYTES) {
         return LIB_STATUS_INVALID_STATE;
