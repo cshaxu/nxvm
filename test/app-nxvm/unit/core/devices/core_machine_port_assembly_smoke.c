@@ -337,9 +337,9 @@ static lib_i32 port_assembly_port_b_transaction(lib_bool d4, lib_size fail_at)
         failed |= (d4 ? core_machine_configure_d4_platform(machine, &d4_config) :
             core_machine_configure_planar_parity(machine, &parity)) !=
                 LIB_STATUS_NO_MEMORY ||
-            machine->planar_parity_configured || machine->d4_platform_configured ||
+            machine->board->planar_parity_configured || machine->d4_platform_configured ||
             machine->executor_memory.connect.parity != 0u ||
-            machine->planar_parity_port_b != 0u || machine->d4_platform_port_b != 0u ||
+            machine->board->planar_parity_port_b != 0u || machine->d4_platform_port_b != 0u ||
             core_machine_port_has_read(&machine->executor_port, CORE_MACHINE_PC_AT_PORT_B) ||
             core_machine_port_has_write(&machine->executor_port, CORE_MACHINE_PC_AT_PORT_B);
         allocation.fail_at = 0u;

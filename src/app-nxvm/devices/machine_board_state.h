@@ -23,6 +23,11 @@ struct core_machine_board_state {
     t_kbc shared_kbc;
     core_machine_xt_ppi_keyboard xt_ppi_keyboard;
     x86_xt_keyboard *xt_keyboard;
+    core_machine_planar_parity_config planar_parity_config;
+    lib_u8 planar_parity_port_b;
+    lib_u8 planar_parity_configured;
+    lib_u8 planar_parity_latched;
+    lib_u8 planar_parity_nmi_signaled;
     t_vadp shared_vadp;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;

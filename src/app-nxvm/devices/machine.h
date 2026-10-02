@@ -192,11 +192,6 @@ struct core_machine {
     core_machine_time_axis time_axis;
     core_machine_l1_compatibility_policy l1_compatibility_policy;
     core_machine_board_state *board;
-    core_machine_planar_parity_config planar_parity_config;
-    lib_u8 planar_parity_port_b;
-    lib_u8 planar_parity_configured;
-    lib_u8 planar_parity_latched;
-    lib_u8 planar_parity_nmi_signaled;
     lib_u8 xt_ppi_speaker_configured;
     lib_u8 xt_ppi_speaker_gate;
     lib_u8 xt_ppi_speaker_data_enabled;
