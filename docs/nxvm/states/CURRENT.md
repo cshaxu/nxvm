@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S62 is active: separate frozen-plan board topology from neutral
-Core timing declarations. S1-S61 are accepted;
+M5 T540 S63 is active: remove board-only definitions and includes from the
+neutral Core private header. S1-S62 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -82,7 +82,8 @@ the completed CPU extraction.
 | T540 S59 | Accepted: source-audited 14 board providers and one firmware binding/rollback path; no redundant revoke added; dual-width units/gates pass. |
 | T540 S60 | Accepted: measured the oversized neutral private/public header and allocated S61-S65 as bounded numeric receivers. |
 | T540 S61 | Accepted: D4-specific mutable memory state moved to board; Core retains one atomic memory route; both-width units/gates and eight boots pass. |
-| T540 S62 | Active: frozen-plan board topology/type receiver. |
+| T540 S62 | Accepted: live Core retains only validated timing declarations, while board owns controller timing rules and DMA provenance; both-width units/gates and eight boots pass. |
+| T540 S63 | Active: neutral private-header boundary. |
 
 ## T540 S1 Acceptance
 
@@ -2172,6 +2173,36 @@ ownership and hashes. T540 remains open.
 | Exit Criteria | P1/P2 pushed if code changes; affected verification passes; worktree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | Plan create/configure/freeze, topology apply, board and Core timing consumers, failure rollback and direct tests. |
+
+## T540 S62 Acceptance
+
+P1 `25a350639` removes the live full-plan copy and dead linear declaration
+lookup. The neutral machine keeps only indexed, validated timing declarations;
+the sole board attachment owns controller timing and explicit-DMA-clock
+provenance. The original plan remains the only construction input and the
+existing validation, application order and rollback remain intact. The
+[S62 evidence](../etc/evidence/t540-s62-frozen-timing-declarations.md)
+records the 31-addition/49-removal diff, both-width 469/469 complete units,
+both specialized gate sets and all eight single-run external boot terminals.
+Eight optimized 0540 products are PE/no-debug verified. T540 remains open.
+
+## T540 S63 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S63, next linear S after accepted S62. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Remove board-only definitions and chip includes from the neutral Core private header, keeping one owning board header and direct dependencies for each consumer. |
+| Non-goals | Public interface redesign (S64), physical Shared move (S65), new device framework, behavior/timing/profile/INI/media changes. |
+| Reference Baseline | S62 P1 `25a350639`, [S62 evidence](../etc/evidence/t540-s62-frozen-timing-declarations.md), [S60 measured intake](../etc/evidence/t540-s60-neutral-header-intake.md). |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Private `machine.h`, sole `machine_board_state.h`, and their actual direct consumers. Inventory each board-only definition/include before editing; split oversized receivers into later linear S numbers. |
+| Applicable Rules | A neutral Core header names no board chip type or private board state; consumers include only the owner they actually use. No second state or forwarding wrapper. |
+| Verification | Complete x64/x86 units, specialized/documentation gates, focused header/owner tests, one boot per profile/width and eight optimized 0540 PE/no-debug products if code changes. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Stop Conditions | A private-header slice is larger than one safe owner cut or forces a public ABI redesign; record and assign the remainder to linear S. |
+| Exit Criteria | P1/P2 pushed if code changes; affected checks pass; worktree clean. |
+| Similar-Issue Sweep | All private-header direct includers, CMake source inventories, unit/integration diagnostics and hidden chip dependencies. |
 
 ## S87 Admission Packet
 
