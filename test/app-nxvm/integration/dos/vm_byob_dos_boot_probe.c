@@ -1861,8 +1861,8 @@ int main(lib_i32 argc, char **argv)
                     (unsigned int)fault_cpu.gdtr.base, (unsigned int)fault_cpu.gdtr.limit);
             }
             printf("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
-                (unsigned int)session->core_machine->d4_memory.control,
-                (unsigned int)session->core_machine->d4_memory.ram_setup);
+                (unsigned int)session->core_machine->board->d4_memory.control,
+                (unsigned int)session->core_machine->board->d4_memory.ram_setup);
             printf("BOOT-PROBE=transaction-owner=%u-hold-owner=%u-hold-ack=%u-refresh-pending=%u\n",
                 (unsigned int)session->core_machine->transaction.owner,
                 (unsigned int)session->core_machine->transaction.hold_owner,
@@ -2571,8 +2571,8 @@ done:
             (unsigned long long)trace.model40_video_delay_entries,
             (unsigned int)trace.model40_video_delay_predecessor);
         printf("BOOT-PROBE=model40-d4-control=%02X-ram-setup=%04X\n",
-            (unsigned int)session->core_machine->d4_memory.control,
-            (unsigned int)session->core_machine->d4_memory.ram_setup);
+            (unsigned int)session->core_machine->board->d4_memory.control,
+            (unsigned int)session->core_machine->board->d4_memory.ram_setup);
         printf("BOOT-PROBE=model40-reset-vector-target=%llu-predecessor=%05X\n",
             (unsigned long long)trace.model40_reset_vector_target_entries,
             (unsigned int)trace.model40_reset_vector_target_predecessor);

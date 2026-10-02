@@ -20,6 +20,7 @@ struct core_machine_board_state {
     lib_u8 rtc_selected_register;
     core_machine_fdc fdc;
     core_machine_hdc hdc;
+    core_machine_d4_memory d4_memory;
     t_kbc shared_kbc;
     core_machine_xt_ppi_keyboard xt_ppi_keyboard;
     x86_xt_keyboard *xt_keyboard;

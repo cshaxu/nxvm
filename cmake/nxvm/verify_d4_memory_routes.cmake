@@ -7,7 +7,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory_interface.c" core)
 
 foreach(required "core_machine_install_memory_device_routes(machine, routes, 2u"
     "core_machine_d4_memory_write_observer, &parity, machine"
-    "machine->d4_memory.configured = LIB_TRUE"
+    "machine->board->d4_memory.configured = LIB_TRUE"
     "core_machine_memory_register_replacement_device_provider(memory"
     "core_machine_memory_enable_parity(memory"
     "core_machine_memory_release_parity(memory)")
@@ -20,6 +20,7 @@ endforeach()
 foreach(forbidden "core_machine_register_memory_replacement_device("
     "core_machine_register_memory_write_observer("
     "core_machine_enable_memory_parity("
+    "machine->d4_memory"
     "&machine->executor_memory")
     string(FIND "${d4}" "${forbidden}" position)
     if(NOT position LESS 0)

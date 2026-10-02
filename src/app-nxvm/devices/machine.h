@@ -162,7 +162,6 @@ struct core_machine {
     core_machine_timeline timeline;
     core_machine_plan timing_plan;
     lib_u8 timing_plan_copied;
-    core_machine_d4_memory d4_memory;
     core_machine_transaction_state transaction;
     core_machine_transaction_contract transaction_contract;
     lib_u32 external_cycle_page_tag;

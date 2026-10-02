@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 
 #define CORE_MACHINE_D4_CONTROL_PHYSICAL 0x80c00000u
 #define CORE_MACHINE_D4_CONTROL_WINDOW_BYTES 4096u
@@ -10,7 +11,7 @@ static core_machine_d4_memory *core_machine_d4_state(void *owner)
 {
     core_machine *machine = (core_machine *)owner;
 
-    return machine == LIB_NULL ? LIB_NULL : &machine->d4_memory;
+    return machine == LIB_NULL ? LIB_NULL : &machine->board->d4_memory;
 }
 
 /* In the selected D4 setup, low nibble 1 disconnects every extension-RAM
@@ -116,7 +117,7 @@ static void core_machine_d4_parity_fault(void *opaque, lib_u32 physical)
     core_machine *machine = (core_machine *)opaque;
 
     if (machine == LIB_NULL) return;
-    machine->d4_memory.parity_fault_mask |= (lib_u8)(1u << (physical & 3u));
+    machine->board->d4_memory.parity_fault_mask |= (lib_u8)(1u << (physical & 3u));
     (void)core_machine_report_d4_iochk_fault(machine);
 }
 
@@ -127,7 +128,7 @@ static void core_machine_d4_memory_write_observer(void *opaque, lib_u32 physical
 
     (void)physical;
     (void)bytes;
-    if (machine != LIB_NULL && machine->d4_memory.parity_fault_mask != 0u) {
+    if (machine != LIB_NULL && machine->board->d4_memory.parity_fault_mask != 0u) {
         (void)core_machine_clear_d4_iochk_fault(machine);
     }
 }
@@ -156,23 +157,23 @@ lib_status core_machine_d4_memory_configure(core_machine *machine,
     lib_status status;
 
     if (machine == LIB_NULL || !core_machine_d4_memory_config_is_valid(config) ||
-        machine->d4_memory.configured) return LIB_STATUS_INVALID_ARGUMENT;
+        machine->board->d4_memory.configured) return LIB_STATUS_INVALID_ARGUMENT;
     status = core_machine_install_memory_device_routes(machine, routes, 2u,
         core_machine_d4_memory_write_observer, &parity, machine);
     if (status != LIB_STATUS_OK) return status;
-    machine->d4_memory.diagnostic_low = config->diagnostic_low;
-    machine->d4_memory.diagnostic_high = config->diagnostic_high;
-    machine->d4_memory.reset_ram_setup = config->ram_setup;
-    machine->d4_memory.ram_setup = config->ram_setup;
-    machine->d4_memory.configured = LIB_TRUE;
+    machine->board->d4_memory.diagnostic_low = config->diagnostic_low;
+    machine->board->d4_memory.diagnostic_high = config->diagnostic_high;
+    machine->board->d4_memory.reset_ram_setup = config->ram_setup;
+    machine->board->d4_memory.ram_setup = config->ram_setup;
+    machine->board->d4_memory.configured = LIB_TRUE;
     core_machine_d4_memory_reset(machine);
     return LIB_STATUS_OK;
 }
 
 void core_machine_d4_memory_reset(core_machine *machine)
 {
-    if (machine == LIB_NULL || !machine->d4_memory.configured) return;
-    machine->d4_memory.control = 0xffu;
-    machine->d4_memory.parity_fault_mask = 0u;
-    machine->d4_memory.ram_setup = machine->d4_memory.reset_ram_setup;
+    if (machine == LIB_NULL || !machine->board->d4_memory.configured) return;
+    machine->board->d4_memory.control = 0xffu;
+    machine->board->d4_memory.parity_fault_mask = 0u;
+    machine->board->d4_memory.ram_setup = machine->board->d4_memory.reset_ram_setup;
 }
