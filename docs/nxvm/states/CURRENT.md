@@ -1572,6 +1572,42 @@ firmware/media inputs are untouched. T540 remains open.
 | Original Owner Request | Make independent x86 Core and reusable IBM-PC boards without diverging four PC products. |
 | Similar-Issue Sweep | Audit every named clock consumer, configuration/reset path, deadline/advance callback, topology reader and affected private fixture. |
 
+## T540 S44 Acceptance
+
+Actual-diff review accepts NXVM P1 `784e95e40`. The
+[S44 evidence](../etc/evidence/t540-s44-board-state.md) records 27 board
+clock/topology/timing fields moved from flat `core_machine` storage to one
+board-owned attachment. Allocation precedes board clock/device setup;
+finalization releases that attachment after chip teardown, including
+partial-construction rollback. Core provider clock and timeline, chip
+algorithms, frozen plan, public ABI and VM's separate FDC binding did not
+change. Complete x64/x86 repository-only units pass **469/469** each,
+specialized gates pass, and the fixed-profile external boot matrix passes
+**8/8**, once per profile/width. All eight optimized 0540 products have
+the expected PE widths and no `.debug` sections. Shared/MyNES and owner
+INIs are untouched. T540 remains open.
+
+## T540 S45 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S45, next linear S after accepted S44. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Inventory and move PC chip instances plus their IRQ/port-owned state from flat `core_machine` into the sole board attachment, preserving one lifetime and all callback/registration order. |
+| Non-goals | D4/refresh/board callback split (S46), final neutral private header (S47), physical Shared move (S48), new device framework, chip or timing behavior change. |
+| Reference Baseline | S44 P1 `784e95e40`, [S44 evidence](../etc/evidence/t540-s44-board-state.md), [S42 private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, specialized gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and [S42 ownership ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | First count actual chip-instance and IRQ/port readers/writers in board, Core, adapters and direct fixtures. Move only one bounded owner group at a time; if that inventory is too large, assign further **numeric linear S** receivers and shift later S before code. |
+| Applicable Rules | One board attachment, no mirrored chip or IRQ state, one registration/rollback route; Core CPU, memory, transaction and timeline stay neutral. |
+| Verification | Full x64/x86 units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | Moved chip instances and IRQ/port state no longer occupy flat Core storage; board constructor/finalizer alone own their lifetime. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Inventory and exact moved fields, constructor/reset/finalization equivalence, diff size, tests and artifact hashes. |
+| Stop Conditions | Stop before an unbounded mechanical move, second owner, altered chip wiring or unsupported Shared import; split a large remainder into next linear numeric S first. |
+| Exit Criteria | A bounded owner move is complete, tests and artifacts pass, P1/P2 pushed and tree clean; explicitly record any remaining numeric receiver. |
+| Original Owner Request | Prepare independently reusable x86 Core and IBM-PC boards without diverging the four PC products. |
+| Similar-Issue Sweep | PIC/PIT/DMA/RTC/FDC/HDC/KBC/XT PPI/XT keyboard/VADP chip lifetime, IRQ signals, port registration and failed construction. |
+
 ## S87 Admission Packet
 
 | Field | Required record |
