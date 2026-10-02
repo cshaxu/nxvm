@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S12 is active: move RTC/CMOS index and data ports to one Core-owned
-typed route batch. S1-S11 are accepted; T540 remains open. The oversized
+M5 T540 S12 is accepted: RTC/CMOS index and data ports use one Core-owned
+typed route batch. S1-S12 are accepted; T540 remains open. The oversized
 former S12 port batch is split into linear receivers. Shared Core and board
 code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -38,6 +38,7 @@ the completed CPU extraction.
 | T540 S9 | Accepted: DMA uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S10 | Accepted: KBC 60h/64h use one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S11 | Accepted: FDC uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
+| T540 S12 | Accepted: RTC/CMOS uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -347,6 +348,23 @@ external integration gate. No new timing grade is claimed.
 | Exit Criteria | RTC/CMOS has exactly one Core-owned atomic route batch and no external registration checkpoint or second port path; failed route or chip creation leaves no partial state; all required tests, gates and products pass. |
 | Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components, admitting bounded numeric S tasks rather than a patch-on-patch migration. |
 | Similar-Issue Sweep | Search all NXVM board adapters for raw `t_port`, `core_machine_port_add_*` and external registration checkpoints. S12 consumes the RTC hits; Port-B/D4, HDC and VADP remain distinct later numeric S receivers, while the Core-private port table and CPU bus stay with the neutral-Core move. |
+
+## T540 S12 Acceptance
+
+[S12 evidence](../etc/evidence/t540-s12-rtc-port-routes.md) records the
+source-inspected RTC change, rollback and collision tests, tracked line counts,
+both-width verification and eight product hashes. Implementation P1
+`a128b4f67` deletes the external RTC port checkpoint and publishes its index
+and data routes atomically. Actual-diff review found no duplicate RTC state,
+changed chip timing or second route path. Both complete repository-only unit
+suites passed 467/467; focused tests passed 11/11 per width; both RTC/Core
+source gates, documentation governance, PE/no-debug checks and staged diff
+check passed.
+
+S12 changes only NXVM. Port-B/D4, HDC and VADP remain separately assigned
+to prospective S13-S15; memory, signal, deadline, reset, neutral Core and
+board extraction follow. The full external integration gate is still a T540
+exit requirement. No new timing grade is claimed.
 
 ## S87 Admission Packet
 
