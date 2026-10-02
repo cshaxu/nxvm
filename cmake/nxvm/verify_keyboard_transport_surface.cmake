@@ -3,9 +3,22 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/guest_input_interface.h" input_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" machine_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c" input_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/machine/vm_keyboard_host_ingress_smoke.c"
     input_smoke_source)
+
+foreach(instance IN ITEMS "t_kbc[ \t]+shared_kbc;"
+    "core_machine_xt_ppi_keyboard[ \t]+xt_ppi_keyboard;")
+    if(machine_header MATCHES "${instance}" OR NOT board_header MATCHES "${instance}")
+        message(FATAL_ERROR "Keyboard instances must have one board owner")
+    endif()
+endforeach()
+if(scheduler_source MATCHES "board->(shared_kbc|xt_ppi_keyboard)")
+    message(FATAL_ERROR "Neutral scheduler directly owns board keyboard state")
+endif()
 
 foreach(source_text IN ITEMS "${input_header}" "${input_source}" "${input_smoke_source}")
     foreach(forbidden "vm_platform_keyboard_modifier"

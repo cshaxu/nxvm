@@ -151,7 +151,7 @@ lib_status core_machine_board_create(core_machine *machine,
         }
     }
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        lib_status status = core_machine_xt_ppi_keyboard_initialize(&machine->xt_ppi_keyboard,
+        lib_status status = core_machine_xt_ppi_keyboard_initialize(&machine->board->xt_ppi_keyboard,
             &config->xt_ppi_keyboard, machine);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
@@ -166,7 +166,7 @@ lib_status core_machine_board_create(core_machine *machine,
                 core_machine_xt_keyboard_duration(rate, 25u)
             };
             status = x86_xt_keyboard_create(&timing,
-                core_machine_xt_keyboard_deliver, &machine->xt_ppi_keyboard,
+                core_machine_xt_keyboard_deliver, &machine->board->xt_ppi_keyboard,
                 &machine->xt_keyboard);
             if (status != LIB_STATUS_OK) {
                 core_machine_destroy(machine);
@@ -174,7 +174,7 @@ lib_status core_machine_board_create(core_machine *machine,
             }
         }
     } else {
-        lib_status status = core_machine_kbc_initialize(&machine->shared_kbc,
+        lib_status status = core_machine_kbc_initialize(&machine->board->shared_kbc,
             machine);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
@@ -216,33 +216,33 @@ lib_status core_machine_board_create(core_machine *machine,
         core_machine_pic_timer_output, &machine->board->shared_pit_irq0_source);
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_board_configure_xt_ppi_speaker(machine);
-        core_machine_xt_ppi_keyboard_bind_pic(&machine->xt_ppi_keyboard,
+        core_machine_xt_ppi_keyboard_bind_pic(&machine->board->xt_ppi_keyboard,
             &machine->board->shared_pic_master, &machine->board->shared_pic_slave);
-        core_machine_xt_ppi_keyboard_bind_nmi(&machine->xt_ppi_keyboard,
+        core_machine_xt_ppi_keyboard_bind_nmi(&machine->board->xt_ppi_keyboard,
             core_machine_xt_ppi_request_nmi, machine);
-        core_machine_xt_ppi_keyboard_bind_speaker(&machine->xt_ppi_keyboard,
+        core_machine_xt_ppi_keyboard_bind_speaker(&machine->board->xt_ppi_keyboard,
             core_machine_xt_ppi_update_speaker, machine);
-        core_machine_xt_ppi_keyboard_bind_keyboard_observer(&machine->xt_ppi_keyboard,
+        core_machine_xt_ppi_keyboard_bind_keyboard_observer(&machine->board->xt_ppi_keyboard,
             core_machine_xt_keyboard_lines, machine->xt_keyboard,
             core_machine_xt_keyboard_released);
     } else {
-        core_machine_kbc_bind_core_services(&machine->shared_kbc,
+        core_machine_kbc_bind_core_services(&machine->board->shared_kbc,
             &machine->board->shared_pic_master, &machine->board->shared_pic_slave,
             core_machine_kbc_signal_a20, machine,
             core_machine_kbc_request_reset, machine,
             !config->kbc_aux_absent);
         if (config->kbc_reset_output_port_configured) {
-            core_machine_kbc_set_reset_output_port(&machine->shared_kbc,
+            core_machine_kbc_set_reset_output_port(&machine->board->shared_kbc,
                 config->kbc_reset_output_port);
         }
-        core_machine_kbc_set_typematic_timing(&machine->shared_kbc,
+        core_machine_kbc_set_typematic_timing(&machine->board->shared_kbc,
             machine->board->kbc_typematic_initial_ticks,
             machine->board->kbc_typematic_repeat_ticks);
-        core_machine_kbc_set_command_response_timing(&machine->shared_kbc,
+        core_machine_kbc_set_command_response_timing(&machine->board->shared_kbc,
             machine->board->kbc_command_response_ticks);
-        core_machine_kbc_set_command_response_status_polls(&machine->shared_kbc,
+        core_machine_kbc_set_command_response_status_polls(&machine->board->shared_kbc,
             machine->board->kbc_command_response_status_polls);
-        core_machine_kbc_set_serial_delivery_timing(&machine->shared_kbc,
+        core_machine_kbc_set_serial_delivery_timing(&machine->board->shared_kbc,
             machine->board->kbc_serial_delivery_ticks);
     }
     x86_pit_set_output(machine->board->shared_pit.device, 1, LIB_NULL, LIB_NULL);
@@ -278,7 +278,7 @@ lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
         return x86_xt_keyboard_receive_native_bytes(machine->xt_keyboard,
             &native_byte, 1u);
     }
-    return core_machine_kbc_submit_native_byte(&machine->shared_kbc, native_byte);
+    return core_machine_kbc_submit_native_byte(&machine->board->shared_kbc, native_byte);
 }
 
 lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
@@ -290,7 +290,7 @@ lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine
     }
     *out_scan_set = machine->board->keyboard_topology ==
         CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ? CORE_MACHINE_KEYBOARD_SCAN_SET_1 :
-        x86_keyboard_get_signals(machine->shared_kbc.connect.keyboard).scan_set;
+        x86_keyboard_get_signals(machine->board->shared_kbc.connect.keyboard).scan_set;
     return LIB_STATUS_OK;
 }
 
@@ -307,7 +307,7 @@ lib_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
         return x86_xt_keyboard_receive_native_bytes(machine->xt_keyboard,
             native_bytes, count);
     }
-    return core_machine_kbc_submit_native_bytes(&machine->shared_kbc, native_bytes, count);
+    return core_machine_kbc_submit_native_bytes(&machine->board->shared_kbc, native_bytes, count);
 }
 
 lib_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
@@ -317,7 +317,7 @@ lib_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
         machine->board->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         return LIB_STATUS_INVALID_STATE;
     }
-    return core_machine_xt_ppi_keyboard_set_fault_input(&machine->xt_ppi_keyboard,
+    return core_machine_xt_ppi_keyboard_set_fault_input(&machine->board->xt_ppi_keyboard,
         input, asserted);
 }
 
@@ -332,7 +332,7 @@ lib_status core_machine_mouse_receive_relative(core_machine *machine,
     }
     if (machine->board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) return LIB_STATUS_UNSUPPORTED;
-    return core_machine_kbc_submit_aux_report(&machine->shared_kbc, delta_x, delta_y, buttons);
+    return core_machine_kbc_submit_aux_report(&machine->board->shared_kbc, delta_x, delta_y, buttons);
 }
 
 static lib_u32 core_machine_board_reset_rom_alias(
@@ -744,12 +744,12 @@ void core_machine_board_reset_devices(core_machine *machine)
 {
     core_machine_d4_memory_reset(machine);
     if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        core_machine_xt_ppi_keyboard_reset(&machine->xt_ppi_keyboard);
+        core_machine_xt_ppi_keyboard_reset(&machine->board->xt_ppi_keyboard);
         x86_xt_keyboard_reset(machine->xt_keyboard);
     } else {
-        core_machine_kbc_reset(&machine->shared_kbc);
+        core_machine_kbc_reset(&machine->board->shared_kbc);
         if (machine->board->kbc_input_port_configured) {
-            core_machine_kbc_set_input_port(&machine->shared_kbc,
+            core_machine_kbc_set_input_port(&machine->board->shared_kbc,
                 machine->board->kbc_input_port);
         }
     }
@@ -793,8 +793,8 @@ void core_machine_board_finalize_devices(core_machine *machine)
     x86_rtc_destroy(machine->board->shared_rtc);
     if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         x86_xt_keyboard_destroy(machine->xt_keyboard);
-        core_machine_xt_ppi_keyboard_finalize(&machine->xt_ppi_keyboard);
-    } else core_machine_kbc_finalize(&machine->shared_kbc);
+        core_machine_xt_ppi_keyboard_finalize(&machine->board->xt_ppi_keyboard);
+    } else core_machine_kbc_finalize(&machine->board->shared_kbc);
     core_machine_pic_finalize(&machine->board->shared_pic_master,
         &machine->board->shared_pic_slave);
     core_machine_vadp_finalize(&machine->shared_vadp);
@@ -850,7 +850,7 @@ void core_machine_board_refresh_nmi(core_machine *machine)
 {
     if (machine != LIB_NULL && machine->board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        core_machine_xt_ppi_keyboard_refresh_nmi(&machine->xt_ppi_keyboard);
+        core_machine_xt_ppi_keyboard_refresh_nmi(&machine->board->xt_ppi_keyboard);
     }
     core_machine_planar_parity_refresh_nmi(machine);
     core_machine_d4_platform_refresh_nmi(machine);

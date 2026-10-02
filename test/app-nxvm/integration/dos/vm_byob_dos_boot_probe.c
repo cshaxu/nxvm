@@ -710,9 +710,9 @@ static void vm_byob_retirement_observe(void *context,
                 ++trace->kbc_data4d_writes;
                 trace->kbc_data4d_pc = observation->point.linear_pc;
                 trace->kbc_data4d_bat_pending =
-                    x86_keyboard_get_signals(trace->machine->shared_kbc.connect.keyboard).bat_ready;
+                    x86_keyboard_get_signals(trace->machine->board->shared_kbc.connect.keyboard).bat_ready;
                 trace->kbc_data4d_irq_asserted =
-                    trace->machine->shared_kbc.connect.irq1_source.asserted;
+                    trace->machine->board->shared_kbc.connect.irq1_source.asserted;
             }
         } else if (trace->kbc_keyboard_reset_seen && observation->io_port == 0x0060u &&
             trace->kbc_keyboard_reset_read_count <
@@ -2105,7 +2105,7 @@ int main(lib_i32 argc, char **argv)
                 {
                     x86_ppi8255_pins pins = {0u, 0u};
                     lib_u64 next = 0u;
-                    if (x86_ppi8255_output(session->core_machine->xt_ppi_keyboard.ppi,
+                    if (x86_ppi8255_output(session->core_machine->board->xt_ppi_keyboard.ppi,
                             1u, &pins) == LIB_STATUS_OK) {
                         printf("BOOT-PROBE=xt-ppi-pb=%02X-drive=%02X\n",
                             (unsigned int)pins.latch, (unsigned int)pins.output_mask);
@@ -2115,7 +2115,7 @@ int main(lib_i32 argc, char **argv)
                         printf("BOOT-PROBE=xt-keyboard-next=%llu\n", (unsigned long long)next);
                     }
                 }
-                if (session->core_machine->xt_ppi_keyboard.byte_ready)
+                if (session->core_machine->board->xt_ppi_keyboard.byte_ready)
                     printf("BOOT-PROBE=xt-keyboard-byte-ready\n");
                 {
                     lib_u8 mask = 0u;
@@ -2991,7 +2991,7 @@ done:
         {
             lib_u64 ticks = 0u;
             const lib_status status = core_machine_kbc_ticks_until_event(
-                &session->core_machine->shared_kbc, &ticks);
+                &session->core_machine->board->shared_kbc, &ticks);
             printf("BOOT-PROBE=kbc-deadline-status=%u-ticks=%llu\n",
                 (unsigned int)status, (unsigned long long)ticks);
         }
@@ -3258,14 +3258,14 @@ done:
             {
                 lib_u64 ticks = 0u;
                 const lib_status status = x86_keyboard_ticks_until_repeat(
-                    session->core_machine->shared_kbc.connect.keyboard, &ticks);
+                    session->core_machine->board->shared_kbc.connect.keyboard, &ticks);
                 printf("BOOT-PROBE=waiting-keyboard-repeat-status=%u-ticks=%llu\n",
                     (unsigned int)status, (unsigned long long)ticks);
             }
             {
                 lib_u64 ticks = 0u;
                 const lib_status status = core_machine_kbc_ticks_until_event(
-                    &session->core_machine->shared_kbc, &ticks);
+                    &session->core_machine->board->shared_kbc, &ticks);
                 printf("BOOT-PROBE=waiting-kbc-deadline-status=%u-ticks=%llu-pit-rule=%u\n",
                     (unsigned int)status, (unsigned long long)ticks,
                     (unsigned int)session->core_machine->timing_plan.controller_timing.pit_clock);

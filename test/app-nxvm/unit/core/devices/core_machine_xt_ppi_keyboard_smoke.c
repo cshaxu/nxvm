@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/debug_interface.h"
 
 static lib_i32 core_machine_xt_ppi_keyboard_path(void)
@@ -67,10 +68,10 @@ static lib_i32 core_machine_xt_ppi_keyboard_path(void)
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_xt_ppi_keyboard_receive_device_byte(
-        &machine->xt_ppi_keyboard, 0x1eu) !=
+        &machine->board->xt_ppi_keyboard, 0x1eu) !=
         LIB_STATUS_OK;
-    failed |= !failed && !machine->xt_ppi_keyboard.byte_ready;
-    failed |= !failed && !machine->xt_ppi_keyboard.irq1_asserted;
+    failed |= !failed && !machine->board->xt_ppi_keyboard.byte_ready;
+    failed |= !failed && !machine->board->xt_ppi_keyboard.irq1_asserted;
     failed |= !failed && core_machine_bus_read(machine, 0x0060u, &value) !=
         LIB_STATUS_OK;
     failed |= !failed && value != 0x1eu;
@@ -81,14 +82,14 @@ static lib_i32 core_machine_xt_ppi_keyboard_path(void)
     failed |= !failed && value != 0x1eu;
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0xc0u) !=
         LIB_STATUS_OK;
-    failed |= !failed && machine->xt_ppi_keyboard.byte_ready;
-    failed |= !failed && machine->xt_ppi_keyboard.irq1_asserted;
+    failed |= !failed && machine->board->xt_ppi_keyboard.byte_ready;
+    failed |= !failed && machine->board->xt_ppi_keyboard.irq1_asserted;
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_xt_ppi_keyboard_receive_device_byte(
-        &machine->xt_ppi_keyboard, 0x9eu) !=
+        &machine->board->xt_ppi_keyboard, 0x9eu) !=
         LIB_STATUS_OK;
-    failed |= !failed && !machine->xt_ppi_keyboard.byte_ready;
+    failed |= !failed && !machine->board->xt_ppi_keyboard.byte_ready;
     failed |= !failed && core_machine_bus_read(machine, 0x0060u, &value) !=
         LIB_STATUS_OK;
     failed |= !failed && value != 0x9eu;
@@ -151,7 +152,7 @@ static lib_i32 core_machine_xt_ppi_parity_nmi_path(void)
     failed |= !failed && test_core_machine_fixture_nmi_execute(machine, LIB_FALSE);
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x20u) !=
         LIB_STATUS_OK;
-    failed |= !failed && !machine->xt_ppi_keyboard.nmi_signaled;
+    failed |= !failed && !machine->board->xt_ppi_keyboard.nmi_signaled;
     failed |= !failed && test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) !=
@@ -207,7 +208,7 @@ static lib_i32 core_machine_xt_keyboard_reset_bat_path(void)
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_advance_time(machine, 300300u) != LIB_STATUS_OK;
-    failed |= !failed && machine->xt_ppi_keyboard.byte_ready;
+    failed |= !failed && machine->board->xt_ppi_keyboard.byte_ready;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) !=
         LIB_STATUS_OK;
@@ -218,14 +219,14 @@ static lib_i32 core_machine_xt_keyboard_reset_bat_path(void)
         &time_observation) != LIB_STATUS_OK;
     failed |= !failed && !time_observation.next_deadline_valid;
     failed |= !failed && core_machine_advance_time(machine, 300000u) != LIB_STATUS_OK;
-    failed |= !failed && machine->xt_ppi_keyboard.byte_ready;
+    failed |= !failed && machine->board->xt_ppi_keyboard.byte_ready;
     failed |= !failed && core_machine_capture_time_observation(machine,
         &time_observation) != LIB_STATUS_OK;
     failed |= !failed && (!time_observation.next_deadline_valid ||
         time_observation.next_deadline_tick != machine->elapsed_ticks + 60u);
     failed |= !failed && core_machine_advance_time(machine, 300u) != LIB_STATUS_OK;
-    failed |= !failed && !machine->xt_ppi_keyboard.byte_ready;
-    failed |= !failed && !machine->xt_ppi_keyboard.irq1_asserted;
+    failed |= !failed && !machine->board->xt_ppi_keyboard.byte_ready;
+    failed |= !failed && !machine->board->xt_ppi_keyboard.irq1_asserted;
     failed |= !failed && core_machine_bus_read(machine, 0x0060u, &value) !=
         LIB_STATUS_OK;
     failed |= !failed && value != 0xaau;
@@ -282,7 +283,7 @@ static lib_i32 core_machine_xt_keyboard_refused_completion(lib_bool bat,
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) != LIB_STATUS_OK;
     /* Occupy the board latch independently of the frame under test. */
     failed |= !failed && core_machine_xt_ppi_keyboard_receive_device_byte(
-        &machine->xt_ppi_keyboard, 0x1eu) != LIB_STATUS_OK;
+        &machine->board->xt_ppi_keyboard, 0x1eu) != LIB_STATUS_OK;
     if (bat) {
         failed |= !failed && core_machine_advance_time(machine, 300000u) != LIB_STATUS_OK;
     } else {

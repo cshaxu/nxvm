@@ -223,8 +223,6 @@ struct core_machine {
     core_machine_cpu_execution_context *executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
-    t_kbc shared_kbc;
-    core_machine_xt_ppi_keyboard xt_ppi_keyboard;
     x86_xt_keyboard *xt_keyboard;
     t_vadp shared_vadp;
     const core_machine_firmware_provider *firmware_provider;

@@ -20,6 +20,8 @@ struct core_machine_board_state {
     lib_u8 rtc_selected_register;
     core_machine_fdc fdc;
     core_machine_hdc hdc;
+    t_kbc shared_kbc;
+    core_machine_xt_ppi_keyboard xt_ppi_keyboard;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain auxiliary_pit_clock;

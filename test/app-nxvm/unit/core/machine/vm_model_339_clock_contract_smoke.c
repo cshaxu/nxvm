@@ -101,7 +101,7 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         session->core_machine->board->kbc_typematic_repeat_ticks != 800000u ||
         session->core_machine->board->kbc_command_response_ticks != 0u;
     {
-        x86_keyboard *keyboard = session->core_machine->shared_kbc.connect.keyboard;
+        x86_keyboard *keyboard = session->core_machine->board->shared_kbc.connect.keyboard;
         lib_u64 ticks = 0u;
         lib_u8 repeated = 0u;
         failed |= x86_keyboard_admit(keyboard, 0x1cu) != LIB_STATUS_OK;

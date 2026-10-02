@@ -58,9 +58,9 @@ lib_i32 main(void)
             LIB_STATUS_OK || value != 0x1fu ||
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
             sizeof(rom_byte)) != LIB_STATUS_OK || rom_byte != 0xa5u ||
-        x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
-            x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
-        !kbc_test_command_matches(&session->core_machine->shared_kbc,
+        x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
+            x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
+        !kbc_test_command_matches(&session->core_machine->board->shared_kbc,
             &session->core_machine->executor_port, 0x20u,
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
     if (failed) stage = 1;
@@ -78,8 +78,8 @@ lib_i32 main(void)
             0x64u) & VKBC_STATUS_OBF) != 0u;
         core_machine_port_write(&session->core_machine->executor_port,
             0x0064u, 0xa8u);
-        failed |= x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
-            !kbc_test_command_matches(&session->core_machine->shared_kbc,
+        failed |= x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
+            !kbc_test_command_matches(&session->core_machine->board->shared_kbc,
             &session->core_machine->executor_port, 0x20u,
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
     failed |= !failed && (session->core_machine->board->fdc_topology.drives.installed_mask !=
@@ -91,17 +91,17 @@ lib_i32 main(void)
             0x22u);
         core_machine_port_write(&session->core_machine->executor_port,
             0x0060u, 0xf5u);
-        failed |= kbc_test_read_reply(&session->core_machine->shared_kbc,
+        failed |= kbc_test_read_reply(&session->core_machine->board->shared_kbc,
             &session->core_machine->executor_port) != 0xfau;
         core_machine_port_write(&session->core_machine->executor_port,
             0x0064u, 0xd4u);
         core_machine_port_write(&session->core_machine->executor_port,
             0x0060u, 0xf4u);
-        failed |= x86_keyboard_get_signals(session->core_machine->shared_kbc.connect.keyboard).scanning ||
+        failed |= x86_keyboard_get_signals(session->core_machine->board->shared_kbc.connect.keyboard).scanning ||
             (core_machine_port_read(&session->core_machine->executor_port,
                 0x64u) & VKBC_STATUS_OBF) != 0u;
         core_machine_port_write(&session->core_machine->executor_port, 0x60u, 0xeeu);
-        failed |= kbc_test_read_reply(&session->core_machine->shared_kbc,
+        failed |= kbc_test_read_reply(&session->core_machine->board->shared_kbc,
             &session->core_machine->executor_port) != 0xeeu;
         if (failed) stage = 2;
     }

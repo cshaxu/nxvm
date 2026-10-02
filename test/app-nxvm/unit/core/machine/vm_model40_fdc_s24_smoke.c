@@ -119,7 +119,7 @@ lib_i32 main(void)
         fdc = &session->core_machine->board->fdc;
         port = &session->core_machine->executor_port;
         core_machine_port_write(port, 0x0064u, 0xc0u);
-        core_machine_kbc_advance(&session->core_machine->shared_kbc, 1u);
+        core_machine_kbc_advance(&session->core_machine->board->shared_kbc, 1u);
         failed |= core_machine_port_read(port, 0x0060u) != 0xb4u;
         failed |= fdc->connect.config.irq != 6u || fdc->connect.config.dma_channel != 2u ||
             fdc->connect.config.ready_mask != 0x0fu ||

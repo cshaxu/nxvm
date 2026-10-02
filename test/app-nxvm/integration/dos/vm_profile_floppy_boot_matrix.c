@@ -299,7 +299,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 boot_signature[1u], boot_signature[0u]);
         }
         {
-            const t_kbc *kbc = &session->core_machine->shared_kbc;
+            const t_kbc *kbc = &session->core_machine->board->shared_kbc;
             const x86_keyboard_signals signals = x86_keyboard_get_signals(kbc->connect.keyboard);
             lib_u64 ticks = 0u;
             const lib_status status = core_machine_kbc_ticks_until_event(kbc, &ticks);

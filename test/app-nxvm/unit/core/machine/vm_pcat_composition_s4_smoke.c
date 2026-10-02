@@ -49,10 +49,10 @@ static lib_i32 vm_pcat_s4_topology_matches(
     failed |= pit_route == LIB_NULL || keyboard_route == LIB_NULL || aux_route == LIB_NULL ||
         cmos_route == LIB_NULL || fdc_route == LIB_NULL ||
         session->core_machine->board->shared_pit_irq0_source.irq != pit_route->irq ||
-        session->core_machine->shared_kbc.connect.irq1_source.irq !=
+        session->core_machine->board->shared_kbc.connect.irq1_source.irq !=
             keyboard_route->irq ||
-        !x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
-        session->core_machine->shared_kbc.connect.irq12_source.irq != aux_route->irq ||
+        !x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
+        session->core_machine->board->shared_kbc.connect.irq12_source.irq != aux_route->irq ||
         session->core_machine->board->rtc_cmos_config.irq != cmos_route->irq ||
         session->core_machine->board->rtc_cmos_config.timing.provenance !=
             CORE_MACHINE_RTC_TIMING_L2_RATIO ||

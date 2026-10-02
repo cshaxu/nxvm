@@ -101,7 +101,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
         board_consider_absolute(now, now + 1u,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
-    if (core_machine_kbc_ticks_until_event(&machine->shared_kbc,
+    if (core_machine_kbc_ticks_until_event(&machine->board->shared_kbc,
             &device_ticks) == LIB_STATUS_OK &&
         board_consider_clock(&machine->board->kbc_clock, device_ticks,
             &out_observation->source_ticks))
