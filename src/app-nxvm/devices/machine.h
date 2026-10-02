@@ -372,7 +372,7 @@ extern const core_machine_cpu_execution_diagnostic_provider
  * observer or a physical retirement contract actually needs it. */
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
-void core_machine_board_cold_reset(core_machine *machine);
+void core_machine_board_reset_devices(core_machine *machine);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     core_machine_board_deadline_observation *out_observation);
 lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address);

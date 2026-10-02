@@ -844,35 +844,7 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     x86_fpu_reset(machine->fpu);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
-    core_machine_d4_memory_reset(machine);
-    if (machine->keyboard_topology ==
-            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        core_machine_xt_ppi_keyboard_reset(&machine->xt_ppi_keyboard);
-        x86_xt_keyboard_reset(machine->xt_keyboard);
-    } else {
-        core_machine_kbc_reset(&machine->shared_kbc);
-        if (machine->kbc_input_port_configured) {
-            core_machine_kbc_set_input_port(&machine->shared_kbc,
-                machine->kbc_input_port);
-        }
-    }
-    core_machine_dma_reset(&machine->shared_dma_latch,
-        &machine->shared_dma_primary, &machine->shared_dma_secondary);
-    if (machine->rtc_cmos_configured) x86_rtc_reset(machine->shared_rtc);
-    core_machine_board_cold_reset(machine);
-    core_machine_fdc_reset(&machine->fdc);
-    core_machine_hdc_reset(&machine->hdc);
-    core_machine_pic_reset(&machine->shared_pic_master,
-        &machine->shared_pic_slave);
-    x86_pit_reset(machine->shared_pit.device);
-    if (machine->auxiliary_pit_configured) {
-        x86_pit_reset(machine->auxiliary_pit.device);
-    }
-    core_machine_board_after_pit_reset(machine);
-    machine->d4_refresh_hold_pending = LIB_FALSE;
-    machine->d4_refresh_pulse_active = LIB_FALSE;
-    machine->d4_refresh_address = 0u;
-    x86_video_reset(machine->shared_vadp.chip);
+    core_machine_board_reset_devices(machine);
 
     lib_atomic_i32_store_explicit(&machine->stop_requested, 0, LIB_MEMORY_ORDER_RELEASE);
     machine->fault_detail = 0u;
