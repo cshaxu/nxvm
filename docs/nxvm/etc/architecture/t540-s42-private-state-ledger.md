@@ -113,6 +113,11 @@ construction operations. D4 already uses the existing memory transaction.
 Board port checkpoints and timer port writes remain the next bounded receiver,
 not part of the neutral RAM state contract.
 
+S72 receives only constructor checkpoint/status/rollback: typed Core batches
+already propagate each failure, and the sole destructor owns the unpublished
+candidate. The reset/configure refresh timer writes are a distinct next
+receiver, followed by firmware/attachment boundaries and physical relocation.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

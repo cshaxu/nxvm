@@ -81,6 +81,12 @@ reset-address decoding and parity electrical policy. Port construction,
 firmware publication and provider attachment remain separately measured
 receivers before the physical move; no private pointer facade qualifies them.
 
+S72 removes the redundant board-constructor port checkpoint after auditing
+all failure propagation and whole-candidate destruction. Core typed batches
+retain sole route transaction ownership. Reset-time refresh programming has
+a distinct lifecycle and bus side effect; it receives the next measured S,
+not a direct chip-write shortcut in this constructor cut.
+
 S65 separates the private neutral construction value without rewriting the
 public plan ABI: one board composition derives the temporary value and owns
 the existing public create/test-allocation pipeline. Core does not retain

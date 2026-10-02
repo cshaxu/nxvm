@@ -142,7 +142,6 @@ lib_status core_machine_create_with_test_port_allocation(
 lib_status core_machine_board_create(core_machine *machine,
     const core_machine_config *config)
 {
-    core_machine_port_provider_entry *port_checkpoint;
     lib_u8 dma_controller_count;
     lib_size installed_bytes;
     core_machine_cpu_profile cpu_profile;
@@ -216,7 +215,6 @@ lib_status core_machine_board_create(core_machine *machine,
             return status;
         }
     }
-    port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     {
         lib_status status = core_machine_board_register_a20_port(machine);
         if (status != LIB_STATUS_OK) {
@@ -328,17 +326,6 @@ lib_status core_machine_board_create(core_machine *machine,
             machine->board->kbc_serial_delivery_ticks);
     }
     x86_pit_set_output(machine->board->shared_pit.device, 1, LIB_NULL, LIB_NULL);
-    {
-        lib_status status = core_machine_port_registration_status(
-            &machine->executor_port);
-
-        if (status != LIB_STATUS_OK) {
-            core_machine_port_rollback_registration(&machine->executor_port,
-                port_checkpoint);
-            core_machine_destroy(machine);
-            return status;
-        }
-    }
     return LIB_STATUS_OK;
 }
 

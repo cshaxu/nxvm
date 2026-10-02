@@ -181,16 +181,38 @@ static lib_i32 port_assembly_dma_byte_lanes(void)
 
 static lib_i32 port_assembly_create_failure(void)
 {
-    const core_machine_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
-    core_machine_port_test_allocation allocation = { 2u, 0u };
-    core_machine *machine = (core_machine *)(lib_uptr)1u;
-    lib_status status = core_machine_create_with_test_port_allocation(&config,
-        &machine, &allocation);
+    const core_machine_config variants[] = {
+        {.memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES},
+        {.memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+            .auxiliary_pit_present = LIB_TRUE, .auxiliary_pit_base_port = 0x48u},
+        {.memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+            .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
+            .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u},
+            .dma_controller_count = 1u, .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_SINGLE}
+    };
 
-    if (status != LIB_STATUS_NO_MEMORY || machine != LIB_NULL ||
-        allocation.attempts != 2u) {
+    for (lib_size variant = 0u; variant < sizeof(variants) / sizeof(variants[0]); ++variant) {
+        core_machine_port_test_allocation allocation = {0u, 0u};
+        core_machine *machine = LIB_NULL;
+        lib_status status = core_machine_create_with_test_port_allocation(
+            &variants[variant], &machine, &allocation);
+        lib_size count = allocation.attempts;
+        lib_i32 failed = status != LIB_STATUS_OK || machine == LIB_NULL || count == 0u;
+
         core_machine_destroy(machine);
-        return 1;
+        if (failed) return 1;
+        for (lib_size fail_at = 1u; fail_at <= count + 1u; ++fail_at) {
+            allocation = (core_machine_port_test_allocation) {fail_at, 0u};
+            machine = LIB_NULL;
+            status = core_machine_create_with_test_port_allocation(
+                &variants[variant], &machine, &allocation);
+            failed = fail_at <= count ?
+                status != LIB_STATUS_NO_MEMORY || machine != LIB_NULL ||
+                    allocation.attempts != fail_at :
+                status != LIB_STATUS_OK || machine == LIB_NULL || allocation.attempts != count;
+            core_machine_destroy(machine);
+            if (failed) return 1;
+        }
     }
     return port_assembly_fresh_default_create();
 }
