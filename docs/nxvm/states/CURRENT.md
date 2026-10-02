@@ -2,10 +2,10 @@
 
 ## Current Work
 
-M5 T540 S18 is active: route immutable ROM images, ordinary aliases and
-pre-A20 reset aliases through one Core-owned registration and rollback
-boundary. S1-S17 are accepted; T540 remains open for the remaining neutral
-Core and IBM-PC board extraction.
+M5 T540 S18 is accepted: immutable ROM images, ordinary aliases and pre-A20
+reset aliases now use one Core-owned registration and rollback boundary.
+S1-S18 are accepted; T540 remains open for bounded KBC/DMA memory exchange,
+neutral Core relocation and IBM-PC board extraction. The next S is S19.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -46,7 +46,7 @@ the completed CPU extraction.
 | T540 S15 | Accepted: CGA and staged EGA/Compaq/VGA ports use Core-owned atomic batches; both-width units, focused EGA integration, gates and eight 0540 products pass. |
 | T540 S16 | Accepted: VADP CGA/planar memory routes and EGA observer use one Core owner transaction; snapshots use copied Core inspection. |
 | T540 S17 | Accepted: D4 replacement windows, parity and observer publish atomically; both-width complete units, Model-40 boot and eight 0540 products pass. |
-| T540 S18 | Active: unify Core ROM image and alias memory publication/rollback while preserving byte ownership and reset priority. |
+| T540 S18 | Accepted: ROM images and both alias kinds use Core-owned routes and owner-scoped rollback; dual-width units, four-profile external boots, gates and eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -577,6 +577,22 @@ Core relocation and IBM-PC board extraction remain open T540 work.
 | Exit Criteria | ROM image and both alias kinds publish and roll back through the one Core memory owner without leaking or displacing unrelated routes; old direct ROM provider manipulation is gone; affected regressions and complete dual-width gates/products pass. |
 | Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal, individually tracked cuts before extraction for independent PC Apps. |
 | Similar-Issue Sweep | Search all production/test/build registration and rollback of immutable ROM, alias, reset alias, raw provider entries and firmware construction. Consume ROM variants here; retain the non-ROM absent-memory fallback and KBC/DMA cycles for the next bounded Core-memory receiver. |
+
+## T540 S18 Acceptance
+
+P1 `b987233dd` unifies immutable ROM image and ordinary/reset-alias route
+publication through the Core memory batch and replaces direct provider-table
+rollback with owner-scoped removal. The actual-diff review confirms one copied
+image owner, alias byte borrowing, unchanged priority and firmware construction
+authority, plus an explicit failure/rollback test and static gate. It found no
+Shared, MyNES, INI, media or external-asset change.
+
+The [S18 evidence](../etc/evidence/t540-s18-rom-memory-routes.md) records x64
+and x86 complete units **469/469** each, specialized gates **72/72**, each of
+the four external boot checkpoints once per width, documentation governance,
+eight optimized 0540 products, PE/no-debug checks and their SHA-256 identities.
+S18 is accepted. S19 retains KBC/DMA bounded memory exchanges and the non-ROM
+absent-memory fallback; the neutral Core and board extraction remain T540 work.
 
 ## S87 Admission Packet
 
