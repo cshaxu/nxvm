@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S23 is active: move ordered IBM-PC board advancement behind one
-bounded Core-to-board effect seam without changing the sole guest timeline.
-S1-S22 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S24 is active: split readiness board effects around Core-owned FPU
+advancement without changing the sole guest timeline or causal order.
+S1-S23 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -51,7 +51,8 @@ the completed CPU extraction.
 | T540 S20 | Accepted: one bounded Core DMA bus-cycle operation; no board-facing RAM or transaction pointers, with dual-width units and eight boot checkpoints passing. |
 | T540 S21 | Accepted: source-inspected scheduler/PIC ownership and divided the oversized move into linear S22-S26 receivers. |
 | T540 S22 | Accepted: copied board deadlines feed the one Core time observation, retaining immediate and L1-blocking disposition; dual-width units and eight boots pass. |
-| T540 S23 | Active: Core time settlement calls ordered board-advance phases through one bounded effect seam. |
+| T540 S23 | Accepted: Core time settlement calls the board-owned peripheral tail after readiness; dual-width units and eight boots pass. |
+| T540 S24 | Active: board FDC/HDC, then Core FPU, then board RTC readiness effects retain their exact order. |
 
 ## T540 S1 Acceptance
 
@@ -764,20 +765,60 @@ T540 remains open. S23 receives the still-mixed ordered board effects.
 | --- | --- |
 | Identifier Mode | Continuation M5 T540 S23, the next linear S after accepted S22. |
 | Admission And Approval | The owner's automatic admission of bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES are read-only. |
-| Objective | Move IBM-PC device-advance effects behind one ordered, bounded Core-to-board call while Core retains the only tick settlement and FPU/CPU timing. Preserve all three causal phases. |
-| Non-goals | PIC CPU INTA handoff (S24), mixed plan/reset (S25), neutral Core physical move (S26), device timing formulas, profile/INI/media/firmware changes, generic event framework or second time loop. |
+| Objective | Move the peripheral-tail XT keyboard/KBC, PIC and VADP effects behind one bounded board call. Core retains the sole tick settlement and the arbitration/readiness/peripheral order. |
+| Non-goals | Interleaved readiness and Core FPU (S24), DMA/refresh arbitration and prefetch (S25), CPU PIC INTA (S26), plan/reset (S27), neutral Core physical move (S28), timing formula or profile/INI/media/firmware changes, event framework or second loop. |
 | Reference Baseline | Accepted S22 P1 `dbef7f81e`, [S22 evidence](../etc/evidence/t540-s22-copied-board-deadlines.md) and [S21 source intake](../etc/evidence/t540-s21-scheduler-pic-intake.md); dual-width units 469/469, specialized gates 75/75, eight external boots and eight Release products. |
-| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md), [board adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and S21/S22 evidence. |
-| Files And ABI Surface | Inspect `devices/machine_scheduler.c` advancement phases and direct chip APIs. Extract only board effects to a private board-owned implementation; Core calls it with copied tick/delta facts, without handing timeline mutation or CPU transaction ownership to the board. Update direct tests/gates and eight products. |
-| Applicable Rules | One Core guest clock, one settlement order, no copied owner state, no parallel advance route. Keep DMA HOLD/refresh/PIT/PIC arbitration before FDC/HDC/RTC readiness, then XT keyboard/KBC/PIC/video peripheral effects; retain FPU and prefetch Core authority. |
-| Verification | Focused DMA, refresh, PIT, IRQ, FDC/HDC, KBC, XT keyboard, video, FPU and prefetch-order tests; complete dual-width repository-only units, specialized/documentation gates, four external boots once per width and eight optimized 0540 products with hashes/PE/no-debug proof. |
-| Expected Markers | Core publication invokes one board advancement seam for the original ordered phase effects, but still owns time and FPU/CPU settlement. Old direct chip-advance calls in Core are deleted in the same P. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S23 refined handoff](../etc/architecture/t540-s7-core-board-handoff.md), [board adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and S21/S22 evidence. |
+| Files And ABI Surface | Inspect `devices/machine_scheduler.c` peripheral tail and direct chip APIs. Extract only the XT keyboard/KBC, PIC and VADP effects to a private board-owned implementation; Core passes the source-tick delta, not its timeline or CPU transaction. Update direct tests/gates and eight products. |
+| Applicable Rules | One Core guest clock and settlement order, no copied owner state or parallel advance route. Keep DMA/PIT/PIC arbitration before FDC/HDC/FPU/RTC readiness before peripheral tail. S24/S25 retain the FPU/prefetch interleaving rather than moving Core work into board. |
+| Verification | Focused KBC, XT keyboard, PIC and video advance/IRQ tests plus full dual-width repository-only units, specialized/documentation gates, four external boots once per width and eight optimized 0540 products with hashes/PE/no-debug proof. |
+| Expected Markers | Core publication calls one board peripheral-tail seam after readiness; old direct XT keyboard/KBC/PIC/VADP advance calls in Core are deleted. Core still owns time and CPU/FPU settlement. |
 | Asset Needs | Existing external owner-provided assets only for boot checkpoints and products; no new or changed ROM, media, INI or font. |
-| Reporting Requirements | Record original and receiving effect calls, exact phase order, failure/overflow behavior, before/after line counts, focused/full verification, eight boots and product hashes; transfer PIC CPU bridge to S24. |
-| Stop Conditions | Stop before event-order reinterpretation, new physical timing claim, second scheduler, Shared/MyNES edits, protected asset modification or an unresolved board/Core owner ambiguity. |
-| Exit Criteria | Single ordered board-effect seam with no parallel Core chip-advance path; all source and external gates pass; coordinator actual-diff review accepts P1 and governance P2 records closure. |
+| Reporting Requirements | Record original and receiving peripheral calls, exact order, source-tick/zero-tick behavior, before/after lines, full verification, eight boots and hashes; transfer interleaved readiness/arbitration to S24/S25. |
+| Stop Conditions | Stop before event-order reinterpretation, new physical timing claim, second scheduler, Shared/MyNES edits, protected asset modification or moving interleaved Core FPU/prefetch/bus transaction into the board. |
+| Exit Criteria | Single board-owned peripheral-tail seam with no parallel direct Core chip-advance path; all source and external gates pass; coordinator actual-diff review accepts P1 and governance P2 records closure. |
 | Original Owner Request | Make neutral `x86/core` and reusable IBM-PC board layers available before splitting PC Apps, with flat owner boundaries and linear numeric S tasks. |
-| Similar-Issue Sweep | Inspect all three advance phases and every direct chip effect, including indirect PIC/refresh/HOLD effects; identify Core-only FPU/prefetch cases explicitly rather than moving them by file proximity. |
+| Similar-Issue Sweep | Inspect all three original phases and every direct chip effect; preserve and explicitly assign FPU/prefetch/transaction interleaving to S24/S25 rather than moving it by file proximity. |
+
+## T540 S23 Acceptance
+
+P1 `545086ce9` moves exactly the peripheral-tail XT keyboard/KBC, PIC and
+VADP advancement to a board-owned implementation. Core still publishes the
+sole time axis and calls arbitration, readiness, then the board peripheral
+provider. One `board_owner` serves deadline and peripheral callbacks; no
+second owner or advance loop exists. The
+[S23 evidence](../etc/evidence/t540-s23-board-peripheral-advance.md) records
+the source-intake split, exact call order, net +5 production lines and eight
+product hashes. Actual diff review found 19 scoped P1 paths: NXVM source,
+tests, gates, evidence and eight Release EXEs only; Shared, MyNES, INIs,
+firmware and external media are unchanged.
+
+Complete x64/x86 repository-only unit suites passed **469/469** per width,
+specialized gates **76/76**, and four external boots once per width (**8/8**).
+All eight rebuilt products have their expected PE architecture and zero
+`.debug` sections. Documentation governance and diff hygiene passed. S23 is
+accepted; T540 remains open. S24 receives the interleaved readiness boundary.
+
+## T540 S24 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S24, the next linear S after accepted S23. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move board FDC/HDC readiness and RTC clock/chip effects behind explicit board calls while Core keeps FPU advancement between them, preserving the existing due-tick and trace order. |
+| Non-goals | DMA/refresh/PIT/PIC arbitration and CPU prefetch (S25), CPU PIC INTA/HOLD locality (S26), mixed plan/reset (S27), physical neutral Core move (S28), chip timing/grade or profile/INI/firmware/media changes. |
+| Reference Baseline | Accepted S23 P1 `545086ce9`, [S23 evidence](../etc/evidence/t540-s23-board-peripheral-advance.md), [source intake](../etc/evidence/t540-s21-scheduler-pic-intake.md): dual-width units 469/469, gates 76/76, eight boots and eight Release products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S23 source-refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and board adapter ledger. |
+| Files And ABI Surface | Inspect and change only private `devices/{machine_scheduler,board_advance,machine}` readiness calls plus direct tests/gates and eight products. Board receives source ticks and absolute due tick as values; it does not own Core FPU or elapsed-time mutation. |
+| Applicable Rules | Keep exact sequence: FDC advance/trace, HDC advance/trace, Core FPU advance, RTC clock/chip advance/trace. Use direct named calls on either side of FPU rather than a generic phase framework or callback into Core. Delete old direct board calls in the same P. |
+| Verification | Focused FDC/HDC, RTC, FPU, PIC ordering and scheduler tests; complete x64/x86 repository-only units, specialized/documentation gates, one boot per four profiles per width and eight optimized 0540 products with PE/hash/no-debug proof. |
+| Expected Markers | Core readiness contains FPU advancement between two bounded board calls; Core no longer directly queries or advances FDC/HDC/RTC chips. No second readiness path. |
+| Asset Needs | Existing owner-provided external firmware/media only for boot checks and products; no new or changed binary original, INI or font. |
+| Reporting Requirements | Record exact original/moved calls, due-tick and zero-tick behavior, trace order, production/test line delta, full/focused verification, eight boot results and product hashes; transfer arbitration to S25. |
+| Stop Conditions | Stop before reordering FPU against FDC/HDC/RTC, inventing a physical rate, moving Core time/transaction ownership into the board, Shared/MyNES edits, protected asset changes or a second scheduler. |
+| Exit Criteria | One ordered readiness seam around Core FPU, old direct Core chip calls deleted, all gates and products pass, actual-diff P1 accepted and governance P2 records closure. |
+| Original Owner Request | Create neutral `x86/core` and reusable IBM-PC board layers before splitting PC Apps, with flat ownership and linear numeric S tasks. |
+| Similar-Issue Sweep | Inspect every readiness advance, clock conversion and trace event; keep FPU as Core even though it sits among board effects, and identify any other interleaving before moving code. |
 
 ## S87 Admission Packet
 
