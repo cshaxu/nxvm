@@ -285,6 +285,12 @@ lib_status core_machine_set_nmi_mask(core_machine *machine, lib_i32 masked);
 lib_status core_machine_get_nmi_mask(const core_machine *machine,
     lib_i32 *out_masked);
 
+/* Board signals run on the owning executor thread with a live opaque machine.
+ * NMI returns false for a masked signal or null machine; reset is null-safe.
+ * CPU owns the pending state; the normal run boundary consumes processor reset. */
+lib_bool core_machine_signal_nmi(core_machine *machine);
+void core_machine_signal_processor_reset(core_machine *machine);
+
 lib_status core_machine_report_fault(
     core_machine *machine,
     lib_u32 detail);

@@ -36,15 +36,14 @@ static lib_u8 core_machine_xt_ppi_request_nmi(void *owner)
 {
     core_machine *machine = (core_machine *)owner;
 
-    return machine != LIB_NULL &&
-        core_machine_cpu_request_nmi(machine->executor_cpu_execution);
+    return core_machine_signal_nmi(machine);
 }
 
 static void core_machine_kbc_request_reset(void *owner)
 {
     core_machine *machine = owner;
 
-    core_machine_cpu_execution_request_reset(machine->executor_cpu_execution);
+    core_machine_signal_processor_reset(machine);
 }
 
 static void core_machine_kbc_signal_a20(void *owner, lib_bool enabled)
@@ -638,7 +637,7 @@ static void core_machine_planar_parity_refresh_nmi(core_machine *machine)
         machine->board->planar_parity_latched &&
         (machine->board->planar_parity_port_b & 0x04u) != 0u &&
         !machine->board->planar_parity_nmi_signaled &&
-        core_machine_cpu_request_nmi(machine->executor_cpu_execution)) {
+        core_machine_signal_nmi(machine)) {
         machine->board->planar_parity_nmi_signaled = LIB_TRUE;
     }
 }
@@ -804,7 +803,7 @@ static void core_machine_d4_platform_refresh_nmi(core_machine *machine)
         ((machine->board->d4_platform_port_b & 0x04u) == 0u &&
         machine->board->d4_platform_failsafe_latched);
     if (pending && !machine->board->d4_platform_nmi_signaled &&
-        core_machine_cpu_request_nmi(machine->executor_cpu_execution)) {
+        core_machine_signal_nmi(machine)) {
         machine->board->d4_platform_nmi_signaled = LIB_TRUE;
     }
 }

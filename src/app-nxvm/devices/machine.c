@@ -1054,6 +1054,18 @@ lib_status core_machine_request_stop(core_machine *machine)
     return LIB_STATUS_OK;
 }
 
+lib_bool core_machine_signal_nmi(core_machine *machine)
+{
+    return machine != LIB_NULL &&
+        core_machine_cpu_request_nmi(machine->executor_cpu_execution);
+}
+
+void core_machine_signal_processor_reset(core_machine *machine)
+{
+    if (machine != LIB_NULL)
+        core_machine_cpu_execution_request_reset(machine->executor_cpu_execution);
+}
+
 lib_status core_machine_set_nmi_mask(core_machine *machine, lib_i32 masked)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine)) {

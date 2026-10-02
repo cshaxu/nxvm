@@ -85,8 +85,23 @@ lib_i32 main(void)
         time.elapsed_ticks == 0u ||
         core_machine_capture_observation(machine, &observation) != LIB_STATUS_OK ||
         observation.elapsed_ticks != time.elapsed_ticks ||
-        (probe.trace_events != 0u) != (CORE_MACHINE_RUNTIME_TRACE_ENABLED != 0) ||
-        core_machine_request_stop(machine) != LIB_STATUS_OK ||
+        (probe.trace_events != 0u) != (CORE_MACHINE_RUNTIME_TRACE_ENABLED != 0)) goto done;
+    core_machine_signal_processor_reset(LIB_NULL);
+    if (core_machine_signal_nmi(LIB_NULL) ||
+        core_machine_set_nmi_mask(machine, LIB_TRUE) != LIB_STATUS_OK ||
+        core_machine_signal_nmi(machine) ||
+        core_machine_set_nmi_mask(machine, LIB_FALSE) != LIB_STATUS_OK ||
+        !core_machine_signal_nmi(machine)) goto done;
+    core_machine_signal_processor_reset(machine);
+    if (core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_RESET_REQUESTED ||
+        result.executed != 0u || result.linear_pc != 0xffff0u ||
+        core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
+        time.elapsed_ticks != observation.elapsed_ticks ||
+        core_machine_debug_read_memory(machine, 0x100u, &byte, 1u) != LIB_STATUS_OK ||
+        byte != code[0] ||
+        core_machine_debug_read_port(machine, 0x1234u, &value) != LIB_STATUS_OK ||
+        value != 0x5au || core_machine_request_stop(machine) != LIB_STATUS_OK ||
         core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_REQUESTED) goto done;
     failed = 0;

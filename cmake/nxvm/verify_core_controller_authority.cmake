@@ -36,6 +36,16 @@ foreach(required IN ITEMS "machine_interface.h" "core_machine_config"
     endif()
 endforeach()
 file(READ "${machine_lifecycle_source}" machine_lifecycle_text)
+file(GLOB_RECURSE nxvm_signal_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c")
+foreach(source IN LISTS nxvm_signal_sources)
+    if(source STREQUAL machine_lifecycle_source)
+        continue()
+    endif()
+    file(READ "${source}" source_text)
+    if(source_text MATCHES "core_machine_cpu_(request_nmi|execution_request_reset)[ \t\r\n]*\\(")
+        message(FATAL_ERROR "CPU signals must use the opaque Core boundary: ${source}")
+    endif()
+endforeach()
 foreach(forbidden IN ITEMS "const core_machine_config *"
     "config->clock_plan" "core_machine_create_internal("
     "core_machine_board_create(machine, config)" "machine_board_state.h"

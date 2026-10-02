@@ -95,10 +95,18 @@ firmware context remains an operation guard, not a second machine owner.
    S66 moves adjacent public board operation declarations with their types;
    S67 receives the remaining five neutral validators implemented in board
    `machine_plan.c`, rather than repeat an already completed declaration cut.
-8. **S70** — Move only proven neutral source/tests to `src/x86/core` and
+8. **Former prospective S70** — Move only proven neutral source/tests to `src/x86/core` and
    `test/x86/core`, delete App copies, reconnect NXVM, verify independent
    Shared build/tests, both widths and four fixed-profile boots. S71 onward
    owns separately audited IBM-PC common/AT/XT moves.
+
+Post-S69 receiving correction: independent Core linkage is accepted, but
+board-to-Core private access is not a public contract. S70 now receives all
+board CPU NMI/reset signaling without borrowing the CPU context. Memory/port
+construction and rollback, firmware publication, provider binding/board
+attachment ownership and direct-test classification remain preconditions of
+the physical move. Each receives a measured next numeric S; the former S70
+and S71 physical/board-move numbers were prospective and are superseded.
 
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three

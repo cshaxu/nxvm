@@ -57,10 +57,23 @@ neutralization unsafe. Its [finite receiving plan](../etc/evidence/t540-s60-neut
 assigned S61-S64 to D4 memory, frozen plan, private and public interface
 boundaries. S64's [measured public intake](../etc/evidence/t540-s64-public-interface-intake.md)
 further splits configuration, board values, operations, Core handoff and
-independent compilation into S65-S69. The first eligible neutral Core
-physical move is now S70; IBM-PC board extraction follows from S71.
+independent compilation into S65-S69. Its prospective first neutral Core
+physical move was S70; the post-S69 consumer correction below supersedes
+that receiving number before execution.
 These are prospective numeric receivers, not a claim that Shared Core
 already builds independently.
+
+S69 proves actual independent compile/link/run, but its receiving audit finds
+that board consumers still borrow neutral private state. Therefore the former
+S70 physical-move row is superseded before execution: S70 closes the complete
+CPU-signal class (three NMI sites and one processor-reset site). Subsequent
+bounded receivers close memory/port construction transactions, firmware
+publication and board provider/attachment ownership, then classify direct
+tests before the physical move. Exact eighteen-header intake finds 306
+source/test/build consumers; this is a receiving inventory, not permission to
+move every test or to export private layouts. The coordinator admits each
+next numeric receiver from its measured diff. Physical relocation remains
+required, not replaced by independent compilation or this signal cut.
 
 S65 separates the private neutral construction value without rewriting the
 public plan ABI: one board composition derives the temporary value and owns

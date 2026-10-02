@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S69 is accepted: independent neutral Core compilation and linking pass.
-S1-S69 are accepted; no subtask is active between receiving packets.
+M5 T540 S70 is active: close the board-to-Core CPU signal boundary.
+S1-S69 are accepted.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -2402,6 +2402,27 @@ archive dependency, both-width Debug/Release execution and 470/470 complete
 units per width. Product sources and all eight S68 EXE identities are unchanged.
 Physical relocation and public board-consumer boundaries remain open.
 
+## T540 S70 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S70, next unused numeric S after accepted S69. |
+| Admission And Approval | Owner standing automatic bounded-S authorization within T540 extraction; NXVM source/test/build evidence only. Shared, MyNES, owner INIs and external assets remain read-only. |
+| Objective | Remove every production board borrow of the CPU execution context for NMI and processor-reset signals; Core alone accepts these signals and the existing CPU/run path consumes them. |
+| Non-goals | Physical Shared relocation, new CPU signal state, lifecycle queue or executor, CPU/timing/guest behavior change, RAM/port/firmware boundary changes and MyNES builds. |
+| Reference Baseline | Accepted S69 P2 `7c0c8c458`. Actual intake finds three NMI and one reset call in board composition still borrow `executor_cpu_execution`; independent linkage did not prove public consumer boundaries. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S69 proof](../etc/evidence/t540-s69-independent-neutral-core.md). |
+| Files And ABI Surface | Existing neutral machine/interface, board composition, neutral receiving smoke and lifecycle prevention gate. Add only bounded opaque-machine NMI acceptance and processor-reset signal operations. Preserve CPU-owned mask/latch/reset flag and original call sites. |
+| Applicable Rules | One CPU execution lifetime and run-loop reset consumer; no CPU pointer crosses the board boundary. Signal acceptance runs synchronously on the executor thread like A20; it is not a host lifecycle request or arbitrary-thread API. |
+| Verification | Neutral masked/unmasked NMI acceptance, null input and queued processor reset consumed before retirement; existing XT/parity/D4/KBC tests; full x64/x86 units, independent proof and specialized/dependency/documentation gates; rebuild eight 0540 products and one external boot per profile/width. |
+| Expected Markers | No production board CPU-context borrow for these signals; existing NMI latches update only after accepted NMI; reset has no second pending flag and reaches the original processor-only reset consumer. |
+| Asset Needs | Existing external boot inputs only, unchanged owner INIs and overlay media. No acquisition or asset-master write. |
+| Reporting Requirements | Exact similar-issue caller inventory, public lifetime/thread/mask contract, code-size delta, tests, artifact identities, boot checkpoints and remaining physical-relocation prerequisites. |
+| Stop Conditions | Original mask/latch or reset priority changes, a second state/queue is needed, broader private access must be hidden rather than owned, or any unrelated consumer/artifact changes. Re-plan the unaccepted boundary first. |
+| Exit Criteria | Complete scoped signal cut and all required proof/artifacts/boots; pushed P1, coordinator actual-commit review and pushed governance P2, clean worktree. T540 stays open. |
+| Original Owner Request | Independently reusable Core and flat IBM-PC board components, unique state/production path, automatic numeric S progression without layered patches. |
+| Similar-Issue Sweep | All production CPU NMI/reset calls, callback adapters and latch-on-accept sites; classify CPU internals and same-owner tests separately. Exact eighteen-header consumer inventory covers 306 source/test/build paths and retains memory/port, firmware and provider-binding cuts before physical relocation. |
+
 ## S87 Admission Packet
 
 | Field | Required record |
@@ -3803,7 +3824,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S68 with unchanged owner INIs; S68 evidence records their hashes, PE
+T540 S70 with unchanged owner INIs; S70 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

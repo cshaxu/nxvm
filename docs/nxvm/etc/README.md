@@ -14,6 +14,10 @@ owns admission and status.
 T540 S67: [neutral validation owner](evidence/t540-s67-neutral-validation-owner.md)
 records the five verbatim implementation moves and their receiving proof.
 
+T540 S70: [Core signal boundary](evidence/t540-s70-core-signal-boundary.md)
+records the four CPU signal callers and remaining measured private-consumer
+classes before physical relocation.
+
 T540 S69: [independent neutral Core](evidence/t540-s69-independent-neutral-core.md)
 records actual-source OBJECT linkage without PC board archives and both-width
 Debug/Release runtime proof; physical relocation remains open.
