@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S58 is active: move absent-memory window state to the sole board
-attachment. S1-S57 are accepted;
+M5 T540 S59 is active: audit callback and firmware binding across the board
+attachment. S1-S58 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -78,7 +78,8 @@ the completed CPU extraction.
 | T540 S55 | Accepted: D4 platform/Port-B/NMI state moved into the sole board attachment; dual-width complete units, gates and eight boot checkpoints pass. |
 | T540 S56 | Accepted: three D4 refresh electrical fields moved into the sole board attachment; Core HOLD stays bounded, gates and eight boots pass. |
 | T540 S57 | Accepted: four XT speaker electrical fields moved into the sole board attachment; both-width units, gates and eight boots pass. |
-| T540 S58 | Active: absent-memory window owner receiver. |
+| T540 S58 | Accepted: absent-memory fallback windows moved into the sole board attachment; both-width units, gates and eight boots pass. |
+| T540 S59 | Active: callback and firmware binding owner audit. |
 
 ## T540 S1 Acceptance
 
@@ -2042,6 +2043,36 @@ records the exact diff and artifact hashes. T540 remains open.
 | Exit Criteria | P1/P2 pushed; both-width verification, eight boots and artifact evidence pass; worktree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | Absent-window configuration, Core typed memory registration, route owner pointer, open-bus fallback and rollback. |
+
+## T540 S58 Acceptance
+
+The absent-memory slots are board-owned; Core's fallback memory route keeps
+its existing priority and a stable slot owner pointer. P1 `930d35bec` is
+pushed. Both-width complete units pass 469/469, both specialized gate sets
+pass, and all eight fixed-profile boots pass once each. The optimized 0540
+products are rebuilt and PE/no-debug verified. The [S58 evidence](../etc/evidence/t540-s58-absent-memory-owner.md)
+records rollback, lifetime, exact diff and artifact hashes. T540 remains open.
+
+## T540 S59 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S59, next linear S after accepted S58. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Audit and correct the existing board callback install/revoke and firmware binding owners so neutral Core only invokes bounded providers and the board retains its F0000h alias choice, without a second lifetime or direct chip access. |
+| Non-goals | Neutral private header (S60), physical Shared move (S61), firmware behavior/ROM change, callback ABI redesign or new board framework. |
+| Reference Baseline | S58 P1 `930d35bec`, [S58 evidence](../etc/evidence/t540-s58-absent-memory-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Existing `board_*_provider` slots and `board_owner`, board constructor/finalizer, firmware provider/context binding and F0000h alias choice. No new public API. |
+| Applicable Rules | Core owns operation guards and bounded invocation; board owns callback production and revocation. Preserve shutdown callback ABI used by test schedulers. |
+| Verification | Source audit of every install/revoke and firmware path; focused affected regressions; complete x64/x86 units, specialized/documentation gates; rebuild eight products and run one boot per profile/width only if executable inputs change. |
+| Expected Markers | Callback owners remain valid through invocation and are revoked before board release; one firmware invocation/ROM table and one board alias choice, with no duplicate path. |
+| Asset Needs | Existing external firmware/media for any affected boot checks only; no owner INI edit. |
+| Reporting Requirements | Complete callback/firmware owner inventory, exact diff or justified no-change result, tests and artifact determination. |
+| Stop Conditions | Stop for conflicting ownership, a needed ABI redesign or cross-target change; split if actual surface exceeds one bounded S. |
+| Exit Criteria | P1 if code changes, P2 evidence pushed; affected verification passes; worktree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | Board install/revoke, destruction order, outstanding event callbacks, firmware bounded invocation and F0000h alias registration. |
 
 ## S87 Admission Packet
 
