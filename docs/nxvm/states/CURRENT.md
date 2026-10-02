@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S40 is active: separate the D4 shutdown decision and XT/8042 input
-dispatch from the neutral Core execution/input path. S1-S39 are accepted;
+M5 T540 S41 is active: move named device clock-domain initialization/reset
+to the board advance/deadline owner. S1-S40 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -68,7 +68,8 @@ the completed CPU extraction.
 | T540 S37 | Accepted: S31-S36 actual-diff/caller audit froze a finite neutral Core/board file ledger and identified owner-sized pre-move receivers. |
 | T540 S38 | Accepted: F0000h alias derivation and sole firmware bind continuation moved to board owner with one rollback; dual-width units and eight boots pass. |
 | T540 S39 | Accepted: high-reset RAM alias and parity resize veto are board-owned; Core retains one checked memory operation; dual-width units and eight boots pass. |
-| T540 S40 | Active: D4 shutdown decision and XT/8042 native input dispatch boundary. |
+| T540 S40 | Accepted: D4 shutdown reset choice and native XT/8042 input dispatch are board-owned; dual-width units and eight boots pass. |
+| T540 S41 | Active: named device clock-domain initialization/reset boundary. |
 
 ## T540 S1 Acceptance
 
@@ -1413,13 +1414,50 @@ the distinct D4/input boundary; T540 remains open.
 | Files And ABI Surface | Inspect `src/app-nxvm/devices/{machine.c,machine_board.c,machine.h}` and D4/XT/KBC callers/tests. Keep the existing public input ABI, move only board dispatch implementation, and use one bounded board choice for shutdown without copying board state. |
 | Applicable Rules | Core owns CPU shutdown consumption and processor-only reset; board owns whether D4 converts shutdown to reset. XT PPI and AT 8042 retain their exact event ordering and one input route. Do not expose chip or board pointers to neutral Core. |
 | Verification | Focused D4 shutdown and native keyboard input tests; full x64/x86 repository-only units, specialized/documentation gates, one external boot per profile/width and eight optimized 0540 products with PE/hash/no-debug proof. |
-| Expected Markers | Neutral Core no longer branches on D4 or XT/KBC fields; one board-owned input dispatch and one board shutdown policy, without mirrored state or new public API. |
+| Expected Markers | Neutral Core run no longer branches on D4; `machine.c` has no public native input dispatch. The mixed board constructor remains explicitly assigned to S42. There is no mirrored state or new public API. |
 | Asset Needs | Existing owner-provided external firmware/media for boot checks only; no new protected input or owner INI change. |
 | Reporting Requirements | Record exact CPU shutdown priority, input dispatch/effect order, focused/full checks, artifact hashes and retained S41-S43 work. |
 | Stop Conditions | Stop before a second input route/queue, new board framework, changed CPU reset behavior, Shared/MyNES edit or a broad private-state move outside this S. |
 | Exit Criteria | D4 and XT/8042 board decisions have one owner, Core CPU execution stays neutral, behavior and checks pass, and actual-diff P1 plus governance P2 close S40. |
 | Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique state/data ownership and no patch-over-patch path. |
 | Similar-Issue Sweep | Check D4 shutdown/reset, non-D4 stop, XT scan delivery and 8042 keyboard/mouse input callers and four-profile boots. |
+
+## T540 S40 Acceptance
+
+Actual-diff review accepts NXVM P1 `399dad3e3`. The
+[S40 evidence](../etc/evidence/t540-s40-board-shutdown-input.md) records the
+single board-owned D4 shutdown-reset choice and the verbatim relocation of
+five public native input functions. CPU shutdown priority and processor-only
+reset, XT/8042 dispatch, scan-set observation and mouse rejection remain
+unchanged. The scheduler probe exposed and resolved an incorrect first
+callback-owner choice before acceptance; the corrected callback receives a
+`const core_machine *`, not the replaceable scheduler probe owner. Production
+source net adds 12 lines. Final-source x64/x86 units pass **469/469** per
+width, specialized gates pass, all eight single-run external boot checkpoints
+pass, and eight optimized 0540 products have correct PE width and no `.debug`
+sections. Shared/MyNES, owner INIs and protected inputs are untouched.
+S41 receives the distinct clock-domain boundary; T540 remains open.
+
+## T540 S41 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S41, next linear S after accepted S40. |
+| Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Place named PIT/RTC/DMA/KBC/FDC/HDC and other device clock-domain initialization/reset with the board advance/deadline owner while retaining Core's sole guest timeline and CPU/provider clock. |
+| Non-goals | Changing clock ratios, oscillator sources, device deadlines, CPU retirement timing, profile frequency choices, S42 private-state split, S43 physical Shared move, firmware/assets/INI changes. |
+| Reference Baseline | S40 P1 `399dad3e3`, [S40 evidence](../etc/evidence/t540-s40-board-shutdown-input.md), [S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md), dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md). |
+| Files And ABI Surface | Inspect `src/app-nxvm/devices/{machine.c,machine_board.c,machine_scheduler.c,board_advance.c,board_deadline.c,machine.h}` and clock-domain unit/profile tests. Move the existing named-device clock initialization/reset calls by owner only; retain the one current time axis and provider clock. |
+| Applicable Rules | Board owns each named device clock domain and its reset order; Core owns guest tick settlement, CPU retirement and provider time. No new clock copy, implicit conversion or fabricated physical rate. |
+| Verification | Focused clock/reset/deadline and four-profile tests; full x64/x86 repository-only units, specialized/documentation gates, one external boot per profile/width and eight optimized 0540 products with PE/hash/no-debug proof. |
+| Expected Markers | No named board-device clock initialization/reset in the neutral Core portion; one exact clock-domain owner and no changed rate/deadline formula. |
+| Asset Needs | Existing owner-provided external firmware/media for boot checks only; no new protected input or owner INI change. |
+| Reporting Requirements | Record the exact clock fields, initialization/reset order, failure rollback, tests/artifact hashes and retained S42-S43 work. |
+| Stop Conditions | Stop before a second clock axis, unverified frequency, Shared/MyNES edit, broad private-state move or changed controller timing beyond the declared owner cut. |
+| Exit Criteria | Named device clocks have board ownership, Core time remains sole and unchanged, behavior and checks pass, and actual-diff P1 plus governance P2 close S41. |
+| Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique clock and state owners, without patch-over-patch paths. |
+| Similar-Issue Sweep | Check every named clock create/reset caller, reset order, PIT/RTC/DMA/KBC/FDC/HDC deadline mapping and four-profile boots. |
 
 ## S87 Admission Packet
 
