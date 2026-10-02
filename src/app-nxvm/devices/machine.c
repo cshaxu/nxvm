@@ -473,6 +473,8 @@ static lib_status core_machine_create_internal(
     machine->time_axis = config->time_axis;
     machine->l1_compatibility_policy = config->l1_compatibility_policy;
     machine->board_deadline_provider = core_machine_board_deadline_observe;
+    machine->board_refresh_request_provider = core_machine_board_refresh_request;
+    machine->board_refresh_complete_provider = core_machine_board_refresh_complete;
     machine->board_media_provider = core_machine_board_media_advance;
     machine->board_rtc_provider = core_machine_board_rtc_advance;
     machine->board_peripheral_provider = core_machine_board_peripheral_advance;

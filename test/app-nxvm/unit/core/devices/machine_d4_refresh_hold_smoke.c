@@ -144,6 +144,7 @@ lib_i32 main(void)
     refresh_dma_source source = {0xa5u};
     core_machine *machine = LIB_NULL;
     lib_u8 byte = 0u;
+    lib_u8 refresh_address = 0xffu;
     lib_u32 start;
     lib_u32 refresh_request = 0u;
     lib_u32 refresh_acknowledge = 0u;
@@ -188,6 +189,8 @@ lib_i32 main(void)
     failed |= !machine->d4_refresh_hold_pending ||
         machine->d4_refresh_address != 0u ||
         machine->dma_cycle_wait_remaining != 0u;
+    failed |= !machine->board_refresh_request_provider(machine->board_owner,
+        &refresh_address) || refresh_address != 0u;
     failed |= core_machine_capture_time_observation(machine, &observation) !=
         LIB_STATUS_OK || observation.next_deadline_valid ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY;
@@ -199,6 +202,9 @@ lib_i32 main(void)
     failed |= machine->d4_refresh_hold_pending ||
         machine->d4_refresh_address != 1u ||
         machine->dma_cycle_wait_remaining != 0u;
+    refresh_address = 0xffu;
+    failed |= machine->board_refresh_request_provider(machine->board_owner,
+        &refresh_address) || refresh_address != 0xffu;
     failed |= core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
         LIB_STATUS_OK || byte != 0xa5u;
     failed |= !refresh_find_hold_after(&probe,

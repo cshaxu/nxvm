@@ -117,20 +117,22 @@ static void core_machine_dma_grant_advance(core_machine *machine)
 }
 static void core_machine_d4_refresh_hold_advance(core_machine *machine)
 {
-    if (machine == LIB_NULL || !machine->d4_refresh_hold_pending) return;
+    lib_u8 address;
+    if (machine == LIB_NULL || machine->board_refresh_request_provider == LIB_NULL ||
+        !machine->board_refresh_request_provider(machine->board_owner, &address)) return;
     if (core_machine_transaction_hold_request(&machine->transaction,
-            CORE_MACHINE_TRANSACTION_OWNER_REFRESH, machine->d4_refresh_address) !=
+            CORE_MACHINE_TRANSACTION_OWNER_REFRESH, address) !=
         LIB_STATUS_OK) return;
     if (core_machine_transaction_hold_acknowledge(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_REFRESH) == LIB_STATUS_OK &&
         core_machine_transaction_begin(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
             CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE,
-            machine->d4_refresh_address, 0u, 0u) == LIB_STATUS_OK) {
+            address, 0u, 0u) == LIB_STATUS_OK) {
         /* Bus occupation only: Core has no DRAM electrical refresh model. */
         core_machine_transaction_commit(&machine->transaction);
-        machine->d4_refresh_address = (lib_u8)(machine->d4_refresh_address + 1u);
-        machine->d4_refresh_hold_pending = LIB_FALSE;
+        if (machine->board_refresh_complete_provider != LIB_NULL)
+            machine->board_refresh_complete_provider(machine->board_owner);
     }
     core_machine_transaction_hold_release(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_REFRESH);
@@ -142,13 +144,16 @@ static void core_machine_arbitration_advance(core_machine *machine,
     lib_u64 pit_ticks;
     lib_u64 auxiliary_pit_ticks;
     lib_u8 refresh_pending;
+    lib_u8 refresh_address;
 
     if (machine == LIB_NULL || source_ticks == 0u) return;
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, source_ticks);
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, source_ticks);
     auxiliary_pit_ticks = core_machine_clock_domain_advance(
         &machine->auxiliary_pit_clock, source_ticks);
-    refresh_pending = machine->d4_refresh_hold_pending;
+    refresh_pending = machine->board_refresh_request_provider != LIB_NULL &&
+        machine->board_refresh_request_provider(machine->board_owner,
+            &refresh_address);
     core_machine_d4_refresh_hold_advance(machine);
     if (machine->transaction_contract.dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
         lib_u64 tick;
@@ -189,7 +194,9 @@ static void core_machine_arbitration_advance(core_machine *machine,
             machine, dma_ticks);
     }
     if (machine->transaction_contract.cpu_prefetch_reservation_enabled && !refresh_pending &&
-        !machine->d4_refresh_hold_pending &&
+        (machine->board_refresh_request_provider == LIB_NULL ||
+         !machine->board_refresh_request_provider(machine->board_owner,
+             &refresh_address)) &&
         !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
             &machine->shared_dma_secondary) &&
         machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_NONE &&

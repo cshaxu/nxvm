@@ -69,6 +69,18 @@ static void scheduler_board_rtc(void *owner, lib_u64 source_ticks)
     core_machine_board_rtc_advance(probe->machine, source_ticks);
 }
 
+static lib_bool scheduler_board_refresh_request(void *owner, lib_u8 *out_address)
+{
+    scheduler_board_probe *probe = owner;
+    return core_machine_board_refresh_request(probe->machine, out_address);
+}
+
+static void scheduler_board_refresh_complete(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    core_machine_board_refresh_complete(probe->machine);
+}
+
 typedef struct scheduler_deadline_probe {
     core_machine_board_deadline_observation value;
     lib_u32 calls;
@@ -112,6 +124,8 @@ lib_i32 main(void)
     machine->board_media_provider = scheduler_board_media;
     machine->board_rtc_provider = scheduler_board_rtc;
     machine->board_peripheral_provider = scheduler_board_peripheral;
+    machine->board_refresh_request_provider = scheduler_board_refresh_request;
+    machine->board_refresh_complete_provider = scheduler_board_refresh_complete;
     machine->board_owner = &board_probe;
 
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;

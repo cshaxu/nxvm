@@ -155,6 +155,23 @@ static void core_machine_d4_refresh_output(void *opaque, lib_u8 asserted)
     }
 }
 
+lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address)
+{
+    const core_machine *machine = owner;
+    if (machine == LIB_NULL || out_address == LIB_NULL ||
+        !machine->d4_refresh_hold_pending) return LIB_FALSE;
+    *out_address = machine->d4_refresh_address;
+    return LIB_TRUE;
+}
+
+void core_machine_board_refresh_complete(void *owner)
+{
+    core_machine *machine = owner;
+    if (machine == LIB_NULL || !machine->d4_refresh_hold_pending) return;
+    machine->d4_refresh_address = (lib_u8)(machine->d4_refresh_address + 1u);
+    machine->d4_refresh_hold_pending = LIB_FALSE;
+}
+
 static void core_machine_dma_refresh_pit_output(void *owner,
     lib_u8 asserted);
 
