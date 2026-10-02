@@ -95,8 +95,13 @@ checkpoints, not native GUI/audio acceptance or intermittent-fault frequency
 claims. Documentation governance and `git diff --check` pass.
 
 Executor self-review confirms all six guards and both verbatim READY bodies,
-complete tests/gates, artifact identity and NXVM-only scope. P1 is the complete
-delivery; coordinator acceptance follows actual review of its pushed diff.
+complete tests/gates, artifact identity and NXVM-only scope. P1 `b39d60c31`
+is the complete pushed delivery. Coordinator actual pushed-diff review accepts
+all eighteen changed files: production ownership/guard semantics, synthetic
+fixtures, full board-family gate, packet/evidence and eight artifact identities
+match the admitted scope. S75 closes in the following pure-governance P2;
+no executable input changes and no repeated boots are required. T540 remains
+open for its explicitly recorded next receivers and physical relocation.
 
 ## Artifact identity
 

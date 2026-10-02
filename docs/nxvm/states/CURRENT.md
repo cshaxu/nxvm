@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S1-S74 are accepted; S75 is active.
-S75 receives the complete lifecycle-observation and bus-READY owner boundary.
+M5 T540 S1-S75 are accepted; no implementation S is active.
+S75 closes the complete lifecycle-observation and bus-READY owner boundary.
 Attachment ownership and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
@@ -96,6 +96,7 @@ the completed CPU extraction.
 | T540 S72 | Accepted: sole Core route transaction and candidate destruction; every constructor port allocation failure, dual-width units/gates and eight single boots pass. |
 | T540 S73 | Accepted: all refresh PIT initialization callers use the chip contract; dual-width units/gates and eight single boots pass, with no Core port borrowing. |
 | T540 S74 | Accepted: Core owns firmware publication/rollback; board reset aliases use bounded neutral operations; dual-width units/gates and eight single boots pass. |
+| T540 S75 | Accepted: six board lifecycle consumers use copied Core observation; both READY operations belong to the neutral scheduler; dual-width 470/470 units/gates and eight single boots pass. |
 
 ## T540 S1 Acceptance
 
@@ -2487,26 +2488,22 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
-## T540 S75 Admission Packet
+## T540 S75 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S75, next numeric S after accepted S74. |
-| Admission And Approval | Owner's standing automatic bounded-S approval in T540; NXVM only. No Shared or MyNES modification. |
-| Objective | Move both existing CPU/DMA READY operations to the neutral scheduler; replace all six board input/display lifecycle consumers with the existing copied Core lifecycle operation. |
-| Non-goals | Running-time observation/timing qualification, attachment redesign or physical move, new API, changed lifecycle policy, chip algorithms, Shared/MyNES/INI/media/ROM edits. |
-| Reference Baseline | S74 P3 `9221e17dc`; READY definitions remain in machine_board.c and six input/display functions read private Core lifecycle. |
-| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S75 boundary](../etc/evidence/t540-s75-lifecycle-ready-boundary.md). |
-| Files And ABI Surface | Existing machine_board.c, machine_display.c, machine_scheduler.c, neutral-link and input/display fixtures, controller-authority gate and NXVM evidence. Existing public signatures, status codes, initialization and reset semantics unchanged. |
-| Applicable Rules | Sole Core lifecycle and READY state owners; board uses copied observation and bounded operations. Move definitions without a wrapper; no mirrored state, new queue, wait or getter facade. Unit inputs are synthetic owned values. |
-| Verification | All lifecycle states and null/output guards for six board operations; independent actual-Core linkage tests disabled/enabled READY gates, nonzero normalization, firmware mutation guard and reset defaults; complete x64/x86 unit suites and specialized gates, eight optimized stripped 0540 products and one external overlay boot each, documentation/diff checks. |
-| Expected Markers | Existing neutral-link/input-display/competition/prefetch markers pass; no production board reads Core lifecycle or writes READY/transaction state; both operation definitions exist only in the neutral scheduler. |
-| Asset Needs | Existing approved BYOB builds and INIs; all eight existing products updated only when input changes. MyNES and external master data untouched. |
-| Reporting Requirements | Executor confirms scope, reports verification progress and complete pushed delivery; record all production hits, exact tracked code delta, both-width proof, eight boot outcomes and artifact hashes. |
-| Stop Conditions | New public API, changed status/lifecycle behavior, timing-policy change or another target requires coordinator revision before implementation. |
-| Exit Criteria | Complete P1 pushed, actual-diff coordinator review and any corrective P, then pure-governance closure and clean tree. T540 stays open. |
-| Original Owner Request | Build independent neutral Core and reusable flat IBM-PC board components; automatic bounded numeric S admission with unchanged runnable machines. |
-| Similar-Issue Sweep | Scan tracked NXVM production/tests/build for lifecycle/READY/transaction field consumers and definitions. Core owners/test setup remain valid. One Running Port-B time read, three board deadline timing-qualification reads and both plan timing-publication sites are explicitly assigned to next S76 intake, before attachment and physical relocation; do not weaken existing get_elapsed_ticks restrictions. |
+Coordinator actual pushed-diff review accepts P1 `b39d60c31`: six existing
+board input/display functions use the copied Core lifecycle operation, with
+all original states/statuses preserved; both READY bodies move verbatim into
+the sole neutral scheduler. The whole board-source-family gate and four
+injected negatives pass. No API, duplicate state or runtime path is added.
+The [S75 evidence](../etc/evidence/t540-s75-lifecycle-ready-boundary.md)
+records x64/x86 470/470 complete units, specialized gates, eight independent
+Core-link executions, eight one-shot external boots and stripped 0540 hashes.
+Shared, MyNES, INIs and external master inputs are unchanged.
+S75 is accepted. S76 intake receives the complete timing publication and
+observation group: one Running Port-B clock read, three deadline qualification
+reads and both plan publication sites. Attachment, test classification and
+physical Core/IBM-PC relocation remain required before T540 closure.
+This pure-governance acceptance admits no next implementation S.
 
 ## T540 S74 Acceptance
 

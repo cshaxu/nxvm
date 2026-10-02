@@ -38,3 +38,15 @@ eight one-shot boots and the eight stripped 0540 artifact identities.
 Shared, MyNES, INIs and external master inputs remain unchanged. Attachment,
 remaining scalar boundaries, test classification and physical source relocation
 are still due; this S acceptance does not close T540.
+
+## S75: Lifecycle Observation And READY Ownership Accepted
+
+P1 `b39d60c31` replaces all six board input/display private lifecycle reads
+with the existing copied Core operation and moves both unchanged READY bodies
+to the neutral scheduler. Actual pushed-diff review accepts the complete
+eighteen-file NXVM-only delivery. [S75 evidence](../etc/evidence/t540-s75-lifecycle-ready-boundary.md)
+records dual-width 470/470 units, specialized gates, eight independent neutral
+link proofs, eight one-shot external boots and optimized stripped 0540 hashes.
+Shared, MyNES, INIs and external master inputs remain unchanged. The complete
+timing publication/observation receiver, attachment, test classification and
+physical source relocation are still due; T540 remains open.
