@@ -2,8 +2,9 @@
 
 ## Current Work
 
-M5 T540 S41 is active: move named device clock-domain initialization/reset
-to the board advance/deadline owner. S1-S40 are accepted;
+M5 T540 S42 is active: inspect the mixed private state/header and Core/board
+constructor-execution functions before an owner-safe physical split. S1-S41
+are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -69,7 +70,8 @@ the completed CPU extraction.
 | T540 S38 | Accepted: F0000h alias derivation and sole firmware bind continuation moved to board owner with one rollback; dual-width units and eight boots pass. |
 | T540 S39 | Accepted: high-reset RAM alias and parity resize veto are board-owned; Core retains one checked memory operation; dual-width units and eight boots pass. |
 | T540 S40 | Accepted: D4 shutdown reset choice and native XT/8042 input dispatch are board-owned; dual-width units and eight boots pass. |
-| T540 S41 | Active: named device clock-domain initialization/reset boundary. |
+| T540 S41 | Accepted: six named board clocks moved with their advance/deadline owner; Core retains provider clock and one timeline; dual-width units and eight boots pass. |
+| T540 S42 | Active: mixed private-state and source split intake. |
 
 ## T540 S1 Acceptance
 
@@ -1444,7 +1446,7 @@ S41 receives the distinct clock-domain boundary; T540 remains open.
 | --- | --- |
 | Identifier Mode | Continuation M5 T540 S41, next linear S after accepted S40. |
 | Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
-| Objective | Place named PIT/RTC/DMA/KBC/FDC/HDC and other device clock-domain initialization/reset with the board advance/deadline owner while retaining Core's sole guest timeline and CPU/provider clock. |
+| Objective | Place the six actually named board-device clock-domain initialization/reset operations (DMA, PIT, auxiliary PIT, RTC, VADP and KBC) with the board advance/deadline owner while retaining Core's sole guest timeline and provider clock. FDC/HDC have no independent named clock domains. |
 | Non-goals | Changing clock ratios, oscillator sources, device deadlines, CPU retirement timing, profile frequency choices, S42 private-state split, S43 physical Shared move, firmware/assets/INI changes. |
 | Reference Baseline | S40 P1 `399dad3e3`, [S40 evidence](../etc/evidence/t540-s40-board-shutdown-input.md), [S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md), dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
 | Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md). |
@@ -1458,6 +1460,43 @@ S41 receives the distinct clock-domain boundary; T540 remains open.
 | Exit Criteria | Named device clocks have board ownership, Core time remains sole and unchanged, behavior and checks pass, and actual-diff P1 plus governance P2 close S41. |
 | Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique clock and state owners, without patch-over-patch paths. |
 | Similar-Issue Sweep | Check every named clock create/reset caller, reset order, PIT/RTC/DMA/KBC/FDC/HDC deadline mapping and four-profile boots. |
+
+## T540 S41 Acceptance
+
+Actual-diff review accepts NXVM P1 `b33ee1220`. The
+[S41 evidence](../etc/evidence/t540-s41-board-clock-domains.md) records
+the six existing device-clock domains moved to their board advance owner
+without changing ratios, initialization/reset order, phase or deadline
+formula. Core retains its single guest timeline and provider clock. FDC/HDC
+were verified not to have separate named clock domains; none were invented.
+The T388 physical-timebase inventory now reads the moved source while
+retaining all required checks. Production source net adds 20 lines for the
+bounded owner operations. Final-source x64/x86 units pass **469/469** per
+width, specialized gates pass, all eight single-run external boot checkpoints
+pass, and eight optimized 0540 products have correct PE width and no `.debug`
+sections. Shared/MyNES, owner INIs and protected inputs are untouched.
+T540 remains open.
+
+## T540 S42 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S42, next linear S after accepted S41. |
+| Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Inspect every remaining mixed `machine.h` field, `machine.c` function, provider callback and direct test consumer; establish exact neutral Core versus IBM-PC board ownership and divide the oversized private-state/source split into finite linear receivers before moving code. |
+| Non-goals | Blindly moving the large mixed source/private header, modifying CPU/chip semantics, creating mirrored state or a second machine, changing timing/ROM/INI, or physically moving to Shared before the private split is proven. |
+| Reference Baseline | S41 P1 `b33ee1220`, [S41 evidence](../etc/evidence/t540-s41-board-clock-domains.md), [S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md), dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md). S37's S43 physical move is prospective and must be renumbered only after the actual bounded split receivers are known. |
+| Files And ABI Surface | Read `src/app-nxvm/devices/{machine.c,machine.h,machine_board.c,machine_plan.c,board_advance.c,board_deadline.c}` and every direct `machine.h` include/test. Create an owner/receiver ledger; do not edit Shared/MyNES. |
+| Applicable Rules | One machine, one constructor/publication, one guest-time axis. Core owns CPU, memory/port transaction, timeline and execution; board owns chip instances, topology, named clocks and wiring. No cross-layer pointer leak or copied fact. |
+| Verification | Source and caller sweep, owner matrix, `git diff --check` and NXVM documentation governance. No product binary rebuild for a source-only intake. Actual later split receivers require full dual-width units, gates, boots and eight products. |
+| Expected Markers | A finite field/function/test allocation, explicit single-owner dataflow and linear S numbers; no new code path in this intake. |
+| Asset Needs | None for read-only source inventory. No protected input or owner INI change. |
+| Reporting Requirements | Record current field/function counts, direct include/caller surface, exact neutral/board receiver sizes and revised physical-move sequence. |
+| Stop Conditions | Stop before moving a mixed private structure or function without an exact owner, second state copy, new generic framework or Shared/MyNES edit. |
+| Exit Criteria | The complete remaining mixed state/source is assigned to bounded linear S receivers with no unallocated rows, governance passes, and S42 source-only P1 plus P2 closure is recorded. |
+| Original Owner Request | Prepare reusable neutral x86 Core and IBM-PC board mechanisms so four fixed PC Apps and future PC110 can share them without divergent machine paths. |
+| Similar-Issue Sweep | Check every `machine.h` direct include, constructor/reset/run/destroy call, board callback and product test fixture for hidden board-state coupling. |
 
 ## S87 Admission Packet
 
