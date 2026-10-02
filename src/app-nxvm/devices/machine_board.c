@@ -61,7 +61,8 @@ static void core_machine_xt_ppi_update_speaker(void *owner,
 lib_i32 core_machine_board_config_is_valid(
     const core_machine_config *config)
 {
-    return (config->shared_pit_personality == X86_PIT_PERSONALITY_8254 ||
+    return core_machine_clock_plan_is_valid(&config->clock_plan) &&
+        (config->shared_pit_personality == X86_PIT_PERSONALITY_8254 ||
             config->shared_pit_personality == X86_PIT_PERSONALITY_8253) &&
         (config->auxiliary_pit_present == LIB_FALSE ||
          config->auxiliary_pit_present == LIB_TRUE) &&
@@ -73,6 +74,69 @@ lib_i32 core_machine_board_config_is_valid(
         (config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ||
          core_machine_xt_ppi_keyboard_config_is_valid(&config->xt_ppi_keyboard)) &&
         (!config->auxiliary_pit_present || config->auxiliary_pit_base_port <= 0xfffcu);
+}
+
+static lib_status core_machine_create_internal(
+    const core_machine_config *config,
+    core_machine **out_machine,
+    core_machine_memory_test_allocation *test_allocation,
+    core_machine_port_test_allocation *port_test_allocation)
+{
+    core_machine *machine;
+    lib_status status;
+
+    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_machine = LIB_NULL;
+    if (config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    const core_machine_executor_config executor = {
+        .memory_bytes = config->memory_bytes,
+        .cpu_profile = config->cpu_profile,
+        .fpu_profile = config->fpu_profile,
+        .cpu_80386_cr_mov_ignores_mod = config->cpu_80386_cr_mov_ignores_mod,
+        .a20_wrap_policy = config->a20_wrap_policy,
+        .ticks_per_instruction = config->ticks_per_instruction,
+        .instruction_timing = config->instruction_timing,
+        .transaction_contract = config->transaction_contract,
+        .provider_clock = config->clock_plan.provider,
+        .time_axis = config->time_axis,
+        .l1_compatibility_policy = config->l1_compatibility_policy,
+        .retirement_time_contract = config->retirement_time_contract,
+        .retirement_qualification = config->retirement_qualification
+    };
+    if (!core_machine_neutral_config_is_valid(&executor) ||
+        !core_machine_board_config_is_valid(config)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_neutral_create(&executor, test_allocation,
+        port_test_allocation, &machine);
+    if (status != LIB_STATUS_OK) return status;
+    status = core_machine_board_create(machine, config);
+    if (status != LIB_STATUS_OK) return status;
+
+    *out_machine = machine;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_create(const core_machine_config *config,
+    core_machine **out_machine)
+{
+    return core_machine_create_internal(config, out_machine, LIB_NULL, LIB_NULL);
+}
+
+lib_status core_machine_create_with_test_memory_allocation(
+    const core_machine_config *config, core_machine **out_machine,
+    core_machine_memory_test_allocation *test_allocation)
+{
+    return core_machine_create_internal(config, out_machine, test_allocation,
+        LIB_NULL);
+}
+
+lib_status core_machine_create_with_test_port_allocation(
+    const core_machine_config *config, core_machine **out_machine,
+    core_machine_port_test_allocation *test_allocation)
+{
+    return core_machine_create_internal(config, out_machine, LIB_NULL,
+        test_allocation);
 }
 
 lib_status core_machine_board_create(core_machine *machine,

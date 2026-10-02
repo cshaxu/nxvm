@@ -62,6 +62,13 @@ physical move is now S70; IBM-PC board extraction follows from S71.
 These are prospective numeric receivers, not a claim that Shared Core
 already builds independently.
 
+S65 separates the private neutral construction value without rewriting the
+public plan ABI: one board composition derives the temporary value and owns
+the existing public create/test-allocation pipeline. Core does not retain
+it. This removes the direct board validation/create calls from `machine.c`;
+S68 receives the remaining four reset, clock-reset, NMI and finalization
+calls. S66 still owns the public board configuration/value boundary.
+
 ## Verification And Exit
 
 - Shared board code depends on chip public contracts and declared neutral

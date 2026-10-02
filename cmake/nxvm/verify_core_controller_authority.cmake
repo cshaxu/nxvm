@@ -16,6 +16,26 @@ endforeach()
 
 file(READ "${machine_source}" machine_board_text)
 file(READ "${machine_lifecycle_source}" machine_lifecycle_text)
+foreach(forbidden IN ITEMS "const core_machine_config *"
+    "config->clock_plan" "core_machine_create_internal("
+    "core_machine_board_create(machine, config)")
+    string(FIND "${machine_lifecycle_text}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "Neutral constructor retains board input: ${forbidden}")
+    endif()
+endforeach()
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" private_header)
+string(REGEX MATCH "typedef struct core_machine_executor_config \\{[^}]*\\}"
+    executor_config "${private_header}")
+if(NOT executor_config)
+    message(FATAL_ERROR "Neutral construction value is missing")
+endif()
+foreach(forbidden IN ITEMS "clock_plan" "pic_" "pit_" "dma_" "kbc_" "xt_")
+    string(FIND "${executor_config}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "Neutral construction value contains board field: ${forbidden}")
+    endif()
+endforeach()
 file(READ "${machine_plan_source}" machine_plan_text)
 set(machine_text "${machine_board_text}${machine_lifecycle_text}${machine_plan_text}")
 foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_hdc"

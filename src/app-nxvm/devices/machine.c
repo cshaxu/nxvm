@@ -102,7 +102,8 @@ static lib_i32 core_machine_valid_fpu_profile(x86_fpu_profile profile)
         profile <= X86_FPU_PROFILE_80387;
 }
 
-static lib_size core_machine_resolve_memory_bytes(const core_machine_config *config)
+static lib_size core_machine_resolve_memory_bytes(
+    const core_machine_executor_config *config)
 {
     return config->memory_bytes == 0u ?
         CORE_MACHINE_DEFAULT_MEMORY_BYTES : config->memory_bytes;
@@ -266,8 +267,8 @@ lib_status core_machine_capture_observation(
     return LIB_STATUS_OK;
 }
 
-static lib_i32 core_machine_neutral_config_is_valid(
-    const core_machine_config *config)
+lib_i32 core_machine_neutral_config_is_valid(
+    const core_machine_executor_config *config)
 {
     return config != LIB_NULL &&
         core_machine_valid_cpu_profile(
@@ -275,7 +276,7 @@ static lib_i32 core_machine_neutral_config_is_valid(
         core_machine_valid_fpu_profile(config->fpu_profile) &&
         (config->a20_wrap_policy == CORE_MACHINE_A20_WRAP_GLOBAL_MASK ||
          config->a20_wrap_policy == CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB) &&
-        core_machine_clock_plan_is_valid(&config->clock_plan) &&
+        core_machine_clock_ratio_is_valid(&config->provider_clock) &&
         core_machine_retirement_time_contract_is_valid(
             config->retirement_time_contract) &&
         core_machine_transaction_contract_is_valid(
@@ -293,8 +294,8 @@ static lib_i32 core_machine_neutral_config_is_valid(
 }
 
 
-static lib_status core_machine_neutral_create(
-    const core_machine_config *config,
+lib_status core_machine_neutral_create(
+    const core_machine_executor_config *config,
     core_machine_memory_test_allocation *test_allocation,
     core_machine_port_test_allocation *port_test_allocation,
     core_machine **out_machine)
@@ -349,7 +350,7 @@ static lib_status core_machine_neutral_create(
     machine->maximum_instruction_ticks = core_machine_cpu_timing_maximum_ticks(
         machine->cpu_profile, &instruction_timing);
     if (core_machine_clock_domain_initialize(&machine->provider_clock,
-            &config->clock_plan.provider) != LIB_STATUS_OK) {
+            &config->provider_clock) != LIB_STATUS_OK) {
         lib_release(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
@@ -416,38 +417,6 @@ static lib_status core_machine_neutral_create(
 }
 
 
-static lib_status core_machine_create_internal(
-    const core_machine_config *config,
-    core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation,
-    core_machine_port_test_allocation *port_test_allocation)
-{
-    core_machine *machine;
-    lib_status status;
-
-    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_machine = LIB_NULL;
-    if (!core_machine_neutral_config_is_valid(config) ||
-        !core_machine_board_config_is_valid(config)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    status = core_machine_neutral_create(config, test_allocation,
-        port_test_allocation, &machine);
-    if (status != LIB_STATUS_OK) return status;
-    status = core_machine_board_create(machine, config);
-    if (status != LIB_STATUS_OK) return status;
-
-    *out_machine = machine;
-
-    return LIB_STATUS_OK;
-}
-
-lib_status core_machine_create(const core_machine_config *config,
-    core_machine **out_machine)
-{
-    return core_machine_create_internal(config, out_machine, LIB_NULL, LIB_NULL);
-}
-
 lib_status core_machine_get_timing_disposition(const core_machine *machine,
     core_machine_timing_capability capability,
     core_machine_timing_disposition *out_disposition)
@@ -472,22 +441,6 @@ lib_status core_machine_get_timing_declaration(const core_machine *machine,
     }
     *out_declaration = machine->timing_declarations[capability];
     return LIB_STATUS_OK;
-}
-
-lib_status core_machine_create_with_test_memory_allocation(
-    const core_machine_config *config, core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation)
-{
-    return core_machine_create_internal(config, out_machine, test_allocation,
-        LIB_NULL);
-}
-
-lib_status core_machine_create_with_test_port_allocation(
-    const core_machine_config *config, core_machine **out_machine,
-    core_machine_port_test_allocation *test_allocation)
-{
-    return core_machine_create_internal(config, out_machine, LIB_NULL,
-        test_allocation);
 }
 
 static lib_status core_machine_cold_reset(core_machine *machine)

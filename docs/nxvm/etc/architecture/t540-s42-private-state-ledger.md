@@ -87,9 +87,11 @@ firmware context remains an operation guard, not a second machine owner.
    types without mirroring (S62), neutralize the private header (S63), then
    measure and allocate the oversized public interface (S64).
 7. **S65–S69** — Split neutral construction input from board configuration,
-   board public values and operations, the six direct Core-to-board calls,
+   board public values and operations, the remaining direct Core-to-board calls,
    then prove an independent neutral compile. The [S64 intake](../evidence/t540-s64-public-interface-intake.md)
    owns this revised numeric receiver map.
+   S65 moves the two construction calls to board composition with a temporary
+   neutral executor value; S68 retains four reset/clock/NMI/finalization calls.
 8. **S70** — Move only proven neutral source/tests to `src/x86/core` and
    `test/x86/core`, delete App copies, reconnect NXVM, verify independent
    Shared build/tests, both widths and four fixed-profile boots. S71 onward

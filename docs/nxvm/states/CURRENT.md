@@ -2254,16 +2254,19 @@ This is not an independent-Core-build claim. T540 remains open.
 | Identifier Mode | Continuation M5 T540 S65, next linear S after accepted S64. |
 | Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
 | Objective | Separate neutral Core construction inputs from board-selected PIC/PIT/DMA/KBC/XT and other configuration values within the one validated/frozen plan. |
-| Non-goals | Board public value/operation split (S66-S67), direct Core/board handoff (S68), independent compile (S69), physical Shared move (S70), behavior/timing/profile/INI/media change. |
+| Non-goals | Board public value/operation split (S66-S67), remaining Core reset/NMI/finalization handoff (S68), independent compile (S69), physical Shared move (S70), behavior/timing/profile/INI/media change. |
 | Reference Baseline | S63 P1 `4d6443833`, [S64 measured intake](../etc/evidence/t540-s64-public-interface-intake.md) and [S63 evidence](../etc/evidence/t540-s63-private-header-boundary.md). |
 | Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | `core_machine_config`, plan validator/create/apply and direct configuration consumers. Inventory each value's owner and lifetime before editing; split oversized rows into later linear numeric S tasks. |
+| Files And ABI Surface | Private `core_machine_executor_config` contains only RAM/CPU/FPU/bus/retirement/time/provider-clock inputs. Board composition owns the existing public create and test-allocation pipeline, deriving one temporary neutral value from the unchanged frozen plan; no 152-caller ABI rewrite. Board public configuration ownership completes in S66. |
 | Applicable Rules | One immutable plan, one neutral Core configuration, one board configuration, no runtime mirror or forwarding shim and no second create/rollback path. |
+| Expected Markers | Neutral constructor never receives `core_machine_config` or a device clock plan. Board preflight still rejects invalid clock/topology before allocation; one public construction path and existing rollback order remain. |
 | Verification | Complete x64/x86 units, specialized/documentation gates, focused plan/rollback tests, one external boot per profile/width and eight optimized 0540 PE/no-debug products if code changes. |
 | Asset Needs | Existing external firmware/media only for boots; owner INI untouched. |
 | Stop Conditions | The measured construction ABI and 152-file consumer group cannot be safely changed in one owner cut; divide unaccepted work into later linear numeric S. |
+| Reporting Requirements | Report actual changed paths/line counts, allocation/clock regression results, complete units/gates, eight single boots and product identity; do not claim independent Core compilation yet. |
 | Exit Criteria | P1/P2 pushed if code changes; affected checks pass; worktree clean. |
 | Similar-Issue Sweep | All direct plan/configuration consumers, board construction, failure rollback and CMake/static gates. |
+| Original Owner Request | Build neutral reusable x86 Core and flat IBM-PC common/AT/XT components without duplicate state, frameworks or changed product behavior. |
 
 ## S87 Admission Packet
 
