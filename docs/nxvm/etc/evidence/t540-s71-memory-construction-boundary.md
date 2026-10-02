@@ -89,8 +89,8 @@ manual verification or complete T540 integration acceptance. Retain
 the eight t535-s4 Release receiving trees until this receiver closes.
 Boot logs are `build/s71-<profile>-<width>-boot.log`. Shared, MyNES and owner
 INIs have no tracked diff. External masters are not written.
-Implementation is ready for the complete P1 delivery and actual coordinator
-review; S71 acceptance follows separately.
+Complete implementation P1 `9050dfd69` is pushed and accepted by actual-change
+coordinator review; the following governance P records closure.
 
 ## S71 artifact identities
 
@@ -108,3 +108,22 @@ directories; INIs are unchanged. SHA-256:
 | AT | x86 | 108CB1B050A4C19C89932E6373195F070E17A96E12D9CE882A9441CE6EA7C186 |
 | Model40 | x64 | 61885C23D37FB876D1FACD0718856604F581D487546EC46F88FCA21623584A75 |
 | Model40 | x86 | EB120B0FEA4461D1369A4E5C4ABDC001CEFBBD793EE4FE1B44B8D8FB1E7CF3E3 |
+
+## Coordinator review
+
+Review of pushed P1 `9050dfd69` covers all 22 paths: nine source/test/gate
+receivers, five task/evidence documents and eight artifact identities. Alias
+registration appends to the existing map only; failure resets the original
+count, preserving earlier mappings. Copied descriptors do not expose RAM or
+introduce another validation algorithm. High-reset address and fallback
+priority are unchanged. Parity failure removes only its admitted owner after
+Core rejects any pre-existing owner registration; its electrical callback and
+board configured publication order remain intact. New unit assertions cover
+both failed publication and successful retry. The strengthened prevention gates
+reject board raw RAM construction and preserve Core's sole cleanup owner.
+
+All required verification and artifacts above are complete. No CPU instruction,
+timing grade, Shared corpus, MyNES input/output, INI or external master changes
+occurred. S71 is accepted. Port construction, firmware/provider boundaries,
+test-owner classification, physical Core relocation and flat IBM-PC extraction
+remain explicit T540 work; scoped boots do not close the T.

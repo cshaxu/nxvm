@@ -2,8 +2,9 @@
 
 ## Current Work
 
-M5 T540 S71 is active: close board-to-Core RAM alias and parity construction.
-S1-S70 are accepted. Port construction follows as a separate measured receiver.
+M5 T540 S1-S71 are accepted; no implementation S is active.
+S71 closes board-to-Core RAM alias and parity construction.
+Port construction follows as a separate measured receiver.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -91,7 +92,7 @@ the completed CPU extraction.
 | T540 S68 | Accepted: four private lifecycle bindings replace direct board calls; both-width full units/gates and eight single boots pass. |
 | T540 S69 | Accepted: actual neutral sources link/run independently with only CPU/FPU/Lib dependencies and synthetic owned inputs. |
 | T540 S70 | Accepted: all board NMI/reset signal sites use opaque Core operations; both-width units/gates and eight single boots pass. |
-| T540 S71 | Active: RAM aliases and parity construction use Core-owned publication and rollback; dual-width units/gates and eight single boots pass, complete P1/coordinator acceptance pending. |
+| T540 S71 | Accepted: RAM aliases and parity construction use Core-owned publication and rollback; dual-width units/gates and eight single boots pass. |
 
 ## T540 S1 Acceptance
 
@@ -2436,7 +2437,7 @@ owner INIs and external masters have no change. The
 artifact identities, receiving limits and remaining pre-relocation classes.
 S70 is accepted; T540 remains open with no next implementation admitted here.
 
-## T540 S71 Active Packet
+## T540 S71 Accepted Packet
 
 | Field | Required record |
 | --- | --- |
@@ -2456,6 +2457,19 @@ S70 is accepted; T540 remains open with no next implementation admitted here.
 | Exit Criteria | Complete memory construction class with passing required proof/artifacts/boots, complete pushed P1 and actual coordinator review, governance P2 push and clean worktree. T540 remains open. |
 | Original Owner Request | Flat independently reusable Core and IBM-PC board components, one state owner/path, no pointer facade or layered patches; numeric S progression automatically admitted. |
 | Similar-Issue Sweep | Search all NXVM production for raw memory mapping and parity enable/release calls. Neutral memory implementation is the owner, same-owner tests are valid; D4 already uses public route transaction. Port checkpoint and board-issued I/O hits are explicitly retained for the next receiver. |
+
+Coordinator actual-change review accepts pushed S71 P1 `9050dfd69` across all
+22 delivered paths. The original RAM range validator and mapping storage remain
+the sole owners; failed batches restore the prior count. Board reset aliases
+retain their address/priority and parity publication retains success-only board
+commit plus Core owner-qualified rollback. Both-width full units pass 470/470;
+independent Core proofs, specialized gates and all eight one-shot external boot
+checkpoints pass. Eight optimized debug-stripped 0540 EXEs are committed;
+Shared, MyNES, owner INIs and external masters are unchanged. The
+[S71 evidence](../etc/evidence/t540-s71-memory-construction-boundary.md) records
+identities and limits. S71 is accepted; T540 remains open for measured port,
+firmware/attachment and physical relocation receivers. No next implementation
+is admitted by this governance closure.
 
 ## S87 Admission Packet
 
