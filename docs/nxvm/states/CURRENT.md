@@ -2,10 +2,10 @@
 
 ## Current Work
 
-M5 T540 S18 is accepted: immutable ROM images, ordinary aliases and pre-A20
-reset aliases now use one Core-owned registration and rollback boundary.
-S1-S18 are accepted; T540 remains open for bounded KBC/DMA memory exchange,
-neutral Core relocation and IBM-PC board extraction. The next S is S19.
+M5 T540 S19 is accepted: KBC and 92h A20 use one Core-owned signal, and the
+non-ROM absent-memory fallback uses Core's typed route. S1-S19 are accepted;
+T540 remains open for DMA transactions, neutral Core relocation and IBM-PC
+board extraction. S20 is the next bounded receiver.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -47,6 +47,7 @@ the completed CPU extraction.
 | T540 S16 | Accepted: VADP CGA/planar memory routes and EGA observer use one Core owner transaction; snapshots use copied Core inspection. |
 | T540 S17 | Accepted: D4 replacement windows, parity and observer publish atomically; both-width complete units, Model-40 boot and eight 0540 products pass. |
 | T540 S18 | Accepted: ROM images and both alias kinds use Core-owned routes and owner-scoped rollback; dual-width units, four-profile external boots, gates and eight 0540 products pass. |
+| T540 S19 | Accepted: bounded Core A20 signal and absent-memory fallback route, without raw RAM in board adapters; dual-width units, gates, external boots and eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -591,8 +592,50 @@ The [S18 evidence](../etc/evidence/t540-s18-rom-memory-routes.md) records x64
 and x86 complete units **469/469** each, specialized gates **72/72**, each of
 the four external boot checkpoints once per width, documentation governance,
 eight optimized 0540 products, PE/no-debug checks and their SHA-256 identities.
-S18 is accepted. S19 retains KBC/DMA bounded memory exchanges and the non-ROM
-absent-memory fallback; the neutral Core and board extraction remain T540 work.
+S18 is accepted. S19 consumes bounded KBC/92h A20 and non-ROM absent-memory
+routes; DMA bus transactions move to S20. The neutral Core and board extraction
+remain T540 work.
+
+## T540 S19 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S19, the next linear S after accepted S18. |
+| Admission And Approval | The owner authorized automatic admission of bounded numeric T540 subtasks. Target NXVM only; Shared and MyNES are read-only. S19 source intake splits the former KBC/DMA memory row by distinct signal and bus-transaction boundaries before implementation. |
+| Objective | Make KBC output and port 92h read/write use one bounded Core-owned A20 signal rather than a raw RAM pointer, and publish non-ROM absent-memory fallbacks through Core's typed memory route without losing open-bus priority or rollback. |
+| Non-goals | DMA bus cycles/HOLD (S20), board deadline/PIC exchange (S21), physical Core/board relocation, KBC command changes, new memory/A20 electrical behavior, profile/INI/asset/media changes or a generic device framework. |
+| Reference Baseline | Accepted S18 P1 `b987233dd` and P2 `d961f287a`; complete units 469/469 per width, 72/72 specialized gates, all four external boot checkpoints once per width, eight verified 0540 Release products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [Core/board handoff and S19 refinement](../etc/architecture/t540-s7-core-board-handoff.md), [board adapter ledger](../etc/architecture/t540-board-adapter-ledger.md), and [S18 evidence](../etc/evidence/t540-s18-rom-memory-routes.md). |
+| Files And ABI Surface | NXVM `devices/{kbc,kbc.h,machine,machine_board,memory_interface,memory_interface.h}` plus affected KBC/A20/absent-memory tests, Core route gate, S19 evidence and eight 0540 products. KBC keeps a bounded A20 callback/context instead of `t_ram`; 92h uses the same Core signal. Add only the existing fallback provider's mode to the typed route and retire its direct registration call. |
+| Applicable Rules | One Core A20 truth and one provider table; no board adapter reads/writes `t_ram` or owns another latch for A20. KBC remains capable of signalling A20 while the machine runs; paused-debug A20 mutation retains its restriction. Absent windows remain lower priority than live apertures, with candidate state removed on publication failure. No Shared or MyNES edit and no App-specific profile branch in Core. |
+| Verification | Inspect every A20 writer/reader and absent-memory registration; focused KBC command/output, 92h and absent-window priority/rollback tests; complete repository-only x64/x86 units; specialized/documentation gates; affected external boot checkpoint once per profile/width and eight optimized 0540 EXEs with PE/hash/no-debug proof. |
+| Expected Markers | No KBC or 92h raw RAM link; both A20 inputs observe the same Core flag; one Core typed fallback route and owner-scoped failure cleanup; no new callback path for CPU/debug A20 or duplicate open-bus provider. |
+| Asset Needs | Existing selected BYOB build roots only. Do not alter external originals or adjacent NXVM.ini files. |
+| Reporting Requirements | Record source/test added, removed and net lines; all original A20/fallback callers and disposition; KBC running-write, port 92h readback, open-bus overlap/rollback proof, boot checkpoints and eight product hashes; explicitly transfer DMA to S20. |
+| Stop Conditions | Stop before changing KBC semantics, A20 wrapping policy, DMA transfer order, reset/firmware roles, Shared/MyNES source or protected assets. A newly required behavioral change needs owner review before implementation. |
+| Exit Criteria | KBC and 92h have no raw RAM pointer and retain their behavior via one Core signal; absent fallback uses Core typed registration and fails atomically; focused/full dual-width verification, affected external boots and artifact checks pass. |
+| Original Owner Request | Build reusable neutral x86 Core and proven IBM-PC board components for later independent PC Apps without duplicate state or a patch stack. |
+| Similar-Issue Sweep | Search all tracked NXVM production/test/build paths for direct `flagA20`, `t_ram` board links and raw absent fallback registration. Consume KBC, 92h and fallback here; keep Core-internal memory ownership, CPU/debug operations and DMA transaction arguments with their distinct S20 receiver. |
+
+## T540 S19 Acceptance
+
+P1 `ad38fee6a` replaces the KBC RAM borrow with a bounded A20 signal,
+routes port 92h through the same Core state, and registers absent-memory
+fallback via Core's typed route. The actual diff has one signal owner and one
+provider table: no board/KBC `flagA20` access, no second latch, no changed
+KBC command behavior or fallback priority. DMA's distinct transaction
+arguments remain assigned to S20. The [S19 evidence](../etc/evidence/t540-s19-a20-fallback-routes.md)
+records caller dispositions, allocation-failure/overlap tests, added and
+removed source/test lines, eight executable hashes and a failed x86 relink
+caused solely by an active test handle; the retry passed after that test
+finished.
+
+Complete repository-only unit suites passed x64 and x86 **469/469** each.
+Specialized gates passed **74/74** steps and documentation governance passed
+after the evidence was added. All four external boot checkpoints passed once
+per width, and all eight optimized 0540 products have the expected PE format
+and no `.debug` sections. No Shared, MyNES, INI, external media or firmware
+byte changed. S19 is accepted; T540 remains open.
 
 ## S87 Admission Packet
 
