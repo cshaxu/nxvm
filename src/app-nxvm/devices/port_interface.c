@@ -51,6 +51,15 @@ lib_status core_machine_install_port_routes(core_machine *machine,
     return LIB_STATUS_OK;
 }
 
+lib_status core_machine_remove_port_routes(core_machine *machine,
+    const void *owner)
+{
+    if (machine == LIB_NULL || owner == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (machine->lifecycle == CORE_MACHINE_RUNNING) return LIB_STATUS_INVALID_STATE;
+    core_machine_port_unregister_owner(&machine->executor_port, owner);
+    return LIB_STATUS_OK;
+}
+
 lib_status core_machine_install_port_provider(
     core_machine *machine,
     lib_u16 first,

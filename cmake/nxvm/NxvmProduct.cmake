@@ -3094,6 +3094,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying AT Port-B atomic route and parity ownership"
         VERBATIM)
 
+    add_custom_target(verify-hdc-port-routes
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_hdc_port_routes.cmake"
+        COMMENT "Verifying HDC atomic routes and 3F7 wired-OR"
+        VERBATIM)
+
     add_custom_target(verify-rational-clock-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rational_clock_boundary.cmake"
@@ -3295,6 +3301,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-boot-failure-portal-closure
     verify-cmos-rtc-boundary
     verify-board-port-b-boundary
+    verify-hdc-port-routes
     verify-rational-clock-boundary
     verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary

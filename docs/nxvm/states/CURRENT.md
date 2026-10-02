@@ -2,8 +2,9 @@
 
 ## Current Work
 
-M5 T540 S13 is accepted: AT Port-B and D4 routes are Core-owned and
-failure-atomic with parity storage. S1-S13 are accepted; T540 remains open.
+M5 T540 S14 is active: move all HDC personality port routes, including XT
+and Compaq 3F7 wired-OR, to the Core-owned atomic batch. S1-S13 are accepted;
+T540 remains open.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -407,6 +408,27 @@ records the changed-line accounting, all eight artifact hashes and receiving
 HDC/VADP work. S13 changes NXVM only; Shared and MyNES remain untouched.
 Neutral Core relocation, shared IBM-PC board extraction and the full external
 integration gate remain open T540 work.
+
+## T540 S14 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S14, next linear S after accepted S13. |
+| Admission And Approval | The owner's automatic admission for bounded T540 S work applies to the accepted S7/S12 handoff, which assigns HDC personalities and Compaq 3F7 to S14. Target: NXVM only; Shared and MyNES are read-only receiving reviews. |
+| Objective | Replace HDC's raw noncontiguous port registration/checkpoint with one Core-owned typed route batch for ATA, WD1003, Compaq WD and XT Xebec; retain the 3F7 FDC/HDC wired-OR read and make chip, route and XT DMA binding failure-atomic. |
+| Non-goals | HDC protocol behavior or timing changes, media/geometry policy, VADP or unrelated ports, DMA runtime semantics, neutral Core/board physical relocation, Shared/MyNES source edits, firmware/INI/media changes. |
+| Reference Baseline | Accepted S13 governance commit `edac1deea`; eight optimized 0540 profile executables and dual-width complete units 467/467. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S7 handoff and S12 refinement](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | NXVM `devices/{machine_board,port_interface}` and owner-local HDC/port-assembly tests, a registered boundary verifier if mechanically justified, S14 evidence and the eight 0540 artifacts. The only allowed cross-module API addition is bounded Core route removal by owner, reusing Core's existing private removal mechanism; no raw `t_port` or checkpoint leaves Core. |
+| Applicable Rules | One Core port table and one atomic batch per HDC personality; one HDC chip state owner; one original FDC read plus Compaq's explicit wired-OR contributor on 3F7. Prepare chip before publishing routes. A failed XT DMA bind revokes only HDC-owned routes and destroys only HDC state. Preserve all existing timing grades, guest-visible protocol and product configuration. Record actual code-size change and all retained paths. |
+| Verification | Focused HDC personality, XT DMA, 3F7 wired-OR, port-collision and injected per-route allocation/rollback tests; new DMA-bind failure rollback case; complete x64/x86 repository-only units; relevant static gates; eight optimized Release artifacts with SHA-256, PE and no-debug proof; documentation governance and staged diff checks. |
+| Expected Markers | No HDC adapter `t_port`, availability-probe, checkpoint or per-port raw registration remains. All HDC routes succeed or none do; Compaq retains the pre-existing FDC read and HDC wired-OR contribution; failed chip/route/DMA preparation leaves no HDC route, chip, topology, DMA request or configured flag; retry succeeds. |
+| Asset Needs | Only existing BYOB selected-profile build roots for approved embedded-ROM executable rebuilds. Do not edit adjacent NXVM.ini or MyNES artifacts. |
+| Reporting Requirements | Record exact source/test added, removed and net line counts, actual-diff review, four protocol dispositions and failure order, test results, eight artifact hashes and residual VADP/neutral-Core receivers. |
+| Stop Conditions | Stop before adding a generic controller framework, changing any guest HDC protocol/timing, altering media assets or needing Shared/MyNES code, or exposing raw Core port/DMA layouts across the planned boundary. Revise the packet before any material scope expansion. |
+| Exit Criteria | All four HDC personalities register their complete route set through the single typed Core batch; Compaq 3F7 preserves wired-OR; every injected route and DMA-bind failure leaves all non-HDC state intact; dual-width units/products and documentation gates pass with no second HDC registration path. |
+| Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through complete, minimal, individually tracked board cuts, then extract them for independent PC Apps. |
+| Similar-Issue Sweep | Search all NXVM board adapters, tests and static gates for raw HDC route registration, checkpoints, FDC/HDC 3F7 overlap and owner rollback. Consume every HDC personality hit in S14; assign remaining staged VADP ports to S15 and Core-private storage to the later neutral-Core move. |
 
 ## S87 Admission Packet
 

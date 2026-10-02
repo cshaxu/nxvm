@@ -863,13 +863,33 @@ static lib_i32 core_machine_fdc_topology_is_valid(
     return 1;
 }
 
+static lib_size core_machine_hdc_port_addresses(
+    const core_machine_hdc_config *config, lib_u16 ports[9])
+{
+    if (config->protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT) {
+        ports[0] = config->bus.xebec.data_port;
+        ports[1] = config->bus.xebec.hardware_status_reset_port;
+        ports[2] = config->bus.xebec.jumpers_select_port;
+        ports[3] = config->bus.xebec.dma_irq_mask_port;
+        return 4u;
+    }
+    ports[0] = config->bus.task_file.data_port;
+    ports[1] = config->bus.task_file.error_features_port;
+    ports[2] = config->bus.task_file.sector_count_port;
+    ports[3] = config->bus.task_file.sector_number_port;
+    ports[4] = config->bus.task_file.cylinder_low_port;
+    ports[5] = config->bus.task_file.cylinder_high_port;
+    ports[6] = config->bus.task_file.drive_head_port;
+    ports[7] = config->bus.task_file.status_command_port;
+    ports[8] = config->bus.task_file.alternate_status_device_control_port;
+    return 9u;
+}
+
 static lib_i32 core_machine_hdc_topology_is_valid(
     const core_machine_hdc_topology *topology)
 {
     const core_machine_hdc_config *config;
-    const lib_u16 *ports;
-    lib_u16 task_file_ports[9];
-    lib_u16 xebec_ports[4];
+    lib_u16 ports[9];
     lib_size port_count;
     lib_size first;
     lib_size second;
@@ -878,13 +898,8 @@ static lib_i32 core_machine_hdc_topology_is_valid(
         topology->media_id == CORE_MACHINE_MEDIA_ID_INVALID ||
         topology->slave_media_id == topology->media_id) return 0;
     config = &topology->config;
+    port_count = core_machine_hdc_port_addresses(config, ports);
     if (config->protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT) {
-        xebec_ports[0] = config->bus.xebec.data_port;
-        xebec_ports[1] = config->bus.xebec.hardware_status_reset_port;
-        xebec_ports[2] = config->bus.xebec.jumpers_select_port;
-        xebec_ports[3] = config->bus.xebec.dma_irq_mask_port;
-        ports = xebec_ports;
-        port_count = sizeof(xebec_ports) / sizeof(xebec_ports[0]);
         if (config->irq != 5u || config->bus.xebec.dma_channel != 3u ||
             config->bus.xebec.drive_type != CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||
             config->bus.xebec.expected_media_geometry.logical_sector_count !=
@@ -898,17 +913,6 @@ static lib_i32 core_machine_hdc_topology_is_valid(
             config->bus.xebec.expected_media_geometry.sectors_per_track !=
                 CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK) return 0;
     } else {
-        task_file_ports[0] = config->bus.task_file.data_port;
-        task_file_ports[1] = config->bus.task_file.error_features_port;
-        task_file_ports[2] = config->bus.task_file.sector_count_port;
-        task_file_ports[3] = config->bus.task_file.sector_number_port;
-        task_file_ports[4] = config->bus.task_file.cylinder_low_port;
-        task_file_ports[5] = config->bus.task_file.cylinder_high_port;
-        task_file_ports[6] = config->bus.task_file.drive_head_port;
-        task_file_ports[7] = config->bus.task_file.status_command_port;
-        task_file_ports[8] = config->bus.task_file.alternate_status_device_control_port;
-        ports = task_file_ports;
-        port_count = sizeof(task_file_ports) / sizeof(task_file_ports[0]);
         if (config->bus.task_file.lba28_supported != LIB_FALSE &&
             config->bus.task_file.lba28_supported != LIB_TRUE) return 0;
         if (config->protocol != CORE_MACHINE_HDC_PROTOCOL_ATA_PIO &&
@@ -929,31 +933,6 @@ static lib_i32 core_machine_hdc_topology_is_valid(
         if (ports[first] == 0u) return 0;
         for (second = first + 1u; second < port_count; ++second) {
             if (ports[first] == ports[second]) return 0;
-        }
-    }
-    return 1;
-}
-
-typedef struct core_machine_port_direction_requirement {
-    lib_u16 port;
-    lib_u8 read;
-    lib_u8 write;
-} core_machine_port_direction_requirement;
-
-static lib_i32 core_machine_controller_ports_are_available(
-    const core_machine *machine,
-    const core_machine_port_direction_requirement *requirements,
-    lib_size count)
-{
-    lib_size index;
-
-    if (machine == LIB_NULL || requirements == LIB_NULL) return 0;
-    for (index = 0u; index < count; ++index) {
-        if ((requirements[index].read && core_machine_port_has_read(
-                &machine->executor_port, requirements[index].port)) ||
-            (requirements[index].write && core_machine_port_has_write(
-                &machine->executor_port, requirements[index].port))) {
-            return 0;
         }
     }
     return 1;
@@ -996,11 +975,12 @@ lib_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology)
 {
     const core_machine_port_provider *provider;
-    core_machine_port_direction_requirement ports[9];
+    core_machine_port_route routes[10];
+    lib_u16 ports[9];
     lib_size port_count;
     lib_size index;
     lib_status status;
-    core_machine_port_provider_entry *port_checkpoint;
+    lib_bool xebec;
 
     if (!core_machine_configuration_is_open(machine) || machine->hdc_configured) {
         return LIB_STATUS_INVALID_STATE;
@@ -1011,86 +991,49 @@ lib_status core_machine_configure_hdc(core_machine *machine,
     if (topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB &&
         (!machine->fdc_configured ||
             topology->config.bus.task_file.drive_address_port !=
-                machine->fdc_topology.config.direction_port ||
-            !core_machine_port_has_read(&machine->executor_port,
-                topology->config.bus.task_file.drive_address_port))) return LIB_STATUS_INVALID_STATE;
-    if (topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT) {
-        if (!machine->dma_configured) return LIB_STATUS_INVALID_STATE;
-        ports[0] = (core_machine_port_direction_requirement) {
-            topology->config.bus.xebec.data_port, LIB_TRUE, LIB_TRUE};
-        ports[1] = (core_machine_port_direction_requirement) {
-            topology->config.bus.xebec.hardware_status_reset_port, LIB_TRUE, LIB_TRUE};
-        ports[2] = (core_machine_port_direction_requirement) {
-            topology->config.bus.xebec.jumpers_select_port, LIB_TRUE, LIB_TRUE};
-        ports[3] = (core_machine_port_direction_requirement) {
-            topology->config.bus.xebec.dma_irq_mask_port, LIB_FALSE, LIB_TRUE};
-        port_count = 4u;
-    } else {
-        const core_machine_hdc_task_file_config *task_file =
-            &topology->config.bus.task_file;
-
-        ports[0] = (core_machine_port_direction_requirement) {task_file->data_port,
-            LIB_TRUE, LIB_TRUE};
-        ports[1] = (core_machine_port_direction_requirement) {
-            task_file->error_features_port, LIB_TRUE, LIB_TRUE};
-        ports[2] = (core_machine_port_direction_requirement) {task_file->sector_count_port,
-            LIB_TRUE, LIB_TRUE};
-        ports[3] = (core_machine_port_direction_requirement) {task_file->sector_number_port,
-            LIB_TRUE, LIB_TRUE};
-        ports[4] = (core_machine_port_direction_requirement) {task_file->cylinder_low_port,
-            LIB_TRUE, LIB_TRUE};
-        ports[5] = (core_machine_port_direction_requirement) {task_file->cylinder_high_port,
-            LIB_TRUE, LIB_TRUE};
-        ports[6] = (core_machine_port_direction_requirement) {task_file->drive_head_port,
-            LIB_TRUE, LIB_TRUE};
-        ports[7] = (core_machine_port_direction_requirement) {task_file->status_command_port,
-            LIB_TRUE, LIB_TRUE};
-        ports[8] = (core_machine_port_direction_requirement) {
-            task_file->alternate_status_device_control_port, LIB_TRUE, LIB_TRUE};
-        port_count = 9u;
-    }
-    if (!core_machine_controller_ports_are_available(machine, ports, port_count)) {
-        return LIB_STATUS_INVALID_STATE;
-    }
+                machine->fdc_topology.config.direction_port)) return LIB_STATUS_INVALID_STATE;
+    xebec = topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT;
+    if (xebec && !machine->dma_configured) return LIB_STATUS_INVALID_STATE;
     provider = core_machine_hdc_port_provider();
     if (provider == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
-    port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
+    port_count = core_machine_hdc_port_addresses(&topology->config, ports);
+    for (index = 0u; index < port_count; ++index) {
+        routes[index] = (core_machine_port_route) {ports[index],
+            xebec && index == 3u ? LIB_NULL : provider->read,
+            provider->write, &machine->hdc, LIB_FALSE, 0u};
+    }
+    if (topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) {
+        routes[port_count++] = (core_machine_port_route) {
+            .address = topology->config.bus.task_file.drive_address_port,
+            .read = provider->read, .owner = &machine->hdc,
+            .wired_or_read = LIB_TRUE};
+    }
     machine->hdc_topology = *topology;
     core_machine_hdc_connect(&machine->hdc, machine->hdc_topology.media_registry,
         machine->hdc_topology.media_id, machine->hdc_topology.slave_media_id,
         &machine->shared_pic_master,
         &machine->shared_pic_slave, &machine->hdc_topology.config);
     status = core_machine_hdc_initialize(&machine->hdc);
-    for (index = 0u; status == LIB_STATUS_OK && index < port_count; ++index) {
-        if (ports[index].read && (status = core_machine_port_add_read_provider(
-                &machine->executor_port, ports[index].port, provider->read,
-                &machine->hdc)) != LIB_STATUS_OK) break;
-        if (ports[index].write && (status = core_machine_port_add_write_provider(
-                &machine->executor_port, ports[index].port, provider->write,
-                &machine->hdc)) != LIB_STATUS_OK) break;
-    }
-    if (status == LIB_STATUS_OK &&
-        machine->hdc_topology.config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) {
-        status = core_machine_port_add_read_wired_or_provider(&machine->executor_port,
-            machine->hdc_topology.config.bus.task_file.drive_address_port,
-            provider->read, &machine->hdc);
-    }
-    if (status == LIB_STATUS_OK &&
-        machine->hdc_topology.config.protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT) {
+    if (status == LIB_STATUS_OK)
+        status = core_machine_install_port_routes(machine, routes, port_count);
+    if (status == LIB_STATUS_OK && xebec) {
         status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
             machine->hdc_topology.config.bus.xebec.dma_channel,
             core_machine_hdc_dma_provider(), &machine->hdc, &machine->hdc_dma_request);
+        if (status != LIB_STATUS_OK) {
+            lib_status rollback = core_machine_remove_port_routes(machine, &machine->hdc);
+
+            if (rollback != LIB_STATUS_OK) status = rollback;
+        }
     }
     if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(&machine->executor_port,
-            port_checkpoint);
         core_machine_hdc_finalize(&machine->hdc);
         lib_memory_set(&machine->hdc_topology, 0u,
             sizeof(machine->hdc_topology));
         return status;
     }
-    if (machine->hdc_topology.config.protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT) {
+    if (xebec) {
         core_machine_hdc_bind_dma_request(&machine->hdc, &machine->hdc_dma_request,
             core_machine_hdc_dma_request_assert, core_machine_hdc_dma_request_deassert,
             machine);

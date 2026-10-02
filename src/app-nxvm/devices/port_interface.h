@@ -45,6 +45,11 @@ lib_status core_machine_install_port_routes(
     const core_machine_port_route *routes,
     lib_size count);
 
+/* Construction rollback or teardown only, with execution stopped. Removes
+ * only routes published with this owner token. */
+lib_status core_machine_remove_port_routes(core_machine *machine,
+    const void *owner);
+
 lib_status core_machine_install_port_provider(
     core_machine *machine,
     lib_u16 first,
