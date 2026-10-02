@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S37 is active: audit the actual S31-S36 source diff and freeze the
-finite neutral Core file ledger before physical relocation. S1-S36 are accepted;
+M5 T540 S38 is active: move the F0000h firmware role and reset-alias
+composition to the IBM-PC board owner. S1-S37 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -65,7 +65,8 @@ the completed CPU extraction.
 | T540 S34 | Accepted: one board-device cold-reset phase retains order; Core firmware-failure and processor-only reset remain intact; dual-width units and eight boots pass. |
 | T540 S35 | Accepted: the sole destructor delegates board releases and reuses ROM route rollback for owner-only image release; dual-width units and eight boots pass. |
 | T540 S36 | Accepted: entry, ROM and trace implementations use Core state only; unused board helper include removed; dual-width units and eight boots pass. |
-| T540 S37 | Active: construction/reset/rollback audit and relocation ledger. |
+| T540 S37 | Accepted: S31-S36 actual-diff/caller audit froze a finite neutral Core/board file ledger and identified owner-sized pre-move receivers. |
+| T540 S38 | Active: F0000h firmware/reset-alias board ownership. |
 
 ## T540 S1 Acceptance
 
@@ -1309,6 +1310,44 @@ timing grade changed. T540 remains open.
 | Exit Criteria | Every S31-S36 path and dependent caller is audited, concrete defects repaired/verified, finite S38 relocation ledger recorded, and actual-diff P1 plus governance P2 close S37. |
 | Original Owner Request | Establish neutral `x86/core` and flat reusable IBM-PC board layers with no divergence or patch-over-patch implementation. |
 | Similar-Issue Sweep | Check all four profile compositions, early failures, ROM aliases, firmware callbacks, 8042 processor pulse, D4/XT/AT wiring and all direct tests for misplaced ownership. |
+
+## T540 S37 Acceptance
+
+Source-only P1 `1e68c2e9f` records the
+[S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md).
+The review found no new guest-behavior regression in S31-S36: frozen plan,
+single construction/reset/destruction routes and ROM rollback remain intact.
+It also found that the current mixed `machine.c`/`machine.h` cannot be moved
+blindly: F0000h alias policy, firmware-less reset fallback, D4 shutdown,
+planar memory veto, XT/8042 input dispatch and board clock instances still
+live across the intended private-state cut. These are explicitly allocated
+to bounded S38-S42; the physical neutral move is now prospective S43, with
+board extraction S44 onward. This is a relocation-precondition finding, not
+a claim that S38-S43 are already implemented. No source, Shared/MyNES, INI,
+firmware, media or executable input changed. `git diff --check` and NXVM
+documentation governance passed; S36's 469/469 per width and 8/8 boots remain
+the last code baseline. T540 stays open.
+
+## T540 S38 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S38, next linear S after accepted S37. |
+| Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Put the IBM-PC F0000h firmware role and CPU high reset-alias composition with board/firmware assembly, leaving generic Core immutable ROM registration and operation guarding untouched. |
+| Non-goals | High-ROM RAM fallback (S39), D4 shutdown/input dispatch (S40), clock/state split (S41-S42), physical Shared move (S43), ROM byte or CPU reset semantics change, second provider binding. |
+| Reference Baseline | S37 P1 `1e68c2e9f`, [S37 ledger](../etc/architecture/t540-s37-core-relocation-ledger.md), S36 dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S30 intake](../etc/evidence/t540-s30-plan-reset-intake.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md). |
+| Files And ABI Surface | Inspect `src/app-nxvm/devices/{machine.c,machine_board.c,machine_firmware.c,machine.h,rom_mapping_interface.c}` and firmware/ROM alias tests. Relocate the existing F0000h alias derivation and binding continuation by owner; keep one public firmware-provider bind and the existing Core mapping operations. |
+| Applicable Rules | Firmware supplies copied ordinary ROM bytes; board selects the F0000h role and high reset-vector alias; Core owns one immutable mapping table, reset-overlay priority and reverse rollback. Preserve 8086/8088/80186 no-high-alias and 80286/80386 alias behavior plus success-only publication. |
+| Verification | Focused firmware bind/rollback, reset-ROM alias, immutable mapping and four-profile tests; full x64/x86 repository-only units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 products with PE/hash/no-debug proof. |
+| Expected Markers | No F0000h board role in the neutral firmware operation implementation; no second alias table, provider bind, firmware invocation or ROM copy. |
+| Asset Needs | Existing owner-provided external firmware/media for fixed boot checks only; no new protected input or owner INI change. |
+| Reporting Requirements | Record exact moved functions/callers, ROM alias and failure rollback equivalence, tests/artifact hashes and retained S39-S43 work. |
+| Stop Conditions | Stop before a new firmware framework, changed reset mapping, Shared/MyNES edit or moving mixed private state under an unproven header. |
+| Exit Criteria | Board/firmware composition solely owns the F0000h role and alias choice, Core solely owns mapping storage/rollback, behavior and checks pass, and actual-diff P1 plus governance P2 close S38. |
+| Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique state/data ownership and no patch-over-patch path. |
+| Similar-Issue Sweep | Check every firmware bind/reset, 286/386 alias, fallback/no-firmware test and failure rollback caller across four profiles. |
 
 ## S87 Admission Packet
 
