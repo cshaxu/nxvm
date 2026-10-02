@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S68 is active: complete receiving review for the four Core-to-board
-lifecycle/signal calls. S1-S67 are accepted;
+M5 T540 S69 is active: prove independent neutral Core compilation and linking.
+S1-S68 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -88,7 +88,8 @@ the completed CPU extraction.
 | T540 S65 | Accepted: one board composition supplies thirteen neutral constructor fields; both-width units/gates and eight single boots pass. |
 | T540 S66 | Accepted: board values and dependent declarations have one owner; both-width units/gates and eight boot checkpoints pass. |
 | T540 S67 | Accepted: five neutral validator definitions move verbatim to Core; both-width units/gates and eight boot checkpoints pass. |
-| T540 S68 | Active: bounded handoff for the four direct reset/clock/NMI/finalization calls. |
+| T540 S68 | Accepted: four private lifecycle bindings replace direct board calls; both-width full units/gates and eight single boots pass. |
+| T540 S69 | Active: independently link the actual neutral source with only CPU/FPU/Lib dependencies and synthetic owned inputs. |
 
 ## T540 S1 Acceptance
 
@@ -2345,7 +2346,7 @@ the allocation, artifact identities and limits. S67 is accepted, not T540;
 S68 receives the measured four lifecycle handoffs, ahead of independent
 compilation and Shared physical relocation.
 
-## T540 S68 Active Packet
+## T540 S68 Accepted Packet
 
 | Field | Required record |
 | --- | --- |
@@ -2366,12 +2367,33 @@ compilation and Shared physical relocation.
 | Original Owner Request | Reusable neutral x86 Core and flat IBM-PC common/AT/XT components with unique state and execution owners, strict numeric S tracking and no layered patches. |
 | Similar-Issue Sweep | All direct board references in neutral Core, fourteen existing provider bindings, allocation before/after clock initialization, neutral-create failures, cold/processor-only reset, NMI unmask and the sole destroy route. |
 
-S68 implementation is complete, pending actual-commit review. The
+Coordinator review accepts pushed S68 P1 `c473ddfdf`. The
 [receiving evidence](../etc/evidence/t540-s68-board-lifecycle-handoff.md)
 records four private phase bindings, unchanged board bodies/order, complete
 469/469 units per width, specialized/dependency/documentation checks, eight
 rebuilt 0540 products and eight one-shot external boot checkpoints. Shared,
 MyNES and owner INIs remain unchanged. S69-S70 and T540 remain open.
+
+## T540 S69 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S69, next numeric S after accepted S68. |
+| Admission And Approval | Standing automatic bounded-S admission; NXVM-only build/test proof. Shared six components, MyNES, owner INIs and external assets remain read-only. |
+| Objective | Prove that the actual neutral Core sources compile and link without IBM-PC board implementations or the existing all-chip executor aggregate. |
+| Non-goals | Physical Shared relocation (S70), IBM-PC board extraction, new executor or copied production implementation, CPU/device semantics or timing changes, public API and product configuration changes. |
+| Reference Baseline | Accepted S68 P1 `c473ddfdf` and its evidence. Intake finds that current `core-machine-executor` links all board chips and the existing lifecycle fixture constructs a board; neither proves independent neutrality. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md) and [source ledger](../etc/architecture/t540-s37-core-relocation-ledger.md). |
+| Files And ABI Surface | NXVM CMake/test/static-proof files. Compile the same sixteen neutral sources: clock, CPU bus, debug, entry plan, firmware invocation, machine, scheduler, memory/port/ROM/trace/retirement interfaces, timeline and memory/port/transaction primitives. Use existing headers and private neutral constructor. No source copy or new public contract. |
+| Applicable Rules | One production source and guest executor. The test-only receiving target links only declared CPU/FPU/Lib dependencies, not board composition, display or peripheral chips. Synthetic input belongs to its test; existing board fixtures retain their original meaning. |
+| Verification | Both-width standalone link/run proof and link-input inventory; full units and specialized/dependency/documentation/diff gates. If an executable input changes, rebuild eight optimized/debug-stripped 0540 products and verify one external boot per row; otherwise retain and hash-check accepted S68 artifacts. |
+| Expected Markers | A real test executable reaches neutral construction, reset, bounded CPU/time execution, memory/port/ROM/debug observation and destruction without board symbols. Static inventory prevents the all-chip target from masquerading as neutrality. |
+| Asset Needs | None for unit proof; use only code-owned synthetic data. No firmware/media acquisition, external master or INI change. |
+| Reporting Requirements | Exact source/header and link dependencies, exercised API/phase ownership, complete verification and whether product inputs or artifacts changed. State any remaining blocker before claiming independent compilation. |
+| Stop Conditions | Linking requires board implementations or a duplicate executor, proof substitutes stubs for Core logic, existing tests lose coverage, or the bounded diff requires broader production changes. Reallocate the measured gap before claiming success. |
+| Exit Criteria | Actual independent proof plus complete required checks; P1 pushed, coordinator actual-commit review and governance P2 pushed; clean tree. T540 stays open. |
+| Original Owner Request | Neutral x86 Core and flat IBM-PC common/AT/XT ownership for the future independent PC Apps, without mirrored state, layered patches or suffix S numbering. |
+| Similar-Issue Sweep | Candidate source includes and undefined symbols, transitive CMake chip links, existing executor fixture, board callbacks and null bindings, trace variants and primitive/display source ownership. |
 
 ## S87 Admission Packet
 

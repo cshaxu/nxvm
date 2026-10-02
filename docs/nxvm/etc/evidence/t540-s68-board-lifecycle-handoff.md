@@ -59,3 +59,13 @@ Receiving logs are the ignored `build/s68-unit-{x64,x86}.log`,
 `s68-gates-{x64,x86}.log` and `s68-<profile>-<width>-{build,boot}.log` files.
 Independent neutral compilation remains S69; physical Shared relocation is
 S70. T540 and IBM-PC board extraction remain open.
+
+## Actual P1 acceptance
+
+Coordinator review accepts pushed P1 `c473ddfdf`: sixteen NXVM paths and
+clean `git show --check`. The four private callbacks bind once, before
+fallible board clocks, and call the original bodies at the original points.
+The actual test assertions, five source/test/gate deltas, eight artifact
+identities and eight terminal markers match this evidence. HEAD equals
+`origin/master`; the worktree is clean at review. No Shared/MyNES/INI path
+appears in P1. S68 closes this lifecycle boundary, not Core relocation.
