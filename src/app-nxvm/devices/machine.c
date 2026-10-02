@@ -402,63 +402,44 @@ lib_status core_machine_capture_observation(
     return LIB_STATUS_OK;
 }
 
-static lib_status core_machine_create_internal(
+static lib_i32 core_machine_neutral_config_is_valid(
+    const core_machine_config *config)
+{
+    return config != LIB_NULL &&
+        core_machine_valid_cpu_profile(
+            core_machine_resolve_cpu_profile(config->cpu_profile)) &&
+        core_machine_valid_fpu_profile(config->fpu_profile) &&
+        (config->a20_wrap_policy == CORE_MACHINE_A20_WRAP_GLOBAL_MASK ||
+         config->a20_wrap_policy == CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB) &&
+        core_machine_clock_plan_is_valid(&config->clock_plan) &&
+        core_machine_retirement_time_contract_is_valid(
+            config->retirement_time_contract) &&
+        core_machine_transaction_contract_is_valid(
+            &config->transaction_contract) &&
+        (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED ||
+         config->time_axis.kind == CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
+         config->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL) &&
+        (config->l1_compatibility_policy == CORE_MACHINE_L1_COMPATIBILITY_DISABLED ||
+         config->l1_compatibility_policy == CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS) &&
+        (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED ?
+            config->time_axis.ticks_per_second == 0u :
+            config->time_axis.ticks_per_second != 0u) &&
+        (config->retirement_time_contract != CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
+         config->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL);
+}
+
+static lib_status core_machine_neutral_create(
     const core_machine_config *config,
-    core_machine **out_machine,
     core_machine_memory_test_allocation *test_allocation,
-    core_machine_port_test_allocation *port_test_allocation)
+    core_machine_port_test_allocation *port_test_allocation,
+    core_machine **out_machine)
 {
     core_machine *machine;
     core_machine_instruction_timing instruction_timing;
-    core_machine_port_provider_entry *port_checkpoint;
     lib_size memory_bytes;
-    lib_u8 dma_controller_count;
-    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_machine = LIB_NULL;
-    if (config == LIB_NULL ||
-        !core_machine_valid_cpu_profile(
-            core_machine_resolve_cpu_profile(config->cpu_profile)) ||
-        !core_machine_valid_fpu_profile(config->fpu_profile) ||
-        (config->a20_wrap_policy != CORE_MACHINE_A20_WRAP_GLOBAL_MASK &&
-        config->a20_wrap_policy != CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB) ||
-        !core_machine_clock_plan_is_valid(&config->clock_plan) ||
-        !core_machine_retirement_time_contract_is_valid(
-            config->retirement_time_contract) ||
-        !core_machine_transaction_contract_is_valid(
-            &config->transaction_contract) ||
-        (config->shared_pit_personality != X86_PIT_PERSONALITY_8254 &&
-        config->shared_pit_personality != X86_PIT_PERSONALITY_8253) ||
-        (config->auxiliary_pit_present != LIB_FALSE &&
-        config->auxiliary_pit_present != LIB_TRUE) ||
-        (config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
-        config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE) ||
-        (config->dma_controller_count > CORE_MACHINE_DMA_CONTROLLER_COUNT) ||
-        (config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_8042 &&
-        config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) ||
-        (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
-        !core_machine_xt_ppi_keyboard_config_is_valid(&config->xt_ppi_keyboard)) ||
-        (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    if ((config->time_axis.kind != CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
-        config->time_axis.kind != CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
-        config->time_axis.kind != CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL) ||
-        (config->l1_compatibility_policy != CORE_MACHINE_L1_COMPATIBILITY_DISABLED &&
-        config->l1_compatibility_policy !=
-            CORE_MACHINE_L1_COMPATIBILITY_BOUNDED_PROGRESS) ||
-        (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
-        config->time_axis.ticks_per_second != 0u) ||
-        (config->time_axis.kind != CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
-        config->time_axis.ticks_per_second == 0u) ||
-        (config->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
-        config->time_axis.kind != CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
 
     memory_bytes = config->memory_bytes == 0u ?
         CORE_MACHINE_DEFAULT_MEMORY_BYTES : config->memory_bytes;
-    dma_controller_count = config->dma_controller_count == 0u ?
-        CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
 
     machine = (core_machine *)lib_allocate_zero(1u, sizeof(*machine));
     if (machine == LIB_NULL) {
@@ -467,25 +448,10 @@ static lib_status core_machine_create_internal(
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
-    machine->keyboard_topology = config->keyboard_topology;
     machine->retirement_time_contract = config->retirement_time_contract;
     machine->transaction_contract = config->transaction_contract;
     machine->time_axis = config->time_axis;
     machine->l1_compatibility_policy = config->l1_compatibility_policy;
-    machine->board_deadline_provider = core_machine_board_deadline_observe;
-    machine->board_refresh_request_provider = core_machine_board_refresh_request;
-    machine->board_refresh_complete_provider = core_machine_board_refresh_complete;
-    machine->board_dma_ticks_provider = core_machine_board_dma_ticks;
-    machine->board_dma_request_provider = core_machine_board_dma_request;
-    machine->board_dma_advance_provider = core_machine_board_dma_advance;
-    machine->board_pit_ticks_provider = core_machine_board_pit_ticks_advance;
-    machine->board_pit_pic_provider = core_machine_board_pit_pic_advance;
-    machine->board_pic_pending_provider = core_machine_board_pic_pending;
-    machine->board_pic_acknowledge_provider = core_machine_board_pic_acknowledge;
-    machine->board_media_provider = core_machine_board_media_advance;
-    machine->board_rtc_provider = core_machine_board_rtc_advance;
-    machine->board_peripheral_provider = core_machine_board_peripheral_advance;
-    machine->board_owner = machine;
     machine->dma_cycle_bus_ready = LIB_TRUE;
     machine->cpu_cycle_bus_ready = LIB_TRUE;
     if (config->retirement_qualification != LIB_NULL) {
@@ -535,16 +501,6 @@ static lib_status core_machine_create_internal(
         lib_release(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    /* Zero is an explicit profile choice: without a calibrated guest-time
-     * mapping, core-generated keyboard repeat must remain disabled. */
-    machine->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
-    machine->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
-    machine->kbc_command_response_ticks = config->kbc_command_response_ticks;
-    machine->kbc_command_response_status_polls =
-        config->kbc_command_response_status_polls;
-    machine->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
-    machine->kbc_input_port_configured = config->kbc_input_port_configured;
-    machine->kbc_input_port = config->kbc_input_port;
     {
         lib_status status = x86_fpu_create(config->fpu_profile, &machine->fpu);
         if (status != LIB_STATUS_OK) {
@@ -616,6 +572,68 @@ static lib_status core_machine_create_internal(
         core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    *out_machine = machine;
+    return LIB_STATUS_OK;
+}
+
+static lib_status core_machine_create_internal(
+    const core_machine_config *config,
+    core_machine **out_machine,
+    core_machine_memory_test_allocation *test_allocation,
+    core_machine_port_test_allocation *port_test_allocation)
+{
+    core_machine *machine;
+    core_machine_port_provider_entry *port_checkpoint;
+    lib_u8 dma_controller_count;
+    lib_status status;
+
+    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_machine = LIB_NULL;
+    if (!core_machine_neutral_config_is_valid(config) ||
+        (config->shared_pit_personality != X86_PIT_PERSONALITY_8254 &&
+        config->shared_pit_personality != X86_PIT_PERSONALITY_8253) ||
+        (config->auxiliary_pit_present != LIB_FALSE &&
+        config->auxiliary_pit_present != LIB_TRUE) ||
+        (config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
+        config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE) ||
+        (config->dma_controller_count > CORE_MACHINE_DMA_CONTROLLER_COUNT) ||
+        (config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_8042 &&
+        config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) ||
+        (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
+        !core_machine_xt_ppi_keyboard_config_is_valid(&config->xt_ppi_keyboard)) ||
+        (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_neutral_create(config, test_allocation,
+        port_test_allocation, &machine);
+    if (status != LIB_STATUS_OK) return status;
+    dma_controller_count = config->dma_controller_count == 0u ?
+        CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
+    machine->keyboard_topology = config->keyboard_topology;
+    machine->board_deadline_provider = core_machine_board_deadline_observe;
+    machine->board_refresh_request_provider = core_machine_board_refresh_request;
+    machine->board_refresh_complete_provider = core_machine_board_refresh_complete;
+    machine->board_dma_ticks_provider = core_machine_board_dma_ticks;
+    machine->board_dma_request_provider = core_machine_board_dma_request;
+    machine->board_dma_advance_provider = core_machine_board_dma_advance;
+    machine->board_pit_ticks_provider = core_machine_board_pit_ticks_advance;
+    machine->board_pit_pic_provider = core_machine_board_pit_pic_advance;
+    machine->board_pic_pending_provider = core_machine_board_pic_pending;
+    machine->board_pic_acknowledge_provider = core_machine_board_pic_acknowledge;
+    machine->board_media_provider = core_machine_board_media_advance;
+    machine->board_rtc_provider = core_machine_board_rtc_advance;
+    machine->board_peripheral_provider = core_machine_board_peripheral_advance;
+    machine->board_owner = machine;
+    /* Zero is an explicit profile choice: without a calibrated guest-time
+     * mapping, core-generated keyboard repeat must remain disabled. */
+    machine->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
+    machine->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
+    machine->kbc_command_response_ticks = config->kbc_command_response_ticks;
+    machine->kbc_command_response_status_polls =
+        config->kbc_command_response_status_polls;
+    machine->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
+    machine->kbc_input_port_configured = config->kbc_input_port_configured;
+    machine->kbc_input_port = config->kbc_input_port;
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     {
         lib_status status = core_machine_board_register_a20_port(machine);
