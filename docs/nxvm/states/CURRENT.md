@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S55 is active: move only D4 platform/Port-B/NMI board electrical
-state to the sole board attachment. S1-S54 are accepted;
+M5 T540 S56 is active: move D4 refresh request state to the sole board
+attachment while retaining neutral Core HOLD servicing. S1-S55 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -75,6 +75,7 @@ the completed CPU extraction.
 | T540 S44-S52 | Accepted: board attachment and PIC/PIT/DMA/RTC/FDC/HDC/keyboard/VADP instance receivers; dual-width complete units, gates and eight boot checkpoints at each code receiver. |
 | T540 S53 | Accepted: residual XT keyboard chip pointer moved to board; remaining electrical/callback row split into S54-S59. Dual-width 469/469 units, gates and eight boot checkpoints pass. |
 | T540 S54 | Accepted: five planar-parity state fields moved into the sole board attachment; dual-width complete units, gates and eight boot checkpoints pass. |
+| T540 S55 | Accepted: D4 platform/Port-B/NMI state moved into the sole board attachment; dual-width complete units, gates and eight boot checkpoints pass. |
 | T540 S53 | Active: remaining board electrical latches and callback receiver. |
 
 ## T540 S1 Acceptance
@@ -1946,6 +1947,37 @@ the full clean rerun, exact diff and artifact hashes. T540 remains open.
 | Exit Criteria | P1/P2 pushed; both-width verification, eight boots and artifact evidence pass; worktree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | D4 configuration, Port-B read/write, IOCHK/failsafe latches, reset/shutdown and NMI consumers. |
+
+## T540 S55 Acceptance
+
+The six D4 platform/Port-B/NMI fields are board-owned with no Core mirror.
+Failsafe PIT, speaker, reset/shutdown, latch-clear and NMI order is unchanged.
+P1 `8ca51989a` is pushed. Both-width full units pass 469/469, specialized
+gates pass, and all eight fixed-profile boots pass once each. The optimized
+0540 products are rebuilt and PE/no-debug verified; the [S55 evidence](../etc/evidence/t540-s55-d4-platform-owner.md)
+records exact diff and artifact hashes. The three D4 refresh request fields
+remain for S56. T540 remains open.
+
+## T540 S56 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S56, next linear S after accepted S55. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move D4 refresh pending/pulse/address electrical latches to the sole board attachment while Core continues to service the one bounded HOLD/arbitration operation. Audit DMA refresh producer/consumer wiring for a single owner. |
+| Non-goals | XT speaker (S57), absent memory (S58), callback/firmware audit (S59), neutral header (S60), physical Shared move (S61), altered DMA grant or guest-time behavior. |
+| Reference Baseline | S55 P1 `8ca51989a`, [S55 evidence](../etc/evidence/t540-s55-d4-platform-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Three flat D4 refresh fields, PIT/DMA board producer and neutral scheduler deadline/arbitration readers. Keep copied request and success-only completion across the Core/board boundary. |
+| Applicable Rules | Board owns refresh signal state; neutral Core owns bus grant, HOLD and memory transaction, not a second refresh latch. |
+| Verification | Full x64/x86 units, specialized/documentation gates, refresh/DMA focused regressions, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | No D4 refresh electrical latch remains flat in `core_machine`; one board state owns pending, pulse and address. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Producer/consumer and completion audit, exact diff, tests and artifact hashes. |
+| Stop Conditions | Stop for a new timing/ownership conflict, second owner or cross-target change; split if actual surface exceeds one bounded S. |
+| Exit Criteria | P1/P2 pushed; both-width verification, eight boots and artifact evidence pass; worktree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | PIT refresh output, DMA request, HOLD/acknowledge, deadline, reset and observer consumers. |
 
 ## S87 Admission Packet
 
