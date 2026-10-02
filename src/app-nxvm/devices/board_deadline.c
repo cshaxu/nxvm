@@ -69,11 +69,11 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     /* A frozen fallback ratio remains an L2 timing claim, but is still a
      * Core-local conversion for a programmed PIT wake edge. */
     if (machine->timing_plan_copied) {
-        if (board_consider_pit(machine->shared_pit.device, &machine->board->pit_clock,
+        if (board_consider_pit(machine->board->shared_pit.device, &machine->board->pit_clock,
                 &out_observation->source_ticks))
             out_observation->immediate_due = LIB_TRUE;
-        if (machine->auxiliary_pit_configured &&
-            board_consider_pit(machine->auxiliary_pit.device,
+        if (machine->board->auxiliary_pit_configured &&
+            board_consider_pit(machine->board->auxiliary_pit.device,
                 &machine->board->auxiliary_pit_clock, &out_observation->source_ticks))
             out_observation->immediate_due = LIB_TRUE;
     }

@@ -107,7 +107,7 @@ lib_i32 main(void)
     }
     if (!failed) {
         vm_machine_reset(session);
-        failed |= !session->core_machine->auxiliary_pit_configured ||
+        failed |= !session->core_machine->board->auxiliary_pit_configured ||
             !session->core_machine->board->fdc_configured ||
             session->core_machine->board->fdc_topology.config.irq != 6u ||
             session->core_machine->board->fdc_topology.config.dma_channel != 2u ||

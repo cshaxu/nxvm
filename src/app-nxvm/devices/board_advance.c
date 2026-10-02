@@ -72,9 +72,9 @@ void core_machine_board_pit_pic_advance(void *owner,
 {
     core_machine *machine = owner;
     if (machine == LIB_NULL) return;
-    x86_pit_advance(machine->shared_pit.device, ticks.primary);
-    if (machine->auxiliary_pit_configured) {
-        x86_pit_advance(machine->auxiliary_pit.device, ticks.auxiliary);
+    x86_pit_advance(machine->board->shared_pit.device, ticks.primary);
+    if (machine->board->auxiliary_pit_configured) {
+        x86_pit_advance(machine->board->auxiliary_pit.device, ticks.auxiliary);
     }
     if (ticks.primary != 0u) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIT_ADVANCE,

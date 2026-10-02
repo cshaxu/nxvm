@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_interface.h"
 
 #include "support/core_machine_board_fixture.h"
@@ -84,7 +85,7 @@ lib_i32 main(void)
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
         (value & 0x94u) != 0x14u ||
-        (x86_pit_advance(machine->shared_pit.device, 19u),
+        (x86_pit_advance(machine->board->shared_pit.device, 19u),
          core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK) ||
         (value & 0x10u) != 0u ||
 

@@ -223,9 +223,6 @@ struct core_machine {
     core_machine_cpu_execution_context *executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
-    core_machine_pit_bus shared_pit;
-    core_machine_pit_bus auxiliary_pit;
-    lib_u8 auxiliary_pit_configured;
     t_latch shared_dma_latch;
     t_dma shared_dma_primary;
     t_dma shared_dma_secondary;

@@ -199,20 +199,20 @@ lib_status core_machine_board_create(core_machine *machine,
     core_machine_pic_irq_source_bind(&machine->board->shared_pit_irq0_source,
         &machine->board->shared_pic_master, &machine->board->shared_pic_slave, 0u);
     {
-        lib_status status = core_machine_pit_bus_create(&machine->shared_pit,
+        lib_status status = core_machine_pit_bus_create(&machine->board->shared_pit,
             machine, config->shared_pit_personality, 0x0040u);
         if (status == LIB_STATUS_OK && config->auxiliary_pit_present) {
-            status = core_machine_pit_bus_create(&machine->auxiliary_pit,
+            status = core_machine_pit_bus_create(&machine->board->auxiliary_pit,
                 machine, X86_PIT_PERSONALITY_8254,
                 config->auxiliary_pit_base_port);
-            machine->auxiliary_pit_configured = status == LIB_STATUS_OK;
+            machine->board->auxiliary_pit_configured = status == LIB_STATUS_OK;
         }
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
             return status;
         }
     }
-    x86_pit_set_output(machine->shared_pit.device, 0,
+    x86_pit_set_output(machine->board->shared_pit.device, 0,
         core_machine_pic_timer_output, &machine->board->shared_pit_irq0_source);
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_board_configure_xt_ppi_speaker(machine);
@@ -245,7 +245,7 @@ lib_status core_machine_board_create(core_machine *machine,
         core_machine_kbc_set_serial_delivery_timing(&machine->shared_kbc,
             machine->board->kbc_serial_delivery_ticks);
     }
-    x86_pit_set_output(machine->shared_pit.device, 1, LIB_NULL, LIB_NULL);
+    x86_pit_set_output(machine->board->shared_pit.device, 1, LIB_NULL, LIB_NULL);
     {
         lib_status status = core_machine_port_registration_status(
             &machine->executor_port);
@@ -586,8 +586,8 @@ static lib_u8 core_machine_pc_at_port_b_timer_status(
                 machine->planar_parity_config.refresh_status_toggle_ticks) & 1u) != 0u) {
             value |= 0x10u;
         }
-    } else if (x86_pit_get_output(machine->shared_pit.device, 1u)) value |= 0x10u;
-    if (x86_pit_get_output(machine->shared_pit.device, 2u)) value |= 0x20u;
+    } else if (x86_pit_get_output(machine->board->shared_pit.device, 1u)) value |= 0x10u;
+    if (x86_pit_get_output(machine->board->shared_pit.device, 2u)) value |= 0x20u;
     return value;
 }
 
@@ -663,7 +663,7 @@ static void core_machine_speaker_refresh(core_machine *machine)
     value = core_machine_speaker_source_value(machine);
     machine->speaker_output = (value & 0x02u) != 0u &&
         ((value & 0x01u) == 0u ||
-        x86_pit_get_output(machine->shared_pit.device, 2u));
+        x86_pit_get_output(machine->board->shared_pit.device, 2u));
 }
 
 static void core_machine_speaker_timer_output(void *owner,
@@ -679,7 +679,7 @@ static void core_machine_speaker_set_gate(core_machine *machine,
     lib_u8 value)
 {
     if (machine == LIB_NULL) return;
-    x86_pit_set_gate(machine->shared_pit.device, 2u,
+    x86_pit_set_gate(machine->board->shared_pit.device, 2u,
         (value & 0x01u) != 0u ? LIB_TRUE : LIB_FALSE);
     core_machine_speaker_refresh(machine);
 }
@@ -770,9 +770,9 @@ void core_machine_board_reset_devices(core_machine *machine)
     core_machine_hdc_reset(&machine->hdc);
     core_machine_pic_reset(&machine->board->shared_pic_master,
         &machine->board->shared_pic_slave);
-    x86_pit_reset(machine->shared_pit.device);
-    if (machine->auxiliary_pit_configured) {
-        x86_pit_reset(machine->auxiliary_pit.device);
+    x86_pit_reset(machine->board->shared_pit.device);
+    if (machine->board->auxiliary_pit_configured) {
+        x86_pit_reset(machine->board->auxiliary_pit.device);
     }
     core_machine_board_after_pit_reset(machine);
     machine->d4_refresh_hold_pending = LIB_FALSE;
@@ -784,8 +784,8 @@ void core_machine_board_reset_devices(core_machine *machine)
 void core_machine_board_finalize_devices(core_machine *machine)
 {
     if (machine->board == LIB_NULL) return;
-    core_machine_pit_bus_destroy(&machine->shared_pit);
-    core_machine_pit_bus_destroy(&machine->auxiliary_pit);
+    core_machine_pit_bus_destroy(&machine->board->shared_pit);
+    core_machine_pit_bus_destroy(&machine->board->auxiliary_pit);
     core_machine_hdc_finalize(&machine->hdc);
     core_machine_fdc_finalize(&machine->fdc);
     core_machine_dma_finalize(&machine->shared_dma_latch,
@@ -806,7 +806,7 @@ void core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
     machine->xt_ppi_speaker_configured = LIB_TRUE;
-    x86_pit_set_output(machine->shared_pit.device, 2u,
+    x86_pit_set_output(machine->board->shared_pit.device, 2u,
         core_machine_speaker_timer_output, machine);
     core_machine_board_set_xt_ppi_speaker(machine, LIB_FALSE, LIB_FALSE);
 }
@@ -825,7 +825,7 @@ void core_machine_board_after_pit_reset(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
     if (machine->board->dma_configured && !machine->d4_platform_configured) {
-        x86_pit_set_output(machine->shared_pit.device, 1u,
+        x86_pit_set_output(machine->board->shared_pit.device, 1u,
             core_machine_dma_refresh_pit_output, machine);
     }
     if (machine->planar_parity_configured || machine->d4_platform_configured) {
@@ -838,9 +838,9 @@ void core_machine_board_after_pit_reset(core_machine *machine)
     if (machine->d4_platform_configured) {
         core_machine_speaker_set_gate(machine,
             machine->d4_platform_port_b);
-        x86_pit_set_output(machine->shared_pit.device, 1u,
+        x86_pit_set_output(machine->board->shared_pit.device, 1u,
             core_machine_d4_refresh_output, machine);
-        x86_pit_set_output(machine->auxiliary_pit.device,
+        x86_pit_set_output(machine->board->auxiliary_pit.device,
             machine->d4_platform_config.failsafe_pit_counter,
             core_machine_d4_platform_failsafe_output, machine);
     }
@@ -1010,7 +1010,7 @@ lib_status core_machine_configure_dma(core_machine *machine,
         &machine->shared_dma_primary, &machine->shared_dma_secondary, 0u,
         &core_machine_dma_refresh_provider, machine, &machine->board->refresh_dma_request);
     if (status != LIB_STATUS_OK) return status;
-    x86_pit_set_output(machine->shared_pit.device, 1u,
+    x86_pit_set_output(machine->board->shared_pit.device, 1u,
         core_machine_dma_refresh_pit_output, machine);
     machine->board->dma_wiring = *wiring;
     machine->board->dma_configured = LIB_TRUE;
@@ -1155,7 +1155,7 @@ lib_status core_machine_configure_planar_parity(core_machine *machine,
     machine->planar_parity_config = *config;
     machine->planar_parity_port_b = 0x04u;
     machine->planar_parity_configured = LIB_TRUE;
-    x86_pit_set_output(machine->shared_pit.device, 2u,
+    x86_pit_set_output(machine->board->shared_pit.device, 2u,
         core_machine_speaker_timer_output, machine);
     core_machine_pc_at_refresh_timer_program(machine);
     core_machine_speaker_set_gate(machine, machine->planar_parity_port_b);
@@ -1171,7 +1171,7 @@ lib_status core_machine_configure_d4_platform(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) ||
         machine->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
     if (config == LIB_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
-        config->failsafe_pit_counter >= 3u || !machine->auxiliary_pit_configured ||
+        config->failsafe_pit_counter >= 3u || !machine->board->auxiliary_pit_configured ||
         machine->planar_parity_configured) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
@@ -1186,13 +1186,13 @@ lib_status core_machine_configure_d4_platform(core_machine *machine,
     machine->d4_platform_config = *config;
     machine->d4_platform_port_b = 0x0fu;
     machine->d4_platform_configured = LIB_TRUE;
-    x86_pit_set_output(machine->shared_pit.device, 2u,
+    x86_pit_set_output(machine->board->shared_pit.device, 2u,
         core_machine_speaker_timer_output, machine);
     core_machine_pc_at_refresh_timer_program(machine);
-    x86_pit_set_output(machine->shared_pit.device, 1u,
+    x86_pit_set_output(machine->board->shared_pit.device, 1u,
         core_machine_d4_refresh_output, machine);
     core_machine_speaker_set_gate(machine, machine->d4_platform_port_b);
-    x86_pit_set_output(machine->auxiliary_pit.device,
+    x86_pit_set_output(machine->board->auxiliary_pit.device,
         config->failsafe_pit_counter, core_machine_d4_platform_failsafe_output,
         machine);
     return LIB_STATUS_OK;
@@ -1297,7 +1297,7 @@ lib_status core_machine_get_speaker_observation(const core_machine *machine,
     out_observation->timer_gate = (value & 0x01u) != 0u;
     out_observation->data_enabled = (value & 0x02u) != 0u;
     out_observation->timer_output = x86_pit_get_output(
-        machine->shared_pit.device, 2u);
+        machine->board->shared_pit.device, 2u);
     out_observation->output = machine->speaker_output;
     return LIB_STATUS_OK;
 }

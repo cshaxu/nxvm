@@ -10,6 +10,9 @@ struct core_machine_board_state {
     core_machine_pic_bus shared_pic_slave;
     core_machine_pic_irq_source shared_pit_irq0_source;
     core_machine_pic_irq_source rtc_irq_source;
+    core_machine_pit_bus shared_pit;
+    core_machine_pit_bus auxiliary_pit;
+    lib_u8 auxiliary_pit_configured;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain auxiliary_pit_clock;

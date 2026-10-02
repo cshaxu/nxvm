@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 
 static void program_counter0(core_machine *machine, lib_u16 base,
     lib_u8 control, lib_u16 count)
@@ -32,7 +33,7 @@ lib_i32 main(void)
     config.auxiliary_pit_base_port = 0x0048u;
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
     if (!failed) {
-        failed |= !machine->auxiliary_pit_configured ||
+        failed |= !machine->board->auxiliary_pit_configured ||
             !core_machine_port_has_read(&machine->executor_port, 0x0048u) ||
             !core_machine_port_has_write(&machine->executor_port, 0x004bu) ||
             !core_machine_port_has_read(&machine->executor_port, 0x0040u);
@@ -62,10 +63,10 @@ lib_i32 main(void)
         /* Reset cancels both programmed output transitions. */
         {
             lib_u64 deadline;
-            failed |= x86_pit_get_output(machine->shared_pit.device, 0u) ||
-                x86_pit_get_output(machine->auxiliary_pit.device, 0u) ||
-                x86_pit_ticks_until_output(machine->shared_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE ||
-                x86_pit_ticks_until_output(machine->auxiliary_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE;
+            failed |= x86_pit_get_output(machine->board->shared_pit.device, 0u) ||
+                x86_pit_get_output(machine->board->auxiliary_pit.device, 0u) ||
+                x86_pit_ticks_until_output(machine->board->shared_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE ||
+                x86_pit_ticks_until_output(machine->board->auxiliary_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE;
         }
     }
     core_machine_destroy(machine);
