@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S66 has verified its public board construction/topology and
-observation boundary; actual P1 review and acceptance remain. S1-S65 are accepted;
+M5 T540 S67 is active: move the five remaining neutral validators out of
+board plan implementation. S1-S66 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -86,7 +86,8 @@ the completed CPU extraction.
 | T540 S63 | Accepted: neutral private header no longer defines board plan/topology or includes concrete chips; both-width units/gates and eight boots pass. |
 | T540 S64 | Accepted: measured 694-line/174-includer public interface and split its distinct owner boundaries into linear S65-S70 receivers; no source change. |
 | T540 S65 | Accepted: one board composition supplies thirteen neutral constructor fields; both-width units/gates and eight single boots pass. |
-| T540 S66 | Verified delivery awaiting actual P1 review: board values and dependent declarations have one owner; both-width units/gates and eight boot checkpoints pass. |
+| T540 S66 | Accepted: board values and dependent declarations have one owner; both-width units/gates and eight boot checkpoints pass. |
+| T540 S67 | Active: neutral construction/timing validators must not require the board-plan implementation. |
 
 ## T540 S1 Acceptance
 
@@ -2284,7 +2285,7 @@ See [S65 evidence](../etc/evidence/t540-s65-neutral-construction-input.md).
 This accepts S65 only: public board values/operations and four direct
 Core reset/clock/NMI/finalization calls remain with their named receivers.
 
-## T540 S66 Admission Packet
+## T540 S66 Accepted Admission Record
 
 | Field | Required record |
 | --- | --- |
@@ -2305,7 +2306,7 @@ Core reset/clock/NMI/finalization calls remain with their named receivers.
 | Similar-Issue Sweep | All direct public interface consumers, transitive concrete chip includes, plan construction, copied observations and boundary gates. |
 | Original Owner Request | Build reusable neutral x86 Core and flat IBM-PC common/AT/XT components with single ownership and no patch-layered architecture. |
 
-## T540 S66 Delivery
+## T540 S66 Acceptance
 
 The neutral public contract shrinks from 694 to 305 lines. All six board
 declaration blocks are verbatim at the new explicit owner; 210 consumer files
@@ -2318,7 +2319,33 @@ Both-width complete units pass **469/469** each, specialized and documentation
 gates pass, eight optimized/debug-stripped 0540 products are rebuilt and the
 eight receiving external boot rows pass. See the
 [S66 evidence](../etc/evidence/t540-s66-public-board-interface.md).
-This delivery awaits actual-commit coordinator review, not T closure.
+Coordinator review accepts pushed P1 `455e920fc`: exactly 231 NXVM paths,
+`git show --check` passes, all 210 concrete consumers have zero non-include
+changes, and local HEAD equals `origin/master` with a clean worktree at review.
+The six declaration blocks remain verbatim, board-private seams retain their
+signatures, and static gates inspect the receiving owner. This closes S66,
+not T540 or the independent Core/board extraction.
+
+## T540 S67 Active Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S67, next linear numeric S after accepted S66. |
+| Admission And Approval | Owner standing automatic bounded-S admission; NXVM only. Shared six components, MyNES, owner INIs and external assets remain read-only. |
+| Objective | Remove neutral Core's validation link dependency on board `machine_plan.c` while retaining every existing validation result and caller. |
+| Non-goals | Board plan/controller validators, the four Core lifecycle handoffs (S68), independent full Core compile (S69), Shared relocation (S70), new hardware, timing grades, profile/INI/media or runtime semantics. |
+| Reference Baseline | Accepted/pushed S66 P1 `455e920fc` and [S66 evidence](../etc/evidence/t540-s66-public-board-interface.md); the measured sweep finds four neutral Core call sites, one board capability caller and two internal transaction-validation calls. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), revised before this admission. |
+| Files And ABI Surface | Move the five existing definitions for retirement contract, timing capability, external-cycle timing, access-wait windows and transaction contract from `machine_plan.c` into existing neutral `machine.c`, adjacent to their configuration/validation consumers. Keep function bodies and declarations unchanged, with one definition each. Repair only a verifier proven to inspect the former implementation owner. |
+| Applicable Rules | Single validation owner and production path, no board-to-neutral reverse source dependency, no wrapper/helper framework, unchanged fields, values, signatures, classifications and failure semantics. |
+| Verification | Exact moved-body comparison and caller/definition inventory; complete x64/x86 units; specialized, dependency and documentation gates; eight optimized/debug-stripped 0540 products and one qualified external boot per profile/width. |
+| Expected Markers | The neutral validation definitions exist once in neutral source; board plan retains its own validations and invokes the same neutral capability contract. No extra input copy, phase or fallback is introduced. |
+| Asset Needs | Existing owner-provided external inputs only; no acquisition, asset-master or owner-INI modification. |
+| Reporting Requirements | Report exact five-function/body allocation, source/gate diff, all verification and artifact identities, and the still-open S68-S70 boundaries. |
+| Stop Conditions | A selected validator requires concrete board state or a source move changes results; revise the owner cut from evidence instead of creating a shim or widening Core's inputs. |
+| Exit Criteria | Required checks/artifacts/boots pass; complete P1 pushed; actual-commit coordinator review and governance P2 pushed; worktree clean. This does not close T540. |
+| Original Owner Request | Build reusable neutral x86 Core and flat IBM-PC common/AT/XT components with single ownership, strict numeric S tracking and no patch-layered architecture. |
+| Similar-Issue Sweep | All five validator definitions and every production/test caller, neutral constructor/capability declarations, board frozen-plan validations, and implementation-owner gates. |
 
 ## S87 Admission Packet
 
@@ -3721,7 +3748,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S65 with unchanged owner INIs; S65 evidence records their hashes, PE
+T540 S66 with unchanged owner INIs; S66 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

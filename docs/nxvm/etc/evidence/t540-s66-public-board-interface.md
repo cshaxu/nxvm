@@ -27,7 +27,7 @@ second configuration, plan mirror, lifetime or runtime path.
 
 The direct concrete-value inventory has 210 existing consumer paths: 26
 production and 184 tests. Ignoring include lines, each of these paths is
-identical to its HEAD baseline. The new explicit board-header receiver is also
+identical to pre-S66 parent `9f8fb4802`. The explicit board-header receiver is also
 included by private board state. Duplicate includes introduced during the
 mechanical migration were removed before final verification.
 
@@ -81,3 +81,13 @@ x64 then x86:
 - Default: `9C8DCB1DBCF516233BD351339FDE25435C2EAF6EA9D64EB18E6D3945939DE075`, `92C6A1FF3D258897608FC076A7539C33C8762B5461D60635168D4EAF99308BF0`.
 - XT: `04866DECE8F5DF39189DB3B8E0B91FCDCA73668792F1A77C9AE722A4E55CF61D`, `7BFF4A29E86E8D30F51CC8D5B0152FF0BA52544FDE125E8A1E52FFDC04B6873B`.
 - IBM 5170: `AD2ECDCAC1B948B719734A4ADFDE9F79935E6D2CF45D71D61E9CF6986EF36CBB`, `2B3D2F12D595953CA8872A72D2CD8A1B8BFDECCB9067900DDB47BF0E3A8F866D`.
+
+## Actual P1 acceptance
+
+Pushed NXVM P1 `455e920fc` has exactly 231 scoped paths and passes
+`git show --check`. Coordinator actual-change review rechecks all 210 concrete
+consumer paths against the parent: zero non-include differences. The value/API
+cut, private seams, changed gate owners and four explicit existing profile
+dependencies match the admitted boundary. HEAD equals `origin/master`, with a
+clean worktree at review. S66 is accepted; S67 receives the measured neutral
+validator implementations. T540 and the complete board extraction remain open.
