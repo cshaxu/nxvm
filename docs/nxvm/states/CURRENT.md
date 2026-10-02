@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S14 is active: move all HDC personality port routes, including XT
-and Compaq 3F7 wired-OR, to the Core-owned atomic batch. S1-S13 are accepted;
-T540 remains open.
+M5 T540 S14 is accepted: all HDC personality routes, including XT and
+Compaq 3F7 wired-OR, use the Core-owned atomic batch. S1-S14 are accepted;
+T540 remains open. S15 owns staged VADP ports.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -429,6 +429,21 @@ integration gate remain open T540 work.
 | Exit Criteria | All four HDC personalities register their complete route set through the single typed Core batch; Compaq 3F7 preserves wired-OR; every injected route and DMA-bind failure leaves all non-HDC state intact; dual-width units/products and documentation gates pass with no second HDC registration path. |
 | Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through complete, minimal, individually tracked board cuts, then extract them for independent PC Apps. |
 | Similar-Issue Sweep | Search all NXVM board adapters, tests and static gates for raw HDC route registration, checkpoints, FDC/HDC 3F7 overlap and owner rollback. Consume every HDC personality hit in S14; assign remaining staged VADP ports to S15 and Core-private storage to the later neutral-Core move. |
+
+## T540 S14 Acceptance
+
+Pushed implementation P1 `962700027` was reviewed against the actual diff:
+all four personalities use one Core-owned typed route batch; Compaq 3F7
+retains FDC/HDC wired-OR; XT DMA failure revokes only HDC-owned routes; the
+old raw HDC registration/checkpoint/availability path is deleted. Production
+adds 65/removes 108 lines (net -43) without another state owner or timing
+claim. Both full unit suites pass 467/467, focused HDC selections pass 11/11
+per width, the registered static gate and documentation checks pass, and all
+eight optimized 0540 products pass architecture/no-debug checks. The
+[S14 evidence](../etc/evidence/t540-s14-hdc-port-routes.md) records the failure
+matrix and executable hashes. S14 changes NXVM only and is accepted. S15
+receives staged VADP ports; neutral Core, IBM-PC board extraction and the full
+external integration gate remain open T540 work.
 
 ## S87 Admission Packet
 
@@ -1830,8 +1845,8 @@ packages by the current work plan.
 ## Current Technical Baseline
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
-runnable. Eight optimized compiler-debug-stripped 0540 EXEs are committed in
-0483f1df1 with unchanged owner INIs. S4 evidence records hashes, PE
+runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
+T540 S14 with unchanged owner INIs; S14 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 
