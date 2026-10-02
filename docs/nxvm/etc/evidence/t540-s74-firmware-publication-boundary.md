@@ -132,7 +132,10 @@ Corrective complete units pass x64 470/470 in 64.67 seconds and x86 470/470
 in 69.37 seconds. Both complete specialized gates return zero, retaining
 402 strict-matrix rows, 377 strict and 25 declared deferred owners.
 No executable input changed: all eight deployed hashes still match P1, so no
-product rebuild or repeated boot is required. Actual P2 review and governance
-closure remain pending.
+product rebuild or repeated boot is required. Coordinator actual pushed-diff
+review accepts P2 `eb6e1db17`: only the existing gate and NXVM task records
+changed; its neutral-owner exceptions match the inspected production owners.
+S74 is accepted by the following pure-governance P3; no additional runtime,
+test or artifact input is changed by closure.
 T540 still requires attachment ownership, test classification and physical
 Core/IBM-PC source relocation. These proofs do not replace those exits.

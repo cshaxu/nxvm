@@ -25,3 +25,16 @@ the flat `x86/ibmpc-common`, `x86/ibmpc-at` and `x86/ibmpc-xt` components. It
 introduces no source directory, ABI or runtime
 change.  Its completion record identifies the first safe source batches and
 the profile regressions that remain product-owned.
+
+## S74: Firmware Publication Boundary Accepted
+
+P1 `7997202a6` moves the sole firmware binding/rollback transaction to neutral
+Core and replaces board ROM-table borrowing with bounded copied coverage and
+atomic window publication. P2 `eb6e1db17` closes the whole-production gate
+coverage gap. Actual pushed-diff review accepts both deliveries.
+[S74 evidence](../etc/evidence/t540-s74-firmware-publication-boundary.md)
+records complete dual-width 470/470 units/gates, standalone Core linkage,
+eight one-shot boots and the eight stripped 0540 artifact identities.
+Shared, MyNES, INIs and external master inputs remain unchanged. Attachment,
+remaining scalar boundaries, test classification and physical source relocation
+are still due; this S acceptance does not close T540.

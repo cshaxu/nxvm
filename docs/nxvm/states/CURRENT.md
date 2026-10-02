@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S1-S73 are accepted; S74 is active.
-S74 receives the complete firmware publication/reset-alias boundary.
+M5 T540 S1-S74 are accepted; no implementation S is active.
+S74 closes the neutral firmware publication and board-selected reset aliases.
 Attachment ownership and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
@@ -95,6 +95,7 @@ the completed CPU extraction.
 | T540 S71 | Accepted: RAM aliases and parity construction use Core-owned publication and rollback; dual-width units/gates and eight single boots pass. |
 | T540 S72 | Accepted: sole Core route transaction and candidate destruction; every constructor port allocation failure, dual-width units/gates and eight single boots pass. |
 | T540 S73 | Accepted: all refresh PIT initialization callers use the chip contract; dual-width units/gates and eight single boots pass, with no Core port borrowing. |
+| T540 S74 | Accepted: Core owns firmware publication/rollback; board reset aliases use bounded neutral operations; dual-width units/gates and eight single boots pass. |
 
 ## T540 S1 Acceptance
 
@@ -2486,40 +2487,20 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
-## T540 S74 Admission Packet
+## T540 S74 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S74, next numeric S after accepted S73. |
-| Admission And Approval | Automatic bounded-S authorization in T540; NXVM only. Neutral bounded ROM publication is permitted, not exposed private mapping storage. |
-| Objective | Move firmware binding/checkpoint/rollback to neutral Core; eliminate board private firmware/ROM registry access while retaining automatic PC reset-alias policy. |
-| Non-goals | Physical Shared move, attachment redesign, CPU semantics/timing, profile/INI/media/ROM byte changes, framework, second provider, Shared/MyNES edits. |
-| Reference Baseline | S73 P2 `aec7d3b76`; board defines binding, two presence checks and alias intersection with private Core state. |
-| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S74 boundary](../etc/evidence/t540-s74-firmware-publication-boundary.md). |
-| Files And ABI Surface | Existing machine attachment, firmware/ROM owners, board constructor/policy, ROM transaction/reset and neutral-link tests, controller-authority gate. Binder signature unchanged; neutral range-presence and atomic reset-window operations expose no registry pointer. |
-| Applicable Rules | Core owns immutable bytes, routes and rollback; board owns F0000h/CPU-family alias selection. One synchronous optional construction callback inside binding; no retained policy or wrapper context. |
-| Verification | Sparse/clipped windows, explicit high-ROM priority, absent source, configure/alias allocation failure and retry, board-free neutral binding; full x64/x86 units/gates, eight stripped 0540 products, one external boot each, documentation/diff checks. |
-| Expected Markers | ROM-route/reset/neutral-link markers pass; board lacks private ROM/provider/context access and rollback; neutral owners have no PC constants/chip dependency. |
-| Asset Needs | Existing BYOB build roots and external overlay boots only; owner INIs/master media unchanged. |
-| Reporting Requirements | All production hits, exact code delta, callback/rollback scope, unchanged 15/16-byte presence checks, both-width proofs and eight hashes. |
-| Stop Conditions | Raw registry exposure, mirrored ROM state, changed reset priority/coverage, new runtime firmware or another target; re-plan first. |
-| Exit Criteria | Complete implementation immediately pushed, actual coordinator diff review, corrective P if rejected, then pure-governance P and clean tree; T540 stays open. |
-| Original Owner Request | Independent Core and reusable flat PC board components with sole state/transaction owners; automatic numeric S admission. |
-| Similar-Issue Sweep | Search all NXVM firmware/provider/context and immutable-ROM registry/rollback consumers; migrate board hits, retain legitimate Core owners/tests. General attachment and test relocation are subsequent receivers. |
-
-### S74 Consolidated Corrective Brief
-
-Coordinator actual-diff review of pushed P1 `7997202a6` finds one remaining
-closure gap: the new private-ROM/firmware gate checks only `machine_board.c`,
-not other production paths. Extend the existing all-NXVM source scan to forbid
-those private fields and rollback outside the actual neutral owners. Include
-the firmware-operation guard. No runtime source, test input, ROM, INI or
-artifact change is admitted. Executor confirms this entire corrective brief.
-Run positive and injected-negative inspection, both-width complete unit suites
-and specialized gates, documentation/diff checks, and verify P1 artifact hashes
-remain exact. Do not repeat the eight already successful boots or rebuild
-unchanged product inputs. Commit/push P2 as the complete correction, then
-coordinator reviews it before a later pure-governance P closes S74.
+Coordinator actual pushed-diff review accepts runtime/test/artifact P1
+`7997202a6` and complete gate correction P2 `eb6e1db17`. Core owns firmware
+publication and rollback; board policy uses copied coverage and atomic ROM
+window operations. Whole-production inspection and five injected negatives
+close the private-state coverage gap without another runtime path.
+The [S74 evidence](../etc/evidence/t540-s74-firmware-publication-boundary.md)
+records x64/x86 470/470 complete units, specialized gates, independent Core
+proofs and eight one-shot boots. All eight optimized stripped 0540 artifact
+hashes remain exact. Shared, MyNES and owner INIs are unchanged.
+S74 is accepted; T540 remains open for attachment ownership, remaining scalar
+boundaries, direct-test classification and physical Core/IBM-PC relocation.
+This governance closure admits no next implementation S.
 
 ## T540 S73 Acceptance
 
