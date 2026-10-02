@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S31 is active: separate the one frozen IBM-PC construction plan from
-neutral Core configuration without duplicating mutable plan state.
-S1-S30 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S32 is active: isolate the neutral Core constructor's preflight,
+allocation, CPU/FPU, transaction, timeline, memory and port setup.
+S1-S31 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -59,7 +59,8 @@ the completed CPU extraction.
 | T540 S28 | Accepted: board PIT/PIC post-prefetch tail with earlier copied clock ticks; both-width units and eight boots pass. |
 | T540 S29 | Accepted: copied PIC signals and Core CPU locality event; both-width units and eight boots pass. |
 | T540 S30 | Accepted: source-only mixed plan/reset ownership audit and bounded S31-S38 receivers. |
-| T540 S31 | Active: frozen board plan versus neutral Core construction inputs. |
+| T540 S31 | Accepted: VM config/rules mirrors deleted; the frozen board plan owns composition and Core alone validates its transaction input before allocation. Dual-width units and eight boots pass. |
+| T540 S32 | Active: neutral Core constructor and early-failure boundary. |
 
 ## T540 S1 Acceptance
 
@@ -1095,6 +1096,42 @@ remains open.
 | Exit Criteria | A single validated frozen plan with neutral Core inputs and no parallel path; complete verification for the actual code scope; actual-diff P1 and governance P2 close S31. |
 | Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board components with flat ownership, linear numeric S and no patch-over-patch path. |
 | Similar-Issue Sweep | Inspect all config/plan copies, constructor entry points, plan topology declaration and all four profile inputs for duplicated or mutable machine facts. |
+
+## T540 S31 Acceptance
+
+Actual-diff review accepts NXVM P1 `02c505858`. The VM's extra configuration
+and timing-rule copies are deleted; the one board construction plan receives
+values directly from the profile source. Its topology/timing validation no
+longer repeats the neutral transaction preflight that Core itself performs
+before allocation. The original create/apply/rollback route remains singular.
+The [S31 evidence](../etc/evidence/t540-s31-frozen-plan-boundary.md) records
+ownership, test and artifact proof. Full x64/x86 units pass **469/469** per
+width, specialized gates pass, all eight external boot checkpoints pass once,
+and eight optimized 0540 products have correct PE width and no `.debug`
+sections. No Shared, MyNES, INI, firmware source or timing-grade change.
+S31 is accepted; S32 owns constructor effects and S33 owns board creation.
+T540 remains open.
+
+## T540 S32 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S32, next linear S after accepted S31. |
+| Admission And Approval | The owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES remain read-only. |
+| Objective | Isolate neutral Core constructor preflight, allocation, CPU/FPU, transaction, timeline, memory and port construction from IBM-PC board-only construction effects, preserving one create route and exact early exits. |
+| Non-goals | Board controller creation and topology application (S33), reset (S34), teardown (S35), ROM/entry/trace work (S36), physical Shared move (S38), timing formulas, profile/INI/firmware/media changes. |
+| Reference Baseline | S31 P1 `02c505858`, [S31 evidence](../etc/evidence/t540-s31-frozen-plan-boundary.md) and dual-width 469/469 units, specialized gates, 8/8 external boot checkpoints, eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S30 intake](../etc/evidence/t540-s30-plan-reset-intake.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | Inspect `src/app-nxvm/devices/machine.c`, its private state, existing constructor callers and direct tests. Extract only CPU/time/transaction/bus/memory initialization into one private neutral Core owner, without adding a second public constructor or exposing board state. |
+| Applicable Rules | Preserve validation-before-allocation, original error codes and null output, copied retirement qualification lifetime, CPU/FPU teardown, one Core timeline, and first-failure rollback. Board construction order remains S33's receiver. |
+| Verification | Focused invalid-config, CPU/FPU, allocation/rollback and plan tests; complete x64/x86 repository-only units, specialized/documentation gates, one boot per profile/width, and eight optimized 0540 products with PE/hash/no-debug proof for code changes. |
+| Expected Markers | One neutral constructor phase with no machine-name or controller-personality branch; unchanged board controller create order and no duplicate Core state or second create route. |
+| Asset Needs | Existing owner-provided external firmware/media for boot validation only; no protected input or owner INI change. |
+| Reporting Requirements | Record exact constructor call/failure order, affected callers, actual diff, full verification and products; assign board-only construction and topology to S33. |
+| Stop Conditions | Stop before a new framework, board state in neutral Core, changed timing or profile semantics, Shared/MyNES edits, or an oversized mixed constructor rewrite that cannot be cleanly bounded. |
+| Exit Criteria | Neutral Core preflight/allocation and setup have one owner, all original early failures and rollback survive, focused/full checks pass, and reviewed P1 plus governance P2 close S32. |
+| Original Owner Request | Build reusable neutral `x86/core` and flat IBM-PC board layers without code duplication, using linear numeric S deliveries. |
+| Similar-Issue Sweep | Check every create entry point, allocation failure, CPU/FPU and memory/port setup branch, copied qualification lifetime, and partial initialization cleanup. |
 
 ## S87 Admission Packet
 
