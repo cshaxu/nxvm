@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S39 is active: move high-reset RAM fallback and board-specific memory
-reconfigure veto out of the neutral Core construction/resize path. S1-S38 are accepted;
+M5 T540 S40 is active: separate the D4 shutdown decision and XT/8042 input
+dispatch from the neutral Core execution/input path. S1-S39 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -67,7 +67,8 @@ the completed CPU extraction.
 | T540 S36 | Accepted: entry, ROM and trace implementations use Core state only; unused board helper include removed; dual-width units and eight boots pass. |
 | T540 S37 | Accepted: S31-S36 actual-diff/caller audit froze a finite neutral Core/board file ledger and identified owner-sized pre-move receivers. |
 | T540 S38 | Accepted: F0000h alias derivation and sole firmware bind continuation moved to board owner with one rollback; dual-width units and eight boots pass. |
-| T540 S39 | Active: reset RAM fallback and board memory resize boundary. |
+| T540 S39 | Accepted: high-reset RAM alias and parity resize veto are board-owned; Core retains one checked memory operation; dual-width units and eight boots pass. |
+| T540 S40 | Active: D4 shutdown decision and XT/8042 native input dispatch boundary. |
 
 ## T540 S1 Acceptance
 
@@ -1385,6 +1386,40 @@ distinct RAM fallback/resize boundary; T540 remains open.
 | Exit Criteria | Board-only address/veto choices no longer reside in neutral Core flow, checked route/allocation behavior is unchanged, verification passes, and actual-diff P1 plus governance P2 close S39. |
 | Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique owners and no patch-over-patch paths. |
 | Similar-Issue Sweep | Check no-firmware fixtures, 8086/286/386 reset vectors, memory resize callers, parity/D4 topology and early construction failures across four profiles. |
+
+## T540 S39 Acceptance
+
+Actual-diff review accepts NXVM P1 `d96502c6c`. The [S39 evidence](../etc/evidence/t540-s39-board-memory-boundary.md)
+records the unchanged high reset RAM alias and failure rollback after its move
+to board creation, and the single public resize operation with a board-owned
+planar-parity veto and private Core memory operation. Production code net adds
+15 lines for this owner seam; no duplicate RAM or route exists. Final-source
+x64/x86 units pass **469/469** per width, specialized gates pass, and all
+eight single-run external boot checkpoints pass. Eight optimized 0540
+products have correct PE width and no `.debug` sections. Shared/MyNES,
+owner INIs, protected firmware and timing grades are unchanged. S40 receives
+the distinct D4/input boundary; T540 remains open.
+
+## T540 S40 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S40, next linear S after accepted S39. |
+| Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Move the D4 processor-shutdown reset choice and XT/8042 native keyboard input dispatch behind the IBM-PC board owner while preserving the one neutral Core execution/input path. |
+| Non-goals | CPU shutdown generation or reset implementation, KBC/XT chip semantics, new input queue, S41 named clock split, S42 private-state split, S43 physical Shared move, firmware/assets/INI changes. |
+| Reference Baseline | S39 P1 `d96502c6c`, [S39 evidence](../etc/evidence/t540-s39-board-memory-boundary.md), [S37 ledger](../etc/architecture/t540-s37-core-relocation-ledger.md), dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [S37 relocation ledger](../etc/architecture/t540-s37-core-relocation-ledger.md). |
+| Files And ABI Surface | Inspect `src/app-nxvm/devices/{machine.c,machine_board.c,machine.h}` and D4/XT/KBC callers/tests. Keep the existing public input ABI, move only board dispatch implementation, and use one bounded board choice for shutdown without copying board state. |
+| Applicable Rules | Core owns CPU shutdown consumption and processor-only reset; board owns whether D4 converts shutdown to reset. XT PPI and AT 8042 retain their exact event ordering and one input route. Do not expose chip or board pointers to neutral Core. |
+| Verification | Focused D4 shutdown and native keyboard input tests; full x64/x86 repository-only units, specialized/documentation gates, one external boot per profile/width and eight optimized 0540 products with PE/hash/no-debug proof. |
+| Expected Markers | Neutral Core no longer branches on D4 or XT/KBC fields; one board-owned input dispatch and one board shutdown policy, without mirrored state or new public API. |
+| Asset Needs | Existing owner-provided external firmware/media for boot checks only; no new protected input or owner INI change. |
+| Reporting Requirements | Record exact CPU shutdown priority, input dispatch/effect order, focused/full checks, artifact hashes and retained S41-S43 work. |
+| Stop Conditions | Stop before a second input route/queue, new board framework, changed CPU reset behavior, Shared/MyNES edit or a broad private-state move outside this S. |
+| Exit Criteria | D4 and XT/8042 board decisions have one owner, Core CPU execution stays neutral, behavior and checks pass, and actual-diff P1 plus governance P2 close S40. |
+| Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique state/data ownership and no patch-over-patch path. |
+| Similar-Issue Sweep | Check D4 shutdown/reset, non-D4 stop, XT scan delivery and 8042 keyboard/mouse input callers and four-profile boots. |
 
 ## S87 Admission Packet
 
