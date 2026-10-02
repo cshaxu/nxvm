@@ -1,5 +1,4 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine.h"
 
