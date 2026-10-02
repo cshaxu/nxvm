@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S65 is active: separate neutral Core construction values from
-board-selected configuration. S1-S64 are accepted;
+M5 T540 S66 is active: separate public board construction/topology and
+observation values from the neutral Core interface. S1-S65 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -85,7 +85,8 @@ the completed CPU extraction.
 | T540 S62 | Accepted: live Core retains only validated timing declarations, while board owns controller timing rules and DMA provenance; both-width units/gates and eight boots pass. |
 | T540 S63 | Accepted: neutral private header no longer defines board plan/topology or includes concrete chips; both-width units/gates and eight boots pass. |
 | T540 S64 | Accepted: measured 694-line/174-includer public interface and split its distinct owner boundaries into linear S65-S70 receivers; no source change. |
-| T540 S65 | Active: neutral Core construction input versus board configuration. |
+| T540 S65 | Accepted: one board composition supplies thirteen neutral constructor fields; both-width units/gates and eight single boots pass. |
+| T540 S66 | Active: public board configuration, topology and observation value boundary. |
 
 ## T540 S1 Acceptance
 
@@ -2268,6 +2269,42 @@ This is not an independent-Core-build claim. T540 remains open.
 | Similar-Issue Sweep | All direct plan/configuration consumers, board construction, failure rollback and CMake/static gates. |
 | Original Owner Request | Build neutral reusable x86 Core and flat IBM-PC common/AT/XT components without duplicate state, frameworks or changed product behavior. |
 
+## T540 S65 Acceptance
+
+Actual-pushed P1 `c6ce9b84c` has exactly eighteen NXVM paths: three
+production, one test, two static gates, four documents and eight EXEs.
+`git show --check` passes, and P1 equals `origin/master` at review. Core's
+constructor receives only the thirteen-field neutral value, with one
+board composition/create/rollback route. Complete units pass 469/469 per
+width, focused construction/clock/plan tests 6/6 per width, both specialized
+gate sets and documentation checks pass. Exactly one boot/profile/width
+passes, 8/8; all eight optimized 0540 PE products have no compiler-debug
+sections. Shared/MyNES, owner INI and external inputs remain unchanged.
+See [S65 evidence](../etc/evidence/t540-s65-neutral-construction-input.md).
+This accepts S65 only: public board values/operations and four direct
+Core reset/clock/NMI/finalization calls remain with their named receivers.
+
+## T540 S66 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S66, next numeric S after accepted S65. |
+| Admission And Approval | Owner standing automatic bounded-S admission; NXVM only, Shared/MyNES read-only. |
+| Objective | Give public board construction, topology and observation values their explicit board owner, removing their definitions and concrete chip dependencies from the neutral Core interface. |
+| Non-goals | Runtime operation changes, remaining board operation cut (S67), Core lifecycle handoff (S68), independent compile (S69), physical Shared move (S70), timing/behavior/profile/INI/asset changes. |
+| Reference Baseline | S65 P1 `c6ce9b84c`; [S64 intake](../etc/evidence/t540-s64-public-interface-intake.md) and [S65 evidence](../etc/evidence/t540-s65-neutral-construction-input.md). |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Public machine/controller/display/clock/topology value definitions, their directly dependent declarations and actual source/test consumers; inventory type dependencies before the atomic owner cut. |
+| Applicable Rules | One definition per value, no forwarding compatibility header, copied observations, one frozen input plan, explicit includes and unchanged numeric/ABI semantics. |
+| Expected Markers | Neutral execution/time values remain Core-owned; board value definitions have one public board interface and every concrete consumer includes that owner. No duplicate definition or runtime mirror. |
+| Verification | Complete x64/x86 units, specialized/documentation gates, affected constructor/plan/observation tests, eight optimized 0540 products if production inputs change and one external boot per profile/width. |
+| Asset Needs | Existing BYOB inputs only; no acquisition, external-master or owner-INI edit. |
+| Stop Conditions | A type-dependent declaration cannot be split without an explicit receiving owner, or the measured cut changes behavior/ABI; re-plan the unaccepted boundary rather than add a shim. |
+| Reporting Requirements | Report actual value/caller inventory, source/test diff counts, verification and remaining boundaries; do not claim physical Shared extraction or independent Core build. |
+| Exit Criteria | Complete P1 pushed, actual-diff review, governance P2 pushed, required checks and artifacts correct, worktree clean. |
+| Similar-Issue Sweep | All direct public interface consumers, transitive concrete chip includes, plan construction, copied observations and boundary gates. |
+| Original Owner Request | Build reusable neutral x86 Core and flat IBM-PC common/AT/XT components with single ownership and no patch-layered architecture. |
+
 ## S87 Admission Packet
 
 | Field | Required record |
@@ -3669,7 +3706,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S14 with unchanged owner INIs; S14 evidence records their hashes, PE
+T540 S65 with unchanged owner INIs; S65 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

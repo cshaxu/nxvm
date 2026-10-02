@@ -75,5 +75,9 @@ All probes were relinked after the construction change; no older executable
 substitutes for the current build. This proves the sampled checkpoints, not
 indefinite freedom from intermittent faults or T-level integration completion.
 
-Actual-P coordinator review follows the complete delivery commit. T540 stays
-open for the public board interface and remaining extraction receivers.
+Actual-P coordinator review accepts pushed P1 `c6ce9b84c`: eighteen scoped
+NXVM paths, matching recorded source counts and eight artifact identities;
+`git show --check` passes and no unrelated work remains. This is a
+one-session role-switched review, not an independent second-agent review.
+T540 stays open for the public board interface and remaining extraction
+receivers; S66 is automatically admitted under the owner's standing rule.
