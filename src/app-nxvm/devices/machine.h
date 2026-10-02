@@ -126,6 +126,11 @@ typedef void (*core_machine_board_media_provider)(void *owner,
 typedef lib_bool (*core_machine_board_refresh_request_provider)(void *owner,
     lib_u8 *out_address);
 typedef void (*core_machine_board_refresh_complete_provider)(void *owner);
+typedef lib_u64 (*core_machine_board_dma_ticks_provider)(void *owner,
+    lib_u64 source_ticks);
+typedef lib_bool (*core_machine_board_dma_request_provider)(void *owner);
+typedef void (*core_machine_board_dma_advance_provider)(void *owner,
+    lib_u64 dma_ticks);
 
 struct core_machine_firmware_context {
     core_machine *machine;
@@ -266,6 +271,9 @@ struct core_machine {
     core_machine_board_deadline_provider board_deadline_provider;
     core_machine_board_refresh_request_provider board_refresh_request_provider;
     core_machine_board_refresh_complete_provider board_refresh_complete_provider;
+    core_machine_board_dma_ticks_provider board_dma_ticks_provider;
+    core_machine_board_dma_request_provider board_dma_request_provider;
+    core_machine_board_dma_advance_provider board_dma_advance_provider;
     core_machine_board_media_provider board_media_provider;
     core_machine_board_ticks_provider board_rtc_provider;
     core_machine_board_ticks_provider board_peripheral_provider;
@@ -355,6 +363,9 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     core_machine_board_deadline_observation *out_observation);
 lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address);
 void core_machine_board_refresh_complete(void *owner);
+lib_u64 core_machine_board_dma_ticks(void *owner, lib_u64 source_ticks);
+lib_bool core_machine_board_dma_request(void *owner);
+void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks);
 void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
     lib_u64 due_tick);
 void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks);

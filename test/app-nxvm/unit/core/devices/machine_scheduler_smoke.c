@@ -29,10 +29,12 @@ typedef struct scheduler_board_probe {
     core_machine *machine;
     lib_u32 media_calls;
     lib_u32 rtc_calls;
+    lib_u32 dma_calls;
     lib_u32 calls;
     lib_u64 media_due_tick;
     lib_u64 media_ticks;
     lib_u64 rtc_ticks;
+    lib_u64 dma_ticks;
     lib_u64 advanced_ticks;
 } scheduler_board_probe;
 
@@ -81,6 +83,26 @@ static void scheduler_board_refresh_complete(void *owner)
     core_machine_board_refresh_complete(probe->machine);
 }
 
+static lib_u64 scheduler_board_dma_ticks(void *owner, lib_u64 source_ticks)
+{
+    scheduler_board_probe *probe = owner;
+    return core_machine_board_dma_ticks(probe->machine, source_ticks);
+}
+
+static lib_bool scheduler_board_dma_request(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    return core_machine_board_dma_request(probe->machine);
+}
+
+static void scheduler_board_dma_advance(void *owner, lib_u64 dma_ticks)
+{
+    scheduler_board_probe *probe = owner;
+    ++probe->dma_calls;
+    probe->dma_ticks += dma_ticks;
+    core_machine_board_dma_advance(probe->machine, dma_ticks);
+}
+
 typedef struct scheduler_deadline_probe {
     core_machine_board_deadline_observation value;
     lib_u32 calls;
@@ -126,6 +148,9 @@ lib_i32 main(void)
     machine->board_peripheral_provider = scheduler_board_peripheral;
     machine->board_refresh_request_provider = scheduler_board_refresh_request;
     machine->board_refresh_complete_provider = scheduler_board_refresh_complete;
+    machine->board_dma_ticks_provider = scheduler_board_dma_ticks;
+    machine->board_dma_request_provider = scheduler_board_dma_request;
+    machine->board_dma_advance_provider = scheduler_board_dma_advance;
     machine->board_owner = &board_probe;
 
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;

@@ -1,6 +1,30 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine.h"
 
+lib_u64 core_machine_board_dma_ticks(void *owner, lib_u64 source_ticks)
+{
+    core_machine *machine = owner;
+    if (machine == LIB_NULL) return 0u;
+    return core_machine_clock_domain_advance(&machine->dma_clock, source_ticks);
+}
+
+lib_bool core_machine_board_dma_request(void *owner)
+{
+    const core_machine *machine = owner;
+    if (machine == LIB_NULL) return LIB_FALSE;
+    return core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+        &machine->shared_dma_secondary) ? LIB_TRUE : LIB_FALSE;
+}
+
+void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks)
+{
+    core_machine *machine = owner;
+    if (machine == LIB_NULL) return;
+    core_machine_dma_advance_transaction(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary,
+        machine, dma_ticks);
+}
+
 void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
     lib_u64 due_tick)
 {

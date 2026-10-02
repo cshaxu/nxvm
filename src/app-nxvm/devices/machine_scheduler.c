@@ -97,22 +97,20 @@ static void core_machine_dma_grant_advance(core_machine *machine)
     if (machine == LIB_NULL) return;
     if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
-        core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary) &&
+        machine->board_dma_request_provider != LIB_NULL &&
+        machine->board_dma_request_provider(machine->board_owner) &&
         core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == LIB_STATUS_OK) {
         if (core_machine_transaction_hold_acknowledge(&machine->transaction,
                 CORE_MACHINE_TRANSACTION_OWNER_DMA) == LIB_STATUS_OK) {
-            core_machine_dma_advance_transaction(&machine->shared_dma_latch,
-                &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                machine, 1u);
+            if (machine->board_dma_advance_provider != LIB_NULL)
+                machine->board_dma_advance_provider(machine->board_owner, 1u);
         }
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
     } else {
-        core_machine_dma_advance_transaction(&machine->shared_dma_latch,
-            &machine->shared_dma_primary, &machine->shared_dma_secondary,
-            machine, 1u);
+        if (machine->board_dma_advance_provider != LIB_NULL)
+            machine->board_dma_advance_provider(machine->board_owner, 1u);
     }
 }
 static void core_machine_d4_refresh_hold_advance(core_machine *machine)
@@ -147,7 +145,8 @@ static void core_machine_arbitration_advance(core_machine *machine,
     lib_u8 refresh_address;
 
     if (machine == LIB_NULL || source_ticks == 0u) return;
-    dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, source_ticks);
+    dma_ticks = machine->board_dma_ticks_provider != LIB_NULL ?
+        machine->board_dma_ticks_provider(machine->board_owner, source_ticks) : 0u;
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, source_ticks);
     auxiliary_pit_ticks = core_machine_clock_domain_advance(
         &machine->auxiliary_pit_clock, source_ticks);
@@ -158,8 +157,8 @@ static void core_machine_arbitration_advance(core_machine *machine,
     if (machine->transaction_contract.dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
         lib_u64 tick;
         for (tick = 0u; tick < dma_ticks; ++tick) {
-            if (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-                    &machine->shared_dma_secondary)) {
+            if (machine->board_dma_request_provider != LIB_NULL &&
+                machine->board_dma_request_provider(machine->board_owner)) {
                 if (machine->transaction_contract.dma_cycle_bus_ready_gate_enabled &&
                     !machine->dma_cycle_bus_ready) {
                     continue;
@@ -176,29 +175,27 @@ static void core_machine_arbitration_advance(core_machine *machine,
     } else if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
         dma_ticks != 0u &&
-        core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary) &&
+        machine->board_dma_request_provider != LIB_NULL &&
+        machine->board_dma_request_provider(machine->board_owner) &&
         core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == LIB_STATUS_OK) {
         if (core_machine_transaction_hold_acknowledge(&machine->transaction,
                 CORE_MACHINE_TRANSACTION_OWNER_DMA) == LIB_STATUS_OK) {
-            core_machine_dma_advance_transaction(&machine->shared_dma_latch,
-                &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                machine, dma_ticks);
+            if (machine->board_dma_advance_provider != LIB_NULL)
+                machine->board_dma_advance_provider(machine->board_owner, dma_ticks);
         }
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
     } else {
-        core_machine_dma_advance_transaction(&machine->shared_dma_latch,
-            &machine->shared_dma_primary, &machine->shared_dma_secondary,
-            machine, dma_ticks);
+        if (machine->board_dma_advance_provider != LIB_NULL)
+            machine->board_dma_advance_provider(machine->board_owner, dma_ticks);
     }
     if (machine->transaction_contract.cpu_prefetch_reservation_enabled && !refresh_pending &&
         (machine->board_refresh_request_provider == LIB_NULL ||
          !machine->board_refresh_request_provider(machine->board_owner,
              &refresh_address)) &&
-        !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary) &&
+        (machine->board_dma_request_provider == LIB_NULL ||
+         !machine->board_dma_request_provider(machine->board_owner)) &&
         machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_NONE &&
         machine->transaction.hold_owner == CORE_MACHINE_TRANSACTION_OWNER_NONE) {
         core_machine_cpu_execution_advance_prefetch_reservation(
