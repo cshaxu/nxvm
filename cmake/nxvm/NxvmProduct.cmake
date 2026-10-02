@@ -64,6 +64,7 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/cpu_bus.c
     src/app-nxvm/devices/d4_memory.c
     src/app-nxvm/devices/debug.c
+    src/app-nxvm/devices/dma_bus.c
     src/app-nxvm/devices/entry_plan_interface.c
     src/app-nxvm/devices/fdc.c
     src/app-nxvm/devices/hdc.c
@@ -1218,7 +1219,6 @@ set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/vadp.c
     src/app-nxvm/devices/port.c
     src/app-nxvm/devices/memory.c
-    src/app-nxvm/devices/dma_bus.c
     src/app-nxvm/devices/transaction.c
 )
 add_library(core-machine-executor STATIC
@@ -3481,7 +3481,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/port.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/memory.c|machine-executor"
     "core-machine-executor|src/app-nxvm/devices/transaction.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/dma_bus.c|machine-executor"
     "vm-app|src/app-nxvm/product/command.c|console-product"
     "vm-app|src/app-nxvm/product/keyboard.c|keyboard-product"
     "vm-app|src/app-nxvm/product/startup.c|session-startup"

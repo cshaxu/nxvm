@@ -39,7 +39,7 @@ lib_status core_machine_pit_bus_create(core_machine_pit_bus *bus,
     for (index = 0u; index < 4u; ++index) {
         routes[index] = (core_machine_port_route) {(lib_u16)(base_port + index),
             index < 3u ? core_machine_pit_bus_read : LIB_NULL,
-            core_machine_pit_bus_write, bus, LIB_FALSE};
+            core_machine_pit_bus_write, bus, LIB_FALSE, 0u};
     }
     status = core_machine_install_port_routes(machine, routes, 4u);
     if (status != LIB_STATUS_OK) {

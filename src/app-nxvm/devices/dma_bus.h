@@ -11,7 +11,7 @@ extern "C"
 #include "x86/chips/dma8237/dma8237_interface.h"
 
 #include "app-nxvm/devices/controller_interface.h"
-#include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/port_interface.h"
 
 #define CORE_MACHINE_DEVICE_DMA "Intel 8237A"
 
@@ -65,7 +65,7 @@ extern "C"
     };
 
 lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
-    t_dma *secondary, t_port *port, lib_u8 controller_count);
+    t_dma *secondary, core_machine *machine, lib_u8 controller_count);
     void core_machine_dma_reset(t_latch *latch, t_dma *primary,
                                   t_dma *secondary);
     void core_machine_dma_advance_transaction(t_latch *latch,

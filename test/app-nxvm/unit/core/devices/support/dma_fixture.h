@@ -1,6 +1,24 @@
 #ifndef TEST_NXVM_DMA_FIXTURE_H
 #define TEST_NXVM_DMA_FIXTURE_H
-#include "app-nxvm/devices/dma_bus.h"
+#include "app-nxvm/devices/machine.h"
+
+/* Keep the legacy port-only chip fixtures synthetic while exercising DMA's
+ * single production registration path through a Core-owned port table. */
+static inline lib_status test_dma_initialize(t_latch *latch, t_dma *primary,
+    t_dma *secondary, t_port *port, lib_u8 controller_count)
+{
+    core_machine *machine = (core_machine *)lib_allocate_zero(1u, sizeof(*machine));
+    lib_status status;
+
+    if (machine == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    machine->lifecycle = CORE_MACHINE_INITIALIZED;
+    machine->executor_port = *port;
+    status = core_machine_dma_initialize(latch, primary, secondary,
+        machine, controller_count);
+    *port = machine->executor_port;
+    lib_release(machine);
+    return status;
+}
 
 /* With no valid software request, assay which external DREQ inputs are
  * blocked. Restore their original levels without advancing the chip. Like
@@ -33,7 +51,7 @@ static lib_u16 test_dma_register_word(t_port *port, lib_bool secondary,
  * These unit fixtures own the idle CPU's port bus. Reading address/count here
  * is intentional; unlike boot diagnostics it may reset the byte flip-flop.
  * M2M half-cycle tests use explicit clock counts instead of this helper. */
-static void test_dma_transfers(t_latch *latch, t_dma *primary, t_dma *secondary,
+static inline void test_dma_transfers(t_latch *latch, t_dma *primary, t_dma *secondary,
     t_ram *memory, t_port *port, lib_u64 transfers)
 {
     lib_u64 transfer;

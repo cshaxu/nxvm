@@ -647,7 +647,7 @@ static lib_status core_machine_create_internal(
     {
         lib_status status = core_machine_dma_initialize(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
-            &machine->executor_port, dma_controller_count);
+            machine, dma_controller_count);
         if (status == LIB_STATUS_OK) {
             status = core_machine_pic_initialize(&machine->shared_pic_master,
                 &machine->shared_pic_slave, machine, config->pic_topology);

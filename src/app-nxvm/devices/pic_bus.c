@@ -77,7 +77,7 @@ lib_status core_machine_pic_initialize(core_machine_pic_bus *master,
         core_machine_pic_bus *bus = index < 2u ? master : slave;
         lib_u16 address = (lib_u16)((index < 2u ? 0x20u : 0xa0u) + (index & 1u));
         routes[index] = (core_machine_port_route) {address, pic_bus_read,
-            pic_bus_write, bus, LIB_FALSE};
+            pic_bus_write, bus, LIB_FALSE, 0u};
     }
     status = core_machine_install_port_routes(machine, routes, count);
     if (status != LIB_STATUS_OK) {

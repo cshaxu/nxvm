@@ -95,14 +95,16 @@ remainder into the next numeric S before implementation. No `S8a` suffixes.
 | Batch | Complete change and proof boundary |
 | --- | --- |
 | S8 | Replace simple board port registration (92h, PIC, PIT and XT PPI) with one Core-owned value-provider/batch path. Delete each old raw callback/registration path; preserve primary-only XT and cascaded AT/Model40 routes and rollback tests. |
-| S9 | Convert KBC, FDC and DMA port routes, including DMA width/page-lane semantics, to the same path; retain command/DRQ/IRQ and allocation-failure regressions. |
-| S10 | Convert VADP staged CGA/EGA/VGA registration, HDC personality ports and 3F7 wired-OR, RTC/board ports; prove failed candidate leaves no partial route. After this batch no board adapter requires `t_port` or port-entry checkpoints. |
-| S11 | Convert VADP/D4/ROM board memory attachments and their owner rollback to Core bounded routes; preserve side-effect-free video capture and reset-alias priority. |
-| S12 | Convert KBC A20 and DMA/refresh memory cycles to bounded Core signals/transactions; no board adapter then requires `t_ram` or a Core transaction pointer. |
-| S13 | Separate board deadline/advance and PIC acknowledge from Core's one CPU bus/timeline. Preserve PIT/RTC/DMA/FDC/HDC/KBC, XT keyboard, D4 and FPU ordering, HLT wake and L1/L2 disposition. |
-| S14 | Split the one mixed plan/create/reset/destroy at the private state owner boundary, including processor-only reset and failure rollback. No copied mutable field or second reset/plan path. |
-| S15 | Physically move the now-neutral Core source, private state and tests into `src/x86/core` / `test/x86/core`; reconnect NXVM through its public opaque contract and remove old App source definitions. |
-| S16 onward | Move only S2-proven board mechanisms into `ibmpc-common`, `ibmpc-at` and `ibmpc-xt` in owner-sized batches; retain D4 and each genuine machine composition at its App owner. Final T gate checks every ledger row and all four external-machine scenarios. |
+| S9 | Convert DMA port routes, including width/page-lane semantics, to the Core-owned batch; retain primary-only and paired routes and allocation-failure regressions. Source inspection found its width-dependent callback contract requires an owner-local Core change and separate review. |
+| S10 | Convert KBC port routes and command/BAT/IRQ regressions to the same Core-owned batch. |
+| S11 | Convert FDC port routes and status/data/DOR/DIR, DRQ/IRQ and registration-failure regressions to the same Core-owned batch. |
+| S12 | Convert VADP staged CGA/EGA/VGA registration, HDC personality ports and 3F7 wired-OR, RTC/board ports; prove failed candidate leaves no partial route. After this batch no board adapter requires `t_port` or port-entry checkpoints. |
+| S13 | Convert VADP/D4/ROM board memory attachments and their owner rollback to Core bounded routes; preserve side-effect-free video capture and reset-alias priority. |
+| S14 | Convert KBC A20 and DMA/refresh memory cycles to bounded Core signals/transactions; no board adapter then requires `t_ram` or a Core transaction pointer. |
+| S15 | Separate board deadline/advance and PIC acknowledge from Core's one CPU bus/timeline. Preserve PIT/RTC/DMA/FDC/HDC/KBC, XT keyboard, D4 and FPU ordering, HLT wake and L1/L2 disposition. |
+| S16 | Split the one mixed plan/create/reset/destroy at the private state owner boundary, including processor-only reset and failure rollback. No copied mutable field or second reset/plan path. |
+| S17 | Physically move the now-neutral Core source, private state and tests into `src/x86/core` / `test/x86/core`; reconnect NXVM through its public opaque contract and remove old App source definitions. |
+| S18 onward | Move only S2-proven board mechanisms into `ibmpc-common`, `ibmpc-at` and `ibmpc-xt` in owner-sized batches; retain D4 and each genuine machine composition at its App owner. Final T gate checks every ledger row and all four external-machine scenarios. |
 
 Every code S runs the complete repository-only x64/x86 unit suites, affected
 four-profile Release pairs, applicable Shared receivers/manifests, and the

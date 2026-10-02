@@ -45,7 +45,7 @@ mapped the generic-Core/IBM-PC cut; S6 removed fixed port 92h from generic
 memory. [S7's private-state handoff](../etc/architecture/t540-s7-core-board-handoff.md)
 corrects the earlier S7/S8 file-move order: raw port/RAM layouts, board
 deadlines, PIC acknowledgement and reset ordering must have one bounded
-receiver before the neutral Core can move. Its prospective linear S8-S15
+receiver before the neutral Core can move. Its prospective linear S8-S17
 batches are admitted one at a time from current source evidence. Then extract
 and reconnect one complete board dependency batch at a time. Finish with
 NXVM using the shared implementation and delete its duplicate common board

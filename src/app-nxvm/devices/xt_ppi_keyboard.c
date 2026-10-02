@@ -171,7 +171,7 @@ lib_status core_machine_xt_ppi_keyboard_initialize(
         routes[index] = (core_machine_port_route) {
             (lib_u16)(config->port_a + index),
             core_machine_xt_ppi_keyboard_read,
-            core_machine_xt_ppi_keyboard_write, keyboard, LIB_FALSE};
+            core_machine_xt_ppi_keyboard_write, keyboard, LIB_FALSE, 0u};
     }
     status = core_machine_install_port_routes(machine, routes, 4u);
     if (status != LIB_STATUS_OK) {

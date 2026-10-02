@@ -34,7 +34,7 @@ lib_status core_machine_board_register_a20_port(core_machine *machine)
 
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     route = (core_machine_port_route) {0x0092u, core_machine_board_read_a20,
-        core_machine_board_write_a20, &machine->executor_memory, LIB_FALSE};
+        core_machine_board_write_a20, &machine->executor_memory, LIB_FALSE, 0u};
     return core_machine_install_port_routes(machine, &route, 1u);
 }
 

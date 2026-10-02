@@ -1,5 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 #include "app-nxvm/devices/dma_bus.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/transaction.h"
 
@@ -57,26 +58,33 @@ static lib_u8 dma_page_spare_index(lib_u16 port_id)
 }
 
 
-static void dma_port_read_byte(t_port *port, lib_u16 port_id, void *owner)
+static lib_status dma_port_read(void *owner, lib_u16 port_id,
+    lib_u32 *out_value)
 {
     t_dma *primary = owner;
     t_dma *dma;
+    lib_u8 value;
+
+    if (primary == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    value = (lib_u8)*out_value;
     if (port_id < 0x10u) {
-        x86_dma_read_register(primary->device, (lib_u8)port_id, &port->data.ioByte);
+        x86_dma_read_register(primary->device, (lib_u8)port_id, &value);
     } else if (port_id >= 0xc0u && port_id <= 0xdeu && !(port_id & 1u)) {
         x86_dma_read_register(primary->connect.peer->device,
-            (lib_u8)((port_id - 0xc0u) >> 1), &port->data.ioByte);
+            (lib_u8)((port_id - 0xc0u) >> 1), &value);
     } else if (port_id == 0x80u || port_id == 0x84u || port_id == 0x85u ||
         port_id == 0x86u || port_id == 0x88u ||
         (port_id >= 0x8cu && port_id <= 0x8eu)) {
-        port->data.ioByte = primary->data.page_spare[dma_page_spare_index(port_id)];
+        value = primary->data.page_spare[dma_page_spare_index(port_id)];
     } else if (port_id >= 0x81u && port_id <= 0x8fu) {
         dma = dma_controller(primary, port_id);
-        port->data.ioByte = dma->data.page[dma_page_channel(port_id)];
+        value = dma->data.page[dma_page_channel(port_id)];
     }
+    *out_value = (*out_value & ~0xffu) | value;
+    return LIB_STATUS_OK;
 }
 
-static void dma_port_write_byte(t_port *port, lib_u16 port_id, void *owner)
+static lib_status dma_port_write(void *owner, lib_u16 port_id, lib_u32 value)
 {
     t_dma *primary = owner;
     t_dma *dma;
@@ -84,65 +92,20 @@ static void dma_port_write_byte(t_port *port, lib_u16 port_id, void *owner)
     if (port_id == 0x80u || port_id == 0x84u || port_id == 0x85u ||
         port_id == 0x86u || port_id == 0x88u ||
         (port_id >= 0x8cu && port_id <= 0x8eu)) {
-        primary->data.page_spare[dma_page_spare_index(port_id)] = port->data.ioByte;
-        return;
+        primary->data.page_spare[dma_page_spare_index(port_id)] = (lib_u8)value;
+        return LIB_STATUS_OK;
     }
     if (port_id >= 0x81u && port_id <= 0x8fu) {
         dma = dma_controller(primary, port_id);
-        dma->data.page[dma_page_channel(port_id)] = port->data.ioByte;
-        return;
+        dma->data.page[dma_page_channel(port_id)] = (lib_u8)value;
+        return LIB_STATUS_OK;
     }
     dma = port_id >= 0xc0u ? primary->connect.peer : primary;
     selector = (lib_u8)(port_id >= 0xc0u ? (port_id - 0xc0u) >> 1 : port_id);
     /* Preserve the existing board master-clear fanout, including page latches. */
     if (selector == 13u) core_machine_dma_controller_reset(dma);
-    else x86_dma_write_register(dma->device, selector, port->data.ioByte);
-}
-
-static lib_i32 dma_page_port_is_byte_lanes(const t_port *port,
-    lib_u16 port_id)
-{
-    return port != LIB_NULL && port->data.access_bytes > 1u &&
-        port_id >= 0x0080u && (lib_u32)port_id +
-        port->data.access_bytes <= 0x0090u;
-}
-
-static void dma_port_read(t_port *port, lib_u16 port_id, void *owner)
-{
-    lib_u32 value = 0u;
-    lib_u8 lane;
-
-    if (!dma_page_port_is_byte_lanes(port, port_id)) {
-        dma_port_read_byte(port, port_id, owner);
-        return;
-    }
-    /* These page latches are individual eight-bit system-board endpoints.
-     * A CPU word/dword transaction therefore reaches consecutive latches;
-     * native-width endpoints (notably the HDC data port) retain their one
-     * transaction route in the generic port owner. */
-    for (lane = 0u; lane < port->data.access_bytes; ++lane) {
-        port->data.ioDWord = 0u;
-        dma_port_read_byte(port, (lib_u16)(port_id + lane), owner);
-        value |= (lib_u32)port->data.ioByte << (lane * 8u);
-    }
-    port->data.ioDWord = value;
-}
-
-static void dma_port_write(t_port *port, lib_u16 port_id, void *owner)
-{
-    lib_u32 value;
-    lib_u8 lane;
-
-    if (!dma_page_port_is_byte_lanes(port, port_id)) {
-        dma_port_write_byte(port, port_id, owner);
-        return;
-    }
-    value = port->data.ioDWord;
-    for (lane = 0u; lane < port->data.access_bytes; ++lane) {
-        port->data.ioDWord = value >> (lane * 8u);
-        dma_port_write_byte(port, (lib_u16)(port_id + lane), owner);
-    }
-    port->data.ioDWord = value;
+    else x86_dma_write_register(dma->device, selector, (lib_u8)value);
+    return LIB_STATUS_OK;
 }
 
 
@@ -318,12 +281,8 @@ void core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
 
 
 lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
-    t_dma *secondary, t_port *port, lib_u8 controller_count)
+    t_dma *secondary, core_machine *machine, lib_u8 controller_count)
 {
-    static const lib_u16 primary_reads[] = {
-        0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
-        0x0008, 0x000d
-    };
     static const lib_u16 primary_page_ports[] = {
         0x0081, 0x0082, 0x0083
     };
@@ -333,16 +292,14 @@ lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     static const lib_u16 spare_page_ports[] = {
         0x0080, 0x0084, 0x0085, 0x0086, 0x0088, 0x008c, 0x008d, 0x008e
     };
-    static const lib_u16 secondary_reads[] = {
-        0x00c0, 0x00c2, 0x00c4, 0x00c6, 0x00c8, 0x00ca, 0x00cc, 0x00ce,
-        0x00d0, 0x00da
-    };
+    core_machine_port_route routes[48];
+    lib_size count = 0u;
     lib_uptr index;
     lib_status status;
-    core_machine_port_provider_entry *checkpoint;
 
     if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
-        port == LIB_NULL || (controller_count != 1u && controller_count != 2u) || primary == secondary) {
+        machine == LIB_NULL || (controller_count != 1u && controller_count != 2u) ||
+        primary == secondary) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     lib_memory_set((void *)latch, 0u, sizeof(*latch));
@@ -352,8 +309,6 @@ lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     primary->connect.peer = secondary;
     secondary->connect.latch = latch;
     secondary->connect.peer = primary;
-    status = core_machine_port_registration_status(port);
-    if (status != LIB_STATUS_OK) return status;
     status = x86_dma_create(&primary->device);
     if (status == LIB_STATUS_OK && controller_count == 2u) {
         status = x86_dma_create(&secondary->device);
@@ -362,52 +317,37 @@ lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
         core_machine_dma_finalize(latch, primary, secondary);
         return status;
     }
-    checkpoint = core_machine_port_registration_begin(port);
-    for (index = 0; index < sizeof(primary_reads) / sizeof(primary_reads[0]);
-         ++index) {
-        core_machine_port_add_read(port, primary_reads[index], dma_port_read,
-            primary);
-    }
     for (index = 0; index < 0x10u; ++index) {
-        core_machine_port_add_write(port, (lib_u16)index, dma_port_write,
-            primary);
+        routes[count++] = (core_machine_port_route) {(lib_u16)index,
+            index <= 8u || index == 13u ? dma_port_read : LIB_NULL,
+            dma_port_write, primary, LIB_FALSE, 0u};
     }
     for (index = 0; index < sizeof(primary_page_ports) /
             sizeof(primary_page_ports[0]);
          ++index) {
-        core_machine_port_add_read(port, primary_page_ports[index], dma_port_read,
-            primary);
-        core_machine_port_add_write(port, primary_page_ports[index], dma_port_write,
-            primary);
+        routes[count++] = (core_machine_port_route) {primary_page_ports[index],
+            dma_port_read, dma_port_write, primary, LIB_FALSE, 0x0090u};
     }
     if (controller_count == 2u) {
         for (index = 0; index < sizeof(spare_page_ports) /
             sizeof(spare_page_ports[0]); ++index) {
-            core_machine_port_add_read(port, spare_page_ports[index], dma_port_read,
-                primary);
-            core_machine_port_add_write(port, spare_page_ports[index], dma_port_write,
-                primary);
+            routes[count++] = (core_machine_port_route) {spare_page_ports[index],
+                dma_port_read, dma_port_write, primary, LIB_FALSE, 0x0090u};
         }
         for (index = 0; index < sizeof(secondary_page_ports) /
                 sizeof(secondary_page_ports[0]); ++index) {
-            core_machine_port_add_read(port, secondary_page_ports[index], dma_port_read,
-                primary);
-            core_machine_port_add_write(port, secondary_page_ports[index], dma_port_write,
-                primary);
+            routes[count++] = (core_machine_port_route) {secondary_page_ports[index],
+                dma_port_read, dma_port_write, primary, LIB_FALSE, 0x0090u};
         }
-        for (index = 0; index < sizeof(secondary_reads) /
-             sizeof(secondary_reads[0]); ++index) {
-            core_machine_port_add_read(port, secondary_reads[index], dma_port_read,
-                primary);
-        }
-        for (index = 0; index <= 0x1eu; index += 2u) {
-            core_machine_port_add_write(port, (lib_u16)(0x00c0u + index),
-                dma_port_write, primary);
+        for (index = 0u; index < 0x10u; ++index) {
+            routes[count++] = (core_machine_port_route) {
+                (lib_u16)(0x00c0u + index * 2u),
+                index <= 8u || index == 13u ? dma_port_read : LIB_NULL,
+                dma_port_write, primary, LIB_FALSE, 0u};
         }
     }
-    status = core_machine_port_registration_status(port);
+    status = core_machine_install_port_routes(machine, routes, count);
     if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(port, checkpoint);
         core_machine_dma_finalize(latch, primary, secondary);
     }
     return status;

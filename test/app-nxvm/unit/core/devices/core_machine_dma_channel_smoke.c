@@ -199,11 +199,12 @@ static lib_bool dma_construction_rollback(void)
     t_dma primary = {0};
     t_dma secondary = {0};
     t_port port;
+    core_machine_port_test_allocation allocation = {3u, 0u};
     lib_bool failed = LIB_FALSE;
     core_machine_port_initialize(&port);
     failed |= core_machine_port_add_write(&port, 0xd4u, dma_conflicting_port,
         &port) != LIB_STATUS_OK;
-    failed |= core_machine_dma_initialize(&latch, &primary, &secondary,
+    failed |= test_dma_initialize(&latch, &primary, &secondary,
         &port, 2u) != LIB_STATUS_INVALID_STATE;
     failed |= primary.device != LIB_NULL || secondary.device != LIB_NULL;
     failed |= core_machine_port_has_read(&port, 0u) ||
@@ -214,9 +215,21 @@ static lib_bool dma_construction_rollback(void)
     /* A pre-existing registration error is not erased by starting DMA setup. */
     failed |= core_machine_port_add_write(&port, 0xd4u, dma_conflicting_port,
         &latch) != LIB_STATUS_INVALID_STATE;
-    failed |= core_machine_dma_initialize(&latch, &primary, &secondary,
+    failed |= test_dma_initialize(&latch, &primary, &secondary,
         &port, 1u) != LIB_STATUS_INVALID_STATE;
     failed |= primary.device != LIB_NULL || secondary.device != LIB_NULL;
+    core_machine_port_finalize(&port);
+    core_machine_port_initialize(&port);
+    core_machine_port_set_test_allocation(&port, &allocation);
+    failed |= test_dma_initialize(&latch, &primary, &secondary,
+        &port, 2u) != LIB_STATUS_NO_MEMORY;
+    failed |= primary.device != LIB_NULL || secondary.device != LIB_NULL ||
+        core_machine_port_has_read(&port, 0u) ||
+        core_machine_port_has_write(&port, 0u) ||
+        core_machine_port_has_write(&port, 0x0081u);
+    allocation.fail_at = 0u;
+    failed |= test_dma_initialize(&latch, &primary, &secondary,
+        &port, 2u) != LIB_STATUS_OK;
     core_machine_port_finalize(&port);
     core_machine_dma_finalize(&latch, &primary, &secondary);
     return failed;
@@ -245,7 +258,7 @@ static lib_i32 core_machine_dma_first_service_matrix(void)
         failed = 1;
         goto done;
     }
-    if (core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u) != LIB_STATUS_OK) {
+    if (test_dma_initialize(&latch, &primary, &secondary, &port, 2u) != LIB_STATUS_OK) {
         failed = 1;
         goto done;
     }
@@ -381,7 +394,7 @@ lib_i32 main(void)
         failed = 1;
         goto done;
     }
-    if (core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u) != LIB_STATUS_OK) {
+    if (test_dma_initialize(&latch, &primary, &secondary, &port, 2u) != LIB_STATUS_OK) {
         failed = 1;
         goto done;
     }

@@ -114,8 +114,8 @@ static lib_i32 port_assembly_batch_transaction(void)
     port_assembly_probe_state state = {0u};
     core_machine_port_test_allocation allocation = {3u, 0u};
     core_machine_port_route routes[] = {
-        {0x00e2u, port_assembly_read, port_assembly_write, &state, LIB_FALSE},
-        {0x00e4u, port_assembly_read, port_assembly_write, &state, LIB_FALSE}
+        {0x00e2u, port_assembly_read, port_assembly_write, &state, LIB_FALSE, 0u},
+        {0x00e4u, port_assembly_read, port_assembly_write, &state, LIB_FALSE, 0u}
     };
     core_machine *machine = LIB_NULL;
     lib_u32 value = 0u;
@@ -142,6 +142,36 @@ static lib_i32 port_assembly_batch_transaction(void)
             core_machine_bus_write(machine, 0x00e4u, 0x3cu) != LIB_STATUS_OK ||
             core_machine_bus_read(machine, 0x00e2u, &value) != LIB_STATUS_OK ||
             value != 0x3cu;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 port_assembly_dma_byte_lanes(void)
+{
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES};
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+
+    if (!failed) {
+        t_port *port = &machine->executor_port;
+
+        port->data.ioDWord = 0x44332211u;
+        failed |= core_machine_port_execute_write_width(port, 0x0081u, 4u) !=
+            LIB_STATUS_OK;
+        failed |= (lib_u8)core_machine_port_read(port, 0x0081u) != 0x11u ||
+            (lib_u8)core_machine_port_read(port, 0x0082u) != 0x22u ||
+            (lib_u8)core_machine_port_read(port, 0x0083u) != 0x33u ||
+            (lib_u8)core_machine_port_read(port, 0x0084u) != 0x44u;
+        failed |= core_machine_port_execute_read_width(port, 0x0081u, 4u) !=
+            LIB_STATUS_OK || port->data.ioDWord != 0x44332211u;
+        core_machine_port_write(port, 0x008fu, 0x5au);
+        port->data.ioDWord = 0x88776655u;
+        failed |= core_machine_port_execute_write_width(port, 0x008eu, 4u) !=
+            LIB_STATUS_OK;
+        failed |= (lib_u8)core_machine_port_read(port, 0x008eu) != 0x55u ||
+            (lib_u8)core_machine_port_read(port, 0x008fu) != 0x5au;
     }
     core_machine_destroy(machine);
     return failed;
@@ -403,6 +433,7 @@ lib_i32 main(void)
 {
     lib_i32 failed = port_assembly_range_transaction() ||
         port_assembly_batch_transaction() ||
+        port_assembly_dma_byte_lanes() ||
         port_assembly_create_failure() ||
         port_assembly_pit_transaction() || port_assembly_pic_transaction();
 

@@ -70,6 +70,8 @@ lib_status core_machine_port_add_read_wired_or_provider(t_port *port,
 lib_status core_machine_port_add_write_provider(t_port *port,
     lib_u16 port_id, core_machine_port_write_provider provider,
     void *owner);
+lib_status core_machine_port_add_route(t_port *port,
+    const core_machine_port_route *route);
 lib_i32 core_machine_port_has_read(const t_port *port, lib_u16 port_id);
 lib_i32 core_machine_port_has_write(const t_port *port, lib_u16 port_id);
 lib_u32 core_machine_port_read(t_port *port, lib_u16 port_id);

@@ -33,6 +33,9 @@ typedef struct core_machine_port_route {
     core_machine_port_write_provider write;
     void *owner;
     lib_bool wired_or_read;
+    /* Exclusive end of a bank of eight-bit latches. A wide access wholly
+     * inside this bank calls the same provider once per consecutive lane. */
+    lib_u16 byte_lane_end;
 } core_machine_port_route;
 
 /* All routes are installed or none are. Route order is observable only for

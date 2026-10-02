@@ -8,6 +8,7 @@
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/devices/transaction.h"
 #include "support/core_machine_board_fixture.h"
+#include "support/dma_fixture.h"
 
 typedef struct transaction_probe {
     core_machine_trace_event events[256];
@@ -294,7 +295,7 @@ lib_i32 main(void)
     core_machine_port_initialize(&port);
     failed |= core_machine_memory_initialize_for(&memory, 2u * 1024u * 1024u,
         LIB_NULL) != LIB_STATUS_OK;
-    if (core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u) != LIB_STATUS_OK) {
+    if (test_dma_initialize(&latch, &primary, &secondary, &port, 2u) != LIB_STATUS_OK) {
         core_machine_memory_finalize(&memory);
         core_machine_port_finalize(&port);
         core_machine_destroy(machine);
