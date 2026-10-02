@@ -2,10 +2,10 @@
 
 ## Current Work
 
-M5 T540 S17 is accepted: Model-40 D4 replacement windows, parity and write
-observer now form one failure-atomic Core memory configuration. S1-S17 are
-accepted; T540 remains open for ROM memory, neutral Core and IBM-PC board
-extraction.
+M5 T540 S18 is active: route immutable ROM images, ordinary aliases and
+pre-A20 reset aliases through one Core-owned registration and rollback
+boundary. S1-S17 are accepted; T540 remains open for the remaining neutral
+Core and IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -46,6 +46,7 @@ the completed CPU extraction.
 | T540 S15 | Accepted: CGA and staged EGA/Compaq/VGA ports use Core-owned atomic batches; both-width units, focused EGA integration, gates and eight 0540 products pass. |
 | T540 S16 | Accepted: VADP CGA/planar memory routes and EGA observer use one Core owner transaction; snapshots use copied Core inspection. |
 | T540 S17 | Accepted: D4 replacement windows, parity and observer publish atomically; both-width complete units, Model-40 boot and eight 0540 products pass. |
+| T540 S18 | Active: unify Core ROM image and alias memory publication/rollback while preserving byte ownership and reset priority. |
 
 ## T540 S1 Acceptance
 
@@ -555,6 +556,27 @@ no unowned D4 callback. Final-source x64/x86 complete units each passed
 passed 72/72. Documentation governance and staged diff checks passed. S17 is
 accepted while ROM/reset aliases (S18), bounded KBC/DMA cycles (S19), neutral
 Core relocation and IBM-PC board extraction remain open T540 work.
+
+## T540 S18 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S18, next linear S after accepted S17. |
+| Admission And Approval | The owner's automatic admission applies to bounded numeric T540 S tasks. Target NXVM only; Shared and MyNES remain read-only. The S16 handoff assigns immutable ROM/reset-alias memory ownership to S18. |
+| Objective | Make immutable ROM image, ordinary alias and pre-A20 reset-alias registration and rollback one Core-owned, owner-scoped memory path, retaining one image owner, mapping priority and firmware construction semantics. |
+| Non-goals | KBC/DMA memory cycles (S19), board deadline/PIC exchange, Core/board physical relocation, firmware-byte selection, ROM acquisition, profile/INI/media changes, hardware or timing reinterpretation, generic device framework. |
+| Reference Baseline | Accepted S17 P1 `f58a536ce` and P2 `48d3c083a`; dual-width complete units 468/468, Model-40 boot 1/1 per width, 72/72 specialized gates and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [Core/board handoff](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md), and [S17 evidence](../etc/evidence/t540-s17-d4-memory-routes.md). |
+| Files And ABI Surface | NXVM `devices/{rom_mapping_interface,memory_interface,memory,machine_firmware,machine}` and affected ROM/firmware/reset tests, owner-local failure tests, static gates, evidence and eight 0540 products. Extend the existing typed Core memory route mechanism only as needed for ordinary, overlay and pre-A20 reset priority; remove direct ROM provider-table mutation. |
+| Applicable Rules | Core owns one mapping/provider table and copied immutable image. An alias borrows bytes from its source and never owns a second copy. Firmware configure plus derived reset alias either publishes completely or removes only its new owners; existing unrelated routes survive. The high reset alias must retain pre-A20 priority. No App asset path or ROM bytes enter Shared. |
+| Verification | Inspect every ROM/alias registration and rollback caller; inject provider-capacity, alias-source and reset-alias failure after earlier successful registration; prove unchanged unrelated routes, image lifetime, retry and reset priority for 286/386. Run focused ROM/firmware tests, complete x64/x86 repository-only units, specialized/documentation gates, affected external boot checkpoints and eight Release products with PE/hash/no-debug proof. |
+| Expected Markers | One owner-scoped Core route operation for each ROM image/alias and one firmware transaction rollback; no direct ROM-specific provider-array loop or second memory table; no duplicate image copy for aliases; unchanged reset-only decode semantics. |
+| Asset Needs | Existing selected BYOB build roots only. Do not change external originals or adjacent NXVM.ini files. |
+| Reporting Requirements | Record each original ROM/alias caller and disposition, failure positions and surviving owner, actual source/test added/removed/net lines, affected boot checkpoints, eight artifact hashes and the S19 KBC/DMA receiver. |
+| Stop Conditions | Stop before changing reset-vector priority, image lifetime, firmware callback authority, Shared/MyNES source, protected ROM inputs or profile semantics. If one batch proves too large, split its unstarted remainder into the next numeric S before implementation. |
+| Exit Criteria | ROM image and both alias kinds publish and roll back through the one Core memory owner without leaking or displacing unrelated routes; old direct ROM provider manipulation is gone; affected regressions and complete dual-width gates/products pass. |
+| Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal, individually tracked cuts before extraction for independent PC Apps. |
+| Similar-Issue Sweep | Search all production/test/build registration and rollback of immutable ROM, alias, reset alias, raw provider entries and firmware construction. Consume ROM variants here; retain the non-ROM absent-memory fallback and KBC/DMA cycles for the next bounded Core-memory receiver. |
 
 ## S87 Admission Packet
 

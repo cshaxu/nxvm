@@ -5,17 +5,6 @@
 
 
 
-lib_status core_machine_register_memory_device(core_machine *machine,
-    lib_u32 physical_start, lib_size bytes,
-    const core_machine_memory_device_callbacks *callbacks, void *owner)
-{
-    if (callbacks == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
-    return core_machine_memory_register_overlay_device_provider(&machine->executor_memory,
-        physical_start, bytes, callbacks->read, callbacks->write, callbacks->query,
-        owner);
-}
-
 lib_status core_machine_install_memory_device_routes(core_machine *machine,
     const core_machine_memory_device_route *routes, lib_size count,
     core_machine_memory_write_observer observer,
@@ -26,7 +15,12 @@ lib_status core_machine_install_memory_device_routes(core_machine *machine,
     lib_size observer_count;
     lib_status status = LIB_STATUS_OK;
 
-    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
+    if (!core_machine_configuration_is_open(machine) &&
+        (machine == LIB_NULL || machine->lifecycle != CORE_MACHINE_INITIALIZED ||
+        machine->execution_provider_frozen || !machine->firmware_operation_active ||
+        !machine->firmware_context.active ||
+        !machine->firmware_context.configuring ||
+        machine->firmware_context.machine != machine)) return LIB_STATUS_INVALID_STATE;
     if (owner == LIB_NULL || (count == 0u && observer == LIB_NULL &&
         parity == LIB_NULL) ||
         (count != 0u && routes == LIB_NULL)) return LIB_STATUS_INVALID_ARGUMENT;
@@ -47,13 +41,32 @@ lib_status core_machine_install_memory_device_routes(core_machine *machine,
     for (lib_size index = 0u; index < count; ++index) {
         const core_machine_memory_device_route *route = &routes[index];
 
-        status = route->replacement ?
-            core_machine_memory_register_replacement_device_provider(memory,
-                route->physical_start, route->bytes, route->callbacks.read,
-                route->callbacks.write, route->callbacks.query, owner) :
-            core_machine_memory_register_device_provider(memory,
+        switch (route->mode) {
+        case CORE_MACHINE_MEMORY_PROVIDER_STANDARD:
+            status = core_machine_memory_register_device_provider(memory,
                 route->physical_start, route->bytes, route->callbacks.read,
                 route->callbacks.write, route->callbacks.query, owner);
+            break;
+        case CORE_MACHINE_MEMORY_PROVIDER_OVERLAY:
+            status = core_machine_memory_register_overlay_device_provider(memory,
+                route->physical_start, route->bytes, route->callbacks.read,
+                route->callbacks.write, route->callbacks.query, owner);
+            break;
+        case CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY:
+            status = core_machine_memory_register_pre_a20_overlay_device_provider(
+                memory, route->physical_start, route->bytes,
+                route->callbacks.read, route->callbacks.write,
+                route->callbacks.query, owner);
+            break;
+        case CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT:
+            status = core_machine_memory_register_replacement_device_provider(memory,
+                route->physical_start, route->bytes, route->callbacks.read,
+                route->callbacks.write, route->callbacks.query, owner);
+            break;
+        default:
+            status = LIB_STATUS_INVALID_ARGUMENT;
+            break;
+        }
         if (status != LIB_STATUS_OK) break;
     }
     if (status == LIB_STATUS_OK && observer != LIB_NULL)

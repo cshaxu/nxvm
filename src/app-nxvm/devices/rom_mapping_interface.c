@@ -60,10 +60,19 @@ static lib_status core_machine_rom_mapping_query(void *owner,
     return LIB_STATUS_OK;
 }
 
+static const core_machine_memory_device_callbacks rom_callbacks = {
+    core_machine_rom_mapping_read, core_machine_rom_mapping_write,
+    core_machine_rom_mapping_query
+};
+
 static lib_status core_machine_register_immutable_rom_mapping_internal(
     core_machine *machine, lib_u32 physical_start, const lib_u8 *image,
     lib_size bytes, lib_i32 firmware_call)
 {
+    const core_machine_memory_device_route route = {
+        physical_start, bytes, rom_callbacks,
+        CORE_MACHINE_MEMORY_PROVIDER_STANDARD
+    };
     core_machine_immutable_rom_mapping *mapping;
     lib_u8 *copy;
     lib_status status;
@@ -88,9 +97,8 @@ static lib_status core_machine_register_immutable_rom_mapping_internal(
     mapping->bytes = bytes;
     mapping->image = copy;
     mapping->owns_image = LIB_TRUE;
-    status = core_machine_memory_register_device_provider(&machine->executor_memory,
-        physical_start, bytes, core_machine_rom_mapping_read,
-        core_machine_rom_mapping_write, core_machine_rom_mapping_query, mapping);
+    status = core_machine_install_memory_device_routes(machine, &route, 1u,
+        LIB_NULL, LIB_NULL, mapping);
     if (status != LIB_STATUS_OK) {
         lib_release(copy);
         lib_memory_set(mapping, 0, sizeof(*mapping));
@@ -113,6 +121,11 @@ static lib_status core_machine_register_immutable_rom_mapping_alias_internal(
     lib_u32 physical_start, lib_size bytes, lib_i32 firmware_call,
     lib_u8 pre_a20)
 {
+    const core_machine_memory_device_route route = {
+        physical_start, bytes, rom_callbacks,
+        pre_a20 ? CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY :
+            CORE_MACHINE_MEMORY_PROVIDER_OVERLAY
+    };
     core_machine_immutable_rom_mapping *source = LIB_NULL;
     core_machine_immutable_rom_mapping *mapping;
     lib_size index;
@@ -152,10 +165,8 @@ static lib_status core_machine_register_immutable_rom_mapping_alias_internal(
     mapping->bytes = bytes;
     mapping->image = source->image + source_offset;
     mapping->owns_image = LIB_FALSE;
-    status = (pre_a20 ? core_machine_memory_register_pre_a20_overlay_device_provider :
-        core_machine_memory_register_overlay_device_provider)(&machine->executor_memory,
-            physical_start, bytes, core_machine_rom_mapping_read,
-            core_machine_rom_mapping_write, core_machine_rom_mapping_query, mapping);
+    status = core_machine_install_memory_device_routes(machine, &route, 1u,
+        LIB_NULL, LIB_NULL, mapping);
     if (status != LIB_STATUS_OK) {
         lib_memory_set(mapping, 0, sizeof(*mapping));
         return status;
@@ -208,27 +219,8 @@ void core_machine_rollback_immutable_rom_mappings(core_machine *machine,
             mapping_index > mapping_count; --mapping_index) {
         core_machine_immutable_rom_mapping *mapping =
             &machine->immutable_rom_mappings[mapping_index - 1u];
-        lib_uptr provider_index;
 
-        for (provider_index = machine->executor_memory.connect.device_provider_count;
-                provider_index > 0u; --provider_index) {
-            core_machine_memory_device_provider *provider =
-                &machine->executor_memory.connect.device_providers[provider_index - 1u];
-
-            if (provider->owner == mapping) {
-                const lib_uptr tail =
-                    machine->executor_memory.connect.device_provider_count - 1u;
-
-                if (provider_index - 1u != tail) {
-                    machine->executor_memory.connect.device_providers[provider_index - 1u] =
-                        machine->executor_memory.connect.device_providers[tail];
-                }
-                lib_memory_set(&machine->executor_memory.connect.device_providers[tail], 0,
-                    sizeof(machine->executor_memory.connect.device_providers[tail]));
-                --machine->executor_memory.connect.device_provider_count;
-                break;
-            }
-        }
+        (void)core_machine_remove_memory_device_routes(machine, mapping);
         if (mapping->owns_image) lib_release(mapping->image);
         lib_memory_set(mapping, 0, sizeof(*mapping));
     }

@@ -48,8 +48,10 @@ lib_i32 main(void)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
-    const core_machine_memory_device_callbacks callbacks = {
-        overlay_read, overlay_write, overlay_query
+    core_machine_memory_device_route provider = {
+        0x000f0000u, 1u,
+        { overlay_read, overlay_write, overlay_query },
+        CORE_MACHINE_MEMORY_PROVIDER_OVERLAY
     };
     const lib_u8 rom = 0x5au;
     core_machine *machine = LIB_NULL;
@@ -60,8 +62,8 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK || machine == LIB_NULL;
-    if (!failed) failed |= core_machine_register_memory_device(machine, 0x000f0000u,
-        1u, &callbacks, &overlay) != LIB_STATUS_OK ||
+    if (!failed) failed |= core_machine_install_memory_device_routes(machine,
+        &provider, 1u, LIB_NULL, LIB_NULL, &overlay) != LIB_STATUS_OK ||
         core_machine_register_immutable_rom_mapping(machine, 0x000f0000u, &rom,
             sizeof(rom)) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -77,10 +79,11 @@ lib_i32 main(void)
         core_machine_memory_write(machine, 0x000f0000u, &write,
             sizeof(write)) != LIB_STATUS_OK || overlay != write;
     overlay = 0u;
+    provider.physical_start = 0x000f1000u;
     if (!failed) failed |= core_machine_memory_read(machine, 0x000f0000u, &observed,
         sizeof(observed)) != LIB_STATUS_OK || observed != rom ||
-        core_machine_register_memory_device(machine, 0x000f1000u, 1u,
-            &callbacks, &overlay) != LIB_STATUS_INVALID_STATE;
+        core_machine_install_memory_device_routes(machine, &provider, 1u,
+            LIB_NULL, LIB_NULL, &overlay) != LIB_STATUS_INVALID_STATE;
     if (!failed) printf("M5:T386:S16:CORE-MEMORY-DEVICE:OK\n");
     core_machine_destroy(machine);
     return failed ? 1 : 0;

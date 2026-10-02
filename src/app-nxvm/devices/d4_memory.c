@@ -143,10 +143,12 @@ lib_status core_machine_d4_memory_configure(core_machine *machine,
     static const core_machine_memory_device_route routes[2] = {
         { CORE_MACHINE_D4_SETUP_BANK_START, CORE_MACHINE_D4_SETUP_BANK_BYTES,
             { core_machine_d4_setup_read, core_machine_d4_setup_write,
-                core_machine_d4_setup_query }, LIB_TRUE },
+                core_machine_d4_setup_query },
+            CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT },
         { CORE_MACHINE_D4_CONTROL_PHYSICAL, CORE_MACHINE_D4_CONTROL_WINDOW_BYTES,
             { core_machine_d4_control_read, core_machine_d4_control_write,
-                core_machine_d4_control_query }, LIB_TRUE }
+                core_machine_d4_control_query },
+            CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT }
     };
     static const core_machine_memory_parity_config parity = {
         1024u * 1024u, core_machine_d4_parity_fault

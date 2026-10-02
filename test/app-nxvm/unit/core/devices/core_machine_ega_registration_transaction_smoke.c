@@ -197,8 +197,10 @@ lib_i32 main(void)
     {
         lib_i32 candidate_owner = 0;
         const core_machine_memory_device_route routes[2] = {
-            { 0x8000u, 1u, { ignored_read, ignored_device_write, ignored_query }, LIB_FALSE },
-            { 0x9000u, 1u, { ignored_read, ignored_device_write, ignored_query }, LIB_FALSE }
+            { 0x8000u, 1u, { ignored_read, ignored_device_write, ignored_query },
+                CORE_MACHINE_MEMORY_PROVIDER_STANDARD },
+            { 0x9000u, 1u, { ignored_read, ignored_device_write, ignored_query },
+                CORE_MACHINE_MEMORY_PROVIDER_STANDARD }
         };
 
         failed |= !register_provider_fillers(memory, &filler,

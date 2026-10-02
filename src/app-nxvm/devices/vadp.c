@@ -254,13 +254,15 @@ lib_status core_machine_vadp_configure(t_vadp *adapter,
     if (status == LIB_STATUS_OK && config->cga_vram_present)
         memory_routes[memory_route_count++] = (core_machine_memory_device_route) {
             CORE_MACHINE_VADP_VIDEO_BASE, CORE_MACHINE_VADP_VIDEO_BYTES,
-            { cga_read, cga_write, cga_query }, LIB_FALSE };
+            { cga_read, cga_write, cga_query },
+            CORE_MACHINE_MEMORY_PROVIDER_STANDARD };
     if (status == LIB_STATUS_OK && config->ega_present) {
         if (config->ega_sequencer.planar_ega)
             memory_routes[memory_route_count++] = (core_machine_memory_device_route) {
                 CORE_MACHINE_VADP_EGA_APERTURE_BASE,
                 CORE_MACHINE_VADP_EGA_CPU_DECODE_BYTES,
-                { planar_read, planar_write, planar_query }, LIB_FALSE };
+                { planar_read, planar_write, planar_query },
+                CORE_MACHINE_MEMORY_PROVIDER_STANDARD };
         {
             const lib_bool compaq = config->ega_personality ==
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
