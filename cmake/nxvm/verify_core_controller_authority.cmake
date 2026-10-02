@@ -42,13 +42,6 @@ string(FIND "${firmware_text}" "lib_status core_machine_bind_firmware_provider("
 if(NOT board_bind EQUAL -1 OR core_bind EQUAL -1)
     message(FATAL_ERROR "Firmware publication transaction must belong only to Core")
 endif()
-foreach(forbidden IN ITEMS "machine->immutable_rom" "machine->firmware_provider"
-    "machine->firmware_context" "core_machine_rollback_immutable_rom_mappings(")
-    string(FIND "${machine_board_text}" "${forbidden}" position)
-    if(NOT position EQUAL -1)
-        message(FATAL_ERROR "Board borrows private Core firmware/ROM state: ${forbidden}")
-    endif()
-endforeach()
 foreach(required IN ITEMS "machine->board_firmware_provider(machine)"
     "core_machine_rollback_immutable_rom_mappings(machine, boundary)")
     string(FIND "${firmware_text}" "${required}" position)
@@ -69,6 +62,16 @@ foreach(source IN LISTS nxvm_signal_sources)
         continue()
     endif()
     file(READ "${source}" source_text)
+    if(NOT source MATCHES "/devices/(machine_firmware|memory_interface|rom_mapping_interface)\\.c$")
+        foreach(forbidden IN ITEMS "machine->immutable_rom" "machine->firmware_provider"
+            "machine->firmware_context" "machine->firmware_operation_active"
+            "core_machine_rollback_immutable_rom_mappings(")
+            string(FIND "${source_text}" "${forbidden}" position)
+            if(NOT position EQUAL -1)
+                message(FATAL_ERROR "Private Core firmware/ROM state outside its owner: ${source}: ${forbidden}")
+            endif()
+        endforeach()
+    endif()
     if(source_text MATCHES "core_machine_port_(registration_begin|registration_status|rollback_registration)[ \t\r\n]*\\(" AND
        NOT source MATCHES "/devices/port(_interface)?\\.c$")
         message(FATAL_ERROR "Port registry construction must stay in its Core owner: ${source}")

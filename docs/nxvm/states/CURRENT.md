@@ -2503,9 +2503,23 @@ is admitted by this governance closure.
 | Asset Needs | Existing BYOB build roots and external overlay boots only; owner INIs/master media unchanged. |
 | Reporting Requirements | All production hits, exact code delta, callback/rollback scope, unchanged 15/16-byte presence checks, both-width proofs and eight hashes. |
 | Stop Conditions | Raw registry exposure, mirrored ROM state, changed reset priority/coverage, new runtime firmware or another target; re-plan first. |
-| Exit Criteria | Complete verified P1 immediately pushed, actual coordinator diff review, pure-governance P2 pushed, clean tree; T540 stays open. |
+| Exit Criteria | Complete implementation immediately pushed, actual coordinator diff review, corrective P if rejected, then pure-governance P and clean tree; T540 stays open. |
 | Original Owner Request | Independent Core and reusable flat PC board components with sole state/transaction owners; automatic numeric S admission. |
 | Similar-Issue Sweep | Search all NXVM firmware/provider/context and immutable-ROM registry/rollback consumers; migrate board hits, retain legitimate Core owners/tests. General attachment and test relocation are subsequent receivers. |
+
+### S74 Consolidated Corrective Brief
+
+Coordinator actual-diff review of pushed P1 `7997202a6` finds one remaining
+closure gap: the new private-ROM/firmware gate checks only `machine_board.c`,
+not other production paths. Extend the existing all-NXVM source scan to forbid
+those private fields and rollback outside the actual neutral owners. Include
+the firmware-operation guard. No runtime source, test input, ROM, INI or
+artifact change is admitted. Executor confirms this entire corrective brief.
+Run positive and injected-negative inspection, both-width complete unit suites
+and specialized gates, documentation/diff checks, and verify P1 artifact hashes
+remain exact. Do not repeat the eight already successful boots or rebuild
+unchanged product inputs. Commit/push P2 as the complete correction, then
+coordinator reviews it before a later pure-governance P closes S74.
 
 ## T540 S73 Acceptance
 
