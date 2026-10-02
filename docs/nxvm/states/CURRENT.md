@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S30 is active: separate mixed plan/reset Core invariants from
-IBM-PC board configuration and cold-reset effects before physical relocation.
-S1-S29 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S31 is active: separate the one frozen IBM-PC construction plan from
+neutral Core configuration without duplicating mutable plan state.
+S1-S30 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -58,7 +58,8 @@ the completed CPU extraction.
 | T540 S27 | Accepted: board DMA clock/request/chip effects around Core wait/HOLD/grant and prefetch; both-width units and eight boots pass. |
 | T540 S28 | Accepted: board PIT/PIC post-prefetch tail with earlier copied clock ticks; both-width units and eight boots pass. |
 | T540 S29 | Accepted: copied PIC signals and Core CPU locality event; both-width units and eight boots pass. |
-| T540 S30 | Active: mixed plan/reset ownership audit and bounded receivers. |
+| T540 S30 | Accepted: source-only mixed plan/reset ownership audit and bounded S31-S38 receivers. |
+| T540 S31 | Active: frozen board plan versus neutral Core construction inputs. |
 
 ## T540 S1 Acceptance
 
@@ -1056,6 +1057,44 @@ T540 remains open.
 | Exit Criteria | Audited finite Core/board plan/reset ownership and each bounded receiver implemented or explicitly assigned; no hidden dual path; verification matches actual code scope and P1/P2 close S30. |
 | Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board components with flat ownership, linear numeric S and no patch-over-patch path. |
 | Similar-Issue Sweep | Inspect all construction, reset, failure cleanup and plan/profile inputs, including XT, 5170, Model 40 and default; no board-specific branch may silently enter neutral Core. |
+
+## T540 S30 Acceptance
+
+NXVM P1 `4f9f72b28` source-inspected the mixed `machine`, `machine_plan`,
+`machine_board`, entry, ROM and trace implementations. The original
+validation→Core construction→board topology→single rollback, cold-reset
+stage order, processor-only reset and image/alias destruction obligations
+are recorded in the [S30 intake](../etc/evidence/t540-s30-plan-reset-intake.md).
+The former one-piece plan/reset move is divided into linear S31–S37
+owner-sized receivers, S38 neutral Core relocation, then S39 onward board
+extraction. Only unadmitted prospective numbering changed.
+
+This is documentation-only: no production, test, firmware, INI or executable
+input changed. The accepted S29 x64/x86 469/469 units, specialized gates,
+8/8 boots and eight optimized products remain the source baseline.
+Documentation governance and diff checks passed. S30 is accepted; T540
+remains open.
+
+## T540 S31 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S31, the next linear S after accepted S30. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES are read-only. |
+| Objective | Separate IBM-PC topology/timing plan validation and frozen composition from neutral CPU/time/transaction Core construction inputs, keeping one plan and no duplicated mutable state. |
+| Non-goals | Core constructor effects (S32), board constructor/topology application (S33), reset (S34), teardown (S35), ROM/entry/trace qualification (S36), physical move (S38), device timing/profile/INI/firmware/media changes. |
+| Reference Baseline | Accepted S30 P1 `4f9f72b28`, [S30 plan/reset intake](../etc/evidence/t540-s30-plan-reset-intake.md) and unchanged S29 dual-width 469/469 units, specialized gates, eight external boots and eight optimized products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and S30 intake. |
+| Files And ABI Surface | Inspect `devices/{machine_plan,machine,machine_interface}` and all four profile constructors. One board-owned frozen plan may pass only validated immutable CPU, time-axis, clock and transaction inputs to neutral Core. No parallel plan parser, copy or profile-name switch. |
+| Applicable Rules | Preserve validation-before-allocation, declaration uniqueness/timing grade, topology constraints, configuration-owned retirement qualification copy and `create_from_plan` success-only plan publication. |
+| Verification | Focused plan/profile/construction-invalid/rollback tests; full x64/x86 repository-only units, specialized/documentation gates, one boot per four profiles/width and eight optimized 0540 products with PE/hash/no-debug proof if code changes. |
+| Expected Markers | One plan owner and one immutable neutral Core input boundary; no copied mutable controller state or new Core branch on machine name. |
+| Asset Needs | Existing owner-provided external firmware/media only for code validation; no new or changed protected binary or INI. |
+| Reporting Requirements | Record validation/copy source diff, owner/lifetime decisions, focused/full checks and products; hand off constructor side effects to S32-S33. |
+| Stop Conditions | Stop before implementing a second plan, changing timing grades, moving board topology into neutral Core, editing Shared/MyNES or broadening to constructor/reset effects. |
+| Exit Criteria | A single validated frozen plan with neutral Core inputs and no parallel path; complete verification for the actual code scope; actual-diff P1 and governance P2 close S31. |
+| Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board components with flat ownership, linear numeric S and no patch-over-patch path. |
+| Similar-Issue Sweep | Inspect all config/plan copies, constructor entry points, plan topology declaration and all four profile inputs for duplicated or mutable machine facts. |
 
 ## S87 Admission Packet
 
