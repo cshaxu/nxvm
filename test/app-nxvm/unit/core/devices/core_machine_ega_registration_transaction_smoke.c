@@ -105,7 +105,7 @@ static void finalize(t_vadp *adapter, t_ram *memory)
 static lib_i32 is_unconfigured(const t_vadp *adapter, const t_ram *memory,
     lib_uptr observers, lib_uptr providers)
 {
-    return adapter->memory == LIB_NULL &&
+    return !adapter->configured &&
         !x86_video_ega_aperture_contains(adapter->chip, 0xa0000u, 1u) &&
         memory->connect.write_observer_count == observers &&
         memory->connect.device_provider_count == providers;
@@ -152,80 +152,111 @@ lib_i32 main(void)
         0x40u, 0x00u, 0x30u, 0x01u, LIB_TRUE, LIB_FALSE, LIB_TRUE,
         0x06u, 0x01u, LIB_FALSE, LIB_FALSE, LIB_FALSE };
     t_vadp adapter;
-    t_ram memory;
     core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
+    t_ram *memory = &machine.executor_memory;
     t_port *port = &machine.executor_port;
     lib_i32 filler = 0;
     lib_i32 failed = 0;
 
-    if (!initialize(&adapter, &memory, &machine)) return 1;
+    if (!initialize(&adapter, memory, &machine)) return 1;
     {
         core_machine_memory_test_allocation allocation = { LIB_TRUE, 0u };
 
-        failed |= !register_provider_fillers(&memory, &filler,
+        failed |= !register_provider_fillers(memory, &filler,
             CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY);
-        memory.connect.device_provider_test_allocation = &allocation;
-        failed |= core_machine_memory_register_device_provider(&memory, 0x1c00u,
+        memory->connect.device_provider_test_allocation = &allocation;
+        failed |= core_machine_memory_register_device_provider(memory, 0x1c00u,
             1u, ignored_read, ignored_device_write, ignored_query, &filler) !=
             LIB_STATUS_NO_MEMORY;
         failed |= allocation.attempts != 1u ||
-            memory.connect.device_provider_count !=
+            memory->connect.device_provider_count !=
                 CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY ||
-            memory.connect.device_provider_capacity !=
+            memory->connect.device_provider_capacity !=
                 CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY;
-        memory.connect.device_provider_test_allocation = LIB_NULL;
-        failed |= core_machine_memory_register_device_provider(&memory, 0x1c00u,
+        memory->connect.device_provider_test_allocation = LIB_NULL;
+        failed |= core_machine_memory_register_device_provider(memory, 0x1c00u,
             1u, ignored_read, ignored_device_write, ignored_query, &filler) !=
             LIB_STATUS_OK;
-        failed |= memory.connect.device_provider_count !=
+        failed |= memory->connect.device_provider_count !=
             CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY + 1u ||
-            memory.connect.device_provider_capacity <=
+            memory->connect.device_provider_capacity <=
                 CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY;
     }
-    finalize(&adapter, &memory);
-    if (!initialize(&adapter, &memory, &machine)) return 1;
-    failed |= !register_provider_fillers(&memory, &filler,
+    finalize(&adapter, memory);
+    if (!initialize(&adapter, memory, &machine)) return 1;
+    failed |= !register_provider_fillers(memory, &filler,
         CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
-    failed |= core_machine_vadp_configure(&adapter, &memory,
-        &config) != LIB_STATUS_NO_MEMORY;
-    failed |= !is_unconfigured(&adapter, &memory, 0u,
+    failed |= core_machine_vadp_configure(&adapter, &config) != LIB_STATUS_NO_MEMORY;
+    failed |= !is_unconfigured(&adapter, memory, 0u,
         CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
-    finalize(&adapter, &memory);
+    finalize(&adapter, memory);
 
-    if (!initialize(&adapter, &memory, &machine)) return 1;
+    /* A second Core route can fail after the first was appended. The
+     * transaction retains only the unrelated providers and permits retry. */
+    if (!initialize(&adapter, memory, &machine)) return 1;
+    {
+        lib_i32 candidate_owner = 0;
+        const core_machine_memory_device_route routes[2] = {
+            { 0x8000u, 1u, { ignored_read, ignored_device_write, ignored_query }},
+            { 0x9000u, 1u, { ignored_read, ignored_device_write, ignored_query }}
+        };
+
+        failed |= !register_provider_fillers(memory, &filler,
+            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT - 1u);
+        failed |= core_machine_install_memory_device_routes(&machine, routes, 2u,
+            ignored_write, &candidate_owner) !=
+            LIB_STATUS_NO_MEMORY;
+        failed |= !is_unconfigured(&adapter, memory, 0u,
+            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT - 1u);
+        core_machine_memory_unregister_owner(memory, &filler);
+        failed |= core_machine_install_memory_device_routes(&machine, routes, 2u,
+            ignored_write, &candidate_owner) != LIB_STATUS_OK;
+        failed |= memory->connect.device_provider_count != 2u ||
+            memory->connect.write_observer_count != 1u;
+        failed |= core_machine_install_memory_device_routes(&machine, routes, 2u,
+            ignored_write, &candidate_owner) != LIB_STATUS_INVALID_STATE ||
+            memory->connect.device_provider_count != 2u ||
+            memory->connect.write_observer_count != 1u;
+        failed |= core_machine_remove_memory_device_routes(&machine,
+            &candidate_owner) != LIB_STATUS_OK ||
+            memory->connect.device_provider_count != 0u ||
+            memory->connect.write_observer_count != 0u;
+    }
+    finalize(&adapter, memory);
+
+    if (!initialize(&adapter, memory, &machine)) return 1;
     {
         priority_provider first = { 0x3cu, LIB_FALSE };
         priority_provider overlay = { 0xa5u, LIB_FALSE };
         lib_u8 value = 0u;
 
-        failed |= core_machine_memory_allocate_for(&memory, 0x10000u) !=
+        failed |= core_machine_memory_allocate_for(memory, 0x10000u) !=
             LIB_STATUS_OK;
-        failed |= core_machine_memory_register_device_provider(&memory, 0x8000u,
+        failed |= core_machine_memory_register_device_provider(memory, 0x8000u,
             1u, priority_read, ignored_device_write, priority_query, &first) !=
             LIB_STATUS_OK;
-        failed |= core_machine_memory_register_overlay_device_provider(&memory,
+        failed |= core_machine_memory_register_overlay_device_provider(memory,
             0x8000u, 1u, priority_read, ignored_device_write, priority_query,
             &overlay) != LIB_STATUS_OK;
-        core_machine_memory_freeze_mappings(&memory);
-        failed |= core_machine_memory_read_physical(&memory, 0x8000u, (lib_uptr)&value, 1u) !=
+        core_machine_memory_freeze_mappings(memory);
+        failed |= core_machine_memory_read_physical(memory, 0x8000u, (lib_uptr)&value, 1u) !=
             LIB_STATUS_OK || value != first.value;
         first.decline = LIB_TRUE;
         value = 0u;
-        failed |= core_machine_memory_read_physical(&memory, 0x8000u, (lib_uptr)&value, 1u) !=
+        failed |= core_machine_memory_read_physical(memory, 0x8000u, (lib_uptr)&value, 1u) !=
             LIB_STATUS_OK || value != overlay.value;
-        failed |= core_machine_memory_register_device_provider(&memory, 0x9000u,
+        failed |= core_machine_memory_register_device_provider(memory, 0x9000u,
             1u, ignored_read, ignored_device_write, ignored_query, &filler) !=
             LIB_STATUS_INVALID_ARGUMENT;
-        failed |= memory.connect.device_provider_count != 2u;
+        failed |= memory->connect.device_provider_count != 2u;
     }
-    finalize(&adapter, &memory);
-    if (!initialize(&adapter, &memory, &machine)) return 1;
-    failed |= !register_observer_fillers(&memory, &filler);
-    failed |= core_machine_vadp_configure(&adapter, &memory,
-        &config) != LIB_STATUS_NO_MEMORY;
-    failed |= !is_unconfigured(&adapter, &memory,
+    finalize(&adapter, memory);
+    if (!initialize(&adapter, memory, &machine)) return 1;
+    failed |= !register_observer_fillers(memory, &filler);
+    failed |= core_machine_vadp_configure(&adapter, &config) != LIB_STATUS_NO_MEMORY;
+    failed |= !is_unconfigured(&adapter, memory,
         CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY, 0u);
-    finalize(&adapter, &memory);
+    finalize(&adapter, memory);
 
 
     /* Initial CGA construction also preserves routes installed before it. */
@@ -262,41 +293,41 @@ lib_i32 main(void)
             core_machine_port_test_allocation allocation = { fail_at, 0u };
             x86_video *original;
 
-            if (!initialize(&adapter, &memory, &machine)) return 1;
+            if (!initialize(&adapter, memory, &machine)) return 1;
             original = adapter.chip;
             failed |= core_machine_port_add_read(port, 0x80u, sentinel_read,
                 &filler) != LIB_STATUS_OK;
-            failed |= !register_provider_fillers(&memory, &filler, 1u);
-            failed |= core_machine_memory_register_write_observer(&memory,
+            failed |= !register_provider_fillers(memory, &filler, 1u);
+            failed |= core_machine_memory_register_write_observer(memory,
                 ignored_write, &filler) != LIB_STATUS_OK;
             core_machine_port_set_test_allocation(port, &allocation);
-            failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
+            failed |= core_machine_vadp_configure(&adapter, &selected) !=
                 LIB_STATUS_NO_MEMORY;
             failed |= allocation.attempts != fail_at || adapter.chip != original ||
-                !is_unconfigured(&adapter, &memory, 1u, 1u) ||
+                !is_unconfigured(&adapter, memory, 1u, 1u) ||
                 core_machine_port_has_write(port, 0x3c4u) ||
                 core_machine_port_has_write(port, 0x3c9u) ||
                 core_machine_port_has_read(port, 0x7c6u) ||
                 !core_machine_port_has_write(port, 0x3d4u) ||
                 core_machine_port_read(port, 0x80u) != 0x5au;
             allocation.fail_at = 0u;
-            failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
+            failed |= core_machine_vadp_configure(&adapter, &selected) !=
                 LIB_STATUS_OK;
-            failed |= memory.connect.device_provider_count != 2u ||
-                memory.connect.write_observer_count != 2u ||
+            failed |= memory->connect.device_provider_count != 2u ||
+                memory->connect.write_observer_count != 2u ||
                 !core_machine_port_has_write(port, 0x3c4u) ||
                 core_machine_port_has_write(port, 0x3c9u) != selected.vga_present ||
                 core_machine_port_has_read(port, 0x7c6u) != (variant == 2u);
-            core_machine_memory_freeze_mappings(&memory);
+            core_machine_memory_freeze_mappings(memory);
             core_machine_vadp_finalize(&adapter);
-            failed |= memory.connect.device_provider_count != 1u ||
-                memory.connect.write_observer_count != 1u ||
+            failed |= memory->connect.device_provider_count != 1u ||
+                memory->connect.write_observer_count != 1u ||
                 core_machine_port_has_write(port, 0x3c4u) ||
                 core_machine_port_has_write(port, 0x3c9u) ||
                 core_machine_port_has_read(port, 0x7c6u) ||
                 core_machine_port_has_write(port, 0x3d4u) ||
                 core_machine_port_read(port, 0x80u) != 0x5au;
-            core_machine_memory_finalize(&memory);
+            core_machine_memory_finalize(memory);
             core_machine_port_finalize(port);
         }
     }
@@ -310,20 +341,20 @@ lib_i32 main(void)
         selected.ega_personality =
             X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
         selected.cecg = compaq;
-        if (!initialize(&adapter, &memory, &machine)) return 1;
+        if (!initialize(&adapter, memory, &machine)) return 1;
         original = adapter.chip;
         failed |= core_machine_port_add_read(port, 0xfc6u, sentinel_read,
             &filler) != LIB_STATUS_OK;
-        failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
+        failed |= core_machine_vadp_configure(&adapter, &selected) !=
             LIB_STATUS_INVALID_STATE;
         failed |= adapter.chip != original ||
-            !is_unconfigured(&adapter, &memory, 0u, 0u) ||
+            !is_unconfigured(&adapter, memory, 0u, 0u) ||
             core_machine_port_has_write(port, 0x3c4u) ||
             core_machine_port_read(port, 0xfc6u) != 0x5au;
         core_machine_port_unregister_owner(port, &filler);
-        failed |= core_machine_vadp_configure(&adapter, &memory, &selected) !=
+        failed |= core_machine_vadp_configure(&adapter, &selected) !=
             LIB_STATUS_OK;
-        finalize(&adapter, &memory);
+        finalize(&adapter, memory);
     }
 
     if (failed) return 1;

@@ -18,7 +18,7 @@ lib_i32 main(void)
 {
     core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
     t_port *port = &machine.executor_port;
-    t_ram memory;
+    t_ram *memory = &machine.executor_memory;
     t_vadp vadp;
     x86_video_snapshot snapshot;
     x86_video_snapshot_observation observation;
@@ -28,11 +28,11 @@ lib_i32 main(void)
         .text_timing = {48u, 8u, 8u}, .cga_vram_present = LIB_TRUE
     };
 
-    lib_memory_set(&memory, 0, sizeof(memory));
+    lib_memory_set(memory, 0, sizeof(*memory));
     core_machine_port_initialize(port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_vadp_initialize(&vadp, &machine) != LIB_STATUS_OK;
-    failed |= core_machine_vadp_configure(&vadp, &memory, &config) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_configure(&vadp, &config) != LIB_STATUS_OK;
     failed |= core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX) ||
         core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_MODE) ||
         core_machine_port_has_read(port, CORE_MACHINE_VADP_PORT_COLOR) ||
@@ -61,10 +61,10 @@ lib_i32 main(void)
 
     core_machine_port_write(port, 0x03d8u, 0x0au);
     core_machine_port_write(port, 0x03d9u, 0x00u);
-    failed |= !core_machine_cga_graphics_write_byte(&memory, 0u, 0x1bu);
-    failed |= !core_machine_cga_graphics_write_byte(&memory, 0x2000u, 0xe4u);
+    failed |= !core_machine_cga_graphics_write_byte(memory, 0u, 0x1bu);
+    failed |= !core_machine_cga_graphics_write_byte(memory, 0x2000u, 0xe4u);
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot);
     failed |= snapshot.kind != X86_VIDEO_KIND_CGA_320X200X4 ||
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u;
     failed |= snapshot.pixels[0] != 0u || snapshot.pixels[1] != 1u ||
@@ -79,30 +79,30 @@ lib_i32 main(void)
     generation = observation.generation;
     x86_video_observe_snapshot(vadp.chip, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || observation.capture_required;
-    failed |= !core_machine_cga_graphics_write_byte(&memory, 0u, 0xe4u);
+    failed |= !core_machine_cga_graphics_write_byte(memory, 0u, 0xe4u);
     x86_video_observe_snapshot(vadp.chip, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || !observation.capture_required ||
         observation.generation == generation;
 
     core_machine_port_write(port, 0x03d9u, 0x20u);
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot);
     failed |= snapshot.palette_rgb[1] != 0x00aaaau ||
         snapshot.palette_rgb[2] != 0xaa00aau ||
         snapshot.palette_rgb[3] != 0xaaaaaau || !snapshot.buffer_changed;
 
     core_machine_port_write(port, 0x03d9u, 0x10u);
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
         snapshot.palette_rgb[1] != 0x55ff55u ||
         snapshot.palette_rgb[2] != 0xff5555u ||
         snapshot.palette_rgb[3] != 0xffff55u || !snapshot.buffer_changed;
 
     core_machine_port_write(port, 0x03d8u, 0x1au);
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
         snapshot.kind != X86_VIDEO_KIND_CGA_640X200X2 ||
         snapshot.palette_rgb[0] != 0x000000u ||
         snapshot.palette_rgb[1] != 0x000000u;
     core_machine_port_write(port, 0x03d9u, 0x1fu);
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
         snapshot.palette_rgb[0] != 0x000000u ||
         snapshot.palette_rgb[1] != 0xffffffu || !snapshot.buffer_changed;
     core_machine_port_write(port, 0x03dcu, 0u);
@@ -110,18 +110,18 @@ lib_i32 main(void)
     x86_video_reset(vadp.chip);
     failed |= (core_machine_port_read(port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
     core_machine_port_write(port, 0x03d8u, 0x0du);
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot);
     failed |= snapshot.kind != X86_VIDEO_KIND_TEXT;
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     generation = observation.generation;
     x86_video_observe_snapshot(vadp.chip, LIB_TRUE, generation, &observation);
     failed |= !observation.generation_reliable || observation.capture_required;
     core_machine_port_write(port, 0x03d8u, 0x05u);
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
         snapshot.characters[0] != 0x20u || snapshot.attributes[0] != 0u;
 
     core_machine_vadp_finalize(&vadp);
-    core_machine_memory_finalize(&memory);
+    core_machine_memory_finalize(memory);
     core_machine_port_finalize(port);
     if (failed) return 1;
     printf("M5:T228:S1:CGA:PORT:OK\n");

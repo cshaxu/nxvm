@@ -15,7 +15,7 @@ lib_status core_machine_capture_display_snapshot(const core_machine *machine,
         return LIB_STATUS_INVALID_STATE;
     }
     return core_machine_vadp_capture_snapshot(&mutable_machine->shared_vadp,
-        &mutable_machine->executor_memory, out_snapshot) ? LIB_STATUS_OK :
+        out_snapshot) ? LIB_STATUS_OK :
         LIB_STATUS_UNSUPPORTED;
 }
 
@@ -68,8 +68,7 @@ lib_status core_machine_configure_display(core_machine *machine,
         !x86_video_cecg_config_is_valid(&config->cecg))) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    status = core_machine_vadp_configure(&machine->shared_vadp,
-        &machine->executor_memory, config);
+    status = core_machine_vadp_configure(&machine->shared_vadp, config);
     if (status != LIB_STATUS_OK) return status;
     machine->display_ports = config->ports;
     machine->display_configured = LIB_TRUE;

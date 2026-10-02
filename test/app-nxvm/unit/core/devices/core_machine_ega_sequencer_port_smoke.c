@@ -38,18 +38,18 @@ lib_i32 main(void)
     };
     core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
     t_port *port = &machine.executor_port;
-    t_ram memory;
+    t_ram *memory = &machine.executor_memory;
     t_vadp vadp;
     lib_u8 value = 0u;
     lib_u64 dirty_generation;
     x86_video_snapshot_observation observation;
     lib_i32 failed = 0;
 
-    lib_memory_set(&memory, 0, sizeof(memory));
+    lib_memory_set(memory, 0, sizeof(*memory));
     core_machine_port_initialize(port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_vadp_initialize(&vadp, &machine) != LIB_STATUS_OK;
-    failed |= core_machine_vadp_configure(&vadp, &memory, &config) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_configure(&vadp, &config) != LIB_STATUS_OK;
     failed |= core_machine_port_read(port, 0x03c4u) != 0u;
     failed |= core_machine_port_read(port, 0x03c5u) != 0x03u;
 
@@ -67,9 +67,9 @@ lib_i32 main(void)
 
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     dirty_generation = observation.generation;
-    failed |= !core_machine_ega_write(&memory, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
+    failed |= !core_machine_ega_write(memory, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
         0x5au);
-    failed |= !core_machine_ega_read(&memory, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
+    failed |= !core_machine_ega_read(memory, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
         &value) || value != 0x5au;
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     failed |= observation.generation != dirty_generation + 1u;
@@ -79,16 +79,16 @@ lib_i32 main(void)
         CORE_MACHINE_VADP_EGA_APERTURE_BASE + CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
         1u);
     dirty_generation = observation.generation;
-    failed |= !core_machine_ega_write(&memory,
+    failed |= !core_machine_ega_write(memory,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE + CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
         0xa5u);
     x86_video_observe_snapshot(vadp.chip, LIB_FALSE, 0u, &observation);
     failed |= observation.generation != dirty_generation;
-    failed |= !core_machine_ega_read(&memory, CORE_MACHINE_VADP_VIDEO_BASE, &value) ||
+    failed |= !core_machine_ega_read(memory, CORE_MACHINE_VADP_VIDEO_BASE, &value) ||
         value != 0u;
 
     core_machine_vadp_finalize(&vadp);
-    core_machine_memory_finalize(&memory);
+    core_machine_memory_finalize(memory);
     core_machine_port_finalize(port);
     if (failed) return 1;
     printf("M5:T235:S1:EGA-SEQUENCER:PORT:OK\n");

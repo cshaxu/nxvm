@@ -145,11 +145,6 @@ lib_status core_machine_memory_register_fallback_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, void *owner);
-lib_status core_machine_memory_register_device_provider_and_write_observer(
-    t_ram *ram, lib_u32 physical_start, lib_size bytes,
-    core_machine_memory_device_read read, core_machine_memory_device_write write,
-    core_machine_memory_device_query query, void *owner,
-    core_machine_memory_write_observer callback);
 void core_machine_memory_freeze_mappings(t_ram *ram);
 /* Exclusive construction/teardown only; remove this owner's device routes and
  * write observers before destroying the callback context. */

@@ -34,7 +34,7 @@ lib_i32 main(void)
     };
     core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
     t_port *port = &machine.executor_port;
-    t_ram memory;
+    t_ram *memory = &machine.executor_memory;
     t_vadp vadp;
     lib_u8 value = 0u;
     core_machine_display_config config = {
@@ -42,13 +42,13 @@ lib_i32 main(void)
     };
     lib_i32 failed = 0;
 
-    lib_memory_set(&memory, 0, sizeof(memory));
+    lib_memory_set(memory, 0, sizeof(*memory));
     core_machine_port_initialize(port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_vadp_initialize(&vadp, &machine) != LIB_STATUS_OK;
     config.ega_sequencer = sequencer;
     config.ega_controllers = controllers;
-    failed |= core_machine_vadp_configure(&vadp, &memory, &config) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_configure(&vadp, &config) != LIB_STATUS_OK;
     /* The complete generic board decodes the status port through Misc Output;
      * this fixture uses the color alias to reset the attribute flip-flop. */
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT, 1u);
@@ -81,8 +81,8 @@ lib_i32 main(void)
     failed |= !x86_video_ega_aperture_contains(vadp.chip, 0x000b0000u,
         0x00008000u) || x86_video_ega_aperture_contains(vadp.chip,
         0x000a0000u, 1u);
-    failed |= !core_machine_ega_controller_write(&memory, 0x000b0000u, 0x5au);
-    failed |= !core_machine_ega_controller_write(&memory, 0x000a0000u, 0xa5u);
+    failed |= !core_machine_ega_controller_write(memory, 0x000b0000u, 0x5au);
+    failed |= !core_machine_ega_controller_write(memory, 0x000a0000u, 0xa5u);
     core_machine_port_write(port, 0x03cfu, 0x0du);
     failed |= !x86_video_ega_aperture_contains(vadp.chip, 0x000b8000u,
         0x00008000u) || x86_video_ega_aperture_contains(vadp.chip,
@@ -123,8 +123,8 @@ lib_i32 main(void)
     core_machine_port_write(port, 0x03c5u, 0x05u);
     core_machine_port_write(port, 0x03ceu, 5u);
     core_machine_port_write(port, 0x03cfu, 0x03u);
-    failed |= !core_machine_ega_controller_write(&memory, 0x000b8000u, 0xa6u);
-    failed |= !core_machine_ega_controller_read(&memory, 0x000b8000u, &value) ||
+    failed |= !core_machine_ega_controller_write(memory, 0x000b8000u, 0xa6u);
+    failed |= !core_machine_ega_controller_read(memory, 0x000b8000u, &value) ||
         value != 0xa6u;
 
     x86_video_reset(vadp.chip);
@@ -136,12 +136,12 @@ lib_i32 main(void)
     if (failed) {
         fprintf(stderr, "M5:T236:S1:EGA-CONTROLLER:FAIL\n");
         core_machine_vadp_finalize(&vadp);
-        core_machine_memory_finalize(&memory);
+        core_machine_memory_finalize(memory);
         core_machine_port_finalize(port);
         return 1;
     }
     core_machine_vadp_finalize(&vadp);
-    core_machine_memory_finalize(&memory);
+    core_machine_memory_finalize(memory);
     core_machine_port_finalize(port);
     printf("M5:T236:S1:EGA-CONTROLLER:PORT:OK\n");
     printf("M5:T480:S3:COMMON-OWNER:OK\n");

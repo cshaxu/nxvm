@@ -52,6 +52,12 @@ typedef struct core_machine_memory_device_callbacks {
     core_machine_memory_device_query query;
 } core_machine_memory_device_callbacks;
 
+typedef struct core_machine_memory_device_route {
+    lib_u32 physical_start;
+    lib_size bytes;
+    core_machine_memory_device_callbacks callbacks;
+} core_machine_memory_device_route;
+
 /* Configuration-only generic device registration.  Core owns checked routing;
  * the composition-owned callback context supplies all device semantics. */
 lib_status core_machine_enable_memory_parity(core_machine *machine,
@@ -67,6 +73,16 @@ lib_status core_machine_register_memory_device(core_machine *machine,
 lib_status core_machine_register_memory_replacement_device(core_machine *machine,
     lib_u32 physical_start, lib_size bytes,
     const core_machine_memory_device_callbacks *callbacks, void *owner);
+/* Publish all routes and the optional write observer as one owner transaction.
+ * An observer-only registration has zero routes. */
+lib_status core_machine_install_memory_device_routes(core_machine *machine,
+    const core_machine_memory_device_route *routes, lib_size count,
+    core_machine_memory_write_observer observer, void *owner);
+lib_status core_machine_remove_memory_device_routes(core_machine *machine,
+    const void *owner);
+/* Copy bytes through the observational route without changing guest state. */
+lib_status core_machine_memory_inspect(const core_machine *machine,
+    lib_u32 physical, void *out_data, lib_size size);
 lib_status core_machine_memory_read(
     const core_machine *machine,
     lib_u32 physical,

@@ -64,8 +64,8 @@ lib_i32 main(void)
     t_port *port = &machine.executor_port;
     core_machine generic_machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
     t_port *generic_port = &generic_machine.executor_port;
-    t_ram memory;
-    t_ram generic_memory;
+    t_ram *memory = &machine.executor_memory;
+    t_ram *generic_memory = &generic_machine.executor_memory;
     t_vadp vadp;
     t_vadp generic_vadp;
     x86_video_snapshot snapshot;
@@ -78,18 +78,17 @@ lib_i32 main(void)
 
     core_machine_port_initialize(port);
     core_machine_port_initialize(generic_port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
-    failed |= core_machine_memory_initialize_for(&generic_memory, 0x100000u,
+    failed |= core_machine_memory_initialize_for(memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(generic_memory, 0x100000u,
         LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_vadp_initialize(&vadp, &machine) != LIB_STATUS_OK;
     failed |= core_machine_vadp_initialize(&generic_vadp, &generic_machine) != LIB_STATUS_OK;
     display.cecg = config;
     display.ega_sequencer = sequencer;
     display.ega_controllers = controllers;
-    failed |= core_machine_vadp_configure(&vadp, &memory, &display) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_configure(&vadp, &display) != LIB_STATUS_OK;
     display.ega_personality = X86_VIDEO_EGA_PERSONALITY_GENERIC;
-    failed |= core_machine_vadp_configure(&generic_vadp, &generic_memory,
-        &display) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_configure(&generic_vadp, &display) != LIB_STATUS_OK;
     failed |= !core_machine_port_has_write(port,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT) ||
         !core_machine_port_has_write(generic_port,
@@ -99,18 +98,18 @@ lib_i32 main(void)
     t386_s28_select_ega_320(port);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x07u);
-    failed |= !t386_s28_write(&memory, 0x80u) || !t386_s28_read(&memory, &value) ||
-        value != 0x80u || !core_machine_vadp_capture_snapshot(&vadp, &memory,
-        &snapshot) || snapshot.pixels[0] != 15u;
+    failed |= !t386_s28_write(memory, 0x80u) || !t386_s28_read(memory, &value) ||
+        value != 0x80u || !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+        snapshot.pixels[0] != 15u;
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
         0x20u);
-    failed |= !t386_s28_write(&memory, 0x00u) || !t386_s28_read(&memory, &value) ||
-        value != 0x00u || !core_machine_vadp_capture_snapshot(&vadp, &memory,
-        &snapshot) || snapshot.pixels[0] != 0u || !snapshot.buffer_changed;
+    failed |= !t386_s28_write(memory, 0x00u) || !t386_s28_read(memory, &value) ||
+        value != 0x00u || !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
+        snapshot.pixels[0] != 0u || !snapshot.buffer_changed;
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
         0x00u);
-    failed |= !t386_s28_read(&memory, &value) || value != 0x80u ||
-        !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+    failed |= !t386_s28_read(memory, &value) || value != 0x80u ||
+        !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
         snapshot.pixels[0] != 15u || !snapshot.buffer_changed;
     /* DeskPro POST writes B0000h while its primary CECG route is 3Dx/B8000h.
      * Both addresses must reach the one VADP planar store, never ordinary RAM. */
@@ -118,21 +117,21 @@ lib_i32 main(void)
         0x01u);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x0eu);
-    failed |= !t386_s28_write_at(&memory, 0x000b0000u, 0x11u) ||
-        !t386_s28_write_at(&memory, 0x000b8000u, 0x22u) ||
-        !t386_s28_read_at(&memory, 0x000b0000u, &value) || value != 0x22u;
+    failed |= !t386_s28_write_at(memory, 0x000b0000u, 0x11u) ||
+        !t386_s28_write_at(memory, 0x000b8000u, 0x22u) ||
+        !t386_s28_read_at(memory, 0x000b0000u, &value) || value != 0x22u;
     x86_video_reset(vadp.chip);
     t386_s28_select_ega_320(port);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x07u);
-    failed |= !t386_s28_read(&memory, &value) || value != 0u ||
-        !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+    failed |= !t386_s28_read(memory, &value) || value != 0u ||
+        !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
         snapshot.pixels[0] != 0u;
 
     core_machine_vadp_finalize(&generic_vadp);
     core_machine_vadp_finalize(&vadp);
-    core_machine_memory_finalize(&memory);
-    core_machine_memory_finalize(&generic_memory);
+    core_machine_memory_finalize(memory);
+    core_machine_memory_finalize(generic_memory);
     core_machine_port_finalize(generic_port);
     core_machine_port_finalize(port);
     if (failed) {

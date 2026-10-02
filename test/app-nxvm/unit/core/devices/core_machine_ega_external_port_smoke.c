@@ -34,7 +34,7 @@ lib_i32 main(void)
     };
     core_machine machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
     t_port *port = &machine.executor_port;
-    t_ram memory;
+    t_ram *memory = &machine.executor_memory;
     t_vadp vadp;
     x86_video_snapshot snapshot;
     x86_video_snapshot_observation observation;
@@ -46,13 +46,13 @@ lib_i32 main(void)
         .vga_present = LIB_TRUE
     };
 
-    lib_memory_set(&memory, 0, sizeof(memory));
+    lib_memory_set(memory, 0, sizeof(*memory));
     core_machine_port_initialize(port);
-    failed |= core_machine_memory_initialize_for(&memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_memory_initialize_for(memory, 16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_vadp_initialize(&vadp, &machine) != LIB_STATUS_OK;
     config.ega_sequencer = sequencer;
     config.ega_controllers = controllers;
-    failed |= core_machine_vadp_configure(&vadp, &memory, &config) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_configure(&vadp, &config) != LIB_STATUS_OK;
     x86_video_reset(vadp.chip);
     failed |= !core_machine_port_has_read(port,
         CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0) ||
@@ -106,11 +106,11 @@ lib_i32 main(void)
     (void)core_machine_port_read(port, CORE_MACHINE_VADP_PORT_STATUS);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x01u);
-    failed |= core_machine_memory_write_physical(&memory,
+    failed |= core_machine_memory_write_physical(memory,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, (lib_uptr)chain4_bytes,
         sizeof(chain4_bytes)) != LIB_STATUS_OK;
     lib_memory_set(&snapshot, 0, sizeof(snapshot));
-    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &snapshot) ||
         snapshot.kind != X86_VIDEO_KIND_VGA_320X200X256 ||
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 0x10u || snapshot.pixels[1] != 0x11u ||
@@ -132,7 +132,7 @@ lib_i32 main(void)
         0u;
 
     core_machine_vadp_finalize(&vadp);
-    core_machine_memory_finalize(&memory);
+    core_machine_memory_finalize(memory);
     core_machine_port_finalize(port);
     if (failed) {
         fprintf(stderr, "M5:T466:S2:EGA-EXTERNAL-PORT:FAIL\n");

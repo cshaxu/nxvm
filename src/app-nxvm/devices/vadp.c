@@ -1,7 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/memory.h"
 
 typedef struct video_port_route {
     lib_u16 address;
@@ -213,10 +212,12 @@ lib_status core_machine_vadp_initialize(t_vadp *adapter, core_machine *machine)
     return status;
 }
 
-lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
+lib_status core_machine_vadp_configure(t_vadp *adapter,
     const core_machine_display_config *config)
 {
     x86_video *candidate = LIB_NULL;
+    core_machine_memory_device_route memory_routes[2];
+    lib_size memory_route_count = 0u;
     core_machine_port_route routes[
         sizeof(ega_ports) / sizeof(ega_ports[0]) +
         sizeof(compaq_ports) / sizeof(compaq_ports[0]) +
@@ -224,9 +225,9 @@ lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
     lib_size route_count = 0u;
     lib_status status;
 
-    if (adapter == LIB_NULL || adapter->chip == LIB_NULL || memory == LIB_NULL ||
+    if (adapter == LIB_NULL || adapter->chip == LIB_NULL ||
         config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (adapter->memory != LIB_NULL) return LIB_STATUS_INVALID_STATE;
+    if (adapter->configured) return LIB_STATUS_INVALID_STATE;
     if (config->vga_present && (!config->ega_present ||
         config->ega_personality != X86_VIDEO_EGA_PERSONALITY_GENERIC))
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -249,20 +250,18 @@ lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
     }
     if (status == LIB_STATUS_OK && config->vga_present)
         status = x86_video_configure_vga(candidate);
-    /* Prepare the complete chip before publishing any memory route. Port
-     * callbacks still address the old instance until successful publication. */
+    /* Prepare the complete chip before publishing either memory or ports. */
     if (status == LIB_STATUS_OK && config->cga_vram_present)
-        status = core_machine_memory_register_device_provider(memory,
+        memory_routes[memory_route_count++] = (core_machine_memory_device_route) {
             CORE_MACHINE_VADP_VIDEO_BASE, CORE_MACHINE_VADP_VIDEO_BYTES,
-            cga_read, cga_write, cga_query, candidate);
+            { cga_read, cga_write, cga_query }};
     if (status == LIB_STATUS_OK && config->ega_present) {
-        status = config->ega_sequencer.planar_ega ?
-            core_machine_memory_register_device_provider_and_write_observer(memory,
+        if (config->ega_sequencer.planar_ega)
+            memory_routes[memory_route_count++] = (core_machine_memory_device_route) {
                 CORE_MACHINE_VADP_EGA_APERTURE_BASE,
-                CORE_MACHINE_VADP_EGA_CPU_DECODE_BYTES, planar_read, planar_write,
-                planar_query, candidate, notify_write) :
-            core_machine_memory_register_write_observer(memory, notify_write, candidate);
-        if (status == LIB_STATUS_OK) {
+                CORE_MACHINE_VADP_EGA_CPU_DECODE_BYTES,
+                { planar_read, planar_write, planar_query }};
+        {
             const lib_bool compaq = config->ega_personality ==
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
             route_count = append_ports(routes, route_count, ega_ports,
@@ -276,16 +275,20 @@ lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
     if (status == LIB_STATUS_OK && config->vga_present)
         route_count = append_ports(routes, route_count, vga_ports,
             sizeof(vga_ports) / sizeof(vga_ports[0]), adapter);
+    if (status == LIB_STATUS_OK && (memory_route_count != 0u || config->ega_present))
+        status = core_machine_install_memory_device_routes(adapter->machine,
+            memory_routes, memory_route_count,
+            config->ega_present ? notify_write : LIB_NULL, candidate);
     if (status == LIB_STATUS_OK && route_count != 0u)
         status = core_machine_install_port_routes(adapter->machine, routes, route_count);
     if (status != LIB_STATUS_OK) {
-        core_machine_memory_unregister_owner(memory, candidate);
+        (void)core_machine_remove_memory_device_routes(adapter->machine, candidate);
         x86_video_destroy(candidate);
         return status;
     }
     x86_video_destroy(adapter->chip);
     adapter->chip = candidate;
-    adapter->memory = memory;
+    adapter->configured = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
@@ -294,7 +297,8 @@ void core_machine_vadp_finalize(t_vadp *adapter)
     if (adapter == LIB_NULL) return;
     if (adapter->machine != LIB_NULL)
         (void)core_machine_remove_port_routes(adapter->machine, adapter);
-    core_machine_memory_unregister_owner(adapter->memory, adapter->chip);
+    if (adapter->configured)
+        (void)core_machine_remove_memory_device_routes(adapter->machine, adapter->chip);
     x86_video_destroy(adapter->chip);
     lib_memory_set(adapter, 0u, sizeof(*adapter));
 }
@@ -302,15 +306,15 @@ void core_machine_vadp_finalize(t_vadp *adapter)
 static lib_status read_backing(void *context, lib_u32 address,
     lib_u8 *destination, lib_size bytes)
 {
-    return core_machine_memory_inspect_physical(context, address,
-        (lib_uptr)destination, bytes, LIB_FALSE);
+    return core_machine_memory_inspect(context, address, destination, bytes);
 }
 
-lib_i32 core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
+lib_i32 core_machine_vadp_capture_snapshot(t_vadp *adapter,
     x86_video_snapshot *out_snapshot)
 {
-    const x86_video_memory_reader reader = { read_backing, memory };
+    const x86_video_memory_reader reader = { read_backing,
+        adapter == LIB_NULL ? LIB_NULL : adapter->machine };
 
     return adapter != LIB_NULL && x86_video_capture_snapshot_from(adapter->chip,
-        memory == LIB_NULL ? LIB_NULL : &reader, out_snapshot);
+        adapter->machine == LIB_NULL ? LIB_NULL : &reader, out_snapshot);
 }

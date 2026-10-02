@@ -3106,6 +3106,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VADP Core-owned atomic port routes"
         VERBATIM)
 
+    add_custom_target(verify-vadp-memory-routes
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_vadp_memory_routes.cmake"
+        COMMENT "Verifying VADP Core-owned memory routes and copied inspection"
+        VERBATIM)
+
     add_custom_target(verify-rational-clock-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rational_clock_boundary.cmake"
@@ -3309,6 +3315,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-board-port-b-boundary
     verify-hdc-port-routes
     verify-vadp-port-routes
+    verify-vadp-memory-routes
     verify-rational-clock-boundary
     verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary

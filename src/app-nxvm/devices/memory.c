@@ -502,25 +502,6 @@ lib_status core_machine_memory_register_fallback_device_provider(t_ram *ram,
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_memory_register_device_provider_and_write_observer(
-    t_ram *ram, lib_u32 physical_start, lib_size bytes,
-    core_machine_memory_device_read read, core_machine_memory_device_write write,
-    core_machine_memory_device_query query, void *owner,
-    core_machine_memory_write_observer callback)
-{
-    lib_status status = core_machine_memory_validate_device_provider(ram,
-        physical_start, bytes, read, write, query, owner, LIB_FALSE);
-
-    if (status != LIB_STATUS_OK) return status;
-    status = core_machine_memory_validate_write_observer(ram, callback, owner);
-    if (status != LIB_STATUS_OK) return status;
-    status = core_machine_memory_reserve_device_provider(ram);
-    if (status != LIB_STATUS_OK) return status;
-    core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, LIB_FALSE, LIB_FALSE, LIB_FALSE, LIB_FALSE);
-    core_machine_memory_append_write_observer(ram, callback, owner);
-    return LIB_STATUS_OK;
-}
 void core_machine_memory_freeze_mappings(t_ram *ram)
 {
     if (ram != LIB_NULL) ram->connect.mappings_frozen = LIB_TRUE;

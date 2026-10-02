@@ -25,8 +25,8 @@ lib_i32 main(void)
     t_port *port = &machine.executor_port;
     core_machine generic_machine = {.lifecycle = CORE_MACHINE_INITIALIZED};
     t_port *generic_port = &generic_machine.executor_port;
-    t_ram memory;
-    t_ram generic_memory;
+    t_ram *memory = &machine.executor_memory;
+    t_ram *generic_memory = &generic_machine.executor_memory;
     t_vadp vadp;
     t_vadp generic_vadp;
     x86_video_ega_sequencer_config sequencer = {
@@ -48,19 +48,18 @@ lib_i32 main(void)
 
     core_machine_port_initialize(port);
     core_machine_port_initialize(generic_port);
-    failed |= core_machine_memory_initialize_for(&memory,
+    failed |= core_machine_memory_initialize_for(memory,
         16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
-    failed |= core_machine_memory_initialize_for(&generic_memory,
+    failed |= core_machine_memory_initialize_for(generic_memory,
         16u * 1024u * 1024u, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_vadp_initialize(&vadp, &machine) != LIB_STATUS_OK;
     failed |= core_machine_vadp_initialize(&generic_vadp, &generic_machine) != LIB_STATUS_OK;
     display.cecg = config;
     display.ega_sequencer = sequencer;
     display.ega_controllers = controllers;
-    failed |= core_machine_vadp_configure(&vadp, &memory, &display) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_configure(&vadp, &display) != LIB_STATUS_OK;
     display.ega_personality = X86_VIDEO_EGA_PERSONALITY_GENERIC;
-    failed |= core_machine_vadp_configure(&generic_vadp, &generic_memory,
-        &display) != LIB_STATUS_OK;
+    failed |= core_machine_vadp_configure(&generic_vadp, &display) != LIB_STATUS_OK;
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
     core_machine_port_write(generic_port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
@@ -71,20 +70,20 @@ lib_i32 main(void)
         CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT) ||
         core_machine_port_has_read(generic_port,
         CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) ||
-        !t386_s11_query_route(&memory, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+        !t386_s11_query_route(memory, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     core_machine_port_write(port,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
-    failed |= !t386_s11_query_route(&memory, CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM) ||
-        !t386_s11_query_route(&generic_memory, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+    failed |= !t386_s11_query_route(memory, CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM) ||
+        !t386_s11_query_route(generic_memory, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     x86_video_reset(vadp.chip);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-    failed |= !t386_s11_query_route(&memory, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+    failed |= !t386_s11_query_route(memory, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
 
     core_machine_vadp_finalize(&generic_vadp);
     core_machine_vadp_finalize(&vadp);
-    core_machine_memory_finalize(&generic_memory);
-    core_machine_memory_finalize(&memory);
+    core_machine_memory_finalize(generic_memory);
+    core_machine_memory_finalize(memory);
     core_machine_port_finalize(generic_port);
     core_machine_port_finalize(port);
     if (!failed) {

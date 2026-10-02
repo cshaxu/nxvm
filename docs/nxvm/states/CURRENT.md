@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S15 is accepted: initial CGA and staged EGA/Compaq/VGA VADP port
-routes are Core-owned and failure-atomic. S1-S15 are accepted; T540 remains
-open for S16 memory routes and the later neutral Core/IBM-PC board extraction.
+M5 T540 S16 is active: make VADP memory routes and observational snapshot
+backing Core-bounded without changing video semantics. S1-S15 are accepted;
+T540 remains open for D4/ROM memory, neutral Core and IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -478,7 +478,29 @@ width, all specialized gates, and eight optimized 0540 artifact identities.
 Actual-diff review confirms one VADP chip state and one Core route table, no
 raw VADP port registration or new timing claim. Only NXVM-owned files changed;
 Shared, MyNES and adjacent INIs remain untouched. S16 owns the remaining
-VADP/ROM/D4 memory attachments; neutral Core and board relocation remain open.
+VADP memory attachment; D4 and ROM have separate S17/S18 receivers. Neutral
+Core and board relocation remain open.
+
+## T540 S16 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S16, next linear S after accepted S15. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 subtasks applies. [S16 source intake](../etc/architecture/t540-s7-core-board-handoff.md) separates VADP, D4 and ROM by their distinct memory owner/rollback boundaries. Target: NXVM only; Shared and MyNES remain read-only. |
+| Objective | Give VADP a bounded Core memory route and copied inspection boundary for candidate CGA/planar mappings, observer and display snapshot, without `t_ram` in the VADP adapter. |
+| Non-goals | D4 parity/windows (S17), immutable ROM/reset aliases (S18), KBC/DMA memory cycles (S19), video register semantics, frame geometry/timing, new generic device framework, profile/INI/firmware/media changes, physical Core or board relocation. |
+| Reference Baseline | Accepted S15 P1 `b656b0456` and P2 `700d7f0c9`; both-width full units 467/467, focused EGA integration 1/1 per width, complete specialized gates and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [Core/board handoff and S16 source refinement](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and [S15 evidence](../etc/evidence/t540-s15-vadp-port-routes.md). |
+| Files And ABI Surface | NXVM `devices/{vadp,memory_interface,memory,machine_display,machine}` and owner-local CGA/EGA/Compaq/VGA memory/snapshot tests, affected CMake gates, S16 evidence and eight 0540 artifacts. Expose only the typed memory route/owner and copied inspection operations VADP actually needs; Core retains the sole mapping table. |
+| Applicable Rules | Prepare the candidate chip first; publish its selected CGA provider and planar provider/write observer through one Core-owned failure-atomic operation. An observer-only EGA configuration is equally supported. On failure, no candidate mapping or observer remains, old chip/routes survive, and retry succeeds. Snapshot reads are observational and copied, never an operational read or raw RAM borrow. |
+| Verification | Inject each provider/observer publication failure and existing owner collision; verify rollback, retry, CGA/planar aperture semantics and side-effect-free text/graphics capture. Run affected focused tests, full repository-only x64/x86 units, registered static/governance gates, eight optimized Release products with PE/hash/no-debug proof and staged diff review. |
+| Expected Markers | No `t_ram`, `executor_memory`, raw memory registration or unregister in `vadp.c`/`vadp.h`; one Core mapping table, one VADP chip, one candidate publication/rollback path, unchanged video semantics and timing grade. |
+| Asset Needs | Existing selected BYOB build roots only; preserve adjacent INIs and every MyNES file. |
+| Reporting Requirements | Record each affected test receiver, actual source/test added/removed/net lines, candidate-memory and snapshot order, rollback proof, eight artifact hashes and remaining S17/S18 receivers. |
+| Stop Conditions | Split an oversized unstarted remainder into the next numeric S before implementation; stop before adding a second video/memory owner, moving D4/ROM prematurely, introducing a generic device framework or changing Shared/MyNES. Revise the packet for any material scope expansion. |
+| Exit Criteria | VADP uses only bounded Core memory operations for configuration and copied inspection; all candidate failure paths are atomic; the old raw VADP memory path is deleted; dual-width tests/products and static/documentation gates pass. |
+| Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal and individually tracked cuts before extracting them for independent PC Apps. |
+| Similar-Issue Sweep | Search VADP and tests for all raw `t_ram` mapping, write observer, unregister and snapshot inspection calls. S16 consumes VADP hits; retain D4 windows/parity for S17 and ROM/reset aliases for S18. |
 
 ## S87 Admission Packet
 

@@ -1,4 +1,4 @@
-/* NXVM video board adapter: PC routes and borrowed backing-memory access. */
+/* NXVM video board adapter: PC routes and copied display snapshots. */
 #ifndef CORE_MACHINE_VADP_H
 #define CORE_MACHINE_VADP_H
 #include "x86/chips/video/video_interface.h"
@@ -48,20 +48,19 @@
 #define CORE_MACHINE_VADP_PORT_COMPAQ_INITIAL_MODE 0x0fc6u
 
 
-typedef struct t_ram t_ram;
 typedef struct core_machine core_machine;
 typedef struct core_machine_display_config core_machine_display_config;
 
 typedef struct t_vadp {
     x86_video *chip;
     core_machine *machine;
-    t_ram *memory;
+    lib_bool configured;
 } t_vadp;
 
 lib_status core_machine_vadp_initialize(t_vadp *adapter, core_machine *machine);
-lib_status core_machine_vadp_configure(t_vadp *adapter, t_ram *memory,
+lib_status core_machine_vadp_configure(t_vadp *adapter,
     const core_machine_display_config *config);
 void core_machine_vadp_finalize(t_vadp *adapter);
-lib_i32 core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
+lib_i32 core_machine_vadp_capture_snapshot(t_vadp *adapter,
     x86_video_snapshot *out_snapshot);
 #endif

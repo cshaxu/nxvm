@@ -33,6 +33,67 @@ lib_status core_machine_register_memory_replacement_device(core_machine *machine
         &machine->executor_memory, physical_start, bytes, callbacks->read,
         callbacks->write, callbacks->query, owner);
 }
+
+lib_status core_machine_install_memory_device_routes(core_machine *machine,
+    const core_machine_memory_device_route *routes, lib_size count,
+    core_machine_memory_write_observer observer, void *owner)
+{
+    t_ram *memory;
+    lib_size provider_count;
+    lib_size observer_count;
+    lib_status status = LIB_STATUS_OK;
+
+    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
+    if (owner == LIB_NULL || (count == 0u && observer == LIB_NULL) ||
+        (count != 0u && routes == LIB_NULL)) return LIB_STATUS_INVALID_ARGUMENT;
+    memory = &machine->executor_memory;
+    for (lib_size index = 0u; index < memory->connect.device_provider_count; ++index)
+        if (memory->connect.device_providers[index].owner == owner)
+            return LIB_STATUS_INVALID_STATE;
+    for (lib_size index = 0u; index < memory->connect.write_observer_count; ++index)
+        if (memory->connect.write_observers[index].owner == owner)
+            return LIB_STATUS_INVALID_STATE;
+    provider_count = memory->connect.device_provider_count;
+    observer_count = memory->connect.write_observer_count;
+    for (lib_size index = 0u; index < count; ++index) {
+        const core_machine_memory_device_route *route = &routes[index];
+
+        status = core_machine_memory_register_device_provider(memory,
+            route->physical_start, route->bytes, route->callbacks.read,
+            route->callbacks.write, route->callbacks.query, owner);
+        if (status != LIB_STATUS_OK) break;
+    }
+    if (status == LIB_STATUS_OK && observer != LIB_NULL)
+        status = core_machine_memory_register_write_observer(memory, observer, owner);
+    if (status != LIB_STATUS_OK) {
+        memory->connect.device_provider_count = provider_count;
+        memory->connect.write_observer_count = observer_count;
+    }
+    return status;
+}
+
+lib_status core_machine_remove_memory_device_routes(core_machine *machine,
+    const void *owner)
+{
+    if (machine == LIB_NULL || owner == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (machine->lifecycle == CORE_MACHINE_RUNNING) return LIB_STATUS_INVALID_STATE;
+    core_machine_memory_unregister_owner(&machine->executor_memory, owner);
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_memory_inspect(const core_machine *machine,
+    lib_u32 physical, void *out_data, lib_size size)
+{
+    if (machine == LIB_NULL || out_data == LIB_NULL || size == 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (machine->lifecycle == CORE_MACHINE_RUNNING ||
+        machine->executor_memory.connect.backing == 0u)
+        return LIB_STATUS_INVALID_STATE;
+    return core_machine_memory_inspect_physical(
+        (t_ram *)&machine->executor_memory, physical, (lib_uptr)out_data,
+        size, LIB_FALSE);
+}
+
 lib_status core_machine_memory_read(
     const core_machine *machine,
     lib_u32 physical,

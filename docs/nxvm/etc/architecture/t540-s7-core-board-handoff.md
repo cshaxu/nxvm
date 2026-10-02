@@ -124,6 +124,24 @@ board extraction begins at S21. These remain prospective and are fixed only
 by each later S intake. No suffix identifiers or temporary duplicate route
 paths are introduced.
 
+## S16 Source-Intake Refinement
+
+After S15 removed the last raw VADP port path, source inspection found three
+separate memory publication and rollback owners in the former S16 row:
+
+| Linear receiver | Memory boundary |
+| --- | --- |
+| S16 | VADP candidate CGA/planar routes and write observers use bounded Core memory operations. VADP snapshot backing is copied through a Core inspection capability; no `t_ram` escapes into this board adapter. Preserve candidate-before-publication and old-chip rollback. |
+| S17 | Model-40 D4 replacement windows, parity allocation and write observer publish or roll back as one board-owned configuration. Preserve the existing D4 reset state and failure semantics; do not move D4 into common IBM-PC code. |
+| S18 | Core immutable ROM images, ordinary aliases and pre-A20 reset aliases use one owner-scoped memory registration/rollback path. Preserve image ownership and mapping priority; no ROM bytes or asset policy enter shared code. |
+
+The former prospective S17-S20 rows consequently become S19-S22: bounded
+KBC/DMA signals and memory cycles, board deadlines/PIC acknowledgement, the
+mixed plan/reset/destroy cut, then neutral Core relocation. Proven board
+extraction starts at S23. These numbers are prospective until each packet is
+admitted. The three memory receivers share Core's single mapping table but
+not an App-level memory registry or a universal device framework.
+
 Every code S runs the complete repository-only x64/x86 unit suites, affected
 four-profile Release pairs, applicable Shared receivers/manifests, and the
 focused board/reset/interrupt/deadline regressions named by its packet. T540
