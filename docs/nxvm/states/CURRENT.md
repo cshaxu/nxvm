@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S15 is active: make the initial CGA and staged EGA/Compaq/VGA VADP
-port routes Core-owned and failure-atomic. S1-S14 are accepted; T540 remains
-open.
+M5 T540 S15 is accepted: initial CGA and staged EGA/Compaq/VGA VADP port
+routes are Core-owned and failure-atomic. S1-S15 are accepted; T540 remains
+open for S16 memory routes and the later neutral Core/IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -41,6 +41,8 @@ the completed CPU extraction.
 | T540 S11 | Accepted: FDC uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S12 | Accepted: RTC/CMOS uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S13 | Accepted: planar-parity and D4 Port-B routes are atomic; x64/x86 complete units and all eight 0540 products pass. |
+| T540 S14 | Accepted: all HDC personality ports use a Core-owned typed batch; Compaq 3F7 wired-OR and XT rollback remain intact. |
+| T540 S15 | Accepted: CGA and staged EGA/Compaq/VGA ports use Core-owned atomic batches; both-width units, focused EGA integration, gates and eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -465,6 +467,18 @@ external integration gate remain open T540 work.
 | Exit Criteria | Initial and staged VADP ports use the one Core typed batch; failed candidate and allocation paths preserve old chip/routes and leave no new memory or port owner; old raw VADP port registration is deleted; dual-width tests/products and documentation gates pass. |
 | Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal and individually tracked board cuts before extracting them for independent PC Apps. |
 | Similar-Issue Sweep | Search all VADP board adapters and tests for raw `t_port`, port add/checkpoints, candidate memory and port rollback. S15 consumes port hits; retain bounded VADP/ROM/D4 memory attachments for S16 and Core-private table for the neutral-Core move. |
+
+## T540 S15 Acceptance
+
+P1 `b656b0456` is pushed. The [S15 evidence](../etc/evidence/t540-s15-vadp-port-routes.md)
+records the actual diff, all CGA/EGA/VGA/Compaq allocation positions, a
+late Compaq port collision, memory-owner rollback, port-direction preservation,
+both-width 467/467 complete units, focused 14/14 and external EGA 1/1 per
+width, all specialized gates, and eight optimized 0540 artifact identities.
+Actual-diff review confirms one VADP chip state and one Core route table, no
+raw VADP port registration or new timing claim. Only NXVM-owned files changed;
+Shared, MyNES and adjacent INIs remain untouched. S16 owns the remaining
+VADP/ROM/D4 memory attachments; neutral Core and board relocation remain open.
 
 ## S87 Admission Packet
 
