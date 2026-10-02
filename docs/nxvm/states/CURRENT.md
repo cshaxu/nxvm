@@ -1677,6 +1677,40 @@ are untouched. T540 remains open.
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | Primary/secondary DMA, latch, refresh, FDC/HDC DRQ, terminal count, board reset and failed construction. |
 
+## T540 S47 Acceptance
+
+Actual-diff review accepts NXVM P1 `61a53ec3e`. The
+[S47 evidence](../etc/evidence/t540-s47-dma-owner.md) records the DMA latch
+and primary/secondary controllers moved into the sole board attachment.
+Construction, request/acknowledge, refresh, FDC/HDC DRQ, deadline, reset and
+finalization calls retain the existing order and chip behavior. Complete
+x64/x86 repository-only units pass **469/469** each; specialized gates pass.
+The four fixed-profile external boot probes pass **8/8**, once per width.
+Eight optimized 0540 products have the expected PE widths and no `.debug`
+sections; hashes are in the evidence. Shared/MyNES and owner INIs are
+untouched. T540 remains open.
+
+## T540 S48 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S48, next linear S after accepted S47. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move the RTC chip instance and selected-register latch from flat `core_machine` into the sole board attachment; preserve one RTC lifetime and existing CMOS/IRQ/deadline wiring. |
+| Non-goals | FDC, HDC, keyboard and VADP (S49–S52), board electrical/callback split (S53), final neutral header (S54), physical Shared move (S55), RTC behavior or time formula change. |
+| Reference Baseline | S47 P1 `61a53ec3e`, [S47 evidence](../etc/evidence/t540-s47-dma-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Current RTC-instance/latch references occur in three production and ten direct test files. Retarget only these and exact source inventories. |
+| Applicable Rules | One board attachment, no copied RTC/CMOS phase or selected-register state; keep reset, port, IRQ and finalization order unchanged. |
+| Verification | Full x64/x86 units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | RTC chip and selected register no longer occupy flat Core storage; board alone owns their lifetime. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Exact moved fields and references, constructor/reset/finalization equivalence, diff size, tests and artifact hashes. |
+| Stop Conditions | Stop before pulling another chip into S48, altering RTC semantics, or adding a second owner/access path. |
+| Exit Criteria | RTC owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | RTC/CMOS port selection, IRQ8, deadline, reset, board seed and failed construction. |
+
 ## S87 Admission Packet
 
 | Field | Required record |
