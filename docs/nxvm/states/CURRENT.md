@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S28 is active: move the post-prefetch PIT/PIC arbitration tail to
-board ownership while retaining the one Core timeline and event order.
-S1-S27 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S29 is active: isolate CPU PIC INTA and DMA-HOLD locality from board
+signal owners without changing interrupt or prefetch order.
+S1-S28 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -56,7 +56,8 @@ the completed CPU extraction.
 | T540 S25 | Accepted: source-only Core/board arbitration intake and S26-S31 receiver map; no runtime change. |
 | T540 S26 | Accepted: copied board D4 refresh request and success-only completion around Core HOLD/transaction; both-width units and eight boots pass. |
 | T540 S27 | Accepted: board DMA clock/request/chip effects around Core wait/HOLD/grant and prefetch; both-width units and eight boots pass. |
-| T540 S28 | Active: post-prefetch PIT/PIC board tail after Core DMA arbitration. |
+| T540 S28 | Accepted: board PIT/PIC post-prefetch tail with earlier copied clock ticks; both-width units and eight boots pass. |
+| T540 S29 | Active: CPU PIC INTA and DMA-HOLD locality owner boundary. |
 
 ## T540 S1 Acceptance
 
@@ -975,6 +976,43 @@ the remaining PIT/PIC post-prefetch tail. T540 remains open.
 | Exit Criteria | One board-owned PIT/PIC tail after Core arbitration with unchanged signals and trace order; full verification and eight products pass; actual-diff P1 and governance P2 close S28. |
 | Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board components with flat ownership, linear numeric S and no patch-over-patch path. |
 | Similar-Issue Sweep | Inspect primary/auxiliary PIT and PIC refresh across all scheduler, board callback and reset paths; leave CPU PIC INTA/HOLD locality explicitly for S29. |
+
+## T540 S28 Acceptance
+
+NXVM P1 `826d5e29c` retains early PIT clock-domain conversion as a copied
+primary/auxiliary tick pair, then advances both PIT chips, refreshes PIC and
+emits the original traces after Core DMA service and prefetch. The staged
+diff was 16 NXVM paths, 173 lines added and 17 removed, including the new
+boundary gate, scheduler fixture and eight optimized product updates.
+
+Full x64 and x86 repository-only units passed **469/469** each; the
+specialized gates passed; all four external boot checkpoints passed once per
+width (**8/8**). Eight Release products have the expected PE format, zero
+`.debug` sections and recorded SHA-256 hashes. Documentation governance
+and staged diff checks passed. The [S28 evidence](../etc/evidence/t540-s28-board-pit-pic-tail.md)
+records exact call order and hashes. S28 is accepted; S29 receives CPU PIC
+INTA and DMA-HOLD locality. T540 remains open.
+
+## T540 S29 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S29, the next linear S after accepted S28. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES are read-only. |
+| Objective | Source-inspect and isolate CPU PIC INTA and DMA-HOLD locality: Core retains CPU delivery and prefetch invalidation, board supplies only PIC/DMA signal facts and electrical wiring. |
+| Non-goals | Mixed plan/reset (S30), neutral Core physical move (S31), timing formula, profile/INI/firmware/media changes, second interrupt route or generic event bus. |
+| Reference Baseline | Accepted S28 P1 `826d5e29c`, [S25 arbitration intake](../etc/evidence/t540-s25-arbitration-intake.md), S28 dual-width 469/469 units, specialized gates, eight external boots and eight optimized products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and S25 intake. |
+| Files And ABI Surface | Inspect `devices/{machine_board,machine_scheduler,cpu_bus,machine,transaction}` plus PIC/INTA and prefetch-locality tests. Expose only copied line/request facts across Core/board; no board CPU pointer or Core PIC pointer. |
+| Applicable Rules | Preserve PIC phase/cascade, CPU INTA sampling/acknowledge and DMA HOLD/prefetch invalidation order. Board may emit line events; Core alone decides CPU interrupt entry and locality effects. |
+| Verification | Focused PIC phase/cascade/INTA, DMA HOLD, CPU prefetch and scheduler tests; full x64/x86 repository-only units, specialized/documentation gates, one boot per four profiles/width and eight optimized 0540 products with PE/hash/no-debug proof. |
+| Expected Markers | No board-owned CPU execution mutation or Core-owned PIC wiring; one bounded signal boundary and no duplicate INTA path. |
+| Asset Needs | Existing owner-provided external firmware/media for boots/products only; no new or changed ROM, disk, font or INI. |
+| Reporting Requirements | Record original/receiver call graph, interrupt and locality order, actual line delta, focused/full checks, eight boot outcomes and product hashes; transfer mixed plan/reset to S30. |
+| Stop Conditions | Stop before changing PIC/DMA electrical semantics, CPU interrupt timing or prefetch rules, editing Shared/MyNES, or changing protected assets. |
+| Exit Criteria | One source-audited CPU/board signal boundary with unchanged PIC INTA and HOLD locality; full verification and eight products if code changes; actual-diff P1 and governance P2 close S29. |
+| Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board components with flat ownership, linear numeric S and no patch-over-patch path. |
+| Similar-Issue Sweep | Inspect all PIC IRQ/INTA callbacks and DMA HOLD/prefetch invalidations, including XT versus AT paths and reset; leave plan/reset assigned to S30. |
 
 ## S87 Admission Packet
 
