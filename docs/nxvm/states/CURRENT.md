@@ -2,10 +2,9 @@
 
 ## Current Work
 
-M5 T540 S9 is active: convert DMA board port routes to the Core-owned typed
-route batch without losing page-lane width semantics. KBC and FDC follow in
-the next two linear S tasks.
-S1-S8 are accepted; T540 remains open. Shared Core and board code have not moved.
+M5 T540 S1-S9 are accepted. S9 completed DMA's typed, atomic Core port routes
+with its existing page-lane width behavior; KBC and FDC remain the next two
+bounded port batches. T540 remains open. Shared Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -35,6 +34,7 @@ the completed CPU extraction.
 | T540 S6 | Accepted: 92h has one board-owned route; both-width complete units and all eight 0540 products pass. |
 | T540 S7 | Accepted: source-inspected Core/board state and API handoff before physical relocation. |
 | T540 S8 | Accepted: first complete port registration cut for 92h, PIC, PIT and XT PPI; x64/x86 complete units and all eight 0540 products pass. |
+| T540 S9 | Accepted: DMA uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -229,26 +229,23 @@ pass. S9 receives KBC/FDC/DMA ports; S10 receives VADP/HDC/RTC ports. T540's
 neutral Core move, Shared board extraction and external integration gate remain
 open; S8 makes no timing-grade claim.
 
-## T540 S9 Admission Packet
+## T540 S9 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S9, next linear S after accepted S8. |
-| Admission And Approval | The owner approved automatic admission of bounded linear T540 S work and the Core/IBM-PC board separation. Source inspection showed that the prospective KBC/FDC/DMA batch crosses two mechanisms: DMA alone needs a width-aware Core route. Under S7's explicit oversize-split rule, S9 consumes DMA; S10 and S11 receive KBC and FDC. Target: NXVM only; Shared and MyNES are read-only receiving review. |
-| Objective | Give DMA board ports one Core-owned typed, atomic route batch while preserving primary-only/paired topology, native controller ports and consecutive byte-lane page-register semantics. |
-| Non-goals | KBC/FDC and other port families (S10-S12), chip algorithm or timing-grade changes, memory-cycle transfer (S14), Core physical move, board extraction, new device framework, profile/firmware/INI/media changes, and MyNES edits. |
-| Reference Baseline | Accepted S8 governance commit `dda5c844d`; 467/467 complete units per width and eight optimized 0540 NXVM executables. |
-| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S7 handoff](../etc/architecture/t540-s7-core-board-handoff.md), and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
-| Files And ABI Surface | NXVM `devices/{port,port_interface,dma_bus,machine}` and necessary headers, corresponding owner-local tests, build/static gates and task evidence. Core route contract may gain only the minimum byte-lane flag needed by DMA; no `t_port` or route-entry pointer crosses the board boundary. |
-| Applicable Rules | Architecture: Core solely owns the port table and atomic publication; chip/board state remains at its existing owner. Coding: remove the raw adapter callbacks and checkpoint paths, no forwarding compatibility route. Execution: one complete implementation P, actual-diff review, full both-width repository-only units and affected 0540 artifact pairs; documentation governance. Source policy not triggered: no external source or assets imported. |
-| Verification | Focused DMA primary/secondary/page-lane, route-collision and allocation-failure tests; complete x64/x86 unit suites; T345 source-owner and applicable static gates; four-profile Release x64/x86 builds with PE/debug-section/hash checks; `git diff --check` and NXVM documentation governance. |
-| Expected Markers | DMA registers through one typed Core batch and returns registration errors; its board adapter contains no `t_port` callback or checkpoint registration; DMA word/dword page accesses still reach consecutive eight-bit latches, other endpoints retain native-width routing. |
-| Asset Needs | Existing BYOB roots only for product rebuild; no new ROM/media input. Preserve every adjacent NXVM.ini and all MyNES artifacts. |
-| Reporting Requirements | Record actual changed paths and source/test added, removed, net lines; DMA owner/path disposition and KBC/FDC successor allocation; focused/full tests, static gates, eight artifact hashes or unchanged-hash disposition, and actual-diff review. |
-| Stop Conditions | Stop before changing port decode, CPU I/O width semantics outside the existing DMA page-lane case, chip command behavior, guest timing or another target; revise the packet if the width contract cannot be expressed by a bounded value callback. |
-| Exit Criteria | DMA adapter has no raw `t_port` dependency for port registration/execution; Core owns its atomic routes, failure leaves no partial route, required both-width proof and product artifacts pass, and no second DMA port path remains. |
-| Original Owner Request | Build neutral shared `x86/core` and reusable IBM-PC board components before splitting the four PC Apps; automatically admit bounded numeric S tasks and avoid patch-on-patch architecture. |
-| Similar-Issue Sweep | Search all tracked NXVM board adapters and tests for `t_port` callbacks, `core_machine_port_add_*`, registration checkpoints and width-dependent routes. S9 closes all DMA port hits; S10/S11 receive KBC/FDC and S12 receives VADP/HDC/RTC. Record every remaining hit's reason and receiver in S9 evidence. |
+Coordinator review of NXVM implementation P1 `6691f16f4` inspected its actual
+source, test, CMake, documentation and eight artifact changes against the S9
+packet. DMA has one typed Core-owned route batch and no raw port-registration
+path; Core alone owns route publication and rollback. The page-bank width
+contract preserves consecutive eight-bit latches without changing native
+controller ports. The [S9 evidence](../etc/evidence/t540-s9-dma-port-routes.md)
+records the scope, similar-issue receivers, source/test delta and artifact hashes.
+
+Focused route/rollback tests pass 3/3 per width; complete repository-only x64
+and x86 units pass 467/467 each. All four profile-specific Release pairs have
+the expected PE width and no `.debug` section. The T345 ownership verifier and
+self-test, NXVM documentation governance and diff checks pass. KBC, FDC and
+remaining board routes stay assigned to S10-S12; no Shared or MyNES input was
+changed. The neutral Core move, board extraction and external integration gate
+remain open T540 work; S9 makes no new timing-grade claim.
 
 ## S87 Admission Packet
 
