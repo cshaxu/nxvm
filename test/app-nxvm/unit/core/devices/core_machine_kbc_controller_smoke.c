@@ -12,6 +12,7 @@
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
 #include "support/core_machine_board_fixture.h"
+#include "support/kbc_fixture.h"
 
 static lib_u8 core_machine_kbc_read_byte(t_port *port, lib_u16 port_id)
 {
@@ -79,7 +80,7 @@ static lib_bool kbc_construction_rollback(void)
         failed |= core_machine_port_add_read(&port, 0x80u, kbc_existing_port,
             &port) != LIB_STATUS_OK;
         core_machine_port_set_test_allocation(&port, &allocation);
-        failed |= core_machine_kbc_initialize(&kbc, &port) != LIB_STATUS_NO_MEMORY;
+        failed |= test_kbc_initialize(&kbc, &port) != LIB_STATUS_NO_MEMORY;
         failed |= kbc.connect.aux_device != LIB_NULL ||
             kbc.connect.keyboard != LIB_NULL || kbc.chip != LIB_NULL;
         failed |= core_machine_port_has_read(&port, 0x60u) ||
@@ -88,7 +89,7 @@ static lib_bool kbc_construction_rollback(void)
             core_machine_port_has_write(&port, 0x64u) ||
             core_machine_port_read(&port, 0x80u) != 0x5au;
         core_machine_port_set_test_allocation(&port, LIB_NULL);
-        failed |= core_machine_kbc_initialize(&kbc, &port) != LIB_STATUS_OK;
+        failed |= test_kbc_initialize(&kbc, &port) != LIB_STATUS_OK;
         core_machine_port_write(&port, 0x64u, 0xaau);
         failed |= core_machine_port_read(&port, 0x60u) != 0x55u;
         core_machine_kbc_finalize(&kbc);
@@ -101,7 +102,7 @@ static lib_bool kbc_construction_rollback(void)
         core_machine_port_initialize(&port);
         failed |= core_machine_port_add_write(&port, 0x64u, kbc_existing_port,
             &port) != LIB_STATUS_OK;
-        failed |= core_machine_kbc_initialize(&kbc, &port) != LIB_STATUS_INVALID_STATE;
+        failed |= test_kbc_initialize(&kbc, &port) != LIB_STATUS_INVALID_STATE;
         failed |= kbc.connect.aux_device != LIB_NULL ||
             kbc.connect.keyboard != LIB_NULL || kbc.chip != LIB_NULL ||
             core_machine_port_has_read(&port, 0x60u) ||
@@ -111,7 +112,7 @@ static lib_bool kbc_construction_rollback(void)
         failed |= port.data.ioByte != 0x5au;
         failed |= core_machine_port_add_write(&port, 0x64u, kbc_existing_port,
             &kbc) != LIB_STATUS_INVALID_STATE;
-        failed |= core_machine_kbc_initialize(&kbc, &port) != LIB_STATUS_INVALID_STATE;
+        failed |= test_kbc_initialize(&kbc, &port) != LIB_STATUS_INVALID_STATE;
         failed |= core_machine_port_registration_status(&port) != LIB_STATUS_INVALID_STATE;
         core_machine_kbc_finalize(&kbc);
         core_machine_port_finalize(&port);
@@ -133,7 +134,7 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     machine.lifecycle = CORE_MACHINE_INITIALIZED;
     core_machine_port_initialize(port);
     core_machine_pic_initialize(&pic_master, &pic_slave, &machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
-    core_machine_kbc_initialize(&kbc, port);
+    core_machine_kbc_initialize(&kbc, &machine);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
         &memory, LIB_NULL, LIB_NULL, LIB_TRUE);
     core_machine_kbc_initialize_pic(port);
@@ -208,7 +209,7 @@ static lib_i32 core_machine_kbc_set2_translation(void)
     lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     x86_kbc8042_set_aux_present(kbc.chip, LIB_FALSE);
     core_machine_kbc_reset(&kbc);
     core_machine_port_write(&port, 0x64u, 0x20u);
@@ -267,7 +268,7 @@ static lib_i32 core_machine_kbc_set2_break_cancels_typematic(void)
     lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x41u);
     core_machine_kbc_set_typematic_timing(&kbc, 1u, 1u);
@@ -310,7 +311,7 @@ static lib_i32 core_machine_kbc_self_test_flushes_keyboard_output(void)
     lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
         (core_machine_kbc_read_byte(&port, 0x64u) & VKBC_STATUS_OBF) == 0u;
     core_machine_port_write(&port, 0x0064u, 0xaau);
@@ -328,7 +329,7 @@ static lib_i32 core_machine_kbc_bat_on_line_enable(void)
     lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     /* C0h bit 7 is the board keyboard-inhibit switch, not the 8042's
        serial data line.  The 5170's B0h board straps must therefore not
        suppress the command-byte's 45h -> 4Dh release edge. */
@@ -354,7 +355,7 @@ static lib_i32 core_machine_kbc_controller_enable_is_not_a_second_bat(void)
     lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     core_machine_kbc_set_input_port(&kbc, 0u);
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x45u);
@@ -376,7 +377,7 @@ static lib_i32 core_machine_kbc_self_test_enable_releases_bat(void)
     lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     core_machine_port_write(&port, 0x0064u, 0xaau);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x55u;
     core_machine_port_write(&port, 0x0064u, 0xaeu);
@@ -396,7 +397,7 @@ static lib_i32 core_machine_kbc_reset_then_enable_has_one_bat(void)
     lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x7du);
     core_machine_port_write(&port, 0x0060u, 0xffu);
@@ -421,7 +422,7 @@ static lib_i32 core_machine_kbc_ibm_5170_post_contract(void)
     lib_i32 failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     x86_kbc8042_set_aux_present(kbc.chip, LIB_FALSE);
     core_machine_kbc_reset(&kbc);
     core_machine_kbc_set_input_port(&kbc, 0xb0u);
@@ -471,7 +472,7 @@ static lib_i32 core_machine_kbc_typematic_output_boundary(void)
     lib_u8 lines, ack, interface_result;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     core_machine_kbc_set_typematic_timing(&kbc, 1u, 1u);
     failed = core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != LIB_STATUS_OK;
     core_machine_kbc_advance(&kbc, 4u);
@@ -615,7 +616,7 @@ lib_i32 main(void)
     machine.lifecycle = CORE_MACHINE_INITIALIZED;
     core_machine_port_initialize(port);
     core_machine_pic_initialize(&pic_master, &pic_slave, &machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
-    core_machine_kbc_initialize(&kbc, port);
+    core_machine_kbc_initialize(&kbc, &machine);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
         &memory, count_reset_pulse, &reset_pulses, LIB_TRUE);
     core_machine_kbc_initialize_pic(port);

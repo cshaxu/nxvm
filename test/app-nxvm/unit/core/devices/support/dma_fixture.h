@@ -1,22 +1,19 @@
 #ifndef TEST_NXVM_DMA_FIXTURE_H
 #define TEST_NXVM_DMA_FIXTURE_H
-#include "app-nxvm/devices/machine.h"
+#include "port_owner_fixture.h"
 
 /* Keep the legacy port-only chip fixtures synthetic while exercising DMA's
  * single production registration path through a Core-owned port table. */
 static inline lib_status test_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port, lib_u8 controller_count)
 {
-    core_machine *machine = (core_machine *)lib_allocate_zero(1u, sizeof(*machine));
+    core_machine *machine = test_port_owner_open(port);
     lib_status status;
 
     if (machine == LIB_NULL) return LIB_STATUS_NO_MEMORY;
-    machine->lifecycle = CORE_MACHINE_INITIALIZED;
-    machine->executor_port = *port;
     status = core_machine_dma_initialize(latch, primary, secondary,
         machine, controller_count);
-    *port = machine->executor_port;
-    lib_release(machine);
+    test_port_owner_close(port, machine);
     return status;
 }
 

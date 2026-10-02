@@ -638,7 +638,7 @@ static lib_status core_machine_create_internal(
         }
     } else {
         lib_status status = core_machine_kbc_initialize(&machine->shared_kbc,
-            &machine->executor_port);
+            machine);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
             return status;

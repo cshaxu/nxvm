@@ -64,7 +64,7 @@ lib_i32 main(void)
     machine.lifecycle = CORE_MACHINE_INITIALIZED;
     core_machine_port_initialize(port);
     core_machine_pic_initialize(&master, &slave, &machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
-    core_machine_kbc_initialize(&kbc, port);
+    core_machine_kbc_initialize(&kbc, &machine);
     core_machine_kbc_bind_core_services(&kbc, &master, &slave, &memory,
         LIB_NULL, LIB_NULL, LIB_TRUE);
     initialize_pic(port);

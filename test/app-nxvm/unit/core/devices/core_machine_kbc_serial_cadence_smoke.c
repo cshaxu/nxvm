@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "app-nxvm/devices/kbc.h"
 #include "app-nxvm/devices/port.h"
+#include "support/kbc_fixture.h"
 
 lib_i32 main(void)
 {
@@ -12,7 +13,7 @@ lib_i32 main(void)
     lib_u64 ticks = 0u;
 
     core_machine_port_initialize(&port);
-    core_machine_kbc_initialize(&kbc, &port);
+    test_kbc_initialize(&kbc, &port);
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x07u);
     core_machine_kbc_set_serial_delivery_timing(&kbc, 2u);

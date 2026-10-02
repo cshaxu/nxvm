@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S1-S9 are accepted. S9 completed DMA's typed, atomic Core port routes
-with its existing page-lane width behavior; KBC and FDC remain the next two
-bounded port batches. T540 remains open. Shared Core and board code have not moved.
+M5 T540 S10 is active: migrate KBC's 60h/64h routes to the Core-owned typed,
+atomic port batch. S1-S9 are accepted; T540 remains open. Shared Core and board
+code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -246,6 +246,27 @@ self-test, NXVM documentation governance and diff checks pass. KBC, FDC and
 remaining board routes stay assigned to S10-S12; no Shared or MyNES input was
 changed. The neutral Core move, board extraction and external integration gate
 remain open T540 work; S9 makes no new timing-grade claim.
+
+## T540 S10 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S10, next linear S after accepted S9. |
+| Admission And Approval | The owner approved automatic admission of bounded numeric T540 S work and the Core/IBM-PC board split; the accepted S7 handoff assigns the KBC port batch to S10. Target: NXVM only; Shared and MyNES are read-only receiving reviews. |
+| Objective | Replace KBC's raw `t_port` callbacks and registration checkpoint with one Core-owned typed, atomic 60h/64h route batch while preserving keyboard/aux command, BAT, IRQ1/IRQ12 and reset behavior. |
+| Non-goals | KBC chip protocol or timing changes, KBC A20/RAM and reset-signal decoupling (S14), FDC and remaining ports (S11-S12), physical Core/board relocation, new framework, profile/firmware/INI/media changes, or MyNES edits. |
+| Reference Baseline | Accepted S9 governance commit `6c9d33f53`; full x64/x86 units 467/467 each and eight optimized 0540 NXVM artifacts. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S7 handoff](../etc/architecture/t540-s7-core-board-handoff.md), and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | NXVM `devices/{kbc,machine}` and necessary headers, owner-local synthetic tests/fixtures, relevant build/static gate and S10 evidence. KBC initializer receives the opaque Core owner for route installation; no raw port-table or route-entry pointer crosses the board boundary. |
+| Applicable Rules | Architecture: Core solely owns port routes and atomic publication; keyboard/controller chips own protocol state, KBC board attachment owns signal wiring. Coding: delete the old callbacks/checkpoint without a compatibility path. Execution: complete implementation P, actual-diff review, both-width full repository-only units, affected four-profile 0540 artifacts and documentation governance. Source policy: no external material imported; existing approved BYOB firmware embedding is used for artifact rebuild. |
+| Verification | Focused KBC controller/aux/serial-cadence, route-collision/allocation rollback, 5170/default/Model40 profile and port assembly tests; complete x64/x86 unit suites; applicable T345 source-owner/static gates; four-profile x64/x86 stripped Release pairs with PE/debug-section/hash checks; `git diff --check` and NXVM documentation governance. |
+| Expected Markers | Only two KBC route descriptions (60h data and 64h status/command) are published by the Core batch; no KBC `t_port` callback, `core_machine_port_add_*` or registration checkpoint remains. Failure preserves existing routes and destroys uncommitted chips. |
+| Asset Needs | Existing selected BYOB roots for product rebuild only; no new ROM/media input. Preserve adjacent NXVM.ini and all MyNES paths. |
+| Reporting Requirements | Record actual changed paths and source/test added, removed and net lines; old/new owner and failure-boundary comparison; focused/full tests, static gates, eight artifact hashes, actual-diff review, and FDC/other-port successor allocation. |
+| Stop Conditions | Stop before altering KBC command replies, status/IRQ timing, A20/reset semantics, guest port-width policy, or any Shared/MyNES target; revise the packet if typed value callbacks cannot preserve the KBC path. |
+| Exit Criteria | KBC has one typed Core route batch with no raw port-table execution/registration dependency; collision and allocation failures leave no partial route or leaked chip; both-width tests and product artifacts pass, and no second KBC port path remains. |
+| Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components before splitting four PC Apps, admitting bounded numeric S tasks automatically without patch-on-patch architecture. |
+| Similar-Issue Sweep | Search every NXVM board adapter and test for raw `t_port` callbacks, `core_machine_port_add_*` and registration checkpoints. S10 consumes all KBC port hits; FDC is S11, VADP/HDC/RTC/board routes S12, and KBC memory/signal pointers S14. Record the residual owner and receiver in S10 evidence. |
 
 ## S87 Admission Packet
 

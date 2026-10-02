@@ -1,5 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 #include "app-nxvm/devices/kbc.h"
+#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/memory.h"
 
 static x86_kbc8042_keyboard_inputs kbc_keyboard_inputs(void *context)
@@ -117,37 +118,32 @@ static void kbc_output_port(void *context, lib_u8 value)
     if ((value & 0x01u) == 0u) kbc_reset_pulse(context);
 }
 
-static void kbc_read_data(t_port *port, lib_u16 address, void *owner)
+static lib_status kbc_port_read(void *owner, lib_u16 address,
+    lib_u32 *out_value)
 {
     t_kbc *attachment = owner;
-    (void)address;
-    port->data.ioByte = x86_kbc8042_read_data(attachment->chip);
+    lib_u8 value;
+
+    if (attachment == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    value = address == 0x60u ? x86_kbc8042_read_data(attachment->chip) :
+        x86_kbc8042_read_status(attachment->chip);
+    *out_value = (*out_value & ~0xffu) | value;
+    return LIB_STATUS_OK;
 }
 
-static void kbc_read_status(t_port *port, lib_u16 address, void *owner)
+static lib_status kbc_port_write(void *owner, lib_u16 address, lib_u32 value)
 {
     t_kbc *attachment = owner;
-    (void)address;
-    port->data.ioByte = x86_kbc8042_read_status(attachment->chip);
+
+    if (attachment == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (address == 0x60u) x86_kbc8042_write_data(attachment->chip, (lib_u8)value);
+    else x86_kbc8042_write_command(attachment->chip, (lib_u8)value);
+    return LIB_STATUS_OK;
 }
 
-static void kbc_write_data(t_port *port, lib_u16 address, void *owner)
+lib_status core_machine_kbc_initialize(t_kbc *attachment, core_machine *machine)
 {
-    t_kbc *attachment = owner;
-    (void)address;
-    x86_kbc8042_write_data(attachment->chip, port->data.ioByte);
-}
-
-static void kbc_write_command(t_port *port, lib_u16 address, void *owner)
-{
-    t_kbc *attachment = owner;
-    (void)address;
-    x86_kbc8042_write_command(attachment->chip, port->data.ioByte);
-}
-
-lib_status core_machine_kbc_initialize(t_kbc *attachment, t_port *port)
-{
-    core_machine_port_provider_entry *checkpoint;
+    core_machine_port_route routes[2];
     lib_status status;
     const x86_kbc8042_link link = {
         .keyboard_inputs = kbc_keyboard_inputs,
@@ -166,10 +162,8 @@ lib_status core_machine_kbc_initialize(t_kbc *attachment, t_port *port)
         .context = attachment
     };
 
-    if (attachment == LIB_NULL || port == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (attachment == LIB_NULL || machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     lib_memory_set(attachment, 0u, sizeof(*attachment));
-    status = core_machine_port_registration_status(port);
-    if (status != LIB_STATUS_OK) return status;
     status = x86_keyboard_create(&attachment->connect.keyboard);
     if (status == LIB_STATUS_OK) status = x86_ps2_mouse_create(&attachment->connect.aux_device);
     if (status == LIB_STATUS_OK) status = x86_kbc8042_create(&link, &attachment->chip);
@@ -177,16 +171,12 @@ lib_status core_machine_kbc_initialize(t_kbc *attachment, t_port *port)
         core_machine_kbc_finalize(attachment);
         return status;
     }
-    checkpoint = core_machine_port_registration_begin(port);
-    core_machine_port_add_read(port, 0x60u, kbc_read_data, attachment);
-    core_machine_port_add_read(port, 0x64u, kbc_read_status, attachment);
-    core_machine_port_add_write(port, 0x60u, kbc_write_data, attachment);
-    core_machine_port_add_write(port, 0x64u, kbc_write_command, attachment);
-    status = core_machine_port_registration_status(port);
-    if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(port, checkpoint);
-        core_machine_kbc_finalize(attachment);
-    }
+    routes[0] = (core_machine_port_route) {0x60u, kbc_port_read,
+        kbc_port_write, attachment, LIB_FALSE, 0u};
+    routes[1] = (core_machine_port_route) {0x64u, kbc_port_read,
+        kbc_port_write, attachment, LIB_FALSE, 0u};
+    status = core_machine_install_port_routes(machine, routes, 2u);
+    if (status != LIB_STATUS_OK) core_machine_kbc_finalize(attachment);
     return status;
 }
 

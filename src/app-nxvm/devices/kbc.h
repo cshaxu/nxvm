@@ -12,7 +12,7 @@ extern "C" {
 #include "x86/chips/kbc8042/kbc8042_interface.h"
 
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/port.h"
+#include "app-nxvm/devices/port_interface.h"
 
 #define CORE_MACHINE_DEVICE_KBC "Intel 8042"
 
@@ -47,7 +47,7 @@ typedef struct t_kbc {
     t_kbc_connect connect;
 } t_kbc;
 
-lib_status core_machine_kbc_initialize(t_kbc *controller, t_port *port);
+lib_status core_machine_kbc_initialize(t_kbc *controller, core_machine *machine);
 void core_machine_kbc_bind_core_services(t_kbc *controller, core_machine_pic_bus *pic_master,
     core_machine_pic_bus *pic_slave, t_ram *memory,
     void (*request_reset)(void *context), void *reset_context,
