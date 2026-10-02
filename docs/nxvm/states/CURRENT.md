@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S61 is active: move D4 memory value to its board owner. S1-S60 are
-accepted;
+M5 T540 S62 is active: separate frozen-plan board topology from neutral
+Core timing declarations. S1-S61 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -81,7 +81,8 @@ the completed CPU extraction.
 | T540 S58 | Accepted: absent-memory fallback windows moved into the sole board attachment; both-width units, gates and eight boots pass. |
 | T540 S59 | Accepted: source-audited 14 board providers and one firmware binding/rollback path; no redundant revoke added; dual-width units/gates pass. |
 | T540 S60 | Accepted: measured the oversized neutral private/public header and allocated S61-S65 as bounded numeric receivers. |
-| T540 S61 | Active: D4 memory board-owner receiver. |
+| T540 S61 | Accepted: D4-specific mutable memory state moved to board; Core retains one atomic memory route; both-width units/gates and eight boots pass. |
+| T540 S62 | Active: frozen-plan board topology/type receiver. |
 
 ## T540 S1 Acceptance
 
@@ -2139,6 +2140,38 @@ artifacts remain current. T540 remains open.
 | Exit Criteria | P1/P2 pushed if code changes; affected verification passes; worktree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | D4 configuration, address remap, parity fault, reset, consumer and destroy paths. |
+
+## T540 S61 Acceptance
+
+The sole D4 mutable value is board-owned; Core still publishes the same
+two replacement routes and parity/write observers atomically. P1
+`ab3c8f437` is pushed. Focused D4/Model 40 units pass 23/23 per width,
+complete units pass 469/469 per width, the corrected existing route verifier
+and both specialized gate sets pass, and eight fixed-profile boots pass once
+each. Eight optimized 0540 products are PE/no-debug verified. The [S61
+evidence](../etc/evidence/t540-s61-d4-memory-owner.md) records exact diff,
+ownership and hashes. T540 remains open.
+
+## T540 S62 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S62, next linear S after accepted S61. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Separate the existing frozen plan's board topology and D4/media/display/FDC inputs from neutral Core timing declarations while preserving one plan, one application order and one rollback. |
+| Non-goals | Private/public header completion (S63-S64), physical Shared relocation (S65), a second plan or parser, timing/behavior change, profile/INI/media change. |
+| Reference Baseline | S61 P1 `ab3c8f437`, [S61 evidence](../etc/evidence/t540-s61-d4-memory-owner.md), [S60 measured intake](../etc/evidence/t540-s60-neutral-header-intake.md), dual-width units/gates and eight boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | `core_machine_plan`, its constructor/apply/freeze path, neutral timing and board topology/type consumers plus directly affected tests/static inventories. Measure actual coupling before editing; split if larger than one safe owner cut. |
+| Applicable Rules | One frozen plan and one success-only publication; Core consumes neutral declarations, board consumes topology. No copied mutable configuration or second application path. |
+| Verification | Full x64/x86 units, specialized/documentation gates, focused plan/rollback tests, one external boot per profile/width and eight optimized 0540 PE/no-debug products if code changes. |
+| Expected Markers | Board-specific plan types do not force the neutral Core header to include controllers; there is one plan object and unchanged application order. |
+| Asset Needs | Existing external firmware/media for affected boot checks only; no owner INI edit. |
+| Reporting Requirements | Exact plan consumer/type inventory, ownership diff or numeric sub-split, tests and artifact decision. |
+| Stop Conditions | Split into further numeric S tasks if one receiver would be oversized or require a second plan. |
+| Exit Criteria | P1/P2 pushed if code changes; affected verification passes; worktree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | Plan create/configure/freeze, topology apply, board and Core timing consumers, failure rollback and direct tests. |
 
 ## S87 Admission Packet
 
