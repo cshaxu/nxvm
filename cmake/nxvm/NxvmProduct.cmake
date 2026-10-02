@@ -60,6 +60,7 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-x86-tests)
 
 add_library(core-machine STATIC
+    src/app-nxvm/devices/board_advance.c
     src/app-nxvm/devices/board_deadline.c
     src/app-nxvm/devices/clock.c
     src/app-nxvm/devices/cpu_bus.c
@@ -3151,6 +3152,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying copied board deadline inputs to Core"
         VERBATIM)
 
+    add_custom_target(verify-board-peripheral-advance-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_board_peripheral_advance_boundary.cmake"
+        COMMENT "Verifying board-owned peripheral advance after Core readiness"
+        VERBATIM)
+
     add_custom_target(verify-rational-clock-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rational_clock_boundary.cmake"
@@ -3360,6 +3367,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-a20-fallback-routes
     verify-dma-core-cycle-boundary
     verify-board-deadline-boundary
+    verify-board-peripheral-advance-boundary
     verify-rational-clock-boundary
     verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary

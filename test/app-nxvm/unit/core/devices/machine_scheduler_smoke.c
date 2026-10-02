@@ -25,6 +25,27 @@ static const core_machine_execution_provider scheduler_provider = {
     scheduler_provider_advance
 };
 
+typedef struct scheduler_board_probe {
+    core_machine *machine;
+    lib_u32 calls;
+    lib_u64 advanced_ticks;
+} scheduler_board_probe;
+
+static void scheduler_board_deadline_forward(void *owner, lib_u64 now,
+    core_machine_board_deadline_observation *out_observation)
+{
+    scheduler_board_probe *probe = owner;
+    core_machine_board_deadline_observe(probe->machine, now, out_observation);
+}
+
+static void scheduler_board_peripheral(void *owner, lib_u64 source_ticks)
+{
+    scheduler_board_probe *probe = owner;
+    ++probe->calls;
+    probe->advanced_ticks += source_ticks;
+    core_machine_board_peripheral_advance(probe->machine, source_ticks);
+}
+
 typedef struct scheduler_deadline_probe {
     core_machine_board_deadline_observation value;
     lib_u32 calls;
@@ -46,6 +67,7 @@ lib_i32 main(void)
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
     scheduler_provider_probe provider_probe = { 0u, 0u };
+    scheduler_board_probe board_probe = {0};
     scheduler_deadline_probe deadline_probe = {0};
     core_machine_time_observation observation;
     const lib_u8 nop = 0x90u;
@@ -62,21 +84,27 @@ lib_i32 main(void)
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, sizeof(nop)) !=
         LIB_STATUS_OK;
+    board_probe.machine = machine;
+    machine->board_deadline_provider = scheduler_board_deadline_forward;
+    machine->board_peripheral_provider = scheduler_board_peripheral;
+    machine->board_owner = &board_probe;
 
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
         result.ticks != 0u || result.elapsed_ticks != 0u ||
-        provider_probe.advances != 0u || provider_probe.advanced_ticks != 0u;
+        provider_probe.advances != 0u || provider_probe.advanced_ticks != 0u ||
+        board_probe.calls != 0u;
 
     budget.instructions = 1u;
     budget.ticks = 0u;
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
         result.ticks != 3u || result.elapsed_ticks != 3u ||
-        provider_probe.advances != 1u || provider_probe.advanced_ticks != 3u;
+        provider_probe.advances != 1u || provider_probe.advanced_ticks != 3u ||
+        board_probe.calls == 0u || board_probe.advanced_ticks != 3u;
 
     machine->board_deadline_provider = scheduler_board_deadline;
-    machine->board_deadline_owner = &deadline_probe;
+    machine->board_owner = &deadline_probe;
     deadline_probe.value.source_ticks = 5u;
     core_machine_capture_time_observation_private(machine, &observation);
     failed |= deadline_probe.calls != 1u || !observation.next_deadline_valid ||
@@ -98,6 +126,8 @@ lib_i32 main(void)
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE ||
         deadline_probe.calls != 4u;
 
+    machine->board_peripheral_provider = core_machine_board_peripheral_advance;
+    machine->board_owner = machine;
     core_machine_destroy(machine);
     if (failed) return 1;
     printf("M5:T219:S2:SCHEDULER:OK\n");

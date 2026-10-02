@@ -175,6 +175,29 @@ These numbers remain prospective until their own intake. No suffix S
 identifiers, parallel scheduler, event bus or memory/transaction owner is
 introduced.
 
+## S23 Source-Intake Refinement
+
+The three advancement phases cannot move as one opaque board call without
+moving Core work too: DMA/refresh bus transactions and CPU prefetch reservation
+occur inside arbitration, and FPU advancement separates FDC/HDC readiness
+from RTC advancement. Preserve the exact order and split the unaccepted work
+into linear owner-sized receivers:
+
+| Linear receiver | Exact boundary |
+| --- | --- |
+| S23 | Peripheral tail only: XT keyboard or KBC, then PIC, then VADP. A single private board call receives the source-tick delta; Core still owns publication and phase order. |
+| S24 | Readiness: board FDC/HDC before Core FPU, then board RTC after FPU; no callback into Core or reordered chip effects. |
+| S25 | Arbitration: Core DMA/refresh transaction and prefetch authority remain Core; board DMA/PIT/PIC effects cross bounded calls at their original positions. |
+| S26 | CPU PIC pending/INTA board service and DMA-HOLD trace locality owner. |
+| S27 | Split mixed plan/create/reset/destroy by private state owner. |
+| S28 | Move neutral Core and its tests into `x86/core`, deleting the App copy. |
+| S29 onward | Extract only proven IBM-PC common/AT/XT board mechanisms, then run the full T ledger and external gate. |
+
+The former S23-S27 prospective rows above remain historical planning context;
+this later source-intake assignment narrows S23 before code and governs later
+unadmitted work. No S suffix
+or parallel board execution loop is introduced.
+
 Every code S runs the complete repository-only x64/x86 unit suites, affected
 four-profile Release pairs, applicable Shared receivers/manifests, and the
 focused board/reset/interrupt/deadline regressions named by its packet. T540

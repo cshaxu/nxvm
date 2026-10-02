@@ -1,0 +1,27 @@
+if(NOT DEFINED PROJECT_SOURCE_DIR)
+    message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
+endif()
+
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" creation)
+foreach(effect "x86_xt_keyboard_advance(" "core_machine_kbc_advance("
+    "core_machine_pic_advance(" "x86_video_advance(")
+    string(FIND "${core}" "${effect}" core_position)
+    string(FIND "${board}" "${effect}" board_position)
+    if(NOT core_position LESS 0 OR board_position LESS 0)
+        message(FATAL_ERROR "Peripheral effect has wrong owner: ${effect}")
+    endif()
+endforeach()
+string(FIND "${core}" "core_machine_readiness_advance(machine, source_ticks, due_tick);"
+    readiness_position)
+string(FIND "${core}" "machine->board_peripheral_provider(machine->board_owner, source_ticks);"
+    peripheral_position)
+if(readiness_position LESS 0 OR peripheral_position LESS readiness_position)
+    message(FATAL_ERROR "Core lost readiness-before-peripheral order")
+endif()
+string(FIND "${creation}" "core_machine_board_peripheral_advance" binding)
+if(binding LESS 0)
+    message(FATAL_ERROR "Peripheral provider is not bound at creation")
+endif()
+message("M5:T540:S23:BOARD-PERIPHERAL:OK")

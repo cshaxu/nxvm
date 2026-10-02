@@ -58,7 +58,7 @@ static void core_machine_capture_time_with_board(const core_machine *machine,
         }
     }
     if (machine->board_deadline_provider != LIB_NULL)
-        machine->board_deadline_provider(machine->board_deadline_owner,
+        machine->board_deadline_provider(machine->board_owner,
             machine->elapsed_ticks, &board);
     if (out_board != LIB_NULL) *out_board = board;
     if (board.immediate_due) immediate_due = LIB_TRUE;
@@ -248,34 +248,6 @@ static void core_machine_readiness_advance(core_machine *machine,
         0u, (lib_u32)rtc_ticks, 0u);
 }
 
-/*
- * Guest input and video state advance after the readiness boundary.  Host
- * presentation consumes only copied snapshots outside this callback and does
- * not participate in machine time.
- */
-static void core_machine_peripheral_advance(core_machine *machine,
-    lib_u64 source_ticks)
-{
-    lib_u64 kbc_ticks;
-    lib_u64 vadp_ticks;
-
-    if (machine == LIB_NULL || source_ticks == 0u) return;
-    kbc_ticks = core_machine_clock_domain_advance(&machine->kbc_clock, source_ticks);
-    if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        x86_xt_keyboard_advance(machine->xt_keyboard, source_ticks);
-    } else {
-        core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
-    }
-    core_machine_pic_advance(&machine->shared_pic_master, &machine->shared_pic_slave,
-        source_ticks);
-    core_machine_trace_record(machine, CORE_MACHINE_TRACE_KBC_ADVANCE,
-        0u, (lib_u32)kbc_ticks, 0u);
-    vadp_ticks = core_machine_clock_domain_advance(&machine->vadp_clock, source_ticks);
-    x86_video_advance(machine->shared_vadp.chip, vadp_ticks);
-    core_machine_trace_record(machine, CORE_MACHINE_TRACE_VADP_ADVANCE,
-        0u, (lib_u32)vadp_ticks, 0u);
-}
-
 static void core_machine_advance_scheduler(core_machine *machine,
     lib_u64 elapsed_ticks)
 {
@@ -310,7 +282,8 @@ static void core_machine_advance_scheduler(core_machine *machine,
         (void)core_machine_timeline_advance(&machine->timeline, due_tick);
         core_machine_arbitration_advance(machine, source_ticks);
         core_machine_readiness_advance(machine, source_ticks, due_tick);
-        core_machine_peripheral_advance(machine, source_ticks);
+        if (machine->board_peripheral_provider != LIB_NULL)
+            machine->board_peripheral_provider(machine->board_owner, source_ticks);
     }
     provider_ticks = core_machine_clock_domain_advance(&machine->provider_clock,
         elapsed_ticks);

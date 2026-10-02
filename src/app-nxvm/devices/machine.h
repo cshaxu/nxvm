@@ -119,6 +119,8 @@ typedef struct core_machine_board_deadline_observation {
 } core_machine_board_deadline_observation;
 typedef void (*core_machine_board_deadline_provider)(void *owner, lib_u64 now,
     core_machine_board_deadline_observation *out_observation);
+typedef void (*core_machine_board_peripheral_provider)(void *owner,
+    lib_u64 source_ticks);
 
 struct core_machine_firmware_context {
     core_machine *machine;
@@ -257,7 +259,8 @@ struct core_machine {
     lib_u8 d4_refresh_pulse_active;
     lib_u8 d4_refresh_address;
     core_machine_board_deadline_provider board_deadline_provider;
-    void *board_deadline_owner;
+    core_machine_board_peripheral_provider board_peripheral_provider;
+    void *board_owner;
 };
 
 lib_status core_machine_bus_initialize(core_machine *machine);
@@ -341,6 +344,7 @@ extern const core_machine_cpu_execution_diagnostic_provider
 void core_machine_board_cold_reset(core_machine *machine);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     core_machine_board_deadline_observation *out_observation);
+void core_machine_board_peripheral_advance(void *owner, lib_u64 source_ticks);
 lib_status core_machine_board_register_a20_port(core_machine *machine);
 void core_machine_board_after_pit_reset(core_machine *machine);
 void core_machine_board_refresh_nmi(core_machine *machine);

@@ -4,7 +4,8 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" machine_lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" machine_scheduler_source)
-set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}")
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board_advance_source)
+set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}${board_advance_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/clock.c" clock_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/execution_provider.h"
     provider_header)

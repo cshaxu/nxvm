@@ -7,6 +7,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c"
     scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_deadline.c"
     board_deadline_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c"
+    board_advance_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/execution_provider.h"
     execution_provider_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h"
@@ -18,7 +20,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     machine_devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.c" fdd_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/hdd.c" hdd_source)
-set(core_source "${machine_source}${scheduler_source}${board_deadline_source}${kbc_source}")
+set(core_source "${machine_source}${scheduler_source}${board_deadline_source}${board_advance_source}${kbc_source}")
 
 foreach(forbidden IN ITEMS "core_machine_arbitration_tick"
     "core_machine_readiness_tick" "core_machine_peripheral_tick"
@@ -68,7 +70,7 @@ foreach(required IN ITEMS "core_machine_dma_advance_transaction"
     "core_machine_fdc_advance_at" "core_machine_hdc_advance"
     "x86_rtc_advance" "core_machine_kbc_advance"
     "x86_xt_keyboard_advance" "x86_video_advance")
-    string(FIND "${scheduler_source}" "${required}" position)
+    string(FIND "${scheduler_source}${board_advance_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T499 lacks scheduler-owned controller migration: ${required}")
     endif()
