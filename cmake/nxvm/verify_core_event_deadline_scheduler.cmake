@@ -5,6 +5,8 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c"
     scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_deadline.c"
+    board_deadline_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/execution_provider.h"
     execution_provider_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h"
@@ -16,7 +18,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     machine_devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.c" fdd_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/hdd.c" hdd_source)
-set(core_source "${machine_source}${scheduler_source}${kbc_source}")
+set(core_source "${machine_source}${scheduler_source}${board_deadline_source}${kbc_source}")
 
 foreach(forbidden IN ITEMS "core_machine_arbitration_tick"
     "core_machine_readiness_tick" "core_machine_peripheral_tick"
@@ -41,7 +43,7 @@ foreach(forbidden IN ITEMS "(*refresh)(void *context)" "provider->refresh")
     endif()
 endforeach()
 
-foreach(required IN ITEMS "else if (core_machine_fast_advance_is_blocked(machine))"
+foreach(required IN ITEMS "else if (board.fast_advance_blocked)"
     "due_tick = machine->elapsed_ticks + 1u")
     string(FIND "${scheduler_source}" "${required}" position)
     if(position EQUAL -1)

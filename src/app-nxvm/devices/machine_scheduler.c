@@ -2,56 +2,6 @@
 
 #include "app-nxvm/devices/machine.h"
 
-static lib_i32 core_machine_dma_deadline_is_available(const core_machine *machine)
-{
-    return machine != LIB_NULL && machine->timing_plan_copied &&
-        machine->timing_plan.configuration.clock_plan.dma.numerator != 0u &&
-        machine->timing_plan.configuration.clock_plan.dma.denominator != 0u;
-}
-
-static lib_i32 core_machine_deadline_is_blocked(const core_machine *machine)
-{
-    lib_u64 due_tick;
-    if (machine == LIB_NULL ||
-        (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary) &&
-         !core_machine_dma_deadline_is_available(machine))) {
-        return 1;
-    }
-    return core_machine_fdc_next_due_tick(&machine->fdc, &due_tick) == LIB_STATUS_OK &&
-        due_tick <= machine->elapsed_ticks;
-}
-
-static lib_i32 core_machine_fast_advance_is_blocked(const core_machine *machine)
-{
-    return core_machine_deadline_is_blocked(machine);
-}
-
-static lib_i32 core_machine_l1_compatibility_is_eligible(const core_machine *machine)
-{
-    return machine != LIB_NULL &&
-        ((core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary) &&
-          !core_machine_dma_deadline_is_available(machine)));
-}
-
-static lib_u8 core_machine_deadline_consider_clock(const core_machine_clock_domain *clock,
-    lib_u64 device_ticks, lib_u64 *io_source_ticks)
-{
-    lib_u64 source_ticks;
-
-    if (device_ticks == 0u) return LIB_TRUE;
-    if (io_source_ticks == LIB_NULL ||
-        core_machine_clock_domain_source_ticks_until(clock, device_ticks,
-            &source_ticks) != LIB_STATUS_OK) {
-        return LIB_FALSE;
-    }
-    if (*io_source_ticks == 0u || source_ticks < *io_source_ticks) {
-        *io_source_ticks = source_ticks;
-    }
-    return LIB_FALSE;
-}
-
 static lib_u8 core_machine_deadline_consider_absolute(const core_machine *machine,
     lib_u64 due_tick, lib_u64 *io_source_ticks)
 {
@@ -66,31 +16,13 @@ static lib_u8 core_machine_deadline_consider_absolute(const core_machine *machin
     return LIB_FALSE;
 }
 
-static lib_u8 core_machine_deadline_consider_pit(const x86_pit *pit,
-    const core_machine_clock_domain *clock, lib_u64 *io_source_ticks)
+static void core_machine_capture_time_with_board(const core_machine *machine,
+    core_machine_time_observation *out_observation,
+    core_machine_board_deadline_observation *out_board)
 {
-    lib_u8 counter;
-    lib_u8 immediate_due = LIB_FALSE;
-
-    for (counter = 0u; counter < 3u; ++counter) {
-        lib_u64 device_ticks;
-
-        if (x86_pit_ticks_until_output(pit, counter, &device_ticks) ==
-            LIB_STATUS_OK) {
-            if (core_machine_deadline_consider_clock(clock, device_ticks,
-                    io_source_ticks)) immediate_due = LIB_TRUE;
-        }
-    }
-    return immediate_due;
-}
-
-void core_machine_capture_time_observation_private(const core_machine *machine,
-    core_machine_time_observation *out_observation)
-{
+    core_machine_board_deadline_observation board = {0};
     lib_u64 source_ticks = 0u;
     lib_u64 device_ticks;
-    lib_u64 fdc_due_tick;
-    lib_u64 hdc_due_tick;
     lib_u64 timeline_due_tick;
     lib_u8 immediate_due = LIB_FALSE;
 
@@ -117,40 +49,6 @@ void core_machine_capture_time_observation_private(const core_machine *machine,
         if (core_machine_deadline_consider_absolute(machine, timeline_due_tick,
                 &source_ticks)) immediate_due = LIB_TRUE;
     }
-    /* A frozen fallback ratio remains an L2 timing claim, but it is still a
-     * usable Core-local conversion.  Provenance decides what we promise about
-     * the edge, not whether a programmed PIT may wake a halted guest. */
-    if (machine->timing_plan_copied) {
-        if (core_machine_deadline_consider_pit(machine->shared_pit.device,
-                &machine->pit_clock, &source_ticks)) immediate_due = LIB_TRUE;
-        if (machine->auxiliary_pit_configured) {
-            if (core_machine_deadline_consider_pit(machine->auxiliary_pit.device,
-                    &machine->auxiliary_pit_clock, &source_ticks)) immediate_due =
-                LIB_TRUE;
-        }
-    }
-    if (machine->timing_plan_copied && machine->rtc_cmos_configured &&
-        x86_rtc_ticks_until_irq(machine->shared_rtc, &device_ticks) ==
-            LIB_STATUS_OK) {
-        if (core_machine_deadline_consider_clock(&machine->rtc_clock, device_ticks,
-                &source_ticks)) immediate_due = LIB_TRUE;
-    }
-    if (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary) &&
-        core_machine_dma_deadline_is_available(machine)) {
-        if (core_machine_deadline_consider_clock(&machine->dma_clock, 1u,
-                &source_ticks)) immediate_due = LIB_TRUE;
-    }
-    if (core_machine_fdc_next_due_tick(&machine->fdc, &fdc_due_tick) ==
-        LIB_STATUS_OK) {
-        if (core_machine_deadline_consider_absolute(machine, fdc_due_tick,
-                &source_ticks)) immediate_due = LIB_TRUE;
-    }
-    if (core_machine_hdc_next_due_tick(&machine->hdc, &hdc_due_tick) ==
-        LIB_STATUS_OK) {
-        if (core_machine_deadline_consider_absolute(machine, hdc_due_tick,
-                &source_ticks)) immediate_due = LIB_TRUE;
-    }
     if (x86_fpu_ticks_until_completion(machine->fpu, &device_ticks) ==
         LIB_STATUS_OK) {
         if (device_ticks <= UINT64_MAX - machine->elapsed_ticks &&
@@ -159,36 +57,19 @@ void core_machine_capture_time_observation_private(const core_machine *machine,
             immediate_due = LIB_TRUE;
         }
     }
-    if (machine->d4_refresh_hold_pending &&
-        core_machine_deadline_consider_absolute(machine,
-            machine->elapsed_ticks + 1u, &source_ticks)) {
-        immediate_due = LIB_TRUE;
-    }
-    if (core_machine_kbc_ticks_until_event(&machine->shared_kbc, &device_ticks) ==
-        LIB_STATUS_OK) {
-        if (core_machine_deadline_consider_clock(&machine->kbc_clock, device_ticks,
-                &source_ticks)) immediate_due = LIB_TRUE;
-    }
-    if (core_machine_pic_ticks_until_event(&machine->shared_pic_master,
-            &machine->shared_pic_slave, &device_ticks) == LIB_STATUS_OK) {
-        if (core_machine_deadline_consider_absolute(machine,
-                machine->elapsed_ticks + device_ticks, &source_ticks)) {
-            immediate_due = LIB_TRUE;
-        }
-    }
-    if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
-        x86_xt_keyboard_ticks_until_event(machine->xt_keyboard,
-            &device_ticks) == LIB_STATUS_OK) {
-        if (device_ticks == 0u) immediate_due = LIB_TRUE;
-        else if (source_ticks == 0u || device_ticks < source_ticks) {
-            source_ticks = device_ticks;
-        }
-    }
+    if (machine->board_deadline_provider != LIB_NULL)
+        machine->board_deadline_provider(machine->board_deadline_owner,
+            machine->elapsed_ticks, &board);
+    if (out_board != LIB_NULL) *out_board = board;
+    if (board.immediate_due) immediate_due = LIB_TRUE;
+    if (board.source_ticks != 0u &&
+        (source_ticks == 0u || board.source_ticks < source_ticks))
+        source_ticks = board.source_ticks;
     if (immediate_due) {
         out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_IMMEDIATE;
         return;
     }
-    if (core_machine_l1_compatibility_is_eligible(machine)) {
+    if (board.l1_compatibility) {
         /* An unsourced owner may change before an unrelated deadline.  Its
          * bounded Core progression therefore takes precedence without
          * inventing a device duration or exposing controller state. */
@@ -198,11 +79,17 @@ void core_machine_capture_time_observation_private(const core_machine *machine,
     if (source_ticks != 0u) {
         out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_DEADLINE;
     }
-    if (core_machine_fast_advance_is_blocked(machine)) return;
+    if (board.fast_advance_blocked) return;
     if (source_ticks != 0u && source_ticks <= UINT64_MAX - machine->elapsed_ticks) {
         out_observation->next_deadline_tick = machine->elapsed_ticks + source_ticks;
         out_observation->next_deadline_valid = LIB_TRUE;
     }
+}
+
+void core_machine_capture_time_observation_private(const core_machine *machine,
+    core_machine_time_observation *out_observation)
+{
+    core_machine_capture_time_with_board(machine, out_observation, LIB_NULL);
 }
 
 static void core_machine_dma_grant_advance(core_machine *machine)
@@ -402,17 +289,18 @@ static void core_machine_advance_scheduler(core_machine *machine,
     target_tick = machine->elapsed_ticks + elapsed_ticks;
     while (machine->elapsed_ticks < target_tick) {
         core_machine_time_observation observation;
+        core_machine_board_deadline_observation board;
         lib_u64 due_tick = target_tick;
         lib_u64 source_ticks;
 
-        core_machine_capture_time_observation_private(machine, &observation);
-        if (core_machine_l1_compatibility_is_eligible(machine)) {
+        core_machine_capture_time_with_board(machine, &observation, &board);
+        if (board.l1_compatibility) {
             due_tick = machine->elapsed_ticks + 1u;
         } else if (observation.next_deadline_valid &&
             observation.next_deadline_tick > machine->elapsed_ticks &&
             observation.next_deadline_tick < due_tick) {
             due_tick = observation.next_deadline_tick;
-        } else if (core_machine_fast_advance_is_blocked(machine)) {
+        } else if (board.fast_advance_blocked) {
             /* An active L1 owner blocks fast advance, but a successful CPU
              * retirement still advances its existing causal route one tick. */
             due_tick = machine->elapsed_ticks + 1u;

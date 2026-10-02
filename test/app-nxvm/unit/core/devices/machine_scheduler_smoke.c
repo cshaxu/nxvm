@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine.h"
 #include "support/core_machine_board_fixture.h"
 
 typedef struct scheduler_provider_probe {
@@ -25,6 +25,20 @@ static const core_machine_execution_provider scheduler_provider = {
     scheduler_provider_advance
 };
 
+typedef struct scheduler_deadline_probe {
+    core_machine_board_deadline_observation value;
+    lib_u32 calls;
+} scheduler_deadline_probe;
+
+static void scheduler_board_deadline(void *owner, lib_u64 now,
+    core_machine_board_deadline_observation *out_observation)
+{
+    scheduler_deadline_probe *probe = owner;
+    (void)now;
+    ++probe->calls;
+    *out_observation = probe->value;
+}
+
 lib_i32 main(void)
 {
     core_machine_config config = { 0 };
@@ -32,6 +46,8 @@ lib_i32 main(void)
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
     scheduler_provider_probe provider_probe = { 0u, 0u };
+    scheduler_deadline_probe deadline_probe = {0};
+    core_machine_time_observation observation;
     const lib_u8 nop = 0x90u;
     lib_i32 failed = 0;
 
@@ -58,6 +74,29 @@ lib_i32 main(void)
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
         result.ticks != 3u || result.elapsed_ticks != 3u ||
         provider_probe.advances != 1u || provider_probe.advanced_ticks != 3u;
+
+    machine->board_deadline_provider = scheduler_board_deadline;
+    machine->board_deadline_owner = &deadline_probe;
+    deadline_probe.value.source_ticks = 5u;
+    core_machine_capture_time_observation_private(machine, &observation);
+    failed |= deadline_probe.calls != 1u || !observation.next_deadline_valid ||
+        observation.next_deadline_tick != machine->elapsed_ticks + 5u ||
+        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE;
+    deadline_probe.value.immediate_due = LIB_TRUE;
+    core_machine_capture_time_observation_private(machine, &observation);
+    failed |= observation.next_deadline_valid ||
+        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_IMMEDIATE;
+    deadline_probe.value.immediate_due = LIB_FALSE;
+    deadline_probe.value.l1_compatibility = LIB_TRUE;
+    deadline_probe.value.fast_advance_blocked = LIB_TRUE;
+    core_machine_capture_time_observation_private(machine, &observation);
+    failed |= observation.next_deadline_valid ||
+        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY;
+    deadline_probe.value.l1_compatibility = LIB_FALSE;
+    core_machine_capture_time_observation_private(machine, &observation);
+    failed |= observation.next_deadline_valid ||
+        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE ||
+        deadline_probe.calls != 4u;
 
     core_machine_destroy(machine);
     if (failed) return 1;

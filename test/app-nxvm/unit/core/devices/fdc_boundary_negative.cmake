@@ -8,6 +8,7 @@ set(paths
     src/app-nxvm/devices/fdc.c
     src/app-nxvm/devices/fdc.h
     src/app-nxvm/devices/machine_scheduler.c
+    src/app-nxvm/devices/board_deadline.c
     src/app-nxvm/devices/machine_board.c
     src/app-nxvm/devices/dma_bus.c
     src/app-nxvm/devices/memory_interface.c

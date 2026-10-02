@@ -111,6 +111,15 @@ typedef struct core_machine_absent_memory {
     lib_u8 configured;
 } core_machine_absent_memory;
 
+typedef struct core_machine_board_deadline_observation {
+    lib_u64 source_ticks;
+    lib_u8 immediate_due;
+    lib_u8 l1_compatibility;
+    lib_u8 fast_advance_blocked;
+} core_machine_board_deadline_observation;
+typedef void (*core_machine_board_deadline_provider)(void *owner, lib_u64 now,
+    core_machine_board_deadline_observation *out_observation);
+
 struct core_machine_firmware_context {
     core_machine *machine;
     lib_status operation_status;
@@ -247,6 +256,8 @@ struct core_machine {
     lib_u8 d4_refresh_hold_pending;
     lib_u8 d4_refresh_pulse_active;
     lib_u8 d4_refresh_address;
+    core_machine_board_deadline_provider board_deadline_provider;
+    void *board_deadline_owner;
 };
 
 lib_status core_machine_bus_initialize(core_machine *machine);
@@ -328,6 +339,8 @@ extern const core_machine_cpu_execution_diagnostic_provider
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
 void core_machine_board_cold_reset(core_machine *machine);
+void core_machine_board_deadline_observe(void *owner, lib_u64 now,
+    core_machine_board_deadline_observation *out_observation);
 lib_status core_machine_board_register_a20_port(core_machine *machine);
 void core_machine_board_after_pit_reset(core_machine *machine);
 void core_machine_board_refresh_nmi(core_machine *machine);

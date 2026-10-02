@@ -472,6 +472,8 @@ static lib_status core_machine_create_internal(
     machine->transaction_contract = config->transaction_contract;
     machine->time_axis = config->time_axis;
     machine->l1_compatibility_policy = config->l1_compatibility_policy;
+    machine->board_deadline_provider = core_machine_board_deadline_observe;
+    machine->board_deadline_owner = machine;
     machine->dma_cycle_bus_ready = LIB_TRUE;
     machine->cpu_cycle_bus_ready = LIB_TRUE;
     if (config->retirement_qualification != LIB_NULL) {
