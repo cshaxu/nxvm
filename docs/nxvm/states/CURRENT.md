@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S25 is active: separate board DMA/PIT/PIC arbitration effects from
-Core-owned bus transactions and CPU prefetch without changing event order.
-S1-S24 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S26 is active: give Core a copied D4 refresh HOLD request and
+report successful completion back to the board, without exposing its state.
+S1-S25 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -53,7 +53,8 @@ the completed CPU extraction.
 | T540 S22 | Accepted: copied board deadlines feed the one Core time observation, retaining immediate and L1-blocking disposition; dual-width units and eight boots pass. |
 | T540 S23 | Accepted: Core time settlement calls the board-owned peripheral tail after readiness; dual-width units and eight boots pass. |
 | T540 S24 | Accepted: board FDC/HDC, then Core FPU, then board RTC readiness effects retain their exact order; dual-width units and eight boots pass. |
-| T540 S25 | Active: preserve arbitration's Core DMA/refresh transactions and prefetch while moving board DMA/PIT/PIC effects. |
+| T540 S25 | Accepted: source-only Core/board arbitration intake and S26-S31 receiver map; no runtime change. |
+| T540 S26 | Active: copied D4 refresh request and success-only completion around Core HOLD/transaction. |
 
 ## T540 S1 Acceptance
 
@@ -844,20 +845,56 @@ passed. S24 is accepted; T540 remains open for S25 arbitration.
 | --- | --- |
 | Identifier Mode | Continuation M5 T540 S25, the next linear S after accepted S24. |
 | Admission And Approval | The owner's automatic admission of bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES remain read-only. |
-| Objective | Separate IBM-PC DMA/refresh/PIT/PIC arbitration effects from Core bus/HOLD transactions and CPU prefetch while keeping their existing source-tick and phase order. |
-| Non-goals | CPU interrupt-pending/INTA and trace-locality disposition (S26), mixed plan/reset (S27), physical Core move (S28), timing formula or grade changes, profile/INI/firmware/media changes, generic bus/event framework. |
+| Objective | Source-inspect the entire mixed arbitration function, freeze its exact Core transaction/CPU prefetch and board request/chip effect owners, and assign bounded S26-S31 code receivers before implementation. |
+| Non-goals | Any production/API/test/asset/INI/executable change, timing or grade reinterpretation, generic bus/event framework or speculative physical relocation. |
 | Reference Baseline | Accepted S24 P1 `8f1b7a68c`, [S24 evidence](../etc/evidence/t540-s24-board-readiness.md), [S21 intake](../etc/evidence/t540-s21-scheduler-pic-intake.md); dual-width units 469/469, all specialized gates, eight external boots and eight Release products. |
-| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [source-refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and board adapter ledger. |
-| Files And ABI Surface | Inspect `devices/{machine_scheduler,board_advance,dma_bus,machine}` and Core transaction/prefetch contracts. Board may receive copied tick/due/arbitration facts and call only bounded Core operations; no raw Core transaction or RAM state leaks to an eventual Shared board component. Direct tests/gates and eight products follow. |
-| Applicable Rules | Preserve exact order: clock-domain conversion, pending refresh HOLD, DMA wait/grant/transaction, CPU prefetch reservation, DMA trace, PIT/aux PIT advance/trace, PIC refresh/trace; then existing readiness and peripheral phases. One Core tick publication and one bus transaction owner. |
-| Verification | Focused DMA HOLD/wait, D4 refresh, prefetch, PIT output/IRQ0, PIC refresh and causal trace tests; complete dual-width repository-only units, specialized/documentation gates, one boot per four profiles/width and eight optimized 0540 products with PE/hash/no-debug proof. |
-| Expected Markers | Board chip advance and board clock/IRQ wiring are not direct Core scheduler calls; Core retains HOLD/transaction and prefetch ordering with no second DMA cycle path. Old direct calls are removed in the same P. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S25 refined handoff](../etc/architecture/t540-s7-core-board-handoff.md), [arbitration intake](../etc/evidence/t540-s25-arbitration-intake.md) and board adapter ledger. |
+| Files And ABI Surface | Read `devices/{machine_scheduler,board_deadline,dma_bus,machine_board,transaction}` and Core prefetch contract; document copied request/completion boundaries. No source or ABI change in this S. |
+| Applicable Rules | Preserve clock conversion, pending refresh HOLD, DMA wait/grant, Core prefetch, DMA trace, PIT advance/trace and PIC refresh/trace in exact order. One Core tick and transaction owner; board owns chip/request state. Split unlike responsibilities before code. |
+| Verification | Source audit every arbitration branch and its failure behavior; map focused tests. As a documentation-only S, run documentation governance and diff hygiene; retain S24 complete dual-width unit, gate, boot and product baseline without unnecessary rebuild. |
+| Expected Markers | Every existing arbitration effect has a unique Core or board owner, an explicit linear S26-S31 receiver and a regression anchor; no unassigned Core-prefetch or board-DMA path. |
 | Asset Needs | Existing external owner-provided firmware/media only for boot checks and products; no new or changed ROM, disk, font or INI. |
-| Reporting Requirements | Record exact original/receiver calls, wait/hold failure behavior, prefetch gate and trace order, production/test line delta, focused/full checks, eight boot results and product hashes. Refine into the next linear S before implementation if a distinct unresolved owner boundary appears. |
+| Reporting Requirements | Record exact original calls, wait/hold failure behavior, prefetch gate, trace order, zero production/test/binary diff, S26-S31 receiver plan and regression anchors. |
 | Stop Conditions | Stop before moving Core transaction/prefetch state into board, new physical timing inference, changed DMA/PIT/PIC order, second scheduler/transaction owner, Shared/MyNES edits or protected asset change. |
-| Exit Criteria | One bounded arbitration owner split with no parallel old path; all source/external gates pass; actual-diff P1 review and governance P2 close S25. |
+| Exit Criteria | Complete source-only owner map and linear receiver plan, documentation/diff checks pass, actual-diff P1 review and governance P2 close S25. |
 | Original Owner Request | Build reusable neutral `x86/core` and IBM-PC board layers before splitting PC Apps, without layering compatibility patches. |
 | Similar-Issue Sweep | Inspect both DMA wait-quanta and no-wait paths, D4 refresh HOLD, prefetch eligibility, PIC refresh and every trace effect; avoid moving Core authority merely because it shares a function with board chips. |
+
+## T540 S25 Acceptance
+
+P1 `3f14bf9d2` source-inspects the original arbitration function and
+separates board D4 request/address, board DMA clock/request/chip effects,
+Core HOLD/transaction/wait/prefetch, and board PIT/PIC tail effects. The
+[S25 intake](../etc/evidence/t540-s25-arbitration-intake.md) records exact
+call and failure order plus the linear S26-S31 receiver map. The actual
+two-file P1 diff is documentation only: zero production/API, test, EXE,
+Shared, MyNES, INI or external-asset changes.
+
+Documentation governance and diff hygiene passed. The accepted S24 full
+dual-width **469/469** unit, specialized-gate, **8/8** boot and eight-product
+baseline is unchanged. S25 is accepted; T540 remains open. S26 receives
+the D4 refresh request/completion boundary only.
+
+## T540 S26 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S26, the next linear S after accepted S25. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES are read-only. |
+| Objective | Make D4 board refresh pending/address a copied request to Core; Core alone performs HOLD and refresh transaction and reports success so board clears/increments only after commit. |
+| Non-goals | DMA clock/wait/grant and prefetch (S27), PIT/PIC tail (S28), CPU PIC INTA/locality (S29), mixed plan/reset (S30), physical neutral Core move (S31), new timing formula, profile/INI/firmware/media changes. |
+| Reference Baseline | Accepted S25 P1 `3f14bf9d2`, [arbitration intake](../etc/evidence/t540-s25-arbitration-intake.md) and S24 accepted dual-width 469/469 units, all specialized gates, eight external boots and eight optimized products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md), [board adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and S25 intake. |
+| Files And ABI Surface | Inspect `devices/{machine_scheduler,machine_board,machine,transaction}` and D4 tests. Board reports only copied pending/address and receives a success completion; Core transaction, HOLD owner and guest timeline stay private. Update direct gates/tests and eight products. |
+| Applicable Rules | Original pending snapshot precedes service and remains available to prefetch gate. Failed HOLD/ack/begin retains board request/address. Only successful Core commit clears pending and increments address; release HOLD in original cases. No parallel refresh path. |
+| Verification | Focused D4 refresh/HOLD, parity, transaction and prefetch tests; complete x64/x86 repository-only units, specialized/documentation gates, one boot per four profiles/width and eight optimized 0540 products with PE/hash/no-debug proof. |
+| Expected Markers | Core refresh routine reads copied request and sends success only; it no longer directly reads/writes D4 pending/address. Board never receives a transaction pointer or publishes Core time. |
+| Asset Needs | Existing owner-provided external firmware/media for boots/products only; no new or changed ROM, disk, font or INI. |
+| Reporting Requirements | Record original and new success/failure transitions, pending-before-service prefetch fact, line delta, focused/full checks, eight boot outcomes and product hashes; transfer DMA wait/grant to S27. |
+| Stop Conditions | Stop before inventing refresh physics, moving Core transaction/HOLD into board, changing failed-HOLD retry semantics, Shared/MyNES edits, second guest clock or protected-asset changes. |
+| Exit Criteria | Single D4 copied request/completion seam with no direct Core board-state mutation and no parallel path; full verification and eight products pass; actual-diff P1 and governance P2 close S26. |
+| Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board components with flat ownership, linear numeric S and no patch-over-patch path. |
+| Similar-Issue Sweep | Inspect all D4 refresh pending/address reads and writes, reset, PIT callback and prefetch condition; leave DMA and PIC effects explicitly for S27-S29. |
 
 ## S87 Admission Packet
 
