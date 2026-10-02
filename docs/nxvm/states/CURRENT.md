@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S21 is active: separate board deadline/advance and PIC acknowledge
-from Core's single CPU bus and guest timeline without changing event order.
-S1-S20 are accepted; T540 remains open for neutral Core relocation and
+M5 T540 S22 is active: publish copied IBM-PC board device deadlines to the
+single Core guest timeline without changing event order or timing claims.
+S1-S21 are accepted; T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -49,7 +49,8 @@ the completed CPU extraction.
 | T540 S18 | Accepted: ROM images and both alias kinds use Core-owned routes and owner-scoped rollback; dual-width units, four-profile external boots, gates and eight 0540 products pass. |
 | T540 S19 | Accepted: bounded Core A20 signal and absent-memory fallback route, without raw RAM in board adapters; dual-width units, gates, external boots and eight 0540 products pass. |
 | T540 S20 | Accepted: one bounded Core DMA bus-cycle operation; no board-facing RAM or transaction pointers, with dual-width units and eight boot checkpoints passing. |
-| T540 S21 | Active: source-intake and separation of board deadline/advance and PIC acknowledgement from neutral Core execution. |
+| T540 S21 | Accepted: source-inspected scheduler/PIC ownership and divided the oversized move into linear S22-S26 receivers. |
+| T540 S22 | Active: copied board deadlines feed the one Core time observation, retaining immediate and L1-blocking disposition. |
 
 ## T540 S1 Acceptance
 
@@ -687,20 +688,57 @@ open. S21 receives board deadline/advance and PIC acknowledge separation.
 | --- | --- |
 | Identifier Mode | Continuation M5 T540 S21, the next linear S after accepted S20. |
 | Admission And Approval | The owner's automatic admission for bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES remain read-only. Source intake must split a too-large or unlike scheduler/PIC receiver into further linear S numbers before implementation. |
-| Objective | Separate board device deadline/advance and PIC acknowledge from the neutral Core CPU bus/timeline through one explicit, bounded owner contract. Preserve one Core guest clock and the present event/INTA order. |
-| Non-goals | New timing formulas or L3 claims, device command/register changes, plan/reset/destroy split (S22), physical Core relocation (S23), Shared board move, profile/INI/firmware/media changes or a second scheduler. |
+| Objective | Source-inspect every deadline, advance and PIC caller; freeze the exact Core/board owner map and regression anchors, then divide this oversized combined move into bounded linear numeric receivers before code changes. |
+| Non-goals | Production source, ABI, test or binary changes; new timing formulas or L3 claims, device command/register changes, physical Core relocation, Shared board move or a second scheduler. |
 | Reference Baseline | Accepted S20 P1 `9e4c22e2f`; complete units 469/469 per width, 76/76 specialized-gate steps, all four external boot checkpoints once per width and eight verified 0540 Release products. |
 | Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [Core/board handoff](../etc/architecture/t540-s7-core-board-handoff.md), [board adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and [S20 evidence](../etc/evidence/t540-s20-dma-core-cycle.md). |
-| Files And ABI Surface | Inspect NXVM `devices/{machine_scheduler,cpu_bus,pic_bus,machine,machine_interface}` and their direct deadline, PIC-phase, IRQ, HOLD and trace tests first. Freeze exact moved functions and typed values in an S21 source ledger before code changes; no CPU or PIC private-layout pointer may cross the resulting boundary. |
+| Files And ABI Surface | Read NXVM `devices/{machine_scheduler,cpu_bus,pic_bus,machine,machine_interface}` and their direct deadline, PIC-phase, IRQ, HOLD and trace tests. Change only the NXVM handoff document, source-intake evidence and state record; do not touch code. |
 | Applicable Rules | Core alone advances the guest timeline and owns CPU bus transactions. The IBM-PC board owns only its installed device deadlines, signal wiring and PIC service effect. The adapter sends copied observations/results, not mutable Core or chip internals; remove old callers in the same change. |
-| Verification | Source-inspect every deadline publisher, advance caller and PIC acknowledge path; focused deadline/HLT, PIT/RTC/DMA/FDC/HDC/KBC, PIC phase and interrupt trace tests; complete repository-only x64/x86 units, specialized/documentation gates, each four-profile external boot once per width and eight optimized 0540 products with PE/hash/no-debug proof. |
-| Expected Markers | One Core timeline and CPU bus, one board device event contribution, PIC's existing acknowledge order, no parallel scheduler/acknowledge path and no changed timing source. |
+| Verification | Source-inspect every deadline publisher, advance caller, CPU time publication and PIC acknowledge path; map focused regression anchors. As a documentation-only S, run documentation governance and `git diff --check`; retain the accepted S20 complete dual-width baseline without rebuilding products. |
+| Expected Markers | One named Core timeline/CPU bus owner, distinct board deadline/advance/PIC receivers, explicit unchanged phase order and no unassigned cross-owner path. |
 | Asset Needs | Existing owner-provided profile firmware/media only for external checkpoints and products; no asset import or modification. Repository-only tests use no external files. |
-| Reporting Requirements | Record exact original deadline/advance/PIC callers and their owner disposition, event-order/rollback proof, production/test added/removed/net lines, full dual-width results, eight boot checkpoints and product hashes; explicitly transfer plan/reset/destroy to S22. |
+| Reporting Requirements | Record exact original deadline/advance/PIC callers, owner disposition, critical phase order, test anchors and the later linear receiver map. Note zero production/test/binary diff and transfer plan/reset to S25. |
 | Stop Conditions | Stop before changing physical timebase, chip or PIC instruction semantics, an unresolved event-order contract, Shared/MyNES code or protected assets. Refine S21 into bounded linear receivers rather than layering a second scheduler. |
-| Exit Criteria | Core and board event/PIC responsibilities have one explicit direction and no retained cross-owner access; focused/full verification, external boots and products pass; coordinator actual-diff review accepts an implementation P and governance P records closure. |
+| Exit Criteria | Source owner audit and bounded linear task plan are complete; no code or binary changed; documentation governance and diff hygiene pass; coordinator actual-diff review accepts the audit P and governance P records closure. |
 | Original Owner Request | Build reusable neutral `x86/core` and proven `x86/ibmpc-*` board components before splitting the PC Apps, preserving behavior with flat ownership and linear numeric S tasks. |
 | Similar-Issue Sweep | Search the full scheduler, CPU bus, PIC bus and their direct tests for device state inside CPU-time decisions or CPU transaction state inside board callbacks; classify each as Core-private, board-owned or later plan/reset work, with no unowned remainder. |
+
+## T540 S21 Acceptance
+
+P1 `fa9aa0c27` source-inspects the 436-line scheduler, 332-line CPU bus and
+PIC service. The [S21 intake](../etc/evidence/t540-s21-scheduler-pic-intake.md)
+assigns one Core timeline/time-publication owner, copied board deadlines,
+ordered board effects, PIC pending/INTA service and the DMA-HOLD locality
+policy to distinct receivers. The original S21 code move would have mixed
+these responsibilities; the revised linear S22-S26 plan removes that risk
+without creating a second scheduler. The actual diff is documentation only:
+no source, ABI, test, product, Shared, MyNES, INI or media change.
+
+Documentation governance and `git diff --check` passed. The prior accepted
+S20 full dual-width **469/469** unit and **8/8** external boot baseline stays
+unchanged. S21 is accepted; T540 remains open. S22 receives copied board
+deadline publication only.
+
+## T540 S22 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S22, the next linear S after accepted S21. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES are read-only. S21 source evidence narrows this receiver to copied device deadlines. |
+| Objective | Move IBM-PC board device deadline discovery behind one copied observation contract while Core remains the sole guest-time/min-deadline owner. Preserve immediate-due, unsourced-DMA L1 blocking and existing min-order. |
+| Non-goals | Device advance effects (S23), PIC CPU INTA handoff (S24), plan/reset lifecycle (S25), neutral Core physical move (S26), timing formula changes, profile/INI/firmware/media edits or a second scheduler. |
+| Reference Baseline | Accepted S21 P1 `fa9aa0c27` and [source intake](../etc/evidence/t540-s21-scheduler-pic-intake.md); S20 complete units 469/469 per width, 76/76 specialized gates, four external boots once per width and eight Release products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md), [board adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and [S21 source intake](../etc/evidence/t540-s21-scheduler-pic-intake.md). |
+| Files And ABI Surface | Inspect and change only NXVM deadline observation in `devices/{machine_scheduler,machine,machine_interface}` plus direct tests/static gate and eight products. Board reports copied due/immediate/block disposition; Core compares against its timeline and elapsed ticks. Do not expose board chip state to a neutral Core contract. |
+| Applicable Rules | One Core clock and one min-deadline decision; board owns chip-state queries but not Core elapsed-time mutation. Unknown/unsourced timing remains honest L1/L2 as before. Delete old direct queries in the same cut, no parallel compatibility path. |
+| Verification | Focused PIT/RTC/DMA/FDC/HDC/KBC/PIC/XT keyboard deadline and HLT tests; full repository-only x64/x86 units, specialized/documentation gates, each four-profile external boot once per width and eight optimized 0540 products with PE/hash/no-debug proof. |
+| Expected Markers | Neutral Core deadline choice no longer sees chip private state, while board returns copied next-due/immediate/blocked facts and existing causal order and time grade are unchanged. |
+| Asset Needs | Existing owner-provided firmware/media only for the external boot checkpoints and products. No new or modified asset, INI or external original. |
+| Reporting Requirements | Record original device query callers and their destination, min/immediate/L1 cases, overflow/failure behavior, production/test added/removed/net lines, full dual-width verification, eight boot checkpoints and hashes; transfer device advancement to S23. |
+| Stop Conditions | Stop before a new physical rate/timing inference, chip behavior reinterpretation, Shared/MyNES edit, protected asset change or a second time source. Split another genuinely distinct receiver into the next linear S before code if intake finds one. |
+| Exit Criteria | One copied board deadline publication replaces Core's direct chip query path; full/focused verification, external boots and products pass; coordinator actual-diff review accepts implementation P and governance P records closure. |
+| Original Owner Request | Build neutral `x86/core` and reusable IBM-PC board layers before splitting PC Apps, with a single guest timeline and no patch-over-patch behavior. |
+| Similar-Issue Sweep | Inspect every chip deadline query and the immediate/L1-blocked decisions, not just PIT; retain Core timeline and FPU completion as neutral, and classify every other board query or explicitly defer it with a unique owner reason. |
 
 ## S87 Admission Packet
 
