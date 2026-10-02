@@ -97,7 +97,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
         LIB_STATUS_OK && board_consider_absolute(now, due_tick,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
-    if (machine->d4_refresh_hold_pending &&
+    if (machine->board->d4_refresh_hold_pending &&
         board_consider_absolute(now, now + 1u,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;

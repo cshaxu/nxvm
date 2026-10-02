@@ -443,7 +443,7 @@ static lib_i32 prefetch_grant_contract(void)
             prefetch_grants != 1u;
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
-        machine->d4_refresh_hold_pending = LIB_TRUE;
+        machine->board->d4_refresh_hold_pending = LIB_TRUE;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
             prefetch_grants != 1u;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||

@@ -223,10 +223,6 @@ struct core_machine {
     lib_u32 dma_cycle_wait_remaining;
     lib_u8 dma_cycle_bus_ready;
     lib_u8 cpu_cycle_bus_ready;
-    /* D4 refresh request state; it is serviced at the shared arbitration point. */
-    lib_u8 d4_refresh_hold_pending;
-    lib_u8 d4_refresh_pulse_active;
-    lib_u8 d4_refresh_address;
     core_machine_board_deadline_provider board_deadline_provider;
     core_machine_board_refresh_request_provider board_refresh_request_provider;
     core_machine_board_refresh_complete_provider board_refresh_complete_provider;

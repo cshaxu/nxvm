@@ -1867,7 +1867,7 @@ int main(lib_i32 argc, char **argv)
                 (unsigned int)session->core_machine->transaction.owner,
                 (unsigned int)session->core_machine->transaction.hold_owner,
                 (unsigned int)session->core_machine->transaction.hold_acknowledged,
-                (unsigned int)session->core_machine->d4_refresh_hold_pending);
+                (unsigned int)session->core_machine->board->d4_refresh_hold_pending);
             printf("BOOT-PROBE=far-pointer=%02X,%02X,%02X,%02X,%02X,%02X-gdt-entry=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)far_pointer[0u], (unsigned int)far_pointer[1u],
                 (unsigned int)far_pointer[2u], (unsigned int)far_pointer[3u],

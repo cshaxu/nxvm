@@ -34,6 +34,10 @@ struct core_machine_board_state {
     lib_u8 d4_platform_iochk_latched;
     lib_u8 d4_platform_failsafe_latched;
     lib_u8 d4_platform_nmi_signaled;
+    /* D4 refresh signal state; Core services its request at arbitration. */
+    lib_u8 d4_refresh_hold_pending;
+    lib_u8 d4_refresh_pulse_active;
+    lib_u8 d4_refresh_address;
     t_vadp shared_vadp;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;

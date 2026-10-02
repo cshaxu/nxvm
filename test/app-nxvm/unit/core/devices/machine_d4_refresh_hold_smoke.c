@@ -187,8 +187,8 @@ lib_i32 main(void)
     failed |= core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
     start = probe.count;
     failed |= core_machine_advance_time(machine, 19u) != LIB_STATUS_OK;
-    failed |= !machine->d4_refresh_hold_pending ||
-        machine->d4_refresh_address != 0u ||
+    failed |= !machine->board->d4_refresh_hold_pending ||
+        machine->board->d4_refresh_address != 0u ||
         machine->dma_cycle_wait_remaining != 0u;
     failed |= !machine->board_refresh_request_provider(machine->board_owner,
         &refresh_address) || refresh_address != 0u;
@@ -200,8 +200,8 @@ lib_i32 main(void)
      * channel selection plus S1..S4, with this contract's one wait quantum
      * per controller step. */
     failed |= core_machine_advance_time(machine, 11u) != LIB_STATUS_OK;
-    failed |= machine->d4_refresh_hold_pending ||
-        machine->d4_refresh_address != 1u ||
+    failed |= machine->board->d4_refresh_hold_pending ||
+        machine->board->d4_refresh_address != 1u ||
         machine->dma_cycle_wait_remaining != 0u;
     refresh_address = 0xffu;
     failed |= machine->board_refresh_request_provider(machine->board_owner,
@@ -234,8 +234,8 @@ lib_i32 main(void)
         refresh_commit >= refresh_release || refresh_release >= dma_begin ||
         refresh_has_cpu_transaction_between(&probe, refresh_release, dma_begin);
     failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-        machine->d4_refresh_hold_pending || machine->d4_refresh_pulse_active ||
-        machine->d4_refresh_address != 0u;
+        machine->board->d4_refresh_hold_pending || machine->board->d4_refresh_pulse_active ||
+        machine->board->d4_refresh_address != 0u;
 
     core_machine_destroy(machine);
     failed |= !refresh_non_d4_contract();

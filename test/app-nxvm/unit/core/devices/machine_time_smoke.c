@@ -35,7 +35,7 @@ static lib_i32 machine_time_d4_l2_precedes_unrelated_deadline(void)
     failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
-        machine->d4_refresh_hold_pending = LIB_TRUE;
+        machine->board->d4_refresh_hold_pending = LIB_TRUE;
         failed |= core_machine_timeline_schedule(&machine->timeline, 4u,
             machine_time_timeline_callback, &timeline_count, &token) != LIB_STATUS_OK;
     }
@@ -44,7 +44,7 @@ static lib_i32 machine_time_d4_l2_precedes_unrelated_deadline(void)
         observation.next_deadline_tick != 1u ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE);
     failed |= !failed && (core_machine_advance_to_next_deadline(machine, &advanced) !=
-        LIB_STATUS_OK || !advanced || machine->d4_refresh_hold_pending ||
+        LIB_STATUS_OK || !advanced || machine->board->d4_refresh_hold_pending ||
         machine->elapsed_ticks != 1u || timeline_count != 0u);
     failed |= !failed && (core_machine_advance_to_next_deadline(machine, &advanced) !=
         LIB_STATUS_OK || !advanced || machine->elapsed_ticks != 4u ||

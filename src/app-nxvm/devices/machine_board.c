@@ -603,11 +603,11 @@ static void core_machine_d4_refresh_output(void *opaque, lib_u8 asserted)
      * interval or any calibrated phase duration. */
     if (machine != LIB_NULL) {
         if (asserted) {
-            machine->d4_refresh_pulse_active = LIB_FALSE;
-        } else if (!machine->d4_refresh_pulse_active) {
-            machine->d4_refresh_pulse_active = LIB_TRUE;
+            machine->board->d4_refresh_pulse_active = LIB_FALSE;
+        } else if (!machine->board->d4_refresh_pulse_active) {
+            machine->board->d4_refresh_pulse_active = LIB_TRUE;
             core_machine_cpu_bus_refresh_pulse(machine);
-            machine->d4_refresh_hold_pending = LIB_TRUE;
+            machine->board->d4_refresh_hold_pending = LIB_TRUE;
         }
     }
 }
@@ -616,17 +616,17 @@ lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address)
 {
     const core_machine *machine = owner;
     if (machine == LIB_NULL || out_address == LIB_NULL ||
-        !machine->d4_refresh_hold_pending) return LIB_FALSE;
-    *out_address = machine->d4_refresh_address;
+        !machine->board->d4_refresh_hold_pending) return LIB_FALSE;
+    *out_address = machine->board->d4_refresh_address;
     return LIB_TRUE;
 }
 
 void core_machine_board_refresh_complete(void *owner)
 {
     core_machine *machine = owner;
-    if (machine == LIB_NULL || !machine->d4_refresh_hold_pending) return;
-    machine->d4_refresh_address = (lib_u8)(machine->d4_refresh_address + 1u);
-    machine->d4_refresh_hold_pending = LIB_FALSE;
+    if (machine == LIB_NULL || !machine->board->d4_refresh_hold_pending) return;
+    machine->board->d4_refresh_address = (lib_u8)(machine->board->d4_refresh_address + 1u);
+    machine->board->d4_refresh_hold_pending = LIB_FALSE;
 }
 
 static void core_machine_dma_refresh_pit_output(void *owner,
@@ -775,9 +775,9 @@ void core_machine_board_reset_devices(core_machine *machine)
         x86_pit_reset(machine->board->auxiliary_pit.device);
     }
     core_machine_board_after_pit_reset(machine);
-    machine->d4_refresh_hold_pending = LIB_FALSE;
-    machine->d4_refresh_pulse_active = LIB_FALSE;
-    machine->d4_refresh_address = 0u;
+    machine->board->d4_refresh_hold_pending = LIB_FALSE;
+    machine->board->d4_refresh_pulse_active = LIB_FALSE;
+    machine->board->d4_refresh_address = 0u;
     x86_video_reset(machine->board->shared_vadp.chip);
 }
 
