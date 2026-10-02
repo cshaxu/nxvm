@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S43 is active: move the remaining board constructor and callbacks
-out of `machine.c` without adding a second create path. S1-S42 are accepted;
+M5 T540 S44 is active: move board clock/topology state toward one board
+attachment without a mirrored fact. S1-S43 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -71,7 +71,8 @@ the completed CPU extraction.
 | T540 S40 | Accepted: D4 shutdown reset choice and native XT/8042 input dispatch are board-owned; dual-width units and eight boots pass. |
 | T540 S41 | Accepted: six named board clocks moved with their advance/deadline owner; Core retains provider clock and one timeline; dual-width units and eight boots pass. |
 | T540 S42 | Accepted: finite private Core/board ownership ledger assigns all mixed state groups and source stages to linear receivers. |
-| T540 S43 | Active: remaining board constructor/callback separation. |
+| T540 S43 | Accepted: remaining board constructor/callback separation, dual-width units/gates and eight boot checkpoints. |
+| T540 S44 | Active: first board-attachment state receiver. |
 
 ## T540 S1 Acceptance
 
@@ -1534,6 +1535,42 @@ code baseline. T540 remains open.
 | Exit Criteria | One board constructor owns all remaining board callbacks/validation; neutral create invokes it once; dual-width verification and artifacts pass; actual P1 and governance P2 are pushed with a clean tree. |
 | Original Owner Request | Extract independent chips and board mechanisms without diverging the four fixed PC products. |
 | Similar-Issue Sweep | Check XT and AT keyboard creation/reset, PPI speaker/NMI, port registration rollback, destruction after partial board creation and all four profile boots. |
+
+## T540 S43 Acceptance
+
+Actual-diff review accepts NXVM P1 `8645c1c74`; the
+[S43 evidence](../etc/evidence/t540-s43-board-constructor.md) records the
+245-line move from `machine.c` to the existing board owner, two private
+declarations, and eight static gates retargeted to that owner without
+relaxing their checks. One resolved-memory-size read replaced a duplicate
+configuration calculation after successful allocation. No parallel create,
+board registration, rollback or destructor route appeared. Final-source
+x64/x86 repository-only units pass **469/469** each, specialized gates pass,
+and the four fixed-profile external boot probes pass **8/8**, once per width.
+Eight optimized 0540 products have the expected PE widths and no `.debug`
+sections, with hashes in the evidence. Shared/MyNES, owner INIs and
+firmware/media inputs are untouched. T540 remains open.
+
+## T540 S44 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S44, next linear S after accepted S43. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Establish one board-owned attachment for named device clocks and the actual topology/timing fields now flat in `core_machine`, moving each fact once and keeping the Core clock/timeline separate. |
+| Non-goals | Chip-instance and IRQ/port move (S45), D4/refresh/callback split (S46), neutral private header completion (S47), physical Shared move (S48), new device framework or changed time formula. |
+| Reference Baseline | S43 P1 `8645c1c74`, [S43 evidence](../etc/evidence/t540-s43-board-constructor.md), [S42 ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and [S42 private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Audit actual references to six named device clocks, KBC timing/input, keyboard/display topology, DMA bindings, RTC/CMOS and FDC/HDC topology across board, controller, plan and tests before editing. Add one owner attachment only if every moved reader/writer has one route. |
+| Applicable Rules | No copied clock phase, no dual topology state, no board pointer inside CPU/chip, one success publication and one rollback. Core keeps provider clock and single guest timeline; board owns device clocks. |
+| Verification | Full x64/x86 units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | Named clocks/topology no longer occupy flat Core state; board attachment has one lifetime and no parallel path. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI modification. |
+| Reporting Requirements | Exact moved fields, direct readers/writers, constructor/reset/finalization order, tests and artifact hashes; allocate any oversized remainder to the next linear numeric S before implementation. |
+| Stop Conditions | Stop before creating a second state owner, mirroring a clock phase, altering board timing ratios or moving a mixed header into Shared. |
+| Exit Criteria | Actual bounded state move has one board owner, all callers and fixtures use it, dual-width validation passes, P1/P2 pushed and tree clean. |
+| Original Owner Request | Make independent x86 Core and reusable IBM-PC boards without diverging four PC products. |
+| Similar-Issue Sweep | Audit every named clock consumer, configuration/reset path, deadline/advance callback, topology reader and affected private fixture. |
 
 ## S87 Admission Packet
 
