@@ -414,19 +414,7 @@ static lib_status core_machine_neutral_create(
         &config->instruction_timing, config->ticks_per_instruction);
     machine->maximum_instruction_ticks = core_machine_cpu_timing_maximum_ticks(
         machine->cpu_profile, &instruction_timing);
-    if (core_machine_clock_domain_initialize(&machine->dma_clock,
-            &config->clock_plan.dma) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&machine->pit_clock,
-            &config->clock_plan.pit) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&machine->auxiliary_pit_clock,
-            &config->clock_plan.auxiliary_pit) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&machine->rtc_clock,
-            &config->clock_plan.rtc) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&machine->vadp_clock,
-            &config->clock_plan.vadp) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&machine->kbc_clock,
-            &config->clock_plan.kbc) != LIB_STATUS_OK ||
-        core_machine_clock_domain_initialize(&machine->provider_clock,
+    if (core_machine_clock_domain_initialize(&machine->provider_clock,
             &config->clock_plan.provider) != LIB_STATUS_OK) {
         lib_release(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -498,6 +486,12 @@ static lib_status core_machine_board_create(core_machine *machine,
 {
     core_machine_port_provider_entry *port_checkpoint;
     lib_u8 dma_controller_count;
+
+    if (core_machine_board_initialize_clocks(machine,
+            &config->clock_plan) != LIB_STATUS_OK) {
+        core_machine_destroy(machine);
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
 
     dma_controller_count = config->dma_controller_count == 0u ?
         CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
@@ -786,12 +780,7 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     machine->retirement_eligibility_key_valid = LIB_FALSE;
     core_machine_transaction_reset(&machine->transaction);
     core_machine_timeline_reset(&machine->timeline);
-    core_machine_clock_domain_reset(&machine->dma_clock);
-    core_machine_clock_domain_reset(&machine->pit_clock);
-    core_machine_clock_domain_reset(&machine->auxiliary_pit_clock);
-    core_machine_clock_domain_reset(&machine->rtc_clock);
-    core_machine_clock_domain_reset(&machine->vadp_clock);
-    core_machine_clock_domain_reset(&machine->kbc_clock);
+    core_machine_board_reset_clocks(machine);
     core_machine_clock_domain_reset(&machine->provider_clock);
     machine->entry_plan_applied = LIB_FALSE;
     core_machine_cpu_diagnostic_reset(machine);

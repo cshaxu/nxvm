@@ -377,6 +377,9 @@ extern const core_machine_cpu_execution_diagnostic_provider
 void core_machine_board_reset_devices(core_machine *machine);
 void core_machine_board_finalize_devices(core_machine *machine);
 lib_bool core_machine_board_shutdown_resets(const core_machine *machine);
+lib_status core_machine_board_initialize_clocks(core_machine *machine,
+    const core_machine_clock_plan *plan);
+void core_machine_board_reset_clocks(core_machine *machine);
 lib_status core_machine_reconfigure_memory_core(core_machine *machine,
     lib_size memory_bytes);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,

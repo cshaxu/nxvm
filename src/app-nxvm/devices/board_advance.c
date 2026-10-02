@@ -1,6 +1,34 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine.h"
 
+lib_status core_machine_board_initialize_clocks(core_machine *machine,
+    const core_machine_clock_plan *plan)
+{
+    if (core_machine_clock_domain_initialize(&machine->dma_clock,
+            &plan->dma) != LIB_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->pit_clock,
+            &plan->pit) != LIB_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->auxiliary_pit_clock,
+            &plan->auxiliary_pit) != LIB_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->rtc_clock,
+            &plan->rtc) != LIB_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->vadp_clock,
+            &plan->vadp) != LIB_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->kbc_clock,
+            &plan->kbc) != LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
+    return LIB_STATUS_OK;
+}
+
+void core_machine_board_reset_clocks(core_machine *machine)
+{
+    core_machine_clock_domain_reset(&machine->dma_clock);
+    core_machine_clock_domain_reset(&machine->pit_clock);
+    core_machine_clock_domain_reset(&machine->auxiliary_pit_clock);
+    core_machine_clock_domain_reset(&machine->rtc_clock);
+    core_machine_clock_domain_reset(&machine->vadp_clock);
+    core_machine_clock_domain_reset(&machine->kbc_clock);
+}
+
 lib_u64 core_machine_board_dma_ticks(void *owner, lib_u64 source_ticks)
 {
     core_machine *machine = owner;
