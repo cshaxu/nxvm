@@ -56,28 +56,26 @@ typedef struct core_machine_memory_device_route {
     lib_u32 physical_start;
     lib_size bytes;
     core_machine_memory_device_callbacks callbacks;
+    lib_bool replacement;
 } core_machine_memory_device_route;
+
+typedef struct core_machine_memory_parity_config {
+    lib_size bytes;
+    core_machine_memory_parity_fault_observer fault;
+} core_machine_memory_parity_config;
 
 /* Configuration-only generic device registration.  Core owns checked routing;
  * the composition-owned callback context supplies all device semantics. */
-lib_status core_machine_enable_memory_parity(core_machine *machine,
-    lib_size bytes, core_machine_memory_parity_fault_observer fault, void *owner);
-
-lib_status core_machine_register_memory_write_observer(core_machine *machine,
-    core_machine_memory_write_observer callback, void *owner);
 lib_status core_machine_register_memory_device(core_machine *machine,
     lib_u32 physical_start, lib_size bytes,
     const core_machine_memory_device_callbacks *callbacks, void *owner);
-/* A board-owned selected decode replaces any lower ROM/RAM provider while its
- * query accepts the access; on decline the ordinary route remains intact. */
-lib_status core_machine_register_memory_replacement_device(core_machine *machine,
-    lib_u32 physical_start, lib_size bytes,
-    const core_machine_memory_device_callbacks *callbacks, void *owner);
-/* Publish all routes and the optional write observer as one owner transaction.
- * An observer-only registration has zero routes. */
+/* Publish routes, optional parity and optional write observer as one owner
+ * transaction. Replacement routes override lower ROM/RAM only when queried
+ * as present. An observer-only registration has zero routes. */
 lib_status core_machine_install_memory_device_routes(core_machine *machine,
     const core_machine_memory_device_route *routes, lib_size count,
-    core_machine_memory_write_observer observer, void *owner);
+    core_machine_memory_write_observer observer,
+    const core_machine_memory_parity_config *parity, void *owner);
 lib_status core_machine_remove_memory_device_routes(core_machine *machine,
     const void *owner);
 /* Copy bytes through the observational route without changing guest state. */

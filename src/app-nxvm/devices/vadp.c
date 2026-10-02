@@ -254,13 +254,13 @@ lib_status core_machine_vadp_configure(t_vadp *adapter,
     if (status == LIB_STATUS_OK && config->cga_vram_present)
         memory_routes[memory_route_count++] = (core_machine_memory_device_route) {
             CORE_MACHINE_VADP_VIDEO_BASE, CORE_MACHINE_VADP_VIDEO_BYTES,
-            { cga_read, cga_write, cga_query }};
+            { cga_read, cga_write, cga_query }, LIB_FALSE };
     if (status == LIB_STATUS_OK && config->ega_present) {
         if (config->ega_sequencer.planar_ega)
             memory_routes[memory_route_count++] = (core_machine_memory_device_route) {
                 CORE_MACHINE_VADP_EGA_APERTURE_BASE,
                 CORE_MACHINE_VADP_EGA_CPU_DECODE_BYTES,
-                { planar_read, planar_write, planar_query }};
+                { planar_read, planar_write, planar_query }, LIB_FALSE };
         {
             const lib_bool compaq = config->ega_personality ==
                 X86_VIDEO_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
@@ -278,7 +278,7 @@ lib_status core_machine_vadp_configure(t_vadp *adapter,
     if (status == LIB_STATUS_OK && (memory_route_count != 0u || config->ega_present))
         status = core_machine_install_memory_device_routes(adapter->machine,
             memory_routes, memory_route_count,
-            config->ega_present ? notify_write : LIB_NULL, candidate);
+            config->ega_present ? notify_write : LIB_NULL, LIB_NULL, candidate);
     if (status == LIB_STATUS_OK && route_count != 0u)
         status = core_machine_install_port_routes(adapter->machine, routes, route_count);
     if (status != LIB_STATUS_OK) {

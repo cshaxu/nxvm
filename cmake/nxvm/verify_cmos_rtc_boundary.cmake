@@ -37,7 +37,7 @@ foreach(required IN ITEMS "core_machine_pic_irq_source_assert"
     endif()
 endforeach()
 string(FIND "${board_source}" "lib_status core_machine_configure_rtc_cmos(" rtc_start)
-string(FIND "${board_source}" "lib_status core_machine_enable_memory_parity(" rtc_end)
+string(FIND "${board_source}" "lib_status core_machine_configure_planar_parity(" rtc_end)
 if(rtc_start LESS 0 OR rtc_end LESS rtc_start)
     message(FATAL_ERROR "CMOS RTC construction range is missing")
 endif()

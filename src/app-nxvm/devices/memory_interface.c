@@ -5,13 +5,6 @@
 
 
 
-lib_status core_machine_register_memory_write_observer(core_machine *machine,
-    core_machine_memory_write_observer callback, void *owner)
-{
-    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
-    return core_machine_memory_register_write_observer(&machine->executor_memory,
-        callback, owner);
-}
 lib_status core_machine_register_memory_device(core_machine *machine,
     lib_u32 physical_start, lib_size bytes,
     const core_machine_memory_device_callbacks *callbacks, void *owner)
@@ -23,20 +16,10 @@ lib_status core_machine_register_memory_device(core_machine *machine,
         owner);
 }
 
-lib_status core_machine_register_memory_replacement_device(core_machine *machine,
-    lib_u32 physical_start, lib_size bytes,
-    const core_machine_memory_device_callbacks *callbacks, void *owner)
-{
-    if (callbacks == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
-    return core_machine_memory_register_replacement_device_provider(
-        &machine->executor_memory, physical_start, bytes, callbacks->read,
-        callbacks->write, callbacks->query, owner);
-}
-
 lib_status core_machine_install_memory_device_routes(core_machine *machine,
     const core_machine_memory_device_route *routes, lib_size count,
-    core_machine_memory_write_observer observer, void *owner)
+    core_machine_memory_write_observer observer,
+    const core_machine_memory_parity_config *parity, void *owner)
 {
     t_ram *memory;
     lib_size provider_count;
@@ -44,7 +27,8 @@ lib_status core_machine_install_memory_device_routes(core_machine *machine,
     lib_status status = LIB_STATUS_OK;
 
     if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
-    if (owner == LIB_NULL || (count == 0u && observer == LIB_NULL) ||
+    if (owner == LIB_NULL || (count == 0u && observer == LIB_NULL &&
+        parity == LIB_NULL) ||
         (count != 0u && routes == LIB_NULL)) return LIB_STATUS_INVALID_ARGUMENT;
     memory = &machine->executor_memory;
     for (lib_size index = 0u; index < memory->connect.device_provider_count; ++index)
@@ -55,12 +39,21 @@ lib_status core_machine_install_memory_device_routes(core_machine *machine,
             return LIB_STATUS_INVALID_STATE;
     provider_count = memory->connect.device_provider_count;
     observer_count = memory->connect.write_observer_count;
+    if (parity != LIB_NULL) {
+        status = core_machine_memory_enable_parity(memory, parity->bytes,
+            parity->fault, owner);
+        if (status != LIB_STATUS_OK) return status;
+    }
     for (lib_size index = 0u; index < count; ++index) {
         const core_machine_memory_device_route *route = &routes[index];
 
-        status = core_machine_memory_register_device_provider(memory,
-            route->physical_start, route->bytes, route->callbacks.read,
-            route->callbacks.write, route->callbacks.query, owner);
+        status = route->replacement ?
+            core_machine_memory_register_replacement_device_provider(memory,
+                route->physical_start, route->bytes, route->callbacks.read,
+                route->callbacks.write, route->callbacks.query, owner) :
+            core_machine_memory_register_device_provider(memory,
+                route->physical_start, route->bytes, route->callbacks.read,
+                route->callbacks.write, route->callbacks.query, owner);
         if (status != LIB_STATUS_OK) break;
     }
     if (status == LIB_STATUS_OK && observer != LIB_NULL)
@@ -68,6 +61,7 @@ lib_status core_machine_install_memory_device_routes(core_machine *machine,
     if (status != LIB_STATUS_OK) {
         memory->connect.device_provider_count = provider_count;
         memory->connect.write_observer_count = observer_count;
+        if (parity != LIB_NULL) core_machine_memory_release_parity(memory);
     }
     return status;
 }
@@ -78,6 +72,8 @@ lib_status core_machine_remove_memory_device_routes(core_machine *machine,
     if (machine == LIB_NULL || owner == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (machine->lifecycle == CORE_MACHINE_RUNNING) return LIB_STATUS_INVALID_STATE;
     core_machine_memory_unregister_owner(&machine->executor_memory, owner);
+    if (machine->executor_memory.connect.parity_owner == owner)
+        core_machine_memory_release_parity(&machine->executor_memory);
     return LIB_STATUS_OK;
 }
 

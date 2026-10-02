@@ -5,6 +5,14 @@
 #define CORE_MACHINE_D4_CONTROL_WINDOW_BYTES 4096u
 #define CORE_MACHINE_D4_SETUP_BANK_START 0x00100000u
 #define CORE_MACHINE_D4_SETUP_BANK_BYTES 0x00e00000u
+
+static core_machine_d4_memory *core_machine_d4_state(void *owner)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    return machine == LIB_NULL ? LIB_NULL : &machine->d4_memory;
+}
+
 /* In the selected D4 setup, low nibble 1 disconnects every extension-RAM
  * bank below F00000h.  This is an External-L2 board relation, cross-checked
  * against the selected DeskPro reference model; it deliberately does not
@@ -17,7 +25,7 @@ static lib_i32 core_machine_d4_setup_blocks_extension(const core_machine_d4_memo
 static lib_status core_machine_d4_setup_read(void *opaque, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
-    core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
+    const core_machine_d4_memory *memory = core_machine_d4_state(opaque);
 
     (void)physical;
     (void)observe_only;
@@ -31,7 +39,7 @@ static lib_status core_machine_d4_setup_read(void *opaque, lib_u32 physical,
 static lib_status core_machine_d4_setup_write(void *opaque, lib_u32 physical,
     lib_uptr source, lib_uptr bytes)
 {
-    core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
+    const core_machine_d4_memory *memory = core_machine_d4_state(opaque);
 
     (void)physical;
     (void)source;
@@ -43,7 +51,7 @@ static lib_status core_machine_d4_setup_write(void *opaque, lib_u32 physical,
 static lib_status core_machine_d4_setup_query(void *opaque, lib_u32 physical,
     lib_uptr bytes, core_machine_memory_access access)
 {
-    core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
+    const core_machine_d4_memory *memory = core_machine_d4_state(opaque);
 
     (void)physical;
     (void)bytes;
@@ -55,7 +63,7 @@ static lib_status core_machine_d4_setup_query(void *opaque, lib_u32 physical,
 static lib_status core_machine_d4_control_read(void *opaque, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)
 {
-    core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
+    core_machine_d4_memory *memory = core_machine_d4_state(opaque);
     lib_u32 offset;
 
     (void)observe_only;
@@ -75,7 +83,7 @@ static lib_status core_machine_d4_control_read(void *opaque, lib_u32 physical,
 static lib_status core_machine_d4_control_write(void *opaque, lib_u32 physical,
     lib_uptr source, lib_uptr bytes)
 {
-    core_machine_d4_memory *memory = (core_machine_d4_memory *)opaque;
+    core_machine_d4_memory *memory = core_machine_d4_state(opaque);
     lib_u32 offset;
 
     if (memory == LIB_NULL || source == 0u || bytes != 1u ||
@@ -132,31 +140,31 @@ lib_i32 core_machine_d4_memory_config_is_valid(const core_machine_d4_memory_conf
 lib_status core_machine_d4_memory_configure(core_machine *machine,
     const core_machine_d4_memory_config *config)
 {
-    static const core_machine_memory_device_callbacks control_callbacks = {
-        core_machine_d4_control_read, core_machine_d4_control_write, core_machine_d4_control_query };
-    static const core_machine_memory_device_callbacks setup_callbacks = {
-        core_machine_d4_setup_read, core_machine_d4_setup_write, core_machine_d4_setup_query };
+    static const core_machine_memory_device_route routes[2] = {
+        { CORE_MACHINE_D4_SETUP_BANK_START, CORE_MACHINE_D4_SETUP_BANK_BYTES,
+            { core_machine_d4_setup_read, core_machine_d4_setup_write,
+                core_machine_d4_setup_query }, LIB_TRUE },
+        { CORE_MACHINE_D4_CONTROL_PHYSICAL, CORE_MACHINE_D4_CONTROL_WINDOW_BYTES,
+            { core_machine_d4_control_read, core_machine_d4_control_write,
+                core_machine_d4_control_query }, LIB_TRUE }
+    };
+    static const core_machine_memory_parity_config parity = {
+        1024u * 1024u, core_machine_d4_parity_fault
+    };
     lib_status status;
 
     if (machine == LIB_NULL || !core_machine_d4_memory_config_is_valid(config) ||
         machine->d4_memory.configured) return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_install_memory_device_routes(machine, routes, 2u,
+        core_machine_d4_memory_write_observer, &parity, machine);
+    if (status != LIB_STATUS_OK) return status;
     machine->d4_memory.diagnostic_low = config->diagnostic_low;
     machine->d4_memory.diagnostic_high = config->diagnostic_high;
     machine->d4_memory.reset_ram_setup = config->ram_setup;
     machine->d4_memory.ram_setup = config->ram_setup;
     machine->d4_memory.configured = LIB_TRUE;
     core_machine_d4_memory_reset(machine);
-    status = core_machine_register_memory_replacement_device(machine, CORE_MACHINE_D4_SETUP_BANK_START,
-        CORE_MACHINE_D4_SETUP_BANK_BYTES, &setup_callbacks, &machine->d4_memory);
-    if (status != LIB_STATUS_OK) return status;
-    status = core_machine_register_memory_replacement_device(machine, CORE_MACHINE_D4_CONTROL_PHYSICAL,
-        CORE_MACHINE_D4_CONTROL_WINDOW_BYTES, &control_callbacks, &machine->d4_memory);
-    if (status != LIB_STATUS_OK) return status;
-    status = core_machine_enable_memory_parity(machine, 1024u * 1024u,
-        core_machine_d4_parity_fault, machine);
-    if (status != LIB_STATUS_OK) return status;
-    return core_machine_register_memory_write_observer(machine,
-        core_machine_d4_memory_write_observer, machine);
+    return LIB_STATUS_OK;
 }
 
 void core_machine_d4_memory_reset(core_machine *machine)

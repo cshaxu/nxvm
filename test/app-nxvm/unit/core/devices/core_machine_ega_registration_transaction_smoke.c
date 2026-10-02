@@ -197,24 +197,24 @@ lib_i32 main(void)
     {
         lib_i32 candidate_owner = 0;
         const core_machine_memory_device_route routes[2] = {
-            { 0x8000u, 1u, { ignored_read, ignored_device_write, ignored_query }},
-            { 0x9000u, 1u, { ignored_read, ignored_device_write, ignored_query }}
+            { 0x8000u, 1u, { ignored_read, ignored_device_write, ignored_query }, LIB_FALSE },
+            { 0x9000u, 1u, { ignored_read, ignored_device_write, ignored_query }, LIB_FALSE }
         };
 
         failed |= !register_provider_fillers(memory, &filler,
             CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT - 1u);
         failed |= core_machine_install_memory_device_routes(&machine, routes, 2u,
-            ignored_write, &candidate_owner) !=
+            ignored_write, LIB_NULL, &candidate_owner) !=
             LIB_STATUS_NO_MEMORY;
         failed |= !is_unconfigured(&adapter, memory, 0u,
             CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT - 1u);
         core_machine_memory_unregister_owner(memory, &filler);
         failed |= core_machine_install_memory_device_routes(&machine, routes, 2u,
-            ignored_write, &candidate_owner) != LIB_STATUS_OK;
+            ignored_write, LIB_NULL, &candidate_owner) != LIB_STATUS_OK;
         failed |= memory->connect.device_provider_count != 2u ||
             memory->connect.write_observer_count != 1u;
         failed |= core_machine_install_memory_device_routes(&machine, routes, 2u,
-            ignored_write, &candidate_owner) != LIB_STATUS_INVALID_STATE ||
+            ignored_write, LIB_NULL, &candidate_owner) != LIB_STATUS_INVALID_STATE ||
             memory->connect.device_provider_count != 2u ||
             memory->connect.write_observer_count != 1u;
         failed |= core_machine_remove_memory_device_routes(&machine,

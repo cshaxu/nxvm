@@ -597,13 +597,6 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_enable_memory_parity(core_machine *machine,
-    lib_size bytes, core_machine_memory_parity_fault_observer fault, void *owner)
-{
-    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
-    return core_machine_memory_enable_parity(&machine->executor_memory, bytes,
-        fault, owner);
-}
 lib_status core_machine_configure_planar_parity(core_machine *machine,
     const core_machine_planar_parity_config *config)
 {

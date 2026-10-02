@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S16 is accepted: VADP memory routes and observational snapshot
-backing are Core-bounded without changing video semantics. S1-S16 are
-accepted; T540 remains open for D4/ROM memory, neutral Core and IBM-PC board
+M5 T540 S17 is active: make Model-40 D4 replacement windows, parity and
+write observer one failure-atomic Core memory configuration. S1-S16 are
+accepted; T540 remains open for ROM memory, neutral Core and IBM-PC board
 extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -516,6 +516,27 @@ one Core mapping table, one VADP chip owner, and no raw memory access in the
 VADP adapter. Only NXVM-owned files changed; Shared, MyNES and adjacent INIs
 remain untouched. S17 owns D4 memory/parity, S18 owns ROM/reset aliases;
 neutral Core and IBM-PC board relocation remain open.
+
+## T540 S17 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S17, next linear S after accepted S16. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 subtasks applies. Target NXVM only; Shared and MyNES remain read-only. The S16 handoff assigns Model-40 D4 memory/parity to this separate owner boundary. |
+| Objective | Publish Model-40 D4's two replacement windows, parity allocation and write observer atomically through Core's sole memory owner, preserving D4 reset and fault behavior. |
+| Non-goals | ROM/reset aliases (S18), KBC/DMA memory cycles (S19), D4 protocol/timing reinterpretation, generic device framework, profile/INI/firmware/media changes, Core or board physical relocation. |
+| Reference Baseline | Accepted S16 P1 `1fc8b2054` and P2 `6b6f13b65`; both-width complete units 467/467, focused EGA integration 1/1 per width, specialized gates, eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [Core/board handoff](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md), and [S16 evidence](../etc/evidence/t540-s16-vadp-memory-routes.md). |
+| Files And ABI Surface | NXVM `devices/{d4_memory,memory_interface,memory,machine_board,vadp}` and affected D4/Model-40 tests plus owner-local transaction test, static gates, S17 evidence and eight 0540 products. Extend only Core's existing typed memory batch to express replacement routes and optional parity; delete unused separate D4 memory wrappers. |
+| Applicable Rules | Core remains the sole mapping/parity table. Prepare D4 configuration before publication; on failure retain unrelated owners and no D4 provider, observer, parity or configured state. On success retain one D4 owner and unchanged reset/IOCHK semantics. Do not move D4 into shared IBM-PC code. |
+| Verification | Inject first/second replacement-route, parity-conflict and observer-capacity failures; verify rollback and retry, Model-40 windows, parity fault and reset. Run focused D4/Model-40 tests, complete repository-only x64/x86 units, specialized/documentation gates, affected external checkpoint, eight Release products with PE/hash/no-debug proof, and staged actual-diff review. |
+| Expected Markers | No separate stepwise D4 registration path or partial `configured`; one Core memory table, one owner identity for D4 routes/parity/observer, unchanged D4 reset/IOCHK behavior, no new timing grade. |
+| Asset Needs | Existing selected BYOB build roots only; preserve adjacent INIs, all Shared and MyNES files. |
+| Reporting Requirements | Record actual source/test added/removed/net lines, each failure injection and surviving owner, D4 reset/parity proof, eight artifact hashes and remaining S18 ROM receiver. |
+| Stop Conditions | Split an oversized unstarted remainder into the next numeric S before implementation; stop before a second memory registry, D4-in-common move, unapproved Shared/MyNES change, or D4 hardware semantics change. |
+| Exit Criteria | D4 configuration is failure-atomic with Core-bounded replacement routes/parity/observer; old piecemeal path is deleted; affected regressions and complete dual-width gates/products pass. |
+| Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal, individually tracked cuts before extracting them for independent PC Apps. |
+| Similar-Issue Sweep | Search D4 and other board adapters for stepwise memory publication with parity/observer; consume D4 here, retain ROM/reset aliases for S18 and KBC/DMA cycles for S19. |
 
 ## S87 Admission Packet
 

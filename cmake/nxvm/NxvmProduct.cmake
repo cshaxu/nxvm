@@ -1343,6 +1343,9 @@ add_executable(core-machine-d4-platform-s4-smoke
     test/app-nxvm/unit/core/devices/core_machine_d4_platform_s4_smoke.c
 )
 target_link_libraries(core-machine-d4-platform-s4-smoke PRIVATE core-machine)
+add_executable(core-machine-d4-memory-transaction-smoke
+    test/app-nxvm/unit/core/devices/core_machine_d4_memory_transaction_smoke.c)
+target_link_libraries(core-machine-d4-memory-transaction-smoke PRIVATE core-machine)
 add_executable(core-machine-rtc-cmos-s3-smoke
     test/app-nxvm/unit/core/devices/core_machine_rtc_cmos_s3_smoke.c
 )
@@ -1959,6 +1962,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-pit-irq0-s2-smoke
     core-machine-auxiliary-pit-s3-smoke
     core-machine-d4-platform-s4-smoke
+    core-machine-d4-memory-transaction-smoke
     core-machine-rtc-cmos-s3-smoke
     core-machine-pic-irq-lifecycle-smoke
     core-machine-pic-command-priority-smoke
@@ -3112,6 +3116,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VADP Core-owned memory routes and copied inspection"
         VERBATIM)
 
+    add_custom_target(verify-d4-memory-routes
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_d4_memory_routes.cmake"
+        COMMENT "Verifying D4 Core-owned atomic memory routes and parity"
+        VERBATIM)
+
     add_custom_target(verify-rational-clock-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rational_clock_boundary.cmake"
@@ -3316,6 +3326,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-hdc-port-routes
     verify-vadp-port-routes
     verify-vadp-memory-routes
+    verify-d4-memory-routes
     verify-rational-clock-boundary
     verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary
