@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"

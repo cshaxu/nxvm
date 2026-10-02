@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 static lib_status overlay_read(void *opaque, lib_u32 physical,
     lib_uptr destination, lib_uptr bytes, lib_bool observe_only)

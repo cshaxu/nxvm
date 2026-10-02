@@ -1,4 +1,5 @@
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
 static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes);

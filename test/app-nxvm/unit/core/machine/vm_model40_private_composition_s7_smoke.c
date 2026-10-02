@@ -1,4 +1,5 @@
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "support/kbc_fixture.h"
 #include <stdio.h>
 

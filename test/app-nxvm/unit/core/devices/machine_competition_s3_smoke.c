@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/transaction.h"
 #include "support/core_machine_board_fixture.h"
 

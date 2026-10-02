@@ -1,4 +1,5 @@
 #include "../../../support/hdc.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "../devices/support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include "support/kbc_fixture.h"

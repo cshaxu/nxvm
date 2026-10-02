@@ -1,4 +1,5 @@
 #include "support/cpu_board_limit_fixture.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/pic_fixture.h"
 #include "app-nxvm/devices/debug_interface.h"

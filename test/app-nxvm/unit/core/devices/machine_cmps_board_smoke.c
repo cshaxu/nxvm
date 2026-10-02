@@ -2,7 +2,7 @@
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/pic_fixture.h"
 #include "app-nxvm/devices/device_support.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
 #define CMPS_FLAGS (VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | \

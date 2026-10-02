@@ -3,7 +3,7 @@
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/debug_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 lib_i32 main(void)
 {

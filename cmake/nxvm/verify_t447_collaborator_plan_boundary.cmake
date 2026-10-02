@@ -5,7 +5,7 @@ endif()
 set(project_t447_s6_contracts
     "src/app-nxvm/devices/media_interface.h|core_machine_media_registry"
     "src/app-nxvm/devices/display_interface.h|core_machine_display_provider_slot"
-    "src/app-nxvm/devices/machine_interface.h|core_machine_plan")
+    "src/app-nxvm/devices/machine_board_interface.h|core_machine_plan")
 
 foreach(project_t447_s6_contract IN LISTS project_t447_s6_contracts)
     string(REPLACE "|" ";" project_t447_s6_parts "${project_t447_s6_contract}")
@@ -22,7 +22,7 @@ foreach(project_t447_s6_contract IN LISTS project_t447_s6_contracts)
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_interface.h"
     project_t447_s6_machine_contract)
 foreach(project_t447_s6_retired
         "core_machine_plan_memory_device"

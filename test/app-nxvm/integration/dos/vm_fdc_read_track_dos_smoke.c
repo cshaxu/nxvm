@@ -6,7 +6,7 @@
 
 #include "app-nxvm/devices/fdc.h"
 #include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/memory_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/waiting.h"

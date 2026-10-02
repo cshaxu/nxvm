@@ -7,7 +7,7 @@
 #include "x86/chips/cpu/cpu_instructions.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 typedef struct fpu_interface_s65_machine {

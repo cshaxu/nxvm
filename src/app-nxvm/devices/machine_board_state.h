@@ -2,6 +2,7 @@
 #define CORE_MACHINE_BOARD_STATE_H
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/pit_bus.h"
 #include "app-nxvm/devices/dma_bus.h"
@@ -125,6 +126,14 @@ lib_status core_machine_configure_fdc(core_machine *machine,
 lib_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology);
 void core_machine_board_reset_devices(core_machine *machine);
+/* Private board construction failure seams use the one production factory. */
+lib_status core_machine_create_with_test_memory_allocation(
+    const core_machine_config *config, core_machine **out_machine,
+    core_machine_memory_test_allocation *test_allocation);
+lib_status core_machine_create_with_test_port_allocation(
+    const core_machine_config *config, core_machine **out_machine,
+    core_machine_port_test_allocation *test_allocation);
+lib_i32 core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 lib_i32 core_machine_board_config_is_valid(const core_machine_config *config);
 lib_status core_machine_board_create(core_machine *machine,
     const core_machine_config *config);

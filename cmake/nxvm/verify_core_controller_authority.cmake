@@ -15,6 +15,26 @@ foreach(source IN ITEMS "${machine_source}" "${machine_lifecycle_source}" "${mac
 endforeach()
 
 file(READ "${machine_source}" machine_board_text)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h" neutral_contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_interface.h" board_contract)
+foreach(forbidden IN ITEMS "machine_board_interface.h" "controller_interface.h"
+    "display_interface.h" "pic_bus_interface.h" "fdc_observation_interface.h"
+    "core_machine_config" "core_machine_clock_plan" "core_machine_plan_topology"
+    "core_machine_keyboard_topology" "core_machine_display_config")
+    string(FIND "${neutral_contract}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "Neutral public contract retains board dependency: ${forbidden}")
+    endif()
+endforeach()
+foreach(required IN ITEMS "machine_interface.h" "core_machine_config"
+    "core_machine_clock_plan" "core_machine_plan_topology"
+    "core_machine_create(" "core_machine_plan_create("
+    "core_machine_configure_display(" "core_machine_configure_dma(")
+    string(FIND "${board_contract}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "Board public contract lacks migrated declaration: ${required}")
+    endif()
+endforeach()
 file(READ "${machine_lifecycle_source}" machine_lifecycle_text)
 foreach(forbidden IN ITEMS "const core_machine_config *"
     "config->clock_plan" "core_machine_create_internal("

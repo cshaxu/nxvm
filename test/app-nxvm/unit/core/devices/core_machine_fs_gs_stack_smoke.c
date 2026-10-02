@@ -1,4 +1,5 @@
 #include "support/core_machine_board_fixture.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/device_support.h"
 #include <stdio.h>
 

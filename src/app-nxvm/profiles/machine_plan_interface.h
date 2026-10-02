@@ -5,7 +5,7 @@
 #include "app-nxvm/profiles/selection_interface.h"
 
 #include "app-nxvm/devices/firmware_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/profiles/device/floppy.h"
 
 typedef struct vm_profile_machine_plan vm_profile_machine_plan;

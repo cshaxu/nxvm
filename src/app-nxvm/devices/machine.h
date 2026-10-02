@@ -251,13 +251,6 @@ lib_status core_machine_neutral_create(
     core_machine_port_test_allocation *port_test_allocation,
     core_machine **out_machine);
 
-/* Private test-only create seam; the public create contract remains unchanged. */
-lib_status core_machine_create_with_test_memory_allocation(
-    const core_machine_config *config, core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation);
-lib_status core_machine_create_with_test_port_allocation(
-    const core_machine_config *config, core_machine **out_machine,
-    core_machine_port_test_allocation *test_allocation);
 lib_u32 core_machine_linear_pc(const core_machine *machine);
 void core_machine_external_cycle_invalidate(core_machine *machine);
 extern const core_machine_cpu_bus_provider core_machine_cpu_bus;
@@ -312,5 +305,4 @@ lib_i32 core_machine_external_access_wait_windows_are_valid(
     const core_machine_external_access_wait_window *windows);
 lib_i32 core_machine_transaction_contract_is_valid(
     const core_machine_transaction_contract *contract);
-lib_i32 core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 #endif

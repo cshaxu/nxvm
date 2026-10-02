@@ -3,7 +3,7 @@
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/debug_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 #define UD_S1_GDT_BASE 0x0300u
 #define UD_S1_IDT_BASE 0x0400u

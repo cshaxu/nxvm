@@ -1,6 +1,7 @@
 #ifndef CORE_MACHINE_D4_MEMORY_H
 #define CORE_MACHINE_D4_MEMORY_H
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 
 #include "app-nxvm/devices/memory_interface.h"

@@ -1,4 +1,5 @@
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
 #include "app-nxvm/profiles/device/floppy.h"

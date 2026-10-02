@@ -1,5 +1,6 @@
 /* Repository guest firmware and synthetic media only; no external asset files. */
 #include "app-nxvm/profiles/machine_plan_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "lib/types/file.h"
 

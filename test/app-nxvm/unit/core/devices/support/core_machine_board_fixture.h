@@ -2,6 +2,7 @@
 #define TEST_CORE_MACHINE_BOARD_FIXTURE_H
 
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "x86/chips/cpu/cpu.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"

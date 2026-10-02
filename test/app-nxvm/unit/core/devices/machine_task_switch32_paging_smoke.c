@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/entry_plan_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 #define GDT_POINTER 0x0100u
 #define GDT_BASE 0x0300u

@@ -4,7 +4,7 @@
 #include "core_machine_board_fixture.h"
 #include "x86/chips/cpu/cpu.h"
 #include "app-nxvm/devices/device_support.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 /* Board-owned descriptor loading and fault delivery, not a CPU cache edit. */
 static lib_i32 test_cpu_board_limit_prepare_exact(core_machine **out_machine,

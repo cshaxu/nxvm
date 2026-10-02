@@ -3,7 +3,7 @@
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/vadp.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 static void ignored_write(void *owner, lib_u32 physical,
     lib_uptr bytes)

@@ -5,11 +5,10 @@
 
 #include <windows.h>
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/hdc.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/machine/waiting.h"
-#include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 
 #define VM_ATA253_BOOT_BUDGET 6000000u

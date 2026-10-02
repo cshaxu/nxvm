@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S66 is active: separate public board construction/topology and
-observation values from the neutral Core interface. S1-S65 are accepted;
+M5 T540 S66 has verified its public board construction/topology and
+observation boundary; actual P1 review and acceptance remain. S1-S65 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -86,7 +86,7 @@ the completed CPU extraction.
 | T540 S63 | Accepted: neutral private header no longer defines board plan/topology or includes concrete chips; both-width units/gates and eight boots pass. |
 | T540 S64 | Accepted: measured 694-line/174-includer public interface and split its distinct owner boundaries into linear S65-S70 receivers; no source change. |
 | T540 S65 | Accepted: one board composition supplies thirteen neutral constructor fields; both-width units/gates and eight single boots pass. |
-| T540 S66 | Active: public board configuration, topology and observation value boundary. |
+| T540 S66 | Verified delivery awaiting actual P1 review: board values and dependent declarations have one owner; both-width units/gates and eight boot checkpoints pass. |
 
 ## T540 S1 Acceptance
 
@@ -2291,10 +2291,10 @@ Core reset/clock/NMI/finalization calls remain with their named receivers.
 | Identifier Mode | Continuation M5 T540 S66, next numeric S after accepted S65. |
 | Admission And Approval | Owner standing automatic bounded-S admission; NXVM only, Shared/MyNES read-only. |
 | Objective | Give public board construction, topology and observation values their explicit board owner, removing their definitions and concrete chip dependencies from the neutral Core interface. |
-| Non-goals | Runtime operation changes, remaining board operation cut (S67), Core lifecycle handoff (S68), independent compile (S69), physical Shared move (S70), timing/behavior/profile/INI/asset changes. |
+| Non-goals | Runtime operation changes, neutral validator implementation cut (S67), Core lifecycle handoff (S68), independent compile (S69), physical Shared move (S70), timing/behavior/profile/INI/asset changes. |
 | Reference Baseline | S65 P1 `c6ce9b84c`; [S64 intake](../etc/evidence/t540-s64-public-interface-intake.md) and [S65 evidence](../etc/evidence/t540-s65-neutral-construction-input.md). |
 | Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | Public machine/controller/display/clock/topology value definitions, their directly dependent declarations and actual source/test consumers; inventory type dependencies before the atomic owner cut. |
+| Files And ABI Surface | Move board constants, clock plan, full construction config, keyboard/XT enums, controller timing rules, display/RTC/parity/D4/DMA/media topology and copied observations into `machine_board_interface.h`. Move their adjacent board API declarations atomically (including by-value XT fault enum); repair only concrete consumers. Move private board create-test/clock-plan declarations from `machine.h` to board state. Keep function bodies, symbols, enum values and layouts unchanged; no reverse include or forwarding header. |
 | Applicable Rules | One definition per value, no forwarding compatibility header, copied observations, one frozen input plan, explicit includes and unchanged numeric/ABI semantics. |
 | Expected Markers | Neutral execution/time values remain Core-owned; board value definitions have one public board interface and every concrete consumer includes that owner. No duplicate definition or runtime mirror. |
 | Verification | Complete x64/x86 units, specialized/documentation gates, affected constructor/plan/observation tests, eight optimized 0540 products if production inputs change and one external boot per profile/width. |
@@ -2304,6 +2304,21 @@ Core reset/clock/NMI/finalization calls remain with their named receivers.
 | Exit Criteria | Complete P1 pushed, actual-diff review, governance P2 pushed, required checks and artifacts correct, worktree clean. |
 | Similar-Issue Sweep | All direct public interface consumers, transitive concrete chip includes, plan construction, copied observations and boundary gates. |
 | Original Owner Request | Build reusable neutral x86 Core and flat IBM-PC common/AT/XT components with single ownership and no patch-layered architecture. |
+
+## T540 S66 Delivery
+
+The neutral public contract shrinks from 694 to 305 lines. All six board
+declaration blocks are verbatim at the new explicit owner; 210 consumer files
+change only their includes. Private board construction seams move with their
+owner. No runtime implementation, numeric value, layout, Shared or MyNES
+source, owner INI or external asset changes. Five remaining neutral validators
+defined in board plan are explicitly assigned to S67; S68-S70 remain open.
+
+Both-width complete units pass **469/469** each, specialized and documentation
+gates pass, eight optimized/debug-stripped 0540 products are rebuilt and the
+eight receiving external boot rows pass. See the
+[S66 evidence](../etc/evidence/t540-s66-public-board-interface.md).
+This delivery awaits actual-commit coordinator review, not T closure.
 
 ## S87 Admission Packet
 

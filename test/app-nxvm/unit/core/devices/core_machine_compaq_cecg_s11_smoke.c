@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/vadp.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 static lib_i32 t386_s11_query_route(t_ram *memory, core_machine_memory_route expected)
 {

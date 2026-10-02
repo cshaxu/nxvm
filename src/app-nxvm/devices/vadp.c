@@ -1,6 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 #include "app-nxvm/devices/vadp.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 typedef struct video_port_route {
     lib_u16 address;

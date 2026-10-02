@@ -2,7 +2,7 @@
 
 #include "app-nxvm/machine/machine_private.h"
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/display.h"

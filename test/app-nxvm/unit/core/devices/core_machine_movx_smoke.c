@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "support/core_machine_board_fixture.h"
 
 #define MOVX_SOURCE_MEMORY 0x5000u

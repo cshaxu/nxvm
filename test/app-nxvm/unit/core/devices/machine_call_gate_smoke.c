@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "x86/chips/cpu/cpu.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 #define CALL_GATE_GDT_POINTER 0x0100u

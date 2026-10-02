@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 #define OAS_GDT_POINTER 0x0100u
 #define OAS_GDT_ADDRESS 0x0300u

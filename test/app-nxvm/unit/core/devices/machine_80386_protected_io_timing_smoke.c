@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 #define TIMING_S7_RESET_LINEAR 0xfffffff0u

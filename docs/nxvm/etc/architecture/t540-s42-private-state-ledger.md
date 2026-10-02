@@ -92,6 +92,9 @@ firmware context remains an operation guard, not a second machine owner.
    owns this revised numeric receiver map.
    S65 moves the two construction calls to board composition with a temporary
    neutral executor value; S68 retains four reset/clock/NMI/finalization calls.
+   S66 moves adjacent public board operation declarations with their types;
+   S67 receives the remaining five neutral validators implemented in board
+   `machine_plan.c`, rather than repeat an already completed declaration cut.
 8. **S70** — Move only proven neutral source/tests to `src/x86/core` and
    `test/x86/core`, delete App copies, reconnect NXVM, verify independent
    Shared build/tests, both widths and four fixed-profile boots. S71 onward

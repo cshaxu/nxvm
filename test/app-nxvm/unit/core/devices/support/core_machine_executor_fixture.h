@@ -2,7 +2,7 @@
 #ifndef TEST_CORE_MACHINE_EXECUTOR_FIXTURE_H
 #define TEST_CORE_MACHINE_EXECUTOR_FIXTURE_H
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 static lib_status test_core_machine_create_executor(
     lib_size memory_bytes,

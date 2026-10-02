@@ -2,6 +2,7 @@
 #define TEST_CPU_BOARD_IRQ_FIXTURE_H
 
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"

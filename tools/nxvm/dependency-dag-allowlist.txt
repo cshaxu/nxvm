@@ -1,5 +1,6 @@
 # Exact temporary source-owner edges.  Every entry is a direct include audited
-# by T533 S3; remove it with the include rather than silently widening a layer.
+# by T533 S3; T540 S66 makes four existing board-value consumers explicit.
+# Remove each edge with its consumer rather than silently widening a layer.
 src/app-nxvm/machine/control.c|app-nxvm/devices
 src/app-nxvm/machine/debug.h|app-nxvm/devices
 src/app-nxvm/machine/debug_adapter.c|app-nxvm/devices
@@ -25,11 +26,15 @@ src/app-nxvm/machine/waiting.h|app-nxvm/devices
 src/app-nxvm/profiles/default_profile/external_pc_at_rom.c|app-nxvm/devices
 src/app-nxvm/profiles/default_profile/external_pc_at_rom.h|app-nxvm/devices
 src/app-nxvm/profiles/default_profile/keyboard_mapper.c|app-nxvm/devices
+src/app-nxvm/profiles/default_profile/pc_at_profile.c|app-nxvm/devices
 src/app-nxvm/profiles/default_profile/pc_at_profile_private.h|app-nxvm/devices
 src/app-nxvm/profiles/device/floppy.h|app-nxvm/devices
 src/app-nxvm/profiles/machine_plan_interface.h|app-nxvm/devices
+src/app-nxvm/profiles/machine_plan.c|app-nxvm/devices
 src/app-nxvm/profiles/profile_contract_interface.h|app-nxvm/devices
 src/app-nxvm/profiles/model40/composition.c|app-nxvm/devices
 src/app-nxvm/profiles/model40/composition_interface.h|app-nxvm/devices
 src/app-nxvm/profiles/model40/model40_private.h|app-nxvm/devices
+src/app-nxvm/profiles/model40/model40.c|app-nxvm/devices
 src/app-nxvm/profiles/xt/xt_5160_268.h|app-nxvm/devices
+src/app-nxvm/profiles/xt/xt_5160_268.c|app-nxvm/devices

@@ -4,7 +4,7 @@
 #include "lib/types/types_interface.h"
 #include "x86/chips/cpu/cpu_interface.h"
 #include "app-nxvm/devices/debug_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 #define TEST_PROTECTED_16_GDT_POINTER 0x0100u
 #define TEST_PROTECTED_16_GDT_BASE 0x0300u

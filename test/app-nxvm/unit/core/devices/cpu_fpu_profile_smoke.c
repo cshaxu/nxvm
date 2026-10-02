@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "x86/chips/cpu/cpu_instructions.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 static lib_i32 verify_machine_profiles(core_machine_cpu_profile cpu_profile,
     x86_fpu_profile fpu_profile)

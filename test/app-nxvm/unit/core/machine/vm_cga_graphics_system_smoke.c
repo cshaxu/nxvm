@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/entry_plan_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/session_assets.h"

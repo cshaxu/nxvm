@@ -5,7 +5,7 @@
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/chips/fpu/fpu_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/profiles/profile_contract_interface.h"
 

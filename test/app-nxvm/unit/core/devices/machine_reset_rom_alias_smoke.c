@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/firmware_interface.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 static lib_status reset_rom_configure(void *opaque,
     core_machine_firmware_context *firmware)

@@ -4,7 +4,7 @@
 
 #include "x86/chips/cpu/cpu.h"
 #include "app-nxvm/devices/debug_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 #define GDT_PTR 0x0100u
 #define IDT_PTR 0x0110u

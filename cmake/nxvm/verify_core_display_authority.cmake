@@ -14,7 +14,7 @@ if(machine_header MATCHES "t_vadp[ \t]+shared_vadp;" OR
 endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" board_display_source)
 set(core_source "${core_plan_source}${core_display_source}${board_display_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)

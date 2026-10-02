@@ -1,4 +1,5 @@
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"

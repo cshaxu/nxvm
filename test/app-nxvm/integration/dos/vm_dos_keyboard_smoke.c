@@ -5,7 +5,7 @@
 #include <windows.h>
 
 #include "app-nxvm/devices/debug_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/machine/fault.h"
 #include "app-nxvm/machine/display.h"
 #include "app-nxvm/machine/lifecycle.h"

@@ -2,6 +2,7 @@
 #ifndef CORE_MACHINE_VADP_H
 #define CORE_MACHINE_VADP_H
 #include "x86/chips/video/video_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 #define CORE_MACHINE_DEVICE_VADP "CGA Adapter"
 #define CORE_MACHINE_VADP_VIDEO_BASE 0x000b8000u

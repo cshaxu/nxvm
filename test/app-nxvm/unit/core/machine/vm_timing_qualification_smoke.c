@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 #include "app-nxvm/profiles/xt/xt_5160_268.h"

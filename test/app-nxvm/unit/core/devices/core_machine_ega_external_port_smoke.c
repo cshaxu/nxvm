@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/vadp.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 static void ega_write_crtc(t_port *port, lib_u16 index_port,
     lib_u8 index, lib_u8 value)

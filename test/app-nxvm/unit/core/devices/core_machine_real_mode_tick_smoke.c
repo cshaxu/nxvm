@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "support/core_machine_board_fixture.h"
 
 /* T337_REAL_UD_TERMINAL_GUEST_LIDT: preparation is outside measured ticks. */

@@ -1,4 +1,5 @@
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #ifndef VM_PROFILE_XT_5160_268_H
 #define VM_PROFILE_XT_5160_268_H
 

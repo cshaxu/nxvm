@@ -1,4 +1,5 @@
 #include "support/pic_fixture.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"

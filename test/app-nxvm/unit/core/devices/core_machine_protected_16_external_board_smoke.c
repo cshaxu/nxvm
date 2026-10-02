@@ -1,4 +1,5 @@
 #include "support/protected_16_bootstrap_fixture.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "x86/chips/cpu/cpu.h"
 #include <stdio.h>
 

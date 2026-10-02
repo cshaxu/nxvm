@@ -67,7 +67,14 @@ public plan ABI: one board composition derives the temporary value and owns
 the existing public create/test-allocation pipeline. Core does not retain
 it. This removes the direct board validation/create calls from `machine.c`;
 S68 receives the remaining four reset, clock-reset, NMI and finalization
-calls. S66 still owns the public board configuration/value boundary.
+calls. S66 owns the public board configuration/value boundary and its adjacent
+operation declarations: by-value XT enum parameters cannot remain in a neutral
+header without restoring the board dependency. Implementations remain unchanged.
+S67 therefore receives the measured residual implementation dependency instead:
+five neutral validation functions currently defined in board `machine_plan.c`
+but consumed by neutral Core construction and timing declarations. Move them
+verbatim to an existing neutral owner; do not add a validator facade or a
+second validation path. S68-S70 retain their existing receiving boundaries.
 
 ## Verification And Exit
 

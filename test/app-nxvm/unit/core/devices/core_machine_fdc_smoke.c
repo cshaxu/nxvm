@@ -1,4 +1,5 @@
 #include "support/dma_fixture.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "support/fdc_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>

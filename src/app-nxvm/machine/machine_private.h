@@ -4,7 +4,7 @@
 
 #include "app-nxvm/machine/machine_interface.h"
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/display_interface.h"
 #include "lib/base/sync_interface.h"

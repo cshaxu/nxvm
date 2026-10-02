@@ -1,7 +1,9 @@
 #include "lib/types/types_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 
 static lib_i32 ram_create_success(lib_size memory_bytes)
 {

@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/vadp.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 
 static lib_i32 core_machine_ega_write(t_ram *memory, lib_u32 physical,
     lib_u8 value)

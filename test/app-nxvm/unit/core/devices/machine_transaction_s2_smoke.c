@@ -3,7 +3,7 @@
 
 #include "x86/chips/cpu/cpu_instructions.h"
 #include "app-nxvm/devices/dma_bus.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/memory_interface.h"
 #include "app-nxvm/devices/port.h"

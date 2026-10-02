@@ -3,7 +3,7 @@
 
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/port.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
 
