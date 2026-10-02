@@ -1506,31 +1506,12 @@ void core_machine_destroy(core_machine *machine)
         machine->firmware_context.machine = LIB_NULL;
         machine->firmware_provider = LIB_NULL;
         machine->firmware_provider_context = LIB_NULL;
-        core_machine_pit_bus_destroy(&machine->shared_pit);
-        core_machine_pit_bus_destroy(&machine->auxiliary_pit);
-        core_machine_hdc_finalize(&machine->hdc);
-        core_machine_fdc_finalize(&machine->fdc);
-        core_machine_dma_finalize(&machine->shared_dma_latch,
-            &machine->shared_dma_primary, &machine->shared_dma_secondary);
-        x86_rtc_destroy(machine->shared_rtc);
-        if (machine->keyboard_topology ==
-                CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-            x86_xt_keyboard_destroy(machine->xt_keyboard);
-            core_machine_xt_ppi_keyboard_finalize(&machine->xt_ppi_keyboard);
-        } else core_machine_kbc_finalize(&machine->shared_kbc);
-        core_machine_pic_finalize(&machine->shared_pic_master,
-            &machine->shared_pic_slave);
-        core_machine_vadp_finalize(&machine->shared_vadp);
+        core_machine_board_finalize_devices(machine);
         core_machine_cpu_destroy(machine->executor_cpu_execution);
         x86_fpu_destroy(machine->fpu);
         core_machine_port_finalize(&machine->executor_port);
+        core_machine_rollback_immutable_rom_mappings(machine, 0u);
         core_machine_memory_finalize(&machine->executor_memory);
-        for (lib_size index = 0u; index < machine->immutable_rom_mapping_count;
-                ++index) {
-            if (machine->immutable_rom_mappings[index].owns_image) {
-                lib_release(machine->immutable_rom_mappings[index].image);
-            }
-        }
     }
     core_machine_trace_finalize(machine);
     core_machine_bus_finalize(machine);

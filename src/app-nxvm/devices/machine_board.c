@@ -324,6 +324,24 @@ void core_machine_board_reset_devices(core_machine *machine)
     x86_video_reset(machine->shared_vadp.chip);
 }
 
+void core_machine_board_finalize_devices(core_machine *machine)
+{
+    core_machine_pit_bus_destroy(&machine->shared_pit);
+    core_machine_pit_bus_destroy(&machine->auxiliary_pit);
+    core_machine_hdc_finalize(&machine->hdc);
+    core_machine_fdc_finalize(&machine->fdc);
+    core_machine_dma_finalize(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary);
+    x86_rtc_destroy(machine->shared_rtc);
+    if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        x86_xt_keyboard_destroy(machine->xt_keyboard);
+        core_machine_xt_ppi_keyboard_finalize(&machine->xt_ppi_keyboard);
+    } else core_machine_kbc_finalize(&machine->shared_kbc);
+    core_machine_pic_finalize(&machine->shared_pic_master,
+        &machine->shared_pic_slave);
+    core_machine_vadp_finalize(&machine->shared_vadp);
+}
+
 void core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
