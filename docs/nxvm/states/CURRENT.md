@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S59 is active: audit callback and firmware binding across the board
-attachment. S1-S58 are accepted;
+M5 T540 S60 is active: finish the neutral Core private header. S1-S59 are
+accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -79,7 +79,8 @@ the completed CPU extraction.
 | T540 S56 | Accepted: three D4 refresh electrical fields moved into the sole board attachment; Core HOLD stays bounded, gates and eight boots pass. |
 | T540 S57 | Accepted: four XT speaker electrical fields moved into the sole board attachment; both-width units, gates and eight boots pass. |
 | T540 S58 | Accepted: absent-memory fallback windows moved into the sole board attachment; both-width units, gates and eight boots pass. |
-| T540 S59 | Active: callback and firmware binding owner audit. |
+| T540 S59 | Accepted: source-audited 14 board providers and one firmware binding/rollback path; no redundant revoke added; dual-width units/gates pass. |
+| T540 S60 | Active: neutral private Core header receiver. |
 
 ## T540 S1 Acceptance
 
@@ -2066,13 +2067,45 @@ records rollback, lifetime, exact diff and artifact hashes. T540 remains open.
 | Files And ABI Surface | Existing `board_*_provider` slots and `board_owner`, board constructor/finalizer, firmware provider/context binding and F0000h alias choice. No new public API. |
 | Applicable Rules | Core owns operation guards and bounded invocation; board owns callback production and revocation. Preserve shutdown callback ABI used by test schedulers. |
 | Verification | Source audit of every install/revoke and firmware path; focused affected regressions; complete x64/x86 units, specialized/documentation gates; rebuild eight products and run one boot per profile/width only if executable inputs change. |
-| Expected Markers | Callback owners remain valid through invocation and are revoked before board release; one firmware invocation/ROM table and one board alias choice, with no duplicate path. |
+| Expected Markers | Callback owners remain valid through invocation, with no callback after board release; an explicit slot-clearing pass is unnecessary when destroying the whole machine. One firmware invocation/ROM table and one board alias choice remain, with no duplicate path. |
 | Asset Needs | Existing external firmware/media for any affected boot checks only; no owner INI edit. |
 | Reporting Requirements | Complete callback/firmware owner inventory, exact diff or justified no-change result, tests and artifact determination. |
 | Stop Conditions | Stop for conflicting ownership, a needed ABI redesign or cross-target change; split if actual surface exceeds one bounded S. |
 | Exit Criteria | P1 if code changes, P2 evidence pushed; affected verification passes; worktree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | Board install/revoke, destruction order, outstanding event callbacks, firmware bounded invocation and F0000h alias registration. |
+
+## T540 S59 Acceptance
+
+The [S59 callback/firmware audit](../etc/evidence/t540-s59-callback-firmware-audit.md)
+finds one installation point for 14 Core-facing providers, no callback after
+the synchronous board teardown, one guarded firmware binding and one board
+reset-alias decision with rollback. It correctly rejects a redundant
+provider-slot clearing pass. No executable input changed: focused tests pass
+8/8 per width, complete units pass 469/469 per width and both specialized
+gate sets pass. S58's eight optimized artifacts and 8/8 boot checkpoints
+remain the executable baseline. T540 remains open.
+
+## T540 S60 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S60, next linear S after accepted S59. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Finish the neutral private Core header and separate remaining board-only types/accesses by actual owner before the physical Shared move. |
+| Non-goals | Physical Shared relocation (S61), new Core/device framework, behavior/timing change, firmware/media/INI change or cross-target edits. |
+| Reference Baseline | [S59 evidence](../etc/evidence/t540-s59-callback-firmware-audit.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units and gates; S58's eight booted 0540 artifacts. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Existing private Core/board headers, neutral Core source and directly affected tests/static inventories. Audit the actual remaining type and include graph before editing; split further if the measured row is oversized. |
+| Applicable Rules | No named PC chip, board topology, D4, speaker or profile include in neutral Core's private header; retain only Core state and bounded board attachment/provider contracts. Preserve one owner and test boundaries. |
+| Verification | Complete x64/x86 units, specialized/documentation gates, one external boot per profile/width and eight optimized 0540 PE/no-debug products if executable inputs change; exact-diff evidence. |
+| Expected Markers | Neutral Core private header compiles without board-chip definitions or product profile includes; board types remain board-owned without duplicate storage. |
+| Asset Needs | Existing external firmware/media for affected boot checks only; no owner INI edit. |
+| Reporting Requirements | Measured remaining include/type inventory, allocation, diff and test/artifact evidence. |
+| Stop Conditions | Stop or split if actual surface exceeds one bounded receiver, a needed Shared edit appears, or behavior would change. |
+| Exit Criteria | P1 if code changes, P2 evidence pushed; affected verification passes; worktree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | Every direct board type/include in `machine.h`, neutral Core sources and direct tests; no copied chip state or bypass. |
 
 ## S87 Admission Packet
 
