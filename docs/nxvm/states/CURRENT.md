@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S50 is active: move the HDC controller instance into the sole board
-attachment without a mirrored fact. S1-S49 are accepted;
+M5 T540 S51 is active: move the KBC and XT keyboard instances into the sole
+board attachment without a mirrored fact. S1-S50 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -72,8 +72,8 @@ the completed CPU extraction.
 | T540 S41 | Accepted: six named board clocks moved with their advance/deadline owner; Core retains provider clock and one timeline; dual-width units and eight boots pass. |
 | T540 S42 | Accepted: finite private Core/board ownership ledger assigns all mixed state groups and source stages to linear receivers. |
 | T540 S43 | Accepted: remaining board constructor/callback separation, dual-width units/gates and eight boot checkpoints. |
-| T540 S44-S49 | Accepted: board attachment, PIC/PIT/DMA/RTC/FDC instance receivers; dual-width complete units, gates and eight boot checkpoints at each code receiver. |
-| T540 S50 | Active: board-owned HDC instance receiver. |
+| T540 S44-S50 | Accepted: board attachment and PIC/PIT/DMA/RTC/FDC/HDC instance receivers; dual-width complete units, gates and eight boot checkpoints at each code receiver. |
+| T540 S51 | Active: board-owned KBC and XT keyboard instance receiver. |
 
 ## T540 S1 Acceptance
 
@@ -1780,6 +1780,40 @@ Shared/MyNES and owner INIs are untouched. T540 remains open.
 | Exit Criteria | HDC owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | ATA, Xebec and Model-40 route/IRQ/DRQ/media/deadline/reset/finalization consumers. |
+
+## T540 S50 Acceptance
+
+Actual-diff review accepts NXVM P1 `997d28483`. The
+[S50 evidence](../etc/evidence/t540-s50-hdc-owner.md) records the sole HDC
+controller instance moved into the board attachment. ATA, XT Xebec and
+Model-40 personalities keep their existing ports, media, DRQ/IRQ, deadline,
+reset and failure rollback. Complete x64/x86 repository-only units pass
+**469/469** each; specialized gates and focused HDD/ATA integration pass.
+The four fixed-profile external boot probes pass **8/8**, once per width.
+Eight optimized 0540 products have the expected PE widths and no `.debug`
+sections; hashes are in the evidence. Shared/MyNES and owner INIs are
+untouched. T540 remains open.
+
+## T540 S51 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S51, next linear S after accepted S50. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move the AT KBC and XT PPI-keyboard instance state from flat `core_machine` into the sole board attachment, preserving their separate hardware identities and one input/IRQ/reset path per topology. |
+| Non-goals | VADP (S52), board electrical/callback split (S53), final neutral header (S54), physical Shared move (S55), keyboard command, BAT, input or timing behavior changes. |
+| Reference Baseline | S50 P1 `997d28483`, [S50 evidence](../etc/evidence/t540-s50-hdc-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates, focused HDD/ATA integration and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Inventory direct KBC and XT keyboard instance consumers before changing source; keep frozen topology and copied input events distinct from live chip state. Public Core and chip interfaces remain unchanged. |
+| Applicable Rules | One board attachment, no copied command/output/BAT/typematic or XT PPI state; preserve constructor, port/input routing, IRQ, reset, deadline and teardown order. |
+| Verification | Full x64/x86 units, specialized/documentation gates, keyboard-focused regressions, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | KBC and XT keyboard instances no longer occupy flat Core storage; board alone owns their lifetimes. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Exact moved fields/references, AT/XT event and failure-path equivalence, diff size, tests and artifact hashes. |
+| Stop Conditions | Stop before pulling VADP into S51, altering keyboard semantics, or adding a second owner/access path. |
+| Exit Criteria | Keyboard owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | 8042 command/output/BAT/IRQ and XT PPI-keyboard input/reset/deadline consumers. |
 
 ## S87 Admission Packet
 
