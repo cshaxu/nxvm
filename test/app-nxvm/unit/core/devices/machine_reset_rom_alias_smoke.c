@@ -76,10 +76,48 @@ static lib_i32 reset_rom_run(core_machine_cpu_profile profile)
     return failed;
 }
 
+static lib_i32 absent_fallback_run(void)
+{
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const core_machine_absent_memory_config absent = {
+        0x000a0000u, 2u, 0xffu
+    };
+    const lib_u8 rom_byte = 0x5au;
+    core_machine_memory_test_allocation allocation = {LIB_TRUE, 0u};
+    core_machine *machine = LIB_NULL;
+    lib_u8 byte = 0u;
+    lib_i32 failed = 0;
+
+    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    machine->executor_memory.connect.device_provider_test_allocation = &allocation;
+    failed |= core_machine_configure_absent_memory(machine, &absent) !=
+        LIB_STATUS_NO_MEMORY || allocation.attempts != 1u ||
+        machine->absent_memory[0].configured ||
+        machine->executor_memory.connect.device_provider_count != 0u;
+    machine->executor_memory.connect.device_provider_test_allocation = LIB_NULL;
+    failed |= core_machine_configure_absent_memory(machine, &absent) !=
+        LIB_STATUS_OK || !machine->absent_memory[0].configured;
+    failed |= core_machine_register_immutable_rom_mapping(machine,
+        absent.physical_start, &rom_byte, 1u) != LIB_STATUS_OK;
+    failed |= core_machine_memory_read_physical(&machine->executor_memory,
+        absent.physical_start, (lib_uptr)&byte, 1u) != LIB_STATUS_OK ||
+        byte != rom_byte;
+    byte = 0u;
+    failed |= core_machine_memory_read_physical(&machine->executor_memory,
+        absent.physical_start + 1u, (lib_uptr)&byte, 1u) != LIB_STATUS_OK ||
+        byte != absent.read_value;
+    core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     if (reset_rom_run(CORE_MACHINE_CPU_PROFILE_80286) ||
-        reset_rom_run(CORE_MACHINE_CPU_PROFILE_80386)) return 1;
+        reset_rom_run(CORE_MACHINE_CPU_PROFILE_80386) ||
+        absent_fallback_run()) return 1;
     puts("M5:T496:S7:RESET-ROM-ALIAS:OK");
     return 0;
 }

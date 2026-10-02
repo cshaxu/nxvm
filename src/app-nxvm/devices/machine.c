@@ -57,6 +57,11 @@ static void core_machine_kbc_request_reset(void *owner)
     core_machine_cpu_execution_request_reset(machine->executor_cpu_execution);
 }
 
+static void core_machine_kbc_signal_a20(void *owner, lib_bool enabled)
+{
+    (void)core_machine_signal_a20(owner, enabled);
+}
+
 static void core_machine_xt_ppi_update_speaker(void *owner,
     lib_u8 timer_gate, lib_u8 data_enabled)
 {
@@ -691,7 +696,8 @@ static lib_status core_machine_create_internal(
     } else {
         core_machine_kbc_bind_core_services(&machine->shared_kbc,
             &machine->shared_pic_master, &machine->shared_pic_slave,
-            &machine->executor_memory, core_machine_kbc_request_reset, machine,
+            core_machine_kbc_signal_a20, machine,
+            core_machine_kbc_request_reset, machine,
             !config->kbc_aux_absent);
         if (config->kbc_reset_output_port_configured) {
             core_machine_kbc_set_reset_output_port(&machine->shared_kbc,

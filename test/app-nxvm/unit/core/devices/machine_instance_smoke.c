@@ -5,6 +5,7 @@
 
 
 #include "app-nxvm/devices/machine_interface.h"
+#include "app-nxvm/devices/machine.h"
 #include "support/core_machine_executor_fixture.h"
 
 typedef struct port_fixture {
@@ -51,6 +52,7 @@ lib_i32 main(void)
     port_fixture second_port = { 0u, 0u };
     lib_u8 value;
     lib_u32 port_value;
+    lib_bool a20_enabled;
     lib_i32 result = 0;
 
     result |= expect_status(test_core_machine_create_executor(
@@ -113,6 +115,19 @@ lib_i32 main(void)
     result |= expect_status(core_machine_memory_read(first, 0x100000u, &value, 1u),
                             LIB_STATUS_OK);
     result |= value != 0x11u;
+
+    first->lifecycle = CORE_MACHINE_RUNNING;
+    result |= expect_status(core_machine_set_a20(first, 1), LIB_STATUS_INVALID_STATE);
+    core_machine_port_write(&first->executor_port, 0x64u, 0xd1u);
+    core_machine_port_write(&first->executor_port, 0x60u, 0x03u);
+    result |= expect_status(core_machine_observe_a20(first, &a20_enabled), LIB_STATUS_OK);
+    result |= !a20_enabled ||
+        core_machine_port_read(&first->executor_port, 0x92u) != 0x02u;
+    core_machine_port_write(&first->executor_port, 0x92u, 0u);
+    result |= expect_status(core_machine_observe_a20(first, &a20_enabled), LIB_STATUS_OK);
+    result |= a20_enabled;
+    first->lifecycle = CORE_MACHINE_STOPPED;
+
     value = 0xffu;
     result |= expect_status(core_machine_memory_read(second, 0u, &value, 1u),
                             LIB_STATUS_OK);

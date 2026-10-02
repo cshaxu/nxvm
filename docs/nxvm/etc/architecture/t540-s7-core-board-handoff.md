@@ -142,6 +142,26 @@ extraction starts at S23. These numbers are prospective until each packet is
 admitted. The three memory receivers share Core's single mapping table but
 not an App-level memory registry or a universal device framework.
 
+## S19 Source-Intake Refinement
+
+S18 finished the ROM owner. The remaining memory row has two unlike execution
+boundaries: KBC/92h A20 is a single Core-owned signal, while DMA transfers
+need the Core transaction and HOLD ordering around a device callback. The
+non-ROM absent-memory fallback is a construction-time Core provider route.
+They are divided before implementation:
+
+| Linear receiver | Complete boundary |
+| --- | --- |
+| S19 | Route KBC and 92h A20 through one bounded Core signal without exposing `t_ram`; register the absent-memory fallback through Core's typed memory route. Preserve running KBC writes, 92h reads, open-bus priority and configuration rollback. |
+| S20 | Replace DMA's raw RAM/transaction arguments with one bounded Core bus-cycle operation, retaining HOLD, query/begin/device/memory/device/commit order and primary-only/paired topology. |
+| S21 | Separate board deadline/advance and PIC acknowledge from Core's single CPU bus/timeline. |
+| S22 | Separate mixed plan/create/reset/destroy at the private state owner. |
+| S23 | Move the neutral Core and its direct tests to `src/x86/core` and `test/x86/core`; remove the App source copy. |
+| S24 onward | Move only proven common, AT and XT board mechanisms to their flat Shared receivers, then run the T-wide ledger and external integration gate. |
+
+These later numbers remain prospective until their own intake. No suffix S
+identifiers or parallel memory/transaction owner is introduced.
+
 Every code S runs the complete repository-only x64/x86 unit suites, affected
 four-profile Release pairs, applicable Shared receivers/manifests, and the
 focused board/reset/interrupt/deadline regressions named by its packet. T540

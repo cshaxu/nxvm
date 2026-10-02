@@ -112,9 +112,9 @@ static void kbc_reset_pulse(void *context)
 static void kbc_output_port(void *context, lib_u8 value)
 {
     t_kbc *attachment = context;
-    if (attachment->connect.memory != LIB_NULL) {
-        attachment->connect.memory->data.flagA20 = (value & 0x02u) != 0u;
-    }
+    if (attachment->connect.set_a20 != LIB_NULL)
+        attachment->connect.set_a20(attachment->connect.a20_context,
+            (value & 0x02u) != 0u);
     if ((value & 0x01u) == 0u) kbc_reset_pulse(context);
 }
 
@@ -181,14 +181,16 @@ lib_status core_machine_kbc_initialize(t_kbc *attachment, core_machine *machine)
 }
 
 void core_machine_kbc_bind_core_services(t_kbc *attachment,
-    core_machine_pic_bus *master, core_machine_pic_bus *slave, t_ram *memory,
+    core_machine_pic_bus *master, core_machine_pic_bus *slave,
+    void (*set_a20)(void *context, lib_bool enabled), void *a20_context,
     void (*request_reset)(void *context), void *reset_context,
     lib_u8 aux_present)
 {
     if (attachment == LIB_NULL) return;
     core_machine_pic_irq_source_bind(&attachment->connect.irq1_source, master, slave, 1u);
     core_machine_pic_irq_source_bind(&attachment->connect.irq12_source, master, slave, 12u);
-    attachment->connect.memory = memory;
+    attachment->connect.set_a20 = set_a20;
+    attachment->connect.a20_context = a20_context;
     attachment->connect.request_reset = request_reset;
     attachment->connect.reset_context = reset_context;
     x86_kbc8042_set_aux_present(attachment->chip, aux_present);

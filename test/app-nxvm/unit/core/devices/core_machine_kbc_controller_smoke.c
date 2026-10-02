@@ -7,7 +7,6 @@
 #include "app-nxvm/devices/machine.h"
 
 #include "app-nxvm/devices/kbc.h"
-#include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
@@ -22,6 +21,11 @@ static lib_u8 core_machine_kbc_read_byte(t_port *port, lib_u16 port_id)
 static void count_reset_pulse(void *context)
 {
     ++*(lib_u32 *)context;
+}
+
+static void test_signal_a20(void *context, lib_bool enabled)
+{
+    *(lib_bool *)context = enabled;
 }
 
 static lib_bool keyboard_has_repeat(const t_kbc *kbc)
@@ -126,7 +130,6 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     t_kbc kbc;
     core_machine_pic_bus pic_master;
     core_machine_pic_bus pic_slave;
-    t_ram memory = {0};
     core_machine machine = {0};
     t_port *port = &machine.executor_port;
     lib_i32 failed = 0;
@@ -136,7 +139,7 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     core_machine_pic_initialize(&pic_master, &pic_slave, &machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &machine);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
-        &memory, LIB_NULL, LIB_NULL, LIB_TRUE);
+        LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL, LIB_TRUE);
     core_machine_kbc_initialize_pic(port);
 
     core_machine_port_write(port, 0x0064u, 0xd4u);
@@ -596,7 +599,7 @@ lib_i32 main(void)
     t_kbc kbc;
     core_machine_pic_bus pic_master;
     core_machine_pic_bus pic_slave;
-    t_ram memory = {0};
+    lib_bool a20_enabled = LIB_FALSE;
     lib_u32 reset_pulses = 0u;
     core_machine machine = {0};
     t_port *port = &machine.executor_port;
@@ -618,7 +621,7 @@ lib_i32 main(void)
     core_machine_pic_initialize(&pic_master, &pic_slave, &machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &machine);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
-        &memory, count_reset_pulse, &reset_pulses, LIB_TRUE);
+        test_signal_a20, &a20_enabled, count_reset_pulse, &reset_pulses, LIB_TRUE);
     core_machine_kbc_initialize_pic(port);
 
     mixed_failed = core_machine_kbc_mixed_fifo_lifecycle();
@@ -852,20 +855,20 @@ lib_i32 main(void)
 
     core_machine_port_write(port, 0x0064u, 0xd1u);
     core_machine_port_write(port, 0x0060u, 0x03u);
-    failed |= !memory.data.flagA20;
+    failed |= !a20_enabled;
     core_machine_port_write(port, 0x0064u, 0xd0u);
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x03u;
     core_machine_port_write(port, 0x0064u, 0xffu);
     failed |= reset_pulses != 0u ||
-        !memory.data.flagA20;
+        !a20_enabled;
     core_machine_port_write(port, 0x0064u, 0xfeu);
     failed |= reset_pulses != 1u ||
-        !memory.data.flagA20;
+        !a20_enabled;
     core_machine_port_write(port, 0x0064u, 0xd0u);
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x03u;
     core_machine_port_write(port, 0x0064u, 0xd1u);
     core_machine_port_write(port, 0x0060u, 0x00u);
-    failed |= memory.data.flagA20 ||
+    failed |= a20_enabled ||
         reset_pulses != 2u;
 
     core_machine_kbc_reset(&kbc);

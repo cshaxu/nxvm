@@ -63,6 +63,11 @@ lib_status core_machine_install_memory_device_routes(core_machine *machine,
                 route->physical_start, route->bytes, route->callbacks.read,
                 route->callbacks.write, route->callbacks.query, owner);
             break;
+        case CORE_MACHINE_MEMORY_PROVIDER_FALLBACK:
+            status = core_machine_memory_register_fallback_device_provider(memory,
+                route->physical_start, route->bytes, route->callbacks.read,
+                route->callbacks.write, route->callbacks.query, owner);
+            break;
         default:
             status = LIB_STATUS_INVALID_ARGUMENT;
             break;
@@ -202,9 +207,25 @@ lib_status core_machine_set_a20(
         return LIB_STATUS_INVALID_STATE;
     }
 
-    if (machine->executor_memory.connect.backing == 0u) {
+    return core_machine_signal_a20(machine, enabled != 0);
+}
+
+lib_status core_machine_signal_a20(core_machine *machine, lib_bool enabled)
+{
+    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (machine->executor_memory.connect.backing == 0u)
         return LIB_STATUS_INVALID_STATE;
-    }
-    machine->executor_memory.data.flagA20 = enabled != 0;
+    machine->executor_memory.data.flagA20 = enabled ? LIB_TRUE : LIB_FALSE;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_observe_a20(const core_machine *machine,
+    lib_bool *out_enabled)
+{
+    if (machine == LIB_NULL || out_enabled == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (machine->executor_memory.connect.backing == 0u)
+        return LIB_STATUS_INVALID_STATE;
+    *out_enabled = machine->executor_memory.data.flagA20 ? LIB_TRUE : LIB_FALSE;
     return LIB_STATUS_OK;
 }

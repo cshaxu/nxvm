@@ -8,24 +8,23 @@
 static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id,
     lib_u32 *out_value)
 {
-    t_ram *ram = (t_ram *)owner;
+    lib_bool enabled;
+    lib_status status;
 
     (void)port_id;
-    if (ram == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_value = ram->data.flagA20 ? CORE_MACHINE_BOARD_A20_BIT : 0u;
+    if (out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_observe_a20(owner, &enabled);
+    if (status != LIB_STATUS_OK) return status;
+    *out_value = enabled ? CORE_MACHINE_BOARD_A20_BIT : 0u;
     return LIB_STATUS_OK;
 }
 
 static lib_status core_machine_board_write_a20(void *owner, lib_u16 port_id,
     lib_u32 value)
 {
-    t_ram *ram = (t_ram *)owner;
-
     (void)port_id;
-    if (ram == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    ram->data.flagA20 = CORE_MACHINE_BIT_IS_SET(value,
-        CORE_MACHINE_BOARD_A20_BIT);
-    return LIB_STATUS_OK;
+    return core_machine_signal_a20(owner,
+        CORE_MACHINE_BIT_IS_SET(value, CORE_MACHINE_BOARD_A20_BIT));
 }
 
 lib_status core_machine_board_register_a20_port(core_machine *machine)
@@ -34,7 +33,7 @@ lib_status core_machine_board_register_a20_port(core_machine *machine)
 
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     route = (core_machine_port_route) {0x0092u, core_machine_board_read_a20,
-        core_machine_board_write_a20, &machine->executor_memory, LIB_FALSE, 0u};
+        core_machine_board_write_a20, machine, LIB_FALSE, 0u};
     return core_machine_install_port_routes(machine, &route, 1u);
 }
 
@@ -785,6 +784,7 @@ lib_status core_machine_configure_absent_memory(core_machine *machine,
     const core_machine_absent_memory_config *config)
 {
     core_machine_absent_memory *absent;
+    core_machine_memory_device_route route;
     lib_status status;
     lib_uptr index;
 
@@ -807,10 +807,14 @@ lib_status core_machine_configure_absent_memory(core_machine *machine,
     /* An unpopulated board window is a fallback, not an installed device:
      * a dynamically decoded video aperture may own part of the same physical
      * range while the remaining addresses still read as open bus. */
-    status = core_machine_memory_register_fallback_device_provider(&machine->executor_memory,
-        config->physical_start, config->bytes, core_machine_absent_memory_read,
-        core_machine_absent_memory_write, core_machine_absent_memory_query,
-        absent);
+    route = (core_machine_memory_device_route) {
+        config->physical_start, config->bytes,
+        {core_machine_absent_memory_read, core_machine_absent_memory_write,
+            core_machine_absent_memory_query},
+        CORE_MACHINE_MEMORY_PROVIDER_FALLBACK
+    };
+    status = core_machine_install_memory_device_routes(machine, &route, 1u,
+        LIB_NULL, LIB_NULL, absent);
     if (status != LIB_STATUS_OK) {
         lib_memory_set(absent, 0, sizeof(*absent));
         return status;

@@ -56,7 +56,8 @@ typedef enum core_machine_memory_provider_mode {
     CORE_MACHINE_MEMORY_PROVIDER_STANDARD = 0,
     CORE_MACHINE_MEMORY_PROVIDER_OVERLAY,
     CORE_MACHINE_MEMORY_PROVIDER_RESET_OVERLAY,
-    CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT
+    CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT,
+    CORE_MACHINE_MEMORY_PROVIDER_FALLBACK
 } core_machine_memory_provider_mode;
 
 typedef struct core_machine_memory_device_route {
@@ -108,6 +109,12 @@ lib_status core_machine_memory_query(
 lib_status core_machine_set_a20(
     core_machine *machine,
     lib_i32 enabled);
+
+/* Board signals may change A20 while the guest runs. The paused-debug setter
+ * above keeps its separate lifecycle restriction. */
+lib_status core_machine_signal_a20(core_machine *machine, lib_bool enabled);
+lib_status core_machine_observe_a20(const core_machine *machine,
+    lib_bool *out_enabled);
 
 #ifdef __cplusplus
 }

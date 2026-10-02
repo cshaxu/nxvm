@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/kbc.h"
-#include "app-nxvm/devices/memory.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/port.h"
@@ -54,7 +53,6 @@ lib_i32 main(void)
     t_kbc kbc;
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
-    t_ram memory = {0};
     core_machine machine = {0};
     t_port *port = &machine.executor_port;
     lib_i32 failed = 0;
@@ -65,8 +63,8 @@ lib_i32 main(void)
     core_machine_port_initialize(port);
     core_machine_pic_initialize(&master, &slave, &machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &machine);
-    core_machine_kbc_bind_core_services(&kbc, &master, &slave, &memory,
-        LIB_NULL, LIB_NULL, LIB_TRUE);
+    core_machine_kbc_bind_core_services(&kbc, &master, &slave,
+        LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL, LIB_TRUE);
     initialize_pic(port);
 
     core_machine_port_write(port, 0x0064u, 0x20u);
