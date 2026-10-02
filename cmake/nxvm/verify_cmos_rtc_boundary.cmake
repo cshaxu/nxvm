@@ -4,6 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/rtc146818/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" advance_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     devices_source)
@@ -62,7 +63,7 @@ foreach(forbidden IN ITEMS "app-nxvm/" "core_machine_pic" "selected_register"
     endif()
 endforeach()
 
-string(FIND "${scheduler_source}" "x86_rtc_advance" machine_advance_position)
+string(FIND "${advance_source}" "x86_rtc_advance" machine_advance_position)
 string(FIND "${board_source}" "core_machine_configure_rtc_cmos"
     machine_binding_position)
 string(FIND "${devices_source}" "core_machine_rtc_" device_position)

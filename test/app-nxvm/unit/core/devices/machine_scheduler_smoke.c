@@ -27,7 +27,12 @@ static const core_machine_execution_provider scheduler_provider = {
 
 typedef struct scheduler_board_probe {
     core_machine *machine;
+    lib_u32 media_calls;
+    lib_u32 rtc_calls;
     lib_u32 calls;
+    lib_u64 media_due_tick;
+    lib_u64 media_ticks;
+    lib_u64 rtc_ticks;
     lib_u64 advanced_ticks;
 } scheduler_board_probe;
 
@@ -44,6 +49,24 @@ static void scheduler_board_peripheral(void *owner, lib_u64 source_ticks)
     ++probe->calls;
     probe->advanced_ticks += source_ticks;
     core_machine_board_peripheral_advance(probe->machine, source_ticks);
+}
+
+static void scheduler_board_media(void *owner, lib_u64 source_ticks,
+    lib_u64 due_tick)
+{
+    scheduler_board_probe *probe = owner;
+    ++probe->media_calls;
+    probe->media_ticks += source_ticks;
+    probe->media_due_tick = due_tick;
+    core_machine_board_media_advance(probe->machine, source_ticks, due_tick);
+}
+
+static void scheduler_board_rtc(void *owner, lib_u64 source_ticks)
+{
+    scheduler_board_probe *probe = owner;
+    ++probe->rtc_calls;
+    probe->rtc_ticks += source_ticks;
+    core_machine_board_rtc_advance(probe->machine, source_ticks);
 }
 
 typedef struct scheduler_deadline_probe {
@@ -86,6 +109,8 @@ lib_i32 main(void)
         LIB_STATUS_OK;
     board_probe.machine = machine;
     machine->board_deadline_provider = scheduler_board_deadline_forward;
+    machine->board_media_provider = scheduler_board_media;
+    machine->board_rtc_provider = scheduler_board_rtc;
     machine->board_peripheral_provider = scheduler_board_peripheral;
     machine->board_owner = &board_probe;
 
@@ -93,6 +118,7 @@ lib_i32 main(void)
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
         result.ticks != 0u || result.elapsed_ticks != 0u ||
         provider_probe.advances != 0u || provider_probe.advanced_ticks != 0u ||
+        board_probe.media_calls != 0u || board_probe.rtc_calls != 0u ||
         board_probe.calls != 0u;
 
     budget.instructions = 1u;
@@ -101,6 +127,9 @@ lib_i32 main(void)
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
         result.ticks != 3u || result.elapsed_ticks != 3u ||
         provider_probe.advances != 1u || provider_probe.advanced_ticks != 3u ||
+        board_probe.media_calls == 0u || board_probe.rtc_calls == 0u ||
+        board_probe.media_ticks != 3u || board_probe.rtc_ticks != 3u ||
+        board_probe.media_due_tick != machine->elapsed_ticks ||
         board_probe.calls == 0u || board_probe.advanced_ticks != 3u;
 
     machine->board_deadline_provider = scheduler_board_deadline;

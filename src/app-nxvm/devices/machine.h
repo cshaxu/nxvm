@@ -119,8 +119,10 @@ typedef struct core_machine_board_deadline_observation {
 } core_machine_board_deadline_observation;
 typedef void (*core_machine_board_deadline_provider)(void *owner, lib_u64 now,
     core_machine_board_deadline_observation *out_observation);
-typedef void (*core_machine_board_peripheral_provider)(void *owner,
+typedef void (*core_machine_board_ticks_provider)(void *owner,
     lib_u64 source_ticks);
+typedef void (*core_machine_board_media_provider)(void *owner,
+    lib_u64 source_ticks, lib_u64 due_tick);
 
 struct core_machine_firmware_context {
     core_machine *machine;
@@ -259,7 +261,9 @@ struct core_machine {
     lib_u8 d4_refresh_pulse_active;
     lib_u8 d4_refresh_address;
     core_machine_board_deadline_provider board_deadline_provider;
-    core_machine_board_peripheral_provider board_peripheral_provider;
+    core_machine_board_media_provider board_media_provider;
+    core_machine_board_ticks_provider board_rtc_provider;
+    core_machine_board_ticks_provider board_peripheral_provider;
     void *board_owner;
 };
 
@@ -344,6 +348,9 @@ extern const core_machine_cpu_execution_diagnostic_provider
 void core_machine_board_cold_reset(core_machine *machine);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     core_machine_board_deadline_observation *out_observation);
+void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
+    lib_u64 due_tick);
+void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks);
 void core_machine_board_peripheral_advance(void *owner, lib_u64 source_ticks);
 lib_status core_machine_board_register_a20_port(core_machine *machine);
 void core_machine_board_after_pit_reset(core_machine *machine);
