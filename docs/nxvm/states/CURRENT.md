@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S51 is active: move the KBC and XT keyboard instances into the sole
-board attachment without a mirrored fact. S1-S50 are accepted;
+M5 T540 S52 is active: move the VADP instance into the sole board attachment
+without a mirrored fact. S1-S51 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -72,8 +72,8 @@ the completed CPU extraction.
 | T540 S41 | Accepted: six named board clocks moved with their advance/deadline owner; Core retains provider clock and one timeline; dual-width units and eight boots pass. |
 | T540 S42 | Accepted: finite private Core/board ownership ledger assigns all mixed state groups and source stages to linear receivers. |
 | T540 S43 | Accepted: remaining board constructor/callback separation, dual-width units/gates and eight boot checkpoints. |
-| T540 S44-S50 | Accepted: board attachment and PIC/PIT/DMA/RTC/FDC/HDC instance receivers; dual-width complete units, gates and eight boot checkpoints at each code receiver. |
-| T540 S51 | Active: board-owned KBC and XT keyboard instance receiver. |
+| T540 S44-S51 | Accepted: board attachment and PIC/PIT/DMA/RTC/FDC/HDC/keyboard instance receivers; dual-width complete units, gates and eight boot checkpoints at each code receiver. |
+| T540 S52 | Active: board-owned VADP instance receiver. |
 
 ## T540 S1 Acceptance
 
@@ -1814,6 +1814,40 @@ untouched. T540 remains open.
 | Exit Criteria | Keyboard owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | 8042 command/output/BAT/IRQ and XT PPI-keyboard input/reset/deadline consumers. |
+
+## T540 S51 Acceptance
+
+Actual-diff review accepts NXVM P1 `b28f48550`. The
+[S51 evidence](../etc/evidence/t540-s51-keyboard-owner.md) records both AT
+8042 and XT PPI-keyboard instances moved into the sole board attachment,
+without merging their distinct hardware identities. Port/input dispatch,
+IRQ/NMI/speaker wiring, reset, deadline and teardown retain the existing
+order. Complete x64/x86 repository-only units pass **469/469** each;
+specialized gates pass. The four fixed-profile external boot probes pass
+**8/8**, once per width. Eight optimized 0540 products have the expected PE
+widths and no `.debug` sections; hashes are in the evidence. Shared/MyNES
+and owner INIs are untouched. T540 remains open.
+
+## T540 S52 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S52, next linear S after accepted S51. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move the sole VADP instance from flat `core_machine` into the board attachment while preserving one guest video state, memory/port mapping and copied snapshot owner. |
+| Non-goals | Board electrical/callback split (S53), final neutral header (S54), physical Shared move (S55), CGA/EGA/VGA rendering, palette, geometry or timing behavior changes. |
+| Reference Baseline | S51 P1 `b28f48550`, [S51 evidence](../etc/evidence/t540-s51-keyboard-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Inventory direct VADP instance consumers before changing source; keep frozen display topology and copied presentation frames distinct from live chip state. Public Core and chip interfaces remain unchanged. |
+| Applicable Rules | One board video owner, no copied mode/VRAM/frame state; preserve construction, port/memory routes, reset, deadline, snapshot and finalization order. |
+| Verification | Full x64/x86 units, specialized/documentation gates, display-focused regressions, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | VADP instance no longer occupies flat Core storage; board alone owns its lifetime. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Exact moved field/references, CGA/EGA/VGA and rollback equivalence, diff size, tests and artifact hashes. |
+| Stop Conditions | Stop before pulling D4/other latches into S52, altering display semantics, or adding a second owner/access path. |
+| Exit Criteria | VADP owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | VADP ports, VRAM mappings, snapshot, frame generation, reset and resource teardown. |
 
 ## S87 Admission Packet
 
