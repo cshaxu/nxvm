@@ -31,7 +31,7 @@ and destroy remain the only production paths.
 | XT speaker gates and output | board PPI/PIT signal adapter | S57 |
 | Absent-memory windows | board memory route adapter; Core owns only checked memory operation | S58 |
 | Firmware provider/context binding and F0000h alias choice | `machine_board.c` owns board role/alias and binding; Core retains the single bounded firmware invocation and ROM table. Do not duplicate either side | S59 |
-| `board_*_provider` callback slots and `board_owner` | Core scheduler/CPU bus call bounded board operations; board installs/revokes them with its lifetime. The shutdown callback currently takes `const core_machine *` because test schedulers replace `board_owner` with a probe, so do not silently change that ABI | S59–S60 |
+| `board_*_provider` callback slots and `board_owner` | Core scheduler/CPU bus call bounded board operations. The board installs 14 providers at one construction point; synchronous whole-machine destruction prevents any call after board release, so a redundant slot-clearing pass is not needed. The shutdown callback takes `const core_machine *` because test schedulers replace `board_owner` with a probe; do not silently change that ABI | S59–S64 |
 
 These rows cover all contiguous state groups in the current `struct
 core_machine`, including the appended scheduler state. `core_machine_plan`
@@ -80,16 +80,16 @@ firmware context remains an operation guard, not a second machine owner.
    (S57), absent-memory routes (S58), and board callback install/revoke plus
    firmware binding audit (S59). Preserve Core operation guards, the board's
    F0000h choice, one copied plan and one rollback.
-5. **S60** — Finish the neutral private header: no named PC chip, topology,
-   D4, speaker or profile include. Keep only Core state and the bounded
-   board attachment/callback contract; migrate remaining direct test
-   consumers by actual dependency, not filename. Compile Core without the
-   NXVM board target before claiming the split.
-6. **S61** — Physically move only the proven neutral implementation and
-   neutral test receivers to `src/x86/core` and `test/x86/core`, delete the
-   old App copies, reconnect NXVM, verify independent Shared build/tests,
-   both product widths and all four fixed-profile boots. S62 onward owns
-   the separately audited `ibmpc-common`, `ibmpc-at` and `ibmpc-xt` moves.
+5. **S60** — Measure the mixed private/public header and split its oversized
+   neutralization. The [source intake](../evidence/t540-s60-neutral-header-intake.md)
+   assigns distinct owner and compile boundaries.
+6. **S61–S64** — Move D4 board memory state (S61), split frozen-plan board
+   types without mirroring (S62), neutralize the private header (S63), then
+   split the public interface and independently compile Core (S64).
+7. **S65** — Move only proven neutral source/tests to `src/x86/core` and
+   `test/x86/core`, delete App copies, reconnect NXVM, verify independent
+   Shared build/tests, both widths and four fixed-profile boots. S66 onward
+   owns separately audited IBM-PC common/AT/XT moves.
 
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three

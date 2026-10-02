@@ -52,6 +52,13 @@ NXVM using the shared implementation and delete its duplicate common board
 paths. Preserve one construction/rollback owner and one reset path. No generic
 board inheritance, universal event bus or new per-machine execution loops.
 
+S60 measured the remaining private/public Core header and found a one-step
+neutralization unsafe. Its [finite receiving plan](../etc/evidence/t540-s60-neutral-header-intake.md)
+assigns S61-S64 to D4 memory, frozen plan, private and public interface
+boundaries; the first eligible neutral Core physical move is S65. IBM-PC
+board extraction follows from S66. These are prospective numeric receivers,
+not a claim that Shared Core already builds independently.
+
 ## Verification And Exit
 
 - Shared board code depends on chip public contracts and declared neutral

@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M5 T540 S60 is active: finish the neutral Core private header. S1-S59 are
+M5 T540 S61 is active: move D4 memory value to its board owner. S1-S60 are
 accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
@@ -80,7 +80,8 @@ the completed CPU extraction.
 | T540 S57 | Accepted: four XT speaker electrical fields moved into the sole board attachment; both-width units, gates and eight boots pass. |
 | T540 S58 | Accepted: absent-memory fallback windows moved into the sole board attachment; both-width units, gates and eight boots pass. |
 | T540 S59 | Accepted: source-audited 14 board providers and one firmware binding/rollback path; no redundant revoke added; dual-width units/gates pass. |
-| T540 S60 | Active: neutral private Core header receiver. |
+| T540 S60 | Accepted: measured the oversized neutral private/public header and allocated S61-S65 as bounded numeric receivers. |
+| T540 S61 | Active: D4 memory board-owner receiver. |
 
 ## T540 S1 Acceptance
 
@@ -2092,20 +2093,52 @@ remain the executable baseline. T540 remains open.
 | --- | --- |
 | Identifier Mode | Continuation M5 T540 S60, next linear S after accepted S59. |
 | Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
-| Objective | Finish the neutral private Core header and separate remaining board-only types/accesses by actual owner before the physical Shared move. |
-| Non-goals | Physical Shared relocation (S61), new Core/device framework, behavior/timing change, firmware/media/INI change or cross-target edits. |
+| Objective | Measure the remaining mixed private/public header and direct consumers, then split an oversized neutralization into finite owner receivers before changing code. |
+| Non-goals | A one-step header rewrite, physical Shared relocation (now S65), new Core/device framework, behavior/timing change, firmware/media/INI change or cross-target edits. |
 | Reference Baseline | [S59 evidence](../etc/evidence/t540-s59-callback-firmware-audit.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units and gates; S58's eight booted 0540 artifacts. |
 | Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | Existing private Core/board headers, neutral Core source and directly affected tests/static inventories. Audit the actual remaining type and include graph before editing; split further if the measured row is oversized. |
+| Files And ABI Surface | Source-only inventory of private/public Core and board headers, named chip/D4/plan dependencies and direct source/test consumers; architecture ledger, proposal and admission/evidence documents only. |
 | Applicable Rules | No named PC chip, board topology, D4, speaker or profile include in neutral Core's private header; retain only Core state and bounded board attachment/provider contracts. Preserve one owner and test boundaries. |
-| Verification | Complete x64/x86 units, specialized/documentation gates, one external boot per profile/width and eight optimized 0540 PE/no-debug products if executable inputs change; exact-diff evidence. |
-| Expected Markers | Neutral Core private header compiles without board-chip definitions or product profile includes; board types remain board-owned without duplicate storage. |
+| Verification | Source inventory, current complete x64/x86 unit and gate baseline, documentation governance and diff checks. No executable input or artifact changes. |
+| Expected Markers | Finite numeric receivers for D4, plan, private/public header and physical move; no false claim that the current Core header is already neutral or independently compilable. |
 | Asset Needs | Existing external firmware/media for affected boot checks only; no owner INI edit. |
-| Reporting Requirements | Measured remaining include/type inventory, allocation, diff and test/artifact evidence. |
+| Reporting Requirements | Measured remaining include/type inventory, numeric receiving allocation and explicit no-build artifact determination. |
 | Stop Conditions | Stop or split if actual surface exceeds one bounded receiver, a needed Shared edit appears, or behavior would change. |
-| Exit Criteria | P1 if code changes, P2 evidence pushed; affected verification passes; worktree clean. |
+| Exit Criteria | Source intake and updated authoritative plan pushed; documentation governance passes; worktree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | Every direct board type/include in `machine.h`, neutral Core sources and direct tests; no copied chip state or bypass. |
+
+## T540 S60 Acceptance
+
+The [measured neutral-header intake](../etc/evidence/t540-s60-neutral-header-intake.md)
+finds 384 private and 694 public interface lines, with 133 and 174 direct
+includers. The old single-step header/Shared move was not executed. D4,
+frozen-plan, private/public interface and physical relocation now have
+distinct linear numeric receivers S61-S65; board extraction begins at S66.
+No executable input changed. S60's own dual-width 469/469 units and S59's
+specialized gates verify the baseline; S58's eight booted 0540
+artifacts remain current. T540 remains open.
+
+## T540 S61 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S61, next linear S after accepted S60. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move the D4-specific mutable memory value to the board owner, retaining one Core checked-memory route and the existing parity/mapping effects. Inspect the actual 49 reference sites before changing storage. |
+| Non-goals | Frozen-plan split (S62), header/interface neutralization (S63-S64), Shared move (S65), D4 behavior/timing change or new callback framework. |
+| Reference Baseline | [S60 measured intake](../etc/evidence/t540-s60-neutral-header-intake.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), current dual-width units/gates and S58's booted eight-product baseline. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md). |
+| Files And ABI Surface | Existing D4 memory state, D4 memory adapter and direct test consumers; preserve its current public configuration contract. |
+| Applicable Rules | One board owner for D4-specific state, one neutral Core memory/bus operation owner, no mirrored latches or profile branch in Core. |
+| Verification | Full x64/x86 units, specialized/documentation gates, affected D4 tests, one external boot per profile/width and eight optimized 0540 PE/no-debug products if code changes. |
+| Expected Markers | No D4-specific mutable value remains flat in `core_machine`; parity, mapping, reset and fault observations follow the existing single path. |
+| Asset Needs | Existing external firmware/media for affected boot checks only; no owner INI edit. |
+| Reporting Requirements | Exact D4 reference and ownership diff, tests, boot/artifact hashes. |
+| Stop Conditions | Split into further numeric S tasks if D4 storage and mechanism cannot be moved safely as one bounded receiver. |
+| Exit Criteria | P1/P2 pushed if code changes; affected verification passes; worktree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | D4 configuration, address remap, parity fault, reset, consumer and destroy paths. |
 
 ## S87 Admission Packet
 
