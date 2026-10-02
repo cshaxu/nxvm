@@ -270,7 +270,7 @@ static lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_rtc_cmos(machine, &rtc_config) !=
                 LIB_STATUS_NO_MEMORY || machine->board->rtc_cmos_configured ||
-            machine->shared_rtc != LIB_NULL ||
+            machine->board->shared_rtc != LIB_NULL ||
             lib_memory_compare(&machine->board->rtc_cmos_config, &config_zero,
                 sizeof(config_zero)) != 0 ||
             core_machine_port_has_write(&machine->executor_port, 0x0070u) ||
@@ -304,7 +304,7 @@ static lib_i32 port_assembly_rtc_collision(void)
     if (!failed) {
         failed |= core_machine_install_port_routes(machine, &existing, 1u) != LIB_STATUS_OK;
         failed |= core_machine_configure_rtc_cmos(machine, &rtc_config) !=
-                LIB_STATUS_INVALID_STATE || machine->shared_rtc != LIB_NULL ||
+                LIB_STATUS_INVALID_STATE || machine->board->shared_rtc != LIB_NULL ||
             machine->board->rtc_cmos_configured ||
             core_machine_port_has_write(&machine->executor_port, 0x0070u) ||
             !core_machine_port_has_read(&machine->executor_port, 0x0071u) ||

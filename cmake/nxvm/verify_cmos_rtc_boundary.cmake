@@ -13,6 +13,14 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_pro
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
     profile_header)
 
+foreach(forbidden IN ITEMS "machine->board->shared_rtc"
+    "machine->board->rtc_selected_register" "x86_rtc_advance(")
+    string(FIND "${scheduler_source}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "Core scheduler directly owns board RTC: ${forbidden}")
+    endif()
+endforeach()
+
 foreach(forbidden IN ITEMS "time(" "localtime(" "GetSystemTime"
     "GetLocalTime" "GetTickCount" "QueryPerformanceCounter" "Sleep(")
     string(FIND "${rtc_source}" "${forbidden}" position)

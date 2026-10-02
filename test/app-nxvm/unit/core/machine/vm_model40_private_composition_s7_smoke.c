@@ -68,10 +68,10 @@ lib_i32 main(void)
             LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
             LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
-        x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x80u ||
-        x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u ||
-        x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_EXTMEM_LSB) != 0u ||
-        x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_EXTMEM_MSB) != 0x04u ||
+        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x80u ||
+        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u ||
+        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_LSB) != 0u ||
+        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_MSB) != 0x04u ||
         core_machine_get_d4_platform_observation(session->core_machine, &d4) !=
             LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||

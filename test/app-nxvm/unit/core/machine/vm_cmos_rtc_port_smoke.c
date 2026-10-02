@@ -38,7 +38,7 @@ static void initialize_pic(t_port *port)
 
 static void advance_cmos(core_machine *machine, lib_u64 elapsed_ticks)
 {
-    x86_rtc_advance(machine->shared_rtc, elapsed_ticks);
+    x86_rtc_advance(machine->board->shared_rtc, elapsed_ticks);
     core_machine_pic_refresh(&machine->board->shared_pic_master,
         &machine->board->shared_pic_slave);
 }
@@ -155,16 +155,16 @@ lib_i32 main(void)
     core_machine_port_write(port, 0x0020u, 0x20u);
 
     cmos_write(port, CORE_MACHINE_RTC_EQUIPMENT, 0x5au);
-    x86_rtc_reset(session->core_machine->shared_rtc);
+    x86_rtc_reset(session->core_machine->board->shared_rtc);
     if (cmos_read(port, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au) failed |= 0x2000;
     if (cmos_read(port, X86_RTC_SECOND) != 0x59u) failed |= 0x4000;
 
     failed |= default_at_cmos_seed_is_loaded();
     if (failed) {
         printf("RTC probe failed=%04x: second=%u hour=%u B=%02x\n", failed,
-            x86_rtc_read_register(session->core_machine->shared_rtc, X86_RTC_SECOND),
-            x86_rtc_read_register(session->core_machine->shared_rtc, X86_RTC_HOUR),
-            x86_rtc_read_register(session->core_machine->shared_rtc, X86_RTC_REG_B));
+            x86_rtc_read_register(session->core_machine->board->shared_rtc, X86_RTC_SECOND),
+            x86_rtc_read_register(session->core_machine->board->shared_rtc, X86_RTC_HOUR),
+            x86_rtc_read_register(session->core_machine->board->shared_rtc, X86_RTC_REG_B));
     }
     vm_machine_destroy(session);
     if (failed) return 1;

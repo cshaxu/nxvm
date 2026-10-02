@@ -6,6 +6,7 @@
 
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/debug_interface.h"
 
 #include "app-nxvm/machine/machine_interface.h"
@@ -25,7 +26,7 @@ static lib_bool sessions_are_isolated(core_machine *first, core_machine *second)
         first->executor_cpu_execution == second->executor_cpu_execution ||
         &first->executor_memory == &second->executor_memory ||
         &first->executor_port == &second->executor_port ||
-        &first->shared_rtc == &second->shared_rtc ||
+        first->board->shared_rtc == second->board->shared_rtc ||
         &first->fdc == &second->fdc || &first->hdc == &second->hdc) return LIB_FALSE;
     for (index = 0u; index < 2u; ++index) {
         if (core_machine_debug_write_real(machines[index], 0u, 0u,

@@ -78,7 +78,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
             out_observation->immediate_due = LIB_TRUE;
     }
     if (machine->timing_plan_copied && machine->board->rtc_cmos_configured &&
-        x86_rtc_ticks_until_irq(machine->shared_rtc, &device_ticks) ==
+        x86_rtc_ticks_until_irq(machine->board->shared_rtc, &device_ticks) ==
             LIB_STATUS_OK && board_consider_clock(&machine->board->rtc_clock,
                 device_ticks, &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;

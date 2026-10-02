@@ -2,6 +2,8 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -27,21 +29,21 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
         session == LIB_NULL ||
         session->fdd.data.ncyl != cylinders || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != sectors || session->fdd.data.nbyte != 512u ||
-        x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY) !=
+        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY) !=
             cmos_type) {
         printf("FDD setup format=%u cmos=%02x expected=%02x\n",
-            (unsigned int)format, (unsigned int)x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY),
+            (unsigned int)format, (unsigned int)x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY),
             (unsigned int)cmos_type);
         vm_machine_destroy(session);
         return 0;
     }
     for (index = 0x10u; index < 0x2eu; ++index) {
         checksum = (lib_u16)(checksum +
-            x86_rtc_read_register(session->core_machine->shared_rtc, index));
+            x86_rtc_read_register(session->core_machine->board->shared_rtc, index));
     }
-    if (x86_rtc_read_register(session->core_machine->shared_rtc, 0x2eu) !=
+    if (x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x2eu) !=
             (lib_u8)(checksum >> 8u) ||
-        x86_rtc_read_register(session->core_machine->shared_rtc, 0x2fu) !=
+        x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x2fu) !=
             (lib_u8)checksum) {
         vm_machine_destroy(session);
         return 0;
@@ -135,9 +137,9 @@ lib_i32 main(void)
         vm_machine_destroy(session);
         return 1;
     }
-    if (x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_EQUIPMENT) !=
-            0x21u || x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x7fu ||
-        x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u) {
+    if (x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_EQUIPMENT) !=
+            0x21u || x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x7fu ||
+        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u) {
         vm_machine_destroy(session);
         return 1;
     }

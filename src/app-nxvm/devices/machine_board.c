@@ -533,8 +533,8 @@ static lib_status core_machine_rtc_cmos_port_read(void *owner,
         port != machine->board->rtc_cmos_config.data_port) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    *out_value = x86_rtc_read_register(machine->shared_rtc,
-        machine->rtc_selected_register);
+    *out_value = x86_rtc_read_register(machine->board->shared_rtc,
+        machine->board->rtc_selected_register);
     return LIB_STATUS_OK;
 }
 
@@ -548,12 +548,12 @@ static lib_status core_machine_rtc_cmos_port_write(void *owner,
         (void)core_machine_set_nmi_mask(machine,
             (value & machine->board->rtc_cmos_config.nmi_mask_bit) != 0u ?
             LIB_TRUE : LIB_FALSE);
-        machine->rtc_selected_register = (lib_u8)(value & 0x3fu);
+        machine->board->rtc_selected_register = (lib_u8)(value & 0x3fu);
         return LIB_STATUS_OK;
     }
     if (port == machine->board->rtc_cmos_config.data_port) {
-        x86_rtc_write_register(machine->shared_rtc,
-            machine->rtc_selected_register, (lib_u8)value);
+        x86_rtc_write_register(machine->board->shared_rtc,
+            machine->board->rtc_selected_register, (lib_u8)value);
         return LIB_STATUS_OK;
     }
     return LIB_STATUS_INVALID_ARGUMENT;
@@ -755,7 +755,7 @@ void core_machine_board_reset_devices(core_machine *machine)
     }
     core_machine_dma_reset(&machine->board->shared_dma_latch,
         &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary);
-    if (machine->board->rtc_cmos_configured) x86_rtc_reset(machine->shared_rtc);
+    if (machine->board->rtc_cmos_configured) x86_rtc_reset(machine->board->shared_rtc);
     machine->planar_parity_port_b = machine->planar_parity_configured ? 0x04u : 0u;
     machine->planar_parity_latched = LIB_FALSE;
     machine->planar_parity_nmi_signaled = LIB_FALSE;
@@ -790,7 +790,7 @@ void core_machine_board_finalize_devices(core_machine *machine)
     core_machine_fdc_finalize(&machine->fdc);
     core_machine_dma_finalize(&machine->board->shared_dma_latch,
         &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary);
-    x86_rtc_destroy(machine->shared_rtc);
+    x86_rtc_destroy(machine->board->shared_rtc);
     if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         x86_xt_keyboard_destroy(machine->xt_keyboard);
         core_machine_xt_ppi_keyboard_finalize(&machine->xt_ppi_keyboard);
@@ -1073,7 +1073,7 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     rtc_config.uip_lead_ticks = config->timing.uip_lead_ticks;
     rtc_config.update_ticks = config->timing.update_ticks;
     status = x86_rtc_create(&rtc_config, core_machine_rtc_irq_output,
-        &machine->board->rtc_irq_source, &machine->shared_rtc);
+        &machine->board->rtc_irq_source, &machine->board->shared_rtc);
     if (status != LIB_STATUS_OK) return status;
     routes[0] = (core_machine_port_route) {
         .address = config->index_port,
@@ -1086,15 +1086,15 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     };
     status = core_machine_install_port_routes(machine, routes, 2u);
     if (status != LIB_STATUS_OK) {
-        x86_rtc_destroy(machine->shared_rtc);
-        machine->shared_rtc = LIB_NULL;
+        x86_rtc_destroy(machine->board->shared_rtc);
+        machine->board->shared_rtc = LIB_NULL;
         return status;
     }
     core_machine_pic_irq_source_bind(&machine->board->rtc_irq_source,
         &machine->board->shared_pic_master, &machine->board->shared_pic_slave, config->irq);
     for (index = 0u; index < config->default_count; ++index) {
         if (config->defaults[index].index <= X86_RTC_REG_D) continue;
-        x86_rtc_write_register(machine->shared_rtc,
+        x86_rtc_write_register(machine->board->shared_rtc,
             config->defaults[index].index, config->defaults[index].value);
     }
     if (config->derive_configuration_checksum) {
@@ -1105,11 +1105,11 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
          * checksum here after every configured byte has its sole owner value. */
         for (index = 0x10u; index < 0x2eu; ++index) {
             checksum = (lib_u16)(checksum +
-                x86_rtc_read_register(machine->shared_rtc, (lib_u8)index));
+                x86_rtc_read_register(machine->board->shared_rtc, (lib_u8)index));
         }
-        x86_rtc_write_register(machine->shared_rtc, 0x2eu,
+        x86_rtc_write_register(machine->board->shared_rtc, 0x2eu,
             CORE_MACHINE_MASK_U8(checksum >> 8u));
-        x86_rtc_write_register(machine->shared_rtc, 0x2fu,
+        x86_rtc_write_register(machine->board->shared_rtc, 0x2fu,
             CORE_MACHINE_MASK_U8(checksum));
     }
     machine->board->rtc_cmos_config = *config;

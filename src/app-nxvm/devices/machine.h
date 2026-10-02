@@ -223,8 +223,6 @@ struct core_machine {
     core_machine_cpu_execution_context *executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
-    x86_rtc *shared_rtc;
-    lib_u8 rtc_selected_register;
     core_machine_fdc fdc;
     core_machine_hdc hdc;
     t_kbc shared_kbc;

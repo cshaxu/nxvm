@@ -128,7 +128,7 @@ void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks)
     if (machine == LIB_NULL || source_ticks == 0u) return;
     rtc_ticks = core_machine_clock_domain_advance(&machine->board->rtc_clock, source_ticks);
     if (machine->board->rtc_cmos_configured) {
-        x86_rtc_advance(machine->shared_rtc, rtc_ticks);
+        x86_rtc_advance(machine->board->shared_rtc, rtc_ticks);
     }
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_RTC_ADVANCE,
         0u, (lib_u32)rtc_ticks, 0u);

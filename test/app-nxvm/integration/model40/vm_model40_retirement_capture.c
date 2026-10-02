@@ -4,6 +4,8 @@
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/retirement_observation_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -771,7 +773,7 @@ static void model40_capture_observe(void *opaque,
         }
         if (capture->machine != LIB_NULL && reset_sample < MODEL40_CAPTURE_RESET_HISTORY) {
             capture->reset_vector_shutdown_status[reset_sample] =
-                x86_rtc_read_register(capture->machine->shared_rtc, 0x0fu);
+                x86_rtc_read_register(capture->machine->board->shared_rtc, 0x0fu);
             capture->reset_vector_a20[reset_sample] =
                 capture->machine->executor_memory.data.flagA20;
         }
@@ -783,7 +785,7 @@ static void model40_capture_observe(void *opaque,
         capture->reset_instruction_port = observation->point.bytes[1u];
         capture->reset_instruction_value = (lib_u8)observation->instruction_entry_cpu.eax;
         capture->reset_instruction_state_seen = LIB_TRUE;
-        capture->reset_instruction_shutdown_status = x86_rtc_read_register(capture->machine->shared_rtc, 0x0fu);
+        capture->reset_instruction_shutdown_status = x86_rtc_read_register(capture->machine->board->shared_rtc, 0x0fu);
         capture->reset_instruction_a20 =
             capture->machine->executor_memory.data.flagA20;
     }
