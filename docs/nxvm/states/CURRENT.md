@@ -2,8 +2,9 @@
 
 ## Current Work
 
-M5 T540 S70 is active: close the board-to-Core CPU signal boundary.
-S1-S69 are accepted.
+M5 T540 has no active packet after S70 acceptance.
+S1-S70 are accepted. The next receiver closes measured memory/port
+construction ownership before neutral Core relocation.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -2402,7 +2403,7 @@ archive dependency, both-width Debug/Release execution and 470/470 complete
 units per width. Product sources and all eight S68 EXE identities are unchanged.
 Physical relocation and public board-consumer boundaries remain open.
 
-## T540 S70 Active Packet
+## T540 S70 Accepted Packet
 
 | Field | Required record |
 | --- | --- |
@@ -2422,6 +2423,17 @@ Physical relocation and public board-consumer boundaries remain open.
 | Exit Criteria | Complete scoped signal cut and all required proof/artifacts/boots; pushed P1, coordinator actual-commit review and pushed governance P2, clean worktree. T540 stays open. |
 | Original Owner Request | Independently reusable Core and flat IBM-PC board components, unique state/production path, automatic numeric S progression without layered patches. |
 | Similar-Issue Sweep | All production CPU NMI/reset calls, callback adapters and latch-on-accept sites; classify CPU internals and same-owner tests separately. Exact eighteen-header consumer inventory covers 306 source/test/build paths and retains memory/port, firmware and provider-binding cuts before physical relocation. |
+
+Coordinator actual-change review accepts pushed S70 P1 `ba659381f`.
+All four board CPU signal callers use the opaque Core operations; original
+mask/latch predicates and the CPU-owned reset consumer remain unchanged.
+Both-width complete units pass 470/470; independent Debug/Release linkage,
+specialized gates and all eight one-shot external boot checkpoints pass.
+Eight optimized debug-stripped 0540 products are committed. Shared, MyNES,
+owner INIs and external masters have no change. The
+[S70 evidence](../etc/evidence/t540-s70-core-signal-boundary.md) records
+artifact identities, receiving limits and remaining pre-relocation classes.
+S70 is accepted; T540 remains open with no next implementation admitted here.
 
 ## S87 Admission Packet
 

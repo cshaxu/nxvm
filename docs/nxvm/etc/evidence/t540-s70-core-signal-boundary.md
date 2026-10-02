@@ -94,3 +94,15 @@ All files are under `assets/nxvm/<profile>/`, version 0540.
 | AT | x86 | 4963EC6BDFBA02BD711385E565F3CF228B429DDE69F4D62E87A95A9AC7FD5C55 |
 | Model40 | x64 | 4044F87A888C2B4FDF57B161A5F882D0413D3FA90F5B30DA1C7A70C7B130032F |
 | Model40 | x86 | CF74B2DD95556E79EAD2C76D49D2AADD2322302AB8919FAA3D7DBE06E672318C |
+
+## Coordinator review
+
+Actual pushed P1 `ba659381f` was reviewed across all eighteen changed paths,
+including the five code/test/gate paths, governing intake changes and eight
+artifact identities. The three NMI predicates and latch-on-accept behavior
+are preserved; KBC reaches the existing CPU reset request and processor-only
+run consumer. CPU sources and run priority have no diff. All requested
+S70 outcomes map to the evidence above; the new prevention scan covers all
+production NXVM signal callers. Shared six components, MyNES and owner INIs
+are unchanged. S70 is accepted; physical relocation and board extraction
+remain required open T540 work, not hidden behind this receiving proof.
