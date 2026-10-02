@@ -8,12 +8,13 @@ lib_status core_machine_capture_display_snapshot(const core_machine *machine,
     x86_video_snapshot *out_snapshot)
 {
     core_machine *mutable_machine = (core_machine *)machine;
+    core_machine_lifecycle lifecycle;
 
     if (machine == LIB_NULL || out_snapshot == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (machine->lifecycle != CORE_MACHINE_STOPPED &&
-        machine->lifecycle != CORE_MACHINE_PAUSED) {
+    if (core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+        (lifecycle != CORE_MACHINE_STOPPED && lifecycle != CORE_MACHINE_PAUSED)) {
         return LIB_STATUS_INVALID_STATE;
     }
     return core_machine_vadp_capture_snapshot(&mutable_machine->board->shared_vadp,
@@ -26,11 +27,13 @@ lib_status core_machine_observe_display_snapshot(const core_machine *machine,
     lib_u64 acknowledged_generation,
     x86_video_snapshot_observation *out_observation)
 {
+    core_machine_lifecycle lifecycle;
+
     if (machine == LIB_NULL || out_observation == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (machine->lifecycle != CORE_MACHINE_STOPPED &&
-        machine->lifecycle != CORE_MACHINE_PAUSED) {
+    if (core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+        (lifecycle != CORE_MACHINE_STOPPED && lifecycle != CORE_MACHINE_PAUSED)) {
         return LIB_STATUS_INVALID_STATE;
     }
     x86_video_observe_snapshot(machine->board->shared_vadp.chip,

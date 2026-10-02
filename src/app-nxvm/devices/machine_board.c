@@ -340,9 +340,12 @@ lib_bool core_machine_board_shutdown_resets(const core_machine *machine)
 lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
     lib_u8 native_byte)
 {
+    core_machine_lifecycle lifecycle;
+
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
-        machine->lifecycle == CORE_MACHINE_FAULTED) {
+        core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+        lifecycle == CORE_MACHINE_INITIALIZED ||
+        lifecycle == CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (machine->board->keyboard_topology ==
@@ -356,8 +359,11 @@ lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
 lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
     lib_u8 *out_scan_set)
 {
+    core_machine_lifecycle lifecycle;
+
     if (machine == LIB_NULL || out_scan_set == LIB_NULL ||
-        machine->lifecycle == CORE_MACHINE_INITIALIZED) {
+        core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+        lifecycle == CORE_MACHINE_INITIALIZED) {
         return LIB_STATUS_INVALID_STATE;
     }
     *out_scan_set = machine->board->keyboard_topology ==
@@ -369,9 +375,12 @@ lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine
 lib_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
     const lib_u8 *native_bytes, lib_size count)
 {
+    core_machine_lifecycle lifecycle;
+
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
-        machine->lifecycle == CORE_MACHINE_FAULTED) {
+        core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+        lifecycle == CORE_MACHINE_INITIALIZED ||
+        lifecycle == CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (machine->board->keyboard_topology ==
@@ -396,10 +405,13 @@ lib_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
 lib_status core_machine_mouse_receive_relative(core_machine *machine,
     lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons)
 {
+    core_machine_lifecycle lifecycle;
+
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        (machine->lifecycle != CORE_MACHINE_RUNNING &&
-        machine->lifecycle != CORE_MACHINE_PAUSED &&
-        machine->lifecycle != CORE_MACHINE_STOPPED)) {
+        core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+        (lifecycle != CORE_MACHINE_RUNNING &&
+        lifecycle != CORE_MACHINE_PAUSED &&
+        lifecycle != CORE_MACHINE_STOPPED)) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (machine->board->keyboard_topology ==
@@ -1019,24 +1031,6 @@ lib_status core_machine_get_fdc_dma_request_binding(const core_machine *machine,
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_set_dma_bus_ready(core_machine *machine, lib_i32 ready)
-{
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->transaction_contract.dma_cycle_bus_ready_gate_enabled) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    machine->dma_cycle_bus_ready = ready ? LIB_TRUE : LIB_FALSE;
-    return LIB_STATUS_OK;
-}
-lib_status core_machine_set_cpu_bus_ready(core_machine *machine, lib_i32 ready)
-{
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    machine->cpu_cycle_bus_ready = ready ? LIB_TRUE : LIB_FALSE;
-    return LIB_STATUS_OK;
-}
 static void core_machine_rtc_irq_output(void *context, lib_bool asserted)
 {
     core_machine_pic_irq_source *source = context;

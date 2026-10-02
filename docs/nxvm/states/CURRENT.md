@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S1-S74 are accepted; no implementation S is active.
-S74 closes the neutral firmware publication and board-selected reset aliases.
+M5 T540 S1-S74 are accepted; S75 is active.
+S75 receives the complete lifecycle-observation and bus-READY owner boundary.
 Attachment ownership and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
@@ -2487,6 +2487,27 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
+## T540 S75 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S75, next numeric S after accepted S74. |
+| Admission And Approval | Owner's standing automatic bounded-S approval in T540; NXVM only. No Shared or MyNES modification. |
+| Objective | Move both existing CPU/DMA READY operations to the neutral scheduler; replace all six board input/display lifecycle consumers with the existing copied Core lifecycle operation. |
+| Non-goals | Running-time observation/timing qualification, attachment redesign or physical move, new API, changed lifecycle policy, chip algorithms, Shared/MyNES/INI/media/ROM edits. |
+| Reference Baseline | S74 P3 `9221e17dc`; READY definitions remain in machine_board.c and six input/display functions read private Core lifecycle. |
+| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S75 boundary](../etc/evidence/t540-s75-lifecycle-ready-boundary.md). |
+| Files And ABI Surface | Existing machine_board.c, machine_display.c, machine_scheduler.c, neutral-link and input/display fixtures, controller-authority gate and NXVM evidence. Existing public signatures, status codes, initialization and reset semantics unchanged. |
+| Applicable Rules | Sole Core lifecycle and READY state owners; board uses copied observation and bounded operations. Move definitions without a wrapper; no mirrored state, new queue, wait or getter facade. Unit inputs are synthetic owned values. |
+| Verification | All lifecycle states and null/output guards for six board operations; independent actual-Core linkage tests disabled/enabled READY gates, nonzero normalization, firmware mutation guard and reset defaults; complete x64/x86 unit suites and specialized gates, eight optimized stripped 0540 products and one external overlay boot each, documentation/diff checks. |
+| Expected Markers | Existing neutral-link/input-display/competition/prefetch markers pass; no production board reads Core lifecycle or writes READY/transaction state; both operation definitions exist only in the neutral scheduler. |
+| Asset Needs | Existing approved BYOB builds and INIs; all eight existing products updated only when input changes. MyNES and external master data untouched. |
+| Reporting Requirements | Executor confirms scope, reports verification progress and complete pushed delivery; record all production hits, exact tracked code delta, both-width proof, eight boot outcomes and artifact hashes. |
+| Stop Conditions | New public API, changed status/lifecycle behavior, timing-policy change or another target requires coordinator revision before implementation. |
+| Exit Criteria | Complete P1 pushed, actual-diff coordinator review and any corrective P, then pure-governance closure and clean tree. T540 stays open. |
+| Original Owner Request | Build independent neutral Core and reusable flat IBM-PC board components; automatic bounded numeric S admission with unchanged runnable machines. |
+| Similar-Issue Sweep | Scan tracked NXVM production/tests/build for lifecycle/READY/transaction field consumers and definitions. Core owners/test setup remain valid. One Running Port-B time read, three board deadline timing-qualification reads and both plan timing-publication sites are explicitly assigned to next S76 intake, before attachment and physical relocation; do not weaken existing get_elapsed_ticks restrictions. |
+
 ## T540 S74 Acceptance
 
 Coordinator actual pushed-diff review accepts runtime/test/artifact P1
@@ -3916,7 +3937,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S74 with unchanged owner INIs; S74 evidence records their hashes, PE
+T540 S75 with unchanged owner INIs; S75 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

@@ -2,6 +2,26 @@
 
 #include "app-nxvm/devices/machine.h"
 
+lib_status core_machine_set_dma_bus_ready(core_machine *machine, lib_i32 ready)
+{
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        !machine->transaction_contract.dma_cycle_bus_ready_gate_enabled) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    machine->dma_cycle_bus_ready = ready ? LIB_TRUE : LIB_FALSE;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_set_cpu_bus_ready(core_machine *machine, lib_i32 ready)
+{
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        !machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    machine->cpu_cycle_bus_ready = ready ? LIB_TRUE : LIB_FALSE;
+    return LIB_STATUS_OK;
+}
+
 static lib_u8 core_machine_deadline_consider_absolute(const core_machine *machine,
     lib_u64 due_tick, lib_u64 *io_source_ticks)
 {

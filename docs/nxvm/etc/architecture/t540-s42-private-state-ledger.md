@@ -127,6 +127,15 @@ S74 receives firmware publication as one Core binding/rollback transaction
 with board-selected reset alias policy and bounded ROM operations. General
 attachment ownership and test classification still precede physical movement.
 
+S75 receives all six input/display lifecycle consumers through the existing
+copied Core lifecycle operation and moves both bus READY definitions to the
+neutral scheduler. The remaining Running Port-B time read and three deadline
+qualification reads are assigned to S76 intake before attachment and physical
+movement; lifecycle observation does not justify relaxing time-read guards.
+That intake also includes both plan timing-declaration publication sites:
+the array write and the copied marker. The complete timing owner boundary,
+not merely its first reader, must close before the physical move.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

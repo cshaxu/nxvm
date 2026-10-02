@@ -98,6 +98,13 @@ completion. Core owns publication/rollback; board supplies PC policy through
 bounded ROM operations, without private registry access or a second provider.
 Attachment ownership and direct-test classification remain before relocation.
 
+S75 receives six board input/display lifecycle checks through the existing
+copied Core operation and places both READY definitions with the neutral
+scheduler. Running Port-B time and deadline qualification are the next measured
+scalar receiver; the existing stopped-time observer cannot be substituted in
+running port dispatch. Attachment and test classification still precede the
+required physical source cut.
+
 S65 separates the private neutral construction value without rewriting the
 public plan ABI: one board composition derives the temporary value and owns
 the existing public create/test-allocation pipeline. Core does not retain

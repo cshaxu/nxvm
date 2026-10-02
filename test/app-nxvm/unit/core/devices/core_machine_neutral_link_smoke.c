@@ -75,6 +75,53 @@ done:
     return failed;
 }
 
+static lib_i32 neutral_ready_levels(void)
+{
+    core_machine_executor_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+    };
+    const lib_i32 levels[] = {0, 1, -3};
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = 1;
+
+    if (core_machine_set_cpu_bus_ready(LIB_NULL, 1) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_set_dma_bus_ready(LIB_NULL, 1) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
+            LIB_STATUS_OK) goto done;
+    if (core_machine_set_cpu_bus_ready(machine, 0) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_INVALID_ARGUMENT ||
+        !machine->cpu_cycle_bus_ready || !machine->dma_cycle_bus_ready) goto done;
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
+    config.transaction_contract.dma_cycle_bus_ready_gate_enabled = LIB_TRUE;
+    if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
+            LIB_STATUS_OK) goto done;
+    for (lib_size index = 0u; index < sizeof(levels) / sizeof(levels[0]); ++index) {
+        const lib_bool expected = levels[index] != 0 ? LIB_TRUE : LIB_FALSE;
+        if (core_machine_set_cpu_bus_ready(machine, levels[index]) != LIB_STATUS_OK ||
+            core_machine_set_dma_bus_ready(machine, levels[index]) != LIB_STATUS_OK ||
+            machine->cpu_cycle_bus_ready != expected ||
+            machine->dma_cycle_bus_ready != expected) goto done;
+    }
+    machine->firmware_operation_active = LIB_TRUE;
+    if (core_machine_set_cpu_bus_ready(machine, 0) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_INVALID_ARGUMENT ||
+        !machine->cpu_cycle_bus_ready || !machine->dma_cycle_bus_ready) goto done;
+    machine->firmware_operation_active = LIB_FALSE;
+    if (core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_set_cpu_bus_ready(machine, 0) != LIB_STATUS_OK ||
+        core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        !machine->cpu_cycle_bus_ready || !machine->dma_cycle_bus_ready) goto done;
+    failed = 0;
+done:
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static lib_status neutral_firmware_configure(void *owner,
     core_machine_firmware_context *firmware)
 {
@@ -170,7 +217,7 @@ lib_i32 main(void)
     lib_u8 byte = 0u;
     lib_i32 failed = 1;
 
-    if (neutral_memory_aliases() || neutral_rom_windows()) goto done;
+    if (neutral_memory_aliases() || neutral_rom_windows() || neutral_ready_levels()) goto done;
     if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
             LIB_STATUS_OK) goto done;
     if (machine->board != LIB_NULL ||
