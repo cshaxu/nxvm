@@ -198,6 +198,32 @@ this later source-intake assignment narrows S23 before code and governs later
 unadmitted work. No S suffix
 or parallel board execution loop is introduced.
 
+## S25 Arbitration Source-Intake Refinement
+
+The remaining arbitration function is not one owner-sized move. It couples
+three different mechanisms and Core effects in a strict sequence: D4 refresh
+pending/address is board state but HOLD/begin/commit is Core transaction;
+DMA clocks/request/grants belong to the board chip while HOLD, wait and CPU
+prefetch locality are Core bus policy; PIT outputs and PIC refresh are
+board-only after the prefetch decision. A single opaque board callback would
+either receive raw Core transaction state or move CPU prefetch into the board.
+
+| Linear receiver | Exact boundary |
+| --- | --- |
+| S25 | Source-only intake and bounded contract/receiver map, with no runtime change. |
+| S26 | D4 refresh HOLD: board supplies pending/address as copied request; Core owns HOLD and refresh transaction; board consumes successful completion. Preserve failed-HOLD pending state. |
+| S27 | DMA clock, wait and grant: board owns clock/request/chip advancement; Core owns HOLD/wait policy and CPU prefetch decision. No raw transaction or RAM pointer crosses into board. |
+| S28 | PIT/auxiliary PIT advancement and PIC refresh after prefetch, including original trace order. |
+| S29 | CPU interrupt-pending/INTA board PIC service and DMA-HOLD locality trace. |
+| S30 | Split mixed plan/create/reset/destroy by private state owner. |
+| S31 | Move neutral Core and direct tests into `x86/core`, deleting App source copy. |
+| S32 onward | Extract only proven common/AT/XT board mechanisms and run the full T ledger/external gate. |
+
+The former S25-S29 prospective rows above are retained only as historical
+planning context. This later source inspection narrows S25 before code and
+assigns every unaccepted effect a linear numeric receiver. No second clock,
+scheduler, transaction owner or suffix identifier is introduced.
+
 Every code S runs the complete repository-only x64/x86 unit suites, affected
 four-profile Release pairs, applicable Shared receivers/manifests, and the
 focused board/reset/interrupt/deadline regressions named by its packet. T540
