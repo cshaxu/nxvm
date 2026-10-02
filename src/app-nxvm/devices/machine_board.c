@@ -2,6 +2,7 @@
 #include "app-nxvm/devices/device_support.h"
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 
 #define CORE_MACHINE_BOARD_A20_BIT 0x02u
 
@@ -80,6 +81,12 @@ lib_status core_machine_board_create(core_machine *machine,
     core_machine_port_provider_entry *port_checkpoint;
     lib_u8 dma_controller_count;
 
+    machine->board = (core_machine_board_state *)lib_allocate_zero(1u,
+        sizeof(*machine->board));
+    if (machine->board == LIB_NULL) {
+        core_machine_destroy(machine);
+        return LIB_STATUS_NO_MEMORY;
+    }
     if (core_machine_board_initialize_clocks(machine,
             &config->clock_plan) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
@@ -88,7 +95,7 @@ lib_status core_machine_board_create(core_machine *machine,
 
     dma_controller_count = config->dma_controller_count == 0u ?
         CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
-    machine->keyboard_topology = config->keyboard_topology;
+    machine->board->keyboard_topology = config->keyboard_topology;
     machine->board_deadline_provider = core_machine_board_deadline_observe;
     machine->board_refresh_request_provider = core_machine_board_refresh_request;
     machine->board_refresh_complete_provider = core_machine_board_refresh_complete;
@@ -107,14 +114,14 @@ lib_status core_machine_board_create(core_machine *machine,
     machine->board_owner = machine;
     /* Zero is an explicit profile choice: without a calibrated guest-time
      * mapping, core-generated keyboard repeat must remain disabled. */
-    machine->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
-    machine->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
-    machine->kbc_command_response_ticks = config->kbc_command_response_ticks;
-    machine->kbc_command_response_status_polls =
+    machine->board->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
+    machine->board->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
+    machine->board->kbc_command_response_ticks = config->kbc_command_response_ticks;
+    machine->board->kbc_command_response_status_polls =
         config->kbc_command_response_status_polls;
-    machine->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
-    machine->kbc_input_port_configured = config->kbc_input_port_configured;
-    machine->kbc_input_port = config->kbc_input_port;
+    machine->board->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
+    machine->board->kbc_input_port_configured = config->kbc_input_port_configured;
+    machine->board->kbc_input_port = config->kbc_input_port;
     /* Firmware-less fixtures may supply reset bytes from ordinary board RAM.
      * Firmware-backed machines install the reset-only ROM overlay later. */
     if (machine->executor_memory.connect.installed_bytes >= 0x00100000u &&
@@ -229,14 +236,14 @@ lib_status core_machine_board_create(core_machine *machine,
                 config->kbc_reset_output_port);
         }
         core_machine_kbc_set_typematic_timing(&machine->shared_kbc,
-            machine->kbc_typematic_initial_ticks,
-            machine->kbc_typematic_repeat_ticks);
+            machine->board->kbc_typematic_initial_ticks,
+            machine->board->kbc_typematic_repeat_ticks);
         core_machine_kbc_set_command_response_timing(&machine->shared_kbc,
-            machine->kbc_command_response_ticks);
+            machine->board->kbc_command_response_ticks);
         core_machine_kbc_set_command_response_status_polls(&machine->shared_kbc,
-            machine->kbc_command_response_status_polls);
+            machine->board->kbc_command_response_status_polls);
         core_machine_kbc_set_serial_delivery_timing(&machine->shared_kbc,
-            machine->kbc_serial_delivery_ticks);
+            machine->board->kbc_serial_delivery_ticks);
     }
     x86_pit_set_output(machine->shared_pit.device, 1, LIB_NULL, LIB_NULL);
     {
@@ -266,7 +273,7 @@ lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
     }
-    if (machine->keyboard_topology ==
+    if (machine->board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         return x86_xt_keyboard_receive_native_bytes(machine->xt_keyboard,
             &native_byte, 1u);
@@ -281,7 +288,7 @@ lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine
         machine->lifecycle == CORE_MACHINE_INITIALIZED) {
         return LIB_STATUS_INVALID_STATE;
     }
-    *out_scan_set = machine->keyboard_topology ==
+    *out_scan_set = machine->board->keyboard_topology ==
         CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ? CORE_MACHINE_KEYBOARD_SCAN_SET_1 :
         x86_keyboard_get_signals(machine->shared_kbc.connect.keyboard).scan_set;
     return LIB_STATUS_OK;
@@ -295,7 +302,7 @@ lib_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
     }
-    if (machine->keyboard_topology ==
+    if (machine->board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         return x86_xt_keyboard_receive_native_bytes(machine->xt_keyboard,
             native_bytes, count);
@@ -307,7 +314,7 @@ lib_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
     core_machine_xt_ppi_fault_input input, lib_i32 asserted)
 {
     if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        machine->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        machine->board->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         return LIB_STATUS_INVALID_STATE;
     }
     return core_machine_xt_ppi_keyboard_set_fault_input(&machine->xt_ppi_keyboard,
@@ -323,7 +330,7 @@ lib_status core_machine_mouse_receive_relative(core_machine *machine,
         machine->lifecycle != CORE_MACHINE_STOPPED)) {
         return LIB_STATUS_INVALID_STATE;
     }
-    if (machine->keyboard_topology ==
+    if (machine->board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) return LIB_STATUS_UNSUPPORTED;
     return core_machine_kbc_submit_aux_report(&machine->shared_kbc, delta_x, delta_y, buttons);
 }
@@ -523,7 +530,7 @@ static lib_status core_machine_rtc_cmos_port_read(void *owner,
     core_machine *machine = (core_machine *)owner;
 
     if (machine == LIB_NULL || out_value == LIB_NULL ||
-        port != machine->rtc_cmos_config.data_port) {
+        port != machine->board->rtc_cmos_config.data_port) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     *out_value = x86_rtc_read_register(machine->shared_rtc,
@@ -537,14 +544,14 @@ static lib_status core_machine_rtc_cmos_port_write(void *owner,
     core_machine *machine = (core_machine *)owner;
 
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (port == machine->rtc_cmos_config.index_port) {
+    if (port == machine->board->rtc_cmos_config.index_port) {
         (void)core_machine_set_nmi_mask(machine,
-            (value & machine->rtc_cmos_config.nmi_mask_bit) != 0u ?
+            (value & machine->board->rtc_cmos_config.nmi_mask_bit) != 0u ?
             LIB_TRUE : LIB_FALSE);
         machine->rtc_selected_register = (lib_u8)(value & 0x3fu);
         return LIB_STATUS_OK;
     }
-    if (port == machine->rtc_cmos_config.data_port) {
+    if (port == machine->board->rtc_cmos_config.data_port) {
         x86_rtc_write_register(machine->shared_rtc,
             machine->rtc_selected_register, (lib_u8)value);
         return LIB_STATUS_OK;
@@ -736,19 +743,19 @@ static void core_machine_d4_platform_failsafe_output(void *owner,
 void core_machine_board_reset_devices(core_machine *machine)
 {
     core_machine_d4_memory_reset(machine);
-    if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+    if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_reset(&machine->xt_ppi_keyboard);
         x86_xt_keyboard_reset(machine->xt_keyboard);
     } else {
         core_machine_kbc_reset(&machine->shared_kbc);
-        if (machine->kbc_input_port_configured) {
+        if (machine->board->kbc_input_port_configured) {
             core_machine_kbc_set_input_port(&machine->shared_kbc,
-                machine->kbc_input_port);
+                machine->board->kbc_input_port);
         }
     }
     core_machine_dma_reset(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary);
-    if (machine->rtc_cmos_configured) x86_rtc_reset(machine->shared_rtc);
+    if (machine->board->rtc_cmos_configured) x86_rtc_reset(machine->shared_rtc);
     machine->planar_parity_port_b = machine->planar_parity_configured ? 0x04u : 0u;
     machine->planar_parity_latched = LIB_FALSE;
     machine->planar_parity_nmi_signaled = LIB_FALSE;
@@ -776,6 +783,7 @@ void core_machine_board_reset_devices(core_machine *machine)
 
 void core_machine_board_finalize_devices(core_machine *machine)
 {
+    if (machine->board == LIB_NULL) return;
     core_machine_pit_bus_destroy(&machine->shared_pit);
     core_machine_pit_bus_destroy(&machine->auxiliary_pit);
     core_machine_hdc_finalize(&machine->hdc);
@@ -783,13 +791,15 @@ void core_machine_board_finalize_devices(core_machine *machine)
     core_machine_dma_finalize(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary);
     x86_rtc_destroy(machine->shared_rtc);
-    if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+    if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         x86_xt_keyboard_destroy(machine->xt_keyboard);
         core_machine_xt_ppi_keyboard_finalize(&machine->xt_ppi_keyboard);
     } else core_machine_kbc_finalize(&machine->shared_kbc);
     core_machine_pic_finalize(&machine->shared_pic_master,
         &machine->shared_pic_slave);
     core_machine_vadp_finalize(&machine->shared_vadp);
+    lib_release(machine->board);
+    machine->board = LIB_NULL;
 }
 
 void core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
@@ -814,7 +824,7 @@ void core_machine_board_set_xt_ppi_speaker(core_machine *machine,
 void core_machine_board_after_pit_reset(core_machine *machine)
 {
     if (machine == LIB_NULL) return;
-    if (machine->dma_configured && !machine->d4_platform_configured) {
+    if (machine->board->dma_configured && !machine->d4_platform_configured) {
         x86_pit_set_output(machine->shared_pit.device, 1u,
             core_machine_dma_refresh_pit_output, machine);
     }
@@ -838,7 +848,7 @@ void core_machine_board_after_pit_reset(core_machine *machine)
 
 void core_machine_board_refresh_nmi(core_machine *machine)
 {
-    if (machine != LIB_NULL && machine->keyboard_topology ==
+    if (machine != LIB_NULL && machine->board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_refresh_nmi(&machine->xt_ppi_keyboard);
     }
@@ -903,8 +913,8 @@ static void core_machine_fdc_dma_request_assert(void *owner,
     core_machine *machine = owner;
 
     if (machine == LIB_NULL || binding == LIB_NULL ||
-        binding->core_token != machine->fdc_dma_request.core_token ||
-        binding->channel != machine->fdc_dma_request.channel) return;
+        binding->core_token != machine->board->fdc_dma_request.core_token ||
+        binding->channel != machine->board->fdc_dma_request.channel) return;
     core_machine_dma_request_assert(&machine->shared_dma_primary,
         &machine->shared_dma_secondary, binding);
 }
@@ -915,8 +925,8 @@ static void core_machine_fdc_dma_request_deassert(void *owner,
     core_machine *machine = owner;
 
     if (machine == LIB_NULL || binding == LIB_NULL ||
-        binding->core_token != machine->fdc_dma_request.core_token ||
-        binding->channel != machine->fdc_dma_request.channel) return;
+        binding->core_token != machine->board->fdc_dma_request.core_token ||
+        binding->channel != machine->board->fdc_dma_request.channel) return;
     core_machine_dma_request_deassert(&machine->shared_dma_primary,
         &machine->shared_dma_secondary, binding);
 }
@@ -927,8 +937,8 @@ static void core_machine_hdc_dma_request_assert(void *owner,
     core_machine *machine = owner;
 
     if (machine == LIB_NULL || binding == LIB_NULL ||
-        binding->core_token != machine->hdc_dma_request.core_token ||
-        binding->channel != machine->hdc_dma_request.channel) return;
+        binding->core_token != machine->board->hdc_dma_request.core_token ||
+        binding->channel != machine->board->hdc_dma_request.channel) return;
     core_machine_dma_request_assert(&machine->shared_dma_primary,
         &machine->shared_dma_secondary, binding);
 }
@@ -939,8 +949,8 @@ static void core_machine_hdc_dma_request_deassert(void *owner,
     core_machine *machine = owner;
 
     if (machine == LIB_NULL || binding == LIB_NULL ||
-        binding->core_token != machine->hdc_dma_request.core_token ||
-        binding->channel != machine->hdc_dma_request.channel) return;
+        binding->core_token != machine->board->hdc_dma_request.core_token ||
+        binding->channel != machine->board->hdc_dma_request.channel) return;
     core_machine_dma_request_deassert(&machine->shared_dma_primary,
         &machine->shared_dma_secondary, binding);
 }
@@ -952,10 +962,10 @@ static void core_machine_dma_refresh_pit_output(void *owner, lib_u8 asserted)
     if (machine == LIB_NULL) return;
     if (asserted) {
         core_machine_dma_request_deassert(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary, &machine->refresh_dma_request);
+            &machine->shared_dma_secondary, &machine->board->refresh_dma_request);
     } else {
         core_machine_dma_request_assert(&machine->shared_dma_primary,
-            &machine->shared_dma_secondary, &machine->refresh_dma_request);
+            &machine->shared_dma_secondary, &machine->board->refresh_dma_request);
     }
 }
 
@@ -982,40 +992,40 @@ lib_status core_machine_configure_dma(core_machine *machine,
 {
     lib_status status;
 
-    if (!core_machine_configuration_is_open(machine) || machine->dma_configured) {
+    if (!core_machine_configuration_is_open(machine) || machine->board->dma_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (!core_machine_dma_wiring_is_valid(wiring) || out_fdc_request == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    machine->fdc_dma_request = (core_machine_dma_request_binding) {0};
+    machine->board->fdc_dma_request = (core_machine_dma_request_binding) {0};
     if (wiring->fdc_channel != CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND) {
         status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
             wiring->fdc_channel, core_machine_fdc_dma_provider(), &machine->fdc,
-            &machine->fdc_dma_request);
+            &machine->board->fdc_dma_request);
         if (status != LIB_STATUS_OK) return status;
     }
     status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary, 0u,
-        &core_machine_dma_refresh_provider, machine, &machine->refresh_dma_request);
+        &core_machine_dma_refresh_provider, machine, &machine->board->refresh_dma_request);
     if (status != LIB_STATUS_OK) return status;
     x86_pit_set_output(machine->shared_pit.device, 1u,
         core_machine_dma_refresh_pit_output, machine);
-    machine->dma_wiring = *wiring;
-    machine->dma_configured = LIB_TRUE;
-    *out_fdc_request = machine->fdc_dma_request;
+    machine->board->dma_wiring = *wiring;
+    machine->board->dma_configured = LIB_TRUE;
+    *out_fdc_request = machine->board->fdc_dma_request;
     return LIB_STATUS_OK;
 }
 
 lib_status core_machine_get_fdc_dma_request_binding(const core_machine *machine,
     core_machine_dma_request_binding *out_binding)
 {
-    if (machine == LIB_NULL || out_binding == LIB_NULL || !machine->dma_configured ||
-        machine->fdc_dma_request.core_token == 0u) {
+    if (machine == LIB_NULL || out_binding == LIB_NULL || !machine->board->dma_configured ||
+        machine->board->fdc_dma_request.core_token == 0u) {
         return LIB_STATUS_INVALID_STATE;
     }
-    *out_binding = machine->fdc_dma_request;
+    *out_binding = machine->board->fdc_dma_request;
     return LIB_STATUS_OK;
 }
 
@@ -1053,7 +1063,7 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     lib_size index;
 
     if (!core_machine_configuration_is_open(machine) ||
-        machine->rtc_cmos_configured) {
+        machine->board->rtc_cmos_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (!core_machine_rtc_cmos_config_is_valid(config)) {
@@ -1102,8 +1112,8 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
         x86_rtc_write_register(machine->shared_rtc, 0x2fu,
             CORE_MACHINE_MASK_U8(checksum));
     }
-    machine->rtc_cmos_config = *config;
-    machine->rtc_cmos_configured = LIB_TRUE;
+    machine->board->rtc_cmos_config = *config;
+    machine->board->rtc_cmos_configured = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
@@ -1451,31 +1461,31 @@ lib_status core_machine_configure_fdc(core_machine *machine,
 {
     lib_status status;
 
-    if (!core_machine_configuration_is_open(machine) || !machine->dma_configured ||
-        machine->fdc_configured) {
+    if (!core_machine_configuration_is_open(machine) || !machine->board->dma_configured ||
+        machine->board->fdc_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (!core_machine_fdc_topology_is_valid(topology) ||
-        topology->dma_request.core_token != machine->fdc_dma_request.core_token ||
-        topology->dma_request.channel != machine->fdc_dma_request.channel) {
+        topology->dma_request.core_token != machine->board->fdc_dma_request.core_token ||
+        topology->dma_request.channel != machine->board->fdc_dma_request.channel) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    machine->fdc_topology = *topology;
-    core_machine_fdc_connect(&machine->fdc, machine->fdc_topology.media_registry,
-        &machine->fdc_topology.drives, &machine->fdc_topology.dma_request,
+    machine->board->fdc_topology = *topology;
+    core_machine_fdc_connect(&machine->fdc, machine->board->fdc_topology.media_registry,
+        &machine->board->fdc_topology.drives, &machine->board->fdc_topology.dma_request,
         core_machine_fdc_dma_request_assert,
         core_machine_fdc_dma_request_deassert, machine,
         &machine->shared_pic_master, &machine->shared_pic_slave,
-        machine, &machine->fdc_topology.config,
-        &machine->fdc_topology.observation_provider);
+        machine, &machine->board->fdc_topology.config,
+        &machine->board->fdc_topology.observation_provider);
     status = core_machine_fdc_initialize(&machine->fdc);
     if (status != LIB_STATUS_OK) {
         core_machine_fdc_finalize(&machine->fdc);
-        lib_memory_set(&machine->fdc_topology, 0u,
-            sizeof(machine->fdc_topology));
+        lib_memory_set(&machine->board->fdc_topology, 0u,
+            sizeof(machine->board->fdc_topology));
         return status;
     }
-    machine->fdc_configured = LIB_TRUE;
+    machine->board->fdc_configured = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 
@@ -1490,18 +1500,18 @@ lib_status core_machine_configure_hdc(core_machine *machine,
     lib_status status;
     lib_bool xebec;
 
-    if (!core_machine_configuration_is_open(machine) || machine->hdc_configured) {
+    if (!core_machine_configuration_is_open(machine) || machine->board->hdc_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (!core_machine_hdc_topology_is_valid(topology)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB &&
-        (!machine->fdc_configured ||
+        (!machine->board->fdc_configured ||
             topology->config.bus.task_file.drive_address_port !=
-                machine->fdc_topology.config.direction_port)) return LIB_STATUS_INVALID_STATE;
+                machine->board->fdc_topology.config.direction_port)) return LIB_STATUS_INVALID_STATE;
     xebec = topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT;
-    if (xebec && !machine->dma_configured) return LIB_STATUS_INVALID_STATE;
+    if (xebec && !machine->board->dma_configured) return LIB_STATUS_INVALID_STATE;
     provider = core_machine_hdc_port_provider();
     if (provider == LIB_NULL) return LIB_STATUS_INTERNAL_ERROR;
     port_count = core_machine_hdc_port_addresses(&topology->config, ports);
@@ -1516,19 +1526,19 @@ lib_status core_machine_configure_hdc(core_machine *machine,
             .read = provider->read, .owner = &machine->hdc,
             .wired_or_read = LIB_TRUE};
     }
-    machine->hdc_topology = *topology;
-    core_machine_hdc_connect(&machine->hdc, machine->hdc_topology.media_registry,
-        machine->hdc_topology.media_id, machine->hdc_topology.slave_media_id,
+    machine->board->hdc_topology = *topology;
+    core_machine_hdc_connect(&machine->hdc, machine->board->hdc_topology.media_registry,
+        machine->board->hdc_topology.media_id, machine->board->hdc_topology.slave_media_id,
         &machine->shared_pic_master,
-        &machine->shared_pic_slave, &machine->hdc_topology.config);
+        &machine->shared_pic_slave, &machine->board->hdc_topology.config);
     status = core_machine_hdc_initialize(&machine->hdc);
     if (status == LIB_STATUS_OK)
         status = core_machine_install_port_routes(machine, routes, port_count);
     if (status == LIB_STATUS_OK && xebec) {
         status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
-            machine->hdc_topology.config.bus.xebec.dma_channel,
-            core_machine_hdc_dma_provider(), &machine->hdc, &machine->hdc_dma_request);
+            machine->board->hdc_topology.config.bus.xebec.dma_channel,
+            core_machine_hdc_dma_provider(), &machine->hdc, &machine->board->hdc_dma_request);
         if (status != LIB_STATUS_OK) {
             lib_status rollback = core_machine_remove_port_routes(machine, &machine->hdc);
 
@@ -1537,15 +1547,15 @@ lib_status core_machine_configure_hdc(core_machine *machine,
     }
     if (status != LIB_STATUS_OK) {
         core_machine_hdc_finalize(&machine->hdc);
-        lib_memory_set(&machine->hdc_topology, 0u,
-            sizeof(machine->hdc_topology));
+        lib_memory_set(&machine->board->hdc_topology, 0u,
+            sizeof(machine->board->hdc_topology));
         return status;
     }
     if (xebec) {
-        core_machine_hdc_bind_dma_request(&machine->hdc, &machine->hdc_dma_request,
+        core_machine_hdc_bind_dma_request(&machine->hdc, &machine->board->hdc_dma_request,
             core_machine_hdc_dma_request_assert, core_machine_hdc_dma_request_deassert,
             machine);
     }
-    machine->hdc_configured = LIB_TRUE;
+    machine->board->hdc_configured = LIB_TRUE;
     return LIB_STATUS_OK;
 }

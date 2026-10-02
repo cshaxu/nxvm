@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -31,8 +32,8 @@ int main(void)
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x03f2u) ||
         !core_machine_port_has_read(&session->core_machine->executor_port, 0x03f4u) ||
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x03f5u) ||
-        session->core_machine->fdc_topology.config.irq != route->irq ||
-        session->core_machine->fdc_topology.config.dma_channel != route->dma_channel;
+        session->core_machine->board->fdc_topology.config.irq != route->irq ||
+        session->core_machine->board->fdc_topology.config.dma_channel != route->dma_channel;
     vm_machine_destroy(session);
     if (failed) return 1;
     printf("M5:T366:S7:MODEL339-FIRMWARE-FDC-TOPOLOGY:OK\n");

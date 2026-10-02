@@ -6,6 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" creation)
 foreach(forbidden "machine->pit_clock" "machine->auxiliary_pit_clock"
+    "machine->board->pit_clock" "machine->board->auxiliary_pit_clock"
     "machine->shared_pit" "machine->auxiliary_pit.device"
     "machine->shared_pic_master" "machine->shared_pic_slave"
     "x86_pit_advance(" "core_machine_pic_refresh(")
@@ -24,8 +25,8 @@ foreach(required "board_pit_ticks_provider(machine->board_owner,"
 endforeach()
 foreach(required "core_machine_board_pit_ticks_advance("
     "core_machine_board_pit_pic_advance("
-    "core_machine_clock_domain_advance(&machine->pit_clock"
-    "&machine->auxiliary_pit_clock" "x86_pit_advance("
+    "core_machine_clock_domain_advance(&machine->board->pit_clock"
+    "&machine->board->auxiliary_pit_clock" "x86_pit_advance("
     "CORE_MACHINE_TRACE_PIT_ADVANCE" "core_machine_pic_refresh("
     "CORE_MACHINE_TRACE_PIC_REFRESH")
     string(FIND "${board}" "${required}" position)

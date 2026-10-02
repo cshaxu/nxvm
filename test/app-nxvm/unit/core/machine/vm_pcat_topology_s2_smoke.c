@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -53,11 +54,11 @@ static lib_i32 pcat_topology_registry_matches_profile(
             keyboard_route->irq ||
         !x86_kbc8042_aux_enabled(session->core_machine->shared_kbc.chip) ||
         session->core_machine->shared_kbc.connect.irq12_source.irq != aux_route->irq ||
-        session->core_machine->rtc_cmos_config.irq != cmos_route->irq ||
-        session->core_machine->fdc_topology.config.irq != fdc_route->irq ||
-        session->core_machine->fdc_topology.config.dma_channel !=
+        session->core_machine->board->rtc_cmos_config.irq != cmos_route->irq ||
+        session->core_machine->board->fdc_topology.config.irq != fdc_route->irq ||
+        session->core_machine->board->fdc_topology.config.dma_channel !=
             fdc_route->dma_channel ||
-        session->core_machine->hdc_topology.config.irq !=
+        session->core_machine->board->hdc_topology.config.irq !=
             profile->hdc.irq;
     failed |= !core_machine_port_has_read(&session->core_machine->executor_port,
             0x0061u) ||

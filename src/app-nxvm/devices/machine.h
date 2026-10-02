@@ -111,6 +111,8 @@ typedef struct core_machine_absent_memory {
     lib_u8 configured;
 } core_machine_absent_memory;
 
+typedef struct core_machine_board_state core_machine_board_state;
+
 typedef struct core_machine_board_deadline_observation {
     lib_u64 source_ticks;
     lib_u8 immediate_due;
@@ -186,32 +188,10 @@ struct core_machine {
     core_machine_retirement_eligibility_key retirement_qualification[
         CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY];
     lib_size retirement_qualification_count;
-    core_machine_clock_domain dma_clock;
-    core_machine_clock_domain pit_clock;
-    core_machine_clock_domain auxiliary_pit_clock;
-    core_machine_clock_domain rtc_clock;
-    core_machine_clock_domain vadp_clock;
-    core_machine_clock_domain kbc_clock;
     core_machine_clock_domain provider_clock;
     core_machine_time_axis time_axis;
     core_machine_l1_compatibility_policy l1_compatibility_policy;
-    lib_u32 kbc_typematic_initial_ticks;
-    lib_u32 kbc_typematic_repeat_ticks;
-    lib_u32 kbc_command_response_ticks;
-    lib_u8 kbc_command_response_status_polls;
-    lib_u32 kbc_serial_delivery_ticks;
-    lib_u8 kbc_input_port_configured;
-    lib_u8 kbc_input_port;
-    core_machine_keyboard_topology keyboard_topology;
-    core_machine_display_port_topology display_ports;
-    lib_u8 display_configured;
-    core_machine_dma_wiring dma_wiring;
-    core_machine_dma_request_binding fdc_dma_request;
-    core_machine_dma_request_binding hdc_dma_request;
-    core_machine_dma_request_binding refresh_dma_request;
-    lib_u8 dma_configured;
-    core_machine_rtc_cmos_config rtc_cmos_config;
-    lib_u8 rtc_cmos_configured;
+    core_machine_board_state *board;
     core_machine_planar_parity_config planar_parity_config;
     lib_u8 planar_parity_port_b;
     lib_u8 planar_parity_configured;
@@ -228,10 +208,6 @@ struct core_machine {
     lib_u8 d4_platform_failsafe_latched;
     lib_u8 d4_platform_nmi_signaled;
     core_machine_absent_memory absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
-    core_machine_fdc_topology fdc_topology;
-    lib_u8 fdc_configured;
-    core_machine_hdc_topology hdc_topology;
-    lib_u8 hdc_configured;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
     core_machine_retirement_observation_state retirement_observation;

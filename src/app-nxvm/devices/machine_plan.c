@@ -1,6 +1,7 @@
 #include "lib/types/types_interface.h"
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 
 lib_i32 core_machine_retirement_time_contract_is_valid(
     core_machine_retirement_time_contract contract)
@@ -266,7 +267,7 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
         core_machine_display_provider_slot_freeze(plan->display_provider);
     }
     if (topology->dma_present && (status = core_machine_configure_dma(machine,
-            &topology->dma, &machine->fdc_dma_request)) != LIB_STATUS_OK) return status;
+            &topology->dma, &machine->board->fdc_dma_request)) != LIB_STATUS_OK) return status;
     if (topology->rtc_cmos_present && (status = core_machine_configure_rtc_cmos(
             machine, &topology->rtc_cmos)) != LIB_STATUS_OK) return status;
     if (topology->fdc_present) {
@@ -274,7 +275,7 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
         fdc.drives = topology->fdc_drives;
         fdc.config = topology->fdc;
         fdc.observation_provider = plan->fdc_observation_provider;
-        fdc.dma_request = machine->fdc_dma_request;
+        fdc.dma_request = machine->board->fdc_dma_request;
         if ((status = core_machine_configure_fdc(machine, &fdc)) != LIB_STATUS_OK) {
             return status;
         }

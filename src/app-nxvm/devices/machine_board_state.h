@@ -1,0 +1,38 @@
+#ifndef CORE_MACHINE_BOARD_STATE_H
+#define CORE_MACHINE_BOARD_STATE_H
+
+#include "app-nxvm/devices/machine.h"
+
+/* One board-owned lifetime. Fields move here by their actual owner; Core
+ * retains only the opaque attachment pointer and bounded callbacks. */
+struct core_machine_board_state {
+    core_machine_clock_domain dma_clock;
+    core_machine_clock_domain pit_clock;
+    core_machine_clock_domain auxiliary_pit_clock;
+    core_machine_clock_domain rtc_clock;
+    core_machine_clock_domain vadp_clock;
+    core_machine_clock_domain kbc_clock;
+    lib_u32 kbc_typematic_initial_ticks;
+    lib_u32 kbc_typematic_repeat_ticks;
+    lib_u32 kbc_command_response_ticks;
+    lib_u8 kbc_command_response_status_polls;
+    lib_u32 kbc_serial_delivery_ticks;
+    lib_u8 kbc_input_port_configured;
+    lib_u8 kbc_input_port;
+    core_machine_keyboard_topology keyboard_topology;
+    core_machine_display_port_topology display_ports;
+    lib_u8 display_configured;
+    core_machine_dma_wiring dma_wiring;
+    core_machine_dma_request_binding fdc_dma_request;
+    core_machine_dma_request_binding hdc_dma_request;
+    core_machine_dma_request_binding refresh_dma_request;
+    lib_u8 dma_configured;
+    core_machine_rtc_cmos_config rtc_cmos_config;
+    lib_u8 rtc_cmos_configured;
+    core_machine_fdc_topology fdc_topology;
+    lib_u8 fdc_configured;
+    core_machine_hdc_topology hdc_topology;
+    lib_u8 hdc_configured;
+};
+
+#endif

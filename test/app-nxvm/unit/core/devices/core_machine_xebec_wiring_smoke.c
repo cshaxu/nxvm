@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/port.h"
 
@@ -155,8 +156,8 @@ lib_i32 main(void)
             machine->hdc.connect.irq_source.irq != 5u) {
             failed |= 0x10;
         } else if (
-            machine->hdc_dma_request.core_token == 0u ||
-            machine->hdc_dma_request.channel != 3u) {
+            machine->board->hdc_dma_request.core_token == 0u ||
+            machine->board->hdc_dma_request.channel != 3u) {
             failed |= 0x20;
         } else {
             core_machine_port_write(&machine->executor_port, 0x0320u, dcb[0]);

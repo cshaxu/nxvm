@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 
 static lib_u8 board_consider_clock(const core_machine_clock_domain *clock,
     lib_u64 device_ticks, lib_u64 *io_source_ticks)
@@ -68,21 +69,21 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     /* A frozen fallback ratio remains an L2 timing claim, but is still a
      * Core-local conversion for a programmed PIT wake edge. */
     if (machine->timing_plan_copied) {
-        if (board_consider_pit(machine->shared_pit.device, &machine->pit_clock,
+        if (board_consider_pit(machine->shared_pit.device, &machine->board->pit_clock,
                 &out_observation->source_ticks))
             out_observation->immediate_due = LIB_TRUE;
         if (machine->auxiliary_pit_configured &&
             board_consider_pit(machine->auxiliary_pit.device,
-                &machine->auxiliary_pit_clock, &out_observation->source_ticks))
+                &machine->board->auxiliary_pit_clock, &out_observation->source_ticks))
             out_observation->immediate_due = LIB_TRUE;
     }
-    if (machine->timing_plan_copied && machine->rtc_cmos_configured &&
+    if (machine->timing_plan_copied && machine->board->rtc_cmos_configured &&
         x86_rtc_ticks_until_irq(machine->shared_rtc, &device_ticks) ==
-            LIB_STATUS_OK && board_consider_clock(&machine->rtc_clock,
+            LIB_STATUS_OK && board_consider_clock(&machine->board->rtc_clock,
                 device_ticks, &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
     if (dma_pending && dma_qualified &&
-        board_consider_clock(&machine->dma_clock, 1u,
+        board_consider_clock(&machine->board->dma_clock, 1u,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
     if (core_machine_fdc_next_due_tick(&machine->fdc, &due_tick) ==
@@ -102,7 +103,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
         out_observation->immediate_due = LIB_TRUE;
     if (core_machine_kbc_ticks_until_event(&machine->shared_kbc,
             &device_ticks) == LIB_STATUS_OK &&
-        board_consider_clock(&machine->kbc_clock, device_ticks,
+        board_consider_clock(&machine->board->kbc_clock, device_ticks,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
     if (core_machine_pic_ticks_until_event(&machine->shared_pic_master,
@@ -110,7 +111,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
         board_consider_absolute(now, now + device_ticks,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
-    if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
+    if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
         x86_xt_keyboard_ticks_until_event(machine->xt_keyboard,
             &device_ticks) == LIB_STATUS_OK) {
         if (device_ticks == 0u) out_observation->immediate_due = LIB_TRUE;

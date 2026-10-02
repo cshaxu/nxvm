@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -158,7 +159,7 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
         !core_machine_port_has_write(&machine->executor_port, 0x03d9u) ||
         !core_machine_port_has_read(&machine->executor_port, 0x03dau) ||
         core_machine_port_has_read(&machine->executor_port, 0x03c0u) ||
-        !machine->hdc_configured ||
+        !machine->board->hdc_configured ||
         machine->hdc.connect.config.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
         machine->hdc.connect.config.bus.xebec.drive_type !=
             CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||

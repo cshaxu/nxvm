@@ -1,6 +1,7 @@
 #include "lib/types/types_interface.h"
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 
 lib_status core_machine_capture_display_snapshot(const core_machine *machine,
     x86_video_snapshot *out_snapshot)
@@ -59,7 +60,7 @@ lib_status core_machine_configure_display(core_machine *machine,
 {
     lib_status status;
 
-    if (!core_machine_configuration_is_open(machine) || machine->display_configured) {
+    if (!core_machine_configuration_is_open(machine) || machine->board->display_configured) {
         return LIB_STATUS_INVALID_STATE;
     }
     if (config == LIB_NULL || !core_machine_display_ports_are_vadp(config) ||
@@ -70,7 +71,7 @@ lib_status core_machine_configure_display(core_machine *machine,
     }
     status = core_machine_vadp_configure(&machine->shared_vadp, config);
     if (status != LIB_STATUS_OK) return status;
-    machine->display_ports = config->ports;
-    machine->display_configured = LIB_TRUE;
+    machine->board->display_ports = config->ports;
+    machine->board->display_configured = LIB_TRUE;
     return LIB_STATUS_OK;
 }

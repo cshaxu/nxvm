@@ -3,6 +3,7 @@
 
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -15,14 +16,14 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     if (vm_model40_fixture_create(&session) != LIB_STATUS_OK ||
-        session == LIB_NULL || !session->core_machine->dma_configured ||
+        session == LIB_NULL || !session->core_machine->board->dma_configured ||
         session->core_machine->transaction_contract.dma_cycle_wait_quanta != 1u ||
         !session->core_machine->transaction_contract.dma_cycle_bus_ready_gate_enabled ||
         !session->core_machine->dma_cycle_bus_ready ||
-        session->core_machine->dma_wiring.fdc_channel != 2u ||
-        session->core_machine->dma_wiring.controller_count !=
+        session->core_machine->board->dma_wiring.fdc_channel != 2u ||
+        session->core_machine->board->dma_wiring.controller_count !=
             CORE_MACHINE_DMA_CONTROLLER_COUNT ||
-        session->core_machine->dma_wiring.cascade_channel !=
+        session->core_machine->board->dma_wiring.cascade_channel !=
             CORE_MACHINE_DMA_CASCADE_CHANNEL ||
         session->core_machine->shared_dma_primary.connect.peer !=
             &session->core_machine->shared_dma_secondary ||

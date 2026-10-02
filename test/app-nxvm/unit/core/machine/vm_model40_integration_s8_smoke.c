@@ -11,6 +11,7 @@
 #include "app-nxvm/devices/hdc.h"
 #include "app-nxvm/devices/kbc.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/port.h"
 #include "support/rom/model40_session_assets.h"
 
@@ -81,11 +82,11 @@ lib_i32 main(void)
             !kbc_test_command_matches(&session->core_machine->shared_kbc,
             &session->core_machine->executor_port, 0x20u,
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
-    failed |= !failed && (session->core_machine->fdc_topology.drives.installed_mask !=
-        0x03u || session->core_machine->fdc_topology.drives.double_sided_mask != 0x03u ||
-        session->core_machine->fdc_topology.drives.cylinder_count[0u] != 80u ||
-        session->core_machine->fdc_topology.drives.cylinder_count[1u] != 80u ||
-        session->core_machine->fdc_topology.drives.track_zero_active_low_mask != 0u ||
+    failed |= !failed && (session->core_machine->board->fdc_topology.drives.installed_mask !=
+        0x03u || session->core_machine->board->fdc_topology.drives.double_sided_mask != 0x03u ||
+        session->core_machine->board->fdc_topology.drives.cylinder_count[0u] != 80u ||
+        session->core_machine->board->fdc_topology.drives.cylinder_count[1u] != 80u ||
+        session->core_machine->board->fdc_topology.drives.track_zero_active_low_mask != 0u ||
         x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY) !=
             0x22u);
         core_machine_port_write(&session->core_machine->executor_port,
@@ -107,15 +108,15 @@ lib_i32 main(void)
     if (!failed) {
         vm_machine_reset(session);
         failed |= !session->core_machine->auxiliary_pit_configured ||
-            !session->core_machine->fdc_configured ||
-            session->core_machine->fdc_topology.config.irq != 6u ||
-            session->core_machine->fdc_topology.config.dma_channel != 2u ||
-            !session->core_machine->hdc_configured ||
-            session->core_machine->hdc_topology.config.irq != 14u ||
-            session->core_machine->hdc_topology.config.protocol !=
+            !session->core_machine->board->fdc_configured ||
+            session->core_machine->board->fdc_topology.config.irq != 6u ||
+            session->core_machine->board->fdc_topology.config.dma_channel != 2u ||
+            !session->core_machine->board->hdc_configured ||
+            session->core_machine->board->hdc_topology.config.irq != 14u ||
+            session->core_machine->board->hdc_topology.config.protocol !=
                 CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB ||
-            !session->core_machine->rtc_cmos_configured ||
-            session->core_machine->rtc_cmos_config.irq != 8u ||
+            !session->core_machine->board->rtc_cmos_configured ||
+            session->core_machine->board->rtc_cmos_config.irq != 8u ||
             !core_machine_port_has_read(&session->core_machine->executor_port,
                 0x03f7u) || !core_machine_port_has_write(
                 &session->core_machine->executor_port, 0x004bu);
@@ -172,8 +173,8 @@ lib_i32 main(void)
     if (failed && session != LIB_NULL) {
         printf("M5:T386:S8:MODEL40-INTEGRATION:FAILED-stage=%u-fdc=%02X/%02X-cmos=%02X-reset=%02X,%02X,%02X,%02X-final=%02X\n",
             (unsigned int)stage,
-            (unsigned int)session->core_machine->fdc_topology.drives.installed_mask,
-            (unsigned int)session->core_machine->fdc_topology.drives.track_zero_active_low_mask,
+            (unsigned int)session->core_machine->board->fdc_topology.drives.installed_mask,
+            (unsigned int)session->core_machine->board->fdc_topology.drives.track_zero_active_low_mask,
             (unsigned int)x86_rtc_read_register(session->core_machine->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY), (unsigned int)reset_status[0u],
             (unsigned int)reset_status[1u], (unsigned int)reset_status[2u],
             (unsigned int)reset_status[3u], (unsigned int)sense_status);
