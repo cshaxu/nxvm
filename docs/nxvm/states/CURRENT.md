@@ -2,8 +2,9 @@
 
 ## Current Work
 
-M5 T540 S72 is active: remove redundant board-constructor port rollback.
-S1-S71 are accepted. Reset-time board I/O remains a separate receiver.
+M5 T540 S1-S72 are accepted; no implementation S is active.
+S72 closes redundant constructor port rollback. Reset-time board I/O
+remains a separate receiver.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -92,7 +93,7 @@ the completed CPU extraction.
 | T540 S69 | Accepted: actual neutral sources link/run independently with only CPU/FPU/Lib dependencies and synthetic owned inputs. |
 | T540 S70 | Accepted: all board NMI/reset signal sites use opaque Core operations; both-width units/gates and eight single boots pass. |
 | T540 S71 | Accepted: RAM aliases and parity construction use Core-owned publication and rollback; dual-width units/gates and eight single boots pass. |
-| T540 S72 | Active: constructor port failure propagation and sole candidate destruction, without a board-owned registry checkpoint. |
+| T540 S72 | Accepted: sole Core route transaction and candidate destruction; every constructor port allocation failure, dual-width units/gates and eight single boots pass. |
 
 ## T540 S1 Acceptance
 
@@ -2471,26 +2472,18 @@ identities and limits. S71 is accepted; T540 remains open for measured port,
 firmware/attachment and physical relocation receivers. No next implementation
 is admitted by this governance closure.
 
-## T540 S72 Active Packet
+## T540 S72 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S72, next numeric receiver after accepted S71 P2. |
-| Admission And Approval | Owner standing automatic bounded-S admission within approved T540; NXVM source/test/gate/document/artifact changes only. Shared, MyNES, INIs and external masters are read-only. |
-| Objective | Remove the board constructor's redundant raw port checkpoint/status/rollback; each typed route batch owns its atomic publication, and failed candidate construction has one whole-machine destructor. |
-| Non-goals | Reset-time PIT programming, firmware/provider attachment, physical Shared relocation, timing or guest behavior changes, new APIs and MyNES builds. |
-| Reference Baseline | S71 P2 `2307dbbe2`; all seven route-producing constructor stages already propagate failure and their parent destroys the unpublished candidate. |
-| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S72 intake](../etc/evidence/t540-s72-port-construction-owner.md). |
-| Files And ABI Surface | machine_board.c constructor, existing port-assembly unit, controller-authority gate and task evidence; delete raw constructor checkpoint without adding ABI. |
-| Applicable Rules | One Core port registry/publication owner, one unpublished candidate cleanup, unchanged construction order and original error propagation; synthetic same-owner tests may use existing allocation injection. |
-| Verification | Expand existing test to every port allocation failure in AT, auxiliary-PIT AT and XT construction; public output stays NULL, exact NO_MEMORY and successful fresh construction. Full x64/x86 units and specialized/dependency/documentation gates; eight optimized stripped 0540 products and one external boot each. |
-| Expected Markers | No registry checkpoint/status/rollback in Board construction; Core route batches retain atomicity. Existing port-assembly marker and independent Core marker pass. |
-| Asset Needs | Existing unchanged owner INIs and external overlay media only; no acquisition or master writes. |
-| Reporting Requirements | Exact constructor caller/cleanup audit, allocation failure coverage, code-size delta, both-width tests/gates, eight hashes and retained reset-I/O/firmware/attachment cuts. |
-| Stop Conditions | A constructor ignores route failure, destruction misses a published route/resource, external behavior changes, or Shared/MyNES modification is required. Revise before proceeding beyond this boundary. |
-| Exit Criteria | Complete constructor failure class, required verification/artifacts/boots, complete P1 push and actual coordinator review, pure governance P2 push and clean tree. T540 remains open. |
-| Original Owner Request | Reusable neutral Core and flat IBM-PC boards; no raw state facade, duplicate ownership, layered patch or nonnumeric S identifier. |
-| Similar-Issue Sweep | Search all NXVM production registration begin/status/rollback calls; only port.c/port_interface.c retain registry mechanics after this receiver. Board refresh timer's three writes have distinct reset lifetime and are explicitly assigned the next receiver. |
+Coordinator actual-change review accepts pushed P1 `53c2d4085`: all sixteen
+changed files match the NXVM-only packet, including three source/test/gate
+paths and eight rebuilt products. Constructor order and error returns remain
+unchanged; Core batches and the sole destructor retain failure ownership.
+The [S72 evidence](../etc/evidence/t540-s72-port-construction-owner.md) records
+complete allocation-failure coverage, x64/x86 470/470 units, specialized gates,
+independent Core proofs, eight one-shot boots and artifact identities.
+Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
+reset-I/O, firmware/attachment and physical relocation. No next implementation
+is admitted by this governance closure.
 
 ## S87 Admission Packet
 
