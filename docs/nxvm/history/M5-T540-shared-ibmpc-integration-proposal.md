@@ -87,6 +87,12 @@ retain sole route transaction ownership. Reset-time refresh programming has
 a distinct lifecycle and bus side effect; it receives the next measured S,
 not a direct chip-write shortcut in this constructor cut.
 
+S73 completes that distinct refresh-programming receiver after proving Core
+scratch/width observability across construction and cold reset. Board uses
+the existing PIT register contract; guest port I/O keeps one Core dispatch.
+No construction-I/O facade is added. Firmware/attachment and test-owner
+classification still precede physical relocation.
+
 S65 separates the private neutral construction value without rewriting the
 public plan ABI: one board composition derives the temporary value and owns
 the existing public create/test-allocation pipeline. Core does not retain

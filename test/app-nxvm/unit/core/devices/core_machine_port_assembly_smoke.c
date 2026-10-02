@@ -337,6 +337,19 @@ static lib_i32 port_assembly_rtc_collision(void)
     return failed;
 }
 
+static lib_i32 port_assembly_refresh_count(core_machine *machine)
+{
+    x86_pit *pit = machine->board->shared_pit.device;
+    lib_u8 low = 0u, high = 0u;
+
+    /* The reload becomes observable on the next input-clock cycle. */
+    x86_pit_advance(pit, 1u);
+    return x86_pit_write_register(pit, 3u, 0x40u) != LIB_STATUS_OK ||
+        x86_pit_read_counter(pit, 1u, &low) != LIB_STATUS_OK ||
+        x86_pit_read_counter(pit, 1u, &high) != LIB_STATUS_OK ||
+        low != 18u || high != 0u;
+}
+
 static lib_i32 port_assembly_port_b_transaction(lib_bool d4, lib_size fail_at)
 {
     const core_machine_config config = {
@@ -375,6 +388,17 @@ static lib_i32 port_assembly_port_b_transaction(lib_bool d4, lib_size fail_at)
                 CORE_MACHINE_PC_AT_PORT_B) ||
             !core_machine_port_has_write(&machine->executor_port,
                 CORE_MACHINE_PC_AT_PORT_B);
+        if (!failed) failed |= port_assembly_refresh_count(machine) ||
+            core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK ||
+            machine->executor_port.data.ioDWord != 0u ||
+            port_assembly_refresh_count(machine) ||
+            core_machine_bus_write(machine, 0x0043u, 0x74u) != LIB_STATUS_OK ||
+            core_machine_bus_write(machine, 0x0041u, 2u) != LIB_STATUS_OK ||
+            core_machine_bus_write(machine, 0x0041u, 0u) != LIB_STATUS_OK ||
+            core_machine_reset(machine) != LIB_STATUS_OK ||
+            machine->executor_port.data.ioDWord != 0u ||
+            port_assembly_refresh_count(machine);
     }
     core_machine_destroy(machine);
     return failed;

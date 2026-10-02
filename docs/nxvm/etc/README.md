@@ -24,6 +24,9 @@ records RAM alias and parity receiving contracts and remaining port ownership.
 T540 S72: [port construction owner](evidence/t540-s72-port-construction-owner.md)
 records redundant constructor rollback and the distinct reset-I/O receiver.
 
+T540 S73: [board refresh PIT](evidence/t540-s73-board-refresh-pit.md)
+records chip initialization and the Core port-scratch observability proof.
+
 T540 S69: [independent neutral Core](evidence/t540-s69-independent-neutral-core.md)
 records actual-source OBJECT linkage without PC board archives and both-width
 Debug/Release runtime proof; physical relocation remains open.

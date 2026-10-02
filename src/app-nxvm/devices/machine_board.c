@@ -703,13 +703,10 @@ static void core_machine_dma_refresh_pit_output(void *owner,
 
 static void core_machine_pc_at_refresh_timer_program(core_machine *machine)
 {
-    lib_u16 count;
-
     if (machine == LIB_NULL) return;
-    count = 18u;
-    core_machine_port_write(&machine->executor_port, 0x0043u, 0x74u);
-    core_machine_port_write(&machine->executor_port, 0x0041u, count & 0xffu);
-    core_machine_port_write(&machine->executor_port, 0x0041u, count >> 8u);
+    (void)x86_pit_write_register(machine->board->shared_pit.device, 3u, 0x74u);
+    (void)x86_pit_write_register(machine->board->shared_pit.device, 1u, 18u);
+    (void)x86_pit_write_register(machine->board->shared_pit.device, 1u, 0u);
 }
 
 static lib_u8 core_machine_speaker_source_value(

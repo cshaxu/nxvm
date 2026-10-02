@@ -118,6 +118,11 @@ already propagate each failure, and the sole destructor owns the unpublished
 candidate. The reset/configure refresh timer writes are a distinct next
 receiver, followed by firmware/attachment boundaries and physical relocation.
 
+S73 receives all three refresh-programming callers using the sole PIT chip
+contract after source proof that construction scratch is unobservable and
+cold reset leaves the same zero value. Guest port dispatch remains Core-owned;
+firmware/attachment and direct-test classification remain measured receivers.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/
