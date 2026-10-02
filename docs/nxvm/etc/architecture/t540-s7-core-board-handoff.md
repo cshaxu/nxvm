@@ -229,3 +229,16 @@ four-profile Release pairs, applicable Shared receivers/manifests, and the
 focused board/reset/interrupt/deadline regressions named by its packet. T540
 still requires the full external integration gate. A successful structural
 move never upgrades any chip's timing grade.
+
+## S30 Plan/Reset Source-Intake Refinement
+
+After S26–S29 closed arbitration and PIC/CPU locality, the remaining mixed
+construction/reset batch proved larger than one owner-sized source move.
+The [S30 intake](../evidence/t540-s30-plan-reset-intake.md) records the exact
+plan, constructor, reset, processor-only reset, failure and destructor order.
+Its current linear receivers are S31 frozen plan, S32 neutral Core creation,
+S33 board creation/topology, S34 reset, S35 teardown, S36 entry/ROM/trace,
+S37 whole-boundary audit, S38 neutral Core physical relocation, then S39
+onward proven IBM-PC board extraction and task-wide integration. The former
+S31/S32 prospective rows above are historical only; no accepted S is
+renumbered. One plan, one cold-reset path and one destructor remain required.
