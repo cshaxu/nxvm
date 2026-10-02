@@ -5,6 +5,81 @@
 
 #define CORE_MACHINE_BOARD_A20_BIT 0x02u
 
+lib_bool core_machine_board_shutdown_resets(const core_machine *machine)
+{
+    return machine != LIB_NULL && machine->d4_platform_configured;
+}
+
+lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
+    lib_u8 native_byte)
+{
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+        machine->lifecycle == CORE_MACHINE_FAULTED) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    if (machine->keyboard_topology ==
+            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        return x86_xt_keyboard_receive_native_bytes(machine->xt_keyboard,
+            &native_byte, 1u);
+    }
+    return core_machine_kbc_submit_native_byte(&machine->shared_kbc, native_byte);
+}
+
+lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
+    lib_u8 *out_scan_set)
+{
+    if (machine == LIB_NULL || out_scan_set == LIB_NULL ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    *out_scan_set = machine->keyboard_topology ==
+        CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ? CORE_MACHINE_KEYBOARD_SCAN_SET_1 :
+        x86_keyboard_get_signals(machine->shared_kbc.connect.keyboard).scan_set;
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
+    const lib_u8 *native_bytes, lib_size count)
+{
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+        machine->lifecycle == CORE_MACHINE_FAULTED) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    if (machine->keyboard_topology ==
+            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        return x86_xt_keyboard_receive_native_bytes(machine->xt_keyboard,
+            native_bytes, count);
+    }
+    return core_machine_kbc_submit_native_bytes(&machine->shared_kbc, native_bytes, count);
+}
+
+lib_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
+    core_machine_xt_ppi_fault_input input, lib_i32 asserted)
+{
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        machine->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    return core_machine_xt_ppi_keyboard_set_fault_input(&machine->xt_ppi_keyboard,
+        input, asserted);
+}
+
+lib_status core_machine_mouse_receive_relative(core_machine *machine,
+    lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons)
+{
+    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        (machine->lifecycle != CORE_MACHINE_RUNNING &&
+        machine->lifecycle != CORE_MACHINE_PAUSED &&
+        machine->lifecycle != CORE_MACHINE_STOPPED)) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    if (machine->keyboard_topology ==
+            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) return LIB_STATUS_UNSUPPORTED;
+    return core_machine_kbc_submit_aux_report(&machine->shared_kbc, delta_x, delta_y, buttons);
+}
+
 static lib_u32 core_machine_board_reset_rom_alias(
     core_machine_cpu_profile profile)
 {

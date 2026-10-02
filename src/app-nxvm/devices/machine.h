@@ -141,6 +141,8 @@ typedef void (*core_machine_board_pit_pic_provider)(void *owner,
     core_machine_board_pit_ticks ticks);
 typedef lib_bool (*core_machine_board_pic_pending_provider)(void *owner);
 typedef lib_u8 (*core_machine_board_pic_acknowledge_provider)(void *owner);
+typedef lib_bool (*core_machine_board_shutdown_reset_provider)(
+    const core_machine *machine);
 
 struct core_machine_firmware_context {
     core_machine *machine;
@@ -288,6 +290,7 @@ struct core_machine {
     core_machine_board_pit_pic_provider board_pit_pic_provider;
     core_machine_board_pic_pending_provider board_pic_pending_provider;
     core_machine_board_pic_acknowledge_provider board_pic_acknowledge_provider;
+    core_machine_board_shutdown_reset_provider board_shutdown_reset_provider;
     core_machine_board_media_provider board_media_provider;
     core_machine_board_ticks_provider board_rtc_provider;
     core_machine_board_ticks_provider board_peripheral_provider;
@@ -373,6 +376,7 @@ extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
 void core_machine_board_reset_devices(core_machine *machine);
 void core_machine_board_finalize_devices(core_machine *machine);
+lib_bool core_machine_board_shutdown_resets(const core_machine *machine);
 lib_status core_machine_reconfigure_memory_core(core_machine *machine,
     lib_size memory_bytes);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
