@@ -428,6 +428,23 @@ static lib_i32 core_machine_neutral_config_is_valid(
          config->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL);
 }
 
+static lib_i32 core_machine_board_config_is_valid(
+    const core_machine_config *config)
+{
+    return (config->shared_pit_personality == X86_PIT_PERSONALITY_8254 ||
+            config->shared_pit_personality == X86_PIT_PERSONALITY_8253) &&
+        (config->auxiliary_pit_present == LIB_FALSE ||
+         config->auxiliary_pit_present == LIB_TRUE) &&
+        (config->pic_topology == CORE_MACHINE_PIC_TOPOLOGY_CASCADED ||
+         config->pic_topology == CORE_MACHINE_PIC_TOPOLOGY_SINGLE) &&
+        config->dma_controller_count <= CORE_MACHINE_DMA_CONTROLLER_COUNT &&
+        (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_8042 ||
+         config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) &&
+        (config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ||
+         core_machine_xt_ppi_keyboard_config_is_valid(&config->xt_ppi_keyboard)) &&
+        (!config->auxiliary_pit_present || config->auxiliary_pit_base_port <= 0xfffcu);
+}
+
 static lib_status core_machine_neutral_create(
     const core_machine_config *config,
     core_machine_memory_test_allocation *test_allocation,
@@ -576,37 +593,12 @@ static lib_status core_machine_neutral_create(
     return LIB_STATUS_OK;
 }
 
-static lib_status core_machine_create_internal(
-    const core_machine_config *config,
-    core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation,
-    core_machine_port_test_allocation *port_test_allocation)
+static lib_status core_machine_board_create(core_machine *machine,
+    const core_machine_config *config)
 {
-    core_machine *machine;
     core_machine_port_provider_entry *port_checkpoint;
     lib_u8 dma_controller_count;
-    lib_status status;
 
-    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_machine = LIB_NULL;
-    if (!core_machine_neutral_config_is_valid(config) ||
-        (config->shared_pit_personality != X86_PIT_PERSONALITY_8254 &&
-        config->shared_pit_personality != X86_PIT_PERSONALITY_8253) ||
-        (config->auxiliary_pit_present != LIB_FALSE &&
-        config->auxiliary_pit_present != LIB_TRUE) ||
-        (config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
-        config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE) ||
-        (config->dma_controller_count > CORE_MACHINE_DMA_CONTROLLER_COUNT) ||
-        (config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_8042 &&
-        config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) ||
-        (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
-        !core_machine_xt_ppi_keyboard_config_is_valid(&config->xt_ppi_keyboard)) ||
-        (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    status = core_machine_neutral_create(config, test_allocation,
-        port_test_allocation, &machine);
-    if (status != LIB_STATUS_OK) return status;
     dma_controller_count = config->dma_controller_count == 0u ?
         CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
     machine->keyboard_topology = config->keyboard_topology;
@@ -757,6 +749,29 @@ static lib_status core_machine_create_internal(
             return status;
         }
     }
+    return LIB_STATUS_OK;
+}
+
+static lib_status core_machine_create_internal(
+    const core_machine_config *config,
+    core_machine **out_machine,
+    core_machine_memory_test_allocation *test_allocation,
+    core_machine_port_test_allocation *port_test_allocation)
+{
+    core_machine *machine;
+    lib_status status;
+
+    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_machine = LIB_NULL;
+    if (!core_machine_neutral_config_is_valid(config) ||
+        !core_machine_board_config_is_valid(config)) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_neutral_create(config, test_allocation,
+        port_test_allocation, &machine);
+    if (status != LIB_STATUS_OK) return status;
+    status = core_machine_board_create(machine, config);
+    if (status != LIB_STATUS_OK) return status;
 
     *out_machine = machine;
 
@@ -767,33 +782,6 @@ lib_status core_machine_create(const core_machine_config *config,
     core_machine **out_machine)
 {
     return core_machine_create_internal(config, out_machine, LIB_NULL, LIB_NULL);
-}
-
-lib_status core_machine_create_from_plan(const core_machine_plan *plan,
-    core_machine **out_machine)
-{
-    lib_status status;
-
-    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_machine = LIB_NULL;
-    if (core_machine_plan_validate(plan) != LIB_STATUS_OK) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    status = core_machine_create_internal(&plan->configuration, out_machine,
-        LIB_NULL, LIB_NULL);
-    if (status != LIB_STATUS_OK) return status;
-    status = core_machine_plan_apply_topology(*out_machine, plan);
-    if (status != LIB_STATUS_OK) {
-        core_machine_destroy(*out_machine);
-        *out_machine = LIB_NULL;
-        return status;
-    }
-    (*out_machine)->timing_plan = *plan;
-    /* Configuration-owned retirement qualification is already copied by
-     * create_internal; the plan copy must retain no caller-owned pointer. */
-    (*out_machine)->timing_plan.configuration.retirement_qualification = LIB_NULL;
-    (*out_machine)->timing_plan_copied = LIB_TRUE;
-    return LIB_STATUS_OK;
 }
 
 lib_status core_machine_get_timing_disposition(const core_machine *machine,

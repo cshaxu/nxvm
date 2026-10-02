@@ -291,6 +291,32 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
     return LIB_STATUS_OK;
 }
 
+lib_status core_machine_create_from_plan(const core_machine_plan *plan,
+    core_machine **out_machine)
+{
+    lib_status status;
+
+    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_machine = LIB_NULL;
+    if (core_machine_plan_validate(plan) != LIB_STATUS_OK) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_create(&plan->configuration, out_machine);
+    if (status != LIB_STATUS_OK) return status;
+    status = core_machine_plan_apply_topology(*out_machine, plan);
+    if (status != LIB_STATUS_OK) {
+        core_machine_destroy(*out_machine);
+        *out_machine = LIB_NULL;
+        return status;
+    }
+    (*out_machine)->timing_plan = *plan;
+    /* Configuration-owned retirement qualification is already copied by
+     * create; the plan copy must retain no caller-owned pointer. */
+    (*out_machine)->timing_plan.configuration.retirement_qualification = LIB_NULL;
+    (*out_machine)->timing_plan_copied = LIB_TRUE;
+    return LIB_STATUS_OK;
+}
+
 const core_machine_timing_declaration *
 core_machine_plan_declaration_find(const core_machine_plan *plan,
     core_machine_timing_capability capability)
