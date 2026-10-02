@@ -139,17 +139,16 @@ static void core_machine_arbitration_advance(core_machine *machine,
     lib_u64 source_ticks)
 {
     lib_u64 dma_ticks;
-    lib_u64 pit_ticks;
-    lib_u64 auxiliary_pit_ticks;
+    core_machine_board_pit_ticks pit_ticks = {0u, 0u};
     lib_u8 refresh_pending;
     lib_u8 refresh_address;
 
     if (machine == LIB_NULL || source_ticks == 0u) return;
     dma_ticks = machine->board_dma_ticks_provider != LIB_NULL ?
         machine->board_dma_ticks_provider(machine->board_owner, source_ticks) : 0u;
-    pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, source_ticks);
-    auxiliary_pit_ticks = core_machine_clock_domain_advance(
-        &machine->auxiliary_pit_clock, source_ticks);
+    if (machine->board_pit_ticks_provider != LIB_NULL)
+        pit_ticks = machine->board_pit_ticks_provider(machine->board_owner,
+            source_ticks);
     refresh_pending = machine->board_refresh_request_provider != LIB_NULL &&
         machine->board_refresh_request_provider(machine->board_owner,
             &refresh_address);
@@ -205,18 +204,8 @@ static void core_machine_arbitration_advance(core_machine *machine,
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_DMA_ADVANCE,
             0u, (lib_u32)dma_ticks, 0u);
     }
-    x86_pit_advance(machine->shared_pit.device, pit_ticks);
-    if (machine->auxiliary_pit_configured) {
-        x86_pit_advance(machine->auxiliary_pit.device, auxiliary_pit_ticks);
-    }
-    if (pit_ticks != 0u) {
-        core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIT_ADVANCE,
-            0u, (lib_u32)pit_ticks, 0u);
-    }
-    core_machine_pic_refresh(&machine->shared_pic_master,
-        &machine->shared_pic_slave);
-    core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIC_REFRESH,
-        0u, 0u, 0u);
+    if (machine->board_pit_pic_provider != LIB_NULL)
+        machine->board_pit_pic_provider(machine->board_owner, pit_ticks);
 }
 
 /*

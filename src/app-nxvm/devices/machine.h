@@ -131,6 +131,14 @@ typedef lib_u64 (*core_machine_board_dma_ticks_provider)(void *owner,
 typedef lib_bool (*core_machine_board_dma_request_provider)(void *owner);
 typedef void (*core_machine_board_dma_advance_provider)(void *owner,
     lib_u64 dma_ticks);
+typedef struct core_machine_board_pit_ticks {
+    lib_u64 primary;
+    lib_u64 auxiliary;
+} core_machine_board_pit_ticks;
+typedef core_machine_board_pit_ticks (*core_machine_board_pit_ticks_provider)(
+    void *owner, lib_u64 source_ticks);
+typedef void (*core_machine_board_pit_pic_provider)(void *owner,
+    core_machine_board_pit_ticks ticks);
 
 struct core_machine_firmware_context {
     core_machine *machine;
@@ -274,6 +282,8 @@ struct core_machine {
     core_machine_board_dma_ticks_provider board_dma_ticks_provider;
     core_machine_board_dma_request_provider board_dma_request_provider;
     core_machine_board_dma_advance_provider board_dma_advance_provider;
+    core_machine_board_pit_ticks_provider board_pit_ticks_provider;
+    core_machine_board_pit_pic_provider board_pit_pic_provider;
     core_machine_board_media_provider board_media_provider;
     core_machine_board_ticks_provider board_rtc_provider;
     core_machine_board_ticks_provider board_peripheral_provider;
@@ -366,6 +376,10 @@ void core_machine_board_refresh_complete(void *owner);
 lib_u64 core_machine_board_dma_ticks(void *owner, lib_u64 source_ticks);
 lib_bool core_machine_board_dma_request(void *owner);
 void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks);
+core_machine_board_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
+    lib_u64 source_ticks);
+void core_machine_board_pit_pic_advance(void *owner,
+    core_machine_board_pit_ticks ticks);
 void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
     lib_u64 due_tick);
 void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks);

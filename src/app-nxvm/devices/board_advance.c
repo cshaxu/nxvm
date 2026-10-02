@@ -25,6 +25,38 @@ void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks)
         machine, dma_ticks);
 }
 
+core_machine_board_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
+    lib_u64 source_ticks)
+{
+    core_machine *machine = owner;
+    core_machine_board_pit_ticks ticks = {0u, 0u};
+    if (machine == LIB_NULL) return ticks;
+    ticks.primary = core_machine_clock_domain_advance(&machine->pit_clock,
+        source_ticks);
+    ticks.auxiliary = core_machine_clock_domain_advance(
+        &machine->auxiliary_pit_clock, source_ticks);
+    return ticks;
+}
+
+void core_machine_board_pit_pic_advance(void *owner,
+    core_machine_board_pit_ticks ticks)
+{
+    core_machine *machine = owner;
+    if (machine == LIB_NULL) return;
+    x86_pit_advance(machine->shared_pit.device, ticks.primary);
+    if (machine->auxiliary_pit_configured) {
+        x86_pit_advance(machine->auxiliary_pit.device, ticks.auxiliary);
+    }
+    if (ticks.primary != 0u) {
+        core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIT_ADVANCE,
+            0u, (lib_u32)ticks.primary, 0u);
+    }
+    core_machine_pic_refresh(&machine->shared_pic_master,
+        &machine->shared_pic_slave);
+    core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIC_REFRESH,
+        0u, 0u, 0u);
+}
+
 void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
     lib_u64 due_tick)
 {

@@ -30,11 +30,13 @@ typedef struct scheduler_board_probe {
     lib_u32 media_calls;
     lib_u32 rtc_calls;
     lib_u32 dma_calls;
+    lib_u32 pit_pic_calls;
     lib_u32 calls;
     lib_u64 media_due_tick;
     lib_u64 media_ticks;
     lib_u64 rtc_ticks;
     lib_u64 dma_ticks;
+    core_machine_board_pit_ticks pit_ticks;
     lib_u64 advanced_ticks;
 } scheduler_board_probe;
 
@@ -103,6 +105,22 @@ static void scheduler_board_dma_advance(void *owner, lib_u64 dma_ticks)
     core_machine_board_dma_advance(probe->machine, dma_ticks);
 }
 
+static core_machine_board_pit_ticks scheduler_board_pit_ticks(void *owner,
+    lib_u64 source_ticks)
+{
+    scheduler_board_probe *probe = owner;
+    return core_machine_board_pit_ticks_advance(probe->machine, source_ticks);
+}
+
+static void scheduler_board_pit_pic(void *owner,
+    core_machine_board_pit_ticks ticks)
+{
+    scheduler_board_probe *probe = owner;
+    ++probe->pit_pic_calls;
+    probe->pit_ticks = ticks;
+    core_machine_board_pit_pic_advance(probe->machine, ticks);
+}
+
 typedef struct scheduler_deadline_probe {
     core_machine_board_deadline_observation value;
     lib_u32 calls;
@@ -151,6 +169,8 @@ lib_i32 main(void)
     machine->board_dma_ticks_provider = scheduler_board_dma_ticks;
     machine->board_dma_request_provider = scheduler_board_dma_request;
     machine->board_dma_advance_provider = scheduler_board_dma_advance;
+    machine->board_pit_ticks_provider = scheduler_board_pit_ticks;
+    machine->board_pit_pic_provider = scheduler_board_pit_pic;
     machine->board_owner = &board_probe;
 
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
@@ -167,6 +187,7 @@ lib_i32 main(void)
         result.ticks != 3u || result.elapsed_ticks != 3u ||
         provider_probe.advances != 1u || provider_probe.advanced_ticks != 3u ||
         board_probe.media_calls == 0u || board_probe.rtc_calls == 0u ||
+        board_probe.pit_pic_calls == 0u ||
         board_probe.media_ticks != 3u || board_probe.rtc_ticks != 3u ||
         board_probe.media_due_tick != machine->elapsed_ticks ||
         board_probe.calls == 0u || board_probe.advanced_ticks != 3u;

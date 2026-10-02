@@ -3176,6 +3176,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying board DMA effects around Core HOLD and prefetch"
         VERBATIM)
 
+    add_custom_target(verify-board-pit-pic-tail-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_board_pit_pic_tail_boundary.cmake"
+        COMMENT "Verifying board PIT/PIC tail after Core DMA arbitration"
+        VERBATIM)
+
     add_custom_target(verify-rational-clock-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_rational_clock_boundary.cmake"
@@ -3389,6 +3395,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-board-readiness-boundary
     verify-board-refresh-request-boundary
     verify-board-dma-arbitration-boundary
+    verify-board-pit-pic-tail-boundary
     verify-rational-clock-boundary
     verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary
