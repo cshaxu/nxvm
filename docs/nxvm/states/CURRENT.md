@@ -2,10 +2,10 @@
 
 ## Current Work
 
-M5 T540 S19 is accepted: KBC and 92h A20 use one Core-owned signal, and the
-non-ROM absent-memory fallback uses Core's typed route. S1-S19 are accepted;
-T540 remains open for DMA transactions, neutral Core relocation and IBM-PC
-board extraction. S20 is the next bounded receiver.
+M5 T540 S21 is active: separate board deadline/advance and PIC acknowledge
+from Core's single CPU bus and guest timeline without changing event order.
+S1-S20 are accepted; T540 remains open for neutral Core relocation and
+IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -48,6 +48,8 @@ the completed CPU extraction.
 | T540 S17 | Accepted: D4 replacement windows, parity and observer publish atomically; both-width complete units, Model-40 boot and eight 0540 products pass. |
 | T540 S18 | Accepted: ROM images and both alias kinds use Core-owned routes and owner-scoped rollback; dual-width units, four-profile external boots, gates and eight 0540 products pass. |
 | T540 S19 | Accepted: bounded Core A20 signal and absent-memory fallback route, without raw RAM in board adapters; dual-width units, gates, external boots and eight 0540 products pass. |
+| T540 S20 | Accepted: one bounded Core DMA bus-cycle operation; no board-facing RAM or transaction pointers, with dual-width units and eight boot checkpoints passing. |
+| T540 S21 | Active: source-intake and separation of board deadline/advance and PIC acknowledgement from neutral Core execution. |
 
 ## T540 S1 Acceptance
 
@@ -636,6 +638,69 @@ after the evidence was added. All four external boot checkpoints passed once
 per width, and all eight optimized 0540 products have the expected PE format
 and no `.debug` sections. No Shared, MyNES, INI, external media or firmware
 byte changed. S19 is accepted; T540 remains open.
+
+## T540 S20 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S20, the next linear S after accepted S19. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES are read-only. The S19 source-intake refinement assigns DMA's raw RAM/transaction cut to S20. |
+| Objective | Replace DMA board callbacks' `t_ram` and transaction-state access with one bounded Core-owned DMA bus-cycle operation. Preserve query, begin, device-before-memory, memory, device-after-memory, commit/cancel, and Core-owned HOLD arbitration. |
+| Non-goals | Device command/register semantics, DMA chip timing, new board wait ratios, PIC/deadline exchange (S21), reset/plan split (S22), physical Core/board move (S23), profile/INI/firmware/media changes, generic bus framework or second transaction owner. |
+| Reference Baseline | S19 P1 `ad38fee6a` and P2 `33d8382f9`; complete units 469/469 per width, 74/74 specialized-gate steps, all four external boot checkpoints once per width, eight verified 0540 Release products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [Core/board handoff and S19 refinement](../etc/architecture/t540-s7-core-board-handoff.md), [board adapter ledger](../etc/architecture/t540-board-adapter-ledger.md), and [S19 evidence](../etc/evidence/t540-s19-a20-fallback-routes.md). |
+| Files And ABI Surface | NXVM `devices/{dma_bus,dma_bus.h,memory_interface,memory_interface.h,machine_scheduler}` and directly affected DMA/transaction tests and fixtures, static boundary gate, S20 evidence and eight 0540 products. DMA submits physical address, width, direction, channel and copied value/device effect to a Core operation; it receives no RAM or transaction layout. Scheduler retains its one Core HOLD decision. |
+| Applicable Rules | One Core RAM, transaction and guest-time owner; no board adapter borrows their mutable layout. Device callbacks remain board-owned and fire in the original order. The typed operation has bounded inputs, explicit failure and no parallel compatibility call. Structural extraction makes no L3 claim. One NXVM target per P; preserve other product surfaces. |
+| Verification | Inspect all DMA cycle and HOLD callers; focused byte/word, primary-only/paired, verify, mem-to-mem, request/terminal, query-failure/transaction-cancel and bus trace tests. Run complete repository-only x64/x86 units, specialized/documentation gates, four external boot checkpoints once per width, and eight optimized 0540 EXEs with hash/PE/no-debug proof. |
+| Expected Markers | No `t_ram` or `core_machine_transaction_state` in DMA board callback ABI or implementation; Core alone queries, begins, reads/writes, commits/cancels. Existing DMA HOLD, channel and board topology results remain unchanged. No chip source, INI or timing data is modified. |
+| Asset Needs | Existing owner-provided profile firmware/media only for the external boot checkpoints and eight Release products. Repository-only tests use no external files. No new asset or import. |
+| Reporting Requirements | Record each original raw DMA caller and disposition, exact before/after cycle order, failure rollback and trace proof, production/test added/removed/net lines, external boot checkpoints, eight artifact hashes and explicit S21 transfer. |
+| Stop Conditions | Stop before a change requiring hardware/timing reinterpretation, a second transaction path, direct Shared/MyNES edit, protected asset change, or an unpreserved device-before/after-memory ordering. Report any discovered contract expansion before proceeding. |
+| Exit Criteria | All raw RAM/transaction board links are retired from DMA; one Core operation owns each cycle and its failure boundary; tests, gates, external checkpoints and products pass; coordinator actual-diff review accepts the implementation P and governance P records S20 closure. |
+| Original Owner Request | Build reusable `x86/core` and `x86/ibmpc-*` before splitting four PC Apps, with flat sole ownership, no patch layering, linear numeric S tasks, automatic S admission and preserved product behavior. |
+| Similar-Issue Sweep | Search all tracked NXVM production/test/build paths for DMA use of `t_ram`, `executor_memory`, transaction-state pointers, raw memory query/read/write and HOLD access. Consume DMA cycle callers here; retain Core-private bus/refresh operations and transfer deadline/PIC exchange to S21 with distinct owner reason. Add a static boundary gate for the forbidden DMA shape. |
+
+## T540 S20 Acceptance
+
+P1 `9e4c22e2f` moves the DMA physical route query, transaction begin,
+memory operation and commit/cancel into one Core-owned cycle. The actual-diff
+review confirms the DMA adapter has no raw RAM or transaction-state ABI, no
+parallel legacy cycle and no change to chip timing, HOLD arbitration or
+primary-only/paired board topology. Device effects remain in their original
+before/after positions. The [S20 evidence](../etc/evidence/t540-s20-dma-core-cycle.md)
+records caller disposition, failure cancellation, source/test line counts,
+all eight boot results and the eight executable SHA-256 identities.
+
+Final-source complete repository-only unit suites passed x64 and x86
+**469/469** each. Specialized gates completed **76/76** steps, including the
+new DMA boundary gate. Documentation governance and diff hygiene passed.
+Each of the four external boot checkpoints passed once per width. All eight
+optimized 0540 Release products have the expected PE format and no `.debug`
+sections. A broad x86 unit-tree build incidentally relinked the MyNES x86
+product; it was restored from HEAD and the accepted diff contains no MyNES,
+Shared, INI, media or firmware-byte change. S20 is accepted; T540 remains
+open. S21 receives board deadline/advance and PIC acknowledge separation.
+
+## T540 S21 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S21, the next linear S after accepted S20. |
+| Admission And Approval | The owner's automatic admission for bounded numeric T540 S tasks applies. Target NXVM only; Shared and MyNES remain read-only. Source intake must split a too-large or unlike scheduler/PIC receiver into further linear S numbers before implementation. |
+| Objective | Separate board device deadline/advance and PIC acknowledge from the neutral Core CPU bus/timeline through one explicit, bounded owner contract. Preserve one Core guest clock and the present event/INTA order. |
+| Non-goals | New timing formulas or L3 claims, device command/register changes, plan/reset/destroy split (S22), physical Core relocation (S23), Shared board move, profile/INI/firmware/media changes or a second scheduler. |
+| Reference Baseline | Accepted S20 P1 `9e4c22e2f`; complete units 469/469 per width, 76/76 specialized-gate steps, all four external boot checkpoints once per width and eight verified 0540 Release products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [Core/board handoff](../etc/architecture/t540-s7-core-board-handoff.md), [board adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and [S20 evidence](../etc/evidence/t540-s20-dma-core-cycle.md). |
+| Files And ABI Surface | Inspect NXVM `devices/{machine_scheduler,cpu_bus,pic_bus,machine,machine_interface}` and their direct deadline, PIC-phase, IRQ, HOLD and trace tests first. Freeze exact moved functions and typed values in an S21 source ledger before code changes; no CPU or PIC private-layout pointer may cross the resulting boundary. |
+| Applicable Rules | Core alone advances the guest timeline and owns CPU bus transactions. The IBM-PC board owns only its installed device deadlines, signal wiring and PIC service effect. The adapter sends copied observations/results, not mutable Core or chip internals; remove old callers in the same change. |
+| Verification | Source-inspect every deadline publisher, advance caller and PIC acknowledge path; focused deadline/HLT, PIT/RTC/DMA/FDC/HDC/KBC, PIC phase and interrupt trace tests; complete repository-only x64/x86 units, specialized/documentation gates, each four-profile external boot once per width and eight optimized 0540 products with PE/hash/no-debug proof. |
+| Expected Markers | One Core timeline and CPU bus, one board device event contribution, PIC's existing acknowledge order, no parallel scheduler/acknowledge path and no changed timing source. |
+| Asset Needs | Existing owner-provided profile firmware/media only for external checkpoints and products; no asset import or modification. Repository-only tests use no external files. |
+| Reporting Requirements | Record exact original deadline/advance/PIC callers and their owner disposition, event-order/rollback proof, production/test added/removed/net lines, full dual-width results, eight boot checkpoints and product hashes; explicitly transfer plan/reset/destroy to S22. |
+| Stop Conditions | Stop before changing physical timebase, chip or PIC instruction semantics, an unresolved event-order contract, Shared/MyNES code or protected assets. Refine S21 into bounded linear receivers rather than layering a second scheduler. |
+| Exit Criteria | Core and board event/PIC responsibilities have one explicit direction and no retained cross-owner access; focused/full verification, external boots and products pass; coordinator actual-diff review accepts an implementation P and governance P records closure. |
+| Original Owner Request | Build reusable neutral `x86/core` and proven `x86/ibmpc-*` board components before splitting the PC Apps, preserving behavior with flat ownership and linear numeric S tasks. |
+| Similar-Issue Sweep | Search the full scheduler, CPU bus, PIC bus and their direct tests for device state inside CPU-time decisions or CPU transaction state inside board callbacks; classify each as Core-private, board-owned or later plan/reset work, with no unowned remainder. |
 
 ## S87 Admission Packet
 
