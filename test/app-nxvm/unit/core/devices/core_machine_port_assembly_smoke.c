@@ -284,6 +284,35 @@ static lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
     return failed || port_assembly_fresh_default_create();
 }
 
+static lib_i32 port_assembly_rtc_collision(void)
+{
+    const core_machine_config machine_config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+    };
+    const core_machine_rtc_cmos_config rtc_config = {
+        .index_port = 0x0070u, .data_port = 0x0071u, .nmi_mask_bit = 0x80u,
+        .irq = 8u, .ticks_per_second = 1000u
+    };
+    const core_machine_port_route existing = {
+        .address = 0x0071u, .read = port_assembly_read,
+        .write = port_assembly_write
+    };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = core_machine_create(&machine_config, &machine) != LIB_STATUS_OK;
+
+    if (!failed) {
+        failed |= core_machine_install_port_routes(machine, &existing, 1u) != LIB_STATUS_OK;
+        failed |= core_machine_configure_rtc_cmos(machine, &rtc_config) !=
+                LIB_STATUS_INVALID_STATE || machine->shared_rtc != LIB_NULL ||
+            machine->rtc_cmos_configured ||
+            core_machine_port_has_write(&machine->executor_port, 0x0070u) ||
+            !core_machine_port_has_read(&machine->executor_port, 0x0071u) ||
+            !core_machine_port_has_write(&machine->executor_port, 0x0071u);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
     lib_size fail_at)
 {
@@ -444,7 +473,8 @@ lib_i32 main(void)
     if (failed) return 1;
     puts("M5:T313:S3:PORT-ASSEMBLY:OK");
 
-    failed = port_assembly_rtc_transaction(1u) || port_assembly_rtc_transaction(2u);
+    failed = port_assembly_rtc_transaction(1u) || port_assembly_rtc_transaction(2u) ||
+        port_assembly_rtc_collision();
     for (lib_u32 protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO;
         protocol <= CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT; ++protocol) {
         const lib_size routes = protocol == CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ? 7u :

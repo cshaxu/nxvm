@@ -2,9 +2,10 @@
 
 ## Current Work
 
-M5 T540 S11 is accepted: FDC register routes use the Core-owned typed,
-atomic port batch. S1-S11 are accepted; T540 remains open. S12 will address
-the remaining board ports. Shared Core and board code have not moved.
+M5 T540 S12 is active: move RTC/CMOS index and data ports to one Core-owned
+typed route batch. S1-S11 are accepted; T540 remains open. The oversized
+former S12 port batch is split into linear receivers. Shared Core and board
+code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -320,10 +321,32 @@ port path or changed chip command/timing rule. Both full repository-only unit
 suites passed 467/467; the FDC and T345 source-boundary gates, documentation
 governance, artifact PE/no-debug checks and staged diff check passed.
 
-S11 changes only NXVM. S12 still owns VADP/HDC/RTC and remaining board ports;
-the later bounded cuts own memory, signal, deadline and reset exchanges. T540
+S11 changes only NXVM. The then-prospective S12 port batch contained
+VADP/HDC/RTC and remaining board ports; S12 intake splits it into bounded
+linear receivers. Later cuts own memory, signal, deadline and reset exchanges. T540
 remains open for the neutral Core move, proven board extraction and full
 external integration gate. No new timing grade is claimed.
+
+## T540 S12 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S12, the next linear S after accepted S11. |
+| Admission And Approval | The owner approved automatic admission of bounded numeric T540 subtasks. Source intake splits the former oversized S12 port batch by distinct owner and rollback boundary: S12 RTC/CMOS, later linear S for Port-B/D4, HDC and VADP. Target: NXVM only; Shared and MyNES are read-only receiving reviews. |
+| Objective | Install the RTC/CMOS index-write and data-read/write endpoints through one typed Core-owned atomic route batch, deleting the board's separate precheck and external port-registration checkpoint while preserving register selection, NMI mask, chip defaults and IRQ behavior. |
+| Non-goals | RTC register/timing semantics, Port-B/D4 parity or speaker wiring, HDC/VADP ports, memory/signal/deadline/reset cut, physical Core/board relocation, new device framework, profile/firmware/INI/media changes, Shared or MyNES edits. |
+| Reference Baseline | Accepted S11 governance commit `126dc94ef`, complete 0540 artifact pairs and both-width units 467/467. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S7 handoff](../etc/architecture/t540-s7-core-board-handoff.md), [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md) and [S11 evidence](../etc/evidence/t540-s11-fdc-port-routes.md). |
+| Files And ABI Surface | NXVM `devices/machine_board.c`, owner-local RTC/port-assembly tests, source-boundary verifiers, the S7 handoff's S12-intake numbering refinement, S12 evidence and affected 0540 products; no public ABI or Shared source. |
+| Applicable Rules | Core alone owns port entries and atomic publication; RTC chip alone owns register state, board owns IRQ/NMI wiring and frozen CMOS defaults. Delete the obsolete availability/checkpoint path; no duplicate route or state. Full both-width units, all affected products, actual diff and documentation review are required. The source policy permits rebuilding the existing owner-approved embedded-ROM EXEs but no new ROM acquisition or raw-ROM commit. |
+| Verification | Focused RTC/CMOS, NMI, route-collision and allocation-failure tests; both-width complete repository-only units; relevant source-owner/static gates; four-profile x64/x86 optimized 0540 artifacts and hashes; `git diff --check` and NXVM documentation governance. |
+| Expected Markers | One two-route Core batch, index write only and data read/write; pre-existing routes survive every failed candidate, no partial RTC routes or leaked chip; no board-held port checkpoint. |
+| Asset Needs | Existing selected BYOB build roots only; no new asset. Preserve adjacent NXVM.ini and all MyNES files. |
+| Reporting Requirements | Record actual changed paths, tracked source/test added/removed/net lines, before/after rollback boundary, test/gate results, eight artifact hashes, actual diff and residual port-route receivers. |
+| Stop Conditions | Stop before changing RTC chip behavior, input clock/timing, NMI semantics, memory parity, other controller ports or any Shared/MyNES target; revise the packet if the existing typed route cannot preserve behavior. |
+| Exit Criteria | RTC/CMOS has exactly one Core-owned atomic route batch and no external registration checkpoint or second port path; failed route or chip creation leaves no partial state; all required tests, gates and products pass. |
+| Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components, admitting bounded numeric S tasks rather than a patch-on-patch migration. |
+| Similar-Issue Sweep | Search all NXVM board adapters for raw `t_port`, `core_machine_port_add_*` and external registration checkpoints. S12 consumes the RTC hits; Port-B/D4, HDC and VADP remain distinct later numeric S receivers, while the Core-private port table and CPU bus stay with the neutral-Core move. |
 
 ## S87 Admission Packet
 

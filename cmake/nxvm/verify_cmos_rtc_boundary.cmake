@@ -30,10 +30,24 @@ endforeach()
 
 foreach(required IN ITEMS "core_machine_pic_irq_source_assert"
     "core_machine_pic_irq_source_deassert" "rtc_selected_register"
-    "x86_rtc_create" "core_machine_port_rollback_registration")
+    "x86_rtc_create" "core_machine_install_port_routes")
     string(FIND "${board_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "CMOS RTC board binding is incomplete: ${required}")
+    endif()
+endforeach()
+string(FIND "${board_source}" "lib_status core_machine_configure_rtc_cmos(" rtc_start)
+string(FIND "${board_source}" "lib_status core_machine_enable_memory_parity(" rtc_end)
+if(rtc_start LESS 0 OR rtc_end LESS rtc_start)
+    message(FATAL_ERROR "CMOS RTC construction range is missing")
+endif()
+math(EXPR rtc_length "${rtc_end} - ${rtc_start}")
+string(SUBSTRING "${board_source}" ${rtc_start} ${rtc_length} rtc_board)
+foreach(forbidden IN ITEMS "executor_port" "port_checkpoint"
+    "core_machine_install_port_provider" "core_machine_port_rollback_registration")
+    string(FIND "${rtc_board}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "CMOS RTC retains a raw port-registration path: ${forbidden}")
     endif()
 endforeach()
 if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/rtc.c" OR

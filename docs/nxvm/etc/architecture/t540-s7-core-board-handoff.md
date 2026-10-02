@@ -106,6 +106,24 @@ remainder into the next numeric S before implementation. No `S8a` suffixes.
 | S17 | Physically move the now-neutral Core source, private state and tests into `src/x86/core` / `test/x86/core`; reconnect NXVM through its public opaque contract and remove old App source definitions. |
 | S18 onward | Move only S2-proven board mechanisms into `ibmpc-common`, `ibmpc-at` and `ibmpc-xt` in owner-sized batches; retain D4 and each genuine machine composition at its App owner. Final T gate checks every ledger row and all four external-machine scenarios. |
 
+## S12 Source-Intake Refinement
+
+S8-S11 completed the simple routes, DMA, KBC and FDC batches. S12 intake
+confirmed the remaining prospective port row has four distinct publication
+and rollback boundaries, so it is divided before more implementation:
+
+| Linear receiver | Remaining port boundary |
+| --- | --- |
+| S12 | RTC/CMOS index and data routes, one chip lifetime and atomic batch. |
+| S13 | Port-B planar parity and D4 board ports, including their parity/signal rollback. |
+| S14 | HDC personalities, including XT routes and Compaq 3F7 wired-OR. |
+| S15 | Staged VADP CGA/EGA/VGA route changes and failed-candidate rollback. |
+
+The former prospective S13-S17 rows shift to S16-S20 respectively; proven
+board extraction begins at S21. These remain prospective and are fixed only
+by each later S intake. No suffix identifiers or temporary duplicate route
+paths are introduced.
+
 Every code S runs the complete repository-only x64/x86 unit suites, affected
 four-profile Release pairs, applicable Shared receivers/manifests, and the
 focused board/reset/interrupt/deadline regressions named by its packet. T540

@@ -391,16 +391,6 @@ static const core_machine_port_provider core_machine_d4_platform_port_provider =
     core_machine_d4_platform_port_read,
     core_machine_d4_platform_port_write
 };
-static const core_machine_port_provider core_machine_rtc_cmos_port_provider = {
-    core_machine_rtc_cmos_port_read,
-    core_machine_rtc_cmos_port_write
-};
-
-static const core_machine_port_provider core_machine_rtc_cmos_index_port_provider = {
-    LIB_NULL,
-    core_machine_rtc_cmos_port_write
-};
-
 static void core_machine_fdc_dma_request_assert(void *owner,
     const core_machine_dma_request_binding *binding)
 {
@@ -552,7 +542,7 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config)
 {
     x86_rtc_config rtc_config;
-    core_machine_port_provider_entry *port_checkpoint;
+    core_machine_port_route routes[2];
     lib_status status;
     lib_size index;
 
@@ -563,36 +553,25 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     if (!core_machine_rtc_cmos_config_is_valid(config)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (core_machine_port_has_write(&machine->executor_port,
-            config->index_port) || core_machine_port_has_read(
-            &machine->executor_port, config->data_port) ||
-        core_machine_port_has_write(&machine->executor_port,
-            config->data_port)) {
-        return LIB_STATUS_INVALID_STATE;
-    }
-    port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
-    status = core_machine_install_port_provider(machine, config->index_port,
-        config->index_port, &core_machine_rtc_cmos_index_port_provider, machine);
-    if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(&machine->executor_port,
-            port_checkpoint);
-        return status;
-    }
-    status = core_machine_install_port_provider(machine, config->data_port,
-        config->data_port, &core_machine_rtc_cmos_port_provider, machine);
-    if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(&machine->executor_port,
-            port_checkpoint);
-        return status;
-    }
     rtc_config.ticks_per_second = config->ticks_per_second;
     rtc_config.uip_lead_ticks = config->timing.uip_lead_ticks;
     rtc_config.update_ticks = config->timing.update_ticks;
     status = x86_rtc_create(&rtc_config, core_machine_rtc_irq_output,
         &machine->rtc_irq_source, &machine->shared_rtc);
+    if (status != LIB_STATUS_OK) return status;
+    routes[0] = (core_machine_port_route) {
+        .address = config->index_port,
+        .write = core_machine_rtc_cmos_port_write, .owner = machine
+    };
+    routes[1] = (core_machine_port_route) {
+        .address = config->data_port,
+        .read = core_machine_rtc_cmos_port_read,
+        .write = core_machine_rtc_cmos_port_write, .owner = machine
+    };
+    status = core_machine_install_port_routes(machine, routes, 2u);
     if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(&machine->executor_port,
-            port_checkpoint);
+        x86_rtc_destroy(machine->shared_rtc);
+        machine->shared_rtc = LIB_NULL;
         return status;
     }
     core_machine_pic_irq_source_bind(&machine->rtc_irq_source,

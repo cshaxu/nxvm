@@ -16,7 +16,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     devices_source)
 
 foreach(required IN ITEMS "core_machine_configure_dma"
-    "core_machine_configure_rtc_cmos" "core_machine_rtc_cmos_port_provider"
+    "core_machine_configure_rtc_cmos" "core_machine_rtc_cmos_port_read"
     "x86_rtc_advance" "core_machine_dma_bind_channel")
     string(FIND "${core_source}" "${required}" source_position)
     string(FIND "${core_header}" "${required}" header_position)
