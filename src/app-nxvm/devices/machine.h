@@ -375,6 +375,9 @@ extern const core_machine_cpu_execution_diagnostic_provider
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
 void core_machine_board_reset_devices(core_machine *machine);
+lib_i32 core_machine_board_config_is_valid(const core_machine_config *config);
+lib_status core_machine_board_create(core_machine *machine,
+    const core_machine_config *config);
 void core_machine_board_finalize_devices(core_machine *machine);
 lib_bool core_machine_board_shutdown_resets(const core_machine *machine);
 lib_status core_machine_board_initialize_clocks(core_machine *machine,

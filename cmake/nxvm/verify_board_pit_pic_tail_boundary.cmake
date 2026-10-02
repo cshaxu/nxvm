@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" creation)
 foreach(forbidden "machine->pit_clock" "machine->auxiliary_pit_clock"
     "machine->shared_pit" "machine->auxiliary_pit.device"
     "machine->shared_pic_master" "machine->shared_pic_slave"

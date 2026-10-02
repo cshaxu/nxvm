@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" creation)
 foreach(effect "core_machine_fdc_advance_at(" "core_machine_hdc_advance_at("
     "x86_rtc_advance(")
     string(FIND "${core}" "${effect}" core_position)

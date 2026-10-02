@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" creation)
 foreach(field "d4_refresh_hold_pending" "d4_refresh_address")
     string(FIND "${core}" "${field}" position)
     if(NOT position LESS 0)

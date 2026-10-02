@@ -5,7 +5,7 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_bus.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" wiring)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" creation)
 foreach(forbidden "machine->shared_pic_master" "machine->shared_pic_slave"
     "core_machine_pic_scan_interrupt(" "core_machine_pic_get_interrupt(")
     string(FIND "${core}" "${forbidden}" position)

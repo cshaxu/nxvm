@@ -23,6 +23,7 @@ foreach(forbidden "flagA20" "core_machine_memory_register_fallback_device_provid
 endforeach()
 
 foreach(required "core_machine_signal_a20(owner" "core_machine_observe_a20(owner"
+    "core_machine_kbc_signal_a20"
     "CORE_MACHINE_MEMORY_PROVIDER_FALLBACK"
     "core_machine_install_memory_device_routes(machine, &route, 1u")
     string(FIND "${board}" "${required}" position)
@@ -31,7 +32,7 @@ foreach(required "core_machine_signal_a20(owner" "core_machine_observe_a20(owner
     endif()
 endforeach()
 
-foreach(required "attachment->connect.set_a20" "core_machine_kbc_signal_a20"
+foreach(required "attachment->connect.set_a20"
     "core_machine_signal_a20(machine, enabled != 0)"
     "case CORE_MACHINE_MEMORY_PROVIDER_FALLBACK:")
     string(FIND "${kbc}${machine}${core}" "${required}" position)
