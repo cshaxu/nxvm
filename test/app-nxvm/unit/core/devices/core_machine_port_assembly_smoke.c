@@ -439,7 +439,7 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
         failed |= core_machine_configure_hdc(machine, &topology) !=
                 (busy_dma || busy_port ? LIB_STATUS_INVALID_STATE : LIB_STATUS_NO_MEMORY) ||
             machine->board->hdc_configured ||
-            lib_memory_compare(&machine->hdc, &hdc_zero, sizeof(hdc_zero)) != 0 ||
+            lib_memory_compare(&machine->board->hdc, &hdc_zero, sizeof(hdc_zero)) != 0 ||
             lib_memory_compare(&machine->board->hdc_topology, &topology_zero,
                 sizeof(topology_zero)) != 0 ||
             core_machine_port_has_read(&machine->executor_port, 0x01f0u) ||
@@ -472,7 +472,7 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
                 lib_u32 hdc_value = 0u;
                 lib_u32 combined = 0u;
 
-                failed |= core_machine_hdc_port_provider()->read(&machine->hdc,
+                failed |= core_machine_hdc_port_provider()->read(&machine->board->hdc,
                     0x03f7u, &hdc_value) != LIB_STATUS_OK ||
                     core_machine_port_execute_read(&machine->executor_port,
                         0x03f7u) != LIB_STATUS_OK;

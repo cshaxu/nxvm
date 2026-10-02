@@ -4,6 +4,14 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/port_interface.c" port_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" machine_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
+if(machine_header MATCHES "core_machine_hdc[ \t]+hdc;" OR
+    NOT board_header MATCHES "core_machine_hdc[ \t]+hdc;" OR
+    scheduler_source MATCHES "board->hdc|core_machine_hdc_")
+    message(FATAL_ERROR "HDC controller must have one board owner")
+endif()
 string(FIND "${board_source}" "lib_status core_machine_configure_hdc(" first)
 if(first LESS 0)
     message(FATAL_ERROR "HDC construction is missing")

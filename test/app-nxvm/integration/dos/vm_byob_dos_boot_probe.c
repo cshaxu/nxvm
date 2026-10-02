@@ -3072,15 +3072,15 @@ done:
             (unsigned int)trace.kbc_reset_xmit_transactions[3u].address,
             (unsigned int)trace.kbc_reset_xmit_transactions[3u].value);
         printf("BOOT-PROBE=hdc-phase=%u-status=%02X-error=%02X-command=%02X-count=%u-sector=%u-cylinder=%02X%02X-drive-head=%02X\n",
-            (unsigned int)hdc_observe(&session->core_machine->hdc).phase,
-            (unsigned int)hdc_observe(&session->core_machine->hdc).status,
-            (unsigned int)hdc_observe(&session->core_machine->hdc).error,
-            (unsigned int)hdc_observe(&session->core_machine->hdc).last_command,
-            (unsigned int)hdc_observe(&session->core_machine->hdc).command_count,
-            (unsigned int)hdc_observe(&session->core_machine->hdc).sector_number,
-            (unsigned int)hdc_observe(&session->core_machine->hdc).cylinder_high,
-            (unsigned int)hdc_observe(&session->core_machine->hdc).cylinder_low,
-            (unsigned int)hdc_observe(&session->core_machine->hdc).drive_head);
+            (unsigned int)hdc_observe(&session->core_machine->board->hdc).phase,
+            (unsigned int)hdc_observe(&session->core_machine->board->hdc).status,
+            (unsigned int)hdc_observe(&session->core_machine->board->hdc).error,
+            (unsigned int)hdc_observe(&session->core_machine->board->hdc).last_command,
+            (unsigned int)hdc_observe(&session->core_machine->board->hdc).command_count,
+            (unsigned int)hdc_observe(&session->core_machine->board->hdc).sector_number,
+            (unsigned int)hdc_observe(&session->core_machine->board->hdc).cylinder_high,
+            (unsigned int)hdc_observe(&session->core_machine->board->hdc).cylinder_low,
+            (unsigned int)hdc_observe(&session->core_machine->board->hdc).drive_head);
         if (trace.fdc_port_accesses != 0u) {
             const lib_u64 history = trace.fdc_port_accesses <
                 VM_BYOB_FDC_PORT_HISTORY ? trace.fdc_port_accesses :
@@ -3250,7 +3250,7 @@ done:
             if (x86_fdc_capture(session->core_machine->board->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
                 printf("BOOT-PROBE=waiting-fdc-phase=%u-hdc-phase=%u-dma-pending=%u\n",
                     (unsigned int)fdc_observation.phase,
-                    (unsigned int)hdc_observe(&session->core_machine->hdc).phase,
+                    (unsigned int)hdc_observe(&session->core_machine->board->hdc).phase,
                     (unsigned int)core_machine_dma_has_pending_request(
                         &session->core_machine->board->shared_dma_primary,
                         &session->core_machine->board->shared_dma_secondary));

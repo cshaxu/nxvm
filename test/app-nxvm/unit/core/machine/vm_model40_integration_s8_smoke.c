@@ -155,15 +155,15 @@ lib_i32 main(void)
             0x01f6u, 0x2au);
         core_machine_port_write(&session->core_machine->executor_port,
             0x01f7u, 0x90u);
-        hdc_service(&session->core_machine->hdc);
-        failed |= hdc_observe(&session->core_machine->hdc).error != 0x01u ||
-            !core_machine_hdc_irq_pending(&session->core_machine->hdc);
+        hdc_service(&session->core_machine->board->hdc);
+        failed |= hdc_observe(&session->core_machine->board->hdc).error != 0x01u ||
+            !core_machine_hdc_irq_pending(&session->core_machine->board->hdc);
         (void)core_machine_port_read(&session->core_machine->executor_port,
             0x01f7u);
-        failed |= core_machine_hdc_irq_pending(&session->core_machine->hdc);
+        failed |= core_machine_hdc_irq_pending(&session->core_machine->board->hdc);
         core_machine_port_write(&session->core_machine->executor_port,
             0x01f7u, 0xecu);
-        hdc_service(&session->core_machine->hdc);
+        hdc_service(&session->core_machine->board->hdc);
         failed |= (core_machine_port_read(&session->core_machine->executor_port,
             0x01f7u) & X86_HDC_STATUS_ERR) == 0u ||
             core_machine_port_read(&session->core_machine->executor_port,

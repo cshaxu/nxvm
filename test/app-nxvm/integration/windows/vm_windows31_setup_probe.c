@@ -6,6 +6,7 @@
 
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
@@ -180,8 +181,8 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
     printf("M5:T287:S23:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         was_running,
-        hdc_observe(&session->core_machine->hdc).command_count,
-        hdc_observe(&session->core_machine->hdc).last_command);
+        hdc_observe(&session->core_machine->board->hdc).command_count,
+        hdc_observe(&session->core_machine->board->hdc).last_command);
     if (diagnostic.first_fault.valid) {
         const core_machine_cpu_fault_snapshot *fault = &diagnostic.first_fault;
 

@@ -7,6 +7,7 @@
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/machine/control.h"
@@ -96,8 +97,8 @@ static void vm_t287_report(const vm_machine *session, const char *stage)
     printf("M5:T287:S2:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         vm_machine_control_is_running(&session->control),
-        hdc_observe(&session->core_machine->hdc).command_count,
-        hdc_observe(&session->core_machine->hdc).last_command);
+        hdc_observe(&session->core_machine->board->hdc).command_count,
+        hdc_observe(&session->core_machine->board->hdc).last_command);
     if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
             LIB_STATUS_OK && diagnostic.first_fault.valid) {
         lib_size index;
@@ -204,7 +205,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     stage = "bda-hdd-count";
     if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
             sizeof(hdd_bda)) == LIB_STATUS_OK) hdd_count = hdd_bda[1];
-    ata_commands = hdc_observe(&session->core_machine->hdc).command_count;
+    ata_commands = hdc_observe(&session->core_machine->board->hdc).command_count;
     vm_machine_stop(session);
     vm_t287_report_frame(session);
     if (c_present && ata_commands != 0u) {

@@ -4,6 +4,7 @@
 
 #include "app-nxvm/devices/hdc.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/media_interface.h"
 
 typedef struct core_machine_hdc_fixture_media {
@@ -106,7 +107,7 @@ static lib_i32 core_machine_hdc_command(core_machine *machine,
     const core_machine_hdc_task_file_config *config, lib_u8 command)
 {
     if (!core_machine_hdc_write(machine, config->status_command_port, command)) return 0;
-    hdc_service(&machine->hdc);
+    hdc_service(&machine->board->hdc);
     return 1;
 }
 
@@ -129,7 +130,7 @@ static lib_i32 core_machine_hdc_drain(core_machine *machine,
         if (!core_machine_hdc_read(machine, config->data_port, &word)) return 0;
         if (index == 0u && first_word != LIB_NULL) *first_word = (lib_u16)word;
     }
-    hdc_service(&machine->hdc);
+    hdc_service(&machine->board->hdc);
     return 1;
 }
 
@@ -140,7 +141,7 @@ static lib_i32 core_machine_hdc_fill(core_machine *machine,
         if (!core_machine_hdc_write(machine, config->data_port,
                 index == 0u ? first_word : 0u)) return 0;
     }
-    hdc_service(&machine->hdc);
+    hdc_service(&machine->board->hdc);
     return 1;
 }
 
@@ -191,7 +192,7 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
         if (core_machine_configure_hdc(machine, &topology) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK ||
-            hdc_observe(&machine->hdc).error != X86_HDC_ERROR_DIAGNOSTIC_OK ||
+            hdc_observe(&machine->board->hdc).error != X86_HDC_ERROR_DIAGNOSTIC_OK ||
             !core_machine_hdc_program_chs(machine, &hdc_config) ||
             !core_machine_hdc_write(machine, hdc_config.drive_head_port, 0xa0u) ||
             !core_machine_hdc_command(machine, &hdc_config, 0x22u) ||
@@ -201,8 +202,8 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
             !core_machine_hdc_drain(machine, &hdc_config, &word) || word != 0x5678u ||
             !core_machine_hdc_write(machine,
                 hdc_config.alternate_status_device_control_port, 0x08u) ||
-            hdc_observe(&machine->hdc).fixed_disk_register != 0x08u ||
-            hdc_observe(&machine->hdc).drive_head != 0xa0u ||
+            hdc_observe(&machine->board->hdc).fixed_disk_register != 0x08u ||
+            hdc_observe(&machine->board->hdc).drive_head != 0xa0u ||
             core_machine_bus_read(machine, hdc_config.alternate_status_device_control_port,
                 &status) != LIB_STATUS_UNSUPPORTED ||
             !core_machine_hdc_program_chs(machine, &hdc_config) ||
@@ -210,21 +211,21 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
             !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
             status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC) ||
             !core_machine_hdc_command(machine, &hdc_config, 0x10u) ||
-            hdc_observe(&machine->hdc).step_rate_selector != 0u ||
-            hdc_observe(&machine->hdc).step_rate_ticks != 280u ||
-            hdc_observe(&machine->hdc).step_pulse_limit != 1023u ||
+            hdc_observe(&machine->board->hdc).step_rate_selector != 0u ||
+            hdc_observe(&machine->board->hdc).step_rate_ticks != 280u ||
+            hdc_observe(&machine->board->hdc).step_pulse_limit != 1023u ||
             !core_machine_hdc_command(machine, &hdc_config, 0x7fu) ||
-            hdc_observe(&machine->hdc).step_rate_selector != 15u ||
-            hdc_observe(&machine->hdc).step_rate_ticks != 60000u ||
-            hdc_observe(&machine->hdc).step_pulse_limit != 0u ||
+            hdc_observe(&machine->board->hdc).step_rate_selector != 15u ||
+            hdc_observe(&machine->board->hdc).step_rate_ticks != 60000u ||
+            hdc_observe(&machine->board->hdc).step_pulse_limit != 0u ||
             !core_machine_hdc_command(machine, &hdc_config, 0x90u) ||
-            hdc_observe(&machine->hdc).step_rate_selector != 15u ||
-            hdc_observe(&machine->hdc).step_rate_ticks != 60000u ||
-            hdc_observe(&machine->hdc).step_pulse_limit != 1023u ||
+            hdc_observe(&machine->board->hdc).step_rate_selector != 15u ||
+            hdc_observe(&machine->board->hdc).step_rate_ticks != 60000u ||
+            hdc_observe(&machine->board->hdc).step_pulse_limit != 1023u ||
             !core_machine_hdc_command(machine, &hdc_config, 0xecu) ||
             !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
             status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_ERR) ||
-            hdc_observe(&machine->hdc).error != X86_HDC_ERROR_ABORT) {
+            hdc_observe(&machine->board->hdc).error != X86_HDC_ERROR_ABORT) {
             failed = 1;
         }
     }
@@ -274,7 +275,7 @@ lib_i32 main(void)
     if (core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
         core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        hdc = &machine->hdc;
+        hdc = &machine->board->hdc;
         if (hdc == LIB_NULL ||
             core_machine_media_registry_bind(registry, 1u, &media,
                 &core_machine_hdc_fixture_provider) != LIB_STATUS_OK ||

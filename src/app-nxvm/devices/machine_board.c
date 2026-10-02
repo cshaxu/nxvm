@@ -767,7 +767,7 @@ void core_machine_board_reset_devices(core_machine *machine)
     machine->d4_platform_failsafe_latched = LIB_FALSE;
     machine->d4_platform_nmi_signaled = LIB_FALSE;
     core_machine_fdc_reset(&machine->board->fdc);
-    core_machine_hdc_reset(&machine->hdc);
+    core_machine_hdc_reset(&machine->board->hdc);
     core_machine_pic_reset(&machine->board->shared_pic_master,
         &machine->board->shared_pic_slave);
     x86_pit_reset(machine->board->shared_pit.device);
@@ -786,7 +786,7 @@ void core_machine_board_finalize_devices(core_machine *machine)
     if (machine->board == LIB_NULL) return;
     core_machine_pit_bus_destroy(&machine->board->shared_pit);
     core_machine_pit_bus_destroy(&machine->board->auxiliary_pit);
-    core_machine_hdc_finalize(&machine->hdc);
+    core_machine_hdc_finalize(&machine->board->hdc);
     core_machine_fdc_finalize(&machine->board->fdc);
     core_machine_dma_finalize(&machine->board->shared_dma_latch,
         &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary);
@@ -1518,41 +1518,41 @@ lib_status core_machine_configure_hdc(core_machine *machine,
     for (index = 0u; index < port_count; ++index) {
         routes[index] = (core_machine_port_route) {ports[index],
             xebec && index == 3u ? LIB_NULL : provider->read,
-            provider->write, &machine->hdc, LIB_FALSE, 0u};
+            provider->write, &machine->board->hdc, LIB_FALSE, 0u};
     }
     if (topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) {
         routes[port_count++] = (core_machine_port_route) {
             .address = topology->config.bus.task_file.drive_address_port,
-            .read = provider->read, .owner = &machine->hdc,
+            .read = provider->read, .owner = &machine->board->hdc,
             .wired_or_read = LIB_TRUE};
     }
     machine->board->hdc_topology = *topology;
-    core_machine_hdc_connect(&machine->hdc, machine->board->hdc_topology.media_registry,
+    core_machine_hdc_connect(&machine->board->hdc, machine->board->hdc_topology.media_registry,
         machine->board->hdc_topology.media_id, machine->board->hdc_topology.slave_media_id,
         &machine->board->shared_pic_master,
         &machine->board->shared_pic_slave, &machine->board->hdc_topology.config);
-    status = core_machine_hdc_initialize(&machine->hdc);
+    status = core_machine_hdc_initialize(&machine->board->hdc);
     if (status == LIB_STATUS_OK)
         status = core_machine_install_port_routes(machine, routes, port_count);
     if (status == LIB_STATUS_OK && xebec) {
         status = core_machine_dma_bind_channel(&machine->board->shared_dma_latch,
             &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
             machine->board->hdc_topology.config.bus.xebec.dma_channel,
-            core_machine_hdc_dma_provider(), &machine->hdc, &machine->board->hdc_dma_request);
+            core_machine_hdc_dma_provider(), &machine->board->hdc, &machine->board->hdc_dma_request);
         if (status != LIB_STATUS_OK) {
-            lib_status rollback = core_machine_remove_port_routes(machine, &machine->hdc);
+            lib_status rollback = core_machine_remove_port_routes(machine, &machine->board->hdc);
 
             if (rollback != LIB_STATUS_OK) status = rollback;
         }
     }
     if (status != LIB_STATUS_OK) {
-        core_machine_hdc_finalize(&machine->hdc);
+        core_machine_hdc_finalize(&machine->board->hdc);
         lib_memory_set(&machine->board->hdc_topology, 0u,
             sizeof(machine->board->hdc_topology));
         return status;
     }
     if (xebec) {
-        core_machine_hdc_bind_dma_request(&machine->hdc, &machine->board->hdc_dma_request,
+        core_machine_hdc_bind_dma_request(&machine->board->hdc, &machine->board->hdc_dma_request,
             core_machine_hdc_dma_request_assert, core_machine_hdc_dma_request_deassert,
             machine);
     }

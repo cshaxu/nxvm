@@ -93,7 +93,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
                 &out_observation->source_ticks))
             out_observation->immediate_due = LIB_TRUE;
     }
-    if (core_machine_hdc_next_due_tick(&machine->hdc, &due_tick) ==
+    if (core_machine_hdc_next_due_tick(&machine->board->hdc, &due_tick) ==
         LIB_STATUS_OK && board_consider_absolute(now, due_tick,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;

@@ -147,8 +147,8 @@ lib_i32 main(void)
             failed |= machine->board->fdc.connect.dma_request.core_token !=
                     dma_request.core_token ||
                 machine->board->fdc.connect.irq_source.irq != fdc_config.irq ||
-                machine->hdc.connect.irq_source.irq != hdc_config.irq ||
-                machine->hdc.connect.media_id != hdc_topology.media_id;
+                machine->board->hdc.connect.irq_source.irq != hdc_config.irq ||
+                machine->board->hdc.connect.media_id != hdc_topology.media_id;
 
             core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
             core_machine_controller_fdc_command(&machine->board->fdc, port, specify_non_dma,
@@ -172,7 +172,7 @@ lib_i32 main(void)
                 status != X86_HDC_STATUS_BSY) {
                 failed |= 0x08;
             } else {
-                hdc_service(&machine->hdc);
+                hdc_service(&machine->board->hdc);
                 if (core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
                         &status) != LIB_STATUS_OK ||
                 core_machine_bus_read(machine, hdc_config.bus.task_file.error_features_port,
@@ -184,7 +184,7 @@ lib_i32 main(void)
             }
             if (core_machine_reset(machine) != LIB_STATUS_OK ||
                 core_machine_port_read(port, fdc_config.status_port) != TEST_FDC_MSR_RQM ||
-                hdc_observe(&machine->hdc).status != (X86_HDC_STATUS_DRDY |
+                hdc_observe(&machine->board->hdc).status != (X86_HDC_STATUS_DRDY |
                     X86_HDC_STATUS_DSC)) {
                 failed |= 0x10;
             }

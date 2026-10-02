@@ -114,7 +114,7 @@ void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
             0u, 0u, 0u);
     }
     if (machine->board->hdc_configured) {
-        core_machine_hdc_advance_at(&machine->hdc, due_tick);
+        core_machine_hdc_advance_at(&machine->board->hdc, due_tick);
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_HDC_ADVANCE,
             0u, 0u, 0u);
     }

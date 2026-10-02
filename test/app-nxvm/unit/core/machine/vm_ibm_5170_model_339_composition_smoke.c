@@ -120,8 +120,8 @@ static lib_i32 vm_model_339_selected_contract(void)
     failed |= (!core_machine_port_has_read(&session->core_machine->executor_port, 0x01f0u) ||
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x01f0u) ||
         core_machine_port_read(&session->core_machine->executor_port, 0x03f1u) != 0x50u ||
-        session->core_machine->hdc.connect.config.service.command_ticks != 16000u ||
-        session->core_machine->hdc.connect.config.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
+        session->core_machine->board->hdc.connect.config.service.command_ticks != 16000u ||
+        session->core_machine->board->hdc.connect.config.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
     {
         core_machine_pic_bus *bus = &session->core_machine->board->shared_pic_master;
         lib_u64 ticks = 0u;

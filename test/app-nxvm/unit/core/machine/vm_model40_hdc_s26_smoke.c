@@ -4,6 +4,7 @@
 
 #include "app-nxvm/devices/hdc.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/media/hdd.h"
@@ -19,7 +20,7 @@ static lib_i32 read_first_sector(vm_machine *session, lib_u8 drive_head,
     lib_u16 index;
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL) return 0;
-    hdc = &session->core_machine->hdc;
+    hdc = &session->core_machine->board->hdc;
     core_machine_port_write(&session->core_machine->executor_port, 0x01f2u, 1u);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f3u, 1u);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f4u, 0u);
@@ -63,11 +64,11 @@ lib_i32 main(void)
             vm_machine_hdd_replace_bytes(&session->hdd, image, MODEL40_HDC_BYTES) ||
             vm_machine_hdd_set_geometry(&session->hdd, 925u, 5u, 17u) ||
             !session->hdd.connect.flagDiskExist ||
-            session->core_machine->hdc.connect.config.service.command_ticks != 0u ||
-            session->core_machine->hdc.connect.config.service.next_sector_ticks != 0u ||
+            session->core_machine->board->hdc.connect.config.service.command_ticks != 0u ||
+            session->core_machine->board->hdc.connect.config.service.next_sector_ticks != 0u ||
             session->hdd.data.ncyl != 925u || session->hdd.data.nhead != 5u ||
             session->hdd.data.nsector != 17u || session->hdd.data.nbyte != 512u ||
-            session->core_machine->hdc.connect.slave_media_id != CORE_MACHINE_MEDIA_ID_INVALID ||
+            session->core_machine->board->hdc.connect.slave_media_id != CORE_MACHINE_MEDIA_ID_INVALID ||
             !read_first_sector(session, 0x20u, 0x5aa5u) ||
             !read_first_sector(session, 0xa0u, 0x5aa5u);
     }
