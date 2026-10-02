@@ -106,8 +106,8 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
         board_consider_clock(&machine->board->kbc_clock, device_ticks,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
-    if (core_machine_pic_ticks_until_event(&machine->shared_pic_master,
-            &machine->shared_pic_slave, &device_ticks) == LIB_STATUS_OK &&
+    if (core_machine_pic_ticks_until_event(&machine->board->shared_pic_master,
+            &machine->board->shared_pic_slave, &device_ticks) == LIB_STATUS_OK &&
         board_consider_absolute(now, now + device_ticks,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;

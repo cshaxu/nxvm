@@ -1,4 +1,5 @@
 #include "support/pic_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -356,10 +357,10 @@ static lib_i32 iret_s51_test_pic(void)
         if (!failed) {
             iret_s51_seed(&state, VCPU_EFLAGS_CF);
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.machine->shared_pic_master, (lib_u8)vector);
+            test_pic_program_vector(&state.machine->board->shared_pic_master, (lib_u8)vector);
             core_machine_pic_irq_source_bind(&source,
-                &state.machine->shared_pic_master,
-                &state.machine->shared_pic_slave, 0u);
+                &state.machine->board->shared_pic_master,
+                &state.machine->board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(state.machine,
@@ -369,9 +370,9 @@ static lib_i32 iret_s51_test_pic(void)
                 failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 failed |= after.data.eip != offset + 1u;
                 failed |= !after.data.flagHalt;
-                failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+                failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u));
-                failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
+                failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au),
                     VPIC_IRR_IRQ(0u));
                 failed |= core_machine_memory_read_physical(
                     &state.machine->executor_memory,
@@ -381,9 +382,9 @@ static lib_i32 iret_s51_test_pic(void)
             } else {
                 failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
                 failed |= after.data.eip != 2u;
-                failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
+                failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u));
-                failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
+                failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au),
                     VPIC_IRR_IRQ(0u));
             }
         }

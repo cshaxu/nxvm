@@ -1,4 +1,5 @@
 #include "support/core_machine_board_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "support/pic_fixture.h"
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -116,9 +117,9 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
                 sizeof(hlt)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0u, code, bytes) != LIB_STATUS_OK;
     if (!failed) {
-        test_pic_program_vector(&machine->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &machine->shared_pic_master,
-            &machine->shared_pic_slave, 0u);
+        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &machine->board->shared_pic_master,
+            &machine->board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed = core_machine_run(machine,
@@ -144,9 +145,9 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
             probe.writes != (input ? 0u : 1u) ||
             (!input && probe.last_write != source[0]) ||
             observed != source[0] ||
-            !(test_pic_read(&machine->shared_pic_master, 0x0bu) &
+            !(test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) ||
-            (test_pic_read(&machine->shared_pic_master, 0x0au) &
+            (test_pic_read(&machine->board->shared_pic_master, 0x0au) &
                 VPIC_IRR_IRQ(0u));
     core_machine_destroy(machine);
     return !failed;

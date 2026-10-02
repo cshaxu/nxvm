@@ -1,4 +1,5 @@
 #include "support/core_machine_board_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "support/pic_fixture.h"
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/machine_interface.h"
@@ -219,9 +220,9 @@ static lib_i32 arpl_board_irq(void)
                 core_machine_debug_capture_cpu_snapshot(machine,
                     CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         if (!failed) {
-            test_pic_program_vector(&machine->shared_pic_master, 0x20u);
+            test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
+                &machine->board->shared_pic_master, &machine->board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed = core_machine_run(machine,
@@ -258,9 +259,9 @@ static lib_i32 arpl_board_irq(void)
                     sizeof(before.fs)) != 0 ||
                 lib_memory_compare(&before.gs, &after.gs,
                     sizeof(before.gs)) != 0 ||
-                !(test_pic_read(&machine->shared_pic_master, 0x0bu) &
+                !(test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
                     VPIC_ISR_IRQ(0u)) ||
-                (test_pic_read(&machine->shared_pic_master, 0x0au) &
+                (test_pic_read(&machine->board->shared_pic_master, 0x0au) &
                     VPIC_IRR_IRQ(0u)) ||
                 frame[0u] != 3u ||
                 !!(frame[2u] & VCPU_EFLAGS_ZF) != change ||

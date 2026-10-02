@@ -153,9 +153,9 @@ int main(void)
         failed = 1;
         stage = 4;
     } else if (!(interrupt_pending = core_machine_pic_scan_interrupt(
-            &machine->shared_pic_master, &machine->shared_pic_slave)) ||
+            &machine->board->shared_pic_master, &machine->board->shared_pic_slave)) ||
         (interrupt_vector = core_machine_pic_get_interrupt(
-            &machine->shared_pic_master, &machine->shared_pic_slave)) != 0x70u) {
+            &machine->board->shared_pic_master, &machine->board->shared_pic_slave)) != 0x70u) {
         failed = 1;
         stage = 5;
     } else if (core_machine_reset(machine) != LIB_STATUS_OK ||
@@ -170,10 +170,10 @@ done:
     if (failed && machine != LIB_NULL) {
         printf("M5:T296:S3:DMA-RTC-AUTHORITY:DETAIL:%d IRQ=%u asserted=%u pending=%d vector=%02x IRR=%02x/%02x\n",
             stage,
-            machine->rtc_irq_source.irq,
-            machine->rtc_irq_source.asserted,
+            machine->board->rtc_irq_source.irq,
+            machine->board->rtc_irq_source.asserted,
             interrupt_pending, interrupt_vector,
-            test_pic_read(&machine->shared_pic_master, 0x0au), test_pic_read(&machine->shared_pic_slave, 0x0au));
+            test_pic_read(&machine->board->shared_pic_master, 0x0au), test_pic_read(&machine->board->shared_pic_slave, 0x0au));
     }
     core_machine_destroy(machine);
     if (failed) printf("M5:T296:S3:DMA-RTC-AUTHORITY:FAIL:%d\n", stage);

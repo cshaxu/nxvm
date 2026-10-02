@@ -1,4 +1,5 @@
 #include "support/core_machine_board_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "support/pic_fixture.h"
 #include "x86/chips/cpu/cpu.h"
 #include "app-nxvm/devices/device_support.h"
@@ -68,9 +69,9 @@ static lib_i32 table_register_board_case(const lib_u8 *opcode,
             core_machine_memory_write(machine, 0x0100u, &handler,
                 sizeof(handler)) != LIB_STATUS_OK;
     if (!failed) {
-        test_pic_program_vector(&machine->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&source, &machine->shared_pic_master,
-            &machine->shared_pic_slave, 0u);
+        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&source, &machine->board->shared_pic_master,
+            &machine->board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed = core_machine_run(machine, (core_machine_run_budget){2u,0u},
@@ -82,9 +83,9 @@ static lib_i32 table_register_board_case(const lib_u8 *opcode,
     if (!failed)
         failed = diagnostic.first_fault.valid || result.reason !=
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || after.eip != 0x0101u ||
-            !(test_pic_read(&machine->shared_pic_master, 0x0bu) &
+            !(test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) ||
-            (test_pic_read(&machine->shared_pic_master, 0x0au) & VPIC_IRR_IRQ(0u));
+            (test_pic_read(&machine->board->shared_pic_master, 0x0au) & VPIC_IRR_IRQ(0u));
     if (!failed && !lidt)
         failed = result.executed != 2u;
     core_machine_destroy(machine);

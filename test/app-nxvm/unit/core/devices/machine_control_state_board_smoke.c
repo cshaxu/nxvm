@@ -1,4 +1,5 @@
 #include "support/pic_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
 #include "support/machine_cpu_fixture.h"
 #include "x86/chips/cpu/cpu.h"
@@ -168,9 +169,9 @@ static lib_i32 control_board_irq(void)
                     machine, 0x100u, &handler, sizeof(handler)) != LIB_STATUS_OK ||
                 core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK;
         if (!failed) {
-            test_pic_program_vector(&machine->shared_pic_master, 0x20u);
-            core_machine_pic_irq_source_bind(&source, &machine->shared_pic_master,
-                &machine->shared_pic_slave, 0u);
+            test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
+            core_machine_pic_irq_source_bind(&source, &machine->board->shared_pic_master,
+                &machine->board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed = core_machine_run(machine, (core_machine_run_budget){2u,0u},
@@ -182,7 +183,7 @@ static lib_i32 control_board_irq(void)
         if (!failed)
             failed = result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 after.eip != 0x0101u || (after.eflags & VCPU_EFLAGS_IF) != 0u ||
-                (test_pic_read(&machine->shared_pic_master, 0x0bu) &
+                (test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) == 0u || (operation == 0u &&
                 (after.cr0 & VCPU_CR0_TS) != 0u) || (operation == 1u &&
                 (after.eax & 0xffffu) != 0u) || (operation == 2u &&

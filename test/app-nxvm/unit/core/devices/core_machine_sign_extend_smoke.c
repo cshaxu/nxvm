@@ -1,4 +1,5 @@
 #include "support/pic_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
 #include "app-nxvm/devices/device_support.h"
 #include "app-nxvm/devices/pic_bus.h"
@@ -65,9 +66,9 @@ static lib_i32 sign_extend_test_irq(void)
                     sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            test_pic_program_vector(&machine->shared_pic_master, 0x20u);
+            test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
+                &machine->board->shared_pic_master, &machine->board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(machine,
@@ -84,7 +85,7 @@ static lib_i32 sign_extend_test_irq(void)
                 after.edx != (opcodes[opcode] == 0x99u ?
                     0x5566ffffu : 0x55660000u) ||
                 !CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(&machine->shared_pic_master, 0x0bu),
+                    test_pic_read(&machine->board->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u));
         }
         core_machine_destroy(machine);

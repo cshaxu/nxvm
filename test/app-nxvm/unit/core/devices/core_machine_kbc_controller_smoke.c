@@ -5,6 +5,7 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 
 #include "app-nxvm/devices/kbc.h"
 #include "app-nxvm/devices/pic_bus.h"
@@ -585,7 +586,7 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
                 &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_state(fixture.machine, &cpu) != LIB_STATUS_OK ||
             cpu.eip != offset ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.machine->shared_pic_master, 0x0bu),
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.machine->board->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(1u)) ||
             core_machine_port_read(&fixture.machine->executor_port, 0x60u) != 0xaau ||
             (core_machine_port_read(&fixture.machine->executor_port, 0x64u) & VKBC_STATUS_OBF) != 0u;

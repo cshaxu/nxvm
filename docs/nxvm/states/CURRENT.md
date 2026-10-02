@@ -1593,18 +1593,18 @@ INIs are untouched. T540 remains open.
 | --- | --- |
 | Identifier Mode | Continuation M5 T540 S45, next linear S after accepted S44. |
 | Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
-| Objective | Inventory and move PC chip instances plus their IRQ/port-owned state from flat `core_machine` into the sole board attachment, preserving one lifetime and all callback/registration order. |
-| Non-goals | D4/refresh/board callback split (S46), final neutral private header (S47), physical Shared move (S48), new device framework, chip or timing behavior change. |
+| Objective | Move the PIC pair and its PIT0/RTC IRQ-source bindings from flat `core_machine` to the sole board attachment, preserving one PIC lifetime and callback/registration order. |
+| Non-goals | Other chip groups (S46–S52), D4/refresh/board callback split (S53), final neutral private header (S54), physical Shared move (S55), new device framework or chip/timing behavior change. |
 | Reference Baseline | S44 P1 `784e95e40`, [S44 evidence](../etc/evidence/t540-s44-board-state.md), [S42 private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, specialized gates and 8/8 boots. |
 | Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and [S42 ownership ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | First count actual chip-instance and IRQ/port readers/writers in board, Core, adapters and direct fixtures. Move only one bounded owner group at a time; if that inventory is too large, assign further **numeric linear S** receivers and shift later S before code. |
+| Files And ABI Surface | PIC state is read in three production and fifty direct test files. The measured [receiving plan](../etc/architecture/t540-s42-private-state-ledger.md) assigns PIT, DMA, RTC, FDC, HDC, keyboard and VADP to S46–S52 before code. S45 edits only the PIC group, its direct fixtures and exact source inventories. |
 | Applicable Rules | One board attachment, no mirrored chip or IRQ state, one registration/rollback route; Core CPU, memory, transaction and timeline stay neutral. |
 | Verification | Full x64/x86 units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
-| Expected Markers | Moved chip instances and IRQ/port state no longer occupy flat Core storage; board constructor/finalizer alone own their lifetime. |
+| Expected Markers | PIC pair and two PIC IRQ-source bindings no longer occupy flat Core storage; board constructor/finalizer alone own their lifetime. |
 | Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
 | Reporting Requirements | Inventory and exact moved fields, constructor/reset/finalization equivalence, diff size, tests and artifact hashes. |
-| Stop Conditions | Stop before an unbounded mechanical move, second owner, altered chip wiring or unsupported Shared import; split a large remainder into next linear numeric S first. |
-| Exit Criteria | A bounded owner move is complete, tests and artifacts pass, P1/P2 pushed and tree clean; explicitly record any remaining numeric receiver. |
+| Stop Conditions | Stop before pulling another chip group into S45, a second PIC owner, altered wiring or unsupported Shared import. |
+| Exit Criteria | PIC owner move is complete, tests and artifacts pass, P1/P2 pushed and tree clean; S46–S55 retain their recorded receivers. |
 | Original Owner Request | Prepare independently reusable x86 Core and IBM-PC boards without diverging the four PC products. |
 | Similar-Issue Sweep | PIC/PIT/DMA/RTC/FDC/HDC/KBC/XT PPI/XT keyboard/VADP chip lifetime, IRQ signals, port registration and failed construction. |
 

@@ -80,8 +80,8 @@ void core_machine_board_pit_pic_advance(void *owner,
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIT_ADVANCE,
             0u, (lib_u32)ticks.primary, 0u);
     }
-    core_machine_pic_refresh(&machine->shared_pic_master,
-        &machine->shared_pic_slave);
+    core_machine_pic_refresh(&machine->board->shared_pic_master,
+        &machine->board->shared_pic_slave);
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIC_REFRESH,
         0u, 0u, 0u);
 }
@@ -90,16 +90,16 @@ lib_bool core_machine_board_pic_pending(void *owner)
 {
     core_machine *machine = owner;
     if (machine == LIB_NULL) return LIB_FALSE;
-    return core_machine_pic_scan_interrupt(&machine->shared_pic_master,
-        &machine->shared_pic_slave) ? LIB_TRUE : LIB_FALSE;
+    return core_machine_pic_scan_interrupt(&machine->board->shared_pic_master,
+        &machine->board->shared_pic_slave) ? LIB_TRUE : LIB_FALSE;
 }
 
 lib_u8 core_machine_board_pic_acknowledge(void *owner)
 {
     core_machine *machine = owner;
     if (machine == LIB_NULL) return 0u;
-    return core_machine_pic_get_interrupt(&machine->shared_pic_master,
-        &machine->shared_pic_slave);
+    return core_machine_pic_get_interrupt(&machine->board->shared_pic_master,
+        &machine->board->shared_pic_slave);
 }
 
 void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
@@ -149,7 +149,7 @@ void core_machine_board_peripheral_advance(void *owner, lib_u64 source_ticks)
     } else {
         core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
     }
-    core_machine_pic_advance(&machine->shared_pic_master, &machine->shared_pic_slave,
+    core_machine_pic_advance(&machine->board->shared_pic_master, &machine->board->shared_pic_slave,
         source_ticks);
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_KBC_ADVANCE,
         0u, (lib_u32)kbc_ticks, 0u);

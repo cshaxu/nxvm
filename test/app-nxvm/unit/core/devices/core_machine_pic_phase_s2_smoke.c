@@ -5,6 +5,7 @@
 
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "support/core_machine_board_fixture.h"
 
@@ -93,8 +94,8 @@ static lib_i32 pic_phase_s2_cascaded_bus(void)
         core_machine_reset(state.machine) != LIB_STATUS_OK ||
         core_machine_set_trace_provider(state.machine, &trace) != LIB_STATUS_OK;
     if (!failed) {
-        x86_pic *master = state.machine->shared_pic_master.device;
-        x86_pic *slave = state.machine->shared_pic_slave.device;
+        x86_pic *master = state.machine->board->shared_pic_master.device;
+        x86_pic *slave = state.machine->board->shared_pic_slave.device;
         x86_pic_write_register(master, 0u, 0x11u);
         x86_pic_write_register(master, 1u, 0x20u);
         x86_pic_write_register(master, 1u, 0x04u);
@@ -103,12 +104,12 @@ static lib_i32 pic_phase_s2_cascaded_bus(void)
         x86_pic_write_register(slave, 1u, 0x28u);
         x86_pic_write_register(slave, 1u, 0x02u);
         x86_pic_write_register(slave, 1u, 0x01u);
-        core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
-            &state.machine->shared_pic_slave, 14u);
+        core_machine_pic_irq_source_bind(&irq, &state.machine->board->shared_pic_master,
+            &state.machine->board->shared_pic_slave, 14u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
-        core_machine_pic_refresh(&state.machine->shared_pic_master,
-            &state.machine->shared_pic_slave);
+        core_machine_pic_refresh(&state.machine->board->shared_pic_master,
+            &state.machine->board->shared_pic_slave);
         failed |= !core_machine_cpu_bus.interrupt_pending(state.machine);
         failed |= core_machine_transaction_begin(&state.machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA,
@@ -118,8 +119,8 @@ static lib_i32 pic_phase_s2_cascaded_bus(void)
                 LIB_STATUS_INVALID_ARGUMENT || vector != 0xffu || state.count != 0u ||
             state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_DMA ||
             !core_machine_cpu_bus.interrupt_pending(state.machine) ||
-            test_pic_read(&state.machine->shared_pic_master, 0x0bu) != 0u ||
-            test_pic_read(&state.machine->shared_pic_slave, 0x0bu) != 0u;
+            test_pic_read(&state.machine->board->shared_pic_master, 0x0bu) != 0u ||
+            test_pic_read(&state.machine->board->shared_pic_slave, 0x0bu) != 0u;
         core_machine_transaction_cancel(&state.machine->transaction);
         state.count = 0u;
         failed |= core_machine_cpu_bus.acknowledge_interrupt(state.machine, &vector) !=
@@ -129,8 +130,8 @@ static lib_i32 pic_phase_s2_cascaded_bus(void)
             state.events[1].value != 0x2eu ||
             ((state.events[0].detail >> 8u) & 0xffu) !=
                 CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE ||
-            test_pic_read(&state.machine->shared_pic_master, 0x0bu) != 0x04u ||
-            test_pic_read(&state.machine->shared_pic_slave, 0x0bu) != 0x40u ||
+            test_pic_read(&state.machine->board->shared_pic_master, 0x0bu) != 0x04u ||
+            test_pic_read(&state.machine->board->shared_pic_slave, 0x0bu) != 0x40u ||
             state.machine->transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE;
     }
     core_machine_destroy(state.machine);
@@ -179,21 +180,21 @@ lib_i32 main(void)
     if (!failed) {
         failed |= core_machine_debug_patch_registers(state.machine,
             &interrupt_entry) != LIB_STATUS_OK;
-        test_pic_program_vector(&state.machine->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
-            &state.machine->shared_pic_slave, 0u);
+        test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &state.machine->board->shared_pic_master,
+            &state.machine->board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed |= !core_machine_pic_scan_interrupt(
-            &state.machine->shared_pic_master, &state.machine->shared_pic_slave) ||
+            &state.machine->board->shared_pic_master, &state.machine->board->shared_pic_slave) ||
             core_machine_run(state.machine, (core_machine_run_budget){ 8u, 0u },
                 &result) != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK ||
             cpu.eip != 0x0101u ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || !CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(&state.machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+                test_pic_read(&state.machine->board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
             !pic_phase_s2_has_acknowledgement_before_frame(&state) ||
             core_machine_reset(state.machine) != LIB_STATUS_OK ||
             state.reset_status != LIB_STATUS_OK ||

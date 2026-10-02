@@ -1,4 +1,5 @@
 #include "support/cpu_board_limit_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "support/pic_fixture.h"
 #include <stdio.h>
 
@@ -59,9 +60,9 @@ static lib_i32 movs_irq_case(lib_bool repeated)
                 sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        test_pic_program_vector(&machine->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &machine->shared_pic_master,
-            &machine->shared_pic_slave, 0u);
+        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &machine->board->shared_pic_master,
+            &machine->board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed = core_machine_run(machine,
@@ -85,9 +86,9 @@ static lib_i32 movs_irq_case(lib_bool repeated)
                 destination[0] != source[0] ||
                 (repeated && (destination[1] != 0xa5u ||
                     destination[2] != 0xa5u)) ||
-                !(test_pic_read(&machine->shared_pic_master, 0x0bu) &
+                !(test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
                     VPIC_ISR_IRQ(0u)) ||
-                (test_pic_read(&machine->shared_pic_master, 0x0au) &
+                (test_pic_read(&machine->board->shared_pic_master, 0x0au) &
                     VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(machine);

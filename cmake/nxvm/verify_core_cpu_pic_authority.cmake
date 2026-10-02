@@ -35,9 +35,9 @@ foreach(token IN ITEMS
     endif()
 endforeach()
 foreach(token IN ITEMS
-    "core_machine_pic_scan_interrupt(&machine->shared_pic_master,"
-    "core_machine_pic_get_interrupt(&machine->shared_pic_master,"
-    "&machine->shared_pic_slave)")
+    "core_machine_pic_scan_interrupt(&machine->board->shared_pic_master,"
+    "core_machine_pic_get_interrupt(&machine->board->shared_pic_master,"
+    "&machine->board->shared_pic_slave)")
     string(FIND "${board_source}" "${token}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Board PIC signal contract is missing: ${token}")

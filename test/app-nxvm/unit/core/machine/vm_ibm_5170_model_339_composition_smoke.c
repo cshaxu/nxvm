@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/port.h"
@@ -122,7 +123,7 @@ static lib_i32 vm_model_339_selected_contract(void)
         session->core_machine->hdc.connect.config.service.command_ticks != 16000u ||
         session->core_machine->hdc.connect.config.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
     {
-        core_machine_pic_bus *bus = &session->core_machine->shared_pic_master;
+        core_machine_pic_bus *bus = &session->core_machine->board->shared_pic_master;
         lib_u64 ticks = 0u;
         x86_pic_write_register(bus->device, 0u, 0x13u);
         x86_pic_write_register(bus->device, 1u, 8u);

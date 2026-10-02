@@ -1,6 +1,7 @@
 /* Temporary S50 timing-only fixture.  S47 moved all S3--S7 behavior to the
  * public-board fixture; this file remains solely for manifest recipes. */
 #include "support/pic_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -335,9 +336,9 @@ static lib_i32 s3_gate_external_irq(void)
     lib_memory_set(&source, 0, sizeof(source));
     if (!failed) {
         (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        test_pic_program_vector(&state.machine->shared_pic_master, S3_VECTOR);
-        core_machine_pic_irq_source_bind(&source, &state.machine->shared_pic_master,
-            &state.machine->shared_pic_slave, 0u);
+        test_pic_program_vector(&state.machine->board->shared_pic_master, S3_VECTOR);
+        core_machine_pic_irq_source_bind(&source, &state.machine->board->shared_pic_master,
+            &state.machine->board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed |= !s3_gate_write(&state, S3_CODE_BASE, nop, sizeof(nop)) ||
@@ -348,8 +349,8 @@ static lib_i32 s3_gate_external_irq(void)
             (*test_core_machine_fixture_cpu(state.machine)).data.esp != S3_STACK_TOP - 6u ||
             CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_IF) ||
             CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_TF) ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0bu),
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->shared_pic_master, 0x0au),
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || !s3_gate_read(&state, S3_STACK_TOP - 6u,
                 frame, sizeof(frame)) || frame[0] != 1u || frame[1] != 0x0008u ||
             frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);

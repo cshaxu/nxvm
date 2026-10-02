@@ -6,6 +6,7 @@
 
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/lifecycle.h"
@@ -253,9 +254,9 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
         }
         printf("T515:INI-BOOT:%s:PIC:pending=%u:IRQ0=%u\n",
             name, core_machine_pic_scan_interrupt(
-                &session->core_machine->shared_pic_master,
-                &session->core_machine->shared_pic_slave),
-            session->core_machine->shared_pit_irq0_source.asserted);
+                &session->core_machine->board->shared_pic_master,
+                &session->core_machine->board->shared_pic_slave),
+            session->core_machine->board->shared_pit_irq0_source.asserted);
         printf("T515:INI-BOOT:%s:PIT:out0=%u:out1=%u\n", name,
             (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 0u),
             (unsigned int)x86_pit_get_output(session->core_machine->shared_pit.device, 1u));

@@ -1,4 +1,5 @@
 #include "support/pic_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/device_support.h"
@@ -57,9 +58,9 @@ static lib_i32 lea_test_irq_no_shadow(void)
     }
     if (!failed) {
         lib_memory_set(&source, 0, sizeof(source));
-        test_pic_program_vector(&machine->shared_pic_master, 0x20u);
+        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source,
-            &machine->shared_pic_master, &machine->shared_pic_slave,
+            &machine->board->shared_pic_master, &machine->board->shared_pic_slave,
             0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
@@ -72,8 +73,8 @@ static lib_i32 lea_test_irq_no_shadow(void)
                 after.ss.base + (lib_u16)after.esp,
                 &frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
             after.eip != 0x0101u || !CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(&machine->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&machine->shared_pic_master, 0x0au),
+                test_pic_read(&machine->board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&machine->board->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || frame_ip != 3u;
     }
     core_machine_destroy(machine);

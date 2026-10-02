@@ -1,4 +1,5 @@
 #include "support/pic_fixture.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
 #include "support/machine_cpu_fixture.h"
 #include "x86/chips/cpu/cpu.h"
@@ -241,16 +242,16 @@ static lib_i32 debug_board_test_pic_order(void)
         CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
         CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS), values);
     if (!failed) {
-        test_pic_program_vector(&machine->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&source, &machine->shared_pic_master,
-            &machine->shared_pic_slave, 0u);
+        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&source, &machine->board->shared_pic_master,
+            &machine->board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed = !debug_board_run(machine, mov_dr_nop, sizeof(mov_dr_nop),
             &result, &after, &diagnostic) || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || diagnostic.first_fault.valid ||
             after.eip != 0x0101u ||
-            (test_pic_read(&machine->shared_pic_master, 0x0bu) & VPIC_ISR_IRQ(0u)) == 0u;
+            (test_pic_read(&machine->board->shared_pic_master, 0x0bu) & VPIC_ISR_IRQ(0u)) == 0u;
     }
     core_machine_destroy(machine);
     return !failed;
@@ -408,9 +409,9 @@ static lib_i32 debug_board_test_trap_priority(void)
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ESP) |
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS), values);
     if (!failed) {
-        test_pic_program_vector(&machine->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&source, &machine->shared_pic_master,
-            &machine->shared_pic_slave, 0u);
+        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&source, &machine->board->shared_pic_master,
+            &machine->board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed = !debug_board_run(machine, nop, sizeof(nop), &result, &after,
@@ -419,8 +420,8 @@ static lib_i32 debug_board_test_trap_priority(void)
             !diagnostic.last_delivered_exception.valid ||
             diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
             after.eip != 0x0101u ||
-            (test_pic_read(&machine->shared_pic_master, 0x0bu) & VPIC_ISR_IRQ(0u)) != 0u ||
-            (test_pic_read(&machine->shared_pic_master, 0x0au) & VPIC_IRR_IRQ(0u)) == 0u;
+            (test_pic_read(&machine->board->shared_pic_master, 0x0bu) & VPIC_ISR_IRQ(0u)) != 0u ||
+            (test_pic_read(&machine->board->shared_pic_master, 0x0au) & VPIC_IRR_IRQ(0u)) == 0u;
     }
     core_machine_destroy(machine);
     return !failed;

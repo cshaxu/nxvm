@@ -186,18 +186,18 @@ lib_status core_machine_board_create(core_machine *machine,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
             machine, dma_controller_count);
         if (status == LIB_STATUS_OK) {
-            status = core_machine_pic_initialize(&machine->shared_pic_master,
-                &machine->shared_pic_slave, machine, config->pic_topology);
+            status = core_machine_pic_initialize(&machine->board->shared_pic_master,
+                &machine->board->shared_pic_slave, machine, config->pic_topology);
         }
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
             return status;
         }
     }
-    core_machine_pic_set_irq_timing(&machine->shared_pic_master,
-        &machine->shared_pic_slave, &config->pic_irq_timing);
-    core_machine_pic_irq_source_bind(&machine->shared_pit_irq0_source,
-        &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
+    core_machine_pic_set_irq_timing(&machine->board->shared_pic_master,
+        &machine->board->shared_pic_slave, &config->pic_irq_timing);
+    core_machine_pic_irq_source_bind(&machine->board->shared_pit_irq0_source,
+        &machine->board->shared_pic_master, &machine->board->shared_pic_slave, 0u);
     {
         lib_status status = core_machine_pit_bus_create(&machine->shared_pit,
             machine, config->shared_pit_personality, 0x0040u);
@@ -213,11 +213,11 @@ lib_status core_machine_board_create(core_machine *machine,
         }
     }
     x86_pit_set_output(machine->shared_pit.device, 0,
-        core_machine_pic_timer_output, &machine->shared_pit_irq0_source);
+        core_machine_pic_timer_output, &machine->board->shared_pit_irq0_source);
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_board_configure_xt_ppi_speaker(machine);
         core_machine_xt_ppi_keyboard_bind_pic(&machine->xt_ppi_keyboard,
-            &machine->shared_pic_master, &machine->shared_pic_slave);
+            &machine->board->shared_pic_master, &machine->board->shared_pic_slave);
         core_machine_xt_ppi_keyboard_bind_nmi(&machine->xt_ppi_keyboard,
             core_machine_xt_ppi_request_nmi, machine);
         core_machine_xt_ppi_keyboard_bind_speaker(&machine->xt_ppi_keyboard,
@@ -227,7 +227,7 @@ lib_status core_machine_board_create(core_machine *machine,
             core_machine_xt_keyboard_released);
     } else {
         core_machine_kbc_bind_core_services(&machine->shared_kbc,
-            &machine->shared_pic_master, &machine->shared_pic_slave,
+            &machine->board->shared_pic_master, &machine->board->shared_pic_slave,
             core_machine_kbc_signal_a20, machine,
             core_machine_kbc_request_reset, machine,
             !config->kbc_aux_absent);
@@ -768,8 +768,8 @@ void core_machine_board_reset_devices(core_machine *machine)
     machine->d4_platform_nmi_signaled = LIB_FALSE;
     core_machine_fdc_reset(&machine->fdc);
     core_machine_hdc_reset(&machine->hdc);
-    core_machine_pic_reset(&machine->shared_pic_master,
-        &machine->shared_pic_slave);
+    core_machine_pic_reset(&machine->board->shared_pic_master,
+        &machine->board->shared_pic_slave);
     x86_pit_reset(machine->shared_pit.device);
     if (machine->auxiliary_pit_configured) {
         x86_pit_reset(machine->auxiliary_pit.device);
@@ -795,8 +795,8 @@ void core_machine_board_finalize_devices(core_machine *machine)
         x86_xt_keyboard_destroy(machine->xt_keyboard);
         core_machine_xt_ppi_keyboard_finalize(&machine->xt_ppi_keyboard);
     } else core_machine_kbc_finalize(&machine->shared_kbc);
-    core_machine_pic_finalize(&machine->shared_pic_master,
-        &machine->shared_pic_slave);
+    core_machine_pic_finalize(&machine->board->shared_pic_master,
+        &machine->board->shared_pic_slave);
     core_machine_vadp_finalize(&machine->shared_vadp);
     lib_release(machine->board);
     machine->board = LIB_NULL;
@@ -1073,7 +1073,7 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
     rtc_config.uip_lead_ticks = config->timing.uip_lead_ticks;
     rtc_config.update_ticks = config->timing.update_ticks;
     status = x86_rtc_create(&rtc_config, core_machine_rtc_irq_output,
-        &machine->rtc_irq_source, &machine->shared_rtc);
+        &machine->board->rtc_irq_source, &machine->shared_rtc);
     if (status != LIB_STATUS_OK) return status;
     routes[0] = (core_machine_port_route) {
         .address = config->index_port,
@@ -1090,8 +1090,8 @@ lib_status core_machine_configure_rtc_cmos(core_machine *machine,
         machine->shared_rtc = LIB_NULL;
         return status;
     }
-    core_machine_pic_irq_source_bind(&machine->rtc_irq_source,
-        &machine->shared_pic_master, &machine->shared_pic_slave, config->irq);
+    core_machine_pic_irq_source_bind(&machine->board->rtc_irq_source,
+        &machine->board->shared_pic_master, &machine->board->shared_pic_slave, config->irq);
     for (index = 0u; index < config->default_count; ++index) {
         if (config->defaults[index].index <= X86_RTC_REG_D) continue;
         x86_rtc_write_register(machine->shared_rtc,
@@ -1475,7 +1475,7 @@ lib_status core_machine_configure_fdc(core_machine *machine,
         &machine->board->fdc_topology.drives, &machine->board->fdc_topology.dma_request,
         core_machine_fdc_dma_request_assert,
         core_machine_fdc_dma_request_deassert, machine,
-        &machine->shared_pic_master, &machine->shared_pic_slave,
+        &machine->board->shared_pic_master, &machine->board->shared_pic_slave,
         machine, &machine->board->fdc_topology.config,
         &machine->board->fdc_topology.observation_provider);
     status = core_machine_fdc_initialize(&machine->fdc);
@@ -1529,8 +1529,8 @@ lib_status core_machine_configure_hdc(core_machine *machine,
     machine->board->hdc_topology = *topology;
     core_machine_hdc_connect(&machine->hdc, machine->board->hdc_topology.media_registry,
         machine->board->hdc_topology.media_id, machine->board->hdc_topology.slave_media_id,
-        &machine->shared_pic_master,
-        &machine->shared_pic_slave, &machine->board->hdc_topology.config);
+        &machine->board->shared_pic_master,
+        &machine->board->shared_pic_slave, &machine->board->hdc_topology.config);
     status = core_machine_hdc_initialize(&machine->hdc);
     if (status == LIB_STATUS_OK)
         status = core_machine_install_port_routes(machine, routes, port_count);

@@ -6,6 +6,10 @@
 /* One board-owned lifetime. Fields move here by their actual owner; Core
  * retains only the opaque attachment pointer and bounded callbacks. */
 struct core_machine_board_state {
+    core_machine_pic_bus shared_pic_master;
+    core_machine_pic_bus shared_pic_slave;
+    core_machine_pic_irq_source shared_pit_irq0_source;
+    core_machine_pic_irq_source rtc_irq_source;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain auxiliary_pit_clock;

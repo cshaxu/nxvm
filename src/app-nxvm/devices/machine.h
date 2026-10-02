@@ -223,9 +223,6 @@ struct core_machine {
     core_machine_cpu_execution_context *executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
-    core_machine_pic_bus shared_pic_master;
-    core_machine_pic_bus shared_pic_slave;
-    core_machine_pic_irq_source shared_pit_irq0_source;
     core_machine_pit_bus shared_pit;
     core_machine_pit_bus auxiliary_pit;
     lib_u8 auxiliary_pit_configured;
@@ -233,7 +230,6 @@ struct core_machine {
     t_dma shared_dma_primary;
     t_dma shared_dma_secondary;
     x86_rtc *shared_rtc;
-    core_machine_pic_irq_source rtc_irq_source;
     lib_u8 rtc_selected_register;
     core_machine_fdc fdc;
     core_machine_hdc hdc;

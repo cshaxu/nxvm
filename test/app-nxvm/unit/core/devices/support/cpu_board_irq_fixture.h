@@ -4,6 +4,7 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/debug_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "pic_fixture.h"
 
 typedef struct test_cpu_board_irq_case {
@@ -87,9 +88,9 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
                 LIB_STATUS_OK;
     }
     if (!failed) {
-        test_pic_program_vector(&machine->shared_pic_master, 0x20u);
+        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&irq,
-            &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
+            &machine->board->shared_pic_master, &machine->board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed = core_machine_run(machine,
@@ -103,8 +104,8 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
                 out->after.ss.base + (lib_u16)out->after.esp,
                 &out->frame_ip, sizeof(out->frame_ip)) != LIB_STATUS_OK;
         if (!failed) {
-            out->isr = test_pic_read(&machine->shared_pic_master, 0x0bu);
-            out->irr = test_pic_read(&machine->shared_pic_master, 0x0au);
+            out->isr = test_pic_read(&machine->board->shared_pic_master, 0x0bu);
+            out->irr = test_pic_read(&machine->board->shared_pic_master, 0x0au);
             failed = core_machine_debug_read_memory(machine, 0x7ffeu,
                 &out->stack_word, sizeof(out->stack_word)) != LIB_STATUS_OK;
         }
