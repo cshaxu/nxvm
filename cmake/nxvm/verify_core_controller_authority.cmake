@@ -57,6 +57,16 @@ foreach(forbidden IN ITEMS "clock_plan" "pic_" "pit_" "dma_" "kbc_" "xt_")
     endif()
 endforeach()
 file(READ "${machine_plan_source}" machine_plan_text)
+foreach(validator IN ITEMS retirement_time_contract_is_valid
+    timing_capability_is_valid external_cycle_timing_is_valid
+    external_access_wait_windows_are_valid transaction_contract_is_valid)
+    set(definition "lib_i32 core_machine_${validator}(")
+    string(FIND "${machine_plan_text}" "${definition}" board_position)
+    string(FIND "${machine_lifecycle_text}" "${definition}" core_position)
+    if(NOT board_position EQUAL -1 OR core_position EQUAL -1)
+        message(FATAL_ERROR "Neutral validator must belong to Core: ${validator}")
+    endif()
+endforeach()
 set(machine_text "${machine_board_text}${machine_lifecycle_text}${machine_plan_text}")
 foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_hdc"
     "core_machine_fdc_connect" "core_machine_fdc_initialize"

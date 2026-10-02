@@ -11,6 +11,9 @@ T540 S5: [neutral Core source cut](architecture/t540-s5-neutral-core-cut.md)
 maps the mixed executor/IBM-PC fields and ordered S6-S8 receivers; Current
 owns admission and status.
 
+T540 S67: [neutral validation owner](evidence/t540-s67-neutral-validation-owner.md)
+records the five verbatim implementation moves and their receiving proof.
+
 S7 receiving evidence: [T43 Shared repair artifacts](evidence/m6-t43-s7-receiving-artifacts.md); eight current NXVM binaries, hashes and complete dual-width unit proof.
 
 S10 receiving evidence: [T43 byte-boolean artifacts](evidence/m6-t43-s10-receiving-artifacts.md); rebuilt eight 0535 receivers and corrected test callback contracts.

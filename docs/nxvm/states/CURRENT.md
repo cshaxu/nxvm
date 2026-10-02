@@ -2347,6 +2347,14 @@ not T540 or the independent Core/board extraction.
 | Original Owner Request | Build reusable neutral x86 Core and flat IBM-PC common/AT/XT components with single ownership, strict numeric S tracking and no patch-layered architecture. |
 | Similar-Issue Sweep | All five validator definitions and every production/test caller, neutral constructor/capability declarations, board frozen-plan validations, and implementation-owner gates. |
 
+S67 implementation and verification are complete, awaiting actual pushed-P1
+coordinator review. The five complete definitions match their originals;
+the three source/gate paths add 75/remove 63 lines, with no new runtime logic.
+Both-width complete units pass 469/469 each, specialized/dependency/documentation
+gates pass, and eight rebuilt optimized/debug-stripped 0540 products each pass
+one external boot checkpoint. See the
+[S67 evidence](../etc/evidence/t540-s67-neutral-validation-owner.md).
+
 ## S87 Admission Packet
 
 | Field | Required record |
@@ -3748,7 +3756,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S66 with unchanged owner INIs; S66 evidence records their hashes, PE
+T540 S67 with unchanged owner INIs; S67 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

@@ -4,20 +4,6 @@
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 
-lib_i32 core_machine_retirement_time_contract_is_valid(
-    core_machine_retirement_time_contract contract)
-{
-    return contract == CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
-        contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
-}
-
-lib_i32 core_machine_timing_capability_is_valid(
-    core_machine_timing_capability capability)
-{
-    return capability >= CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC &&
-        capability <= CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG;
-}
-
 static lib_i32 core_machine_timing_disposition_is_valid(
     core_machine_timing_disposition disposition)
 {
@@ -444,55 +430,6 @@ lib_status core_machine_plan_configure_d4_memory(core_machine_plan *plan,
         plan->d4_memory.present) return LIB_STATUS_INVALID_ARGUMENT;
     plan->d4_memory = *config;
     return LIB_STATUS_OK;
-}
-lib_i32 core_machine_external_cycle_timing_is_valid(
-    const core_machine_external_cycle_timing *timing)
-{
-    if (timing == LIB_NULL || (timing->overlap_policy !=
-        CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED && timing->overlap_policy !=
-        CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL)) return 0;
-    if (timing->page_bytes == 0u) {
-        return timing->page_miss_ticks == 0u && timing->page_hit_ticks == 0u &&
-            timing->overlap_policy == CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED;
-    }
-    return (timing->page_bytes & (timing->page_bytes - 1u)) == 0u &&
-        ((timing->first_eligible_address == 0u &&
-          timing->last_eligible_address == 0u) ||
-         timing->first_eligible_address <= timing->last_eligible_address);
-}
-lib_i32 core_machine_external_access_wait_windows_are_valid(
-    const core_machine_external_access_wait_window *windows)
-{
-    lib_size index;
-
-    if (windows == LIB_NULL) return 0;
-    for (index = 0u; index < CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY;
-            ++index) {
-        const core_machine_external_access_wait_window *window = &windows[index];
-        if (window->wait_ticks == 0u) continue;
-        if ((window->space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
-                window->space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT) ||
-            window->first_address > window->last_address ||
-            (window->space == CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT &&
-                window->last_address > 0xffffu)) return 0;
-    }
-    return 1;
-}
-
-lib_i32 core_machine_transaction_contract_is_valid(
-    const core_machine_transaction_contract *contract)
-{
-    return contract != LIB_NULL &&
-        core_machine_external_cycle_timing_is_valid(
-            &contract->external_cycle_timing) &&
-        core_machine_external_access_wait_windows_are_valid(
-            contract->external_access_wait_windows) &&
-        (contract->dma_cycle_bus_ready_gate_enabled == LIB_FALSE ||
-         contract->dma_cycle_bus_ready_gate_enabled == LIB_TRUE) &&
-        (contract->cpu_cycle_bus_ready_gate_enabled == LIB_FALSE ||
-         contract->cpu_cycle_bus_ready_gate_enabled == LIB_TRUE) &&
-        (contract->cpu_prefetch_reservation_enabled == LIB_FALSE ||
-         contract->cpu_prefetch_reservation_enabled == LIB_TRUE);
 }
 
 lib_i32 core_machine_clock_plan_is_valid(
