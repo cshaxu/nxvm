@@ -152,103 +152,11 @@ static lib_i32 core_machine_valid_fpu_profile(x86_fpu_profile profile)
         profile <= X86_FPU_PROFILE_80387;
 }
 
-static lib_u32 core_machine_cpu_reset_rom_alias(
-    core_machine_cpu_profile profile)
-{
-    switch (profile) {
-    case CORE_MACHINE_CPU_PROFILE_80286:
-        return 0x00ff0000u;
-    case CORE_MACHINE_CPU_PROFILE_80386:
-        return 0xffff0000u;
-    case CORE_MACHINE_CPU_PROFILE_8086:
-    case CORE_MACHINE_CPU_PROFILE_8088:
-    case CORE_MACHINE_CPU_PROFILE_80186:
-    case CORE_MACHINE_CPU_PROFILE_DEFAULT:
-        return 0u;
-    }
-    return 0u;
-}
-
-static lib_i32 core_machine_cpu_reset_rom_is_present(const core_machine *machine)
-{
-    lib_size index;
-
-    if (machine == LIB_NULL) return 0;
-    for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
-        const core_machine_immutable_rom_mapping *mapping =
-            &machine->immutable_rom_mappings[index];
-
-        /* A reset alias is meaningful only when the actual reset prefetch
-         * window comes from F0000h ROM.  A short unrelated F0000h alias must
-         * not turn on a high-ROM provider which cannot serve the reset CPU. */
-        if (0x000ffff0u >= mapping->physical_start &&
-            (lib_u64)0x000ffff0u - mapping->physical_start + 15u <=
-                mapping->bytes) return 1;
-    }
-    return 0;
-}
-
-static lib_i32 core_machine_cpu_reset_rom_alias_is_present(const core_machine *machine,
-    lib_u32 reset_alias)
-{
-    lib_size index;
-
-    if (machine == LIB_NULL) return 0;
-    for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
-        const core_machine_immutable_rom_mapping *mapping =
-            &machine->immutable_rom_mappings[index];
-
-        if (reset_alias <= UINT32_MAX - 0xfff0u &&
-            reset_alias + 0xfff0u >= mapping->physical_start &&
-            (lib_u64)(reset_alias + 0xfff0u) - mapping->physical_start + 16u <=
-                mapping->bytes) return 1;
-    }
-    return 0;
-}
-
 lib_i32 core_machine_configuration_is_open(const core_machine *machine)
 {
     return machine != LIB_NULL &&
         machine->lifecycle == CORE_MACHINE_INITIALIZED &&
         !machine->execution_provider_frozen && !machine->firmware_operation_active;
-}
-
-lib_status core_machine_register_reset_rom_alias(core_machine *machine)
-{
-    lib_u32 reset_alias;
-    lib_size index;
-    lib_i32 copied = 0;
-
-    if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    reset_alias = core_machine_cpu_reset_rom_alias(machine->cpu_profile);
-    if (reset_alias == 0u || !core_machine_cpu_reset_rom_is_present(machine)) {
-        return LIB_STATUS_OK;
-    }
-    if (core_machine_cpu_reset_rom_alias_is_present(machine, reset_alias)) {
-        return LIB_STATUS_OK;
-    }
-    for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
-        const core_machine_immutable_rom_mapping *mapping =
-            &machine->immutable_rom_mappings[index];
-        lib_u32 source_start;
-        lib_u64 source_end = (lib_u64)mapping->physical_start +
-            mapping->bytes;
-        lib_u64 copy_end;
-        lib_status status;
-
-        if (source_end <= 0x000f0000u || mapping->physical_start >= 0x00100000u) {
-            continue;
-        }
-        source_start = mapping->physical_start < 0x000f0000u ?
-            0x000f0000u : mapping->physical_start;
-        copy_end = source_end < 0x00100000u ? source_end : 0x00100000u;
-        status = core_machine_register_immutable_rom_mapping_reset_alias(machine,
-            source_start, reset_alias + (source_start - 0x000f0000u),
-            (lib_size)(copy_end - source_start));
-        if (status != LIB_STATUS_OK) return status;
-        copied = 1;
-    }
-    return copied ? LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT;
 }
 
 lib_i32 core_machine_mutable_operation_is_allowed(const core_machine *machine)

@@ -5,6 +5,122 @@
 
 #define CORE_MACHINE_BOARD_A20_BIT 0x02u
 
+static lib_u32 core_machine_board_reset_rom_alias(
+    core_machine_cpu_profile profile)
+{
+    switch (profile) {
+    case CORE_MACHINE_CPU_PROFILE_80286:
+        return 0x00ff0000u;
+    case CORE_MACHINE_CPU_PROFILE_80386:
+        return 0xffff0000u;
+    case CORE_MACHINE_CPU_PROFILE_8086:
+    case CORE_MACHINE_CPU_PROFILE_8088:
+    case CORE_MACHINE_CPU_PROFILE_80186:
+    case CORE_MACHINE_CPU_PROFILE_DEFAULT:
+        return 0u;
+    }
+    return 0u;
+}
+
+static lib_i32 core_machine_board_reset_rom_is_present(const core_machine *machine)
+{
+    lib_size index;
+
+    for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
+        const core_machine_immutable_rom_mapping *mapping =
+            &machine->immutable_rom_mappings[index];
+
+        /* A reset alias is meaningful only when the actual reset prefetch
+         * window comes from F0000h ROM.  A short unrelated F0000h alias must
+         * not turn on a high-ROM provider which cannot serve the reset CPU. */
+        if (0x000ffff0u >= mapping->physical_start &&
+            (lib_u64)0x000ffff0u - mapping->physical_start + 15u <=
+                mapping->bytes) return 1;
+    }
+    return 0;
+}
+
+static lib_i32 core_machine_board_reset_rom_alias_is_present(
+    const core_machine *machine, lib_u32 reset_alias)
+{
+    lib_size index;
+
+    for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
+        const core_machine_immutable_rom_mapping *mapping =
+            &machine->immutable_rom_mappings[index];
+
+        if (reset_alias <= UINT32_MAX - 0xfff0u &&
+            reset_alias + 0xfff0u >= mapping->physical_start &&
+            (lib_u64)(reset_alias + 0xfff0u) - mapping->physical_start + 16u <=
+                mapping->bytes) return 1;
+    }
+    return 0;
+}
+
+static lib_status core_machine_board_register_reset_rom_alias(core_machine *machine)
+{
+    lib_u32 reset_alias;
+    lib_size index;
+    lib_i32 copied = 0;
+
+    reset_alias = core_machine_board_reset_rom_alias(machine->cpu_profile);
+    if (reset_alias == 0u || !core_machine_board_reset_rom_is_present(machine)) {
+        return LIB_STATUS_OK;
+    }
+    if (core_machine_board_reset_rom_alias_is_present(machine, reset_alias)) {
+        return LIB_STATUS_OK;
+    }
+    for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
+        const core_machine_immutable_rom_mapping *mapping =
+            &machine->immutable_rom_mappings[index];
+        lib_u32 source_start;
+        lib_u64 source_end = (lib_u64)mapping->physical_start +
+            mapping->bytes;
+        lib_u64 copy_end;
+        lib_status status;
+
+        if (source_end <= 0x000f0000u || mapping->physical_start >= 0x00100000u) {
+            continue;
+        }
+        source_start = mapping->physical_start < 0x000f0000u ?
+            0x000f0000u : mapping->physical_start;
+        copy_end = source_end < 0x00100000u ? source_end : 0x00100000u;
+        status = core_machine_register_immutable_rom_mapping_reset_alias(machine,
+            source_start, reset_alias + (source_start - 0x000f0000u),
+            (lib_size)(copy_end - source_start));
+        if (status != LIB_STATUS_OK) return status;
+        copied = 1;
+    }
+    return copied ? LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT;
+}
+
+lib_status core_machine_bind_firmware_provider(core_machine *machine,
+    const core_machine_firmware_provider *provider, void *provider_context)
+{
+    lib_status status;
+    lib_size rom_mapping_boundary;
+
+    if (!core_machine_configuration_is_open(machine) ||
+        machine->firmware_provider != LIB_NULL || provider == LIB_NULL ||
+        provider->configure == LIB_NULL || provider->reset == LIB_NULL) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    rom_mapping_boundary = machine->immutable_rom_mapping_count;
+    machine->firmware_provider = provider;
+    machine->firmware_provider_context = provider_context;
+    status = core_machine_firmware_invoke(machine, 1, 0, provider->configure);
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_board_register_reset_rom_alias(machine);
+    }
+    if (status != LIB_STATUS_OK) {
+        core_machine_rollback_immutable_rom_mappings(machine, rom_mapping_boundary);
+        machine->firmware_provider = LIB_NULL;
+        machine->firmware_provider_context = LIB_NULL;
+        lib_memory_set(&machine->firmware_context, 0, sizeof(machine->firmware_context));
+    }
+    return status;
+}
+
 static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id,
     lib_u32 *out_value)
 {

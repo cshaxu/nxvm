@@ -50,42 +50,6 @@ static lib_i32 core_machine_firmware_context_is_active(
         firmware->machine->firmware_operation_active;
 }
 
-lib_status core_machine_bind_firmware_provider(core_machine *machine,
-    const core_machine_firmware_provider *provider, void *provider_context)
-{
-    lib_status status;
-    lib_size rom_mapping_boundary;
-
-    if (!core_machine_configuration_is_open(machine) ||
-        machine->firmware_provider != LIB_NULL || provider == LIB_NULL ||
-        provider->configure == LIB_NULL || provider->reset == LIB_NULL) {
-        return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    rom_mapping_boundary = machine->immutable_rom_mapping_count;
-    machine->firmware_provider = provider;
-    machine->firmware_provider_context = provider_context;
-    status = core_machine_firmware_invoke(machine, 1, 0, provider->configure);
-    if (status != LIB_STATUS_OK) {
-        core_machine_rollback_immutable_rom_mappings(machine, rom_mapping_boundary);
-        machine->firmware_provider = LIB_NULL;
-        machine->firmware_provider_context = LIB_NULL;
-        lib_memory_set(&machine->firmware_context, 0, sizeof(machine->firmware_context));
-        return status;
-    }
-    /* The firmware supplies only its ordinary F0000h image.  Core derives the
-     * CPU-selected reset-vector alias after that source exists, before the
-     * configuration boundary freezes. */
-    status = core_machine_register_reset_rom_alias(machine);
-    if (status != LIB_STATUS_OK) {
-        core_machine_rollback_immutable_rom_mappings(machine, rom_mapping_boundary);
-        machine->firmware_provider = LIB_NULL;
-        machine->firmware_provider_context = LIB_NULL;
-        lib_memory_set(&machine->firmware_context, 0, sizeof(machine->firmware_context));
-        return status;
-    }
-    return LIB_STATUS_OK;
-}
-
 lib_status core_machine_firmware_register_immutable_rom(
     core_machine_firmware_context *firmware, lib_u32 physical_start,
     const lib_u8 *image, lib_size bytes)
