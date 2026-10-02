@@ -85,10 +85,14 @@ firmware context remains an operation guard, not a second machine owner.
    assigns distinct owner and compile boundaries.
 6. **S61–S64** — Move D4 board memory state (S61), split frozen-plan board
    types without mirroring (S62), neutralize the private header (S63), then
-   split the public interface and independently compile Core (S64).
-7. **S65** — Move only proven neutral source/tests to `src/x86/core` and
+   measure and allocate the oversized public interface (S64).
+7. **S65–S69** — Split neutral construction input from board configuration,
+   board public values and operations, the six direct Core-to-board calls,
+   then prove an independent neutral compile. The [S64 intake](../evidence/t540-s64-public-interface-intake.md)
+   owns this revised numeric receiver map.
+8. **S70** — Move only proven neutral source/tests to `src/x86/core` and
    `test/x86/core`, delete App copies, reconnect NXVM, verify independent
-   Shared build/tests, both widths and four fixed-profile boots. S66 onward
+   Shared build/tests, both widths and four fixed-profile boots. S71 onward
    owns separately audited IBM-PC common/AT/XT moves.
 
 The S37 prospective “S43 physical move” is superseded by this measured

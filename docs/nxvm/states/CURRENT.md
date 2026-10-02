@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S64 is active: split the public machine interface and prove an
-independently compiled neutral Core. S1-S63 are accepted;
+M5 T540 S65 is active: separate neutral Core construction values from
+board-selected configuration. S1-S64 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -84,7 +84,8 @@ the completed CPU extraction.
 | T540 S61 | Accepted: D4-specific mutable memory state moved to board; Core retains one atomic memory route; both-width units/gates and eight boots pass. |
 | T540 S62 | Accepted: live Core retains only validated timing declarations, while board owns controller timing rules and DMA provenance; both-width units/gates and eight boots pass. |
 | T540 S63 | Accepted: neutral private header no longer defines board plan/topology or includes concrete chips; both-width units/gates and eight boots pass. |
-| T540 S64 | Active: public interface boundary and independent neutral compile. |
+| T540 S64 | Accepted: measured 694-line/174-includer public interface and split its distinct owner boundaries into linear S65-S70 receivers; no source change. |
+| T540 S65 | Active: neutral Core construction input versus board configuration. |
 
 ## T540 S1 Acceptance
 
@@ -2233,6 +2234,36 @@ open; S64 receives the public interface and independent compile proof.
 | Stop Conditions | Public interface contains multiple distinct owner cuts too large for one S; record finite split before modifying those cuts. |
 | Exit Criteria | P1/P2 pushed if code changes; independent compile proof and affected checks pass; worktree clean. |
 | Similar-Issue Sweep | Public header transitive includes, direct source/test consumers, target source lists and static gates. |
+
+## T540 S64 Acceptance
+
+The [S64 intake](../etc/evidence/t540-s64-public-interface-intake.md)
+measured the public interface's 694 lines/174 direct includers, overlapping
+152-file configuration, 48-file topology and 47-file board-operation
+consumer groups, and six direct `machine.c` board calls. It assigns
+separate, strictly numeric S65-S69 receivers before the now-S70 physical
+Shared move; S71 onward receives board extraction. No production source,
+test, build, owner INI, external input or EXE changed. Both complete
+repository-only unit suites pass 469/469 on the unchanged S63 baseline.
+This is not an independent-Core-build claim. T540 remains open.
+
+## T540 S65 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S65, next linear S after accepted S64. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Separate neutral Core construction inputs from board-selected PIC/PIT/DMA/KBC/XT and other configuration values within the one validated/frozen plan. |
+| Non-goals | Board public value/operation split (S66-S67), direct Core/board handoff (S68), independent compile (S69), physical Shared move (S70), behavior/timing/profile/INI/media change. |
+| Reference Baseline | S63 P1 `4d6443833`, [S64 measured intake](../etc/evidence/t540-s64-public-interface-intake.md) and [S63 evidence](../etc/evidence/t540-s63-private-header-boundary.md). |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | `core_machine_config`, plan validator/create/apply and direct configuration consumers. Inventory each value's owner and lifetime before editing; split oversized rows into later linear numeric S tasks. |
+| Applicable Rules | One immutable plan, one neutral Core configuration, one board configuration, no runtime mirror or forwarding shim and no second create/rollback path. |
+| Verification | Complete x64/x86 units, specialized/documentation gates, focused plan/rollback tests, one external boot per profile/width and eight optimized 0540 PE/no-debug products if code changes. |
+| Asset Needs | Existing external firmware/media only for boots; owner INI untouched. |
+| Stop Conditions | The measured construction ABI and 152-file consumer group cannot be safely changed in one owner cut; divide unaccepted work into later linear numeric S. |
+| Exit Criteria | P1/P2 pushed if code changes; affected checks pass; worktree clean. |
+| Similar-Issue Sweep | All direct plan/configuration consumers, board construction, failure rollback and CMake/static gates. |
 
 ## S87 Admission Packet
 
