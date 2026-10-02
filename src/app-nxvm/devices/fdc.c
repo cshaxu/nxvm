@@ -1,7 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 /* PC adapter: register decode, drive mechanics/media and chip wiring. */
 #include "app-nxvm/devices/fdc.h"
-#include "app-nxvm/devices/port.h"
 
 static core_machine_media_id core_machine_fdc_drive_media_id(
     const core_machine_fdc *fdc, lib_u8 drive)
@@ -334,67 +333,54 @@ const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(void)
     return &provider;
 }
 
-static void core_machine_fdc_read_status(t_port *port, lib_u16 id, void *owner)
-{
-    const core_machine_fdc *fdc = owner;
-    (void)id;
-    port->data.ioByte = x86_fdc_read_status(fdc->chip);
-}
-
-static void core_machine_fdc_read_data(t_port *port, lib_u16 id, void *owner)
+static lib_status core_machine_fdc_port_read(void *owner, lib_u16 id,
+    lib_u32 *out_value)
 {
     core_machine_fdc *fdc = owner;
-    (void)id;
-    x86_fdc_read_data(fdc->chip, &port->data.ioByte);
+    lib_u8 value;
+
+    if (fdc == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    value = (lib_u8)*out_value;
+    if (id == fdc->connect.config.status_port) {
+        value = x86_fdc_read_status(fdc->chip);
+    } else if (id == fdc->connect.config.data_port) {
+        x86_fdc_read_data(fdc->chip, &value);
+    } else if (id == fdc->connect.config.direction_port) {
+        /* Media change is sampled only when the guest observes DIR. */
+        core_machine_fdc_refresh(fdc);
+        value = fdc->data.dir;
+    } else if (id == fdc->connect.config.diagnostic_port) {
+        value = fdc->connect.config.diagnostic_read_value;
+    } else {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    *out_value = (*out_value & ~0xffu) | value;
+    return LIB_STATUS_OK;
 }
 
-static void core_machine_fdc_write_data(t_port *port, lib_u16 id, void *owner)
+static lib_status core_machine_fdc_port_write(void *owner, lib_u16 id,
+    lib_u32 value)
 {
     core_machine_fdc *fdc = owner;
-    (void)id;
-    x86_fdc_write_data(fdc->chip, port->data.ioByte);
-}
 
-static void core_machine_fdc_write_dor(t_port *port, lib_u16 id, void *owner)
-{
-    core_machine_fdc *fdc = owner;
-    (void)id;
-    fdc->data.dor = port->data.ioByte;
-    x86_fdc_set_service_enabled(fdc->chip, (fdc->data.dor & VFDC_DOR_ENRQ) != 0u);
-    x86_fdc_set_reset(fdc->chip, (fdc->data.dor & VFDC_DOR_NRS) != 0u);
-    core_machine_fdc_update_dir(fdc);
-    x86_fdc_refresh(fdc->chip);
-}
-
-static void core_machine_fdc_write_control(t_port *port, lib_u16 id, void *owner)
-{
-    core_machine_fdc *fdc = owner;
-    x86_fdc_timing timing;
-    (void)id;
-    fdc->data.ccr = port->data.ioByte & VFDC_CCR_RATE_MASK;
-    timing = core_machine_fdc_timing(fdc);
-    (void)x86_fdc_set_timing(fdc->chip, &timing);
-}
-
-static void core_machine_fdc_read_direction(t_port *port, lib_u16 id,
-    void *owner)
-{
-    core_machine_fdc *fdc = owner; (void)port; (void)id;
-
-    /* Media insertion/removal is an external input, not a controller clock.
-     * Sample it only when the guest observes the change-latch port. */
-    core_machine_fdc_refresh(fdc);
-    fdc->connect.port->data.ioByte = fdc->data.dir;
-}
-
-static void core_machine_fdc_read_diagnostic(t_port *port, lib_u16 id,
-    void *owner)
-{
-    const core_machine_fdc *fdc = owner;
-
-    (void)id;
-    if (fdc == LIB_NULL || fdc->connect.port == LIB_NULL) return;
-    port->data.ioByte = fdc->connect.config.diagnostic_read_value;
+    if (fdc == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (id == fdc->connect.config.dor_port) {
+        fdc->data.dor = (lib_u8)value;
+        x86_fdc_set_service_enabled(fdc->chip, (fdc->data.dor & VFDC_DOR_ENRQ) != 0u);
+        x86_fdc_set_reset(fdc->chip, (fdc->data.dor & VFDC_DOR_NRS) != 0u);
+        core_machine_fdc_update_dir(fdc);
+        x86_fdc_refresh(fdc->chip);
+    } else if (id == fdc->connect.config.data_port) {
+        x86_fdc_write_data(fdc->chip, (lib_u8)value);
+    } else if (id == fdc->connect.config.control_port) {
+        x86_fdc_timing timing;
+        fdc->data.ccr = (lib_u8)value & VFDC_CCR_RATE_MASK;
+        timing = core_machine_fdc_timing(fdc);
+        (void)x86_fdc_set_timing(fdc->chip, &timing);
+    } else {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    return LIB_STATUS_OK;
 }
 
 void core_machine_fdc_connect(core_machine_fdc *fdc,
@@ -404,7 +390,7 @@ void core_machine_fdc_connect(core_machine_fdc *fdc,
     core_machine_fdc_dma_request_operation dma_request_assert,
     core_machine_fdc_dma_request_operation dma_request_deassert,
     void *dma_request_owner, core_machine_pic_bus *pic_master, core_machine_pic_bus *pic_slave,
-    t_port *port, const core_machine_fdc_config *config,
+    core_machine *machine, const core_machine_fdc_config *config,
     const core_machine_fdc_terminal_observation_provider *observation_provider)
 {
     if (fdc == LIB_NULL || drives == LIB_NULL || dma_request == LIB_NULL ||
@@ -418,7 +404,7 @@ void core_machine_fdc_connect(core_machine_fdc *fdc,
     fdc->connect.dma_request_owner = dma_request_owner;
     core_machine_pic_irq_source_bind(&fdc->connect.irq_source, pic_master,
         pic_slave, config->irq);
-    fdc->connect.port = port;
+    fdc->connect.machine = machine;
     fdc->connect.config = *config;
     if (observation_provider != LIB_NULL) {
         fdc->connect.observation_provider = *observation_provider;
@@ -430,7 +416,9 @@ lib_status core_machine_fdc_initialize(core_machine_fdc *fdc)
     lib_status status;
     x86_fdc_connection connection;
     x86_fdc_timing timing;
-    if (fdc == LIB_NULL || fdc->connect.port == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    core_machine_port_route routes[7];
+    lib_size route_count = 0u;
+    if (fdc == LIB_NULL || fdc->connect.machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (fdc->chip != LIB_NULL) return LIB_STATUS_INVALID_STATE;
     lib_memory_set(fdc->drive_cylinder, 0u, sizeof(fdc->drive_cylinder));
     lib_memory_set(&fdc->data, 0u, sizeof(fdc->data));
@@ -449,27 +437,46 @@ lib_status core_machine_fdc_initialize(core_machine_fdc *fdc)
     };
     status = x86_fdc_create(&connection, &timing, &fdc->chip);
     if (status != LIB_STATUS_OK) return status;
-    core_machine_port_add_read(fdc->connect.port, fdc->connect.config.status_port,
-        core_machine_fdc_read_status, fdc);
-    core_machine_port_add_read(fdc->connect.port, fdc->connect.config.data_port,
-        core_machine_fdc_read_data, fdc);
+    routes[route_count++] = (core_machine_port_route) {
+        .address = fdc->connect.config.status_port,
+        .read = core_machine_fdc_port_read, .owner = fdc
+    };
+    routes[route_count++] = (core_machine_port_route) {
+        .address = fdc->connect.config.data_port,
+        .read = core_machine_fdc_port_read, .owner = fdc
+    };
     if (fdc->connect.config.direction_port != 0u) {
-        core_machine_port_add_read(fdc->connect.port, fdc->connect.config.direction_port,
-            core_machine_fdc_read_direction, fdc);
+        routes[route_count++] = (core_machine_port_route) {
+            .address = fdc->connect.config.direction_port,
+            .read = core_machine_fdc_port_read, .owner = fdc
+        };
     }
     if (fdc->connect.config.diagnostic_port != 0u) {
-        core_machine_port_add_read(fdc->connect.port,
-            fdc->connect.config.diagnostic_port, core_machine_fdc_read_diagnostic, fdc);
+        routes[route_count++] = (core_machine_port_route) {
+            .address = fdc->connect.config.diagnostic_port,
+            .read = core_machine_fdc_port_read, .owner = fdc
+        };
     }
-    core_machine_port_add_write(fdc->connect.port, fdc->connect.config.dor_port,
-        core_machine_fdc_write_dor, fdc);
-    core_machine_port_add_write(fdc->connect.port, fdc->connect.config.data_port,
-        core_machine_fdc_write_data, fdc);
+    routes[route_count++] = (core_machine_port_route) {
+        .address = fdc->connect.config.dor_port,
+        .write = core_machine_fdc_port_write, .owner = fdc
+    };
+    routes[route_count++] = (core_machine_port_route) {
+        .address = fdc->connect.config.data_port,
+        .write = core_machine_fdc_port_write, .owner = fdc
+    };
     if (fdc->connect.config.control_port != 0u) {
-        core_machine_port_add_write(fdc->connect.port, fdc->connect.config.control_port,
-            core_machine_fdc_write_control, fdc);
+        routes[route_count++] = (core_machine_port_route) {
+            .address = fdc->connect.config.control_port,
+            .write = core_machine_fdc_port_write, .owner = fdc
+        };
     }
-    return LIB_STATUS_OK;
+    status = core_machine_install_port_routes(fdc->connect.machine, routes, route_count);
+    if (status != LIB_STATUS_OK) {
+        x86_fdc_destroy(fdc->chip);
+        fdc->chip = LIB_NULL;
+    }
+    return status;
 }
 void core_machine_fdc_reset(core_machine_fdc *fdc)
 {

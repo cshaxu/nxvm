@@ -33,7 +33,7 @@ lib_i32 main(void)
         machine->core_machine->fdc.connect.dma_request.channel != 2u ||
         machine->core_machine->fdc.connect.irq_source.master == LIB_NULL ||
         machine->core_machine->fdc.connect.irq_source.slave == LIB_NULL ||
-        machine->core_machine->fdc.connect.port == LIB_NULL) {
+        machine->core_machine->fdc.connect.machine != machine->core_machine) {
         vm_machine_destroy(session);
         return 1;
     }

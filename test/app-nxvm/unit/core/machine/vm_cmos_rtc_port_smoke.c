@@ -89,8 +89,8 @@ lib_i32 main(void)
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) return 1;
-    port = session->core_machine->fdc.connect.port;
-    if (!session->active || port == LIB_NULL) failed = 1;
+    port = &session->core_machine->executor_port;
+    if (!session->active) failed = 1;
     initialize_pic(port);
 
     if (cmos_read(port, X86_RTC_REG_D) != X86_RTC_REG_D_VRT) failed |= 0x0001;

@@ -991,20 +991,6 @@ static lib_i32 core_machine_controller_ports_are_available(
 lib_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology)
 {
-    const core_machine_port_direction_requirement ports[] = {
-        {topology == LIB_NULL ? 0u : topology->config.dor_port,
-            LIB_FALSE, LIB_TRUE},
-        {topology == LIB_NULL ? 0u : topology->config.status_port,
-            LIB_TRUE, LIB_FALSE},
-        {topology == LIB_NULL ? 0u : topology->config.data_port,
-            LIB_TRUE, LIB_TRUE},
-        {topology == LIB_NULL ? 0u : topology->config.direction_port,
-            topology != LIB_NULL && topology->config.direction_port != 0u,
-            LIB_FALSE},
-        {topology == LIB_NULL ? 0u : topology->config.control_port,
-            LIB_FALSE, topology != LIB_NULL && topology->config.control_port != 0u}
-    };
-    core_machine_port_provider_entry *port_checkpoint;
     lib_status status;
 
     if (!core_machine_configuration_is_open(machine) || !machine->dma_configured ||
@@ -1016,23 +1002,16 @@ lib_status core_machine_configure_fdc(core_machine *machine,
         topology->dma_request.channel != machine->fdc_dma_request.channel) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (!core_machine_controller_ports_are_available(machine, ports,
-            sizeof(ports) / sizeof(ports[0]))) return LIB_STATUS_INVALID_STATE;
-    port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     machine->fdc_topology = *topology;
     core_machine_fdc_connect(&machine->fdc, machine->fdc_topology.media_registry,
         &machine->fdc_topology.drives, &machine->fdc_topology.dma_request,
         core_machine_fdc_dma_request_assert,
         core_machine_fdc_dma_request_deassert, machine,
         &machine->shared_pic_master, &machine->shared_pic_slave,
-        &machine->executor_port, &machine->fdc_topology.config,
+        machine, &machine->fdc_topology.config,
         &machine->fdc_topology.observation_provider);
     status = core_machine_fdc_initialize(&machine->fdc);
-    if (status == LIB_STATUS_OK)
-        status = core_machine_port_registration_status(&machine->executor_port);
     if (status != LIB_STATUS_OK) {
-        core_machine_port_rollback_registration(&machine->executor_port,
-            port_checkpoint);
         core_machine_fdc_finalize(&machine->fdc);
         lib_memory_set(&machine->fdc_topology, 0u,
             sizeof(machine->fdc_topology));

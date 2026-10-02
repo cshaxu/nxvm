@@ -82,9 +82,8 @@ lib_i32 main(void)
         if (vm_machine_fdd_replace_bytes(&session->fdd, vm_fdc_t242_image,
                 sizeof(vm_fdc_t242_image)) != 0) goto done;
     }
-    port = session->core_machine->fdc.connect.port;
+    port = &session->core_machine->executor_port;
     stage = '3';
-    if (port == LIB_NULL) goto done;
     core_machine_port_write(port, 0x03f7u, 0x00u); /* 1.44MB: 500 kbps. */
     for (index = 0u; index < sizeof(expected); ++index) {
         expected[index] = (lib_u8)((index * 17u) ^ (index >> 4u));

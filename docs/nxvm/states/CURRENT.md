@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S1-S10 are accepted; T540 remains open. KBC's 60h/64h routes use
-the Core-owned typed, atomic port batch. FDC is next at S11; Shared Core and
+M5 T540 S11 is active: move the FDC register routes to the Core-owned typed,
+atomic port batch. S1-S10 are accepted; T540 remains open. Shared Core and
 board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
@@ -286,6 +286,27 @@ Release pairs have the expected PE width and no `.debug` section. No Shared,
 MyNES, INI or media input changed. FDC and remaining board ports stay assigned
 to S11-S12; neutral Core, board extraction and T-level external integration
 remain open. S10 makes no new timing-grade claim.
+
+## T540 S11 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S11, the next linear S after accepted S10. |
+| Admission And Approval | The owner approved automatic admission of bounded numeric T540 S work and the Core/IBM-PC board split; the accepted S7 handoff assigns FDC port routes to S11. Target: NXVM only; Shared and MyNES are read-only receiving reviews. |
+| Objective | Replace FDC's raw `t_port` callbacks, retained port-table pointer and external registration checkpoint with one Core-owned typed, atomic route batch for status, data, DOR, DIR, diagnostic and control endpoints; preserve DRQ/IRQ, media-change observation and reset behavior. |
+| Non-goals | 8272A chip commands or timing changes, FDC DMA/memory transaction decoupling, VADP/HDC/RTC or other board routes (S12), neutral Core/board physical relocation, new device framework, profile/firmware/INI/media changes, or MyNES edits. |
+| Reference Baseline | Accepted S10 governance commit `424da67a1`; full x64/x86 units 467/467 each and eight optimized 0540 NXVM artifacts. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S7 handoff](../etc/architecture/t540-s7-core-board-handoff.md), and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | NXVM `devices/{fdc,machine_board}` and necessary headers, owner-local port and controller tests, S11 evidence and affected 0540 artifacts. FDC connection retains an opaque Core owner instead of a raw port table; Core alone registers/publishes routes. |
+| Applicable Rules | Architecture: one Core port owner and atomic route publication, FDC board attachment owns wiring, chip owns command state. Coding: delete obsolete raw callbacks/checkpoint and avoid a forwarding path. Execution: complete implementation P, actual-diff review, both-width full repository-only units, four-profile 0540 Release pairs and documentation governance. Source policy: no new external material; existing approved BYOB firmware embedding is used for artifact rebuild. |
+| Verification | Focused FDC port/topology/media-change/controller/Model40 tests, route collision/allocation rollback and port assembly; complete x64/x86 unit suites; applicable T345 source-owner/static gates; four-profile x64/x86 stripped Release pairs with PE/debug-section/hash checks; `git diff --check` and NXVM documentation governance. |
+| Expected Markers | FDC route descriptions cover each configured register direction, including optional DIR/diagnostic/control and shared 3F7 direction separation; no FDC `t_port` callback, stored port-table pointer, `core_machine_port_add_*` or external checkpoint remains. A failed candidate preserves all previous routes and destroys the uncommitted FDC chip. |
+| Asset Needs | Existing selected BYOB build roots for the product rebuild only; no new ROM/media input. Preserve adjacent NXVM.ini and all MyNES paths. |
+| Reporting Requirements | Record actual changed paths and tracked source/test added, removed and net lines; old/new owner and failure-boundary comparison; focused/full tests, static gates, eight artifact hashes, actual-diff review and residual-route successors. |
+| Stop Conditions | Stop before changing FDC command replies, status/IRQ/DRQ timing, guest port-width policy, DMA semantics, HDC shared-read semantics or any Shared/MyNES target; revise the packet if the typed value callback cannot preserve the FDC path. |
+| Exit Criteria | FDC has one typed Core route batch and no raw port-table execution/registration dependency; collision/allocation failures leave no partial route or leaked chip; both-width tests and products pass; no second FDC port path remains. |
+| Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components before splitting four PC Apps, admitting bounded numeric S tasks automatically without patch-on-patch architecture. |
+| Similar-Issue Sweep | Search all NXVM board adapters and relevant tests for raw `t_port` callbacks, stored `connect.port`, `core_machine_port_add_*` and registration checkpoints. S11 consumes all FDC port hits; VADP/HDC/RTC/other board ports remain S12, and FDC DMA/memory signal exchange stays with the later bounded board/Core cut. Record every residual owner and receiver in S11 evidence. |
 
 ## S87 Admission Packet
 

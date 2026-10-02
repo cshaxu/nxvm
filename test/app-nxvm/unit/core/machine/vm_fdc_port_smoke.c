@@ -56,7 +56,8 @@ lib_i32 main(void)
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->active ||
-        (port = session->core_machine->fdc.connect.port) == LIB_NULL) return 1;
+        session->core_machine == LIB_NULL) return 1;
+    port = &session->core_machine->executor_port;
     core_machine_port_write(port, 0x03f2u, 0x1cu);
     core_machine_port_write(port, 0x03f7u, 0x00u); /* 1.44MB: 500 kbps. */
 

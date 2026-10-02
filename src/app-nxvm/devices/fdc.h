@@ -5,9 +5,9 @@
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/fdc_observation_interface.h"
+#include "app-nxvm/devices/port_interface.h"
 #include "x86/chips/fdc8272/fdc8272_interface.h"
 
-typedef struct t_port t_port;
 #define CORE_MACHINE_DEVICE_FDC "Intel 8272A"
 
 typedef void (*core_machine_fdc_dma_request_operation)(void *owner,
@@ -21,7 +21,7 @@ typedef struct {
     core_machine_fdc_dma_request_operation dma_request_deassert;
     void *dma_request_owner;
     core_machine_pic_irq_source irq_source;
-    t_port *port;
+    core_machine *machine;
     core_machine_fdc_config config;
     core_machine_fdc_terminal_observation_provider observation_provider;
     lib_u64 observation_sequence;
@@ -67,7 +67,7 @@ void core_machine_fdc_connect(core_machine_fdc *fdc,
     core_machine_fdc_dma_request_operation dma_request_assert,
     core_machine_fdc_dma_request_operation dma_request_deassert,
     void *dma_request_owner, core_machine_pic_bus *pic_master, core_machine_pic_bus *pic_slave,
-    t_port *port, const core_machine_fdc_config *config,
+    core_machine *machine, const core_machine_fdc_config *config,
     const core_machine_fdc_terminal_observation_provider *observation_provider);
 const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(void);
 lib_status core_machine_fdc_initialize(core_machine_fdc *fdc);
