@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S17 is active: make Model-40 D4 replacement windows, parity and
-write observer one failure-atomic Core memory configuration. S1-S16 are
+M5 T540 S17 is accepted: Model-40 D4 replacement windows, parity and write
+observer now form one failure-atomic Core memory configuration. S1-S17 are
 accepted; T540 remains open for ROM memory, neutral Core and IBM-PC board
 extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -45,6 +45,7 @@ the completed CPU extraction.
 | T540 S14 | Accepted: all HDC personality ports use a Core-owned typed batch; Compaq 3F7 wired-OR and XT rollback remain intact. |
 | T540 S15 | Accepted: CGA and staged EGA/Compaq/VGA ports use Core-owned atomic batches; both-width units, focused EGA integration, gates and eight 0540 products pass. |
 | T540 S16 | Accepted: VADP CGA/planar memory routes and EGA observer use one Core owner transaction; snapshots use copied Core inspection. |
+| T540 S17 | Accepted: D4 replacement windows, parity and observer publish atomically; both-width complete units, Model-40 boot and eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -537,6 +538,23 @@ neutral Core and IBM-PC board relocation remain open.
 | Exit Criteria | D4 configuration is failure-atomic with Core-bounded replacement routes/parity/observer; old piecemeal path is deleted; affected regressions and complete dual-width gates/products pass. |
 | Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components through correct, minimal, individually tracked cuts before extracting them for independent PC Apps. |
 | Similar-Issue Sweep | Search D4 and other board adapters for stepwise memory publication with parity/observer; consume D4 here, retain ROM/reset aliases for S18 and KBC/DMA cycles for S19. |
+
+## T540 S17 Acceptance
+
+NXVM P1 `f58a536ce` adds replacement-route and optional parity support to
+Core's existing memory batch and removes D4's three stepwise registration
+wrappers. D4 state is committed only after the full batch succeeds. The
+owner-local transaction test covers first and second route failure, parity
+conflict, observer capacity, retry, reset and teardown. The [S17 evidence](../etc/evidence/t540-s17-d4-memory-routes.md)
+records the actual source/test diff and all eight Release artifact hashes.
+
+The coordinator's committed-diff review found only NXVM paths: no Shared,
+MyNES, INI, firmware or external-media change, no second mapping table, and
+no unowned D4 callback. Final-source x64/x86 complete units each passed
+468/468; Model-40 external boot passed 1/1 per width; the specialized gate
+passed 72/72. Documentation governance and staged diff checks passed. S17 is
+accepted while ROM/reset aliases (S18), bounded KBC/DMA cycles (S19), neutral
+Core relocation and IBM-PC board extraction remain open T540 work.
 
 ## S87 Admission Packet
 
