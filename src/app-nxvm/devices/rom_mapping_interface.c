@@ -225,3 +225,55 @@ void core_machine_rollback_immutable_rom_mappings(core_machine *machine,
     }
     machine->immutable_rom_mapping_count = mapping_count;
 }
+
+lib_bool core_machine_immutable_rom_mapping_contains(
+    const core_machine *machine, lib_u32 physical_start, lib_size bytes)
+{
+    if (machine == LIB_NULL || bytes == 0u ||
+        bytes > (lib_u64)LIB_UINT32_MAX + 1u - physical_start) return LIB_FALSE;
+    for (lib_size index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
+        const core_machine_immutable_rom_mapping *mapping =
+            &machine->immutable_rom_mappings[index];
+
+        if (physical_start >= mapping->physical_start &&
+            (lib_u64)physical_start - mapping->physical_start + bytes <=
+                mapping->bytes) return LIB_TRUE;
+    }
+    return LIB_FALSE;
+}
+
+lib_status core_machine_register_immutable_rom_mapping_reset_window(
+    core_machine *machine, lib_u32 source_start,
+    lib_u32 physical_start, lib_size bytes)
+{
+    lib_size boundary;
+    lib_u64 window_end;
+    lib_status status = LIB_STATUS_INVALID_ARGUMENT;
+
+    if (machine == LIB_NULL || bytes == 0u ||
+        bytes > (lib_u64)LIB_UINT32_MAX + 1u - source_start ||
+        bytes > (lib_u64)LIB_UINT32_MAX + 1u - physical_start) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
+    boundary = machine->immutable_rom_mapping_count;
+    window_end = (lib_u64)source_start + bytes;
+    for (lib_size index = 0u; index < boundary; ++index) {
+        const core_machine_immutable_rom_mapping *mapping =
+            &machine->immutable_rom_mappings[index];
+        lib_u64 end = (lib_u64)mapping->physical_start + mapping->bytes;
+        lib_u32 start;
+
+        if (end <= source_start || mapping->physical_start >= window_end) continue;
+        start = mapping->physical_start < source_start ? source_start :
+            mapping->physical_start;
+        if (end > window_end) end = window_end;
+        status = core_machine_register_immutable_rom_mapping_reset_alias(machine,
+            start, physical_start + (start - source_start), (lib_size)(end - start));
+        if (status != LIB_STATUS_OK) {
+            core_machine_rollback_immutable_rom_mappings(machine, boundary);
+            return status;
+        }
+    }
+    return status;
+}

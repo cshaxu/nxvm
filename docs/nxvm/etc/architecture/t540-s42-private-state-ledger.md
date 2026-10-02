@@ -123,6 +123,10 @@ contract after source proof that construction scratch is unobservable and
 cold reset leaves the same zero value. Guest port dispatch remains Core-owned;
 firmware/attachment and direct-test classification remain measured receivers.
 
+S74 receives firmware publication as one Core binding/rollback transaction
+with board-selected reset alias policy and bounded ROM operations. General
+attachment ownership and test classification still precede physical movement.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

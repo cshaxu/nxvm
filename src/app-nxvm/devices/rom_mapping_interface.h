@@ -28,6 +28,16 @@ lib_status core_machine_register_immutable_rom_mapping_reset_alias(
     core_machine *machine, lib_u32 source_start,
     lib_u32 physical_start, lib_size bytes);
 
+/* Copied coverage answer only; no immutable backing or registry is exposed. */
+lib_bool core_machine_immutable_rom_mapping_contains(
+    const core_machine *machine, lib_u32 physical_start, lib_size bytes);
+
+/* Configuration-only, all-or-none reset aliases of every existing ROM segment
+ * intersecting a supplied window. Holes remain holes; backing is not copied. */
+lib_status core_machine_register_immutable_rom_mapping_reset_window(
+    core_machine *machine, lib_u32 source_start,
+    lib_u32 physical_start, lib_size bytes);
+
 #ifdef __cplusplus
 }
 #endif

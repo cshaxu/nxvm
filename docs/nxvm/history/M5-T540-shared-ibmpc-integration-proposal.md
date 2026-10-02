@@ -93,6 +93,11 @@ the existing PIT register contract; guest port I/O keeps one Core dispatch.
 No construction-I/O facade is added. Firmware/attachment and test-owner
 classification still precede physical relocation.
 
+S74 receives the complete firmware bind transaction and its board reset-alias
+completion. Core owns publication/rollback; board supplies PC policy through
+bounded ROM operations, without private registry access or a second provider.
+Attachment ownership and direct-test classification remain before relocation.
+
 S65 separates the private neutral construction value without rewriting the
 public plan ABI: one board composition derives the temporary value and owns
 the existing public create/test-allocation pipeline. Core does not retain

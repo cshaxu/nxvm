@@ -75,6 +75,78 @@ done:
     return failed;
 }
 
+static lib_status neutral_firmware_configure(void *owner,
+    core_machine_firmware_context *firmware)
+{
+    static const lib_u8 code[16] = {0xb8u, 0x34u, 0x12u, 0x90u, 0xf4u};
+    (void)owner;
+    return core_machine_firmware_register_immutable_rom(firmware,
+        0xffff0u, code, sizeof(code));
+}
+
+static lib_status neutral_firmware_reset(void *owner,
+    core_machine_firmware_context *firmware)
+{
+    (void)owner;
+    (void)firmware;
+    return LIB_STATUS_OK;
+}
+
+static lib_i32 neutral_rom_windows(void)
+{
+    const core_machine_executor_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+    };
+    const lib_u8 image[4] = {0x11u, 0x22u, 0x33u, 0x44u};
+    core_machine *machine = LIB_NULL;
+    lib_u8 observed[2] = {0};
+    lib_i32 failed = 1;
+
+    if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
+            LIB_STATUS_OK) goto done;
+    if (core_machine_register_immutable_rom_mapping(machine, 0x100u,
+            image, sizeof(image)) != LIB_STATUS_OK ||
+        core_machine_register_immutable_rom_mapping(machine, 0x108u,
+            image, sizeof(image)) != LIB_STATUS_OK ||
+        core_machine_immutable_rom_mapping_contains(LIB_NULL, 0x100u, 1u) ||
+        core_machine_immutable_rom_mapping_contains(machine, 0x100u, 0u) ||
+        core_machine_immutable_rom_mapping_contains(machine, LIB_UINT32_MAX, 2u) ||
+        core_machine_register_immutable_rom_mapping_reset_window(machine,
+            0x102u, LIB_UINT32_MAX, 8u) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_register_immutable_rom_mapping_reset_window(machine,
+            0x800u, 0x20000u, 8u) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_register_immutable_rom_mapping_reset_window(machine,
+            0x102u, 0x20000u, 8u) != LIB_STATUS_OK ||
+        !core_machine_immutable_rom_mapping_contains(machine, 0x20000u, 2u) ||
+        core_machine_immutable_rom_mapping_contains(machine, 0x20002u, 1u) ||
+        !core_machine_immutable_rom_mapping_contains(machine, 0x20006u, 2u) ||
+        core_machine_immutable_rom_mapping_contains(machine, 0x20008u, 1u) ||
+        core_machine_memory_read_reset_physical(&machine->executor_memory,
+            0x20000u, (lib_uptr)observed, 2u) != LIB_STATUS_OK ||
+        observed[0] != 0x33u || observed[1] != 0x44u) goto done;
+    while (machine->immutable_rom_mapping_count <
+            CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY - 1u) {
+        if (core_machine_register_immutable_rom_mapping(machine,
+                0x1000u + (lib_u32)machine->immutable_rom_mapping_count,
+                image, 1u) != LIB_STATUS_OK) goto done;
+    }
+    const lib_size routes = machine->executor_memory.connect.device_provider_count;
+    if (core_machine_register_immutable_rom_mapping_reset_window(machine,
+            0x102u, 0x30000u, 8u) != LIB_STATUS_NO_MEMORY ||
+        machine->immutable_rom_mapping_count !=
+            CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY - 1u ||
+        machine->executor_memory.connect.device_provider_count != routes ||
+        core_machine_immutable_rom_mapping_contains(machine, 0x30000u, 1u) ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_register_immutable_rom_mapping_reset_window(machine,
+            0x102u, 0x40000u, 8u) != LIB_STATUS_INVALID_STATE) goto done;
+    failed = 0;
+done:
+    core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
@@ -87,6 +159,9 @@ lib_i32 main(void)
     neutral_probe probe = {0};
     const core_machine_trace_provider trace = {neutral_trace, &probe};
     const core_machine_run_budget budget = {1u, 0u};
+    const core_machine_firmware_provider firmware = {
+        neutral_firmware_configure, neutral_firmware_reset, LIB_NULL
+    };
     core_machine *machine = LIB_NULL;
     core_machine_run_result result;
     core_machine_time_observation time;
@@ -95,14 +170,15 @@ lib_i32 main(void)
     lib_u8 byte = 0u;
     lib_i32 failed = 1;
 
-    if (neutral_memory_aliases()) goto done;
+    if (neutral_memory_aliases() || neutral_rom_windows()) goto done;
     if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
             LIB_STATUS_OK) goto done;
     if (machine->board != LIB_NULL ||
         core_machine_install_port_provider(machine, 0x1234u, 0x1234u,
             &port, &probe) != LIB_STATUS_OK ||
-        core_machine_register_immutable_rom_mapping(machine, 0xffff0u,
-            code, sizeof(code)) != LIB_STATUS_OK ||
+        core_machine_bind_firmware_provider(machine, &firmware, LIB_NULL) !=
+            LIB_STATUS_OK ||
+        machine->immutable_rom_mapping_count != 1u ||
         core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK) goto done;

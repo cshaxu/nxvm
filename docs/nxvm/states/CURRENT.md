@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S1-S73 are accepted; no implementation S is active.
-S73 closes board refresh PIT initialization without Core port borrowing.
-Firmware/attachment and physical movement remain open.
+M5 T540 S1-S73 are accepted; S74 is active.
+S74 receives the complete firmware publication/reset-alias boundary.
+Attachment ownership and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -2486,6 +2486,27 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
+## T540 S74 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S74, next numeric S after accepted S73. |
+| Admission And Approval | Automatic bounded-S authorization in T540; NXVM only. Neutral bounded ROM publication is permitted, not exposed private mapping storage. |
+| Objective | Move firmware binding/checkpoint/rollback to neutral Core; eliminate board private firmware/ROM registry access while retaining automatic PC reset-alias policy. |
+| Non-goals | Physical Shared move, attachment redesign, CPU semantics/timing, profile/INI/media/ROM byte changes, framework, second provider, Shared/MyNES edits. |
+| Reference Baseline | S73 P2 `aec7d3b76`; board defines binding, two presence checks and alias intersection with private Core state. |
+| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S74 boundary](../etc/evidence/t540-s74-firmware-publication-boundary.md). |
+| Files And ABI Surface | Existing machine attachment, firmware/ROM owners, board constructor/policy, ROM transaction/reset and neutral-link tests, controller-authority gate. Binder signature unchanged; neutral range-presence and atomic reset-window operations expose no registry pointer. |
+| Applicable Rules | Core owns immutable bytes, routes and rollback; board owns F0000h/CPU-family alias selection. One synchronous optional construction callback inside binding; no retained policy or wrapper context. |
+| Verification | Sparse/clipped windows, explicit high-ROM priority, absent source, configure/alias allocation failure and retry, board-free neutral binding; full x64/x86 units/gates, eight stripped 0540 products, one external boot each, documentation/diff checks. |
+| Expected Markers | ROM-route/reset/neutral-link markers pass; board lacks private ROM/provider/context access and rollback; neutral owners have no PC constants/chip dependency. |
+| Asset Needs | Existing BYOB build roots and external overlay boots only; owner INIs/master media unchanged. |
+| Reporting Requirements | All production hits, exact code delta, callback/rollback scope, unchanged 15/16-byte presence checks, both-width proofs and eight hashes. |
+| Stop Conditions | Raw registry exposure, mirrored ROM state, changed reset priority/coverage, new runtime firmware or another target; re-plan first. |
+| Exit Criteria | Complete verified P1 immediately pushed, actual coordinator diff review, pure-governance P2 pushed, clean tree; T540 stays open. |
+| Original Owner Request | Independent Core and reusable flat PC board components with sole state/transaction owners; automatic numeric S admission. |
+| Similar-Issue Sweep | Search all NXVM firmware/provider/context and immutable-ROM registry/rollback consumers; migrate board hits, retain legitimate Core owners/tests. General attachment and test relocation are subsequent receivers. |
+
 ## T540 S73 Acceptance
 
 Coordinator actual-change review accepts pushed P1 `dd5b611f2`: all sixteen
@@ -3900,7 +3921,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S73 with unchanged owner INIs; S73 evidence records their hashes, PE
+T540 S74 with unchanged owner INIs; S74 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

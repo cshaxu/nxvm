@@ -114,8 +114,64 @@ static lib_i32 absent_fallback_run(void)
     return failed;
 }
 
+static lib_status policy_configure(void *opaque,
+    core_machine_firmware_context *firmware)
+{
+    static const lib_u8 source[16] = {0xeau};
+    static const lib_u8 high[16] = {0xccu};
+    const lib_u32 mode = *(const lib_u32 *)opaque;
+    lib_status status = core_machine_firmware_register_immutable_rom(firmware,
+        0x000ffff0u, source, mode == 0u ? 14u : mode == 1u ? 15u : 16u);
+
+    if (status != LIB_STATUS_OK) return status;
+    if (mode == 2u) return core_machine_firmware_register_immutable_rom(firmware,
+        0xfffffff0u, high, sizeof(high));
+    if (mode == 3u) return core_machine_firmware_register_immutable_rom(firmware,
+        0x000efffeu, source, 4u);
+    return LIB_STATUS_OK;
+}
+
+static lib_i32 reset_rom_policy(lib_u32 mode)
+{
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const core_machine_firmware_provider provider = {
+        policy_configure, reset_rom_reset, LIB_NULL
+    };
+    const lib_size counts[] = {1u, 2u, 2u, 4u};
+    core_machine *machine = LIB_NULL;
+    lib_u8 byte = 0u;
+    lib_i32 failed = 1;
+
+    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) goto done;
+    if (core_machine_bind_firmware_provider(machine, &provider, &mode) !=
+            LIB_STATUS_OK || machine->immutable_rom_mapping_count != counts[mode]) goto done;
+    if (mode == 0u) {
+        if (core_machine_immutable_rom_mapping_contains(machine, 0xfffffff0u, 1u)) goto done;
+    } else {
+        if (core_machine_memory_read_reset_physical(&machine->executor_memory,
+                0xfffffff0u, (lib_uptr)&byte, 1u) != LIB_STATUS_OK ||
+            byte != (mode == 2u ? 0xccu : 0xeau)) goto done;
+        if (mode == 1u &&
+            (!core_machine_immutable_rom_mapping_contains(machine, 0xfffffff0u, 15u) ||
+             core_machine_immutable_rom_mapping_contains(machine, 0xfffffff0u, 16u))) goto done;
+        if (mode == 3u &&
+            (!core_machine_immutable_rom_mapping_contains(machine, 0xffff0000u, 2u) ||
+             core_machine_immutable_rom_mapping_contains(machine, 0xffff0002u, 1u))) goto done;
+    }
+    failed = 0;
+done:
+    core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
+    for (lib_u32 mode = 0u; mode < 4u; ++mode) {
+        if (reset_rom_policy(mode)) return 1;
+    }
     if (reset_rom_run(CORE_MACHINE_CPU_PROFILE_80286) ||
         reset_rom_run(CORE_MACHINE_CPU_PROFILE_80386) ||
         absent_fallback_run()) return 1;

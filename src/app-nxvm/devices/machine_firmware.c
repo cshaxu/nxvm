@@ -2,6 +2,33 @@
 
 #include "app-nxvm/devices/machine.h"
 
+lib_status core_machine_bind_firmware_provider(core_machine *machine,
+    const core_machine_firmware_provider *provider, void *provider_context)
+{
+    lib_status status;
+    lib_size boundary;
+
+    if (!core_machine_configuration_is_open(machine) ||
+        machine->firmware_provider != LIB_NULL || provider == LIB_NULL ||
+        provider->configure == LIB_NULL || provider->reset == LIB_NULL) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    boundary = machine->immutable_rom_mapping_count;
+    machine->firmware_provider = provider;
+    machine->firmware_provider_context = provider_context;
+    status = core_machine_firmware_invoke(machine, 1, 0, provider->configure);
+    if (status == LIB_STATUS_OK && machine->board_firmware_provider != LIB_NULL) {
+        status = machine->board_firmware_provider(machine);
+    }
+    if (status != LIB_STATUS_OK) {
+        core_machine_rollback_immutable_rom_mappings(machine, boundary);
+        machine->firmware_provider = LIB_NULL;
+        machine->firmware_provider_context = LIB_NULL;
+        lib_memory_set(&machine->firmware_context, 0, sizeof(machine->firmware_context));
+    }
+    return status;
+}
+
 lib_status core_machine_firmware_invoke(core_machine *machine,
     lib_i32 configuring, lib_i32 track_operation_failures,
     lib_status (*callback)(void *,
