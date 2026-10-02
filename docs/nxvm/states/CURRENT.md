@@ -2,9 +2,9 @@
 
 ## Current Work
 
-M5 T540 S11 is active: move the FDC register routes to the Core-owned typed,
-atomic port batch. S1-S10 are accepted; T540 remains open. Shared Core and
-board code have not moved.
+M5 T540 S11 is accepted: FDC register routes use the Core-owned typed,
+atomic port batch. S1-S11 are accepted; T540 remains open. S12 will address
+the remaining board ports. Shared Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is
@@ -36,6 +36,7 @@ the completed CPU extraction.
 | T540 S8 | Accepted: first complete port registration cut for 92h, PIC, PIT and XT PPI; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S9 | Accepted: DMA uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 | T540 S10 | Accepted: KBC 60h/64h use one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
+| T540 S11 | Accepted: FDC uses one Core-owned typed route batch; x64/x86 complete units and all eight 0540 products pass. |
 
 ## T540 S1 Acceptance
 
@@ -307,6 +308,22 @@ remain open. S10 makes no new timing-grade claim.
 | Exit Criteria | FDC has one typed Core route batch and no raw port-table execution/registration dependency; collision/allocation failures leave no partial route or leaked chip; both-width tests and products pass; no second FDC port path remains. |
 | Original Owner Request | Build reusable neutral x86 Core and IBM-PC board components before splitting four PC Apps, admitting bounded numeric S tasks automatically without patch-on-patch architecture. |
 | Similar-Issue Sweep | Search all NXVM board adapters and relevant tests for raw `t_port` callbacks, stored `connect.port`, `core_machine_port_add_*` and registration checkpoints. S11 consumes all FDC port hits; VADP/HDC/RTC/other board ports remain S12, and FDC DMA/memory signal exchange stays with the later bounded board/Core cut. Record every residual owner and receiver in S11 evidence. |
+
+## T540 S11 Acceptance
+
+[S11 evidence](../etc/evidence/t540-s11-fdc-port-routes.md) records the
+source-inspected change, failure/rollback contract, source and test line
+counts, both-width verification and all eight artifact hashes. Implementation
+P1 `acd6fd859` removes the raw FDC port callbacks and board checkpoint and
+publishes one typed Core route batch. Actual-diff review found no parallel FDC
+port path or changed chip command/timing rule. Both full repository-only unit
+suites passed 467/467; the FDC and T345 source-boundary gates, documentation
+governance, artifact PE/no-debug checks and staged diff check passed.
+
+S11 changes only NXVM. S12 still owns VADP/HDC/RTC and remaining board ports;
+the later bounded cuts own memory, signal, deadline and reset exchanges. T540
+remains open for the neutral Core move, proven board extraction and full
+external integration gate. No new timing grade is claimed.
 
 ## S87 Admission Packet
 
