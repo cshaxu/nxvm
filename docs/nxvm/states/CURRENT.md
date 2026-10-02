@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S36 is active: qualify entry, immutable ROM and trace Core boundaries
-before the physical move. S1-S35 are accepted;
+M5 T540 S37 is active: audit the actual S31-S36 source diff and freeze the
+finite neutral Core file ledger before physical relocation. S1-S36 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -64,7 +64,8 @@ the completed CPU extraction.
 | T540 S33 | Accepted: private board creation retains port/device order, while the sole validated create-from-plan and topology rollback live with board plan; dual-width units and eight boots pass. |
 | T540 S34 | Accepted: one board-device cold-reset phase retains order; Core firmware-failure and processor-only reset remain intact; dual-width units and eight boots pass. |
 | T540 S35 | Accepted: the sole destructor delegates board releases and reuses ROM route rollback for owner-only image release; dual-width units and eight boots pass. |
-| T540 S36 | Active: entry, ROM and trace boundary qualification. |
+| T540 S36 | Accepted: entry, ROM and trace implementations use Core state only; unused board helper include removed; dual-width units and eight boots pass. |
+| T540 S37 | Active: construction/reset/rollback audit and relocation ledger. |
 
 ## T540 S1 Acceptance
 
@@ -1272,6 +1273,42 @@ entry/ROM/trace qualification; T540 remains open.
 | Exit Criteria | All three boundaries are source-qualified for neutral Core, any concrete board-state leak is repaired and verified, and actual-diff P1 plus governance P2 close S36. |
 | Original Owner Request | Establish neutral `x86/core` and reusable IBM-PC board layers with unique owners and no patch-over-patch compatibility routes. |
 | Similar-Issue Sweep | Inspect each prepared-entry caller, ROM source/alias/rollback path, trace emission caller and board/firmware adaptation for illicit Core-to-board dependency. |
+
+## T540 S36 Acceptance
+
+Actual-diff review accepts NXVM P1 `53fdcef56`. The
+[S36 source audit](../etc/evidence/t540-s36-entry-rom-trace-boundary.md)
+qualifies prepared entry, immutable ROM and bounded trace by state owner and
+caller direction. The only concrete implementation cleanup removes one unused
+board helper include from ROM mapping; no algorithm or public contract was
+changed. The three files still compile against the present mixed `machine.h`,
+which S37 must ledger and S38 must physically separate; this S does not
+claim the Shared move is complete. Final-source x64/x86 units pass **469/469**
+per width, specialized gates pass, all eight single-run external boot
+checkpoints pass, and eight optimized 0540 products have correct PE width
+and no `.debug` sections. No Shared/MyNES, owner INI, protected firmware or
+timing grade changed. T540 remains open.
+
+## T540 S37 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S37, next linear S after accepted S36. |
+| Admission And Approval | Owner's standing automatic admission for bounded numeric T540 S work applies. Target NXVM only; Shared and MyNES stay read-only. |
+| Objective | Audit the actual S31-S36 source changes and all construction, cold/processor reset, teardown and rollback callers; repair any concrete gap, then freeze a finite neutral Core file ledger for S38. |
+| Non-goals | Premature physical Shared move, new generic device framework, second construction/reset/destruction route, profile/clock/firmware/media/INI behavior change. |
+| Reference Baseline | S36 P1 `53fdcef56`, [S36 evidence](../etc/evidence/t540-s36-entry-rom-trace-boundary.md), S31-S35 evidence, dual-width 469/469 units, specialized gates, 8/8 boots and eight optimized 0540 products. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S30 intake](../etc/evidence/t540-s30-plan-reset-intake.md), [refined handoff](../etc/architecture/t540-s7-core-board-handoff.md) and [adapter ledger](../etc/architecture/t540-board-adapter-ledger.md). |
+| Files And ABI Surface | Inspect S31-S36 source diffs, `src/app-nxvm/devices/{machine.c,machine.h,machine_plan.c,machine_board.c,entry_plan_interface.c,rom_mapping_interface.c,trace_interface.c}` and every direct caller/test; enumerate neutral Core files, required headers and exact board adapters for S38. |
+| Applicable Rules | One frozen board plan before allocation, one neutral constructor plus board phase, exact cold reset and CPU-only reset, one public destroy, owner-only ROM release, typed board signals/deadlines and no Core-to-profile dependency. |
+| Verification | Source/diff/caller and dependency audit; focused regressions for any correction, full x64/x86 repository-only units, specialized/documentation gates, one boot per profile/width and eight optimized 0540 products if code changes; source-only evidence and governance if not. |
+| Expected Markers | Finite list of neutral Core files and direct test receivers, explicit retained board files/adapters, no unresolved mixed-owner branch or duplicate path, and a concrete S38 move order. |
+| Asset Needs | Existing owner-provided external firmware/media only if corrections require boot checks; no new protected input or owner INI change. |
+| Reporting Requirements | Record each S31-S36 owner verdict and caller/rollback finding, actual correction diff or no-diff reason, frozen file ledger, test/artifact decision and remaining physical dependency. |
+| Stop Conditions | Stop before a guessed Shared dependency, broad header rewrite without per-field owner proof, Shared/MyNES edit or silent behavioral downgrade. |
+| Exit Criteria | Every S31-S36 path and dependent caller is audited, concrete defects repaired/verified, finite S38 relocation ledger recorded, and actual-diff P1 plus governance P2 close S37. |
+| Original Owner Request | Establish neutral `x86/core` and flat reusable IBM-PC board layers with no divergence or patch-over-patch implementation. |
+| Similar-Issue Sweep | Check all four profile compositions, early failures, ROM aliases, firmware callbacks, 8042 processor pulse, D4/XT/AT wiring and all direct tests for misplaced ownership. |
 
 ## S87 Admission Packet
 
