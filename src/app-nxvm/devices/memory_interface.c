@@ -5,6 +5,30 @@
 
 
 
+lib_status core_machine_install_memory_aliases(core_machine *machine,
+    const core_machine_memory_alias_config *aliases, lib_size count,
+    lib_bool selected)
+{
+    lib_size boundary;
+
+    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
+    if ((count != 0u && aliases == LIB_NULL) ||
+        (selected != LIB_FALSE && selected != LIB_TRUE)) return LIB_STATUS_INVALID_ARGUMENT;
+    boundary = machine->executor_memory.connect.mapping_count;
+    for (lib_size index = 0u; index < count; ++index) {
+        const core_machine_memory_alias_config *alias = &aliases[index];
+        lib_status status = core_machine_memory_register_mapping(
+            &machine->executor_memory, alias->physical_start,
+            alias->backing_start, alias->bytes, selected);
+
+        if (status != LIB_STATUS_OK) {
+            machine->executor_memory.connect.mapping_count = boundary;
+            return status;
+        }
+    }
+    return LIB_STATUS_OK;
+}
+
 lib_status core_machine_install_memory_device_routes(core_machine *machine,
     const core_machine_memory_device_route *routes, lib_size count,
     core_machine_memory_write_observer observer,

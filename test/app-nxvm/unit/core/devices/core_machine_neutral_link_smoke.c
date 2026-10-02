@@ -30,6 +30,51 @@ static void neutral_trace(void *owner, const core_machine_trace_event *event)
     if (event != LIB_NULL) ++probe->trace_events;
 }
 
+static lib_i32 neutral_memory_aliases(void)
+{
+    const core_machine_executor_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+    };
+    const core_machine_memory_alias_config aliases[2] = {
+        {0x20000u, 0x100u, 16u}, {0x30000u, 0x100u, 0u}
+    };
+    core_machine *machine = LIB_NULL;
+    const lib_u8 written = 0x5au;
+    lib_u8 read = 0u;
+    lib_i32 failed = 1;
+
+    if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
+            LIB_STATUS_OK) goto done;
+    if (core_machine_install_memory_aliases(machine, LIB_NULL, 1u, LIB_TRUE) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_install_memory_aliases(machine, aliases, 1u, 2u) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_install_memory_aliases(machine, aliases, 2u, LIB_TRUE) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        machine->executor_memory.connect.mapping_count != 0u ||
+        core_machine_install_memory_aliases(machine, aliases, 1u, LIB_TRUE) !=
+            LIB_STATUS_OK ||
+        core_machine_install_memory_aliases(machine, aliases, 2u, LIB_FALSE) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        machine->executor_memory.connect.mapping_count != 1u ||
+        core_machine_install_memory_aliases(machine, LIB_NULL, 0u, LIB_FALSE) !=
+            LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_install_memory_aliases(machine, aliases, 1u, LIB_TRUE) !=
+            LIB_STATUS_INVALID_STATE ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x20000u, &written, 1u) != LIB_STATUS_OK ||
+        core_machine_memory_read(machine, 0x100u, &read, 1u) != LIB_STATUS_OK ||
+        read != written ||
+        core_machine_memory_read(machine, 0x20000u, &read, 1u) != LIB_STATUS_OK ||
+        read != written) goto done;
+    failed = 0;
+done:
+    core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
@@ -50,6 +95,7 @@ lib_i32 main(void)
     lib_u8 byte = 0u;
     lib_i32 failed = 1;
 
+    if (neutral_memory_aliases()) goto done;
     if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
             LIB_STATUS_OK) goto done;
     if (machine->board != LIB_NULL ||

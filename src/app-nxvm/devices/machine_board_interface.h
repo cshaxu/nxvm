@@ -264,14 +264,6 @@ typedef struct core_machine_absent_memory_config {
 
 #define CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT 4u
 
-/* A profile-declared physical alias into installed Core RAM.  This preserves
- * one RAM owner while allowing board address decoding to select it twice. */
-typedef struct core_machine_memory_alias_config {
-    lib_u32 physical_start;
-    lib_u32 backing_start;
-    lib_size bytes;
-} core_machine_memory_alias_config;
-
 #define CORE_MACHINE_MEMORY_ALIAS_COUNT 4u
 
 #define CORE_MACHINE_DMA_CONTROLLER_COUNT 2u

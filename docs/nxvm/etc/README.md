@@ -18,6 +18,9 @@ T540 S70: [Core signal boundary](evidence/t540-s70-core-signal-boundary.md)
 records the four CPU signal callers and remaining measured private-consumer
 classes before physical relocation.
 
+T540 S71: [memory construction boundary](evidence/t540-s71-memory-construction-boundary.md)
+records RAM alias and parity receiving contracts and remaining port ownership.
+
 T540 S69: [independent neutral Core](evidence/t540-s69-independent-neutral-core.md)
 records actual-source OBJECT linkage without PC board archives and both-width
 Debug/Release runtime proof; physical relocation remains open.

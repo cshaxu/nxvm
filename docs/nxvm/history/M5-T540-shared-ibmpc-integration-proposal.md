@@ -75,6 +75,12 @@ move every test or to export private layouts. The coordinator admits each
 next numeric receiver from its measured diff. Physical relocation remains
 required, not replaced by independent compilation or this signal cut.
 
+S71 receives the complete RAM-alias/parity construction class using one
+Core-owned alias batch and the existing memory-route transaction. Board keeps
+reset-address decoding and parity electrical policy. Port construction,
+firmware publication and provider attachment remain separately measured
+receivers before the physical move; no private pointer facade qualifies them.
+
 S65 separates the private neutral construction value without rewriting the
 public plan ABI: one board composition derives the temporary value and owns
 the existing public create/test-allocation pipeline. Core does not retain

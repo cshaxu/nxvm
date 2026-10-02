@@ -228,14 +228,9 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
 
     if (machine == LIB_NULL || plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     topology = &plan->topology;
-    for (index = 0u; index < topology->memory_alias_count; ++index) {
-        const core_machine_memory_alias_config *alias =
-            &topology->memory_alias[index];
-
-        status = core_machine_memory_register_mapping(&machine->executor_memory,
-            alias->physical_start, alias->backing_start, alias->bytes, LIB_TRUE);
-        if (status != LIB_STATUS_OK) return status;
-    }
+    status = core_machine_install_memory_aliases(machine, topology->memory_alias,
+        topology->memory_alias_count, LIB_TRUE);
+    if (status != LIB_STATUS_OK) return status;
     for (index = 0u; index < topology->absent_memory_count; ++index) {
         status = core_machine_configure_absent_memory(machine,
             &topology->absent_memory[index]);

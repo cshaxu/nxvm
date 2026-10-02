@@ -108,6 +108,11 @@ attachment ownership and direct-test classification remain preconditions of
 the physical move. Each receives a measured next numeric S; the former S70
 and S71 physical/board-move numbers were prospective and are superseded.
 
+S71 receives RAM aliases and planar parity publication through neutral
+construction operations. D4 already uses the existing memory transaction.
+Board port checkpoints and timer port writes remain the next bounded receiver,
+not part of the neutral RAM state contract.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

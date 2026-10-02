@@ -11,6 +11,19 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
+/* Copied physical decoding into the single installed RAM backing. */
+typedef struct core_machine_memory_alias_config {
+    lib_u32 physical_start;
+    lib_u32 backing_start;
+    lib_size bytes;
+} core_machine_memory_alias_config;
+
+/* Construction-only, owning executor thread. Publish the entire batch or none;
+ * selected aliases take precedence over unselected fallback decoding. */
+lib_status core_machine_install_memory_aliases(core_machine *machine,
+    const core_machine_memory_alias_config *aliases, lib_size count,
+    lib_bool selected);
+
 typedef void (*core_machine_memory_parity_fault_observer)(void *owner,
     lib_u32 physical);
 

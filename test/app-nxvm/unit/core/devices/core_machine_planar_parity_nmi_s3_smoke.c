@@ -56,6 +56,46 @@ static lib_i32 planar_parity_s4_unbound_reconfigure(void)
     return failed;
 }
 
+static lib_status planar_conflict_read(void *owner, lib_u16 port, lib_u32 *value)
+{
+    (void)owner;
+    if (port != CORE_MACHINE_PC_AT_PORT_B) return LIB_STATUS_INVALID_ARGUMENT;
+    *value = 0x5au;
+    return LIB_STATUS_OK;
+}
+
+static lib_i32 planar_parity_publication_rollback(void)
+{
+    const core_machine_config config = {.memory_bytes = 512u * 1024u};
+    const core_machine_planar_parity_config parity = {
+        .port = CORE_MACHINE_PC_AT_PORT_B, .memory_bytes = 512u * 1024u,
+        .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1
+    };
+    core_machine *machine = LIB_NULL;
+    const core_machine_port_route conflict = {
+        .address = CORE_MACHINE_PC_AT_PORT_B, .read = planar_conflict_read,
+        .owner = &machine
+    };
+    lib_i32 failed = 1;
+
+    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) goto done;
+    if (core_machine_install_port_routes(machine, &conflict, 1u) != LIB_STATUS_OK ||
+        core_machine_configure_planar_parity(machine, &parity) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        machine->executor_memory.connect.parity != 0u ||
+        machine->executor_memory.connect.parity_owner != LIB_NULL ||
+        machine->board->planar_parity_configured ||
+        core_machine_remove_port_routes(machine, &machine) != LIB_STATUS_OK ||
+        core_machine_configure_planar_parity(machine, &parity) != LIB_STATUS_OK ||
+        machine->executor_memory.connect.parity == 0u ||
+        machine->executor_memory.connect.parity_owner != machine ||
+        !machine->board->planar_parity_configured) goto done;
+    failed = 0;
+done:
+    core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     core_machine_config config = {0};
@@ -111,7 +151,8 @@ lib_i32 main(void)
             LIB_STATUS_OK || !observation.enabled || observation.latched;
     core_machine_destroy(machine);
     if (failed) return 1;
-    failed |= planar_parity_s4_shared_memory() || planar_parity_s4_unbound_reconfigure();
+    failed |= planar_parity_s4_shared_memory() || planar_parity_s4_unbound_reconfigure() ||
+        planar_parity_publication_rollback();
     if (failed) return 1;
     printf("M5:T366:S4:PLANAR-MEMORY-PARITY:OK\n");
     return 0;

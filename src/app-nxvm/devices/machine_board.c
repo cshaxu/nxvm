@@ -144,6 +144,8 @@ lib_status core_machine_board_create(core_machine *machine,
 {
     core_machine_port_provider_entry *port_checkpoint;
     lib_u8 dma_controller_count;
+    lib_size installed_bytes;
+    core_machine_cpu_profile cpu_profile;
 
     machine->board = (core_machine_board_state *)lib_allocate_zero(1u,
         sizeof(*machine->board));
@@ -195,15 +197,24 @@ lib_status core_machine_board_create(core_machine *machine,
     machine->board->kbc_input_port = config->kbc_input_port;
     /* Firmware-less fixtures may supply reset bytes from ordinary board RAM.
      * Firmware-backed machines install the reset-only ROM overlay later. */
-    if (machine->executor_memory.connect.installed_bytes >= 0x00100000u &&
-        (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
-         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
-        core_machine_memory_register_mapping(&machine->executor_memory,
-            machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
-                0x00ff0000u : 0xffff0000u,
-            0x000f0000u, 0x00010000u, LIB_FALSE) != LIB_STATUS_OK) {
+    if (core_machine_get_memory_bytes(machine, &installed_bytes) != LIB_STATUS_OK ||
+        core_machine_get_cpu_profile(machine, &cpu_profile) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    if (installed_bytes >= 0x00100000u &&
+        (cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
+         cpu_profile == CORE_MACHINE_CPU_PROFILE_80386)) {
+        const core_machine_memory_alias_config alias = {
+            cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x00ff0000u : 0xffff0000u,
+            0x000f0000u, 0x00010000u
+        };
+        lib_status status = core_machine_install_memory_aliases(machine,
+            &alias, 1u, LIB_FALSE);
+        if (status != LIB_STATUS_OK) {
+            core_machine_destroy(machine);
+            return status;
+        }
     }
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     {
@@ -1204,12 +1215,13 @@ lib_status core_machine_configure_planar_parity(core_machine *machine,
         (config->refresh_status_source ==
                 CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE &&
             config->refresh_status_toggle_ticks == 0u) ||
-        (config->memory_bytes != 0u && config->memory_bytes >
-            machine->executor_memory.connect.installed_bytes) ||
         machine->board->d4_platform_configured) return LIB_STATUS_INVALID_ARGUMENT;
     if (config->memory_bytes != 0u) {
-        status = core_machine_memory_enable_parity(&machine->executor_memory,
-            config->memory_bytes, core_machine_planar_parity_memory_fault, machine);
+        const core_machine_memory_parity_config parity = {
+            config->memory_bytes, core_machine_planar_parity_memory_fault
+        };
+        status = core_machine_install_memory_device_routes(machine, LIB_NULL, 0u,
+            LIB_NULL, &parity, machine);
         if (status != LIB_STATUS_OK) return status;
     }
     route = (core_machine_port_route) {
@@ -1219,8 +1231,10 @@ lib_status core_machine_configure_planar_parity(core_machine *machine,
     };
     status = core_machine_install_port_routes(machine, &route, 1u);
     if (status != LIB_STATUS_OK) {
-        if (config->memory_bytes != 0u)
-            core_machine_memory_release_parity(&machine->executor_memory);
+        if (config->memory_bytes != 0u) {
+            lib_status rollback = core_machine_remove_memory_device_routes(machine, machine);
+            if (rollback != LIB_STATUS_OK) return rollback;
+        }
         return status == LIB_STATUS_INVALID_STATE ? LIB_STATUS_INVALID_ARGUMENT : status;
     }
     machine->board->planar_parity_config = *config;
