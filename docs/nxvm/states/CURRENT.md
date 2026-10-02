@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S52 is active: move the VADP instance into the sole board attachment
-without a mirrored fact. S1-S51 are accepted;
+M5 T540 S53 is active: audit and move the remaining board electrical latches
+and callback ownership without a mirrored fact. S1-S52 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -72,8 +72,8 @@ the completed CPU extraction.
 | T540 S41 | Accepted: six named board clocks moved with their advance/deadline owner; Core retains provider clock and one timeline; dual-width units and eight boots pass. |
 | T540 S42 | Accepted: finite private Core/board ownership ledger assigns all mixed state groups and source stages to linear receivers. |
 | T540 S43 | Accepted: remaining board constructor/callback separation, dual-width units/gates and eight boot checkpoints. |
-| T540 S44-S51 | Accepted: board attachment and PIC/PIT/DMA/RTC/FDC/HDC/keyboard instance receivers; dual-width complete units, gates and eight boot checkpoints at each code receiver. |
-| T540 S52 | Active: board-owned VADP instance receiver. |
+| T540 S44-S52 | Accepted: board attachment and PIC/PIT/DMA/RTC/FDC/HDC/keyboard/VADP instance receivers; dual-width complete units, gates and eight boot checkpoints at each code receiver. |
+| T540 S53 | Active: remaining board electrical latches and callback receiver. |
 
 ## T540 S1 Acceptance
 
@@ -1848,6 +1848,39 @@ and owner INIs are untouched. T540 remains open.
 | Exit Criteria | VADP owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | VADP ports, VRAM mappings, snapshot, frame generation, reset and resource teardown. |
+
+## T540 S52 Acceptance
+
+Actual-diff review accepts NXVM P1 `855045aac`. The
+[S52 evidence](../etc/evidence/t540-s52-vadp-owner.md) records the sole
+VADP instance moved into the board attachment while copied snapshots remain
+presentation values. Port and VRAM mapping, clock advance, reset and
+finalization retain the existing order. Complete x64/x86 repository-only
+units pass **469/469** each; specialized gates pass. The four fixed-profile
+external boot probes pass **8/8**, once per width. Eight optimized 0540
+products have the expected PE widths and no `.debug` sections; hashes are
+in the evidence. Shared/MyNES and owner INIs are untouched. T540 remains open.
+
+## T540 S53 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S53, next linear S after accepted S52. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Inventory and relocate remaining D4, absent-memory, parity, speaker and refresh board electrical latches plus board callback ownership to the sole board attachment. Split this row into further linear numeric S receivers before editing if the actual dependency surface is not bounded. |
+| Non-goals | Final neutral private header (S54), physical Shared move (S55), new board framework, new chip state, changed D4/NMI/refresh/speaker behavior or timing. |
+| Reference Baseline | S52 P1 `855045aac`, [S52 evidence](../etc/evidence/t540-s52-vadp-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Record each remaining flat board field, its actual owner, consumer, reset and callback lifetime before moving it. Core operation guards and copied plan inputs remain distinct from board electrical state. |
+| Applicable Rules | One board owner, no copied latch or callback path; preserve D4 shutdown, parity/NMI, refresh HOLD, speaker and absent-memory order with existing Core operation guards. |
+| Verification | Full x64/x86 units, specialized/documentation gates, focused electrical regressions, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | Each proven board-owned latch/callback leaves flat Core storage; neutral Core retains only bounded operations. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Field-by-field owner and callback lifecycle, exact diff, tests and artifact hashes. |
+| Stop Conditions | Stop and split if the actual field/callback surface exceeds one bounded S; do not move neutral Core guards into the board. |
+| Exit Criteria | Finite board electrical/callback receivers pass tests/artifacts with P1/P2 pushed and tree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | D4, absent-memory, parity, speaker, refresh and callback install/revoke consumers. |
 
 ## S87 Admission Packet
 
