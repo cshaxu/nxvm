@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S53 is active: audit and move the remaining board electrical latches
-and callback ownership without a mirrored fact. S1-S52 are accepted;
+M5 T540 S54 is active: move only planar-parity board electrical state to
+the sole board attachment. S1-S53 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -73,6 +73,7 @@ the completed CPU extraction.
 | T540 S42 | Accepted: finite private Core/board ownership ledger assigns all mixed state groups and source stages to linear receivers. |
 | T540 S43 | Accepted: remaining board constructor/callback separation, dual-width units/gates and eight boot checkpoints. |
 | T540 S44-S52 | Accepted: board attachment and PIC/PIT/DMA/RTC/FDC/HDC/keyboard/VADP instance receivers; dual-width complete units, gates and eight boot checkpoints at each code receiver. |
+| T540 S53 | Accepted: residual XT keyboard chip pointer moved to board; remaining electrical/callback row split into S54-S59. Dual-width 469/469 units, gates and eight boot checkpoints pass. |
 | T540 S53 | Active: remaining board electrical latches and callback receiver. |
 
 ## T540 S1 Acceptance
@@ -1867,20 +1868,52 @@ in the evidence. Shared/MyNES and owner INIs are untouched. T540 remains open.
 | --- | --- |
 | Identifier Mode | Continuation M5 T540 S53, next linear S after accepted S52. |
 | Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
-| Objective | Inventory and relocate remaining D4, absent-memory, parity, speaker and refresh board electrical latches plus board callback ownership to the sole board attachment. Split this row into further linear numeric S receivers before editing if the actual dependency surface is not bounded. |
-| Non-goals | Final neutral private header (S54), physical Shared move (S55), new board framework, new chip state, changed D4/NMI/refresh/speaker behavior or timing. |
+| Objective | Correct the S51-overlooked XT keyboard chip pointer so board alone owns its creation, input, advance/deadline, reset and destruction. Audit and split the oversized remaining D4, absent-memory, parity, speaker, refresh and callback row into linear numeric receivers before changing those electrical states. |
+| Non-goals | The electrical/callback moves (S54-S59), final neutral private header (S60), physical Shared move (S61), new board framework, new chip state, changed keyboard/D4/NMI/refresh/speaker behavior or timing. |
 | Reference Baseline | S52 P1 `855045aac`, [S52 evidence](../etc/evidence/t540-s52-vadp-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
 | Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | Record each remaining flat board field, its actual owner, consumer, reset and callback lifetime before moving it. Core operation guards and copied plan inputs remain distinct from board electrical state. |
+| Files And ABI Surface | Move only the residual XT keyboard chip pointer and its exact consumers; record each other flat board field, owner, consumer, reset and callback lifetime for S54-S59. Core operation guards and copied plan inputs remain distinct from board electrical state. |
 | Applicable Rules | One board owner, no copied latch or callback path; preserve D4 shutdown, parity/NMI, refresh HOLD, speaker and absent-memory order with existing Core operation guards. |
 | Verification | Full x64/x86 units, specialized/documentation gates, focused electrical regressions, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
-| Expected Markers | Each proven board-owned latch/callback leaves flat Core storage; neutral Core retains only bounded operations. |
+| Expected Markers | XT keyboard chip leaves flat Core storage; each remaining board-owned latch/callback has one bounded numeric receiver, and neutral Core retains only bounded operations. |
 | Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
 | Reporting Requirements | Field-by-field owner and callback lifecycle, exact diff, tests and artifact hashes. |
 | Stop Conditions | Stop and split if the actual field/callback surface exceeds one bounded S; do not move neutral Core guards into the board. |
-| Exit Criteria | Finite board electrical/callback receivers pass tests/artifacts with P1/P2 pushed and tree clean. |
+| Exit Criteria | XT chip owner correction passes tests/artifacts with P1/P2 pushed and tree clean; the electrical/callback receivers are recorded as S54-S59, not falsely claimed complete. |
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | D4, absent-memory, parity, speaker, refresh and callback install/revoke consumers. |
+
+## T540 S53 Acceptance
+
+The overlooked XT keyboard chip pointer is now board-owned through its one
+construction, input, deadline, advance, reset and teardown path. P1
+`e313e4660` is pushed. The original combined electrical/callback assignment
+was split on the measured dependency surface rather than falsely declared
+complete. Dual-width full units pass 469/469, specialized gates pass, and
+all eight fixed-profile boots pass once each. The optimized 0540 products are
+rebuilt and PE/no-debug verified; the [S53 evidence](../etc/evidence/t540-s53-xt-keyboard-and-electrical-intake.md)
+contains exact hashes and the S54-S61 receiving map. T540 remains open.
+
+## T540 S54 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S54, next linear S after accepted S53. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move only planar-parity configuration, Port-B and NMI latch state from flat Core storage into the sole board attachment; preserve the existing port, memory-fault and speaker signal path. |
+| Non-goals | D4 platform/NMI (S55), D4 refresh/DMA (S56), XT speaker state (S57), absent-memory routes (S58), callback/firmware audit (S59), neutral header (S60), physical Shared move (S61), behavior/timing change. |
+| Reference Baseline | S53 P1 `e313e4660`, [S53 evidence](../etc/evidence/t540-s53-xt-keyboard-and-electrical-intake.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | `machine.h`, board state/port/memory/NMI owners, direct private test consumers and existing static gates. Preserve one checked Core memory operation and the existing board callback lifetime. |
+| Applicable Rules | One board owner, no mirror/compatibility branch; preserve parity latch, NMI delivery and Port-B ordering. |
+| Verification | Full x64/x86 units, specialized/documentation gates, parity-focused regression, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | No planar-parity mutable state remains flat in `core_machine`; one board state owns its configuration and latches. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Field/consumer inventory, exact diff, tests and artifact hashes. |
+| Stop Conditions | Stop for a new parity semantic conflict, second owner or cross-target change; split if the actual surface exceeds a bounded S. |
+| Exit Criteria | P1/P2 pushed; both-width verification, eight boots and artifact evidence pass; worktree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | Parity memory fault, Port-B read/write, reset, NMI and speaker wiring consumers. |
 
 ## S87 Admission Packet
 

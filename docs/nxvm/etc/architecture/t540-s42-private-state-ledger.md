@@ -22,11 +22,16 @@ and destroy remain the only production paths.
 | DMA latch and primary/secondary controllers | board constructor, DMA effects and finalization; one board attachment owns DMA lifetime | S47 |
 | RTC chip and selected register | board constructor, RTC I/O/deadline and finalization; one board attachment owns RTC lifetime | S48 |
 | FDC and HDC controller instances | board constructor, controller adapters and finalization; separate bounded board batches | S49–S50 |
-| KBC, XT PPI and XT keyboard instances | board constructor, input adapters and finalization; one keyboard owner group | S51 |
+| KBC and XT PPI instances | board constructor, input adapters and finalization; one keyboard owner group | S51 |
+| XT keyboard chip pointer left in flat Core after S51 | board constructor, input, advance/deadline, reset and finalization; no Core-only consumer | S53 |
 | VADP instance | board constructor, display adapters and finalization | S52 |
-| D4 memory/platform, absent-memory windows, planar parity, XT speaker, D4 refresh latches and DMA refresh wiring | board memory, port, NMI, refresh and speaker adapters; one board attachment owns machine-specific electrical state | S53 |
-| Firmware provider/context binding and F0000h alias choice | `machine_board.c` owns board role/alias and binding; Core retains the single bounded firmware invocation and ROM table. Do not duplicate either side | S53 |
-| `board_*_provider` callback slots and `board_owner` | Core scheduler/CPU bus call bounded board operations; board installs/revokes them with its lifetime. The shutdown callback currently takes `const core_machine *` because test schedulers replace `board_owner` with a probe, so do not silently change that ABI | S53–S54 |
+| Planar parity configuration/port/NMI latches | board memory, port and NMI adapter | S54 |
+| D4 platform configuration/port/failsafe/NMI latches | board port, reset and NMI adapter | S55 |
+| D4 refresh pending/pulse/address latches and DMA refresh wiring | board refresh producer, neutral Core HOLD consumer | S56 |
+| XT speaker gates and output | board PPI/PIT signal adapter | S57 |
+| Absent-memory windows | board memory route adapter; Core owns only checked memory operation | S58 |
+| Firmware provider/context binding and F0000h alias choice | `machine_board.c` owns board role/alias and binding; Core retains the single bounded firmware invocation and ROM table. Do not duplicate either side | S59 |
+| `board_*_provider` callback slots and `board_owner` | Core scheduler/CPU bus call bounded board operations; board installs/revokes them with its lifetime. The shutdown callback currently takes `const core_machine *` because test schedulers replace `board_owner` with a probe, so do not silently change that ABI | S59–S60 |
 
 These rows cover all contiguous state groups in the current `struct
 core_machine`, including the appended scheduler state. `core_machine_plan`
@@ -64,24 +69,26 @@ firmware context remains an operation guard, not a second machine owner.
 2. **S44** — Move device clocks, topology/configuration and timing fields to
    one board attachment. Repoint only their real readers/writers; preserve
    one frozen input plan and unchanged device phases. No duplicate fields.
-3. **S45–S52** — Move board chip instances in actual owner groups: PIC and
+3. **S45–S53** — Move board chip instances in actual owner groups: PIC and
    its IRQ source bindings (S45), PIT (S46), DMA (S47), RTC (S48), FDC
-   (S49), HDC (S50), KBC/XT keyboard (S51), VADP (S52). Each group retains
+   (S49), HDC (S50), KBC/XT PPI (S51), VADP (S52), and the XT keyboard chip
+   pointer overlooked in S51 (S53). Each group retains
    its existing constructor, reset, deadline, ports, IRQ wiring, teardown
    and tests; no group adds a second chip lifetime.
-4. **S53** — Move D4/absent-memory/parity/speaker/refresh latches and board
-   callback installation/revocation. Keep the Core operation guard and the
-   board's F0000h choice on opposite sides of one bounded interface. Audit
-   the copied plan's topology application against the sole rollback.
-5. **S54** — Finish the neutral private header: no named PC chip, topology,
+4. **S54–S59** — Move the remaining electrical groups separately: parity
+   (S54), D4 platform/NMI (S55), D4 refresh/DMA wiring (S56), XT speaker
+   (S57), absent-memory routes (S58), and board callback install/revoke plus
+   firmware binding audit (S59). Preserve Core operation guards, the board's
+   F0000h choice, one copied plan and one rollback.
+5. **S60** — Finish the neutral private header: no named PC chip, topology,
    D4, speaker or profile include. Keep only Core state and the bounded
    board attachment/callback contract; migrate remaining direct test
    consumers by actual dependency, not filename. Compile Core without the
    NXVM board target before claiming the split.
-6. **S55** — Physically move only the proven neutral implementation and
+6. **S61** — Physically move only the proven neutral implementation and
    neutral test receivers to `src/x86/core` and `test/x86/core`, delete the
    old App copies, reconnect NXVM, verify independent Shared build/tests,
-   both product widths and all four fixed-profile boots. S56 onward owns
+   both product widths and all four fixed-profile boots. S62 onward owns
    the separately audited `ibmpc-common`, `ibmpc-at` and `ibmpc-xt` moves.
 
 The S37 prospective “S43 physical move” is superseded by this measured
@@ -89,7 +96,10 @@ split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/
 thirteen, RTC in three/ten, FDC/HDC together in six/thirty-one, keyboard
 in three/eleven and VADP in three/two. That exceeds one bounded S45 owner
-move, so S45–S52 are assigned by chip group before implementation. If a
+move, so S45–S53 are assigned by chip group before implementation. S53
+found one residual XT keyboard chip pointer and 212 board/electrical/callback
+accesses in the remaining private sources; these are not a bounded single
+receiver. They are assigned to S54–S59 before their implementation. If a
 later actual diff still exceeds one safe owner boundary, create further
 **numeric, linear** receivers and shift S53–S55
 forward before implementation. Do not use S suffixes or leave a mixed state
