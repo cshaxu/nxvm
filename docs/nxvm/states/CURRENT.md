@@ -1608,6 +1608,41 @@ INIs are untouched. T540 remains open.
 | Original Owner Request | Prepare independently reusable x86 Core and IBM-PC boards without diverging the four PC products. |
 | Similar-Issue Sweep | PIC/PIT/DMA/RTC/FDC/HDC/KBC/XT PPI/XT keyboard/VADP chip lifetime, IRQ signals, port registration and failed construction. |
 
+## T540 S45 Acceptance
+
+Actual-diff review accepts NXVM P1 `c47f4fb7d`. The
+[S45 evidence](../etc/evidence/t540-s45-pic-owner.md) records the PIC
+master/slave and PIT0/RTC IRQ-source bindings moved into the sole board
+attachment, with unchanged construction/reset/IRQ/port/destruction calls.
+Core CPU bus still sees only bounded PIC callbacks. Complete x64/x86
+repository-only units pass **469/469** each, specialized gates pass, and
+the four fixed-profile external boot probes pass **8/8**, once per width.
+Eight optimized 0540 products have the expected widths and no `.debug`
+sections; hashes are in the evidence. The large direct-test diff reflects
+field references, not a parallel PIC implementation. Shared/MyNES and
+owner INIs are untouched. T540 remains open.
+
+## T540 S46 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S46, next linear S after accepted S45. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move the PIT pair and auxiliary-PIT configured state from flat `core_machine` into the sole board attachment; preserve one PIT lifetime and Gate/OUT/IRQ/refresh wiring. |
+| Non-goals | DMA, RTC, FDC, HDC, keyboard and VADP (S47–S52), board electrical/callback split (S53), final neutral header (S54), physical Shared move (S55), chip/timing behavior change. |
+| Reference Baseline | S45 P1 `c47f4fb7d`, [S45 evidence](../etc/evidence/t540-s45-pic-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | PIT state has four production and eight direct test file consumers. Retarget only these, the board constructor/reset/deadline/advance/finalizer, and exact source inventories. |
+| Applicable Rules | One board attachment, no copied PIT phase or duplicated Gate/OUT state; keep chip callback order, IRQ0 and DMA refresh signal wiring unchanged. |
+| Verification | Full x64/x86 units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | PIT pair and auxiliary configured state no longer occupy flat Core storage; board alone owns chip lifetime. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Exact moved fields, references, callback/registration/reset/finalization equivalence, tests and artifact hashes. |
+| Stop Conditions | Stop before pulling another chip into S46, changing PIT timing or adding a second owner/access path. |
+| Exit Criteria | PIT owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | Both PIT instances, IRQ0, refresh, speaker, auxiliary PIT, board reset and failed construction. |
+
 ## S87 Admission Packet
 
 | Field | Required record |
