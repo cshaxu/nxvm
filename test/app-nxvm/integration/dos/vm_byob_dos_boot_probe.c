@@ -1800,7 +1800,7 @@ int main(lib_i32 argc, char **argv)
     }
     /* This is probe-only observability after construction; the FDC retains the
        sole terminal event path and no guest-visible state is changed. */
-    session->core_machine->fdc.connect.observation_provider =
+    session->core_machine->board->fdc.connect.observation_provider =
         (core_machine_fdc_terminal_observation_provider) {
             vm_byob_fdc_terminal_observe, &trace };
     if (trace_enabled) {
@@ -1906,7 +1906,7 @@ int main(lib_i32 argc, char **argv)
             goto done;
         }
         x86_fdc_observation fdc_observation;
-        if (x86_fdc_capture(session->core_machine->fdc.chip, &fdc_observation) != LIB_STATUS_OK) {
+        if (x86_fdc_capture(session->core_machine->board->fdc.chip, &fdc_observation) != LIB_STATUS_OK) {
             printf("BOOT-PROBE=fdc-observation-unavailable\n");
             goto done;
         }
@@ -2522,10 +2522,10 @@ done:
             (unsigned int)x86_pit_get_output(session->core_machine->board->shared_pit.device, 0u),
             (unsigned int)x86_pit_get_output(session->core_machine->board->shared_pit.device, 1u));
         x86_fdc_observation fdc_observation;
-        if (x86_fdc_capture(session->core_machine->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
+        if (x86_fdc_capture(session->core_machine->board->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
                 (unsigned int)fdc_observation.phase,
-                (unsigned int)session->core_machine->fdc.data.dor,
+                (unsigned int)session->core_machine->board->fdc.data.dor,
                 (unsigned int)fdc_observation.msr,
                 (unsigned int)fdc_observation.st0,
                 (unsigned int)fdc_observation.st1,
@@ -3132,7 +3132,7 @@ done:
             (unsigned int)core_machine_pic_scan_interrupt(
                 &session->core_machine->board->shared_pic_master,
                 &session->core_machine->board->shared_pic_slave),
-            (unsigned int)session->core_machine->fdc.connect.irq_source.asserted);
+            (unsigned int)session->core_machine->board->fdc.connect.irq_source.asserted);
         if (core_machine_memory_read(session->core_machine, 0x0410u,
                 &bda_equipment, sizeof(bda_equipment)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x0415u,
@@ -3247,7 +3247,7 @@ done:
                 (unsigned int)waiting_interrupts_enabled,
                 (unsigned int)last_wait_advanced,
                 (unsigned int)waiting_linear_pc);
-            if (x86_fdc_capture(session->core_machine->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
+            if (x86_fdc_capture(session->core_machine->board->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
                 printf("BOOT-PROBE=waiting-fdc-phase=%u-hdc-phase=%u-dma-pending=%u\n",
                     (unsigned int)fdc_observation.phase,
                     (unsigned int)hdc_observe(&session->core_machine->hdc).phase,

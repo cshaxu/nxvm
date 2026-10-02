@@ -236,14 +236,14 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
             session->fdd.data.ncyl, session->fdd.data.nhead, session->fdd.data.nsector,
             x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY));
         x86_fdc_observation chip;
-        if (x86_fdc_capture(session->core_machine->fdc.chip, &chip) == LIB_STATUS_OK) {
+        if (x86_fdc_capture(session->core_machine->board->fdc.chip, &chip) == LIB_STATUS_OK) {
             printf("T515:INI-BOOT:%s:FDC:phase=%u:cmd=%02X:index=%u:CHRN=%u/%u/%u:EOT=%u:CCR=%02X:result=%02X/%02X/%02X:remaining=%u:gate=%u:due=%llu:irq=%u\n",
                 name, chip.phase, chip.command[0u], chip.command_index,
                 chip.cylinder, chip.head, chip.sector, chip.eot,
-                session->core_machine->fdc.data.ccr, chip.st0, chip.st1, chip.st2,
+                session->core_machine->board->fdc.data.ccr, chip.st0, chip.st1, chip.st2,
                 chip.transfer_remaining, chip.dma_byte_gate_pending,
                 (unsigned long long)chip.next_dma_byte_tick,
-                session->core_machine->fdc.connect.irq_source.asserted);
+                session->core_machine->board->fdc.connect.irq_source.asserted);
         }
         if (core_machine_capture_time_observation(session->core_machine,
                 &time_observation) == LIB_STATUS_OK) {
@@ -516,10 +516,10 @@ int main(int argc, char **argv)
     }
     session = ini_session.session;
     if (trace_enabled) {
-        trace_probe.fdc = &session->core_machine->fdc;
+        trace_probe.fdc = &session->core_machine->board->fdc;
         (void)core_machine_set_trace_provider(session->core_machine,
             &(core_machine_trace_provider) {boot_trace_observe, &trace_probe});
-        session->core_machine->fdc.connect.observation_provider =
+        session->core_machine->board->fdc.connect.observation_provider =
             (core_machine_fdc_terminal_observation_provider) {boot_trace_fdc_terminal,
                 &trace_probe};
     }

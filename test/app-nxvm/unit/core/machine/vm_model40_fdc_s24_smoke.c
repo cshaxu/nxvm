@@ -116,7 +116,7 @@ lib_i32 main(void)
     failed |= create_status != LIB_STATUS_OK || session == LIB_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
         sizeof(image)) != LIB_FALSE;
     if (!failed) {
-        fdc = &session->core_machine->fdc;
+        fdc = &session->core_machine->board->fdc;
         port = &session->core_machine->executor_port;
         core_machine_port_write(port, 0x0064u, 0xc0u);
         core_machine_kbc_advance(&session->core_machine->shared_kbc, 1u);

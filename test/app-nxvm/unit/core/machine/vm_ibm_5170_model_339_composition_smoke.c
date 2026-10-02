@@ -164,7 +164,7 @@ static lib_i32 vm_model_339_floppy_contract(void)
         session->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
         session->fdd.data.ncyl != 40u || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != 9u ||
-        session->core_machine->fdc.connect.drives.cylinder_count[0u] != 80u;
+        session->core_machine->board->fdc.connect.drives.cylinder_count[0u] != 80u;
     vm_machine_destroy(session);
     session = LIB_NULL;
     failed |= vm_test_create_5170(&rejected, &session) == LIB_STATUS_OK || session != LIB_NULL;

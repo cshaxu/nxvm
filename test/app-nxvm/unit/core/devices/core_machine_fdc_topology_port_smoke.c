@@ -5,6 +5,7 @@
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/fdc.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/port.h"
 
@@ -133,7 +134,7 @@ int main(void)
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
         core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        fdc = &machine->fdc;
+        fdc = &machine->board->fdc;
         port = &machine->executor_port;
         if (fdc == LIB_NULL || port == LIB_NULL ||
             core_machine_media_registry_bind(media, 11u, &drive0,

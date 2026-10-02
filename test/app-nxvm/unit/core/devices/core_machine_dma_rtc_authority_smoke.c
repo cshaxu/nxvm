@@ -112,7 +112,7 @@ int main(void)
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
-        machine->board->shared_dma_primary.connect.device_owner[2u] != &machine->fdc ||
+        machine->board->shared_dma_primary.connect.device_owner[2u] != &machine->board->fdc ||
         machine->board->shared_dma_primary.connect.device_owner[0u] != machine ||
         machine->board->refresh_dma_request.core_token == 0u ||
         machine->board->refresh_dma_request.channel != 0u ||

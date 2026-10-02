@@ -3,6 +3,7 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -17,7 +18,7 @@ lib_i32 main(void)
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->active || session->core_machine == LIB_NULL ||
-        session->core_machine->fdc.connect.machine != session->core_machine) return 1;
+        session->core_machine->board->fdc.connect.machine != session->core_machine) return 1;
     port = &session->core_machine->executor_port;
     core_machine_port_write(port, 0x0070u, 0x80u);
     if (core_machine_get_nmi_mask(session->core_machine, &masked) != LIB_STATUS_OK ||

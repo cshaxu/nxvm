@@ -4,6 +4,7 @@
 
 #include "app-nxvm/devices/machine_interface.h"
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/memory_interface.h"
 #include "app-nxvm/devices/port.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -98,9 +99,9 @@ lib_i32 main(void)
     core_machine_port_write(port, 0x03f2u, 0x0cu);
     stage = '4';
     vm_fdc_t242_write_dma2(port);
-    vm_fdc_t242_command(&session->core_machine->fdc, port, specify_dma, sizeof(specify_dma));
-    vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
-    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE);
+    vm_fdc_t242_command(&session->core_machine->board->fdc, port, specify_dma, sizeof(specify_dma));
+    vm_fdc_t242_command(&session->core_machine->board->fdc, port, read_track, sizeof(read_track));
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->board->fdc, LIB_TRUE);
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
@@ -108,59 +109,59 @@ lib_i32 main(void)
     failed |= core_machine_memory_read(session->core_machine, 0x0500u, actual,
         sizeof(actual)) != LIB_STATUS_OK || lib_memory_compare(actual, untouched,
         sizeof(actual)) != 0;
-    vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){0x08u}, 1u);
+    vm_fdc_t242_command(&session->core_machine->board->fdc, port, (const lib_u8[]){0x08u}, 1u);
     (void)core_machine_port_read(port, 0x03f5u);
     (void)core_machine_port_read(port, 0x03f5u);
-    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_FALSE);
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->board->fdc, LIB_FALSE);
     core_machine_port_write(port, 0x03f2u, 0x2cu);
-    vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
-    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE);
+    vm_fdc_t242_command(&session->core_machine->board->fdc, port, read_track, sizeof(read_track));
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->board->fdc, LIB_TRUE);
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
     }
     failed |= result[0] != TEST_FDC_ST0_ABNORMAL || result[1] != 0x04u;
-    vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){0x08u}, 1u);
+    vm_fdc_t242_command(&session->core_machine->board->fdc, port, (const lib_u8[]){0x08u}, 1u);
     (void)core_machine_port_read(port, 0x03f5u);
     (void)core_machine_port_read(port, 0x03f5u);
-    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_FALSE);
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->board->fdc, LIB_FALSE);
     core_machine_port_write(port, 0x03f2u, 0x1cu);
     vm_fdc_t242_write_dma2(port);
-    vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
+    vm_fdc_t242_command(&session->core_machine->board->fdc, port, read_track, sizeof(read_track));
     stage = '5';
     /* Bound phase-level progression for the entire 18-sector transfer,
      * not merely 1024 events. Reaching this bound is never success. */
     for (index = 0u; index < sizeof(expected) * 16u + 1024u &&
-            !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE);
+            !test_fdc_interrupt_matches(&session->core_machine->board->fdc, LIB_TRUE);
             ++index) {
         if (core_machine_advance_to_next_deadline(session->core_machine,
                 &advanced) != LIB_STATUS_OK || !advanced) goto done;
     }
-    if (!test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE) ||
+    if (!test_fdc_interrupt_matches(&session->core_machine->board->fdc, LIB_TRUE) ||
         core_machine_memory_read(session->core_machine, 0x0500u, actual,
             sizeof(actual)) != LIB_STATUS_OK) {
         goto done;
     }
     failed |= lib_memory_compare(expected, actual, sizeof(expected)) != 0;
     stage = '6';
-    if (test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_TRUE)) {
+    if (test_fdc_interrupt_matches(&session->core_machine->board->fdc, LIB_TRUE)) {
         for (index = 0u; index < sizeof(result); ++index) {
             result[index] = (lib_u8)core_machine_port_read(port, 0x03f5u);
         }
         failed |= result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
             result[2] != 0u || result[3] != 0u || result[4] != 0u ||
             result[5] != 0x13u || result[6] != 0x02u;
-        vm_fdc_t242_command(&session->core_machine->fdc, port,
+        vm_fdc_t242_command(&session->core_machine->board->fdc, port,
             (const lib_u8[]){0x08u}, 1u);
         (void)core_machine_port_read(port, 0x03f5u);
         (void)core_machine_port_read(port, 0x03f5u);
-        failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_FALSE);
+        failed |= !test_fdc_interrupt_matches(&session->core_machine->board->fdc, LIB_FALSE);
     } else {
         failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM;
     }
     stage = '7';
 
     /* Non-MFM stays an owner-local no-data result, not a second command form. */
-    vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){
+    vm_fdc_t242_command(&session->core_machine->board->fdc, port, (const lib_u8[]){
         0x02u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x12u, 0x1bu, 0xffu
     }, 9u);
     for (index = 0u; index < sizeof(result); ++index) {
@@ -168,16 +169,16 @@ lib_i32 main(void)
     }
     failed |= result[0] != TEST_FDC_ST0_ABNORMAL ||
         result[1] != 0x04u;
-    vm_fdc_t242_command(&session->core_machine->fdc, port, (const lib_u8[]){0x08u}, 1u);
+    vm_fdc_t242_command(&session->core_machine->board->fdc, port, (const lib_u8[]){0x08u}, 1u);
     (void)core_machine_port_read(port, 0x03f5u);
     (void)core_machine_port_read(port, 0x03f5u);
-    failed |= !test_fdc_interrupt_matches(&session->core_machine->fdc, LIB_FALSE);
+    failed |= !test_fdc_interrupt_matches(&session->core_machine->board->fdc, LIB_FALSE);
 
     stage = '8';
 done:
     if (session != LIB_NULL) {
         x86_fdc_observation observation = {0};
-        if (x86_fdc_capture(session->core_machine->fdc.chip, &observation) == LIB_STATUS_OK) {
+        if (x86_fdc_capture(session->core_machine->board->fdc.chip, &observation) == LIB_STATUS_OK) {
             final_intr = observation.interrupt_pending;
             final_phase = observation.phase;
         }

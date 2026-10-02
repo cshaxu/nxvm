@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/port.h"
 
@@ -143,24 +144,24 @@ lib_i32 main(void)
             failed |= 0x04;
         } else {
             port = &machine->executor_port;
-            failed |= machine->fdc.connect.dma_request.core_token !=
+            failed |= machine->board->fdc.connect.dma_request.core_token !=
                     dma_request.core_token ||
-                machine->fdc.connect.irq_source.irq != fdc_config.irq ||
+                machine->board->fdc.connect.irq_source.irq != fdc_config.irq ||
                 machine->hdc.connect.irq_source.irq != hdc_config.irq ||
                 machine->hdc.connect.media_id != hdc_topology.media_id;
 
             core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
-            core_machine_controller_fdc_command(&machine->fdc, port, specify_non_dma,
+            core_machine_controller_fdc_command(&machine->board->fdc, port, specify_non_dma,
                 sizeof(specify_non_dma));
-            core_machine_controller_fdc_command(&machine->fdc, port, read_absent,
+            core_machine_controller_fdc_command(&machine->board->fdc, port, read_absent,
                 sizeof(read_absent));
-            failed |= !core_machine_controller_fdc_result(&machine->fdc, port, result,
+            failed |= !core_machine_controller_fdc_result(&machine->board->fdc, port, result,
                 sizeof(result)) || result[0] != 0x48u || result[1] != 0u;
 
-            core_machine_controller_fdc_command(&machine->fdc, port, write_absent,
+            core_machine_controller_fdc_command(&machine->board->fdc, port, write_absent,
                 sizeof(write_absent));
             core_machine_port_write(port, fdc_config.data_port, 0x5au);
-            failed |= !core_machine_controller_fdc_result(&machine->fdc, port, result,
+            failed |= !core_machine_controller_fdc_result(&machine->board->fdc, port, result,
                 sizeof(result)) || result[0] != 0x48u || result[1] != 0u;
 
             if (!core_machine_controller_hdc_program_chs(machine, &hdc_config) ||

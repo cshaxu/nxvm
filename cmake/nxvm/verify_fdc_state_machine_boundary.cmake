@@ -9,10 +9,15 @@ file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.h" chip_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc8272_interface.h" chip_interface)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_deadline.c" board_deadline_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_fdc_smoke.c"
     core_fixture)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.h" fdd_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.c" fdd_source)
+
+if(scheduler_source MATCHES "board->fdc|core_machine_fdc_")
+    message(FATAL_ERROR "Core scheduler directly owns board FDC")
+endif()
 
 foreach(forbidden IN ITEMS "pImgBase" "pCurrByte" "transCount"
     "core_machine_memory_" "core_machine_pic_set_irq" "t_fdd"

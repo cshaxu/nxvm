@@ -223,7 +223,6 @@ struct core_machine {
     core_machine_cpu_execution_context *executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
-    core_machine_fdc fdc;
     core_machine_hdc hdc;
     t_kbc shared_kbc;
     core_machine_xt_ppi_keyboard xt_ppi_keyboard;

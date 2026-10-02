@@ -766,7 +766,7 @@ void core_machine_board_reset_devices(core_machine *machine)
     machine->d4_platform_iochk_latched = LIB_FALSE;
     machine->d4_platform_failsafe_latched = LIB_FALSE;
     machine->d4_platform_nmi_signaled = LIB_FALSE;
-    core_machine_fdc_reset(&machine->fdc);
+    core_machine_fdc_reset(&machine->board->fdc);
     core_machine_hdc_reset(&machine->hdc);
     core_machine_pic_reset(&machine->board->shared_pic_master,
         &machine->board->shared_pic_slave);
@@ -787,7 +787,7 @@ void core_machine_board_finalize_devices(core_machine *machine)
     core_machine_pit_bus_destroy(&machine->board->shared_pit);
     core_machine_pit_bus_destroy(&machine->board->auxiliary_pit);
     core_machine_hdc_finalize(&machine->hdc);
-    core_machine_fdc_finalize(&machine->fdc);
+    core_machine_fdc_finalize(&machine->board->fdc);
     core_machine_dma_finalize(&machine->board->shared_dma_latch,
         &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary);
     x86_rtc_destroy(machine->board->shared_rtc);
@@ -1002,7 +1002,7 @@ lib_status core_machine_configure_dma(core_machine *machine,
     if (wiring->fdc_channel != CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND) {
         status = core_machine_dma_bind_channel(&machine->board->shared_dma_latch,
             &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
-            wiring->fdc_channel, core_machine_fdc_dma_provider(), &machine->fdc,
+            wiring->fdc_channel, core_machine_fdc_dma_provider(), &machine->board->fdc,
             &machine->board->fdc_dma_request);
         if (status != LIB_STATUS_OK) return status;
     }
@@ -1471,16 +1471,16 @@ lib_status core_machine_configure_fdc(core_machine *machine,
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     machine->board->fdc_topology = *topology;
-    core_machine_fdc_connect(&machine->fdc, machine->board->fdc_topology.media_registry,
+    core_machine_fdc_connect(&machine->board->fdc, machine->board->fdc_topology.media_registry,
         &machine->board->fdc_topology.drives, &machine->board->fdc_topology.dma_request,
         core_machine_fdc_dma_request_assert,
         core_machine_fdc_dma_request_deassert, machine,
         &machine->board->shared_pic_master, &machine->board->shared_pic_slave,
         machine, &machine->board->fdc_topology.config,
         &machine->board->fdc_topology.observation_provider);
-    status = core_machine_fdc_initialize(&machine->fdc);
+    status = core_machine_fdc_initialize(&machine->board->fdc);
     if (status != LIB_STATUS_OK) {
-        core_machine_fdc_finalize(&machine->fdc);
+        core_machine_fdc_finalize(&machine->board->fdc);
         lib_memory_set(&machine->board->fdc_topology, 0u,
             sizeof(machine->board->fdc_topology));
         return status;

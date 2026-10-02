@@ -214,7 +214,7 @@ static lib_i32 core_machine_fdc_read_result(core_machine_fdc *fdc, t_port *port,
 static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine,
     core_machine_fdc_fixture_media *media)
 {
-    core_machine_fdc *fdc = &machine->fdc;
+    core_machine_fdc *fdc = &machine->board->fdc;
     t_port *port = &machine->executor_port;
     static const struct {
         lib_u8 bytes[9];
@@ -357,7 +357,7 @@ static lib_i32 core_machine_fdc_result_identity(core_machine_fdc *fdc,
 static lib_i32 core_machine_fdc_write_terminal(core_machine *machine,
     core_machine_fdc_fixture_media *media)
 {
-    core_machine_fdc *fdc = &machine->fdc;
+    core_machine_fdc *fdc = &machine->board->fdc;
     t_port *port = &machine->executor_port;
     const core_machine_fdc_config saved_config = fdc->connect.config;
     enum { FINISH, RESET, MOTOR_OFF, WRITE_FAILURE };
@@ -458,7 +458,7 @@ static lib_i32 core_machine_fdc_terminal_id(core_machine *machine,
     core_machine_fdc_fixture_media *media)
 {
     static const lib_u8 commands[] = {0x46u, 0x4cu, 0x45u, 0x49u};
-    core_machine_fdc *fdc = &machine->fdc;
+    core_machine_fdc *fdc = &machine->board->fdc;
     t_port *port = &machine->executor_port;
     const core_machine_fdc_config saved_config = fdc->connect.config;
     lib_i32 failed = 0;
@@ -700,7 +700,7 @@ lib_i32 main(void)
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
         core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        fdc = &machine->fdc;
+        fdc = &machine->board->fdc;
         port = &machine->executor_port;
         if (fdc == LIB_NULL || port == LIB_NULL ||
             core_machine_media_registry_bind(media, 1u, &fixture,

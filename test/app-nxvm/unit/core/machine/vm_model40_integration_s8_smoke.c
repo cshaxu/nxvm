@@ -126,13 +126,13 @@ lib_i32 main(void)
             0x03f2u, 0u);
         core_machine_port_write(&session->core_machine->executor_port,
             0x03f2u, 0x1cu);
-        failed |= !test_fdc_advance_due(&session->core_machine->fdc);
-        failed |= !session->core_machine->fdc.connect.irq_source.asserted;
+        failed |= !test_fdc_advance_due(&session->core_machine->board->fdc);
+        failed |= !session->core_machine->board->fdc.connect.irq_source.asserted;
         for (sense_status = 0u; sense_status < CORE_MACHINE_FDC_DRIVE_COUNT;
             ++sense_status) {
             core_machine_port_write(&session->core_machine->executor_port,
                 0x03f5u, 0x08u);
-            test_fdc_advance(&session->core_machine->fdc);
+            test_fdc_advance(&session->core_machine->board->fdc);
             reset_status[sense_status] = (lib_u8)core_machine_port_read(
                 &session->core_machine->executor_port, 0x03f5u);
             sense_cylinder = (lib_u8)core_machine_port_read(
@@ -142,7 +142,7 @@ lib_i32 main(void)
                 sense_cylinder != 0u;
         }
         core_machine_port_write(&session->core_machine->executor_port, 0x03f5u, 0x08u);
-        test_fdc_advance(&session->core_machine->fdc);
+        test_fdc_advance(&session->core_machine->board->fdc);
         sense_status = (lib_u8)core_machine_port_read(
             &session->core_machine->executor_port, 0x03f5u);
         failed |= sense_status != 0x80u ||

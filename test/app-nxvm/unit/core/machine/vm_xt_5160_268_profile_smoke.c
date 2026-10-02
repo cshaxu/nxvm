@@ -144,9 +144,9 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
     failed |= !failed && core_machine_get_fdc_dma_request_binding(machine, &binding) !=
         LIB_STATUS_OK;
     failed |= !failed && (binding.core_token == 0u || binding.channel != 2u ||
-        machine->fdc.connect.config.irq != 6u ||
-        machine->fdc.connect.config.dma_channel != 2u ||
-        machine->fdc.connect.config.clock_ticks_per_second != 4772727u ||
+        machine->board->fdc.connect.config.irq != 6u ||
+        machine->board->fdc.connect.config.dma_channel != 2u ||
+        machine->board->fdc.connect.config.clock_ticks_per_second != 4772727u ||
         !core_machine_port_has_read(&machine->executor_port, 0x03f4u) ||
         !core_machine_port_has_read(&machine->executor_port, 0x03f5u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x03f2u) ||

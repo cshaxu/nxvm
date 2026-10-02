@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/media/media.h"
@@ -37,8 +38,8 @@ lib_i32 main(void)
             &info, &result) != LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.cylinders != 80u || info.geometry.heads != 2u ||
         info.geometry.sectors_per_track != 15u || info.geometry.bytes_per_sector != 512u ||
-        model40->core_machine->fdc.connect.config.irq != 6u ||
-        model40->core_machine->fdc.connect.config.dma_channel != 2u) {
+        model40->core_machine->board->fdc.connect.config.irq != 6u ||
+        model40->core_machine->board->fdc.connect.config.dma_channel != 2u) {
         failed = 1;
         goto done;
     }

@@ -18,6 +18,7 @@ struct core_machine_board_state {
     t_dma shared_dma_secondary;
     x86_rtc *shared_rtc;
     lib_u8 rtc_selected_register;
+    core_machine_fdc fdc;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain auxiliary_pit_clock;

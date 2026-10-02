@@ -127,13 +127,13 @@ lib_i32 main(void)
     vm_machine *session = LIB_NULL;
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK) return 1;
     if (!session->active || session->profile_plan == LIB_NULL ||
-        session->core_machine->fdc.connect.config.dor_port != 0x03f2u ||
-        session->core_machine->fdc.connect.config.status_port != 0x03f4u ||
-        session->core_machine->fdc.connect.config.data_port != 0x03f5u ||
-        session->core_machine->fdc.connect.config.direction_port != 0x03f7u ||
-        session->core_machine->fdc.connect.config.irq != 6u ||
-        session->core_machine->fdc.connect.config.dma_channel != 2u ||
-        session->core_machine->fdc.connect.config.ready_mask != 0x0fu) {
+        session->core_machine->board->fdc.connect.config.dor_port != 0x03f2u ||
+        session->core_machine->board->fdc.connect.config.status_port != 0x03f4u ||
+        session->core_machine->board->fdc.connect.config.data_port != 0x03f5u ||
+        session->core_machine->board->fdc.connect.config.direction_port != 0x03f7u ||
+        session->core_machine->board->fdc.connect.config.irq != 6u ||
+        session->core_machine->board->fdc.connect.config.dma_channel != 2u ||
+        session->core_machine->board->fdc.connect.config.ready_mask != 0x0fu) {
         vm_machine_destroy(session);
         return 1;
     }

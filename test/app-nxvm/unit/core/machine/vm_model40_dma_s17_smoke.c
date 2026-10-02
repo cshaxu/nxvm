@@ -30,7 +30,7 @@ lib_i32 main(void)
         session->core_machine->board->shared_dma_secondary.connect.peer !=
             &session->core_machine->board->shared_dma_primary ||
         session->core_machine->board->shared_dma_primary.connect.device_owner[2u] !=
-            &session->core_machine->fdc ||
+            &session->core_machine->board->fdc ||
         !core_machine_port_has_write(&session->core_machine->executor_port,
             0x00d6u) || !core_machine_port_has_write(
             &session->core_machine->executor_port, 0x00d4u)) {

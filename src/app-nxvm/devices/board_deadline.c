@@ -86,7 +86,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
         board_consider_clock(&machine->board->dma_clock, 1u,
             &out_observation->source_ticks))
         out_observation->immediate_due = LIB_TRUE;
-    if (core_machine_fdc_next_due_tick(&machine->fdc, &due_tick) ==
+    if (core_machine_fdc_next_due_tick(&machine->board->fdc, &due_tick) ==
         LIB_STATUS_OK) {
         if (due_tick <= now) out_observation->fast_advance_blocked = LIB_TRUE;
         if (board_consider_absolute(now, due_tick,

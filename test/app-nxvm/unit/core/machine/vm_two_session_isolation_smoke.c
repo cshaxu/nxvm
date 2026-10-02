@@ -27,7 +27,7 @@ static lib_bool sessions_are_isolated(core_machine *first, core_machine *second)
         &first->executor_memory == &second->executor_memory ||
         &first->executor_port == &second->executor_port ||
         first->board->shared_rtc == second->board->shared_rtc ||
-        &first->fdc == &second->fdc || &first->hdc == &second->hdc) return LIB_FALSE;
+        &first->board->fdc == &second->board->fdc || &first->hdc == &second->hdc) return LIB_FALSE;
     for (index = 0u; index < 2u; ++index) {
         if (core_machine_debug_write_real(machines[index], 0u, 0u,
                 &values[index], 1u) != LIB_STATUS_OK ||

@@ -227,7 +227,7 @@ static lib_i32 port_assembly_fdc_transaction(lib_size fail_at)
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_fdc(machine, &topology) != LIB_STATUS_NO_MEMORY ||
             machine->board->fdc_configured ||
-            lib_memory_compare(&machine->fdc, &fdc_zero, sizeof(fdc_zero)) != 0 ||
+            lib_memory_compare(&machine->board->fdc, &fdc_zero, sizeof(fdc_zero)) != 0 ||
             lib_memory_compare(&machine->board->fdc_topology, &topology_zero,
                 sizeof(topology_zero)) != 0 ||
             core_machine_port_has_read(&machine->executor_port, 0x03f4u) ||
