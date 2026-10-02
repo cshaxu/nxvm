@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S69 is active: prove independent neutral Core compilation and linking.
-S1-S68 are accepted;
+M5 T540 S69 is accepted: independent neutral Core compilation and linking pass.
+S1-S69 are accepted; no subtask is active between receiving packets.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -2374,7 +2374,7 @@ records four private phase bindings, unchanged board bodies/order, complete
 rebuilt 0540 products and eight one-shot external boot checkpoints. Shared,
 MyNES and owner INIs remain unchanged. S69-S70 and T540 remain open.
 
-## T540 S69 Active Packet
+## T540 S69 Accepted Packet
 
 | Field | Required record |
 | --- | --- |
@@ -2395,7 +2395,7 @@ MyNES and owner INIs remain unchanged. S69-S70 and T540 remain open.
 | Original Owner Request | Neutral x86 Core and flat IBM-PC common/AT/XT ownership for the future independent PC Apps, without mirrored state, layered patches or suffix S numbering. |
 | Similar-Issue Sweep | Candidate source includes and undefined symbols, transitive CMake chip links, existing executor fixture, board callbacks and null bindings, trace variants and primitive/display source ownership. |
 
-S69 implementation is complete pending actual pushed-commit review. The
+Coordinator review accepts pushed S69 P1 `0fbfa9a7b`. The
 [independent receiving evidence](../etc/evidence/t540-s69-independent-neutral-core.md)
 records sixteen actual-source objects, eighteen required headers, no board
 archive dependency, both-width Debug/Release execution and 470/470 complete

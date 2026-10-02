@@ -64,3 +64,13 @@ open for that relocation and IBM-PC common/AT/XT extraction.
 The proof target is test-only, not a second production executor. At physical
 relocation it must be replaced by the real Shared Core target and the smoke
 retargeted, rather than retaining duplicate production compilation paths.
+
+## Actual P1 acceptance
+
+Coordinator review accepts pushed P1 `0fbfa9a7b`: six NXVM paths, 216 added
+lines, zero production-source edits and clean `git show --check`. Build/test
+code accounts for 139 added lines; the rest records receiving evidence and
+status. The reviewed object/source membership, exact project link dependencies,
+runtime assertions and complete test results match the proof above. HEAD
+equals `origin/master` and the worktree is clean at review. S69 closes only
+independent compilation; T540 remains open.
