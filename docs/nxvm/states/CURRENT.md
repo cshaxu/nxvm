@@ -2395,6 +2395,13 @@ MyNES and owner INIs remain unchanged. S69-S70 and T540 remain open.
 | Original Owner Request | Neutral x86 Core and flat IBM-PC common/AT/XT ownership for the future independent PC Apps, without mirrored state, layered patches or suffix S numbering. |
 | Similar-Issue Sweep | Candidate source includes and undefined symbols, transitive CMake chip links, existing executor fixture, board callbacks and null bindings, trace variants and primitive/display source ownership. |
 
+S69 implementation is complete pending actual pushed-commit review. The
+[independent receiving evidence](../etc/evidence/t540-s69-independent-neutral-core.md)
+records sixteen actual-source objects, eighteen required headers, no board
+archive dependency, both-width Debug/Release execution and 470/470 complete
+units per width. Product sources and all eight S68 EXE identities are unchanged.
+Physical relocation and public board-consumer boundaries remain open.
+
 ## S87 Admission Packet
 
 | Field | Required record |

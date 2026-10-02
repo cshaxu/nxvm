@@ -1235,6 +1235,8 @@ target_include_directories(core-machine-executor PUBLIC
 target_link_libraries(core-machine-executor PUBLIC x86-cpu x86-fpu x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine PUBLIC core-machine-executor)
 
+include(cmake/nxvm/NxvmNeutralCoreProof.cmake)
+
 add_executable(vm-machine-frame-smoke
     test/app-nxvm/unit/core/machine/vm_machine_frame_smoke.c)
 target_link_libraries(vm-machine-frame-smoke PRIVATE vm-machine)
@@ -2145,6 +2147,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
 list(APPEND PROJECT_UNIT_TEST_TARGETS
     core-machine-contract-smoke
     core-machine-lifecycle-smoke
+    core-machine-neutral-link-smoke
     core-machine-trace-smoke
     core-machine-external-time-trace-s18-smoke
     vm-model-339-clock-contract-smoke

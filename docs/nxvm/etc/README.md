@@ -14,6 +14,10 @@ owns admission and status.
 T540 S67: [neutral validation owner](evidence/t540-s67-neutral-validation-owner.md)
 records the five verbatim implementation moves and their receiving proof.
 
+T540 S69: [independent neutral Core](evidence/t540-s69-independent-neutral-core.md)
+records actual-source OBJECT linkage without PC board archives and both-width
+Debug/Release runtime proof; physical relocation remains open.
+
 T540 S68: [board lifecycle handoff](evidence/t540-s68-board-lifecycle-handoff.md)
 records the four private phase bindings and their unchanged execution order.
 
