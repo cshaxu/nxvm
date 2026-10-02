@@ -1711,6 +1711,41 @@ untouched. T540 remains open.
 | Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
 | Similar-Issue Sweep | RTC/CMOS port selection, IRQ8, deadline, reset, board seed and failed construction. |
 
+## T540 S48 Acceptance
+
+Actual-diff review accepts NXVM P1 `15fb83f58`. The
+[S48 evidence](../etc/evidence/t540-s48-rtc-owner.md) records the RTC chip
+pointer and selected-register latch moved into the sole board attachment.
+Port installation/rollback, seed, deadline, advance, IRQ, reset and
+finalization calls retain the existing order and chip behavior. The
+multi-session test now compares actual RTC instances instead of the addresses
+of pointer slots. Complete x64/x86 repository-only units pass **469/469**
+each; specialized gates pass. The four fixed-profile external boot probes
+pass **8/8**, once per width. Eight optimized 0540 products have the
+expected PE widths and no `.debug` sections; hashes are in the evidence.
+Shared/MyNES and owner INIs are untouched. T540 remains open.
+
+## T540 S49 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S49, next linear S after accepted S48. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Move the FDC controller instance from flat `core_machine` into the sole board attachment; preserve one FDC lifetime and its DMA/IRQ/media-change wiring. |
+| Non-goals | HDC, keyboard and VADP (S50–S52), board electrical/callback split (S53), final neutral header (S54), physical Shared move (S55), FDC chip behavior or timing change. |
+| Reference Baseline | S48 P1 `15fb83f58`, [S48 evidence](../etc/evidence/t540-s48-rtc-owner.md), [receiving ledger](../etc/architecture/t540-s42-private-state-ledger.md), dual-width 469/469 units, gates and 8/8 boots. |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the measured [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | FDC-instance access spans three production files, twenty direct C test files and one test-boundary script. `topology->fdc` in the frozen plan is a distinct configuration value and must not be moved. |
+| Applicable Rules | One board attachment, no copied FDC command/DRQ/IRQ state; preserve controller construction, media binding, port routes, reset, DMA request and finalization order. |
+| Verification | Full x64/x86 units, specialized/documentation gates, one external boot per profile/width, eight optimized 0540 PE/no-debug products and actual-diff evidence. |
+| Expected Markers | The FDC controller no longer occupies flat Core storage; board alone owns its lifetime. |
+| Asset Needs | Existing external firmware/media for boot checks only; no owner INI edit. |
+| Reporting Requirements | Exact moved field/references, constructor/reset/finalization equivalence, diff size, tests and artifact hashes. |
+| Stop Conditions | Stop before pulling another chip into S49, altering FDC semantics, or adding a second owner/access path. |
+| Exit Criteria | FDC owner move and focused behavior are complete; tests/artifacts pass, P1/P2 pushed and tree clean. |
+| Original Owner Request | Prepare reusable x86 Core and IBM-PC boards with one clear hardware owner. |
+| Similar-Issue Sweep | FDC ports, drive selection, DMA/IRQ, media-change observation, deadline, reset and failed construction. |
+
 ## S87 Admission Packet
 
 | Field | Required record |
