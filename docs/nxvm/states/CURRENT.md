@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S63 is active: remove board-only definitions and includes from the
-neutral Core private header. S1-S62 are accepted;
+M5 T540 S64 is active: split the public machine interface and prove an
+independently compiled neutral Core. S1-S63 are accepted;
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -83,7 +83,8 @@ the completed CPU extraction.
 | T540 S60 | Accepted: measured the oversized neutral private/public header and allocated S61-S65 as bounded numeric receivers. |
 | T540 S61 | Accepted: D4-specific mutable memory state moved to board; Core retains one atomic memory route; both-width units/gates and eight boots pass. |
 | T540 S62 | Accepted: live Core retains only validated timing declarations, while board owns controller timing rules and DMA provenance; both-width units/gates and eight boots pass. |
-| T540 S63 | Active: neutral private-header boundary. |
+| T540 S63 | Accepted: neutral private header no longer defines board plan/topology or includes concrete chips; both-width units/gates and eight boots pass. |
+| T540 S64 | Active: public interface boundary and independent neutral compile. |
 
 ## T540 S1 Acceptance
 
@@ -2203,6 +2204,35 @@ Eight optimized 0540 products are PE/no-debug verified. T540 remains open.
 | Stop Conditions | A private-header slice is larger than one safe owner cut or forces a public ABI redesign; record and assign the remainder to linear S. |
 | Exit Criteria | P1/P2 pushed if code changes; affected checks pass; worktree clean. |
 | Similar-Issue Sweep | All private-header direct includers, CMake source inventories, unit/integration diagnostics and hidden chip dependencies. |
+
+## T540 S63 Acceptance
+
+P1 `4d6443833` moved the board-only private definitions, chip includes and
+function declarations to the existing sole board header, then corrected six
+real transitive include consumers. The [S63 evidence](../etc/evidence/t540-s63-private-header-boundary.md)
+records the 90-addition/93-removal structural diff, final x64/x86 469/469
+units, both 82-target specialized gate sets, all eight single-run external
+boot terminals and optimized PE/no-debug 0540 products. It also records the
+resolved intermittent shared modal-window test observation. T540 remains
+open; S64 receives the public interface and independent compile proof.
+
+## T540 S64 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S64, next linear S after accepted S63. |
+| Admission And Approval | Owner's standing automatic admission applies to bounded numeric T540 S work. NXVM only; Shared and MyNES remain read-only. |
+| Objective | Split PC-specific types and includes from the public Core interface and prove neutral Core compiles independently of App board/product headers. |
+| Non-goals | Physical Shared source move (S65), new board framework, behavior/timing/profile/INI/media change or second creation path. |
+| Reference Baseline | S63 P1 `4d6443833`, [S63 evidence](../etc/evidence/t540-s63-private-header-boundary.md), [S60 measured intake](../etc/evidence/t540-s60-neutral-header-intake.md). |
+| Candidate Proposal | [T540 integration](../history/M5-T540-shared-ibmpc-integration-proposal.md) and the [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | `machine_interface.h` and its direct consumers, current neutral source inventory and bounded compile target. Measure its 694-line/174-includer surface before editing; split further into linear numeric S if one owner cut is unsafe. |
+| Applicable Rules | No PC topology or product type in the neutral public contract; exactly one function implementation and one construction path. Board contracts retain their real owner. |
+| Verification | Independent strict neutral compile plus complete x64/x86 units, specialized/documentation gates, affected boot matrix and optimized eight-product PE/no-debug output if code changes. |
+| Asset Needs | Existing external boot inputs only; do not alter owner INI. |
+| Stop Conditions | Public interface contains multiple distinct owner cuts too large for one S; record finite split before modifying those cuts. |
+| Exit Criteria | P1/P2 pushed if code changes; independent compile proof and affected checks pass; worktree clean. |
+| Similar-Issue Sweep | Public header transitive includes, direct source/test consumers, target source lists and static gates. |
 
 ## S87 Admission Packet
 
