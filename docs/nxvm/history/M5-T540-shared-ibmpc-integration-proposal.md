@@ -182,6 +182,12 @@ rollback and teardown. Existing hardware assertions, full suites and eight
 single-run product checkpoints remain required. PIC/DMA and AT/XT family
 assembly are not accepted by this receiver.
 
+S90 actual-commit review accepts Shared P1 `ddc957eaf` and NXVM P2
+`f33730fea`; the whole port receiver and dead display ABI are complete.
+The [S90 evidence](../etc/evidence/t540-s90-pit-port-extraction.md) records
+independent/full tests, corrected single-Core links and all eight final boot
+checkpoints. The remaining common/family/D4 receivers are still required.
+
 ## Verification And Exit
 
 S80 receives the complete callback-context class from S79: the existing board

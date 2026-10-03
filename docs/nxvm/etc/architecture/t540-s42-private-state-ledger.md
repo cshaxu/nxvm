@@ -41,6 +41,10 @@ object or allocation is necessary. Board owns each primary/auxiliary chip and
 its clock/OUT lifecycle; Shared owns atomic four-port publication. Core owns
 the routes and existing serialized machine teardown. All constructor/failure/reset/deadline/test paths are in this
 batch. S90 also removes the preceding unused display mode-binding half.
+Actual-commit review accepts Shared P1 `ddc957eaf` and NXVM P2 `f33730fea`:
+all old PIT binding paths are deleted and all primary/auxiliary callers use the
+Shared atomic installation. The [S90 evidence](../evidence/t540-s90-pit-port-extraction.md)
+records the complete independent/full-suite and product verification.
 PIC/DMA aggregation, AT/XT wiring and D4 remain open; no narrow route proof
 qualifies those distinct owners.
 

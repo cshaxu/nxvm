@@ -1,6 +1,6 @@
 # T540 S90 PIT Port Attachment Evidence
 
-Baseline: accepted S89 `47dfd87b7`. S90 is active, not accepted.
+Baseline: accepted S89 `47dfd87b7`. S90 is accepted; T540 remains open.
 
 ## Complete Receiving Boundary
 
@@ -185,3 +185,15 @@ The final `build/s90-final-*-boot.log` records supersede pre-link proof.
 No MyNES source/test/document/artifact, chip algorithm or owner INI differs
 from the accepted baseline. The complete S90 brief is ready for its ordered
 Shared and NXVM implementation commits and subsequent actual-commit review.
+
+## Coordinator Acceptance
+
+Actual pushed commits `ddc957eaf` (Shared P1) and `f33730fea` (NXVM P2)
+are reviewed against the complete packet, original binding bodies, all changed
+fixtures/build gates and final proof above. All original hardware assertions
+remain; the seven port-allocation failures retain atomic-route rollback and
+now prove caller-owned chip survival. Core and chip private layouts are not
+exported. The dead mode ABI has no remaining source/test/build caller. Each
+commit contains only its declared target, and all eight deployed hashes match
+the recorded final products. No excluded App, INI or chip algorithm changed.
+This accepts S90 only; the remaining common/family/D4 owners remain required.
