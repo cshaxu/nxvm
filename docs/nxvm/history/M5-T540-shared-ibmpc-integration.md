@@ -50,3 +50,14 @@ link proofs, eight one-shot external boots and optimized stripped 0540 hashes.
 Shared, MyNES, INIs and external master inputs remain unchanged. The complete
 timing publication/observation receiver, attachment, test classification and
 physical source relocation are still due; T540 remains open.
+
+## S76: Timing Publication Boundary Accepted
+
+P1 `8a4e3bd12` puts complete copied-table validation/publication under neutral
+Core and supplies qualification on the existing board deadline callback.
+Actual pushed-diff review accepts all 22 NXVM-only paths. [S76 evidence](../etc/evidence/t540-s76-timing-publication-boundary.md)
+records both-width 470/470 units/gates, eight neutral-link executions, eight
+one-shot external boots and optimized stripped 0540 identities. Shared,
+MyNES and owner INIs are unchanged. S77 receives Running Port-B time through
+an actual I/O-cycle input contract; attachment, direct-test classification and
+physical relocation remain required. T540 remains open.

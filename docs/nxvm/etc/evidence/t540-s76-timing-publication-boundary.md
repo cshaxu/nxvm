@@ -138,5 +138,11 @@ to terminal completion, not restarted after observation timeouts.
 
 Shared six corpora, MyNES code/tests/artifacts, owner INIs and external master
 inputs have no diff. Local scripts, logs and incremental build trees remain
-ignored. The complete executor delivery is ready for P1 push and subsequent
-coordinator review of the actual committed diff; S76 is not yet accepted here.
+ignored. Complete P1 `8a4e3bd12` is pushed. Coordinator reviewed its actual
+22-path committed diff, including every production/test/gate hunk, packet,
+ownership split, results and artifact identities. Full-batch representation
+checks and all three qualification decisions preserve the admitted policy and
+ordering. There is no retained caller pointer, second table/clock or new
+failure cleanup path. `git show --check` passes and P1 equals `origin/master`
+at review. Acceptance closes S76 in the following pure-governance P2;
+T540's explicitly recorded remaining receivers are not closed.
