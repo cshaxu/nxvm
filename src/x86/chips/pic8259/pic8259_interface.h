@@ -10,6 +10,16 @@ typedef struct x86_pic_request {
     lib_bool cascade;
 } x86_pic_request;
 
+typedef struct x86_pic_register_state {
+    lib_u8 irr;
+    lib_u8 imr;
+    lib_u8 isr;
+} x86_pic_register_state;
+
+/* Copied diagnostics, without changing OCW3, polling or acknowledgement. */
+lib_status x86_pic_capture_registers(const x86_pic *pic,
+    x86_pic_register_state *out_state);
+
 /* One execution owner. Each instance models one controller, never a pair.
  * Board source aggregation, port decode and cascade wiring are external.
  * No operation calls or owns another chip. Stop callers before destruction. */

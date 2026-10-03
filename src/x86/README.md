@@ -11,7 +11,7 @@ state machine belongs here.
 | Component | Responsibility | Public interface |
 | --- | --- | --- |
 | core | Neutral CPU/FPU execution, guest timeline, bus transactions, RAM/port/ROM routes and bounded debug operations | machine_interface.h and adjacent *_interface.h contracts |
-| ibmpc-common | Frozen media-provider registry and copied display-provider binding; bus/family extraction remains pending | media_interface.h, display_interface.h |
+| ibmpc-common | Frozen media-provider registry, copied display binding, PIT port attachment and PIC aggregation; remaining bus/family extraction is pending | media_interface.h, display_interface.h, pit_bus_interface.h, pic_bus_interface.h |
 | debug | Original DOS/X command implementation and copied x86 protocol | debug_interface.h, protocol_interface.h |
 | xasm32 | x86 byte/text assembly and disassembly | xasm32_interface.h |
 | chips/cpu | 8086 through 80386 execution state, instruction decoding and CPU-local timing | cpu_interface.h |
@@ -30,13 +30,18 @@ state machine belongs here.
 | chips/fpu | Existing partial 8087 arithmetic and 8087/287/387 extension completion model | fpu_interface.h |
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
-only on Types. The current ibmpc-common implementation also depends only on
-Types; its display value ABI uses the public video-values header. Media
+only on Types. ibmpc-common depends on Types and public PIT/PIC chip contracts;
+its port adapters use the Core public contract without selecting a Core build
+variant. Its display value ABI uses the public video-values header. Media
 providers and their contexts are borrowed until registry destruction; freeze
 prevents rebinding. The display slot likewise borrows contexts, freezes binding,
 and captures copied snapshots. Neither component opens files, owns media bytes,
 selects a profile, or schedules guest execution. Calls are serialized by the
-owning board/driver; destruction must not overlap a provider call.
+owning board/driver; destruction must not overlap a provider call. PIC owns
+opaque endpoints and IRQ source leases for the pair's lifetime. Producers
+borrow leases; reset/reconnect uses the same pair, and finalize invalidates all
+leases after producers stop. Copied IRR/IMR/ISR observation does not program
+OCW3; guest reads, writes and acknowledgement retain their actual side effects.
 Public tool names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
 Core depends only on Types, CPU and FPU. `x86-core` is its production target;
 `x86-core-observable` compiles the same implementation for trace-contract tests.

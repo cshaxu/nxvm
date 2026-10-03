@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
+#include "lib/types/file.h"
 
 #include "x86/ibmpc-common/media_interface.h"
 
@@ -241,7 +241,7 @@ lib_i32 main(void)
         result != CORE_MACHINE_MEDIA_RESULT_PERMANENT)) failed = 1;
     core_machine_media_registry_destroy(registry);
     if (failed) return 1;
-    printf("M5:T270:S2:MEDIA-PROVIDER:OK\n");
-    printf("M5:T374:S9:MEDIA-ADDRESS-MARK:OK\n");
+    lib_c_printf("M5:T270:S2:MEDIA-PROVIDER:OK\n");
+    lib_c_printf("M5:T374:S9:MEDIA-ADDRESS-MARK:OK\n");
     return 0;
 }

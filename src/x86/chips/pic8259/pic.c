@@ -49,6 +49,16 @@ static lib_u8 pic_pending_requests(const x86_pic *pic)
     return pic->data.irr | pic->data.cascade_irr;
 }
 
+lib_status x86_pic_capture_registers(const x86_pic *pic,
+    x86_pic_register_state *out_state)
+{
+    if (pic == LIB_NULL || out_state == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_state = (x86_pic_register_state) {
+        pic_pending_requests(pic), pic->data.imr, pic->data.isr
+    };
+    return LIB_STATUS_OK;
+}
+
 static lib_bool pic_select_controller(const x86_pic *pic,
     lib_u8 *out_id)
 {
