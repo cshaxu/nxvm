@@ -691,7 +691,7 @@ static lib_i32 timing_80386_manifest_verify_esc_handoff(void)
     core_machine_run_result run = { 0 };
     core_machine *machine = LIB_NULL;
     lib_u64 remaining_ticks = 0u;
-    lib_status status = core_machine_create(&config, &machine);
+    lib_status status = core_machine_create(&config, &machine, LIB_NULL);
     lib_i32 failed = status != LIB_STATUS_OK;
 
     if (!failed) status = test_core_machine_fixture_register_reset_mapping(machine,
@@ -744,7 +744,7 @@ static lib_i32 timing_80386_manifest_run_recipe(const char *key_id,
         program == LIB_NULL || program_bytes == 0u) return 1;
     halt_recipe = lib_text_compare(key_id, "I386-HLT") == 0;
     active_provider.context = &capture;
-    status = core_machine_create(&config, &machine);
+    status = core_machine_create(&config, &machine, LIB_NULL);
     if (status == LIB_STATUS_OK) status =
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_80386_MANIFEST_RESET_LINEAR,
@@ -1559,7 +1559,7 @@ static lib_i32 timing_80386_manifest_run_s4_repeat_continuation(
     record = timing_80386_manifest_find(key_id);
     if (record == LIB_NULL || !timing_80386_manifest_is_i386(record)) return 1;
     active_provider.context = &capture;
-    status = core_machine_create(&config, &machine);
+    status = core_machine_create(&config, &machine, LIB_NULL);
     if (status == LIB_STATUS_OK) status = test_core_machine_fixture_register_reset_mapping(
         machine, TIMING_80386_MANIFEST_RESET_LINEAR,
         TIMING_80386_MANIFEST_RESET_PHYSICAL, TIMING_80386_MANIFEST_WINDOW_BYTES);

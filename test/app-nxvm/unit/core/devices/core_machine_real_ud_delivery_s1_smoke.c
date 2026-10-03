@@ -60,7 +60,7 @@ static lib_i32 real_ud_prepare(real_ud_machine *state,
     if (state == LIB_NULL || test_case == LIB_NULL) return 0;
     config.cpu_profile = test_case->profile;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
         core_machine_reset(state->machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(state->machine, &setup) != LIB_STATUS_OK ||

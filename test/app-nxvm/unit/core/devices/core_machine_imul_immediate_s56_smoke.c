@@ -123,7 +123,7 @@ static lib_i32 imul_irq_no_shadow(void)
         core_machine_debug_cpu_snapshot before = {0}, after = {0};
         core_machine_debug_register_patch patch = {0};
         lib_u16 frame_ip = 0u, frame_flags = 0u;
-        lib_i32 failed = core_machine_create(&config, &machine) !=
+        lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) !=
                 LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK;

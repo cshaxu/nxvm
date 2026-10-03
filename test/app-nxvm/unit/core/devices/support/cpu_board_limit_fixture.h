@@ -40,7 +40,7 @@ static lib_i32 test_cpu_board_limit_prepare_exact(core_machine **out_machine,
     gdt[16u] = (lib_u8)ds_limit;
     gdt[17u] = (lib_u8)(ds_limit >> 8u);
     gdt[21u] = writable ? 0x92u : 0x90u;
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||

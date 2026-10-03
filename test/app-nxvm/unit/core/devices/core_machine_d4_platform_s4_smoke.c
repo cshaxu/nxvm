@@ -24,7 +24,7 @@ static lib_i32 core_machine_port_b_exclusivity(void)
     config.memory_bytes = 2u * 1024u * 1024u;
     config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_planar_parity(machine, &planar) != LIB_STATUS_OK ||
         core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -35,7 +35,7 @@ static lib_i32 core_machine_port_b_exclusivity(void)
 
     machine = LIB_NULL;
     value = 0u;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK ||
         core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_INVALID_STATE ||
         core_machine_configure_planar_parity(machine, &planar) != LIB_STATUS_INVALID_ARGUMENT ||
@@ -73,7 +73,7 @@ lib_i32 main(void)
     cmos.irq = 8u;
     cmos.nmi_mask_bit = 0x80u;
     cmos.ticks_per_second = 1u;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK ||
         core_machine_configure_rtc_cmos(machine, &cmos) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,

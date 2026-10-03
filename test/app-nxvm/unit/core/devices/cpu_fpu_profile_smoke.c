@@ -15,7 +15,7 @@ static lib_i32 verify_machine_profiles(core_machine_cpu_profile cpu_profile,
     core_machine *machine = LIB_NULL;
     core_machine_cpu_profile observed_cpu;
     x86_fpu_profile observed_fpu;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_get_cpu_profile(machine, &observed_cpu) != LIB_STATUS_OK ||
         core_machine_get_fpu_profile(machine, &observed_fpu) != LIB_STATUS_OK ||
         observed_cpu != cpu_profile || observed_fpu != fpu_profile;
@@ -45,7 +45,7 @@ lib_i32 main(void)
         X86_FPU_PROFILE_80287);
     failed |= verify_machine_profiles(CORE_MACHINE_CPU_PROFILE_80386,
         X86_FPU_PROFILE_80387);
-    failed |= core_machine_create(&default_config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&default_config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_get_cpu_profile(machine, &cpu_profile) != LIB_STATUS_OK ||
         cpu_profile != CORE_MACHINE_CPU_PROFILE_80386;
     failed |= core_machine_get_fpu_profile(machine, &fpu_profile) != LIB_STATUS_OK ||

@@ -128,7 +128,7 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(media, 11u, &fdc_media,
             &core_machine_compaq_hdc_machine_fdc_provider) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(media, 12u, hdc_sector,

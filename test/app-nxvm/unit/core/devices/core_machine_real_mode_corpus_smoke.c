@@ -36,7 +36,7 @@ static lib_i32 corpus_prepare_machine(core_machine **out_machine,
     };
     core_machine *machine = LIB_NULL;
 
-    if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
+    if (out_machine == LIB_NULL || core_machine_create(&config, &machine, LIB_NULL) !=
             LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             CORPUS_RESET_LINEAR, CORPUS_RESET_PHYSICAL,

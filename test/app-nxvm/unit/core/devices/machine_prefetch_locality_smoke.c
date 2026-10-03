@@ -39,7 +39,7 @@ static lib_i32 run_halt(const core_machine_external_cycle_timing *timing,
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = *timing;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
@@ -67,7 +67,7 @@ static lib_i32 run_halt_with_port_wait(lib_u64 *out_ticks)
     config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x00e0u, 0x00e0u, 1u};
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
@@ -94,7 +94,7 @@ static lib_i32 run_write(const core_machine_external_cycle_timing *timing,
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = *timing;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
@@ -122,7 +122,7 @@ static lib_i32 run_read(const core_machine_external_cycle_timing *timing,
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = *timing;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
@@ -148,7 +148,7 @@ static lib_i32 external_cycle_observer_contract(void)
     lib_i32 failed = 0;
 
     config.transaction_contract.external_cycle_timing = explicit_timing;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     provider = core_machine_cpu_external_cycle_trace;
@@ -220,7 +220,7 @@ static lib_i32 d4_refresh_external_cycle_contract(void)
     config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
     config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
@@ -263,7 +263,7 @@ static lib_i32 retirement_wait_contract(void)
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = timing;
     config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
@@ -316,7 +316,7 @@ static lib_i32 cecg_aperture_wait_contract(void)
         (core_machine_external_access_wait_window) {
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0000u,
             0x000affffu, 1u};
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     provider = core_machine_cpu_external_cycle_trace;
@@ -349,7 +349,7 @@ static lib_i32 d4_cecg_memory_class_contract(void)
     config.transaction_contract.external_cycle_timing = (core_machine_external_cycle_timing) {
         2048u, 2u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED,
         0u, 0x0009ffffu};
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     provider = core_machine_cpu_external_cycle_trace;
@@ -377,7 +377,7 @@ static lib_i32 cecg_port_wait_contract(void)
     config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 0x03cfu, 1u};
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     provider = core_machine_cpu_external_cycle_trace;
@@ -425,7 +425,7 @@ static lib_i32 prefetch_grant_contract(void)
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = timing;
     config.transaction_contract.cpu_prefetch_reservation_enabled = LIB_TRUE;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {

@@ -84,7 +84,7 @@ lib_i32 main(void)
 
     fixture.media_byte = 0xa5u;
     if (core_machine_media_registry_create(&fixture.media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         x86_rtc_create(&rtc_config, LIB_NULL, LIB_NULL, &fixture.rtc) !=
             LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {

@@ -42,7 +42,7 @@ static lib_i32 lea_test_irq_no_shadow(void)
     lib_u16 vector_offset = 0x0100u;
     lib_u16 vector_segment = 0u;
     lib_u16 frame_ip = 0u;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK;
 

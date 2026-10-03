@@ -14,7 +14,7 @@ static lib_i32 prepare_machine(core_machine **out_machine)
     };
     core_machine *machine = LIB_NULL;
 
-    if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
+    if (out_machine == LIB_NULL || core_machine_create(&config, &machine, LIB_NULL) !=
             LIB_STATUS_OK || core_machine_register_immutable_rom_mapping(machine,
             0x1000u, rom, sizeof(rom)) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||

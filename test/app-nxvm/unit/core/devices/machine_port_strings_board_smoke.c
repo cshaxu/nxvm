@@ -70,7 +70,7 @@ static lib_i32 port_strings_board_prepare(core_machine **out_machine,
         }
     };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed)
         failed = core_machine_install_port_provider(machine, 0x00e0u,

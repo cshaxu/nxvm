@@ -280,7 +280,7 @@ lib_i32 main(void)
 
     trace.callback = transaction_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,

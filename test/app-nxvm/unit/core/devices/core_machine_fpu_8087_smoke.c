@@ -47,7 +47,7 @@ static lib_i32 fpu_test_prepare(fpu_test_machine *state,
     };
 
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 0;
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK) return 0;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             &fpu_test_provider, state) || state->reset_status != LIB_STATUS_OK) {
         printf("FPU prepare profile=%u reset=%u\n", cpu_profile, state->reset_status);

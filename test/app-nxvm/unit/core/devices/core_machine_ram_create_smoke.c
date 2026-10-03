@@ -10,12 +10,15 @@ static lib_i32 ram_create_success(lib_size memory_bytes)
     core_machine_config config = { .memory_bytes = memory_bytes };
     core_machine_memory_test_allocation allocation = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_size installed_bytes = 0u;
     lib_i32 failed = 0;
 
     failed |= core_machine_create_with_test_memory_allocation(&config, &machine,
-        &allocation) != LIB_STATUS_OK;
+        &allocation, &board) != LIB_STATUS_OK;
     failed |= machine == LIB_NULL || allocation.attempts != 1u;
+    failed |= board == LIB_NULL || (!failed &&
+        (board->core != machine || machine->attachment.context != board));
     failed |= !failed && core_machine_get_memory_bytes(machine, &installed_bytes) !=
         LIB_STATUS_OK;
     failed |= !failed && installed_bytes != (memory_bytes == 0u ?
@@ -32,11 +35,37 @@ static lib_i32 ram_create_failure(lib_size memory_bytes)
     core_machine_config config = { .memory_bytes = memory_bytes };
     core_machine_memory_test_allocation allocation = { LIB_TRUE, 0u };
     core_machine *machine = (core_machine *)(lib_uptr)1u;
+    core_machine_board_state *board = (core_machine_board_state *)(lib_uptr)1u;
     lib_status status = core_machine_create_with_test_memory_allocation(
-        &config, &machine, &allocation);
+        &config, &machine, &allocation, &board);
 
-    return status != LIB_STATUS_NO_MEMORY || machine != LIB_NULL ||
+    return status != LIB_STATUS_NO_MEMORY || machine != LIB_NULL || board != LIB_NULL ||
         allocation.attempts != 1u;
+}
+
+static lib_i32 configuration_board_publication(void)
+{
+    const core_machine_config configurations[] = {
+        {0},
+        {.auxiliary_pit_present = LIB_TRUE, .auxiliary_pit_base_port = 0x48u},
+        {.keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
+            .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u},
+            .dma_controller_count = 1u, .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_SINGLE}
+    };
+    lib_i32 failed = 0;
+
+    for (lib_size i = 0u; i < sizeof(configurations) / sizeof(configurations[0]); ++i) {
+        core_machine *machine = LIB_NULL;
+        core_machine_board_state *board = LIB_NULL;
+        lib_status status = core_machine_create(&configurations[i], &machine, &board);
+
+        failed |= status != LIB_STATUS_OK || machine == LIB_NULL || board == LIB_NULL;
+        if (status == LIB_STATUS_OK && machine != LIB_NULL && board != LIB_NULL) {
+            failed |= machine->attachment.context != board || board->core != machine;
+        }
+        core_machine_destroy(machine);
+    }
+    return failed;
 }
 
 static lib_i32 ram_fixture_retained(void)
@@ -75,21 +104,25 @@ static lib_i32 ram_create_preflight(void)
     for (lib_size i = 0u; i < sizeof(ratios) / sizeof(ratios[0]); ++i) {
         core_machine_memory_test_allocation allocation = {0};
         core_machine *machine = (core_machine *)(lib_uptr)1u;
+        core_machine_board_state *board = (core_machine_board_state *)(lib_uptr)1u;
         ratios[i]->numerator = 1u;
         failed |= core_machine_create_with_test_memory_allocation(&config,
-            &machine, &allocation) != LIB_STATUS_INVALID_ARGUMENT;
-        failed |= machine != LIB_NULL || allocation.attempts != 0u;
+            &machine, &allocation, &board) != LIB_STATUS_INVALID_ARGUMENT;
+        failed |= machine != LIB_NULL || board != LIB_NULL || allocation.attempts != 0u;
         if (machine != LIB_NULL && machine != (core_machine *)(lib_uptr)1u)
             core_machine_destroy(machine);
         ratios[i]->numerator = 0u;
     }
     {
         core_machine *machine = (core_machine *)(lib_uptr)1u;
-        failed |= core_machine_create(LIB_NULL, &machine) !=
+        core_machine_board_state *board = (core_machine_board_state *)(lib_uptr)1u;
+        failed |= core_machine_create(LIB_NULL, &machine, &board) !=
             LIB_STATUS_INVALID_ARGUMENT;
-        failed |= machine != LIB_NULL;
-        failed |= core_machine_create(&config, LIB_NULL) !=
+        failed |= machine != LIB_NULL || board != LIB_NULL;
+        board = (core_machine_board_state *)(lib_uptr)1u;
+        failed |= core_machine_create(&config, LIB_NULL, &board) !=
             LIB_STATUS_INVALID_ARGUMENT;
+        failed |= board != LIB_NULL;
     }
     return failed;
 }
@@ -104,7 +137,9 @@ lib_i32 main(void)
     failed |= ram_create_failure(CORE_MACHINE_MINIMUM_MEMORY_BYTES);
     failed |= ram_fixture_retained();
     failed |= ram_create_preflight();
+    failed |= configuration_board_publication();
     if (failed) return 1;
     puts("M5:T313:S2:RAM-CREATE:OK");
+    puts("M5:T540:S82:CONFIG-BOARD-PUBLICATION:OK");
     return 0;
 }

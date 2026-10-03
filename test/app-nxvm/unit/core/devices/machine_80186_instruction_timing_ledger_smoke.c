@@ -69,7 +69,7 @@ static lib_i32 timing_80186_prepare(core_machine **out_machine,
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_80186_RESET_LINEAR, TIMING_80186_RESET_PHYSICAL, 16u) !=
             LIB_STATUS_OK || core_machine_install_port_provider(machine,

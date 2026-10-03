@@ -40,7 +40,7 @@ lib_i32 main(void)
     core_machine_cpu_execution_context *cpu;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     if (failed || machine == LIB_NULL) return 1;
     cpu = machine->executor_cpu_execution;
     failed |= cpu == LIB_NULL;

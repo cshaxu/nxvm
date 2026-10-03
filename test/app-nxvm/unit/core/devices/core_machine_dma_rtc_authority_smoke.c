@@ -46,7 +46,7 @@ static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
     core_machine *machine = LIB_NULL;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&configuration, &machine) != LIB_STATUS_OK ||
+    failed |= core_machine_create(&configuration, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_dma(machine, &wiring, &fdc_request) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
@@ -97,7 +97,7 @@ int main(void)
     rtc_config.default_count = 1u;
 
     invalid_wiring.controller_count = 1u;
-    if (core_machine_create(&machine_config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&machine_config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_dma(machine, &invalid_wiring, &fdc_request) !=
             LIB_STATUS_INVALID_ARGUMENT ||
         (invalid_wiring = dma_wiring, invalid_wiring.fdc_channel = 0u,

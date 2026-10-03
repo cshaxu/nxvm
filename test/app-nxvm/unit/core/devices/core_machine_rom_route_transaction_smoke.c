@@ -89,7 +89,7 @@ static lib_i32 run_case(lib_u32 mode)
     lib_status expected = mode == 1u ? LIB_STATUS_INVALID_ARGUMENT :
         LIB_STATUS_NO_MEMORY;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) return 1;
     failed |= core_machine_register_immutable_rom_mapping(machine,
         0x000d0000u, &prior_image, 1u) != LIB_STATUS_OK;
     if (mode != 1u) {

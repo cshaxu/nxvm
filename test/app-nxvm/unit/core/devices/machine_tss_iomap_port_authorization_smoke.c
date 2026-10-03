@@ -94,7 +94,7 @@ static lib_i32 iomap_prepare(iomap_machine *state, core_machine_cpu_profile prof
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 0;
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK) return 0;
     if (core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e1u,
             &iomap_port_provider, &state->port) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,

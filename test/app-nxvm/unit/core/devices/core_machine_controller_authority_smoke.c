@@ -72,7 +72,7 @@ static lib_i32 verify_board_phases(const core_machine_config *config)
     };
 
     core_machine_board_refresh_nmi(LIB_NULL);
-    if (core_machine_create(config, &machine) != LIB_STATUS_OK) return 1;
+    if (core_machine_create(config, &machine, LIB_NULL) != LIB_STATUS_OK) return 1;
     probe.failed = machine->attachment.context != machine->board ||
         machine->attachment.context == machine || machine->board->core != machine ||
         machine->attachment.reset_devices !=
@@ -252,7 +252,7 @@ lib_i32 main(void)
     lib_i32 failed = verify_board_phases(&config) || verify_partial_board_cleanup();
 
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         fdc_topology.media_registry = media;
         hdc_topology.media_registry = media;

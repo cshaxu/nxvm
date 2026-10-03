@@ -34,7 +34,7 @@ lib_i32 main(void)
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     config.clock_plan.pit.numerator = 1u;
     config.clock_plan.pit.denominator = 4u;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     if (!failed) {
         failed |= test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
             0x000ffff0u, sizeof(program)) != LIB_STATUS_OK;

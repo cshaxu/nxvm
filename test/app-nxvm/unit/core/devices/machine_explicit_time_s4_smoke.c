@@ -22,7 +22,7 @@ static lib_i32 machine_explicit_time_prepare(core_machine **out_machine)
         .ticks_per_second = 1u
     };
 
-    return core_machine_create(&config, out_machine) == LIB_STATUS_OK &&
+    return core_machine_create(&config, out_machine, LIB_NULL) == LIB_STATUS_OK &&
         core_machine_configure_rtc_cmos(*out_machine, &rtc) == LIB_STATUS_OK &&
         test_core_machine_fixture_register_reset_mapping(*out_machine, 0x00fffff0u,
             0x000ffff0u, 16u) == LIB_STATUS_OK &&
@@ -37,7 +37,7 @@ static lib_i32 machine_explicit_time_rejects_unstarted_lifecycle(void)
     };
     core_machine *machine = LIB_NULL;
     lib_u64 elapsed = 1u;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_advance_time(machine, 1u) != LIB_STATUS_INVALID_STATE ||
         core_machine_get_elapsed_ticks(machine, &elapsed) != LIB_STATUS_INVALID_STATE ||
         machine->elapsed_ticks != 0u;

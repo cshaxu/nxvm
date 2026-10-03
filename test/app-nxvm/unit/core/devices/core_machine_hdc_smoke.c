@@ -181,7 +181,7 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
     media.sector[0][0] = 0x78u;
     media.sector[0][1] = 0x56u;
     if (core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(registry, 1u, &media,
             &core_machine_hdc_fixture_provider) != LIB_STATUS_OK ||
         core_machine_media_registry_freeze(registry) != LIB_STATUS_OK) {
@@ -274,7 +274,7 @@ lib_i32 main(void)
     media.sector[0][0] = 0x34u;
     media.sector[0][1] = 0x12u;
     if (core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         hdc = &machine->board->hdc;
         if (hdc == LIB_NULL ||

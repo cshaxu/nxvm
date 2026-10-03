@@ -22,7 +22,7 @@ static lib_i32 legacy_sreg_stack_prepare(core_machine_cpu_profile profile, legac
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine) == LIB_STATUS_OK &&
+    return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
         core_machine_reset(state->machine) == LIB_STATUS_OK &&
         core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;

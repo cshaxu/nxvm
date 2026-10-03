@@ -26,7 +26,7 @@ static lib_i32 sign_extend_test_irq(void)
         core_machine_debug_register_patch patch = {0};
         const lib_u8 code[] = {opcodes[opcode], 0x90u};
         lib_u16 offset = 0x0100u, segment = 0u, frame = 0u;
-        lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK;
 

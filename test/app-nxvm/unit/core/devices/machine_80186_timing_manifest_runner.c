@@ -280,7 +280,7 @@ static lib_i32 timing_80186_manifest_prepare(core_machine **out_machine,
     lib_status status;
 
     if (out_machine == LIB_NULL || capture == LIB_NULL || program == LIB_NULL) return 0;
-    status = core_machine_create(&config, &machine);
+    status = core_machine_create(&config, &machine, LIB_NULL);
     if (status == LIB_STATUS_OK) status =
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_80186_MANIFEST_RESET_LINEAR,

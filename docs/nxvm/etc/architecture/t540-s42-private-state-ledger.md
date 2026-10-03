@@ -189,6 +189,15 @@ Configuration-only fixtures and public board operations remain next receivers,
 not a private-state getter or completed physical move. The
 [S81 evidence](../evidence/t540-s81-plan-board-publication.md) records this cut.
 
+S82 completes configuration construction publication across 125 caller files,
+including the two existing allocation-failure seams. The board output is
+optional and borrowed; requested outputs share the existing allocation and
+clear on failure. All prior calls adopt the signature without changing their
+test behavior. Public board operations and direct field fixtures still require
+actual board-handle migration; constructor publication does not remove that
+private association. [S82 evidence](../evidence/t540-s82-config-board-publication.md)
+records the complete class rather than a finished physical extraction.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

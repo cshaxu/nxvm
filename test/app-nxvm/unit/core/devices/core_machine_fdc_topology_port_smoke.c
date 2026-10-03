@@ -133,7 +133,7 @@ int main(void)
     lib_i32 failed = 0;
 
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK) failed |= 0x01;
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         fdc = &machine->board->fdc;
         port = &machine->executor_port;

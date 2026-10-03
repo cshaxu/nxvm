@@ -16,7 +16,7 @@ static lib_i32 table_register_board_create(core_machine **out_machine)
     core_machine *machine = LIB_NULL;
 
     *out_machine = LIB_NULL;
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
@@ -130,7 +130,7 @@ static lib_i32 table_register_board_ltr_memory(void)
     core_machine_debug_cpu_snapshot after = {0};
     lib_u16 selector = 0x20u;
     lib_u8 access = 0u;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK;
 
@@ -271,7 +271,7 @@ static lib_i32 table_register_board_source_limit(void)
         lib_u8 code[sizeof(load_target)];
         lib_u8 gdt_image[sizeof(gdt)];
         lib_u8 guard[6] = {0x3cu,0x3cu,0x3cu,0x3cu,0x3cu,0x3cu};
-        lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK;
 
@@ -373,7 +373,7 @@ static lib_i32 table_register_board_dos_sgdt_discriminator(void)
         core_machine_run_result result = {0};
         core_machine_cpu_diagnostic diagnostic = {0};
         core_machine_debug_cpu_snapshot after = {0};
-        lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK;
 
@@ -440,7 +440,7 @@ static lib_i32 table_register_board_lgdt_consumer(void)
     core_machine_cpu_diagnostic diagnostic = {0};
     core_machine_debug_cpu_snapshot after = {0};
     lib_u8 idt[0x108u] = {0};
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK;
 
@@ -536,7 +536,7 @@ static lib_i32 table_register_board_cpl_reject(void)
         core_machine_cpu_diagnostic diagnostic = {0};
         core_machine_debug_cpu_snapshot after = {0};
         lib_u16 sp0 = 0x9000u, ss0 = 0x0010u;
-        lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK;
 

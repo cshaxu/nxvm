@@ -22,7 +22,7 @@ static lib_i32 core_machine_xt_ppi_keyboard_path(void)
     core_machine_speaker_observation speaker;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&configuration, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&configuration, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
@@ -110,7 +110,7 @@ static lib_i32 core_machine_xt_ppi_does_not_change_at_8042(void)
     lib_u8 scan_set = 0u;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&configuration, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&configuration, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
@@ -134,7 +134,7 @@ static lib_i32 core_machine_xt_ppi_parity_nmi_path(void)
     lib_u32 value = 0u;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&configuration, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&configuration, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
@@ -199,7 +199,7 @@ static lib_i32 core_machine_xt_keyboard_reset_bat_path(void)
     };
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&configuration, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&configuration, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
@@ -274,7 +274,7 @@ static lib_i32 core_machine_xt_keyboard_refused_completion(lib_bool bat,
     lib_u64 deadline = 0u;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&configuration, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&configuration, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) != LIB_STATUS_OK;

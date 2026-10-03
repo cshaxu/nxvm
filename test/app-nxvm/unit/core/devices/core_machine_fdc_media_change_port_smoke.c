@@ -138,7 +138,7 @@ int main(void)
     lib_i32 first_failure = 0;
 
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK) failed = 1;
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed = 1;
     if (!failed) {
         fdc = &machine->board->fdc;
         dma = &machine->board->shared_dma_primary;

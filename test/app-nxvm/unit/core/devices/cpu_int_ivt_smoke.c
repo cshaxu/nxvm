@@ -19,7 +19,7 @@ static lib_i32 run_case(core_machine_cpu_profile profile)
     core_machine *machine = LIB_NULL;
     lib_i32 failed = 0;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) goto fail;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) goto fail;
     if (test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, sizeof(program)) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||

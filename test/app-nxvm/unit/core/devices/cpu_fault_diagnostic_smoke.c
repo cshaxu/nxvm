@@ -29,7 +29,7 @@ lib_i32 main(void)
     };
     lib_size index;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK) goto fail;
     /* T337_REAL_UD_TERMINAL_GUEST_LIDT: exclude vector 6 using guest LIDT

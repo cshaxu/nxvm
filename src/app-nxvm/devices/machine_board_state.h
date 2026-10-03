@@ -136,10 +136,12 @@ lib_status core_machine_create_internal(const core_machine_config *config,
     core_machine_board_state **out_board);
 lib_status core_machine_create_with_test_memory_allocation(
     const core_machine_config *config, core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation);
+    core_machine_memory_test_allocation *test_allocation,
+    core_machine_board_state **out_board);
 lib_status core_machine_create_with_test_port_allocation(
     const core_machine_config *config, core_machine **out_machine,
-    core_machine_port_test_allocation *test_allocation);
+    core_machine_port_test_allocation *test_allocation,
+    core_machine_board_state **out_board);
 lib_i32 core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 lib_i32 core_machine_board_config_is_valid(const core_machine_config *config);
 lib_status core_machine_board_create(core_machine *machine,

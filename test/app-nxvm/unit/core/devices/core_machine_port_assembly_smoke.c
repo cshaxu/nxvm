@@ -75,7 +75,7 @@ static lib_i32 port_assembly_fresh_default_create(void)
 {
     core_machine_config config = {0};
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     core_machine_destroy(machine);
     return failed;
@@ -89,7 +89,7 @@ static lib_i32 port_assembly_range_transaction(void)
     port_assembly_probe_state state = {0u};
     core_machine *machine = LIB_NULL;
     lib_u32 value = 0u;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
@@ -129,7 +129,7 @@ static lib_i32 port_assembly_batch_transaction(void)
     };
     core_machine *machine = LIB_NULL;
     lib_u32 value = 0u;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         failed |= core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
@@ -210,7 +210,7 @@ static lib_i32 port_assembly_port_b_time(void)
     core_machine_run_result result = {0};
     core_machine_time_observation time = {0};
     lib_u32 eax = 0u;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) failed = core_machine_configure_planar_parity(machine, &parity) !=
         LIB_STATUS_OK;
@@ -243,7 +243,7 @@ static lib_i32 port_assembly_dma_byte_lanes(void)
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES};
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         t_port *port = &machine->executor_port;
@@ -283,22 +283,27 @@ static lib_i32 port_assembly_create_failure(void)
     for (lib_size variant = 0u; variant < sizeof(variants) / sizeof(variants[0]); ++variant) {
         core_machine_port_test_allocation allocation = {0u, 0u};
         core_machine *machine = LIB_NULL;
+        core_machine_board_state *board = LIB_NULL;
         lib_status status = core_machine_create_with_test_port_allocation(
-            &variants[variant], &machine, &allocation);
+            &variants[variant], &machine, &allocation, &board);
         lib_size count = allocation.attempts;
         lib_i32 failed = status != LIB_STATUS_OK || machine == LIB_NULL || count == 0u;
+        failed |= board == LIB_NULL || (!failed &&
+            (machine->attachment.context != board || board->core != machine));
 
         core_machine_destroy(machine);
         if (failed) return 1;
         for (lib_size fail_at = 1u; fail_at <= count + 1u; ++fail_at) {
             allocation = (core_machine_port_test_allocation) {fail_at, 0u};
             machine = LIB_NULL;
+            board = (core_machine_board_state *)(lib_uptr)1u;
             status = core_machine_create_with_test_port_allocation(
-                &variants[variant], &machine, &allocation);
+                &variants[variant], &machine, &allocation, &board);
             failed = fail_at <= count ?
-                status != LIB_STATUS_NO_MEMORY || machine != LIB_NULL ||
+                status != LIB_STATUS_NO_MEMORY || machine != LIB_NULL || board != LIB_NULL ||
                     allocation.attempts != fail_at :
-                status != LIB_STATUS_OK || machine == LIB_NULL || allocation.attempts != count;
+                status != LIB_STATUS_OK || machine == LIB_NULL || board == LIB_NULL ||
+                    allocation.attempts != count;
             core_machine_destroy(machine);
             if (failed) return 1;
         }
@@ -330,7 +335,7 @@ static lib_i32 port_assembly_fdc_transaction(lib_size fail_at)
     lib_i32 failed = 0;
 
     failed |= core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_dma(machine, &wiring, &request) != LIB_STATUS_OK;
     topology.media_registry = media;
     topology.dma_request = request;
@@ -376,7 +381,7 @@ static lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
     core_machine_port_test_allocation allocation = { fail_at, 0u };
     core_machine_rtc_cmos_config config_zero = {0};
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&machine_config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&machine_config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
@@ -411,7 +416,7 @@ static lib_i32 port_assembly_rtc_collision(void)
         .write = port_assembly_write
     };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&machine_config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&machine_config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         failed |= core_machine_install_port_routes(machine, &existing, 1u) != LIB_STATUS_OK;
@@ -455,7 +460,7 @@ static lib_i32 port_assembly_port_b_transaction(lib_bool d4, lib_size fail_at)
     };
     core_machine_port_test_allocation allocation = {fail_at, 0u};
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
@@ -528,7 +533,7 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
     lib_i32 failed = 0;
 
     failed |= core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&machine_config, &machine) != LIB_STATUS_OK;
+        core_machine_create(&machine_config, &machine, LIB_NULL) != LIB_STATUS_OK;
     topology.media_registry = media;
     topology.config.protocol = protocol;
     topology.config.bus.task_file.lba28_supported =

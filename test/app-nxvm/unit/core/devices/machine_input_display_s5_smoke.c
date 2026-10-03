@@ -50,7 +50,7 @@ static lib_i32 input_display_lifecycle_guards(void)
     lib_i32 failed = 1;
 
     if (snapshot == LIB_NULL ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK) goto done;
     for (lib_size index = 0u; index < sizeof(states) / sizeof(states[0]); ++index) {
@@ -113,7 +113,7 @@ lib_i32 main(void)
     failed |= input_display_lifecycle_guards();
     config.ticks_per_instruction = 1u;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
         0x00fffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=

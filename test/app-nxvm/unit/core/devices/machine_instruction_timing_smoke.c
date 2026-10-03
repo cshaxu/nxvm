@@ -54,7 +54,7 @@ static lib_i32 timing_prepare(core_machine **out_machine,
     };
     core_machine *machine = LIB_NULL;
 
-    if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
+    if (out_machine == LIB_NULL || core_machine_create(&config, &machine, LIB_NULL) !=
             LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
@@ -213,7 +213,7 @@ static lib_i32 timing_capture_qualification(const lib_u8 *program,
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
     lib_i32 failed = out_key == LIB_NULL ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
             LIB_STATUS_OK ||
@@ -249,9 +249,9 @@ static lib_i32 timing_test_invalid_qualification(void)
     };
     core_machine *machine = LIB_NULL;
 
-    return core_machine_create(&missing_config, &machine) != LIB_STATUS_INVALID_ARGUMENT ||
+    return core_machine_create(&missing_config, &machine, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
         machine != LIB_NULL ||
-        core_machine_create(&empty_config, &machine) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_create(&empty_config, &machine, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
         machine != LIB_NULL;
 }
 static lib_i32 timing_test_physical_contract(void)
@@ -279,7 +279,7 @@ static lib_i32 timing_test_physical_contract(void)
     lib_i32 failed = timing_capture_qualification(exact, sizeof(exact),
             &entries[0]) ||
         timing_capture_qualification(jcc, sizeof(jcc), &entries[1]) ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
             LIB_STATUS_OK ||

@@ -116,7 +116,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
         gdt[40u] = 0x2bu;
         gdt[45u] = 0x81u;
     }
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
         (planar_parity && core_machine_configure_planar_parity(state->machine,
             &parity) != LIB_STATUS_OK) ||
         core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||

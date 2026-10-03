@@ -26,7 +26,7 @@ static lib_i32 segment_prepare(segment_machine *state,
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 0;
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK) return 0;
     if (core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
         core_machine_reset(state->machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(state->machine,

@@ -56,7 +56,7 @@ static lib_i32 legacy_lock_s1_prepare(core_machine_cpu_profile profile,
     };
 
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine) == LIB_STATUS_OK &&
+    return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
         core_machine_install_port_provider(state->machine, 0x005au, 0x005au,
             &legacy_lock_s1_port_provider, state) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&

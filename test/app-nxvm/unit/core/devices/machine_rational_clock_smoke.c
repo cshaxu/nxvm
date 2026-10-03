@@ -47,7 +47,7 @@ static lib_i32 rational_clock_prepare(core_machine **out_machine,
     config.clock_plan.provider.numerator = 3u;
     config.clock_plan.provider.denominator = 2u;
     config.clock_plan.provider.reset_phase = 1u;
-    if (core_machine_create(&config, out_machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, out_machine, LIB_NULL) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(*out_machine, 0xfffffff0u,
             0x000ffff0u, sizeof(program)) != LIB_STATUS_OK ||
         core_machine_bind_execution_provider(*out_machine, &rational_clock_provider,

@@ -23,7 +23,7 @@ static lib_i32 real_mode_386_prepare(core_machine **out_machine)
     static const lib_u8 reset_jump[] = {0xeau, 0x00u, 0x00u, 0x00u, 0x00u};
     core_machine *machine = LIB_NULL;
 
-    if (out_machine == LIB_NULL || core_machine_create(&config, &machine) !=
+    if (out_machine == LIB_NULL || core_machine_create(&config, &machine, LIB_NULL) !=
             LIB_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
             machine, TEST_RESET_LINEAR,
             TEST_RESET_PHYSICAL, TEST_RESET_WINDOW) != LIB_STATUS_OK ||

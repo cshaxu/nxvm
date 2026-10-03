@@ -66,7 +66,7 @@ static lib_i32 arpl_board_prepare(core_machine **out_machine,
     idt[13u * 8u + 1u] = 0x01u;
     idt[13u * 8u + 2u] = 0x08u;
     idt[13u * 8u + 5u] = 0x86u;
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||

@@ -129,7 +129,7 @@ lib_i32 main(void)
     lib_size index;
     lib_i32 failed = 0;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_media_registry_create(&registry) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         for (index = 0u; index < sizeof(media.bytes); ++index)

@@ -44,7 +44,7 @@ static lib_i32 cmps_prepare_protected(core_machine **out_machine,
     gdt[17u] = (lib_u8)(ds_limit >> 8u);
     gdt[24u] = (lib_u8)es_limit;
     gdt[25u] = (lib_u8)(es_limit >> 8u);
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
@@ -149,7 +149,7 @@ static lib_i32 cmps_irq_case(lib_bool repeated)
     lib_u8 right[] = {0x10u, 1u, 1u};
     lib_u8 observed_left[sizeof(left)] = {0};
     lib_u8 observed_right[sizeof(right)] = {0};
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |

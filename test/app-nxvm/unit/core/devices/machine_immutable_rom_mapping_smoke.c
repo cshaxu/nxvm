@@ -26,7 +26,7 @@ lib_i32 main(void)
     lib_u8 overwrite = 0u;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= machine == LIB_NULL;
     if (!failed) {
         failed |= test_core_machine_fixture_register_reset_mapping(machine, RESET_LINEAR,

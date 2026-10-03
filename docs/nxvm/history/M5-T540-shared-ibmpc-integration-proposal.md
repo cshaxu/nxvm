@@ -166,6 +166,13 @@ receives the actual allocation without a getter. The subsequent operation and
 configuration-fixture receiver uses these handles, then removes the remaining
 private association before neutral/board source movement.
 
+S82 completes the remaining constructor class: the existing configuration
+constructor and both allocation-failure seams publish the same optional borrowed
+board output. All 198 existing configuration calls and five seam calls adopt
+the signature; pure execution fixtures need not retain unused board state.
+This enables the subsequent complete public-operation/direct-fixture receiver
+without a getter, second factory, allocation or destructor.
+
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
 - Common board contract tests live with their flat receiver under

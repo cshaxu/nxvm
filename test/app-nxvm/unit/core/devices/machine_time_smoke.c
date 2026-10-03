@@ -29,7 +29,7 @@ static lib_i32 machine_time_d4_l2_precedes_unrelated_deadline(void)
     core_machine_timeline_token token;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
@@ -77,26 +77,26 @@ lib_i32 main(void)
         rejected = &rejected_sentinel;
 
         invalid.time_axis.ticks_per_second = 0u;
-        failed |= core_machine_create(&invalid, &rejected) != LIB_STATUS_INVALID_ARGUMENT ||
+        failed |= core_machine_create(&invalid, &rejected, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
             rejected != LIB_NULL;
         invalid = config;
         invalid.time_axis.kind = (core_machine_time_axis_kind)3;
-        failed |= core_machine_create(&invalid, &rejected) != LIB_STATUS_INVALID_ARGUMENT ||
+        failed |= core_machine_create(&invalid, &rejected, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
             rejected != LIB_NULL;
         invalid = config;
         invalid.time_axis = (core_machine_time_axis) {
             CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u };
         invalid.retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
-        failed |= core_machine_create(&invalid, &rejected) != LIB_STATUS_INVALID_ARGUMENT ||
+        failed |= core_machine_create(&invalid, &rejected, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
             rejected != LIB_NULL;
         invalid = config;
         invalid.time_axis = (core_machine_time_axis) {
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u };
         invalid.retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
-        failed |= core_machine_create(&invalid, &rejected) != LIB_STATUS_INVALID_ARGUMENT ||
+        failed |= core_machine_create(&invalid, &rejected, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
             rejected != LIB_NULL;
     }
-    failed |= machine_time_expect(core_machine_create(&config, &machine));
+    failed |= machine_time_expect(core_machine_create(&config, &machine, LIB_NULL));
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= machine_time_expect(core_machine_freeze_execution_providers(machine));

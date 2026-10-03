@@ -34,7 +34,7 @@ static lib_i32 test_cpu_board_de_delivery(const test_cpu_board_de_case *entry)
     core_machine_run_result result = {0};
     lib_u16 frame16[3] = {0u};
     lib_u32 frame32[3] = {0u};
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK;
 

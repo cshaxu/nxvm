@@ -1473,7 +1473,7 @@ static lib_i32 preview_test_cpu_fetch_nonpublication(void)
     lib_u64 committed = 0u;
     lib_u64 cancelled = 0u;
     lib_size trace_count = 0u;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, PREVIEW_RESET_PHYSICAL, program,
@@ -1525,7 +1525,7 @@ static lib_i32 preview_test_limited_fetch_nonpublication(void)
     lib_u64 committed = 0u;
     lib_u64 cancelled = 0u;
     lib_size trace_count = 0u;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK ||
@@ -1582,7 +1582,7 @@ static lib_i32 preview_test_taken_jcc_target(void)
     core_machine_cpu_state cpu;
     lib_u32 flags = 0u;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, PREVIEW_RESET_PHYSICAL, program,
@@ -1628,7 +1628,7 @@ static lib_i32 preview_test_taken_near_jcc_target(void)
     core_machine_cpu_state cpu;
     lib_u32 flags = 0u;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, PREVIEW_RESET_PHYSICAL, program,
@@ -1666,7 +1666,7 @@ static lib_i32 preview_test_cr_mov_mod_quirk(void)
         .cpu_80386_cr_mov_ignores_mod=LIB_TRUE};
     core_machine_cpu_instruction_lexeme lexeme;
     core_machine *machine=LIB_NULL; lib_u8 index;
-    lib_i32 failed=core_machine_create(&config,&machine)!=LIB_STATUS_OK||
+    lib_i32 failed=core_machine_create(&config,&machine, LIB_NULL)!=LIB_STATUS_OK||
         core_machine_freeze_execution_providers(machine)!=LIB_STATUS_OK||
         core_machine_reset(machine)!=LIB_STATUS_OK;
     for(index=0u;!failed&&index<2u;++index) {
@@ -1688,7 +1688,7 @@ static lib_i32 preview_test_default_reset_alias(void)
     core_machine_run_result result;
     core_machine_cpu_state cpu;
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_memory_write(machine, 0x000ffff0u, halt,

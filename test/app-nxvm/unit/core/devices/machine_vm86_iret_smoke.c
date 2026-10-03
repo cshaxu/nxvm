@@ -50,7 +50,7 @@ static lib_i32 vm86_iret_prepare(vm86_iret_state *state,
     t_cpu *cpu;
 
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &vm86_iret_provider, state) ||
         core_machine_memory_write(state->machine, VM86_IRET_CODE, instruction,

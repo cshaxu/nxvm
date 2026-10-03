@@ -22,7 +22,7 @@ lib_i32 main(void)
         0xf4u
     };
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) {
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }

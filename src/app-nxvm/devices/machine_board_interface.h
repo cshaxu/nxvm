@@ -310,9 +310,11 @@ typedef struct core_machine_plan_topology {
 
 typedef struct core_machine_plan core_machine_plan;
 
+/* Optional board output is borrowed until core_machine_destroy. Supplied
+ * outputs clear on failure; construction has one allocation/cleanup owner. */
 lib_status core_machine_create(
     const core_machine_config *config,
-    core_machine **out_machine);
+    core_machine **out_machine, core_machine_board_state **out_board);
 
 lib_status core_machine_plan_create(const core_machine_config *configuration,
     core_machine_plan **out_plan);

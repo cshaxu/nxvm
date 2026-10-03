@@ -133,7 +133,7 @@ static lib_i32 rtc_cmos_s3_test_cmos_adapter(void)
     rtc_config.defaults[0].value = 0x5au;
     rtc_config.default_count = 1u;
     rtc_config.timing.provenance = CORE_MACHINE_RTC_TIMING_L3_SOURCE;
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_rtc_cmos(machine, &rtc_config) != LIB_STATUS_INVALID_ARGUMENT) {
         failed = 1;
     }

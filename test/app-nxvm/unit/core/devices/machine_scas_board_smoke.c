@@ -71,7 +71,7 @@ static lib_i32 scas_irq_case(lib_bool repeated)
     core_machine_run_result result = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
     lib_u8 image[] = {0x10u, 1u, 1u};
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |

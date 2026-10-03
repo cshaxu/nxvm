@@ -119,7 +119,7 @@ static lib_i32 lifecycle_cpu_port_boundaries(void)
     core_machine *machine = LIB_NULL;
     lib_i32 failed = 0;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) return 1;
     failed = core_machine_install_port_provider(machine, 0x1234u, 0x1234u,
             &ports, &probe) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -184,7 +184,7 @@ static lib_i32 lifecycle_cpu_memory_boundaries(void)
     core_machine *machine = LIB_NULL;
     lib_i32 failed = 0;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) return 1;
     failed = test_core_machine_fixture_register_memory_device_provider(machine,
             0x80000u, 1u, lifecycle_memory_read, lifecycle_memory_write,
             lifecycle_memory_query, &probe) != LIB_STATUS_OK ||
@@ -273,7 +273,7 @@ lib_i32 main(void)
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     trace.callback = lifecycle_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;

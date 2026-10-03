@@ -123,26 +123,28 @@ lib_status core_machine_create_internal(
 }
 
 lib_status core_machine_create(const core_machine_config *config,
-    core_machine **out_machine)
+    core_machine **out_machine, core_machine_board_state **out_board)
 {
     return core_machine_create_internal(config, out_machine, LIB_NULL, LIB_NULL,
-        LIB_NULL);
+        out_board);
 }
 
 lib_status core_machine_create_with_test_memory_allocation(
     const core_machine_config *config, core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation)
+    core_machine_memory_test_allocation *test_allocation,
+    core_machine_board_state **out_board)
 {
     return core_machine_create_internal(config, out_machine, test_allocation,
-        LIB_NULL, LIB_NULL);
+        LIB_NULL, out_board);
 }
 
 lib_status core_machine_create_with_test_port_allocation(
     const core_machine_config *config, core_machine **out_machine,
-    core_machine_port_test_allocation *test_allocation)
+    core_machine_port_test_allocation *test_allocation,
+    core_machine_board_state **out_board)
 {
     return core_machine_create_internal(config, out_machine, LIB_NULL,
-        test_allocation, LIB_NULL);
+        test_allocation, out_board);
 }
 
 lib_status core_machine_board_create(core_machine *machine,

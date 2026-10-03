@@ -34,7 +34,7 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
         core_machine_run_result result = {0};
         lib_u16 frame[3] = {0};
         lib_u16 known = legacy_alu_real_flags_known_mask(profiles[index]);
-        lib_i32 failed = core_machine_create(&config, &machine) !=
+        lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) !=
                 LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) !=
                 LIB_STATUS_OK ||

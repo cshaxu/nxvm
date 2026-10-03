@@ -90,9 +90,11 @@ See [S79 evidence](../etc/evidence/t540-s79-copied-attachment-binding.md) and
 S81's frozen-plan constructor publishes the opaque board and Core handles
 together only after successful construction; Core remains their sole lifetime
 owner. The driver holds the borrowed board handle and clears it on destruction.
-Public board operation signatures and configuration-only fixture callers remain
-the next migration boundary, not a completed physical move. See
-[S81 evidence](../etc/evidence/t540-s81-plan-board-publication.md).
+S82 extends the existing configuration constructor and both allocation seams
+with the same optional borrowed output; no getter or lifetime owner is added.
+Public board operations and direct-board fixtures remain the next migration
+boundary, not a completed physical move. See [S81 evidence](../etc/evidence/t540-s81-plan-board-publication.md)
+and [S82 evidence](../etc/evidence/t540-s82-config-board-publication.md).
 
 ### Fixed Composition Without A New Framework
 

@@ -15,7 +15,7 @@ static lib_i32 bound_board_create(core_machine **out_machine,
     core_machine *machine = LIB_NULL;
 
     *out_machine = LIB_NULL;
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK) {
         core_machine_destroy(machine);

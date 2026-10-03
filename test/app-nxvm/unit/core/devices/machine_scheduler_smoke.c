@@ -214,7 +214,7 @@ static lib_i32 scheduler_board_timing_qualification(void)
     lib_u64 source_ticks;
     lib_i32 failed = 1;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x43u, 0x34u) != LIB_STATUS_OK ||
@@ -251,7 +251,7 @@ lib_i32 main(void)
     failed |= scheduler_board_timing_qualification();
     config.ticks_per_instruction = 2u;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_bind_execution_provider(machine, &scheduler_provider,

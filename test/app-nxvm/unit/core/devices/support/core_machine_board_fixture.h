@@ -64,7 +64,7 @@ static inline lib_i32 test_core_machine_fixture_create_bind_freeze_reset(
     const core_machine_execution_provider *provider, void *provider_owner,
     core_machine **out_machine)
 {
-    return core_machine_create(config, out_machine) == LIB_STATUS_OK &&
+    return core_machine_create(config, out_machine, LIB_NULL) == LIB_STATUS_OK &&
         test_core_machine_fixture_bind_freeze_reset(*out_machine, provider,
             provider_owner);
 }

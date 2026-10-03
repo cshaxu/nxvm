@@ -74,7 +74,7 @@ static lib_i32 core_machine_port_probe_prepare(core_machine **out_machine,
     core_machine *machine = LIB_NULL;
     lib_i32 failed = out_machine == LIB_NULL || port_state == LIB_NULL;
 
-    failed |= !failed && core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_install_port_provider(machine, 0x00e0u,
         0x00e0u, &provider, port_state) != LIB_STATUS_OK;
     failed |= !failed && core_machine_install_port_provider(machine, 0x00e0u,
@@ -127,7 +127,7 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
     core_machine *machine = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 failed = core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
             LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,
@@ -181,7 +181,7 @@ static lib_i32 core_machine_port_probe_fdc_write_conflict_is_retained(void)
         LIB_STATUS_OK};
     core_machine *machine = LIB_NULL;
     lib_i32 failed = core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
             LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,

@@ -102,7 +102,7 @@ static lib_i32 paging_prepare(paging_machine *state,
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 0;
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK) return 0;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             &paging_provider, state) || state->reset_status != LIB_STATUS_OK) {
         core_machine_destroy(state->machine);

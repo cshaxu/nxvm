@@ -33,7 +33,7 @@ static lib_i32 prepare_machine(x86_fpu_profile fpu_profile,
     };
     if (state == LIB_NULL) return 1;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK) return 1;
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK) return 1;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
             &fpu_escape_provider, state)) {
         core_machine_destroy(state->machine);

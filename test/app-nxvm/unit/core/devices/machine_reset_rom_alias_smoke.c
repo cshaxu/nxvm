@@ -52,7 +52,7 @@ static lib_i32 reset_rom_run(core_machine_cpu_profile profile)
     lib_u8 reset_byte = 0u;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_configure_absent_memory(machine,
         &absent_memory) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bind_firmware_provider(machine,
@@ -92,7 +92,7 @@ static lib_i32 absent_fallback_run(void)
     lib_u8 byte = 0u;
     lib_i32 failed = 0;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) return 1;
     machine->executor_memory.connect.device_provider_test_allocation = &allocation;
     failed |= core_machine_configure_absent_memory(machine, &absent) !=
         LIB_STATUS_NO_MEMORY || allocation.attempts != 1u ||
@@ -145,7 +145,7 @@ static lib_i32 reset_rom_policy(lib_u32 mode)
     lib_u8 byte = 0u;
     lib_i32 failed = 1;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) goto done;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) goto done;
     if (core_machine_bind_firmware_provider(machine, &provider, &mode) !=
             LIB_STATUS_OK || machine->immutable_rom_mapping_count != counts[mode]) goto done;
     if (mode == 0u) {

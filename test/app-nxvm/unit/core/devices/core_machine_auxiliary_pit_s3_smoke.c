@@ -32,7 +32,7 @@ lib_i32 main(void)
     config.clock_plan.auxiliary_pit = (core_machine_clock_ratio) {1u, 4u, 0u};
     config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     if (!failed) {
         failed |= !machine->board->auxiliary_pit_configured ||
             !core_machine_port_has_read(&machine->executor_port, 0x0048u) ||

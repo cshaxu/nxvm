@@ -33,7 +33,7 @@ static lib_i32 ud_s1_prepare(ud_s1_machine *state)
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine) == LIB_STATUS_OK &&
+    return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
         core_machine_reset(state->machine) == LIB_STATUS_OK &&
         core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;

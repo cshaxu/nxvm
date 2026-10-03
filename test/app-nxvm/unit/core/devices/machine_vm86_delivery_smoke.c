@@ -63,7 +63,7 @@ static lib_i32 vm86_delivery_prepare(vm86_delivery_state *state, lib_u8 vector)
     idt[vector * 8u + 2u] = 0x08u; idt[vector * 8u + 5u] = 0x8eu;
     idt[8u] = 0u; idt[9u] = 0x01u; idt[10u] = 0x08u; idt[13u] = 0x8eu;
     lib_memory_copy(&tss[4u], &esp0, sizeof(esp0)); lib_memory_copy(&tss[8u], &ss0, sizeof(ss0));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &vm86_delivery_provider, state) ||
         core_machine_memory_write(state->machine, VM86_GDT_BASE, gdt, sizeof(gdt)) != LIB_STATUS_OK ||

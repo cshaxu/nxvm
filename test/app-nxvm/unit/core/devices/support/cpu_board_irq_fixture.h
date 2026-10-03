@@ -42,7 +42,7 @@ static lib_i32 test_cpu_board_irq_run(const test_cpu_board_irq_case *entry,
     lib_u16 offset = 0x100u;
     lib_u16 segment = 0u;
     lib_i32 failed = entry == LIB_NULL || out == LIB_NULL ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK;
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         lib_memory_set(out, 0, sizeof(*out));

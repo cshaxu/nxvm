@@ -46,7 +46,7 @@ static lib_i32 t362_s2_prepare(core_machine_cpu_profile profile,
     core_machine *machine = LIB_NULL;
 
     if (out_machine == LIB_NULL || state == LIB_NULL ||
-        core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T362_S2_RESET_LINEAR, T362_S2_RESET_PHYSICAL, 16u) !=
             LIB_STATUS_OK ||

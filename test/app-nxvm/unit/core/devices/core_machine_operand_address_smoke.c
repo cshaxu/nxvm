@@ -110,7 +110,7 @@ static lib_i32 oas_prepare(oas_machine *state, oas_port_state *port,
         gdt[21u] = expand_down ? 0x96u : 0x92u;
         gdt[22u] = expand_down ? 0u : 0x40u;
     }
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
         (port != LIB_NULL && core_machine_install_port_provider(state->machine,
             0x00e0u, 0x00e0u, &oas_port_provider, port) != LIB_STATUS_OK) ||
         core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||

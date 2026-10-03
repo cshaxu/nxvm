@@ -71,7 +71,7 @@ static lib_i32 stos_irq_case(lib_bool repeated, lib_u8 width)
     lib_u8 image[] = {0xa5u, 0xa5u, 0xa5u};
     lib_u8 bytes = repeated ? 3u : 2u;
     lib_u8 image_bytes = repeated ? 3u : width;
-    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
 
     if (!failed) {
         patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |

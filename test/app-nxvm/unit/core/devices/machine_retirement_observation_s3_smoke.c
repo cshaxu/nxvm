@@ -35,7 +35,7 @@ static lib_i32 retirement_prepare(core_machine **out_machine,
     lib_size bytes)
 {
     return out_machine != LIB_NULL &&
-        core_machine_create(config, out_machine) == LIB_STATUS_OK &&
+        core_machine_create(config, out_machine, LIB_NULL) == LIB_STATUS_OK &&
         test_core_machine_fixture_register_reset_mapping(*out_machine, 0xfffffff0u,
             0x000ffff0u, 16u) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(*out_machine) == LIB_STATUS_OK &&

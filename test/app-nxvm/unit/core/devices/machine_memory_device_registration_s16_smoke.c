@@ -61,7 +61,7 @@ lib_i32 main(void)
     lib_u8 write = 0xa5u;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK || machine == LIB_NULL;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK || machine == LIB_NULL;
     if (!failed) failed |= core_machine_install_memory_device_routes(machine,
         &provider, 1u, LIB_NULL, LIB_NULL, &overlay) != LIB_STATUS_OK ||
         core_machine_register_immutable_rom_mapping(machine, 0x000f0000u, &rom,

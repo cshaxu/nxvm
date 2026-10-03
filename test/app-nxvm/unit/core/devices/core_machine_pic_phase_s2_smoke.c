@@ -90,7 +90,7 @@ static lib_i32 pic_phase_s2_cascaded_bus(void)
     lib_u8 vector = 0xffu;
     lib_i32 failed;
 
-    if (core_machine_create(&config, &state.machine) != LIB_STATUS_OK) return 1;
+    if (core_machine_create(&config, &state.machine, LIB_NULL) != LIB_STATUS_OK) return 1;
     failed = core_machine_freeze_execution_providers(state.machine) != LIB_STATUS_OK ||
         core_machine_reset(state.machine) != LIB_STATUS_OK ||
         core_machine_set_trace_provider(state.machine, &trace) != LIB_STATUS_OK;

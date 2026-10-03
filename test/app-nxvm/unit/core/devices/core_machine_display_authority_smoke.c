@@ -34,7 +34,7 @@ int main(void)
     display_config.ports.crtc_first = CORE_MACHINE_VADP_PORT_CRTC_INDEX;
     display_config.ports.crtc_last = CORE_MACHINE_VADP_PORT_STATUS;
 
-    if (core_machine_create(&machine_config, &machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&machine_config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_display(machine, &display_config) != LIB_STATUS_OK ||
         core_machine_configure_display(machine, &display_config) !=
             LIB_STATUS_INVALID_STATE ||

@@ -52,7 +52,7 @@ lib_i32 main(void)
     t_ram *memory;
     lib_bool failed = LIB_FALSE;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) return 1;
     memory = &machine->executor_memory;
     failed |= core_machine_memory_register_device_provider(memory, 0x1001u, 2u,
         probe_read, probe_write, probe_query, &probe) != LIB_STATUS_OK;

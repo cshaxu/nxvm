@@ -216,6 +216,17 @@ foreach(forbidden IN ITEMS "clock_plan" "pic_" "pit_" "dma_" "kbc_" "xt_")
     endif()
 endforeach()
 file(READ "${machine_plan_source}" machine_plan_text)
+foreach(factory IN ITEMS core_machine_create
+    core_machine_create_with_test_memory_allocation
+    core_machine_create_with_test_port_allocation)
+    string(REGEX MATCH "lib_status ${factory}\\([^}]+\\}"
+        factory_body "${machine_board_text}")
+    string(FIND "${factory_body}" "core_machine_board_state **out_board" declaration)
+    string(FIND "${factory_body}" "out_board);" publication)
+    if(declaration EQUAL -1 OR publication EQUAL -1)
+        message(FATAL_ERROR "Configuration factory loses borrowed board output: ${factory}")
+    endif()
+endforeach()
 foreach(required IN ITEMS "core_machine_board_state **out_board"
     "core_machine_create_internal(&plan->configuration, &machine,"
     "core_machine_destroy(machine);" "*out_machine = machine;"

@@ -110,7 +110,7 @@ static lib_i32 competition_dma_wait_contract(void)
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.dma_cycle_wait_quanta = 1u;
     config.transaction_contract.dma_cycle_bus_ready_gate_enabled = LIB_TRUE;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_dma_bind_channel(&machine->board->shared_dma_latch,
@@ -179,7 +179,7 @@ lib_i32 main(void)
     config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = competition_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK;
     failed |= core_machine_get_d4_platform_observation(machine, &d4_observation) !=
         LIB_STATUS_OK || !d4_observation.configured;

@@ -24,7 +24,7 @@ static lib_i32 sreg_mov_prepare(sreg_mov_machine *state,
     };
 
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine) == LIB_STATUS_OK &&
+    return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
         core_machine_reset(state->machine) == LIB_STATUS_OK &&
         core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;

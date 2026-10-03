@@ -53,9 +53,9 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&core_machine_dma_binding_token_config, &first) !=
+        core_machine_create(&core_machine_dma_binding_token_config, &first, LIB_NULL) !=
             LIB_STATUS_OK ||
-        core_machine_create(&core_machine_dma_binding_token_config, &second) !=
+        core_machine_create(&core_machine_dma_binding_token_config, &second, LIB_NULL) !=
             LIB_STATUS_OK ||
         core_machine_configure_dma(first, &core_machine_dma_binding_token_wiring,
             &first_request) != LIB_STATUS_OK ||

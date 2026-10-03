@@ -32,7 +32,7 @@ lib_i32 main(void)
     lib_u8 halt = 0xf4u;
     lib_i32 failed = 0;
 
-    failed |= machine_configuration_expect(core_machine_create(&config, &machine),
+    failed |= machine_configuration_expect(core_machine_create(&config, &machine, LIB_NULL),
         LIB_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_reset(machine),
         LIB_STATUS_INVALID_STATE);

@@ -74,7 +74,7 @@ lib_i32 main(void)
     rtc_config.nmi_mask_bit = 0x80u;
     rtc_config.ticks_per_second = 1u;
 
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= !failed && core_machine_configure_rtc_cmos(machine, &rtc_config) !=
         LIB_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,

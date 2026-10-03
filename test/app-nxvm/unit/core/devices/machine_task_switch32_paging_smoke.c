@@ -45,7 +45,7 @@ static lib_i32 prepare(core_machine **out_machine)
         .entry_route = CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM
     };
 
-    return out_machine != LIB_NULL && core_machine_create(&config, out_machine) ==
+    return out_machine != LIB_NULL && core_machine_create(&config, out_machine, LIB_NULL) ==
         LIB_STATUS_OK && core_machine_freeze_execution_providers(*out_machine) ==
         LIB_STATUS_OK && core_machine_reset(*out_machine) == LIB_STATUS_OK &&
         core_machine_apply_entry_plan(*out_machine, &plan) == LIB_STATUS_OK;

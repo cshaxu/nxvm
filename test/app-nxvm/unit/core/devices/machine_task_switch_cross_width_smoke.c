@@ -73,7 +73,7 @@ static lib_i32 task_switch_prepare(task_switch_fixture *fixture,
 
     if (fixture == LIB_NULL) return 0;
     lib_memory_set(fixture, 0, sizeof(*fixture));
-    if (core_machine_create(&config, &fixture->machine) != LIB_STATUS_OK) return 0;
+    if (core_machine_create(&config, &fixture->machine, LIB_NULL) != LIB_STATUS_OK) return 0;
     if (!test_core_machine_fixture_bind_freeze_reset(fixture->machine,
             &task_switch_provider, fixture)) {
         core_machine_destroy(fixture->machine);

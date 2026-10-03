@@ -99,7 +99,7 @@ static lib_i32 timeline_machine_contract(void)
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED
     trace.context = &trace_probe;
 #endif
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;

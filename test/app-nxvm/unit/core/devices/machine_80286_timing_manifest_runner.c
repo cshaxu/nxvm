@@ -867,7 +867,7 @@ static lib_i32 timing_80286_manifest_prepare(core_machine **out_machine,
 
     if (out_machine == LIB_NULL || capture == LIB_NULL || key_id == LIB_NULL ||
         program == LIB_NULL || bytes == 0u) return 0;
-    status = core_machine_create(&config, &machine);
+    status = core_machine_create(&config, &machine, LIB_NULL);
     if (status == LIB_STATUS_OK) status =
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_80286_MANIFEST_RESET_LINEAR,
@@ -1010,7 +1010,7 @@ static lib_i32 timing_80286_manifest_prepare_protected_system(
 
     if (out_machine == LIB_NULL || capture == LIB_NULL || key_id == LIB_NULL ||
         program == LIB_NULL || bytes == 0u) return 0;
-    status = core_machine_create(&config, &machine);
+    status = core_machine_create(&config, &machine, LIB_NULL);
     if (status == LIB_STATUS_OK) status = core_machine_install_port_provider(
         machine, 0x00e0u, 0x00e0u, &timing_80286_manifest_ports, LIB_NULL);
     if (status == LIB_STATUS_OK) status = core_machine_bind_execution_provider(

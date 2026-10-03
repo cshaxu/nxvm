@@ -85,7 +85,7 @@ static lib_i32 s3_gate_prepare(s3_gate_machine *state,
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(state->machine,
             &s3_gate_provider, state) ||
         !s3_gate_write(state, S3_GDT_BASE, gdt, sizeof(gdt)) ||

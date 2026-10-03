@@ -118,7 +118,7 @@ static lib_i32 refresh_non_d4_contract(void)
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     trace.callback = refresh_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
@@ -163,7 +163,7 @@ lib_i32 main(void)
     config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = refresh_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
     failed |= core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;

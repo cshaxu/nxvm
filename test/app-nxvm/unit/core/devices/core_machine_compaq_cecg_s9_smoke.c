@@ -26,7 +26,7 @@ static lib_i32 t386_s9_invalid_cecg_is_failure_atomic(void)
         CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA,
         CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA,
         CORE_MACHINE_VADP_PORT_CRTC_INDEX, CORE_MACHINE_VADP_PORT_STATUS };
-    status = core_machine_create(&machine_config, &machine);
+    status = core_machine_create(&machine_config, &machine, LIB_NULL);
     if (status == LIB_STATUS_OK) status = core_machine_configure_display(machine,
         &display_config);
     if (status == LIB_STATUS_INVALID_ARGUMENT) {

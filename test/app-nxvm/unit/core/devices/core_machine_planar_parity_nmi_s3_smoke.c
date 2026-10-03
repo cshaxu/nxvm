@@ -24,7 +24,7 @@ static lib_i32 planar_parity_s4_shared_memory(void)
     lib_i32 failed = 0;
 
     config.memory_bytes = 512u * 1024u;
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) failed = 1;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed = 1;
     else if (core_machine_configure_planar_parity(machine, &parity) != LIB_STATUS_OK) failed = 2;
     else if (core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK) failed = 3;
     else if (core_machine_reset(machine) != LIB_STATUS_OK) failed = 4;
@@ -48,7 +48,7 @@ static lib_i32 planar_parity_s4_unbound_reconfigure(void)
     lib_i32 failed = 0;
 
     config.memory_bytes = 2u * 1024u * 1024u;
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) failed = 1;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed = 1;
     else if (core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK) failed = 2;
     else if (core_machine_reset(machine) != LIB_STATUS_OK) failed = 3;
     else if (core_machine_reconfigure_memory(machine, 512u * 1024u) != LIB_STATUS_INVALID_STATE) failed = 4;
@@ -80,7 +80,7 @@ static lib_i32 planar_parity_publication_rollback(void)
     };
     lib_i32 failed = 1;
 
-    if (core_machine_create(&config, &machine) != LIB_STATUS_OK) goto done;
+    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) goto done;
     if (core_machine_install_port_routes(machine, &conflict, 1u) != LIB_STATUS_OK ||
         core_machine_configure_planar_parity(machine, &parity) !=
             LIB_STATUS_INVALID_ARGUMENT ||
@@ -119,7 +119,7 @@ lib_i32 main(void)
     cmos.irq = 8u;
     cmos.nmi_mask_bit = 0x80u;
     cmos.ticks_per_second = 1u;
-    failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_configure_planar_parity(machine, &parity) != LIB_STATUS_OK ||
         core_machine_configure_rtc_cmos(machine, &cmos) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,

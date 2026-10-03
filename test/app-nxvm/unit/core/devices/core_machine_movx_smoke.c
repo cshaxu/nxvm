@@ -74,7 +74,7 @@ static lib_i32 movx_prepare(core_machine_cpu_profile profile,
 
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
-    if (core_machine_create(&config, &state->machine) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
         (provider != LIB_NULL && test_core_machine_fixture_register_memory_device_provider(
             state->machine, MOVX_SOURCE_MEMORY, 2u, movx_read, movx_write,
             movx_query, provider) != LIB_STATUS_OK) ||
