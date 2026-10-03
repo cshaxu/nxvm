@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
 
 typedef struct scheduler_provider_probe {
@@ -42,10 +43,12 @@ typedef struct scheduler_board_probe {
 } scheduler_board_probe;
 
 static void scheduler_board_deadline_forward(void *owner, lib_u64 now,
+    lib_bool timing_qualified,
     core_machine_board_deadline_observation *out_observation)
 {
     scheduler_board_probe *probe = owner;
-    core_machine_board_deadline_observe(probe->machine, now, out_observation);
+    core_machine_board_deadline_observe(probe->machine, now, timing_qualified,
+        out_observation);
 }
 
 static void scheduler_board_peripheral(void *owner, lib_u64 source_ticks)
@@ -137,15 +140,52 @@ static lib_u8 scheduler_board_pic_acknowledge(void *owner)
 typedef struct scheduler_deadline_probe {
     core_machine_board_deadline_observation value;
     lib_u32 calls;
+    lib_bool timing_qualified;
 } scheduler_deadline_probe;
 
 static void scheduler_board_deadline(void *owner, lib_u64 now,
+    lib_bool timing_qualified,
     core_machine_board_deadline_observation *out_observation)
 {
     scheduler_deadline_probe *probe = owner;
     (void)now;
+    probe->timing_qualified = timing_qualified;
     ++probe->calls;
     *out_observation = probe->value;
+}
+
+static lib_i32 scheduler_board_timing_qualification(void)
+{
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
+        .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u, 0x0du, 0x02u}
+    };
+    core_machine *machine = LIB_NULL;
+    core_machine_board_deadline_observation observation;
+    lib_u64 pit_ticks;
+    lib_u64 source_ticks;
+    lib_i32 failed = 1;
+
+    if (core_machine_create(&config, &machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x43u, 0x34u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x40u, 5u) != LIB_STATUS_OK ||
+        core_machine_bus_write(machine, 0x40u, 0u) != LIB_STATUS_OK ||
+        x86_pit_ticks_until_output(machine->board->shared_pit.device, 0u,
+            &pit_ticks) != LIB_STATUS_OK ||
+        core_machine_clock_domain_source_ticks_until(&machine->board->pit_clock,
+            pit_ticks, &source_ticks) != LIB_STATUS_OK) goto done;
+    /* Provider input, not private Core marker, authorizes the board clock. */
+    core_machine_board_deadline_observe(machine, 0u, LIB_FALSE, &observation);
+    if (observation.source_ticks != 0u || observation.immediate_due) goto done;
+    core_machine_board_deadline_observe(machine, 0u, LIB_TRUE, &observation);
+    if (observation.source_ticks != source_ticks || observation.immediate_due) goto done;
+    failed = 0;
+done:
+    core_machine_destroy(machine);
+    return failed;
 }
 
 lib_i32 main(void)
@@ -161,6 +201,7 @@ lib_i32 main(void)
     const lib_u8 nop = 0x90u;
     lib_i32 failed = 0;
 
+    failed |= scheduler_board_timing_qualification();
     config.ticks_per_instruction = 2u;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     failed |= core_machine_create(&config, &machine) != LIB_STATUS_OK;
@@ -211,12 +252,15 @@ lib_i32 main(void)
     machine->board_owner = &deadline_probe;
     deadline_probe.value.source_ticks = 5u;
     core_machine_capture_time_observation_private(machine, &observation);
-    failed |= deadline_probe.calls != 1u || !observation.next_deadline_valid ||
+    failed |= deadline_probe.calls != 1u || deadline_probe.timing_qualified ||
+        !observation.next_deadline_valid ||
         observation.next_deadline_tick != machine->elapsed_ticks + 5u ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE;
     deadline_probe.value.immediate_due = LIB_TRUE;
+    /* Same-owner injection isolates the copied callback input. */
+    machine->timing_declarations_copied = LIB_TRUE;
     core_machine_capture_time_observation_private(machine, &observation);
-    failed |= observation.next_deadline_valid ||
+    failed |= !deadline_probe.timing_qualified || observation.next_deadline_valid ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_IMMEDIATE;
     deadline_probe.value.immediate_due = LIB_FALSE;
     deadline_probe.value.l1_compatibility = LIB_TRUE;

@@ -122,6 +122,90 @@ done:
     return failed;
 }
 
+static lib_i32 neutral_timing_declarations(void)
+{
+    const core_machine_executor_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086
+    };
+    core_machine_timing_declaration declarations[CORE_MACHINE_TIMING_CAPABILITY_COUNT];
+    core_machine_timing_declaration observed;
+    const core_machine_timing_declaration invalid_entries[] = {
+        {CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
+        {(core_machine_timing_capability)-1, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
+        {(core_machine_timing_capability)CORE_MACHINE_TIMING_CAPABILITY_COUNT, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
+        {CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, (core_machine_timing_disposition)-1, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
+        {CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, (core_machine_timing_disposition)(CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED + 1), CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM},
+        {CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, (core_machine_timing_seam)-1},
+        {CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC, CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, (core_machine_timing_seam)(CORE_MACHINE_TIMING_SEAM_OBSERVATION + 1)}
+    };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = 1;
+    lib_size index;
+
+    /* Neutral representation is tested independently of a board's source
+     * policy. Reverse order proves publication indexes capability, not input. */
+    for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index)
+        declarations[index] = (core_machine_timing_declaration){
+            (core_machine_timing_capability)(CORE_MACHINE_TIMING_CAPABILITY_COUNT - 1u - index),
+            CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK, CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM};
+    if (core_machine_validate_timing_declarations(LIB_NULL,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_validate_timing_declarations(declarations, 0u) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_validate_timing_declarations(declarations,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT - 1u) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_validate_timing_declarations(declarations,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT + 1u) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_install_timing_declarations(LIB_NULL, declarations,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE ||
+        core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) != LIB_STATUS_OK)
+        goto done;
+    if (core_machine_install_timing_declarations(machine, LIB_NULL,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_ARGUMENT) goto done;
+    for (index = 0u; index < sizeof(invalid_entries) / sizeof(invalid_entries[0]); ++index) {
+        core_machine_timing_declaration saved = declarations[CORE_MACHINE_TIMING_CAPABILITY_COUNT - 1u];
+        core_machine_timing_declaration *invalid = &declarations[CORE_MACHINE_TIMING_CAPABILITY_COUNT - 1u];
+
+        *invalid = invalid_entries[index];
+        if (core_machine_install_timing_declarations(machine, declarations,
+                CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_ARGUMENT ||
+            machine->timing_declarations_copied) goto done;
+        for (lib_size entry = 0u; entry < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++entry)
+            if (machine->timing_declarations[entry].capability != 0) goto done;
+        *invalid = saved;
+    }
+    machine->firmware_operation_active = LIB_TRUE;
+    if (core_machine_install_timing_declarations(machine, declarations,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE) goto done;
+    machine->firmware_operation_active = LIB_FALSE;
+    if (core_machine_install_timing_declarations(machine, declarations,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_OK ||
+        core_machine_install_timing_declarations(machine, declarations,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE) goto done;
+    declarations[0].disposition = CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+    if (core_machine_get_timing_declaration(machine,
+            CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG, &observed) != LIB_STATUS_OK ||
+        observed.disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_get_timing_declaration(machine,
+            CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG, &observed) != LIB_STATUS_OK ||
+        observed.disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK ||
+        core_machine_install_timing_declarations(machine, declarations,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE) goto done;
+    core_machine_destroy(machine);
+    machine = LIB_NULL;
+    if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_install_timing_declarations(machine, declarations,
+            CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE ||
+        machine->timing_declarations_copied) goto done;
+    failed = 0;
+done:
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static lib_status neutral_firmware_configure(void *owner,
     core_machine_firmware_context *firmware)
 {
@@ -217,7 +301,8 @@ lib_i32 main(void)
     lib_u8 byte = 0u;
     lib_i32 failed = 1;
 
-    if (neutral_memory_aliases() || neutral_rom_windows() || neutral_ready_levels()) goto done;
+    if (neutral_memory_aliases() || neutral_rom_windows() || neutral_ready_levels() ||
+        neutral_timing_declarations()) goto done;
     if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
             LIB_STATUS_OK) goto done;
     if (machine->board != LIB_NULL ||

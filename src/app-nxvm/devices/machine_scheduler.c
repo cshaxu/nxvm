@@ -79,7 +79,7 @@ static void core_machine_capture_time_with_board(const core_machine *machine,
     }
     if (machine->board_deadline_provider != LIB_NULL)
         machine->board_deadline_provider(machine->board_owner,
-            machine->elapsed_ticks, &board);
+            machine->elapsed_ticks, machine->timing_declarations_copied, &board);
     if (out_board != LIB_NULL) *out_board = board;
     if (board.immediate_due) immediate_due = LIB_TRUE;
     if (board.source_ticks != 0u &&

@@ -105,6 +105,12 @@ scalar receiver; the existing stopped-time observer cannot be substituted in
 running port dispatch. Attachment and test classification still precede the
 required physical source cut.
 
+S76 closes the full declaration publication/qualification boundary through
+neutral batch validation/publication and a copied qualification value on the
+existing deadline callback. Its intake assigns the distinct Running Port-B
+read to S77's actual I/O-cycle input contract; a paused-time getter shortcut
+cannot close it. Both receivers remain before attachment and source movement.
+
 S65 separates the private neutral construction value without rewriting the
 public plan ABI: one board composition derives the temporary value and owns
 the existing public create/test-allocation pipeline. Core does not retain

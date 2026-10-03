@@ -75,6 +75,10 @@ foreach(source IN LISTS nxvm_signal_sources)
        source_text MATCHES "(machine|mutable_machine)->(lifecycle|transaction_contract|cpu_cycle_bus_ready|dma_cycle_bus_ready)")
         message(FATAL_ERROR "Board borrows private Core lifecycle or READY state: ${source}")
     endif()
+    if(NOT source MATCHES "/devices/(machine|machine_scheduler)\\.c$" AND
+       source_text MATCHES "->[ \t]*(timing_declarations|timing_declarations_copied)")
+        message(FATAL_ERROR "Core timing declaration state outside its owner: ${source}")
+    endif()
     if(NOT source MATCHES "/devices/(machine_firmware|memory_interface|rom_mapping_interface)\\.c$")
         foreach(forbidden IN ITEMS "machine->immutable_rom" "machine->firmware_provider"
             "machine->firmware_context" "machine->firmware_operation_active"

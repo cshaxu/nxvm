@@ -4,14 +4,6 @@
 #include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 
-static lib_i32 core_machine_timing_disposition_is_valid(
-    core_machine_timing_disposition disposition)
-{
-    return disposition == CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK ||
-        disposition == CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME ||
-        disposition == CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-}
-
 static lib_i32 core_machine_controller_timing_rule_is_valid(
     core_machine_controller_timing_rule rule)
 {
@@ -144,11 +136,10 @@ static core_machine_timing_seam core_machine_timing_capability_seam(
 
 lib_status core_machine_plan_validate(const core_machine_plan *plan)
 {
-    lib_u8 seen[CORE_MACHINE_TIMING_CAPABILITY_COUNT] = {0};
     lib_size index;
 
-    if (plan == LIB_NULL || plan->declaration_count !=
-        CORE_MACHINE_TIMING_CAPABILITY_COUNT ||
+    if (plan == LIB_NULL || core_machine_validate_timing_declarations(
+            plan->declarations, plan->declaration_count) != LIB_STATUS_OK ||
         (plan->configuration.keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_8042 &&
         plan->configuration.keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) ||
         (plan->configuration.keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
@@ -191,10 +182,8 @@ lib_status core_machine_plan_validate(const core_machine_plan *plan)
         const core_machine_timing_declaration *declaration =
             &plan->declarations[index];
 
-        if (!core_machine_timing_capability_is_valid(declaration->capability) ||
-            !core_machine_timing_disposition_is_valid(declaration->disposition) ||
-            declaration->seam != core_machine_timing_capability_seam(
-                declaration->capability) || seen[declaration->capability]) {
+        if (declaration->seam != core_machine_timing_capability_seam(
+                declaration->capability)) {
             return LIB_STATUS_INVALID_ARGUMENT;
         }
         if (core_machine_timing_capability_is_non_guest_time(
@@ -208,10 +197,6 @@ lib_status core_machine_plan_validate(const core_machine_plan *plan)
                 declaration->capability)) {
             return LIB_STATUS_INVALID_ARGUMENT;
         }
-        seen[declaration->capability] = LIB_TRUE;
-    }
-    for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index) {
-        if (!seen[index]) return LIB_STATUS_INVALID_ARGUMENT;
     }
     return LIB_STATUS_OK;
 }
@@ -278,7 +263,6 @@ lib_status core_machine_create_from_plan(const core_machine_plan *plan,
     core_machine **out_machine)
 {
     lib_status status;
-    lib_size index;
 
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = LIB_NULL;
@@ -288,20 +272,15 @@ lib_status core_machine_create_from_plan(const core_machine_plan *plan,
     status = core_machine_create(&plan->configuration, out_machine);
     if (status != LIB_STATUS_OK) return status;
     status = core_machine_plan_apply_topology(*out_machine, plan);
+    if (status == LIB_STATUS_OK)
+        status = core_machine_install_timing_declarations(*out_machine,
+            plan->declarations, plan->declaration_count);
     if (status != LIB_STATUS_OK) {
         core_machine_destroy(*out_machine);
         *out_machine = LIB_NULL;
         return status;
     }
-    for (index = 0u; index < plan->declaration_count; ++index) {
-        const core_machine_timing_declaration *declaration =
-            &plan->declarations[index];
-
-        (*out_machine)->timing_declarations[declaration->capability] =
-            *declaration;
-    }
     (*out_machine)->board->controller_timing = plan->controller_timing;
-    (*out_machine)->timing_declarations_copied = LIB_TRUE;
     return LIB_STATUS_OK;
 }
 

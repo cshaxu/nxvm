@@ -143,6 +143,7 @@ lib_status core_machine_board_initialize_clocks(core_machine *machine,
     const core_machine_clock_plan *plan);
 void core_machine_board_reset_clocks(core_machine *machine);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
+    lib_bool timing_qualified,
     core_machine_board_deadline_observation *out_observation);
 lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address);
 void core_machine_board_refresh_complete(void *owner);

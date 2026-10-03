@@ -229,6 +229,15 @@ lib_status core_machine_get_timing_declaration(const core_machine *machine,
     core_machine_timing_capability capability,
     core_machine_timing_declaration *out_declaration);
 
+/* Validate complete copied table representation; board provenance and seam
+ * policy remain the composition's responsibility. */
+lib_status core_machine_validate_timing_declarations(
+    const core_machine_timing_declaration *declarations, lib_size count);
+/* Construction-only, once-only publication. Failure changes no live entry;
+ * the caller's array is not retained. Reset preserves the frozen table. */
+lib_status core_machine_install_timing_declarations(core_machine *machine,
+    const core_machine_timing_declaration *declarations, lib_size count);
+
 lib_status core_machine_reset(core_machine *machine);
 
 lib_status core_machine_reconfigure_memory(core_machine *machine,

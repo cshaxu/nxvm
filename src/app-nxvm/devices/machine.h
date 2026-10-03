@@ -66,6 +66,7 @@ typedef struct core_machine_board_deadline_observation {
     lib_u8 fast_advance_blocked;
 } core_machine_board_deadline_observation;
 typedef void (*core_machine_board_deadline_provider)(void *owner, lib_u64 now,
+    lib_bool timing_qualified,
     core_machine_board_deadline_observation *out_observation);
 typedef void (*core_machine_board_ticks_provider)(void *owner,
     lib_u64 source_ticks);

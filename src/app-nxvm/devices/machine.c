@@ -494,6 +494,43 @@ lib_status core_machine_get_timing_disposition(const core_machine *machine,
     return LIB_STATUS_OK;
 }
 
+lib_status core_machine_validate_timing_declarations(
+    const core_machine_timing_declaration *declarations, lib_size count)
+{
+    lib_bool seen[CORE_MACHINE_TIMING_CAPABILITY_COUNT] = {LIB_FALSE};
+    lib_size index;
+
+    if (declarations == LIB_NULL || count != CORE_MACHINE_TIMING_CAPABILITY_COUNT)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    for (index = 0u; index < count; ++index) {
+        const core_machine_timing_declaration *declaration = &declarations[index];
+
+        if (!core_machine_timing_capability_is_valid(declaration->capability) ||
+            declaration->disposition < CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK ||
+            declaration->disposition > CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED ||
+            declaration->seam < CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM ||
+            declaration->seam > CORE_MACHINE_TIMING_SEAM_OBSERVATION ||
+            seen[declaration->capability]) return LIB_STATUS_INVALID_ARGUMENT;
+        seen[declaration->capability] = LIB_TRUE;
+    }
+    return LIB_STATUS_OK;
+}
+
+lib_status core_machine_install_timing_declarations(core_machine *machine,
+    const core_machine_timing_declaration *declarations, lib_size count)
+{
+    lib_size index;
+
+    if (!core_machine_configuration_is_open(machine) ||
+        machine->timing_declarations_copied) return LIB_STATUS_INVALID_STATE;
+    if (core_machine_validate_timing_declarations(declarations, count) !=
+            LIB_STATUS_OK) return LIB_STATUS_INVALID_ARGUMENT;
+    for (index = 0u; index < count; ++index)
+        machine->timing_declarations[declarations[index].capability] = declarations[index];
+    machine->timing_declarations_copied = LIB_TRUE;
+    return LIB_STATUS_OK;
+}
+
 lib_status core_machine_get_timing_declaration(const core_machine *machine,
     core_machine_timing_capability capability,
     core_machine_timing_declaration *out_declaration)

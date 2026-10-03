@@ -136,6 +136,12 @@ That intake also includes both plan timing-declaration publication sites:
 the array write and the copied marker. The complete timing owner boundary,
 not merely its first reader, must close before the physical move.
 
+S76 intake separates that class by real ownership: the complete declaration
+publication and deadline qualification receiver closes in S76; the one Running
+Port-B observation requires the separate I/O-cycle input receiver S77. Neither
+an extra board clock nor relaxing the paused-time getter is an eligible fix.
+Both remain preconditions of attachment and physical movement.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

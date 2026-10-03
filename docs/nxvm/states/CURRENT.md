@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S1-S75 are accepted; no implementation S is active.
-S75 closes the complete lifecycle-observation and bus-READY owner boundary.
+M5 T540 S1-S75 are accepted; S76 is active.
+S76 receives timing declaration publication and deadline qualification.
 Attachment ownership and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
@@ -2488,6 +2488,27 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
+## T540 S76 Admission Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T540 S76, next numeric S after accepted S75. |
+| Admission And Approval | Owner's standing automatic bounded-S approval in T540; NXVM only. No Shared/MyNES/INI or external input changes. |
+| Objective | Close both plan writes and all three deadline reads of Core timing declaration state: neutral Core validates and atomically publishes the complete copied table; its existing deadline callback supplies a copied qualification value. |
+| Non-goals | Port-B Running-time observation (complete I/O-cycle receiver S77), attachment redesign, physical source move, timing reclassification, chip algorithms, new host/framework path. |
+| Reference Baseline | Accepted S75 P2 e0f0470ba; plan directly writes Core declaration array/marker; deadline directly reads marker three times. |
+| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S76 boundary](../etc/evidence/t540-s76-timing-publication-boundary.md). |
+| Files And ABI Surface | Existing machine.c/interface, machine_plan.c, machine.h/scheduler, board_deadline.c/state header, existing neutral-link/plan/scheduler fixtures and controller authority gate. Two bounded neutral declaration validation/publication operations; existing private deadline callback receives copied qualification. Existing public observation restrictions and statuses unchanged. |
+| Applicable Rules | One table/marker owner; prepare/check full batch before publication, no retained caller pointer or mirrored clock. Core validates representation; board retains capability seam/provenance policy. Deadline consumes values, not Core fields. Synthetic unit inputs only. |
+| Verification | Full declaration corpus valid/reordered and null/count/duplicate/range failures, no partial publication, frozen/firmware/duplicate publication rejection, copied values survive reset. Existing plan policy negatives and qualified/unqualified deadline behavior. Complete x64/x86 units and specialized gates; eight optimized stripped 0540 products, standalone Core proof each and one external overlay boot each; docs/diff/scope checks. |
+| Expected Markers | Existing plan/scheduler/neutral proof markers pass; no production board access to timing_declarations or timing_declarations_copied; only Core validates representation and publishes live state. |
+| Asset Needs | Reuse existing approved eight BYOB build trees, owner INIs and overlays without edits; update only affected eight NXVM products. |
+| Reporting Requirements | Executor confirms packet; report full batch/source hits, complete-P evidence, exact tracked source/test/gate delta, artifact hashes and verification limits. |
+| Stop Conditions | Timing grade/guest behavior change, weakened time-read restriction, mirrored state, extra framework or another target requires revised admission before implementation. |
+| Exit Criteria | Complete P1 immediate push; coordinator actual pushed-diff review; corrective P if required; pure-governance acceptance push, clean tree. T540 stays open. |
+| Original Owner Request | Build independent neutral Core and reusable flat IBM-PC board components without reduced machine functionality; automatically admit bounded numeric S. |
+| Similar-Issue Sweep | Search tracked NXVM production/tests/build for all timing declaration field users, publication and deadline callback sites. Core and same-owner fixtures retain valid private use. S77 explicitly receives sole Running Port-B elapsed_ticks read with actual I/O contract before attachment and relocation; no getter shortcut. |
+
 ## T540 S75 Acceptance
 
 Coordinator actual pushed-diff review accepts P1 `b39d60c31`: six existing
@@ -3934,7 +3955,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S75 with unchanged owner INIs; S75 evidence records their hashes, PE
+T540 S76 with unchanged owner INIs; S76 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 
