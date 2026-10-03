@@ -6,6 +6,7 @@
 #include "app-nxvm/devices/execution_provider.h"
 #include "app-nxvm/devices/firmware_interface.h"
 #include "app-nxvm/devices/lifecycle_interface.h"
+#include "app-nxvm/devices/attachment_interface.h"
 #include "app-nxvm/devices/memory_interface.h"
 #include "app-nxvm/devices/port_interface.h"
 #include "lib/types/types_interface.h"

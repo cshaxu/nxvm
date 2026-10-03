@@ -190,7 +190,7 @@ lib_i32 main(void)
     failed |= !machine->board->d4_refresh_hold_pending ||
         machine->board->d4_refresh_address != 0u ||
         machine->dma_cycle_wait_remaining != 0u;
-    failed |= !machine->board_refresh_request_provider(machine->board_owner,
+    failed |= !machine->attachment.refresh_request(machine->attachment.context,
         &refresh_address) || refresh_address != 0u;
     failed |= core_machine_capture_time_observation(machine, &observation) !=
         LIB_STATUS_OK || observation.next_deadline_valid ||
@@ -204,7 +204,7 @@ lib_i32 main(void)
         machine->board->d4_refresh_address != 1u ||
         machine->dma_cycle_wait_remaining != 0u;
     refresh_address = 0xffu;
-    failed |= machine->board_refresh_request_provider(machine->board_owner,
+    failed |= machine->attachment.refresh_request(machine->attachment.context,
         &refresh_address) || refresh_address != 0xffu;
     failed |= core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
         LIB_STATUS_OK || byte != 0xa5u;

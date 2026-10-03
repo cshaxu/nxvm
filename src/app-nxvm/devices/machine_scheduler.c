@@ -38,9 +38,9 @@ static lib_u8 core_machine_deadline_consider_absolute(const core_machine *machin
 
 static void core_machine_capture_time_with_board(const core_machine *machine,
     core_machine_time_observation *out_observation,
-    core_machine_board_deadline_observation *out_board)
+    core_machine_attachment_deadline_observation *out_board)
 {
-    core_machine_board_deadline_observation board = {0};
+    core_machine_attachment_deadline_observation board = {0};
     lib_u64 source_ticks = 0u;
     lib_u64 device_ticks;
     lib_u64 timeline_due_tick;
@@ -77,8 +77,8 @@ static void core_machine_capture_time_with_board(const core_machine *machine,
             immediate_due = LIB_TRUE;
         }
     }
-    if (machine->board_deadline_provider != LIB_NULL)
-        machine->board_deadline_provider(machine->board_owner,
+    if (machine->attachment.deadline != LIB_NULL)
+        machine->attachment.deadline(machine->attachment.context,
             machine->elapsed_ticks, machine->timing_declarations_copied, &board);
     if (out_board != LIB_NULL) *out_board = board;
     if (board.immediate_due) immediate_due = LIB_TRUE;
@@ -117,27 +117,27 @@ static void core_machine_dma_grant_advance(core_machine *machine)
     if (machine == LIB_NULL) return;
     if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
-        machine->board_dma_request_provider != LIB_NULL &&
-        machine->board_dma_request_provider(machine->board_owner) &&
+        machine->attachment.dma_request != LIB_NULL &&
+        machine->attachment.dma_request(machine->attachment.context) &&
         core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == LIB_STATUS_OK) {
         if (core_machine_transaction_hold_acknowledge(&machine->transaction,
                 CORE_MACHINE_TRANSACTION_OWNER_DMA) == LIB_STATUS_OK) {
-            if (machine->board_dma_advance_provider != LIB_NULL)
-                machine->board_dma_advance_provider(machine->board_owner, 1u);
+            if (machine->attachment.dma_advance != LIB_NULL)
+                machine->attachment.dma_advance(machine->attachment.context, 1u);
         }
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
     } else {
-        if (machine->board_dma_advance_provider != LIB_NULL)
-            machine->board_dma_advance_provider(machine->board_owner, 1u);
+        if (machine->attachment.dma_advance != LIB_NULL)
+            machine->attachment.dma_advance(machine->attachment.context, 1u);
     }
 }
 static void core_machine_d4_refresh_hold_advance(core_machine *machine)
 {
     lib_u8 address;
-    if (machine == LIB_NULL || machine->board_refresh_request_provider == LIB_NULL ||
-        !machine->board_refresh_request_provider(machine->board_owner, &address)) return;
+    if (machine == LIB_NULL || machine->attachment.refresh_request == LIB_NULL ||
+        !machine->attachment.refresh_request(machine->attachment.context, &address)) return;
     if (core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_REFRESH, address) !=
         LIB_STATUS_OK) return;
@@ -149,8 +149,8 @@ static void core_machine_d4_refresh_hold_advance(core_machine *machine)
             address, 0u, 0u) == LIB_STATUS_OK) {
         /* Bus occupation only: Core has no DRAM electrical refresh model. */
         core_machine_transaction_commit(&machine->transaction);
-        if (machine->board_refresh_complete_provider != LIB_NULL)
-            machine->board_refresh_complete_provider(machine->board_owner);
+        if (machine->attachment.refresh_complete != LIB_NULL)
+            machine->attachment.refresh_complete(machine->attachment.context);
     }
     core_machine_transaction_hold_release(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_REFRESH);
@@ -159,25 +159,25 @@ static void core_machine_arbitration_advance(core_machine *machine,
     lib_u64 source_ticks)
 {
     lib_u64 dma_ticks;
-    core_machine_board_pit_ticks pit_ticks = {0u, 0u};
+    core_machine_attachment_pit_ticks pit_ticks = {0u, 0u};
     lib_u8 refresh_pending;
     lib_u8 refresh_address;
 
     if (machine == LIB_NULL || source_ticks == 0u) return;
-    dma_ticks = machine->board_dma_ticks_provider != LIB_NULL ?
-        machine->board_dma_ticks_provider(machine->board_owner, source_ticks) : 0u;
-    if (machine->board_pit_ticks_provider != LIB_NULL)
-        pit_ticks = machine->board_pit_ticks_provider(machine->board_owner,
+    dma_ticks = machine->attachment.dma_ticks != LIB_NULL ?
+        machine->attachment.dma_ticks(machine->attachment.context, source_ticks) : 0u;
+    if (machine->attachment.pit_ticks != LIB_NULL)
+        pit_ticks = machine->attachment.pit_ticks(machine->attachment.context,
             source_ticks);
-    refresh_pending = machine->board_refresh_request_provider != LIB_NULL &&
-        machine->board_refresh_request_provider(machine->board_owner,
+    refresh_pending = machine->attachment.refresh_request != LIB_NULL &&
+        machine->attachment.refresh_request(machine->attachment.context,
             &refresh_address);
     core_machine_d4_refresh_hold_advance(machine);
     if (machine->transaction_contract.dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
         lib_u64 tick;
         for (tick = 0u; tick < dma_ticks; ++tick) {
-            if (machine->board_dma_request_provider != LIB_NULL &&
-                machine->board_dma_request_provider(machine->board_owner)) {
+            if (machine->attachment.dma_request != LIB_NULL &&
+                machine->attachment.dma_request(machine->attachment.context)) {
                 if (machine->transaction_contract.dma_cycle_bus_ready_gate_enabled &&
                     !machine->dma_cycle_bus_ready) {
                     continue;
@@ -194,27 +194,27 @@ static void core_machine_arbitration_advance(core_machine *machine,
     } else if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
         dma_ticks != 0u &&
-        machine->board_dma_request_provider != LIB_NULL &&
-        machine->board_dma_request_provider(machine->board_owner) &&
+        machine->attachment.dma_request != LIB_NULL &&
+        machine->attachment.dma_request(machine->attachment.context) &&
         core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == LIB_STATUS_OK) {
         if (core_machine_transaction_hold_acknowledge(&machine->transaction,
                 CORE_MACHINE_TRANSACTION_OWNER_DMA) == LIB_STATUS_OK) {
-            if (machine->board_dma_advance_provider != LIB_NULL)
-                machine->board_dma_advance_provider(machine->board_owner, dma_ticks);
+            if (machine->attachment.dma_advance != LIB_NULL)
+                machine->attachment.dma_advance(machine->attachment.context, dma_ticks);
         }
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
     } else {
-        if (machine->board_dma_advance_provider != LIB_NULL)
-            machine->board_dma_advance_provider(machine->board_owner, dma_ticks);
+        if (machine->attachment.dma_advance != LIB_NULL)
+            machine->attachment.dma_advance(machine->attachment.context, dma_ticks);
     }
     if (machine->transaction_contract.cpu_prefetch_reservation_enabled && !refresh_pending &&
-        (machine->board_refresh_request_provider == LIB_NULL ||
-         !machine->board_refresh_request_provider(machine->board_owner,
+        (machine->attachment.refresh_request == LIB_NULL ||
+         !machine->attachment.refresh_request(machine->attachment.context,
              &refresh_address)) &&
-        (machine->board_dma_request_provider == LIB_NULL ||
-         !machine->board_dma_request_provider(machine->board_owner)) &&
+        (machine->attachment.dma_request == LIB_NULL ||
+         !machine->attachment.dma_request(machine->attachment.context)) &&
         machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_NONE &&
         machine->transaction.hold_owner == CORE_MACHINE_TRANSACTION_OWNER_NONE) {
         core_machine_cpu_execution_advance_prefetch_reservation(
@@ -224,8 +224,8 @@ static void core_machine_arbitration_advance(core_machine *machine,
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_DMA_ADVANCE,
             0u, (lib_u32)dma_ticks, 0u);
     }
-    if (machine->board_pit_pic_provider != LIB_NULL)
-        machine->board_pit_pic_provider(machine->board_owner, pit_ticks);
+    if (machine->attachment.pit_pic != LIB_NULL)
+        machine->attachment.pit_pic(machine->attachment.context, pit_ticks);
 }
 
 /*
@@ -240,11 +240,11 @@ static void core_machine_readiness_advance(core_machine *machine,
     lib_u64 source_ticks, lib_u64 due_tick)
 {
     if (machine == LIB_NULL || source_ticks == 0u) return;
-    if (machine->board_media_provider != LIB_NULL)
-        machine->board_media_provider(machine->board_owner, source_ticks, due_tick);
+    if (machine->attachment.media != LIB_NULL)
+        machine->attachment.media(machine->attachment.context, source_ticks, due_tick);
     x86_fpu_advance(machine->fpu, source_ticks);
-    if (machine->board_rtc_provider != LIB_NULL)
-        machine->board_rtc_provider(machine->board_owner, source_ticks);
+    if (machine->attachment.rtc != LIB_NULL)
+        machine->attachment.rtc(machine->attachment.context, source_ticks);
 }
 
 static void core_machine_advance_scheduler(core_machine *machine,
@@ -260,7 +260,7 @@ static void core_machine_advance_scheduler(core_machine *machine,
     target_tick = machine->elapsed_ticks + elapsed_ticks;
     while (machine->elapsed_ticks < target_tick) {
         core_machine_time_observation observation;
-        core_machine_board_deadline_observation board;
+        core_machine_attachment_deadline_observation board;
         lib_u64 due_tick = target_tick;
         lib_u64 source_ticks;
 
@@ -281,8 +281,8 @@ static void core_machine_advance_scheduler(core_machine *machine,
         (void)core_machine_timeline_advance(&machine->timeline, due_tick);
         core_machine_arbitration_advance(machine, source_ticks);
         core_machine_readiness_advance(machine, source_ticks, due_tick);
-        if (machine->board_peripheral_provider != LIB_NULL)
-            machine->board_peripheral_provider(machine->board_owner, source_ticks);
+        if (machine->attachment.peripheral != LIB_NULL)
+            machine->attachment.peripheral(machine->attachment.context, source_ticks);
     }
     provider_ticks = core_machine_clock_domain_advance(&machine->provider_clock,
         elapsed_ticks);

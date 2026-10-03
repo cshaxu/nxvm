@@ -125,7 +125,7 @@ lib_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology);
 lib_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology);
-void core_machine_board_reset_devices(core_machine *machine);
+void core_machine_board_reset_devices(void *owner);
 /* Private board construction failure seams use the one production factory. */
 lib_status core_machine_create_with_test_memory_allocation(
     const core_machine_config *config, core_machine **out_machine,
@@ -137,23 +137,23 @@ lib_i32 core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 lib_i32 core_machine_board_config_is_valid(const core_machine_config *config);
 lib_status core_machine_board_create(core_machine *machine,
     const core_machine_config *config);
-void core_machine_board_finalize_devices(core_machine *machine);
-lib_bool core_machine_board_shutdown_resets(const core_machine *machine);
+void core_machine_board_finalize_devices(void *owner);
+lib_bool core_machine_board_shutdown_resets(void *owner);
 lib_status core_machine_board_initialize_clocks(core_machine *machine,
     const core_machine_clock_plan *plan);
-void core_machine_board_reset_clocks(core_machine *machine);
+void core_machine_board_reset_clocks(void *owner);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     lib_bool timing_qualified,
-    core_machine_board_deadline_observation *out_observation);
+    core_machine_attachment_deadline_observation *out_observation);
 lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address);
 void core_machine_board_refresh_complete(void *owner);
 lib_u64 core_machine_board_dma_ticks(void *owner, lib_u64 source_ticks);
 lib_bool core_machine_board_dma_request(void *owner);
 void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks);
-core_machine_board_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
+core_machine_attachment_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
     lib_u64 source_ticks);
 void core_machine_board_pit_pic_advance(void *owner,
-    core_machine_board_pit_ticks ticks);
+    core_machine_attachment_pit_ticks ticks);
 lib_bool core_machine_board_pic_pending(void *owner);
 lib_u8 core_machine_board_pic_acknowledge(void *owner);
 void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
@@ -162,7 +162,7 @@ void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks);
 void core_machine_board_peripheral_advance(void *owner, lib_u64 source_ticks);
 lib_status core_machine_board_register_a20_port(core_machine *machine);
 void core_machine_board_after_pit_reset(core_machine *machine);
-void core_machine_board_refresh_nmi(core_machine *machine);
+void core_machine_board_refresh_nmi(void *owner);
 void core_machine_board_configure_xt_ppi_speaker(core_machine *machine);
 void core_machine_board_set_xt_ppi_speaker(core_machine *machine,
     lib_u8 timer_gate, lib_u8 data_enabled);

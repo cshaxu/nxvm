@@ -24,8 +24,8 @@ endforeach()
 foreach(required "core_machine_transaction_hold_request("
     "core_machine_transaction_hold_acknowledge(" "core_machine_transaction_begin("
     "core_machine_transaction_commit(" "core_machine_transaction_hold_release("
-    "machine->board_refresh_request_provider(machine->board_owner,"
-    "machine->board_refresh_complete_provider(machine->board_owner)")
+    "machine->attachment.refresh_request(machine->attachment.context,"
+    "machine->attachment.refresh_complete(machine->attachment.context)")
     string(FIND "${core}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Core refresh transaction lacks ${required}")

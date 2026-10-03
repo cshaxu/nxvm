@@ -120,6 +120,22 @@ lib_i32 core_machine_mutable_operation_is_allowed(const core_machine *machine)
     return machine != LIB_NULL && !machine->firmware_operation_active;
 }
 
+lib_status core_machine_bind_attachment(core_machine *machine,
+    const core_machine_attachment *attachment)
+{
+    if (machine == LIB_NULL || attachment == LIB_NULL ||
+            attachment->context == LIB_NULL ||
+            attachment->finalize_devices == LIB_NULL) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    if (!core_machine_configuration_is_open(machine) ||
+            machine->attachment.context != LIB_NULL) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    machine->attachment = *attachment;
+    return LIB_STATUS_OK;
+}
+
 lib_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, void *context)
 {
@@ -551,8 +567,8 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     x86_fpu_reset(machine->fpu);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
-    if (machine->board_reset_devices_provider != LIB_NULL) {
-        machine->board_reset_devices_provider(machine);
+    if (machine->attachment.reset_devices != LIB_NULL) {
+        machine->attachment.reset_devices(machine->attachment.context);
     }
 
     lib_atomic_i32_store_explicit(&machine->stop_requested, 0, LIB_MEMORY_ORDER_RELEASE);
@@ -581,8 +597,8 @@ static lib_status core_machine_cold_reset(core_machine *machine)
     machine->retirement_eligibility_key_valid = LIB_FALSE;
     core_machine_transaction_reset(&machine->transaction);
     core_machine_timeline_reset(&machine->timeline);
-    if (machine->board_reset_clocks_provider != LIB_NULL) {
-        machine->board_reset_clocks_provider(machine);
+    if (machine->attachment.reset_clocks != LIB_NULL) {
+        machine->attachment.reset_clocks(machine->attachment.context);
     }
     core_machine_clock_domain_reset(&machine->provider_clock);
     machine->entry_plan_applied = LIB_FALSE;
@@ -756,8 +772,8 @@ lib_status core_machine_run(
              * It must win over the legacy stop marker carried with that CPU
              * event, or the generic stop path would incorrectly cold-reset
              * the board before D4 can consume the event. */
-            if (machine->board_shutdown_reset_provider != LIB_NULL &&
-                machine->board_shutdown_reset_provider(machine) &&
+            if (machine->attachment.shutdown_reset != LIB_NULL &&
+                machine->attachment.shutdown_reset(machine->attachment.context) &&
                 core_machine_cpu_execution_consume_shutdown_request(
                     machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
@@ -1110,8 +1126,8 @@ lib_status core_machine_set_nmi_mask(core_machine *machine, lib_i32 masked)
     }
     core_machine_cpu_set_nmi_mask(machine->executor_cpu_execution,
         masked ? LIB_TRUE : LIB_FALSE);
-    if (!masked && machine->board_refresh_nmi_provider != LIB_NULL) {
-        machine->board_refresh_nmi_provider(machine);
+    if (!masked && machine->attachment.refresh_nmi != LIB_NULL) {
+        machine->attachment.refresh_nmi(machine->attachment.context);
     }
     return LIB_STATUS_OK;
 }
@@ -1153,8 +1169,8 @@ void core_machine_destroy(core_machine *machine)
         machine->firmware_context.machine = LIB_NULL;
         machine->firmware_provider = LIB_NULL;
         machine->firmware_provider_context = LIB_NULL;
-        if (machine->board_finalize_devices_provider != LIB_NULL) {
-            machine->board_finalize_devices_provider(machine);
+        if (machine->attachment.finalize_devices != LIB_NULL) {
+            machine->attachment.finalize_devices(machine->attachment.context);
         }
         core_machine_cpu_destroy(machine->executor_cpu_execution);
         x86_fpu_destroy(machine->fpu);

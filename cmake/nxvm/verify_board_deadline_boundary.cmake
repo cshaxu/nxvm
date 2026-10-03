@@ -22,7 +22,7 @@ foreach(query "x86_pit_ticks_until_output(" "x86_rtc_ticks_until_irq("
         message(FATAL_ERROR "Board deadline query crosses Core owner: ${query}")
     endif()
 endforeach()
-foreach(required "core_machine_publish_elapsed_ticks(" "machine->board_deadline_provider("
+foreach(required "core_machine_publish_elapsed_ticks(" "machine->attachment.deadline("
     "core_machine_timeline_next_due(" "x86_fpu_ticks_until_completion(")
     string(FIND "${core}" "${required}" position)
     if(position LESS 0)

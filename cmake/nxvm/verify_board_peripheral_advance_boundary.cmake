@@ -15,7 +15,7 @@ foreach(effect "x86_xt_keyboard_advance(" "core_machine_kbc_advance("
 endforeach()
 string(FIND "${core}" "core_machine_readiness_advance(machine, source_ticks, due_tick);"
     readiness_position)
-string(FIND "${core}" "machine->board_peripheral_provider(machine->board_owner, source_ticks);"
+string(FIND "${core}" "machine->attachment.peripheral(machine->attachment.context, source_ticks);"
     peripheral_position)
 if(readiness_position LESS 0 OR peripheral_position LESS readiness_position)
     message(FATAL_ERROR "Core lost readiness-before-peripheral order")

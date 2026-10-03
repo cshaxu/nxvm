@@ -7,7 +7,7 @@
 
 #define CORE_MACHINE_BOARD_A20_BIT 0x02u
 
-static lib_status core_machine_board_register_reset_rom_alias(core_machine *machine);
+static lib_status core_machine_board_register_reset_rom_alias(void *owner);
 
 /* Range-selected XT durations retain their existing L2 macro-axis values.
  * Quotient/remainder conversion avoids overflow before the final ceiling. */
@@ -144,6 +144,29 @@ lib_status core_machine_create_with_test_port_allocation(
 lib_status core_machine_board_create(core_machine *machine,
     const core_machine_config *config)
 {
+    const core_machine_attachment attachment = {
+        .deadline = core_machine_board_deadline_observe,
+        .refresh_request = core_machine_board_refresh_request,
+        .refresh_complete = core_machine_board_refresh_complete,
+        .dma_ticks = core_machine_board_dma_ticks,
+        .dma_request = core_machine_board_dma_request,
+        .dma_advance = core_machine_board_dma_advance,
+        .pit_ticks = core_machine_board_pit_ticks_advance,
+        .pit_pic = core_machine_board_pit_pic_advance,
+        .pic_pending = core_machine_board_pic_pending,
+        .pic_acknowledge = core_machine_board_pic_acknowledge,
+        .shutdown_reset = core_machine_board_shutdown_resets,
+        .media = core_machine_board_media_advance,
+        .rtc = core_machine_board_rtc_advance,
+        .peripheral = core_machine_board_peripheral_advance,
+        .reset_devices = core_machine_board_reset_devices,
+        .reset_clocks = core_machine_board_reset_clocks,
+        .refresh_nmi = core_machine_board_refresh_nmi,
+        .finalize_devices = core_machine_board_finalize_devices,
+        .firmware = core_machine_board_register_reset_rom_alias,
+        .context = machine
+    };
+    lib_status status;
     lib_u8 dma_controller_count;
     lib_size installed_bytes;
     core_machine_cpu_profile cpu_profile;
@@ -154,11 +177,12 @@ lib_status core_machine_board_create(core_machine *machine,
         core_machine_destroy(machine);
         return LIB_STATUS_NO_MEMORY;
     }
-    machine->board_reset_devices_provider = core_machine_board_reset_devices;
-    machine->board_reset_clocks_provider = core_machine_board_reset_clocks;
-    machine->board_refresh_nmi_provider = core_machine_board_refresh_nmi;
-    machine->board_finalize_devices_provider = core_machine_board_finalize_devices;
-    machine->board_firmware_provider = core_machine_board_register_reset_rom_alias;
+    status = core_machine_bind_attachment(machine, &attachment);
+    if (status != LIB_STATUS_OK) {
+        core_machine_board_finalize_devices(machine);
+        core_machine_destroy(machine);
+        return status;
+    }
     if (core_machine_board_initialize_clocks(machine,
             &config->clock_plan) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
@@ -171,22 +195,6 @@ lib_status core_machine_board_create(core_machine *machine,
     dma_controller_count = config->dma_controller_count == 0u ?
         CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
     machine->board->keyboard_topology = config->keyboard_topology;
-    machine->board_deadline_provider = core_machine_board_deadline_observe;
-    machine->board_refresh_request_provider = core_machine_board_refresh_request;
-    machine->board_refresh_complete_provider = core_machine_board_refresh_complete;
-    machine->board_dma_ticks_provider = core_machine_board_dma_ticks;
-    machine->board_dma_request_provider = core_machine_board_dma_request;
-    machine->board_dma_advance_provider = core_machine_board_dma_advance;
-    machine->board_pit_ticks_provider = core_machine_board_pit_ticks_advance;
-    machine->board_pit_pic_provider = core_machine_board_pit_pic_advance;
-    machine->board_pic_pending_provider = core_machine_board_pic_pending;
-    machine->board_shutdown_reset_provider =
-        core_machine_board_shutdown_resets;
-    machine->board_pic_acknowledge_provider = core_machine_board_pic_acknowledge;
-    machine->board_media_provider = core_machine_board_media_advance;
-    machine->board_rtc_provider = core_machine_board_rtc_advance;
-    machine->board_peripheral_provider = core_machine_board_peripheral_advance;
-    machine->board_owner = machine;
     /* Zero is an explicit profile choice: without a calibrated guest-time
      * mapping, core-generated keyboard repeat must remain disabled. */
     machine->board->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
@@ -332,8 +340,9 @@ lib_status core_machine_board_create(core_machine *machine,
     return LIB_STATUS_OK;
 }
 
-lib_bool core_machine_board_shutdown_resets(const core_machine *machine)
+lib_bool core_machine_board_shutdown_resets(void *owner)
 {
+    const core_machine *machine = owner;
     return machine != LIB_NULL && machine->board->d4_platform_configured;
 }
 
@@ -436,8 +445,9 @@ static lib_u32 core_machine_board_reset_rom_alias(
     return 0u;
 }
 
-static lib_status core_machine_board_register_reset_rom_alias(core_machine *machine)
+static lib_status core_machine_board_register_reset_rom_alias(void *owner)
 {
+    core_machine *machine = owner;
     core_machine_cpu_profile profile;
     lib_u32 reset_alias;
     lib_status status = core_machine_get_cpu_profile(machine, &profile);
@@ -745,8 +755,9 @@ static void core_machine_d4_platform_refresh_nmi(core_machine *machine)
 static void core_machine_d4_platform_failsafe_output(void *owner,
     lib_u8 asserted);
 
-void core_machine_board_reset_devices(core_machine *machine)
+void core_machine_board_reset_devices(void *owner)
 {
+    core_machine *machine = owner;
     core_machine_d4_memory_reset(machine);
     if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_reset(&machine->board->xt_ppi_keyboard);
@@ -786,8 +797,9 @@ void core_machine_board_reset_devices(core_machine *machine)
     x86_video_reset(machine->board->shared_vadp.chip);
 }
 
-void core_machine_board_finalize_devices(core_machine *machine)
+void core_machine_board_finalize_devices(void *owner)
 {
+    core_machine *machine = owner;
     if (machine->board == LIB_NULL) return;
     core_machine_pit_bus_destroy(&machine->board->shared_pit);
     core_machine_pit_bus_destroy(&machine->board->auxiliary_pit);
@@ -805,7 +817,6 @@ void core_machine_board_finalize_devices(core_machine *machine)
     core_machine_vadp_finalize(&machine->board->shared_vadp);
     lib_release(machine->board);
     machine->board = LIB_NULL;
-    machine->board_firmware_provider = LIB_NULL;
 }
 
 void core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
@@ -852,8 +863,9 @@ void core_machine_board_after_pit_reset(core_machine *machine)
     }
 }
 
-void core_machine_board_refresh_nmi(core_machine *machine)
+void core_machine_board_refresh_nmi(void *owner)
 {
+    core_machine *machine = owner;
     if (machine != LIB_NULL && machine->board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_refresh_nmi(&machine->board->xt_ppi_keyboard);

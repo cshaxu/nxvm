@@ -142,6 +142,14 @@ whole callback publication cut, not one slot; board-handle/test classification
 then precedes physical relocation. No getter, registry, parallel binding or
 new lifecycle worker is eligible. This design receiver changes no runtime.
 
+S79 implements that complete copied callback binding: one public typed value,
+one configuration-only publication and one Core finalization owner replace
+all nineteen private callback slots. Board callback algorithms and dispatch
+order stay unchanged. Its [evidence](../etc/evidence/t540-s79-copied-attachment-binding.md)
+records verification and the retained Core-handle context bridge. The opaque
+board handle and direct-test owner classification are still required before
+physical relocation; a copied callback bundle alone does not complete them.
+
 ## Verification And Exit
 
 - Shared board code depends on chip public contracts and declared neutral

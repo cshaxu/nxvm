@@ -59,42 +59,6 @@ typedef struct core_machine_immutable_rom_mapping {
 
 typedef struct core_machine_board_state core_machine_board_state;
 
-typedef struct core_machine_board_deadline_observation {
-    lib_u64 source_ticks;
-    lib_u8 immediate_due;
-    lib_u8 l1_compatibility;
-    lib_u8 fast_advance_blocked;
-} core_machine_board_deadline_observation;
-typedef void (*core_machine_board_deadline_provider)(void *owner, lib_u64 now,
-    lib_bool timing_qualified,
-    core_machine_board_deadline_observation *out_observation);
-typedef void (*core_machine_board_ticks_provider)(void *owner,
-    lib_u64 source_ticks);
-typedef void (*core_machine_board_media_provider)(void *owner,
-    lib_u64 source_ticks, lib_u64 due_tick);
-typedef lib_bool (*core_machine_board_refresh_request_provider)(void *owner,
-    lib_u8 *out_address);
-typedef void (*core_machine_board_refresh_complete_provider)(void *owner);
-typedef lib_u64 (*core_machine_board_dma_ticks_provider)(void *owner,
-    lib_u64 source_ticks);
-typedef lib_bool (*core_machine_board_dma_request_provider)(void *owner);
-typedef void (*core_machine_board_dma_advance_provider)(void *owner,
-    lib_u64 dma_ticks);
-typedef struct core_machine_board_pit_ticks {
-    lib_u64 primary;
-    lib_u64 auxiliary;
-} core_machine_board_pit_ticks;
-typedef core_machine_board_pit_ticks (*core_machine_board_pit_ticks_provider)(
-    void *owner, lib_u64 source_ticks);
-typedef void (*core_machine_board_pit_pic_provider)(void *owner,
-    core_machine_board_pit_ticks ticks);
-typedef lib_bool (*core_machine_board_pic_pending_provider)(void *owner);
-typedef lib_u8 (*core_machine_board_pic_acknowledge_provider)(void *owner);
-typedef lib_bool (*core_machine_board_shutdown_reset_provider)(
-    const core_machine *machine);
-typedef void (*core_machine_board_phase_provider)(core_machine *machine);
-typedef lib_status (*core_machine_board_firmware_provider)(core_machine *machine);
-
 struct core_machine_firmware_context {
     core_machine *machine;
     lib_status operation_status;
@@ -163,30 +127,11 @@ struct core_machine {
     const core_machine_execution_provider *execution_provider;
     void *execution_provider_context;
     lib_i32 execution_provider_frozen;
-    /* Append-only scheduler state keeps existing internal offsets stable. */
+    /* Core scheduler state is private; attachments use the copied contract. */
     lib_u32 dma_cycle_wait_remaining;
     lib_u8 dma_cycle_bus_ready;
     lib_u8 cpu_cycle_bus_ready;
-    core_machine_board_deadline_provider board_deadline_provider;
-    core_machine_board_refresh_request_provider board_refresh_request_provider;
-    core_machine_board_refresh_complete_provider board_refresh_complete_provider;
-    core_machine_board_dma_ticks_provider board_dma_ticks_provider;
-    core_machine_board_dma_request_provider board_dma_request_provider;
-    core_machine_board_dma_advance_provider board_dma_advance_provider;
-    core_machine_board_pit_ticks_provider board_pit_ticks_provider;
-    core_machine_board_pit_pic_provider board_pit_pic_provider;
-    core_machine_board_pic_pending_provider board_pic_pending_provider;
-    core_machine_board_pic_acknowledge_provider board_pic_acknowledge_provider;
-    core_machine_board_shutdown_reset_provider board_shutdown_reset_provider;
-    core_machine_board_media_provider board_media_provider;
-    core_machine_board_ticks_provider board_rtc_provider;
-    core_machine_board_ticks_provider board_peripheral_provider;
-    void *board_owner;
-    core_machine_board_phase_provider board_reset_devices_provider;
-    core_machine_board_phase_provider board_reset_clocks_provider;
-    core_machine_board_phase_provider board_refresh_nmi_provider;
-    core_machine_board_phase_provider board_finalize_devices_provider;
-    core_machine_board_firmware_provider board_firmware_provider;
+    core_machine_attachment attachment;
 };
 
 lib_status core_machine_bus_initialize(core_machine *machine);

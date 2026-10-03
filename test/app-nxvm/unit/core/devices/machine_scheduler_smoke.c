@@ -27,8 +27,20 @@ static const core_machine_execution_provider scheduler_provider = {
     scheduler_provider_advance
 };
 
+typedef struct scheduler_deadline_probe {
+    core_machine_attachment_deadline_observation value;
+    lib_u32 calls;
+    lib_bool timing_qualified;
+} scheduler_deadline_probe;
+
+static void scheduler_board_deadline(void *owner, lib_u64 now,
+    lib_bool timing_qualified,
+    core_machine_attachment_deadline_observation *out_observation);
+
 typedef struct scheduler_board_probe {
     core_machine *machine;
+    core_machine_attachment production;
+    scheduler_deadline_probe *deadline_probe;
     lib_u32 media_calls;
     lib_u32 rtc_calls;
     lib_u32 dma_calls;
@@ -38,15 +50,20 @@ typedef struct scheduler_board_probe {
     lib_u64 media_ticks;
     lib_u64 rtc_ticks;
     lib_u64 dma_ticks;
-    core_machine_board_pit_ticks pit_ticks;
+    core_machine_attachment_pit_ticks pit_ticks;
     lib_u64 advanced_ticks;
 } scheduler_board_probe;
 
 static void scheduler_board_deadline_forward(void *owner, lib_u64 now,
     lib_bool timing_qualified,
-    core_machine_board_deadline_observation *out_observation)
+    core_machine_attachment_deadline_observation *out_observation)
 {
     scheduler_board_probe *probe = owner;
+    if (probe->deadline_probe != LIB_NULL) {
+        scheduler_board_deadline(probe->deadline_probe, now, timing_qualified,
+            out_observation);
+        return;
+    }
     core_machine_board_deadline_observe(probe->machine, now, timing_qualified,
         out_observation);
 }
@@ -109,7 +126,7 @@ static void scheduler_board_dma_advance(void *owner, lib_u64 dma_ticks)
     core_machine_board_dma_advance(probe->machine, dma_ticks);
 }
 
-static core_machine_board_pit_ticks scheduler_board_pit_ticks(void *owner,
+static core_machine_attachment_pit_ticks scheduler_board_pit_ticks(void *owner,
     lib_u64 source_ticks)
 {
     scheduler_board_probe *probe = owner;
@@ -117,7 +134,7 @@ static core_machine_board_pit_ticks scheduler_board_pit_ticks(void *owner,
 }
 
 static void scheduler_board_pit_pic(void *owner,
-    core_machine_board_pit_ticks ticks)
+    core_machine_attachment_pit_ticks ticks)
 {
     scheduler_board_probe *probe = owner;
     ++probe->pit_pic_calls;
@@ -137,21 +154,51 @@ static lib_u8 scheduler_board_pic_acknowledge(void *owner)
     return core_machine_board_pic_acknowledge(probe->machine);
 }
 
-typedef struct scheduler_deadline_probe {
-    core_machine_board_deadline_observation value;
-    lib_u32 calls;
-    lib_bool timing_qualified;
-} scheduler_deadline_probe;
-
 static void scheduler_board_deadline(void *owner, lib_u64 now,
     lib_bool timing_qualified,
-    core_machine_board_deadline_observation *out_observation)
+    core_machine_attachment_deadline_observation *out_observation)
 {
     scheduler_deadline_probe *probe = owner;
     (void)now;
     probe->timing_qualified = timing_qualified;
     ++probe->calls;
     *out_observation = probe->value;
+}
+
+static void scheduler_board_reset_devices(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    probe->production.reset_devices(probe->production.context);
+}
+
+static void scheduler_board_reset_clocks(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    probe->production.reset_clocks(probe->production.context);
+}
+
+static void scheduler_board_refresh_nmi(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    probe->production.refresh_nmi(probe->production.context);
+}
+
+static void scheduler_board_finalize_devices(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    probe->production.finalize_devices(probe->production.context);
+}
+
+static lib_bool scheduler_board_shutdown_reset(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    return probe->production.shutdown_reset(probe->production.context);
+}
+
+static lib_status scheduler_board_firmware(void *owner)
+{
+    scheduler_board_probe *probe = owner;
+    return probe->production.firmware(probe->production.context);
 }
 
 static lib_i32 scheduler_board_timing_qualification(void)
@@ -162,7 +209,7 @@ static lib_i32 scheduler_board_timing_qualification(void)
         .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u, 0x0du, 0x02u}
     };
     core_machine *machine = LIB_NULL;
-    core_machine_board_deadline_observation observation;
+    core_machine_attachment_deadline_observation observation;
     lib_u64 pit_ticks;
     lib_u64 source_ticks;
     lib_i32 failed = 1;
@@ -214,20 +261,31 @@ lib_i32 main(void)
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, sizeof(nop)) !=
         LIB_STATUS_OK;
     board_probe.machine = machine;
-    machine->board_deadline_provider = scheduler_board_deadline_forward;
-    machine->board_media_provider = scheduler_board_media;
-    machine->board_rtc_provider = scheduler_board_rtc;
-    machine->board_peripheral_provider = scheduler_board_peripheral;
-    machine->board_refresh_request_provider = scheduler_board_refresh_request;
-    machine->board_refresh_complete_provider = scheduler_board_refresh_complete;
-    machine->board_dma_ticks_provider = scheduler_board_dma_ticks;
-    machine->board_dma_request_provider = scheduler_board_dma_request;
-    machine->board_dma_advance_provider = scheduler_board_dma_advance;
-    machine->board_pit_ticks_provider = scheduler_board_pit_ticks;
-    machine->board_pit_pic_provider = scheduler_board_pit_pic;
-    machine->board_pic_pending_provider = scheduler_board_pic_pending;
-    machine->board_pic_acknowledge_provider = scheduler_board_pic_acknowledge;
-    machine->board_owner = &board_probe;
+    board_probe.production = machine->attachment;
+    /* Same-module instrumentation replaces a complete bundle, never the public
+     * construction-only binding. Every callback retains its correct context. */
+    machine->attachment = (core_machine_attachment) {
+        .deadline = scheduler_board_deadline_forward,
+        .refresh_request = scheduler_board_refresh_request,
+        .refresh_complete = scheduler_board_refresh_complete,
+        .dma_ticks = scheduler_board_dma_ticks,
+        .dma_request = scheduler_board_dma_request,
+        .dma_advance = scheduler_board_dma_advance,
+        .pit_ticks = scheduler_board_pit_ticks,
+        .pit_pic = scheduler_board_pit_pic,
+        .pic_pending = scheduler_board_pic_pending,
+        .pic_acknowledge = scheduler_board_pic_acknowledge,
+        .shutdown_reset = scheduler_board_shutdown_reset,
+        .media = scheduler_board_media,
+        .rtc = scheduler_board_rtc,
+        .peripheral = scheduler_board_peripheral,
+        .reset_devices = scheduler_board_reset_devices,
+        .reset_clocks = scheduler_board_reset_clocks,
+        .refresh_nmi = scheduler_board_refresh_nmi,
+        .finalize_devices = scheduler_board_finalize_devices,
+        .firmware = scheduler_board_firmware,
+        .context = &board_probe
+    };
 
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
@@ -248,8 +306,7 @@ lib_i32 main(void)
         board_probe.media_due_tick != machine->elapsed_ticks ||
         board_probe.calls == 0u || board_probe.advanced_ticks != 3u;
 
-    machine->board_deadline_provider = scheduler_board_deadline;
-    machine->board_owner = &deadline_probe;
+    board_probe.deadline_probe = &deadline_probe;
     deadline_probe.value.source_ticks = 5u;
     core_machine_capture_time_observation_private(machine, &observation);
     failed |= deadline_probe.calls != 1u || deadline_probe.timing_qualified ||
@@ -274,8 +331,7 @@ lib_i32 main(void)
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE ||
         deadline_probe.calls != 4u;
 
-    machine->board_peripheral_provider = core_machine_board_peripheral_advance;
-    machine->board_owner = machine;
+    machine->attachment = board_probe.production;
     core_machine_destroy(machine);
     if (failed) return 1;
     printf("M5:T219:S2:SCHEDULER:OK\n");

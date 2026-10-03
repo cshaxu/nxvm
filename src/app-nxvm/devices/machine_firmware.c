@@ -17,8 +17,8 @@ lib_status core_machine_bind_firmware_provider(core_machine *machine,
     machine->firmware_provider = provider;
     machine->firmware_provider_context = provider_context;
     status = core_machine_firmware_invoke(machine, 1, 0, provider->configure);
-    if (status == LIB_STATUS_OK && machine->board_firmware_provider != LIB_NULL) {
-        status = machine->board_firmware_provider(machine);
+    if (status == LIB_STATUS_OK && machine->attachment.firmware != LIB_NULL) {
+        status = machine->attachment.firmware(machine->attachment.context);
     }
     if (status != LIB_STATUS_OK) {
         core_machine_rollback_immutable_rom_mappings(machine, boundary);

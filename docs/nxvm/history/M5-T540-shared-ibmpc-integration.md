@@ -77,3 +77,17 @@ not close T540's attachment, direct-test classification or physical relocation.
 Coordinator accepts pushed P1 `bd0256b47` after actual 58-path diff review,
 dual-width 470/470 units/gates, eight neutral executions and eight one-shot
 external boots. Pure-governance P2 closes S77 only; T540 remains open.
+
+## S79: Copied Attachment Binding Delivery
+
+The entire nineteen-callback class now has one typed public binding, one
+constructor publication and one Core lifetime owner. The old private slots
+and owner field are deleted; all phases/firmware/shutdown receive explicit
+context. Three fixtures preserve phase, failure and context coverage without
+runtime production rebinding. [S79 evidence](../etc/evidence/t540-s79-copied-attachment-binding.md)
+records fourteen source/test paths (+369/-218, net +151), dual-width 470/470
+units, specialized/injected-negative gates, eight independent Core executions,
+eight one-shot real-INI checkpoints and the rebuilt stripped 0540 pairs.
+Shared, MyNES, INIs and external masters remain unchanged. Coordinator
+acceptance follows the complete pushed implementation's actual diff review;
+T540's opaque-board, test-classification and physical moves remain open.

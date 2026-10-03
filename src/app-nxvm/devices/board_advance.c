@@ -21,8 +21,9 @@ lib_status core_machine_board_initialize_clocks(core_machine *machine,
     return LIB_STATUS_OK;
 }
 
-void core_machine_board_reset_clocks(core_machine *machine)
+void core_machine_board_reset_clocks(void *owner)
 {
+    core_machine *machine = owner;
     core_machine_clock_domain_reset(&machine->board->dma_clock);
     core_machine_clock_domain_reset(&machine->board->pit_clock);
     core_machine_clock_domain_reset(&machine->board->auxiliary_pit_clock);
@@ -55,11 +56,11 @@ void core_machine_board_dma_advance(void *owner, lib_u64 dma_ticks)
         machine, dma_ticks);
 }
 
-core_machine_board_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
+core_machine_attachment_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
     lib_u64 source_ticks)
 {
     core_machine *machine = owner;
-    core_machine_board_pit_ticks ticks = {0u, 0u};
+    core_machine_attachment_pit_ticks ticks = {0u, 0u};
     if (machine == LIB_NULL) return ticks;
     ticks.primary = core_machine_clock_domain_advance(&machine->board->pit_clock,
         source_ticks);
@@ -69,7 +70,7 @@ core_machine_board_pit_ticks core_machine_board_pit_ticks_advance(void *owner,
 }
 
 void core_machine_board_pit_pic_advance(void *owner,
-    core_machine_board_pit_ticks ticks)
+    core_machine_attachment_pit_ticks ticks)
 {
     core_machine *machine = owner;
     if (machine == LIB_NULL) return;

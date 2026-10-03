@@ -17,8 +17,8 @@ foreach(forbidden "machine->pit_clock" "machine->auxiliary_pit_clock"
         message(FATAL_ERROR "Core scheduler directly owns board PIT/PIC: ${forbidden}")
     endif()
 endforeach()
-foreach(required "board_pit_ticks_provider(machine->board_owner,"
-    "board_pit_pic_provider(machine->board_owner, pit_ticks)"
+foreach(required "attachment.pit_ticks(machine->attachment.context,"
+    "attachment.pit_pic(machine->attachment.context, pit_ticks)"
     "core_machine_cpu_execution_advance_prefetch_reservation(")
     string(FIND "${core}" "${required}" position)
     if(position LESS 0)
@@ -36,8 +36,8 @@ foreach(required "core_machine_board_pit_ticks_advance("
         message(FATAL_ERROR "Board PIT/PIC tail lacks ${required}")
     endif()
 endforeach()
-foreach(required "board_pit_ticks_provider = core_machine_board_pit_ticks_advance"
-    "board_pit_pic_provider = core_machine_board_pit_pic_advance")
+foreach(required ".pit_ticks = core_machine_board_pit_ticks_advance"
+    ".pit_pic = core_machine_board_pit_pic_advance")
     string(FIND "${creation}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board PIT/PIC provider not bound: ${required}")

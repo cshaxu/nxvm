@@ -46,7 +46,7 @@ static lib_u8 board_consider_pit(const x86_pit *pit,
 
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     lib_bool timing_qualified,
-    core_machine_board_deadline_observation *out_observation)
+    core_machine_attachment_deadline_observation *out_observation)
 {
     const core_machine *machine = owner;
     lib_u64 device_ticks;
@@ -55,7 +55,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     lib_u8 dma_qualified;
 
     if (out_observation == LIB_NULL) return;
-    *out_observation = (core_machine_board_deadline_observation){0};
+    *out_observation = (core_machine_attachment_deadline_observation){0};
     if (machine == LIB_NULL) return;
     dma_pending = core_machine_dma_has_pending_request(
         &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary) ?

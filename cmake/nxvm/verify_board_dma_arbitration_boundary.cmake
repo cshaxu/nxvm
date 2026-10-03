@@ -16,9 +16,9 @@ foreach(forbidden "machine->dma_clock" "machine->board->dma_clock"
         message(FATAL_ERROR "Core scheduler directly owns board DMA: ${forbidden}")
     endif()
 endforeach()
-foreach(required "board_dma_ticks_provider(machine->board_owner, source_ticks)"
-    "board_dma_request_provider(machine->board_owner)"
-    "board_dma_advance_provider(machine->board_owner, dma_ticks)"
+foreach(required "attachment.dma_ticks(machine->attachment.context, source_ticks)"
+    "attachment.dma_request(machine->attachment.context)"
+    "attachment.dma_advance(machine->attachment.context, dma_ticks)"
     "core_machine_transaction_hold_request(" "core_machine_transaction_hold_acknowledge("
     "core_machine_transaction_hold_release("
     "core_machine_cpu_execution_advance_prefetch_reservation(")
@@ -35,9 +35,9 @@ foreach(required "core_machine_board_dma_ticks(" "core_machine_board_dma_request
         message(FATAL_ERROR "Board DMA effect lacks ${required}")
     endif()
 endforeach()
-foreach(required "board_dma_ticks_provider = core_machine_board_dma_ticks"
-    "board_dma_request_provider = core_machine_board_dma_request"
-    "board_dma_advance_provider = core_machine_board_dma_advance")
+foreach(required ".dma_ticks = core_machine_board_dma_ticks"
+    ".dma_request = core_machine_board_dma_request"
+    ".dma_advance = core_machine_board_dma_advance")
     string(FIND "${creation}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board DMA provider not bound: ${required}")

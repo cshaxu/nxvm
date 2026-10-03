@@ -76,6 +76,13 @@ state before its execution resources. The [S78 intake](../etc/evidence/t540-s78-
 records the current private dependencies and distinguishes this target from
 implemented behavior. It adds no device framework or lifecycle queue.
 
+S79 implements the copied callback/publication half through
+`attachment_interface.h`: all nineteen callbacks share one opaque context,
+published once during configuration and finalized by Core destruction.
+The present board context is still the Core handle while the private board
+association awaits its own receiver. This bridge does not satisfy the final
+opaque-board target or authorize a layout getter; see [S79 evidence](../etc/evidence/t540-s79-copied-attachment-binding.md).
+
 ### Fixed Composition Without A New Framework
 
 Build selection supplies one profile composition entry to the adapter:

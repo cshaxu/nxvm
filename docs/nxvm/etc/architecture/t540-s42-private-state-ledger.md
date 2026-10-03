@@ -158,6 +158,18 @@ assigns the complete copied-binding cut to prospective S79, then the opaque
 board-handle/test-classification cut before physical relocation. These are
 real ownership contracts, not a private-pointer getter or completed move.
 
+S79 replaces the full nineteen-slot callback class with one copied
+`core_machine_attachment`. Core owns validation, publication and destruction;
+board construction supplies the callbacks/context once. All phase, shutdown
+and firmware callbacks now take the same explicit context. The scheduler
+fixture forwards every phase with its correct production context instead of
+mixing private owners. The earlier S59 callback row is historical: its
+Core-typed shutdown exception and fourteen-slot publication no longer describe
+the current implementation. The [S79 evidence](../evidence/t540-s79-copied-attachment-binding.md)
+records complete-class proof. The six private board-access owners and direct
+board tests remain assigned to the opaque-board/test-classification receiver;
+physical Shared movement has not occurred.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

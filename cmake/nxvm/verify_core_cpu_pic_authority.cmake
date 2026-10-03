@@ -26,8 +26,8 @@ endif()
 foreach(token IN ITEMS
     ".interrupt_pending = core_machine_cpu_bus_interrupt_pending"
     ".acknowledge_interrupt = core_machine_cpu_bus_acknowledge_interrupt"
-    "board_pic_pending_provider(machine->board_owner)"
-    "board_pic_acknowledge_provider(machine->board_owner)"
+    "attachment.pic_pending(machine->attachment.context)"
+    "attachment.pic_acknowledge(machine->attachment.context)"
     "CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE")
     string(FIND "${bus_source}" "${token}" position)
     if(position EQUAL -1)

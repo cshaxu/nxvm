@@ -51,7 +51,7 @@ string(FIND "${firmware_text}" "lib_status core_machine_bind_firmware_provider("
 if(NOT board_bind EQUAL -1 OR core_bind EQUAL -1)
     message(FATAL_ERROR "Firmware publication transaction must belong only to Core")
 endif()
-foreach(required IN ITEMS "machine->board_firmware_provider(machine)"
+foreach(required IN ITEMS "machine->attachment.firmware(machine->attachment.context)"
     "core_machine_rollback_immutable_rom_mappings(machine, boundary)")
     string(FIND "${firmware_text}" "${required}" position)
     if(position EQUAL -1)
@@ -120,17 +120,61 @@ foreach(forbidden IN ITEMS "const core_machine_config *"
     endif()
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" private_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/attachment_interface.h" attachment_contract)
+string(FIND "${private_header}" "core_machine_attachment attachment;" attachment_state)
+if(attachment_state EQUAL -1)
+    message(FATAL_ERROR "Core must own one copied attachment binding")
+endif()
+foreach(forbidden IN ITEMS "machine.h" "machine_board" "core_machine_board_state")
+    string(FIND "${attachment_contract}" "${forbidden}" private_dependency)
+    if(NOT private_dependency EQUAL -1)
+        message(FATAL_ERROR "Attachment public contract borrows private board/Core layout: ${forbidden}")
+    endif()
+endforeach()
+foreach(callback IN ITEMS deadline refresh_request refresh_complete dma_ticks
+    dma_request dma_advance pit_ticks pit_pic pic_pending pic_acknowledge
+    shutdown_reset media rtc peripheral reset_devices reset_clocks refresh_nmi
+    finalize_devices firmware)
+    string(FIND "${attachment_contract}" " ${callback};" declaration)
+    string(FIND "${machine_board_text}" ".${callback} = core_machine_board_" publication)
+    if(declaration EQUAL -1 OR publication EQUAL -1)
+        message(FATAL_ERROR "Attachment callback class is incomplete: ${callback}")
+    endif()
+endforeach()
+foreach(required IN ITEMS "machine->attachment = *attachment;"
+    "machine->attachment.context != LIB_NULL"
+    "attachment->context == LIB_NULL" "attachment->finalize_devices == LIB_NULL")
+    string(FIND "${machine_lifecycle_text}" "${required}" binding_guard)
+    if(binding_guard EQUAL -1)
+        message(FATAL_ERROR "Copied attachment publication lacks guard/commit: ${required}")
+    endif()
+endforeach()
+foreach(source IN LISTS nxvm_signal_sources)
+    file(READ "${source}" attachment_source)
+    if(attachment_source MATCHES "->board_([a-z_]+_provider|owner)")
+        message(FATAL_ERROR "Old private attachment slot survives: ${source}")
+    endif()
+    if(NOT source STREQUAL machine_lifecycle_source AND
+       attachment_source MATCHES "->attachment(\\.[a-z_]+)?[ \t\r\n]*=[^=]")
+        message(FATAL_ERROR "Attachment publication bypasses its Core owner: ${source}")
+    endif()
+    if(NOT source STREQUAL machine_source AND
+       attachment_source MATCHES "core_machine_bind_attachment[ \t\r\n]*\\(" AND
+       NOT source STREQUAL machine_lifecycle_source)
+        message(FATAL_ERROR "Attachment has a second production publisher: ${source}")
+    endif()
+endforeach()
 foreach(phase IN ITEMS reset_devices reset_clocks refresh_nmi finalize_devices)
     string(FIND "${machine_lifecycle_text}"
-        "machine->board_${phase}_provider(machine)" call_position)
+        "machine->attachment.${phase}(machine->attachment.context)" call_position)
     string(FIND "${machine_board_text}"
-        "machine->board_${phase}_provider = core_machine_board_${phase};" bind_position)
+        ".${phase} = core_machine_board_${phase}," bind_position)
     if(call_position EQUAL -1 OR bind_position EQUAL -1)
         message(FATAL_ERROR "Core board phase lacks its sole binding/call: ${phase}")
     endif()
 endforeach()
 string(FIND "${machine_board_text}"
-    "machine->board_finalize_devices_provider =" finalize_binding)
+    "core_machine_bind_attachment(machine, &attachment)" finalize_binding)
 string(FIND "${machine_board_text}"
     "core_machine_board_initialize_clocks(" clock_initialization)
 if(clock_initialization EQUAL -1 OR finalize_binding GREATER clock_initialization)
