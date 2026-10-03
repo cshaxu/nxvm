@@ -1,4 +1,4 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
@@ -6,7 +6,7 @@
 #include "x86/chips/cpu/cpu.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "x86/core/memory_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 #define GDT_POINTER 0x0100u

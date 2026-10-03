@@ -141,7 +141,7 @@ lib_i32 main(void)
         failed |= core_machine_port_read(port, 0x0071u) != 0x04u;
         core_machine_port_write(port, 0x03f2u, 0x1cu);
         failed |= !test_fdc_advance_due(fdc);
-        failed |= !fdc->connect.irq_source.asserted;
+        failed |= !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
         model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
             result[0] != TEST_FDC_ST0_READY_CHANGE;
@@ -204,10 +204,10 @@ lib_i32 main(void)
         failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB;
         core_machine_port_write(port, 0x03f2u, 0u);
         failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM ||
-            fdc->connect.irq_source.asserted;
+            core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
         core_machine_port_write(port, 0x03f2u, 0x1cu);
         failed |= !test_fdc_advance_due(fdc);
-        failed |= !fdc->connect.irq_source.asserted;
+        failed |= !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
         for (index = 0u; index < 4u; ++index) {
             model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
             failed |= !model40_fdc_result(fdc, port, result, 2u) ||
@@ -219,13 +219,13 @@ lib_i32 main(void)
         test_fdc_advance(fdc);
         failed |= core_machine_port_read(port, 0x03f4u) !=
             (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_CB) ||
-            !fdc->connect.irq_source.asserted ||
+            !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
             !model40_fdc_result(fdc, port, result, sizeof(result)) ||
             result[0] != TEST_FDC_ST0_ABNORMAL ||
             result[1] != 0x04u || result[2] != 0u;
         model40_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 1u) ||
-            result[0] != 0x80u || fdc->connect.irq_source.asserted;
+            result[0] != 0x80u || core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
     }
     if (session != LIB_NULL && fdc != LIB_NULL) {
         static const struct { lib_u8 bytes[9]; lib_u8 count; } commands[] = {

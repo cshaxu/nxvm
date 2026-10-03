@@ -160,23 +160,23 @@ int main(void)
                 failed |= 0x04;
             } else {
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
-                failed |= fdc->connect.irq_source.asserted ? 0x08 : 0;
+                failed |= core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ? 0x08 : 0;
                 failed |= !test_fdc_advance_due(fdc) ? 0x08 : 0;
-                failed |= !fdc->connect.irq_source.asserted ? 0x08 : 0;
+                failed |= !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ? 0x08 : 0;
                 for (reset_drive = 0u; reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT;
                     ++reset_drive) {
                     core_machine_fdc_topology_command(fdc, port,
                         (const lib_u8[]){0x08u}, 1u);
                     failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
-                        result[1] != 0u || fdc->connect.irq_source.asserted) ? 0x08 : 0;
+                        result[1] != 0u || core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source)) ? 0x08 : 0;
                 }
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 core_machine_fdc_topology_command(fdc, port,
                     (const lib_u8[]){0x08u}, 1u);
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x80u ||
-                    fdc->connect.irq_source.asserted) ? 0x08 : 0;
+                    core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source)) ? 0x08 : 0;
                 core_machine_fdc_topology_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
                 core_machine_fdc_topology_command(fdc, port, sense_drive,

@@ -1,6 +1,6 @@
 #include "support/core_machine_board_fixture.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
@@ -102,7 +102,7 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
     port_strings_board_probe probe = {0};
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    core_machine_pic_irq_source irq = {0};
+    core_machine_pic_irq_source *irq = LIB_NULL;
     core_machine_run_result result = {0};
     core_machine_debug_cpu_snapshot after = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
@@ -121,11 +121,11 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
                 sizeof(hlt)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0u, code, bytes) != LIB_STATUS_OK;
     if (!failed) {
-        test_pic_program_vector(&board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &board->shared_pic_master,
-            &board->shared_pic_slave, 0u);
-        core_machine_pic_irq_source_assert(&irq);
-        core_machine_pic_irq_source_deassert(&irq);
+        test_pic_program_vector(board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, board->shared_pic_master,
+            board->shared_pic_slave, 0u);
+        core_machine_pic_irq_source_assert(irq);
+        core_machine_pic_irq_source_deassert(irq);
         failed = core_machine_run(machine,
             (core_machine_run_budget){repeat ? 4u : 2u,0u}, &result) !=
             LIB_STATUS_OK || result.reason !=
@@ -149,9 +149,9 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
             probe.writes != (input ? 0u : 1u) ||
             (!input && probe.last_write != source[0]) ||
             observed != source[0] ||
-            !(test_pic_read(&board->shared_pic_master, 0x0bu) &
+            !(test_pic_read(board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) ||
-            (test_pic_read(&board->shared_pic_master, 0x0au) &
+            (test_pic_read(board->shared_pic_master, 0x0au) &
                 VPIC_IRR_IRQ(0u));
     core_machine_destroy(machine);
     return !failed;

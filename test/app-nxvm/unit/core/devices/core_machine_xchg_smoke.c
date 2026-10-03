@@ -1,9 +1,9 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include <stdio.h>
 
 typedef struct xchg_machine {
@@ -146,7 +146,7 @@ static lib_i32 xchg_test_irq_no_shadow(void)
     static const lib_u8 code[] = { 0x87u, 0x06u, 0x00u, 0x10u, 0x90u };
     static const lib_u8 hlt = 0xf4u;
     xchg_machine state;
-    core_machine_pic_irq_source source;
+    core_machine_pic_irq_source *source = LIB_NULL;
     core_machine_run_result result;
     core_machine_debug_cpu_snapshot after;
     lib_u16 offset = 0x0100u;
@@ -163,16 +163,16 @@ static lib_i32 xchg_test_irq_no_shadow(void)
             core_machine_memory_write(state.machine,0x100u,&hlt,1u)!=LIB_STATUS_OK;
         failed |= xchg_seed(&state, 0x200u) != LIB_STATUS_OK;
         lib_memory_set(&source,0,sizeof(source));
-        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&source,&state.board->shared_pic_master,&state.board->shared_pic_slave,0u);
-        core_machine_pic_irq_source_assert(&source);
-        core_machine_pic_irq_source_deassert(&source);
+        test_pic_program_vector(state.board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&source,state.board->shared_pic_master,state.board->shared_pic_slave,0u);
+        core_machine_pic_irq_source_assert(source);
+        core_machine_pic_irq_source_deassert(source);
         failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=LIB_STATUS_OK ||
             result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= core_machine_memory_read(state.machine, after.ss.base + (lib_u16)after.esp, &frame, 2u)!=LIB_STATUS_OK || after.eip!=0x101u || frame!=4u ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u));
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -183,7 +183,7 @@ static lib_i32 xchg_test_accumulator_irq(void)
     static const lib_u8 code[] = { 0x91u, 0x90u };
     static const lib_u8 hlt = 0xf4u;
     xchg_machine state;
-    core_machine_pic_irq_source source;
+    core_machine_pic_irq_source *source = LIB_NULL;
     core_machine_run_result result;
     core_machine_debug_cpu_snapshot after;
     lib_u16 offset = 0x0100u;
@@ -208,12 +208,12 @@ static lib_i32 xchg_test_accumulator_irq(void)
             core_machine_memory_write(state.machine, 0x100u, &hlt,
                 1u) != LIB_STATUS_OK;
         failed |= xchg_seed(&state, 0x200u) != LIB_STATUS_OK;
-        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+        test_pic_program_vector(state.board->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source,
-            &state.board->shared_pic_master,
-            &state.board->shared_pic_slave, 0u);
-        core_machine_pic_irq_source_assert(&source);
-        core_machine_pic_irq_source_deassert(&source);
+            state.board->shared_pic_master,
+            state.board->shared_pic_slave, 0u);
+        core_machine_pic_irq_source_assert(source);
+        core_machine_pic_irq_source_deassert(source);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
@@ -224,7 +224,7 @@ static lib_i32 xchg_test_accumulator_irq(void)
             frame != 1u ||
             after.eax != 0xaabb7788u ||
             after.ecx != 0x55663344u ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u));
     }
     if (failed)
@@ -237,8 +237,8 @@ static lib_i32 xchg_test_accumulator_irq(void)
             frame,
             after.eax,
             after.ecx,
-            test_pic_read(&state.board->shared_pic_master, 0x0au),
-            test_pic_read(&state.board->shared_pic_master, 0x0bu));
+            test_pic_read(state.board->shared_pic_master, 0x0au),
+            test_pic_read(state.board->shared_pic_master, 0x0bu));
     }
     core_machine_destroy(state.machine);
     return !failed;

@@ -1,9 +1,9 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include <stdio.h>
 
 typedef struct lfg_machine { core_machine *machine;
@@ -128,7 +128,7 @@ static lib_i32 lfg_test_irq_shadow(void)
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lfg_machine state;
-        core_machine_pic_irq_source source;
+        core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result;
         core_machine_debug_cpu_snapshot after = {0};
         lib_u8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u, 0x90u };
@@ -156,11 +156,11 @@ static lib_i32 lfg_test_irq_shadow(void)
                     .values = { [CORE_MACHINE_DEBUG_EFLAGS] = 0x200u }
                 }) != LIB_STATUS_OK;
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+            test_pic_program_vector(state.board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &state.board->shared_pic_master, &state.board->shared_pic_slave, 0u);
-            core_machine_pic_irq_source_assert(&source);
-            core_machine_pic_irq_source_deassert(&source);
+                state.board->shared_pic_master, state.board->shared_pic_slave, 0u);
+            core_machine_pic_irq_source_assert(source);
+            core_machine_pic_irq_source_deassert(source);
             failed |= core_machine_run(state.machine,
                     (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
                 result.reason != (opcode == 0u ? CORE_MACHINE_STOP_BUDGET :
@@ -171,15 +171,15 @@ static lib_i32 lfg_test_irq_shadow(void)
                     after.ss.base + (lib_u16)after.esp,
                     (lib_uptr)&frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.eip != (opcode == 0u ? 0x0100u : 0x0101u) || !CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au),
+                    test_pic_read(state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au),
                     VPIC_IRR_IRQ(0u)) || frame_ip != (opcode == 0u ? 6u : 5u);
         }
         if (failed)
             printf("LFG irq op=%02x eip=%08x esp=%08x irr=%02x isr=%02x frame=%04x\n",
                 opcodes[opcode], after.eip, after.esp,
-                test_pic_read(&state.board->shared_pic_master, 0x0au),
-                test_pic_read(&state.board->shared_pic_master, 0x0bu), frame_ip);
+                test_pic_read(state.board->shared_pic_master, 0x0au),
+                test_pic_read(state.board->shared_pic_master, 0x0bu), frame_ip);
         core_machine_destroy(state.machine);
         if (failed)
             return 0;

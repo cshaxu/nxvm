@@ -5,14 +5,14 @@
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/dma_bus.h"
 #include "x86/ibmpc-common/media_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/port_interface.h"
 
 typedef struct core_machine_hdc_connection {
     const core_machine_media_registry *media_registry;
     core_machine_media_id media_id;
     core_machine_media_id slave_media_id;
-    core_machine_pic_irq_source irq_source;
+    core_machine_pic_irq_source *irq_source;
     core_machine_dma_request_binding dma_request;
     void (*dma_request_assert)(void *owner,
         const core_machine_dma_request_binding *binding);
@@ -28,7 +28,7 @@ typedef struct core_machine_hdc {
     core_machine_hdc_connection connect;
 } core_machine_hdc;
 
-void core_machine_hdc_connect(core_machine_hdc *hdc,
+lib_status core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
     core_machine_pic_bus *pic_master, core_machine_pic_bus *pic_slave, const core_machine_hdc_config *config);

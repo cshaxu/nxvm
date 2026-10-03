@@ -60,8 +60,8 @@ static x86_hdc_record_result hdc_write(void *context, lib_u8 unit,
 static void hdc_irq(void *context, lib_bool asserted)
 {
     core_machine_hdc *hdc = context;
-    if (asserted) core_machine_pic_irq_source_assert(&hdc->connect.irq_source);
-    else core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
+    if (asserted) core_machine_pic_irq_source_assert(hdc->connect.irq_source);
+    else core_machine_pic_irq_source_deassert(hdc->connect.irq_source);
 }
 
 static void hdc_drq(void *context, lib_bool asserted)
@@ -152,18 +152,21 @@ static void hdc_dma_terminal(void *context, t_latch *latch)
     if (hdc != LIB_NULL) x86_hdc_terminal_count(hdc->chip);
 }
 
-void core_machine_hdc_connect(core_machine_hdc *hdc,
+lib_status core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
     core_machine_pic_bus *pic_master, core_machine_pic_bus *pic_slave, const core_machine_hdc_config *config)
 {
-    if (hdc == LIB_NULL || config == LIB_NULL) return;
+    lib_status status;
+    if (hdc == LIB_NULL || config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_pic_irq_source_bind(&hdc->connect.irq_source,
+        pic_master, pic_slave, config->irq);
+    if (status != LIB_STATUS_OK) return status;
     hdc->connect.media_registry = media_registry;
     hdc->connect.media_id = media_id;
     hdc->connect.slave_media_id = slave_media_id;
-    core_machine_pic_irq_source_bind(&hdc->connect.irq_source, pic_master,
-        pic_slave, config->irq);
     hdc->connect.config = *config;
+    return LIB_STATUS_OK;
 }
 
 void core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,

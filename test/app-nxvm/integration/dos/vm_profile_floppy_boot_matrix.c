@@ -244,7 +244,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 session->board->fdc.data.ccr, chip.st0, chip.st1, chip.st2,
                 chip.transfer_remaining, chip.dma_byte_gate_pending,
                 (unsigned long long)chip.next_dma_byte_tick,
-                session->board->fdc.connect.irq_source.asserted);
+                core_machine_pic_irq_source_is_asserted(session->board->fdc.connect.irq_source));
         }
         if (core_machine_capture_time_observation(session->core_machine,
                 &time_observation) == LIB_STATUS_OK) {
@@ -255,9 +255,9 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
         }
         printf("T515:INI-BOOT:%s:PIC:pending=%u:IRQ0=%u\n",
             name, core_machine_pic_scan_interrupt(
-                &session->board->shared_pic_master,
-                &session->board->shared_pic_slave),
-            session->board->shared_pit_irq0_source.asserted);
+                session->board->shared_pic_master,
+                session->board->shared_pic_slave),
+            core_machine_pic_irq_source_is_asserted(session->board->shared_pit_irq0_source));
         printf("T515:INI-BOOT:%s:PIT:out0=%u:out1=%u\n", name,
             (unsigned int)x86_pit_get_output(session->board->shared_pit, 0u),
             (unsigned int)x86_pit_get_output(session->board->shared_pit, 1u));
@@ -306,8 +306,8 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
             const lib_status status = core_machine_kbc_ticks_until_event(kbc, &ticks);
             printf("T539:INI-BOOT:%s:KBC:scan=%u:bat=%u:irq1=%u:irq12=%u:a20=%u:deadline-status=%u:ticks=%llu\n",
                 name, (unsigned int)signals.scanning, (unsigned int)signals.bat_ready,
-                (unsigned int)kbc->connect.irq1_source.asserted,
-                (unsigned int)kbc->connect.irq12_source.asserted,
+                (unsigned int)core_machine_pic_irq_source_is_asserted(kbc->connect.irq1_source),
+                (unsigned int)core_machine_pic_irq_source_is_asserted(kbc->connect.irq12_source),
                 (unsigned int)session->core_machine->executor_memory.data.flagA20,
                 (unsigned int)status, (unsigned long long)ticks);
         }

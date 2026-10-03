@@ -263,7 +263,7 @@ int main(void)
                 }
                 core_machine_fdc_change_require(&failed, &first_failure, 14,
                     core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_RQM ||
-                    fdc->connect.irq_source.asserted);
+                    core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source));
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 failed |= !core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));

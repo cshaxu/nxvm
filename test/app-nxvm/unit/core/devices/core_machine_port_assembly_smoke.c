@@ -678,14 +678,14 @@ static lib_i32 port_assembly_pic_transaction(void)
     for (lib_u32 fail_at = 1u; fail_at <= 8u; ++fail_at) {
         core_machine machine = {0};
         t_port *ports = &machine.executor_port;
-        core_machine_pic_bus master = {0}, slave = {0};
+        core_machine_pic_bus *master = LIB_NULL, *slave = LIB_NULL;
         core_machine_port_test_allocation allocation = {fail_at, 0u};
         machine.lifecycle = CORE_MACHINE_INITIALIZED;
         core_machine_port_initialize(ports);
         core_machine_port_set_test_allocation(ports, &allocation);
         failed |= core_machine_pic_initialize(&master, &slave, &machine,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_NO_MEMORY ||
-            master.device != LIB_NULL || slave.device != LIB_NULL;
+            master != LIB_NULL || slave != LIB_NULL;
         for (lib_size index = 0u; index < sizeof(addresses) / sizeof(addresses[0]); ++index) {
             failed |= core_machine_port_has_read(ports, addresses[index]) ||
                 core_machine_port_has_write(ports, addresses[index]);
@@ -693,7 +693,7 @@ static lib_i32 port_assembly_pic_transaction(void)
         allocation.fail_at = 0u;
         failed |= core_machine_pic_initialize(&master, &slave, &machine,
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK;
-        core_machine_pic_finalize(&master, &slave);
+        core_machine_pic_finalize(master, slave);
         core_machine_port_finalize(ports);
     }
     return failed;

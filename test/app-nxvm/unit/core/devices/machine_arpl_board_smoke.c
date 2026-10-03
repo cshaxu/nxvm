@@ -1,6 +1,6 @@
 #include "support/core_machine_board_fixture.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "x86/core/device_support_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
@@ -194,7 +194,7 @@ static lib_i32 arpl_board_irq(void)
     for (change = 0u; change != 2u; ++change) {
         core_machine *machine = LIB_NULL;
         core_machine_board_state *board = LIB_NULL;
-        core_machine_pic_irq_source source = {0};
+        core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result = {0};
         core_machine_debug_cpu_snapshot before = {0}, after = {0};
         core_machine_cpu_diagnostic diagnostic = {0};
@@ -223,11 +223,11 @@ static lib_i32 arpl_board_irq(void)
                 core_machine_debug_capture_cpu_snapshot(machine,
                     CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
         if (!failed) {
-            test_pic_program_vector(&board->shared_pic_master, 0x20u);
+            test_pic_program_vector(board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &board->shared_pic_master, &board->shared_pic_slave, 0u);
-            core_machine_pic_irq_source_assert(&source);
-            core_machine_pic_irq_source_deassert(&source);
+                board->shared_pic_master, board->shared_pic_slave, 0u);
+            core_machine_pic_irq_source_assert(source);
+            core_machine_pic_irq_source_deassert(source);
             failed = core_machine_run(machine,
                 (core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
@@ -262,9 +262,9 @@ static lib_i32 arpl_board_irq(void)
                     sizeof(before.fs)) != 0 ||
                 lib_memory_compare(&before.gs, &after.gs,
                     sizeof(before.gs)) != 0 ||
-                !(test_pic_read(&board->shared_pic_master, 0x0bu) &
+                !(test_pic_read(board->shared_pic_master, 0x0bu) &
                     VPIC_ISR_IRQ(0u)) ||
-                (test_pic_read(&board->shared_pic_master, 0x0au) &
+                (test_pic_read(board->shared_pic_master, 0x0au) &
                     VPIC_IRR_IRQ(0u)) ||
                 frame[0u] != 3u ||
                 !!(frame[2u] & VCPU_EFLAGS_ZF) != change ||

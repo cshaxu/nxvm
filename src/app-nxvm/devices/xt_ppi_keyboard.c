@@ -74,7 +74,7 @@ static void core_machine_xt_ppi_keyboard_deassert_irq(
     core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == LIB_NULL || !keyboard->irq1_asserted) return;
-    core_machine_pic_irq_source_deassert(&keyboard->irq1_source);
+    core_machine_pic_irq_source_deassert(keyboard->irq1_source);
     keyboard->irq1_asserted = LIB_FALSE;
 }
 
@@ -187,11 +187,11 @@ lib_status core_machine_xt_ppi_keyboard_initialize(
     return LIB_STATUS_OK;
 }
 
-void core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
+lib_status core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
     core_machine_pic_bus *master, core_machine_pic_bus *slave)
 {
-    if (keyboard == LIB_NULL) return;
-    core_machine_pic_irq_source_bind(&keyboard->irq1_source, master, slave,
+    if (keyboard == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_pic_irq_source_bind(&keyboard->irq1_source, master, slave,
         keyboard->config.irq);
 }
 
@@ -277,7 +277,7 @@ lib_status core_machine_xt_ppi_keyboard_receive_device_byte(
     }
     keyboard->current_byte = native_byte;
     keyboard->byte_ready = LIB_TRUE;
-    core_machine_pic_irq_source_assert(&keyboard->irq1_source);
+    core_machine_pic_irq_source_assert(keyboard->irq1_source);
     keyboard->irq1_asserted = LIB_TRUE;
     return LIB_STATUS_OK;
 }

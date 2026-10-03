@@ -50,6 +50,11 @@ it does not change runtime ownership before the corresponding cutover.
   and display-provider slot in `x86/ibmpc-common`, consumed through public
   contracts. The common PIT adapter installs four copied routes against a
   board-owned opaque chip; composition alone selects the Core implementation.
+  The common PIC aggregation owns opaque controller endpoints and IRQ source
+  leases, port/cascade routing, reset, deadline and acknowledgement. App
+  producers borrow sources for that aggregation's lifetime; copied register
+  diagnostics do not expose a chip or mutable layout. Current records its
+  verification and acceptance status.
   `app-nxvm/devices` retains the remaining IBM-PC board attachments
   pending the flat `x86/ibmpc-*` receivers. Chip state stays in `x86/chips`,
   guest execution time in one Core, and profile/firmware/media choices in

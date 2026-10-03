@@ -1,3 +1,4 @@
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "../../../support/hdc.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "support/dma_fixture.h"
@@ -155,7 +156,8 @@ lib_i32 main(void)
             failed |= 0x08;
         } else if (
             board->hdc.connect.config.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
-            board->hdc.connect.irq_source.irq != 5u) {
+            !test_pic_source_route(board->shared_pic_master, board->shared_pic_slave,
+                board->hdc.connect.irq_source, 5u)) {
             failed |= 0x10;
         } else if (
             board->hdc_dma_request.core_token == 0u ||

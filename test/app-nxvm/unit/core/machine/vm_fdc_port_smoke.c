@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/port.h"
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
@@ -86,8 +86,8 @@ lib_i32 main(void)
     fdc_command(&session->board->fdc, port, format_id, sizeof(format_id));
     test_fdc_advance(&session->board->fdc);
     failed |= !core_machine_pic_scan_interrupt(
-        session->board->fdc.connect.irq_source.master,
-        session->board->fdc.connect.irq_source.slave);
+        session->board->shared_pic_master,
+        session->board->shared_pic_slave);
     failed |= !fdc_read_result(&session->board->fdc, port, result, sizeof(result));
     failed |= result[0] != TEST_FDC_ST0_NORMAL;
     fdc_command(&session->board->fdc, port, (const lib_u8[]){ 0x08u }, 1u);

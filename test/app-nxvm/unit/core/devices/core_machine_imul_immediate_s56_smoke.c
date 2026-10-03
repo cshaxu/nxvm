@@ -1,9 +1,9 @@
 #include "support/cpu_board_limit_fixture.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include <stdio.h>
 
 static void imul_seed_patch(core_machine_debug_register_patch *patch)
@@ -119,7 +119,7 @@ static lib_i32 imul_irq_no_shadow(void)
         const lib_u8 instruction_bytes = form ? 6u : 4u;
         core_machine *machine = LIB_NULL;
         core_machine_board_state *board = LIB_NULL;
-        core_machine_pic_irq_source source_irq = {0};
+        core_machine_pic_irq_source *source_irq = LIB_NULL;
         core_machine_run_result result = {0};
         core_machine_debug_cpu_snapshot before = {0}, after = {0};
         core_machine_debug_register_patch patch = {0};
@@ -155,11 +155,11 @@ static lib_i32 imul_irq_no_shadow(void)
                     &source, sizeof(source)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            test_pic_program_vector(&board->shared_pic_master, 0x20u);
+            test_pic_program_vector(board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source_irq,
-                &board->shared_pic_master, &board->shared_pic_slave, 0u);
-            core_machine_pic_irq_source_assert(&source_irq);
-            core_machine_pic_irq_source_deassert(&source_irq);
+                board->shared_pic_master, board->shared_pic_slave, 0u);
+            core_machine_pic_irq_source_assert(source_irq);
+            core_machine_pic_irq_source_deassert(source_irq);
             failed = core_machine_run(machine,
                     (core_machine_run_budget){2u, 0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
@@ -187,10 +187,10 @@ static lib_i32 imul_irq_no_shadow(void)
                 CORE_MACHINE_BIT_IS_SET(frame_flags, VCPU_EFLAGS_CF) ||
                 CORE_MACHINE_BIT_IS_SET(frame_flags, VCPU_EFLAGS_OF) ||
                 !CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(&board->shared_pic_master, 0x0bu),
+                    test_pic_read(board->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u)) ||
                 CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(&board->shared_pic_master, 0x0au),
+                    test_pic_read(board->shared_pic_master, 0x0au),
                     VPIC_IRR_IRQ(0u));
         }
         core_machine_destroy(machine);

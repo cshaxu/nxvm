@@ -1,3 +1,4 @@
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -48,11 +49,13 @@ static lib_i32 vm_pcat_s4_topology_matches(
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
     failed |= pit_route == LIB_NULL || keyboard_route == LIB_NULL || aux_route == LIB_NULL ||
         cmos_route == LIB_NULL || fdc_route == LIB_NULL ||
-        session->board->shared_pit_irq0_source.irq != pit_route->irq ||
-        session->board->shared_kbc.connect.irq1_source.irq !=
-            keyboard_route->irq ||
+        !test_pic_source_route(session->board->shared_pic_master,
+            session->board->shared_pic_slave, session->board->shared_pit_irq0_source, pit_route->irq) ||
+        !test_pic_source_route(session->board->shared_pic_master,
+            session->board->shared_pic_slave, session->board->shared_kbc.connect.irq1_source, keyboard_route->irq) ||
         !x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
-        session->board->shared_kbc.connect.irq12_source.irq != aux_route->irq ||
+        !test_pic_source_route(session->board->shared_pic_master,
+            session->board->shared_pic_slave, session->board->shared_kbc.connect.irq12_source, aux_route->irq) ||
         session->board->rtc_cmos_config.irq != cmos_route->irq ||
         session->board->rtc_cmos_config.timing.provenance !=
             CORE_MACHINE_RTC_TIMING_L2_RATIO ||

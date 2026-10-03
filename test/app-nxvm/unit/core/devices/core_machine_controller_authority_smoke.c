@@ -1,3 +1,4 @@
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "../../../support/hdc.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "support/fdc_fixture.h"
@@ -285,8 +286,10 @@ lib_i32 main(void)
                     dma_request.core_token ||
                 board->fdc.connect.dma_request_owner != board ||
                 board->fdc.connect.machine != machine ||
-                board->fdc.connect.irq_source.irq != fdc_config.irq ||
-                board->hdc.connect.irq_source.irq != hdc_config.irq ||
+                !test_pic_source_route(board->shared_pic_master, board->shared_pic_slave,
+                    board->fdc.connect.irq_source, fdc_config.irq) ||
+                !test_pic_source_route(board->shared_pic_master, board->shared_pic_slave,
+                    board->hdc.connect.irq_source, hdc_config.irq) ||
                 board->hdc.connect.media_id != hdc_topology.media_id;
 
             core_machine_port_write(port, fdc_config.dor_port, 0x1cu);

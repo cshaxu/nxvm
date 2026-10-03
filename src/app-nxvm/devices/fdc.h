@@ -3,7 +3,7 @@
 #define CORE_MACHINE_FDC_H
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/dma_bus.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "app-nxvm/devices/fdc_observation_interface.h"
 #include "x86/core/port_interface.h"
 #include "x86/chips/fdc8272/fdc8272_interface.h"
@@ -20,7 +20,7 @@ typedef struct {
     core_machine_fdc_dma_request_operation dma_request_assert;
     core_machine_fdc_dma_request_operation dma_request_deassert;
     void *dma_request_owner;
-    core_machine_pic_irq_source irq_source;
+    core_machine_pic_irq_source *irq_source;
     core_machine *machine;
     core_machine_fdc_config config;
     core_machine_fdc_terminal_observation_provider observation_provider;
@@ -60,7 +60,7 @@ typedef struct {
 #define VFDC_CCR_RATE_MASK 0x03u
 
 
-void core_machine_fdc_connect(core_machine_fdc *fdc,
+lib_status core_machine_fdc_connect(core_machine_fdc *fdc,
     const core_machine_media_registry *media_registry,
     const core_machine_fdc_drive_bindings *drives,
     const core_machine_dma_request_binding *dma_request,

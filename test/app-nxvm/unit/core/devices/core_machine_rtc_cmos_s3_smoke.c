@@ -3,17 +3,17 @@
 #include <stdio.h>
 
 #include "x86/core/machine.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/port.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "support/core_machine_board_fixture.h"
 
 typedef struct rtc_cmos_s3_fixture {
     core_machine machine;
-    core_machine_pic_bus master;
-    core_machine_pic_bus slave;
+    core_machine_pic_bus *master;
+    core_machine_pic_bus *slave;
     x86_rtc *rtc;
-    core_machine_pic_irq_source irq_source;
+    core_machine_pic_irq_source *irq_source;
 } rtc_cmos_s3_fixture;
 
 static void rtc_cmos_s3_initialize_pic(t_port *port)
@@ -39,18 +39,19 @@ static lib_status rtc_cmos_s3_initialize(rtc_cmos_s3_fixture *fixture)
 {
     x86_rtc_config config = {4u, 0u, 0u};
 
+    fixture->irq_source = LIB_NULL;
     lib_memory_set(&fixture->machine, 0, sizeof(fixture->machine));
     fixture->machine.lifecycle = CORE_MACHINE_INITIALIZED;
     core_machine_port_initialize(&fixture->machine.executor_port);
     core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->machine,
         CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     rtc_cmos_s3_initialize_pic(&fixture->machine.executor_port);
-    core_machine_pic_irq_source_bind(&fixture->irq_source, &fixture->master,
-        &fixture->slave, 8u);
+    core_machine_pic_irq_source_bind(&fixture->irq_source, fixture->master,
+        fixture->slave, 8u);
     lib_status status = x86_rtc_create(&config, rtc_cmos_s3_output,
-        &fixture->irq_source, &fixture->rtc);
+        fixture->irq_source, &fixture->rtc);
     if (status != LIB_STATUS_OK) {
-        core_machine_pic_finalize(&fixture->master, &fixture->slave);
+        core_machine_pic_finalize(fixture->master, fixture->slave);
         core_machine_port_finalize(&fixture->machine.executor_port);
     }
     return status;
@@ -59,7 +60,7 @@ static lib_status rtc_cmos_s3_initialize(rtc_cmos_s3_fixture *fixture)
 static void rtc_cmos_s3_finalize(rtc_cmos_s3_fixture *fixture)
 {
     x86_rtc_destroy(fixture->rtc);
-    core_machine_pic_finalize(&fixture->master, &fixture->slave);
+    core_machine_pic_finalize(fixture->master, fixture->slave);
     core_machine_port_finalize(&fixture->machine.executor_port);
 }
 
@@ -80,20 +81,20 @@ static lib_i32 rtc_cmos_s3_test_events_and_irq8(void)
     failed |= (flags & (X86_RTC_REG_C_PF | X86_RTC_REG_C_AF |
         X86_RTC_REG_C_UF)) != (X86_RTC_REG_C_PF |
         X86_RTC_REG_C_AF | X86_RTC_REG_C_UF) ||
-        (flags & X86_RTC_REG_C_IRQF) != 0u || fixture.irq_source.asserted;
+        (flags & X86_RTC_REG_C_IRQF) != 0u || core_machine_pic_irq_source_is_asserted(fixture.irq_source);
     x86_rtc_advance(fixture.rtc, 4u);
     x86_rtc_write_register(fixture.rtc, X86_RTC_REG_B,
         X86_RTC_REG_B_24H | X86_RTC_REG_B_PIE |
         X86_RTC_REG_B_AIE | X86_RTC_REG_B_UIE);
-    core_machine_pic_refresh(&fixture.master, &fixture.slave);
-    failed |= !fixture.irq_source.asserted ||
-        core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x70u;
+    core_machine_pic_refresh(fixture.master, fixture.slave);
+    failed |= !core_machine_pic_irq_source_is_asserted(fixture.irq_source) ||
+        core_machine_pic_get_interrupt(fixture.master, fixture.slave) != 0x70u;
     flags = x86_rtc_read_register(fixture.rtc, X86_RTC_REG_C);
     failed |= (flags & (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_PF |
         X86_RTC_REG_C_AF | X86_RTC_REG_C_UF)) !=
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_PF |
         X86_RTC_REG_C_AF | X86_RTC_REG_C_UF) ||
-        fixture.irq_source.asserted;
+        core_machine_pic_irq_source_is_asserted(fixture.irq_source);
     core_machine_port_write(&fixture.machine.executor_port, 0x00a0u, 0x20u);
     core_machine_port_write(&fixture.machine.executor_port, 0x0020u, 0x20u);
     x86_rtc_advance(fixture.rtc, 4u);
@@ -102,14 +103,14 @@ static lib_i32 rtc_cmos_s3_test_events_and_irq8(void)
     flags = x86_rtc_read_register(fixture.rtc, X86_RTC_REG_C);
     failed |= (flags & (X86_RTC_REG_C_PF | X86_RTC_REG_C_AF |
         X86_RTC_REG_C_UF)) == 0u || (flags & X86_RTC_REG_C_IRQF) != 0u ||
-        fixture.irq_source.asserted;
+        core_machine_pic_irq_source_is_asserted(fixture.irq_source);
     x86_rtc_advance(fixture.rtc, 4u);
     x86_rtc_write_register(fixture.rtc, X86_RTC_REG_B,
         X86_RTC_REG_B_24H | X86_RTC_REG_B_UIE);
-    failed |= !fixture.irq_source.asserted;
+    failed |= !core_machine_pic_irq_source_is_asserted(fixture.irq_source);
     x86_rtc_destroy(fixture.rtc);
     fixture.rtc = LIB_NULL;
-    failed |= fixture.irq_source.asserted;
+    failed |= core_machine_pic_irq_source_is_asserted(fixture.irq_source);
     rtc_cmos_s3_finalize(&fixture);
     return failed;
 }

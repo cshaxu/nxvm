@@ -3,7 +3,7 @@
 
 #include "x86/core/clock_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/ibmpc-common/pit_bus_interface.h"
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/d4_memory.h"
@@ -53,10 +53,10 @@ typedef struct core_machine_absent_memory {
 struct core_machine_board_state {
     /* Execution is Core-owned; this handle is borrowed until finalization. */
     core_machine *core;
-    core_machine_pic_bus shared_pic_master;
-    core_machine_pic_bus shared_pic_slave;
-    core_machine_pic_irq_source shared_pit_irq0_source;
-    core_machine_pic_irq_source rtc_irq_source;
+    core_machine_pic_bus *shared_pic_master;
+    core_machine_pic_bus *shared_pic_slave;
+    core_machine_pic_irq_source *shared_pit_irq0_source;
+    core_machine_pic_irq_source *rtc_irq_source;
     x86_pit *shared_pit;
     x86_pit *auxiliary_pit;
     lib_u8 auxiliary_pit_configured;

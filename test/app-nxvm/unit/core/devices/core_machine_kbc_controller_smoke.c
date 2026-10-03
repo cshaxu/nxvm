@@ -1,4 +1,4 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
@@ -8,7 +8,7 @@
 #include "app-nxvm/devices/machine_board_state.h"
 
 #include "app-nxvm/devices/kbc.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/machine.h"
 #include "x86/core/port.h"
 #include "support/core_machine_board_fixture.h"
@@ -129,8 +129,8 @@ static lib_bool kbc_construction_rollback(void)
 static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
 {
     t_kbc kbc;
-    core_machine_pic_bus pic_master;
-    core_machine_pic_bus pic_slave;
+    core_machine_pic_bus *pic_master = LIB_NULL;
+    core_machine_pic_bus *pic_slave = LIB_NULL;
     core_machine machine = {0};
     t_port *port = &machine.executor_port;
     lib_i32 failed = 0;
@@ -139,14 +139,14 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     core_machine_port_initialize(port);
     core_machine_pic_initialize(&pic_master, &pic_slave, &machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &machine);
-    core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
+    core_machine_kbc_bind_core_services(&kbc, pic_master, pic_slave,
         LIB_NULL, LIB_NULL, LIB_NULL, LIB_NULL, LIB_TRUE);
     core_machine_kbc_initialize_pic(port);
 
     core_machine_port_write(port, 0x0064u, 0xd4u);
     core_machine_port_write(port, 0x0060u, 0xf4u);
-    core_machine_pic_refresh(&pic_master, &pic_slave);
-    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x74u ||
+    core_machine_pic_refresh(pic_master, pic_slave);
+    failed |= core_machine_pic_get_interrupt(pic_master, pic_slave) != 0x74u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0xfau;
     core_machine_port_write(port, 0x00a0u, 0x20u);
     core_machine_port_write(port, 0x0020u, 0x20u);
@@ -154,20 +154,20 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
         core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) != LIB_STATUS_OK;
     core_machine_port_write(port, 0x0064u, 0x20u);
-    core_machine_pic_refresh(&pic_master, &pic_slave);
-    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u ||
+    core_machine_pic_refresh(pic_master, pic_slave);
+    failed |= core_machine_pic_get_interrupt(pic_master, pic_slave) != 0x09u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x03u;
     core_machine_port_write(port, 0x0020u, 0x20u);
-    core_machine_pic_refresh(&pic_master, &pic_slave);
-    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x74u ||
+    core_machine_pic_refresh(pic_master, pic_slave);
+    failed |= core_machine_pic_get_interrupt(pic_master, pic_slave) != 0x74u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x09u;
     core_machine_port_write(port, 0x00a0u, 0x20u);
     core_machine_port_write(port, 0x0020u, 0x20u);
-    failed |= !kbc.connect.irq12_source.asserted ||
+    failed |= !core_machine_pic_irq_source_is_asserted(kbc.connect.irq12_source) ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x01u ||
-        !kbc.connect.irq12_source.asserted ||
+        !core_machine_pic_irq_source_is_asserted(kbc.connect.irq12_source) ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x01u ||
-        kbc.connect.irq1_source.asserted || kbc.connect.irq12_source.asserted ||
+        core_machine_pic_irq_source_is_asserted(kbc.connect.irq1_source) || core_machine_pic_irq_source_is_asserted(kbc.connect.irq12_source) ||
         (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_AUX) != 0u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x43u;
 
@@ -175,8 +175,8 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
     core_machine_port_write(port, 0x0064u, 0x20u);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     core_machine_kbc_advance(&kbc, 2u);
-    core_machine_pic_refresh(&pic_master, &pic_slave);
-    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u ||
+    core_machine_pic_refresh(pic_master, pic_slave);
+    failed |= core_machine_pic_get_interrupt(pic_master, pic_slave) != 0x09u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x03u;
     core_machine_port_write(port, 0x0020u, 0x20u);
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x43u;
@@ -184,15 +184,15 @@ static lib_i32 core_machine_kbc_mixed_fifo_lifecycle(void)
 
     failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 0u) != LIB_STATUS_OK;
     core_machine_kbc_reset(&kbc);
-    failed |= (core_machine_kbc_read_byte(port, 0x64u) & VKBC_STATUS_OBF) != 0u || kbc.connect.irq1_source.asserted ||
-        kbc.connect.irq12_source.asserted ||
+    failed |= (core_machine_kbc_read_byte(port, 0x64u) & VKBC_STATUS_OBF) != 0u || core_machine_pic_irq_source_is_asserted(kbc.connect.irq1_source) ||
+        core_machine_pic_irq_source_is_asserted(kbc.connect.irq12_source) ||
         !x86_kbc8042_aux_enabled(kbc.chip) || !x86_keyboard_get_signals(kbc.connect.keyboard).scanning;
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
-        !kbc.connect.irq1_source.asserted;
+        !core_machine_pic_irq_source_is_asserted(kbc.connect.irq1_source);
     core_machine_kbc_finalize(&kbc);
-    failed |= kbc.connect.irq1_source.asserted || kbc.connect.irq12_source.asserted;
+    failed |= core_machine_pic_irq_source_is_asserted(kbc.connect.irq1_source) || core_machine_pic_irq_source_is_asserted(kbc.connect.irq12_source);
 
-    core_machine_pic_finalize(&pic_master, &pic_slave);
+    core_machine_pic_finalize(pic_master, pic_slave);
     core_machine_port_finalize(port);
     return failed;
 }
@@ -580,14 +580,14 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
             cpu.eip != 6u ||
             x86_keyboard_get_signals(fixture.board->shared_kbc.connect.keyboard).bat_ready ||
             (core_machine_port_read(&fixture.machine->executor_port, 0x64u) & VKBC_STATUS_OBF) == 0u ||
-            !fixture.board->shared_kbc.connect.irq1_source.asserted;
+            !core_machine_pic_irq_source_is_asserted(fixture.board->shared_kbc.connect.irq1_source);
     }
     if (!failed) {
         failed |= core_machine_run(fixture.machine, (core_machine_run_budget){2u, 0u},
                 &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_state(fixture.machine, &cpu) != LIB_STATUS_OK ||
             cpu.eip != offset ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.board->shared_pic_master, 0x0bu),
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(fixture.board->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(1u)) ||
             core_machine_port_read(&fixture.machine->executor_port, 0x60u) != 0xaau ||
             (core_machine_port_read(&fixture.machine->executor_port, 0x64u) & VKBC_STATUS_OBF) != 0u;
@@ -599,8 +599,8 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
 lib_i32 main(void)
 {
     t_kbc kbc;
-    core_machine_pic_bus pic_master;
-    core_machine_pic_bus pic_slave;
+    core_machine_pic_bus *pic_master = LIB_NULL;
+    core_machine_pic_bus *pic_slave = LIB_NULL;
     lib_bool a20_enabled = LIB_FALSE;
     lib_u32 reset_pulses = 0u;
     core_machine machine = {0};
@@ -622,7 +622,7 @@ lib_i32 main(void)
     core_machine_port_initialize(port);
     core_machine_pic_initialize(&pic_master, &pic_slave, &machine, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &machine);
-    core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
+    core_machine_kbc_bind_core_services(&kbc, pic_master, pic_slave,
         test_signal_a20, &a20_enabled, count_reset_pulse, &reset_pulses, LIB_TRUE);
     core_machine_kbc_initialize_pic(port);
 
@@ -684,17 +684,17 @@ lib_i32 main(void)
         LIB_STATUS_INVALID_STATE;
     core_machine_port_write(port, 0x0064u, 0xaeu);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
-    failed |= (test_pic_read(&pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) == 0u;
+    failed |= (test_pic_read(pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) == 0u;
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x1eu;
-    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
+    failed |= core_machine_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
     core_machine_port_write(port, 0x0020u, 0x20u);
 
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK;
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x30u) != LIB_STATUS_OK;
-    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
+    failed |= core_machine_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x1eu;
     core_machine_port_write(port, 0x0020u, 0x20u);
-    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
+    failed |= core_machine_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x30u;
     core_machine_port_write(port, 0x0020u, 0x20u);
 
@@ -704,7 +704,7 @@ lib_i32 main(void)
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xfau ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0xabu ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x41u;
-    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
+    failed |= core_machine_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
     core_machine_port_write(port, 0x0020u, 0x20u);
     core_machine_port_write(port, 0x0064u, 0x60u);
     core_machine_port_write(port, 0x0060u, 0x01u);
@@ -713,14 +713,14 @@ lib_i32 main(void)
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xfau;
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0xabu;
     failed |= core_machine_kbc_read_byte(port, 0x0060u) != 0x83u;
-    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
+    failed |= core_machine_pic_get_interrupt(pic_master, pic_slave) != 0x09u;
     core_machine_port_write(port, 0x0020u, 0x20u);
     core_machine_port_write(port, 0x0064u, 0xaau);
     failed |= (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_SYS) == 0u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x55u ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
             LIB_STATUS_INVALID_STATE ||
-        (test_pic_read(&pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) != 0u;
+        (test_pic_read(pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) != 0u;
     core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
     core_machine_port_write(port, 0x0064u, 0xaau);
     failed |= (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_OBF) != 0u ||
@@ -729,7 +729,7 @@ lib_i32 main(void)
     core_machine_kbc_set_command_response_status_polls(&kbc, 0u);
     core_machine_port_write(port, 0x0064u, 0xaeu);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != LIB_STATUS_OK ||
-        (test_pic_read(&pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) == 0u ||
+        (test_pic_read(pic_master, 0x0au) & VPIC_IRR_IRQ(1u)) == 0u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0x1eu;
     core_machine_kbc_set_command_response_status_polls(&kbc, 1u);
     core_machine_port_write(port, 0x0060u, 0xffu);
@@ -833,7 +833,7 @@ lib_i32 main(void)
     failed |= !x86_keyboard_get_signals(kbc.connect.keyboard).bat_ready || (core_machine_kbc_read_byte(port, 0x64u) & VKBC_STATUS_OBF) == 0u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0xfau ||
         x86_keyboard_get_signals(kbc.connect.keyboard).bat_ready || (core_machine_kbc_read_byte(port, 0x64u) & VKBC_STATUS_OBF) == 0u ||
-        !kbc.connect.irq1_source.asserted ||
+        !core_machine_pic_irq_source_is_asserted(kbc.connect.irq1_source) ||
         (core_machine_kbc_read_byte(port, 0x0064u) & VKBC_STATUS_OBF) == 0u ||
         core_machine_kbc_read_byte(port, 0x0060u) != 0xaau ||
         x86_keyboard_get_signals(kbc.connect.keyboard).scan_set != CORE_MACHINE_KEYBOARD_SCAN_SET_2;
@@ -906,7 +906,7 @@ lib_i32 main(void)
     failed |= (core_machine_kbc_read_byte(port, 0x64u) & VKBC_STATUS_OBF) != 0u;
 
     core_machine_kbc_finalize(&kbc);
-    core_machine_pic_finalize(&pic_master, &pic_slave);
+    core_machine_pic_finalize(pic_master, pic_slave);
     core_machine_port_finalize(port);
     if (failed) {
         fprintf(stderr,

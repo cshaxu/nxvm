@@ -1,9 +1,9 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include <stdio.h>
 
 typedef struct moffs_machine { core_machine *machine;
@@ -145,7 +145,7 @@ static lib_i32 moffs_test_irq_no_shadow(void)
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
         moffs_machine state;
-        core_machine_pic_irq_source source;
+        core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result;
         core_machine_debug_cpu_snapshot after;
         lib_u16 vector_offset = 0x0100u;
@@ -173,12 +173,12 @@ static lib_i32 moffs_test_irq_no_shadow(void)
                 failed |= core_machine_debug_patch_registers(state.machine, &flags) != LIB_STATUS_OK;
             }
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+            test_pic_program_vector(state.board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &state.board->shared_pic_master, &state.board->shared_pic_slave,
+                state.board->shared_pic_master, state.board->shared_pic_slave,
                 0u);
-            core_machine_pic_irq_source_assert(&source);
-            core_machine_pic_irq_source_deassert(&source);
+            core_machine_pic_irq_source_assert(source);
+            core_machine_pic_irq_source_deassert(source);
             failed |= core_machine_run(state.machine,
                     (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
@@ -186,9 +186,9 @@ static lib_i32 moffs_test_irq_no_shadow(void)
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             failed |= core_machine_memory_read(state.machine, after.ss.base + (lib_u16)after.esp, &frame_ip, sizeof(frame_ip)) !=
                     LIB_STATUS_OK || after.eip != 0x0101u || frame_ip != 3u ||
-                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
+                    test_pic_read(state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
                 (form == 0u && after.eax != 0xaabb335au) ||
                 (form == 1u && (core_machine_memory_read(state.machine, 0x1000u, &image, sizeof(image)) != LIB_STATUS_OK ||
                     image != 0x44u));

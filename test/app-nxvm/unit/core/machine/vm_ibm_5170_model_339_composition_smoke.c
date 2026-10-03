@@ -123,15 +123,20 @@ static lib_i32 vm_model_339_selected_contract(void)
         session->board->hdc.connect.config.service.command_ticks != 16000u ||
         session->board->hdc.connect.config.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
     {
-        core_machine_pic_bus *bus = &session->board->shared_pic_master;
+        core_machine_pic_bus *bus = session->board->shared_pic_master;
+        core_machine_pic_irq_source *source = LIB_NULL;
         lib_u64 ticks = 0u;
-        x86_pic_write_register(bus->device, 0u, 0x13u);
-        x86_pic_write_register(bus->device, 1u, 8u);
-        x86_pic_write_register(bus->device, 1u, 1u);
-        x86_pic_write_register(bus->device, 1u, 2u);
-        x86_pic_set_inputs(bus->device, 0u, 2u, 0u);
-        x86_pic_write_register(bus->device, 1u, 0u);
-        failed |= x86_pic_ticks_until_event(bus->device, &ticks) !=
+        core_machine_pic_write_register(bus, 0u, 0x13u);
+        core_machine_pic_write_register(bus, 1u, 8u);
+        core_machine_pic_write_register(bus, 1u, 1u);
+        core_machine_pic_write_register(bus, 1u, 2u);
+        failed |= core_machine_pic_irq_source_bind(&source, bus,
+            session->board->shared_pic_slave, 1u) != LIB_STATUS_OK;
+        core_machine_pic_irq_source_assert(source);
+        core_machine_pic_irq_source_deassert(source);
+        core_machine_pic_write_register(bus, 1u, 0u);
+        failed |= core_machine_pic_ticks_until_event(bus,
+            session->board->shared_pic_slave, &ticks) !=
             LIB_STATUS_OK || ticks != 120u ? 0x0012 : 0;
     }
     vm_machine_destroy(session);

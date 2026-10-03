@@ -188,6 +188,25 @@ The [S90 evidence](../etc/evidence/t540-s90-pit-port-extraction.md) records
 independent/full tests, corrected single-Core links and all eight final boot
 checkpoints. The remaining common/family/D4 receivers are still required.
 
+## S91 Complete PIC Aggregation Receiver
+
+The receiver includes non-mutating copied IRR/IMR/ISR diagnostics through the
+chip's public contract. Diagnostic inspection must not reprogram OCW3 or refresh
+cascade inputs; actual polling remains a guest-visible bus operation. This is
+the same opaque/copy boundary, not a chip getter or timing/algorithm change.
+
+Move the whole port/cascade/source/reset/advance/deadline/acknowledgement component,
+not a per-operation seam. Opaque endpoints and source leases eliminate the
+App's embedded aggregation layout. The PIC lifetime owns source allocations;
+reconnection reuses the same lease, and any initial allocation failure rolls
+back the whole board candidate. No private chip getter or state mirror is
+eligible. Public programming/observation follows the same owned port and IRQ
+mechanisms, with copied values only. Every FDC/HDC/KBC/RTC/PIT producer,
+diagnostic and fixture adopts that owner. Existing algorithms, reset ordering
+and hardware assertions remain. Independent tests, full suites, gates and
+eight final single-run checkpoints precede delivery. DMA/family/D4 remain
+distinct subsequent complete receivers.
+
 ## Verification And Exit
 
 S80 receives the complete callback-context class from S79: the existing board

@@ -712,7 +712,7 @@ static void vm_byob_retirement_observe(void *context,
                 trace->kbc_data4d_bat_pending =
                     x86_keyboard_get_signals(trace->machine->board->shared_kbc.connect.keyboard).bat_ready;
                 trace->kbc_data4d_irq_asserted =
-                    trace->machine->board->shared_kbc.connect.irq1_source.asserted;
+                    core_machine_pic_irq_source_is_asserted(trace->machine->board->shared_kbc.connect.irq1_source);
             }
         } else if (trace->kbc_keyboard_reset_seen && observation->io_port == 0x0060u &&
             trace->kbc_keyboard_reset_read_count <
@@ -2119,7 +2119,7 @@ int main(lib_i32 argc, char **argv)
                     printf("BOOT-PROBE=xt-keyboard-byte-ready\n");
                 {
                     lib_u8 mask = 0u;
-                    x86_pic_read_register(session->board->shared_pic_master.device,
+                    core_machine_pic_read_register(session->board->shared_pic_master,
                         1u, &mask);
                     printf("BOOT-PROBE=pic-imr=%02X\n", (unsigned int)mask);
                     if (mask == 0xffu) printf("BOOT-PROBE=pic-imr-ff\n");
@@ -3130,9 +3130,9 @@ done:
         }
         printf("BOOT-PROBE=pic-pending=%u-fdc-irq=%u\n",
             (unsigned int)core_machine_pic_scan_interrupt(
-                &session->board->shared_pic_master,
-                &session->board->shared_pic_slave),
-            (unsigned int)session->board->fdc.connect.irq_source.asserted);
+                session->board->shared_pic_master,
+                session->board->shared_pic_slave),
+            (unsigned int)core_machine_pic_irq_source_is_asserted(session->board->fdc.connect.irq_source));
         if (core_machine_memory_read(session->core_machine, 0x0410u,
                 &bda_equipment, sizeof(bda_equipment)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x0415u,

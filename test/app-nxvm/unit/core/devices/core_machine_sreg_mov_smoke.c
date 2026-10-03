@@ -1,4 +1,4 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
@@ -179,7 +179,7 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
 
     for (form = 0u; form != sizeof(modrms); ++form) {
         sreg_mov_machine state;
-        core_machine_pic_irq_source source;
+        core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result;
         core_machine_debug_cpu_snapshot after = {0};
         lib_u16 offset = 0x0100u;
@@ -236,12 +236,12 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
             failed |= core_machine_debug_patch_registers(state.machine,
                 &registers) != LIB_STATUS_OK;
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+            test_pic_program_vector(state.board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &state.board->shared_pic_master,
-                &state.board->shared_pic_slave, 0u);
-            core_machine_pic_irq_source_assert(&source);
-            core_machine_pic_irq_source_deassert(&source);
+                state.board->shared_pic_master,
+                state.board->shared_pic_slave, 0u);
+            core_machine_pic_irq_source_assert(source);
+            core_machine_pic_irq_source_deassert(source);
             failed |= core_machine_run(state.machine,
                 (core_machine_run_budget){form == 0u ? 3u : 2u, 0u},
                 &result) != LIB_STATUS_OK ||
@@ -252,10 +252,10 @@ static lib_i32 sreg_mov_test_irq_shadow(void)
                 sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.eip != 0x101u || frame_ip != expected_ip ||
                 !CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(&state.board->shared_pic_master, 0x0bu),
+                    test_pic_read(state.board->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u)) ||
                 CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(&state.board->shared_pic_master, 0x0au),
+                    test_pic_read(state.board->shared_pic_master, 0x0au),
                     VPIC_IRR_IRQ(0u)) ||
                 sreg_mov_sreg(&after, target)->selector != 0x2000u;
         }

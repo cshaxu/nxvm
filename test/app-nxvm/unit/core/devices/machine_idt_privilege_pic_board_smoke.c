@@ -1,7 +1,7 @@
 #include "x86/chips/cpu/support/cpu_instruction_fixture.h"
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/machine.h"
 #include "x86/core/port.h"
 #include <stdio.h>
@@ -17,8 +17,8 @@
 typedef struct idt_pic_board {
     cpu_instruction_fixture cpu;
     core_machine machine;
-    core_machine_pic_bus master;
-    core_machine_pic_bus slave;
+    core_machine_pic_bus *master;
+    core_machine_pic_bus *slave;
 } idt_pic_board;
 
 static lib_status idt_pic_read(void *opaque, lib_u32 address, void *destination,
@@ -41,13 +41,13 @@ static lib_status idt_pic_write(void *opaque, lib_u32 address,
 static lib_bool idt_pic_interrupt_pending(void *opaque)
 {
     idt_pic_board *const board = opaque;
-    return core_machine_pic_peek_interrupt(&board->master, &board->slave) != 0u;
+    return core_machine_pic_peek_interrupt(board->master, board->slave) != 0u;
 }
 
 static lib_status idt_pic_acknowledge(void *opaque, lib_u8 *out_vector)
 {
     idt_pic_board *const board = opaque;
-    lib_u8 vector = core_machine_pic_get_interrupt(&board->master, &board->slave);
+    lib_u8 vector = core_machine_pic_get_interrupt(board->master, board->slave);
 
     if (out_vector == LIB_NULL || vector == 0u) return LIB_STATUS_INVALID_STATE;
     *out_vector = vector;
@@ -131,21 +131,21 @@ static lib_bool idt_pic_prepare(idt_pic_board *board)
     cpu->data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
     cpu->data.esp = 0x00008800u;
     cpu->data.eflags = 0x00000202u;
-    test_pic_program_vector(&board->master, PIC_IDT_VECTOR);
+    test_pic_program_vector(board->master, PIC_IDT_VECTOR);
     return LIB_TRUE;
 }
 
 int main(void)
 {
     idt_pic_board board;
-    core_machine_pic_irq_source source = {0};
+    core_machine_pic_irq_source *source = LIB_NULL;
     t_cpu after;
     lib_i32 failed = !idt_pic_prepare(&board);
 
     if (!failed) {
-        core_machine_pic_irq_source_bind(&source, &board.master, &board.slave, 0u);
-        core_machine_pic_irq_source_assert(&source);
-        core_machine_pic_irq_source_deassert(&source);
+        core_machine_pic_irq_source_bind(&source, board.master, board.slave, 0u);
+        core_machine_pic_irq_source_assert(source);
+        core_machine_pic_irq_source_deassert(source);
         core_machine_cpu_execution_refresh(&board.cpu.execution);
         core_machine_cpu_execution_refresh(&board.cpu.execution);
         after = board.cpu.cpu;
@@ -153,10 +153,10 @@ int main(void)
             after.data.cs.selector != 0x0008u || after.data.cs.dpl != 0u ||
             after.data.ss.selector != 0x0010u || after.data.esp != 0x00008fecu ||
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&board.master, 0x0bu), 1u) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&board.master, 0x0au), 1u);
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(board.master, 0x0bu), 1u) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(board.master, 0x0au), 1u);
     }
-    core_machine_pic_finalize(&board.master, &board.slave);
+    core_machine_pic_finalize(board.master, board.slave);
     core_machine_port_finalize(&board.machine.executor_port);
     if (failed) return 1;
     puts("M5:T307:IDT-PRIVILEGE-ENTRY:PIC:OK");

@@ -1,6 +1,6 @@
 #include "x86/chips/cpu/support/cpu_outer_return_fixture.h"
-#include "support/pic_fixture.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/machine.h"
 #include "x86/core/port.h"
 #include <stdio.h>
@@ -8,8 +8,8 @@
 typedef struct outer_iret_pic_board {
     cpu_instruction_fixture cpu;
     core_machine machine;
-    core_machine_pic_bus master;
-    core_machine_pic_bus slave;
+    core_machine_pic_bus *master;
+    core_machine_pic_bus *slave;
 } outer_iret_pic_board;
 
 static lib_status outer_iret_pic_read(void *opaque, lib_u32 address,
@@ -36,14 +36,14 @@ static lib_bool outer_iret_pic_pending(void *opaque)
 {
     outer_iret_pic_board *const board = opaque;
 
-    return core_machine_pic_peek_interrupt(&board->master, &board->slave) != 0u;
+    return core_machine_pic_peek_interrupt(board->master, board->slave) != 0u;
 }
 
 static lib_status outer_iret_pic_acknowledge(void *opaque, lib_u8 *out_vector)
 {
     outer_iret_pic_board *const board = opaque;
-    const lib_u8 vector = core_machine_pic_get_interrupt(&board->master,
-        &board->slave);
+    const lib_u8 vector = core_machine_pic_get_interrupt(board->master,
+        board->slave);
 
     if (out_vector == LIB_NULL || vector == 0u) return LIB_STATUS_INVALID_STATE;
     *out_vector = vector;
@@ -84,21 +84,21 @@ static lib_bool outer_iret_pic_prepare(outer_iret_pic_board *board)
         sizeof(outer_frame));
     lib_memory_copy(memory + CPU_OUTER_USER_CODE_BASE + 0x10u, user_nop,
         sizeof(user_nop));
-    test_pic_program_vector(&board->master, vector);
+    test_pic_program_vector(board->master, vector);
     return LIB_TRUE;
 }
 
 int main(void)
 {
     outer_iret_pic_board board;
-    core_machine_pic_irq_source source = {0};
+    core_machine_pic_irq_source *source = LIB_NULL;
     t_cpu after = {0};
     lib_bool failed = !outer_iret_pic_prepare(&board);
 
     if (!failed) {
-        core_machine_pic_irq_source_bind(&source, &board.master, &board.slave, 0u);
-        core_machine_pic_irq_source_assert(&source);
-        core_machine_pic_irq_source_deassert(&source);
+        core_machine_pic_irq_source_bind(&source, board.master, board.slave, 0u);
+        core_machine_pic_irq_source_assert(source);
+        core_machine_pic_irq_source_deassert(source);
         core_machine_cpu_execution_refresh(&board.cpu.execution);
         core_machine_cpu_execution_refresh(&board.cpu.execution);
         core_machine_cpu_execution_refresh(&board.cpu.execution);
@@ -107,19 +107,19 @@ int main(void)
         failed = board.cpu.fault.valid || after.data.cs.selector != 0x0008u ||
             after.data.ss.selector != 0x0010u || after.data.eip != 0x101u ||
             !after.data.flagHalt ||
-            (test_pic_read(&board.master, 0x0bu) & 1u) == 0u ||
-            (test_pic_read(&board.master, 0x0au) & 1u) != 0u;
+            (test_pic_read(board.master, 0x0bu) & 1u) == 0u ||
+            (test_pic_read(board.master, 0x0au) & 1u) != 0u;
     }
     if (failed) {
         fprintf(stderr, "outer PIC cs=%04x ss=%04x ip=%08x sp=%08x flags=%08x irr=%02x isr=%02x fault=%u\\n",
             after.data.cs.selector, after.data.ss.selector, after.data.eip,
-            after.data.esp, after.data.eflags, test_pic_read(&board.master, 0x0au),
-            test_pic_read(&board.master, 0x0bu), board.cpu.fault.valid);
-        core_machine_pic_finalize(&board.master, &board.slave);
+            after.data.esp, after.data.eflags, test_pic_read(board.master, 0x0au),
+            test_pic_read(board.master, 0x0bu), board.cpu.fault.valid);
+        core_machine_pic_finalize(board.master, board.slave);
         core_machine_port_finalize(&board.machine.executor_port);
         return 1;
     }
-    core_machine_pic_finalize(&board.master, &board.slave);
+    core_machine_pic_finalize(board.master, board.slave);
     core_machine_port_finalize(&board.machine.executor_port);
     puts("M5:T539:S54:OUTER-IRET:PIC-BOARD:OK");
     return 0;

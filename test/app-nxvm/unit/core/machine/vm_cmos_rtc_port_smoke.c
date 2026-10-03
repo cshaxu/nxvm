@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/port.h"
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
@@ -40,8 +40,8 @@ static void initialize_pic(t_port *port)
 static void advance_cmos(core_machine_board_state *board, lib_u64 elapsed_ticks)
 {
     x86_rtc_advance(board->shared_rtc, elapsed_ticks);
-    core_machine_pic_refresh(&board->shared_pic_master,
-        &board->shared_pic_slave);
+    core_machine_pic_refresh(board->shared_pic_master,
+        board->shared_pic_slave);
 }
 
 static lib_i32 default_at_cmos_seed_is_loaded(void)
@@ -102,24 +102,24 @@ lib_i32 main(void)
 
     cmos_write(port, X86_RTC_REG_B, X86_RTC_REG_B_24H | X86_RTC_REG_B_UIE);
     advance_cmos(session->board, 50000u);
-    if (!core_machine_pic_scan_interrupt(session->board->rtc_irq_source.master,
-        session->board->rtc_irq_source.slave)) failed |= 0x0008;
-    if (core_machine_pic_get_interrupt(session->board->rtc_irq_source.master,
-        session->board->rtc_irq_source.slave) != 0x70u) failed |= 0x0010;
+    if (!core_machine_pic_scan_interrupt(session->board->shared_pic_master,
+        session->board->shared_pic_slave)) failed |= 0x0008;
+    if (core_machine_pic_get_interrupt(session->board->shared_pic_master,
+        session->board->shared_pic_slave) != 0x70u) failed |= 0x0010;
     if ((cmos_read(port, X86_RTC_REG_C) &
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_UF)) !=
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_UF)) failed |= 0x0020;
     core_machine_port_write(port, 0x00a0u, 0x20u);
     core_machine_port_write(port, 0x0020u, 0x20u);
-    if (core_machine_pic_scan_interrupt(session->board->rtc_irq_source.master,
-        session->board->rtc_irq_source.slave)) failed |= 0x0040;
+    if (core_machine_pic_scan_interrupt(session->board->shared_pic_master,
+        session->board->shared_pic_slave)) failed |= 0x0040;
 
     cmos_write(port, X86_RTC_REG_B, X86_RTC_REG_B_24H | X86_RTC_REG_B_PIE);
     advance_cmos(session->board, 50u);
-    if (!core_machine_pic_scan_interrupt(session->board->rtc_irq_source.master,
-        session->board->rtc_irq_source.slave) ||
-        core_machine_pic_get_interrupt(session->board->rtc_irq_source.master,
-            session->board->rtc_irq_source.slave) != 0x70u) failed |= 0x0080;
+    if (!core_machine_pic_scan_interrupt(session->board->shared_pic_master,
+        session->board->shared_pic_slave) ||
+        core_machine_pic_get_interrupt(session->board->shared_pic_master,
+            session->board->shared_pic_slave) != 0x70u) failed |= 0x0080;
     if ((cmos_read(port, X86_RTC_REG_C) &
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_PF)) !=
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_PF)) failed |= 0x0100;
@@ -145,10 +145,10 @@ lib_i32 main(void)
     cmos_write(port, X86_RTC_HOUR_ALARM, 0x00u);
     cmos_write(port, X86_RTC_REG_B, X86_RTC_REG_B_24H | X86_RTC_REG_B_AIE);
     advance_cmos(session->board, 50000u);
-    if (!core_machine_pic_scan_interrupt(session->board->rtc_irq_source.master,
-        session->board->rtc_irq_source.slave) ||
-        core_machine_pic_get_interrupt(session->board->rtc_irq_source.master,
-            session->board->rtc_irq_source.slave) != 0x70u) failed |= 0x0800;
+    if (!core_machine_pic_scan_interrupt(session->board->shared_pic_master,
+        session->board->shared_pic_slave) ||
+        core_machine_pic_get_interrupt(session->board->shared_pic_master,
+            session->board->shared_pic_slave) != 0x70u) failed |= 0x0800;
     if ((cmos_read(port, X86_RTC_REG_C) &
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_AF)) !=
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_AF)) failed |= 0x1000;

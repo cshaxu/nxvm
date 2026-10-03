@@ -172,8 +172,9 @@ lib_i32 main(void)
             &media_info, &media_result) != LIB_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK || !media_info.present ||
         media_info.geometry.cylinders != 2u ||
-        session->board->hdc.connect.irq_source.master == LIB_NULL ||
-        session->board->hdc.connect.irq_source.slave == LIB_NULL ||
+        session->board->hdc.connect.irq_source == LIB_NULL ||
+        session->board->shared_pic_master == LIB_NULL ||
+        session->board->shared_pic_slave == LIB_NULL ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
         !vm_hdc_complete_command(session->board) ||
         !vm_hdc_read(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, &value) ||

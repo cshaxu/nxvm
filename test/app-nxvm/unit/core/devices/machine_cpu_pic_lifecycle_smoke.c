@@ -1,4 +1,4 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
@@ -49,13 +49,19 @@ lib_i32 main(void)
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= cpu_pic_binding_is_owned(machine, cpu);
     if (machine != LIB_NULL) {
-        x86_pic_set_inputs(board->shared_pic_master.device, 0u, 0xffu, 0u);
-        x86_pic_set_inputs(board->shared_pic_slave.device, 0u, 0xffu, 0u);
+        for (lib_u8 irq = 0u; irq < 16u; ++irq) {
+            core_machine_pic_irq_source *source = LIB_NULL;
+            if (irq == 2u) continue;
+            failed |= core_machine_pic_irq_source_bind(&source,
+                board->shared_pic_master, board->shared_pic_slave, irq) != LIB_STATUS_OK;
+            core_machine_pic_irq_source_assert(source);
+            core_machine_pic_irq_source_deassert(source);
+        }
     }
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= cpu_pic_binding_is_owned(machine, cpu);
-    failed |= machine == LIB_NULL || test_pic_read(&board->shared_pic_master, 0x0au) != 0u ||
-        test_pic_read(&board->shared_pic_slave, 0x0au) != 0u;
+    failed |= machine == LIB_NULL || test_pic_read(board->shared_pic_master, 0x0au) != 0u ||
+        test_pic_read(board->shared_pic_slave, 0x0au) != 0u;
 
     core_machine_destroy(machine);
     if (failed != 0) return 1;

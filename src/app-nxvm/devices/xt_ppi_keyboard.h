@@ -4,7 +4,7 @@
 
 
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/port_interface.h"
 #include "x86/chips/ppi8255/ppi8255_interface.h"
 
@@ -20,7 +20,7 @@ typedef void (*core_machine_xt_ppi_byte_released)(void *owner);
  * wiring would otherwise become invented guest behavior. */
 typedef struct core_machine_xt_ppi_keyboard {
     core_machine_xt_ppi_keyboard_config config;
-    core_machine_pic_irq_source irq1_source;
+    core_machine_pic_irq_source *irq1_source;
     x86_ppi8255 *ppi;
     lib_u8 current_byte;
     lib_bool byte_ready;
@@ -43,7 +43,7 @@ lib_i32 core_machine_xt_ppi_keyboard_config_is_valid(
 lib_status core_machine_xt_ppi_keyboard_initialize(
     core_machine_xt_ppi_keyboard *keyboard,
     const core_machine_xt_ppi_keyboard_config *config, core_machine *machine);
-void core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
+lib_status core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
     core_machine_pic_bus *master, core_machine_pic_bus *slave);
 void core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keyboard,
     core_machine_xt_ppi_nmi_request request, void *owner);

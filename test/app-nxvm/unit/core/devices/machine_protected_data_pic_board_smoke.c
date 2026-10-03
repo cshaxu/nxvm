@@ -23,8 +23,8 @@ int main(void)
         failed = board.cpu.execution.stop_requested || board.cpu.fault.valid ||
             after.data.eax != 0xaabbcc5au || after.data.cs.selector != 0x08u ||
             after.data.eip != 0x101u || frame_ip != 4u || after.data.esp != 0x7ffau ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&board.master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&board.master, 0x0au), VPIC_IRR_IRQ(0u));
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(board.master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(board.master, 0x0au), VPIC_IRR_IRQ(0u));
     }
     protected_pic_board_finalize(&board);
     if (failed) return 1;

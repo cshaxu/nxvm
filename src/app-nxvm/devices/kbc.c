@@ -94,7 +94,7 @@ static void kbc_irq(void *context, lib_bool auxiliary, lib_bool asserted)
 {
     t_kbc *attachment = context;
     core_machine_pic_irq_source *source = auxiliary ?
-        &attachment->connect.irq12_source : &attachment->connect.irq1_source;
+        attachment->connect.irq12_source : attachment->connect.irq1_source;
     if (asserted) core_machine_pic_irq_source_assert(source);
     else core_machine_pic_irq_source_deassert(source);
 }
@@ -179,20 +179,26 @@ lib_status core_machine_kbc_initialize(t_kbc *attachment, core_machine *machine)
     return status;
 }
 
-void core_machine_kbc_bind_core_services(t_kbc *attachment,
+lib_status core_machine_kbc_bind_core_services(t_kbc *attachment,
     core_machine_pic_bus *master, core_machine_pic_bus *slave,
     void (*set_a20)(void *context, lib_bool enabled), void *a20_context,
     void (*request_reset)(void *context), void *reset_context,
     lib_u8 aux_present)
 {
-    if (attachment == LIB_NULL) return;
-    core_machine_pic_irq_source_bind(&attachment->connect.irq1_source, master, slave, 1u);
-    core_machine_pic_irq_source_bind(&attachment->connect.irq12_source, master, slave, 12u);
+    lib_status status;
+    if (attachment == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_pic_irq_source_bind(&attachment->connect.irq1_source,
+        master, slave, 1u);
+    if (status == LIB_STATUS_OK)
+        status = core_machine_pic_irq_source_bind(&attachment->connect.irq12_source,
+            master, slave, 12u);
+    if (status != LIB_STATUS_OK) return status;
     attachment->connect.set_a20 = set_a20;
     attachment->connect.a20_context = a20_context;
     attachment->connect.request_reset = request_reset;
     attachment->connect.reset_context = reset_context;
     x86_kbc8042_set_aux_present(attachment->chip, aux_present);
+    return LIB_STATUS_OK;
 }
 
 void core_machine_kbc_reset(t_kbc *attachment)

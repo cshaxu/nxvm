@@ -11,7 +11,7 @@ extern "C" {
 #include "x86/chips/keyboard/keyboard_interface.h"
 #include "x86/chips/kbc8042/kbc8042_interface.h"
 
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/port_interface.h"
 
 #define CORE_MACHINE_DEVICE_KBC "Intel 8042"
@@ -34,8 +34,8 @@ typedef struct core_machine_pic_bus core_machine_pic_bus;
 typedef struct t_kbc_connect {
     x86_ps2_mouse *aux_device;
     x86_keyboard *keyboard;
-    core_machine_pic_irq_source irq1_source;
-    core_machine_pic_irq_source irq12_source;
+    core_machine_pic_irq_source *irq1_source;
+    core_machine_pic_irq_source *irq12_source;
     void (*set_a20)(void *context, lib_bool enabled);
     void *a20_context;
     void (*request_reset)(void *context);
@@ -48,7 +48,7 @@ typedef struct t_kbc {
 } t_kbc;
 
 lib_status core_machine_kbc_initialize(t_kbc *controller, core_machine *machine);
-void core_machine_kbc_bind_core_services(t_kbc *controller, core_machine_pic_bus *pic_master,
+lib_status core_machine_kbc_bind_core_services(t_kbc *controller, core_machine_pic_bus *pic_master,
     core_machine_pic_bus *pic_slave,
     void (*set_a20)(void *context, lib_bool enabled), void *a20_context,
     void (*request_reset)(void *context), void *reset_context,

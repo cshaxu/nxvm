@@ -253,8 +253,8 @@ static x86_fdc_record_result core_machine_fdc_record_format(void *context, lib_u
 static void core_machine_fdc_irq(void *context, lib_bool asserted)
 {
     core_machine_fdc *fdc = context;
-    if (asserted) core_machine_pic_irq_source_assert(&fdc->connect.irq_source);
-    else core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+    if (asserted) core_machine_pic_irq_source_assert(fdc->connect.irq_source);
+    else core_machine_pic_irq_source_deassert(fdc->connect.irq_source);
 }
 
 static void core_machine_fdc_drq(void *context, lib_bool asserted)
@@ -384,7 +384,7 @@ static lib_status core_machine_fdc_port_write(void *owner, lib_u16 id,
     return LIB_STATUS_OK;
 }
 
-void core_machine_fdc_connect(core_machine_fdc *fdc,
+lib_status core_machine_fdc_connect(core_machine_fdc *fdc,
     const core_machine_media_registry *media_registry,
     const core_machine_fdc_drive_bindings *drives,
     const core_machine_dma_request_binding *dma_request,
@@ -394,22 +394,25 @@ void core_machine_fdc_connect(core_machine_fdc *fdc,
     core_machine *machine, const core_machine_fdc_config *config,
     const core_machine_fdc_terminal_observation_provider *observation_provider)
 {
+    lib_status status;
     if (fdc == LIB_NULL || drives == LIB_NULL || dma_request == LIB_NULL ||
         dma_request_assert == LIB_NULL || dma_request_deassert == LIB_NULL ||
-        dma_request_owner == LIB_NULL || config == LIB_NULL) return;
+        dma_request_owner == LIB_NULL || config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = core_machine_pic_irq_source_bind(&fdc->connect.irq_source,
+        pic_master, pic_slave, config->irq);
+    if (status != LIB_STATUS_OK) return status;
     fdc->connect.media_registry = media_registry;
     fdc->connect.drives = *drives;
     fdc->connect.dma_request = *dma_request;
     fdc->connect.dma_request_assert = dma_request_assert;
     fdc->connect.dma_request_deassert = dma_request_deassert;
     fdc->connect.dma_request_owner = dma_request_owner;
-    core_machine_pic_irq_source_bind(&fdc->connect.irq_source, pic_master,
-        pic_slave, config->irq);
     fdc->connect.machine = machine;
     fdc->connect.config = *config;
     if (observation_provider != LIB_NULL) {
         fdc->connect.observation_provider = *observation_provider;
     }
+    return LIB_STATUS_OK;
 }
 
 lib_status core_machine_fdc_initialize(core_machine_fdc *fdc)

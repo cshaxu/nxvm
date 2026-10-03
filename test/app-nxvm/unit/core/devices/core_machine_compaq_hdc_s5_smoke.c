@@ -4,7 +4,7 @@
 
 #include "app-nxvm/devices/hdc.h"
 #include "x86/ibmpc-common/media_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/machine.h"
 #include "x86/core/port.h"
 
@@ -109,8 +109,8 @@ lib_i32 main(void)
     core_machine machine = {0};
     t_port *port = &machine.executor_port;
     t_port empty_port = {0};
-    core_machine_pic_bus master = {0};
-    core_machine_pic_bus slave = {0};
+    core_machine_pic_bus *master = LIB_NULL;
+    core_machine_pic_bus *slave = LIB_NULL;
     lib_u32 value;
     lib_i32 failed = 0;
 
@@ -131,7 +131,7 @@ lib_i32 main(void)
     } else if (core_machine_media_registry_freeze(registry) != LIB_STATUS_OK) {
         failed |= 0x02;
     } else {
-        core_machine_hdc_connect(&hdc, registry, 1u, 2u, &master, &slave, &config);
+        core_machine_hdc_connect(&hdc, registry, 1u, 2u, master, slave, &config);
         if (core_machine_hdc_initialize(&hdc) != LIB_STATUS_OK ||
             !core_machine_compaq_hdc_install(port, &hdc)) {
             failed |= 0x02;
@@ -185,7 +185,7 @@ lib_i32 main(void)
              * only a sector command is allowed to report absent media. */
             core_machine_port_initialize(&empty_port);
             core_machine_hdc_connect(&empty_hdc, registry, 3u,
-                CORE_MACHINE_MEDIA_ID_INVALID, &master, &slave, &config);
+                CORE_MACHINE_MEDIA_ID_INVALID, master, slave, &config);
             if (core_machine_hdc_initialize(&empty_hdc) != LIB_STATUS_OK ||
                 !core_machine_compaq_hdc_install(&empty_port, &empty_hdc)) {
                 failed |= 0x04;
@@ -200,6 +200,7 @@ lib_i32 main(void)
         fprintf(stderr, "M5:T386:S5:COMPAQ-HDC-ROUTE:FAIL %x status=%x error=%x phase=%u irq=%u chs=%x:%x:%x\n", failed, hdc_observe(&hdc).status, hdc_observe(&hdc).error, hdc_observe(&hdc).phase, hdc_observe(&hdc).irq_pending, hdc_observe(&hdc).cylinder_high, hdc_observe(&hdc).cylinder_low, hdc_observe(&hdc).sector_number);
         core_machine_hdc_finalize(&hdc);
         core_machine_media_registry_destroy(registry);
+        core_machine_pic_finalize(master, slave);
         core_machine_port_finalize(port);
         return 1;
     }
@@ -207,6 +208,7 @@ lib_i32 main(void)
     core_machine_port_finalize(&empty_port);
     core_machine_hdc_finalize(&hdc);
     core_machine_media_registry_destroy(registry);
+    core_machine_pic_finalize(master, slave);
     core_machine_port_finalize(port);
     puts("M5:T386:S5:COMPAQ-HDC-ROUTE:OK");
     puts("M5:T386:S5:PORT-WIRED-OR:OK");

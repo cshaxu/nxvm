@@ -296,14 +296,14 @@ static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine, core_mac
             if (!inputs[input].admitted) {
                 const lib_bool not_ready = inputs[input].ready == 0u;
                 test_fdc_advance(fdc);
-                mismatch = !fdc->connect.irq_source.asserted ||
+                mismatch = !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
                     !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != (not_ready ? 0x48u : 0x40u) ||
                     result[1] != (not_ready ? 0u : 0x04u) ||
-                    result[2] != 0u || fdc->connect.irq_source.asserted;
+                    result[2] != 0u || core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
             } else {
                 mismatch = core_machine_port_read(port, 0x03f4u) != commands[command].msr ||
-                    fdc->connect.irq_source.asserted !=
+                    core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) !=
                         (commands[command].msr == TEST_FDC_MSR_RESULT);
             }
             mismatch |= core_machine_dma_has_pending_request(
@@ -313,7 +313,7 @@ static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine, core_mac
             if (mismatch) {
                 fprintf(stderr, "FDC readiness variant=%zu command=%02x st=%02x/%02x/%02x irq=%u msr=%02x dma=%u\n",
                     variant, commands[command].bytes[0], result[0], result[1], result[2],
-                    fdc->connect.irq_source.asserted,
+                    core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source),
                     core_machine_port_read(port, 0x03f4u),
                     core_machine_dma_has_pending_request(&board->shared_dma_primary,
                         &board->shared_dma_secondary));
@@ -409,7 +409,7 @@ static lib_i32 core_machine_fdc_write_terminal(core_machine *machine, core_machi
                     core_machine_fdc_advance_at(fdc, due);
                     if (cases[index].action == RESET)
                         failed |= (core_machine_port_read(port, 0x03f4u) & TEST_FDC_MSR_CB) != 0u ||
-                            fdc->connect.irq_source.asserted;
+                            core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                     else failed |= !core_machine_fdc_read_result(fdc, port, result, 7u) ||
                         result[0] != 0x40u || result[1] !=
                             (cases[index].action == MOTOR_OFF ? 0x04u : 0x02u);
@@ -725,23 +725,23 @@ lib_i32 main(void)
             } else {
                 failed |= core_machine_port_read(port, fdc_config.diagnostic_port) != 0x50u;
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
-                failed |= fdc->connect.irq_source.asserted ||
+                failed |= core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
                     !observe(fdc).reset_pending || observe(fdc).reset_due_tick != 8192u;
                 core_machine_fdc_advance_at(fdc, 8191u);
-                failed |= fdc->connect.irq_source.asserted;
+                failed |= core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 core_machine_fdc_advance_at(fdc, 8192u);
-                failed |= !fdc->connect.irq_source.asserted;
+                failed |= !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 for (lib_u8 reset_drive = 0u;
                     reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
                     failed |= !core_machine_fdc_command(fdc, port,
                         (const lib_u8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
-                        result[1] != 0u || fdc->connect.irq_source.asserted;
+                        result[1] != 0u || core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 }
                 failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x08u}, 1u);
                 failed |= !core_machine_fdc_read_result(fdc, port, result, 1u) ||
-                    result[0] != 0x80u || fdc->connect.irq_source.asserted;
+                    result[0] != 0x80u || core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 /* A new Recalibrate supersedes an undrained reset notice;
                    Sense Interrupt must report the completed operation. */
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
@@ -760,7 +760,7 @@ lib_i32 main(void)
                 core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_RATE_250);
 
                 failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){0x10u}, 1u);
-                failed |= fdc->connect.irq_source.asserted ||
+                failed |= core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
                     !core_machine_fdc_read_result(fdc, port, result, 1u) ||
                     result[0] != 0x80u || (core_machine_port_read(port, 0x03f4u) & TEST_FDC_MSR_CB) != 0u;
 
@@ -775,7 +775,7 @@ lib_i32 main(void)
                         (const lib_u8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
-                        result[1] != 0u || fdc->connect.irq_source.asserted;
+                        result[1] != 0u || core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 }
                 failed |= !core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
@@ -808,7 +808,7 @@ lib_i32 main(void)
                     core_machine_port_write(port, fdc_config.data_port, read_sector[index]);
                 }
                 failed |= core_machine_port_read(port, fdc_config.status_port) != TEST_FDC_MSR_CB ||
-                    fdc->connect.irq_source.asserted;
+                    core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 test_fdc_advance(fdc);
                 failed |= (core_machine_port_read(port, 0x03f4u) & TEST_FDC_MSR_PROCESS_READ) != TEST_FDC_MSR_PROCESS_READ;
                 failed |= core_machine_port_read(port, fdc_config.data_port) != 0x4au;
@@ -816,13 +816,13 @@ lib_i32 main(void)
                     (void)core_machine_port_read(port, fdc_config.data_port);
                 }
                 failed |= core_machine_port_read(port, fdc_config.status_port) != TEST_FDC_MSR_CB ||
-                    fdc->connect.irq_source.asserted;
+                    core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 test_fdc_advance(fdc);
                 failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_RESULT ||
-                    !fdc->connect.irq_source.asserted ||
+                    !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
                     !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != TEST_FDC_ST0_NORMAL ||
-                    fdc->connect.irq_source.asserted;
+                    core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 fixture.read_count = 0u;
 
                 failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
@@ -831,10 +831,10 @@ lib_i32 main(void)
                     (void)core_machine_port_read(port, fdc_config.data_port);
                 }
                 test_fdc_advance(fdc);
-                failed |= !fdc->connect.irq_source.asserted ||
+                failed |= !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
                     !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != TEST_FDC_ST0_NORMAL || fixture.read_count != 512u ||
-                    fdc->connect.irq_source.asserted;
+                    core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
 
                 fixture.marks[0] = CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
                 failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
@@ -975,13 +975,13 @@ lib_i32 main(void)
                 test_dma_transfers(&board->shared_dma_latch,
                     &board->shared_dma_primary, &board->shared_dma_secondary,
                     machine, &machine->executor_port, 1u);
-                failed |= fixture.read_count != 2u || core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB || fdc->connect.irq_source.asserted ||
+                failed |= fixture.read_count != 2u || core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB || core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
                     observe(fdc).dma_byte_gate_pending || observe(fdc).next_dma_byte_tick != 0u;
                 core_machine_fdc_advance_at(fdc, 229u);
-                failed |= !fdc->connect.irq_source.asserted;
+                failed |= !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 result[0] = (lib_u8)core_machine_port_read(port,
                     fdc_config.data_port);
-                failed |= fdc->connect.irq_source.asserted || observe(fdc).interrupt_pending ||
+                failed |= core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) || observe(fdc).interrupt_pending ||
                     result[0] != TEST_FDC_ST0_NORMAL;
                 for (lib_u8 result_index = 1u; result_index < sizeof(result);
                     ++result_index) {
@@ -1018,7 +1018,7 @@ lib_i32 main(void)
                 }
                 failed |= observe(fdc).dma_byte_gate_pending;
                 test_fdc_advance(fdc);
-                failed |= !fdc->connect.irq_source.asserted ||
+                failed |= !core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) ||
                     !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[2] & (TEST_FDC_ST2_SCAN_MATCH | TEST_FDC_ST2_SCAN_MISMATCH)) !=
                         TEST_FDC_ST2_SCAN_MATCH;
@@ -1057,7 +1057,7 @@ lib_i32 main(void)
                         (const lib_u8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
-                        result[1] != 0u || fdc->connect.irq_source.asserted;
+                        result[1] != 0u || core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 }
                 failed |= !core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
@@ -1115,7 +1115,7 @@ lib_i32 main(void)
                         (const lib_u8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (TEST_FDC_ST0_READY_CHANGE | reset_drive) ||
-                        result[1] != 0u || fdc->connect.irq_source.asserted;
+                        result[1] != 0u || core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source);
                 }
                 failed |= !core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));

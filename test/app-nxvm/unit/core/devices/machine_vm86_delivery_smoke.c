@@ -1,4 +1,4 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
@@ -6,7 +6,7 @@
 
 #include "x86/chips/cpu/cpu.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 #define VM86_GDT_BASE 0x0300u
@@ -178,15 +178,15 @@ static lib_i32 vm86_delivery_debug_breakpoint(void)
 }
 static lib_i32 vm86_delivery_irq0(void)
 {
-    vm86_delivery_state state; core_machine_pic_irq_source irq; core_machine_run_result result;
+    vm86_delivery_state state; core_machine_pic_irq_source *irq = LIB_NULL; core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic; lib_u32 frame[9u] = {0u}; lib_i32 failed = !vm86_delivery_prepare(&state, 0x20u);
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0x2000u,
             (const lib_u8[]){0x90u,0xf4u}, 2u) != LIB_STATUS_OK;
-        lib_memory_set(&irq, 0, sizeof(irq)); test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &state.board->shared_pic_master,
-            &state.board->shared_pic_slave, 0u); core_machine_pic_irq_source_assert(&irq);
-        core_machine_pic_irq_source_deassert(&irq);
+        lib_memory_set(&irq, 0, sizeof(irq)); test_pic_program_vector(state.board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, state.board->shared_pic_master,
+            state.board->shared_pic_slave, 0u); core_machine_pic_irq_source_assert(irq);
+        core_machine_pic_irq_source_deassert(irq);
         failed |= core_machine_run(state.machine, (core_machine_run_budget){4u,0u}, &result) != LIB_STATUS_OK ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK || diagnostic.first_fault.valid ||
         (*test_core_machine_fixture_cpu(state.machine)).data.eip != 0x101u || (*test_core_machine_fixture_cpu(state.machine)).data.esp != VM86_STACK_TOP - 36u ||
@@ -197,8 +197,8 @@ static lib_i32 vm86_delivery_irq0(void)
             (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector != 0x0010u ||
             (*test_core_machine_fixture_cpu(state.machine)).data.es.flagValid || (*test_core_machine_fixture_cpu(state.machine)).data.ds.flagValid ||
             (*test_core_machine_fixture_cpu(state.machine)).data.fs.flagValid || (*test_core_machine_fixture_cpu(state.machine)).data.gs.flagValid ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory, VM86_STACK_TOP - 36u,
                 (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK || frame[0] != 1u ||
             frame[1u] != 0x0200u || frame[2u] != (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF) ||
@@ -210,7 +210,7 @@ static lib_i32 vm86_delivery_irq0(void)
 static lib_i32 vm86_delivery_irq0_iret_round_trip(void)
 {
     vm86_delivery_state state;
-    core_machine_pic_irq_source irq;
+    core_machine_pic_irq_source *irq = LIB_NULL;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     lib_i32 failed = !vm86_delivery_prepare(&state, 0x20u);
@@ -221,11 +221,11 @@ static lib_i32 vm86_delivery_irq0_iret_round_trip(void)
             core_machine_memory_write(state.machine, VM86_HANDLER_BASE,
                 (const lib_u8[]){ 0xcfu }, 1u) != LIB_STATUS_OK;
         lib_memory_set(&irq, 0, sizeof(irq));
-        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &state.board->shared_pic_master,
-            &state.board->shared_pic_slave, 0u);
-        core_machine_pic_irq_source_assert(&irq);
-        core_machine_pic_irq_source_deassert(&irq);
+        test_pic_program_vector(state.board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, state.board->shared_pic_master,
+            state.board->shared_pic_slave, 0u);
+        core_machine_pic_irq_source_assert(irq);
+        core_machine_pic_irq_source_deassert(irq);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 3u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
@@ -236,8 +236,8 @@ static lib_i32 vm86_delivery_irq0_iret_round_trip(void)
             (*test_core_machine_fixture_cpu(state.machine)).data.cs.selector != 0x0200u ||
             (*test_core_machine_fixture_cpu(state.machine)).data.ss.selector != 0x0300u ||
             (*test_core_machine_fixture_cpu(state.machine)).data.esp != 0x00001234u ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;

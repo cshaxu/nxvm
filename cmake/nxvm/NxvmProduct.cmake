@@ -69,7 +69,6 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/machine_board.c
     src/app-nxvm/devices/machine_plan.c
     src/app-nxvm/devices/machine_display.c
-    src/app-nxvm/devices/pic_bus.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
     src/app-nxvm/devices/kbc.c
     src/app-nxvm/devices/vadp.c
@@ -1174,8 +1173,8 @@ set(VM_MEDIA_SOURCES
 # forwarding library or a second compiled source set.
 add_library(x86-cpu ALIAS x86-cpu-shared)
 
-target_link_libraries(core-machine PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
-target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine PUBLIC x86-pit825x x86-rtc146818 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine PUBLIC x86-ibmpc-common x86-core)
 
 add_executable(vm-machine-frame-smoke
@@ -1276,10 +1275,6 @@ add_executable(core-machine-pit-divider-smoke
     test/app-nxvm/unit/core/devices/machine_pit_divider_smoke.c
 )
 target_link_libraries(core-machine-pit-divider-smoke PRIVATE core-machine)
-add_executable(core-machine-pit-irq0-s2-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pit_irq0_s2_smoke.c
-)
-target_link_libraries(core-machine-pit-irq0-s2-smoke PRIVATE core-machine)
 add_executable(core-machine-auxiliary-pit-s3-smoke
     test/app-nxvm/unit/core/devices/core_machine_auxiliary_pit_s3_smoke.c
 )
@@ -1301,18 +1296,6 @@ target_link_libraries(core-machine-rtc-cmos-s3-smoke PRIVATE core-machine)
 add_executable(core-machine-planar-parity-nmi-s3-smoke
     test/app-nxvm/unit/core/devices/core_machine_planar_parity_nmi_s3_smoke.c)
 target_link_libraries(core-machine-planar-parity-nmi-s3-smoke PRIVATE core-machine)
-add_executable(core-machine-pic-irq-lifecycle-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pic_irq_lifecycle_smoke.c)
-target_link_libraries(core-machine-pic-irq-lifecycle-smoke PRIVATE core-machine)
-add_executable(core-machine-pic-command-priority-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pic_command_priority_smoke.c)
-target_link_libraries(core-machine-pic-command-priority-smoke PRIVATE core-machine)
-add_executable(core-machine-pic-ocw3-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pic_ocw3_smoke.c)
-target_link_libraries(core-machine-pic-ocw3-smoke PRIVATE core-machine)
-add_executable(core-machine-pic-lifecycle-s4-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pic_lifecycle_s4_smoke.c)
-target_link_libraries(core-machine-pic-lifecycle-s4-smoke PRIVATE core-machine)
 add_executable(core-machine-pic-phase-s2-smoke
     test/app-nxvm/unit/core/devices/core_machine_pic_phase_s2_smoke.c)
 target_link_libraries(core-machine-pic-phase-s2-smoke PRIVATE core-machine-observable)

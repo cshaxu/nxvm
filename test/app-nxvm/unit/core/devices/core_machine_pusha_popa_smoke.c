@@ -1,9 +1,9 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include <stdio.h>
 
 typedef struct pusha_popa_machine {
@@ -248,7 +248,7 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
     for (form = 0u; form != 2u; ++form)
     {
         pusha_popa_machine state;
-        core_machine_pic_irq_source source;
+        core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result;
         core_machine_debug_cpu_snapshot before;
         core_machine_debug_cpu_snapshot after;
@@ -276,12 +276,12 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
         if (!failed)
         {
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+            test_pic_program_vector(state.board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &state.board->shared_pic_master, &state.board->shared_pic_slave,
+                state.board->shared_pic_master, state.board->shared_pic_slave,
                 0u);
-            core_machine_pic_irq_source_assert(&source);
-            core_machine_pic_irq_source_deassert(&source);
+            core_machine_pic_irq_source_assert(source);
+            core_machine_pic_irq_source_deassert(source);
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
             failed |= core_machine_run(state.machine,
@@ -293,8 +293,8 @@ static lib_i32 pusha_popa_test_irq_no_shadow(void)
                 after.ss.base + (lib_u16)after.esp,
                 CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.eip != 0x101u || frame_ip != 1u || !CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au),
+                test_pic_read(state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
             if (form == 0u)
             {

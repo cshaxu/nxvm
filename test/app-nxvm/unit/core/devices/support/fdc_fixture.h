@@ -60,6 +60,6 @@ static inline lib_bool test_fdc_interrupt_matches(const core_machine_fdc *fdc,
     x86_fdc_observation observation;
     return x86_fdc_capture(fdc->chip, &observation) == LIB_STATUS_OK &&
         observation.interrupt_pending == asserted &&
-        fdc->connect.irq_source.asserted == asserted;
+        core_machine_pic_irq_source_is_asserted(fdc->connect.irq_source) == asserted;
 }
 #endif

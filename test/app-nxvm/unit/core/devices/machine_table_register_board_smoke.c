@@ -1,6 +1,6 @@
 #include "support/core_machine_board_fixture.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "x86/chips/cpu/cpu.h"
 #include "x86/core/device_support_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
@@ -49,7 +49,7 @@ static lib_i32 table_register_board_case(const lib_u8 *opcode,
     lib_u8 table[6] = {0x57u,0x13u,0x56u,0x34u,0x12u,0u};
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
-    core_machine_pic_irq_source source = {0};
+    core_machine_pic_irq_source *source = LIB_NULL;
     core_machine_run_result result = {0};
     core_machine_cpu_diagnostic diagnostic = {0};
     core_machine_debug_cpu_snapshot after = {0};
@@ -72,11 +72,11 @@ static lib_i32 table_register_board_case(const lib_u8 *opcode,
             core_machine_memory_write(machine, 0x0100u, &handler,
                 sizeof(handler)) != LIB_STATUS_OK;
     if (!failed) {
-        test_pic_program_vector(&board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&source, &board->shared_pic_master,
-            &board->shared_pic_slave, 0u);
-        core_machine_pic_irq_source_assert(&source);
-        core_machine_pic_irq_source_deassert(&source);
+        test_pic_program_vector(board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&source, board->shared_pic_master,
+            board->shared_pic_slave, 0u);
+        core_machine_pic_irq_source_assert(source);
+        core_machine_pic_irq_source_deassert(source);
         failed = core_machine_run(machine, (core_machine_run_budget){2u,0u},
             &result) != LIB_STATUS_OK || core_machine_get_cpu_diagnostic(machine,
             &diagnostic) != LIB_STATUS_OK ||
@@ -86,9 +86,9 @@ static lib_i32 table_register_board_case(const lib_u8 *opcode,
     if (!failed)
         failed = diagnostic.first_fault.valid || result.reason !=
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || after.eip != 0x0101u ||
-            !(test_pic_read(&board->shared_pic_master, 0x0bu) &
+            !(test_pic_read(board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) ||
-            (test_pic_read(&board->shared_pic_master, 0x0au) & VPIC_IRR_IRQ(0u));
+            (test_pic_read(board->shared_pic_master, 0x0au) & VPIC_IRR_IRQ(0u));
     if (!failed && !lidt)
         failed = result.executed != 2u;
     core_machine_destroy(machine);

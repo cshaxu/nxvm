@@ -35,9 +35,9 @@ foreach(token IN ITEMS
     endif()
 endforeach()
 foreach(token IN ITEMS
-    "core_machine_pic_scan_interrupt(&board->shared_pic_master,"
-    "core_machine_pic_get_interrupt(&board->shared_pic_master,"
-    "&board->shared_pic_slave)")
+    "core_machine_pic_scan_interrupt(board->shared_pic_master,"
+    "core_machine_pic_get_interrupt(board->shared_pic_master,"
+    "board->shared_pic_slave)")
     string(FIND "${board_source}" "${token}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Board PIC signal contract is missing: ${token}")
@@ -112,6 +112,9 @@ file(GLOB_RECURSE pic_consumers
 foreach(consumer IN LISTS pic_consumers)
     file(READ "${consumer}" contents)
     if(contents MATCHES "x86/chips/pic8259/pic\\.h" OR
+       contents MATCHES "x86/ibmpc-common/pic_bus\\.h" OR
+       contents MATCHES "(shared_pic_(master|slave)|pic_(master|slave))[ \\t]*(\\.|->)device" OR
+       contents MATCHES "irq[0-9]*_source[ \\t]*(\\.|->)(master|slave|irq|asserted)" OR
        contents MATCHES "(shared_pic_(master|slave)|pic_(master|slave))[ \\t]*(\\.|->)data" OR
        contents MATCHES "app-nxvm/devices/pic(_interface)?\\.h")
         message(FATAL_ERROR "Private/old PIC dependency: ${consumer}")

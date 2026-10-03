@@ -4,7 +4,7 @@
 #include "x86/core/machine_interface.h"
 #include "app-nxvm/devices/controller_interface.h"
 #include "x86/ibmpc-common/display_interface.h"
-#include "app-nxvm/devices/pic_bus_interface.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "app-nxvm/devices/fdc_observation_interface.h"
 
 #ifdef __cplusplus

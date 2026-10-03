@@ -1,10 +1,10 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "support/core_machine_board_fixture.h"
 
 static lib_i32 lea_test_irq_no_shadow(void)
@@ -37,7 +37,7 @@ static lib_i32 lea_test_irq_no_shadow(void)
             [CORE_MACHINE_DEBUG_EFLAGS] = 0x241u /* CF | ZF | IF */
         }
     };
-    core_machine_pic_irq_source source;
+    core_machine_pic_irq_source *source = LIB_NULL;
     core_machine_run_result result;
     core_machine_debug_cpu_snapshot after;
     lib_u16 vector_offset = 0x0100u;
@@ -60,12 +60,12 @@ static lib_i32 lea_test_irq_no_shadow(void)
     }
     if (!failed) {
         lib_memory_set(&source, 0, sizeof(source));
-        test_pic_program_vector(&board->shared_pic_master, 0x20u);
+        test_pic_program_vector(board->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source,
-            &board->shared_pic_master, &board->shared_pic_slave,
+            board->shared_pic_master, board->shared_pic_slave,
             0u);
-        core_machine_pic_irq_source_assert(&source);
-        core_machine_pic_irq_source_deassert(&source);
+        core_machine_pic_irq_source_assert(source);
+        core_machine_pic_irq_source_deassert(source);
         failed |= core_machine_run(machine,
                 (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
@@ -75,8 +75,8 @@ static lib_i32 lea_test_irq_no_shadow(void)
                 after.ss.base + (lib_u16)after.esp,
                 &frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
             after.eip != 0x0101u || !CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(&board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&board->shared_pic_master, 0x0au),
+                test_pic_read(board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(board->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || frame_ip != 3u;
     }
     core_machine_destroy(machine);

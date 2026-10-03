@@ -1,9 +1,9 @@
-#include "support/pic_fixture.h"
+#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include <stdio.h>
 
 typedef struct push_immediate_machine {
@@ -181,7 +181,7 @@ static lib_i32 push_immediate_test_irq(void)
     for (form = 0u; form != 2u; ++form)
     {
         push_immediate_machine state;
-        core_machine_pic_irq_source source;
+        core_machine_pic_irq_source *source = LIB_NULL;
         core_machine_run_result result;
         core_machine_debug_cpu_snapshot after;
         lib_u16 offset = 0x100u;
@@ -204,11 +204,11 @@ static lib_i32 push_immediate_test_irq(void)
         if (!failed)
         {
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
-            core_machine_pic_irq_source_bind(&source, &state.board->shared_pic_master,
-                &state.board->shared_pic_slave, 0u);
-            core_machine_pic_irq_source_assert(&source);
-            core_machine_pic_irq_source_deassert(&source);
+            test_pic_program_vector(state.board->shared_pic_master, 0x20u);
+            core_machine_pic_irq_source_bind(&source, state.board->shared_pic_master,
+                state.board->shared_pic_slave, 0u);
+            core_machine_pic_irq_source_assert(source);
+            core_machine_pic_irq_source_deassert(source);
             failed |= core_machine_run(state.machine,
                 (core_machine_run_budget){2u,0u}, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
@@ -218,8 +218,8 @@ static lib_i32 push_immediate_test_irq(void)
                 after.ss.base + (lib_u16)after.esp,
                 CORE_MACHINE_REFERENCE_OF(frame_ip), 2u) != LIB_STATUS_OK ||
                 after.eip != 0x101u || frame_ip != length[form] ||
-                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au),
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0bu),
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(state.board->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || after.esp != 0x12347ff8u ||
                 core_machine_memory_read_physical(&state.machine->executor_memory,
                 0x7ffeu, CORE_MACHINE_REFERENCE_OF(value), 2u) != LIB_STATUS_OK ||

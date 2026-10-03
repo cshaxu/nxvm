@@ -128,7 +128,7 @@ lib_i32 main(void)
         core_machine_port_write(&session->core_machine->executor_port,
             0x03f2u, 0x1cu);
         failed |= !test_fdc_advance_due(&session->board->fdc);
-        failed |= !session->board->fdc.connect.irq_source.asserted;
+        failed |= !core_machine_pic_irq_source_is_asserted(session->board->fdc.connect.irq_source);
         for (sense_status = 0u; sense_status < CORE_MACHINE_FDC_DRIVE_COUNT;
             ++sense_status) {
             core_machine_port_write(&session->core_machine->executor_port,

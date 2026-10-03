@@ -2,17 +2,17 @@
 #define TEST_PROTECTED_PIC_BOARD_FIXTURE_H
 
 #include "x86/chips/cpu/support/cpu_protected_fixture.h"
-#include "pic_fixture.h"
+#include "../../../../../x86/ibmpc-common/pic_fixture.h"
 #include "x86/core/device_support_interface.h"
-#include "app-nxvm/devices/pic_bus.h"
+#include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/machine.h"
 #include "x86/core/port.h"
 
 typedef struct protected_pic_board_fixture {
     cpu_instruction_fixture cpu;
     core_machine machine;
-    core_machine_pic_bus master;
-    core_machine_pic_bus slave;
+    core_machine_pic_bus *master;
+    core_machine_pic_bus *slave;
 } protected_pic_board_fixture;
 
 static inline lib_status protected_pic_board_read(void *opaque, lib_u32 address,
@@ -36,14 +36,14 @@ static inline lib_status protected_pic_board_write(void *opaque, lib_u32 address
 static inline lib_bool protected_pic_board_pending(void *opaque)
 {
     protected_pic_board_fixture *board = opaque;
-    return core_machine_pic_peek_interrupt(&board->master, &board->slave) != 0u;
+    return core_machine_pic_peek_interrupt(board->master, board->slave) != 0u;
 }
 
 static inline lib_status protected_pic_board_acknowledge(void *opaque,
     lib_u8 *out_vector)
 {
     protected_pic_board_fixture *board = opaque;
-    lib_u8 vector = core_machine_pic_get_interrupt(&board->master, &board->slave);
+    lib_u8 vector = core_machine_pic_get_interrupt(board->master, board->slave);
 
     if (out_vector == LIB_NULL || vector == 0u) return LIB_STATUS_INVALID_STATE;
     *out_vector = vector;
@@ -90,23 +90,23 @@ static inline lib_bool protected_pic_board_prepare(protected_pic_board_fixture *
     lib_memory_copy(board->cpu.memory + 0x0700u, gate, sizeof(gate));
     lib_memory_copy(board->cpu.memory + CPU_PROTECTED_CODE_BASE + 0x100u,
         handler, sizeof(handler));
-    test_pic_program_vector(&board->master, 0x20u);
+    test_pic_program_vector(board->master, 0x20u);
     return LIB_TRUE;
 }
 
 static inline void protected_pic_board_finalize(protected_pic_board_fixture *board)
 {
-    core_machine_pic_finalize(&board->master, &board->slave);
+    core_machine_pic_finalize(board->master, board->slave);
     core_machine_port_finalize(&board->machine.executor_port);
 }
 
 static inline lib_bool protected_pic_board_raise(protected_pic_board_fixture *board)
 {
-    core_machine_pic_irq_source source = {0};
+    core_machine_pic_irq_source *source = LIB_NULL;
 
-    core_machine_pic_irq_source_bind(&source, &board->master, &board->slave, 0u);
-    core_machine_pic_irq_source_assert(&source);
-    core_machine_pic_irq_source_deassert(&source);
+    core_machine_pic_irq_source_bind(&source, board->master, board->slave, 0u);
+    core_machine_pic_irq_source_assert(source);
+    core_machine_pic_irq_source_deassert(source);
     return LIB_TRUE;
 }
 

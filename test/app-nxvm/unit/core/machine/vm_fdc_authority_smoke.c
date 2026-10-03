@@ -32,8 +32,9 @@ lib_i32 main(void)
             CORE_MACHINE_MEDIA_ID_INVALID ||
         machine->board->fdc.connect.dma_request.core_token == 0u ||
         machine->board->fdc.connect.dma_request.channel != 2u ||
-        machine->board->fdc.connect.irq_source.master == LIB_NULL ||
-        machine->board->fdc.connect.irq_source.slave == LIB_NULL ||
+        machine->board->fdc.connect.irq_source == LIB_NULL ||
+        machine->board->shared_pic_master == LIB_NULL ||
+        machine->board->shared_pic_slave == LIB_NULL ||
         machine->board->fdc.connect.machine != machine->core_machine) {
         vm_machine_destroy(session);
         return 1;

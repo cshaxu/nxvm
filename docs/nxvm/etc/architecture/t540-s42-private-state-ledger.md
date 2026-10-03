@@ -48,6 +48,16 @@ records the complete independent/full-suite and product verification.
 PIC/DMA aggregation, AT/XT wiring and D4 remain open; no narrow route proof
 qualifies those distinct owners.
 
+## S91 Whole PIC Receiver
+
+Current source inventory at b44ac5dee measures fifteen production and
+sixty-five test files referencing PIC endpoints, source leases or their
+layout. The entire aggregation lifetime and port/cascade/IRQ operation class
+is assigned to one Shared receiver, including FDC/HDC/KBC/RTC/PIT consumers,
+reconnect/reset, initial allocation failure and diagnostic observation.
+Endpoint and lease layouts remain private; no public chip getter is admitted.
+DMA and the remaining board/family/D4 classes are not disposed by this move.
+
 ## Existing facts and intended sole owners
 
 | State or behavior in the present private header | Present users and final owner | Receiver |
