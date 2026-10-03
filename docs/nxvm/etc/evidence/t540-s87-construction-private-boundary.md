@@ -201,7 +201,11 @@ changed after generation. Boot completion remains a separate requirement.
 | `assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0540_x64.exe` | 1351400 | `9FB47845E18E2CABBAA0F060F9706380EDB83E49A7F57127A42C54C8CC005C80` |
 | `assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0540_x86.exe` | 1522231 | `6A31481C0A373BB03E9440E4B276AF3D9B7C960481241D2DE58935EB3621C905` |
 
-S87 awaits actual committed-diff coordinator acceptance. T540 remains open.
+Coordinator accepts immediately pushed P1 `c662ecd080acc77be2656005c778fbd3886f07f2`
+after actual-commit review: all 119 paths match the reviewed working blobs and
+origin/master; they comprise six production, 98 test, one gate, six document
+and eight artifact paths. No out-of-target or owner INI path is present.
+Governance P2 closes S87 only. T540 remains open.
 Actual `x86/core` and flat `ibmpc-*` source/test/build relocation is still
 required; this complete boundary cannot substitute for it. The next receiver
 must deliver the whole neutral Core component, not more per-function preparation.

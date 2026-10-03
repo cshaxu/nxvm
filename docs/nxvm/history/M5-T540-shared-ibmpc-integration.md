@@ -242,5 +242,8 @@ eight neutral executions, eight unchanged-INI boots once each and eight fresh
 stripped 0540 EXEs. Tracked source/test/gate delta is +1234/-1123 in 104 paths,
 plus one 35-line test fixture; production delta is -17 lines. Shared, MyNES,
 owner INIs and external masters are unchanged. This is complete P delivery,
-not coordinator acceptance or physical Core/board extraction. The next whole
-receiver is actual neutral Core source/test/build movement.
+not physical Core/board extraction. Coordinator accepts immediately pushed
+P1 `c662ecd08` after actual review of its 119 scoped paths and matching working
+blobs, cleanup/header/fixture classes and artifact identity. Governance P2
+removes the active S87 packet and accepts only this complete boundary. The next
+whole receiver is actual neutral Core source/test/build movement; T540 stays open.
