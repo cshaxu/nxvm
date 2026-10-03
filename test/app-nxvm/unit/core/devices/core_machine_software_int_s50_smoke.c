@@ -563,10 +563,10 @@ static lib_i32 software_int_s50_test_pic_boundary(void)
     if (!failed) {
         software_int_s50_seed(&state, flags);
         lib_memory_set(&source, 0, sizeof(source));
-        test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
+        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source,
-            &state.machine->board->shared_pic_master,
-            &state.machine->board->shared_pic_slave, 0u);
+            &state.board->shared_pic_master,
+            &state.board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed = core_machine_run(state.machine,
@@ -576,9 +576,9 @@ static lib_i32 software_int_s50_test_pic_boundary(void)
         failed |= after.data.eip != 0x0101u;
         failed |= !after.data.flagHalt;
         failed |= CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF);
-        failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au),
+        failed |= !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au),
             VPIC_IRR_IRQ(0u));
-        failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),
+        failed |= CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),
             VPIC_ISR_IRQ(0u));
     }
     core_machine_destroy(state.machine);

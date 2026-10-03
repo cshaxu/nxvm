@@ -103,6 +103,7 @@ lib_i32 main(void)
     };
     const lib_u8 nop = 0x90u;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_config config = {0};
     core_machine_trace_provider trace;
     core_machine_dma_request_binding binding = {0};
@@ -133,11 +134,11 @@ lib_i32 main(void)
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     trace.callback = competition_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed |= core_machine_dma_bind_channel(&machine->board->shared_dma_latch,
-        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary, 2u,
+    failed |= core_machine_dma_bind_channel(&board->shared_dma_latch,
+        &board->shared_dma_primary, &board->shared_dma_secondary, 2u,
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
     failed |= core_machine_transaction_hold_request(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK;
@@ -154,8 +155,8 @@ lib_i32 main(void)
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
         LIB_STATUS_OK;
     competition_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(&machine->board->shared_dma_primary,
-        &machine->board->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(&board->shared_dma_primary,
+        &board->shared_dma_secondary, &binding);
     failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||

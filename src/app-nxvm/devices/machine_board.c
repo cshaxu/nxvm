@@ -2,7 +2,6 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/device_support.h"
 
-#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 
 #define CORE_MACHINE_BOARD_A20_BIT 0x02u
@@ -80,20 +79,11 @@ lib_i32 core_machine_board_config_is_valid(
         (!config->auxiliary_pit_present || config->auxiliary_pit_base_port <= 0xfffcu);
 }
 
-lib_status core_machine_create_internal(
-    const core_machine_config *config,
-    core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation,
-    core_machine_port_test_allocation *port_test_allocation,
-    core_machine_board_state **out_board)
+lib_status core_machine_board_prepare_executor(
+    const core_machine_config *config, core_machine_executor_config *out_executor)
 {
-    core_machine *machine;
-    lib_status status;
-
-    if (out_board != LIB_NULL) *out_board = LIB_NULL;
-    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_machine = LIB_NULL;
-    if (config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (config == LIB_NULL || out_executor == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
     const core_machine_executor_config executor = {
         .memory_bytes = config->memory_bytes,
         .cpu_profile = config->cpu_profile,
@@ -110,60 +100,51 @@ lib_status core_machine_create_internal(
         .retirement_qualification = config->retirement_qualification
     };
     if (!core_machine_neutral_config_is_valid(&executor) ||
-        !core_machine_board_config_is_valid(config)) {
+        !core_machine_board_config_is_valid(config))
         return LIB_STATUS_INVALID_ARGUMENT;
-    }
-    status = core_machine_neutral_create(&executor, test_allocation,
-        port_test_allocation, &machine);
-    if (status != LIB_STATUS_OK) return status;
-    status = core_machine_board_create(machine, config);
-    if (status != LIB_STATUS_OK) return status;
-
-    *out_machine = machine;
-    if (out_board != LIB_NULL) *out_board = machine->board;
+    *out_executor = executor;
     return LIB_STATUS_OK;
 }
 
 lib_status core_machine_create(const core_machine_config *config,
     core_machine **out_machine, core_machine_board_state **out_board)
 {
-    return core_machine_create_internal(config, out_machine, LIB_NULL, LIB_NULL,
-        out_board);
-}
+    core_machine *machine;
+    core_machine_board_state *board;
+    core_machine_executor_config executor;
+    lib_status status;
 
-lib_status core_machine_create_with_test_memory_allocation(
-    const core_machine_config *config, core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation,
-    core_machine_board_state **out_board)
-{
-    return core_machine_create_internal(config, out_machine, test_allocation,
-        LIB_NULL, out_board);
-}
-
-lib_status core_machine_create_with_test_port_allocation(
-    const core_machine_config *config, core_machine **out_machine,
-    core_machine_port_test_allocation *test_allocation,
-    core_machine_board_state **out_board)
-{
-    return core_machine_create_internal(config, out_machine, LIB_NULL,
-        test_allocation, out_board);
+    if (out_board != LIB_NULL) *out_board = LIB_NULL;
+    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_machine = LIB_NULL;
+    status = core_machine_board_prepare_executor(config, &executor);
+    if (status != LIB_STATUS_OK) return status;
+    status = core_machine_neutral_create(&executor, &machine);
+    if (status != LIB_STATUS_OK) return status;
+    status = core_machine_board_create(machine, config, &board);
+    if (status != LIB_STATUS_OK) return status;
+    *out_machine = machine;
+    if (out_board != LIB_NULL) *out_board = board;
+    return LIB_STATUS_OK;
 }
 
 lib_status core_machine_board_create(core_machine *machine,
-    const core_machine_config *config)
+    const core_machine_config *config, core_machine_board_state **out_board)
 {
+    core_machine_board_state *board;
     lib_status status;
     lib_u8 dma_controller_count;
     lib_size installed_bytes;
     core_machine_cpu_profile cpu_profile;
 
-    machine->board = (core_machine_board_state *)lib_allocate_zero(1u,
-        sizeof(*machine->board));
-    if (machine->board == LIB_NULL) {
+    *out_board = LIB_NULL;
+    board = (core_machine_board_state *)lib_allocate_zero(1u,
+        sizeof(*board));
+    if (board == LIB_NULL) {
         core_machine_destroy(machine);
         return LIB_STATUS_NO_MEMORY;
     }
-    machine->board->core = machine;
+    board->core = machine;
     const core_machine_attachment attachment = {
         .memory_admission = core_machine_board_memory_admission,
         .deadline = core_machine_board_deadline_observe,
@@ -185,38 +166,37 @@ lib_status core_machine_board_create(core_machine *machine,
         .refresh_nmi = core_machine_board_refresh_nmi,
         .finalize_devices = core_machine_board_finalize_devices,
         .firmware = core_machine_board_register_reset_rom_alias,
-        .context = machine->board
+        .context = board
     };
 
     status = core_machine_bind_attachment(machine, &attachment);
     if (status != LIB_STATUS_OK) {
-        core_machine_board_finalize_devices(machine->board);
-        machine->board = LIB_NULL;
+        core_machine_board_finalize_devices(board);
         core_machine_destroy(machine);
         return status;
     }
-    if (core_machine_board_initialize_clocks(machine->board,
+    if (core_machine_board_initialize_clocks(board,
             &config->clock_plan) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    machine->board->dma_clock_explicit =
+    board->dma_clock_explicit =
         config->clock_plan.dma.numerator != 0u &&
         config->clock_plan.dma.denominator != 0u;
 
     dma_controller_count = config->dma_controller_count == 0u ?
         CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
-    machine->board->keyboard_topology = config->keyboard_topology;
+    board->keyboard_topology = config->keyboard_topology;
     /* Zero is an explicit profile choice: without a calibrated guest-time
      * mapping, core-generated keyboard repeat must remain disabled. */
-    machine->board->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
-    machine->board->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
-    machine->board->kbc_command_response_ticks = config->kbc_command_response_ticks;
-    machine->board->kbc_command_response_status_polls =
+    board->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
+    board->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
+    board->kbc_command_response_ticks = config->kbc_command_response_ticks;
+    board->kbc_command_response_status_polls =
         config->kbc_command_response_status_polls;
-    machine->board->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
-    machine->board->kbc_input_port_configured = config->kbc_input_port_configured;
-    machine->board->kbc_input_port = config->kbc_input_port;
+    board->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
+    board->kbc_input_port_configured = config->kbc_input_port_configured;
+    board->kbc_input_port = config->kbc_input_port;
     /* Firmware-less fixtures may supply reset bytes from ordinary board RAM.
      * Firmware-backed machines install the reset-only ROM overlay later. */
     if (core_machine_get_memory_bytes(machine, &installed_bytes) != LIB_STATUS_OK ||
@@ -246,7 +226,7 @@ lib_status core_machine_board_create(core_machine *machine,
         }
     }
     {
-        lib_status status = core_machine_vadp_initialize(&machine->board->shared_vadp,
+        lib_status status = core_machine_vadp_initialize(&board->shared_vadp,
             machine);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
@@ -254,7 +234,7 @@ lib_status core_machine_board_create(core_machine *machine,
         }
     }
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        lib_status status = core_machine_xt_ppi_keyboard_initialize(&machine->board->xt_ppi_keyboard,
+        lib_status status = core_machine_xt_ppi_keyboard_initialize(&board->xt_ppi_keyboard,
             &config->xt_ppi_keyboard, machine);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
@@ -269,15 +249,15 @@ lib_status core_machine_board_create(core_machine *machine,
                 core_machine_xt_keyboard_duration(rate, 25u)
             };
             status = x86_xt_keyboard_create(&timing,
-                core_machine_xt_keyboard_deliver, &machine->board->xt_ppi_keyboard,
-                &machine->board->xt_keyboard);
+                core_machine_xt_keyboard_deliver, &board->xt_ppi_keyboard,
+                &board->xt_keyboard);
             if (status != LIB_STATUS_OK) {
                 core_machine_destroy(machine);
                 return status;
             }
         }
     } else {
-        lib_status status = core_machine_kbc_initialize(&machine->board->shared_kbc,
+        lib_status status = core_machine_kbc_initialize(&board->shared_kbc,
             machine);
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
@@ -285,70 +265,71 @@ lib_status core_machine_board_create(core_machine *machine,
         }
     }
     {
-        lib_status status = core_machine_dma_initialize(&machine->board->shared_dma_latch,
-            &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
+        lib_status status = core_machine_dma_initialize(&board->shared_dma_latch,
+            &board->shared_dma_primary, &board->shared_dma_secondary,
             machine, dma_controller_count);
         if (status == LIB_STATUS_OK) {
-            status = core_machine_pic_initialize(&machine->board->shared_pic_master,
-                &machine->board->shared_pic_slave, machine, config->pic_topology);
+            status = core_machine_pic_initialize(&board->shared_pic_master,
+                &board->shared_pic_slave, machine, config->pic_topology);
         }
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
             return status;
         }
     }
-    core_machine_pic_set_irq_timing(&machine->board->shared_pic_master,
-        &machine->board->shared_pic_slave, &config->pic_irq_timing);
-    core_machine_pic_irq_source_bind(&machine->board->shared_pit_irq0_source,
-        &machine->board->shared_pic_master, &machine->board->shared_pic_slave, 0u);
+    core_machine_pic_set_irq_timing(&board->shared_pic_master,
+        &board->shared_pic_slave, &config->pic_irq_timing);
+    core_machine_pic_irq_source_bind(&board->shared_pit_irq0_source,
+        &board->shared_pic_master, &board->shared_pic_slave, 0u);
     {
-        lib_status status = core_machine_pit_bus_create(&machine->board->shared_pit,
+        lib_status status = core_machine_pit_bus_create(&board->shared_pit,
             machine, config->shared_pit_personality, 0x0040u);
         if (status == LIB_STATUS_OK && config->auxiliary_pit_present) {
-            status = core_machine_pit_bus_create(&machine->board->auxiliary_pit,
+            status = core_machine_pit_bus_create(&board->auxiliary_pit,
                 machine, X86_PIT_PERSONALITY_8254,
                 config->auxiliary_pit_base_port);
-            machine->board->auxiliary_pit_configured = status == LIB_STATUS_OK;
+            board->auxiliary_pit_configured = status == LIB_STATUS_OK;
         }
         if (status != LIB_STATUS_OK) {
             core_machine_destroy(machine);
             return status;
         }
     }
-    x86_pit_set_output(machine->board->shared_pit.device, 0,
-        core_machine_pic_timer_output, &machine->board->shared_pit_irq0_source);
+    x86_pit_set_output(board->shared_pit.device, 0,
+        core_machine_pic_timer_output, &board->shared_pit_irq0_source);
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        core_machine_board_configure_xt_ppi_speaker(machine->board);
-        core_machine_xt_ppi_keyboard_bind_pic(&machine->board->xt_ppi_keyboard,
-            &machine->board->shared_pic_master, &machine->board->shared_pic_slave);
-        core_machine_xt_ppi_keyboard_bind_nmi(&machine->board->xt_ppi_keyboard,
+        core_machine_board_configure_xt_ppi_speaker(board);
+        core_machine_xt_ppi_keyboard_bind_pic(&board->xt_ppi_keyboard,
+            &board->shared_pic_master, &board->shared_pic_slave);
+        core_machine_xt_ppi_keyboard_bind_nmi(&board->xt_ppi_keyboard,
             core_machine_xt_ppi_request_nmi, machine);
-        core_machine_xt_ppi_keyboard_bind_speaker(&machine->board->xt_ppi_keyboard,
-            core_machine_xt_ppi_update_speaker, machine->board);
-        core_machine_xt_ppi_keyboard_bind_keyboard_observer(&machine->board->xt_ppi_keyboard,
-            core_machine_xt_keyboard_lines, machine->board->xt_keyboard,
+        core_machine_xt_ppi_keyboard_bind_speaker(&board->xt_ppi_keyboard,
+            core_machine_xt_ppi_update_speaker, board);
+        core_machine_xt_ppi_keyboard_bind_keyboard_observer(&board->xt_ppi_keyboard,
+            core_machine_xt_keyboard_lines, board->xt_keyboard,
             core_machine_xt_keyboard_released);
     } else {
-        core_machine_kbc_bind_core_services(&machine->board->shared_kbc,
-            &machine->board->shared_pic_master, &machine->board->shared_pic_slave,
+        core_machine_kbc_bind_core_services(&board->shared_kbc,
+            &board->shared_pic_master, &board->shared_pic_slave,
             core_machine_kbc_signal_a20, machine,
             core_machine_kbc_request_reset, machine,
             !config->kbc_aux_absent);
         if (config->kbc_reset_output_port_configured) {
-            core_machine_kbc_set_reset_output_port(&machine->board->shared_kbc,
+            core_machine_kbc_set_reset_output_port(&board->shared_kbc,
                 config->kbc_reset_output_port);
         }
-        core_machine_kbc_set_typematic_timing(&machine->board->shared_kbc,
-            machine->board->kbc_typematic_initial_ticks,
-            machine->board->kbc_typematic_repeat_ticks);
-        core_machine_kbc_set_command_response_timing(&machine->board->shared_kbc,
-            machine->board->kbc_command_response_ticks);
-        core_machine_kbc_set_command_response_status_polls(&machine->board->shared_kbc,
-            machine->board->kbc_command_response_status_polls);
-        core_machine_kbc_set_serial_delivery_timing(&machine->board->shared_kbc,
-            machine->board->kbc_serial_delivery_ticks);
+        core_machine_kbc_set_typematic_timing(&board->shared_kbc,
+            board->kbc_typematic_initial_ticks,
+            board->kbc_typematic_repeat_ticks);
+        core_machine_kbc_set_command_response_timing(&board->shared_kbc,
+            board->kbc_command_response_ticks);
+        core_machine_kbc_set_command_response_status_polls(&board->shared_kbc,
+            board->kbc_command_response_status_polls);
+        core_machine_kbc_set_serial_delivery_timing(&board->shared_kbc,
+            board->kbc_serial_delivery_ticks);
     }
-    x86_pit_set_output(machine->board->shared_pit.device, 1, LIB_NULL, LIB_NULL);
+    x86_pit_set_output(board->shared_pit.device, 1, LIB_NULL, LIB_NULL);
+    *out_board = board;
     return LIB_STATUS_OK;
 }
 

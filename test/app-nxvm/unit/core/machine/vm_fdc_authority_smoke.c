@@ -26,15 +26,15 @@ lib_i32 main(void)
     machine = session;
     if (machine == LIB_NULL ||
         machine->media_registry == LIB_NULL ||
-        machine->core_machine->board->fdc.connect.drives.media_id[0] !=
+        machine->board->fdc.connect.drives.media_id[0] !=
             VM_MACHINE_MEDIA_FDD_ID ||
-        machine->core_machine->board->fdc.connect.drives.media_id[1] !=
+        machine->board->fdc.connect.drives.media_id[1] !=
             CORE_MACHINE_MEDIA_ID_INVALID ||
-        machine->core_machine->board->fdc.connect.dma_request.core_token == 0u ||
-        machine->core_machine->board->fdc.connect.dma_request.channel != 2u ||
-        machine->core_machine->board->fdc.connect.irq_source.master == LIB_NULL ||
-        machine->core_machine->board->fdc.connect.irq_source.slave == LIB_NULL ||
-        machine->core_machine->board->fdc.connect.machine != machine->core_machine) {
+        machine->board->fdc.connect.dma_request.core_token == 0u ||
+        machine->board->fdc.connect.dma_request.channel != 2u ||
+        machine->board->fdc.connect.irq_source.master == LIB_NULL ||
+        machine->board->fdc.connect.irq_source.slave == LIB_NULL ||
+        machine->board->fdc.connect.machine != machine->core_machine) {
         vm_machine_destroy(session);
         return 1;
     }

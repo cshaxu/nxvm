@@ -275,8 +275,7 @@ lib_status core_machine_create_from_plan(const core_machine_plan *plan,
     if (core_machine_plan_validate(plan) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    status = core_machine_create_internal(&plan->configuration, &machine,
-        LIB_NULL, LIB_NULL, &board);
+    status = core_machine_create(&plan->configuration, &machine, &board);
     if (status != LIB_STATUS_OK) return status;
     status = core_machine_plan_apply_topology(machine, board, plan);
     if (status == LIB_STATUS_OK)

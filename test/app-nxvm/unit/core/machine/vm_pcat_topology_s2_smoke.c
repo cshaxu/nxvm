@@ -49,16 +49,16 @@ static lib_i32 pcat_topology_registry_matches_profile(
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
     failed |= pit_route == LIB_NULL || keyboard_route == LIB_NULL || aux_route == LIB_NULL ||
         cmos_route == LIB_NULL || fdc_route == LIB_NULL ||
-        session->core_machine->board->shared_pit_irq0_source.irq != pit_route->irq ||
-        session->core_machine->board->shared_kbc.connect.irq1_source.irq !=
+        session->board->shared_pit_irq0_source.irq != pit_route->irq ||
+        session->board->shared_kbc.connect.irq1_source.irq !=
             keyboard_route->irq ||
-        !x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
-        session->core_machine->board->shared_kbc.connect.irq12_source.irq != aux_route->irq ||
-        session->core_machine->board->rtc_cmos_config.irq != cmos_route->irq ||
-        session->core_machine->board->fdc_topology.config.irq != fdc_route->irq ||
-        session->core_machine->board->fdc_topology.config.dma_channel !=
+        !x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
+        session->board->shared_kbc.connect.irq12_source.irq != aux_route->irq ||
+        session->board->rtc_cmos_config.irq != cmos_route->irq ||
+        session->board->fdc_topology.config.irq != fdc_route->irq ||
+        session->board->fdc_topology.config.dma_channel !=
             fdc_route->dma_channel ||
-        session->core_machine->board->hdc_topology.config.irq !=
+        session->board->hdc_topology.config.irq !=
             profile->hdc.irq;
     failed |= !core_machine_port_has_read(&session->core_machine->executor_port,
             0x0061u) ||

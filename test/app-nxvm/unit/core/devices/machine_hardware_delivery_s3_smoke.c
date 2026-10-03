@@ -19,6 +19,7 @@
 
 typedef struct hardware_delivery_s3_real_machine {
     core_machine *machine;
+    core_machine_board_state *board;
 } hardware_delivery_s3_real_machine;
 
 static void hardware_delivery_s3_real_reset(void *opaque)
@@ -56,7 +57,7 @@ static lib_i32 hardware_delivery_s3_real_priority(void)
     lib_memory_set(&state, 0, sizeof(state));
     lib_memory_set(&irq, 0, sizeof(irq));
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
-            &hardware_delivery_s3_real_provider, &state, &state.machine)) {
+            &hardware_delivery_s3_real_provider, &state, &state.machine, &state.board)) {
         return 0;
     }
     failed |= core_machine_memory_write(state.machine, 0u, program,
@@ -73,9 +74,9 @@ static lib_i32 hardware_delivery_s3_real_priority(void)
         (*test_core_machine_fixture_cpu(state.machine)).data.esp = 0x00008000u;
         (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI = LIB_TRUE;
-        test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &state.machine->board->shared_pic_master,
-            &state.machine->board->shared_pic_slave, 0u);
+        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &state.board->shared_pic_master,
+            &state.board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         status = core_machine_run(state.machine, (core_machine_run_budget){ 8u, 0u },
@@ -87,8 +88,8 @@ static lib_i32 hardware_delivery_s3_real_priority(void)
             CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_IF) ||
             CORE_MACHINE_BIT_IS_SET((*test_core_machine_fixture_cpu(state.machine)).data.eflags, VCPU_EFLAGS_TF) ||
             (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
                 0x00007ffau, (lib_uptr)frame, sizeof(frame)) !=
                 LIB_STATUS_OK ||
@@ -114,9 +115,9 @@ static lib_i32 hardware_delivery_s3_protected_priority(void)
     if (!failed) {
         (*test_core_machine_fixture_cpu(state.machine)).data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI = LIB_TRUE;
-        test_pic_program_vector(&state.machine->board->shared_pic_master, IE_VECTOR);
-        core_machine_pic_irq_source_bind(&irq, &state.machine->board->shared_pic_master,
-            &state.machine->board->shared_pic_slave, 0u);
+        test_pic_program_vector(&state.board->shared_pic_master, IE_VECTOR);
+        core_machine_pic_irq_source_bind(&irq, &state.board->shared_pic_master,
+            &state.board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed |= !ie_install_gate(&state, 0x02u, 0x0008u,
@@ -128,8 +129,8 @@ static lib_i32 hardware_delivery_s3_protected_priority(void)
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) ||
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_TF) ||
             (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
             !ie_read(&state, IE_STACK_BASE - 12u, frame, sizeof(frame)) ||
             frame[0] != 1u || frame[1] != 0x0008u ||
             frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);
@@ -155,9 +156,9 @@ static lib_i32 hardware_delivery_s3_vm86_install_gate(
 static lib_i32 hardware_delivery_s3_vm86_pic_matches(
     const vm86_delivery_state *state, lib_i32 nmi_masked)
 {
-    lib_u8 irq_pending = CORE_MACHINE_BIT_IS_SET(test_pic_read(&state->machine->board->shared_pic_master, 0x0au),
+    lib_u8 irq_pending = CORE_MACHINE_BIT_IS_SET(test_pic_read(&state->board->shared_pic_master, 0x0au),
         VPIC_IRR_IRQ(0u));
-    lib_u8 irq_active = CORE_MACHINE_BIT_IS_SET(test_pic_read(&state->machine->board->shared_pic_master, 0x0bu),
+    lib_u8 irq_active = CORE_MACHINE_BIT_IS_SET(test_pic_read(&state->board->shared_pic_master, 0x0bu),
         VPIC_ISR_IRQ(0u));
 
     if (nmi_masked) {
@@ -179,9 +180,9 @@ static lib_i32 hardware_delivery_s3_vm86_priority(lib_i32 mask_nmi)
     if (!failed) {
         (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI = LIB_TRUE;
         (*test_core_machine_fixture_cpu(state.machine)).data.flagMaskNMI = mask_nmi ? LIB_TRUE : LIB_FALSE;
-        test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &state.machine->board->shared_pic_master,
-            &state.machine->board->shared_pic_slave, 0u);
+        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &state.board->shared_pic_master,
+            &state.board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed |= !hardware_delivery_s3_vm86_install_gate(&state, 0x20u) ||

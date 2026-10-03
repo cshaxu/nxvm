@@ -36,7 +36,8 @@ static lib_status port_strings_board_write(void *opaque, lib_u16 port,
 }
 
 static lib_i32 port_strings_board_prepare(core_machine **out_machine,
-    port_strings_board_probe *probe)
+    port_strings_board_probe *probe,
+    core_machine_board_state **out_board)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -70,7 +71,7 @@ static lib_i32 port_strings_board_prepare(core_machine **out_machine,
         }
     };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, out_board) != LIB_STATUS_OK;
 
     if (!failed)
         failed = core_machine_install_port_provider(machine, 0x00e0u,
@@ -80,6 +81,7 @@ static lib_i32 port_strings_board_prepare(core_machine **out_machine,
             core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK;
     if (failed) {
         core_machine_destroy(machine);
+        if (out_board != LIB_NULL) *out_board = LIB_NULL;
         return 0;
     }
     *out_machine = machine;
@@ -99,12 +101,13 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
     const lib_u8 source[] = {0x5au,0x6bu,0x7cu};
     port_strings_board_probe probe = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source irq = {0};
     core_machine_run_result result = {0};
     core_machine_debug_cpu_snapshot after = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
     lib_u8 observed = 0u;
-    lib_i32 failed = !port_strings_board_prepare(&machine, &probe);
+    lib_i32 failed = !port_strings_board_prepare(&machine, &probe, &board);
 
     probe.input = source[0];
     if (!failed)
@@ -118,9 +121,9 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
                 sizeof(hlt)) != LIB_STATUS_OK ||
             core_machine_memory_write(machine, 0u, code, bytes) != LIB_STATUS_OK;
     if (!failed) {
-        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &machine->board->shared_pic_master,
-            &machine->board->shared_pic_slave, 0u);
+        test_pic_program_vector(&board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &board->shared_pic_master,
+            &board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed = core_machine_run(machine,
@@ -146,9 +149,9 @@ static lib_i32 port_strings_board_irq(lib_bool input, lib_bool repeat)
             probe.writes != (input ? 0u : 1u) ||
             (!input && probe.last_write != source[0]) ||
             observed != source[0] ||
-            !(test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
+            !(test_pic_read(&board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) ||
-            (test_pic_read(&machine->board->shared_pic_master, 0x0au) &
+            (test_pic_read(&board->shared_pic_master, 0x0au) &
                 VPIC_IRR_IRQ(0u));
     core_machine_destroy(machine);
     return !failed;
@@ -184,7 +187,7 @@ static lib_i32 port_strings_board_protected(lib_bool input, lib_bool repeat)
     core_machine_cpu_diagnostic diagnostic = {0};
     core_machine_debug_cpu_snapshot after = {0};
     core_machine_run_result result = {0};
-    lib_i32 failed = !port_strings_board_prepare(&machine, &probe);
+    lib_i32 failed = !port_strings_board_prepare(&machine, &probe, LIB_NULL);
 
     gdt[input ? 24u : 16u] = repeat ? 0x10u : 0x0fu;
     gdt[input ? 25u : 17u] = 0u;

@@ -421,12 +421,13 @@ static lib_i32 prefetch_grant_contract(void)
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
     core_machine_config config = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.transaction_contract.external_cycle_timing = timing;
     config.transaction_contract.cpu_prefetch_reservation_enabled = LIB_TRUE;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
@@ -444,7 +445,7 @@ static lib_i32 prefetch_grant_contract(void)
             prefetch_grants != 1u;
         core_machine_transaction_hold_release(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA);
-        machine->board->d4_refresh_hold_pending = LIB_TRUE;
+        board->d4_refresh_hold_pending = LIB_TRUE;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
             prefetch_grants != 1u;
         failed |= core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||

@@ -59,27 +59,27 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         session->core_machine_plan->controller_timing.dma_service !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
-        session->core_machine->board->dma_clock.numerator != 3u ||
-        session->core_machine->board->dma_clock.denominator != 8u ||
-        session->core_machine->board->pit_clock.numerator != 596591u ||
-        session->core_machine->board->pit_clock.denominator != 4000000u ||
-        session->core_machine->board->pit_clock.reset_phase != 0u ||
-        session->core_machine->board->rtc_clock.numerator != 64u ||
-        session->core_machine->board->rtc_clock.denominator != 15625u ||
-        session->core_machine->board->rtc_clock.reset_phase != 0u ||
-        session->core_machine->board->vadp_clock.numerator != 315u ||
-        session->core_machine->board->vadp_clock.denominator != 1408u ||
-        session->core_machine->board->vadp_clock.reset_phase != 0u ||
-        session->core_machine->board->rtc_cmos_config.ticks_per_second != 32768u ||
-        session->core_machine->board->rtc_cmos_config.timing.provenance !=
+        session->board->dma_clock.numerator != 3u ||
+        session->board->dma_clock.denominator != 8u ||
+        session->board->pit_clock.numerator != 596591u ||
+        session->board->pit_clock.denominator != 4000000u ||
+        session->board->pit_clock.reset_phase != 0u ||
+        session->board->rtc_clock.numerator != 64u ||
+        session->board->rtc_clock.denominator != 15625u ||
+        session->board->rtc_clock.reset_phase != 0u ||
+        session->board->vadp_clock.numerator != 315u ||
+        session->board->vadp_clock.denominator != 1408u ||
+        session->board->vadp_clock.reset_phase != 0u ||
+        session->board->rtc_cmos_config.ticks_per_second != 32768u ||
+        session->board->rtc_cmos_config.timing.provenance !=
             CORE_MACHINE_RTC_TIMING_L3_SOURCE;
-    failed |= session->core_machine->board->controller_timing.dma_clock !=
+    failed |= session->board->controller_timing.dma_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
-        session->core_machine->board->controller_timing.dma_service !=
+        session->board->controller_timing.dma_service !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
-        session->core_machine->board->controller_timing.pit_clock !=
+        session->board->controller_timing.pit_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
-        session->core_machine->board->controller_timing.rtc_clock !=
+        session->board->controller_timing.rtc_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     {
         core_machine_timing_disposition disposition;
@@ -97,11 +97,11 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK ||
             disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     }
-    failed |= session->core_machine->board->kbc_typematic_initial_ticks != 4000000u ||
-        session->core_machine->board->kbc_typematic_repeat_ticks != 800000u ||
-        session->core_machine->board->kbc_command_response_ticks != 0u;
+    failed |= session->board->kbc_typematic_initial_ticks != 4000000u ||
+        session->board->kbc_typematic_repeat_ticks != 800000u ||
+        session->board->kbc_command_response_ticks != 0u;
     {
-        x86_keyboard *keyboard = session->core_machine->board->shared_kbc.connect.keyboard;
+        x86_keyboard *keyboard = session->board->shared_kbc.connect.keyboard;
         lib_u64 ticks = 0u;
         lib_u8 repeated = 0u;
         failed |= x86_keyboard_admit(keyboard, 0x1cu) != LIB_STATUS_OK;

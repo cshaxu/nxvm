@@ -12,7 +12,8 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
 
-static lib_bool sessions_are_isolated(core_machine *first, core_machine *second)
+static lib_bool sessions_are_isolated(core_machine *first, core_machine *second,
+    core_machine_board_state *first_board, core_machine_board_state *second_board)
 {
     const lib_u8 values[] = { 0x11u, 0x22u };
     core_machine *machines[] = { first, second };
@@ -26,8 +27,8 @@ static lib_bool sessions_are_isolated(core_machine *first, core_machine *second)
         first->executor_cpu_execution == second->executor_cpu_execution ||
         &first->executor_memory == &second->executor_memory ||
         &first->executor_port == &second->executor_port ||
-        first->board->shared_rtc == second->board->shared_rtc ||
-        &first->board->fdc == &second->board->fdc || &first->board->hdc == &second->board->hdc) return LIB_FALSE;
+        first_board->shared_rtc == second_board->shared_rtc ||
+        &first_board->fdc == &second_board->fdc || &first_board->hdc == &second_board->hdc) return LIB_FALSE;
     for (index = 0u; index < 2u; ++index) {
         if (core_machine_debug_write_real(machines[index], 0u, 0u,
                 &values[index], 1u) != LIB_STATUS_OK ||
@@ -63,7 +64,7 @@ lib_i32 main(void)
     if (!failed) {
         failed |= first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;
         failed |= !sessions_are_isolated(
-            first->core_machine, second->core_machine);
+            first->core_machine, second->core_machine, first->board, second->board);
     }
 
     vm_machine_destroy(second);

@@ -1,3 +1,4 @@
+#include "support/board_construction_fixture.h"
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/debug_interface.h"
@@ -285,8 +286,9 @@ static lib_i32 port_assembly_create_failure(void)
         core_machine_port_test_allocation allocation = {0u, 0u};
         core_machine *machine = LIB_NULL;
         core_machine_board_state *board = LIB_NULL;
-        lib_status status = core_machine_create_with_test_port_allocation(
-            &variants[variant], &machine, &allocation, &board);
+        lib_status status = test_core_machine_create_with_allocation(
+            &variants[variant], &machine,
+            LIB_NULL, &allocation, &board);
         lib_size count = allocation.attempts;
         lib_i32 failed = status != LIB_STATUS_OK || machine == LIB_NULL || count == 0u;
         failed |= board == LIB_NULL || (!failed &&
@@ -298,8 +300,9 @@ static lib_i32 port_assembly_create_failure(void)
             allocation = (core_machine_port_test_allocation) {fail_at, 0u};
             machine = LIB_NULL;
             board = (core_machine_board_state *)(lib_uptr)1u;
-            status = core_machine_create_with_test_port_allocation(
-                &variants[variant], &machine, &allocation, &board);
+            status = test_core_machine_create_with_allocation(
+                &variants[variant], &machine,
+                LIB_NULL, &allocation, &board);
             failed = fail_at <= count ?
                 status != LIB_STATUS_NO_MEMORY || machine != LIB_NULL || board != LIB_NULL ||
                     allocation.attempts != fail_at :
@@ -345,9 +348,9 @@ static lib_i32 port_assembly_fdc_transaction(lib_size fail_at)
         fail_fdc_create = fail_at == 0u;
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_fdc(board, &topology) != LIB_STATUS_NO_MEMORY ||
-            machine->board->fdc_configured ||
-            lib_memory_compare(&machine->board->fdc, &fdc_zero, sizeof(fdc_zero)) != 0 ||
-            lib_memory_compare(&machine->board->fdc_topology, &topology_zero,
+            board->fdc_configured ||
+            lib_memory_compare(&board->fdc, &fdc_zero, sizeof(fdc_zero)) != 0 ||
+            lib_memory_compare(&board->fdc_topology, &topology_zero,
                 sizeof(topology_zero)) != 0 ||
             core_machine_port_has_read(&machine->executor_port, 0x03f4u) ||
             core_machine_port_has_read(&machine->executor_port, 0x03f5u) ||
@@ -356,14 +359,14 @@ static lib_i32 port_assembly_fdc_transaction(lib_size fail_at)
             core_machine_port_has_write(&machine->executor_port, 0x03f2u) ||
             core_machine_port_has_write(&machine->executor_port, 0x03f5u) ||
             core_machine_port_has_write(&machine->executor_port, 0x03f7u) ||
-            core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                &machine->board->shared_dma_secondary);
+            core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                &board->shared_dma_secondary);
         failed |= fail_fdc_create && allocation.attempts != 0u;
         fail_fdc_create = LIB_FALSE;
         allocation.fail_at = 0u;
         allocation.attempts = 0u;
         failed |= core_machine_configure_fdc(board, &topology) != LIB_STATUS_OK ||
-            !machine->board->fdc_configured;
+            !board->fdc_configured;
     }
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
@@ -389,9 +392,9 @@ static lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
     if (!failed) {
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_rtc_cmos(board, &rtc_config) !=
-                LIB_STATUS_NO_MEMORY || machine->board->rtc_cmos_configured ||
-            machine->board->shared_rtc != LIB_NULL ||
-            lib_memory_compare(&machine->board->rtc_cmos_config, &config_zero,
+                LIB_STATUS_NO_MEMORY || board->rtc_cmos_configured ||
+            board->shared_rtc != LIB_NULL ||
+            lib_memory_compare(&board->rtc_cmos_config, &config_zero,
                 sizeof(config_zero)) != 0 ||
             core_machine_port_has_write(&machine->executor_port, 0x0070u) ||
             core_machine_port_has_read(&machine->executor_port, 0x0071u) ||
@@ -399,7 +402,7 @@ static lib_i32 port_assembly_rtc_transaction(lib_size fail_at)
         allocation.fail_at = 0u;
         allocation.attempts = 0u;
         failed |= core_machine_configure_rtc_cmos(board, &rtc_config) !=
-            LIB_STATUS_OK || !machine->board->rtc_cmos_configured;
+            LIB_STATUS_OK || !board->rtc_cmos_configured;
     }
     core_machine_destroy(machine);
     return failed || port_assembly_fresh_default_create();
@@ -425,8 +428,8 @@ static lib_i32 port_assembly_rtc_collision(void)
     if (!failed) {
         failed |= core_machine_install_port_routes(machine, &existing, 1u) != LIB_STATUS_OK;
         failed |= core_machine_configure_rtc_cmos(board, &rtc_config) !=
-                LIB_STATUS_INVALID_STATE || machine->board->shared_rtc != LIB_NULL ||
-            machine->board->rtc_cmos_configured ||
+                LIB_STATUS_INVALID_STATE || board->shared_rtc != LIB_NULL ||
+            board->rtc_cmos_configured ||
             core_machine_port_has_write(&machine->executor_port, 0x0070u) ||
             !core_machine_port_has_read(&machine->executor_port, 0x0071u) ||
             !core_machine_port_has_write(&machine->executor_port, 0x0071u);
@@ -435,9 +438,9 @@ static lib_i32 port_assembly_rtc_collision(void)
     return failed;
 }
 
-static lib_i32 port_assembly_refresh_count(core_machine *machine)
+static lib_i32 port_assembly_refresh_count(core_machine_board_state *board)
 {
-    x86_pit *pit = machine->board->shared_pit.device;
+    x86_pit *pit = board->shared_pit.device;
     lib_u8 low = 0u, high = 0u;
 
     /* The reload becomes observable on the next input-clock cycle. */
@@ -472,11 +475,11 @@ static lib_i32 port_assembly_port_b_transaction(lib_bool d4, lib_size fail_at)
         failed |= (d4 ? core_machine_configure_d4_platform(board, &d4_config) :
             core_machine_configure_planar_parity(board, &parity)) !=
                 LIB_STATUS_NO_MEMORY ||
-            machine->board->planar_parity_configured ||
-            machine->board->d4_platform_configured ||
+            board->planar_parity_configured ||
+            board->d4_platform_configured ||
             machine->executor_memory.connect.parity != 0u ||
-            machine->board->planar_parity_port_b != 0u ||
-            machine->board->d4_platform_port_b != 0u ||
+            board->planar_parity_port_b != 0u ||
+            board->d4_platform_port_b != 0u ||
             core_machine_port_has_read(&machine->executor_port, CORE_MACHINE_PC_AT_PORT_B) ||
             core_machine_port_has_write(&machine->executor_port, CORE_MACHINE_PC_AT_PORT_B);
         allocation.fail_at = 0u;
@@ -487,17 +490,17 @@ static lib_i32 port_assembly_port_b_transaction(lib_bool d4, lib_size fail_at)
                 CORE_MACHINE_PC_AT_PORT_B) ||
             !core_machine_port_has_write(&machine->executor_port,
                 CORE_MACHINE_PC_AT_PORT_B);
-        if (!failed) failed |= port_assembly_refresh_count(machine) ||
+        if (!failed) failed |= port_assembly_refresh_count(board) ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK ||
             machine->executor_port.data.ioDWord != 0u ||
-            port_assembly_refresh_count(machine) ||
+            port_assembly_refresh_count(board) ||
             core_machine_bus_write(machine, 0x0043u, 0x74u) != LIB_STATUS_OK ||
             core_machine_bus_write(machine, 0x0041u, 2u) != LIB_STATUS_OK ||
             core_machine_bus_write(machine, 0x0041u, 0u) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK ||
             machine->executor_port.data.ioDWord != 0u ||
-            port_assembly_refresh_count(machine);
+            port_assembly_refresh_count(board);
     }
     core_machine_destroy(machine);
     return failed;
@@ -573,8 +576,8 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
                     CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR, CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS,
                     CORE_MACHINE_XEBEC_TYPE_2_HEADS, CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK}};
             if (busy_dma) failed |= core_machine_dma_bind_channel(
-                &machine->board->shared_dma_latch, &machine->board->shared_dma_primary,
-                &machine->board->shared_dma_secondary, 3u, &blocker,
+                &board->shared_dma_latch, &board->shared_dma_primary,
+                &board->shared_dma_secondary, 3u, &blocker,
                 &blocker_binding, &blocker_binding) != LIB_STATUS_OK;
         }
     }
@@ -587,9 +590,9 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_hdc(board, &topology) !=
                 (busy_dma || busy_port ? LIB_STATUS_INVALID_STATE : LIB_STATUS_NO_MEMORY) ||
-            machine->board->hdc_configured ||
-            lib_memory_compare(&machine->board->hdc, &hdc_zero, sizeof(hdc_zero)) != 0 ||
-            lib_memory_compare(&machine->board->hdc_topology, &topology_zero,
+            board->hdc_configured ||
+            lib_memory_compare(&board->hdc, &hdc_zero, sizeof(hdc_zero)) != 0 ||
+            lib_memory_compare(&board->hdc_topology, &topology_zero,
                 sizeof(topology_zero)) != 0 ||
             core_machine_port_has_read(&machine->executor_port, 0x01f0u) ||
             core_machine_port_has_write(&machine->executor_port, 0x01f0u) ||
@@ -602,13 +605,13 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
             conflict_route.address);
         failed |= core_machine_port_has_write(&machine->executor_port, 0x03f6u) ||
             (fail_hdc_create && allocation.attempts != 0u);
-        if (compaq) failed |= !machine->board->fdc_configured ||
+        if (compaq) failed |= !board->fdc_configured ||
             !core_machine_port_has_read(&machine->executor_port, 0x03f7u);
-        if (xebec) failed |= machine->board->hdc_dma_request.core_token != 0u ||
-            core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                &machine->board->shared_dma_secondary);
+        if (xebec) failed |= board->hdc_dma_request.core_token != 0u ||
+            core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                &board->shared_dma_secondary);
         if (busy_dma) failed |= blocker_binding.core_token == 0u ||
-            machine->board->shared_dma_primary.connect.device_owner[3] != &blocker_binding;
+            board->shared_dma_primary.connect.device_owner[3] != &blocker_binding;
         fail_hdc_create = LIB_FALSE;
         allocation.fail_at = 0u;
         allocation.attempts = 0u;
@@ -616,12 +619,12 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
             &conflict) != LIB_STATUS_OK;
         if (!busy_dma) {
             failed |= core_machine_configure_hdc(board, &topology) != LIB_STATUS_OK ||
-                !machine->board->hdc_configured;
+                !board->hdc_configured;
             if (compaq && !failed) {
                 lib_u32 hdc_value = 0u;
                 lib_u32 combined = 0u;
 
-                failed |= core_machine_hdc_port_provider()->read(&machine->board->hdc,
+                failed |= core_machine_hdc_port_provider()->read(&board->hdc,
                     0x03f7u, 0u, &hdc_value) != LIB_STATUS_OK ||
                     core_machine_port_execute_read(&machine->executor_port,
                         0x03f7u, 0u) != LIB_STATUS_OK;

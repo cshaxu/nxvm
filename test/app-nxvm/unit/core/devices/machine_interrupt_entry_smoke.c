@@ -17,6 +17,7 @@
 
 typedef struct interrupt_entry_machine {
     core_machine *machine;
+    core_machine_board_state *board;
 } interrupt_entry_machine;
 
 typedef enum interrupt_entry_negative {
@@ -121,7 +122,7 @@ static lib_i32 ie_prepare(interrupt_entry_machine *state,
     if (negative == INTERRUPT_ENTRY_NEGATIVE_CODE_LIMIT)
         gdt[8] = 0u;
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
-            &ie_provider, state, &state->machine) ||
+            &ie_provider, state, &state->machine, &state->board) ||
         !ie_write(state, IE_GDT_BASE, gdt, sizeof(gdt)) ||
         !ie_write(state, IE_IDT_BASE, idt, sizeof(idt)) ||
         !ie_write(state, IE_CODE_BASE, code, sizeof(code)) ||
@@ -389,9 +390,9 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
                 sizeof(handler));
         if (!failed && !nmi) {
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.machine->board->shared_pic_master, IE_VECTOR);
+            test_pic_program_vector(&state.board->shared_pic_master, IE_VECTOR);
             core_machine_pic_irq_source_bind(&source,
-                &state.machine->board->shared_pic_master, &state.machine->board->shared_pic_slave, 0u);
+                &state.board->shared_pic_master, &state.board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
         } else if (!failed) {
@@ -402,15 +403,15 @@ static lib_i32 ie_test_external_origin(lib_i32 nmi, lib_i32 reject)
         if (!failed && !reject) {
             failed |= after.data.cs.selector != 0x000bu ||
                 after.data.esp != IE_STACK_BASE - 12u ||
-                (!CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu), 1u) && !nmi) ||
-                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au), 1u) ||
+                (!CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu), 1u) && !nmi) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au), 1u) ||
                 (*test_core_machine_fixture_cpu(state.machine)).data.flagNMI;
         } else if (!failed) {
             failed |= after.data.cs.selector != before.data.cs.selector ||
                 after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
                 (nmi ? !(*test_core_machine_fixture_cpu(state.machine)).data.flagNMI :
-                    (!CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu), 1u) ||
-                     CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au), 1u)));
+                    (!CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu), 1u) ||
+                     CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au), 1u)));
         }
     }
     core_machine_destroy(state.machine);

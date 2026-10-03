@@ -92,12 +92,12 @@ static lib_i32 vm_model_339_selected_contract(void)
         speaker.timer_gate || !speaker.data_enabled || !speaker.output) ? 0x0004 : 0;
     failed |= (core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
         LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) ? 0x0008 : 0;
-    failed |= (x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
-        x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
-        !kbc_test_command_matches(&session->core_machine->board->shared_kbc,
+    failed |= (x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
+        x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
+        !kbc_test_command_matches(&session->board->shared_kbc,
             &session->core_machine->executor_port, 0x20u,
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX)) ? 0x0010 : 0;
-    failed |= (!kbc_test_command_matches(&session->core_machine->board->shared_kbc,
+    failed |= (!kbc_test_command_matches(&session->board->shared_kbc,
         &session->core_machine->executor_port, 0xd0u, 0xffu, 0x03u) ||
         !session->core_machine->executor_memory.data.flagA20) ? 0x0011 : 0;
     failed |= (core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
@@ -120,10 +120,10 @@ static lib_i32 vm_model_339_selected_contract(void)
     failed |= (!core_machine_port_has_read(&session->core_machine->executor_port, 0x01f0u) ||
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x01f0u) ||
         core_machine_port_read(&session->core_machine->executor_port, 0x03f1u) != 0x50u ||
-        session->core_machine->board->hdc.connect.config.service.command_ticks != 16000u ||
-        session->core_machine->board->hdc.connect.config.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
+        session->board->hdc.connect.config.service.command_ticks != 16000u ||
+        session->board->hdc.connect.config.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
     {
-        core_machine_pic_bus *bus = &session->core_machine->board->shared_pic_master;
+        core_machine_pic_bus *bus = &session->board->shared_pic_master;
         lib_u64 ticks = 0u;
         x86_pic_write_register(bus->device, 0u, 0x13u);
         x86_pic_write_register(bus->device, 1u, 8u);
@@ -164,7 +164,7 @@ static lib_i32 vm_model_339_floppy_contract(void)
         session->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
         session->fdd.data.ncyl != 40u || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != 9u ||
-        session->core_machine->board->fdc.connect.drives.cylinder_count[0u] != 80u;
+        session->board->fdc.connect.drives.cylinder_count[0u] != 80u;
     vm_machine_destroy(session);
     session = LIB_NULL;
     failed |= vm_test_create_5170(&rejected, &session) == LIB_STATUS_OK || session != LIB_NULL;

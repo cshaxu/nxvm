@@ -70,7 +70,7 @@ static lib_i32 real_final_prepare(real_final_machine *state,
         return 0;
     lib_memory_set(state, 0, sizeof(*state));
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
-            &real_final_provider, state, &state->machine) ||
+            &real_final_provider, state, &state->machine, LIB_NULL) ||
         state->reset_status != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, 0x0500u, lidt,
             sizeof(lidt)) != LIB_STATUS_OK ||

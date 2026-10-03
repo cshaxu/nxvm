@@ -37,10 +37,11 @@ lib_i32 main(void)
 {
     core_machine_config config = { .memory_bytes = 0u };
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_cpu_execution_context *cpu;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
     if (failed || machine == LIB_NULL) return 1;
     cpu = machine->executor_cpu_execution;
     failed |= cpu == LIB_NULL;
@@ -48,13 +49,13 @@ lib_i32 main(void)
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= cpu_pic_binding_is_owned(machine, cpu);
     if (machine != LIB_NULL) {
-        x86_pic_set_inputs(machine->board->shared_pic_master.device, 0u, 0xffu, 0u);
-        x86_pic_set_inputs(machine->board->shared_pic_slave.device, 0u, 0xffu, 0u);
+        x86_pic_set_inputs(board->shared_pic_master.device, 0u, 0xffu, 0u);
+        x86_pic_set_inputs(board->shared_pic_slave.device, 0u, 0xffu, 0u);
     }
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= cpu_pic_binding_is_owned(machine, cpu);
-    failed |= machine == LIB_NULL || test_pic_read(&machine->board->shared_pic_master, 0x0au) != 0u ||
-        test_pic_read(&machine->board->shared_pic_slave, 0x0au) != 0u;
+    failed |= machine == LIB_NULL || test_pic_read(&board->shared_pic_master, 0x0au) != 0u ||
+        test_pic_read(&board->shared_pic_slave, 0x0au) != 0u;
 
     core_machine_destroy(machine);
     if (failed != 0) return 1;

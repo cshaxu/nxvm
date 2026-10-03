@@ -209,20 +209,21 @@ static lib_i32 scheduler_board_timing_qualification(void)
         .xt_ppi_keyboard = {0x60u, 0x61u, 0x62u, 0x63u, 1u, 0x0du, 0x02u}
     };
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_attachment_deadline_observation observation;
     lib_u64 pit_ticks;
     lib_u64 source_ticks;
     lib_i32 failed = 1;
 
-    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x43u, 0x34u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x40u, 5u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x40u, 0u) != LIB_STATUS_OK ||
-        x86_pit_ticks_until_output(machine->board->shared_pit.device, 0u,
+        x86_pit_ticks_until_output(board->shared_pit.device, 0u,
             &pit_ticks) != LIB_STATUS_OK ||
-        core_machine_clock_domain_source_ticks_until(&machine->board->pit_clock,
+        core_machine_clock_domain_source_ticks_until(&board->pit_clock,
             pit_ticks, &source_ticks) != LIB_STATUS_OK) goto done;
     /* Provider input, not private Core marker, authorizes the board clock. */
     core_machine_board_deadline_observe(machine->attachment.context, 0u, LIB_FALSE, &observation);

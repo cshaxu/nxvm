@@ -12,6 +12,7 @@
 
 typedef struct fpu_interface_s65_machine {
     core_machine *machine;
+    core_machine_board_state *board;
 } fpu_interface_s65_machine;
 
 #define FPU_S65_GDT_POINTER 0x0100u
@@ -46,7 +47,7 @@ static lib_i32 fpu_interface_s65_prepare(core_machine_cpu_profile profile,
     }
     lib_memory_set(state, 0, sizeof(*state));
     return test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &fpu_interface_s65_provider, state, &state->machine) &&
+        &fpu_interface_s65_provider, state, &state->machine, &state->board) &&
         test_core_machine_fixture_prepare_real_mode_execution(
                 state->machine, 0u);
 }
@@ -368,9 +369,9 @@ static lib_i32 fpu_interface_s65_irq(const lib_u8 *instruction,
         (*test_core_machine_fixture_cpu(state.machine)).data.eflags |= VCPU_EFLAGS_IF;
         before = (*test_core_machine_fixture_cpu(state.machine));
         lib_memory_set(&irq, 0, sizeof(irq));
-        test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &state.machine->board->shared_pic_master,
-            &state.machine->board->shared_pic_slave, 0u);
+        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &state.board->shared_pic_master,
+            &state.board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed |= core_machine_run(state.machine,
@@ -385,9 +386,9 @@ static lib_i32 fpu_interface_s65_irq(const lib_u8 *instruction,
             after.data.ebx != before.data.ebx || after.data.ecx != before.data.ecx ||
             after.data.edx != before.data.edx || after.data.ebp != before.data.ebp ||
             after.data.esi != before.data.esi || after.data.edi != before.data.edi ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(&state.machine->board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
+                test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;

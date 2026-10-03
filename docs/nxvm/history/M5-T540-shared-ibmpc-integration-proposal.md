@@ -202,6 +202,17 @@ Core receives the sole resize implementation, not a new board-state mirror or
 forwarding wrapper. Constructor/direct-fixture association removal then
 precedes the real neutral Core and flat IBM-PC source cut.
 
+S87 receives that complete constructor/private-state class, including all
+direct fixtures and neutral construction/test-seam dependencies. Board creation
+returns its actual local allocation, rather than publishing via Core layout.
+Core's sole attachment/destructor owns failure cleanup. Production construction
+must use a genuine neutral contract; private fault seams must not become
+test-only public APIs. The whole fixture class keeps its original assertions
+and is classified by real owner, not moved indiscriminately to Shared. Any
+temporary association during the working migration is removed before S87
+delivery. Then the required physical Core/flat IBM-PC extraction follows;
+neither construction cleanup nor independent linkage substitutes for it.
+
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
 - Common board contract tests live with their flat receiver under

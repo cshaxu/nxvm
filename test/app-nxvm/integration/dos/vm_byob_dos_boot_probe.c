@@ -1800,7 +1800,7 @@ int main(lib_i32 argc, char **argv)
     }
     /* This is probe-only observability after construction; the FDC retains the
        sole terminal event path and no guest-visible state is changed. */
-    session->core_machine->board->fdc.connect.observation_provider =
+    session->board->fdc.connect.observation_provider =
         (core_machine_fdc_terminal_observation_provider) {
             vm_byob_fdc_terminal_observe, &trace };
     if (trace_enabled) {
@@ -1861,13 +1861,13 @@ int main(lib_i32 argc, char **argv)
                     (unsigned int)fault_cpu.gdtr.base, (unsigned int)fault_cpu.gdtr.limit);
             }
             printf("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
-                (unsigned int)session->core_machine->board->d4_memory.control,
-                (unsigned int)session->core_machine->board->d4_memory.ram_setup);
+                (unsigned int)session->board->d4_memory.control,
+                (unsigned int)session->board->d4_memory.ram_setup);
             printf("BOOT-PROBE=transaction-owner=%u-hold-owner=%u-hold-ack=%u-refresh-pending=%u\n",
                 (unsigned int)session->core_machine->transaction.owner,
                 (unsigned int)session->core_machine->transaction.hold_owner,
                 (unsigned int)session->core_machine->transaction.hold_acknowledged,
-                (unsigned int)session->core_machine->board->d4_refresh_hold_pending);
+                (unsigned int)session->board->d4_refresh_hold_pending);
             printf("BOOT-PROBE=far-pointer=%02X,%02X,%02X,%02X,%02X,%02X-gdt-entry=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
                 (unsigned int)far_pointer[0u], (unsigned int)far_pointer[1u],
                 (unsigned int)far_pointer[2u], (unsigned int)far_pointer[3u],
@@ -1906,7 +1906,7 @@ int main(lib_i32 argc, char **argv)
             goto done;
         }
         x86_fdc_observation fdc_observation;
-        if (x86_fdc_capture(session->core_machine->board->fdc.chip, &fdc_observation) != LIB_STATUS_OK) {
+        if (x86_fdc_capture(session->board->fdc.chip, &fdc_observation) != LIB_STATUS_OK) {
             printf("BOOT-PROBE=fdc-observation-unavailable\n");
             goto done;
         }
@@ -1920,7 +1920,7 @@ int main(lib_i32 argc, char **argv)
             last_fdc_result[2u] = fdc_observation.st2;
             last_fdc_phase = (lib_u8)fdc_observation.phase;
             last_fdc_remaining = fdc_observation.transfer_remaining;
-            last_dma = x86_dma_get_signals(session->core_machine->board->shared_dma_primary.device);
+            last_dma = x86_dma_get_signals(session->board->shared_dma_primary.device);
         }
         if (result.reason == CORE_MACHINE_STOP_FAULT) {
             printf("BOOT-PROBE=guest-fault\n");
@@ -2086,7 +2086,7 @@ int main(lib_i32 argc, char **argv)
                     (unsigned int)(current_cpu.eflags & 0xffffu));
                 {
                     x86_dma_signals dma = x86_dma_get_signals(
-                        session->core_machine->board->shared_dma_primary.device);
+                        session->board->shared_dma_primary.device);
                     printf("BOOT-PROBE=post-dma-eligible=%02X-active=%u-enabled=%u\n",
                         (unsigned int)dma.requests, (unsigned int)dma.active_channel,
                         (unsigned int)dma.enabled);
@@ -2100,26 +2100,26 @@ int main(lib_i32 argc, char **argv)
                 printf("BOOT-PROBE=trace-cpu-retires=%llu\n",
                     (unsigned long long)trace.cpu_retires);
                 printf("PIT:out0=%u:out1=%u\n",
-                    (unsigned int)x86_pit_get_output(session->core_machine->board->shared_pit.device, 0u),
-                    (unsigned int)x86_pit_get_output(session->core_machine->board->shared_pit.device, 1u));
+                    (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 0u),
+                    (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 1u));
                 {
                     x86_ppi8255_pins pins = {0u, 0u};
                     lib_u64 next = 0u;
-                    if (x86_ppi8255_output(session->core_machine->board->xt_ppi_keyboard.ppi,
+                    if (x86_ppi8255_output(session->board->xt_ppi_keyboard.ppi,
                             1u, &pins) == LIB_STATUS_OK) {
                         printf("BOOT-PROBE=xt-ppi-pb=%02X-drive=%02X\n",
                             (unsigned int)pins.latch, (unsigned int)pins.output_mask);
                     }
-                    if (x86_xt_keyboard_ticks_until_event(session->core_machine->board->xt_keyboard,
+                    if (x86_xt_keyboard_ticks_until_event(session->board->xt_keyboard,
                             &next) == LIB_STATUS_OK) {
                         printf("BOOT-PROBE=xt-keyboard-next=%llu\n", (unsigned long long)next);
                     }
                 }
-                if (session->core_machine->board->xt_ppi_keyboard.byte_ready)
+                if (session->board->xt_ppi_keyboard.byte_ready)
                     printf("BOOT-PROBE=xt-keyboard-byte-ready\n");
                 {
                     lib_u8 mask = 0u;
-                    x86_pic_read_register(session->core_machine->board->shared_pic_master.device,
+                    x86_pic_read_register(session->board->shared_pic_master.device,
                         1u, &mask);
                     printf("BOOT-PROBE=pic-imr=%02X\n", (unsigned int)mask);
                     if (mask == 0xffu) printf("BOOT-PROBE=pic-imr-ff\n");
@@ -2519,13 +2519,13 @@ done:
             (unsigned int)(current_cpu.eax & 0xffffu),
             (unsigned int)(current_cpu.ebp & 0xffffu));
         printf("PIT:out0=%u:out1=%u\n",
-            (unsigned int)x86_pit_get_output(session->core_machine->board->shared_pit.device, 0u),
-            (unsigned int)x86_pit_get_output(session->core_machine->board->shared_pit.device, 1u));
+            (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 0u),
+            (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 1u));
         x86_fdc_observation fdc_observation;
-        if (x86_fdc_capture(session->core_machine->board->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
+        if (x86_fdc_capture(session->board->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
                 (unsigned int)fdc_observation.phase,
-                (unsigned int)session->core_machine->board->fdc.data.dor,
+                (unsigned int)session->board->fdc.data.dor,
                 (unsigned int)fdc_observation.msr,
                 (unsigned int)fdc_observation.st0,
                 (unsigned int)fdc_observation.st1,
@@ -2571,8 +2571,8 @@ done:
             (unsigned long long)trace.model40_video_delay_entries,
             (unsigned int)trace.model40_video_delay_predecessor);
         printf("BOOT-PROBE=model40-d4-control=%02X-ram-setup=%04X\n",
-            (unsigned int)session->core_machine->board->d4_memory.control,
-            (unsigned int)session->core_machine->board->d4_memory.ram_setup);
+            (unsigned int)session->board->d4_memory.control,
+            (unsigned int)session->board->d4_memory.ram_setup);
         printf("BOOT-PROBE=model40-reset-vector-target=%llu-predecessor=%05X\n",
             (unsigned long long)trace.model40_reset_vector_target_entries,
             (unsigned int)trace.model40_reset_vector_target_predecessor);
@@ -2991,7 +2991,7 @@ done:
         {
             lib_u64 ticks = 0u;
             const lib_status status = core_machine_kbc_ticks_until_event(
-                &session->core_machine->board->shared_kbc, &ticks);
+                &session->board->shared_kbc, &ticks);
             printf("BOOT-PROBE=kbc-deadline-status=%u-ticks=%llu\n",
                 (unsigned int)status, (unsigned long long)ticks);
         }
@@ -3072,15 +3072,15 @@ done:
             (unsigned int)trace.kbc_reset_xmit_transactions[3u].address,
             (unsigned int)trace.kbc_reset_xmit_transactions[3u].value);
         printf("BOOT-PROBE=hdc-phase=%u-status=%02X-error=%02X-command=%02X-count=%u-sector=%u-cylinder=%02X%02X-drive-head=%02X\n",
-            (unsigned int)hdc_observe(&session->core_machine->board->hdc).phase,
-            (unsigned int)hdc_observe(&session->core_machine->board->hdc).status,
-            (unsigned int)hdc_observe(&session->core_machine->board->hdc).error,
-            (unsigned int)hdc_observe(&session->core_machine->board->hdc).last_command,
-            (unsigned int)hdc_observe(&session->core_machine->board->hdc).command_count,
-            (unsigned int)hdc_observe(&session->core_machine->board->hdc).sector_number,
-            (unsigned int)hdc_observe(&session->core_machine->board->hdc).cylinder_high,
-            (unsigned int)hdc_observe(&session->core_machine->board->hdc).cylinder_low,
-            (unsigned int)hdc_observe(&session->core_machine->board->hdc).drive_head);
+            (unsigned int)hdc_observe(&session->board->hdc).phase,
+            (unsigned int)hdc_observe(&session->board->hdc).status,
+            (unsigned int)hdc_observe(&session->board->hdc).error,
+            (unsigned int)hdc_observe(&session->board->hdc).last_command,
+            (unsigned int)hdc_observe(&session->board->hdc).command_count,
+            (unsigned int)hdc_observe(&session->board->hdc).sector_number,
+            (unsigned int)hdc_observe(&session->board->hdc).cylinder_high,
+            (unsigned int)hdc_observe(&session->board->hdc).cylinder_low,
+            (unsigned int)hdc_observe(&session->board->hdc).drive_head);
         if (trace.fdc_port_accesses != 0u) {
             const lib_u64 history = trace.fdc_port_accesses <
                 VM_BYOB_FDC_PORT_HISTORY ? trace.fdc_port_accesses :
@@ -3130,9 +3130,9 @@ done:
         }
         printf("BOOT-PROBE=pic-pending=%u-fdc-irq=%u\n",
             (unsigned int)core_machine_pic_scan_interrupt(
-                &session->core_machine->board->shared_pic_master,
-                &session->core_machine->board->shared_pic_slave),
-            (unsigned int)session->core_machine->board->fdc.connect.irq_source.asserted);
+                &session->board->shared_pic_master,
+                &session->board->shared_pic_slave),
+            (unsigned int)session->board->fdc.connect.irq_source.asserted);
         if (core_machine_memory_read(session->core_machine, 0x0410u,
                 &bda_equipment, sizeof(bda_equipment)) == LIB_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x0415u,
@@ -3247,28 +3247,28 @@ done:
                 (unsigned int)waiting_interrupts_enabled,
                 (unsigned int)last_wait_advanced,
                 (unsigned int)waiting_linear_pc);
-            if (x86_fdc_capture(session->core_machine->board->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
+            if (x86_fdc_capture(session->board->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
                 printf("BOOT-PROBE=waiting-fdc-phase=%u-hdc-phase=%u-dma-pending=%u\n",
                     (unsigned int)fdc_observation.phase,
-                    (unsigned int)hdc_observe(&session->core_machine->board->hdc).phase,
+                    (unsigned int)hdc_observe(&session->board->hdc).phase,
                     (unsigned int)core_machine_dma_has_pending_request(
-                        &session->core_machine->board->shared_dma_primary,
-                        &session->core_machine->board->shared_dma_secondary));
+                        &session->board->shared_dma_primary,
+                        &session->board->shared_dma_secondary));
             }
             {
                 lib_u64 ticks = 0u;
                 const lib_status status = x86_keyboard_ticks_until_repeat(
-                    session->core_machine->board->shared_kbc.connect.keyboard, &ticks);
+                    session->board->shared_kbc.connect.keyboard, &ticks);
                 printf("BOOT-PROBE=waiting-keyboard-repeat-status=%u-ticks=%llu\n",
                     (unsigned int)status, (unsigned long long)ticks);
             }
             {
                 lib_u64 ticks = 0u;
                 const lib_status status = core_machine_kbc_ticks_until_event(
-                    &session->core_machine->board->shared_kbc, &ticks);
+                    &session->board->shared_kbc, &ticks);
                 printf("BOOT-PROBE=waiting-kbc-deadline-status=%u-ticks=%llu-pit-rule=%u\n",
                     (unsigned int)status, (unsigned long long)ticks,
-                    (unsigned int)session->core_machine->board->controller_timing.pit_clock);
+                    (unsigned int)session->board->controller_timing.pit_clock);
             }
         }
         if (post_resume_required) printf("BOOT-PROBE=post-resume-required\n");

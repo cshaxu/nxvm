@@ -20,13 +20,14 @@ static lib_i32 sign_extend_test_irq(void)
 
     for (opcode = 0u; opcode < sizeof(opcodes); ++opcode) {
         core_machine *machine = LIB_NULL;
+        core_machine_board_state *board = LIB_NULL;
         core_machine_pic_irq_source source = {0};
         core_machine_run_result result = {0};
         core_machine_debug_cpu_snapshot after = {0};
         core_machine_debug_register_patch patch = {0};
         const lib_u8 code[] = {opcodes[opcode], 0x90u};
         lib_u16 offset = 0x0100u, segment = 0u, frame = 0u;
-        lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+        lib_i32 failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK;
 
@@ -67,9 +68,9 @@ static lib_i32 sign_extend_test_irq(void)
                     sizeof(hlt)) != LIB_STATUS_OK;
         }
         if (!failed) {
-            test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
+            test_pic_program_vector(&board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &machine->board->shared_pic_master, &machine->board->shared_pic_slave, 0u);
+                &board->shared_pic_master, &board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(machine,
@@ -86,7 +87,7 @@ static lib_i32 sign_extend_test_irq(void)
                 after.edx != (opcodes[opcode] == 0x99u ?
                     0x5566ffffu : 0x55660000u) ||
                 !CORE_MACHINE_BIT_IS_SET(
-                    test_pic_read(&machine->board->shared_pic_master, 0x0bu),
+                    test_pic_read(&board->shared_pic_master, 0x0bu),
                     VPIC_ISR_IRQ(0u));
         }
         core_machine_destroy(machine);

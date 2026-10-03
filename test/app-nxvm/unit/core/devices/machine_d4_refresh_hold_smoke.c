@@ -168,28 +168,28 @@ lib_i32 main(void)
     failed |= core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed |= core_machine_dma_bind_channel(&machine->board->shared_dma_latch,
-        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary, 2u,
+    failed |= core_machine_dma_bind_channel(&board->shared_dma_latch,
+        &board->shared_dma_primary, &board->shared_dma_secondary, 2u,
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
     refresh_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(&machine->board->shared_dma_primary,
-        &machine->board->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(&board->shared_dma_primary,
+        &board->shared_dma_secondary, &binding);
     failed |= core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
     core_machine_port_write(&machine->executor_port, 0x0064u, 0xd1u);
     core_machine_port_write(&machine->executor_port, 0x0060u, 0x01u);
     failed |= machine->executor_memory.data.flagA20;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     refresh_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(&machine->board->shared_dma_primary,
-        &machine->board->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(&board->shared_dma_primary,
+        &board->shared_dma_secondary, &binding);
     failed |= core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
     start = probe.count;
     failed |= core_machine_advance_time(machine, 19u) != LIB_STATUS_OK;
-    failed |= !machine->board->d4_refresh_hold_pending ||
-        machine->board->d4_refresh_address != 0u ||
+    failed |= !board->d4_refresh_hold_pending ||
+        board->d4_refresh_address != 0u ||
         machine->dma_cycle_wait_remaining != 0u;
     failed |= !machine->attachment.refresh_request(machine->attachment.context,
         &refresh_address) || refresh_address != 0u;
@@ -201,8 +201,8 @@ lib_i32 main(void)
      * channel selection plus S1..S4, with this contract's one wait quantum
      * per controller step. */
     failed |= core_machine_advance_time(machine, 11u) != LIB_STATUS_OK;
-    failed |= machine->board->d4_refresh_hold_pending ||
-        machine->board->d4_refresh_address != 1u ||
+    failed |= board->d4_refresh_hold_pending ||
+        board->d4_refresh_address != 1u ||
         machine->dma_cycle_wait_remaining != 0u;
     refresh_address = 0xffu;
     failed |= machine->attachment.refresh_request(machine->attachment.context,
@@ -235,8 +235,8 @@ lib_i32 main(void)
         refresh_commit >= refresh_release || refresh_release >= dma_begin ||
         refresh_has_cpu_transaction_between(&probe, refresh_release, dma_begin);
     failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-        machine->board->d4_refresh_hold_pending || machine->board->d4_refresh_pulse_active ||
-        machine->board->d4_refresh_address != 0u;
+        board->d4_refresh_hold_pending || board->d4_refresh_pulse_active ||
+        board->d4_refresh_address != 0u;
 
     core_machine_destroy(machine);
     failed |= !refresh_non_d4_contract();

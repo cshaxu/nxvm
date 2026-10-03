@@ -12,6 +12,7 @@ static lib_i32 lea_test_irq_no_shadow(void)
     static const lib_u8 code[] = { 0x8du, 0x40u, 0x10u, 0x90u };
     static const lib_u8 hlt = 0xf4u;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
@@ -42,7 +43,7 @@ static lib_i32 lea_test_irq_no_shadow(void)
     lib_u16 vector_offset = 0x0100u;
     lib_u16 vector_segment = 0u;
     lib_u16 frame_ip = 0u;
-    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+    lib_i32 failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK;
 
@@ -59,9 +60,9 @@ static lib_i32 lea_test_irq_no_shadow(void)
     }
     if (!failed) {
         lib_memory_set(&source, 0, sizeof(source));
-        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
+        test_pic_program_vector(&board->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source,
-            &machine->board->shared_pic_master, &machine->board->shared_pic_slave,
+            &board->shared_pic_master, &board->shared_pic_slave,
             0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
@@ -74,8 +75,8 @@ static lib_i32 lea_test_irq_no_shadow(void)
                 after.ss.base + (lib_u16)after.esp,
                 &frame_ip, sizeof(frame_ip)) != LIB_STATUS_OK ||
             after.eip != 0x0101u || !CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(&machine->board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-            CORE_MACHINE_BIT_IS_SET(test_pic_read(&machine->board->shared_pic_master, 0x0au),
+                test_pic_read(&board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+            CORE_MACHINE_BIT_IS_SET(test_pic_read(&board->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u)) || frame_ip != 3u;
     }
     core_machine_destroy(machine);

@@ -6,7 +6,8 @@
 #include <stdio.h>
 
 static lib_i32 bound_board_create(core_machine **out_machine,
-    core_machine_cpu_profile profile)
+    core_machine_cpu_profile profile,
+    core_machine_board_state **out_board)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -15,10 +16,11 @@ static lib_i32 bound_board_create(core_machine **out_machine,
     core_machine *machine = LIB_NULL;
 
     *out_machine = LIB_NULL;
-    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, out_board) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
+        if (out_board != LIB_NULL) *out_board = LIB_NULL;
         return 0;
     }
     *out_machine = machine;
@@ -55,7 +57,7 @@ static lib_i32 bound_board_real_br(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic = {0};
     core_machine_debug_cpu_snapshot before = {0}, after = {0};
     lib_u16 frame[3] = {0};
-    lib_i32 failed = !bound_board_create(&machine, profile);
+    lib_i32 failed = !bound_board_create(&machine, profile, LIB_NULL);
 
     if (!failed)
         failed = !bound_board_entry(machine, 0xa1a10000u | ax) ||
@@ -140,7 +142,7 @@ static lib_i32 bound_board_boot_protected(core_machine **out_machine,
     idt[13u * 8u + 1u] = 0x01u;
     idt[13u * 8u + 2u] = 0x08u;
     idt[13u * 8u + 5u] = 0x86u;
-    if (!bound_board_create(&machine, CORE_MACHINE_CPU_PROFILE_80386) ||
+    if (!bound_board_create(&machine, CORE_MACHINE_CPU_PROFILE_80386, LIB_NULL) ||
         !bound_board_entry(machine, 1u) ||
         (ss_limit != 0xffffu && core_machine_debug_patch_registers(machine,
             &bootstrap_sp) != LIB_STATUS_OK) ||
@@ -260,12 +262,13 @@ static lib_i32 bound_board_irq(void)
     const lib_u16 vector[] = {0x0100u,0u};
     const lib_u8 handler = 0xf4u;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source source = {0};
     core_machine_run_result result = {0};
     core_machine_debug_cpu_snapshot before = {0}, after = {0};
     lib_u16 frame[3] = {0};
     lib_i32 failed = !bound_board_create(&machine,
-        CORE_MACHINE_CPU_PROFILE_80386);
+        CORE_MACHINE_CPU_PROFILE_80386, &board);
     const core_machine_debug_register_patch flags = {
         .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EFLAGS),
         .values = {[CORE_MACHINE_DEBUG_EFLAGS] = VCPU_EFLAGS_IF}
@@ -286,9 +289,9 @@ static lib_i32 bound_board_irq(void)
             core_machine_debug_capture_cpu_snapshot(machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
     if (!failed) {
-        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&source, &machine->board->shared_pic_master,
-            &machine->board->shared_pic_slave, 0u);
+        test_pic_program_vector(&board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&source, &board->shared_pic_master,
+            &board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed = core_machine_run(machine,
@@ -307,9 +310,9 @@ static lib_i32 bound_board_irq(void)
             after.esi != before.esi || after.edi != before.edi ||
             frame[0] != 4u || frame[1] != 0u ||
             frame[2] != ((lib_u16)before.eflags | 0x0002u) ||
-            !(test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
+            !(test_pic_read(&board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) ||
-            (test_pic_read(&machine->board->shared_pic_master, 0x0au) &
+            (test_pic_read(&board->shared_pic_master, 0x0au) &
                 VPIC_IRR_IRQ(0u));
     core_machine_destroy(machine);
     return !failed;

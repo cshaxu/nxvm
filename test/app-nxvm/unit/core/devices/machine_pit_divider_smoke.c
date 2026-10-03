@@ -27,6 +27,7 @@ lib_i32 main(void)
     core_machine_run_budget two_instruction_budget = { 2u, 0u };
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     pit_divider_probe probe = { 0u, 0u };
     lib_i32 failed = 0;
 
@@ -34,14 +35,14 @@ lib_i32 main(void)
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     config.clock_plan.pit.numerator = 1u;
     config.clock_plan.pit.denominator = 4u;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
     if (!failed) {
         failed |= test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
             0x000ffff0u, sizeof(program)) != LIB_STATUS_OK;
         failed |= core_machine_freeze_execution_providers(machine) !=
             LIB_STATUS_OK;
         failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-        test_core_machine_fixture_program_pit_divider(machine, 0x34u, 2u,
+        test_core_machine_fixture_program_pit_divider(machine, board, 0x34u, 2u,
             pit_divider_output, &probe);
         failed |= core_machine_memory_write(machine, 0x00fffff0u, program,
             sizeof(program)) != LIB_STATUS_OK;
@@ -58,7 +59,7 @@ lib_i32 main(void)
         failed |= core_machine_reset(machine) != LIB_STATUS_OK;
         probe.low_transitions = 0u;
         probe.high_transitions = 0u;
-        test_core_machine_fixture_program_pit_divider(machine, 0x30u, 1u,
+        test_core_machine_fixture_program_pit_divider(machine, board, 0x30u, 1u,
             pit_divider_output, &probe);
         failed |= core_machine_memory_write(machine, 0x00fffff0u, program,
             sizeof(program)) != LIB_STATUS_OK;
@@ -73,7 +74,7 @@ lib_i32 main(void)
         failed |= core_machine_reset(machine) != LIB_STATUS_OK;
         probe.low_transitions = 0u;
         probe.high_transitions = 0u;
-        test_core_machine_fixture_program_pit_divider(machine, 0x34u, 2u,
+        test_core_machine_fixture_program_pit_divider(machine, board, 0x34u, 2u,
             pit_divider_output, &probe);
         failed |= core_machine_memory_write(machine, 0x00fffff0u, program,
             sizeof(program)) != LIB_STATUS_OK;

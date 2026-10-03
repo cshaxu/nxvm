@@ -17,21 +17,21 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     if (vm_model40_fixture_create(&session) != LIB_STATUS_OK ||
-        session == LIB_NULL || !session->core_machine->board->dma_configured ||
+        session == LIB_NULL || !session->board->dma_configured ||
         session->core_machine->transaction_contract.dma_cycle_wait_quanta != 1u ||
         !session->core_machine->transaction_contract.dma_cycle_bus_ready_gate_enabled ||
         !session->core_machine->dma_cycle_bus_ready ||
-        session->core_machine->board->dma_wiring.fdc_channel != 2u ||
-        session->core_machine->board->dma_wiring.controller_count !=
+        session->board->dma_wiring.fdc_channel != 2u ||
+        session->board->dma_wiring.controller_count !=
             CORE_MACHINE_DMA_CONTROLLER_COUNT ||
-        session->core_machine->board->dma_wiring.cascade_channel !=
+        session->board->dma_wiring.cascade_channel !=
             CORE_MACHINE_DMA_CASCADE_CHANNEL ||
-        session->core_machine->board->shared_dma_primary.connect.peer !=
-            &session->core_machine->board->shared_dma_secondary ||
-        session->core_machine->board->shared_dma_secondary.connect.peer !=
-            &session->core_machine->board->shared_dma_primary ||
-        session->core_machine->board->shared_dma_primary.connect.device_owner[2u] !=
-            &session->core_machine->board->fdc ||
+        session->board->shared_dma_primary.connect.peer !=
+            &session->board->shared_dma_secondary ||
+        session->board->shared_dma_secondary.connect.peer !=
+            &session->board->shared_dma_primary ||
+        session->board->shared_dma_primary.connect.device_owner[2u] !=
+            &session->board->fdc ||
         !core_machine_port_has_write(&session->core_machine->executor_port,
             0x00d6u) || !core_machine_port_has_write(
             &session->core_machine->executor_port, 0x00d4u)) {
@@ -50,16 +50,16 @@ lib_i32 main(void)
     core_machine_port_write(&session->core_machine->executor_port, 0x0009u,
         0x06u);
     if (!core_machine_dma_has_pending_request(
-            &session->core_machine->board->shared_dma_primary,
-            &session->core_machine->board->shared_dma_secondary)) {
+            &session->board->shared_dma_primary,
+            &session->board->shared_dma_secondary)) {
         failed = 1;
         goto done;
     }
 
     vm_machine_reset(session);
     if (core_machine_dma_has_pending_request(
-            &session->core_machine->board->shared_dma_primary,
-            &session->core_machine->board->shared_dma_secondary)) {
+            &session->board->shared_dma_primary,
+            &session->board->shared_dma_secondary)) {
         failed = 1;
         goto done;
     }

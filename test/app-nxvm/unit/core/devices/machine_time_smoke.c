@@ -24,18 +24,19 @@ static lib_i32 machine_time_d4_l2_precedes_unrelated_deadline(void)
     core_machine_config config = {0};
     core_machine_time_observation observation;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u8 advanced = LIB_FALSE;
     lib_u32 timeline_count = 0u;
     core_machine_timeline_token token;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     if (!failed) {
-        machine->board->d4_refresh_hold_pending = LIB_TRUE;
+        board->d4_refresh_hold_pending = LIB_TRUE;
         failed |= core_machine_timeline_schedule(&machine->timeline, 4u,
             machine_time_timeline_callback, &timeline_count, &token) != LIB_STATUS_OK;
     }
@@ -44,7 +45,7 @@ static lib_i32 machine_time_d4_l2_precedes_unrelated_deadline(void)
         observation.next_deadline_tick != 1u ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE);
     failed |= !failed && (core_machine_advance_to_next_deadline(machine, &advanced) !=
-        LIB_STATUS_OK || !advanced || machine->board->d4_refresh_hold_pending ||
+        LIB_STATUS_OK || !advanced || board->d4_refresh_hold_pending ||
         machine->elapsed_ticks != 1u || timeline_count != 0u);
     failed |= !failed && (core_machine_advance_to_next_deadline(machine, &advanced) !=
         LIB_STATUS_OK || !advanced || machine->elapsed_ticks != 4u ||

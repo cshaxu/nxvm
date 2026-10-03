@@ -10,6 +10,7 @@
 
 typedef struct cli_sti_machine {
     core_machine *machine;
+    core_machine_board_state *board;
 } cli_sti_machine;
 
 static lib_i32 cli_sti_install_gp_gate(cli_sti_machine *state);
@@ -39,7 +40,7 @@ static lib_i32 cli_sti_prepare(core_machine_cpu_profile profile,
 
     lib_memory_set(state, 0, sizeof(*state));
 return test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &cli_sti_provider, state, &state->machine);
+        &cli_sti_provider, state, &state->machine, &state->board);
 }
 
 static lib_i32 cli_sti_run(cli_sti_machine *state, const lib_u8 *code,
@@ -130,9 +131,9 @@ static lib_i32 cli_sti_test_irq_shadow(void)
         }
         if (!failed) {
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.machine->board->shared_pic_master, (lib_u8)vector);
+            test_pic_program_vector(&state.board->shared_pic_master, (lib_u8)vector);
             core_machine_pic_irq_source_bind(&source,
-                &state.machine->board->shared_pic_master, &state.machine->board->shared_pic_slave, 0u);
+                &state.board->shared_pic_master, &state.board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(state.machine,
@@ -145,8 +146,8 @@ static lib_i32 cli_sti_test_irq_shadow(void)
                 (lib_uptr)&frame_ip, sizeof(frame_ip));
             failed |=
                 after.data.eip != offset ||
-                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
                 frame_status != LIB_STATUS_OK || frame_ip != 2u;
         }
         if (failed) {
@@ -170,14 +171,14 @@ static lib_i32 cli_sti_test_irq_shadow(void)
         if (!failed) {
             lib_memory_set(&source, 0, sizeof(source));
             core_machine_pic_irq_source_bind(&source,
-                &state.machine->board->shared_pic_master, &state.machine->board->shared_pic_slave, 0u);
+                &state.board->shared_pic_master, &state.board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(state.machine,
                     (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
                 result.reason != CORE_MACHINE_STOP_BUDGET ||
-                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u));
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u));
         }
         core_machine_destroy(state.machine);
         if (failed) {
@@ -199,9 +200,9 @@ static lib_i32 cli_sti_test_irq_shadow(void)
         }
         if (!failed) {
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.machine->board->shared_pic_master, 0u); x86_pic_write_register(state.machine->board->shared_pic_master.device, 1u, 0xffu);
+            test_pic_program_vector(&state.board->shared_pic_master, 0u); x86_pic_write_register(state.board->shared_pic_master.device, 1u, 0xffu);
             core_machine_pic_irq_source_bind(&source,
-                &state.machine->board->shared_pic_master, &state.machine->board->shared_pic_slave, 1u);
+                &state.board->shared_pic_master, &state.board->shared_pic_slave, 1u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed |= core_machine_run(state.machine,
@@ -209,8 +210,8 @@ static lib_i32 cli_sti_test_irq_shadow(void)
                 result.reason != CORE_MACHINE_STOP_BUDGET;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= after.data.eip != 2u ||
-                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(1u)) ||
-                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(1u));
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(1u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(1u));
         }
         core_machine_destroy(state.machine);
         if (failed) return 0;

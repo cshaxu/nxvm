@@ -1,3 +1,4 @@
+#include "support/board_construction_fixture.h"
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
@@ -14,8 +15,8 @@ static lib_i32 ram_create_success(lib_size memory_bytes)
     lib_size installed_bytes = 0u;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create_with_test_memory_allocation(&config, &machine,
-        &allocation, &board) != LIB_STATUS_OK;
+    failed |= test_core_machine_create_with_allocation(&config, &machine,
+        &allocation, LIB_NULL, &board) != LIB_STATUS_OK;
     failed |= machine == LIB_NULL || allocation.attempts != 1u;
     failed |= board == LIB_NULL || (!failed &&
         (board->core != machine || machine->attachment.context != board));
@@ -36,8 +37,9 @@ static lib_i32 ram_create_failure(lib_size memory_bytes)
     core_machine_memory_test_allocation allocation = { LIB_TRUE, 0u };
     core_machine *machine = (core_machine *)(lib_uptr)1u;
     core_machine_board_state *board = (core_machine_board_state *)(lib_uptr)1u;
-    lib_status status = core_machine_create_with_test_memory_allocation(
-        &config, &machine, &allocation, &board);
+    lib_status status = test_core_machine_create_with_allocation(
+        &config, &machine,
+        &allocation, LIB_NULL, &board);
 
     return status != LIB_STATUS_NO_MEMORY || machine != LIB_NULL || board != LIB_NULL ||
         allocation.attempts != 1u;
@@ -106,8 +108,9 @@ static lib_i32 ram_create_preflight(void)
         core_machine *machine = (core_machine *)(lib_uptr)1u;
         core_machine_board_state *board = (core_machine_board_state *)(lib_uptr)1u;
         ratios[i]->numerator = 1u;
-        failed |= core_machine_create_with_test_memory_allocation(&config,
-            &machine, &allocation, &board) != LIB_STATUS_INVALID_ARGUMENT;
+        failed |= test_core_machine_create_with_allocation(&config,
+            &machine,
+            &allocation, LIB_NULL, &board) != LIB_STATUS_INVALID_ARGUMENT;
         failed |= machine != LIB_NULL || board != LIB_NULL || allocation.attempts != 0u;
         if (machine != LIB_NULL && machine != (core_machine *)(lib_uptr)1u)
             core_machine_destroy(machine);

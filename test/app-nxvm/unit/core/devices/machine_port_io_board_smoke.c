@@ -41,7 +41,8 @@ static lib_status port_io_board_write(void *opaque, lib_u16 port,
 }
 
 static lib_i32 port_io_board_prepare(core_machine **out_machine,
-    port_io_board_probe *probe, core_machine_cpu_profile profile)
+    port_io_board_probe *probe, core_machine_cpu_profile profile,
+    core_machine_board_state **out_board)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -69,7 +70,7 @@ static lib_i32 port_io_board_prepare(core_machine **out_machine,
         }
     };
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, out_board) != LIB_STATUS_OK;
 
     if (!failed)
         failed = core_machine_install_port_provider(machine, 0x005au, 0x005au,
@@ -81,6 +82,7 @@ static lib_i32 port_io_board_prepare(core_machine **out_machine,
             core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK;
     if (failed) {
         core_machine_destroy(machine);
+        if (out_board != LIB_NULL) *out_board = LIB_NULL;
         return 0;
     }
     *out_machine = machine;
@@ -98,7 +100,7 @@ static lib_i32 port_io_board_provider_failure(
     core_machine_run_result result = {0};
     core_machine_cpu_diagnostic diagnostic = {0};
     core_machine_debug_cpu_snapshot after = {0};
-    lib_i32 failed = !port_io_board_prepare(&machine, &probe, profile);
+    lib_i32 failed = !port_io_board_prepare(&machine, &probe, profile, LIB_NULL);
 
     probe.fail = LIB_TRUE;
     if (!failed)
@@ -129,12 +131,13 @@ static lib_i32 port_io_board_irq(lib_bool input)
     lib_u8 bytes = input ? sizeof(in_code) : sizeof(out_code);
     port_io_board_probe probe = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source irq = {0};
     core_machine_run_result result = {0};
     core_machine_debug_cpu_snapshot after = {0};
     lib_u16 offset = 0x100u, segment = 0u, frame_ip = 0xffffu;
     lib_i32 failed = !port_io_board_prepare(&machine, &probe,
-        CORE_MACHINE_CPU_PROFILE_80386);
+        CORE_MACHINE_CPU_PROFILE_80386, &board);
 
     probe.input = 0x11223344u;
     if (!failed)
@@ -147,9 +150,9 @@ static lib_i32 port_io_board_irq(lib_bool input)
             core_machine_memory_write(machine, 0x100u, &halt,
                 sizeof(halt)) != LIB_STATUS_OK;
     if (!failed) {
-        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &machine->board->shared_pic_master,
-            &machine->board->shared_pic_slave, 0u);
+        test_pic_program_vector(&board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &board->shared_pic_master,
+            &board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed = core_machine_run(machine, (core_machine_run_budget){2u,0u},
@@ -169,9 +172,9 @@ static lib_i32 port_io_board_irq(lib_bool input)
             probe.writes != (input ? 0u : 1u) ||
             probe.last_port != (input ? 0x005au : 0x00e0u) ||
             (!input && probe.last_write != 0xb2u) ||
-            !(test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
+            !(test_pic_read(&board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) ||
-            (test_pic_read(&machine->board->shared_pic_master, 0x0au) &
+            (test_pic_read(&board->shared_pic_master, 0x0au) &
                 VPIC_IRR_IRQ(0u));
     core_machine_destroy(machine);
     return !failed;
@@ -184,7 +187,7 @@ static lib_i32 port_io_board_time(core_machine_cpu_profile profile)
     core_machine *machine = LIB_NULL;
     core_machine_run_result result = {0};
     core_machine_time_observation time = {0};
-    lib_i32 failed = !port_io_board_prepare(&machine, &probe, profile);
+    lib_i32 failed = !port_io_board_prepare(&machine, &probe, profile, LIB_NULL);
 
     if (!failed)
         failed = core_machine_memory_write(machine, 0u, code, sizeof(code)) !=

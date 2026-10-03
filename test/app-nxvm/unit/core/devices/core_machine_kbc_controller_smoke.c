@@ -513,6 +513,7 @@ static lib_i32 core_machine_kbc_typematic_output_boundary(void)
 
 typedef struct core_machine_kbc_cpu_fixture {
     core_machine *machine;
+    core_machine_board_state *board;
     lib_status reset_status;
 } core_machine_kbc_cpu_fixture;
 
@@ -557,7 +558,7 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
     lib_u16 offset = 0x0100u;
     lib_u16 segment = 0u;
     lib_i32 failed = !test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &core_machine_kbc_cpu_provider, &fixture, &fixture.machine) ||
+        &core_machine_kbc_cpu_provider, &fixture, &fixture.machine, &fixture.board) ||
         fixture.reset_status != LIB_STATUS_OK;
 
     if (!failed) {
@@ -577,16 +578,16 @@ static lib_i32 core_machine_kbc_cpu_reset_irq1(void)
                 &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_state(fixture.machine, &cpu) != LIB_STATUS_OK ||
             cpu.eip != 6u ||
-            x86_keyboard_get_signals(fixture.machine->board->shared_kbc.connect.keyboard).bat_ready ||
+            x86_keyboard_get_signals(fixture.board->shared_kbc.connect.keyboard).bat_ready ||
             (core_machine_port_read(&fixture.machine->executor_port, 0x64u) & VKBC_STATUS_OBF) == 0u ||
-            !fixture.machine->board->shared_kbc.connect.irq1_source.asserted;
+            !fixture.board->shared_kbc.connect.irq1_source.asserted;
     }
     if (!failed) {
         failed |= core_machine_run(fixture.machine, (core_machine_run_budget){2u, 0u},
                 &result) != LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_state(fixture.machine, &cpu) != LIB_STATUS_OK ||
             cpu.eip != offset ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.machine->board->shared_pic_master, 0x0bu),
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&fixture.board->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(1u)) ||
             core_machine_port_read(&fixture.machine->executor_port, 0x60u) != 0xaau ||
             (core_machine_port_read(&fixture.machine->executor_port, 0x64u) & VKBC_STATUS_OBF) != 0u;

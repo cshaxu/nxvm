@@ -38,8 +38,8 @@ lib_i32 main(void)
             &info, &result) != LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.cylinders != 80u || info.geometry.heads != 2u ||
         info.geometry.sectors_per_track != 15u || info.geometry.bytes_per_sector != 512u ||
-        model40->core_machine->board->fdc.connect.config.irq != 6u ||
-        model40->core_machine->board->fdc.connect.config.dma_channel != 2u) {
+        model40->board->fdc.connect.config.irq != 6u ||
+        model40->board->fdc.connect.config.dma_channel != 2u) {
         failed = 1;
         goto done;
     }

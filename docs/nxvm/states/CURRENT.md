@@ -2,9 +2,15 @@
 
 ## Current Work
 
-M5 T540 S1-S86 are accepted; no S packet is active between receivers.
+M5 T540 S1-S86 are accepted; S87 receives the whole construction/private-state boundary.
 Plan and configuration constructors publish the actual borrowed board beside Core.
-Constructor/private association, test classification and physical movement remain open.
+Physical movement and actual committed-diff acceptance remain open.
+S87's Core layout no longer has a named board pointer; neutral and
+board construction now publish actual handles without a private lookup.
+Both-width full unit runs pass 470/470 and specialized gates pass;
+five construction and 34 retained negative probes pass.
+All eight refreshed products, neutral checks and single INI boots pass.
+Complete P delivery and coordinator acceptance remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 
@@ -13,6 +19,27 @@ Its [evidence](../etc/evidence/t540-s86-board-electrical-boundary.md) records
 the actual-change review and eight fresh product identities. The next complete
 boundary removes constructor/private association and classifies/migrates all
 direct fixtures before actual Core and flat IBM-PC movement.
+
+## Active S87 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T540 S87, next linear numeric receiver after accepted S86. |
+| Admission And Approval | Coordinator admits under the owner's automatic numeric-S and complete reusable Core/board extraction authorization. NXVM only; existing embedded-product artifact exception retained. Executor confirms the complete boundary, not a constructor-only delivery. |
+| Objective | Remove the Core-to-board private association, return the actual board directly from construction, give neutral construction its genuine production boundary, remove board dependence on Core private layout and migrate/classify the complete direct-board fixture class while retaining all assertions and failure coverage. |
+| Non-goals | No Shared/MyNES mutation, physical relocation, chip algorithm, timing grade, profile/INI/media or external master change. No board getter, copied state, test-only public API or new device/executor framework. |
+| Reference Baseline | Accepted S86 P2 8f0557815; implementation P1 5654912d78360377b114c3687fd7e85eeac6791f and its eight verified 0540 products. |
+| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md); [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md); [attachment intake](../etc/evidence/t540-s78-attachment-owner-intake.md); [S87 evidence](../etc/evidence/t540-s87-construction-private-boundary.md). |
+| Files And ABI Surface | Existing neutral machine/interface and board factory/interface/state, allocation-failure seams and actual direct fixture/caller owners, existing boundary gates. One board allocation, one copied attachment and Core destructor remain; construction output is success-only and borrowed. |
+| Applicable Rules | Execution, architecture, coding, documentation, NXVM architecture/layout and source policy; architecture-governance then coding-governance skills. |
+| Verification | Whole constructor/body/cleanup comparison, complete direct-consumer classification with retained assertions, no private Core layout in board production, negative boundary probes; complete x64/x86 unit suites and specialized targets; rebuild all eight 0540 product/neutral/boot targets and run each unchanged-INI boot once with 180000-ms containment; PE/banner/stripped/hash/freshness, documentation/local-link/diff checks. |
+| Expected Markers | Existing construction preflight/allocation/port rollback, attachment/freeze/reset/destruction and direct-board assertions remain; eight neutral markers and DOS/installer terminals retained. |
+| Asset Needs | Unchanged owner INIs and existing read-only/overlay BYOB media; retain immediately needed build trees. No MyNES build or external master write. |
+| Reporting Requirements | Complete production/header/fixture inventory, one cleanup-owner proof, before/after disposition of every candidate, actual code counts, source/body comparisons and eight artifact identities; explicitly distinguish temporary in-worktree association from accepted final boundary. |
+| Stop Conditions | Changed behavior/status/failure coverage, ambiguous allocation lifetime, exposed private/test layout, unresolved consumer or out-of-target mutation. Reconcile the complete class before any P delivery; do not subdivide into per-function S tasks. |
+| Exit Criteria | Core has no named board pointer; board construction uses only genuine neutral production contracts; board headers do not import Core private layout; every direct-board fixture has its actual handle or justified owner-local disposition and original coverage; one factory/rollback/destructor remains; full proof, immediate complete P push, actual committed-diff dual-role review and governance acceptance. |
+| Original Owner Request | Build actual reusable x86 Core and flat IBM-PC components, retain four products, automatically admit numeric S tasks and reject endless small repairs masquerading as componentization. |
+| Similar-Issue Sweep | Constructor definitions/callers, every private Core board field/read/write and transitive board header, neutral config/factory and both allocation seams, all direct-board tests including driver handles distinguished by actual type; Core-only fixtures stay with Core, profile/firmware scenarios stay product-owned. |
 
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.

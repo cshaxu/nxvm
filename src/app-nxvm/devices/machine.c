@@ -374,7 +374,7 @@ lib_i32 core_machine_neutral_config_is_valid(
 }
 
 
-lib_status core_machine_neutral_create(
+lib_status core_machine_neutral_create_with_test_allocation(
     const core_machine_executor_config *config,
     core_machine_memory_test_allocation *test_allocation,
     core_machine_port_test_allocation *port_test_allocation,
@@ -384,6 +384,10 @@ lib_status core_machine_neutral_create(
     core_machine_instruction_timing instruction_timing;
     lib_size memory_bytes;
 
+    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_machine = LIB_NULL;
+    if (!core_machine_neutral_config_is_valid(config))
+        return LIB_STATUS_INVALID_ARGUMENT;
     memory_bytes = core_machine_resolve_memory_bytes(config);
 
     machine = (core_machine *)lib_allocate_zero(1u, sizeof(*machine));
@@ -496,6 +500,13 @@ lib_status core_machine_neutral_create(
     return LIB_STATUS_OK;
 }
 
+
+lib_status core_machine_neutral_create(
+    const core_machine_executor_config *config, core_machine **out_machine)
+{
+    return core_machine_neutral_create_with_test_allocation(config,
+        LIB_NULL, LIB_NULL, out_machine);
+}
 
 lib_status core_machine_get_timing_disposition(const core_machine *machine,
     core_machine_timing_capability capability,

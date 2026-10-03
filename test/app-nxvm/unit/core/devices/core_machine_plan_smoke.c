@@ -1,3 +1,4 @@
+#include "support/board_construction_fixture.h"
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
@@ -95,7 +96,7 @@ static lib_i32 plan_handle_publication(void)
         core_machine_port_test_allocation allocation = { index, 0u };
         machine = (core_machine *)(lib_uptr)1u;
         board = (core_machine_board_state *)(lib_uptr)1u;
-        failed |= core_machine_create_internal(&configuration, &machine,
+        failed |= test_core_machine_create_with_allocation(&configuration, &machine,
             LIB_NULL, &allocation, &board) != LIB_STATUS_NO_MEMORY ||
             machine != LIB_NULL || board != LIB_NULL ||
             allocation.attempts != index;

@@ -141,8 +141,8 @@ int main(void)
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
         core_machine_create(&config, &machine, &board) != LIB_STATUS_OK) failed = 1;
     if (!failed) {
-        fdc = &machine->board->fdc;
-        dma = &machine->board->shared_dma_primary;
+        fdc = &board->fdc;
+        dma = &board->shared_dma_primary;
         port = &machine->executor_port;
         if (fdc == LIB_NULL || dma == LIB_NULL || port == LIB_NULL ||
             core_machine_media_registry_bind(media, 21u, &drive0,

@@ -225,3 +225,22 @@ association and actual Core/flat IBM-PC source movement remain required.
 Coordinator accepts immediately pushed P1 `5654912d7` after actual review of
 all 44 committed paths and matching reviewed worktree blobs. Governance P2
 accepts S86 only; neither T540 nor the complete component extraction closes.
+
+## S87: Complete Construction And Private-State Boundary
+
+Core's named board pointer is deleted. The genuine public neutral constructor
+receives one immutable executor value; board composition projects and validates
+it, attaches its one allocation and publishes both handles only on success.
+Private allocation seams stay behind the neutral private header; the test-owned
+fixture exercises production projection and attachment with the same constructor
+body. All 91 executing direct-board candidates retain their original owner,
+assertion classes and failure coverage. The driver retains its existing borrowed
+board, not a new state copy. The [evidence](../etc/evidence/t540-s87-construction-private-boundary.md)
+records complete source/caller review, final 470/470 units per width, both
+specialized targets, five construction and 34 retained negative probes,
+eight neutral executions, eight unchanged-INI boots once each and eight fresh
+stripped 0540 EXEs. Tracked source/test/gate delta is +1234/-1123 in 104 paths,
+plus one 35-line test fixture; production delta is -17 lines. Shared, MyNES,
+owner INIs and external masters are unchanged. This is complete P delivery,
+not coordinator acceptance or physical Core/board extraction. The next whole
+receiver is actual neutral Core source/test/build movement.

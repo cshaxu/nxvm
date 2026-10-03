@@ -74,7 +74,7 @@ static lib_i32 iret_prepare(iret_machine *state, iret_negative negative,
         gdt[9u] = 0u;
     }
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
-            &iret_provider, state, &state->machine) ||
+            &iret_provider, state, &state->machine, LIB_NULL) ||
         !iret_write(state, IRET_GDT_BASE, gdt, sizeof(gdt))) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;

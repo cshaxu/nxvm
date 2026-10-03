@@ -32,8 +32,8 @@ int main(void)
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x03f2u) ||
         !core_machine_port_has_read(&session->core_machine->executor_port, 0x03f4u) ||
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x03f5u) ||
-        session->core_machine->board->fdc_topology.config.irq != route->irq ||
-        session->core_machine->board->fdc_topology.config.dma_channel != route->dma_channel;
+        session->board->fdc_topology.config.irq != route->irq ||
+        session->board->fdc_topology.config.dma_channel != route->dma_channel;
     vm_machine_destroy(session);
     if (failed) return 1;
     printf("M5:T366:S7:MODEL339-FIRMWARE-FDC-TOPOLOGY:OK\n");

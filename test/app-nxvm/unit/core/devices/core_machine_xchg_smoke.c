@@ -8,6 +8,7 @@
 
 typedef struct xchg_machine {
     core_machine *machine;
+    core_machine_board_state *board;
 } xchg_machine;
 
 static lib_i32 xchg_prepare(core_machine_cpu_profile profile, xchg_machine *state)
@@ -24,7 +25,7 @@ static lib_i32 xchg_prepare(core_machine_cpu_profile profile, xchg_machine *stat
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
+    return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
         core_machine_reset(state->machine) == LIB_STATUS_OK &&
         core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
@@ -162,8 +163,8 @@ static lib_i32 xchg_test_irq_no_shadow(void)
             core_machine_memory_write(state.machine,0x100u,&hlt,1u)!=LIB_STATUS_OK;
         failed |= xchg_seed(&state, 0x200u) != LIB_STATUS_OK;
         lib_memory_set(&source,0,sizeof(source));
-        test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&source,&state.machine->board->shared_pic_master,&state.machine->board->shared_pic_slave,0u);
+        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&source,&state.board->shared_pic_master,&state.board->shared_pic_slave,0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=LIB_STATUS_OK ||
@@ -171,7 +172,7 @@ static lib_i32 xchg_test_irq_no_shadow(void)
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
             CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
         failed |= core_machine_memory_read(state.machine, after.ss.base + (lib_u16)after.esp, &frame, 2u)!=LIB_STATUS_OK || after.eip!=0x101u || frame!=4u ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u));
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -207,10 +208,10 @@ static lib_i32 xchg_test_accumulator_irq(void)
             core_machine_memory_write(state.machine, 0x100u, &hlt,
                 1u) != LIB_STATUS_OK;
         failed |= xchg_seed(&state, 0x200u) != LIB_STATUS_OK;
-        test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
+        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
         core_machine_pic_irq_source_bind(&source,
-            &state.machine->board->shared_pic_master,
-            &state.machine->board->shared_pic_slave, 0u);
+            &state.board->shared_pic_master,
+            &state.board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&source);
         core_machine_pic_irq_source_deassert(&source);
         failed |= core_machine_run(state.machine,
@@ -223,7 +224,7 @@ static lib_i32 xchg_test_accumulator_irq(void)
             frame != 1u ||
             after.eax != 0xaabb7788u ||
             after.ecx != 0x55663344u ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u));
     }
     if (failed)
@@ -236,8 +237,8 @@ static lib_i32 xchg_test_accumulator_irq(void)
             frame,
             after.eax,
             after.ecx,
-            test_pic_read(&state.machine->board->shared_pic_master, 0x0au),
-            test_pic_read(&state.machine->board->shared_pic_master, 0x0bu));
+            test_pic_read(&state.board->shared_pic_master, 0x0au),
+            test_pic_read(&state.board->shared_pic_master, 0x0bu));
     }
     core_machine_destroy(state.machine);
     return !failed;

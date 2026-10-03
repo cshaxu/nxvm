@@ -47,7 +47,7 @@ static lib_i32 neutral_memory_aliases(void)
     lib_u8 read = 0u;
     lib_i32 failed = 1;
 
-    if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
+    if (core_machine_neutral_create(&config, &machine) !=
             LIB_STATUS_OK) goto done;
     if (core_machine_install_memory_aliases(machine, LIB_NULL, 1u, LIB_TRUE) !=
             LIB_STATUS_INVALID_ARGUMENT ||
@@ -90,7 +90,7 @@ static lib_i32 neutral_ready_levels(void)
 
     if (core_machine_set_cpu_bus_ready(LIB_NULL, 1) != LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_set_dma_bus_ready(LIB_NULL, 1) != LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
+        core_machine_neutral_create(&config, &machine) !=
             LIB_STATUS_OK) goto done;
     if (core_machine_set_cpu_bus_ready(machine, 0) != LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_INVALID_ARGUMENT ||
@@ -99,7 +99,7 @@ static lib_i32 neutral_ready_levels(void)
     machine = LIB_NULL;
     config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
     config.transaction_contract.dma_cycle_bus_ready_gate_enabled = LIB_TRUE;
-    if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
+    if (core_machine_neutral_create(&config, &machine) !=
             LIB_STATUS_OK) goto done;
     for (lib_size index = 0u; index < sizeof(levels) / sizeof(levels[0]); ++index) {
         const lib_bool expected = levels[index] != 0 ? LIB_TRUE : LIB_FALSE;
@@ -161,7 +161,7 @@ static lib_i32 neutral_timing_declarations(void)
             CORE_MACHINE_TIMING_CAPABILITY_COUNT + 1u) != LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_install_timing_declarations(LIB_NULL, declarations,
             CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE ||
-        core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) != LIB_STATUS_OK)
+        core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK)
         goto done;
     if (core_machine_install_timing_declarations(machine, LIB_NULL,
             CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_ARGUMENT) goto done;
@@ -198,7 +198,7 @@ static lib_i32 neutral_timing_declarations(void)
             CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE) goto done;
     core_machine_destroy(machine);
     machine = LIB_NULL;
-    if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) != LIB_STATUS_OK ||
+    if (core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_install_timing_declarations(machine, declarations,
             CORE_MACHINE_TIMING_CAPABILITY_COUNT) != LIB_STATUS_INVALID_STATE ||
@@ -237,7 +237,7 @@ static lib_i32 neutral_rom_windows(void)
     lib_u8 observed[2] = {0};
     lib_i32 failed = 1;
 
-    if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
+    if (core_machine_neutral_create(&config, &machine) !=
             LIB_STATUS_OK) goto done;
     if (core_machine_register_immutable_rom_mapping(machine, 0x100u,
             image, sizeof(image)) != LIB_STATUS_OK ||
@@ -281,6 +281,29 @@ done:
     return failed;
 }
 
+static lib_i32 neutral_construction_rejects_invalid_input(void)
+{
+    core_machine sentinel = {0};
+    core_machine *machine = &sentinel;
+    const core_machine_executor_config invalid[] = {
+        {.cpu_profile = (core_machine_cpu_profile)-1},
+        {.provider_clock = {1u, 0u}},
+        {.time_axis = {CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 0u}}
+    };
+
+    if (core_machine_neutral_create(LIB_NULL, LIB_NULL) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_neutral_create(LIB_NULL, &machine) !=
+            LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL) return 1;
+    for (lib_size index = 0u; index < sizeof(invalid) / sizeof(invalid[0]); ++index) {
+        machine = &sentinel;
+        if (core_machine_neutral_config_is_valid(&invalid[index]) ||
+            core_machine_neutral_create(&invalid[index], &machine) !=
+                LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL) return 1;
+    }
+    return 0;
+}
+
 lib_i32 main(void)
 {
     const core_machine_executor_config config = {
@@ -304,11 +327,11 @@ lib_i32 main(void)
     lib_u8 byte = 0u;
     lib_i32 failed = 1;
 
-    if (neutral_memory_aliases() || neutral_rom_windows() || neutral_ready_levels() ||
+    if (neutral_construction_rejects_invalid_input() || neutral_memory_aliases() || neutral_rom_windows() || neutral_ready_levels() ||
         neutral_timing_declarations()) goto done;
-    if (core_machine_neutral_create(&config, LIB_NULL, LIB_NULL, &machine) !=
+    if (core_machine_neutral_create(&config, &machine) !=
             LIB_STATUS_OK) goto done;
-    if (machine->board != LIB_NULL ||
+    if (machine->attachment.context != LIB_NULL ||
         core_machine_install_port_provider(machine, 0x1234u, 0x1234u,
             &port, &probe) != LIB_STATUS_OK ||
         core_machine_bind_firmware_provider(machine, &firmware, LIB_NULL) !=

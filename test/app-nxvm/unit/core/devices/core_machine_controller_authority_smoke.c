@@ -61,6 +61,7 @@ static lib_i32 verify_board_phases(const core_machine_config *config)
         .ticks_per_instruction = config->ticks_per_instruction
     };
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     board_phase_probe probe = {0};
     board_phase_probe rejected = {0};
     core_machine_attachment binding = {
@@ -72,22 +73,22 @@ static lib_i32 verify_board_phases(const core_machine_config *config)
     };
 
     core_machine_board_refresh_nmi(LIB_NULL);
-    if (core_machine_create(config, &machine, LIB_NULL) != LIB_STATUS_OK) return 1;
-    probe.failed = machine->attachment.context != machine->board ||
-        machine->attachment.context == machine || machine->board->core != machine ||
+    if (core_machine_create(config, &machine, &board) != LIB_STATUS_OK) return 1;
+    probe.failed = machine->attachment.context != board ||
+        machine->attachment.context == machine || board->core != machine ||
         machine->attachment.reset_devices !=
             core_machine_board_reset_devices ||
         machine->attachment.reset_clocks != core_machine_board_reset_clocks ||
         machine->attachment.refresh_nmi != core_machine_board_refresh_nmi ||
         machine->attachment.finalize_devices != core_machine_board_finalize_devices;
     core_machine_destroy(machine);
-    if (core_machine_neutral_create(&executor, LIB_NULL, LIB_NULL, &machine) !=
+    if (core_machine_neutral_create(&executor, &machine) !=
             LIB_STATUS_OK) return 1;
     if (core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_bind_attachment(machine, &binding) != LIB_STATUS_INVALID_STATE ||
         machine->attachment.context != LIB_NULL) probe.failed = LIB_TRUE;
     core_machine_destroy(machine);
-    if (core_machine_neutral_create(&executor, LIB_NULL, LIB_NULL, &machine) !=
+    if (core_machine_neutral_create(&executor, &machine) !=
             LIB_STATUS_OK) return 1;
     probe.machine = machine;
     if (core_machine_bind_attachment(machine, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
@@ -134,12 +135,13 @@ static lib_i32 verify_partial_board_cleanup(void)
         .clock_plan.pit = {1u, 0u}
     };
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
 
-    if (core_machine_neutral_create(&executor, LIB_NULL, LIB_NULL, &machine) !=
+    if (core_machine_neutral_create(&executor, &machine) !=
             LIB_STATUS_OK) return 1;
     /* Board construction failure owns and destroys the unpublished Core. */
-    return core_machine_board_create(machine, &invalid_board) !=
-        LIB_STATUS_INVALID_ARGUMENT;
+    return core_machine_board_create(machine, &invalid_board, &board) !=
+        LIB_STATUS_INVALID_ARGUMENT || board != LIB_NULL;
 }
 
 static void core_machine_controller_fdc_command(core_machine_fdc *fdc, t_port *port,
@@ -279,26 +281,26 @@ lib_i32 main(void)
             failed |= 0x04;
         } else {
             port = &machine->executor_port;
-            failed |= machine->board->fdc.connect.dma_request.core_token !=
+            failed |= board->fdc.connect.dma_request.core_token !=
                     dma_request.core_token ||
-                machine->board->fdc.connect.dma_request_owner != board ||
-                machine->board->fdc.connect.machine != machine ||
-                machine->board->fdc.connect.irq_source.irq != fdc_config.irq ||
-                machine->board->hdc.connect.irq_source.irq != hdc_config.irq ||
-                machine->board->hdc.connect.media_id != hdc_topology.media_id;
+                board->fdc.connect.dma_request_owner != board ||
+                board->fdc.connect.machine != machine ||
+                board->fdc.connect.irq_source.irq != fdc_config.irq ||
+                board->hdc.connect.irq_source.irq != hdc_config.irq ||
+                board->hdc.connect.media_id != hdc_topology.media_id;
 
             core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
-            core_machine_controller_fdc_command(&machine->board->fdc, port, specify_non_dma,
+            core_machine_controller_fdc_command(&board->fdc, port, specify_non_dma,
                 sizeof(specify_non_dma));
-            core_machine_controller_fdc_command(&machine->board->fdc, port, read_absent,
+            core_machine_controller_fdc_command(&board->fdc, port, read_absent,
                 sizeof(read_absent));
-            failed |= !core_machine_controller_fdc_result(&machine->board->fdc, port, result,
+            failed |= !core_machine_controller_fdc_result(&board->fdc, port, result,
                 sizeof(result)) || result[0] != 0x48u || result[1] != 0u;
 
-            core_machine_controller_fdc_command(&machine->board->fdc, port, write_absent,
+            core_machine_controller_fdc_command(&board->fdc, port, write_absent,
                 sizeof(write_absent));
             core_machine_port_write(port, fdc_config.data_port, 0x5au);
-            failed |= !core_machine_controller_fdc_result(&machine->board->fdc, port, result,
+            failed |= !core_machine_controller_fdc_result(&board->fdc, port, result,
                 sizeof(result)) || result[0] != 0x48u || result[1] != 0u;
 
             if (!core_machine_controller_hdc_program_chs(machine, &hdc_config) ||
@@ -309,7 +311,7 @@ lib_i32 main(void)
                 status != X86_HDC_STATUS_BSY) {
                 failed |= 0x08;
             } else {
-                hdc_service(&machine->board->hdc);
+                hdc_service(&board->hdc);
                 if (core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
                         &status) != LIB_STATUS_OK ||
                 core_machine_bus_read(machine, hdc_config.bus.task_file.error_features_port,
@@ -321,7 +323,7 @@ lib_i32 main(void)
             }
             if (core_machine_reset(machine) != LIB_STATUS_OK ||
                 core_machine_port_read(port, fdc_config.status_port) != TEST_FDC_MSR_RQM ||
-                hdc_observe(&machine->board->hdc).status != (X86_HDC_STATUS_DRDY |
+                hdc_observe(&board->hdc).status != (X86_HDC_STATUS_DRDY |
                     X86_HDC_STATUS_DSC)) {
                 failed |= 0x10;
             }

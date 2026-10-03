@@ -16,6 +16,10 @@ records board-owned parity/D4/speaker/absent-memory operations and neutral
 RAM admission, preserved source behavior and product proof. Constructor/private
 association and physical component extraction remain separate whole boundaries.
 
+T540 S87: [construction/private-state boundary](evidence/t540-s87-construction-private-boundary.md)
+records the whole constructor, header and direct-fixture receiver. Current
+owns admission; an in-progress constructor edit is not component acceptance.
+
 T540 S67: [neutral validation owner](evidence/t540-s67-neutral-validation-owner.md)
 records the five verbatim implementation moves and their receiving proof.
 

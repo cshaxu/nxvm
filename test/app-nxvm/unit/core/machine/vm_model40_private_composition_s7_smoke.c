@@ -57,22 +57,22 @@ lib_i32 main(void)
         session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled != LIB_TRUE ||
         session->core_machine->transaction_contract.external_cycle_timing.overlap_policy !=
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL ||
-        session->core_machine->board->dma_clock.numerator != 1u ||
-        session->core_machine->board->dma_clock.denominator != 1u ||
-        session->core_machine->board->pit_clock.numerator != 1u ||
-        session->core_machine->board->pit_clock.denominator != 1u ||
-        session->core_machine->board->auxiliary_pit_clock.numerator != 5u ||
-        session->core_machine->board->auxiliary_pit_clock.denominator != 16u ||
-        session->core_machine->board->rtc_clock.numerator != 1u ||
-        session->core_machine->board->rtc_clock.denominator != 1u ||
+        session->board->dma_clock.numerator != 1u ||
+        session->board->dma_clock.denominator != 1u ||
+        session->board->pit_clock.numerator != 1u ||
+        session->board->pit_clock.denominator != 1u ||
+        session->board->auxiliary_pit_clock.numerator != 5u ||
+        session->board->auxiliary_pit_clock.denominator != 16u ||
+        session->board->rtc_clock.numerator != 1u ||
+        session->board->rtc_clock.denominator != 1u ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
             LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
-        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x80u ||
-        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u ||
-        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_LSB) != 0u ||
-        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_MSB) != 0x04u ||
+        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x80u ||
+        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u ||
+        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_LSB) != 0u ||
+        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_MSB) != 0x04u ||
         core_machine_get_d4_platform_observation(session->board, &d4) !=
             LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
@@ -86,7 +86,7 @@ lib_i32 main(void)
             LIB_STATUS_OK || value != 0x1fu ||
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
             sizeof(rom_byte)) != LIB_STATUS_OK || rom_byte != 0x26u ||
-        x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
+        x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
         core_machine_bus_write(session->core_machine, 0x0061u, 0x02u) !=
             LIB_STATUS_OK || core_machine_get_speaker_observation(
             session->board, &speaker) != LIB_STATUS_OK ||
@@ -95,8 +95,8 @@ lib_i32 main(void)
             0x0fu) != LIB_STATUS_OK ||
         session->core_machine_plan->configuration.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_plan->configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
-        x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
-        !kbc_test_command_matches(&session->core_machine->board->shared_kbc,
+        x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
+        !kbc_test_command_matches(&session->board->shared_kbc,
             &session->core_machine->executor_port, 0x20u,
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
     if (!failed) {
@@ -121,23 +121,23 @@ lib_i32 main(void)
             0x64u) & VKBC_STATUS_OBF) != 0u;
         core_machine_port_write(&session->core_machine->executor_port,
             0x0064u, 0xa8u);
-        failed |= x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
-            !kbc_test_command_matches(&session->core_machine->board->shared_kbc,
+        failed |= x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
+            !kbc_test_command_matches(&session->board->shared_kbc,
             &session->core_machine->executor_port, 0x20u,
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
         core_machine_port_write(&session->core_machine->executor_port,
             0x0060u, 0xf5u);
-        failed |= kbc_test_read_reply(&session->core_machine->board->shared_kbc,
+        failed |= kbc_test_read_reply(&session->board->shared_kbc,
             &session->core_machine->executor_port) != 0xfau;
         core_machine_port_write(&session->core_machine->executor_port,
             0x0064u, 0xd4u);
         core_machine_port_write(&session->core_machine->executor_port,
             0x0060u, 0xf4u);
-        failed |= x86_keyboard_get_signals(session->core_machine->board->shared_kbc.connect.keyboard).scanning ||
+        failed |= x86_keyboard_get_signals(session->board->shared_kbc.connect.keyboard).scanning ||
             (core_machine_port_read(&session->core_machine->executor_port,
                 0x64u) & VKBC_STATUS_OBF) != 0u;
         core_machine_port_write(&session->core_machine->executor_port, 0x60u, 0xeeu);
-        failed |= kbc_test_read_reply(&session->core_machine->board->shared_kbc,
+        failed |= kbc_test_read_reply(&session->board->shared_kbc,
             &session->core_machine->executor_port) != 0xeeu;
     }
     if (!failed) printf("M5:T386:S7:MODEL40-PRIVATE-COMPOSITION:OK\n");

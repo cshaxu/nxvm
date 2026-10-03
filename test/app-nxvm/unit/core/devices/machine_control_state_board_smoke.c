@@ -9,6 +9,7 @@
 
 typedef struct control_board_reset_context {
     core_machine *machine;
+    core_machine_board_state *board;
 } control_board_reset_context;
 
 static void control_board_reset(void *opaque)
@@ -37,7 +38,7 @@ static lib_i32 control_board_create(core_machine_cpu_profile profile,
     *out_machine = LIB_NULL;
     lib_memory_set(context, 0, sizeof(*context));
     return test_core_machine_fixture_create_bind_freeze_reset(&config,
-        &control_board_provider, context, &context->machine) &&
+        &control_board_provider, context, &context->machine, &context->board) &&
         test_core_machine_fixture_prepare_real_mode_execution(context->machine,
             0u) && ((*out_machine = context->machine) != LIB_NULL);
 }
@@ -169,9 +170,9 @@ static lib_i32 control_board_irq(void)
                     machine, 0x100u, &handler, sizeof(handler)) != LIB_STATUS_OK ||
                 core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK;
         if (!failed) {
-            test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
-            core_machine_pic_irq_source_bind(&source, &machine->board->shared_pic_master,
-                &machine->board->shared_pic_slave, 0u);
+            test_pic_program_vector(&context.board->shared_pic_master, 0x20u);
+            core_machine_pic_irq_source_bind(&source, &context.board->shared_pic_master,
+                &context.board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
             failed = core_machine_run(machine, (core_machine_run_budget){2u,0u},
@@ -183,7 +184,7 @@ static lib_i32 control_board_irq(void)
         if (!failed)
             failed = result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                 after.eip != 0x0101u || (after.eflags & VCPU_EFLAGS_IF) != 0u ||
-                (test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
+                (test_pic_read(&context.board->shared_pic_master, 0x0bu) &
                 VPIC_ISR_IRQ(0u)) == 0u || (operation == 0u &&
                 (after.cr0 & VCPU_CR0_TS) != 0u) || (operation == 1u &&
                 (after.eax & 0xffffu) != 0u) || (operation == 2u &&

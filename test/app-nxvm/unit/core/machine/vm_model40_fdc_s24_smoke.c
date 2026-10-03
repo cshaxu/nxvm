@@ -116,10 +116,10 @@ lib_i32 main(void)
     failed |= create_status != LIB_STATUS_OK || session == LIB_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
         sizeof(image)) != LIB_FALSE;
     if (!failed) {
-        fdc = &session->core_machine->board->fdc;
+        fdc = &session->board->fdc;
         port = &session->core_machine->executor_port;
         core_machine_port_write(port, 0x0064u, 0xc0u);
-        core_machine_kbc_advance(&session->core_machine->board->shared_kbc, 1u);
+        core_machine_kbc_advance(&session->board->shared_kbc, 1u);
         failed |= core_machine_port_read(port, 0x0060u) != 0xb4u;
         failed |= fdc->connect.config.irq != 6u || fdc->connect.config.dma_channel != 2u ||
             fdc->connect.config.ready_mask != 0x0fu ||
@@ -176,9 +176,9 @@ lib_i32 main(void)
         model40_fdc_write_dma2(port, 0x0600u, 511u);
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
         for (index = 0u; index < 512u; ++index) {
-            test_dma_transfers(&session->core_machine->board->shared_dma_latch,
-                &session->core_machine->board->shared_dma_primary,
-                &session->core_machine->board->shared_dma_secondary,
+            test_dma_transfers(&session->board->shared_dma_latch,
+                &session->board->shared_dma_primary,
+                &session->board->shared_dma_secondary,
                 session->core_machine, &session->core_machine->executor_port, 1u);
             if (index + 1u < 512u) failed |= !test_fdc_advance_ticks(fdc, 128u);
         }

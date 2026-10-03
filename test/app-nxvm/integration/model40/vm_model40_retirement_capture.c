@@ -71,6 +71,7 @@ typedef struct model40_capture_port_event {
 
 typedef struct model40_retirement_capture {
     core_machine *machine;
+    core_machine_board_state *board;
     model40_retirement_capture_form forms[MODEL40_CAPTURE_FORM_LIMIT];
     model40_retirement_capture_key keys[MODEL40_CAPTURE_FORM_LIMIT];
     lib_u32 count;
@@ -773,7 +774,7 @@ static void model40_capture_observe(void *opaque,
         }
         if (capture->machine != LIB_NULL && reset_sample < MODEL40_CAPTURE_RESET_HISTORY) {
             capture->reset_vector_shutdown_status[reset_sample] =
-                x86_rtc_read_register(capture->machine->board->shared_rtc, 0x0fu);
+                x86_rtc_read_register(capture->board->shared_rtc, 0x0fu);
             capture->reset_vector_a20[reset_sample] =
                 capture->machine->executor_memory.data.flagA20;
         }
@@ -785,7 +786,7 @@ static void model40_capture_observe(void *opaque,
         capture->reset_instruction_port = observation->point.bytes[1u];
         capture->reset_instruction_value = (lib_u8)observation->instruction_entry_cpu.eax;
         capture->reset_instruction_state_seen = LIB_TRUE;
-        capture->reset_instruction_shutdown_status = x86_rtc_read_register(capture->machine->board->shared_rtc, 0x0fu);
+        capture->reset_instruction_shutdown_status = x86_rtc_read_register(capture->board->shared_rtc, 0x0fu);
         capture->reset_instruction_a20 =
             capture->machine->executor_memory.data.flagA20;
     }
@@ -1276,6 +1277,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     capture.c1_transfer_diagnostic = c1_transfer_diagnostic != 0;
     capture.d4_timer_history_enabled = port_sequence_diagnostic != 0;
     capture.machine = session->core_machine;
+    capture.board = session->board;
     provider.callback = model40_capture_observe;
     provider.context = &capture;
     status = core_machine_set_retirement_observation_provider(

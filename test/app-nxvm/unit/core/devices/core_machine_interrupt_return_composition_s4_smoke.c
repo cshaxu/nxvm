@@ -65,9 +65,9 @@ static lib_i32 interrupt_return_composition_s4_real_irq_after_iret(void)
     }
     if (!failed) {
         interrupt_return_composition_s4_seed(&state, flags);
-        test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &state.machine->board->shared_pic_master,
-            &state.machine->board->shared_pic_slave, 0u);
+        test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &state.board->shared_pic_master,
+            &state.board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed |= core_machine_run(state.machine,
@@ -80,9 +80,9 @@ static lib_i32 interrupt_return_composition_s4_real_irq_after_iret(void)
             after.data.esp != 0x00007ffau ||
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_IF) ||
             CORE_MACHINE_BIT_IS_SET(after.data.eflags, VCPU_EFLAGS_TF) ||
-            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),
+            !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),
                 VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(&state.machine->board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
+                test_pic_read(&state.board->shared_pic_master, 0x0au), VPIC_IRR_IRQ(0u)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (lib_u16)after.data.esp,
                 (lib_uptr)frame, sizeof(frame)) != LIB_STATUS_OK ||

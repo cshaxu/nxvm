@@ -8,7 +8,8 @@
 #include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "support/core_machine_board_fixture.h"
 
-static lib_i32 machine_explicit_time_prepare(core_machine **out_machine)
+static lib_i32 machine_explicit_time_prepare(core_machine **out_machine,
+    core_machine_board_state **out_board)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
@@ -22,10 +23,8 @@ static lib_i32 machine_explicit_time_prepare(core_machine **out_machine)
         .ticks_per_second = 1u
     };
 
-    core_machine_board_state *board = LIB_NULL;
-
-    return core_machine_create(&config, out_machine, &board) == LIB_STATUS_OK &&
-        core_machine_configure_rtc_cmos(board, &rtc) == LIB_STATUS_OK &&
+    return core_machine_create(&config, out_machine, out_board) == LIB_STATUS_OK &&
+        core_machine_configure_rtc_cmos(*out_board, &rtc) == LIB_STATUS_OK &&
         test_core_machine_fixture_register_reset_mapping(*out_machine, 0x00fffff0u,
             0x000ffff0u, 16u) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(*out_machine) == LIB_STATUS_OK &&
@@ -57,12 +56,13 @@ lib_i32 main(void)
     core_machine_timeline_observation before;
     core_machine_timeline_observation after;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u64 elapsed = 0u;
     lib_u8 second_before_explicit_time = 0u;
     lib_i32 failed = 0;
 
     if (machine_explicit_time_rejects_unstarted_lifecycle() ||
-        !machine_explicit_time_prepare(&machine) ||
+        !machine_explicit_time_prepare(&machine, &board) ||
         core_machine_memory_write(machine, 0x00fffff0u, &halt, sizeof(halt)) !=
             LIB_STATUS_OK ||
         core_machine_run(machine, budget, &first) != LIB_STATUS_OK ||
@@ -73,7 +73,7 @@ lib_i32 main(void)
         core_machine_destroy(machine);
         return 1;
     }
-    second_before_explicit_time = x86_rtc_read_register(machine->board->shared_rtc, X86_RTC_SECOND);
+    second_before_explicit_time = x86_rtc_read_register(board->shared_rtc, X86_RTC_SECOND);
 
     failed |= second.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
         second.executed != 0u || second.ticks != 0u ||
@@ -88,10 +88,10 @@ lib_i32 main(void)
         elapsed != first.elapsed_ticks + 5u ||
         core_machine_get_timeline_observation(machine, &after) != LIB_STATUS_OK ||
         after.now != before.now + 5u ||
-        x86_rtc_read_register(machine->board->shared_rtc, X86_RTC_SECOND) != second_before_explicit_time + 5u;
+        x86_rtc_read_register(board->shared_rtc, X86_RTC_SECOND) != second_before_explicit_time + 5u;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_get_elapsed_ticks(machine, &elapsed) != LIB_STATUS_OK ||
-        elapsed != 0u || x86_rtc_read_register(machine->board->shared_rtc, X86_RTC_SECOND) !=
+        elapsed != 0u || x86_rtc_read_register(board->shared_rtc, X86_RTC_SECOND) !=
             second_before_explicit_time + 5u ||
         core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
         core_machine_get_elapsed_ticks(machine, &elapsed) != LIB_STATUS_OK ||

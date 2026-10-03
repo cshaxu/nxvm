@@ -95,7 +95,7 @@ lib_i32 main(void)
     failed |= !failed && core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= !failed && (result.reason != CORE_MACHINE_STOP_BUDGET ||
         result.elapsed_ticks != 3u ||
-        x86_rtc_read_register(machine->board->shared_rtc, X86_RTC_SECOND) != 3u);
+        x86_rtc_read_register(board->shared_rtc, X86_RTC_SECOND) != 3u);
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != LIB_STATUS_OK;
     failed |= !failed && (observation.now != 3u || observation.pending_events != 0u ||

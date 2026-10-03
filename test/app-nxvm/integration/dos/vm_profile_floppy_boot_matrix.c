@@ -235,16 +235,16 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
             (unsigned long long)observation.elapsed_ticks, observation.lifecycle,
             session->fdd.connect.flagDiskExist,
             session->fdd.data.ncyl, session->fdd.data.nhead, session->fdd.data.nsector,
-            x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY));
+            x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY));
         x86_fdc_observation chip;
-        if (x86_fdc_capture(session->core_machine->board->fdc.chip, &chip) == LIB_STATUS_OK) {
+        if (x86_fdc_capture(session->board->fdc.chip, &chip) == LIB_STATUS_OK) {
             printf("T515:INI-BOOT:%s:FDC:phase=%u:cmd=%02X:index=%u:CHRN=%u/%u/%u:EOT=%u:CCR=%02X:result=%02X/%02X/%02X:remaining=%u:gate=%u:due=%llu:irq=%u\n",
                 name, chip.phase, chip.command[0u], chip.command_index,
                 chip.cylinder, chip.head, chip.sector, chip.eot,
-                session->core_machine->board->fdc.data.ccr, chip.st0, chip.st1, chip.st2,
+                session->board->fdc.data.ccr, chip.st0, chip.st1, chip.st2,
                 chip.transfer_remaining, chip.dma_byte_gate_pending,
                 (unsigned long long)chip.next_dma_byte_tick,
-                session->core_machine->board->fdc.connect.irq_source.asserted);
+                session->board->fdc.connect.irq_source.asserted);
         }
         if (core_machine_capture_time_observation(session->core_machine,
                 &time_observation) == LIB_STATUS_OK) {
@@ -255,21 +255,21 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
         }
         printf("T515:INI-BOOT:%s:PIC:pending=%u:IRQ0=%u\n",
             name, core_machine_pic_scan_interrupt(
-                &session->core_machine->board->shared_pic_master,
-                &session->core_machine->board->shared_pic_slave),
-            session->core_machine->board->shared_pit_irq0_source.asserted);
+                &session->board->shared_pic_master,
+                &session->board->shared_pic_slave),
+            session->board->shared_pit_irq0_source.asserted);
         printf("T515:INI-BOOT:%s:PIT:out0=%u:out1=%u\n", name,
-            (unsigned int)x86_pit_get_output(session->core_machine->board->shared_pit.device, 0u),
-            (unsigned int)x86_pit_get_output(session->core_machine->board->shared_pit.device, 1u));
+            (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 0u),
+            (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 1u));
         printf("T515:INI-BOOT:%s:CMOS:diag=%02X:floppy=%02X:fixed=%02X:equip=%02X:base=%02X%02X:extended=%02X%02X\n",
-            name, x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x0eu),
-            x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x10u),
-            x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x12u),
-            x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x14u),
-            x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x16u),
-            x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x15u),
-            x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x18u),
-            x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x17u));
+            name, x86_rtc_read_register(session->board->shared_rtc, 0x0eu),
+            x86_rtc_read_register(session->board->shared_rtc, 0x10u),
+            x86_rtc_read_register(session->board->shared_rtc, 0x12u),
+            x86_rtc_read_register(session->board->shared_rtc, 0x14u),
+            x86_rtc_read_register(session->board->shared_rtc, 0x16u),
+            x86_rtc_read_register(session->board->shared_rtc, 0x15u),
+            x86_rtc_read_register(session->board->shared_rtc, 0x18u),
+            x86_rtc_read_register(session->board->shared_rtc, 0x17u));
         if (core_machine_memory_read(session->core_machine, 0x00000410u,
                 equipment, sizeof(equipment)) == LIB_STATUS_OK) {
             printf("T515:INI-BOOT:%s:BDA:equipment=%02X%02X\n", name,
@@ -300,7 +300,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 boot_signature[1u], boot_signature[0u]);
         }
         {
-            const t_kbc *kbc = &session->core_machine->board->shared_kbc;
+            const t_kbc *kbc = &session->board->shared_kbc;
             const x86_keyboard_signals signals = x86_keyboard_get_signals(kbc->connect.keyboard);
             lib_u64 ticks = 0u;
             const lib_status status = core_machine_kbc_ticks_until_event(kbc, &ticks);
@@ -517,10 +517,10 @@ int main(int argc, char **argv)
     }
     session = ini_session.session;
     if (trace_enabled) {
-        trace_probe.fdc = &session->core_machine->board->fdc;
+        trace_probe.fdc = &session->board->fdc;
         (void)core_machine_set_trace_provider(session->core_machine,
             &(core_machine_trace_provider) {boot_trace_observe, &trace_probe});
-        session->core_machine->board->fdc.connect.observation_provider =
+        session->board->fdc.connect.observation_provider =
             (core_machine_fdc_terminal_observation_provider) {boot_trace_fdc_terminal,
                 &trace_probe};
     }

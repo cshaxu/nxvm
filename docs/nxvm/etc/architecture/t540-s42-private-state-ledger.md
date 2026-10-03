@@ -236,6 +236,19 @@ direct-fixture class are the next single receiving boundary; actual neutral
 Core and flat IBM-PC movement follow. Independent linkage and these handle
 receivers do not complete physical extraction.
 
+S87 completes the whole constructor/private-association and direct-fixture
+class before physical movement. Core no longer retains a named board pointer;
+the public neutral constructor and board factory publish their actual handles
+without a getter. Production board headers no longer import private Core
+layout. All 91 executing direct-board candidates retain their actual owner
+and assertions; the separate negative-injection literal remains intentional.
+The [S87 evidence](../evidence/t540-s87-construction-private-boundary.md)
+records both-width full units/gates, all eight single boot checkpoints and
+fresh artifacts. Actual Core and flat IBM-PC extraction remain unaccepted.
+The next receiver delivers the whole neutral Core source/test/build component,
+removing its old App source ownership; no further per-function preparation is
+allocated merely to defer that delivery.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

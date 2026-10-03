@@ -26,15 +26,16 @@ lib_i32 main(void)
 {
     core_machine_config config = { 0 };
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     config.clock_plan.auxiliary_pit = (core_machine_clock_ratio) {1u, 4u, 0u};
     config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
     if (!failed) {
-        failed |= !machine->board->auxiliary_pit_configured ||
+        failed |= !board->auxiliary_pit_configured ||
             !core_machine_port_has_read(&machine->executor_port, 0x0048u) ||
             !core_machine_port_has_write(&machine->executor_port, 0x004bu) ||
             !core_machine_port_has_read(&machine->executor_port, 0x0040u);
@@ -64,10 +65,10 @@ lib_i32 main(void)
         /* Reset cancels both programmed output transitions. */
         {
             lib_u64 deadline;
-            failed |= x86_pit_get_output(machine->board->shared_pit.device, 0u) ||
-                x86_pit_get_output(machine->board->auxiliary_pit.device, 0u) ||
-                x86_pit_ticks_until_output(machine->board->shared_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE ||
-                x86_pit_ticks_until_output(machine->board->auxiliary_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE;
+            failed |= x86_pit_get_output(board->shared_pit.device, 0u) ||
+                x86_pit_get_output(board->auxiliary_pit.device, 0u) ||
+                x86_pit_ticks_until_output(board->shared_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE ||
+                x86_pit_ticks_until_output(board->auxiliary_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE;
         }
     }
     core_machine_destroy(machine);

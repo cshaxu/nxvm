@@ -88,12 +88,12 @@ static lib_i32 planar_parity_publication_rollback(void)
             LIB_STATUS_INVALID_ARGUMENT ||
         machine->executor_memory.connect.parity != 0u ||
         machine->executor_memory.connect.parity_owner != LIB_NULL ||
-        machine->board->planar_parity_configured ||
+        board->planar_parity_configured ||
         core_machine_remove_port_routes(machine, &machine) != LIB_STATUS_OK ||
         core_machine_configure_planar_parity(board, &parity) != LIB_STATUS_OK ||
         machine->executor_memory.connect.parity == 0u ||
         machine->executor_memory.connect.parity_owner != board ||
-        !machine->board->planar_parity_configured) goto done;
+        !board->planar_parity_configured) goto done;
     failed = 0;
 done:
     core_machine_destroy(machine);
@@ -131,7 +131,7 @@ lib_i32 main(void)
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
         (value & 0x94u) != 0x14u ||
-        (x86_pit_advance(machine->board->shared_pit.device, 19u),
+        (x86_pit_advance(board->shared_pit.device, 19u),
          core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK) ||
         (value & 0x10u) != 0u ||
 

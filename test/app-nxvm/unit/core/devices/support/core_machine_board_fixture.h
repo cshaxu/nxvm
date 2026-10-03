@@ -62,9 +62,10 @@ static inline lib_i32 test_core_machine_fixture_bind_freeze_reset(
 static inline lib_i32 test_core_machine_fixture_create_bind_freeze_reset(
     const core_machine_config *config,
     const core_machine_execution_provider *provider, void *provider_owner,
-    core_machine **out_machine)
+    core_machine **out_machine,
+    core_machine_board_state **out_board)
 {
-    return core_machine_create(config, out_machine, LIB_NULL) == LIB_STATUS_OK &&
+    return core_machine_create(config, out_machine, out_board) == LIB_STATUS_OK &&
         test_core_machine_fixture_bind_freeze_reset(*out_machine, provider,
             provider_owner);
 }
@@ -107,11 +108,12 @@ static inline lib_status test_core_machine_fixture_register_memory_device_provid
 }
 
 static inline void test_core_machine_fixture_program_pit_divider(
-    core_machine *machine, lib_u8 control, lib_u16 divisor,
+    core_machine *machine, core_machine_board_state *board,
+    lib_u8 control, lib_u16 divisor,
     x86_pit_output_provider output, void *owner)
 {
     if (machine == LIB_NULL) return;
-    x86_pit_set_output(machine->board->shared_pit.device, 0u, output, owner);
+    x86_pit_set_output(board->shared_pit.device, 0u, output, owner);
     core_machine_port_write(&machine->executor_port, 0x0043u, control);
     core_machine_port_write(&machine->executor_port, 0x0040u, divisor & 0xffu);
     core_machine_port_write(&machine->executor_port, 0x0040u, divisor >> 8u);

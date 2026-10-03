@@ -63,52 +63,52 @@ lib_i32 main(void)
     core_machine_port_write(port, 0x03f7u, 0x00u); /* 1.44MB: 500 kbps. */
 
     /* No image is an FDC result, not a host or BIOS shortcut. */
-    fdc_command(&session->core_machine->board->fdc, port, read_sector, sizeof(read_sector));
+    fdc_command(&session->board->fdc, port, read_sector, sizeof(read_sector));
     failed |= (core_machine_port_read(port, 0x03f4u) & TEST_FDC_MSR_DIO) == 0u;
-    failed |= !fdc_read_result(&session->core_machine->board->fdc, port, result, sizeof(result));
+    failed |= !fdc_read_result(&session->board->fdc, port, result, sizeof(result));
     failed |= (result[0] & TEST_FDC_ST0_ABNORMAL) == 0u;
 
     vm_machine_fdd_create_for(&session->fdd);
-    core_machine_fdc_refresh(&session->core_machine->board->fdc);
+    core_machine_fdc_refresh(&session->board->fdc);
     failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u;
     /* A real STEP clears disk-change; SEEK to the current PCN does not. */
-    fdc_command(&session->core_machine->board->fdc, port, (const lib_u8[]){ 0x0fu, 0x00u, 0x01u }, 3u);
-    fdc_command(&session->core_machine->board->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
-    failed |= !fdc_read_result(&session->core_machine->board->fdc, port, result, 2u);
-    fdc_command(&session->core_machine->board->fdc, port, (const lib_u8[]){ 0x0fu, 0x00u, 0x00u }, 3u);
-    fdc_command(&session->core_machine->board->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
-    failed |= !fdc_read_result(&session->core_machine->board->fdc, port, result, 2u);
-    core_machine_fdc_refresh(&session->core_machine->board->fdc);
+    fdc_command(&session->board->fdc, port, (const lib_u8[]){ 0x0fu, 0x00u, 0x01u }, 3u);
+    fdc_command(&session->board->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
+    failed |= !fdc_read_result(&session->board->fdc, port, result, 2u);
+    fdc_command(&session->board->fdc, port, (const lib_u8[]){ 0x0fu, 0x00u, 0x00u }, 3u);
+    fdc_command(&session->board->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
+    failed |= !fdc_read_result(&session->board->fdc, port, result, 2u);
+    core_machine_fdc_refresh(&session->board->fdc);
     failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u;
 
-    fdc_command(&session->core_machine->board->fdc, port, specify_non_dma, sizeof(specify_non_dma));
-    fdc_command(&session->core_machine->board->fdc, port, format_track, sizeof(format_track));
-    fdc_command(&session->core_machine->board->fdc, port, format_id, sizeof(format_id));
-    test_fdc_advance(&session->core_machine->board->fdc);
+    fdc_command(&session->board->fdc, port, specify_non_dma, sizeof(specify_non_dma));
+    fdc_command(&session->board->fdc, port, format_track, sizeof(format_track));
+    fdc_command(&session->board->fdc, port, format_id, sizeof(format_id));
+    test_fdc_advance(&session->board->fdc);
     failed |= !core_machine_pic_scan_interrupt(
-        session->core_machine->board->fdc.connect.irq_source.master,
-        session->core_machine->board->fdc.connect.irq_source.slave);
-    failed |= !fdc_read_result(&session->core_machine->board->fdc, port, result, sizeof(result));
+        session->board->fdc.connect.irq_source.master,
+        session->board->fdc.connect.irq_source.slave);
+    failed |= !fdc_read_result(&session->board->fdc, port, result, sizeof(result));
     failed |= result[0] != TEST_FDC_ST0_NORMAL;
-    fdc_command(&session->core_machine->board->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
-    failed |= !fdc_read_result(&session->core_machine->board->fdc, port, result, 1u) ||
+    fdc_command(&session->board->fdc, port, (const lib_u8[]){ 0x08u }, 1u);
+    failed |= !fdc_read_result(&session->board->fdc, port, result, 1u) ||
         result[0] != 0x80u;
 
     session->fdd.connect.flagReadOnly = LIB_TRUE;
-    fdc_command(&session->core_machine->board->fdc, port, write_sector, sizeof(write_sector));
+    fdc_command(&session->board->fdc, port, write_sector, sizeof(write_sector));
     core_machine_port_write(port, 0x03f5u, 0x5au);
-    failed |= !fdc_read_result(&session->core_machine->board->fdc, port, result, sizeof(result));
+    failed |= !fdc_read_result(&session->board->fdc, port, result, sizeof(result));
     failed |= (result[1] & 0x02u) == 0u;
     session->fdd.connect.flagReadOnly = LIB_FALSE;
 
     /* Reserved rate is rejected; restore this medium's 500-kbps rate. */
     core_machine_port_write(port, 0x03f7u, 0x03u);
-    fdc_command(&session->core_machine->board->fdc, port, read_sector, sizeof(read_sector));
-    failed |= !fdc_read_result(&session->core_machine->board->fdc, port, result, sizeof(result));
+    fdc_command(&session->board->fdc, port, read_sector, sizeof(read_sector));
+    failed |= !fdc_read_result(&session->board->fdc, port, result, sizeof(result));
     failed |= (result[1] & 0x04u) == 0u;
     core_machine_port_write(port, 0x03f7u, 0x00u);
 
-    fdc_command(&session->core_machine->board->fdc, port, read_sector, sizeof(read_sector));
+    fdc_command(&session->board->fdc, port, read_sector, sizeof(read_sector));
     failed |= (core_machine_port_read(port, 0x03f4u) &
         (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_NDM)) !=
         (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_NDM);
@@ -116,7 +116,7 @@ lib_i32 main(void)
     for (lib_u16 index = 1u; index < 512u; ++index) {
         (void)core_machine_port_read(port, 0x03f5u);
     }
-    failed |= !fdc_read_result(&session->core_machine->board->fdc, port, result, sizeof(result));
+    failed |= !fdc_read_result(&session->board->fdc, port, result, sizeof(result));
     failed |= result[0] != TEST_FDC_ST0_NORMAL;
 
     vm_machine_destroy(session);

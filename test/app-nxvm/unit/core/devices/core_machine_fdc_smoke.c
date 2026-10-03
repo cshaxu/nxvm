@@ -212,10 +212,10 @@ static lib_i32 core_machine_fdc_read_result(core_machine_fdc *fdc, t_port *port,
 
 /* S12 supersedes the S10 characterization: READY is a pin, whereas absent
  * media, motor and selection prevent a record from being delivered. */
-static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine,
+static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine, core_machine_board_state *board,
     core_machine_fdc_fixture_media *media)
 {
-    core_machine_fdc *fdc = &machine->board->fdc;
+    core_machine_fdc *fdc = &board->fdc;
     t_port *port = &machine->executor_port;
     static const struct {
         lib_u8 bytes[9];
@@ -307,7 +307,7 @@ static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine,
                         (commands[command].msr == TEST_FDC_MSR_RESULT);
             }
             mismatch |= core_machine_dma_has_pending_request(
-                &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary) !=
+                &board->shared_dma_primary, &board->shared_dma_secondary) !=
                 (inputs[input].admitted &&
                     commands[command].msr != TEST_FDC_MSR_RESULT);
             if (mismatch) {
@@ -315,8 +315,8 @@ static lib_i32 core_machine_fdc_readiness_matrix(core_machine *machine,
                     variant, commands[command].bytes[0], result[0], result[1], result[2],
                     fdc->connect.irq_source.asserted,
                     core_machine_port_read(port, 0x03f4u),
-                    core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                        &machine->board->shared_dma_secondary));
+                    core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                        &board->shared_dma_secondary));
                 failed = 1;
             }
         }
@@ -355,10 +355,10 @@ static lib_i32 core_machine_fdc_result_identity(core_machine_fdc *fdc,
 }
 
 
-static lib_i32 core_machine_fdc_write_terminal(core_machine *machine,
+static lib_i32 core_machine_fdc_write_terminal(core_machine *machine, core_machine_board_state *board,
     core_machine_fdc_fixture_media *media)
 {
-    core_machine_fdc *fdc = &machine->board->fdc;
+    core_machine_fdc *fdc = &board->fdc;
     t_port *port = &machine->executor_port;
     const core_machine_fdc_config saved_config = fdc->connect.config;
     enum { FINISH, RESET, MOTOR_OFF, WRITE_FAILURE };
@@ -392,8 +392,8 @@ static lib_i32 core_machine_fdc_write_terminal(core_machine *machine,
                 failed |= !core_machine_fdc_command(fdc, port, (const lib_u8[]){
                     deleted ? 0x49u : 0x45u, 0u, 0u, 0u, 1u, 2u, 3u, 0x1bu, 0xffu}, 9u);
                 for (lib_u16 byte = 0u; byte < length; ++byte) {
-                    test_dma_transfers(&machine->board->shared_dma_latch,
-                        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
+                    test_dma_transfers(&board->shared_dma_latch,
+                        &board->shared_dma_primary, &board->shared_dma_secondary,
                         machine, port, 1u);
                     if (byte + 1u < length)
                         core_machine_fdc_advance_at(fdc, observe(fdc).next_dma_byte_tick);
@@ -415,8 +415,8 @@ static lib_i32 core_machine_fdc_write_terminal(core_machine *machine,
                             (cases[index].action == MOTOR_OFF ? 0x04u : 0x02u);
                     failed |= media->write_count - writes != length ||
                         observe(fdc).dma_byte_gate_pending ||
-                        core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                            &machine->board->shared_dma_secondary);
+                        core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                            &board->shared_dma_secondary);
                     media->forced_write_result = CORE_MACHINE_MEDIA_RESULT_OK;
                     for (lib_u16 byte = 0u; byte < sizeof(media->bytes); ++byte)
                         failed |= media->bytes[byte] != (byte < length ? 0xa5u : 0x5au);
@@ -427,8 +427,8 @@ static lib_i32 core_machine_fdc_write_terminal(core_machine *machine,
                     const lib_u64 due = observe(fdc).next_dma_byte_tick;
                     const lib_u32 before = media->write_count;
                     failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB ||
-                        core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                            &machine->board->shared_dma_secondary) ||
+                        core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                            &board->shared_dma_secondary) ||
                         (core_machine_port_read(port, 0x03f4u) & TEST_FDC_MSR_RQM) != 0u;
                     core_machine_fdc_advance_at(fdc, due - 1u);
                     failed |= media->write_count != before;
@@ -455,11 +455,11 @@ static lib_i32 core_machine_fdc_write_terminal(core_machine *machine,
     return failed;
 }
 
-static lib_i32 core_machine_fdc_terminal_id(core_machine *machine,
+static lib_i32 core_machine_fdc_terminal_id(core_machine *machine, core_machine_board_state *board,
     core_machine_fdc_fixture_media *media)
 {
     static const lib_u8 commands[] = {0x46u, 0x4cu, 0x45u, 0x49u};
-    core_machine_fdc *fdc = &machine->board->fdc;
+    core_machine_fdc *fdc = &board->fdc;
     t_port *port = &machine->executor_port;
     const core_machine_fdc_config saved_config = fdc->connect.config;
     lib_i32 failed = 0;
@@ -488,8 +488,8 @@ static lib_i32 core_machine_fdc_terminal_id(core_machine *machine,
                 commands[command] | (multi_track ? 0x80u : 0u), head << 2u,
                 0u, head, 1u, 2u, at_eot ? 1u : 2u, 0x1bu, 0xffu}, 9u);
             for (lib_u16 byte = 0u; byte < length; ++byte) {
-                test_dma_transfers(&machine->board->shared_dma_latch,
-                    &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
+                test_dma_transfers(&board->shared_dma_latch,
+                    &board->shared_dma_primary, &board->shared_dma_secondary,
                     machine, port, 1u);
                 if (byte + 1u < length)
                     core_machine_fdc_advance_at(fdc, observe(fdc).next_dma_byte_tick);
@@ -702,7 +702,7 @@ lib_i32 main(void)
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
         core_machine_create(&config, &machine, &board) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        fdc = &machine->board->fdc;
+        fdc = &board->fdc;
         port = &machine->executor_port;
         if (fdc == LIB_NULL || port == LIB_NULL ||
             core_machine_media_registry_bind(media, 1u, &fixture,
@@ -958,22 +958,22 @@ lib_i32 main(void)
                 core_machine_fdc_write_dma2(port, 0x0600u, 1u);
                 failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 core_machine_fdc_advance_at(fdc, 100u);
-                failed |= !core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                    &machine->board->shared_dma_secondary);
-                test_dma_transfers(&machine->board->shared_dma_latch,
-                    &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
+                failed |= !core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                    &board->shared_dma_secondary);
+                test_dma_transfers(&board->shared_dma_latch,
+                    &board->shared_dma_primary, &board->shared_dma_secondary,
                     machine, &machine->executor_port, 1u);
                 failed |= fixture.read_count != 1u ||
-                    core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                        &machine->board->shared_dma_secondary);
+                    core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                        &board->shared_dma_secondary);
                 core_machine_fdc_advance_at(fdc, 219u);
-                failed |= core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                    &machine->board->shared_dma_secondary);
+                failed |= core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                    &board->shared_dma_secondary);
                 core_machine_fdc_advance_at(fdc, 220u);
-                failed |= !core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                    &machine->board->shared_dma_secondary);
-                test_dma_transfers(&machine->board->shared_dma_latch,
-                    &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
+                failed |= !core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                    &board->shared_dma_secondary);
+                test_dma_transfers(&board->shared_dma_latch,
+                    &board->shared_dma_primary, &board->shared_dma_secondary,
                     machine, &machine->executor_port, 1u);
                 failed |= fixture.read_count != 2u || core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB || fdc->connect.irq_source.asserted ||
                     observe(fdc).dma_byte_gate_pending || observe(fdc).next_dma_byte_tick != 0u;
@@ -991,8 +991,8 @@ lib_i32 main(void)
                 failed |= (core_machine_port_read(port, fdc_config.status_port) &
                     (TEST_FDC_MSR_CB | TEST_FDC_MSR_DIO)) != 0u;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
-                failed |= core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                    &machine->board->shared_dma_secondary) || observe(fdc).dma_byte_gate_pending;
+                failed |= core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                    &board->shared_dma_secondary) || observe(fdc).dma_byte_gate_pending;
 
                 /* Scan consumes guest comparison bytes through DMA2's
                    memory-to-device direction, then reports through the same
@@ -1008,8 +1008,8 @@ lib_i32 main(void)
                 core_machine_port_write(port, 0x000bu, 0x4au);
                 failed |= !core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
                 for (lib_u32 index = 0u; index < sizeof(scan_dma); ++index) {
-                    test_dma_transfers(&machine->board->shared_dma_latch,
-                        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
+                    test_dma_transfers(&board->shared_dma_latch,
+                        &board->shared_dma_primary, &board->shared_dma_secondary,
                         machine, &machine->executor_port, 1u);
                     if (index + 1u < sizeof(scan_dma)) {
                         core_machine_fdc_advance_at(fdc,
@@ -1038,8 +1038,8 @@ lib_i32 main(void)
                 failed |= !core_machine_fdc_command(fdc, port, read_sector_dma_terminal,
                     sizeof(read_sector_dma_terminal));
                 for (lib_u32 index = 0u; index < 512u; ++index) {
-                    test_dma_transfers(&machine->board->shared_dma_latch,
-                        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
+                    test_dma_transfers(&board->shared_dma_latch,
+                        &board->shared_dma_primary, &board->shared_dma_secondary,
                         machine, &machine->executor_port, 1u);
                     if (index + 1u < 512u) core_machine_fdc_advance_at(fdc,
                         observe(fdc).elapsed_ticks + 8u * 25u);
@@ -1141,18 +1141,18 @@ lib_i32 main(void)
                 core_machine_fdc_write_dma2(port, 0x0600u, 1u);
                 fallback_read_count = fixture.read_count;
                 failed |= !core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
-                test_dma_transfers(&machine->board->shared_dma_latch,
-                    &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
+                test_dma_transfers(&board->shared_dma_latch,
+                    &board->shared_dma_primary, &board->shared_dma_secondary,
                     machine, &machine->executor_port, 1u);
                 failed |= fixture.read_count != fallback_read_count + 1u ||
                     !observe(fdc).dma_byte_gate_pending ||
-                    core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                        &machine->board->shared_dma_secondary);
+                    core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                        &board->shared_dma_secondary);
                 core_machine_fdc_advance_at(fdc, observe(fdc).next_dma_byte_tick);
-                failed |= !core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-                    &machine->board->shared_dma_secondary);
-                test_dma_transfers(&machine->board->shared_dma_latch,
-                    &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary,
+                failed |= !core_machine_dma_has_pending_request(&board->shared_dma_primary,
+                    &board->shared_dma_secondary);
+                test_dma_transfers(&board->shared_dma_latch,
+                    &board->shared_dma_primary, &board->shared_dma_secondary,
                     machine, &machine->executor_port, 1u);
                 failed |= fixture.read_count != fallback_read_count + 2u || core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB;
                 test_fdc_advance(fdc);
@@ -1162,10 +1162,10 @@ lib_i32 main(void)
             }
         }
     }
-    if (!failed) failed |= core_machine_fdc_readiness_matrix(machine, &fixture);
+    if (!failed) failed |= core_machine_fdc_readiness_matrix(machine, board, &fixture);
     if (!failed) failed |= core_machine_fdc_result_identity(fdc, port, &fixture);
-    if (!failed) failed |= core_machine_fdc_write_terminal(machine, &fixture);
-    if (!failed) failed |= core_machine_fdc_terminal_id(machine, &fixture);
+    if (!failed) failed |= core_machine_fdc_write_terminal(machine, board, &fixture);
+    if (!failed) failed |= core_machine_fdc_terminal_id(machine, board, &fixture);
     if (!failed) failed |= core_machine_fdc_no_implied_seek(fdc, port, &fixture);
     if (!failed) failed |= core_machine_fdc_seek_pins(fdc, port);
     core_machine_destroy(machine);

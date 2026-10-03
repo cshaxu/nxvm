@@ -6,7 +6,8 @@
 #include "app-nxvm/devices/pic_bus.h"
 #include <stdio.h>
 
-typedef struct legacy_sreg_stack_machine { core_machine *machine; } legacy_sreg_stack_machine;
+typedef struct legacy_sreg_stack_machine { core_machine *machine;
+    core_machine_board_state *board; } legacy_sreg_stack_machine;
 
 static lib_i32 legacy_sreg_stack_prepare(core_machine_cpu_profile profile, legacy_sreg_stack_machine *state)
 {
@@ -22,7 +23,7 @@ static lib_i32 legacy_sreg_stack_prepare(core_machine_cpu_profile profile, legac
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
+    return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
         core_machine_reset(state->machine) == LIB_STATUS_OK &&
         core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
@@ -241,15 +242,15 @@ static lib_i32 legacy_sreg_stack_test_irq(void)
         if(!failed) {
             lib_memory_set(&source,0,sizeof(source));
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-            test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
-            core_machine_pic_irq_source_bind(&source,&state.machine->board->shared_pic_master,&state.machine->board->shared_pic_slave,0u);
+            test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+            core_machine_pic_irq_source_bind(&source,&state.board->shared_pic_master,&state.board->shared_pic_slave,0u);
             core_machine_pic_irq_source_assert(&source);core_machine_pic_irq_source_deassert(&source);
             failed|=core_machine_run(state.machine,(core_machine_run_budget){3u,0u},&result)!=LIB_STATUS_OK ||
                 result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine, CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
             failed|=core_machine_memory_read_physical(&state.machine->executor_memory,after.ss.base+(lib_u16)after.esp,CORE_MACHINE_REFERENCE_OF(ip),2u)!=LIB_STATUS_OK ||
-                after.eip!=0x101u || ip!=frame[form] || !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au),VPIC_IRR_IRQ(0u)) ||
+                after.eip!=0x101u || ip!=frame[form] || !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),VPIC_ISR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au),VPIC_IRR_IRQ(0u)) ||
                 !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||
                 (form==3u && (after.esp!=0x7ff8u ||
                 !legacy_sreg_stack_sregs_same(&before, &after) ||

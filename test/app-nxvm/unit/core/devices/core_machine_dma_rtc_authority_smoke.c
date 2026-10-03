@@ -57,10 +57,10 @@ static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
         core_machine_bus_write(machine, 0x0041u, 2u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0041u, 0u) != LIB_STATUS_OK ||
         core_machine_advance_time(machine, 3u) != LIB_STATUS_OK ||
-        x86_pit_get_output(machine->board->shared_pit.device, 1u) ||
+        x86_pit_get_output(board->shared_pit.device, 1u) ||
         (core_machine_port_read(&machine->executor_port, 8u) & 0x10u) == 0u ||
         core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
-        !x86_pit_get_output(machine->board->shared_pit.device, 1u) ||
+        !x86_pit_get_output(board->shared_pit.device, 1u) ||
         (core_machine_port_read(&machine->executor_port, 8u) & 0x10u) != 0u;
     core_machine_destroy(machine);
     return failed;
@@ -123,12 +123,12 @@ int main(void)
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
-        machine->board->shared_dma_primary.connect.device_owner[2u] != &machine->board->fdc ||
-        machine->board->shared_dma_primary.connect.device_owner[0u] != board ||
-        machine->board->refresh_dma_request.core_token == 0u ||
-        machine->board->refresh_dma_request.channel != 0u ||
-        core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
-            &machine->board->shared_dma_secondary) ||
+        board->shared_dma_primary.connect.device_owner[2u] != &board->fdc ||
+        board->shared_dma_primary.connect.device_owner[0u] != board ||
+        board->refresh_dma_request.core_token == 0u ||
+        board->refresh_dma_request.channel != 0u ||
+        core_machine_dma_has_pending_request(&board->shared_dma_primary,
+            &board->shared_dma_secondary) ||
         core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) !=
             0x5au) {
         failed = 1;
@@ -164,9 +164,9 @@ int main(void)
         failed = 1;
         stage = 4;
     } else if (!(interrupt_pending = core_machine_pic_scan_interrupt(
-            &machine->board->shared_pic_master, &machine->board->shared_pic_slave)) ||
+            &board->shared_pic_master, &board->shared_pic_slave)) ||
         (interrupt_vector = core_machine_pic_get_interrupt(
-            &machine->board->shared_pic_master, &machine->board->shared_pic_slave)) != 0x70u) {
+            &board->shared_pic_master, &board->shared_pic_slave)) != 0x70u) {
         failed = 1;
         stage = 5;
     } else if (core_machine_reset(machine) != LIB_STATUS_OK ||
@@ -181,10 +181,10 @@ done:
     if (failed && machine != LIB_NULL) {
         printf("M5:T296:S3:DMA-RTC-AUTHORITY:DETAIL:%d IRQ=%u asserted=%u pending=%d vector=%02x IRR=%02x/%02x\n",
             stage,
-            machine->board->rtc_irq_source.irq,
-            machine->board->rtc_irq_source.asserted,
+            board->rtc_irq_source.irq,
+            board->rtc_irq_source.asserted,
             interrupt_pending, interrupt_vector,
-            test_pic_read(&machine->board->shared_pic_master, 0x0au), test_pic_read(&machine->board->shared_pic_slave, 0x0au));
+            test_pic_read(&board->shared_pic_master, 0x0au), test_pic_read(&board->shared_pic_slave, 0x0au));
     }
     core_machine_destroy(machine);
     if (failed) printf("M5:T296:S3:DMA-RTC-AUTHORITY:FAIL:%d\n", stage);

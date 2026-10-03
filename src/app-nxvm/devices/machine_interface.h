@@ -248,6 +248,33 @@ lib_status core_machine_reconfigure_memory(core_machine *machine,
  * eligibility check, not a lifecycle transition or a private-state lease. */
 lib_i32 core_machine_mutable_operation_is_allowed(const core_machine *machine);
 
+/* Construction values consumed only by the neutral executor. The board
+ * composition derives this temporary value from its one frozen configuration;
+ * Core never retains a second configuration or any board selection. */
+typedef struct core_machine_executor_config {
+    lib_size memory_bytes;
+    core_machine_cpu_profile cpu_profile;
+    x86_fpu_profile fpu_profile;
+    lib_u8 cpu_80386_cr_mov_ignores_mod;
+    core_machine_a20_wrap_policy a20_wrap_policy;
+    lib_u32 ticks_per_instruction;
+    core_machine_instruction_timing instruction_timing;
+    core_machine_transaction_contract transaction_contract;
+    core_machine_clock_ratio provider_clock;
+    core_machine_time_axis time_axis;
+    core_machine_l1_compatibility_policy l1_compatibility_policy;
+    core_machine_retirement_time_contract retirement_time_contract;
+    const core_machine_retirement_qualification_descriptor *retirement_qualification;
+} core_machine_executor_config;
+
+lib_i32 core_machine_neutral_config_is_valid(
+    const core_machine_executor_config *config);
+/* Success publishes one initialized Core; outputs clear on failure. Attachments
+ * are composed separately before freeze. Core owns the returned lifetime. */
+lib_status core_machine_neutral_create(
+    const core_machine_executor_config *config, core_machine **out_machine);
+void core_machine_cpu_bus_refresh_pulse(void *core_owner);
+
 /* Construction eligibility only; board attachments retain no Core layout. */
 lib_i32 core_machine_configuration_is_open(const core_machine *machine);
 

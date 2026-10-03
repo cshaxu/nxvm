@@ -30,21 +30,21 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
         session == LIB_NULL ||
         session->fdd.data.ncyl != cylinders || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != sectors || session->fdd.data.nbyte != 512u ||
-        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY) !=
+        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY) !=
             cmos_type) {
         printf("FDD setup format=%u cmos=%02x expected=%02x\n",
-            (unsigned int)format, (unsigned int)x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY),
+            (unsigned int)format, (unsigned int)x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY),
             (unsigned int)cmos_type);
         vm_machine_destroy(session);
         return 0;
     }
     for (index = 0x10u; index < 0x2eu; ++index) {
         checksum = (lib_u16)(checksum +
-            x86_rtc_read_register(session->core_machine->board->shared_rtc, index));
+            x86_rtc_read_register(session->board->shared_rtc, index));
     }
-    if (x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x2eu) !=
+    if (x86_rtc_read_register(session->board->shared_rtc, 0x2eu) !=
             (lib_u8)(checksum >> 8u) ||
-        x86_rtc_read_register(session->core_machine->board->shared_rtc, 0x2fu) !=
+        x86_rtc_read_register(session->board->shared_rtc, 0x2fu) !=
             (lib_u8)checksum) {
         vm_machine_destroy(session);
         return 0;
@@ -128,19 +128,19 @@ lib_i32 main(void)
     vm_machine *session = LIB_NULL;
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK) return 1;
     if (!session->active || session->profile_plan == LIB_NULL ||
-        session->core_machine->board->fdc.connect.config.dor_port != 0x03f2u ||
-        session->core_machine->board->fdc.connect.config.status_port != 0x03f4u ||
-        session->core_machine->board->fdc.connect.config.data_port != 0x03f5u ||
-        session->core_machine->board->fdc.connect.config.direction_port != 0x03f7u ||
-        session->core_machine->board->fdc.connect.config.irq != 6u ||
-        session->core_machine->board->fdc.connect.config.dma_channel != 2u ||
-        session->core_machine->board->fdc.connect.config.ready_mask != 0x0fu) {
+        session->board->fdc.connect.config.dor_port != 0x03f2u ||
+        session->board->fdc.connect.config.status_port != 0x03f4u ||
+        session->board->fdc.connect.config.data_port != 0x03f5u ||
+        session->board->fdc.connect.config.direction_port != 0x03f7u ||
+        session->board->fdc.connect.config.irq != 6u ||
+        session->board->fdc.connect.config.dma_channel != 2u ||
+        session->board->fdc.connect.config.ready_mask != 0x0fu) {
         vm_machine_destroy(session);
         return 1;
     }
-    if (x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_EQUIPMENT) !=
-            0x21u || x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x7fu ||
-        x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u) {
+    if (x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_EQUIPMENT) !=
+            0x21u || x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x7fu ||
+        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u) {
         vm_machine_destroy(session);
         return 1;
     }

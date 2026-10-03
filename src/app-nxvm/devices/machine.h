@@ -57,8 +57,6 @@ typedef struct core_machine_immutable_rom_mapping {
     lib_u8 owns_image;
 } core_machine_immutable_rom_mapping;
 
-typedef struct core_machine_board_state core_machine_board_state;
-
 struct core_machine_firmware_context {
     core_machine *machine;
     lib_status operation_status;
@@ -104,7 +102,6 @@ struct core_machine {
     core_machine_clock_domain provider_clock;
     core_machine_time_axis time_axis;
     core_machine_l1_compatibility_policy l1_compatibility_policy;
-    core_machine_board_state *board;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
     core_machine_retirement_observation_state retirement_observation;
@@ -175,28 +172,8 @@ lib_status core_machine_register_immutable_rom_mapping_alias_from_firmware(
     lib_u32 physical_start, lib_size bytes);
 void core_machine_rollback_immutable_rom_mappings(core_machine *machine,
     lib_size mapping_count);
-/* Construction values consumed only by the neutral executor. The board
- * composition derives this temporary value from its one frozen configuration;
- * Core never retains a second configuration or any board selection. */
-typedef struct core_machine_executor_config {
-    lib_size memory_bytes;
-    core_machine_cpu_profile cpu_profile;
-    x86_fpu_profile fpu_profile;
-    lib_u8 cpu_80386_cr_mov_ignores_mod;
-    core_machine_a20_wrap_policy a20_wrap_policy;
-    lib_u32 ticks_per_instruction;
-    core_machine_instruction_timing instruction_timing;
-    core_machine_transaction_contract transaction_contract;
-    core_machine_clock_ratio provider_clock;
-    core_machine_time_axis time_axis;
-    core_machine_l1_compatibility_policy l1_compatibility_policy;
-    core_machine_retirement_time_contract retirement_time_contract;
-    const core_machine_retirement_qualification_descriptor *retirement_qualification;
-} core_machine_executor_config;
-
-lib_i32 core_machine_neutral_config_is_valid(
-    const core_machine_executor_config *config);
-lib_status core_machine_neutral_create(
+/* Private fault injection; production composition uses neutral_create. */
+lib_status core_machine_neutral_create_with_test_allocation(
     const core_machine_executor_config *config,
     core_machine_memory_test_allocation *test_allocation,
     core_machine_port_test_allocation *port_test_allocation,
@@ -225,7 +202,6 @@ extern const core_machine_cpu_execution_diagnostic_provider
  * observer or a physical retirement contract actually needs it. */
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
-void core_machine_cpu_bus_refresh_pulse(void *core_owner);
 typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT,
     CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT,

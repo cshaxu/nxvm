@@ -181,8 +181,8 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
     printf("M5:T287:S23:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         was_running,
-        hdc_observe(&session->core_machine->board->hdc).command_count,
-        hdc_observe(&session->core_machine->board->hdc).last_command);
+        hdc_observe(&session->board->hdc).command_count,
+        hdc_observe(&session->board->hdc).last_command);
     if (diagnostic.first_fault.valid) {
         const core_machine_cpu_fault_snapshot *fault = &diagnostic.first_fault;
 

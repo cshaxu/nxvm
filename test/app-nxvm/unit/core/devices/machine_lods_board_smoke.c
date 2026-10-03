@@ -17,6 +17,7 @@ static lib_i32 lods_irq_case(lib_bool repeated, lib_u8 width)
     const lib_u8 source[] = {width == 2u ? 0x62u : 0x51u,
         width == 2u ? 0x22u : 0x62u, 0x73u};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_pic_irq_source irq = {0};
     core_machine_debug_register_patch patch = {0};
     core_machine_debug_cpu_snapshot after = {0};
@@ -25,7 +26,7 @@ static lib_i32 lods_irq_case(lib_bool repeated, lib_u8 width)
     lib_u8 source_after[sizeof(source)] = {0};
     lib_u8 bytes = repeated ? 3u : 2u;
     lib_u8 source_bytes = repeated ? 3u : width;
-    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
 
     if (!failed) {
         patch.mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
@@ -57,9 +58,9 @@ static lib_i32 lods_irq_case(lib_bool repeated, lib_u8 width)
                 sizeof(hlt)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        test_pic_program_vector(&machine->board->shared_pic_master, 0x20u);
-        core_machine_pic_irq_source_bind(&irq, &machine->board->shared_pic_master,
-            &machine->board->shared_pic_slave, 0u);
+        test_pic_program_vector(&board->shared_pic_master, 0x20u);
+        core_machine_pic_irq_source_bind(&irq, &board->shared_pic_master,
+            &board->shared_pic_slave, 0u);
         core_machine_pic_irq_source_assert(&irq);
         core_machine_pic_irq_source_deassert(&irq);
         failed = core_machine_run(machine,
@@ -80,9 +81,9 @@ static lib_i32 lods_irq_case(lib_bool repeated, lib_u8 width)
                     (repeated ? 1u : width) ||
                 (repeated && after.ecx != 0x11220002u) ||
                 lib_memory_compare(source_after, source, source_bytes) != 0 ||
-                !(test_pic_read(&machine->board->shared_pic_master, 0x0bu) &
+                !(test_pic_read(&board->shared_pic_master, 0x0bu) &
                     VPIC_ISR_IRQ(0u)) ||
-                (test_pic_read(&machine->board->shared_pic_master, 0x0au) &
+                (test_pic_read(&board->shared_pic_master, 0x0au) &
                     VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(machine);

@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_BOARD_STATE_H
 #define CORE_MACHINE_BOARD_STATE_H
 
-#include "app-nxvm/devices/machine.h"
+#include "app-nxvm/devices/clock.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/pit_bus.h"
@@ -128,24 +128,13 @@ lib_status core_machine_configure_fdc(core_machine_board_state *board,
 lib_status core_machine_configure_hdc(core_machine_board_state *board,
     const core_machine_hdc_topology *topology);
 void core_machine_board_reset_devices(void *owner);
-/* Private board construction failure seams use the one production factory. */
-lib_status core_machine_create_internal(const core_machine_config *config,
-    core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation,
-    core_machine_port_test_allocation *port_test_allocation,
-    core_machine_board_state **out_board);
-lib_status core_machine_create_with_test_memory_allocation(
-    const core_machine_config *config, core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation,
-    core_machine_board_state **out_board);
-lib_status core_machine_create_with_test_port_allocation(
-    const core_machine_config *config, core_machine **out_machine,
-    core_machine_port_test_allocation *test_allocation,
-    core_machine_board_state **out_board);
+/* Board owns projection/preflight; no candidate exists before it succeeds. */
+lib_status core_machine_board_prepare_executor(
+    const core_machine_config *config, core_machine_executor_config *out_executor);
 lib_i32 core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 lib_i32 core_machine_board_config_is_valid(const core_machine_config *config);
 lib_status core_machine_board_create(core_machine *machine,
-    const core_machine_config *config);
+    const core_machine_config *config, core_machine_board_state **out_board);
 void core_machine_board_finalize_devices(void *owner);
 lib_bool core_machine_board_shutdown_resets(void *owner);
 lib_status core_machine_board_initialize_clocks(core_machine_board_state *board,

@@ -9,6 +9,7 @@
 typedef struct enter_leave_machine
 {
     core_machine *machine;
+    core_machine_board_state *board;
 } enter_leave_machine;
 
 static lib_i32 enter_leave_prepare(core_machine_cpu_profile profile, enter_leave_machine *state)
@@ -25,7 +26,7 @@ static lib_i32 enter_leave_prepare(core_machine_cpu_profile profile, enter_leave
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
+    return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
         core_machine_reset(state->machine) == LIB_STATUS_OK &&
         core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
@@ -264,9 +265,9 @@ static lib_i32 enter_leave_test_irq_no_shadow(void)
         if (!failed)
         {
             lib_memory_set(&source, 0, sizeof(source));
-            test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
+            test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
             core_machine_pic_irq_source_bind(&source,
-                &state.machine->board->shared_pic_master, &state.machine->board->shared_pic_slave,
+                &state.board->shared_pic_master, &state.board->shared_pic_slave,
                 0u);
             core_machine_pic_irq_source_assert(&source);
             core_machine_pic_irq_source_deassert(&source);
@@ -281,8 +282,8 @@ static lib_i32 enter_leave_test_irq_no_shadow(void)
                 after.ss.base + (lib_u16)after.esp,
                 CORE_MACHINE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != LIB_STATUS_OK ||
                 after.eip != 0x101u || frame_ip != (form == 0u ? 4u : 1u) ||
-                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0bu),
-                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au),
+                !CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0bu),
+                VPIC_ISR_IRQ(0u)) || CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
             if (form == 0u)
             {

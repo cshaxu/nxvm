@@ -6,7 +6,8 @@
 #include "app-nxvm/devices/pic_bus.h"
 #include <stdio.h>
 
-typedef struct les_lds_s41_machine { core_machine *machine; } les_lds_s41_machine;
+typedef struct les_lds_s41_machine { core_machine *machine;
+    core_machine_board_state *board; } les_lds_s41_machine;
 
 static lib_i32 les_lds_s41_prepare(core_machine_cpu_profile profile, les_lds_s41_machine *state)
 {
@@ -22,7 +23,7 @@ static lib_i32 les_lds_s41_prepare(core_machine_cpu_profile profile, les_lds_s41
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP)
     };
     lib_memory_set(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine, LIB_NULL) == LIB_STATUS_OK &&
+    return core_machine_create(&config, &state->machine, &state->board) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(state->machine) == LIB_STATUS_OK &&
         core_machine_reset(state->machine) == LIB_STATUS_OK &&
         core_machine_debug_patch_registers(state->machine, &entry) == LIB_STATUS_OK;
@@ -280,9 +281,9 @@ static lib_i32 les_lds_s41_test_irq(void)
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
                 CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
             lib_memory_set(&irq, 0, sizeof(irq));
-            test_pic_program_vector(&state.machine->board->shared_pic_master, 0x20u);
-            core_machine_pic_irq_source_bind(&irq, &state.machine->board->shared_pic_master,
-                &state.machine->board->shared_pic_slave, 0u);
+            test_pic_program_vector(&state.board->shared_pic_master, 0x20u);
+            core_machine_pic_irq_source_bind(&irq, &state.board->shared_pic_master,
+                &state.board->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&irq);
             core_machine_pic_irq_source_deassert(&irq);
             failed |= core_machine_run(state.machine,
@@ -297,8 +298,8 @@ static lib_i32 les_lds_s41_test_irq(void)
                 after.eax != 0xaabb3344u ||
                 !les_lds_s41_irq_gprs_same_except_eax(&before, &after) ||
                 after.eflags != 0u || !CORE_MACHINE_BIT_IS_SET(
-                test_pic_read(&state.machine->board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
-                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.machine->board->shared_pic_master, 0x0au),
+                test_pic_read(&state.board->shared_pic_master, 0x0bu), VPIC_ISR_IRQ(0u)) ||
+                CORE_MACHINE_BIT_IS_SET(test_pic_read(&state.board->shared_pic_master, 0x0au),
                 VPIC_IRR_IRQ(0u));
         }
         core_machine_destroy(state.machine);
