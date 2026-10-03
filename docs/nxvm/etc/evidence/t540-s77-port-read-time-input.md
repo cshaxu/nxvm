@@ -131,3 +131,16 @@ UI/audio behavior or indefinite absence of intermittent boot faults. Full T
 integration and physical relocation are not claimed. Ignored incremental
 trees/logs are retained for actual-change review and the next attachment
 receiver; the isolated injected-negative source copies were removed.
+
+## Coordinator acceptance
+
+Full P1 `bd0256b474fdfaf97af8923358293814fbdcaab1` was immediately pushed to
+origin/master. Coordinator reviews the actual pushed diff, not merely this
+report: 58 paths comprise sixteen production files, twenty-eight existing
+fixtures, one owner gate, five governance/evidence files and eight products.
+All code hunks preserve the admitted single-owner contract; mechanical
+consumers only receive/ignore the value. Regression additions cover four
+entries, all lane/contributor callbacks and Port-B boundaries. Documentation,
+diff, scope and eight rehashed artifact checks pass; HEAD equals origin/master.
+No corrective P is required. S77 is accepted by the governance-only P2;
+attachment/test-classification/source movement remain T540 work, not closed.

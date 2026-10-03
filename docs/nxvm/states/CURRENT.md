@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S1-S76 are accepted; S77 is active.
-S77 receives the Running Port-B observation through the sole read-cycle input.
+M5 T540 S1-S77 are accepted; no implementation S is active.
+S77 closes Running Port-B observation through the sole read-cycle input.
 Attachment ownership and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
@@ -98,6 +98,7 @@ the completed CPU extraction.
 | T540 S74 | Accepted: Core owns firmware publication/rollback; board reset aliases use bounded neutral operations; dual-width units/gates and eight single boots pass. |
 | T540 S75 | Accepted: six board lifecycle consumers use copied Core observation; both READY operations belong to the neutral scheduler; dual-width 470/470 units/gates and eight single boots pass. |
 | T540 S76 | Accepted: complete copied timing table has one Core publication owner; deadline qualification is a callback value; dual-width 470/470 units/gates and eight single boots pass. |
+| T540 S77 | Accepted: Core supplies copied time to all typed port reads; both Port-B routes no longer borrow the private clock; dual-width 470/470 units/gates and eight single boots pass. |
 
 ## T540 S1 Acceptance
 
@@ -2489,26 +2490,20 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
-## T540 S77 Admission Packet
+## T540 S77 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S77, next linear numeric S after accepted S76. |
-| Admission And Approval | Owner's standing automatic bounded-S approval for T540; NXVM only. Shared, MyNES, owner INIs and external master inputs remain read-only. |
-| Objective | Deliver Core-selected guest tick with each existing typed port read, closing the sole Running Port-B private clock read without another clock/query/dispatch path. |
-| Non-goals | Write-provider ABI (no current time consumer), chip algorithms or timing grades, attachment ownership, physical source move, new event/framework layer or relaxed observation guards. |
-| Reference Baseline | S76 P2 12e5304cb. Twelve production read callbacks and twenty-eight existing synthetic callbacks share one typed read signature; CPU, paused bus/debug and bounded firmware are the four Core entry owners. Port-B has one private elapsed_ticks read used by two board read routes. |
-| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S76 evidence](../etc/evidence/t540-s76-timing-publication-boundary.md), [S77 receiver](../etc/evidence/t540-s77-port-read-time-input.md). |
-| Files And ABI Surface | Existing port read-provider typedef, private read dispatch variants, cpu_bus/debug/port_interface/machine_firmware, twelve board/chip adapter callbacks and affected synthetic callbacks. One copied lib_u64 tick argument, no new public operation/type/state. Existing test-only raw read helper submits synthetic zero; all production Core entries explicitly supply their live clock. |
-| Applicable Rules | Core alone owns time; read input is synchronous by value and stable for each lane/wired-OR contribution. No retained pointer, clock field or public running getter. Existing sole route storage, order, transfer widths, status/rollback and lifecycle guards remain. Test inputs are code-owned. |
-| Verification | Existing neutral/port assembly and all timing/transaction regressions; nonzero CPU, paused bus/debug and firmware input delivery, byte-lane and wired-OR same-tick proof, Port-B before/at/after toggle boundaries and live CPU IN. Complete x64/x86 units and specialized gates, eight optimized stripped 0540 products and standalone Core proof each, one real INI/overlay boot per profile/width. Documentation/diff/scope checks. |
-| Expected Markers | No board elapsed_ticks access; every production read dispatch supplies Core time; same typed callback/route owner used for timed reads, no clock cache or getter fallback. |
-| Asset Needs | Existing approved product build trees and external assets/overlays only; update affected eight NXVM EXEs, never INIs or MyNES. |
-| Reporting Requirements | Executor confirms complete packet; record finite callback/entry inventory, source/test/gate counts, full-P proof and artifact identities. |
-| Stop Conditions | A semantic/timing change, mirrored state, new production path, unsafe callback reuse or Shared/MyNES edit requires coordinator revision before implementation. |
-| Exit Criteria | Full P1 immediate push, coordinator actual pushed-diff review, corrective P if needed; pure-governance acceptance push with clean tree. T540 remains open. |
-| Original Owner Request | Build neutral reusable x86 Core and flat IBM-PC board components without reducing supported machine behavior; automatically admit bounded numeric receivers. |
-| Similar-Issue Sweep | Search all tracked NXVM production/tests/build for typed read callbacks, direct callback invocation, private read-dispatch calls and board clock access. CPU/bus/debug/firmware supply real time; raw read convenience has no production caller and remains fixture-only zero-time semantics, with a gate preventing production reuse. Remaining attachment/test-classification/source-move ledger rows remain explicit. |
+Coordinator actual pushed-diff review accepts P1 `bd0256b47`: all 58 paths
+match the NXVM-only packet. Four Core entries supply the single copied read
+tick; all forty typed callbacks are reconnected, and both Port-B routes use
+their unchanged helper algorithm. No clock mirror, running getter or second
+dispatch path is added. The [S77 evidence](../etc/evidence/t540-s77-port-read-time-input.md)
+records x64/x86 470/470 complete units, specialized and injected-negative
+gates, eight independent neutral executions, eight one-shot boot checkpoints
+and optimized stripped product identities. Artifact hashes remain exact.
+Shared, MyNES, owner INIs and external master inputs remain unchanged.
+S77 is accepted; T540 stays open for attachment ownership, direct-test
+classification and physical Core/IBM-PC relocation. This governance closure
+admits no next implementation packet.
 
 ## T540 S76 Acceptance
 

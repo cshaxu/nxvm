@@ -142,11 +142,14 @@ Port-B observation requires the separate I/O-cycle input receiver S77. Neither
 an extra board clock nor relaxing the paused-time getter is an eligible fix.
 Both remain preconditions of attachment and physical movement.
 
-S77 admits the complete typed port-read input boundary: CPU, bus/debug and
+S77 closes the complete typed port-read input boundary: CPU, bus/debug and
 bounded firmware provide a copied Core guest tick; the two Port-B consumers
 use it through their existing helper. Every current typed read callback is
 reconnected in the same receiver. No clock mirror or running getter is added;
 write callbacks have no current time consumer and keep their existing ABI.
+P1 `bd0256b47` is accepted after actual pushed-diff review and full proof.
+Attachment ownership and direct-test classification remain the next measured
+receivers before physical Core/IBM-PC relocation; this row is not that move.
 
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three

@@ -73,3 +73,7 @@ write callbacks, register algorithms, lifecycle guards and timing grades are
 unchanged. [S77 evidence](../etc/evidence/t540-s77-port-read-time-input.md)
 owns the source review, regression and artifact proof. This delivery does
 not close T540's attachment, direct-test classification or physical relocation.
+
+Coordinator accepts pushed P1 `bd0256b47` after actual 58-path diff review,
+dual-width 470/470 units/gates, eight neutral executions and eight one-shot
+external boots. Pure-governance P2 closes S77 only; T540 remains open.
