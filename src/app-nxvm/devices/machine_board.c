@@ -144,6 +144,18 @@ lib_status core_machine_create_with_test_port_allocation(
 lib_status core_machine_board_create(core_machine *machine,
     const core_machine_config *config)
 {
+    lib_status status;
+    lib_u8 dma_controller_count;
+    lib_size installed_bytes;
+    core_machine_cpu_profile cpu_profile;
+
+    machine->board = (core_machine_board_state *)lib_allocate_zero(1u,
+        sizeof(*machine->board));
+    if (machine->board == LIB_NULL) {
+        core_machine_destroy(machine);
+        return LIB_STATUS_NO_MEMORY;
+    }
+    machine->board->core = machine;
     const core_machine_attachment attachment = {
         .deadline = core_machine_board_deadline_observe,
         .refresh_request = core_machine_board_refresh_request,
@@ -164,26 +176,17 @@ lib_status core_machine_board_create(core_machine *machine,
         .refresh_nmi = core_machine_board_refresh_nmi,
         .finalize_devices = core_machine_board_finalize_devices,
         .firmware = core_machine_board_register_reset_rom_alias,
-        .context = machine
+        .context = machine->board
     };
-    lib_status status;
-    lib_u8 dma_controller_count;
-    lib_size installed_bytes;
-    core_machine_cpu_profile cpu_profile;
 
-    machine->board = (core_machine_board_state *)lib_allocate_zero(1u,
-        sizeof(*machine->board));
-    if (machine->board == LIB_NULL) {
-        core_machine_destroy(machine);
-        return LIB_STATUS_NO_MEMORY;
-    }
     status = core_machine_bind_attachment(machine, &attachment);
     if (status != LIB_STATUS_OK) {
-        core_machine_board_finalize_devices(machine);
+        core_machine_board_finalize_devices(machine->board);
+        machine->board = LIB_NULL;
         core_machine_destroy(machine);
         return status;
     }
-    if (core_machine_board_initialize_clocks(machine,
+    if (core_machine_board_initialize_clocks(machine->board,
             &config->clock_plan) != LIB_STATUS_OK) {
         core_machine_destroy(machine);
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -342,8 +345,8 @@ lib_status core_machine_board_create(core_machine *machine,
 
 lib_bool core_machine_board_shutdown_resets(void *owner)
 {
-    const core_machine *machine = owner;
-    return machine != LIB_NULL && machine->board->d4_platform_configured;
+    const core_machine_board_state *board = owner;
+    return board != LIB_NULL && board->d4_platform_configured;
 }
 
 lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
@@ -447,7 +450,8 @@ static lib_u32 core_machine_board_reset_rom_alias(
 
 static lib_status core_machine_board_register_reset_rom_alias(void *owner)
 {
-    core_machine *machine = owner;
+    core_machine_board_state *board = owner;
+    core_machine *machine = board->core;
     core_machine_cpu_profile profile;
     lib_u32 reset_alias;
     lib_status status = core_machine_get_cpu_profile(machine, &profile);
@@ -631,19 +635,19 @@ static void core_machine_d4_refresh_output(void *opaque, lib_u8 asserted)
 
 lib_bool core_machine_board_refresh_request(void *owner, lib_u8 *out_address)
 {
-    const core_machine *machine = owner;
-    if (machine == LIB_NULL || out_address == LIB_NULL ||
-        !machine->board->d4_refresh_hold_pending) return LIB_FALSE;
-    *out_address = machine->board->d4_refresh_address;
+    const core_machine_board_state *board = owner;
+    if (board == LIB_NULL || out_address == LIB_NULL ||
+        !board->d4_refresh_hold_pending) return LIB_FALSE;
+    *out_address = board->d4_refresh_address;
     return LIB_TRUE;
 }
 
 void core_machine_board_refresh_complete(void *owner)
 {
-    core_machine *machine = owner;
-    if (machine == LIB_NULL || !machine->board->d4_refresh_hold_pending) return;
-    machine->board->d4_refresh_address = (lib_u8)(machine->board->d4_refresh_address + 1u);
-    machine->board->d4_refresh_hold_pending = LIB_FALSE;
+    core_machine_board_state *board = owner;
+    if (board == LIB_NULL || !board->d4_refresh_hold_pending) return;
+    board->d4_refresh_address = (lib_u8)(board->d4_refresh_address + 1u);
+    board->d4_refresh_hold_pending = LIB_FALSE;
 }
 
 static void core_machine_dma_refresh_pit_output(void *owner,
@@ -757,66 +761,66 @@ static void core_machine_d4_platform_failsafe_output(void *owner,
 
 void core_machine_board_reset_devices(void *owner)
 {
-    core_machine *machine = owner;
+    core_machine_board_state *board = owner;
+    core_machine *machine = board->core;
     core_machine_d4_memory_reset(machine);
-    if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        core_machine_xt_ppi_keyboard_reset(&machine->board->xt_ppi_keyboard);
-        x86_xt_keyboard_reset(machine->board->xt_keyboard);
+    if (board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        core_machine_xt_ppi_keyboard_reset(&board->xt_ppi_keyboard);
+        x86_xt_keyboard_reset(board->xt_keyboard);
     } else {
-        core_machine_kbc_reset(&machine->board->shared_kbc);
-        if (machine->board->kbc_input_port_configured) {
-            core_machine_kbc_set_input_port(&machine->board->shared_kbc,
-                machine->board->kbc_input_port);
+        core_machine_kbc_reset(&board->shared_kbc);
+        if (board->kbc_input_port_configured) {
+            core_machine_kbc_set_input_port(&board->shared_kbc,
+                board->kbc_input_port);
         }
     }
-    core_machine_dma_reset(&machine->board->shared_dma_latch,
-        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary);
-    if (machine->board->rtc_cmos_configured) x86_rtc_reset(machine->board->shared_rtc);
-    machine->board->planar_parity_port_b = machine->board->planar_parity_configured ? 0x04u : 0u;
-    machine->board->planar_parity_latched = LIB_FALSE;
-    machine->board->planar_parity_nmi_signaled = LIB_FALSE;
-    machine->board->speaker_output = LIB_FALSE;
-    machine->board->xt_ppi_speaker_gate = LIB_FALSE;
-    machine->board->xt_ppi_speaker_data_enabled = LIB_FALSE;
-    machine->board->d4_platform_port_b = machine->board->d4_platform_configured ? 0x0fu : 0u;
-    machine->board->d4_platform_iochk_latched = LIB_FALSE;
-    machine->board->d4_platform_failsafe_latched = LIB_FALSE;
-    machine->board->d4_platform_nmi_signaled = LIB_FALSE;
-    core_machine_fdc_reset(&machine->board->fdc);
-    core_machine_hdc_reset(&machine->board->hdc);
-    core_machine_pic_reset(&machine->board->shared_pic_master,
-        &machine->board->shared_pic_slave);
-    x86_pit_reset(machine->board->shared_pit.device);
-    if (machine->board->auxiliary_pit_configured) {
-        x86_pit_reset(machine->board->auxiliary_pit.device);
+    core_machine_dma_reset(&board->shared_dma_latch,
+        &board->shared_dma_primary, &board->shared_dma_secondary);
+    if (board->rtc_cmos_configured) x86_rtc_reset(board->shared_rtc);
+    board->planar_parity_port_b = board->planar_parity_configured ? 0x04u : 0u;
+    board->planar_parity_latched = LIB_FALSE;
+    board->planar_parity_nmi_signaled = LIB_FALSE;
+    board->speaker_output = LIB_FALSE;
+    board->xt_ppi_speaker_gate = LIB_FALSE;
+    board->xt_ppi_speaker_data_enabled = LIB_FALSE;
+    board->d4_platform_port_b = board->d4_platform_configured ? 0x0fu : 0u;
+    board->d4_platform_iochk_latched = LIB_FALSE;
+    board->d4_platform_failsafe_latched = LIB_FALSE;
+    board->d4_platform_nmi_signaled = LIB_FALSE;
+    core_machine_fdc_reset(&board->fdc);
+    core_machine_hdc_reset(&board->hdc);
+    core_machine_pic_reset(&board->shared_pic_master,
+        &board->shared_pic_slave);
+    x86_pit_reset(board->shared_pit.device);
+    if (board->auxiliary_pit_configured) {
+        x86_pit_reset(board->auxiliary_pit.device);
     }
     core_machine_board_after_pit_reset(machine);
-    machine->board->d4_refresh_hold_pending = LIB_FALSE;
-    machine->board->d4_refresh_pulse_active = LIB_FALSE;
-    machine->board->d4_refresh_address = 0u;
-    x86_video_reset(machine->board->shared_vadp.chip);
+    board->d4_refresh_hold_pending = LIB_FALSE;
+    board->d4_refresh_pulse_active = LIB_FALSE;
+    board->d4_refresh_address = 0u;
+    x86_video_reset(board->shared_vadp.chip);
 }
 
 void core_machine_board_finalize_devices(void *owner)
 {
-    core_machine *machine = owner;
-    if (machine->board == LIB_NULL) return;
-    core_machine_pit_bus_destroy(&machine->board->shared_pit);
-    core_machine_pit_bus_destroy(&machine->board->auxiliary_pit);
-    core_machine_hdc_finalize(&machine->board->hdc);
-    core_machine_fdc_finalize(&machine->board->fdc);
-    core_machine_dma_finalize(&machine->board->shared_dma_latch,
-        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary);
-    x86_rtc_destroy(machine->board->shared_rtc);
-    if (machine->board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        x86_xt_keyboard_destroy(machine->board->xt_keyboard);
-        core_machine_xt_ppi_keyboard_finalize(&machine->board->xt_ppi_keyboard);
-    } else core_machine_kbc_finalize(&machine->board->shared_kbc);
-    core_machine_pic_finalize(&machine->board->shared_pic_master,
-        &machine->board->shared_pic_slave);
-    core_machine_vadp_finalize(&machine->board->shared_vadp);
-    lib_release(machine->board);
-    machine->board = LIB_NULL;
+    core_machine_board_state *board = owner;
+    if (board == LIB_NULL) return;
+    core_machine_pit_bus_destroy(&board->shared_pit);
+    core_machine_pit_bus_destroy(&board->auxiliary_pit);
+    core_machine_hdc_finalize(&board->hdc);
+    core_machine_fdc_finalize(&board->fdc);
+    core_machine_dma_finalize(&board->shared_dma_latch,
+        &board->shared_dma_primary, &board->shared_dma_secondary);
+    x86_rtc_destroy(board->shared_rtc);
+    if (board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        x86_xt_keyboard_destroy(board->xt_keyboard);
+        core_machine_xt_ppi_keyboard_finalize(&board->xt_ppi_keyboard);
+    } else core_machine_kbc_finalize(&board->shared_kbc);
+    core_machine_pic_finalize(&board->shared_pic_master,
+        &board->shared_pic_slave);
+    core_machine_vadp_finalize(&board->shared_vadp);
+    lib_release(board);
 }
 
 void core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
@@ -865,10 +869,11 @@ void core_machine_board_after_pit_reset(core_machine *machine)
 
 void core_machine_board_refresh_nmi(void *owner)
 {
-    core_machine *machine = owner;
-    if (machine != LIB_NULL && machine->board->keyboard_topology ==
+    core_machine_board_state *board = owner;
+    core_machine *machine = board == LIB_NULL ? LIB_NULL : board->core;
+    if (board != LIB_NULL && board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        core_machine_xt_ppi_keyboard_refresh_nmi(&machine->board->xt_ppi_keyboard);
+        core_machine_xt_ppi_keyboard_refresh_nmi(&board->xt_ppi_keyboard);
     }
     core_machine_planar_parity_refresh_nmi(machine);
     core_machine_d4_platform_refresh_nmi(machine);

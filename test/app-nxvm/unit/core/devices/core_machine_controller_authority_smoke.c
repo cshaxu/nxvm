@@ -71,8 +71,11 @@ static lib_i32 verify_board_phases(const core_machine_config *config)
         .context = &probe
     };
 
+    core_machine_board_refresh_nmi(LIB_NULL);
     if (core_machine_create(config, &machine) != LIB_STATUS_OK) return 1;
-    probe.failed = machine->attachment.reset_devices !=
+    probe.failed = machine->attachment.context != machine->board ||
+        machine->attachment.context == machine || machine->board->core != machine ||
+        machine->attachment.reset_devices !=
             core_machine_board_reset_devices ||
         machine->attachment.reset_clocks != core_machine_board_reset_clocks ||
         machine->attachment.refresh_nmi != core_machine_board_refresh_nmi ||

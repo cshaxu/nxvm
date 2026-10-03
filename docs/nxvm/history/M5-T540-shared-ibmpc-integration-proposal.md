@@ -152,6 +152,13 @@ physical relocation; a copied callback bundle alone does not complete them.
 
 ## Verification And Exit
 
+S80 receives the complete callback-context class from S79: the existing board
+allocation is the published context, and owns its borrowed opaque Core handle.
+Advance/deadline and all phase callbacks consume that state directly, without
+changing chip algorithms, event order or attachment ABI. The remaining public
+board APIs and their driver/fixture callers still need the whole opaque-handle
+migration; no private-state getter or runtime rebinding closes that boundary.
+
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
 - Common board contract tests live with their flat receiver under

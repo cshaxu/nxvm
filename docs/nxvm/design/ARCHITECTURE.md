@@ -79,9 +79,13 @@ implemented behavior. It adds no device framework or lifecycle queue.
 S79 implements the copied callback/publication half through
 `attachment_interface.h`: all nineteen callbacks share one opaque context,
 published once during configuration and finalized by Core destruction.
-The present board context is still the Core handle while the private board
-association awaits its own receiver. This bridge does not satisfy the final
-opaque-board target or authorize a layout getter; see [S79 evidence](../etc/evidence/t540-s79-copied-attachment-binding.md).
+S80 changes that context to the existing board allocation, which borrows an
+opaque Core execution handle until Core finalizes the attachment. The public
+board API and driver still use the temporary private Core-to-board association;
+their whole caller migration remains required before physical relocation.
+Neither callback closure authorizes a layout getter or completes that API cut.
+See [S79 evidence](../etc/evidence/t540-s79-copied-attachment-binding.md) and
+[S80 evidence](../etc/evidence/t540-s80-board-callback-context.md).
 
 ### Fixed Composition Without A New Framework
 

@@ -32,8 +32,8 @@ foreach(required "core_machine_transaction_hold_request("
     endif()
 endforeach()
 foreach(required "core_machine_board_refresh_request(" "core_machine_board_refresh_complete("
-    "machine->board->d4_refresh_address = (lib_u8)(machine->board->d4_refresh_address + 1u);"
-    "machine->board->d4_refresh_hold_pending = LIB_FALSE;")
+    "board->d4_refresh_address = (lib_u8)(board->d4_refresh_address + 1u);"
+    "board->d4_refresh_hold_pending = LIB_FALSE;")
     string(FIND "${board}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board refresh completion lacks ${required}")

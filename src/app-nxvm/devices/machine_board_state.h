@@ -51,6 +51,8 @@ typedef struct core_machine_absent_memory {
 /* One board-owned lifetime. Fields move here by their actual owner; Core
  * retains only the opaque attachment pointer and bounded callbacks. */
 struct core_machine_board_state {
+    /* Execution is Core-owned; this handle is borrowed until finalization. */
+    core_machine *core;
     core_machine_pic_bus shared_pic_master;
     core_machine_pic_bus shared_pic_slave;
     core_machine_pic_irq_source shared_pit_irq0_source;
@@ -139,7 +141,7 @@ lib_status core_machine_board_create(core_machine *machine,
     const core_machine_config *config);
 void core_machine_board_finalize_devices(void *owner);
 lib_bool core_machine_board_shutdown_resets(void *owner);
-lib_status core_machine_board_initialize_clocks(core_machine *machine,
+lib_status core_machine_board_initialize_clocks(core_machine_board_state *board,
     const core_machine_clock_plan *plan);
 void core_machine_board_reset_clocks(void *owner);
 void core_machine_board_deadline_observe(void *owner, lib_u64 now,

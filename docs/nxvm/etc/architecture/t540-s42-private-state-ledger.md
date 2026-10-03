@@ -170,6 +170,17 @@ records complete-class proof. The six private board-access owners and direct
 board tests remain assigned to the opaque-board/test-classification receiver;
 physical Shared movement has not occurred.
 
+S80 implements the entire nineteen-callback context receiver: the single board
+allocation retains an opaque Core handle, and the binding publishes that board
+allocation instead of Core. Board advance/deadline and phase/finalization
+callbacks consume their own state. Their declaration/publication class and
+same-module forwarding fixture are checked together. Public board operations,
+chip wiring callbacks and direct-board fixtures still retain the Core-to-board
+association; these are live board API consumers, not a second attachment path.
+Their whole caller migration and test classification remain required before
+the physical move. [S80 evidence](../evidence/t540-s80-board-callback-context.md)
+records the complete class and verification, not a completed public board cut.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

@@ -96,3 +96,23 @@ Coordinator accepts immediately pushed P1 `8717d3af2` after the actual
 37-path source/test/build/document/artifact review and complete packet-to-proof
 mapping. Governance P2 closes S79 only, keeps the eight verified artifact
 identities, removes its active packet and leaves T540 open.
+
+## S80: Actual Board Callback Context
+
+The complete nineteen-callback binding now receives the existing board
+allocation instead of Core layout. Board borrows the same opaque Core execution
+handle for bounded operations; Core retains the unique attachment finalizer.
+All scheduler forwarding calls use their saved production context. No public
+API, chip algorithm, timing grade or second state path is introduced.
+[S80 evidence](../etc/evidence/t540-s80-board-callback-context.md) records
+the complete receiver sweep, null-context preservation, verification and
+artifact identities. Public board callers, direct-test classification and
+physical neutral Core/IBM-PC relocation remain separate required receivers;
+this implementation does not close T540.
+
+Final units pass 470/470 per width, complete specialized and seven injected
+negative gates pass, eight neutral Core executions and eight one-shot INI
+boots pass, and all eight optimized stripped 0540 products are refreshed.
+The six source/test paths add 197/remove 187 lines, net +10; Shared, MyNES
+and owner INIs are unchanged. Coordinator acceptance follows the pushed
+implementation's actual-change review.

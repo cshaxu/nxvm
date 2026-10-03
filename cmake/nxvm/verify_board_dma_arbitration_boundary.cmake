@@ -28,7 +28,7 @@ foreach(required "attachment.dma_ticks(machine->attachment.context, source_ticks
     endif()
 endforeach()
 foreach(required "core_machine_board_dma_ticks(" "core_machine_board_dma_request("
-    "core_machine_board_dma_advance(" "core_machine_clock_domain_advance(&machine->board->dma_clock"
+    "core_machine_board_dma_advance(" "core_machine_clock_domain_advance(&board->dma_clock"
     "core_machine_dma_has_pending_request(" "core_machine_dma_advance_transaction(")
     string(FIND "${board}" "${required}" position)
     if(position LESS 0)
