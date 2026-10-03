@@ -113,10 +113,10 @@ target_compile_definitions(x86-core-observable PUBLIC
 
 add_library(x86-ibmpc-common STATIC
     ibmpc-common/media_interface.c ibmpc-common/display.c
-    ibmpc-common/pit_bus.c ibmpc-common/pic_bus.c)
+    ibmpc-common/pit_bus.c ibmpc-common/pic_bus.c ibmpc-common/dma_bus.c)
 target_include_directories(x86-ibmpc-common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 # Composition selects the Core implementation, including observation tests.
-target_link_libraries(x86-ibmpc-common PUBLIC types x86-pit825x x86-pic8259)
+target_link_libraries(x86-ibmpc-common PUBLIC types x86-pit825x x86-pic8259 x86-dma8237)
 
 if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)

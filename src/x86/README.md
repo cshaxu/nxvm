@@ -11,7 +11,7 @@ state machine belongs here.
 | Component | Responsibility | Public interface |
 | --- | --- | --- |
 | core | Neutral CPU/FPU execution, guest timeline, bus transactions, RAM/port/ROM routes and bounded debug operations | machine_interface.h and adjacent *_interface.h contracts |
-| ibmpc-common | Frozen media-provider registry, copied display binding, PIT port attachment and PIC aggregation; remaining bus/family extraction is pending | media_interface.h, display_interface.h, pit_bus_interface.h, pic_bus_interface.h |
+| ibmpc-common | Frozen media-provider registry, copied display binding, PIT port attachment, PIC aggregation and single/dual DMA bus; remaining board/family extraction is pending | media_interface.h, display_interface.h, pit_bus_interface.h, pic_bus_interface.h, dma_bus_interface.h |
 | debug | Original DOS/X command implementation and copied x86 protocol | debug_interface.h, protocol_interface.h |
 | xasm32 | x86 byte/text assembly and disassembly | xasm32_interface.h |
 | chips/cpu | 8086 through 80386 execution state, instruction decoding and CPU-local timing | cpu_interface.h |

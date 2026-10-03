@@ -26,6 +26,8 @@ set_tests_properties(unit.core-machine-media-provider-smoke PROPERTIES LABELS "u
 list(APPEND SHARED_X86_TEST_TARGETS core-machine-media-provider-smoke)
 shared_register_test(x86 ibmpc-common/display_provider x86-ibmpc-common)
 shared_register_test(x86 ibmpc-common/pit_ports x86-ibmpc-common x86-core)
+shared_register_test(x86 ibmpc-common/dma_ports x86-ibmpc-common x86-core)
+shared_register_test(x86 core/dma_route_rollback x86-core x86-ibmpc-common)
 
 foreach(pic_case IN ITEMS irq-lifecycle command-priority ocw3 lifecycle-s4)
     string(REPLACE "-" "_" pic_file "${pic_case}")
@@ -42,6 +44,12 @@ target_link_libraries(core-machine-pit-irq0-s2-smoke PRIVATE x86-ibmpc-common x8
 add_test(NAME unit.core-machine-pit-irq0-s2-smoke COMMAND core-machine-pit-irq0-s2-smoke)
 set_tests_properties(unit.core-machine-pit-irq0-s2-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
 list(APPEND SHARED_X86_TEST_TARGETS core-machine-pit-irq0-s2-smoke)
+
+add_executable(core-machine-dma-channel-smoke ibmpc-common/core_machine_dma_channel_smoke.c)
+target_link_libraries(core-machine-dma-channel-smoke PRIVATE x86-ibmpc-common x86-core)
+add_test(NAME unit.core-machine-dma-channel-smoke COMMAND core-machine-dma-channel-smoke)
+set_tests_properties(unit.core-machine-dma-channel-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+list(APPEND SHARED_X86_TEST_TARGETS core-machine-dma-channel-smoke)
 
 add_executable(core-machine-neutral-link-smoke core/neutral_link.c)
 target_link_libraries(core-machine-neutral-link-smoke PRIVATE x86-core)

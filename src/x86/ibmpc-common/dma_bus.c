@@ -1,5 +1,5 @@
 /* Copyright 2012-2026 Neko. */
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus.h"
 #include "x86/core/memory_interface.h"
 
 /* This only issues opaque binding nonces. It never selects a DMA instance. */
@@ -9,7 +9,7 @@ static lib_uptr core_machine_dma_request_token_allocate(void)
 {
     lib_uptr expected = lib_atomic_uptr_load_explicit(&core_machine_dma_next_request_token, LIB_MEMORY_ORDER_ACQUIRE);
 
-    while (expected != UINTPTR_MAX) {
+    while (expected != LIB_UPTR_MAX) {
         if (lib_atomic_uptr_compare_exchange_strong_explicit(
                 &core_machine_dma_next_request_token, &expected, expected + 1u, LIB_MEMORY_ORDER_ACQ_REL, LIB_MEMORY_ORDER_ACQUIRE)) {
             return (lib_uptr)expected;
@@ -115,14 +115,22 @@ typedef struct dma_cycle_context {
     lib_bool word;
 } dma_cycle_context;
 
+static void dma_provider_call(core_machine_dma_device_provider provider,
+    void *owner, t_latch *latch)
+{
+    if (provider == LIB_NULL) return;
+    t_latch value = *latch;
+    provider(owner, &value);
+    *latch = value;
+}
+
 static void dma_device_before_memory(void *owner, lib_u8 channel,
     lib_u16 *value)
 {
     dma_cycle_context *context = owner;
     t_dma *dma = context->controller;
-    if (dma->connect.read_provider[channel] != LIB_NULL)
-        dma->connect.read_provider[channel](dma->connect.device_owner[channel],
-            context->latch);
+    dma_provider_call(dma->connect.read_provider[channel],
+        dma->connect.device_owner[channel], context->latch);
     *value = context->word ? context->latch->data.word :
         context->latch->data.byte;
 }
@@ -134,9 +142,8 @@ static void dma_device_after_memory(void *owner, lib_u8 channel,
     t_dma *dma = context->controller;
     if (context->word) context->latch->data.word = *value;
     else context->latch->data.byte = (lib_u8)*value;
-    if (dma->connect.write_provider[channel] != LIB_NULL)
-        dma->connect.write_provider[channel](dma->connect.device_owner[channel],
-            context->latch);
+    dma_provider_call(dma->connect.write_provider[channel],
+        dma->connect.device_owner[channel], context->latch);
 }
 
 static lib_status dma_bus_cycle(void *owner, x86_dma_cycle kind,
@@ -153,10 +160,8 @@ static lib_status dma_bus_cycle(void *owner, x86_dma_cycle kind,
     lib_u32 physical;
     lib_status status;
     if (kind == X86_DMA_VERIFY) {
-        if (dma->connect.read_provider[channel] != LIB_NULL) {
-            dma->connect.read_provider[channel](dma->connect.device_owner[channel],
-                context->latch);
-        }
+        dma_provider_call(dma->connect.read_provider[channel],
+            dma->connect.device_owner[channel], context->latch);
         return LIB_STATUS_OK;
     }
     if (word) page &= 0xfeu;
@@ -175,10 +180,8 @@ static void dma_bus_terminal(void *owner, lib_u8 channel)
 {
     dma_cycle_context *context = owner;
     t_dma *dma = context->controller;
-    if (dma->connect.close_provider[channel] != LIB_NULL) {
-        dma->connect.close_provider[channel](dma->connect.device_owner[channel],
-            context->latch);
-    }
+    dma_provider_call(dma->connect.close_provider[channel],
+        dma->connect.device_owner[channel], context->latch);
 }
 
 static void dma_bus_advance(t_dma *dma, t_latch *latch,
@@ -197,18 +200,23 @@ static void core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
     x86_dma_set_request(dma->device, channel & 3u, asserted);
 }
 
-lib_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
-    t_dma *secondary, lib_u8 drq_id,
+lib_status core_machine_dma_bind_channel(core_machine_dma_bus *bus, lib_u8 drq_id,
     const core_machine_dma_channel_provider *provider, void *owner,
     core_machine_dma_request_binding *out_binding)
 {
     t_dma *dma;
     lib_u8 channel;
+    t_latch *latch;
+    t_dma *primary;
+    t_dma *secondary;
 
-    if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
+    if (bus == LIB_NULL ||
         provider == LIB_NULL || out_binding == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
+    latch = &bus->latch;
+    primary = &bus->primary;
+    secondary = &bus->secondary;
     if (drq_id <= 3u) {
         dma = primary;
         channel = drq_id;
@@ -233,10 +241,13 @@ lib_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
     return LIB_STATUS_OK;
 }
 
-void core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,
+void core_machine_dma_request_assert(core_machine_dma_bus *bus,
     const core_machine_dma_request_binding *binding)
 {
-    if (binding == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
+    if (bus == LIB_NULL) return;
+    t_dma *primary = &bus->primary;
+    t_dma *secondary = &bus->secondary;
+    if (binding == LIB_NULL ||
         binding->core_token == 0u ||
         binding->core_token != primary->connect.request_token ||
         primary->connect.peer != secondary) return;
@@ -244,10 +255,13 @@ void core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,
         binding->channel, LIB_TRUE);
 }
 
-void core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
+void core_machine_dma_request_deassert(core_machine_dma_bus *bus,
     const core_machine_dma_request_binding *binding)
 {
-    if (binding == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
+    if (bus == LIB_NULL) return;
+    t_dma *primary = &bus->primary;
+    t_dma *secondary = &bus->secondary;
+    if (binding == LIB_NULL ||
         binding->core_token == 0u ||
         binding->core_token != primary->connect.request_token ||
         primary->connect.peer != secondary) return;
@@ -255,13 +269,16 @@ void core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
         binding->channel, LIB_FALSE);
 }
 
-void core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
+void core_machine_dma_request_terminate(core_machine_dma_bus *bus,
     const core_machine_dma_request_binding *binding)
 {
     t_dma *dma;
     lib_u8 channel;
+    if (bus == LIB_NULL) return;
+    t_dma *primary = &bus->primary;
+    t_dma *secondary = &bus->secondary;
 
-    if (binding == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
+    if (binding == LIB_NULL ||
         binding->core_token == 0u ||
         binding->core_token != primary->connect.request_token ||
         primary->connect.peer != secondary) return;
@@ -281,8 +298,8 @@ void core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
 }
 
 
-lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
-    t_dma *secondary, core_machine *machine, lib_u8 controller_count)
+lib_status core_machine_dma_initialize(core_machine_dma_bus **out_bus,
+    core_machine *machine, lib_u8 controller_count)
 {
     static const lib_u16 primary_page_ports[] = {
         0x0081, 0x0082, 0x0083
@@ -297,15 +314,22 @@ lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     lib_size count = 0u;
     lib_uptr index;
     lib_status status;
+    core_machine_dma_bus *bus;
+    t_latch *latch;
+    t_dma *primary;
+    t_dma *secondary;
 
-    if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
-        machine == LIB_NULL || (controller_count != 1u && controller_count != 2u) ||
-        primary == secondary) {
+    if (out_bus == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_bus = LIB_NULL;
+    if (machine == LIB_NULL ||
+        (controller_count != 1u && controller_count != 2u)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    lib_memory_set((void *)latch, 0u, sizeof(*latch));
-    lib_memory_set((void *)primary, 0u, sizeof(*primary));
-    lib_memory_set((void *)secondary, 0u, sizeof(*secondary));
+    bus = lib_allocate_zero(1u, sizeof(*bus));
+    if (bus == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    latch = &bus->latch;
+    primary = &bus->primary;
+    secondary = &bus->secondary;
     primary->connect.latch = latch;
     primary->connect.peer = secondary;
     secondary->connect.latch = latch;
@@ -315,7 +339,7 @@ lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
         status = x86_dma_create(&secondary->device);
     }
     if (status != LIB_STATUS_OK) {
-        core_machine_dma_finalize(latch, primary, secondary);
+        core_machine_dma_finalize(bus);
         return status;
     }
     for (index = 0; index < 0x10u; ++index) {
@@ -349,15 +373,20 @@ lib_status core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     }
     status = core_machine_install_port_routes(machine, routes, count);
     if (status != LIB_STATUS_OK) {
-        core_machine_dma_finalize(latch, primary, secondary);
+        core_machine_dma_finalize(bus);
+    } else {
+        *out_bus = bus;
     }
     return status;
 }
 
 
-void core_machine_dma_reset(t_latch *latch, t_dma *primary, t_dma *secondary)
+void core_machine_dma_reset(core_machine_dma_bus *bus)
 {
-    if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL) return;
+    if (bus == LIB_NULL) return;
+    t_latch *latch = &bus->latch;
+    t_dma *primary = &bus->primary;
+    t_dma *secondary = &bus->secondary;
     lib_memory_set(&latch->data, 0u, sizeof(latch->data));
     core_machine_dma_controller_reset(primary);
     core_machine_dma_controller_reset(secondary);
@@ -405,41 +434,46 @@ static void core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
     }
 }
 
-lib_i32 core_machine_dma_has_pending_request(const t_dma *primary, const t_dma *secondary)
+lib_bool core_machine_dma_has_pending_request(const core_machine_dma_bus *bus)
 {
     x86_dma_signals first;
     x86_dma_signals second;
-    if (primary == LIB_NULL || secondary == LIB_NULL || primary->device == LIB_NULL) return 0;
+    if (bus == LIB_NULL || bus->primary.device == LIB_NULL) return LIB_FALSE;
+    const t_dma *primary = &bus->primary;
+    const t_dma *secondary = &bus->secondary;
     first = x86_dma_get_signals(primary->device);
     if (secondary->device == LIB_NULL) {
         return first.enabled && (first.requests || first.active_channel < 4u);
     }
     second = x86_dma_get_signals(secondary->device);
-    if (!second.enabled) return 0;
+    if (!second.enabled) return LIB_FALSE;
     return second.active_channel < 4u || (second.requests & 0x0eu) ||
         (first.enabled && (first.active_channel < 4u || first.requests));
 }
 
-void core_machine_dma_advance_transaction(t_latch *latch, t_dma *primary,
-    t_dma *secondary, core_machine *machine, lib_u64 elapsed_ticks)
+void core_machine_dma_advance_transaction(core_machine_dma_bus *bus,
+    core_machine *machine, lib_u64 elapsed_ticks)
 {
     lib_u64 tick;
-    if (latch == LIB_NULL || primary == LIB_NULL || secondary == LIB_NULL ||
-        primary->device == LIB_NULL || machine == LIB_NULL) return;
+    if (bus == LIB_NULL || bus->primary.device == LIB_NULL || machine == LIB_NULL) return;
     for (tick = 0u; tick < elapsed_ticks; ++tick) {
-        core_machine_dma_advance_one(latch, primary, secondary, machine);
+        core_machine_dma_advance_one(&bus->latch, &bus->primary, &bus->secondary, machine);
     }
 }
 
-void core_machine_dma_finalize(t_latch *latch, t_dma *primary, t_dma *secondary)
+void core_machine_dma_finalize(core_machine_dma_bus *bus)
 {
-    (void)latch;
-    if (primary != LIB_NULL) {
-        x86_dma_destroy(primary->device);
-        primary->device = LIB_NULL;
-    }
-    if (secondary != LIB_NULL) {
-        x86_dma_destroy(secondary->device);
-        secondary->device = LIB_NULL;
-    }
+    if (bus == LIB_NULL) return;
+    x86_dma_destroy(bus->primary.device);
+    x86_dma_destroy(bus->secondary.device);
+    lib_release(bus);
+}
+
+x86_dma_signals core_machine_dma_get_signals(const core_machine_dma_bus *bus,
+    lib_u8 controller)
+{
+    const x86_dma *chip = bus == LIB_NULL || controller > 1u ? LIB_NULL :
+        (controller ? bus->secondary.device : bus->primary.device);
+    return chip != LIB_NULL ? x86_dma_get_signals(chip) :
+        (x86_dma_signals) {0u, 4u, LIB_FALSE};
 }
