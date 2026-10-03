@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/d4_memory.c" d4)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory_interface.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
 
 foreach(required "core_machine_install_memory_device_routes(board->core, routes, 2u"
     "core_machine_d4_memory_write_observer, &parity, board"
@@ -74,7 +74,7 @@ foreach(operation IN ITEMS
         message(FATAL_ERROR "Electrical operation retains Core board lookup: ${operation}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" executor)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" executor)
 file(GLOB_RECURSE callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h")
 foreach(caller IN LISTS callers)
@@ -84,7 +84,7 @@ foreach(caller IN LISTS callers)
         message(FATAL_ERROR "Electrical caller retains Core receiver: ${caller}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" executor_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" executor_header)
 if("${executor}${executor_header}${board}" MATCHES "core_machine_reconfigure_memory_core")
     message(FATAL_ERROR "Duplicate RAM reconfiguration path remains")
 endif()

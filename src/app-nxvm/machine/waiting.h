@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 
 lib_status vm_machine_waiting_advance(vm_machine *session,

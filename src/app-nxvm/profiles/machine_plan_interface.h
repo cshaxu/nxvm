@@ -4,7 +4,7 @@
 
 #include "app-nxvm/profiles/selection_interface.h"
 
-#include "app-nxvm/devices/firmware_interface.h"
+#include "x86/core/firmware_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/profiles/device/floppy.h"
 

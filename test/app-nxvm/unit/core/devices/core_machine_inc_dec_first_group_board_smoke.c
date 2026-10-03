@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "x86/chips/cpu/cpu.h"
-#include "app-nxvm/devices/debug_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/debug_interface.h"
+#include "x86/core/machine_interface.h"
 #include "support/cpu_board_fault_fixture.h"
 #include "support/cpu_board_de_fixture.h"
 

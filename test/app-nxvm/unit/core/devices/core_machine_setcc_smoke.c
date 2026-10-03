@@ -1,5 +1,5 @@
 #include "support/cpu_board_limit_fixture.h"
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 #include <stdio.h>
 
 static lib_i32 setcc_test_limit_nonpublication(void)

@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/memory.h"
+#include "x86/core/memory.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/media/fdd.h"

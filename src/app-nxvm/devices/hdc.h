@@ -6,7 +6,7 @@
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/port_interface.h"
+#include "x86/core/port_interface.h"
 
 typedef struct core_machine_hdc_connection {
     const core_machine_media_registry *media_registry;

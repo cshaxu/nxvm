@@ -1,16 +1,16 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/port.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 #include "support/rom/session_assets.h"
 
 static lib_i32 vm_pcat_s4_topology_matches(

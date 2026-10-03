@@ -4,8 +4,8 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.c" dma)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.h" dma_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory_interface.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.h" core_header)
 
 foreach(forbidden "t_ram" "core_machine_transaction_state"
     "core_machine_memory_query_physical(" "core_machine_memory_read_physical("

@@ -2,7 +2,7 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 #define TIMING_80186_RESET_LINEAR 0x000ffff0u

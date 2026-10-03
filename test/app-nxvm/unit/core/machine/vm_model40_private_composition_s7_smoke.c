@@ -6,9 +6,9 @@
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/devices/kbc.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/port.h"
 #include "support/rom/model40_session_assets.h"
 
 lib_i32 main(void)

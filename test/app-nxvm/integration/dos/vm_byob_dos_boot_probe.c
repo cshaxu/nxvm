@@ -3,22 +3,22 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 #include <windows.h>
 #ifdef exception_code
 #undef exception_code
 #endif
 
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/retirement_observation_interface.h"
-#include "app-nxvm/devices/trace_interface.h"
+#include "x86/core/memory.h"
+#include "x86/core/retirement_observation_interface.h"
+#include "x86/core/trace_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/waiting.h"
 

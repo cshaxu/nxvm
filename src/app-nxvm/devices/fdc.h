@@ -5,7 +5,7 @@
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/fdc_observation_interface.h"
-#include "app-nxvm/devices/port_interface.h"
+#include "x86/core/port_interface.h"
 #include "x86/chips/fdc8272/fdc8272_interface.h"
 
 #define CORE_MACHINE_DEVICE_FDC "Intel 8272A"

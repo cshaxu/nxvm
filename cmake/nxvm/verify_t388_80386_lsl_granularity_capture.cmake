@@ -1,7 +1,7 @@
 if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
-set(machine "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c")
+set(machine "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c")
 set(machine_model "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_timing_model.c")
 set(cpu "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_instructions.c")
 set(header "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_instructions.h")

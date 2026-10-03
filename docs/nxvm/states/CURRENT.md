@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M5 T540 S1-S87 are accepted; no S packet is active between receivers.
+M5 T540 S1-S87 are accepted; S88 is active for actual neutral Core extraction.
 Core no longer has a named board pointer; genuine neutral construction and
 board composition publish their actual handles with one attachment lifetime.
 All direct-board fixtures retain their actual owner and original coverage.
@@ -11,12 +11,45 @@ both specialized targets, 39 negative probes, eight neutral checks and eight
 unchanged-INI boots once each. All eight fresh stripped 0540 products are
 committed. Shared, MyNES and owner INIs remain unchanged.
 
-T540 remains open: actual `x86/core` and flat `ibmpc-*` source/test/build
-movement is not implemented. The next S must deliver the whole neutral Core
-component, delete its former App source ownership and reconnect NXVM; it must
-not be another per-field or per-function preparation batch.
+T540 remains open. S88 has physically moved the neutral Core source/test/build
+component into `x86/core` and reconnected NXVM; its delivery is not yet accepted.
+Flat `ibmpc-*` source/test/build movement remains unimplemented. S88 must finish
+whole-component verification, not become another preparation batch.
 
-## S87 Acceptance
+## Active S88 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T540 S88, immediately after accepted S87 P2 `07f62906f`. |
+| Admission And Approval | Owner approved T540 Shared/NXVM extraction, automatic numeric S admission and non-force pushes; coordinator admits this whole-component receiver under that authorization. MyNES code/configuration/tests/artifacts are excluded. |
+| Objective | Deliver the real neutral `src/x86/core` component, matching tests and independent build, delete former App implementations and reconnect NXVM through its declared contracts. Consume the complete neutral-source closure in the T540 ownership ledger. |
+| Non-goals | No chip algorithm, timing grade, firmware, INI, machine population, MyNES build, App split or IBM-PC board-family move. Those board mechanisms retain their stated next T540 receivers. |
+| Reference Baseline | Clean `07f62906f`; S87 constructor/attachment lifetime and 470 units per width, eight fixed products and original single boot checkpoints. Read the S42 ownership ledger and S78 attachment intake. |
+| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md). |
+| Files And ABI Surface | Shared: 16 neutral C units and their 19-header closure move by git mv to x86/core; genuine external value/clock contracts use `_interface.h`, without forwarding copies. The existing bounded trace writer declaration moves from private machine.h to its trace interface, preserving its Release no-op; unused board private includes are deleted. No new function or state is introduced. Shared source/test build, boundaries, README and manifests change. NXVM: direct includes, build linkage, eligible test rehoming, inventories/gates, architecture/status/evidence and eight affected artifacts. CPU/FPU and Lib Types are the only neutral Core dependencies; board/profile/media stay outside it. |
+| Applicable Rules | Task Reading Set; EXECUTION complete-P/one-target-per-commit and dual-role review; ARCHITECTURE unique owner/public boundary; CODING preserved cohesive algorithm/style, no wrapper or duplicate path; DOCUMENT truthful authority; source policy retains existing authorized source and embedded artifacts only. Architecture then coding governance skills apply. |
+| Verification | Independently configure/build Shared Core and its synthetic repository-only tests; Shared manifest/corpus checks; NXVM x64/x86 full unit suites and specialized boundary targets; migrated negative probes; all eight fixed Release products, PE/banner/hash verification and one unchanged-INI boot per profile/width; documentation governance and diff checks. Read MyNES build graph to prove no x86/Core dependency; preserve its files and hashes rather than rebuilding an unaffected consumer. |
+| Expected Markers | Real x86/core files and linked target; no App copies, no x86-to-App include/build edge; complete original test assertions preserved; independent build/tests and full unit suites pass; eight original boot terminals and stripped 0540 artifacts. |
+| Asset Needs | Existing owner-approved build inputs and external integration media only; no external master or INI modifications. Retain immediately useful ignored build trees/logs until receiver completion. |
+| Reporting Requirements | Executor confirms whole-component scope, reports physical move/build handoff and verified results; evidence maps original coverage, file moves, dependency decisions, line delta, hashes and retained board receivers. Coordinator reviews actual changes before acceptance. |
+| Stop Conditions | Unapproved behavioral/API semantics change, reverse dependency that cannot be removed within extraction, new protected input or MyNES modification; report evidence rather than inventing a shim or weakening tests. |
+| Exit Criteria | Complete source/test/build receiver independently usable, NXVM connected to the sole implementation, original coverage and required verification green, target-separated complete P deliveries pushed and actual-change review accepted. T540 stays open for real flat IBM-PC receivers. |
+| Original Owner Request | Build reusable x86 Core and flat IBM-PC components; stop per-field preparation and deliver the complete component; preserve algorithms, all machines and MyNES. |
+| Similar-Issue Sweep | Inspect all tracked production/test/CMake/tool references to the 35-file neutral closure and private App includes; classify every source/test caller by actual owner, repair every live relocation reference, and enforce the independent Core dependency and absence-of-old-copy invariant. Historical evidence retains its baseline paths. |
+
+S88 worktree now contains the real Shared Core and its production linkage.
+Independent Core and the final 121-case standalone suite pass. Following the
+last private-header cleanup, fresh x86 and x64 units pass 470/470 each with
+specialized checks. All 44 migrated electrical and construction negatives,
+six manifests and documentation governance pass. All eight final Release
+products pass identity/freshness checks; default reaches DOS and both widths
+of XT, AT and Model40 reach installers with unchanged INIs. Complete
+target-separated delivery and actual pushed-change review remain before
+acceptance.
+The [active evidence](../etc/evidence/t540-s88-neutral-core-extraction.md)
+records actual ownership and verification, not S/T acceptance.
+
+## S87 Accepted Review
 
 Coordinator actual-commit review accepts immediately pushed P1 `c662ecd08`:
 119 NXVM-only paths comprise six production files, 98 test paths, one gate,
@@ -28,8 +61,8 @@ The [S87 evidence](../etc/evidence/t540-s87-construction-private-boundary.md)
 records exact checks, counts and artifacts. Governance P2 accepts S87 only;
 physical component extraction and T540 remain open.
 
-The oversized former S12 port batch is split into linear receivers. Shared
-Core and board code have not moved.
+The oversized former S12 port batch was split into linear receivers. S88 now
+moves Shared Core; board-family code still requires its physical receivers.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
 CPU-local descriptor receiver; the retained control-state source is assigned
 only to S45. The former eleven-file, 7,000-plus-line arithmetic assignment is

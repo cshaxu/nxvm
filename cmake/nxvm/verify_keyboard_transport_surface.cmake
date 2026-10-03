@@ -3,9 +3,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/guest_input_interface.h" input_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" machine_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" machine_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c" input_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/machine/vm_keyboard_host_ingress_smoke.c"
     input_smoke_source)

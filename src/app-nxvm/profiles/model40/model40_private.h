@@ -2,7 +2,7 @@
 #define VM_PROFILE_MODEL40_PRIVATE_H
 #include "lib/types/types_interface.h"
 
-#include "app-nxvm/devices/firmware_interface.h"
+#include "x86/core/firmware_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/profiles/model40/model40.h"
 #include "app-nxvm/profiles/profile_contract_interface.h"

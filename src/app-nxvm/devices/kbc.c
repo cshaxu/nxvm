@@ -1,7 +1,5 @@
 /* Copyright 2012-2026 Neko. */
 #include "app-nxvm/devices/kbc.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/memory.h"
 
 static x86_kbc8042_keyboard_inputs kbc_keyboard_inputs(void *context)
 {

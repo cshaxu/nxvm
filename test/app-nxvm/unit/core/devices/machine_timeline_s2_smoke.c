@@ -2,9 +2,9 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/timeline.h"
+#include "x86/core/machine.h"
+#include "x86/core/machine_interface.h"
+#include "x86/core/timeline.h"
 #include "support/core_machine_board_fixture.h"
 
 typedef struct timeline_probe {

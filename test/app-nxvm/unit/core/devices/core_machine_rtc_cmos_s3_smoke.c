@@ -2,9 +2,9 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/port.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "support/core_machine_board_fixture.h"
 

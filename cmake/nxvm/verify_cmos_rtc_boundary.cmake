@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/rtc146818/rtc.c" rtc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" advance_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"

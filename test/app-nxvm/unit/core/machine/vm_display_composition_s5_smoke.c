@@ -2,7 +2,7 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/machine/display.h"
 #include "app-nxvm/machine/lifecycle.h"

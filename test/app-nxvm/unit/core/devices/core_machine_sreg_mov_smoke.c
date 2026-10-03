@@ -2,7 +2,7 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 #include <stdio.h>
 
 typedef struct sreg_mov_machine { core_machine *machine;

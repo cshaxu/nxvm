@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 
-#include "app-nxvm/devices/debug_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/memory.h"
+#include "x86/core/debug_interface.h"
+#include "x86/core/machine_interface.h"
+#include "x86/core/memory.h"
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/fault.h"
 #include "app-nxvm/machine/lifecycle.h"

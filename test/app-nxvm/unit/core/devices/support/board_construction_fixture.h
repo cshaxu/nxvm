@@ -1,7 +1,7 @@
 #ifndef TEST_BOARD_CONSTRUCTION_FIXTURE_H
 #define TEST_BOARD_CONSTRUCTION_FIXTURE_H
 
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 
 /* Fault injection is test-owned. The projection, neutral constructor and board

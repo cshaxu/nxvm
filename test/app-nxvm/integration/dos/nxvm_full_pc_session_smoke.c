@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 lib_i32 main(lib_i32 argc, char **argv)

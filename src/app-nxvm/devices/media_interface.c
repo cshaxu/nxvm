@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 #include "app-nxvm/devices/media_interface.h"
 
 typedef struct core_machine_media_binding {

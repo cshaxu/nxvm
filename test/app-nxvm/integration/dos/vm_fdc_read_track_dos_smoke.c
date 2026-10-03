@@ -5,9 +5,9 @@
 #include <windows.h>
 
 #include "app-nxvm/devices/fdc.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/memory_interface.h"
+#include "x86/core/memory_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"

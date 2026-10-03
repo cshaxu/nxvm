@@ -1,18 +1,10 @@
 # Exact temporary source-owner edges.  Every entry is a direct include audited
 # by T533 S3; T540 S66 makes four existing board-value consumers explicit.
 # Remove each edge with its consumer rather than silently widening a layer.
-src/app-nxvm/machine/control.c|app-nxvm/devices
-src/app-nxvm/machine/debug.h|app-nxvm/devices
-src/app-nxvm/machine/debug_adapter.c|app-nxvm/devices
 src/app-nxvm/machine/display.c|app-nxvm/devices
 src/app-nxvm/machine/display.h|app-nxvm/devices
-src/app-nxvm/machine/fault.h|app-nxvm/devices
-src/app-nxvm/machine/lifecycle.c|app-nxvm/devices
 src/app-nxvm/machine/machine.c|app-nxvm/devices
 src/app-nxvm/machine/machine.c|app-nxvm/profiles
-src/app-nxvm/machine/machine_devices.c|app-nxvm/devices
-src/app-nxvm/machine/machine_devices.h|app-nxvm/devices
-src/app-nxvm/machine/machine_info.c|app-nxvm/devices
 src/app-nxvm/machine/machine_interface.h|app-nxvm/devices
 src/app-nxvm/machine/machine_interface.h|app-nxvm/profiles
 src/app-nxvm/machine/machine_private.h|app-nxvm/devices
@@ -21,10 +13,6 @@ src/app-nxvm/machine/media/fdd.h|app-nxvm/devices
 src/app-nxvm/machine/media/fdd_private.h|app-nxvm/devices
 src/app-nxvm/machine/media/hdd.h|app-nxvm/devices
 src/app-nxvm/machine/media/hdd_private.h|app-nxvm/devices
-src/app-nxvm/machine/runner.c|app-nxvm/devices
-src/app-nxvm/machine/waiting.h|app-nxvm/devices
-src/app-nxvm/profiles/default_profile/external_pc_at_rom.c|app-nxvm/devices
-src/app-nxvm/profiles/default_profile/external_pc_at_rom.h|app-nxvm/devices
 src/app-nxvm/profiles/default_profile/keyboard_mapper.c|app-nxvm/devices
 src/app-nxvm/profiles/default_profile/pc_at_profile.c|app-nxvm/devices
 src/app-nxvm/profiles/default_profile/pc_at_profile_private.h|app-nxvm/devices

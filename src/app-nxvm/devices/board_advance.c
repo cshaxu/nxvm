@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/trace_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 
 lib_status core_machine_board_initialize_clocks(core_machine_board_state *board,

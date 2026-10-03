@@ -5,7 +5,7 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "x86/chips/cpu/cpu.h"
 #include "x86/chips/cpu/cpu_timing.h"
-#include "app-nxvm/devices/retirement_observation_interface.h"
+#include "x86/core/retirement_observation_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 #define TIMING_80186_MANIFEST_RESET_LINEAR 0x000ffff0u

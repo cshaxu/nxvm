@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(t359_source "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_instructions.c")
-set(t359_machine "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c")
+set(t359_machine "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c")
 set(t359_timing_model "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_timing_model.c")
 set(t359_timing "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_timing.c")
 set(t359_inventory

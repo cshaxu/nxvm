@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/firmware_interface.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/firmware_interface.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/common_machine_fixture.h"

@@ -2,11 +2,11 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine_interface.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/memory_interface.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/memory_interface.h"
+#include "x86/core/port.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/devices/fdc.h"

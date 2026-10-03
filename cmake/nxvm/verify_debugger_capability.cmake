@@ -22,7 +22,7 @@ foreach(source IN LISTS debugger_sources)
     endforeach()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/debug_interface.h" contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/debug_interface.h" contract)
 foreach(required "core_machine_debug_capture_instruction_observation"
         "core_machine_debug_read_register" "core_machine_debug_patch_registers"
         "core_machine_debug_read_linear" "core_machine_debug_write_linear"

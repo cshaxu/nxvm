@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/dma_bus.h"
-#include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/memory.h"
+#include "x86/core/port.h"
 
 typedef struct core_machine_dma_fixture {
     lib_u8 bytes[2];

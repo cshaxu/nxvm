@@ -9,7 +9,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.h" chip_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc8272_interface.h" chip_interface)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_deadline.c" board_deadline_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_fdc_smoke.c"
     core_fixture)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.h" fdd_header)
@@ -81,7 +81,7 @@ foreach(required IN ITEMS "x86_fdc_PHASE_COMMAND" "x86_fdc_PHASE_RESULT"
         message(FATAL_ERROR "Shared FDC mechanism missing: ${required}")
     endif()
 endforeach()
-foreach(forbidden IN ITEMS "app-nxvm" "core_machine_" "t_port" "media_registry"
+foreach(forbidden IN ITEMS "app-nxvm" "x86/core/" "core_machine_" "t_port" "media_registry"
     "VFDC_DOR" "VFDC_CCR" "drive_cylinder")
     string(FIND "${chip_source}${chip_header}${chip_interface}" "${forbidden}" position)
     if(NOT position EQUAL -1)
@@ -92,7 +92,9 @@ if(chip_interface MATCHES "struct[ \t\r\n]+x86_fdc[ \t\r\n]*\\{")
     message(FATAL_ERROR "Shared FDC public layout is not opaque")
 endif()
 file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.h")
 foreach(path IN LISTS app_sources)
     file(READ "${path}" source)
     if(source MATCHES "x86/chips/fdc8272/fdc\\.[ch]" OR

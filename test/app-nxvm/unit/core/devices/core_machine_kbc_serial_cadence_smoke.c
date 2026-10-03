@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "app-nxvm/devices/kbc.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/port.h"
 #include "support/kbc_fixture.h"
 
 lib_i32 main(void)

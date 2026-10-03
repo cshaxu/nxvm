@@ -1,11 +1,11 @@
 #include "support/pic_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/machine.h"
+#include "x86/core/port.h"
 
 typedef struct pic_command_priority_fixture {
     core_machine_pic_bus master;

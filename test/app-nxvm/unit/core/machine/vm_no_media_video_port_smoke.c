@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_interface.h"

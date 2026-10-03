@@ -3,7 +3,7 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 
 static const core_machine_timing_seam plan_expected_seams[

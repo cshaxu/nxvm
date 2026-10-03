@@ -4,8 +4,8 @@
 
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/pit_bus.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/machine.h"
+#include "x86/core/port.h"
 
 typedef struct pic_lifecycle_fixture {
     core_machine_pic_bus master;

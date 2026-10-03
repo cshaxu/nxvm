@@ -13,8 +13,8 @@ function Require-Pattern {
 }
 
 $root = (Resolve-Path $RepositoryRoot).Path
-$machine = Join-Path $root 'src/app-nxvm/devices/machine.c'
-$scheduler = Join-Path $root 'src/app-nxvm/devices/machine_scheduler.c'
+$machine = Join-Path $root 'src/x86/core/machine.c'
+$scheduler = Join-Path $root 'src/x86/core/machine_scheduler.c'
 $profile = Join-Path $root 'src/app-nxvm/profiles/default_profile/pc_at_profile.c'
 
 Require-Pattern $profile '596591u, 4000000u' 'Model-339 PIT rational clock'
@@ -41,7 +41,7 @@ $advanceUsers = @(
 foreach ($match in $advanceUsers) {
     $relative = $match.Path.Substring($root.Length).TrimStart('\', '/').Replace('\', '/')
     if ($relative -notin @(
-        'src/app-nxvm/devices/machine.c'
+        'src/x86/core/machine.c'
     )) {
         throw "Unexpected machine-time publisher: $relative"
     }

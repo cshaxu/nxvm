@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_PIT_BUS_H
 #define CORE_MACHINE_PIT_BUS_H
 #include "x86/chips/pit825x/pit825x_interface.h"
-#include "app-nxvm/devices/port_interface.h"
+#include "x86/core/port_interface.h"
 
 /* Board-owned port attachment; the timer itself remains opaque. */
 typedef struct core_machine_pit_bus {

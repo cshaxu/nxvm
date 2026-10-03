@@ -7,8 +7,8 @@ endif()
 file(REMOVE_RECURSE "${WORK}")
 set(cpu_files cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
     cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
-set(paths src/app-nxvm/machine/machine.c src/app-nxvm/devices/machine.c
-    src/app-nxvm/devices/cpu_bus.c src/app-nxvm/devices/board_advance.c
+set(paths src/app-nxvm/machine/machine.c src/x86/core/machine.c
+    src/x86/core/cpu_bus.c src/app-nxvm/devices/board_advance.c
     test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c
@@ -53,7 +53,7 @@ foreach(name IN LISTS cpu_files)
     file(READ "${path}" original)
     foreach(token IN ITEMS t_ram t_port core_machine_transaction
             firmware_interrupt software_interrupt core_machine_pic_scan_interrupt
-            "#include \"app-nxvm/devices/machine.h\""
+            "#include \"x86/core/machine.h\""
             "#include \"app-nxvm/devices/cpu_bus.h\"")
         if(token MATCHES "^#include")
             set(expected "CPU imports outside its neutral boundary")
@@ -74,7 +74,7 @@ foreach(name IN LISTS cpu_files)
 endforeach()
 message(STATUS "CPU bus boundary: baseline and 72 negative controls pass")
 
-set(path "${WORK}/src/app-nxvm/devices/cpu_bus.c")
+set(path "${WORK}/src/x86/core/cpu_bus.c")
 file(READ "${path}" original)
 foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
         "machine->executor_cpu_instructions.data.except = 0\;"

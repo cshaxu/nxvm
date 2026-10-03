@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/rom_mapping_interface.c" rom)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory_interface.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/rom_mapping_interface.c" rom)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
 
 string(REGEX MATCHALL "core_machine_install_memory_device_routes\\(machine, &route, 1u"
     registrations "${rom}")

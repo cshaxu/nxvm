@@ -14,10 +14,10 @@ future Profile only when its separate evidence task admits real source files.
 src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
-  x86/{chips,xasm32,debug}/
+  x86/{chips,core,xasm32,debug}/
   app-nxvm/             NXVM product implementation
     product/            main, INI configuration, CLI and composition
-    devices/            retained mixed x86 executor and IBM-PC board adapters
+    devices/            retained IBM-PC board adapters
     machine/            NXVM driver, asset/media and execution adapter
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/
@@ -76,8 +76,9 @@ live below `test/app-nxvm/`, mirroring `app-nxvm` beneath `unit/`.
 Profile tests mirror their real `src/app-nxvm/profiles/` owner when
 implemented. The current product roots are `xt`, `default_profile`, `model40`,
 `device`, and `byob`; do not create empty future-profile directories. Retained
-NXVM board/Core tests live in `test/app-nxvm/unit/core/` with their source owner,
-preserving CPU-family tests including unused models.
+NXVM board tests live in `test/app-nxvm/unit/core/` with their source owner,
+preserving CPU-family tests including unused models. Neutral Core tests live
+in `test/x86/core` and build independently of NXVM board composition.
 `test/app-nxvm/integration/` stays separate;
 at cutover it uses the real INI path and external assets. Unit tests use code-
 owned values without external ROM/INI/YAML/media dependencies.

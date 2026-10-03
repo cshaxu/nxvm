@@ -1,7 +1,7 @@
 if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
-set(machine "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c")
+set(machine "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c")
 set(machine_model "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_timing_model.c")
 set(smoke "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/machine_80286_instruction_timing_ledger_smoke.c")
 set(evidence "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s7-80286-lsl-architecture-reconciliation.md")

@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" ABSOLUTE)
 
-set(machine_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c")
-set(memory_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory.c")
+set(machine_source "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c")
+set(memory_source "${PROJECT_SOURCE_DIR}/src/x86/core/memory.c")
 set(machine_runtime_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c")
 
 foreach(file IN ITEMS "${machine_source}" "${memory_source}" "${machine_runtime_source}")
@@ -41,9 +41,8 @@ endif()
 file(GLOB_RECURSE source_files "${PROJECT_SOURCE_DIR}/src/*.c"
     "${PROJECT_SOURCE_DIR}/src/*.h")
 foreach(file IN LISTS source_files)
-    file(RELATIVE_PATH relative "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices" "${file}")
-    string(FIND "${relative}" "../" parent_prefix)
-    if(NOT parent_prefix EQUAL 0)
+    if(file STREQUAL memory_source OR
+        file STREQUAL "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c")
         continue()
     endif()
     file(READ "${file}" source)

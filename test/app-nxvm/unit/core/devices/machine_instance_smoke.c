@@ -4,8 +4,8 @@
 
 
 
-#include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine_interface.h"
+#include "x86/core/machine.h"
 #include "support/core_machine_executor_fixture.h"
 
 typedef struct port_fixture {

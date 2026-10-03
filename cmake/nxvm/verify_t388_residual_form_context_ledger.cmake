@@ -1,7 +1,7 @@
 if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
-set(machine "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c")
+set(machine "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c")
 set(machine_model "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_timing_model.c")
 set(s2 "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s2-successful-sentinel-matrix.md")
 set(s4 "${PROJECT_SOURCE_DIR}/docs/nxvm/etc/evidence/t388-s4-residual-form-context-ledger.md")

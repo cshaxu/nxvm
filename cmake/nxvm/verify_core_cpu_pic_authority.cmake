@@ -14,8 +14,8 @@ if(vm_cpu_pic_wiring)
         "VM machine retains T295 CPU/PIC initialization wiring: ${vm_cpu_pic_wiring}")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" core_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/cpu_bus.c" bus_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" core_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/cpu_bus.c" bus_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c"
     board_source)
 string(FIND "${core_source}"
@@ -73,13 +73,14 @@ foreach(old_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions
 endforeach()
 file(GLOB_RECURSE board_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+list(APPEND board_sources "${PROJECT_SOURCE_DIR}/src/x86/core/cpu_bus.c")
 foreach(board_source IN LISTS board_sources)
     file(READ "${board_source}" contents)
     if(contents MATCHES "executor_cpu(_instructions|_execution)?[ \t\r\n]*(\\.|->)[ \t\r\n]*[a-zA-Z_]")
         message(FATAL_ERROR "Board bypasses copied CPU operations: ${board_source}")
     endif()
     # CPU storage is private to cpu.c; no board header imports its layout.
-    if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" AND
+    if(NOT board_source STREQUAL "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" AND
        contents MATCHES "#[ \t]*include[ \t]*[<\"]x86/chips/cpu/cpu(_instructions)?\\.h[>\"]")
         message(FATAL_ERROR "Board imports private CPU layout: ${board_source}")
     endif()

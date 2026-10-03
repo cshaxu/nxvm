@@ -3,10 +3,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/port_interface.c" port_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" machine_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/port_interface.c" port_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" machine_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
 if(machine_header MATCHES "core_machine_hdc[ \t]+hdc;" OR
     NOT board_header MATCHES "core_machine_hdc[ \t]+hdc;" OR
     scheduler_source MATCHES "board->hdc|core_machine_hdc_")

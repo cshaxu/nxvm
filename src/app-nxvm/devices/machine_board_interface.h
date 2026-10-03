@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_BOARD_INTERFACE_H
 #define CORE_MACHINE_BOARD_INTERFACE_H
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/display_interface.h"
 #include "app-nxvm/devices/pic_bus_interface.h"

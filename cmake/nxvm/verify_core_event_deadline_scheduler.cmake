@@ -2,16 +2,16 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c" machine_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c"
     scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_deadline.c"
     board_deadline_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c"
     board_advance_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/execution_provider.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/execution_provider_interface.h"
     execution_provider_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_interface.h"
     machine_interface_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/kbc.c" kbc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c"

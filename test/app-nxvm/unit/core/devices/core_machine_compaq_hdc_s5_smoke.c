@@ -5,8 +5,8 @@
 #include "app-nxvm/devices/hdc.h"
 #include "app-nxvm/devices/media_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/machine.h"
+#include "x86/core/port.h"
 
 typedef struct core_machine_compaq_hdc_media {
     lib_u8 sector[512];

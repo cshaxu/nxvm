@@ -12,7 +12,7 @@ extern "C" {
 #include "x86/chips/kbc8042/kbc8042_interface.h"
 
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/port_interface.h"
+#include "x86/core/port_interface.h"
 
 #define CORE_MACHINE_DEVICE_KBC "Intel 8042"
 

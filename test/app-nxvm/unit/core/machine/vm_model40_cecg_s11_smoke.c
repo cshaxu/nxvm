@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/machine.h"
+#include "x86/core/memory.h"
+#include "x86/core/port.h"
 #include "app-nxvm/devices/vadp.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"

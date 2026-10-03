@@ -213,6 +213,15 @@ temporary association during the working migration is removed before S87
 delivery. Then the required physical Core/flat IBM-PC extraction follows;
 neither construction cleanup nor independent linkage substitutes for it.
 
+S88 delivers the whole neutral Core source/test/build closure, removes former
+App source ownership and reconnects NXVM to one real Shared target. Core
+depends only on Types, CPU and FPU, never PC chip wiring or App assembly.
+Independent neutral tests preserve their original assertions; board-specific
+tests stay with the board. Both-width full units, ownership/negative gates and
+eight unchanged-INI product boots precede acceptance. Flat IBM-PC extraction
+remains required after this whole-component receiver, not further Core
+per-function preparation.
+
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
 - Common board contract tests live with their flat receiver under

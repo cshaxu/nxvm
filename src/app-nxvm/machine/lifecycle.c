@@ -18,7 +18,7 @@
 
 #include "app-nxvm/machine/debug.h"
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 
 
 #include "app-nxvm/machine/display.h"

@@ -1,6 +1,6 @@
 #ifndef TEST_NXVM_PORT_OWNER_FIXTURE_H
 #define TEST_NXVM_PORT_OWNER_FIXTURE_H
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 
 /* Adapt port-only unit fixtures to the single Core-owned registration path. */
 static inline core_machine *test_port_owner_open(const t_port *port)

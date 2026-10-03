@@ -4,7 +4,7 @@
 #define VM_MACHINE_MACHINE_DEVICES_H
 #include "lib/types/types_interface.h"
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 
 typedef struct vm_machine vm_machine;
 

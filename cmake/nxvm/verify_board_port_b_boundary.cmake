@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory.c" memory_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory_interface.c" memory_boundary)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory.c" memory_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" memory_boundary)
 foreach(personality IN ITEMS planar_parity d4_platform)
     string(FIND "${board_source}"
         "lib_status core_machine_configure_${personality}(" first)

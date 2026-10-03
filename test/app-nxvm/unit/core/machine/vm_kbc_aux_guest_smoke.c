@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/entry_plan_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/entry_plan_interface.h"
+#include "x86/core/machine_interface.h"
 #include "app-nxvm/devices/guest_input_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"

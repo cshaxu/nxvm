@@ -2,9 +2,9 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "support/core_machine_board_fixture.h"
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 #include <stdio.h>
 
 static lib_i32 sign_extend_test_irq(void)

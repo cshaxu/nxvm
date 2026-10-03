@@ -3,9 +3,9 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 
 static lib_i32 cpu_pic_binding_is_owned(core_machine *machine,
     const core_machine_cpu_execution_context *cpu)

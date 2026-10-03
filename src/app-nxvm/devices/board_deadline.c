@@ -1,6 +1,5 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 
 static lib_u8 board_consider_clock(const core_machine_clock_domain *clock,

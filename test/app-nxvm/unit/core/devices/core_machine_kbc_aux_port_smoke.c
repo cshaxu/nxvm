@@ -3,8 +3,8 @@
 
 #include "app-nxvm/devices/kbc.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/machine.h"
+#include "x86/core/port.h"
 
 static lib_u8 read_port(t_port *port, lib_u16 id)
 {

@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_deadline.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" creation)
 string(FIND "${core}" "static void core_machine_dma_grant_advance" advance_start)

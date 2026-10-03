@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/firmware_interface.h"
-#include "app-nxvm/devices/machine_interface.h"
-#include "app-nxvm/devices/rom_mapping_interface.h"
+#include "x86/core/firmware_interface.h"
+#include "x86/core/machine_interface.h"
+#include "x86/core/rom_mapping_interface.h"
 #include "support/core_machine_executor_fixture.h"
 #include "support/core_machine_board_fixture.h"
 

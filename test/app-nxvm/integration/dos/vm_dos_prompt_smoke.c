@@ -10,9 +10,9 @@
 
 
 
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 
 #include "app-nxvm/machine/lifecycle.h"
 

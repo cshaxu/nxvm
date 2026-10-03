@@ -6,7 +6,7 @@
 #include "app-nxvm/machine/runner.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 #include "app-nxvm/profiles/byob/blob.h"

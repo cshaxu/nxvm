@@ -4,7 +4,7 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 
 
-#include "app-nxvm/devices/memory_interface.h"
+#include "x86/core/memory_interface.h"
 
 typedef struct core_machine_d4_memory_config core_machine_d4_memory_config;
 

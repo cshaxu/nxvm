@@ -5,10 +5,10 @@
 
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/fdc.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/media_interface.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/port.h"
 
 typedef struct core_machine_fdc_topology_media {
     lib_u8 byte;

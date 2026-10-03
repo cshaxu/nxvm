@@ -3,10 +3,10 @@
 
 #include "x86/chips/cpu/support/cpu_protected_fixture.h"
 #include "pic_fixture.h"
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/machine.h"
+#include "x86/core/port.h"
 
 typedef struct protected_pic_board_fixture {
     cpu_instruction_fixture cpu;

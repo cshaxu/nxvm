@@ -43,13 +43,13 @@ it does not change runtime ownership before the corresponding cutover.
   contracts; it does not depend on Common or Machine-adapter internals.
 - `x86/chips` owns the extracted CPU, FPU, PIC, PIT, DMA, RTC, KBC, PPI,
   keyboard, mouse, FDC, HDC and video chip mechanisms. T539 closed their
-  independent-chip source ownership; `app-nxvm/devices` retains the one mixed
-  x86 executor and IBM-PC board attachments until T540 moves each mechanism
-  to its proven owner. It still owns the sole guest timeline and plan
-  transaction today. Neither the neutral `x86/core` nor the flat
-  `x86/ibmpc-*` board receivers are implemented merely by naming them here.
-  Their source cut must keep chip state in `x86/chips`, guest execution time
-  in one Core, and profile/firmware/media choices in the App composition.
+  independent-chip source ownership. T540 S88 moves the neutral executor,
+  guest timeline, memory/port routes and plan transaction to `x86/core`.
+  Its production target depends only on Types, CPU and FPU; NXVM links that
+  sole implementation. `app-nxvm/devices` retains IBM-PC board attachments
+  pending the flat `x86/ibmpc-*` receivers. Chip state stays in `x86/chips`,
+  guest execution time in one Core, and profile/firmware/media choices in
+  App composition. Current records S88's unaccepted verification status.
 - `common/machine` owns the shared execution/control protocol and paused-debug
   lease; `common/session` is the sole product-control reducer;
   `common/ui` binds Lib KVM and the Console broker.

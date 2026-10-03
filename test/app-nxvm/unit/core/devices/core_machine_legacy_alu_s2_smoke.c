@@ -1,6 +1,6 @@
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 #include "x86/chips/cpu/cpu.h"
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 

@@ -4,9 +4,9 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "x86/chips/cpu/cpu.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 
 static inline lib_i32 test_core_machine_fixture_nmi_prepare(core_machine *machine)
 {

@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 #define T359_S6_RESET_LINEAR 0xfffffff0u

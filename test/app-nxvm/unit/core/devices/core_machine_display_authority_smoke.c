@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/memory_interface.h"
+#include "x86/core/memory_interface.h"
 #include "app-nxvm/devices/vadp.h"
 
 int main(void)

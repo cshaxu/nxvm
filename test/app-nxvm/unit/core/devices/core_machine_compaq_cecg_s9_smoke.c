@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/memory.h"
+#include "x86/core/machine.h"
+#include "x86/core/memory.h"
 #include "app-nxvm/devices/vadp.h"
 
 static lib_i32 t386_s9_invalid_cecg_is_failure_atomic(void)

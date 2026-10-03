@@ -11,7 +11,7 @@ extern "C"
 #include "x86/chips/dma8237/dma8237_interface.h"
 
 #include "app-nxvm/devices/controller_interface.h"
-#include "app-nxvm/devices/port_interface.h"
+#include "x86/core/port_interface.h"
 
 #define CORE_MACHINE_DEVICE_DMA "Intel 8237A"
 

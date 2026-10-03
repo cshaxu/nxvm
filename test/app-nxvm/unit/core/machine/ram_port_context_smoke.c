@@ -3,9 +3,9 @@
 
 
 
-#include "app-nxvm/devices/memory.h"
+#include "x86/core/memory.h"
 
-#include "app-nxvm/devices/port.h"
+#include "x86/core/port.h"
 
 lib_i32 main(void)
 {

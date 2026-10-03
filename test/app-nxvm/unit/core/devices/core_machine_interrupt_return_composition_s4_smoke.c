@@ -2,9 +2,9 @@
 #include "app-nxvm/devices/machine_board_state.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
 
 /* The retained CLI/STI fixture supplies the real-mode machine lifecycle. */

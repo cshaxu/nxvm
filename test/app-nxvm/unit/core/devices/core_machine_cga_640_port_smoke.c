@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/memory.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/memory.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/vadp.h"
 
 lib_i32 main(void)

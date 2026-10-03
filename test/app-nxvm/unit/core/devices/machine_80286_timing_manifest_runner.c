@@ -5,7 +5,7 @@
 #include "x86/chips/cpu/cpu.h"
 #include "x86/chips/cpu/cpu_timing.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/retirement_observation_interface.h"
+#include "x86/core/retirement_observation_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 /* The timing corpus retains its private protected-state fixture until S50

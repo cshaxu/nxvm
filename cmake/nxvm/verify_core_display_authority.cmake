@@ -4,9 +4,9 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c" core_plan_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_display.c" core_display_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.h" machine_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" machine_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
 if(machine_header MATCHES "t_vadp[ \t]+shared_vadp;" OR
     NOT board_header MATCHES "t_vadp[ \t]+shared_vadp;" OR
     scheduler_source MATCHES "board->shared_vadp")
@@ -15,7 +15,7 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" board_display_source)
 set(core_source "${core_plan_source}${core_display_source}${board_display_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_interface.h" core_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h" neutral_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_interface.h" neutral_header)
 foreach(operation IN ITEMS capture_display_snapshot observe_display_snapshot configure_display)
     foreach(source IN ITEMS core_display_source core_header)
         if(NOT "${${source}}" MATCHES

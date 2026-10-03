@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/machine.h"
+#include "x86/core/port.h"
 
 static void initialize_pic(core_machine_pic_bus *master, core_machine_pic_bus *slave, t_port *port,
     lib_u8 icw1)

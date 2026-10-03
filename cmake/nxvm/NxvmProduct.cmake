@@ -62,35 +62,21 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
 add_library(core-machine STATIC
     src/app-nxvm/devices/board_advance.c
     src/app-nxvm/devices/board_deadline.c
-    src/app-nxvm/devices/clock.c
-    src/app-nxvm/devices/cpu_bus.c
     src/app-nxvm/devices/d4_memory.c
-    src/app-nxvm/devices/debug.c
     src/app-nxvm/devices/dma_bus.c
-    src/app-nxvm/devices/entry_plan_interface.c
     src/app-nxvm/devices/fdc.c
     src/app-nxvm/devices/hdc.c
-    src/app-nxvm/devices/machine_firmware.c
-    src/app-nxvm/devices/machine.c
     src/app-nxvm/devices/machine_board.c
     src/app-nxvm/devices/machine_plan.c
-    src/app-nxvm/devices/machine_scheduler.c
     src/app-nxvm/devices/machine_display.c
-    src/app-nxvm/devices/memory_interface.c
     src/app-nxvm/devices/media_interface.c
-    src/app-nxvm/devices/port_interface.c
     src/app-nxvm/devices/pic_bus.c
     src/app-nxvm/devices/pit_bus.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
     src/app-nxvm/devices/kbc.c
-    src/app-nxvm/devices/rom_mapping_interface.c
-    src/app-nxvm/devices/trace_interface.c
-    src/app-nxvm/devices/retirement_observation_interface.c
-    src/app-nxvm/devices/timeline.c
     src/app-nxvm/devices/vadp.c
 )
-# This is the complete public core-machine runtime. It extends the primitive
-# storage/executor target below; it is not a second guest executor.
+# NXVM owns the retained PC board attachment, not the Shared Core executor.
 add_library(core-machine-runtime ALIAS core-machine)
 target_include_directories(core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -112,13 +98,15 @@ add_library(core-machine-observable STATIC ${PROJECT_CORE_MACHINE_SOURCES})
 target_include_directories(core-machine-observable PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-observable PUBLIC core-machine-executor)
+target_link_libraries(core-machine-observable PUBLIC core-machine-executor
+    x86-core-observable)
 target_compile_definitions(core-machine-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
-add_executable(core-machine-contract-smoke
-    test/app-nxvm/unit/core/devices/core_contract_smoke.c
-)
+add_executable(core-machine-instance-smoke
+    test/app-nxvm/unit/core/devices/machine_instance_smoke.c)
+target_link_libraries(core-machine-instance-smoke PRIVATE core-machine)
+
 add_executable(core-machine-plan-smoke
     test/app-nxvm/unit/core/devices/core_machine_plan_smoke.c
 )
@@ -291,17 +279,8 @@ add_executable(vm-xt-5160-268-profile-smoke
     test/app-nxvm/unit/core/machine/vm_xt_5160_268_profile_smoke.c)
 target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-machine)
 
-target_link_libraries(core-machine-contract-smoke PRIVATE core-machine)
 
-add_executable(core-machine-instance-smoke
-    test/app-nxvm/unit/core/devices/machine_instance_smoke.c
-)
-target_link_libraries(core-machine-instance-smoke PRIVATE core-machine)
 
-add_executable(core-machine-lifecycle-smoke
-    test/app-nxvm/unit/core/devices/machine_lifecycle_smoke.c
-)
-target_link_libraries(core-machine-lifecycle-smoke PRIVATE core-machine)
 
 add_executable(core-machine-firmware-capability-smoke
     test/app-nxvm/unit/core/devices/machine_firmware_capability_smoke.c)
@@ -335,7 +314,7 @@ add_executable(core-machine-prefetch-locality-smoke
 # Observe the board-to-CPU grant without exposing CPU reservation storage.
 # Compile the same scheduler with only its outgoing call redirected to the spy.
 add_library(core-machine-prefetch-scheduler-test OBJECT
-    src/app-nxvm/devices/machine_scheduler.c)
+    src/x86/core/machine_scheduler.c)
 target_link_libraries(core-machine-prefetch-scheduler-test PRIVATE core-machine)
 target_compile_definitions(core-machine-prefetch-scheduler-test PRIVATE
     core_machine_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
@@ -933,18 +912,10 @@ foreach(target IN ITEMS
         CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
 endforeach()
 
-add_executable(core-machine-stopped-lifecycle-smoke
-    test/app-nxvm/unit/core/devices/machine_stopped_lifecycle_smoke.c
-)
-target_link_libraries(core-machine-stopped-lifecycle-smoke PRIVATE core-machine)
 add_executable(core-machine-cpu-pic-lifecycle-smoke
     test/app-nxvm/unit/core/devices/machine_cpu_pic_lifecycle_smoke.c
 )
 target_link_libraries(core-machine-cpu-pic-lifecycle-smoke PRIVATE core-machine)
-add_executable(core-machine-memory-reconfigure-smoke
-    test/app-nxvm/unit/core/devices/machine_memory_reconfigure_smoke.c
-)
-target_link_libraries(core-machine-memory-reconfigure-smoke PRIVATE core-machine)
 
 add_executable(core-machine-checked-memory-smoke
     test/app-nxvm/unit/core/devices/machine_checked_memory_smoke.c
@@ -972,24 +943,12 @@ add_executable(machine-port-ownership-board-smoke
 )
 target_link_libraries(machine-port-ownership-board-smoke PRIVATE core-machine)
 
-add_executable(core-machine-trace-smoke
-    test/app-nxvm/unit/core/devices/machine_trace_smoke.c
-)
-target_link_libraries(core-machine-trace-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-retirement-observation-s3-smoke
     test/app-nxvm/unit/core/devices/machine_retirement_observation_s3_smoke.c
 )
 target_link_libraries(core-machine-retirement-observation-s3-smoke PRIVATE core-machine)
-add_executable(core-machine-external-time-trace-s18-smoke
-    test/app-nxvm/unit/core/devices/machine_external_time_trace_s18_smoke.c
-)
-target_link_libraries(core-machine-external-time-trace-s18-smoke PRIVATE core-machine-observable)
 
-add_executable(core-machine-debug-smoke
-    test/app-nxvm/unit/core/devices/machine_debug_smoke.c
-)
-target_link_libraries(core-machine-debug-smoke PRIVATE core-machine)
 
 
 # T317 owns this exact source-to-target inventory.  Keep strict options on the
@@ -1219,9 +1178,6 @@ add_library(x86-cpu ALIAS x86-cpu-shared)
 
 set(CORE_MACHINE_SOURCES
     src/app-nxvm/devices/display.c
-    src/app-nxvm/devices/port.c
-    src/app-nxvm/devices/memory.c
-    src/app-nxvm/devices/transaction.c
 )
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
@@ -1233,9 +1189,7 @@ target_include_directories(core-machine-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(core-machine-executor PUBLIC x86-cpu x86-fpu x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
-target_link_libraries(core-machine PUBLIC core-machine-executor)
-
-include(cmake/nxvm/NxvmNeutralCoreProof.cmake)
+target_link_libraries(core-machine PUBLIC core-machine-executor x86-core)
 
 add_executable(vm-machine-frame-smoke
     test/app-nxvm/unit/core/machine/vm_machine_frame_smoke.c)
@@ -2500,8 +2454,13 @@ function(project_add_t515_ini_integration_test target session_file)
         WORKING_DIRECTORY "${project_t515_workspace}")
 endfunction()
 
+get_property(shared_x86_test_names DIRECTORY "${PROJECT_SOURCE_DIR}/test/x86" PROPERTY TESTS)
 foreach(target IN LISTS PROJECT_UNIT_TEST_TARGETS)
-    project_add_test(${target} unit)
+    if(NOT "unit.${target}" IN_LIST shared_x86_test_names)
+        project_add_test(${target} unit)
+    else()
+        set_property(GLOBAL APPEND PROPERTY PROJECT_T344_UNIT_TEST_REGISTERED_TARGETS ${target})
+    endif()
 endforeach()
 
 add_test(NAME unit.nxvm-firmware-embedding
@@ -3595,9 +3554,6 @@ file(GENERATE
 # next admission condition.
 set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/app-nxvm/devices/display.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/port.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/memory.c|machine-executor"
-    "core-machine-executor|src/app-nxvm/devices/transaction.c|machine-executor"
     "vm-app|src/app-nxvm/product/command.c|console-product"
     "vm-app|src/app-nxvm/product/keyboard.c|keyboard-product"
     "vm-app|src/app-nxvm/product/startup.c|session-startup"
@@ -3631,6 +3587,7 @@ file(GENERATE
 set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
     core-machine-executor
+    x86-core
     x86-cpu-shared
     common-machine
     x86-xasm32

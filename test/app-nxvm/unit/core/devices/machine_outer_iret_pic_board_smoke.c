@@ -1,8 +1,8 @@
 #include "x86/chips/cpu/support/cpu_outer_return_fixture.h"
 #include "support/pic_fixture.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/machine.h"
+#include "x86/core/port.h"
 #include <stdio.h>
 
 typedef struct outer_iret_pic_board {

@@ -1,7 +1,7 @@
 #ifndef CORE_MACHINE_BOARD_STATE_H
 #define CORE_MACHINE_BOARD_STATE_H
 
-#include "app-nxvm/devices/clock.h"
+#include "x86/core/clock_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "app-nxvm/devices/pit_bus.h"

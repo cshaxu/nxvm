@@ -5,9 +5,9 @@
 
 
 
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/session_assets.h"

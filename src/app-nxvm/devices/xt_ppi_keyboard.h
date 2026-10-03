@@ -5,7 +5,7 @@
 
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/port_interface.h"
+#include "x86/core/port_interface.h"
 #include "x86/chips/ppi8255/ppi8255_interface.h"
 
 typedef lib_u8 (*core_machine_xt_ppi_nmi_request)(void *owner);

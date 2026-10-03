@@ -249,6 +249,15 @@ The next receiver delivers the whole neutral Core source/test/build component,
 removing its old App source ownership; no further per-function preparation is
 allocated merely to defer that delivery.
 
+S88 physically receives all neutral source/header groups above into
+`src/x86/core`, including execution/time, CPU lifetime, memory/port routes,
+transaction and firmware publication. Its sole Shared target owns the source
+list; NXVM board targets link it. Eight neutral tests move with that owner,
+while actual 92h/KBC and firmware fixtures remain board-owned. The
+[working evidence](../evidence/t540-s88-neutral-core-extraction.md) records
+verification and unresolved acceptance; the flat common/AT/XT board groups
+remain outstanding and are not hidden by Core's independent build.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

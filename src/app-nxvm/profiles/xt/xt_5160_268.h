@@ -4,7 +4,7 @@
 #define VM_PROFILE_XT_5160_268_H
 
 #include "app-nxvm/profiles/profile_contract_interface.h"
-#include "app-nxvm/devices/firmware_interface.h"
+#include "x86/core/firmware_interface.h"
 
 #define VM_PROFILE_XT_5160_268_FDD_MEDIA_ID 1u
 #define VM_PROFILE_XT_5160_268_HDD_MEDIA_ID 2u

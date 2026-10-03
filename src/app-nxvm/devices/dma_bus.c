@@ -1,6 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 #include "app-nxvm/devices/dma_bus.h"
-#include "app-nxvm/devices/memory_interface.h"
+#include "x86/core/memory_interface.h"
 
 /* This only issues opaque binding nonces. It never selects a DMA instance. */
 static lib_atomic_uptr core_machine_dma_next_request_token = 1u;

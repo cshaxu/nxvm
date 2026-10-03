@@ -1,11 +1,11 @@
 #include "lib/types/types_interface.h"
 #include "lib/types/file.h"
 #include <stdio.h>
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/retirement_observation_interface.h"
+#include "x86/core/retirement_observation_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 /* The timing corpus retains its private protected-state fixture until S50

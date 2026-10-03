@@ -2,8 +2,8 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine.h"
+#include "x86/core/machine_interface.h"
 #include "support/machine_cpu_fixture.h"
 
 #define TIMING_LEDGER_RESET_LINEAR 0xfffffff0u

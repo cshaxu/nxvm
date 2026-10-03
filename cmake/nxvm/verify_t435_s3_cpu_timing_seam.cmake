@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(machine "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine.c")
+set(machine "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c")
 set(timing "${PROJECT_SOURCE_DIR}/src/x86/chips/cpu/cpu_timing.c")
 foreach(path IN ITEMS "${machine}" "${timing}")
     if(NOT EXISTS "${path}")

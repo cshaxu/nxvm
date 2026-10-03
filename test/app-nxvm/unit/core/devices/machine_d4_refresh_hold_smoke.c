@@ -2,10 +2,10 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/dma_bus.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/transaction.h"
+#include "x86/core/transaction.h"
 #include "support/core_machine_board_fixture.h"
 
 #define REFRESH_PROBE_EVENT_CAPACITY 1024u

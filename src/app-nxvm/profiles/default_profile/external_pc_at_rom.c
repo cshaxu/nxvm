@@ -2,7 +2,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "app-nxvm/profiles/byob/blob.h"
 

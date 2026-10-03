@@ -4,7 +4,7 @@
 #ifndef VM_PROFILE_EXTERNAL_PC_AT_ROM_H
 #define VM_PROFILE_EXTERNAL_PC_AT_ROM_H
 
-#include "app-nxvm/devices/firmware_interface.h"
+#include "x86/core/firmware_interface.h"
 #include "app-nxvm/profiles/byob/blob.h"
 
 #define VM_PROFILE_EXTERNAL_PC_AT_ROM_BYTES (64u * 1024u)

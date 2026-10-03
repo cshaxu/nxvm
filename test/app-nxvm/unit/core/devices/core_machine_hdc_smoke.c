@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/hdc.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/media_interface.h"
 

@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/video/video.c" vadp_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory.c" memory_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory.c" memory_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c" machine_plan_source)

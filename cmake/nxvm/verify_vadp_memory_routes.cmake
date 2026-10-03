@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.h" header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/memory_interface.c" core)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
 
 foreach(required "core_machine_install_memory_device_routes(adapter->machine"
     "core_machine_remove_memory_device_routes(adapter->machine"

@@ -247,3 +247,16 @@ P1 `c662ecd08` after actual review of its 119 scoped paths and matching working
 blobs, cleanup/header/fixture classes and artifact identity. Governance P2
 removes the active S87 packet and accepts only this complete boundary. The next
 whole receiver is actual neutral Core source/test/build movement; T540 stays open.
+
+## S88: Physical Neutral Core Executor Delivery
+
+The complete 16-C/19-header closure now lives in `src/x86/core`; NXVM links
+its actual independent target instead of compiling App copies. Eight neutral
+tests follow that owner; board-specific instance/A20 and firmware tests retain
+their real NXVM constructor and assertions. The independent x86 suite passes
+121 cases; final full units pass 470/470 on each width, all migrated negatives
+and specialized gates pass, and eight fresh stripped products preserve their
+single unchanged-INI boot checkpoints. [S88 evidence](../etc/evidence/t540-s88-neutral-core-extraction.md)
+records actual diff/ownership review, line counts and artifact hashes. Pushed
+receipt review still precedes acceptance; flat IBM-PC components remain the
+next physical receivers.

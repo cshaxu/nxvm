@@ -1,7 +1,7 @@
 #ifndef TEST_NXVM_KBC_FIXTURE_H
 #define TEST_NXVM_KBC_FIXTURE_H
 #include "app-nxvm/devices/kbc.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/port.h"
 
 /* Fixture command replies use the production ports and configured deadline.
  * The bounded loop accommodates the profile's status-poll delivery contract. */

@@ -4,10 +4,10 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/media_interface.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/port.h"
 
 typedef struct xebec_media {
     lib_u8 bytes[2u * CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];

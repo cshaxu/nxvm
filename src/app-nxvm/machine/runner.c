@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 
-#include "app-nxvm/devices/machine_interface.h"
+#include "x86/core/machine_interface.h"
 #include "lib/base/sync_interface.h"
 #include "app-nxvm/machine/display.h"
 #include "app-nxvm/machine/fault.h"

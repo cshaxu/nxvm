@@ -1,11 +1,11 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 
-#include "app-nxvm/devices/debug_interface.h"
+#include "x86/core/debug_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/memory_interface.h"
-#include "app-nxvm/devices/port_interface.h"
+#include "x86/core/memory_interface.h"
+#include "x86/core/port_interface.h"
 #include "support/core_machine_board_fixture.h"
 
 /* T337_REAL_UD_VECTOR6_DELIVERY: the corpus installs and observes vector 6. */

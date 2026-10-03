@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/dma_bus.h"
-#include "app-nxvm/devices/machine.h"
+#include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"

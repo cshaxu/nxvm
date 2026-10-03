@@ -1,9 +1,9 @@
 #include "x86/chips/cpu/support/cpu_instruction_fixture.h"
 #include "support/pic_fixture.h"
-#include "app-nxvm/devices/device_support.h"
+#include "x86/core/device_support_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/machine.h"
-#include "app-nxvm/devices/port.h"
+#include "x86/core/machine.h"
+#include "x86/core/port.h"
 #include <stdio.h>
 
 #define PIC_IDT_GDT_BASE 0x0300u
