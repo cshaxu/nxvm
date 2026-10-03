@@ -222,3 +222,6 @@ and eight fresh stripped 0540 products. Source/test changes are +375/-353
 across 26 paths; with four gates, +455/-361 across 30 paths. Shared, MyNES,
 owner INIs and external masters remain unchanged. Constructor/private
 association and actual Core/flat IBM-PC source movement remain required.
+Coordinator accepts immediately pushed P1 `5654912d7` after actual review of
+all 44 committed paths and matching reviewed worktree blobs. Governance P2
+accepts S86 only; neither T540 nor the complete component extraction closes.

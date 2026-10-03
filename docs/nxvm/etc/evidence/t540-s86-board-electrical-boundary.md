@@ -179,3 +179,16 @@ no normalized Git delta.
 | `assets/nxvm/ibm-5160-model-268-360k/nxvm_xt_0_5_0540_x86.exe` | 1521633 | `976D44B9452146B1A787F42E6591E6329456381BD5FB7829648D1F7F2CF4B096` |
 | `assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0540_x64.exe` | 1352406 | `26DFA21061338E25B7EB9A82D99C4C2645940ACE30D927828FF19EFBEB0314D3` |
 | `assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0540_x86.exe` | 1521701 | `CF8FCF7EBDA23411618699FAFF5B30F970B91187DFA2DC864E9467734AE439C8` |
+
+## Coordinator Acceptance
+
+Immediately pushed P1 `5654912d78360377b114c3687fd7e85eeac6791f` contains
+44 NXVM-only paths. Coordinator actual-change review confirms all reviewed
+source/test/gate/document and artifact files equal their committed Git blobs;
+the complete electrical body/context substitutions preserve statuses, reset
+order and route rollback. The two gate literal repairs retain their original
+checks and add old-owner rejection. All required verification above is direct
+S86 evidence, with failures retained rather than concealed. Governance P2
+accepts S86 only and removes its active packet. T540 remains open for the
+whole constructor/private association and fixture boundary, then physical
+Core/flat IBM-PC extraction. The full thread goal remains unachieved.

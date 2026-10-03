@@ -2,37 +2,17 @@
 
 ## Current Work
 
-M5 T540 S1-S85 are accepted; S86 receives the remaining electrical boundary.
+M5 T540 S1-S86 are accepted; no S packet is active between receivers.
 Plan and configuration constructors publish the actual borrowed board beside Core.
-Public board callers, test classification and physical movement remain open.
+Constructor/private association, test classification and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 
-S85 accepts the complete controller configuration/callback receiver at P1
-`8b67d2cdb`; the remaining electrical, constructor/fixture and physical
-component boundaries stay open. See [S85 evidence](../etc/evidence/t540-s85-board-controller-handles.md).
-
-## Active S86 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T540 S86, next numeric receiver after accepted S85. |
-| Admission And Approval | Coordinator admits under owner's automatic numeric-S and whole Core/board extraction authorization; executor confirms this complete boundary. NXVM only; existing embedded-artifact exception retained. |
-| Objective | Receive all remaining parity, D4, speaker and absent-memory operations/callbacks on actual board handles, including D4 memory; move RAM reconfiguration to its one neutral Core owner with the existing board veto delivered by attachment. |
-| Non-goals | No chip algorithm, timing grade, profile/media/INI, Shared/MyNES, external master or physical source movement change. Constructor association and unrelated direct fixtures remain the next whole class. |
-| Reference Baseline | Accepted S85 P2 04b7afa7de48ec55ff4e44524a484627fcd54391. |
-| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md); [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md); [attachment intake](../etc/evidence/t540-s78-attachment-owner-intake.md); [S86 evidence](../etc/evidence/t540-s86-board-electrical-boundary.md). |
-| Files And ABI Surface | NXVM machine_board.c, d4_memory.c/h, board interface/state, machine.c/h, attachment_interface.h, plan/driver and every affected caller, existing owner gates and eight 0540 products. Optional neutral attachment admission callback replaces the private parity lookup; no copied board state or getter. |
-| Applicable Rules | Execution, architecture, coding, documentation, NXVM architecture/layout and source policy; architecture-governance then coding-governance skills. |
-| Verification | Complete ctest -L unit on build/t540-s4-nxvm-x64 and build/t540-s4-nxvm-x86-winlibs, existing specialized gates and injected boundary negatives; rebuild vm-0-5-0540, vm-profile-floppy-boot-matrix and core-machine-neutral-link-smoke in all eight t535-s4 profile/width Release trees; run each neutral and unchanged-INI boot once with 180000-ms containment; PE/banner/stripped/hash/freshness, documentation governance, local links and git diff --check. |
-| Expected Markers | All original parity/D4/speaker/absent-memory and resize markers retained; full units/gates pass; each product retains DOS prompt or running installer checkpoint. |
-| Asset Needs | Existing unchanged owner INIs and read-only/overlay BYOB media; retained ignored build caches needed by this receiver. No external master change or MyNES build. |
-| Reporting Requirements | Complete operation/helper/registration/caller inventory, baseline body comparisons, status/reset/rollback preservation, RAM-veto regression, actual diff counts and eight artifact hashes. |
-| Stop Conditions | Changed guest semantics/timing, missed owner registration, ambiguous failure ownership, failed proof or out-of-target mutation. Reconcile complete class before a P delivery. |
-| Exit Criteria | No electrical function or D4 memory callback borrows private Core board state; all callers use actual board; Core owns one RAM reconfiguration path and invokes optional board admission before mutation; statuses/order and complete proof retained; P1 push, actual committed-diff dual-role review and governance P2 accept S86 only. |
-| Original Owner Request | Complete reusable x86 Core and flat IBM-PC board components; preserve four products, automatically admit numeric S tasks, reject endless one-function repair batches and do not close T on partial extraction. |
-| Similar-Issue Sweep | All parity/D4/speaker/absent-memory definitions, declarations, callers, constructor and cold-reset PIT registrations, memory fault/write observer owners, RAM resize implementations and callers. Core-only A20/reset/NMI signal callbacks remain genuinely Core-owned. |
-
+S86 accepts the complete electrical/RAM-admission receiver at P1 `5654912d7`.
+Its [evidence](../etc/evidence/t540-s86-board-electrical-boundary.md) records
+the actual-change review and eight fresh product identities. The next complete
+boundary removes constructor/private association and classifies/migrates all
+direct fixtures before actual Core and flat IBM-PC movement.
 
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -134,6 +114,7 @@ the completed CPU extraction.
 | T540 S83 | Accepted: P1 231d0ec95 completes five input operations and all 36 calls on actual board handles; dual-width 470/470 units/gates, nineteen negatives, eight neutral executions and eight single boots pass. [Evidence](../etc/evidence/t540-s83-board-input-handle.md); remaining board/physical receivers stay open. |
 | T540 S84 | Accepted: P1 d23281d1b completes the display class and all callers on actual board handles; dual-width 470/470 units/gates, 21 negatives, eight neutral executions and eight one-shot boots pass. [Evidence](../etc/evidence/t540-s84-board-display-handle.md); other board receivers and physical movement remain open. |
 | T540 S85 | Accepted: P1 8b67d2cdb completes the controller configuration/callback class; dual-width 470/470 units/gates, 22 negatives, eight neutral executions and eight single boots pass. [Evidence](../etc/evidence/t540-s85-board-controller-handles.md); electrical, constructor/fixture and physical component cuts remain open. |
+| T540 S86 | Accepted: P1 5654912d7 completes electrical/RAM admission; dual-width 470/470 units/gates, 34 negatives, eight neutral executions and eight single boots pass. [Evidence](../etc/evidence/t540-s86-board-electrical-boundary.md); constructor/private association and physical extraction remain open. |
 
 ## T540 S1 Acceptance
 
@@ -4065,7 +4046,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S85 with unchanged owner INIs; S85 evidence records their hashes, PE
+T540 S86 with unchanged owner INIs; S86 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 
