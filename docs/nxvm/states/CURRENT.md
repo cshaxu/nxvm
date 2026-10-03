@@ -2,28 +2,7 @@
 
 ## Current Work
 
-### Active Packet: M5 T540 S91
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; next numeric S after accepted S90. |
-| Admission And Approval | Owner-approved complete T540 extraction and automatic numeric S admission. Shared and NXVM are admitted; MyNES does not consume x86 and must not change or rebuild. |
-| Objective | Deliver the complete common PIC board aggregation component: port decode, cascade, IRQ source ownership, reset/time/deadline/acknowledgement and destruction, with all actual callers. |
-| Non-goals | No DMA completion, family wiring completion, chip algorithm or timing change, scheduler, framework, INI/media/firmware change or App split. |
-| Reference Baseline | Clean accepted S90 b44ac5dee; four profiles and eight stripped 0540 products. |
-| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md), S91 whole PIC receiver; [ownership ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | Move PIC implementation to x86/ibmpc-common. Opaque endpoints and source leases replace App-embedded mutable layouts; the PIC lifetime owns leases. Preserve existing source aggregation and cascade algorithms. Update the fifteen measured production and all measured test consumers, including construction failure, FDC/HDC/KBC/RTC/PIT signals, reset/reconnect and diagnostics. Keep copied topology/timing and non-mutating IRR/IMR/ISR observations public; private structures stay private. No chip getter or mirrored state. |
-| Applicable Rules | Task Reading Set, Execution, Architecture, Coding, Document and NXVM source policy. One IRQ aggregation owner, one Core route publication/dispatch, neutral public contracts, whole-candidate rollback, no private cross-component layouts, one target per P. |
-| Verification | Independent single/cascaded PIC, shared-line assert/deassert, reset, deadline and route rollback tests; retained original assertions; complete root units x86/x64; specialized gates, six manifests, document/diff and generated single-Core link checks; rebuild eight stripped 0540 products and run each unchanged-INI checkpoint once. |
-| Expected Markers | No App PIC implementation or mutable public endpoint/source layout; every producer uses the same leased source; original PIC timing and cascade behavior preserved; all required proofs pass. |
-| Asset Needs | Existing approved embedded firmware and integration inputs only; no acquisition or owner INI edits. |
-| Reporting Requirements | Confirm whole component scope, record all constructor/reset/failure/teardown callers and actual source/test/build line counts, final test and artifact proof, then actual pushed-diff review. |
-| Stop Conditions | New chip semantics or timing, private handle getter, duplicated source state/routes, unrelated product changes or unexplained original checkpoint regression. |
-| Exit Criteria | Complete PIC aggregation physically Shared, independently tested and production-connected; App copies removed, opaque lifetime/rollback sound, no original assertion lost, all verification/artifacts pushed and reviewed. |
-| Original Owner Request | Finish actual flat Core/common/AT/XT components, not endless per-field preparation. |
-| Similar-Issue Sweep | All PIC endpoint/source declarations, port operations, producer callbacks, bind/rebind/reset/failure/finalization, direct fixtures, diagnostic reads and source/build ownership. DMA and family/D4 members remain assigned under T540. |
-
-M5 T540 S1-S90 are accepted; S91 is active.
+M5 T540 S1-S91 are accepted. No S packet is active.
 
 S90 accepts the complete common PIT port attachment and display dead-ABI
 cleanup. PIC/DMA aggregation, shared board construction/time/deadlines,
@@ -36,7 +15,20 @@ Actual board, profile, firmware and media choices remain outside this component.
 
 | Task | Progress |
 | --- | --- |
-| T540 S91 | Active: complete common PIC aggregation extraction; DMA, remaining board/family assembly and D4 still required. |
+| T540 S91 | Accepted complete common PIC aggregation; DMA, remaining board/family assembly and D4 still required. |
+
+## S91 Accepted Review
+
+Coordinator actual-pushed-diff review accepts Shared P1 `98fd9460b` and NXVM
+P2 `f19d84304`: PIC port/cascade/source ownership is physically Shared, all
+producers borrow opaque leases and old App copies are deleted. Original chip
+algorithms and hardware assertions remain. Independent tests pass 135/135;
+tools-disabled tests pass 129/129; complete units pass 472/472 per width.
+Both specialized gates, six manifests and documentation checks pass. Eight
+current stripped 0540 products pass their unchanged-INI checkpoints once.
+MyNES and owner INIs are unchanged. [S91 evidence](../etc/evidence/t540-s91-pic-aggregation.md)
+records proof, line counts and product hashes. Whole DMA aggregation is the
+next receiver; this acceptance does not close T540 or imply AT/XT completion.
 
 ## S90 Accepted Review
 

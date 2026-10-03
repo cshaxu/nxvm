@@ -273,3 +273,17 @@ Coordinator actual-change review accepts Shared P1 `8d3c57df3` and NXVM P2
 `89f9416b2`; the pushed blobs match the verified tree, and post-commit source
 comparison and both 81-check specialized targets pass. Governance P3 closes
 S88 only; flat IBM-PC components remain the next physical receivers.
+
+## S91: Accepted Complete PIC Aggregation
+
+Shared P1 `98fd9460b` and NXVM P2 `f19d84304` deliver one common PIC
+port/cascade/IRQ-source/reset/deadline/acknowledgement owner and remove App
+copies. All producers and direct fixtures use opaque pair-owned source leases.
+Copied diagnostics preserve OCW3 semantics; original algorithms/assertions
+remain. Independent tests pass 135/135 (129/129 without tools), complete units
+472/472 per width and both specialized gates pass. Six manifests and document
+governance pass; eight stripped products pass their unchanged-INI checkpoints
+once. MyNES and owner INIs are unchanged. The [S91 evidence](../etc/evidence/t540-s91-pic-aggregation.md)
+records the actual-pushed-diff audit, +2076/-1852 C/header lines and final hashes.
+Coordinator accepts both target-scoped P commits; governance P3 closes S91.
+DMA, complete board/family assembly and D4 remain required under open T540.

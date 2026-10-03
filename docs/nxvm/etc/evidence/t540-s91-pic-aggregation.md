@@ -1,6 +1,6 @@
 # T540 S91 Complete PIC Aggregation Evidence
 
-Baseline: b44ac5dee, clean accepted S90. S91 is active, not accepted.
+Baseline: b44ac5dee, clean accepted S90. S91 is accepted after actual-pushed-diff review.
 Local project-owned PIC source is authorized under the existing root MIT
 policy; no external source or asset is imported. Existing copyright notices
 remain with the moved implementation.
@@ -17,7 +17,7 @@ and source leases for one lifetime, preserving the original aggregation,
 cascade, port, reset and timing algorithms. Initial lease failure propagates
 through the owning construction operation; reset/reconnect reuses the lease.
 No private chip getter, App facade, second registry or hardware model is added.
-Acceptance, complete proof and final artifacts are pending.
+The sections below record complete proof, final artifacts and acceptance.
 
 ## Implementation Progress
 
@@ -89,8 +89,8 @@ assertions are unchanged. Independent tests pass 135/135 on this final tree;
 complete root unit/gate reruns pass. The deployed products require
 no additional rebuild for this test-only cleanup.
 
-Pushed-diff review remains pending. S91 and T540 remain open; no implementation
-P is submitted yet.
+Implementation delivery is Shared P1 `98fd9460b` and NXVM P2 `f19d84304`, both
+immediately pushed to origin/master. Governance P3 closes only S91; T540 stays open.
 
 Actual fixture review finds one missing explicit PIC teardown in the Compaq
 HDC direct fixture. Both normal and failure exits now destroy the borrowed
@@ -104,6 +104,17 @@ publishes neither endpoint, retains the pre-existing port and leaves no earlier
 PIC route installed. This directly verifies the PIC-to-Core atomic publication
 contract rather than relying only on Core's general registration tests. The
 regression passes; final complete suites are rerun after this addition.
+
+Coordinator review inspects the actual pushed source/header, build, fixture,
+test, artifact and document differences against b44ac5dee. It confirms the
+single aggregation owner and variant-selecting composition; publication and
+construction failure handling; producer-before-pair teardown; non-mutating
+diagnostics; preserved hardware assertions; and no App copy, private chip
+getter, mirrored source state or unrelated consumer change. Commit target
+lists are disjoint Shared/NXVM and the reviewed tree equals origin/master.
+The complete PIC ledger batch is accepted. Documentation review checks the
+packet, numeric S/P order, retained task status and truthful residual owners,
+not merely the structural documentation gate. The next whole receiver is DMA.
 
 ## Final Delivery Proof
 

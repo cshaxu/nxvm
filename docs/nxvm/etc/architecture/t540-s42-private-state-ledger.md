@@ -50,6 +50,13 @@ qualifies those distinct owners.
 
 ## S91 Whole PIC Receiver
 
+Accepted Shared P1 `98fd9460b` and NXVM P2 `f19d84304` physically deliver the
+whole PIC batch. Opaque pair-owned source leases replace all embedded layouts;
+all production callers and original tests are connected. Independent allocator
+and port-rollback proof, complete units/gates and eight final products pass.
+The [S91 evidence](../evidence/t540-s91-pic-aggregation.md) records actual-change
+review. DMA, shared board assembly, AT/XT wiring and genuine D4 remain open.
+
 Current source inventory at b44ac5dee measures fifteen production and
 sixty-five test files referencing PIC endpoints, source leases or their
 layout. The entire aggregation lifetime and port/cascade/IRQ operation class
