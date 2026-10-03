@@ -2,7 +2,7 @@
 
 ## Goal And Dependency
 
-Admitted as T540 after closed [independent chips](m5-shared-chip-extraction.md).
+Admitted as T540 after closed [independent chips](../proposals/m5-shared-chip-extraction.md).
 Extract the neutral x86 executor and the actual common
 board mechanisms of XT, AT, DeskPro 386 and default PC/AT into the flat
 `src/x86/ibmpc-common`, `src/x86/ibmpc-at` and `src/x86/ibmpc-xt` components.
@@ -133,6 +133,15 @@ but consumed by neutral Core construction and timing declarations. Move them
 verbatim to an existing neutral owner; do not add a validator facade or a
 second validation path. S68-S70 retain their existing receiving boundaries.
 
+S78 measures the remaining attachment class before implementation: nineteen
+private callback slots, six production board-access owners and 97 direct-board
+test files. The [attachment intake](../etc/evidence/t540-s78-attachment-owner-intake.md)
+specifies one copied public binding and one opaque board handle, preserving
+construction rollback and finalization order. Prospective S79 receives the
+whole callback publication cut, not one slot; board-handle/test classification
+then precedes physical relocation. No getter, registry, parallel binding or
+new lifecycle worker is eligible. This design receiver changes no runtime.
+
 ## Verification And Exit
 
 - Shared board code depends on chip public contracts and declared neutral
@@ -156,4 +165,4 @@ Shared plus NXVM, with other receivers explicitly admitted if affected; one
 target per commit. Stop for a contract/behavior change beyond extraction,
 unresolved shared ownership, or a requirement to import protected material.
 
-Next: [four independent PC Apps](m5-independent-pc-apps.md).
+Next: [four independent PC Apps](../proposals/m5-independent-pc-apps.md).

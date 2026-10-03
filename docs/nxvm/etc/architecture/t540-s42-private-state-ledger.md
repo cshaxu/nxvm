@@ -151,6 +151,13 @@ P1 `bd0256b47` is accepted after actual pushed-diff review and full proof.
 Attachment ownership and direct-test classification remain the next measured
 receivers before physical Core/IBM-PC relocation; this row is not that move.
 
+S78 measures the remaining attachment boundary: six production owners have
+451 board association accesses, and nineteen callbacks still publish through
+private Core slots. The [attachment intake](../evidence/t540-s78-attachment-owner-intake.md)
+assigns the complete copied-binding cut to prospective S79, then the opaque
+board-handle/test-classification cut before physical relocation. These are
+real ownership contracts, not a private-pointer getter or completed move.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

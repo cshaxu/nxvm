@@ -65,6 +65,17 @@ it does not change runtime ownership before the corresponding cutover.
   immutable Core mapping route; no host BDA/IVT/reset
   service or software-interrupt interception is restored.
 
+### Attachment Target Before Physical Relocation
+
+T540's remaining attachment cut uses one opaque board handle and one copied
+Core callback binding. Board APIs consume the board handle; execution/debug
+APIs consume the Core handle. Composition establishes their lifetime without
+exporting layouts, a private-state getter or a side registry. Binding is
+published once before freeze; existing Core destruction finalizes attachment
+state before its execution resources. The [S78 intake](../etc/evidence/t540-s78-attachment-owner-intake.md)
+records the current private dependencies and distinguishes this target from
+implemented behavior. It adds no device framework or lifecycle queue.
+
 ### Fixed Composition Without A New Framework
 
 Build selection supplies one profile composition entry to the adapter:
