@@ -181,4 +181,7 @@ checks pass, and all eight product builds, neutral executions and one-shot
 INI boots pass. Eight optimized stripped 0540 EXEs are refreshed. The
 substring gate false positive and sandbox build retry are recorded without
 miscounting old binaries. Shared, MyNES, INIs and external masters are unchanged.
-Coordinator acceptance follows the actual immediately pushed P1 review.
+Coordinator accepts immediately pushed P1 `d23281d1b` after actual review of
+all 41 committed paths, retained algorithms/statuses, caller inventory and
+eight artifact identities. Governance P2 accepts S84 only and removes its
+active packet; T540's remaining receivers and physical movement stay open.

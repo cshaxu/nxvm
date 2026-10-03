@@ -42,7 +42,7 @@ Copied probe state is bounded below build and removed after proof.
 
 ## Verification And Delivery
 
-Implementation verification is complete; coordinator acceptance follows P1.
+Implementation verification is complete; coordinator acceptance is below.
 Complete units pass 470/470 in both widths: x64 289.17 seconds, x86 94.19
 seconds. Their serial CPU-boundary negatives pass in 63.60/66.67 seconds.
 Complete specialized gates pass in both widths, including the 402-row strict
@@ -93,3 +93,24 @@ Other public board configuration/observation operations, chip-wiring contexts,
 direct-board fixture classification and Core's private board association
 remain open. Physical neutral Core and flat IBM-PC relocation is still
 required. S84 does not close T540.
+
+## Coordinator Acceptance
+
+P1 `d23281d1badeaaf5887f35496ff64bb0218f0845` was immediately pushed to
+origin/master. Actual committed-diff review covers all 41 paths: seven
+production files, nineteen tests, two gates, five documents and eight EXEs.
+Seventeen whole caller files differ only by receiver substitution; Core's
+guard/lifecycle implementation is unchanged. Display's cache, CECG validation,
+status ordering and paused/stopped observation retain the original behavior.
+The three extended fixtures retain their original assertions and constructor
+ownership. The gate correction rejects exact board types without rejecting
+the neutral guard's longer identifier. All committed blobs match their
+reviewed files, and the eight evidence hashes match committed artifact bytes.
+
+The full packet, original owner request, numeric allocation, complete receiver
+sweep, rules, test results, sole finalizer and remaining ledger agree. No
+corrective implementation P is needed. Governance P2 accepts S84 and removes
+only its active packet; T540's other public board operations, wiring contexts,
+direct fixtures and physical relocation remain open.
+P2's three governance-only deltas pass documentation checks, all 446 current
+changed-document links and diff checks; no executable input changes again.

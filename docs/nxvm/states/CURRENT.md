@@ -2,32 +2,12 @@
 
 ## Current Work
 
-M5 T540 S1-S83 are accepted; S84 is admitted for the complete display receiver.
+M5 T540 S1-S84 are accepted; input and display callers use actual board handles.
 Plan and configuration constructors publish the actual borrowed board beside Core.
 Public board callers, test classification and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 
-## Active S84 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T540 S84, next numeric receiver after accepted S83. |
-| Admission And Approval | Coordinator admits under the owner's automatic numeric-S authorization; executor confirms before implementation. NXVM target only, existing embedded-artifact exception retained. |
-| Objective | Move configure/observe/capture display operations and every actual caller to the borrowed board handle; preserve the sole VADP state and Core lifecycle/configuration authority. |
-| Non-goals | No video algorithm, timing grade, Shared/MyNES, INI, external master, other configuration class or physical relocation change. |
-| Reference Baseline | Accepted S83 P2 ca0994e7340d6360ff0fc6a82c479702f4143063. |
-| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md); [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md); [attachment intake](../etc/evidence/t540-s78-attachment-owner-intake.md); [S83 evidence](../etc/evidence/t540-s83-board-input-handle.md). |
-| Files And ABI Surface | NXVM devices machine_display.c, machine_board_interface.h, machine.h, machine_interface.h, machine_plan.c and machine_board_state.h; machine/display.c; all affected unit/integration callers; existing display-authority gate and controller-authority exact-token correction; task documents and eight 0540 EXEs. Three receivers become board pointers. Existing configuration-open declaration becomes public, implementation unchanged. Internal topology application receives the already constructed board, without private lookup. |
-| Applicable Rules | Execution, architecture, coding, documentation, NXVM architecture/layout and source policy; architecture-governance then coding-governance skills. |
-| Verification | Full dual-width units and specialized gates via build/s84-units.ps1; cmake -P build/s84-negative.cmake and build/s84-contract-negative.cmake; eight builds via build/s84-product-builds.ps1; build/s84-product-boots.ps1 once per profile/width with 180000-ms containment; build/s84-artifacts.ps1; documentation governance, build/s84-links.ps1 and git diff --check. Transient selection: display authority, input/display lifecycle and Compaq CECG regressions. |
-| Expected Markers | Original unit markers retained; M5:T540:S84:BOARD-DISPLAY-HANDLE:OK; full units/gates and existing DOS prompt/installer markers. |
-| Asset Needs | Existing unchanged INIs and read-only/overlay BYOB inputs. Ignored build trees/scripts/logs retained for this and the immediately next receiver. No master changes or MyNES compilation. |
-| Reporting Requirements | Complete three-operation caller inventory, actual code-size delta, preserved statuses/cache/configuration semantics, dual-width proof and eight hashes. Report remaining private associations honestly. |
-| Stop Conditions | New algorithm or lifecycle behavior, ambiguous ownership, failed required gate, asset/configuration change, out-of-target diff or duplicate state/lifetime path. Repair in-scope failures before closure. |
-| Exit Criteria | Complete display class uses real board handle without Core private layout; sole Core guard implementation and VADP state retained; every required proof passes; complete P1 immediately pushed, actual committed-diff dual-role review, governance P2 accepts only S84. |
-| Original Owner Request | Complete reusable x86 Core/IBM-PC extraction, automatically admit numeric S tasks, preserve all four products and do not close T on partial relocation. |
-| Similar-Issue Sweep | Every configure/observe/capture declaration, definition and production/unit/integration call, including multiline calls and null/error cases; constructor topology must use its actual published board. Other configuration, wiring and fixture classes remain explicit next receivers. |
 
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -127,7 +107,7 @@ the completed CPU extraction.
 | T540 S81 | Accepted: frozen-plan dual-handle publication and sole failure cleanup; dual-width 470/470 units/gates, nine injected negatives, eight neutral executions and eight single boots pass. Public board operations and physical movement remain open. |
 | T540 S82 | Accepted: P1 37b941c35 completes configuration/allocator handle publication; 203 existing calls migrated; dual-width 470/470 units/gates, twelve negatives, eight neutral executions and eight single boots pass. [Evidence](../etc/evidence/t540-s82-config-board-publication.md); public board operations and physical movement remain open. |
 | T540 S83 | Accepted: P1 231d0ec95 completes five input operations and all 36 calls on actual board handles; dual-width 470/470 units/gates, nineteen negatives, eight neutral executions and eight single boots pass. [Evidence](../etc/evidence/t540-s83-board-input-handle.md); remaining board/physical receivers stay open. |
-| T540 S84 | Implemented, review pending: complete display class and all callers use actual board handles; dual-width 470/470 units/gates, 21 negatives, eight neutral executions and eight one-shot boots pass. [Evidence](../etc/evidence/t540-s84-board-display-handle.md); other board receivers and physical movement remain open. |
+| T540 S84 | Accepted: P1 d23281d1b completes the display class and all callers on actual board handles; dual-width 470/470 units/gates, 21 negatives, eight neutral executions and eight one-shot boots pass. [Evidence](../etc/evidence/t540-s84-board-display-handle.md); other board receivers and physical movement remain open. |
 
 ## T540 S1 Acceptance
 
