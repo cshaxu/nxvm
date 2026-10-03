@@ -22,8 +22,10 @@ static lib_i32 machine_explicit_time_prepare(core_machine **out_machine)
         .ticks_per_second = 1u
     };
 
-    return core_machine_create(&config, out_machine, LIB_NULL) == LIB_STATUS_OK &&
-        core_machine_configure_rtc_cmos(*out_machine, &rtc) == LIB_STATUS_OK &&
+    core_machine_board_state *board = LIB_NULL;
+
+    return core_machine_create(&config, out_machine, &board) == LIB_STATUS_OK &&
+        core_machine_configure_rtc_cmos(board, &rtc) == LIB_STATUS_OK &&
         test_core_machine_fixture_register_reset_mapping(*out_machine, 0x00fffff0u,
             0x000ffff0u, 16u) == LIB_STATUS_OK &&
         core_machine_freeze_execution_providers(*out_machine) == LIB_STATUS_OK &&

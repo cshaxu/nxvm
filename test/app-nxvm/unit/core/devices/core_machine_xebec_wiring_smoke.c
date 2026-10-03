@@ -114,6 +114,7 @@ lib_i32 main(void)
     xebec_media media = {{0}};
     core_machine_dma_request_binding fdc_binding = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_hdc_topology topology = hdc;
     const lib_u8 dcb[] = {0x00u, 0x20u, 0x01u, 0x23u, 0u, 0u};
     const lib_u8 initialize_dcb[] = {0x0cu, 0u, 0u, 0u, 0u, 0u};
@@ -129,7 +130,7 @@ lib_i32 main(void)
     lib_size index;
     lib_i32 failed = 0;
 
-    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+    if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
         core_machine_media_registry_create(&registry) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         for (index = 0u; index < sizeof(media.bytes); ++index)
@@ -138,8 +139,8 @@ lib_i32 main(void)
                 &xebec_media_provider) != LIB_STATUS_OK ||
             core_machine_media_registry_freeze(registry) != LIB_STATUS_OK) failed |= 0x02;
         topology.media_registry = registry;
-        if (!failed && (core_machine_configure_dma(machine, &dma, &fdc_binding) != LIB_STATUS_OK ||
-            core_machine_configure_hdc(machine, &topology) != LIB_STATUS_OK)) {
+        if (!failed && (core_machine_configure_dma(board, &dma, &fdc_binding) != LIB_STATUS_OK ||
+            core_machine_configure_hdc(board, &topology) != LIB_STATUS_OK)) {
             failed |= 0x04;
         } else if (!core_machine_port_has_read(&machine->executor_port, 0x0320u) ||
             !core_machine_port_has_write(&machine->executor_port, 0x0320u) ||

@@ -123,9 +123,9 @@ struct core_machine_board_state {
     lib_u8 hdc_configured;
 };
 
-lib_status core_machine_configure_fdc(core_machine *machine,
+lib_status core_machine_configure_fdc(core_machine_board_state *board,
     const core_machine_fdc_topology *topology);
-lib_status core_machine_configure_hdc(core_machine *machine,
+lib_status core_machine_configure_hdc(core_machine_board_state *board,
     const core_machine_hdc_topology *topology);
 void core_machine_board_reset_devices(void *owner);
 /* Private board construction failure seams use the one production factory. */

@@ -188,6 +188,13 @@ topology operation consumes the constructor's actual board output, not a
 private lookup. Other configuration/wiring and fixture ownership still
 precede physical movement; this cut does not close T540.
 
+S85 receives the complete DMA/RTC/FDC/HDC configuration and binding class,
+including every caller and board-owned callback registration at construction
+and cold reset. The same actual board allocation is used throughout; FDC's
+separate route-publication Core context remains opaque. Parity/D4, neutral RAM
+resize veto, constructor association and direct-fixture ownership remain
+subsequent receivers before physical movement. No new getter or owner exists.
+
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
 - Common board contract tests live with their flat receiver under

@@ -235,17 +235,17 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
                 LIB_STATUS_OK) return status;
         core_machine_display_provider_slot_freeze(plan->display_provider);
     }
-    if (topology->dma_present && (status = core_machine_configure_dma(machine,
+    if (topology->dma_present && (status = core_machine_configure_dma(board,
             &topology->dma, &board->fdc_dma_request)) != LIB_STATUS_OK) return status;
     if (topology->rtc_cmos_present && (status = core_machine_configure_rtc_cmos(
-            machine, &topology->rtc_cmos)) != LIB_STATUS_OK) return status;
+            board, &topology->rtc_cmos)) != LIB_STATUS_OK) return status;
     if (topology->fdc_present) {
         fdc.media_registry = plan->media_registry;
         fdc.drives = topology->fdc_drives;
         fdc.config = topology->fdc;
         fdc.observation_provider = plan->fdc_observation_provider;
         fdc.dma_request = board->fdc_dma_request;
-        if ((status = core_machine_configure_fdc(machine, &fdc)) != LIB_STATUS_OK) {
+        if ((status = core_machine_configure_fdc(board, &fdc)) != LIB_STATUS_OK) {
             return status;
         }
     }
@@ -254,7 +254,7 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
         hdc.media_id = topology->hdc_media_id;
         hdc.slave_media_id = topology->hdc_slave_media_id;
         hdc.config = topology->hdc;
-        if ((status = core_machine_configure_hdc(machine, &hdc)) != LIB_STATUS_OK) {
+        if ((status = core_machine_configure_hdc(board, &hdc)) != LIB_STATUS_OK) {
             return status;
         }
     }

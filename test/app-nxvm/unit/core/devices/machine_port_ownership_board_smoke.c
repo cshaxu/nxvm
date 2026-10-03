@@ -125,17 +125,18 @@ static lib_i32 core_machine_port_probe_fdc_read_is_independent(void)
     core_machine_port_probe_state state = {0u, 0u, 0u, LIB_STATUS_OK,
         LIB_STATUS_OK};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 failed = core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
+        core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+        core_machine_configure_dma(board, &dma_wiring, &dma_request) !=
             LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,
             &read_provider, &state) != LIB_STATUS_OK;
 
     topology.media_registry = media;
     topology.dma_request = dma_request;
-    failed |= !failed && core_machine_configure_fdc(machine, &topology) !=
+    failed |= !failed && core_machine_configure_fdc(board, &topology) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
@@ -180,16 +181,17 @@ static lib_i32 core_machine_port_probe_fdc_write_conflict_is_retained(void)
     core_machine_port_probe_state state = {0u, 0u, 0u, LIB_STATUS_OK,
         LIB_STATUS_OK};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
+        core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+        core_machine_configure_dma(board, &dma_wiring, &dma_request) !=
             LIB_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,
             &write_provider, &state) != LIB_STATUS_OK;
 
     topology.media_registry = media;
     topology.dma_request = dma_request;
-    failed |= !failed && core_machine_configure_fdc(machine, &topology) !=
+    failed |= !failed && core_machine_configure_fdc(board, &topology) !=
         LIB_STATUS_INVALID_STATE;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;

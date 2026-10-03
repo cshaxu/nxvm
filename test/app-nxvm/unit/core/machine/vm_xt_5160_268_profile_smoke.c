@@ -142,7 +142,7 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
     failed |= !failed && core_machine_plan_set_topology(plan, &profile.topology) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_get_fdc_dma_request_binding(machine, &binding) !=
+    failed |= !failed && core_machine_get_fdc_dma_request_binding(board, &binding) !=
         LIB_STATUS_OK;
     failed |= !failed && (binding.core_token == 0u || binding.channel != 2u ||
         board->fdc.connect.config.irq != 6u ||

@@ -119,6 +119,7 @@ static lib_i32 rtc_cmos_s3_test_cmos_adapter(void)
     core_machine_config config = { 0 };
     core_machine_rtc_cmos_config rtc_config = { 0 };
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 masked = 0;
     lib_i32 failed = 0;
@@ -133,14 +134,14 @@ static lib_i32 rtc_cmos_s3_test_cmos_adapter(void)
     rtc_config.defaults[0].value = 0x5au;
     rtc_config.default_count = 1u;
     rtc_config.timing.provenance = CORE_MACHINE_RTC_TIMING_L3_SOURCE;
-    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_configure_rtc_cmos(machine, &rtc_config) != LIB_STATUS_INVALID_ARGUMENT) {
+    if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+        core_machine_configure_rtc_cmos(board, &rtc_config) != LIB_STATUS_INVALID_ARGUMENT) {
         failed = 1;
     }
     rtc_config.timing = (core_machine_rtc_timing_plan) {1u, 1u,
         CORE_MACHINE_RTC_TIMING_L3_SOURCE};
     if (failed ||
-        core_machine_configure_rtc_cmos(machine, &rtc_config) != LIB_STATUS_OK ||
+        core_machine_configure_rtc_cmos(board, &rtc_config) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||

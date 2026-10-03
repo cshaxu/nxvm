@@ -49,17 +49,19 @@ lib_i32 main(void)
     core_machine_fdc_topology first_topology;
     core_machine_fdc_topology second_topology;
     core_machine *first = LIB_NULL;
+    core_machine_board_state *first_board = LIB_NULL;
     core_machine *second = LIB_NULL;
+    core_machine_board_state *second_board = LIB_NULL;
     lib_i32 failed = 0;
 
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&core_machine_dma_binding_token_config, &first, LIB_NULL) !=
+        core_machine_create(&core_machine_dma_binding_token_config, &first, &first_board) !=
             LIB_STATUS_OK ||
-        core_machine_create(&core_machine_dma_binding_token_config, &second, LIB_NULL) !=
+        core_machine_create(&core_machine_dma_binding_token_config, &second, &second_board) !=
             LIB_STATUS_OK ||
-        core_machine_configure_dma(first, &core_machine_dma_binding_token_wiring,
+        core_machine_configure_dma(first_board, &core_machine_dma_binding_token_wiring,
             &first_request) != LIB_STATUS_OK ||
-        core_machine_configure_dma(second, &core_machine_dma_binding_token_wiring,
+        core_machine_configure_dma(second_board, &core_machine_dma_binding_token_wiring,
             &second_request) != LIB_STATUS_OK ||
         first_request.core_token == 0u || second_request.core_token == 0u ||
         first_request.core_token == second_request.core_token) {
@@ -69,12 +71,12 @@ lib_i32 main(void)
 
     first_topology = core_machine_dma_binding_token_topology(media, first_request);
     second_topology = core_machine_dma_binding_token_topology(media, second_request);
-    if (core_machine_configure_fdc(first, &second_topology) !=
+    if (core_machine_configure_fdc(first_board, &second_topology) !=
             LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_configure_fdc(second, &first_topology) !=
+        core_machine_configure_fdc(second_board, &first_topology) !=
             LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_configure_fdc(first, &first_topology) != LIB_STATUS_OK ||
-        core_machine_configure_fdc(second, &second_topology) != LIB_STATUS_OK ||
+        core_machine_configure_fdc(first_board, &first_topology) != LIB_STATUS_OK ||
+        core_machine_configure_fdc(second_board, &second_topology) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(first) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(second) != LIB_STATUS_OK ||
         core_machine_reset(first) != LIB_STATUS_OK ||

@@ -360,7 +360,7 @@ lib_status vm_machine_storage_initialize(vm_machine *machine)
     status = core_machine_create_from_plan(machine->core_machine_plan,
         &machine->core_machine, &machine->board);
     if (status == LIB_STATUS_OK) {
-        status = core_machine_get_fdc_dma_request_binding(machine->core_machine,
+        status = core_machine_get_fdc_dma_request_binding(machine->board,
             &machine->fdc_dma_request);
     }
     if (status != LIB_STATUS_OK) {

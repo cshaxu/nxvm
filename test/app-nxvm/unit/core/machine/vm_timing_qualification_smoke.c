@@ -100,7 +100,7 @@ static lib_i32 vm_timing_qualification_assert_case(
         failed = 1;
     }
     if (!failed) {
-        status = core_machine_configure_dma(machine, &wiring, &request);
+        status = core_machine_configure_dma(board, &wiring, &request);
         if (status != LIB_STATUS_OK || request.core_token == 0u) {
             printf("%s: DMA configuration status %d\n", test_case->name, status);
             failed = 1;

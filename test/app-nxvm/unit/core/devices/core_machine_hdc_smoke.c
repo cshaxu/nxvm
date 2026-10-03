@@ -174,6 +174,7 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
     core_machine_media_registry *registry = LIB_NULL;
     core_machine_hdc_topology topology = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u32 status = 0u;
     lib_u16 word = 0u;
     lib_i32 failed = 0;
@@ -181,7 +182,7 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
     media.sector[0][0] = 0x78u;
     media.sector[0][1] = 0x56u;
     if (core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(registry, 1u, &media,
             &core_machine_hdc_fixture_provider) != LIB_STATUS_OK ||
         core_machine_media_registry_freeze(registry) != LIB_STATUS_OK) {
@@ -190,7 +191,7 @@ static lib_i32 core_machine_hdc_test_ibm_wd1003(void)
         topology.media_registry = registry;
         topology.media_id = 1u;
             topology.config = hdc_plan;
-        if (core_machine_configure_hdc(machine, &topology) != LIB_STATUS_OK ||
+        if (core_machine_configure_hdc(board, &topology) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK ||
             hdc_observe(&machine->board->hdc).error != X86_HDC_ERROR_DIAGNOSTIC_OK ||
@@ -263,6 +264,7 @@ lib_i32 main(void)
     core_machine_media_registry *registry = LIB_NULL;
     core_machine_hdc_topology topology = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_hdc *hdc;
     lib_u32 status = 0u;
     lib_u32 error = 0u;
@@ -274,7 +276,7 @@ lib_i32 main(void)
     media.sector[0][0] = 0x34u;
     media.sector[0][1] = 0x12u;
     if (core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed |= 0x01;
+        core_machine_create(&config, &machine, &board) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         hdc = &machine->board->hdc;
         if (hdc == LIB_NULL ||
@@ -288,12 +290,12 @@ lib_i32 main(void)
             topology.media_registry = registry;
             topology.media_id = 1u;
             topology.config = (core_machine_hdc_config) {0};
-            if (core_machine_configure_hdc(machine, &topology) !=
+            if (core_machine_configure_hdc(board, &topology) !=
                 LIB_STATUS_INVALID_ARGUMENT) {
                 failed |= 0x04;
             }
             topology.config = hdc_plan;
-            if (!failed && (core_machine_configure_hdc(machine, &topology) != LIB_STATUS_OK ||
+            if (!failed && (core_machine_configure_hdc(board, &topology) != LIB_STATUS_OK ||
                 core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
                 core_machine_reset(machine) != LIB_STATUS_OK)) {
                 failed |= 0x04;

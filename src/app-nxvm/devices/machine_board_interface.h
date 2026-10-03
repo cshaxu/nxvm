@@ -370,12 +370,12 @@ lib_status core_machine_observe_display_snapshot(const core_machine_board_state 
 
 lib_status core_machine_configure_display(core_machine_board_state *board,
     const core_machine_display_config *config);
-lib_status core_machine_configure_dma(core_machine *machine,
+lib_status core_machine_configure_dma(core_machine_board_state *board,
     const core_machine_dma_wiring *wiring,
     core_machine_dma_request_binding *out_fdc_request);
-lib_status core_machine_get_fdc_dma_request_binding(const core_machine *machine,
+lib_status core_machine_get_fdc_dma_request_binding(const core_machine_board_state *board,
     core_machine_dma_request_binding *out_binding);
-lib_status core_machine_configure_rtc_cmos(core_machine *machine,
+lib_status core_machine_configure_rtc_cmos(core_machine_board_state *board,
     const core_machine_rtc_cmos_config *config);
 lib_status core_machine_configure_planar_parity(core_machine *machine,
     const core_machine_planar_parity_config *config);

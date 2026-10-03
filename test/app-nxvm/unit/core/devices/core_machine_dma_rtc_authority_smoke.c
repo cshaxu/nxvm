@@ -44,10 +44,11 @@ static lib_i32 core_machine_dma_refresh_follows_pit_channel_1(void)
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_dma_request_binding fdc_request = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&configuration, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_configure_dma(machine, &wiring, &fdc_request) != LIB_STATUS_OK ||
+    failed |= core_machine_create(&configuration, &machine, &board) != LIB_STATUS_OK ||
+        core_machine_configure_dma(board, &wiring, &fdc_request) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -77,6 +78,7 @@ int main(void)
     core_machine_run_budget budget = {3u, 0u};
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     const lib_u8 program[] = { 0x90u, 0xf4u };
     lib_u8 interrupt_vector = 0u;
     lib_i32 nmi_masked = 0;
@@ -85,6 +87,14 @@ int main(void)
     lib_i32 stage = 1;
 
     failed |= core_machine_dma_refresh_follows_pit_channel_1();
+    failed |= core_machine_configure_dma(LIB_NULL, &dma_wiring, &fdc_request) !=
+        LIB_STATUS_INVALID_STATE ||
+        core_machine_get_fdc_dma_request_binding(LIB_NULL, &fdc_request) !=
+            LIB_STATUS_INVALID_STATE ||
+        core_machine_configure_rtc_cmos(LIB_NULL, &rtc_config) !=
+            LIB_STATUS_INVALID_STATE ||
+        core_machine_configure_fdc(LIB_NULL, LIB_NULL) != LIB_STATUS_INVALID_STATE ||
+        core_machine_configure_hdc(LIB_NULL, LIB_NULL) != LIB_STATUS_INVALID_STATE;
     machine_config.ticks_per_instruction = 1u;
     machine_config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     rtc_config.index_port = 0x0070u;
@@ -97,24 +107,24 @@ int main(void)
     rtc_config.default_count = 1u;
 
     invalid_wiring.controller_count = 1u;
-    if (core_machine_create(&machine_config, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_configure_dma(machine, &invalid_wiring, &fdc_request) !=
+    if (core_machine_create(&machine_config, &machine, &board) != LIB_STATUS_OK ||
+        core_machine_configure_dma(board, &invalid_wiring, &fdc_request) !=
             LIB_STATUS_INVALID_ARGUMENT ||
         (invalid_wiring = dma_wiring, invalid_wiring.fdc_channel = 0u,
-            core_machine_configure_dma(machine, &invalid_wiring, &fdc_request)) !=
+            core_machine_configure_dma(board, &invalid_wiring, &fdc_request)) !=
             LIB_STATUS_INVALID_ARGUMENT ||
-        core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
+        core_machine_configure_dma(board, &dma_wiring, &fdc_request) !=
             LIB_STATUS_OK ||
-        core_machine_configure_rtc_cmos(machine, &rtc_config) != LIB_STATUS_OK ||
+        core_machine_configure_rtc_cmos(board, &rtc_config) != LIB_STATUS_OK ||
         fdc_request.core_token == 0u || fdc_request.channel != 2u ||
-        core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
+        core_machine_configure_dma(board, &dma_wiring, &fdc_request) !=
             LIB_STATUS_INVALID_STATE ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         machine->board->shared_dma_primary.connect.device_owner[2u] != &machine->board->fdc ||
-        machine->board->shared_dma_primary.connect.device_owner[0u] != machine ||
+        machine->board->shared_dma_primary.connect.device_owner[0u] != board ||
         machine->board->refresh_dma_request.core_token == 0u ||
         machine->board->refresh_dma_request.channel != 0u ||
         core_machine_dma_has_pending_request(&machine->board->shared_dma_primary,
@@ -179,5 +189,6 @@ done:
     core_machine_destroy(machine);
     if (failed) printf("M5:T296:S3:DMA-RTC-AUTHORITY:FAIL:%d\n", stage);
     if (!failed) printf("M5:T296:S3:DMA-RTC-AUTHORITY:OK\n");
+    if (!failed) puts("M5:T540:S85:BOARD-CONTROLLER-HANDLES:OK");
     return failed;
 }

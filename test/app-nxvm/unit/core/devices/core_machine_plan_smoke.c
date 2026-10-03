@@ -362,7 +362,7 @@ static lib_i32 plan_selects_single_controller_xt_board(void)
         core_machine_port_has_write(&machine->executor_port, 0x00d0u) ||
         core_machine_port_has_read(&machine->executor_port, 0x0070u) ||
         core_machine_port_has_write(&machine->executor_port, 0x0071u));
-    failed |= !failed && core_machine_get_fdc_dma_request_binding(machine,
+    failed |= !failed && core_machine_get_fdc_dma_request_binding(board,
         &(core_machine_dma_request_binding) {0}) != LIB_STATUS_INVALID_STATE;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;

@@ -2,11 +2,32 @@
 
 ## Current Work
 
-M5 T540 S1-S84 are accepted; input and display callers use actual board handles.
+M5 T540 S1-S84 are accepted; S85 receives controller configuration and wiring.
 Plan and configuration constructors publish the actual borrowed board beside Core.
 Public board callers, test classification and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
+
+## Active S85 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T540 S85, next numeric receiver after accepted S84. |
+| Admission And Approval | Coordinator admits under automatic numeric-S authorization; executor confirms before implementation. NXVM target only; existing embedded-artifact exception retained. |
+| Objective | Receive the complete DMA/RTC/FDC/HDC configuration and binding class on the actual borrowed board; migrate its DMA/PIT/RTC callback contexts together. |
+| Non-goals | No chip algorithm, timing grade, parity/D4 class, neutral RAM reconfiguration, Shared/MyNES, INI, external master or physical relocation change. |
+| Reference Baseline | Accepted S84 P2 dceff7243a52a0f74ba21e06cd3a03e0cf87072e. |
+| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md); [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md); [attachment intake](../etc/evidence/t540-s78-attachment-owner-intake.md); [S85 evidence](../etc/evidence/t540-s85-board-controller-handles.md). |
+| Files And ABI Surface | NXVM machine_board.c, board interface/state declarations, machine_plan.c, machine/machine.c, all affected unit callers, existing controller/DMA-RTC gates, task documents and eight 0540 EXEs. Five operations use real board pointers; related existing callbacks receive the same allocation. |
+| Applicable Rules | Execution, architecture, coding, documentation, NXVM architecture/layout and source policy; architecture-governance then coding-governance skills. |
+| Verification | pwsh -File build/s85-units.ps1 separately with -Widths x64 and -Widths x86; cmake -P build/s85-negative.cmake; pwsh -File build/s85-product-builds.ps1; build/s85-product-boots.ps1 once per profile/width, 180000-ms containment; build/s85-artifacts.ps1; documentation governance, build/s85-links.ps1 and git diff --check. |
+| Expected Markers | Original unit markers retained; M5:T540:S85:BOARD-CONTROLLER-HANDLES:OK; full units/gates and existing DOS prompt/installer markers. |
+| Asset Needs | Existing unchanged INIs and read-only/overlay BYOB inputs; ignored build scripts/logs retained for receiving work. No master changes or MyNES compilation. |
+| Reporting Requirements | Complete five-operation and callback-registration inventory, actual diff, preserved statuses/rollback/reset order, dual-width proof and eight artifact hashes; name remaining private associations. |
+| Stop Conditions | New algorithm/lifecycle behavior, ambiguous ownership, failed required proof, asset/configuration change, out-of-target diff or duplicate owner. Repair in-scope failures before closure. |
+| Exit Criteria | All five operations/callers and their board callback contexts consume the real board; Core alone owns route eligibility/publication/lifetime; full proofs pass; complete P1 immediately pushed, committed-diff dual-role review and governance P2 accept S85 only. |
+| Original Owner Request | Complete reusable x86 Core/IBM-PC extraction; automatically admit numeric S tasks, preserve four products and never close T on a partial extraction. |
+| Similar-Issue Sweep | Every five-operation declaration/definition/call and all RTC ports, DMA refresh PIT, FDC/HDC DMA assertion registrations, including cold reset. Core-only FDC port-registration context stays Core. Parity/D4, RAM veto, constructor association and direct fixtures remain named subsequent receivers. |
 
 
 The oversized former S12 port batch is split into linear receivers. Shared

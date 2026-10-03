@@ -110,6 +110,7 @@ lib_i32 main(void)
     core_machine_rtc_cmos_config cmos = {0};
     core_machine_planar_parity_observation observation;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 failed = 0;
 
@@ -119,9 +120,9 @@ lib_i32 main(void)
     cmos.irq = 8u;
     cmos.nmi_mask_bit = 0x80u;
     cmos.ticks_per_second = 1u;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
         core_machine_configure_planar_parity(machine, &parity) != LIB_STATUS_OK ||
-        core_machine_configure_rtc_cmos(machine, &cmos) != LIB_STATUS_OK ||
+        core_machine_configure_rtc_cmos(board, &cmos) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||

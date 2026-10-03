@@ -689,6 +689,7 @@ lib_i32 main(void)
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_fdc *fdc;
     t_port *port;
     lib_u8 result[7];
@@ -699,7 +700,7 @@ lib_i32 main(void)
 
     fixture.bytes[0] = 0x4au;
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed |= 0x01;
+        core_machine_create(&config, &machine, &board) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         fdc = &machine->board->fdc;
         port = &machine->executor_port;
@@ -709,7 +710,7 @@ lib_i32 main(void)
             core_machine_media_registry_freeze(media) != LIB_STATUS_OK ||
             core_machine_media_registry_bind(media, 2u, &fixture,
                 &core_machine_fdc_fixture_provider) != LIB_STATUS_INVALID_STATE ||
-            core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
+            core_machine_configure_dma(board, &dma_wiring, &dma_request) !=
                 LIB_STATUS_OK) {
             failed |= 0x02;
         } else {
@@ -717,7 +718,7 @@ lib_i32 main(void)
             topology.drives = drives;
             topology.dma_request = dma_request;
             topology.config = fdc_config;
-            if (core_machine_configure_fdc(machine, &topology) != LIB_STATUS_OK ||
+            if (core_machine_configure_fdc(board, &topology) != LIB_STATUS_OK ||
                 core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
                 core_machine_reset(machine) != LIB_STATUS_OK) {
                 failed |= 0x04;

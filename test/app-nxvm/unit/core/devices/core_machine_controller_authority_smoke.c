@@ -241,6 +241,7 @@ lib_i32 main(void)
         }
     };
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     t_port *port;
     lib_u8 result[7] = {0};
     lib_u32 status = 0u;
@@ -252,25 +253,25 @@ lib_i32 main(void)
     lib_i32 failed = verify_board_phases(&config) || verify_partial_board_cleanup();
 
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed |= 0x01;
+        core_machine_create(&config, &machine, &board) != LIB_STATUS_OK) failed |= 0x01;
     if (!failed) {
         fdc_topology.media_registry = media;
         hdc_topology.media_registry = media;
         fdc_topology.dma_request = dma_request;
-        fdc_before_dma = core_machine_configure_fdc(machine, &fdc_topology);
-        dma_status = core_machine_configure_dma(machine, &dma_wiring, &dma_request);
+        fdc_before_dma = core_machine_configure_fdc(board, &fdc_topology);
+        dma_status = core_machine_configure_dma(board, &dma_wiring, &dma_request);
         if (fdc_before_dma != LIB_STATUS_INVALID_STATE ||
             dma_status != LIB_STATUS_OK) {
             failed |= 0x02;
         }
         fdc_topology.dma_request = dma_request;
-        fdc_status = core_machine_configure_fdc(machine, &fdc_topology);
-        hdc_status = core_machine_configure_hdc(machine, &hdc_topology);
+        fdc_status = core_machine_configure_fdc(board, &fdc_topology);
+        hdc_status = core_machine_configure_hdc(board, &hdc_topology);
         if (fdc_status != LIB_STATUS_OK ||
-            core_machine_configure_fdc(machine, &fdc_topology) !=
+            core_machine_configure_fdc(board, &fdc_topology) !=
                 LIB_STATUS_INVALID_STATE ||
             hdc_status != LIB_STATUS_OK ||
-            core_machine_configure_hdc(machine, &hdc_topology) !=
+            core_machine_configure_hdc(board, &hdc_topology) !=
                 LIB_STATUS_INVALID_STATE ||
             core_machine_media_registry_freeze(media) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
@@ -280,6 +281,8 @@ lib_i32 main(void)
             port = &machine->executor_port;
             failed |= machine->board->fdc.connect.dma_request.core_token !=
                     dma_request.core_token ||
+                machine->board->fdc.connect.dma_request_owner != board ||
+                machine->board->fdc.connect.machine != machine ||
                 machine->board->fdc.connect.irq_source.irq != fdc_config.irq ||
                 machine->board->hdc.connect.irq_source.irq != hdc_config.irq ||
                 machine->board->hdc.connect.media_id != hdc_topology.media_id;

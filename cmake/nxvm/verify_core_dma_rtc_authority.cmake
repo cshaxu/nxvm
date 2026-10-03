@@ -66,4 +66,58 @@ foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
     endif()
 endforeach()
 
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_header)
+foreach(operation IN ITEMS configure_dma get_fdc_dma_request_binding
+    configure_rtc_cmos configure_fdc configure_hdc)
+    if(NOT core_board_source MATCHES
+            "core_machine_${operation}\\(const core_machine_board_state \\*board,|core_machine_${operation}\\(core_machine_board_state \\*board," OR
+       NOT "${core_header}${board_header}" MATCHES
+            "core_machine_${operation}\\(const core_machine_board_state \\*board,|core_machine_${operation}\\(core_machine_board_state \\*board,")
+        message(FATAL_ERROR "Controller operation must receive the actual board: ${operation}")
+    endif()
+endforeach()
+foreach(operation IN ITEMS rtc_cmos_port_read rtc_cmos_port_write
+    fdc_dma_request_assert fdc_dma_request_deassert
+    hdc_dma_request_assert hdc_dma_request_deassert dma_refresh_pit_output
+    configure_dma get_fdc_dma_request_binding configure_rtc_cmos configure_fdc configure_hdc)
+    string(REGEX MATCH "(static )?(lib_status|void) core_machine_${operation}\\([^;]*\\)[ \t\r\n]*\\{" declaration "${core_board_source}")
+    if(declaration STREQUAL "")
+        message(FATAL_ERROR "Controller definition is missing: ${operation}")
+    endif()
+    string(FIND "${core_board_source}" "${declaration}" first)
+    string(SUBSTRING "${core_board_source}" ${first} -1 tail)
+    string(FIND "${tail}" "\n}\n" last)
+    if(last LESS 0)
+        message(FATAL_ERROR "Controller definition is unterminated: ${operation}")
+    endif()
+    string(SUBSTRING "${tail}" 0 ${last} body)
+    if(body MATCHES "->board|core_machine \\*machine")
+        message(FATAL_ERROR "Controller callback/operation recovers private Core state: ${operation}")
+    endif()
+    if(operation MATCHES "^configure_" AND
+       NOT body MATCHES "board == LIB_NULL \\|\\| !core_machine_configuration_is_open\\(board->core\\)")
+        message(FATAL_ERROR "Controller configuration bypasses the sole Core guard: ${operation}")
+    endif()
+endforeach()
+foreach(required IN ITEMS
+    "core_machine_dma_refresh_pit_output, machine->board);"
+    "core_machine_dma_refresh_pit_output, board);"
+    "core_machine_fdc_dma_request_deassert, board,"
+    "board->core, &board->fdc_topology.config,"
+    "core_machine_hdc_dma_request_assert, core_machine_hdc_dma_request_deassert,\n            board);"
+    ".write = core_machine_rtc_cmos_port_write, .owner = board")
+    string(FIND "${core_board_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "Controller registration has the wrong owner: ${required}")
+    endif()
+endforeach()
+file(GLOB_RECURSE controller_callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c")
+foreach(caller IN LISTS controller_callers)
+    file(READ "${caller}" caller_source)
+    if(caller_source MATCHES
+        "core_machine_(configure_dma|get_fdc_dma_request_binding|configure_rtc_cmos|configure_fdc|configure_hdc)\\([ \t\r\n]*(machine->core_machine|machine|first|second|\\*out_machine)[ \t\r\n]*,")
+        message(FATAL_ERROR "Controller caller retains a Core receiver: ${caller}")
+    endif()
+endforeach()
 message(STATUS "M5 T296 S3 core DMA/RTC/CMOS/NMI authority: OK")

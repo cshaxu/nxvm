@@ -185,3 +185,21 @@ Coordinator accepts immediately pushed P1 `d23281d1b` after actual review of
 all 41 committed paths, retained algorithms/statuses, caller inventory and
 eight artifact identities. Governance P2 accepts S84 only and removes its
 active packet; T540's remaining receivers and physical movement stay open.
+
+## S85: Whole Board Controller Receiver
+
+The five DMA, FDC-binding, RTC/CMOS, FDC and HDC operations consume the
+constructor's actual borrowed board. All sixty original calls and seven
+controller callbacks use that allocation; PIT refresh registration agrees
+between construction and cold reset. FDC keeps its separate opaque Core
+connection for route publication. Core eligibility, rollback, reset order
+and unique finalization remain unchanged. No getter, duplicate allocation,
+state owner or forwarding path is introduced. The
+[S85 evidence](../etc/evidence/t540-s85-board-controller-handles.md) records
+the complete function/caller comparison and required verification. Complete
+x64/x86 units pass 470/470 each, specialized gates and 22 injected negatives
+pass, and all eight rebuilt products, neutral executions and single INI boots
+pass. The initial x64 modal-test failure and successful full rerun are retained
+without asserting an unverified cause. Coordinator acceptance is still pending. Parity/D4,
+RAM-resize veto, direct-fixture/constructor association and physical
+relocation remain open; this controller boundary does not close T540.

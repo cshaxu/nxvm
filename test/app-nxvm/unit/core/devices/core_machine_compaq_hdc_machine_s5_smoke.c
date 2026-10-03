@@ -124,17 +124,18 @@ lib_i32 main(void)
     core_machine_fdc_topology fdc_topology = {0};
     core_machine_hdc_topology hdc_topology = {0};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u32 drive_address;
     lib_i32 failed = 0;
 
     if (core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
-        core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
+        core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(media, 11u, &fdc_media,
             &core_machine_compaq_hdc_machine_fdc_provider) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(media, 12u, hdc_sector,
             &core_machine_compaq_hdc_machine_hdc_provider) != LIB_STATUS_OK ||
         core_machine_media_registry_freeze(media) != LIB_STATUS_OK ||
-        core_machine_configure_dma(machine, &dma_wiring, &dma_request) != LIB_STATUS_OK) {
+        core_machine_configure_dma(board, &dma_wiring, &dma_request) != LIB_STATUS_OK) {
         failed = 0x01;
     } else {
         fdc_topology.media_registry = media;
@@ -144,8 +145,8 @@ lib_i32 main(void)
         hdc_topology.media_registry = media;
         hdc_topology.media_id = 12u;
         hdc_topology.config = hdc_config;
-        if (core_machine_configure_fdc(machine, &fdc_topology) != LIB_STATUS_OK ||
-            core_machine_configure_hdc(machine, &hdc_topology) != LIB_STATUS_OK ||
+        if (core_machine_configure_fdc(board, &fdc_topology) != LIB_STATUS_OK ||
+            core_machine_configure_hdc(board, &hdc_topology) != LIB_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
             core_machine_reset(machine) != LIB_STATUS_OK) {
             failed = 0x02;

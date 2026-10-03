@@ -54,6 +54,7 @@ static lib_i32 readiness_has_event(const readiness_trace_probe *probe,
 lib_i32 main(void)
 {
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_config config = { 0 };
     core_machine_rtc_cmos_config rtc_config = { 0 };
     core_machine_run_budget budget = { 1u, 0u };
@@ -74,8 +75,8 @@ lib_i32 main(void)
     rtc_config.nmi_mask_bit = 0x80u;
     rtc_config.ticks_per_second = 1u;
 
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_configure_rtc_cmos(machine, &rtc_config) !=
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_configure_rtc_cmos(board, &rtc_config) !=
         LIB_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
         0x00fffff0u, 0x000ffff0u, 16u) != LIB_STATUS_OK;

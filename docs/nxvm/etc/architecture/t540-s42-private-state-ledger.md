@@ -213,6 +213,19 @@ cache and never borrows Core layout. Other board configuration, chip wiring
 and fixture classification remain separate receivers before physical moves.
 The [S84 evidence](../evidence/t540-s84-board-display-handle.md) records proof.
 
+S85 implements the complete DMA/RTC/FDC/HDC configuration and binding class
+on the borrowed board, including seven callback contexts and cold-reset
+registration. All sixty original calls use that handle. Core alone retains
+route publication, configuration eligibility and finalization; FDC's distinct
+opaque Core connection serves only its port registration. The
+[S85 evidence](../evidence/t540-s85-board-controller-handles.md) records the
+whole-definition/caller review and complete verification; acceptance awaits
+coordinator review of the pushed implementation. This class no longer needs a private Core-to-board
+lookup. The remaining boundary is the complete parity/D4/speaker/absent-memory
+class and RAM-resize veto, followed by constructor/direct-fixture association
+removal and physical Core/flat IBM-PC relocation. These are whole receiving
+boundaries, not one-function repairs or a completed move.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/
