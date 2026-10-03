@@ -24,20 +24,19 @@ lib_i32 main(void)
     }
     failed |= core_machine_display_capture_snapshot_from(slot, snapshot) != 0;
     failed |= core_machine_display_capture_snapshot_from(LIB_NULL, snapshot) != 0;
-    core_machine_display_provider_slot_bind(slot, LIB_NULL, LIB_NULL, &first, capture);
+    core_machine_display_provider_slot_bind(slot, &first, capture);
     failed |= !core_machine_display_capture_snapshot_from(slot, snapshot);
     failed |= snapshot->columns != first;
     failed |= core_machine_display_capture_snapshot_from(slot, LIB_NULL) != 0;
     core_machine_display_provider_slot_freeze(slot);
-    core_machine_display_provider_slot_bind(slot, LIB_NULL, LIB_NULL,
+    core_machine_display_provider_slot_bind(slot,
         &replacement, capture);
     first = 11u;
     failed |= !core_machine_display_capture_snapshot_from(slot, snapshot);
     failed |= snapshot->columns != first;
     core_machine_display_provider_slot_destroy(slot);
     core_machine_display_provider_slot_destroy(LIB_NULL);
-    core_machine_display_provider_slot_bind(LIB_NULL, LIB_NULL, LIB_NULL,
-        LIB_NULL, LIB_NULL);
+    core_machine_display_provider_slot_bind(LIB_NULL, LIB_NULL, LIB_NULL);
     core_machine_display_provider_slot_freeze(LIB_NULL);
     lib_release(snapshot);
     return failed;

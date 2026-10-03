@@ -3,8 +3,6 @@
 #include "x86/ibmpc-common/display_interface.h"
 
 struct core_machine_display_provider_slot {
-    void *mode_context;
-    core_machine_display_provider mode_provider;
     void *snapshot_context;
     core_machine_display_snapshot_provider snapshot_provider;
     lib_i32 frozen;
@@ -24,13 +22,10 @@ lib_status core_machine_display_provider_slot_create(
 }
 
 void core_machine_display_provider_slot_bind(
-    core_machine_display_provider_slot *slot, void *mode_context,
-    core_machine_display_provider mode_provider, void *snapshot_context,
+    core_machine_display_provider_slot *slot, void *snapshot_context,
     core_machine_display_snapshot_provider snapshot_provider)
 {
     if (slot == LIB_NULL || slot->frozen) return;
-    slot->mode_context = mode_context;
-    slot->mode_provider = mode_provider;
     slot->snapshot_context = snapshot_context;
     slot->snapshot_provider = snapshot_provider;
 }

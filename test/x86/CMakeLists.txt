@@ -25,6 +25,7 @@ add_test(NAME unit.core-machine-media-provider-smoke COMMAND core-machine-media-
 set_tests_properties(unit.core-machine-media-provider-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
 list(APPEND SHARED_X86_TEST_TARGETS core-machine-media-provider-smoke)
 shared_register_test(x86 ibmpc-common/display_provider x86-ibmpc-common)
+shared_register_test(x86 ibmpc-common/pit_ports x86-ibmpc-common x86-core)
 
 add_executable(core-machine-neutral-link-smoke core/neutral_link.c)
 target_link_libraries(core-machine-neutral-link-smoke PRIVATE x86-core)

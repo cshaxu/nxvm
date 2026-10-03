@@ -138,6 +138,20 @@ its full instruction count and stops on decoding failure or address exhaustion;
 XA ends at exhaustion. XE/XF preserve incremental validation, without rollback
 of writes preceding an invalid byte. Relocation changes none of these semantics.
 
+## Shared PIT Port Attachment
+
+ibmpc-common installs a board-owned opaque PIT at any valid four-port base.
+Stateless per-selector callbacks retain no register/base mirror or extra
+binding object. Core atomically owns route publication and rollback; the
+board owns chip reset, clocks, OUT consumers and destruction. Serialize all
+access. Remove the chip's owner routes before independent chip destruction,
+or destroy it during serialized Core attachment teardown, which immediately
+discards the routes without further dispatch. A failed installation leaves
+the chip alive and caller-owned. The control port has no read route.
+The caller's composition links exactly one Core implementation. The static
+board library consumes public Core operations but does not transitively choose
+production versus observable Core; the independent port test links Core itself.
+
 ## Build and verification
 
 Video memory inspection returns the same selected CGA/planar bytes as a CPU
