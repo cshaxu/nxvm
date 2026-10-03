@@ -2,7 +2,7 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "x86/ibmpc-common/media_interface.h"

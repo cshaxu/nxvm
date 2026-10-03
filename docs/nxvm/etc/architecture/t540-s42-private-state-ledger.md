@@ -65,6 +65,20 @@ reconnect/reset, initial allocation failure and diagnostic observation.
 Endpoint and lease layouts remain private; no public chip getter is admitted.
 DMA and the remaining board/family/D4 classes are not disposed by this move.
 
+## S92 Whole DMA Receiver
+
+The clean S91 intake query `rg -l` for
+`shared_dma|dma_latch|t_dma|t_latch|dma_bus.h|core_machine_dma_` finds 17 App
+source and 23 App test files. DMA's implementation currently imports the App
+controller header for a neutral nonce, and the board embeds both controller
+layouts plus their latch. One opaque aggregate physically moves this complete
+owner to ibmpc-common; App retains clock conversion and physical signal wiring.
+The public nonce and scoped callback values move with the owner. Direct
+chip/layout assertions are classified by actual test ownership, not replaced
+by raw getters. Independent channel/cycle/rollback tests and all actual
+construction/failure/reset/provider/teardown callers belong to this batch.
+DMA is not accepted until that entire physical receiver is verified.
+
 ## Existing facts and intended sole owners
 
 | State or behavior in the present private header | Present users and final owner | Receiver |

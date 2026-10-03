@@ -63,7 +63,6 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/board_advance.c
     src/app-nxvm/devices/board_deadline.c
     src/app-nxvm/devices/d4_memory.c
-    src/app-nxvm/devices/dma_bus.c
     src/app-nxvm/devices/fdc.c
     src/app-nxvm/devices/hdc.c
     src/app-nxvm/devices/machine_board.c
@@ -1173,8 +1172,8 @@ set(VM_MEDIA_SOURCES
 # forwarding library or a second compiled source set.
 add_library(x86-cpu ALIAS x86-cpu-shared)
 
-target_link_libraries(core-machine PUBLIC x86-pit825x x86-rtc146818 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
-target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine PUBLIC x86-pit825x x86-rtc146818 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine PUBLIC x86-ibmpc-common x86-core)
 
 add_executable(vm-machine-frame-smoke
@@ -1313,10 +1312,6 @@ add_executable(core-machine-kbc-aux-port-smoke
     test/app-nxvm/unit/core/devices/core_machine_kbc_aux_port_smoke.c
 )
 target_link_libraries(core-machine-kbc-aux-port-smoke PRIVATE core-machine)
-add_executable(core-machine-dma-channel-smoke
-    test/app-nxvm/unit/core/devices/core_machine_dma_channel_smoke.c
-)
-target_link_libraries(core-machine-dma-channel-smoke PRIVATE core-machine)
 add_executable(core-machine-dma-binding-token-smoke
     test/app-nxvm/unit/core/devices/core_machine_dma_binding_token_smoke.c
 )

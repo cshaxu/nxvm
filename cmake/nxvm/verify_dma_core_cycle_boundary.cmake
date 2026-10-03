@@ -2,10 +2,24 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.c" dma)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.h" dma_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/dma_bus.c" dma)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/dma_bus_interface.h" dma_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.h" core_header)
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.c" OR
+   EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/dma_bus.h")
+    message(FATAL_ERROR "DMA aggregate retains a second App implementation")
+endif()
+file(GLOB_RECURSE app_dma_consumers
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+foreach(path IN LISTS app_dma_consumers)
+    file(READ "${path}" consumer)
+    if(consumer MATCHES "shared_dma_(primary|secondary|latch)|x86/ibmpc-common/dma_bus\\.h|x86/chips/dma8237/dma\\.h")
+        message(FATAL_ERROR "App borrows private DMA aggregate state: ${path}")
+    endif()
+endforeach()
 
 foreach(forbidden "t_ram" "core_machine_transaction_state"
     "core_machine_memory_query_physical(" "core_machine_memory_read_physical("

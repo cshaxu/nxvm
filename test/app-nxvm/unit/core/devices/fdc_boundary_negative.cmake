@@ -10,7 +10,7 @@ set(paths
     src/x86/core/machine_scheduler.c
     src/app-nxvm/devices/board_deadline.c
     src/app-nxvm/devices/machine_board.c
-    src/app-nxvm/devices/dma_bus.c
+    src/x86/ibmpc-common/dma_bus.c
     src/x86/core/memory_interface.c
     src/app-nxvm/machine/machine_devices.c
     src/app-nxvm/machine/media/fdd.c

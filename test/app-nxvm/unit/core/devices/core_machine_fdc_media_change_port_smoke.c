@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "app-nxvm/devices/fdc.h"
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
@@ -132,7 +132,7 @@ int main(void)
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
     core_machine_fdc *fdc;
-    t_dma *dma;
+    core_machine_dma_bus *dma;
     t_port *port;
     lib_u8 status;
     lib_i32 failed = 0;
@@ -142,7 +142,7 @@ int main(void)
         core_machine_create(&config, &machine, &board) != LIB_STATUS_OK) failed = 1;
     if (!failed) {
         fdc = &board->fdc;
-        dma = &board->shared_dma_primary;
+        dma = board->shared_dma;
         port = &machine->executor_port;
         if (fdc == LIB_NULL || dma == LIB_NULL || port == LIB_NULL ||
             core_machine_media_registry_bind(media, 21u, &drive0,

@@ -76,6 +76,8 @@ int main(void)
     core_machine_rtc_cmos_config rtc_config = {0};
     core_machine_dma_request_binding fdc_request = {0};
     core_machine_run_budget budget = {3u, 0u};
+    const core_machine_dma_channel_provider duplicate_provider = {0};
+    core_machine_dma_request_binding duplicate_request = {0};
     core_machine_run_result result;
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
@@ -123,12 +125,15 @@ int main(void)
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
-        board->shared_dma_primary.connect.device_owner[2u] != &board->fdc ||
-        board->shared_dma_primary.connect.device_owner[0u] != board ||
+        core_machine_dma_bind_channel(board->shared_dma, 2u,
+            &duplicate_provider, &duplicate_request, &duplicate_request) !=
+            LIB_STATUS_INVALID_STATE ||
+        core_machine_dma_bind_channel(board->shared_dma, 0u,
+            &duplicate_provider, &duplicate_request, &duplicate_request) !=
+            LIB_STATUS_INVALID_STATE ||
         board->refresh_dma_request.core_token == 0u ||
         board->refresh_dma_request.channel != 0u ||
-        core_machine_dma_has_pending_request(&board->shared_dma_primary,
-            &board->shared_dma_secondary) ||
+        core_machine_dma_has_pending_request(board->shared_dma) ||
         core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) !=
             0x5au) {
         failed = 1;

@@ -57,7 +57,7 @@ void core_machine_board_deadline_observe(void *owner, lib_u64 now,
     *out_observation = (core_machine_attachment_deadline_observation){0};
     if (board == LIB_NULL) return;
     dma_pending = core_machine_dma_has_pending_request(
-        &board->shared_dma_primary, &board->shared_dma_secondary) ?
+        board->shared_dma) ?
         LIB_TRUE : LIB_FALSE;
     dma_qualified = timing_qualified &&
         board->dma_clock_explicit;

@@ -207,6 +207,22 @@ and hardware assertions remain. Independent tests, full suites, gates and
 eight final single-run checkpoints precede delivery. DMA/family/D4 remain
 distinct subsequent complete receivers.
 
+## S92 Whole DMA Bus Receiver
+
+One opaque bus owns the primary/optional secondary controller, page registers,
+transfer latch, provider bindings and request-token lifetime. The entire
+dma_bus implementation moves to ibmpc-common; App owns only physical clock
+conversion and refresh/FDC/HDC wiring. The existing copied request binding
+belongs to this public interface, not an App controller header. Providers
+receive scoped byte/word transfer values, never a chip or memory pointer.
+Preserve original single/dual port maps, reset, arbitration, EOP, terminal
+count and Core memory-cycle ordering. No per-field facade or parallel route
+is eligible. Copied signals support diagnostics without raw chip access.
+Classify all actual consumers and preserve the original DMA matrix. Own-module
+tests may inspect private mechanics; peer tests must exercise public behavior.
+Independent builds, both complete units, gates/manifests and eight final
+single-run product checkpoints precede delivery. Board/family/D4 remain open.
+
 ## Verification And Exit
 
 S80 receives the complete callback-context class from S79: the existing board

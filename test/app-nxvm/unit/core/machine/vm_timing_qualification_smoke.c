@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_board_interface.h"
@@ -122,8 +122,7 @@ static lib_i32 vm_timing_qualification_assert_case(
     }
     if (!failed) {
         core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
-        core_machine_dma_request_assert(&board->shared_dma_primary,
-            &board->shared_dma_secondary, &request);
+        core_machine_dma_request_assert(board->shared_dma, &request);
         status = core_machine_capture_time_observation(machine, &observation);
         if (status != LIB_STATUS_OK || !observation.next_deadline_valid ||
             observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE) {

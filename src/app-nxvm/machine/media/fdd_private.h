@@ -12,9 +12,6 @@ extern "C" {
 #include "lib/storage/medium_interface.h"
 #include "app-nxvm/machine/media/fdd.h"
 
-typedef struct t_latch t_latch;
-
-
 typedef struct {
     lib_u16 cyl;     /* vfdc.C; cylinder id */
     lib_u16 head;    /* vfdc.H; head id */

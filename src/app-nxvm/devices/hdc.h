@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 #include "x86/chips/hdc/hdc_interface.h"
 #include "app-nxvm/devices/controller_interface.h"
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "x86/ibmpc-common/media_interface.h"
 #include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/core/port_interface.h"

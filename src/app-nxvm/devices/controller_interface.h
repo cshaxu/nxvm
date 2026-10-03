@@ -4,6 +4,7 @@
 
 
 #include "x86/ibmpc-common/media_interface.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 
 #define CORE_MACHINE_FDC_DRIVE_COUNT 4u
 #define CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT 41820u
@@ -13,14 +14,6 @@
 #define CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK 17u
 
 #include "x86/chips/pit825x/pit825x_interface.h"
-
-/* A controller may retain this frozen core-issued nonce, but never DMA
- * registers, guest memory, a controller implementation pointer, or an address.
- * Core validates it against the receiving machine's private DMA state. */
-typedef struct core_machine_dma_request_binding {
-    lib_uptr core_token;
-    lib_u8 channel;
-} core_machine_dma_request_binding;
 
 typedef struct core_machine_fdc_config {
     lib_u16 dor_port;

@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_board_interface.h"
@@ -137,8 +137,7 @@ lib_i32 main(void)
     failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed |= core_machine_dma_bind_channel(&board->shared_dma_latch,
-        &board->shared_dma_primary, &board->shared_dma_secondary, 2u,
+    failed |= core_machine_dma_bind_channel(board->shared_dma, 2u,
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
     failed |= core_machine_transaction_hold_request(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != LIB_STATUS_OK;
@@ -155,8 +154,7 @@ lib_i32 main(void)
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
         LIB_STATUS_OK;
     competition_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(&board->shared_dma_primary,
-        &board->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(board->shared_dma, &binding);
     failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
     failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||

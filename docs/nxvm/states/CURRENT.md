@@ -2,7 +2,28 @@
 
 ## Current Work
 
-M5 T540 S1-S91 are accepted. No S packet is active.
+### Active Packet: M5 T540 S92
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; next numeric S after accepted S91. |
+| Admission And Approval | Owner-approved whole T540 board extraction and automatic numeric S admission. Shared and NXVM are admitted; MyNES is unaffected and must not rebuild or change. |
+| Objective | Extract the complete DMA bus owner into x86/ibmpc-common: single/dual-controller ports, page latches, transfer latch, channel providers, nonce validation, arbitration, Core memory cycles, reset and destruction. |
+| Non-goals | No chip algorithm/timing upgrade, AT/XT family completion, scheduler, framework, App split, firmware/media/INI change or MyNES change. |
+| Reference Baseline | Clean accepted S91 37d46f58d; eight current stripped 0540 products. |
+| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md), S92; [ownership ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Move dma_bus.c/h with one opaque aggregate owning primary/secondary controllers and transfer latch. Move the DMA-issued copied request nonce to its public interface. Preserve scoped byte/word callback value semantics, single/dual port maps and existing cycle algorithms. App keeps clock conversion and refresh/FDC/HDC wiring; all 17 measured source and 23 test consumers are classified and migrated. No raw chip getter, public mutable bus layout, private App helper or second registry. |
+| Applicable Rules | Execution, Architecture, Coding, Document and source policy. One DMA state/binding owner, one Core port/memory dispatch and guest clock, neutral copied/scoped contracts, atomic route publication and sole rollback/destruction. One target per P. |
+| Verification | Independently built original DMA channel matrix and rollback/token/cycle coverage; source comparison and retained assertions; complete root units on x86/x64; specialized/negative gates, six manifests, documentation/diff and sole-Core link checks; eight fresh stripped 0540 EXEs and each unchanged-INI semantic boot checkpoint once. |
+| Expected Markers | One Shared DMA implementation; no App bus source or embedded controller/latch layout; all FDC/HDC/refresh and diagnostic consumers use the public aggregate; algorithms and original checkpoints preserved. |
+| Asset Needs | Existing approved embedded firmware and integration inputs only; no owner INI or external-media writes. |
+| Reporting Requirements | Record full constructor/reset/failure/provider/teardown inventory, actual code counts and retained owners, tests/product proof and coordinator actual-pushed-diff review. |
+| Stop Conditions | New hardware semantics/timing, public private-state getter, duplicate bus/state, unrelated consumer change or unexplained checkpoint regression. |
+| Exit Criteria | Entire DMA aggregate physically Shared and independently tested, NXVM connected and old copy deleted; caller/lifetime/failure coverage complete; all proof/artifacts pushed and actual changes reviewed. |
+| Original Owner Request | Finish actual flat Core/common/AT/XT components, not endless per-field preparation. |
+| Similar-Issue Sweep | Every DMA include, embedded latch/controller, chip/connection field access, request/provider binding, page/port cycle, reset/advance/finalize and diagnostic fixture. Remaining board/family/D4 groups keep their T540 receivers. |
+
+M5 T540 S1-S91 are accepted; S92 is active.
 
 S90 accepts the complete common PIT port attachment and display dead-ABI
 cleanup. PIC/DMA aggregation, shared board construction/time/deadlines,
@@ -15,7 +36,7 @@ Actual board, profile, firmware and media choices remain outside this component.
 
 | Task | Progress |
 | --- | --- |
-| T540 S91 | Accepted complete common PIC aggregation; DMA, remaining board/family assembly and D4 still required. |
+| T540 S92 | Active whole DMA aggregate extraction; board/family assembly and D4 remain required. |
 
 ## S91 Accepted Review
 

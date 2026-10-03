@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "x86/chips/cpu/cpu_instructions.h"
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "x86/core/memory.h"
 #include "x86/core/memory_interface.h"
@@ -263,9 +263,7 @@ lib_i32 main(void)
     core_machine_run_result result;
     transaction_probe probe = {{{0}}, 0u, 0u};
     lib_u8 data = 0x3cu;
-    t_latch latch = {0};
-    t_dma primary = {0};
-    t_dma secondary = {0};
+    core_machine_dma_bus *dma = LIB_NULL;
     core_machine dma_machine = {0};
     t_port port;
     core_machine_dma_request_binding binding = {0};
@@ -356,25 +354,24 @@ lib_i32 main(void)
     failed |= core_machine_memory_initialize_for(&dma_machine.executor_memory,
         2u * 1024u * 1024u,
         LIB_NULL) != LIB_STATUS_OK;
-    if (test_dma_initialize(&latch, &primary, &secondary, &port, 2u) != LIB_STATUS_OK) {
+    if (test_dma_initialize(&dma, &port, 2u) != LIB_STATUS_OK) {
         core_machine_memory_finalize(&dma_machine.executor_memory);
         core_machine_port_finalize(&port);
         core_machine_destroy(machine);
         return 1;
     }
-    core_machine_dma_reset(&latch, &primary, &secondary);
-    failed |= core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,
+    core_machine_dma_reset(dma);
+    failed |= core_machine_dma_bind_channel(dma, 2u,
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
     transaction_dma_program_channel2(&port);
-    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_request_assert(dma, &binding);
     core_machine_transaction_initialize(&dma_machine.transaction);
     lib_memory_set(&state_probe, 0, sizeof(state_probe));
     core_machine_transaction_bind_trace(&dma_machine.transaction, transaction_state_trace,
         &state_probe);
     /* 8237A normal timing selects the channel, then completes S1..S4 before
      * the actual memory write.  One transaction tick is one controller phase. */
-    core_machine_dma_advance_transaction(&latch, &primary, &secondary,
-        &dma_machine, 5u);
+    core_machine_dma_advance_transaction(dma, &dma_machine, 5u);
     failed |= dma_machine.transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         dma_machine.transaction.committed_count != 1u;
     failed |= state_probe.begin_count != 1u || state_probe.commit_count != 1u ||
@@ -412,7 +409,7 @@ lib_i32 main(void)
         dma_machine.transaction.cancelled_count != 1u;
 
     core_machine_port_finalize(&port);
-    core_machine_dma_finalize(&latch, &primary, &secondary);
+    core_machine_dma_finalize(dma);
     core_machine_memory_finalize(&dma_machine.executor_memory);
     core_machine_destroy(machine);
     if (failed != 0) return 1;

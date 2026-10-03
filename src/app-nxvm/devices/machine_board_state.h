@@ -5,7 +5,7 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "x86/ibmpc-common/pic_bus_interface.h"
 #include "x86/ibmpc-common/pit_bus_interface.h"
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "app-nxvm/devices/d4_memory.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "app-nxvm/devices/fdc.h"
@@ -60,9 +60,7 @@ struct core_machine_board_state {
     x86_pit *shared_pit;
     x86_pit *auxiliary_pit;
     lib_u8 auxiliary_pit_configured;
-    t_latch shared_dma_latch;
-    t_dma shared_dma_primary;
-    t_dma shared_dma_secondary;
+    core_machine_dma_bus *shared_dma;
     x86_rtc *shared_rtc;
     lib_u8 rtc_selected_register;
     core_machine_fdc fdc;

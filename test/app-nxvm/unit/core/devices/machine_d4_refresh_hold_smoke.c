@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/devices/machine_board_interface.h"
@@ -168,23 +168,20 @@ lib_i32 main(void)
     failed |= core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed |= core_machine_dma_bind_channel(&board->shared_dma_latch,
-        &board->shared_dma_primary, &board->shared_dma_secondary, 2u,
+    failed |= core_machine_dma_bind_channel(board->shared_dma, 2u,
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
     refresh_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(&board->shared_dma_primary,
-        &board->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(board->shared_dma, &binding);
     failed |= core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
     core_machine_port_write(&machine->executor_port, 0x0064u, 0xd1u);
     core_machine_port_write(&machine->executor_port, 0x0060u, 0x01u);
     failed |= machine->executor_memory.data.flagA20;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     refresh_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(&board->shared_dma_primary,
-        &board->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(board->shared_dma, &binding);
     failed |= core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
     start = probe.count;
     failed |= core_machine_advance_time(machine, 19u) != LIB_STATUS_OK;

@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "app-nxvm/devices/fdc.h"
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
@@ -176,10 +176,8 @@ lib_i32 main(void)
         model40_fdc_write_dma2(port, 0x0600u, 511u);
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
         for (index = 0u; index < 512u; ++index) {
-            test_dma_transfers(&session->board->shared_dma_latch,
-                &session->board->shared_dma_primary,
-                &session->board->shared_dma_secondary,
-                session->core_machine, &session->core_machine->executor_port, 1u);
+            test_dma_transfers(session->board->shared_dma,
+                session->core_machine, &session->core_machine->executor_port, 1u, 2u);
             if (index + 1u < 512u) failed |= !test_fdc_advance_ticks(fdc, 128u);
         }
         failed |= core_machine_port_read(port, 0x03f4u) != TEST_FDC_MSR_CB ||

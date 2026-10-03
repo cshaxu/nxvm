@@ -2,7 +2,7 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
 #include "x86/core/port.h"
@@ -15,6 +15,8 @@ lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
     lib_i32 failed = 0;
+    const core_machine_dma_channel_provider duplicate_provider = {0};
+    core_machine_dma_request_binding duplicate_request = {0};
 
     if (vm_model40_fixture_create(&session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->board->dma_configured ||
@@ -26,12 +28,9 @@ lib_i32 main(void)
             CORE_MACHINE_DMA_CONTROLLER_COUNT ||
         session->board->dma_wiring.cascade_channel !=
             CORE_MACHINE_DMA_CASCADE_CHANNEL ||
-        session->board->shared_dma_primary.connect.peer !=
-            &session->board->shared_dma_secondary ||
-        session->board->shared_dma_secondary.connect.peer !=
-            &session->board->shared_dma_primary ||
-        session->board->shared_dma_primary.connect.device_owner[2u] !=
-            &session->board->fdc ||
+        core_machine_dma_bind_channel(session->board->shared_dma, 2u,
+            &duplicate_provider, &duplicate_request, &duplicate_request) !=
+            LIB_STATUS_INVALID_STATE ||
         !core_machine_port_has_write(&session->core_machine->executor_port,
             0x00d6u) || !core_machine_port_has_write(
             &session->core_machine->executor_port, 0x00d4u)) {
@@ -50,16 +49,14 @@ lib_i32 main(void)
     core_machine_port_write(&session->core_machine->executor_port, 0x0009u,
         0x06u);
     if (!core_machine_dma_has_pending_request(
-            &session->board->shared_dma_primary,
-            &session->board->shared_dma_secondary)) {
+            session->board->shared_dma)) {
         failed = 1;
         goto done;
     }
 
     vm_machine_reset(session);
     if (core_machine_dma_has_pending_request(
-            &session->board->shared_dma_primary,
-            &session->board->shared_dma_secondary)) {
+            session->board->shared_dma)) {
         failed = 1;
         goto done;
     }

@@ -265,8 +265,7 @@ lib_status core_machine_board_create(core_machine *machine,
         }
     }
     {
-        lib_status status = core_machine_dma_initialize(&board->shared_dma_latch,
-            &board->shared_dma_primary, &board->shared_dma_secondary,
+        lib_status status = core_machine_dma_initialize(&board->shared_dma,
             machine, dma_controller_count);
         if (status == LIB_STATUS_OK) {
             status = core_machine_pic_initialize(&board->shared_pic_master,
@@ -781,8 +780,7 @@ void core_machine_board_reset_devices(void *owner)
                 board->kbc_input_port);
         }
     }
-    core_machine_dma_reset(&board->shared_dma_latch,
-        &board->shared_dma_primary, &board->shared_dma_secondary);
+    core_machine_dma_reset(board->shared_dma);
     if (board->rtc_cmos_configured) x86_rtc_reset(board->shared_rtc);
     board->planar_parity_port_b = board->planar_parity_configured ? 0x04u : 0u;
     board->planar_parity_latched = LIB_FALSE;
@@ -817,8 +815,7 @@ void core_machine_board_finalize_devices(void *owner)
     x86_pit_destroy(board->auxiliary_pit);
     core_machine_hdc_finalize(&board->hdc);
     core_machine_fdc_finalize(&board->fdc);
-    core_machine_dma_finalize(&board->shared_dma_latch,
-        &board->shared_dma_primary, &board->shared_dma_secondary);
+    core_machine_dma_finalize(board->shared_dma);
     x86_rtc_destroy(board->shared_rtc);
     if (board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         x86_xt_keyboard_destroy(board->xt_keyboard);
@@ -945,8 +942,7 @@ static void core_machine_fdc_dma_request_assert(void *owner,
     if (board == LIB_NULL || binding == LIB_NULL ||
         binding->core_token != board->fdc_dma_request.core_token ||
         binding->channel != board->fdc_dma_request.channel) return;
-    core_machine_dma_request_assert(&board->shared_dma_primary,
-        &board->shared_dma_secondary, binding);
+    core_machine_dma_request_assert(board->shared_dma, binding);
 }
 
 static void core_machine_fdc_dma_request_deassert(void *owner,
@@ -957,8 +953,7 @@ static void core_machine_fdc_dma_request_deassert(void *owner,
     if (board == LIB_NULL || binding == LIB_NULL ||
         binding->core_token != board->fdc_dma_request.core_token ||
         binding->channel != board->fdc_dma_request.channel) return;
-    core_machine_dma_request_deassert(&board->shared_dma_primary,
-        &board->shared_dma_secondary, binding);
+    core_machine_dma_request_deassert(board->shared_dma, binding);
 }
 
 static void core_machine_hdc_dma_request_assert(void *owner,
@@ -969,8 +964,7 @@ static void core_machine_hdc_dma_request_assert(void *owner,
     if (board == LIB_NULL || binding == LIB_NULL ||
         binding->core_token != board->hdc_dma_request.core_token ||
         binding->channel != board->hdc_dma_request.channel) return;
-    core_machine_dma_request_assert(&board->shared_dma_primary,
-        &board->shared_dma_secondary, binding);
+    core_machine_dma_request_assert(board->shared_dma, binding);
 }
 
 static void core_machine_hdc_dma_request_deassert(void *owner,
@@ -981,8 +975,7 @@ static void core_machine_hdc_dma_request_deassert(void *owner,
     if (board == LIB_NULL || binding == LIB_NULL ||
         binding->core_token != board->hdc_dma_request.core_token ||
         binding->channel != board->hdc_dma_request.channel) return;
-    core_machine_dma_request_deassert(&board->shared_dma_primary,
-        &board->shared_dma_secondary, binding);
+    core_machine_dma_request_deassert(board->shared_dma, binding);
 }
 
 static void core_machine_dma_refresh_pit_output(void *owner, lib_u8 asserted)
@@ -991,11 +984,9 @@ static void core_machine_dma_refresh_pit_output(void *owner, lib_u8 asserted)
 
     if (board == LIB_NULL) return;
     if (asserted) {
-        core_machine_dma_request_deassert(&board->shared_dma_primary,
-            &board->shared_dma_secondary, &board->refresh_dma_request);
+        core_machine_dma_request_deassert(board->shared_dma, &board->refresh_dma_request);
     } else {
-        core_machine_dma_request_assert(&board->shared_dma_primary,
-            &board->shared_dma_secondary, &board->refresh_dma_request);
+        core_machine_dma_request_assert(board->shared_dma, &board->refresh_dma_request);
     }
 }
 
@@ -1012,7 +1003,7 @@ static lib_u8 core_machine_dma_wiring_is_valid(
             wiring->fdc_channel < 4u) ||
            (wiring->controller_count == CORE_MACHINE_DMA_CONTROLLER_COUNT &&
             wiring->cascade_channel == CORE_MACHINE_DMA_CASCADE_CHANNEL &&
-            wiring->fdc_channel < VDMA_CHANNEL_COUNT)) &&
+            wiring->fdc_channel < 4u)) &&
           wiring->fdc_channel != 0u));
 }
 
@@ -1031,14 +1022,12 @@ lib_status core_machine_configure_dma(core_machine_board_state *board,
     }
     board->fdc_dma_request = (core_machine_dma_request_binding) {0};
     if (wiring->fdc_channel != CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND) {
-        status = core_machine_dma_bind_channel(&board->shared_dma_latch,
-            &board->shared_dma_primary, &board->shared_dma_secondary,
+        status = core_machine_dma_bind_channel(board->shared_dma,
             wiring->fdc_channel, core_machine_fdc_dma_provider(), &board->fdc,
             &board->fdc_dma_request);
         if (status != LIB_STATUS_OK) return status;
     }
-    status = core_machine_dma_bind_channel(&board->shared_dma_latch,
-        &board->shared_dma_primary, &board->shared_dma_secondary, 0u,
+    status = core_machine_dma_bind_channel(board->shared_dma, 0u,
         &core_machine_dma_refresh_provider, board, &board->refresh_dma_request);
     if (status != LIB_STATUS_OK) return status;
     x86_pit_set_output(board->shared_pit, 1u,
@@ -1553,8 +1542,7 @@ lib_status core_machine_configure_hdc(core_machine_board_state *board,
     if (status == LIB_STATUS_OK)
         status = core_machine_install_port_routes(board->core, routes, port_count);
     if (status == LIB_STATUS_OK && xebec) {
-        status = core_machine_dma_bind_channel(&board->shared_dma_latch,
-            &board->shared_dma_primary, &board->shared_dma_secondary,
+        status = core_machine_dma_bind_channel(board->shared_dma,
             board->hdc_topology.config.bus.xebec.dma_channel,
             core_machine_hdc_dma_provider(), &board->hdc, &board->hdc_dma_request);
         if (status != LIB_STATUS_OK) {

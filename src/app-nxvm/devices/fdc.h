@@ -2,7 +2,7 @@
 #ifndef CORE_MACHINE_FDC_H
 #define CORE_MACHINE_FDC_H
 #include "app-nxvm/devices/controller_interface.h"
-#include "app-nxvm/devices/dma_bus.h"
+#include "x86/ibmpc-common/dma_bus_interface.h"
 #include "x86/ibmpc-common/pic_bus_interface.h"
 #include "app-nxvm/devices/fdc_observation_interface.h"
 #include "x86/core/port_interface.h"
