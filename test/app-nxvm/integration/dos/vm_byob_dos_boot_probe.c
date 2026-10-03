@@ -1960,7 +1960,7 @@ int main(lib_i32 argc, char **argv)
         if (result.executed != 0u || result.ticks != 0u) progress = now;
         if (now >= next_display_capture) {
             lib_status display_status = core_machine_capture_display_snapshot(
-                session->core_machine, &snapshot);
+                session->board, &snapshot);
 
             next_display_capture = now + VM_BYOB_BOOT_DISPLAY_CADENCE_MILLISECONDS;
             if (display_status != LIB_STATUS_OK && display_status != LIB_STATUS_UNSUPPORTED) {

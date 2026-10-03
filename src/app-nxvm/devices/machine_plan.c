@@ -202,6 +202,7 @@ lib_status core_machine_plan_validate(const core_machine_plan *plan)
 }
 
 lib_status core_machine_plan_apply_topology(core_machine *machine,
+    core_machine_board_state *board,
     const core_machine_plan *plan)
 {
     core_machine_fdc_topology fdc;
@@ -211,7 +212,8 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
     lib_status status;
     lib_size index;
 
-    if (machine == LIB_NULL || plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (machine == LIB_NULL || board == LIB_NULL || plan == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
     topology = &plan->topology;
     status = core_machine_install_memory_aliases(machine, topology->memory_alias,
         topology->memory_alias_count, LIB_TRUE);
@@ -229,12 +231,12 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
             &plan->d4_memory)) != LIB_STATUS_OK) return status;
     if (topology->display_present) {
         display = topology->display;
-        if ((status = core_machine_configure_display(machine, &display)) !=
+        if ((status = core_machine_configure_display(board, &display)) !=
                 LIB_STATUS_OK) return status;
         core_machine_display_provider_slot_freeze(plan->display_provider);
     }
     if (topology->dma_present && (status = core_machine_configure_dma(machine,
-            &topology->dma, &machine->board->fdc_dma_request)) != LIB_STATUS_OK) return status;
+            &topology->dma, &board->fdc_dma_request)) != LIB_STATUS_OK) return status;
     if (topology->rtc_cmos_present && (status = core_machine_configure_rtc_cmos(
             machine, &topology->rtc_cmos)) != LIB_STATUS_OK) return status;
     if (topology->fdc_present) {
@@ -242,7 +244,7 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
         fdc.drives = topology->fdc_drives;
         fdc.config = topology->fdc;
         fdc.observation_provider = plan->fdc_observation_provider;
-        fdc.dma_request = machine->board->fdc_dma_request;
+        fdc.dma_request = board->fdc_dma_request;
         if ((status = core_machine_configure_fdc(machine, &fdc)) != LIB_STATUS_OK) {
             return status;
         }
@@ -276,7 +278,7 @@ lib_status core_machine_create_from_plan(const core_machine_plan *plan,
     status = core_machine_create_internal(&plan->configuration, &machine,
         LIB_NULL, LIB_NULL, &board);
     if (status != LIB_STATUS_OK) return status;
-    status = core_machine_plan_apply_topology(machine, plan);
+    status = core_machine_plan_apply_topology(machine, board, plan);
     if (status == LIB_STATUS_OK)
         status = core_machine_install_timing_declarations(machine,
             plan->declarations, plan->declaration_count);

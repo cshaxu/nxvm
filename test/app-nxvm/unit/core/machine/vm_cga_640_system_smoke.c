@@ -56,7 +56,7 @@ lib_i32 main(void)
     for (instruction = 0u; instruction < VM_CGA254_BOOT_BUDGET; ++instruction) {
         if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT ||
-            core_machine_capture_display_snapshot(session->core_machine,
+            core_machine_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) goto done;
         if (snapshot.kind == X86_VIDEO_KIND_CGA_640X200X2 &&
             snapshot.pixels[0] == 1u && snapshot.pixels[1] == 0u &&

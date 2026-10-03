@@ -36,7 +36,7 @@ static lib_i32 vm_machine_capture_display_snapshot(void *context,
     vm_machine *session = (vm_machine *)context;
 
     return session != LIB_NULL && core_machine_capture_display_snapshot(
-        session->core_machine, out_snapshot) == LIB_STATUS_OK;
+        session->board, out_snapshot) == LIB_STATUS_OK;
 }
 
 static void vm_machine_display_result(vm_machine *machine,
@@ -83,7 +83,7 @@ x86_video_kind vm_machine_publish_display(vm_machine *machine,
 
     if (machine == LIB_NULL) return X86_VIDEO_KIND_TEXT;
     if (!vm_machine_display_publish_is_due(machine, force)) return machine->display_kind;
-    if (!force && core_machine_observe_display_snapshot(machine->core_machine,
+    if (!force && core_machine_observe_display_snapshot(machine->board,
             machine->display_snapshot_generation_valid,
             machine->display_snapshot_generation, &observation) == LIB_STATUS_OK &&
         !observation.capture_required) {
@@ -139,7 +139,7 @@ x86_video_kind vm_machine_publish_display(vm_machine *machine,
     frame.generation = machine->display_generation + 1u;
     vm_machine_display_result(machine, &frame);
     machine->display_generation = frame.generation;
-    if (core_machine_observe_display_snapshot(machine->core_machine,
+    if (core_machine_observe_display_snapshot(machine->board,
             LIB_FALSE, 0u, &observation) == LIB_STATUS_OK &&
         observation.generation_reliable) {
         machine->display_snapshot_generation = observation.generation;

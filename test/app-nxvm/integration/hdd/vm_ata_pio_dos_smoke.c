@@ -299,7 +299,7 @@ static lib_i32 vm_ata253_run_until(vm_machine *session, lib_u32 limit,
     while (executed < limit) {
         if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT ||
-            core_machine_capture_display_snapshot(session->core_machine,
+            core_machine_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) return 0;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_i32 advanced = 0;

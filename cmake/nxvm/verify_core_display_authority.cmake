@@ -15,6 +15,36 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" board_display_source)
 set(core_source "${core_plan_source}${core_display_source}${board_display_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_interface.h" neutral_header)
+foreach(operation IN ITEMS capture_display_snapshot observe_display_snapshot configure_display)
+    foreach(source IN ITEMS core_display_source core_header)
+        if(NOT "${${source}}" MATCHES
+            "core_machine_${operation}\\(const core_machine_board_state \\*board,|core_machine_${operation}\\(core_machine_board_state \\*board,")
+            message(FATAL_ERROR "Display operation must receive the actual board: ${operation}")
+        endif()
+    endforeach()
+endforeach()
+if(core_display_source MATCHES "app-nxvm/devices/machine\\.h|->board|core_machine \\*machine" OR
+    NOT core_display_source MATCHES "core_machine_configuration_is_open\\(board->core\\)" OR
+    NOT core_display_source MATCHES "core_machine_get_lifecycle\\(board->core," OR
+    NOT neutral_header MATCHES "core_machine_configuration_is_open\\(const core_machine \\*machine\\)" OR
+    machine_header MATCHES "core_machine_configuration_is_open\\(")
+    message(FATAL_ERROR "Display must use sole public Core guards without private-state recovery")
+endif()
+if(NOT core_plan_source MATCHES "core_machine_configure_display\\(board," OR
+    NOT core_plan_source MATCHES "core_machine_plan_apply_topology\\(machine, board, plan\\)" OR
+    core_plan_source MATCHES "->board")
+    message(FATAL_ERROR "Topology must consume the constructed board rather than recover private state")
+endif()
+file(GLOB_RECURSE display_callers
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c")
+foreach(caller IN LISTS display_callers)
+    file(READ "${caller}" caller_source)
+    if(caller_source MATCHES
+        "core_machine_(capture_display_snapshot|observe_display_snapshot|configure_display)\\([ \t\r\n]*(session->core_machine|machine->core_machine|machine),")
+        message(FATAL_ERROR "Display caller retains a Core receiver: ${caller}")
+    endif()
+endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)

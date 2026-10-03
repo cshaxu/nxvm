@@ -79,7 +79,7 @@ lib_i32 main(void)
     }
     if (core_machine_memory_read(session->core_machine, 0x0450u, &cursor,
             sizeof(cursor)) != LIB_STATUS_OK ||
-        core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
+        core_machine_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || cursor != 0x0600u || !snapshot.cursor_visible ||
         snapshot.cursor_x != 0u || snapshot.cursor_y != 6u ||
         int10_count == 0u || f2_count != 0u ||

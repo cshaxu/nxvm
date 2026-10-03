@@ -180,6 +180,14 @@ lifecycle rules through its neutral contract. Public display/configuration,
 wiring contexts and remaining fixture classification still precede physical
 movement; this input cut is not a completed Shared relocation.
 
+S84 receives the complete display configure/observe/capture class and every
+caller on the same actual board handle. Core's existing configuration-open
+check becomes part of its neutral contract without another implementation;
+display keeps its cache and stopped/paused observation rules. The internal
+topology operation consumes the constructor's actual board output, not a
+private lookup. Other configuration/wiring and fixture ownership still
+precede physical movement; this cut does not close T540.
+
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
 - Common board contract tests live with their flat receiver under

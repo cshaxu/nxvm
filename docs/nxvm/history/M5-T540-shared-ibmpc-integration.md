@@ -165,3 +165,20 @@ pushed-diff review was required before S83 acceptance.
 Coordinator accepts immediately pushed P1 `231d0ec95` after reviewing all
 30 actual changed paths and committed artifact identities. Governance P2
 accepts S83 only; T540's remaining board receivers and relocation stay open.
+
+## S84: Whole Board Display Receiver
+
+Configure, observe and capture consume the constructor's actual borrowed
+board handle. Every production/unit/integration caller and the frozen-plan
+topology operation uses that same allocation. VADP state/cache and Core's
+configuration/lifecycle authority retain their unique owners; the existing
+configuration-open declaration becomes public, without a new implementation.
+[S84 evidence](../etc/evidence/t540-s84-board-display-handle.md) records the
+caller sweep, status preservation and verification. Other board configuration,
+chip wiring, fixture classification and physical relocation remain open.
+Complete x64/x86 units pass 470/470 each, specialized and 21 injected negative
+checks pass, and all eight product builds, neutral executions and one-shot
+INI boots pass. Eight optimized stripped 0540 EXEs are refreshed. The
+substring gate false positive and sandbox build retry are recorded without
+miscounting old binaries. Shared, MyNES, INIs and external masters are unchanged.
+Coordinator acceptance follows the actual immediately pushed P1 review.

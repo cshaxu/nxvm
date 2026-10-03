@@ -108,7 +108,7 @@ lib_i32 main(void)
         frame.generation <= cga_generation;
     ega_snapshot_generation = session->display_snapshot_generation;
     failed |= !session->display_snapshot_generation_valid ||
-        core_machine_observe_display_snapshot(session->core_machine, LIB_TRUE,
+        core_machine_observe_display_snapshot(session->board, LIB_TRUE,
             ega_snapshot_generation, &observation) != LIB_STATUS_OK ||
         !observation.generation_reliable || observation.capture_required ||
         observation.generation != ega_snapshot_generation;
@@ -122,7 +122,7 @@ lib_i32 main(void)
     failed |= core_machine_memory_write(session->core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, &ega_pixel,
         sizeof(ega_pixel)) != LIB_STATUS_OK ||
-        core_machine_observe_display_snapshot(session->core_machine, LIB_TRUE,
+        core_machine_observe_display_snapshot(session->board, LIB_TRUE,
             ega_snapshot_generation, &observation) != LIB_STATUS_OK ||
         !observation.generation_reliable || !observation.capture_required ||
         observation.generation == ega_snapshot_generation;
@@ -142,7 +142,7 @@ lib_i32 main(void)
         frame.kind != CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
         frame.pixels[0] != 0u || frame.palette_rgb[15] != 0xffffffu ||
-        core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
+        core_machine_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT;
 
     failed |= !vm_display_s5_enable_planar(session) ||

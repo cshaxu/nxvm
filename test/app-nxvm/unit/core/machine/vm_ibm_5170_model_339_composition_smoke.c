@@ -71,7 +71,7 @@ static lib_i32 vm_model_339_selected_contract(void)
         vm_machine_destroy(session);
         return 1;
     }
-    failed |= (core_machine_capture_display_snapshot(session->core_machine,
+    failed |= (core_machine_capture_display_snapshot(session->board,
         &snapshot) != LIB_STATUS_OK || !snapshot.text_glyphs_present ||
         snapshot.text_glyphs['A' *
         X86_VIDEO_TEXT_GLYPH_ROWS] != 0x81u ||

@@ -272,7 +272,7 @@ static lib_i32 vm_mouse_dos_run_until(vm_machine *session, lib_u32 limit,
     while (executed < limit) {
         if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT ||
-            core_machine_capture_display_snapshot(session->core_machine,
+            core_machine_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) return 0;
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             lib_i32 advanced = 0;
@@ -360,7 +360,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             LIB_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
-        core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
+        core_machine_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT ||
         snapshot.characters[VM_MOUSE_DOS_MARKER_CELL] == 'O') goto done;
     stage = 6;
@@ -368,7 +368,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (!passed && session != LIB_NULL) {
         x86_video_snapshot snapshot;
 
-        if (core_machine_capture_display_snapshot(session->core_machine,
+        if (core_machine_capture_display_snapshot(session->board,
                 &snapshot) == LIB_STATUS_OK &&
             snapshot.kind == X86_VIDEO_KIND_TEXT) {
             fprintf(stderr, "M5:T241:MOUSE-DRIVER:MARKER=%02X\n",

@@ -57,7 +57,7 @@ lib_i32 main(void)
                 LIB_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
             goto done;
         }
-        if (core_machine_capture_display_snapshot(session->core_machine,
+        if (core_machine_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK ||
             snapshot.kind != X86_VIDEO_KIND_CGA_320X200X4) {
             continue;

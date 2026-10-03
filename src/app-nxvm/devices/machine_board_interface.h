@@ -361,14 +361,14 @@ lib_status core_machine_set_xt_ppi_fault_input(core_machine_board_state *board,
 lib_status core_machine_mouse_receive_relative(core_machine_board_state *board,
     lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons);
 
-lib_status core_machine_capture_display_snapshot(const core_machine *machine,
+lib_status core_machine_capture_display_snapshot(const core_machine_board_state *board,
     x86_video_snapshot *out_snapshot);
-lib_status core_machine_observe_display_snapshot(const core_machine *machine,
+lib_status core_machine_observe_display_snapshot(const core_machine_board_state *board,
     lib_u8 acknowledged_generation_valid,
     lib_u64 acknowledged_generation,
     x86_video_snapshot_observation *out_observation);
 
-lib_status core_machine_configure_display(core_machine *machine,
+lib_status core_machine_configure_display(core_machine_board_state *board,
     const core_machine_display_config *config);
 lib_status core_machine_configure_dma(core_machine *machine,
     const core_machine_dma_wiring *wiring,

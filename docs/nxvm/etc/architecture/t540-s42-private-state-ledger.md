@@ -205,6 +205,14 @@ one implementation. Its [evidence](../evidence/t540-s83-board-input-handle.md)
 records caller/status proof. Display/configuration and chip wiring still have
 separate complete receiver classes before association deletion and movement.
 
+S84 receives the entire display configuration/observation/capture class on
+the actual borrowed board handle, including every caller and the plan's
+internal topology application. The sole configuration-open implementation
+is exposed through Core's neutral contract; display owns its existing VADP
+cache and never borrows Core layout. Other board configuration, chip wiring
+and fixture classification remain separate receivers before physical moves.
+The [S84 evidence](../evidence/t540-s84-board-display-handle.md) records proof.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

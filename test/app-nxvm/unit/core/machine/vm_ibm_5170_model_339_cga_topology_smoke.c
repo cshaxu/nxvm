@@ -40,7 +40,7 @@ static lib_i32 vm_model_339_cga_topology(void)
             CORE_MACHINE_VADP_PORT_GRAPHICS_DATA) << 8) |
         (x86_video_ega_aperture_contains(session->core_machine->board->shared_vadp.chip,
             0xa0000u, 1u) << 9) |
-        ((core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
+        ((core_machine_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK ||
             snapshot.kind != X86_VIDEO_KIND_TEXT) << 10) |
         (core_machine_memory_write(session->core_machine, 0x000a0000u,

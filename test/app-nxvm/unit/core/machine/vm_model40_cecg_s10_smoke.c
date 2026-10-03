@@ -22,7 +22,7 @@ lib_i32 main(void)
     if (!failed) {
         failed |= core_machine_memory_write(session->core_machine,
             CORE_MACHINE_VADP_TEXT_BASE, text, sizeof(text)) != LIB_STATUS_OK ||
-            core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
+            core_machine_capture_display_snapshot(session->board, &snapshot) !=
                 LIB_STATUS_OK || snapshot.kind != X86_VIDEO_KIND_TEXT ||
             snapshot.characters[0] != 'O' || snapshot.characters[1] != 'K';
     }

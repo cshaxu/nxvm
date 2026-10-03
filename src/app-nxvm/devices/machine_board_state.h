@@ -177,6 +177,7 @@ void core_machine_board_set_xt_ppi_speaker(core_machine *machine,
     lib_u8 timer_gate, lib_u8 data_enabled);
 lib_status core_machine_plan_validate(const core_machine_plan *plan);
 lib_status core_machine_plan_apply_topology(core_machine *machine,
+    core_machine_board_state *board,
     const core_machine_plan *plan);
 
 #endif

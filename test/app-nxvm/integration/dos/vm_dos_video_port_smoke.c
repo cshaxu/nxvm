@@ -88,7 +88,7 @@ lib_i32 main(lib_i32 argc, char **argv)
          * but avoid copying a complete display frame after every instruction. */
         if ((instruction % VM_DOS_VIDEO_DISPLAY_OBSERVATION_QUANTUM == 0u ||
              instruction + 1u == VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET) &&
-            core_machine_capture_display_snapshot(session->core_machine, &snapshot) ==
+            core_machine_capture_display_snapshot(session->board, &snapshot) ==
                 LIB_STATUS_OK && vm_dos_video_has_prompt(&snapshot)) {
             prompt_seen = 1;
             break;

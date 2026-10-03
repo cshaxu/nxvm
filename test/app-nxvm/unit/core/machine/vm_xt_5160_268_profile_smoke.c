@@ -181,7 +181,7 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
     core_machine_port_write(&machine->executor_port, 0x03d8u, 0x0du);
     failed |= !failed && core_machine_memory_write(machine, 0x000b8000u,
         cells, sizeof(cells)) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_capture_display_snapshot(machine, &snapshot) !=
+    failed |= !failed && core_machine_capture_display_snapshot(board, &snapshot) !=
         LIB_STATUS_OK;
     failed |= !failed && (snapshot.kind != X86_VIDEO_KIND_TEXT ||
         snapshot.characters[0] != 'X' || snapshot.attributes[0] != 0x1fu);

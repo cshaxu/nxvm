@@ -21,8 +21,17 @@ foreach(forbidden IN ITEMS "machine_board_interface.h" "controller_interface.h"
     "display_interface.h" "pic_bus_interface.h" "fdc_observation_interface.h"
     "core_machine_config" "core_machine_clock_plan" "core_machine_plan_topology"
     "core_machine_keyboard_topology" "core_machine_display_config")
-    string(FIND "${neutral_contract}" "${forbidden}" position)
-    if(NOT position EQUAL -1)
+    if(forbidden MATCHES "^core_machine_")
+        string(REGEX MATCH "(^|[^A-Za-z0-9_])${forbidden}([^A-Za-z0-9_]|$)"
+            forbidden_match "${neutral_contract}")
+    else()
+        string(FIND "${neutral_contract}" "${forbidden}" position)
+        set(forbidden_match "")
+        if(NOT position EQUAL -1)
+            set(forbidden_match "${forbidden}")
+        endif()
+    endif()
+    if(NOT forbidden_match STREQUAL "")
         message(FATAL_ERROR "Neutral public contract retains board dependency: ${forbidden}")
     endif()
 endforeach()

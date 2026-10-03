@@ -248,6 +248,9 @@ lib_status core_machine_reconfigure_memory(core_machine *machine,
  * eligibility check, not a lifecycle transition or a private-state lease. */
 lib_i32 core_machine_mutable_operation_is_allowed(const core_machine *machine);
 
+/* Construction eligibility only; board attachments retain no Core layout. */
+lib_i32 core_machine_configuration_is_open(const core_machine *machine);
+
 lib_status core_machine_get_lifecycle(
     const core_machine *machine,
     core_machine_lifecycle *out_lifecycle);

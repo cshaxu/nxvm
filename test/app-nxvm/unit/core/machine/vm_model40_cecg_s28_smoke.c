@@ -62,7 +62,7 @@ lib_i32 main(void)
         failed |= !t386_s28_session_write(session, 0x00u) ||
             !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 0u ||
-            core_machine_observe_display_snapshot(session->core_machine,
+            core_machine_observe_display_snapshot(session->board,
                 LIB_FALSE, 0u, &observation) != LIB_STATUS_OK ||
             !observation.generation_reliable;
         if (!failed) {
@@ -71,7 +71,7 @@ lib_i32 main(void)
             failed |= core_machine_memory_write(session->core_machine,
                 CORE_MACHINE_VADP_EGA_APERTURE_BASE, &(lib_u8){0x5au},
                 sizeof(lib_u8)) != LIB_STATUS_OK ||
-                core_machine_observe_display_snapshot(session->core_machine,
+                core_machine_observe_display_snapshot(session->board,
                     LIB_TRUE, observation.generation, &observation) != LIB_STATUS_OK ||
                 !observation.generation_reliable || !observation.capture_required;
         }

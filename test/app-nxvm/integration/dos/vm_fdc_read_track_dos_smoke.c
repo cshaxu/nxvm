@@ -165,7 +165,7 @@ static lib_i32 vm_fdc242_run_until(vm_machine *session, lib_u32 limit,
          * instruction-level FDC/DMA execution being compared. */
         if (used < limit && used % VM_FDC242_DISPLAY_OBSERVATION_QUANTUM != 0u)
             continue;
-        if (core_machine_capture_display_snapshot(session->core_machine,
+        if (core_machine_capture_display_snapshot(session->board,
                 &snapshot) != LIB_STATUS_OK) return 0;
         if (require_marker ? snapshot.kind == X86_VIDEO_KIND_TEXT &&
                 snapshot.characters[VM_FDC242_MARKER_CELL] == 'F' &&

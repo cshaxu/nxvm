@@ -74,16 +74,16 @@ static lib_i32 input_display_lifecycle_guards(core_machine_keyboard_topology top
             core_machine_mouse_receive_relative(board, 1, -1, 0u) !=
                 (input && topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ?
                     LIB_STATUS_UNSUPPORTED : LIB_STATUS_INVALID_STATE) ||
-            core_machine_observe_display_snapshot(machine, LIB_FALSE, 0u,
+            core_machine_observe_display_snapshot(board, LIB_FALSE, 0u,
                 &observation) != (display ? LIB_STATUS_OK : LIB_STATUS_INVALID_STATE)) goto done;
-        capture = core_machine_capture_display_snapshot(machine, snapshot);
+        capture = core_machine_capture_display_snapshot(board, snapshot);
         if (display ? (capture != LIB_STATUS_OK && capture != LIB_STATUS_UNSUPPORTED) :
                 capture != LIB_STATUS_INVALID_STATE) goto done;
         if (core_machine_keyboard_get_native_scan_set(board, LIB_NULL) !=
                 LIB_STATUS_INVALID_STATE ||
-            core_machine_capture_display_snapshot(machine, LIB_NULL) !=
+            core_machine_capture_display_snapshot(board, LIB_NULL) !=
                 LIB_STATUS_INVALID_ARGUMENT ||
-            core_machine_observe_display_snapshot(machine, LIB_FALSE, 0u,
+            core_machine_observe_display_snapshot(board, LIB_FALSE, 0u,
                 LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT) goto done;
     }
     if (core_machine_keyboard_receive_native_byte(LIB_NULL, native) != LIB_STATUS_INVALID_STATE ||
@@ -96,6 +96,7 @@ static lib_i32 input_display_lifecycle_guards(core_machine_keyboard_topology top
     machine->lifecycle = CORE_MACHINE_PAUSED;
     machine->firmware_operation_active = LIB_TRUE;
     if (core_machine_mutable_operation_is_allowed(machine) ||
+        core_machine_configuration_is_open(machine) ||
         core_machine_mutable_operation_is_allowed(LIB_NULL) ||
         core_machine_keyboard_receive_native_byte(board, native) != LIB_STATUS_INVALID_STATE ||
         core_machine_keyboard_receive_native_bytes(board, &native, 1u) != LIB_STATUS_INVALID_STATE ||
@@ -103,6 +104,8 @@ static lib_i32 input_display_lifecycle_guards(core_machine_keyboard_topology top
         core_machine_set_xt_ppi_fault_input(board, CORE_MACHINE_XT_PPI_FAULT_RAM_PARITY,
             LIB_TRUE) != LIB_STATUS_INVALID_STATE ||
         core_machine_keyboard_get_native_scan_set(board, &scan_set) != LIB_STATUS_OK ||
+        core_machine_observe_display_snapshot(board, LIB_FALSE, 0u,
+            &observation) != LIB_STATUS_OK ||
         core_machine_set_xt_ppi_fault_input(LIB_NULL, CORE_MACHINE_XT_PPI_FAULT_RAM_PARITY,
             LIB_TRUE) != LIB_STATUS_INVALID_STATE) goto done;
     machine->firmware_operation_active = LIB_FALSE;
