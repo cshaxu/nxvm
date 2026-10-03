@@ -2,10 +2,9 @@
 
 ## Current Work
 
-M5 T540 S1-S78 are accepted; S79 is active.
-S79 implements the complete copied attachment callback binding.
-Implementation and required verification are complete; coordinator review is pending.
-Attachment ownership and physical movement remain open.
+M5 T540 S1-S79 are accepted; no implementation S is active.
+S79 closes the complete copied attachment callback binding.
+Opaque-board ownership, test classification and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 The oversized former S12 port batch is split into linear receivers. Shared
@@ -100,6 +99,8 @@ the completed CPU extraction.
 | T540 S75 | Accepted: six board lifecycle consumers use copied Core observation; both READY operations belong to the neutral scheduler; dual-width 470/470 units/gates and eight single boots pass. |
 | T540 S76 | Accepted: complete copied timing table has one Core publication owner; deadline qualification is a callback value; dual-width 470/470 units/gates and eight single boots pass. |
 | T540 S77 | Accepted: Core supplies copied time to all typed port reads; both Port-B routes no longer borrow the private clock; dual-width 470/470 units/gates and eight single boots pass. |
+| T540 S78 | Accepted: complete attachment ownership intake and one copied-binding/opaque-board target; no runtime change. |
+| T540 S79 | Accepted: all nineteen callback slots use one copied binding/publication/lifetime; dual-width 470/470 units/gates, eight independent Core executions and eight single boots pass. |
 
 ## T540 S1 Acceptance
 
@@ -2491,26 +2492,20 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
-## T540 S79 Admission Packet
+## T540 S79 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S79, next unused linear S after accepted S78. |
-| Admission And Approval | Owner's standing automatic bounded-S approval and goal continuation. NXVM source/test/build/docs and eight current 0540 products only; Shared and MyNES remain read-only. |
-| Objective | Replace the entire nineteen-slot private publication with one typed copied attachment binding, one constructor publication and one Core lifetime owner. |
-| Non-goals | Board-handle or physical directory cut, chip algorithm changes, profile changes, new registry/queue, runtime rebinding, INI/media changes, timing reclassification or T closure. |
-| Reference Baseline | S78 P2 f878753e1, clean tree; S78 finite callback inventory and S77 verified eight products. |
-| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [S78 intake](../etc/evidence/t540-s78-attachment-owner-intake.md), [private ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | Existing NXVM neutral/board sources and callback consumers, new attachment_interface.h, three callback fixtures, all affected NXVM owner/header gates and neutral source/header inventories, task docs and eight EXEs. Public construction-only bind copies typed callbacks/context; all phase/firmware/shutdown callbacks take explicit context. |
-| Applicable Rules | One state/publication/destruction owner, copied binding and opaque context, no private-pointer getter or parallel old slots. Board association remains the measured next receiver, not a claimed final cut. Configuration-only publication rejects duplicate/frozen/invalid requests without mutation. |
-| Verification | Build/run complete x64/x86 unit suites and specialized gates; independently build/run neutral Core for each product tree; execute each existing real-INI profile/width boot once; verify optimized stripped eight products and hashes. Regressions cover copied publication, invalid/duplicate/frozen rejection, reset/NMI/finalize order, partial construction cleanup and scheduler context identity. |
-| Expected Markers | No old board callback slots or owner; all nineteen callbacks in one public contract, one production publisher, no runtime replacement; original full unit/boot coverage preserved. |
-| Asset Needs | Existing external BYOB inputs unchanged; eight current 0540 EXEs rebuilt. Retain ignored incremental trees/logs for verification and immediate board-handle receiver; no MyNES build. |
-| Reporting Requirements | Executor confirms contract before implementation, reports discovery before scope revision, records complete batch disposition and counted source/test net lines plus full verification. |
-| Stop Conditions | New behavior, hardware, protected input or Shared/MyNES mutation requires new admission; compiler/gate failures remain in-scope until resolved and verified. |
-| Exit Criteria | Complete implementation P immediately pushed, actual pushed-diff coordinator audit, governance acceptance P and clean tree. No partial P; T540 remains open. |
-| Original Owner Request | Extract reusable neutral Core and flat IBM-PC integration with unique owners and no duplicated paths. |
-| Similar-Issue Sweep | All tracked NXVM production/test/CMake callback declarations, assignments, consumers, fixture context substitutions, neutral header inventories and negative owner gates. Shared/MyNES have no attachment consumer and are excluded from mutation. |
+Coordinator actual pushed-diff review accepts P1 `8717d3af2`: all 37 paths
+match the NXVM-only packet. Nineteen callbacks have one copied publication;
+invalid, duplicate and frozen requests preserve the previous value. Core's
+finalization order, scheduler/firmware algorithms and fixture context identity
+are preserved. The [S79 evidence](../etc/evidence/t540-s79-copied-attachment-binding.md)
+records dual-width 470/470 units/gates, six injected negatives, eight neutral
+Core executions, eight one-shot boot checkpoints and stripped 0540 identities.
+Committed artifact blobs match the verified worktree. Documentation structure,
+links, complete ledger disposition, task identifiers and actual scope pass.
+Shared, MyNES, INIs and external master inputs are unchanged. S79 is accepted;
+T540 remains open for opaque-board ownership, direct-test classification and
+physical Core/IBM-PC relocation. This governance closure admits no next packet.
 
 ## T540 S78 Acceptance
 

@@ -91,3 +91,8 @@ eight one-shot real-INI checkpoints and the rebuilt stripped 0540 pairs.
 Shared, MyNES, INIs and external masters remain unchanged. Coordinator
 acceptance follows the complete pushed implementation's actual diff review;
 T540's opaque-board, test-classification and physical moves remain open.
+
+Coordinator accepts immediately pushed P1 `8717d3af2` after the actual
+37-path source/test/build/document/artifact review and complete packet-to-proof
+mapping. Governance P2 closes S79 only, keeps the eight verified artifact
+identities, removes its active packet and leaves T540 open.

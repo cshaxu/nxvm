@@ -159,3 +159,19 @@ original, generated firmware byte source or MyNES artifact is imported.
 Ignored incremental trees and compact logs remain needed by the immediate
 opaque-board receiver; the isolated negative copy is already removed. No
 recording or unbounded trace is produced.
+
+## Coordinator Acceptance
+
+Implementation P1 `8717d3af2088a8a78cfcb4d4edbc5207bdf0e72d` was immediately
+pushed to origin/master. After switching roles, the coordinator reads actual
+committed hunks across all fourteen source/test paths, nine gates and six
+documents, and checks the eight committed artifact blobs against the verified
+files. All 37 changed paths match the packet; no partial callback member or
+hidden production publisher remains. Mandatory Types/boundary, copying and
+failure/lifetime invariants have their direct proof above. Source/request
+scope, linear identifier/P sequence, document links and ledger disposition
+also pass manual review rather than relying on the structural gate alone.
+No corrective implementation P is required. Governance P2 accepts S79 only;
+the opaque-board bridge, direct-test classification and physical Core/IBM-PC
+relocation remain open in T540. The next receiver retains the existing
+incremental trees; no new implementation packet is admitted by acceptance.
