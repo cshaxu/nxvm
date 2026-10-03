@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S1-S77 are accepted; S78 is active.
-S78 measures attachment ownership and freezes its next implementation boundary.
+M5 T540 S1-S78 are accepted; no implementation S is active.
+S78 measures attachment ownership; the complete callback cut is next.
 Attachment ownership and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
@@ -2490,26 +2490,20 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
-## T540 S78 Admission Packet
+## T540 S78 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S78, the next unused linear S after accepted S77. |
-| Admission And Approval | Owner's standing automatic bounded-S approval and active goal continuation; NXVM documentation-only attachment design prerequisite. No Shared, MyNES, source/test/build, INI, firmware, media or artifact mutation. |
-| Objective | Reconcile the complete remaining attachment association, callback publication and destruction surface; specify a real public boundary and one measured next implementation batch before physical relocation. |
-| Non-goals | Runtime implementation, directory movement, chip algorithms, new getter/registry/framework, test retirement, timing reclassification or T540 closure. |
-| Reference Baseline | Accepted S77 P2 e0c2b45fc; clean tree. Six production files contain 451 private board association accesses; nineteen callback slots comprise fourteen scheduler/signal callbacks and five later phase/firmware callbacks. |
-| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md), [S59 binding audit](../etc/evidence/t540-s59-callback-firmware-audit.md), [S69 linkage proof](../etc/evidence/t540-s69-independent-neutral-core.md), [S77 evidence](../etc/evidence/t540-s77-port-read-time-input.md). |
-| Files And ABI Surface | NXVM CURRENT, architecture, T540 proposal/history, private-state ledger and new S78 evidence only. Proposed copied callback binding and opaque board handle are designs, not existing APIs. |
-| Applicable Rules | Core owns execution/time/routes; board owns chips and electrical glue. A copied binding has one publication, lifetime and failure boundary. Do not export layouts or use a raw-pointer getter to disguise dependency. Supporting evidence does not claim current implementation. |
-| Verification | Read current declarations, all nineteen installs/calls, six board access owners, three callback-injection fixtures, constructor failure/destructor order and driver composition. Count tracked source/test/CMake occurrences; reconcile against S59/S69; validate changed links, documentation governance, diff/scope and exact S77 artifact hashes. Design-only changes do not manufacture runtime tests or EXE rebuilds. |
-| Expected Markers | Complete finite attachment inventory, distinct existing versus target ownership, all callbacks mapped to next binding receiver, preserved destruction order and fixture identity, no unclassified production access or getter shortcut. |
-| Asset Needs | None. Preserve S77 eight 0540 EXEs/INIs and ignored incremental trees for immediately next implementation. No MyNES build. |
-| Reporting Requirements | Executor confirms packet, reports actual measured discrepancy and resolves it in the design/evidence; record next whole-batch receiver and unchanged executable inputs. |
-| Stop Conditions | A new machine model, lifecycle queue, protected asset or need to change Shared/MyNES/runtime code requires new admission before that change. |
-| Exit Criteria | Complete design P1 immediate push; coordinator actual pushed-diff/coverage review; pure-governance P2 acceptance and clean tree. T540 remains open; S79 is prospective until its own packet. |
-| Original Owner Request | Extract neutral Core and flat reusable IBM-PC board integration, with complete ownership and no duplicate state, dispatch or framework. |
-| Similar-Issue Sweep | All tracked NXVM source/tests/CMake: board association dereferences, nineteen callback slots/owners, mixed private-header includes, publish/finalize sites and test-owner substitutions. Shared and MyNES are read-only and have no current Core attachment consumer. |
+Coordinator actual pushed-diff review accepts design P1 `5d707a0ba`:
+five NXVM documentation files record the complete nineteen-callback boundary,
+six production board owners, direct-test classification and lifetime order.
+The [S78 intake](../etc/evidence/t540-s78-attachment-owner-intake.md) separates
+existing implementation from the opaque-handle/copied-binding target and
+assigns the whole callback cut to prospective S79. Documentation governance,
+changed local links, diff/scope and all eight S77 artifact hashes pass.
+Two stale proposal links are corrected. Source/tests, Shared, MyNES, owner
+INIs and artifacts are unchanged; no new runtime test or rebuild is claimed.
+S78 is accepted. T540 remains open for attachment implementation, test
+classification and physical Core/IBM-PC relocation. No next implementation
+packet is admitted by this pure-governance acceptance.
 
 ## T540 S77 Acceptance
 

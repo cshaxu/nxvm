@@ -126,3 +126,14 @@ claimed for a design-only change. Document review also found and corrected
 two pre-existing relative proposal links in the retained T540 proposal.
 The retained S77 full unit and boot results
 describe that baseline only, not unimplemented attachment behavior.
+
+## Coordinator Acceptance
+
+P1 `5d707a0bacfc76dca3ce20810ab3b5cdc1ec5ab1` was immediately pushed to
+origin/master. Actual pushed-diff review covers all five NXVM documentation
+paths: 180 insertions and four deletions, no source/test/asset delta. The
+complete callback class and single attachment lifetime have explicit next
+receivers; the architecture section is marked as a target. Documentation
+governance, local links and diff checks pass. All eight S77 sizes/hashes match
+their accepted evidence. No corrective implementation P is needed. S78 is
+accepted by governance P2; T540 and its physical relocation remain open.
