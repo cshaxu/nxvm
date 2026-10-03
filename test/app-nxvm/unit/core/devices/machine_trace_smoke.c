@@ -22,8 +22,10 @@ static void trace_callback(void *context, const core_machine_trace_event *event)
     }
 }
 
-static lib_status port_read(void *owner, lib_u16 port, lib_u32 *out_value)
+static lib_status port_read(void *owner, lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     trace_fixture *fixture = (trace_fixture *)owner;
 
     (void)port;

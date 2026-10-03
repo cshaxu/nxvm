@@ -6,12 +6,15 @@
 typedef struct neutral_probe {
     lib_u32 port_value;
     lib_u32 trace_events;
+    lib_u64 read_tick;
 } neutral_probe;
 
-static lib_status neutral_port_read(void *owner, lib_u16 port, lib_u32 *out_value)
+static lib_status neutral_port_read(void *owner, lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
     neutral_probe *probe = owner;
     if (port != 0x1234u) return LIB_STATUS_INVALID_ARGUMENT;
+    probe->read_tick = tick;
     *out_value = probe->port_value;
     return LIB_STATUS_OK;
 }
@@ -355,7 +358,10 @@ lib_i32 main(void)
         core_machine_debug_read_memory(machine, 0x100u, &byte, 1u) != LIB_STATUS_OK ||
         byte != code[0] ||
         core_machine_debug_read_port(machine, 0x1234u, &value) != LIB_STATUS_OK ||
-        value != 0x5au || core_machine_request_stop(machine) != LIB_STATUS_OK ||
+        value != 0x5au || probe.read_tick != time.elapsed_ticks ||
+        core_machine_bus_read(machine, 0x1234u, &value) != LIB_STATUS_OK ||
+        value != 0x5au || probe.read_tick != time.elapsed_ticks ||
+        core_machine_request_stop(machine) != LIB_STATUS_OK ||
         core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_REQUESTED) goto done;
     failed = 0;

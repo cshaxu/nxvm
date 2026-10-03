@@ -7,8 +7,9 @@
 #include "support/core_machine_executor_fixture.h"
 
 typedef struct debug_port_probe { lib_status status; lib_u32 value; } debug_port_probe;
-static lib_status debug_port_read(void *owner, lib_u16 port, lib_u32 *out)
-{ debug_port_probe *probe = owner; (void)port; if (probe->status != LIB_STATUS_OK) return probe->status; *out = probe->value; return LIB_STATUS_OK; }
+static lib_status debug_port_read(void *owner, lib_u16 port, lib_u64 tick,
+    lib_u32 *out)
+{ (void)tick; debug_port_probe *probe = owner; (void)port; if (probe->status != LIB_STATUS_OK) return probe->status; *out = probe->value; return LIB_STATUS_OK; }
 static lib_status debug_port_write(void *owner, lib_u16 port, lib_u32 value)
 { debug_port_probe *probe = owner; (void)port; if (probe->status != LIB_STATUS_OK) return probe->status; probe->value = value; return LIB_STATUS_OK; }
 

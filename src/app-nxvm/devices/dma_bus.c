@@ -56,9 +56,10 @@ static lib_u8 dma_page_spare_index(lib_u16 port_id)
 }
 
 
-static lib_status dma_port_read(void *owner, lib_u16 port_id,
+static lib_status dma_port_read(void *owner, lib_u16 port_id, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     t_dma *primary = owner;
     t_dma *dma;
     lib_u8 value;

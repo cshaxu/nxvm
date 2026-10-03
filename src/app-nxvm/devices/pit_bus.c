@@ -1,8 +1,9 @@
 #include "app-nxvm/devices/pit_bus.h"
 
-static lib_status core_machine_pit_bus_read(void *owner, lib_u16 address,
+static lib_status core_machine_pit_bus_read(void *owner, lib_u16 address, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     core_machine_pit_bus *bus = owner;
     lib_u8 value = 0u;
     lib_status status;

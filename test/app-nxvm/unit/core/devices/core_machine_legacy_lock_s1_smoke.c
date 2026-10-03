@@ -13,8 +13,10 @@ typedef struct legacy_lock_s1_machine {
 } legacy_lock_s1_machine;
 
 static lib_status legacy_lock_s1_port_read(void *owner,
-    lib_u16 port, lib_u32 *value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *value)
 {
+    (void)tick;
     (void)owner;
     (void)port;
     if (value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;

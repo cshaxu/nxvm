@@ -13,6 +13,7 @@ typedef struct core_machine core_machine;
 typedef lib_status (*core_machine_port_read_provider)(
     void *owner,
     lib_u16 port,
+    lib_u64 tick,
     lib_u32 *out_value);
 
 typedef lib_status (*core_machine_port_write_provider)(
@@ -25,7 +26,10 @@ typedef struct core_machine_port_provider {
     core_machine_port_write_provider write;
 } core_machine_port_provider;
 
-/* The Core owns route storage. The caller retains each callback context until
+/* Read tick is the Core guest time at dispatch, copied unchanged to each
+ * byte lane and wired-OR contributor. A provider must not derive another
+ * clock. Writes consume their settled device state.
+ * The Core owns route storage. The caller retains each callback context until
  * its routes are removed or the machine is destroyed. */
 typedef struct core_machine_port_route {
     lib_u16 address;

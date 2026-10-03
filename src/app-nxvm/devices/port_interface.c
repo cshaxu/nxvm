@@ -124,7 +124,7 @@ lib_status core_machine_bus_read(
     }
     {
         lib_status status = core_machine_port_execute_read(&machine->executor_port,
-            port);
+            port, machine->elapsed_ticks);
 
         if (status != LIB_STATUS_OK) {
             core_machine_trace_record(machine, CORE_MACHINE_TRACE_PORT_READ, port,

@@ -46,8 +46,10 @@ static lib_status lifecycle_memory_query(void *opaque, lib_u32 address,
     return bytes == 1u ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
 }
 
-static lib_status lifecycle_port_read(void *opaque, lib_u16 port, lib_u32 *value)
+static lib_status lifecycle_port_read(void *opaque, lib_u16 port, lib_u64 tick,
+    lib_u32 *value)
 {
+    (void)tick;
     lifecycle_probe *probe = opaque;
     (void)port;
     ++probe->transfers;

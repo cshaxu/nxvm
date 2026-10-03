@@ -66,8 +66,10 @@ typedef struct timing_80386_manifest_port_state {
 } timing_80386_manifest_port_state;
 
 static lib_status timing_80386_manifest_port_read(void *opaque,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     timing_80386_manifest_port_state *state =
         (timing_80386_manifest_port_state *)opaque;
 

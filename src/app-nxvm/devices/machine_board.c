@@ -466,9 +466,10 @@ lib_status core_machine_reconfigure_memory(core_machine *machine,
     return core_machine_reconfigure_memory_core(machine, memory_bytes);
 }
 
-static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id,
+static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     lib_bool enabled;
     lib_status status;
 
@@ -529,8 +530,10 @@ static lib_i32 core_machine_rtc_cmos_config_is_valid(
 }
 
 static lib_status core_machine_rtc_cmos_port_read(void *owner,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     core_machine *machine = (core_machine *)owner;
 
     if (machine == LIB_NULL || out_value == LIB_NULL ||
@@ -578,7 +581,7 @@ static void core_machine_planar_parity_refresh_nmi(core_machine *machine)
 /* PC/AT-compatible port B exposes the system 8254's refresh and speaker
  * channel outputs independently of the board-specific NMI latches. */
 static lib_u8 core_machine_pc_at_port_b_timer_status(
-    const core_machine *machine)
+    const core_machine *machine, lib_u64 tick)
 {
     lib_u8 value = 0u;
 
@@ -586,7 +589,7 @@ static lib_u8 core_machine_pc_at_port_b_timer_status(
     if (machine->board->planar_parity_configured &&
         machine->board->planar_parity_config.refresh_status_source ==
             CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE) {
-        if (((machine->elapsed_ticks /
+        if (((tick /
                 machine->board->planar_parity_config.refresh_status_toggle_ticks) & 1u) != 0u) {
             value |= 0x10u;
         }
@@ -693,14 +696,15 @@ static void core_machine_planar_parity_memory_fault(void *owner,
 }
 
 static lib_status core_machine_planar_parity_port_read(void *owner,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
     core_machine *machine = (core_machine *)owner;
 
     if (machine == LIB_NULL || out_value == LIB_NULL || !machine->board->planar_parity_configured ||
         port != machine->board->planar_parity_config.port) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = (lib_u32)(machine->board->planar_parity_port_b & 0x0fu) |
-        core_machine_pc_at_port_b_timer_status(machine) |
+        core_machine_pc_at_port_b_timer_status(machine, tick) |
         (machine->board->planar_parity_latched ? 0x80u : 0u);
     return LIB_STATUS_OK;
 }
@@ -869,7 +873,8 @@ static void core_machine_d4_platform_failsafe_output(void *owner,
 }
 
 static lib_status core_machine_d4_platform_port_read(void *owner,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
     core_machine *machine = (core_machine *)owner;
 
@@ -877,7 +882,7 @@ static lib_status core_machine_d4_platform_port_read(void *owner,
         !machine->board->d4_platform_configured ||
         port != machine->board->d4_platform_config.port) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = (lib_u32)(machine->board->d4_platform_port_b & 0x0fu) |
-        core_machine_pc_at_port_b_timer_status(machine) |
+        core_machine_pc_at_port_b_timer_status(machine, tick) |
         (machine->board->d4_platform_iochk_latched ? 0x40u : 0u) |
         (machine->board->d4_platform_failsafe_latched ? 0x80u : 0u);
     return LIB_STATUS_OK;

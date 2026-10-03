@@ -19,9 +19,10 @@ typedef struct oas_port_state {
     lib_u32 last_write;
 } oas_port_state;
 
-static lib_status oas_port_read(void *owner, lib_u16 port,
+static lib_status oas_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     oas_port_state *state = (oas_port_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u)

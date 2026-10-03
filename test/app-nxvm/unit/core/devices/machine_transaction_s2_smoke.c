@@ -95,8 +95,10 @@ static void transaction_trace(void *opaque,
 }
 
 static lib_status transaction_port_read(void *opaque,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     transaction_probe *probe = (transaction_probe *)opaque;
 
     (void)port;

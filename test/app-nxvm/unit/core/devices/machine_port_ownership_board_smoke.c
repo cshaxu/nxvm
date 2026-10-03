@@ -28,9 +28,10 @@ typedef struct core_machine_port_probe_state {
     lib_status write_status;
 } core_machine_port_probe_state;
 
-static lib_status core_machine_port_probe_read(void *owner, lib_u16 port,
+static lib_status core_machine_port_probe_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     core_machine_port_probe_state *state =
         (core_machine_port_probe_state *)owner;
 

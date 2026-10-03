@@ -118,9 +118,10 @@ static void kbc_output_port(void *context, lib_u8 value)
     if ((value & 0x01u) == 0u) kbc_reset_pulse(context);
 }
 
-static lib_status kbc_port_read(void *owner, lib_u16 address,
+static lib_status kbc_port_read(void *owner, lib_u16 address, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     t_kbc *attachment = owner;
     lib_u8 value;
 

@@ -62,9 +62,10 @@ static const core_machine_execution_provider timing_manifest_execution_provider 
     timing_manifest_execution_reset, LIB_NULL
 };
 
-static lib_status timing_manifest_port_read(void *owner, lib_u16 port,
+static lib_status timing_manifest_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     (void)owner;
     if (out_value == LIB_NULL || port != 0x00e0u) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = 0x5au;

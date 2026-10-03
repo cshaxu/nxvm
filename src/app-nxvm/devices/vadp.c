@@ -105,8 +105,10 @@ static x86_video_register video_register(lib_u16 address)
     }
 }
 
-static lib_status video_read(void *context, lib_u16 address, lib_u32 *out_value)
+static lib_status video_read(void *context, lib_u16 address, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     t_vadp *adapter = context;
     lib_u8 value = (lib_u8)*out_value;
     lib_status status = x86_video_register_read(adapter->chip,

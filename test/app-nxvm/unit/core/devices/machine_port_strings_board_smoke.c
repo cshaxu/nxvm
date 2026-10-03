@@ -12,9 +12,10 @@ typedef struct port_strings_board_probe {
     lib_u32 last_write;
 } port_strings_board_probe;
 
-static lib_status port_strings_board_read(void *opaque, lib_u16 port,
+static lib_status port_strings_board_read(void *opaque, lib_u16 port, lib_u64 tick,
     lib_u32 *value)
 {
+    (void)tick;
     port_strings_board_probe *probe = (port_strings_board_probe *)opaque;
 
     if (port != 0x00e0u) return LIB_STATUS_INVALID_ARGUMENT;

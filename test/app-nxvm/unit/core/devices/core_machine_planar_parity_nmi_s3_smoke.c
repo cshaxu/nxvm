@@ -56,8 +56,10 @@ static lib_i32 planar_parity_s4_unbound_reconfigure(void)
     return failed;
 }
 
-static lib_status planar_conflict_read(void *owner, lib_u16 port, lib_u32 *value)
+static lib_status planar_conflict_read(void *owner, lib_u16 port, lib_u64 tick,
+    lib_u32 *value)
 {
+    (void)tick;
     (void)owner;
     if (port != CORE_MACHINE_PC_AT_PORT_B) return LIB_STATUS_INVALID_ARGUMENT;
     *value = 0x5au;

@@ -48,13 +48,14 @@ struct t_port {
     t_port_connect connect;
 };
 
-lib_status core_machine_port_execute_read(t_port *port, lib_u16 port_id);
+lib_status core_machine_port_execute_read(t_port *port, lib_u16 port_id,
+    lib_u64 tick);
 lib_status core_machine_port_execute_write(t_port *port, lib_u16 port_id);
 /* CPU IN/OUT widths are one bus transaction at the addressed port.  The
  * provider remains the sole owner of the register value and receives one
  * read/write callback regardless of the CPU transfer width. */
 lib_status core_machine_port_execute_read_width(t_port *port,
-    lib_u16 port_id, lib_u8 bytes);
+    lib_u16 port_id, lib_u8 bytes, lib_u64 tick);
 lib_status core_machine_port_execute_write_width(t_port *port,
     lib_u16 port_id, lib_u8 bytes);
 lib_status core_machine_port_add_read(t_port *port, lib_u16 port_id,
@@ -74,6 +75,8 @@ lib_status core_machine_port_add_route(t_port *port,
     const core_machine_port_route *route);
 lib_i32 core_machine_port_has_read(const t_port *port, lib_u16 port_id);
 lib_i32 core_machine_port_has_write(const t_port *port, lib_u16 port_id);
+/* Legacy fixture convenience: a synthetic zero-time read, never a live Core
+ * clock observation. Production entries use explicit-time execution above. */
 lib_u32 core_machine_port_read(t_port *port, lib_u16 port_id);
 void core_machine_port_write(t_port *port, lib_u16 port_id, lib_u32 value);
 void core_machine_port_initialize(t_port *port);

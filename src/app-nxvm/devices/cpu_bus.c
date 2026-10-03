@@ -86,7 +86,7 @@ static lib_status core_machine_cpu_bus_transfer_port(void *opaque,
         return status;
     }
     status = write ? core_machine_port_execute_write_width(ports, port, bytes) :
-        core_machine_port_execute_read_width(ports, port, bytes);
+        core_machine_port_execute_read_width(ports, port, bytes, machine->elapsed_ticks);
     if (status != LIB_STATUS_OK) {
         core_machine_transaction_cancel(&machine->transaction);
         core_machine_cpu_bus_port_phase(machine,

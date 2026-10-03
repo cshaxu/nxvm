@@ -44,9 +44,10 @@ static void iomap_reset(void *opaque)
         state->machine);
 }
 
-static lib_status iomap_port_read(void *opaque, lib_u16 port,
+static lib_status iomap_port_read(void *opaque, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     iomap_port_state *state = (iomap_port_state *)opaque;
 
     if (state == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;

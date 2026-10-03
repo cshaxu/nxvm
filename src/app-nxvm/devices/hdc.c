@@ -108,8 +108,10 @@ static lib_status hdc_register(const core_machine_hdc *hdc, lib_u16 port,
     return LIB_STATUS_OK;
 }
 
-static lib_status hdc_port_read(void *context, lib_u16 port, lib_u32 *out)
+static lib_status hdc_port_read(void *context, lib_u16 port, lib_u64 tick,
+    lib_u32 *out)
 {
+    (void)tick;
     core_machine_hdc *hdc = context;
     x86_hdc_register reg;
     lib_status status;

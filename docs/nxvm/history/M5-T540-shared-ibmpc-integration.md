@@ -61,3 +61,15 @@ one-shot external boots and optimized stripped 0540 identities. Shared,
 MyNES and owner INIs are unchanged. S77 receives Running Port-B time through
 an actual I/O-cycle input contract; attachment, direct-test classification and
 physical relocation remain required. T540 remains open.
+
+## S77: Port Read-Cycle Time Input
+
+The sole typed read contract now receives Core guest tick by value. CPU bus,
+paused bus/Debug and bounded firmware supply their own Core clock at dispatch;
+ordinary, byte-lane and wired-OR routes use the same value. Both existing
+Port-B callbacks use that input instead of borrowing the private clock. All
+twelve production and twenty-eight synthetic callbacks are reconnected;
+write callbacks, register algorithms, lifecycle guards and timing grades are
+unchanged. [S77 evidence](../etc/evidence/t540-s77-port-read-time-input.md)
+owns the source review, regression and artifact proof. This delivery does
+not close T540's attachment, direct-test classification or physical relocation.

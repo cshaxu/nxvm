@@ -1,5 +1,6 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
+#include "app-nxvm/devices/debug_interface.h"
 #include <stdio.h>
 
 #include "app-nxvm/devices/machine.h"
@@ -39,15 +40,22 @@ static lib_status port_assembly_create_hdc(const x86_hdc_config *config,
 
 typedef struct port_assembly_probe_state {
     lib_u32 value;
+    lib_u64 read_tick;
+    lib_u32 reads;
+    lib_bool inconsistent_tick;
 } port_assembly_probe_state;
 
-static lib_status port_assembly_read(void *owner, lib_u16 port,
+static lib_status port_assembly_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
     port_assembly_probe_state *state = (port_assembly_probe_state *)owner;
 
     (void)port;
     if (state == LIB_NULL || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (state->reads != 0u && state->read_tick != tick)
+        state->inconsistent_tick = LIB_TRUE;
+    state->read_tick = tick;
+    ++state->reads;
     *out_value = state->value;
     return LIB_STATUS_OK;
 }
@@ -149,6 +157,87 @@ static lib_i32 port_assembly_batch_transaction(void)
     return failed;
 }
 
+static lib_i32 port_assembly_read_time(void)
+{
+    t_port ports = {0};
+    port_assembly_probe_state lane = {.value = 0x5au};
+    port_assembly_probe_state contributor = {.value = 0x80u};
+    const core_machine_port_route bank = {
+        .address = 0x100u, .read = port_assembly_read, .owner = &lane,
+        .byte_lane_end = 0x104u
+    };
+    const core_machine_port_route wired_or = {
+        .address = 0x100u, .read = port_assembly_read, .owner = &contributor,
+        .wired_or_read = LIB_TRUE
+    };
+    const lib_u64 tick = 0x100000003ull;
+    lib_i32 failed;
+
+    core_machine_port_initialize(&ports);
+    failed = core_machine_port_add_route(&ports, &bank) != LIB_STATUS_OK ||
+        core_machine_port_add_route(&ports, &wired_or) != LIB_STATUS_OK ||
+        core_machine_port_execute_read_width(&ports, 0x100u, 4u, tick) !=
+            LIB_STATUS_OK || ports.data.ioDWord != 0x5a5a5adau ||
+        lane.reads != 4u || contributor.reads != 1u ||
+        lane.read_tick != tick || contributor.read_tick != tick ||
+        lane.inconsistent_tick || contributor.inconsistent_tick;
+    /* The existing fixture convenience is explicitly zero-time, not live time. */
+    lane.reads = contributor.reads = 0u;
+    failed |= core_machine_port_read(&ports, 0x100u) != 0xdau ||
+        lane.read_tick != 0u || contributor.read_tick != 0u;
+    core_machine_port_finalize(&ports);
+    return failed;
+}
+
+static lib_i32 port_assembly_port_b_time(void)
+{
+    const core_machine_config config = {.memory_bytes = 512u * 1024u,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086};
+    const core_machine_planar_parity_config parity = {
+        .port = CORE_MACHINE_PC_AT_PORT_B, .memory_bytes = 512u * 1024u,
+        .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
+        .refresh_status_toggle_ticks = 64u
+    };
+    const lib_u64 ticks[] = {0u, 63u, 64u, 65u, 127u, 128u, 129u,
+        0x100000040ull};
+    const lib_u8 code[] = {0x90u, 0xe4u, 0x61u};
+    const core_machine_debug_register_patch patch = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = {0}
+    };
+    core_machine *machine = LIB_NULL;
+    core_machine_run_result result = {0};
+    core_machine_time_observation time = {0};
+    lib_u32 eax = 0u;
+    lib_i32 failed = core_machine_create(&config, &machine) != LIB_STATUS_OK;
+
+    if (!failed) failed = core_machine_configure_planar_parity(machine, &parity) !=
+        LIB_STATUS_OK;
+    for (lib_size index = 0u; !failed && index < sizeof(ticks) / sizeof(ticks[0]);
+            ++index) {
+        /* Core time remains zero: the endpoint must use the supplied value. */
+        failed = core_machine_port_execute_read(&machine->executor_port,
+            CORE_MACHINE_PC_AT_PORT_B, ticks[index]) != LIB_STATUS_OK ||
+            (machine->executor_port.data.ioDWord & 0x10u) !=
+                (((ticks[index] / 64u) & 1u) ? 0x10u : 0u) ||
+            machine->elapsed_ticks != 0u;
+    }
+    if (!failed) failed = core_machine_freeze_execution_providers(machine) !=
+            LIB_STATUS_OK || core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_debug_patch_registers(machine, &patch) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, code, sizeof(code)) != LIB_STATUS_OK ||
+        core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
+        core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
+        time.elapsed_ticks == 0u ||
+        core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
+        core_machine_debug_read_register(machine, CORE_MACHINE_DEBUG_EAX, &eax) !=
+            LIB_STATUS_OK ||
+        (eax & 0x10u) != (((time.elapsed_ticks / 64u) & 1u) ? 0x10u : 0u);
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static lib_i32 port_assembly_dma_byte_lanes(void)
 {
     const core_machine_config config = {
@@ -166,7 +255,7 @@ static lib_i32 port_assembly_dma_byte_lanes(void)
             (lib_u8)core_machine_port_read(port, 0x0082u) != 0x22u ||
             (lib_u8)core_machine_port_read(port, 0x0083u) != 0x33u ||
             (lib_u8)core_machine_port_read(port, 0x0084u) != 0x44u;
-        failed |= core_machine_port_execute_read_width(port, 0x0081u, 4u) !=
+        failed |= core_machine_port_execute_read_width(port, 0x0081u, 4u, 0u) !=
             LIB_STATUS_OK || port->data.ioDWord != 0x44332211u;
         core_machine_port_write(port, 0x008fu, 0x5au);
         port->data.ioDWord = 0x88776655u;
@@ -460,7 +549,7 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
             failed |= core_machine_configure_fdc(machine, &fdc) != LIB_STATUS_OK;
             if (!failed) {
                 failed |= core_machine_port_execute_read(&machine->executor_port,
-                    0x03f7u) != LIB_STATUS_OK;
+                    0x03f7u, 0u) != LIB_STATUS_OK;
                 fdc_value = machine->executor_port.data.ioDWord;
             }
         } else {
@@ -522,9 +611,9 @@ static lib_i32 port_assembly_hdc_transaction(core_machine_hdc_protocol protocol,
                 lib_u32 combined = 0u;
 
                 failed |= core_machine_hdc_port_provider()->read(&machine->board->hdc,
-                    0x03f7u, &hdc_value) != LIB_STATUS_OK ||
+                    0x03f7u, 0u, &hdc_value) != LIB_STATUS_OK ||
                     core_machine_port_execute_read(&machine->executor_port,
-                        0x03f7u) != LIB_STATUS_OK;
+                        0x03f7u, 0u) != LIB_STATUS_OK;
                 combined = machine->executor_port.data.ioDWord;
                 failed |= combined != (fdc_value | hdc_value);
             }
@@ -595,7 +684,8 @@ lib_i32 main(void)
 {
     lib_i32 failed = port_assembly_range_transaction() ||
         port_assembly_batch_transaction() ||
-        port_assembly_dma_byte_lanes() ||
+        port_assembly_dma_byte_lanes() || port_assembly_read_time() ||
+        port_assembly_port_b_time() ||
         port_assembly_create_failure() ||
         port_assembly_pit_transaction() || port_assembly_pic_transaction();
 

@@ -111,6 +111,14 @@ existing deadline callback. Its intake assigns the distinct Running Port-B
 read to S77's actual I/O-cycle input contract; a paused-time getter shortcut
 cannot close it. Both receivers remain before attachment and source movement.
 
+S77 supplies copied Core time on the existing typed read callback, including
+CPU, paused bus/Debug and bounded firmware dispatch. Every lane and wired-OR
+contributor receives the same value; both Port-B routes retain their existing
+status algorithm. The write contract has no current time consumer and stays
+unchanged. Zero-time raw reads remain synthetic fixtures only, enforced by
+the production owner gate. Attachment, direct-test classification and source
+movement remain separate receiving work, not inferred from this input closure.
+
 S65 separates the private neutral construction value without rewriting the
 public plan ABI: one board composition derives the temporary value and owns
 the existing public create/test-allocation pipeline. Core does not retain

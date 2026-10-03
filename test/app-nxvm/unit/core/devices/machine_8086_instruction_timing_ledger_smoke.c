@@ -15,9 +15,10 @@ typedef struct timing_8086_state {
     lib_u64 advanced_ticks;
 } timing_8086_state;
 
-static lib_status timing_8086_port_read(void *owner, lib_u16 port,
+static lib_status timing_8086_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     timing_8086_state *state = (timing_8086_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u) {

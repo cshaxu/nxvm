@@ -17,8 +17,10 @@ typedef struct timing_ledger_state {
 } timing_ledger_state;
 
 static lib_status timing_ledger_port_read(void *owner,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     timing_ledger_state *state = (timing_ledger_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u) {

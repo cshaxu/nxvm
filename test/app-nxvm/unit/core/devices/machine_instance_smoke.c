@@ -15,9 +15,10 @@ typedef struct port_fixture {
 
 static lib_status port_read(
     void *owner,
-    lib_u16 port,
+    lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     port_fixture *fixture = (port_fixture *)owner;
 
     fixture->last_port = port;

@@ -85,8 +85,10 @@ static lib_i32 timing_80286_manifest_flags_active = 0;
 static lib_u32 timing_80286_manifest_eflags;
 
 static lib_status timing_80286_manifest_port_read(void *owner,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     (void)owner;
     if (port != 0x00e0u || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = 0x5au;

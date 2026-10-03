@@ -141,7 +141,7 @@ lib_status core_machine_firmware_port_read(
     }
     {
         lib_status status = core_machine_port_execute_read(
-            &firmware->machine->executor_port, port);
+            &firmware->machine->executor_port, port, firmware->machine->elapsed_ticks);
 
         if (status != LIB_STATUS_OK) {
             return core_machine_firmware_operation_result(firmware, status);

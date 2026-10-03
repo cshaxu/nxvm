@@ -79,7 +79,7 @@ static lib_status core_machine_port_add_provider(t_port *port,
 
 
 static lib_status core_machine_port_execute_read_current(t_port *port,
-    lib_u16 port_id)
+    lib_u16 port_id, lib_u64 tick)
 {
     core_machine_port_provider_entry *provider;
     lib_u32 value = 0u;
@@ -100,13 +100,13 @@ static lib_status core_machine_port_execute_read_current(t_port *port,
                 for (lane = 0u; lane < port->data.access_bytes; ++lane) {
                     lib_u32 byte = 0u;
                     lib_status status = provider->read_provider(provider->owner,
-                        (lib_u16)(port_id + lane), &byte);
+                        (lib_u16)(port_id + lane), tick, &byte);
                     if (status != LIB_STATUS_OK) return status;
                     value |= (byte & 0xffu) << (lane * 8u);
                 }
             } else {
                 lib_status status = provider->read_provider(provider->owner,
-                    port_id, &value);
+                    port_id, tick, &value);
                 if (status != LIB_STATUS_OK) return status;
             }
         }
@@ -117,7 +117,7 @@ static lib_status core_machine_port_execute_read_current(t_port *port,
 
         if (provider->port_id != port_id || provider->write || !provider->wired_or ||
             provider->read_provider == LIB_NULL) continue;
-        status = provider->read_provider(provider->owner, port_id, &contribution);
+        status = provider->read_provider(provider->owner, port_id, tick, &contribution);
         if (status != LIB_STATUS_OK) return status;
         value |= contribution;
     }
@@ -156,14 +156,14 @@ static lib_status core_machine_port_execute_write_current(t_port *port,
     return LIB_STATUS_OK;
 }
 lib_status core_machine_port_execute_read_width(t_port *port,
-    lib_u16 port_id, lib_u8 bytes)
+    lib_u16 port_id, lib_u8 bytes, lib_u64 tick)
 {
     if (port == LIB_NULL || (bytes != 1u && bytes != 2u && bytes != 4u) ||
         (lib_u32)port_id + bytes > VPORT_MAX_PORT_COUNT) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     port->data.access_bytes = bytes;
-    return core_machine_port_execute_read_current(port, port_id);
+    return core_machine_port_execute_read_current(port, port_id, tick);
 }
 lib_status core_machine_port_execute_write_width(t_port *port,
     lib_u16 port_id, lib_u8 bytes)
@@ -176,11 +176,12 @@ lib_status core_machine_port_execute_write_width(t_port *port,
     return core_machine_port_execute_write_current(port, port_id);
 }
 
-lib_status core_machine_port_execute_read(t_port *port, lib_u16 port_id)
+lib_status core_machine_port_execute_read(t_port *port, lib_u16 port_id,
+    lib_u64 tick)
 {
     if (port == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     port->data.access_bytes = 1u;
-    return core_machine_port_execute_read_current(port, port_id);
+    return core_machine_port_execute_read_current(port, port_id, tick);
 }
 
 lib_status core_machine_port_execute_write(t_port *port, lib_u16 port_id)
@@ -261,7 +262,7 @@ lib_i32 core_machine_port_has_write(const t_port *port, lib_u16 port_id)
 lib_u32 core_machine_port_read(t_port *port, lib_u16 port_id)
 {
     if (port == LIB_NULL) return 0u;
-    (void)core_machine_port_execute_read(port, port_id);
+    (void)core_machine_port_execute_read(port, port_id, 0u);
     return port->data.ioDWord;
 }
 

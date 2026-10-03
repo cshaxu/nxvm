@@ -26,9 +26,10 @@ void core_machine_pic_refresh(core_machine_pic_bus *master,
     x86_pic_set_inputs(master->device, pic_bus_levels(master), 0u, cascade);
 }
 
-static lib_status pic_bus_read(void *owner, lib_u16 port_id,
+static lib_status pic_bus_read(void *owner, lib_u16 port_id, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     core_machine_pic_bus *bus = owner;
     lib_u8 value = 0u;
 

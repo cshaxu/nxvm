@@ -32,9 +32,10 @@ typedef struct t359_s4_repeat_row {
     lib_u64 iteration[4];
 } t359_s4_repeat_row;
 
-static lib_status t359_s4_port_read(void *owner, lib_u16 port,
+static lib_status t359_s4_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     t359_s4_state *state = (t359_s4_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || port != T359_S4_PORT) {

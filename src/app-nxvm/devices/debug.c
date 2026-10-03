@@ -181,7 +181,8 @@ lib_status core_machine_debug_read_port(core_machine *machine, lib_u16 port,
     lib_status status = core_machine_debug_require_boundary(machine);
     if (status != LIB_STATUS_OK || out_value == LIB_NULL) return
         status == LIB_STATUS_OK ? LIB_STATUS_INVALID_ARGUMENT : status;
-    status = core_machine_port_execute_read(&machine->executor_port, port);
+    status = core_machine_port_execute_read(&machine->executor_port, port,
+        machine->elapsed_ticks);
     if (status != LIB_STATUS_OK) return status;
     *out_value = machine->executor_port.data.ioDWord;
     return LIB_STATUS_OK;

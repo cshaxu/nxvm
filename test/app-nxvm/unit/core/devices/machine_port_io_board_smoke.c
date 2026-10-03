@@ -12,15 +12,17 @@ typedef struct port_io_board_probe {
     lib_u32 reads;
     lib_u32 writes;
     lib_bool fail;
+    lib_u64 read_tick;
 } port_io_board_probe;
 
-static lib_status port_io_board_read(void *opaque, lib_u16 port,
+static lib_status port_io_board_read(void *opaque, lib_u16 port, lib_u64 tick,
     lib_u32 *value)
 {
     port_io_board_probe *probe = (port_io_board_probe *)opaque;
 
     if (probe->fail) return LIB_STATUS_INVALID_ARGUMENT;
     ++probe->reads;
+    probe->read_tick = tick;
     probe->last_port = port;
     *value = probe->input;
     return LIB_STATUS_OK;
@@ -175,6 +177,29 @@ static lib_i32 port_io_board_irq(lib_bool input)
     return !failed;
 }
 
+static lib_i32 port_io_board_time(core_machine_cpu_profile profile)
+{
+    const lib_u8 code[] = {0x90u, 0xe4u, 0x5au};
+    port_io_board_probe probe = {0};
+    core_machine *machine = LIB_NULL;
+    core_machine_run_result result = {0};
+    core_machine_time_observation time = {0};
+    lib_i32 failed = !port_io_board_prepare(&machine, &probe, profile);
+
+    if (!failed)
+        failed = core_machine_memory_write(machine, 0u, code, sizeof(code)) !=
+            LIB_STATUS_OK ||
+            core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+                &result) != LIB_STATUS_OK ||
+            core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
+            time.elapsed_ticks == 0u ||
+            core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+                &result) != LIB_STATUS_OK ||
+            probe.reads != 1u || probe.read_tick != time.elapsed_ticks;
+    core_machine_destroy(machine);
+    return !failed;
+}
+
 lib_i32 main(void)
 {
     if (!port_io_board_provider_failure(CORE_MACHINE_CPU_PROFILE_8086,
@@ -185,7 +210,9 @@ lib_i32 main(void)
             LIB_TRUE) ||
         !port_io_board_provider_failure(CORE_MACHINE_CPU_PROFILE_80386,
             LIB_FALSE) ||
-        !port_io_board_irq(LIB_TRUE) || !port_io_board_irq(LIB_FALSE)) {
+        !port_io_board_irq(LIB_TRUE) || !port_io_board_irq(LIB_FALSE) ||
+        !port_io_board_time(CORE_MACHINE_CPU_PROFILE_8086) ||
+        !port_io_board_time(CORE_MACHINE_CPU_PROFILE_80386)) {
         printf("Scalar port I/O board delivery failed\n");
         return 1;
     }

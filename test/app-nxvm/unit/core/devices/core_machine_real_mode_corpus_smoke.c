@@ -208,9 +208,10 @@ static lib_i32 corpus_test_int_iret(void)
     return failed;
 }
 
-static lib_status corpus_port_read(void *owner, lib_u16 port,
+static lib_status corpus_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     corpus_port_state *state = (corpus_port_state *)owner;
 
     if (state == LIB_NULL || out_value == LIB_NULL || state->event_count >=

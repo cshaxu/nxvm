@@ -16,11 +16,12 @@ typedef struct firmware_probe {
     lib_i32 reentry_rejected;
     lib_status port_status;
     lib_u32 port_value;
+    lib_u64 read_tick;
 } firmware_probe;
 
-static lib_status firmware_probe_port_read(void *owner, lib_u16 port,
+static lib_status firmware_probe_port_read(void *owner, lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
-{ firmware_probe *probe = owner; (void)port; if (probe->port_status != LIB_STATUS_OK) return probe->port_status; *out_value = probe->port_value; return LIB_STATUS_OK; }
+{ firmware_probe *probe = owner; (void)port; probe->read_tick = tick; if (probe->port_status != LIB_STATUS_OK) return probe->port_status; *out_value = probe->port_value; return LIB_STATUS_OK; }
 static lib_status firmware_probe_port_write(void *owner, lib_u16 port,
     lib_u32 value)
 { firmware_probe *probe = owner; (void)port; if (probe->port_status != LIB_STATUS_OK) return probe->port_status; probe->port_value = value; return LIB_STATUS_OK; }
@@ -155,6 +156,7 @@ lib_i32 main(void)
     lib_i32 failed = 0;
     lib_status run_status;
     core_machine_lifecycle lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_time_observation time = {0};
     core_machine_port_provider port_provider = {firmware_probe_port_read,
         firmware_probe_port_write};
 
@@ -235,7 +237,9 @@ lib_i32 main(void)
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     run_status = core_machine_run(machine, budget, &result);
     failed |= run_status != LIB_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_BUDGET || probe.after_run_calls != 1;
+        result.reason != CORE_MACHINE_STOP_BUDGET || probe.after_run_calls != 1 ||
+        core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
+        time.elapsed_ticks == 0u || probe.read_tick != time.elapsed_ticks;
     failed |= core_machine_firmware_port_read(probe.expired, 0x03d8u, &port_value) !=
         LIB_STATUS_INVALID_STATE;
     core_machine_destroy(machine);

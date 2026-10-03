@@ -4,8 +4,10 @@
 #include "app-nxvm/devices/machine_board_interface.h"
 
 static lib_status machine_configuration_port_read(void *owner,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     (void)owner;
     (void)port;
     *out_value = 0x5au;

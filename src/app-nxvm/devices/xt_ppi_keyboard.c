@@ -100,8 +100,10 @@ static void core_machine_xt_ppi_keyboard_clear_byte(
 }
 
 static lib_status core_machine_xt_ppi_keyboard_read(void *owner,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     core_machine_xt_ppi_keyboard *keyboard = owner;
     lib_u8 input = 0u, value = 0u;
     lib_status status;

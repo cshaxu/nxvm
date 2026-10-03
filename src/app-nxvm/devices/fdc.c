@@ -333,9 +333,10 @@ const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(void)
     return &provider;
 }
 
-static lib_status core_machine_fdc_port_read(void *owner, lib_u16 id,
+static lib_status core_machine_fdc_port_read(void *owner, lib_u16 id, lib_u64 tick,
     lib_u32 *out_value)
 {
+    (void)tick;
     core_machine_fdc *fdc = owner;
     lib_u8 value;
 

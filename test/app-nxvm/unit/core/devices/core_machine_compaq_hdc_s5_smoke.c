@@ -53,8 +53,10 @@ static core_machine_media_result core_machine_compaq_hdc_write(void *opaque,
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 static lib_status core_machine_compaq_hdc_fdc_direction(void *opaque,
-    lib_u16 port, lib_u32 *out_value)
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
 {
+    (void)tick;
     (void)opaque;
     if (port != 0x03f7u || out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_value = 0x80u;
