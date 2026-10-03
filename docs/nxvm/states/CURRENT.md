@@ -2,41 +2,31 @@
 
 ## Current Work
 
-### Active Packet: M5 T540 S92
+M5 T540 S1-S92 are accepted. T540 remains open; no S packet is active.
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; next numeric S after accepted S91. |
-| Admission And Approval | Owner-approved whole T540 board extraction and automatic numeric S admission. Shared and NXVM are admitted; MyNES is unaffected and must not rebuild or change. |
-| Objective | Extract the complete DMA bus owner into x86/ibmpc-common: single/dual-controller ports, page latches, transfer latch, channel providers, nonce validation, arbitration, Core memory cycles, reset and destruction. |
-| Non-goals | No chip algorithm/timing upgrade, AT/XT family completion, scheduler, framework, App split, firmware/media/INI change or MyNES change. |
-| Reference Baseline | Clean accepted S91 37d46f58d; eight current stripped 0540 products. |
-| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md), S92; [ownership ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | Move dma_bus.c/h with one opaque aggregate owning primary/secondary controllers and transfer latch. Move the DMA-issued copied request nonce to its public interface. Preserve scoped byte/word callback value semantics, single/dual port maps and existing cycle algorithms. App keeps clock conversion and refresh/FDC/HDC wiring; all 17 measured source and 23 test consumers are classified and migrated. No raw chip getter, public mutable bus layout, private App helper or second registry. |
-| Applicable Rules | Execution, Architecture, Coding, Document and source policy. One DMA state/binding owner, one Core port/memory dispatch and guest clock, neutral copied/scoped contracts, atomic route publication and sole rollback/destruction. One target per P. |
-| Verification | Independently built original DMA channel matrix and rollback/token/cycle coverage; source comparison and retained assertions; complete root units on x86/x64; specialized/negative gates, six manifests, documentation/diff and sole-Core link checks; eight fresh stripped 0540 EXEs and each unchanged-INI semantic boot checkpoint once. |
-| Expected Markers | One Shared DMA implementation; no App bus source or embedded controller/latch layout; all FDC/HDC/refresh and diagnostic consumers use the public aggregate; algorithms and original checkpoints preserved. |
-| Asset Needs | Existing approved embedded firmware and integration inputs only; no owner INI or external-media writes. |
-| Reporting Requirements | Record full constructor/reset/failure/provider/teardown inventory, actual code counts and retained owners, tests/product proof and coordinator actual-pushed-diff review. |
-| Stop Conditions | New hardware semantics/timing, public private-state getter, duplicate bus/state, unrelated consumer change or unexplained checkpoint regression. |
-| Exit Criteria | Entire DMA aggregate physically Shared and independently tested, NXVM connected and old copy deleted; caller/lifetime/failure coverage complete; all proof/artifacts pushed and actual changes reviewed. |
-| Original Owner Request | Finish actual flat Core/common/AT/XT components, not endless per-field preparation. |
-| Similar-Issue Sweep | Every DMA include, embedded latch/controller, chip/connection field access, request/provider binding, page/port cycle, reset/advance/finalize and diagnostic fixture. Remaining board/family/D4 groups keep their T540 receivers. |
-
-M5 T540 S1-S91 are accepted; S92 is active.
-
-S90 accepts the complete common PIT port attachment and display dead-ABI
-cleanup. PIC/DMA aggregation, shared board construction/time/deadlines,
+Neutral execution/time lives in `src/x86/core`, with one implementation.
+Common PIT routes and complete PIC/DMA bus owners live in
+`src/x86/ibmpc-common`. Shared board construction/reset/time/deadlines,
 AT/XT family wiring and genuine machine-specific D4 ownership remain required.
-
-The real neutral source/test/build component now
-lives in `src/x86/core`; NXVM links its sole implementation. Core owns guest
-execution/time and copied attachment lifetime, not a named PC-board pointer.
-Actual board, profile, firmware and media choices remain outside this component.
+Actual profile, firmware and media choices stay outside neutral Core.
 
 | Task | Progress |
 | --- | --- |
-| T540 S92 | Active whole DMA aggregate extraction; board/family assembly and D4 remain required. |
+| T540 | S92 accepted; next whole shared-board receiver must complete construction/reset/time/deadlines before family/D4 closure. |
+
+## S92 Accepted Review
+
+Coordinator actual-pushed-diff review accepts Shared P1 `5a1033665` and
+NXVM P2 `4aa8dc29c`: one opaque Shared DMA bus owns controllers, page/latch,
+bindings, routes and cycles. App callers use its public contract; old copies
+and embedded layouts are removed. The original 126-row first-service matrix
+and Core failure assertions retain their receivers. Complete units pass
+474/474 per width, independent tests 138/138, tools-off tests 132/132.
+Both specialized targets, DMA negatives, six manifests and documentation pass.
+Eight fresh stripped 0540 products pass unchanged-INI checkpoints once each;
+all eight sole-Core link proofs pass. MyNES and owner INIs are unchanged.
+The [S92 evidence](../etc/evidence/t540-s92-dma-aggregation.md) records actual
+source review, counted changes and product hashes. This closes S92, not T540.
 
 ## S91 Accepted Review
 
@@ -4146,7 +4136,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S89 with unchanged owner INIs; S89 evidence records their hashes, PE
+T540 S92 with unchanged owner INIs; S92 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

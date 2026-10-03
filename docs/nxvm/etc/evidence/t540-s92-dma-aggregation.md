@@ -1,6 +1,8 @@
 # T540 S92 Whole DMA Aggregation Evidence
 
 Baseline: clean accepted S91 37d46f58d. S92 is active, not accepted.
+This intake statement is historical. Final disposition: S92 accepted after
+coordinator review of pushed Shared P1 5a1033665 and NXVM P2 4aa8dc29c.
 The local project-owned source retains its original notices and root MIT
 authorization; no external code, protected input or new asset is imported.
 
@@ -124,6 +126,16 @@ owner INIs and external assets are unchanged. Shared P1 owns the physical DMA
 source/test migration and independent build; NXVM P2 owns callers, fixtures,
 gates, task evidence and the eight current products. Coordinator review of
 the actual pushed commits remains required before S92 acceptance.
+
+Coordinator actual-pushed-diff review is complete: P1 has 15 paths, all the
+Shared DMA migration/build/test surface; P2 has 42 NXVM paths, including the
+eight products, callers, gates and evidence. Actual commits match the reviewed
+worktree, pass Git whitespace review and are pushed to origin/master. The
+original port/cycle/arbitration and 126-row matrix changes were read, including
+Core rollback transfer and public App assertion replacements. No additional
+algorithm, media, INI or MyNES change is included. S92 is accepted; remaining
+board construction/reset/time/deadline, AT/XT and D4 requirements prevent T540
+closure.
 
 | Product | Bytes | SHA-256 |
 | --- | ---: | --- |

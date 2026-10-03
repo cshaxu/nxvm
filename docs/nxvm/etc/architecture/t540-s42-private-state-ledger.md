@@ -79,6 +79,15 @@ by raw getters. Independent channel/cycle/rollback tests and all actual
 construction/failure/reset/provider/teardown callers belong to this batch.
 DMA is not accepted until that entire physical receiver is verified.
 
+S92 disposition: accepted by actual-pushed-diff review of Shared 5a1033665
+and NXVM 4aa8dc29c. The complete DMA owner and independent original matrix
+are physically Shared; App retains only the public handle and board wiring.
+Core-private rollback assertions retain their Core test receiver. The
+[evidence](../evidence/t540-s92-dma-aggregation.md) proves all original
+checkpoint, lifecycle, cycle, binding and failure obligations. Shared board
+construction/reset/time/deadlines, family wiring and D4 are still unresolved
+T540 receivers, not covered by the DMA disposition.
+
 ## Existing facts and intended sole owners
 
 | State or behavior in the present private header | Present users and final owner | Receiver |

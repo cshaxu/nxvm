@@ -223,6 +223,12 @@ tests may inspect private mechanics; peer tests must exercise public behavior.
 Independent builds, both complete units, gates/manifests and eight final
 single-run product checkpoints precede delivery. Board/family/D4 remain open.
 
+S92 acceptance: Shared 5a1033665 and NXVM 4aa8dc29c satisfy the whole DMA
+receiver after actual-diff review, independent/full tests and eight unchanged
+INI checkpoints. The [evidence](../etc/evidence/t540-s92-dma-aggregation.md)
+records the retained matrix and source/artifact proof. This is not board/family
+or T540 closure.
+
 ## Verification And Exit
 
 S80 receives the complete callback-context class from S79: the existing board
