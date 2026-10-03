@@ -181,6 +181,14 @@ Their whole caller migration and test classification remain required before
 the physical move. [S80 evidence](../evidence/t540-s80-board-callback-context.md)
 records the complete class and verification, not a completed public board cut.
 
+S81 consumes the frozen-plan constructor publication class: one existing
+candidate factory returns the board allocation to plan assembly, which publishes
+Core and board outputs only after complete topology/timing success. Every plan
+caller receives that real handle; driver destruction clears its borrowed lease.
+Configuration-only fixtures and public board operations remain next receivers,
+not a private-state getter or completed physical move. The
+[S81 evidence](../evidence/t540-s81-plan-board-publication.md) records this cut.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

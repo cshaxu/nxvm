@@ -121,3 +121,21 @@ Coordinator accepts immediately pushed P1 `24fb33b1e` after actual review of
 all 25 NXVM-only paths and the eight committed artifact identities. Governance
 P2 closes S80 only, removes its packet and leaves T540's public board API,
 test classification and physical relocation open.
+
+## S81: Frozen-Plan Board Handle Publication
+
+The one frozen-plan constructor now publishes Core and its opaque board
+allocation together after topology and timing application succeed. Failure
+destroys the unpublished candidate through the existing Core owner. Every
+plan caller receives the new output; the driver clears its borrowed board
+handle when Core is destroyed. No getter, state mirror, second factory or
+destruction path is added. [S81 evidence](../etc/evidence/t540-s81-plan-board-publication.md)
+records publication/rollback checks and final verification. Public board
+operations, configuration-only fixture callers, test classification and the
+physical source move remain required; this delivery does not close T540.
+
+Complete x64/x86 units pass 470/470 each, specialized and nine injected negative
+gates pass, and all eight product builds, neutral executions and one-shot INI
+boots pass. Eight optimized stripped 0540 products are refreshed. The initial
+CPU negative timeout remains recorded; its complete rerun passes without
+removing checks. Shared, MyNES, INIs and external masters are unchanged.

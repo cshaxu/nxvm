@@ -52,6 +52,57 @@ static lib_i32 plan_capability_is_non_guest_time(
         capability == CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG;
 }
 
+static lib_i32 plan_handle_publication(void)
+{
+    const core_machine_config configuration = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+    };
+    core_machine_plan *plan = LIB_NULL;
+    core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
+    lib_i32 failed = 0;
+
+    if (core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK)
+        return 1;
+    if (core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK) {
+        core_machine_plan_destroy(plan);
+        return 1;
+    }
+    failed |= board == LIB_NULL || (void *)board != machine->attachment.context;
+    failed |= board != LIB_NULL && board->core != machine;
+    core_machine_destroy(machine);
+
+    machine = (core_machine *)(lib_uptr)1u;
+    board = (core_machine_board_state *)(lib_uptr)1u;
+    failed |= core_machine_create_from_plan(LIB_NULL, &machine, &board) !=
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL || board != LIB_NULL;
+    board = (core_machine_board_state *)(lib_uptr)1u;
+    failed |= core_machine_create_from_plan(plan, LIB_NULL, &board) !=
+        LIB_STATUS_INVALID_ARGUMENT || board != LIB_NULL;
+    machine = (core_machine *)(lib_uptr)1u;
+    failed |= core_machine_create_from_plan(plan, &machine, LIB_NULL) !=
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
+    /* Valid plan, but topology application fails after attachment creation. */
+    plan->topology.absent_memory_count = 1u;
+    plan->topology.absent_memory[0].physical_start = 0x00100000u;
+    machine = (core_machine *)(lib_uptr)1u;
+    board = (core_machine_board_state *)(lib_uptr)1u;
+    failed |= core_machine_create_from_plan(plan, &machine, &board) !=
+        LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL || board != LIB_NULL;
+    core_machine_plan_destroy(plan);
+
+    for (lib_size index = 1u; index <= 3u; ++index) {
+        core_machine_port_test_allocation allocation = { index, 0u };
+        machine = (core_machine *)(lib_uptr)1u;
+        board = (core_machine_board_state *)(lib_uptr)1u;
+        failed |= core_machine_create_internal(&configuration, &machine,
+            LIB_NULL, &allocation, &board) != LIB_STATUS_NO_MEMORY ||
+            machine != LIB_NULL || board != LIB_NULL ||
+            allocation.attempts != index;
+    }
+    return failed;
+}
+
 static lib_i32 plan_default_and_copy(void)
 {
     core_machine_config configuration = { .memory_bytes =
@@ -59,6 +110,7 @@ static lib_i32 plan_default_and_copy(void)
     core_machine_plan *plan = LIB_NULL;
     core_machine_timing_declaration temporary;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_timing_declaration declaration;
     core_machine_timing_disposition disposition;
     lib_size index;
@@ -81,7 +133,7 @@ static lib_i32 plan_default_and_copy(void)
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC] =
         plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT];
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT] = temporary;
-    failed |= core_machine_create_from_plan(plan, &machine) != LIB_STATUS_OK ||
+    failed |= core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
         machine == LIB_NULL;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC].disposition =
         CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
@@ -101,35 +153,36 @@ static lib_i32 plan_rejects_incomplete_or_unavailable(void)
 {
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = (core_machine *)(lib_uptr)1u;
+    core_machine_board_state *board = LIB_NULL;
     lib_size index;
     lib_i32 failed = 0;
 
     failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     --plan->declaration_count;
-    failed |= core_machine_create_from_plan(plan, &machine) !=
+    failed |= core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     plan->declarations[1].capability = plan->declarations[0].capability;
-    failed |= core_machine_create_from_plan(plan, &machine) !=
+    failed |= core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC].disposition =
         CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-    failed |= core_machine_create_from_plan(plan, &machine) !=
+    failed |= core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT].disposition =
         CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
-    failed |= core_machine_create_from_plan(plan, &machine) !=
+    failed |= core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     failed |= core_machine_plan_create(LIB_NULL, &plan) != LIB_STATUS_OK;
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC].seam =
         CORE_MACHINE_TIMING_SEAM_TRANSACTION;
-    failed |= core_machine_create_from_plan(plan, &machine) !=
+    failed |= core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index) {
         const core_machine_timing_capability capability =
@@ -142,7 +195,7 @@ static lib_i32 plan_rejects_incomplete_or_unavailable(void)
             plan_capability_is_non_guest_time(capability) ?
             CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK :
             CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-        failed |= core_machine_create_from_plan(plan, &machine) !=
+        failed |= core_machine_create_from_plan(plan, &machine, &board) !=
             LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     }
     core_machine_plan_destroy(plan);
@@ -155,17 +208,18 @@ static lib_i32 plan_rejects_topology_before_publication(void)
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = (core_machine *)(lib_uptr)1u;
+    core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     plan->topology.fdc_present = LIB_TRUE;
-    failed |= core_machine_create_from_plan(plan, &machine) !=
+    failed |= core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     plan->topology.absent_memory_count = 1u;
     plan->topology.absent_memory[0].physical_start = 0x00100000u;
-    failed |= core_machine_create_from_plan(plan, &machine) !=
+    failed |= core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     return failed;
@@ -177,12 +231,13 @@ static lib_i32 plan_rejects_invalid_transaction_contract_before_publication(void
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = (core_machine *)(lib_uptr)1u;
+    core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
     configuration.transaction_contract.external_cycle_timing.page_bytes = 3u;
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_validate(plan) != LIB_STATUS_OK;
-    failed |= core_machine_create_from_plan(plan, &machine) !=
+    failed |= core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL;
     core_machine_plan_destroy(plan);
     return failed;
@@ -201,6 +256,7 @@ static lib_i32 plan_controller_timing_rules_are_copied_and_validated(void)
     };
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_timing_disposition disposition;
     lib_i32 failed = 0;
 
@@ -209,7 +265,7 @@ static lib_i32 plan_controller_timing_rules_are_copied_and_validated(void)
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &source_rules) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
+    failed |= !failed && core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_get_timing_disposition(machine,
         CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != LIB_STATUS_OK;
@@ -220,7 +276,7 @@ static lib_i32 plan_controller_timing_rules_are_copied_and_validated(void)
     failed |= !failed && core_machine_get_timing_disposition(machine,
         CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK;
     failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-    failed |= !failed && machine->board->controller_timing.pit_clock !=
+    failed |= !failed && board->controller_timing.pit_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
@@ -240,12 +296,13 @@ static lib_i32 plan_rejects_invalid_controller_timing_rules(void)
     };
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = (core_machine *)(lib_uptr)1u;
+    core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != LIB_STATUS_OK;
-    failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
+    failed |= !failed && (core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
     configuration.clock_plan.dma = (core_machine_clock_ratio) {3u, 8u, 0u};
@@ -255,7 +312,7 @@ static lib_i32 plan_rejects_invalid_controller_timing_rules(void)
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != LIB_STATUS_OK;
     machine = (core_machine *)(lib_uptr)1u;
-    failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
+    failed |= !failed && (core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
     rules.pic_visibility = CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK;
@@ -264,7 +321,7 @@ static lib_i32 plan_rejects_invalid_controller_timing_rules(void)
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != LIB_STATUS_OK;
     machine = (core_machine *)(lib_uptr)1u;
-    failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
+    failed |= !failed && (core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_INVALID_ARGUMENT || machine != LIB_NULL);
     core_machine_plan_destroy(plan);
     return failed;
@@ -281,6 +338,7 @@ static lib_i32 plan_selects_single_controller_xt_board(void)
     core_machine_plan_topology topology = {0};
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_i32 failed = 0;
 
     topology.dma_present = LIB_TRUE;
@@ -289,7 +347,7 @@ static lib_i32 plan_selects_single_controller_xt_board(void)
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_topology(plan, &topology) !=
         LIB_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
+    failed |= !failed && core_machine_create_from_plan(plan, &machine, &board) !=
         LIB_STATUS_OK;
     failed |= !failed && (!core_machine_port_has_read(&machine->executor_port, 0x0020u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x0000u) ||
@@ -325,13 +383,14 @@ static lib_i32 plan_l2_pit_deadline_remains_schedulable(void)
     };
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_time_observation observation;
     core_machine_timing_disposition disposition;
     lib_u8 advanced = LIB_FALSE;
     lib_i32 failed = 0;
 
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     failed |= !failed && core_machine_get_timing_disposition(machine,
@@ -369,6 +428,7 @@ static lib_i32 plan_source_dma_deadline_is_schedulable(void)
     };
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_dma_request_binding binding = {0};
     core_machine_time_observation observation;
     lib_u8 advanced = LIB_FALSE;
@@ -377,17 +437,17 @@ static lib_i32 plan_source_dma_deadline_is_schedulable(void)
     failed |= core_machine_plan_create(&configuration, &plan) != LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_dma_bind_channel(&machine->board->shared_dma_latch,
-        &machine->board->shared_dma_primary, &machine->board->shared_dma_secondary, 2u, &provider,
+    failed |= !failed && core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_dma_bind_channel(&board->shared_dma_latch,
+        &board->shared_dma_primary, &board->shared_dma_secondary, 2u, &provider,
         LIB_NULL, &binding) != LIB_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         LIB_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
     core_machine_port_write(&machine->executor_port, 0x000bu, 0x46u);
     core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
-    core_machine_dma_request_assert(&machine->board->shared_dma_primary,
-        &machine->board->shared_dma_secondary, &binding);
+    core_machine_dma_request_assert(&board->shared_dma_primary,
+        &board->shared_dma_secondary, &binding);
     failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
         LIB_STATUS_OK;
     failed |= !failed && (!observation.next_deadline_valid ||
@@ -396,8 +456,8 @@ static lib_i32 plan_source_dma_deadline_is_schedulable(void)
     failed |= !failed && core_machine_advance_to_next_deadline(machine, &advanced) !=
         LIB_STATUS_OK;
     failed |= !failed && (!advanced || machine->elapsed_ticks != 3u);
-    core_machine_dma_request_deassert(&machine->board->shared_dma_primary,
-        &machine->board->shared_dma_secondary, &binding);
+    core_machine_dma_request_deassert(&board->shared_dma_primary,
+        &board->shared_dma_secondary, &binding);
     core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
@@ -405,7 +465,8 @@ static lib_i32 plan_source_dma_deadline_is_schedulable(void)
 
 lib_i32 main(void)
 {
-    if (plan_default_and_copy() || plan_rejects_incomplete_or_unavailable() ||
+    if (plan_handle_publication() || plan_default_and_copy() ||
+        plan_rejects_incomplete_or_unavailable() ||
         plan_rejects_topology_before_publication() ||
         plan_rejects_invalid_transaction_contract_before_publication() ||
         plan_controller_timing_rules_are_copied_and_validated() ||
@@ -428,5 +489,6 @@ lib_i32 main(void)
     puts("M5:T484:S5:XT-B2-PLAN:OK");
     puts("M5:T484:S5:XT-NO-AT-TOPOLOGY:OK");
     puts("M5:T499:S3:L2-PIT-DEADLINE:OK");
+    puts("M5:T540:S81:BOARD-HANDLE-PUBLICATION:OK");
     return 0;
 }

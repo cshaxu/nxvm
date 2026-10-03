@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+typedef struct core_machine_board_state core_machine_board_state;
+
 #define CORE_MACHINE_RTC_TYPE_DISK_FLOPPY 0x10u
 #define CORE_MACHINE_RTC_TYPE_DISK_FIXED 0x12u
 #define CORE_MACHINE_RTC_EQUIPMENT 0x14u
@@ -333,8 +335,10 @@ lib_status core_machine_plan_configure_hdc(core_machine_plan *plan,
     const core_machine_hdc_config *config);
 lib_status core_machine_plan_configure_d4_memory(core_machine_plan *plan,
     const core_machine_d4_memory_config *config);
+/* Both outputs publish only after complete construction. Board is borrowed:
+ * core_machine_destroy releases it through the installed attachment. */
 lib_status core_machine_create_from_plan(const core_machine_plan *plan,
-    core_machine **out_machine);
+    core_machine **out_machine, core_machine_board_state **out_board);
 /* A serial byte received from the keyboard attached to this machine's 8042.
  * Product host adapters query the selected scan set before forming this
  * device-native stream. */

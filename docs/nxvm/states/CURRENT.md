@@ -2,11 +2,33 @@
 
 ## Current Work
 
-M5 T540 S1-S80 are accepted; no implementation S is active.
+M5 T540 S1-S80 are accepted; S81 is active.
 S80 makes all nineteen attachment callbacks consume their board allocation.
 Opaque-board ownership, test classification and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
+
+### Active S81 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T540 S81; accepted S80 P2 is `0c168e618`. |
+| Admission And Approval | Owner's standing automatic numeric-S admission and T540 board extraction approval; next complete frozen-plan construction/publication class, NXVM target only. No Shared or MyNES edit/build. |
+| Objective | Publish the existing opaque board allocation together with Core only after the frozen plan has fully succeeded; reconnect every plan constructor caller and preserve one cleanup owner. |
+| Non-goals | No physical relocation, chip algorithm/timing change, public board operation migration, configuration-only fixture factory migration, getter, side registry, second board allocation, new lifecycle, INI or asset-master change. |
+| Reference Baseline | S80 P2 `0c168e618`; architecture attachment target, S78 ownership intake and S42 private-state ledger. Existing eight 0540 products and 470 unit cases per width. |
+| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md); complete construction/publication batch from its opaque-board target. |
+| Files And ABI Surface | Existing machine_board_interface.h exposes only the opaque board typedef; create_from_plan returns Core and board outputs. Existing private candidate factory shares allocation/failure path with configuration and allocation-seam callers. Driver retains a borrowed board handle and clears it when Core is destroyed. All five plan caller files, constructor tests and relevant owner gates are in scope. Coordinator revision: existing CPU-boundary negative timeout increases 180 to 600 seconds after recorded host-load timeout, with every assertion and serial ordering preserved; its copied-input comment is corrected. No guest/API scope expansion. |
+| Applicable Rules | Architecture sole state/publication/destruction owner, opaque handles and no reverse dependency; Coding C11/Lib vocabulary and existing style; Execution complete P, immediate push, full units, both-width artifacts and coordinator actual-diff review; Document authority/link consistency; source policy retains existing approved embedding. |
+| Verification | Existing x64/x86 unit trees: build all unit targets, complete `ctest -L unit -j 8`, specialized gates; constructor identity/null-output/failed-topology/invalid-plan checks; independent Core smoke in eight product trees; build optimized stripped 0540 x64/x86 for four profiles, run each existing real-INI boot row once with 180000ms containment; documentation governance and diff check. |
+| Expected Markers | Both widths 470/470 unit pass; constructor success and failure publication marker; specialized gates pass; eight NEUTRAL-LINK:OK and eight dos-prompt or installer-running checkpoints; no MyNES/Shared/INI delta. |
+| Asset Needs | Existing approved immutable build inputs and adjacent INIs only, unchanged. No download, copy or mutation of asset masters. |
+| Reporting Requirements | Report contract confirmation, construction/rollback findings and verification progress; delivery links to evidence, implementation/governance commits and explicit remaining public operation/fixture/physical-move boundaries. |
+| Stop Conditions | Stop for changed guest behavior, unresolved destruction ownership, forbidden getter/registry or undeclared Shared/MyNES changes. A failing boot row is not retried into acceptance. |
+| Exit Criteria | Every frozen-plan caller supplies the new output, success exposes the actual callback-owned allocation and failures expose neither candidate; driver lease is invalidated on destruction; required tests/gates/artifacts pass, actual diff is reviewed, commits pushed and worktree clean. T540 remains open. |
+| Original Owner Request | Extract reusable board integration into x86/core and flat ibmpc-common/at/xt, leaving product composition only, preserving all machines and avoiding layered patches; automatically admit successive numeric S. |
+| Similar-Issue Sweep | Search all tracked NXVM constructor declarations/definitions/callers and destructor sites; inspect ordinary config and allocation-seam factories for same single ownership path. Retain their existing Core-only fixture interface explicitly for the subsequent complete public-board operation/caller receiver; no new compatibility factory. |
+
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
 M5 T539 is closed. S1-S45 are accepted. S43 P1 `4ff59cd5c` establishes its
@@ -4016,7 +4038,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S80 with unchanged owner INIs; S80 evidence records their hashes, PE
+T540 S81 with unchanged owner INIs; S81 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

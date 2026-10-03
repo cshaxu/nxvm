@@ -260,27 +260,33 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
 }
 
 lib_status core_machine_create_from_plan(const core_machine_plan *plan,
-    core_machine **out_machine)
+    core_machine **out_machine, core_machine_board_state **out_board)
 {
+    core_machine *machine;
+    core_machine_board_state *board;
     lib_status status;
 
-    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_machine = LIB_NULL;
+    if (out_machine != LIB_NULL) *out_machine = LIB_NULL;
+    if (out_board != LIB_NULL) *out_board = LIB_NULL;
+    if (out_machine == LIB_NULL || out_board == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
     if (core_machine_plan_validate(plan) != LIB_STATUS_OK) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    status = core_machine_create(&plan->configuration, out_machine);
+    status = core_machine_create_internal(&plan->configuration, &machine,
+        LIB_NULL, LIB_NULL, &board);
     if (status != LIB_STATUS_OK) return status;
-    status = core_machine_plan_apply_topology(*out_machine, plan);
+    status = core_machine_plan_apply_topology(machine, plan);
     if (status == LIB_STATUS_OK)
-        status = core_machine_install_timing_declarations(*out_machine,
+        status = core_machine_install_timing_declarations(machine,
             plan->declarations, plan->declaration_count);
     if (status != LIB_STATUS_OK) {
-        core_machine_destroy(*out_machine);
-        *out_machine = LIB_NULL;
+        core_machine_destroy(machine);
         return status;
     }
-    (*out_machine)->board->controller_timing = plan->controller_timing;
+    board->controller_timing = plan->controller_timing;
+    *out_machine = machine;
+    *out_board = board;
     return LIB_STATUS_OK;
 }
 

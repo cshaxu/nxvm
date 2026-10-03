@@ -2528,10 +2528,10 @@ add_test(NAME unit.cpu-bus-boundary-negative
         "-DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
         "-DWORK=${CMAKE_BINARY_DIR}/test/cpu-bus-boundary-negative"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/core/devices/cpu_bus_boundary_negative.cmake")
-# This negative contract temporarily mutates a tracked CPU header, then restores
-# it.  It must not race the parallel unit readers of that same header.
+# Negative controls mutate owned copies, never the production CPU headers.
+# Keep the existing serial order and bound the complete multi-process probe.
 set_tests_properties(unit.cpu-bus-boundary-negative PROPERTIES
-    LABELS unit TIMEOUT 180 RUN_SERIAL TRUE)
+    LABELS unit TIMEOUT 600 RUN_SERIAL TRUE)
 
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.

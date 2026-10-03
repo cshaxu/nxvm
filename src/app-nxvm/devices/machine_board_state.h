@@ -129,6 +129,11 @@ lib_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology);
 void core_machine_board_reset_devices(void *owner);
 /* Private board construction failure seams use the one production factory. */
+lib_status core_machine_create_internal(const core_machine_config *config,
+    core_machine **out_machine,
+    core_machine_memory_test_allocation *test_allocation,
+    core_machine_port_test_allocation *port_test_allocation,
+    core_machine_board_state **out_board);
 lib_status core_machine_create_with_test_memory_allocation(
     const core_machine_config *config, core_machine **out_machine,
     core_machine_memory_test_allocation *test_allocation);

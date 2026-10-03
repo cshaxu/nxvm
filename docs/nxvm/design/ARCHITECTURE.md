@@ -87,6 +87,13 @@ Neither callback closure authorizes a layout getter or completes that API cut.
 See [S79 evidence](../etc/evidence/t540-s79-copied-attachment-binding.md) and
 [S80 evidence](../etc/evidence/t540-s80-board-callback-context.md).
 
+S81's frozen-plan constructor publishes the opaque board and Core handles
+together only after successful construction; Core remains their sole lifetime
+owner. The driver holds the borrowed board handle and clears it on destruction.
+Public board operation signatures and configuration-only fixture callers remain
+the next migration boundary, not a completed physical move. See
+[S81 evidence](../etc/evidence/t540-s81-plan-board-publication.md).
+
 ### Fixed Composition Without A New Framework
 
 Build selection supplies one profile composition entry to the adapter:

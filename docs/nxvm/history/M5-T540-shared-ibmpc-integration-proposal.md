@@ -159,6 +159,13 @@ changing chip algorithms, event order or attachment ABI. The remaining public
 board APIs and their driver/fixture callers still need the whole opaque-handle
 migration; no private-state getter or runtime rebinding closes that boundary.
 
+S81 consumes the complete frozen-plan publication class first: construction
+returns the existing opaque board alongside Core, atomically after all plan
+application succeeds. The sole destructor retains ownership; every plan caller
+receives the actual allocation without a getter. The subsequent operation and
+configuration-fixture receiver uses these handles, then removes the remaining
+private association before neutral/board source movement.
+
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
 - Common board contract tests live with their flat receiver under

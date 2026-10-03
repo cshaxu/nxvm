@@ -216,6 +216,22 @@ foreach(forbidden IN ITEMS "clock_plan" "pic_" "pit_" "dma_" "kbc_" "xt_")
     endif()
 endforeach()
 file(READ "${machine_plan_source}" machine_plan_text)
+foreach(required IN ITEMS "core_machine_board_state **out_board"
+    "core_machine_create_internal(&plan->configuration, &machine,"
+    "core_machine_destroy(machine);" "*out_machine = machine;"
+    "*out_board = board;")
+    string(FIND "${machine_plan_text}" "${required}" publication)
+    if(publication EQUAL -1)
+        message(FATAL_ERROR "Frozen plan lacks sole dual-handle publication: ${required}")
+    endif()
+endforeach()
+foreach(forbidden IN ITEMS "core_machine_get_board(" "get_board_context("
+    "(*out_machine)->board" "core_machine_create(&plan->configuration")
+    string(FIND "${machine_plan_text}" "${forbidden}" private_bridge)
+    if(NOT private_bridge EQUAL -1)
+        message(FATAL_ERROR "Frozen plan retains a private publication bridge: ${forbidden}")
+    endif()
+endforeach()
 foreach(validator IN ITEMS retirement_time_contract_is_valid
     timing_capability_is_valid external_cycle_timing_is_valid
     external_access_wait_windows_are_valid transaction_contract_is_valid)
@@ -276,7 +292,8 @@ foreach(required IN ITEMS "core_machine_plan_configure_fdc"
 endforeach()
 file(READ "${composition_source}" composition_text)
 foreach(required IN ITEMS "core_machine_media_registry_create"
-    "core_machine_plan_bind_media_registry")
+    "core_machine_plan_bind_media_registry"
+    "&machine->core_machine, &machine->board)" "machine->board = LIB_NULL;")
     string(FIND "${composition_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T296 S4 composition plan submission is incomplete: ${required}")

@@ -121,6 +121,7 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
     vm_profile_xt_5160_268_plan_snapshot profile;
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_dma_request_binding binding = {0};
     core_machine_media_registry *media = LIB_NULL;
     x86_video_snapshot snapshot = {0};
@@ -140,13 +141,13 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
         LIB_STATUS_OK;
     failed |= !failed && core_machine_plan_set_topology(plan, &profile.topology) !=
         LIB_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK;
     failed |= !failed && core_machine_get_fdc_dma_request_binding(machine, &binding) !=
         LIB_STATUS_OK;
     failed |= !failed && (binding.core_token == 0u || binding.channel != 2u ||
-        machine->board->fdc.connect.config.irq != 6u ||
-        machine->board->fdc.connect.config.dma_channel != 2u ||
-        machine->board->fdc.connect.config.clock_ticks_per_second != 4772727u ||
+        board->fdc.connect.config.irq != 6u ||
+        board->fdc.connect.config.dma_channel != 2u ||
+        board->fdc.connect.config.clock_ticks_per_second != 4772727u ||
         !core_machine_port_has_read(&machine->executor_port, 0x03f4u) ||
         !core_machine_port_has_read(&machine->executor_port, 0x03f5u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x03f2u) ||
@@ -159,9 +160,9 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
         !core_machine_port_has_write(&machine->executor_port, 0x03d9u) ||
         !core_machine_port_has_read(&machine->executor_port, 0x03dau) ||
         core_machine_port_has_read(&machine->executor_port, 0x03c0u) ||
-        !machine->board->hdc_configured ||
-        machine->board->hdc.connect.config.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
-        machine->board->hdc.connect.config.bus.xebec.drive_type !=
+        !board->hdc_configured ||
+        board->hdc.connect.config.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
+        board->hdc.connect.config.bus.xebec.drive_type !=
             CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||
         !core_machine_port_has_read(&machine->executor_port, 0x0320u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x0320u) ||

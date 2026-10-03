@@ -358,7 +358,7 @@ lib_status vm_machine_storage_initialize(vm_machine *machine)
         return status;
     }
     status = core_machine_create_from_plan(machine->core_machine_plan,
-        &machine->core_machine);
+        &machine->core_machine, &machine->board);
     if (status == LIB_STATUS_OK) {
         status = core_machine_get_fdc_dma_request_binding(machine->core_machine,
             &machine->fdc_dma_request);
@@ -376,6 +376,7 @@ void vm_machine_storage_finalize(vm_machine *machine)
     if (machine == LIB_NULL) return;
     core_machine_destroy(machine->core_machine);
     machine->core_machine = LIB_NULL;
+    machine->board = LIB_NULL;
     core_machine_display_provider_slot_destroy(machine->display_provider);
     machine->display_provider = LIB_NULL;
     core_machine_media_registry_destroy(machine->media_registry);

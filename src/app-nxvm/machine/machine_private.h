@@ -26,6 +26,8 @@ struct vm_machine {
     core_machine_plan *core_machine_plan;
     vm_profile_machine_plan *profile_plan;
     core_machine *core_machine;
+    /* Borrowed from the sole Core attachment lifetime. */
+    core_machine_board_state *board;
     core_machine_dma_request_binding fdc_dma_request;
     union { t_fdd fdd; t_fdd floppy[VM_MACHINE_FLOPPY_SLOT_COUNT]; };
     union { t_hdd hdd; t_hdd fixed_disk[VM_MACHINE_FIXED_DISK_SLOT_COUNT]; };

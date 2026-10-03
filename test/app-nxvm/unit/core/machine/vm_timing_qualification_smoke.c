@@ -77,6 +77,7 @@ static lib_i32 vm_timing_qualification_assert_case(
     core_machine_time_observation observation;
     core_machine_plan *plan = LIB_NULL;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_status status;
     lib_i32 failed = 0;
 
@@ -93,7 +94,7 @@ static lib_i32 vm_timing_qualification_assert_case(
         printf("%s: plan create status %d\n", test_case->name, status);
         return 1;
     }
-    status = core_machine_create_from_plan(plan, &machine);
+    status = core_machine_create_from_plan(plan, &machine, &board);
     if (status != LIB_STATUS_OK) {
         printf("%s: core create status %d\n", test_case->name, status);
         failed = 1;
@@ -121,8 +122,8 @@ static lib_i32 vm_timing_qualification_assert_case(
     }
     if (!failed) {
         core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
-        core_machine_dma_request_assert(&machine->board->shared_dma_primary,
-            &machine->board->shared_dma_secondary, &request);
+        core_machine_dma_request_assert(&board->shared_dma_primary,
+            &board->shared_dma_secondary, &request);
         status = core_machine_capture_time_observation(machine, &observation);
         if (status != LIB_STATUS_OK || !observation.next_deadline_valid ||
             observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE) {

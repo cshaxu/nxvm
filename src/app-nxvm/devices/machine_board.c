@@ -78,15 +78,17 @@ lib_i32 core_machine_board_config_is_valid(
         (!config->auxiliary_pit_present || config->auxiliary_pit_base_port <= 0xfffcu);
 }
 
-static lib_status core_machine_create_internal(
+lib_status core_machine_create_internal(
     const core_machine_config *config,
     core_machine **out_machine,
     core_machine_memory_test_allocation *test_allocation,
-    core_machine_port_test_allocation *port_test_allocation)
+    core_machine_port_test_allocation *port_test_allocation,
+    core_machine_board_state **out_board)
 {
     core_machine *machine;
     lib_status status;
 
+    if (out_board != LIB_NULL) *out_board = LIB_NULL;
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = LIB_NULL;
     if (config == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
@@ -116,13 +118,15 @@ static lib_status core_machine_create_internal(
     if (status != LIB_STATUS_OK) return status;
 
     *out_machine = machine;
+    if (out_board != LIB_NULL) *out_board = machine->board;
     return LIB_STATUS_OK;
 }
 
 lib_status core_machine_create(const core_machine_config *config,
     core_machine **out_machine)
 {
-    return core_machine_create_internal(config, out_machine, LIB_NULL, LIB_NULL);
+    return core_machine_create_internal(config, out_machine, LIB_NULL, LIB_NULL,
+        LIB_NULL);
 }
 
 lib_status core_machine_create_with_test_memory_allocation(
@@ -130,7 +134,7 @@ lib_status core_machine_create_with_test_memory_allocation(
     core_machine_memory_test_allocation *test_allocation)
 {
     return core_machine_create_internal(config, out_machine, test_allocation,
-        LIB_NULL);
+        LIB_NULL, LIB_NULL);
 }
 
 lib_status core_machine_create_with_test_port_allocation(
@@ -138,7 +142,7 @@ lib_status core_machine_create_with_test_port_allocation(
     core_machine_port_test_allocation *test_allocation)
 {
     return core_machine_create_internal(config, out_machine, LIB_NULL,
-        test_allocation);
+        test_allocation, LIB_NULL);
 }
 
 lib_status core_machine_board_create(core_machine *machine,
