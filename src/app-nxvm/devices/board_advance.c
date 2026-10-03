@@ -74,9 +74,9 @@ void core_machine_board_pit_pic_advance(void *owner,
 {
     core_machine_board_state *board = owner;
     if (board == LIB_NULL) return;
-    x86_pit_advance(board->shared_pit.device, ticks.primary);
+    x86_pit_advance(board->shared_pit, ticks.primary);
     if (board->auxiliary_pit_configured) {
-        x86_pit_advance(board->auxiliary_pit.device, ticks.auxiliary);
+        x86_pit_advance(board->auxiliary_pit, ticks.auxiliary);
     }
     if (ticks.primary != 0u) {
         core_machine_trace_record(board->core, CORE_MACHINE_TRACE_PIT_ADVANCE,

@@ -150,17 +150,9 @@ x86_video_kind vm_machine_publish_display(vm_machine *machine,
     return snapshot.kind;
 }
 
-static void vm_machine_display_mode_changed(void *context)
-{
-    vm_machine *machine = context;
-
-    vm_machine_publish_display(machine, 1);
-}
-
 void vm_machine_bind_display(vm_machine *machine)
 {
     if (machine == LIB_NULL) return;
     core_machine_display_provider_slot_bind(machine->display_provider,
-        machine, vm_machine_display_mode_changed,
         machine, vm_machine_capture_display_snapshot);
 }

@@ -2,8 +2,28 @@
 
 ## Current Work
 
-M5 T540 S1-S89 are accepted. No implementation packet is active between
-acceptance and the next receiver admission.
+### Active Packet: M5 T540 S90
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S90 follows accepted S89. |
+| Admission And Approval | Owner-approved T540 extraction and automatic numeric S admission; Shared and NXVM only. MyNES does not consume x86 and must not change or rebuild. |
+| Objective | Deliver the complete PIT port-binding component in x86/ibmpc-common and remove the unused display mode-binding ABI and its only App callback. |
+| Non-goals | No PIC/DMA/family completion claim, chip algorithm/timing change, new scheduler, INI/media/firmware change or App split. |
+| Reference Baseline | Clean accepted S89 47dfd87b7; four profiles and eight 0540 products. |
+| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md), S90 PIT binding batch; [ownership ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
+| Files And ABI Surface | Move pit_bus.c/h to Shared pit_bus.c/pit_bus_interface.h. Stateless per-selector callbacks borrow the board-owned opaque PIT and install the same four routes atomically. No binding object/allocation or chip-operation facade. Existing board/Core teardown retains its serialized lifetime. All primary/auxiliary and direct fixtures adopt the installation. Remove display mode callback type/arguments/storage and App callback together. Board libraries consume Core's public contract without choosing its implementation; composition links exactly one production/observable Core, and the standalone route test explicitly selects Core. |
+| Applicable Rules | Task Reading Set, Execution, Architecture, Coding, Document, NXVM layout and source policy. One chip owner, one route dispatcher, public opaque/copy boundaries, complete failure rollback and one target per P. |
+| Verification | Independent PIT route tests and full standalone suite; complete root unit x86/x64; specialized ownership/negative gates and single-Core link inspection including Release trace tests; six manifests and documentation/diff checks; rebuild eight stripped 0540 products and run each original unchanged-INI checkpoint once. Retain a completed checkpoint only if the final product is byte-identical. |
+| Expected Markers | No App PIT binding implementation or public mutable binding layout; no unused mode callback; chip reset, advance, OUT wiring and deadline algorithms unchanged; all required verification passes. |
+| Asset Needs | Existing approved embedded firmware and integration inputs only; no acquisition or owner INI edit. |
+| Reporting Requirements | Report complete construction/reset/destruction and caller sweep, actual source/test/build line counts, tests/artifacts and actual pushed-diff acceptance. |
+| Stop Conditions | New hardware semantics, changed chip algorithm, native API, duplicated routes/state, private cross-component access or unexplained original checkpoint regression. |
+| Exit Criteria | Complete PIT binding and display dead-ABI cleanup physically Shared, independent and connected; old paths deleted; original behavior/assertions retained, complete verification and affected artifacts pushed then reviewed. |
+| Original Owner Request | Construct flat reusable x86 Core/common/AT/XT board components, rather than endless per-field preparation. |
+| Similar-Issue Sweep | Every PIT binding construction, failure, primary/auxiliary clock, reset, teardown, fixture and build reference; every display bind call and mode callback reference. PIC/DMA and genuine D4 remain explicitly assigned under T540. |
+
+M5 T540 S1-S89 are accepted.
 
 The real neutral source/test/build component now
 lives in `src/x86/core`; NXVM links its sole implementation. Core owns guest
@@ -12,7 +32,7 @@ Actual board, profile, firmware and media choices remain outside this component.
 
 | Task | Progress |
 | --- | --- |
-| T540 S89 | Accepted: sole Shared media/display provider receiver connected and qualified. Common bus, AT/XT wiring and retained D4 ownership remain required for T540. |
+| T540 S90 | Active: whole PIT port-binding extraction and unused display-binding cleanup; common bus and family assembly remain required. |
 
 ## S89 Accepted Review
 

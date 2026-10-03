@@ -65,10 +65,10 @@ lib_i32 main(void)
         /* Reset cancels both programmed output transitions. */
         {
             lib_u64 deadline;
-            failed |= x86_pit_get_output(board->shared_pit.device, 0u) ||
-                x86_pit_get_output(board->auxiliary_pit.device, 0u) ||
-                x86_pit_ticks_until_output(board->shared_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE ||
-                x86_pit_ticks_until_output(board->auxiliary_pit.device, 0u, &deadline) != LIB_STATUS_INVALID_STATE;
+            failed |= x86_pit_get_output(board->shared_pit, 0u) ||
+                x86_pit_get_output(board->auxiliary_pit, 0u) ||
+                x86_pit_ticks_until_output(board->shared_pit, 0u, &deadline) != LIB_STATUS_INVALID_STATE ||
+                x86_pit_ticks_until_output(board->auxiliary_pit, 0u, &deadline) != LIB_STATUS_INVALID_STATE;
         }
     }
     core_machine_destroy(machine);

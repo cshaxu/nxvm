@@ -440,7 +440,7 @@ static lib_i32 port_assembly_rtc_collision(void)
 
 static lib_i32 port_assembly_refresh_count(core_machine_board_state *board)
 {
-    x86_pit *pit = board->shared_pit.device;
+    x86_pit *pit = board->shared_pit;
     lib_u8 low = 0u, high = 0u;
 
     /* The reload becomes observable on the next input-clock cycle. */
@@ -648,19 +648,24 @@ static lib_i32 port_assembly_pit_transaction(void)
     for (lib_u32 fail_at = 1u; fail_at <= 7u; ++fail_at) {
         core_machine machine = {0};
         t_port *ports = &machine.executor_port;
-        core_machine_pit_bus bus = {0};
+        x86_pit *pit = LIB_NULL;
         core_machine_port_test_allocation allocation = {fail_at, 0u};
         machine.lifecycle = CORE_MACHINE_INITIALIZED;
         core_machine_port_initialize(ports);
         core_machine_port_set_test_allocation(ports, &allocation);
-        failed |= core_machine_pit_bus_create(&bus, &machine,
-            X86_PIT_PERSONALITY_8254, 0x0048u) != LIB_STATUS_NO_MEMORY ||
-            bus.device != LIB_NULL;
+        if (x86_pit_create(X86_PIT_PERSONALITY_8254, &pit) != LIB_STATUS_OK) {
+            core_machine_port_finalize(ports);
+            return 1;
+        }
+        failed |= core_machine_pit_install_ports(&machine, pit, 0x0048u) !=
+            LIB_STATUS_NO_MEMORY;
+        /* A failed port publication does not destroy the caller-owned chip. */
+        failed |= x86_pit_write_register(pit, 3u, 0x34u) != LIB_STATUS_OK;
         for (lib_u16 port = 0x0048u; port <= 0x004bu; ++port) {
             failed |= core_machine_port_has_read(ports, port) ||
                 core_machine_port_has_write(ports, port);
         }
-        core_machine_pit_bus_destroy(&bus);
+        x86_pit_destroy(pit);
         core_machine_port_finalize(ports);
     }
     return failed;

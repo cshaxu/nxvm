@@ -48,7 +48,9 @@ it does not change runtime ownership before the corresponding cutover.
   Its production target depends only on Types, CPU and FPU; NXVM links that
   sole implementation. Accepted S89 puts the complete media registry
   and display-provider slot in `x86/ibmpc-common`, consumed through public
-  contracts. `app-nxvm/devices` retains the remaining IBM-PC board attachments
+  contracts. The common PIT adapter installs four copied routes against a
+  board-owned opaque chip; composition alone selects the Core implementation.
+  `app-nxvm/devices` retains the remaining IBM-PC board attachments
   pending the flat `x86/ibmpc-*` receivers. Chip state stays in `x86/chips`,
   guest execution time in one Core, and profile/firmware/media choices in
   App composition. Flat board receivers stay separate from this neutral Core.

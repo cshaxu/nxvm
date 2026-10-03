@@ -161,6 +161,27 @@ and add direct display-provider coverage. Full units, gates and affected
 dual-width products/checkpoints precede acceptance. Bus/family wiring and D4
 classification remain required under the task ledger, not implied complete.
 
+## S90 PIT Port Binding Receiver
+
+Move the complete PIT port-binding implementation, not its private embedded
+layout, to ibmpc-common. Board composition retains chip allocation, clocks,
+reset, OUT consumers and destruction. Stateless per-selector port callbacks
+borrow that opaque chip until teardown; four routes publish atomically.
+No extra binding allocation, chip getter or operation-forwarding facade is
+needed. Primary, auxiliary and direct fixtures use this one installation.
+Failure destroys the whole candidate through the existing construction path;
+Core owns the route table and serialized whole-machine teardown.
+Composition selects exactly one production/observable Core implementation;
+the board archive consumes the public contract without selecting that variant.
+The standalone port test explicitly links its neutral Core.
+
+This receiver also removes the audited unused display-mode type, parameters,
+stored fields and sole App callback together. Snapshot dispatch remains.
+PIT route tests prove offset mapping, 8253/8254 selection, duplicate publication
+rollback and teardown. Existing hardware assertions, full suites and eight
+single-run product checkpoints remain required. PIC/DMA and AT/XT family
+assembly are not accepted by this receiver.
+
 ## Verification And Exit
 
 S80 receives the complete callback-context class from S79: the existing board

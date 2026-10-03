@@ -3,14 +3,14 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/pit_bus.h"
+#include "x86/ibmpc-common/pit_bus_interface.h"
 #include "x86/core/machine.h"
 #include "x86/core/port.h"
 
 typedef struct pit_irq0_fixture {
     core_machine_pic_bus master;
     core_machine_pic_bus slave;
-    core_machine_pit_bus pit;
+    x86_pit *pit;
     core_machine machine;
     core_machine_pic_irq_source irq0;
 } pit_irq0_fixture;
@@ -33,22 +33,26 @@ static lib_status pit_irq0_initialize(pit_irq0_fixture *fixture)
     core_machine_port_write(&fixture->machine.executor_port, 0x00a1u, 0x01u);
     core_machine_pic_irq_source_bind(&fixture->irq0, &fixture->master,
         &fixture->slave, 0u);
-    lib_status status = core_machine_pit_bus_create(&fixture->pit, &fixture->machine,
-        X86_PIT_PERSONALITY_8254, 0x0040u);
+    lib_status status = x86_pit_create(X86_PIT_PERSONALITY_8254, &fixture->pit);
+    if (status == LIB_STATUS_OK) {
+        status = core_machine_pit_install_ports(&fixture->machine,
+            fixture->pit, 0x0040u);
+    }
     if (status != LIB_STATUS_OK) {
+        x86_pit_destroy(fixture->pit);
         core_machine_pic_finalize(&fixture->master, &fixture->slave);
         core_machine_port_finalize(&fixture->machine.executor_port);
         return status;
     }
-    x86_pit_reset(fixture->pit.device);
-    x86_pit_set_output(fixture->pit.device, 0u,
+    x86_pit_reset(fixture->pit);
+    x86_pit_set_output(fixture->pit, 0u,
         core_machine_pic_timer_output, &fixture->irq0);
     return LIB_STATUS_OK;
 }
 
 static void pit_irq0_finalize(pit_irq0_fixture *fixture)
 {
-    core_machine_pit_bus_destroy(&fixture->pit);
+    x86_pit_destroy(fixture->pit);
     core_machine_pic_finalize(&fixture->master, &fixture->slave);
     core_machine_port_finalize(&fixture->machine.executor_port);
 }
@@ -72,21 +76,21 @@ static lib_i32 pit_irq0_test_mode2_edge(void)
     if (pit_irq0_initialize(&fixture) != LIB_STATUS_OK) return 1;
     pit_irq0_program(&fixture.machine.executor_port, 0x34u, 3u);
     failed |= fixture.irq0.asserted ||
-        !x86_pit_get_output(fixture.pit.device, 0u) ||
+        !x86_pit_get_output(fixture.pit, 0u) ||
         core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
-    x86_pit_advance(fixture.pit.device, 4u);
-    failed |= x86_pit_get_output(fixture.pit.device, 0u) ||
+    x86_pit_advance(fixture.pit, 4u);
+    failed |= x86_pit_get_output(fixture.pit, 0u) ||
         fixture.irq0.asserted || core_machine_pic_scan_interrupt(&fixture.master,
             &fixture.slave);
-    x86_pit_advance(fixture.pit.device, 1u);
-    failed |= !x86_pit_get_output(fixture.pit.device, 0u) ||
+    x86_pit_advance(fixture.pit, 1u);
+    failed |= !x86_pit_get_output(fixture.pit, 0u) ||
         !fixture.irq0.asserted || fixture.master.asserted[0u] != 1u ||
         core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x08u;
     core_machine_port_write(&fixture.machine.executor_port, 0x0020u, 0x20u);
     failed |= test_pic_read(&fixture.master, 0x0bu) != 0u ||
         core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
-    x86_pit_advance(fixture.pit.device, 2u);
-    failed |= x86_pit_get_output(fixture.pit.device, 0u) || fixture.irq0.asserted ||
+    x86_pit_advance(fixture.pit, 2u);
+    failed |= x86_pit_get_output(fixture.pit, 0u) || fixture.irq0.asserted ||
         fixture.master.asserted[0u] != 0u;
     pit_irq0_finalize(&fixture);
     return failed;
@@ -106,17 +110,17 @@ static lib_i32 pit_irq0_test_counter_forms(void)
     core_machine_port_write(&fixture.machine.executor_port, 0x0041u, 0x12u);
     core_machine_port_write(&fixture.machine.executor_port, 0x0043u, 0xeau);
     failed |= core_machine_port_read(&fixture.machine.executor_port, 0x0041u) != 0x70u;
-    x86_pit_advance(fixture.pit.device, 1u);
+    x86_pit_advance(fixture.pit, 1u);
     core_machine_port_write(&fixture.machine.executor_port, 0x0043u, 0xeau);
     failed |= core_machine_port_read(&fixture.machine.executor_port, 0x0041u) != 0x30u;
     core_machine_port_write(&fixture.machine.executor_port, 0x0043u, 0x00d8u);
     failed |= core_machine_port_read(&fixture.machine.executor_port, 0x0041u) != 0x34u ||
         core_machine_port_read(&fixture.machine.executor_port, 0x0041u) != 0x12u;
     pit_irq0_program(&fixture.machine.executor_port, 0x75u, 0x0003u);
-    x86_pit_advance(fixture.pit.device, 4u);
-    failed |= x86_pit_get_output(fixture.pit.device, 1u);
-    x86_pit_advance(fixture.pit.device, 1u);
-    failed |= !x86_pit_get_output(fixture.pit.device, 1u) ||
+    x86_pit_advance(fixture.pit, 4u);
+    failed |= x86_pit_get_output(fixture.pit, 1u);
+    x86_pit_advance(fixture.pit, 1u);
+    failed |= !x86_pit_get_output(fixture.pit, 1u) ||
         core_machine_port_read(&fixture.machine.executor_port, 0x0041u) != 0x02u;
     failed |= core_machine_port_read(&fixture.machine.executor_port, 0x0041u) != 0x00u;
     core_machine_port_write(&fixture.machine.executor_port, 0x0043u, 0x00eau);
@@ -133,16 +137,16 @@ static lib_i32 pit_irq0_test_gate_and_reset(void)
 
     if (pit_irq0_initialize(&fixture) != LIB_STATUS_OK) return 1;
     pit_irq0_program(&fixture.machine.executor_port, 0x32u, 3u);
-    x86_pit_set_gate(fixture.pit.device, 0u, LIB_FALSE);
-    x86_pit_advance(fixture.pit.device, 4u);
-    failed |= !x86_pit_get_output(fixture.pit.device, 0u) || fixture.irq0.asserted;
-    x86_pit_set_gate(fixture.pit.device, 0u, LIB_TRUE);
-    x86_pit_advance(fixture.pit.device, 4u);
-    failed |= !x86_pit_get_output(fixture.pit.device, 0u) || !fixture.irq0.asserted;
+    x86_pit_set_gate(fixture.pit, 0u, LIB_FALSE);
+    x86_pit_advance(fixture.pit, 4u);
+    failed |= !x86_pit_get_output(fixture.pit, 0u) || fixture.irq0.asserted;
+    x86_pit_set_gate(fixture.pit, 0u, LIB_TRUE);
+    x86_pit_advance(fixture.pit, 4u);
+    failed |= !x86_pit_get_output(fixture.pit, 0u) || !fixture.irq0.asserted;
     core_machine_pic_reset(&fixture.master, &fixture.slave);
-    x86_pit_reset(fixture.pit.device);
+    x86_pit_reset(fixture.pit);
     failed |= fixture.irq0.asserted || fixture.master.asserted[0u] != 0u ||
-        x86_pit_get_output(fixture.pit.device, 0u);
+        x86_pit_get_output(fixture.pit, 0u);
     pit_irq0_finalize(&fixture);
     return failed;
 }

@@ -4,7 +4,7 @@
 #include "x86/core/clock_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
-#include "app-nxvm/devices/pit_bus.h"
+#include "x86/ibmpc-common/pit_bus_interface.h"
 #include "app-nxvm/devices/dma_bus.h"
 #include "app-nxvm/devices/d4_memory.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
@@ -57,8 +57,8 @@ struct core_machine_board_state {
     core_machine_pic_bus shared_pic_slave;
     core_machine_pic_irq_source shared_pit_irq0_source;
     core_machine_pic_irq_source rtc_irq_source;
-    core_machine_pit_bus shared_pit;
-    core_machine_pit_bus auxiliary_pit;
+    x86_pit *shared_pit;
+    x86_pit *auxiliary_pit;
     lib_u8 auxiliary_pit_configured;
     t_latch shared_dma_latch;
     t_dma shared_dma_primary;

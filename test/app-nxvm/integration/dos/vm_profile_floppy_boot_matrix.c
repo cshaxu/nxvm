@@ -259,8 +259,8 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 &session->board->shared_pic_slave),
             session->board->shared_pit_irq0_source.asserted);
         printf("T515:INI-BOOT:%s:PIT:out0=%u:out1=%u\n", name,
-            (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 0u),
-            (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 1u));
+            (unsigned int)x86_pit_get_output(session->board->shared_pit, 0u),
+            (unsigned int)x86_pit_get_output(session->board->shared_pit, 1u));
         printf("T515:INI-BOOT:%s:CMOS:diag=%02X:floppy=%02X:fixed=%02X:equip=%02X:base=%02X%02X:extended=%02X%02X\n",
             name, x86_rtc_read_register(session->board->shared_rtc, 0x0eu),
             x86_rtc_read_register(session->board->shared_rtc, 0x10u),

@@ -70,7 +70,6 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/machine_plan.c
     src/app-nxvm/devices/machine_display.c
     src/app-nxvm/devices/pic_bus.c
-    src/app-nxvm/devices/pit_bus.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
     src/app-nxvm/devices/kbc.c
     src/app-nxvm/devices/vadp.c

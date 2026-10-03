@@ -32,6 +32,18 @@ The next common-board/provider caller batch removes that whole unused ABI
 half; snapshot dispatch remains the only live path. This residual is not
 accepted as a required shared capability merely because its files moved.
 
+## S90 PIT Binding Receiver
+
+The entire pit_bus.c/h class has one physical Shared receiver. Its existing
+embedded device/base layout is not a public contract: delete it. Stateless
+per-selector callbacks borrow the opaque chip directly, so no new binding
+object or allocation is necessary. Board owns each primary/auxiliary chip and
+its clock/OUT lifecycle; Shared owns atomic four-port publication. Core owns
+the routes and existing serialized machine teardown. All constructor/failure/reset/deadline/test paths are in this
+batch. S90 also removes the preceding unused display mode-binding half.
+PIC/DMA aggregation, AT/XT wiring and D4 remain open; no narrow route proof
+qualifies those distinct owners.
+
 ## Existing facts and intended sole owners
 
 | State or behavior in the present private header | Present users and final owner | Receiver |

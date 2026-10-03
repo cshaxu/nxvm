@@ -113,7 +113,7 @@ static inline void test_core_machine_fixture_program_pit_divider(
     x86_pit_output_provider output, void *owner)
 {
     if (machine == LIB_NULL) return;
-    x86_pit_set_output(board->shared_pit.device, 0u, output, owner);
+    x86_pit_set_output(board->shared_pit, 0u, output, owner);
     core_machine_port_write(&machine->executor_port, 0x0043u, control);
     core_machine_port_write(&machine->executor_port, 0x0040u, divisor & 0xffu);
     core_machine_port_write(&machine->executor_port, 0x0040u, divisor >> 8u);

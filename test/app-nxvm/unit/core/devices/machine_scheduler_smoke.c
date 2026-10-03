@@ -221,7 +221,7 @@ static lib_i32 scheduler_board_timing_qualification(void)
         core_machine_bus_write(machine, 0x43u, 0x34u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x40u, 5u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x40u, 0u) != LIB_STATUS_OK ||
-        x86_pit_ticks_until_output(board->shared_pit.device, 0u,
+        x86_pit_ticks_until_output(board->shared_pit, 0u,
             &pit_ticks) != LIB_STATUS_OK ||
         core_machine_clock_domain_source_ticks_until(&board->pit_clock,
             pit_ticks, &source_ticks) != LIB_STATUS_OK) goto done;

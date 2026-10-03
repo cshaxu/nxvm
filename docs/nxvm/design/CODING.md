@@ -73,7 +73,7 @@ from actual construction requirements during implementation.
 
 Repository-only shared tests remain `test/{lib,common,x86}`. NXVM-only tests
 live below `test/app-nxvm/`, mirroring `app-nxvm` beneath `unit/`.
-S89's media registry and display-provider tests live in `test/x86/ibmpc-common`;
+Media registry, display-provider and PIT port tests live in `test/x86/ibmpc-common`;
 remaining board/family tests stay with their current source until extraction.
 Profile tests mirror their real `src/app-nxvm/profiles/` owner when
 implemented. The current product roots are `xt`, `default_profile`, `model40`,

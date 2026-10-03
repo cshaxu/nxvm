@@ -2100,8 +2100,8 @@ int main(lib_i32 argc, char **argv)
                 printf("BOOT-PROBE=trace-cpu-retires=%llu\n",
                     (unsigned long long)trace.cpu_retires);
                 printf("PIT:out0=%u:out1=%u\n",
-                    (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 0u),
-                    (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 1u));
+                    (unsigned int)x86_pit_get_output(session->board->shared_pit, 0u),
+                    (unsigned int)x86_pit_get_output(session->board->shared_pit, 1u));
                 {
                     x86_ppi8255_pins pins = {0u, 0u};
                     lib_u64 next = 0u;
@@ -2519,8 +2519,8 @@ done:
             (unsigned int)(current_cpu.eax & 0xffffu),
             (unsigned int)(current_cpu.ebp & 0xffffu));
         printf("PIT:out0=%u:out1=%u\n",
-            (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 0u),
-            (unsigned int)x86_pit_get_output(session->board->shared_pit.device, 1u));
+            (unsigned int)x86_pit_get_output(session->board->shared_pit, 0u),
+            (unsigned int)x86_pit_get_output(session->board->shared_pit, 1u));
         x86_fdc_observation fdc_observation;
         if (x86_fdc_capture(session->board->fdc.chip, &fdc_observation) == LIB_STATUS_OK) {
             printf("BOOT-PROBE=fdc-phase=%u-dor=%02X-msr=%02X-st=%02X/%02X/%02X-reset=%u/%u-seek=%u-cylinder=%u\n",
