@@ -5,10 +5,12 @@ GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 
 Architecture-specific copied protocols, chip mechanisms and DOS-style debug/assembly tools.
 Products explicitly add this corpus; Common and Lib never depend on it.
-There is no executor, Console, input loop or product state machine here.
+Core owns the guest executor; no host worker, Console, input loop or product
+state machine belongs here.
 
 | Component | Responsibility | Public interface |
 | --- | --- | --- |
+| core | Neutral CPU/FPU execution, guest timeline, bus transactions, RAM/port/ROM routes and bounded debug operations | machine_interface.h and adjacent *_interface.h contracts |
 | debug | Original DOS/X command implementation and copied x86 protocol | debug_interface.h, protocol_interface.h |
 | xasm32 | x86 byte/text assembly and disassembly | xasm32_interface.h |
 | chips/cpu | 8086 through 80386 execution state, instruction decoding and CPU-local timing | cpu_interface.h |
@@ -28,6 +30,14 @@ There is no executor, Console, input loop or product state machine here.
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
 only on Types. Public names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
+Core depends only on Types, CPU and FPU. `x86-core` is its production target;
+`x86-core-observable` compiles the same implementation for trace-contract tests.
+Each machine links one variant. An opaque Core handle owns one copied attachment
+binding and finalizes that attachment before execution resources. Products own
+board wiring, clocks, topology, firmware choices and media; none are Core build
+inputs. Core alone advances guest time. Existing `core_machine_*` names remain
+stable. Private layouts are component-local; public copied/value contracts and
+bounded operations use `_interface.h` headers.
 Build targets are x86-debug, x86-xasm32 and x86-<device-directory>. Private includes stay component-local;
 no native platform code or importing-product source dependency is allowed.
 

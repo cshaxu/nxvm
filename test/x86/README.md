@@ -22,6 +22,12 @@ executor/paused lease through the neutral `test/common/machine_fixture` and an
 x86-owned fake protocol. It preserves the original register and CLI assertions
 without duplicating the fixture's thread loop or neutral lifecycle scenarios.
 
+`core/neutral_link.c` exercises the actual production Core without a board or
+App library: construction rejection, memory aliases, routes, firmware mapping,
+CPU execution, time, debug observation and reset/stop. The standalone test entry
+builds and runs it together with chip contracts. Board/profile fixtures remain
+product-owned and are not dependencies of this receiver.
+
 `chips/pit825x` covers 8253 read-back exclusion, 8254 register read-back,
 all six counter modes and aliases, GATE transitions, binary/BCD zero loads,
 rewrite boundaries, deadlines, instance isolation and output release at

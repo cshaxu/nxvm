@@ -91,6 +91,26 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         PROPERTIES COMPILE_OPTIONS "-w")
 endif()
 
+set(x86_core_sources
+    core/clock.c core/cpu_bus.c core/debug.c core/entry_plan_interface.c
+    core/machine_firmware.c core/machine.c core/machine_scheduler.c
+    core/memory_interface.c core/port_interface.c core/rom_mapping_interface.c
+    core/trace_interface.c core/retirement_observation_interface.c
+    core/timeline.c core/port.c core/memory.c core/transaction.c)
+add_library(x86-core STATIC ${x86_core_sources})
+target_include_directories(x86-core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-core PUBLIC types x86-cpu-shared x86-fpu)
+target_compile_definitions(x86-core PUBLIC
+    CORE_MACHINE_RUNTIME_TRACE_ENABLED=$<IF:$<CONFIG:Debug>,1,0>)
+
+# The same implementation with observation enabled is for trace-contract tests.
+# Production consumers link x86-core, never both variants.
+add_library(x86-core-observable STATIC EXCLUDE_FROM_ALL ${x86_core_sources})
+target_include_directories(x86-core-observable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-core-observable PUBLIC types x86-cpu-shared x86-fpu)
+target_compile_definitions(x86-core-observable PUBLIC
+    CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
+
 if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)
 target_include_directories(x86-xasm32 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

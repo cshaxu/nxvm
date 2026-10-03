@@ -18,6 +18,32 @@ endif()
 set(SHARED_X86_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
+add_executable(core-machine-neutral-link-smoke core/neutral_link.c)
+target_link_libraries(core-machine-neutral-link-smoke PRIVATE x86-core)
+add_test(NAME unit.core-machine-neutral-link-smoke COMMAND core-machine-neutral-link-smoke)
+set_tests_properties(unit.core-machine-neutral-link-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+list(APPEND SHARED_X86_TEST_TARGETS core-machine-neutral-link-smoke)
+
+foreach(core_case IN ITEMS
+    "core-machine-contract-smoke|core_contract_smoke.c|x86-core"
+    "core-machine-lifecycle-smoke|machine_lifecycle_smoke.c|x86-core"
+    "core-machine-stopped-lifecycle-smoke|machine_stopped_lifecycle_smoke.c|x86-core"
+    "core-machine-memory-reconfigure-smoke|machine_memory_reconfigure_smoke.c|x86-core"
+    "core-machine-trace-smoke|machine_trace_smoke.c|x86-core-observable"
+    "core-machine-external-time-trace-s18-smoke|machine_external_time_trace_s18_smoke.c|x86-core-observable"
+    "core-machine-debug-smoke|machine_debug_smoke.c|x86-core"
+)
+    string(REPLACE "|" ";" core_fields "${core_case}")
+    list(GET core_fields 0 core_target)
+    list(GET core_fields 1 core_source)
+    list(GET core_fields 2 core_library)
+    add_executable(${core_target} "core/${core_source}")
+    target_link_libraries(${core_target} PRIVATE ${core_library})
+    add_test(NAME "unit.${core_target}" COMMAND ${core_target})
+    set_tests_properties("unit.${core_target}" PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+    list(APPEND SHARED_X86_TEST_TARGETS ${core_target})
+endforeach()
+
 shared_register_test(x86 chips/pit825x/pit_8253 x86-pit825x)
 shared_register_test(x86 chips/pit825x/pit_readback x86-pit825x)
 shared_register_test(x86 chips/pit825x/pit_waveform x86-pit825x)
