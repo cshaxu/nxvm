@@ -144,3 +144,20 @@ Coordinator accepts immediately pushed P1 `c01ee5ede` after actual review of
 all 26 NXVM-only paths and the eight committed artifact identities. Governance
 P2 closes S81 only, removes its active packet and leaves the public board
 operation/caller cut, direct-test classification and physical relocation open.
+
+## S83: Whole Board Input Receiver
+
+The five keyboard/mouse/XT-fault operations consume the actual borrowed board
+allocation. All 36 calls, their preparation helpers and associated XT direct
+chip assertions use that handle. Core keeps the unique lifecycle observer and
+mutation eligibility implementation; only the latter declaration becomes
+public. No chip algorithm, timing grade, allocation or destructor changes.
+[S83 evidence](../etc/evidence/t540-s83-board-input-handle.md) records the
+complete receiver sweep and verification. Display/configuration, chip wiring,
+fixture classification and physical relocation remain required before T540
+can close. Shared, MyNES, owner INIs and external masters remain unchanged.
+
+Complete x64/x86 units pass 470/470 each, specialized and nineteen injected
+negative gates pass, and eight product builds, neutral executions and single
+boots pass. The eight optimized stripped 0540 products are refreshed. Actual
+pushed-diff review is still required before S83 acceptance.

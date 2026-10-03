@@ -31,7 +31,8 @@ static lib_i32 write_u32(core_machine *machine, lib_u32 physical, lib_u32 value)
     return write_bytes(machine, physical, &value, sizeof(value));
 }
 
-static lib_i32 prepare(core_machine **out_machine)
+static lib_i32 prepare(core_machine **out_machine,
+    core_machine_board_state **out_board)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -45,7 +46,7 @@ static lib_i32 prepare(core_machine **out_machine)
         .entry_route = CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM
     };
 
-    return out_machine != LIB_NULL && core_machine_create(&config, out_machine, LIB_NULL) ==
+    return out_machine != LIB_NULL && core_machine_create(&config, out_machine, out_board) ==
         LIB_STATUS_OK && core_machine_freeze_execution_providers(*out_machine) ==
         LIB_STATUS_OK && core_machine_reset(*out_machine) == LIB_STATUS_OK &&
         core_machine_apply_entry_plan(*out_machine, &plan) == LIB_STATUS_OK;
@@ -150,14 +151,15 @@ static lib_i32 run_until_waiting_for_interrupt(core_machine *machine,
 static lib_i32 run_case(lib_bool fault_case, lib_bool pending_irq, lib_bool nested)
 {
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_run_result result = {0};
     core_machine_cpu_diagnostic diagnostic = {0};
     core_machine_debug_cpu_snapshot cpu = {0};
-    lib_i32 failed = !prepare(&machine);
+    lib_i32 failed = !prepare(&machine, &board);
 
     if (!failed) failed |= !install(machine, fault_case, pending_irq, nested);
     if (!failed && pending_irq) failed |= core_machine_keyboard_receive_native_byte(
-        machine, 0x1eu) != LIB_STATUS_OK;
+        board, 0x1eu) != LIB_STATUS_OK;
     if (!failed) {
         failed |= !run_until_waiting_for_interrupt(machine, &result) ||
             core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||

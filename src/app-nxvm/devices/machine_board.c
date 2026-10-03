@@ -355,86 +355,86 @@ lib_bool core_machine_board_shutdown_resets(void *owner)
     return board != LIB_NULL && board->d4_platform_configured;
 }
 
-lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
+lib_status core_machine_keyboard_receive_native_byte(core_machine_board_state *board,
     lib_u8 native_byte)
 {
     core_machine_lifecycle lifecycle;
 
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
+        core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
         lifecycle == CORE_MACHINE_INITIALIZED ||
         lifecycle == CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
     }
-    if (machine->board->keyboard_topology ==
+    if (board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        return x86_xt_keyboard_receive_native_bytes(machine->board->xt_keyboard,
+        return x86_xt_keyboard_receive_native_bytes(board->xt_keyboard,
             &native_byte, 1u);
     }
-    return core_machine_kbc_submit_native_byte(&machine->board->shared_kbc, native_byte);
+    return core_machine_kbc_submit_native_byte(&board->shared_kbc, native_byte);
 }
 
-lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
+lib_status core_machine_keyboard_get_native_scan_set(const core_machine_board_state *board,
     lib_u8 *out_scan_set)
 {
     core_machine_lifecycle lifecycle;
 
-    if (machine == LIB_NULL || out_scan_set == LIB_NULL ||
-        core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+    if (board == LIB_NULL || out_scan_set == LIB_NULL ||
+        core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
         lifecycle == CORE_MACHINE_INITIALIZED) {
         return LIB_STATUS_INVALID_STATE;
     }
-    *out_scan_set = machine->board->keyboard_topology ==
+    *out_scan_set = board->keyboard_topology ==
         CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ? CORE_MACHINE_KEYBOARD_SCAN_SET_1 :
-        x86_keyboard_get_signals(machine->board->shared_kbc.connect.keyboard).scan_set;
+        x86_keyboard_get_signals(board->shared_kbc.connect.keyboard).scan_set;
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
+lib_status core_machine_keyboard_receive_native_bytes(core_machine_board_state *board,
     const lib_u8 *native_bytes, lib_size count)
 {
     core_machine_lifecycle lifecycle;
 
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
+        core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
         lifecycle == CORE_MACHINE_INITIALIZED ||
         lifecycle == CORE_MACHINE_FAULTED) {
         return LIB_STATUS_INVALID_STATE;
     }
-    if (machine->board->keyboard_topology ==
+    if (board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        return x86_xt_keyboard_receive_native_bytes(machine->board->xt_keyboard,
+        return x86_xt_keyboard_receive_native_bytes(board->xt_keyboard,
             native_bytes, count);
     }
-    return core_machine_kbc_submit_native_bytes(&machine->board->shared_kbc, native_bytes, count);
+    return core_machine_kbc_submit_native_bytes(&board->shared_kbc, native_bytes, count);
 }
 
-lib_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
+lib_status core_machine_set_xt_ppi_fault_input(core_machine_board_state *board,
     core_machine_xt_ppi_fault_input input, lib_i32 asserted)
 {
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        machine->board->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
+        board->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         return LIB_STATUS_INVALID_STATE;
     }
-    return core_machine_xt_ppi_keyboard_set_fault_input(&machine->board->xt_ppi_keyboard,
+    return core_machine_xt_ppi_keyboard_set_fault_input(&board->xt_ppi_keyboard,
         input, asserted);
 }
 
-lib_status core_machine_mouse_receive_relative(core_machine *machine,
+lib_status core_machine_mouse_receive_relative(core_machine_board_state *board,
     lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons)
 {
     core_machine_lifecycle lifecycle;
 
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        core_machine_get_lifecycle(machine, &lifecycle) != LIB_STATUS_OK ||
+    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
+        core_machine_get_lifecycle(board->core, &lifecycle) != LIB_STATUS_OK ||
         (lifecycle != CORE_MACHINE_RUNNING &&
         lifecycle != CORE_MACHINE_PAUSED &&
         lifecycle != CORE_MACHINE_STOPPED)) {
         return LIB_STATUS_INVALID_STATE;
     }
-    if (machine->board->keyboard_topology ==
+    if (board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) return LIB_STATUS_UNSUPPORTED;
-    return core_machine_kbc_submit_aux_report(&machine->board->shared_kbc, delta_x, delta_y, buttons);
+    return core_machine_kbc_submit_aux_report(&board->shared_kbc, delta_x, delta_y, buttons);
 }
 
 static lib_u32 core_machine_board_reset_rom_alias(

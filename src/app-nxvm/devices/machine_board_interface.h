@@ -349,16 +349,16 @@ typedef enum core_machine_keyboard_scan_set {
     CORE_MACHINE_KEYBOARD_SCAN_SET_2 = 2u
 } core_machine_keyboard_scan_set;
 
-lib_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
+lib_status core_machine_keyboard_get_native_scan_set(const core_machine_board_state *board,
     lib_u8 *out_scan_set);
-lib_status core_machine_keyboard_receive_native_byte(core_machine *machine,
+lib_status core_machine_keyboard_receive_native_byte(core_machine_board_state *board,
     lib_u8 native_byte);
-lib_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
+lib_status core_machine_keyboard_receive_native_bytes(core_machine_board_state *board,
     const lib_u8 *native_bytes, lib_size count);
-lib_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
+lib_status core_machine_set_xt_ppi_fault_input(core_machine_board_state *board,
     core_machine_xt_ppi_fault_input input, lib_i32 asserted);
 /* A relative report received from the machine's attached pointing device. */
-lib_status core_machine_mouse_receive_relative(core_machine *machine,
+lib_status core_machine_mouse_receive_relative(core_machine_board_state *board,
     lib_i16 delta_x, lib_i16 delta_y, lib_u8 buttons);
 
 lib_status core_machine_capture_display_snapshot(const core_machine *machine,

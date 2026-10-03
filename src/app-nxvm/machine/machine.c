@@ -37,13 +37,13 @@ static lib_status vm_machine_deliver_key(vm_machine *session,
         vm_profile_default_keyboard_sequence sequence;
         lib_u8 native_scan_set;
 
-        if (core_machine_keyboard_get_native_scan_set(session->core_machine,
+        if (core_machine_keyboard_get_native_scan_set(session->board,
                 &native_scan_set) == LIB_STATUS_OK &&
             vm_profile_default_keyboard_map_host_key_for_scan_set(
                 scan_code, virtual_key, pressed,
                 native_scan_set, &sequence) ==
             LIB_STATUS_OK) {
-            status = core_machine_keyboard_receive_native_bytes(session->core_machine,
+            status = core_machine_keyboard_receive_native_bytes(session->board,
                 sequence.bytes, sequence.count);
         }
     }
@@ -60,7 +60,7 @@ static lib_status vm_machine_deliver_mouse(vm_machine *session,
         if (vm_profile_default_mouse_map_host_relative(
                 delta_x, delta_y, buttons, &report) ==
             LIB_STATUS_OK) {
-            return core_machine_mouse_receive_relative(session->core_machine,
+            return core_machine_mouse_receive_relative(session->board,
                 report.delta_x, report.delta_y, report.buttons);
         }
     }

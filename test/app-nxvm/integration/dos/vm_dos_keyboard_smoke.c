@@ -154,7 +154,7 @@ static void vm_dos_keyboard_report_failure(const vm_machine *session,
         &video_mode, sizeof(video_mode));
     (void)core_machine_debug_read_memory(session->core_machine,
         state->cs_base + state->eip, instructions, sizeof(instructions));
-    (void)core_machine_keyboard_get_native_scan_set(session->core_machine,
+    (void)core_machine_keyboard_get_native_scan_set(session->board,
         &scan_set);
     (void)test_vm_machine_capture_presentation(session, &frame);
     printf("keyboard smoke timed out: BDA head=%04x tail=%04x\n", head, tail);

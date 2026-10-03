@@ -58,7 +58,7 @@ static lib_i32 vm_t287_fdisk_submit(const vm_machine *session, const lib_u8 *cod
 
     if (session == LIB_NULL || codes == LIB_NULL) return 0;
     for (index = 0u; index < count; ++index) {
-        if (core_machine_keyboard_receive_native_byte(session->core_machine,
+        if (core_machine_keyboard_receive_native_byte(session->board,
                 codes[index]) != LIB_STATUS_OK) return 0;
     }
     return 1;

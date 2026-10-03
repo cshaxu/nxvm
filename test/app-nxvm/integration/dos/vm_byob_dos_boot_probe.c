@@ -1517,7 +1517,7 @@ static lib_i32 vm_byob_send_f1(vm_machine *session, lib_i32 pressed,
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL ||
         out_scan_set == LIB_NULL || core_machine_keyboard_get_native_scan_set(
-            session->core_machine, &scan_set) !=
+            session->board, &scan_set) !=
             LIB_STATUS_OK) return 0;
     *out_scan_set = scan_set;
     event.kind = CORE_MACHINE_GUEST_INPUT_KEY;

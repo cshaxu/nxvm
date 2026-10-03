@@ -244,6 +244,10 @@ lib_status core_machine_reset(core_machine *machine);
 lib_status core_machine_reconfigure_memory(core_machine *machine,
     lib_size memory_bytes);
 
+/* Board operations share Core's bounded firmware-reentry guard. This is an
+ * eligibility check, not a lifecycle transition or a private-state lease. */
+lib_i32 core_machine_mutable_operation_is_allowed(const core_machine *machine);
+
 lib_status core_machine_get_lifecycle(
     const core_machine *machine,
     core_machine_lifecycle *out_lifecycle);

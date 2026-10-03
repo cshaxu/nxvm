@@ -342,7 +342,7 @@ lib_i32 main(lib_i32 argc, char **argv)
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_BOOT_BUDGET, 0u)) goto done;
     stage = 4;
     for (index = 0u; index < sizeof(command); ++index) {
-        if (core_machine_keyboard_receive_native_byte(session->core_machine,
+        if (core_machine_keyboard_receive_native_byte(session->board,
                 command[index]) != LIB_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_RUN_BUDGET, 'S')) goto done;

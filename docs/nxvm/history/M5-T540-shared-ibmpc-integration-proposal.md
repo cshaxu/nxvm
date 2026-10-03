@@ -173,6 +173,13 @@ the signature; pure execution fixtures need not retain unused board state.
 This enables the subsequent complete public-operation/direct-fixture receiver
 without a getter, second factory, allocation or destructor.
 
+S83 receives the entire five-operation keyboard/mouse/XT-fault class using
+the actual board output, including every production/integration caller and
+associated unit fixture. Core retains the unique mutation eligibility and
+lifecycle rules through its neutral contract. Public display/configuration,
+wiring contexts and remaining fixture classification still precede physical
+movement; this input cut is not a completed Shared relocation.
+
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
 - Common board contract tests live with their flat receiver under

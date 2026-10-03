@@ -198,6 +198,13 @@ actual board-handle migration; constructor publication does not remove that
 private association. [S82 evidence](../evidence/t540-s82-config-board-publication.md)
 records the complete class rather than a finished physical extraction.
 
+S83 receives the full five-operation input class: byte/stream/scan-set, XT
+fault signals and relative mouse. All actual callers use the constructor's
+board output; Core mutation eligibility and lifecycle observation retain
+one implementation. Its [evidence](../evidence/t540-s83-board-input-handle.md)
+records caller/status proof. Display/configuration and chip wiring still have
+separate complete receiver classes before association deletion and movement.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

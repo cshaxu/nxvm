@@ -168,7 +168,6 @@ void core_machine_retirement_observation_capture_eligibility_key(
 void core_machine_retirement_observation_publish(core_machine *machine,
     lib_u64 source_ticks);
 lib_i32 core_machine_configuration_is_open(const core_machine *machine);
-lib_i32 core_machine_mutable_operation_is_allowed(const core_machine *machine);
 lib_status core_machine_register_immutable_rom_mapping_from_firmware(
     core_machine *machine, lib_u32 physical_start, const lib_u8 *image,
     lib_size bytes);
