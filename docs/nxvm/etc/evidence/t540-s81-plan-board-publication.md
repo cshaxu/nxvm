@@ -130,3 +130,17 @@ neutral/boot and artifact logs remain under the ignored build directory.
 | `assets/nxvm/ibm-5160-model-268-360k/nxvm_xt_0_5_0540_x86.exe` | 1523170 | `63A74224316A83FF4B064A3D69BBDAF5A39FE1A40993A2D96F80559247E4B281` |
 | `assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0540_x64.exe` | 1352407 | `613D6D8305C9044745100B97AC1A3D7181F85035289F7667D88598903D7B57EC` |
 | `assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0540_x86.exe` | 1523238 | `3F284553515FB62EAD7DAF8FEE14B08351ED74F1CD336DDFE30A8EAF92E1B4A2` |
+
+## Coordinator Acceptance
+
+P1 `c01ee5edeb6c66a7c12ab56451c069e12d0e8e07` was immediately pushed to
+origin/master. After switching roles, the coordinator reviews the actual
+committed hunks in all ten source/test, two build/gate and six documentation
+paths, then verifies all eight artifact blobs against the checked files.
+All 26 paths belong to NXVM. Publication, caller completeness, failure/lifetime
+ownership, unchanged algorithms/timing grades, Types vocabulary, linear task
+identifiers and packet-to-proof mapping pass. No corrective implementation P
+is required. Governance P2 accepts S81 only, removes its active packet and
+leaves T540's public board operations, configuration-only fixtures, direct-test
+classification and physical relocation open. Incremental trees remain needed
+by that receiver; Shared/MyNES and asset masters are not cleanup targets.

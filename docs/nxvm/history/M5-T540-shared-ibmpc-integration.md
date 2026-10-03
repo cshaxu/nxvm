@@ -139,3 +139,8 @@ gates pass, and all eight product builds, neutral executions and one-shot INI
 boots pass. Eight optimized stripped 0540 products are refreshed. The initial
 CPU negative timeout remains recorded; its complete rerun passes without
 removing checks. Shared, MyNES, INIs and external masters are unchanged.
+
+Coordinator accepts immediately pushed P1 `c01ee5ede` after actual review of
+all 26 NXVM-only paths and the eight committed artifact identities. Governance
+P2 closes S81 only, removes its active packet and leaves the public board
+operation/caller cut, direct-test classification and physical relocation open.
