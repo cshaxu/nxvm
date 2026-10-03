@@ -93,3 +93,16 @@ The next receiver remains the public board-operation/direct-fixture class,
 followed by private-association deletion and actual neutral/IBM-PC relocation.
 Core still uniquely owns CPU/memory/port/time and finalization. Board state
 still uniquely owns wiring. T540 remains open.
+
+## Coordinator Acceptance
+
+Implementation P1 `37b941c35` was immediately pushed to origin/master before
+this review. The coordinator inspected its complete 142-path committed
+inventory and actual source, regression, gate and documentation diffs. All
+123 mechanical caller files match the prior blob plus exactly the optional
+argument change; both nonmechanical regressions preserve the old checks.
+All eight committed EXE blobs equal the verified worktree artifacts. Output
+lifetime, failure clearing, sole allocation/finalization and actual verification
+agree with the packet and ledger. No out-of-target or INI change is present.
+S82 is accepted; only its active packet is removed. No T closure or new
+implementation scope is claimed by this governance-only acceptance.
