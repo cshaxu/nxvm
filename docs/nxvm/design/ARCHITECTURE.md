@@ -49,7 +49,7 @@ it does not change runtime ownership before the corresponding cutover.
   sole implementation. `app-nxvm/devices` retains IBM-PC board attachments
   pending the flat `x86/ibmpc-*` receivers. Chip state stays in `x86/chips`,
   guest execution time in one Core, and profile/firmware/media choices in
-  App composition. Current records S88's unaccepted verification status.
+  App composition. Flat board receivers stay separate from this neutral Core.
 - `common/machine` owns the shared execution/control protocol and paused-debug
   lease; `common/session` is the sole product-control reducer;
   `common/ui` binds Lib KVM and the Console broker.

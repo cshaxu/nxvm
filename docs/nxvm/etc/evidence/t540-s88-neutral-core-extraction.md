@@ -1,6 +1,6 @@
 # T540 S88 Neutral Core Extraction
 
-## Executor Delivery
+## Accepted Core Delivery
 
 Baseline is accepted S87 P2 `07f62906f`. S88 receives the entire neutral
 source/test/build batch in the S42 ownership ledger: 16 C units and 19 headers
@@ -8,7 +8,7 @@ now live in `src/x86/core`. The former App implementations are deleted, and
 NXVM links the sole Shared implementation. This completes the assigned Core
 receiver, not T540: the flat common/AT/XT board receivers remain outstanding.
 Coordinator acceptance is recorded in Current and task history after actual
-pushed-change review.
+pushed-change review of Shared P1 `8d3c57df3` and NXVM P2 `89f9416b2`.
 
 ## Ownership And Actual Change Review
 
@@ -110,11 +110,17 @@ inputs and embedding policy remain unchanged.
 
 ## Remaining T540 Boundary
 
-Shared implementation receipt P1 is `8d3c57df3`, immediately pushed to
-origin/master. NXVM's separate P2 receives all old-owner deletion, linkage,
-consumer/gate/document changes and the eight final artifacts. Neither receipt
-alone constitutes S acceptance; the coordinator reviews their combined actual
-delta from the S87 baseline before the governance receipt.
+Shared implementation receipt P1 is `8d3c57df3` and NXVM P2 is `89f9416b2`,
+both immediately pushed to origin/master. The coordinator reviews their
+combined actual delta from S87: 52 Shared-only paths and 365 NXVM-only paths,
+unchanged verified blobs, no MyNES/INI delta and exact artifact hashes.
+Post-commit comparison confirms 33 mechanical production moves, the two
+reviewed declaration moves and 259 changed retained App C/header paths with
+only four private-header removals beyond include substitution. The unchanged
+App fixture is the 260th reviewed working candidate. Both post-commit 81-check
+specialized jobs exit successfully; a sandbox run which never launched child
+tasks was explicitly terminated and the same checks completed outside it.
+Governance P3 accepts S88 only, not the remaining board extraction.
 
 Core has no named PC-board pointer and owns one copied attachment binding;
 board construction retains its actual local state and required callbacks.

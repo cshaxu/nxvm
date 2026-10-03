@@ -248,7 +248,7 @@ blobs, cleanup/header/fixture classes and artifact identity. Governance P2
 removes the active S87 packet and accepts only this complete boundary. The next
 whole receiver is actual neutral Core source/test/build movement; T540 stays open.
 
-## S88: Physical Neutral Core Executor Delivery
+## S88: Accepted Physical Neutral Core Receiver
 
 The complete 16-C/19-header closure now lives in `src/x86/core`; NXVM links
 its actual independent target instead of compiling App copies. Eight neutral
@@ -257,6 +257,8 @@ their real NXVM constructor and assertions. The independent x86 suite passes
 121 cases; final full units pass 470/470 on each width, all migrated negatives
 and specialized gates pass, and eight fresh stripped products preserve their
 single unchanged-INI boot checkpoints. [S88 evidence](../etc/evidence/t540-s88-neutral-core-extraction.md)
-records actual diff/ownership review, line counts and artifact hashes. Pushed
-receipt review still precedes acceptance; flat IBM-PC components remain the
-next physical receivers.
+records actual diff/ownership review, line counts and artifact hashes.
+Coordinator actual-change review accepts Shared P1 `8d3c57df3` and NXVM P2
+`89f9416b2`; the pushed blobs match the verified tree, and post-commit source
+comparison and both 81-check specialized targets pass. Governance P3 closes
+S88 only; flat IBM-PC components remain the next physical receivers.

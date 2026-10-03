@@ -254,8 +254,8 @@ S88 physically receives all neutral source/header groups above into
 transaction and firmware publication. Its sole Shared target owns the source
 list; NXVM board targets link it. Eight neutral tests move with that owner,
 while actual 92h/KBC and firmware fixtures remain board-owned. The
-[working evidence](../evidence/t540-s88-neutral-core-extraction.md) records
-verification and unresolved acceptance; the flat common/AT/XT board groups
+[accepted evidence](../evidence/t540-s88-neutral-core-extraction.md) records
+complete verification and actual pushed-change review; the flat common/AT/XT board groups
 remain outstanding and are not hidden by Core's independent build.
 
 The S37 prospective “S43 physical move” is superseded by this measured
