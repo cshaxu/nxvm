@@ -91,8 +91,25 @@ retain their original behavior. The gate rejects Core receivers and incorrect
 callback owners without relaxing prior checks. Documentation governance,
 468 changed-document links and diff checks pass. Shared six corpora, MyNES,
 owner INIs and external masters are unchanged. Coordinator committed-diff
-review is still required; this controller boundary does not claim physical
+review is recorded below; this controller boundary does not claim physical
 extraction or close T540.
+
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts immediately pushed P1
+`8b67d2cdbbfc82125e25b307621d212779e41c33`. Its 38 committed paths comprise
+five production files, nineteen caller tests, one existing gate, five task
+documents and eight product EXEs. Complete function-body comparison preserves
+all twelve definitions after the declared receiver substitutions; seventeen
+whole unextended callers preserve their assertions. Actual review of both
+extended fixtures confirms only the declared null-board and owner regressions.
+All 38 normalized Git blobs match the reviewed worktree, including artifacts;
+no Shared, MyNES or owner INI delta exists. Required verification and the
+initial unreproduced modal-test failure remain recorded above. Governance P2
+accepts S85 only; it changes no executable input and requires no new build.
+T540 remains open for the remaining electrical/RAM-veto class, constructor and
+direct-fixture association removal, and real neutral Core/flat IBM-PC source
+relocation. None is accepted by this controller delivery.
 
 | Artifact | Bytes | SHA-256 |
 | --- | ---: | --- |

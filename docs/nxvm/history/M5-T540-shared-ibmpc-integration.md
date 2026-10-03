@@ -200,6 +200,9 @@ the complete function/caller comparison and required verification. Complete
 x64/x86 units pass 470/470 each, specialized gates and 22 injected negatives
 pass, and all eight rebuilt products, neutral executions and single INI boots
 pass. The initial x64 modal-test failure and successful full rerun are retained
-without asserting an unverified cause. Coordinator acceptance is still pending. Parity/D4,
+without asserting an unverified cause. Coordinator accepts immediately pushed
+P1 `8b67d2cdb` after reviewing all 38 committed paths and their worktree blob
+identity, twelve complete definitions, seventeen unextended callers and both
+extended fixtures. Governance P2 accepts S85 only and removes its active packet. Parity/D4,
 RAM-resize veto, direct-fixture/constructor association and physical
 relocation remain open; this controller boundary does not close T540.

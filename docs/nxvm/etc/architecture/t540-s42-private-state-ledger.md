@@ -219,8 +219,8 @@ registration. All sixty original calls use that handle. Core alone retains
 route publication, configuration eligibility and finalization; FDC's distinct
 opaque Core connection serves only its port registration. The
 [S85 evidence](../evidence/t540-s85-board-controller-handles.md) records the
-whole-definition/caller review and complete verification; acceptance awaits
-coordinator review of the pushed implementation. This class no longer needs a private Core-to-board
+whole-definition/caller review and complete verification. Coordinator accepts
+pushed P1 `8b67d2cdb` after actual-diff review. This class no longer needs a private Core-to-board
 lookup. The remaining boundary is the complete parity/D4/speaker/absent-memory
 class and RAM-resize veto, followed by constructor/direct-fixture association
 removal and physical Core/flat IBM-PC relocation. These are whole receiving
