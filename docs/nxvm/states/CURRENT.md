@@ -2,32 +2,12 @@
 
 ## Current Work
 
-M5 T540 S1-S82 are accepted; S83 is admitted for board input operations.
+M5 T540 S1-S83 are accepted; no implementation S is active.
 Plan and configuration constructors publish the actual borrowed board beside Core.
 Public board callers, test classification and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
 
-## Active S83 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T540 S83, next numeric receiver after accepted S82. |
-| Admission And Approval | Coordinator admits under the owner's automatic numeric-S authorization; executor confirms before implementation. NXVM target only. |
-| Objective | Move the whole five-operation keyboard/mouse/XT-fault class to the actual borrowed board handle and reconnect every caller. |
-| Non-goals | No chip algorithm, timing grade, Shared/MyNES, INI, master asset, public display/configuration receiver or physical relocation change. |
-| Reference Baseline | Accepted S82 P2 39695a3d4698c9c273ccb53d4de5db7b3fd524a5. |
-| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md); [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md); [attachment intake](../etc/evidence/t540-s78-attachment-owner-intake.md); [S82 evidence](../etc/evidence/t540-s82-config-board-publication.md). |
-| Files And ABI Surface | NXVM devices machine_board.c, machine_board_interface.h, machine.h, machine_interface.h; machine/machine.c; three affected unit and eight integration caller files; controller-authority CMake gate; NXVM task documents/evidence and eight 0540 EXEs. Five operation receivers become board pointers; the existing Core mutation eligibility declaration becomes public without another implementation. |
-| Applicable Rules | Execution, architecture, coding, documentation, NXVM architecture/layout and source policy; architecture-governance then coding-governance skills. |
-| Verification | `pwsh -NoProfile -File build/s83-units.ps1` (full units and specialized gates, both widths); `cmake -P build/s83-negative.cmake`; `pwsh -NoProfile -File build/s83-product-builds.ps1`; `build/s83-product-boots.ps1` once per profile/width with 180000-ms containment; `build/s83-artifacts.ps1`; documentation governance, `build/s83-links.ps1` and `git diff --check`. |
-| Expected Markers | Existing unit markers preserved; M5:T540:S83:BOARD-INPUT-HANDLE:OK; full unit/gate success and existing DOS prompt/installer boot markers. |
-| Asset Needs | Existing read-only/overlay BYOB inputs and unchanged INIs; ignored build trees/scripts/logs retained for this and the immediately next receiver. |
-| Reporting Requirements | Complete caller inventory, measured source/test diff, statuses/guards preserved, dual-width results and eight hashes; report retained board associations honestly. |
-| Stop Conditions | New behavior or ownership ambiguity, failed required gate, asset/master change, out-of-target diff or second lifetime path. Diagnose and repair in-scope failures before closure. |
-| Exit Criteria | Complete input class uses real board handle; unique Core guard and destructor unchanged; all required proof passes; complete P1 immediately pushed, actual dual-role committed-diff review, governance P2 accepts only S83. |
-| Original Owner Request | Continue the complete reusable x86 Core/IBM-PC extraction; automatically admit numeric S tasks, preserve all four products and do not close T on partial relocation. |
-| Similar-Issue Sweep | All five declarations/definitions and all production/unit/integration callers, including multiline helpers, null cases and XT fault signals; remaining display/configuration and wiring-context receivers stay explicitly open. |
 
 The oversized former S12 port batch is split into linear receivers. Shared
 Core and board code have not moved.
@@ -125,8 +105,8 @@ the completed CPU extraction.
 | T540 S79 | Accepted: all nineteen callback slots use one copied binding/publication/lifetime; dual-width 470/470 units/gates, eight independent Core executions and eight single boots pass. |
 | T540 S80 | Accepted: complete callback class consumes board state; dual-width 470/470 units/gates, seven injected negatives, eight neutral executions and eight single boots pass. Public board API migration remains open. |
 | T540 S81 | Accepted: frozen-plan dual-handle publication and sole failure cleanup; dual-width 470/470 units/gates, nine injected negatives, eight neutral executions and eight single boots pass. Public board operations and physical movement remain open. |
-| T540 S83 | Implemented: five input operations and all 36 callers use the actual board handle; dual-width 470/470 units/gates, nineteen negatives, eight neutral executions and eight single boots pass. [Evidence](../etc/evidence/t540-s83-board-input-handle.md); pushed-diff acceptance and remaining board/physical receivers stay open. |
 | T540 S82 | Accepted: P1 37b941c35 completes configuration/allocator handle publication; 203 existing calls migrated; dual-width 470/470 units/gates, twelve negatives, eight neutral executions and eight single boots pass. [Evidence](../etc/evidence/t540-s82-config-board-publication.md); public board operations and physical movement remain open. |
+| T540 S83 | Accepted: P1 231d0ec95 completes five input operations and all 36 calls on actual board handles; dual-width 470/470 units/gates, nineteen negatives, eight neutral executions and eight single boots pass. [Evidence](../etc/evidence/t540-s83-board-input-handle.md); remaining board/physical receivers stay open. |
 
 ## T540 S1 Acceptance
 

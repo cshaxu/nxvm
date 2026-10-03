@@ -88,3 +88,19 @@ fixture classification and the private Core board association remain open.
 Those complete classes precede physical neutral Core/IBM-PC relocation.
 Core remains the unique execution/time/route/destruction owner; board remains
 the unique chip/wiring owner. S83 does not close T540.
+
+## Coordinator Acceptance
+
+P1 `231d0ec95bda5ac63924d846c39f167cd33cb3a9` was immediately pushed to
+origin/master. Coordinator actual-change review covers all 30 committed
+paths, including the five documentation deltas, declarations, regressions,
+gate and artifact identities. The nine production/integration caller blobs
+equal their baseline plus sole receiver substitution; the entire committed
+board source likewise preserves algorithms outside that exact handle cut.
+The complete XT fixture preserves all original assertions under the same
+mapped setup; the other two fixtures explicitly retain Core lifecycle/IRQ
+ownership. Every committed EXE blob equals its verified file, and all eight
+evidence SHA-256 values match. The full 16-field packet, original request,
+linear allocation, complete caller class, sole guard/finalizer, test results
+and remaining receiver map agree. No corrective implementation P is needed.
+Governance P2 accepts S83, removes only its active packet and leaves T540 open.

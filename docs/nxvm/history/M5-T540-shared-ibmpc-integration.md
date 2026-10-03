@@ -160,4 +160,8 @@ can close. Shared, MyNES, owner INIs and external masters remain unchanged.
 Complete x64/x86 units pass 470/470 each, specialized and nineteen injected
 negative gates pass, and eight product builds, neutral executions and single
 boots pass. The eight optimized stripped 0540 products are refreshed. Actual
-pushed-diff review is still required before S83 acceptance.
+pushed-diff review was required before S83 acceptance.
+
+Coordinator accepts immediately pushed P1 `231d0ec95` after reviewing all
+30 actual changed paths and committed artifact identities. Governance P2
+accepts S83 only; T540's remaining board receivers and relocation stay open.
