@@ -2,8 +2,8 @@
 
 ## Current Work
 
-M5 T540 S1-S79 are accepted; S80 is active.
-S79 closes the complete copied attachment callback binding.
+M5 T540 S1-S80 are accepted; no implementation S is active.
+S80 makes all nineteen attachment callbacks consume their board allocation.
 Opaque-board ownership, test classification and physical movement remain open.
 T540 remains open for neutral Core relocation and
 IBM-PC board extraction.
@@ -101,6 +101,7 @@ the completed CPU extraction.
 | T540 S77 | Accepted: Core supplies copied time to all typed port reads; both Port-B routes no longer borrow the private clock; dual-width 470/470 units/gates and eight single boots pass. |
 | T540 S78 | Accepted: complete attachment ownership intake and one copied-binding/opaque-board target; no runtime change. |
 | T540 S79 | Accepted: all nineteen callback slots use one copied binding/publication/lifetime; dual-width 470/470 units/gates, eight independent Core executions and eight single boots pass. |
+| T540 S80 | Accepted: complete callback class consumes board state; dual-width 470/470 units/gates, seven injected negatives, eight neutral executions and eight single boots pass. Public board API migration remains open. |
 
 ## T540 S1 Acceptance
 
@@ -2492,26 +2493,20 @@ Shared, MyNES and INIs are unchanged. S72 is accepted; T540 remains open for
 reset-I/O, firmware/attachment and physical relocation. No next implementation
 is admitted by this governance closure.
 
-## T540 S80 Admission Packet
+## T540 S80 Acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T540 S80, next unused linear S after accepted S79. |
-| Admission And Approval | Owner's standing automatic bounded-S approval and continued board-extraction goal; NXVM source/test/build/docs and eight current 0540 products only. Shared and MyNES remain read-only. |
-| Objective | Make the complete nineteen-callback attachment consume its actual board allocation, with one board-owned opaque Core handle and unchanged Core finalization ownership. |
-| Non-goals | Public board API/driver migration, direct-test rehoming, physical directory relocation, chip algorithms, timing grades, profile/INI/media changes, additional registries or host loops, and T closure. |
-| Reference Baseline | Accepted S79 P2 511c302b9, clean tree, dual-width 470/470 units and eight single successful boot rows. |
-| Candidate Proposal | [T540](../history/M5-T540-shared-ibmpc-integration-proposal.md), [attachment intake](../etc/evidence/t540-s78-attachment-owner-intake.md), [private ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | Board allocation/state, board advance/deadline and phase callbacks, complete scheduler forwarding fixture, affected NXVM static gates, task evidence and eight EXEs. The public copied attachment ABI remains unchanged. |
-| Applicable Rules | One board allocation and finalizer; callbacks receive board context, not Core layout; bounded Core operations use a board-owned opaque execution handle. No getter, mirror, rebinding API or second publication. Existing public board operations retain their explicitly temporary Core association until their separate full caller migration. |
-| Verification | Complete x64/x86 repository-only units and affected static gates; independent Core build/run in eight product trees; rebuild stripped 0540 pairs and run each existing real-INI profile/width boot once. Check callback identity, reset order, firmware rollback and partial construction cleanup. |
-| Expected Markers | All nineteen production attachment callbacks resolve board context; constructor publishes the board allocation once; advance/deadline no longer read the private Core layout. No old Core-context variant remains in the callback class. |
-| Asset Needs | Existing BYOB inputs unchanged; eight NXVM 0540 artifacts rebuilt; no MyNES build. Retain incremental trees for this and the immediate board API receiver. |
-| Reporting Requirements | Confirm complete callback class before implementation; record actual source/test size, callback and failure sweep, verification and the remaining public board association explicitly. |
-| Stop Conditions | New hardware behavior, protected input, Shared/MyNES mutation or replacement of Core execution ownership requires revised admission before execution. |
-| Exit Criteria | Complete implementation P immediately pushed, actual pushed-diff coordinator audit, governance acceptance P and clean tree. T540 remains open. |
-| Original Owner Request | Extract independently owned neutral Core and flat reusable IBM-PC board components, retaining unique state and execution owners. |
-| Similar-Issue Sweep | All nineteen attachment callback definitions/publication, direct test calls and complete forwarding contexts, chip callback identities, constructor/finalizer error paths and their NXVM build gates. Core-only signal callbacks may retain opaque Core context; their distinct ownership must be verified. |
+Coordinator accepts immediately pushed P1 `24fb33b1e` after reading the actual
+25-path NXVM source/test/build/document/artifact diff. All nineteen callbacks
+consume the actual board allocation; copied publication and Core finalization
+remain unique. Reset, firmware rollback, event ordering and null-context NMI
+semantics are preserved. [S80 evidence](../etc/evidence/t540-s80-board-callback-context.md)
+records dual-width 470/470 units/gates, seven injected negatives, eight neutral
+Core executions, eight single boot checkpoints and stripped 0540 identities.
+Committed artifact blobs equal the verified files. Scope, identifiers, document
+links and retained ledger dispositions pass review. Shared, MyNES, owner INIs
+and external master inputs are unchanged. S80 is accepted; T540 remains open
+for the full public board-handle caller cut, direct-test classification and
+physical neutral Core/IBM-PC relocation. No next packet is admitted here.
 
 ## T540 S79 Accepted Delivery
 
@@ -4021,7 +4016,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S79 with unchanged owner INIs; S79 evidence records their hashes, PE
+T540 S80 with unchanged owner INIs; S80 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 

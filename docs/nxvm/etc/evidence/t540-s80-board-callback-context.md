@@ -122,3 +122,17 @@ current developer/product artifacts, not new hardware or timing qualification.
 | `assets/nxvm/ibm-5160-model-268-360k/nxvm_xt_0_5_0540_x86.exe` | 1521568 | `E345C7C170F96B9E62B24727FC87C60D39C4E74681BDF509B4148763E25832BC` |
 | `assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0540_x64.exe` | 1351830 | `BE3D4FEAB9B96E21D75B1FCF2E7B94C511B8F398579A9C8D341EB0780EFA891E` |
 | `assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0540_x86.exe` | 1521636 | `A4D0C60FF52B33C1C867E9ADCDC0982EE45BEDDA6FB1023A7A2DFDB410EA4DBA` |
+
+## Coordinator Acceptance
+
+P1 `24fb33b1e7b07e7f2bd29d3c5a2d699099aaa8e3` was immediately pushed to
+origin/master. After switching roles, the coordinator reads actual committed
+hunks in all six source/test, five gate and six documentation paths, and
+checks all eight committed artifact blobs against the verified worktree.
+All 25 paths are NXVM-only. The full callback class, failure/lifetime ownership,
+Types vocabulary, unchanged algorithms, table disposition, identifier sequence
+and packet-to-proof mapping pass review; no corrective implementation P is
+needed. Governance P2 accepts S80 only and removes its active packet. T540
+remains open for public board API callers, direct-test classification and the
+flat neutral Core/IBM-PC physical move. Incremental trees remain needed by
+that receiving work; no new implementation packet is admitted at acceptance.

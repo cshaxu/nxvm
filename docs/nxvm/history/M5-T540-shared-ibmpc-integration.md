@@ -116,3 +116,8 @@ boots pass, and all eight optimized stripped 0540 products are refreshed.
 The six source/test paths add 197/remove 187 lines, net +10; Shared, MyNES
 and owner INIs are unchanged. Coordinator acceptance follows the pushed
 implementation's actual-change review.
+
+Coordinator accepts immediately pushed P1 `24fb33b1e` after actual review of
+all 25 NXVM-only paths and the eight committed artifact identities. Governance
+P2 closes S80 only, removes its packet and leaves T540's public board API,
+test classification and physical relocation open.
