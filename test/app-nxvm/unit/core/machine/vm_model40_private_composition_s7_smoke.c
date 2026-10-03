@@ -73,7 +73,7 @@ lib_i32 main(void)
         x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u ||
         x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_LSB) != 0u ||
         x86_rtc_read_register(session->core_machine->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_MSB) != 0x04u ||
-        core_machine_get_d4_platform_observation(session->core_machine, &d4) !=
+        core_machine_get_d4_platform_observation(session->board, &d4) !=
             LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
         core_machine_bus_read(session->core_machine, 0x07c6u, &value) !=
@@ -89,7 +89,7 @@ lib_i32 main(void)
         x86_kbc8042_aux_enabled(session->core_machine->board->shared_kbc.chip) ||
         core_machine_bus_write(session->core_machine, 0x0061u, 0x02u) !=
             LIB_STATUS_OK || core_machine_get_speaker_observation(
-            session->core_machine, &speaker) != LIB_STATUS_OK ||
+            session->board, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
         !speaker.output || core_machine_bus_write(session->core_machine, 0x0061u,
             0x0fu) != LIB_STATUS_OK ||

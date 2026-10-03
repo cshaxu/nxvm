@@ -219,15 +219,15 @@ lib_status core_machine_plan_apply_topology(core_machine *machine,
         topology->memory_alias_count, LIB_TRUE);
     if (status != LIB_STATUS_OK) return status;
     for (index = 0u; index < topology->absent_memory_count; ++index) {
-        status = core_machine_configure_absent_memory(machine,
+        status = core_machine_configure_absent_memory(board,
             &topology->absent_memory[index]);
         if (status != LIB_STATUS_OK) return status;
     }
     if (topology->planar_parity_present && (status = core_machine_configure_planar_parity(
-            machine, &topology->planar_parity)) != LIB_STATUS_OK) return status;
+            board, &topology->planar_parity)) != LIB_STATUS_OK) return status;
     if (topology->d4_platform_present && (status = core_machine_configure_d4_platform(
-            machine, &topology->d4_platform)) != LIB_STATUS_OK) return status;
-    if (plan->d4_memory.present && (status = core_machine_d4_memory_configure(machine,
+            board, &topology->d4_platform)) != LIB_STATUS_OK) return status;
+    if (plan->d4_memory.present && (status = core_machine_d4_memory_configure(board,
             &plan->d4_memory)) != LIB_STATUS_OK) return status;
     if (topology->display_present) {
         display = topology->display;

@@ -11,6 +11,11 @@ T540 S5: [neutral Core source cut](architecture/t540-s5-neutral-core-cut.md)
 maps the mixed executor/IBM-PC fields and ordered S6-S8 receivers; Current
 owns admission and status.
 
+T540 S86: [whole electrical boundary](evidence/t540-s86-board-electrical-boundary.md)
+records board-owned parity/D4/speaker/absent-memory operations and neutral
+RAM admission, preserved source behavior and product proof. Constructor/private
+association and physical component extraction remain separate whole boundaries.
+
 T540 S67: [neutral validation owner](evidence/t540-s67-neutral-validation-owner.md)
 records the five verbatim implementation moves and their receiving proof.
 

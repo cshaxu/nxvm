@@ -45,6 +45,7 @@ static lib_i32 reset_rom_run(core_machine_cpu_profile profile)
     };
     const core_machine_run_budget budget = {4u, 0u};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_run_result result;
     const core_machine_absent_memory_config absent_memory = {
         0x00100000u, 0x00f00000u, 0xffu
@@ -52,8 +53,8 @@ static lib_i32 reset_rom_run(core_machine_cpu_profile profile)
     lib_u8 reset_byte = 0u;
     lib_i32 failed = 0;
 
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_configure_absent_memory(machine,
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
+    failed |= !failed && core_machine_configure_absent_memory(board,
         &absent_memory) != LIB_STATUS_OK;
     failed |= !failed && core_machine_bind_firmware_provider(machine,
         &reset_rom_provider, LIB_NULL) != LIB_STATUS_OK;
@@ -89,17 +90,18 @@ static lib_i32 absent_fallback_run(void)
     const lib_u8 rom_byte = 0x5au;
     core_machine_memory_test_allocation allocation = {LIB_TRUE, 0u};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u8 byte = 0u;
     lib_i32 failed = 0;
 
-    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) return 1;
+    if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK) return 1;
     machine->executor_memory.connect.device_provider_test_allocation = &allocation;
-    failed |= core_machine_configure_absent_memory(machine, &absent) !=
+    failed |= core_machine_configure_absent_memory(board, &absent) !=
         LIB_STATUS_NO_MEMORY || allocation.attempts != 1u ||
         machine->board->absent_memory[0].configured ||
         machine->executor_memory.connect.device_provider_count != 0u;
     machine->executor_memory.connect.device_provider_test_allocation = LIB_NULL;
-    failed |= core_machine_configure_absent_memory(machine, &absent) !=
+    failed |= core_machine_configure_absent_memory(board, &absent) !=
         LIB_STATUS_OK || !machine->board->absent_memory[0].configured;
     failed |= core_machine_register_immutable_rom_mapping(machine,
         absent.physical_start, &rom_byte, 1u) != LIB_STATUS_OK;

@@ -170,10 +170,10 @@ void core_machine_board_media_advance(void *owner, lib_u64 source_ticks,
 void core_machine_board_rtc_advance(void *owner, lib_u64 source_ticks);
 void core_machine_board_peripheral_advance(void *owner, lib_u64 source_ticks);
 lib_status core_machine_board_register_a20_port(core_machine *machine);
-void core_machine_board_after_pit_reset(core_machine *machine);
+void core_machine_board_after_pit_reset(core_machine_board_state *board);
 void core_machine_board_refresh_nmi(void *owner);
-void core_machine_board_configure_xt_ppi_speaker(core_machine *machine);
-void core_machine_board_set_xt_ppi_speaker(core_machine *machine,
+void core_machine_board_configure_xt_ppi_speaker(core_machine_board_state *board);
+void core_machine_board_set_xt_ppi_speaker(core_machine_board_state *board,
     lib_u8 timer_gate, lib_u8 data_enabled);
 lib_status core_machine_plan_validate(const core_machine_plan *plan);
 lib_status core_machine_plan_apply_topology(core_machine *machine,

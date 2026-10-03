@@ -225,8 +225,6 @@ extern const core_machine_cpu_execution_diagnostic_provider
  * observer or a physical retirement contract actually needs it. */
 extern const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_fault_diagnostic_provider;
-lib_status core_machine_reconfigure_memory_core(core_machine *machine,
-    lib_size memory_bytes);
 void core_machine_cpu_bus_refresh_pulse(void *core_owner);
 typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT,

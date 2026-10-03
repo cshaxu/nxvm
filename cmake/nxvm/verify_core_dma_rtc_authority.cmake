@@ -100,7 +100,6 @@ foreach(operation IN ITEMS rtc_cmos_port_read rtc_cmos_port_write
     endif()
 endforeach()
 foreach(required IN ITEMS
-    "core_machine_dma_refresh_pit_output, machine->board);"
     "core_machine_dma_refresh_pit_output, board);"
     "core_machine_fdc_dma_request_deassert, board,"
     "board->core, &board->fdc_topology.config,"
@@ -111,6 +110,12 @@ foreach(required IN ITEMS
         message(FATAL_ERROR "Controller registration has the wrong owner: ${required}")
     endif()
 endforeach()
+string(REGEX MATCHALL "core_machine_dma_refresh_pit_output, board\\)" refresh_bindings
+    "${core_board_source}")
+list(LENGTH refresh_bindings refresh_binding_count)
+if(NOT refresh_binding_count EQUAL 2)
+    message(FATAL_ERROR "Construction and cold reset must both bind board refresh")
+endif()
 file(GLOB_RECURSE controller_callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c")
 foreach(caller IN LISTS controller_callers)

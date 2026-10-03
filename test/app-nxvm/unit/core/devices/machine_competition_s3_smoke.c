@@ -145,6 +145,7 @@ lib_i32 main(void)
     };
     const lib_u8 nop = 0x90u;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_config config = {0};
     core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine_d4_platform_observation d4_observation;
@@ -179,9 +180,9 @@ lib_i32 main(void)
     config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = competition_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
-    failed |= core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK;
-    failed |= core_machine_get_d4_platform_observation(machine, &d4_observation) !=
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
+    failed |= core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_OK;
+    failed |= core_machine_get_d4_platform_observation(board, &d4_observation) !=
         LIB_STATUS_OK || !d4_observation.configured;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;

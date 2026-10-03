@@ -44,9 +44,9 @@ static lib_i32 s47_s5_outer_nmi(core_machine_cpu_profile profile,
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE +
                 0x0100u, nop, sizeof(nop)) || !s47_s5_patch_eflags(&state,
                 VCPU_EFLAGS_CF | VCPU_EFLAGS_IF) ||
-            core_machine_report_planar_parity_fault(state.machine) !=
+            core_machine_report_planar_parity_fault(state.board) !=
                 LIB_STATUS_OK || core_machine_get_planar_parity_observation(
-                state.machine, &parity) != LIB_STATUS_OK || !parity.nmi_signaled ||
+                state.board, &parity) != LIB_STATUS_OK || !parity.nmi_signaled ||
             core_machine_run(state.machine, (core_machine_run_budget){32u,0u},
                 &result) != LIB_STATUS_OK || result.reason !=
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||

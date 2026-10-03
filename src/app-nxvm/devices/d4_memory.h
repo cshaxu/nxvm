@@ -6,7 +6,6 @@
 
 #include "app-nxvm/devices/memory_interface.h"
 
-typedef struct core_machine core_machine;
 typedef struct core_machine_d4_memory_config core_machine_d4_memory_config;
 
 typedef struct core_machine_d4_memory {
@@ -21,8 +20,8 @@ typedef struct core_machine_d4_memory {
 
 lib_i32 core_machine_d4_memory_config_is_valid(
     const core_machine_d4_memory_config *config);
-lib_status core_machine_d4_memory_configure(core_machine *machine,
+lib_status core_machine_d4_memory_configure(core_machine_board_state *board,
     const core_machine_d4_memory_config *config);
-void core_machine_d4_memory_reset(core_machine *machine);
+void core_machine_d4_memory_reset(core_machine_board_state *board);
 
 #endif

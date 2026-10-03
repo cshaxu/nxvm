@@ -2,7 +2,7 @@
 
 ## Current Work
 
-M5 T540 S1-S85 are accepted; no subtask packet is active.
+M5 T540 S1-S85 are accepted; S86 receives the remaining electrical boundary.
 Plan and configuration constructors publish the actual borrowed board beside Core.
 Public board callers, test classification and physical movement remain open.
 T540 remains open for neutral Core relocation and
@@ -11,6 +11,27 @@ IBM-PC board extraction.
 S85 accepts the complete controller configuration/callback receiver at P1
 `8b67d2cdb`; the remaining electrical, constructor/fixture and physical
 component boundaries stay open. See [S85 evidence](../etc/evidence/t540-s85-board-controller-handles.md).
+
+## Active S86 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T540 S86, next numeric receiver after accepted S85. |
+| Admission And Approval | Coordinator admits under owner's automatic numeric-S and whole Core/board extraction authorization; executor confirms this complete boundary. NXVM only; existing embedded-artifact exception retained. |
+| Objective | Receive all remaining parity, D4, speaker and absent-memory operations/callbacks on actual board handles, including D4 memory; move RAM reconfiguration to its one neutral Core owner with the existing board veto delivered by attachment. |
+| Non-goals | No chip algorithm, timing grade, profile/media/INI, Shared/MyNES, external master or physical source movement change. Constructor association and unrelated direct fixtures remain the next whole class. |
+| Reference Baseline | Accepted S85 P2 04b7afa7de48ec55ff4e44524a484627fcd54391. |
+| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md); [private-state ledger](../etc/architecture/t540-s42-private-state-ledger.md); [attachment intake](../etc/evidence/t540-s78-attachment-owner-intake.md); [S86 evidence](../etc/evidence/t540-s86-board-electrical-boundary.md). |
+| Files And ABI Surface | NXVM machine_board.c, d4_memory.c/h, board interface/state, machine.c/h, attachment_interface.h, plan/driver and every affected caller, existing owner gates and eight 0540 products. Optional neutral attachment admission callback replaces the private parity lookup; no copied board state or getter. |
+| Applicable Rules | Execution, architecture, coding, documentation, NXVM architecture/layout and source policy; architecture-governance then coding-governance skills. |
+| Verification | Complete ctest -L unit on build/t540-s4-nxvm-x64 and build/t540-s4-nxvm-x86-winlibs, existing specialized gates and injected boundary negatives; rebuild vm-0-5-0540, vm-profile-floppy-boot-matrix and core-machine-neutral-link-smoke in all eight t535-s4 profile/width Release trees; run each neutral and unchanged-INI boot once with 180000-ms containment; PE/banner/stripped/hash/freshness, documentation governance, local links and git diff --check. |
+| Expected Markers | All original parity/D4/speaker/absent-memory and resize markers retained; full units/gates pass; each product retains DOS prompt or running installer checkpoint. |
+| Asset Needs | Existing unchanged owner INIs and read-only/overlay BYOB media; retained ignored build caches needed by this receiver. No external master change or MyNES build. |
+| Reporting Requirements | Complete operation/helper/registration/caller inventory, baseline body comparisons, status/reset/rollback preservation, RAM-veto regression, actual diff counts and eight artifact hashes. |
+| Stop Conditions | Changed guest semantics/timing, missed owner registration, ambiguous failure ownership, failed proof or out-of-target mutation. Reconcile complete class before a P delivery. |
+| Exit Criteria | No electrical function or D4 memory callback borrows private Core board state; all callers use actual board; Core owns one RAM reconfiguration path and invokes optional board admission before mutation; statuses/order and complete proof retained; P1 push, actual committed-diff dual-role review and governance P2 accept S86 only. |
+| Original Owner Request | Complete reusable x86 Core and flat IBM-PC board components; preserve four products, automatically admit numeric S tasks, reject endless one-function repair batches and do not close T on partial extraction. |
+| Similar-Issue Sweep | All parity/D4/speaker/absent-memory definitions, declarations, callers, constructor and cold-reset PIT registrations, memory fault/write observer owners, RAM resize implementations and callers. Core-only A20/reset/NMI signal callbacks remain genuinely Core-owned. |
 
 
 The oversized former S12 port batch is split into linear receivers. Shared

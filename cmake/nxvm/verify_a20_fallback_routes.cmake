@@ -25,7 +25,7 @@ endforeach()
 foreach(required "core_machine_signal_a20(owner" "core_machine_observe_a20(owner"
     "core_machine_kbc_signal_a20"
     "CORE_MACHINE_MEMORY_PROVIDER_FALLBACK"
-    "core_machine_install_memory_device_routes(machine, &route, 1u")
+    "core_machine_install_memory_device_routes(board->core, &route, 1u")
     string(FIND "${board}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board A20/fallback route is missing ${required}")

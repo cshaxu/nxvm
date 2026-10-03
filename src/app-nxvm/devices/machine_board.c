@@ -8,6 +8,8 @@
 #define CORE_MACHINE_BOARD_A20_BIT 0x02u
 
 static lib_status core_machine_board_register_reset_rom_alias(void *owner);
+static lib_status core_machine_board_memory_admission(void *owner,
+    lib_size memory_bytes);
 
 /* Range-selected XT durations retain their existing L2 macro-axis values.
  * Quotient/remainder conversion avoids overflow before the final ceiling. */
@@ -56,7 +58,7 @@ static void core_machine_kbc_signal_a20(void *owner, lib_bool enabled)
 static void core_machine_xt_ppi_update_speaker(void *owner,
     lib_u8 timer_gate, lib_u8 data_enabled)
 {
-    core_machine_board_set_xt_ppi_speaker((core_machine *)owner, timer_gate,
+    core_machine_board_set_xt_ppi_speaker((core_machine_board_state *)owner, timer_gate,
         data_enabled);
 }
 
@@ -163,6 +165,7 @@ lib_status core_machine_board_create(core_machine *machine,
     }
     machine->board->core = machine;
     const core_machine_attachment attachment = {
+        .memory_admission = core_machine_board_memory_admission,
         .deadline = core_machine_board_deadline_observe,
         .refresh_request = core_machine_board_refresh_request,
         .refresh_complete = core_machine_board_refresh_complete,
@@ -315,13 +318,13 @@ lib_status core_machine_board_create(core_machine *machine,
     x86_pit_set_output(machine->board->shared_pit.device, 0,
         core_machine_pic_timer_output, &machine->board->shared_pit_irq0_source);
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-        core_machine_board_configure_xt_ppi_speaker(machine);
+        core_machine_board_configure_xt_ppi_speaker(machine->board);
         core_machine_xt_ppi_keyboard_bind_pic(&machine->board->xt_ppi_keyboard,
             &machine->board->shared_pic_master, &machine->board->shared_pic_slave);
         core_machine_xt_ppi_keyboard_bind_nmi(&machine->board->xt_ppi_keyboard,
             core_machine_xt_ppi_request_nmi, machine);
         core_machine_xt_ppi_keyboard_bind_speaker(&machine->board->xt_ppi_keyboard,
-            core_machine_xt_ppi_update_speaker, machine);
+            core_machine_xt_ppi_update_speaker, machine->board);
         core_machine_xt_ppi_keyboard_bind_keyboard_observer(&machine->board->xt_ppi_keyboard,
             core_machine_xt_keyboard_lines, machine->board->xt_keyboard,
             core_machine_xt_keyboard_released);
@@ -475,15 +478,18 @@ static lib_status core_machine_board_register_reset_rom_alias(void *owner)
         0x000f0000u, reset_alias, 0x00010000u);
 }
 
-lib_status core_machine_reconfigure_memory(core_machine *machine,
+static lib_status core_machine_board_memory_admission(void *owner,
     lib_size memory_bytes)
 {
-    if (machine == LIB_NULL ||
-        (machine->board->planar_parity_configured &&
-         machine->board->planar_parity_config.memory_bytes != 0u)) {
+    const core_machine_board_state *board = owner;
+
+    (void)memory_bytes;
+    if (board == LIB_NULL ||
+        (board->planar_parity_configured &&
+         board->planar_parity_config.memory_bytes != 0u)) {
         return LIB_STATUS_INVALID_STATE;
     }
-    return core_machine_reconfigure_memory_core(machine, memory_bytes);
+    return LIB_STATUS_OK;
 }
 
 static lib_status core_machine_board_read_a20(void *owner, lib_u16 port_id, lib_u64 tick,
@@ -586,35 +592,35 @@ static lib_status core_machine_rtc_cmos_port_write(void *owner,
     return LIB_STATUS_INVALID_ARGUMENT;
 }
 
-static void core_machine_planar_parity_refresh_nmi(core_machine *machine)
+static void core_machine_planar_parity_refresh_nmi(core_machine_board_state *board)
 {
-    if (machine != LIB_NULL && machine->board->planar_parity_configured &&
-        machine->board->planar_parity_config.memory_bytes != 0u &&
-        machine->board->planar_parity_latched &&
-        (machine->board->planar_parity_port_b & 0x04u) != 0u &&
-        !machine->board->planar_parity_nmi_signaled &&
-        core_machine_signal_nmi(machine)) {
-        machine->board->planar_parity_nmi_signaled = LIB_TRUE;
+    if (board != LIB_NULL && board->planar_parity_configured &&
+        board->planar_parity_config.memory_bytes != 0u &&
+        board->planar_parity_latched &&
+        (board->planar_parity_port_b & 0x04u) != 0u &&
+        !board->planar_parity_nmi_signaled &&
+        core_machine_signal_nmi(board->core)) {
+        board->planar_parity_nmi_signaled = LIB_TRUE;
     }
 }
 
 /* PC/AT-compatible port B exposes the system 8254's refresh and speaker
  * channel outputs independently of the board-specific NMI latches. */
 static lib_u8 core_machine_pc_at_port_b_timer_status(
-    const core_machine *machine, lib_u64 tick)
+    const core_machine_board_state *board, lib_u64 tick)
 {
     lib_u8 value = 0u;
 
-    if (machine == LIB_NULL) return 0u;
-    if (machine->board->planar_parity_configured &&
-        machine->board->planar_parity_config.refresh_status_source ==
+    if (board == LIB_NULL) return 0u;
+    if (board->planar_parity_configured &&
+        board->planar_parity_config.refresh_status_source ==
             CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE) {
         if (((tick /
-                machine->board->planar_parity_config.refresh_status_toggle_ticks) & 1u) != 0u) {
+                board->planar_parity_config.refresh_status_toggle_ticks) & 1u) != 0u) {
             value |= 0x10u;
         }
-    } else if (x86_pit_get_output(machine->board->shared_pit.device, 1u)) value |= 0x10u;
-    if (x86_pit_get_output(machine->board->shared_pit.device, 2u)) value |= 0x20u;
+    } else if (x86_pit_get_output(board->shared_pit.device, 1u)) value |= 0x10u;
+    if (x86_pit_get_output(board->shared_pit.device, 2u)) value |= 0x20u;
     return value;
 }
 
@@ -624,17 +630,17 @@ static lib_u8 core_machine_pc_at_port_b_timer_status(
  * firmware-owned timer and speaker resources. */
 static void core_machine_d4_refresh_output(void *opaque, lib_u8 asserted)
 {
-    core_machine *machine = (core_machine *)opaque;
+    core_machine_board_state *board = (core_machine_board_state *)opaque;
     /* Generic-AT policy: the counter-1 refresh pulse ends CPU-side locality.
      * D4 establishes this refresh topology, but not a physical page-retention
      * interval or any calibrated phase duration. */
-    if (machine != LIB_NULL) {
+    if (board != LIB_NULL) {
         if (asserted) {
-            machine->board->d4_refresh_pulse_active = LIB_FALSE;
-        } else if (!machine->board->d4_refresh_pulse_active) {
-            machine->board->d4_refresh_pulse_active = LIB_TRUE;
-            core_machine_cpu_bus_refresh_pulse(machine);
-            machine->board->d4_refresh_hold_pending = LIB_TRUE;
+            board->d4_refresh_pulse_active = LIB_FALSE;
+        } else if (!board->d4_refresh_pulse_active) {
+            board->d4_refresh_pulse_active = LIB_TRUE;
+            core_machine_cpu_bus_refresh_pulse(board->core);
+            board->d4_refresh_hold_pending = LIB_TRUE;
         }
     }
 }
@@ -659,106 +665,106 @@ void core_machine_board_refresh_complete(void *owner)
 static void core_machine_dma_refresh_pit_output(void *owner,
     lib_u8 asserted);
 
-static void core_machine_pc_at_refresh_timer_program(core_machine *machine)
+static void core_machine_pc_at_refresh_timer_program(core_machine_board_state *board)
 {
-    if (machine == LIB_NULL) return;
-    (void)x86_pit_write_register(machine->board->shared_pit.device, 3u, 0x74u);
-    (void)x86_pit_write_register(machine->board->shared_pit.device, 1u, 18u);
-    (void)x86_pit_write_register(machine->board->shared_pit.device, 1u, 0u);
+    if (board == LIB_NULL) return;
+    (void)x86_pit_write_register(board->shared_pit.device, 3u, 0x74u);
+    (void)x86_pit_write_register(board->shared_pit.device, 1u, 18u);
+    (void)x86_pit_write_register(board->shared_pit.device, 1u, 0u);
 }
 
 static lib_u8 core_machine_speaker_source_value(
-    const core_machine *machine)
+    const core_machine_board_state *board)
 {
-    if (machine == LIB_NULL) return 0u;
-    if (machine->board->xt_ppi_speaker_configured) return
-        (machine->board->xt_ppi_speaker_gate ? 0x01u : 0u) |
-        (machine->board->xt_ppi_speaker_data_enabled ? 0x02u : 0u);
-    if (machine->board->d4_platform_configured) return machine->board->d4_platform_port_b;
-    if (machine->board->planar_parity_configured) return machine->board->planar_parity_port_b;
+    if (board == LIB_NULL) return 0u;
+    if (board->xt_ppi_speaker_configured) return
+        (board->xt_ppi_speaker_gate ? 0x01u : 0u) |
+        (board->xt_ppi_speaker_data_enabled ? 0x02u : 0u);
+    if (board->d4_platform_configured) return board->d4_platform_port_b;
+    if (board->planar_parity_configured) return board->planar_parity_port_b;
     return 0u;
 }
 
-static void core_machine_speaker_refresh(core_machine *machine)
+static void core_machine_speaker_refresh(core_machine_board_state *board)
 {
     lib_u8 value;
 
-    if (machine == LIB_NULL) return;
-    value = core_machine_speaker_source_value(machine);
-    machine->board->speaker_output = (value & 0x02u) != 0u &&
+    if (board == LIB_NULL) return;
+    value = core_machine_speaker_source_value(board);
+    board->speaker_output = (value & 0x02u) != 0u &&
         ((value & 0x01u) == 0u ||
-        x86_pit_get_output(machine->board->shared_pit.device, 2u));
+        x86_pit_get_output(board->shared_pit.device, 2u));
 }
 
 static void core_machine_speaker_timer_output(void *owner,
     lib_u8 asserted)
 {
-    core_machine *machine = (core_machine *)owner;
+    core_machine_board_state *board = (core_machine_board_state *)owner;
 
     (void)asserted;
-    core_machine_speaker_refresh(machine);
+    core_machine_speaker_refresh(board);
 }
 
-static void core_machine_speaker_set_gate(core_machine *machine,
+static void core_machine_speaker_set_gate(core_machine_board_state *board,
     lib_u8 value)
 {
-    if (machine == LIB_NULL) return;
-    x86_pit_set_gate(machine->board->shared_pit.device, 2u,
+    if (board == LIB_NULL) return;
+    x86_pit_set_gate(board->shared_pit.device, 2u,
         (value & 0x01u) != 0u ? LIB_TRUE : LIB_FALSE);
-    core_machine_speaker_refresh(machine);
+    core_machine_speaker_refresh(board);
 }
 
 static void core_machine_planar_parity_memory_fault(void *owner,
     lib_u32 physical)
 {
     (void)physical;
-    (void)core_machine_report_planar_parity_fault((core_machine *)owner);
+    (void)core_machine_report_planar_parity_fault((core_machine_board_state *)owner);
 }
 
 static lib_status core_machine_planar_parity_port_read(void *owner,
     lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
-    core_machine *machine = (core_machine *)owner;
+    core_machine_board_state *board = (core_machine_board_state *)owner;
 
-    if (machine == LIB_NULL || out_value == LIB_NULL || !machine->board->planar_parity_configured ||
-        port != machine->board->planar_parity_config.port) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_value = (lib_u32)(machine->board->planar_parity_port_b & 0x0fu) |
-        core_machine_pc_at_port_b_timer_status(machine, tick) |
-        (machine->board->planar_parity_latched ? 0x80u : 0u);
+    if (board == LIB_NULL || out_value == LIB_NULL || !board->planar_parity_configured ||
+        port != board->planar_parity_config.port) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_value = (lib_u32)(board->planar_parity_port_b & 0x0fu) |
+        core_machine_pc_at_port_b_timer_status(board, tick) |
+        (board->planar_parity_latched ? 0x80u : 0u);
     return LIB_STATUS_OK;
 }
 
 static lib_status core_machine_planar_parity_port_write(void *owner,
     lib_u16 port, lib_u32 value)
 {
-    core_machine *machine = (core_machine *)owner;
+    core_machine_board_state *board = (core_machine_board_state *)owner;
 
-    if (machine == LIB_NULL || !machine->board->planar_parity_configured ||
-        port != machine->board->planar_parity_config.port) return LIB_STATUS_INVALID_ARGUMENT;
-    machine->board->planar_parity_port_b = (lib_u8)value & 0x0fu;
-    core_machine_speaker_set_gate(machine, machine->board->planar_parity_port_b);
-    if ((machine->board->planar_parity_port_b & 0x04u) == 0u) {
-        machine->board->planar_parity_latched = LIB_FALSE;
-        machine->board->planar_parity_nmi_signaled = LIB_FALSE;
+    if (board == LIB_NULL || !board->planar_parity_configured ||
+        port != board->planar_parity_config.port) return LIB_STATUS_INVALID_ARGUMENT;
+    board->planar_parity_port_b = (lib_u8)value & 0x0fu;
+    core_machine_speaker_set_gate(board, board->planar_parity_port_b);
+    if ((board->planar_parity_port_b & 0x04u) == 0u) {
+        board->planar_parity_latched = LIB_FALSE;
+        board->planar_parity_nmi_signaled = LIB_FALSE;
     } else {
-        core_machine_planar_parity_refresh_nmi(machine);
+        core_machine_planar_parity_refresh_nmi(board);
     }
     return LIB_STATUS_OK;
 }
 
-static void core_machine_d4_platform_refresh_nmi(core_machine *machine)
+static void core_machine_d4_platform_refresh_nmi(core_machine_board_state *board)
 {
     lib_u8 pending;
 
-    if (machine == LIB_NULL || !machine->board->d4_platform_configured) return;
-    pending = ((machine->board->d4_platform_port_b & 0x08u) == 0u &&
-        machine->board->d4_platform_iochk_latched) ||
-        ((machine->board->d4_platform_port_b & 0x04u) == 0u &&
-        machine->board->d4_platform_failsafe_latched);
-    if (pending && !machine->board->d4_platform_nmi_signaled &&
-        core_machine_signal_nmi(machine)) {
-        machine->board->d4_platform_nmi_signaled = LIB_TRUE;
+    if (board == LIB_NULL || !board->d4_platform_configured) return;
+    pending = ((board->d4_platform_port_b & 0x08u) == 0u &&
+        board->d4_platform_iochk_latched) ||
+        ((board->d4_platform_port_b & 0x04u) == 0u &&
+        board->d4_platform_failsafe_latched);
+    if (pending && !board->d4_platform_nmi_signaled &&
+        core_machine_signal_nmi(board->core)) {
+        board->d4_platform_nmi_signaled = LIB_TRUE;
     }
 }
 
@@ -768,8 +774,7 @@ static void core_machine_d4_platform_failsafe_output(void *owner,
 void core_machine_board_reset_devices(void *owner)
 {
     core_machine_board_state *board = owner;
-    core_machine *machine = board->core;
-    core_machine_d4_memory_reset(machine);
+    core_machine_d4_memory_reset(board);
     if (board->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_reset(&board->xt_ppi_keyboard);
         x86_xt_keyboard_reset(board->xt_keyboard);
@@ -801,7 +806,7 @@ void core_machine_board_reset_devices(void *owner)
     if (board->auxiliary_pit_configured) {
         x86_pit_reset(board->auxiliary_pit.device);
     }
-    core_machine_board_after_pit_reset(machine);
+    core_machine_board_after_pit_reset(board);
     board->d4_refresh_hold_pending = LIB_FALSE;
     board->d4_refresh_pulse_active = LIB_FALSE;
     board->d4_refresh_address = 0u;
@@ -829,111 +834,110 @@ void core_machine_board_finalize_devices(void *owner)
     lib_release(board);
 }
 
-void core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
+void core_machine_board_configure_xt_ppi_speaker(core_machine_board_state *board)
 {
-    if (machine == LIB_NULL) return;
-    machine->board->xt_ppi_speaker_configured = LIB_TRUE;
-    x86_pit_set_output(machine->board->shared_pit.device, 2u,
-        core_machine_speaker_timer_output, machine);
-    core_machine_board_set_xt_ppi_speaker(machine, LIB_FALSE, LIB_FALSE);
+    if (board == LIB_NULL) return;
+    board->xt_ppi_speaker_configured = LIB_TRUE;
+    x86_pit_set_output(board->shared_pit.device, 2u,
+        core_machine_speaker_timer_output, board);
+    core_machine_board_set_xt_ppi_speaker(board, LIB_FALSE, LIB_FALSE);
 }
 
-void core_machine_board_set_xt_ppi_speaker(core_machine *machine,
+void core_machine_board_set_xt_ppi_speaker(core_machine_board_state *board,
     lib_u8 timer_gate, lib_u8 data_enabled)
 {
-    if (machine == LIB_NULL || !machine->board->xt_ppi_speaker_configured) return;
-    machine->board->xt_ppi_speaker_gate = timer_gate;
-    machine->board->xt_ppi_speaker_data_enabled = data_enabled;
-    core_machine_speaker_set_gate(machine,
+    if (board == LIB_NULL || !board->xt_ppi_speaker_configured) return;
+    board->xt_ppi_speaker_gate = timer_gate;
+    board->xt_ppi_speaker_data_enabled = data_enabled;
+    core_machine_speaker_set_gate(board,
         (timer_gate ? 0x01u : 0u) | (data_enabled ? 0x02u : 0u));
 }
 
-void core_machine_board_after_pit_reset(core_machine *machine)
+void core_machine_board_after_pit_reset(core_machine_board_state *board)
 {
-    if (machine == LIB_NULL) return;
-    if (machine->board->dma_configured && !machine->board->d4_platform_configured) {
-        x86_pit_set_output(machine->board->shared_pit.device, 1u,
-            core_machine_dma_refresh_pit_output, machine->board);
+    if (board == LIB_NULL) return;
+    if (board->dma_configured && !board->d4_platform_configured) {
+        x86_pit_set_output(board->shared_pit.device, 1u,
+            core_machine_dma_refresh_pit_output, board);
     }
-    if (machine->board->planar_parity_configured || machine->board->d4_platform_configured) {
-        core_machine_pc_at_refresh_timer_program(machine);
+    if (board->planar_parity_configured || board->d4_platform_configured) {
+        core_machine_pc_at_refresh_timer_program(board);
     }
-    if (machine->board->planar_parity_configured) {
-        core_machine_speaker_set_gate(machine,
-            machine->board->planar_parity_port_b);
+    if (board->planar_parity_configured) {
+        core_machine_speaker_set_gate(board,
+            board->planar_parity_port_b);
     }
-    if (machine->board->d4_platform_configured) {
-        core_machine_speaker_set_gate(machine,
-            machine->board->d4_platform_port_b);
-        x86_pit_set_output(machine->board->shared_pit.device, 1u,
-            core_machine_d4_refresh_output, machine);
-        x86_pit_set_output(machine->board->auxiliary_pit.device,
-            machine->board->d4_platform_config.failsafe_pit_counter,
-            core_machine_d4_platform_failsafe_output, machine);
+    if (board->d4_platform_configured) {
+        core_machine_speaker_set_gate(board,
+            board->d4_platform_port_b);
+        x86_pit_set_output(board->shared_pit.device, 1u,
+            core_machine_d4_refresh_output, board);
+        x86_pit_set_output(board->auxiliary_pit.device,
+            board->d4_platform_config.failsafe_pit_counter,
+            core_machine_d4_platform_failsafe_output, board);
     }
 }
 
 void core_machine_board_refresh_nmi(void *owner)
 {
     core_machine_board_state *board = owner;
-    core_machine *machine = board == LIB_NULL ? LIB_NULL : board->core;
     if (board != LIB_NULL && board->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_refresh_nmi(&board->xt_ppi_keyboard);
     }
-    core_machine_planar_parity_refresh_nmi(machine);
-    core_machine_d4_platform_refresh_nmi(machine);
+    core_machine_planar_parity_refresh_nmi(board);
+    core_machine_d4_platform_refresh_nmi(board);
 }
 
 static void core_machine_d4_platform_failsafe_output(void *owner,
     lib_u8 asserted)
 {
-    core_machine *machine = (core_machine *)owner;
+    core_machine_board_state *board = (core_machine_board_state *)owner;
 
-    if (machine == LIB_NULL || !machine->board->d4_platform_configured || !asserted) return;
-    machine->board->d4_platform_failsafe_latched = LIB_TRUE;
-    core_machine_d4_platform_refresh_nmi(machine);
+    if (board == LIB_NULL || !board->d4_platform_configured || !asserted) return;
+    board->d4_platform_failsafe_latched = LIB_TRUE;
+    core_machine_d4_platform_refresh_nmi(board);
 }
 
 static lib_status core_machine_d4_platform_port_read(void *owner,
     lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
 {
-    core_machine *machine = (core_machine *)owner;
+    core_machine_board_state *board = (core_machine_board_state *)owner;
 
-    if (machine == LIB_NULL || out_value == LIB_NULL ||
-        !machine->board->d4_platform_configured ||
-        port != machine->board->d4_platform_config.port) return LIB_STATUS_INVALID_ARGUMENT;
-    *out_value = (lib_u32)(machine->board->d4_platform_port_b & 0x0fu) |
-        core_machine_pc_at_port_b_timer_status(machine, tick) |
-        (machine->board->d4_platform_iochk_latched ? 0x40u : 0u) |
-        (machine->board->d4_platform_failsafe_latched ? 0x80u : 0u);
+    if (board == LIB_NULL || out_value == LIB_NULL ||
+        !board->d4_platform_configured ||
+        port != board->d4_platform_config.port) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_value = (lib_u32)(board->d4_platform_port_b & 0x0fu) |
+        core_machine_pc_at_port_b_timer_status(board, tick) |
+        (board->d4_platform_iochk_latched ? 0x40u : 0u) |
+        (board->d4_platform_failsafe_latched ? 0x80u : 0u);
     return LIB_STATUS_OK;
 }
 
 static lib_status core_machine_d4_platform_port_write(void *owner,
     lib_u16 port, lib_u32 value)
 {
-    core_machine *machine = (core_machine *)owner;
+    core_machine_board_state *board = (core_machine_board_state *)owner;
 
-    if (machine == LIB_NULL || !machine->board->d4_platform_configured ||
-        port != machine->board->d4_platform_config.port) return LIB_STATUS_INVALID_ARGUMENT;
-    machine->board->d4_platform_port_b = (lib_u8)value & 0x3fu;
-    core_machine_speaker_set_gate(machine, machine->board->d4_platform_port_b);
+    if (board == LIB_NULL || !board->d4_platform_configured ||
+        port != board->d4_platform_config.port) return LIB_STATUS_INVALID_ARGUMENT;
+    board->d4_platform_port_b = (lib_u8)value & 0x3fu;
+    core_machine_speaker_set_gate(board, board->d4_platform_port_b);
     /* DeskPro port 61h bits 3 and 2 disable IOCHK and RAM/fail-safe NMI.
      * A high pulse clears the corresponding latched status; this records the
      * bounded logical effect, not electrical pulse timing. */
-    if ((machine->board->d4_platform_port_b & 0x08u) != 0u) {
-        machine->board->d4_platform_iochk_latched = LIB_FALSE;
+    if ((board->d4_platform_port_b & 0x08u) != 0u) {
+        board->d4_platform_iochk_latched = LIB_FALSE;
     }
-    if ((machine->board->d4_platform_port_b & 0x04u) != 0u) {
-        machine->board->d4_platform_failsafe_latched = LIB_FALSE;
+    if ((board->d4_platform_port_b & 0x04u) != 0u) {
+        board->d4_platform_failsafe_latched = LIB_FALSE;
     }
-    if (!machine->board->d4_platform_iochk_latched &&
-        !machine->board->d4_platform_failsafe_latched) {
-        machine->board->d4_platform_nmi_signaled = LIB_FALSE;
+    if (!board->d4_platform_iochk_latched &&
+        !board->d4_platform_failsafe_latched) {
+        board->d4_platform_nmi_signaled = LIB_FALSE;
     }
-    core_machine_d4_platform_refresh_nmi(machine);
+    core_machine_d4_platform_refresh_nmi(board);
     return LIB_STATUS_OK;
 }
 
@@ -1130,13 +1134,13 @@ lib_status core_machine_configure_rtc_cmos(core_machine_board_state *board,
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_configure_planar_parity(core_machine *machine,
+lib_status core_machine_configure_planar_parity(core_machine_board_state *board,
     const core_machine_planar_parity_config *config)
 {
     core_machine_port_route route;
     lib_status status;
 
-    if (!core_machine_configuration_is_open(machine) || machine->board->planar_parity_configured)
+    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) || board->planar_parity_configured)
         return LIB_STATUS_INVALID_STATE;
     if (config == LIB_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
         (config->refresh_status_source !=
@@ -1146,80 +1150,80 @@ lib_status core_machine_configure_planar_parity(core_machine *machine,
         (config->refresh_status_source ==
                 CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE &&
             config->refresh_status_toggle_ticks == 0u) ||
-        machine->board->d4_platform_configured) return LIB_STATUS_INVALID_ARGUMENT;
+        board->d4_platform_configured) return LIB_STATUS_INVALID_ARGUMENT;
     if (config->memory_bytes != 0u) {
         const core_machine_memory_parity_config parity = {
             config->memory_bytes, core_machine_planar_parity_memory_fault
         };
-        status = core_machine_install_memory_device_routes(machine, LIB_NULL, 0u,
-            LIB_NULL, &parity, machine);
+        status = core_machine_install_memory_device_routes(board->core, LIB_NULL, 0u,
+            LIB_NULL, &parity, board);
         if (status != LIB_STATUS_OK) return status;
     }
     route = (core_machine_port_route) {
         .address = config->port,
         .read = core_machine_planar_parity_port_read,
-        .write = core_machine_planar_parity_port_write, .owner = machine
+        .write = core_machine_planar_parity_port_write, .owner = board
     };
-    status = core_machine_install_port_routes(machine, &route, 1u);
+    status = core_machine_install_port_routes(board->core, &route, 1u);
     if (status != LIB_STATUS_OK) {
         if (config->memory_bytes != 0u) {
-            lib_status rollback = core_machine_remove_memory_device_routes(machine, machine);
+            lib_status rollback = core_machine_remove_memory_device_routes(board->core, board);
             if (rollback != LIB_STATUS_OK) return rollback;
         }
         return status == LIB_STATUS_INVALID_STATE ? LIB_STATUS_INVALID_ARGUMENT : status;
     }
-    machine->board->planar_parity_config = *config;
-    machine->board->planar_parity_port_b = 0x04u;
-    machine->board->planar_parity_configured = LIB_TRUE;
-    x86_pit_set_output(machine->board->shared_pit.device, 2u,
-        core_machine_speaker_timer_output, machine);
-    core_machine_pc_at_refresh_timer_program(machine);
-    core_machine_speaker_set_gate(machine, machine->board->planar_parity_port_b);
+    board->planar_parity_config = *config;
+    board->planar_parity_port_b = 0x04u;
+    board->planar_parity_configured = LIB_TRUE;
+    x86_pit_set_output(board->shared_pit.device, 2u,
+        core_machine_speaker_timer_output, board);
+    core_machine_pc_at_refresh_timer_program(board);
+    core_machine_speaker_set_gate(board, board->planar_parity_port_b);
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_configure_d4_platform(core_machine *machine,
+lib_status core_machine_configure_d4_platform(core_machine_board_state *board,
     const core_machine_d4_platform_config *config)
 {
     core_machine_port_route route;
     lib_status status;
 
-    if (!core_machine_configuration_is_open(machine) ||
-        machine->board->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
+    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core) ||
+        board->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
     if (config == LIB_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
-        config->failsafe_pit_counter >= 3u || !machine->board->auxiliary_pit_configured ||
-        machine->board->planar_parity_configured) {
+        config->failsafe_pit_counter >= 3u || !board->auxiliary_pit_configured ||
+        board->planar_parity_configured) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     route = (core_machine_port_route) {
         .address = config->port,
         .read = core_machine_d4_platform_port_read,
-        .write = core_machine_d4_platform_port_write, .owner = machine
+        .write = core_machine_d4_platform_port_write, .owner = board
     };
-    status = core_machine_install_port_routes(machine, &route, 1u);
+    status = core_machine_install_port_routes(board->core, &route, 1u);
     if (status != LIB_STATUS_OK)
         return status == LIB_STATUS_INVALID_STATE ? LIB_STATUS_INVALID_ARGUMENT : status;
-    machine->board->d4_platform_config = *config;
-    machine->board->d4_platform_port_b = 0x0fu;
-    machine->board->d4_platform_configured = LIB_TRUE;
-    x86_pit_set_output(machine->board->shared_pit.device, 2u,
-        core_machine_speaker_timer_output, machine);
-    core_machine_pc_at_refresh_timer_program(machine);
-    x86_pit_set_output(machine->board->shared_pit.device, 1u,
-        core_machine_d4_refresh_output, machine);
-    core_machine_speaker_set_gate(machine, machine->board->d4_platform_port_b);
-    x86_pit_set_output(machine->board->auxiliary_pit.device,
+    board->d4_platform_config = *config;
+    board->d4_platform_port_b = 0x0fu;
+    board->d4_platform_configured = LIB_TRUE;
+    x86_pit_set_output(board->shared_pit.device, 2u,
+        core_machine_speaker_timer_output, board);
+    core_machine_pc_at_refresh_timer_program(board);
+    x86_pit_set_output(board->shared_pit.device, 1u,
+        core_machine_d4_refresh_output, board);
+    core_machine_speaker_set_gate(board, board->d4_platform_port_b);
+    x86_pit_set_output(board->auxiliary_pit.device,
         config->failsafe_pit_counter, core_machine_d4_platform_failsafe_output,
-        machine);
+        board);
     return LIB_STATUS_OK;
 }
-lib_status core_machine_report_planar_parity_fault(core_machine *machine)
+lib_status core_machine_report_planar_parity_fault(core_machine_board_state *board)
 {
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->board->planar_parity_configured ||
-        machine->board->planar_parity_config.memory_bytes == 0u) return LIB_STATUS_INVALID_STATE;
-    machine->board->planar_parity_latched = LIB_TRUE;
-    core_machine_planar_parity_refresh_nmi(machine);
+    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
+        !board->planar_parity_configured ||
+        board->planar_parity_config.memory_bytes == 0u) return LIB_STATUS_INVALID_STATE;
+    board->planar_parity_latched = LIB_TRUE;
+    core_machine_planar_parity_refresh_nmi(board);
     return LIB_STATUS_OK;
 }
 
@@ -1265,59 +1269,59 @@ static lib_status core_machine_absent_memory_query(void *owner,
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_clear_d4_iochk_fault(core_machine *machine)
+lib_status core_machine_clear_d4_iochk_fault(core_machine_board_state *board)
 {
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->board->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
-    machine->board->d4_platform_iochk_latched = LIB_FALSE;
-    if (!machine->board->d4_platform_failsafe_latched) machine->board->d4_platform_nmi_signaled = LIB_FALSE;
-    core_machine_d4_platform_refresh_nmi(machine);
+    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
+        !board->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
+    board->d4_platform_iochk_latched = LIB_FALSE;
+    if (!board->d4_platform_failsafe_latched) board->d4_platform_nmi_signaled = LIB_FALSE;
+    core_machine_d4_platform_refresh_nmi(board);
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_report_d4_iochk_fault(core_machine *machine)
+lib_status core_machine_report_d4_iochk_fault(core_machine_board_state *board)
 {
-    if (machine == LIB_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->board->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
-    machine->board->d4_platform_iochk_latched = LIB_TRUE;
-    core_machine_d4_platform_refresh_nmi(machine);
+    if (board == LIB_NULL || !core_machine_mutable_operation_is_allowed(board->core) ||
+        !board->d4_platform_configured) return LIB_STATUS_INVALID_STATE;
+    board->d4_platform_iochk_latched = LIB_TRUE;
+    core_machine_d4_platform_refresh_nmi(board);
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_get_d4_platform_observation(const core_machine *machine,
+lib_status core_machine_get_d4_platform_observation(const core_machine_board_state *board,
     core_machine_d4_platform_observation *out_observation)
 {
-    if (machine == LIB_NULL || out_observation == LIB_NULL) {
+    if (board == LIB_NULL || out_observation == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    out_observation->configured = machine->board->d4_platform_configured;
-    out_observation->iochk_enabled = (machine->board->d4_platform_port_b & 0x08u) == 0u;
+    out_observation->configured = board->d4_platform_configured;
+    out_observation->iochk_enabled = (board->d4_platform_port_b & 0x08u) == 0u;
     out_observation->failsafe_enabled =
-        (machine->board->d4_platform_port_b & 0x04u) == 0u;
-    out_observation->iochk_latched = machine->board->d4_platform_iochk_latched;
-    out_observation->failsafe_latched = machine->board->d4_platform_failsafe_latched;
-    out_observation->nmi_signaled = machine->board->d4_platform_nmi_signaled;
+        (board->d4_platform_port_b & 0x04u) == 0u;
+    out_observation->iochk_latched = board->d4_platform_iochk_latched;
+    out_observation->failsafe_latched = board->d4_platform_failsafe_latched;
+    out_observation->nmi_signaled = board->d4_platform_nmi_signaled;
     return LIB_STATUS_OK;
 }
-lib_status core_machine_get_speaker_observation(const core_machine *machine,
+lib_status core_machine_get_speaker_observation(const core_machine_board_state *board,
     core_machine_speaker_observation *out_observation)
 {
     lib_u8 value;
 
-    if (machine == LIB_NULL || out_observation == LIB_NULL) {
+    if (board == LIB_NULL || out_observation == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    value = core_machine_speaker_source_value(machine);
-    out_observation->configured = machine->board->xt_ppi_speaker_configured ||
-        machine->board->d4_platform_configured || machine->board->planar_parity_configured;
+    value = core_machine_speaker_source_value(board);
+    out_observation->configured = board->xt_ppi_speaker_configured ||
+        board->d4_platform_configured || board->planar_parity_configured;
     out_observation->timer_gate = (value & 0x01u) != 0u;
     out_observation->data_enabled = (value & 0x02u) != 0u;
     out_observation->timer_output = x86_pit_get_output(
-        machine->board->shared_pit.device, 2u);
-    out_observation->output = machine->board->speaker_output;
+        board->shared_pit.device, 2u);
+    out_observation->output = board->speaker_output;
     return LIB_STATUS_OK;
 }
-lib_status core_machine_configure_absent_memory(core_machine *machine,
+lib_status core_machine_configure_absent_memory(core_machine_board_state *board,
     const core_machine_absent_memory_config *config)
 {
     core_machine_absent_memory *absent;
@@ -1325,7 +1329,7 @@ lib_status core_machine_configure_absent_memory(core_machine *machine,
     lib_status status;
     lib_uptr index;
 
-    if (!core_machine_configuration_is_open(machine)) return LIB_STATUS_INVALID_STATE;
+    if (board == LIB_NULL || !core_machine_configuration_is_open(board->core)) return LIB_STATUS_INVALID_STATE;
     if (config == LIB_NULL || config->bytes == 0u ||
         (lib_u64)config->physical_start + config->bytes >
             (lib_u64)LIB_UINT32_MAX + 1u) {
@@ -1333,8 +1337,8 @@ lib_status core_machine_configure_absent_memory(core_machine *machine,
     }
     absent = LIB_NULL;
     for (index = 0u; index < CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT; ++index) {
-        if (!machine->board->absent_memory[index].configured) {
-            absent = &machine->board->absent_memory[index];
+        if (!board->absent_memory[index].configured) {
+            absent = &board->absent_memory[index];
             break;
         }
     }
@@ -1350,7 +1354,7 @@ lib_status core_machine_configure_absent_memory(core_machine *machine,
             core_machine_absent_memory_query},
         CORE_MACHINE_MEMORY_PROVIDER_FALLBACK
     };
-    status = core_machine_install_memory_device_routes(machine, &route, 1u,
+    status = core_machine_install_memory_device_routes(board->core, &route, 1u,
         LIB_NULL, LIB_NULL, absent);
     if (status != LIB_STATUS_OK) {
         lib_memory_set(absent, 0, sizeof(*absent));
@@ -1359,16 +1363,16 @@ lib_status core_machine_configure_absent_memory(core_machine *machine,
     return LIB_STATUS_OK;
 }
 
-lib_status core_machine_get_planar_parity_observation(const core_machine *machine,
+lib_status core_machine_get_planar_parity_observation(const core_machine_board_state *board,
     core_machine_planar_parity_observation *out_observation)
 {
-    if (machine == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    out_observation->configured = machine->board->planar_parity_configured &&
-        machine->board->planar_parity_config.memory_bytes != 0u;
+    if (board == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    out_observation->configured = board->planar_parity_configured &&
+        board->planar_parity_config.memory_bytes != 0u;
     out_observation->enabled = out_observation->configured &&
-        (machine->board->planar_parity_port_b & 0x04u) != 0u;
-    out_observation->latched = machine->board->planar_parity_latched;
-    out_observation->nmi_signaled = machine->board->planar_parity_nmi_signaled;
+        (board->planar_parity_port_b & 0x04u) != 0u;
+    out_observation->latched = board->planar_parity_latched;
+    out_observation->nmi_signaled = board->planar_parity_nmi_signaled;
     return LIB_STATUS_OK;
 }
 

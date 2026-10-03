@@ -42,18 +42,18 @@ static lib_i32 core_machine_xt_ppi_keyboard_path(void)
     failed |= !failed && core_machine_bus_read(machine, 0x0062u, &value) !=
         LIB_STATUS_OK;
     failed |= !failed && value != 0x02u;
-    failed |= !failed && (core_machine_get_speaker_observation(machine, &speaker) !=
+    failed |= !failed && (core_machine_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || !speaker.configured || speaker.timer_gate ||
         speaker.data_enabled || speaker.output);
     failed |= !failed && (core_machine_bus_write(machine, 0x0061u, 0x02u) !=
-        LIB_STATUS_OK || core_machine_get_speaker_observation(machine, &speaker) !=
+        LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || speaker.timer_gate || !speaker.data_enabled ||
         !speaker.output);
     failed |= !failed && (core_machine_bus_write(machine, 0x0061u, 0x03u) !=
-        LIB_STATUS_OK || core_machine_get_speaker_observation(machine, &speaker) !=
+        LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || !speaker.timer_gate || !speaker.data_enabled);
     failed |= !failed && (core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_get_speaker_observation(machine, &speaker) != LIB_STATUS_OK ||
+        core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || speaker.timer_gate || speaker.data_enabled ||
         speaker.output);
     failed |= !failed && core_machine_bus_read(machine, 0x0063u, &value) !=

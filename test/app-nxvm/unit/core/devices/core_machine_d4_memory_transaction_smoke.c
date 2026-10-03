@@ -64,7 +64,7 @@ static lib_i32 run_case(lib_u32 mode)
     lib_status expected = mode == 2u ? LIB_STATUS_INVALID_ARGUMENT :
         LIB_STATUS_NO_MEMORY;
 
-    machine.board = &board;
+    board.core = &machine;
 
     if (core_machine_memory_initialize_for(memory, 2u * 1024u * 1024u,
             LIB_NULL) != LIB_STATUS_OK) return 1;
@@ -88,33 +88,33 @@ static lib_i32 run_case(lib_u32 mode)
     providers_before = memory->connect.device_provider_count;
     observers_before = memory->connect.write_observer_count;
     parity_before = memory->connect.parity;
-    failed |= core_machine_d4_memory_configure(&machine, &config) != expected ||
-        machine.board->d4_memory.configured ||
+    failed |= core_machine_d4_memory_configure(&board, &config) != expected ||
+        board.d4_memory.configured ||
         memory->connect.device_provider_count != providers_before ||
         memory->connect.write_observer_count != observers_before ||
         memory->connect.parity != parity_before;
 
     core_machine_memory_unregister_owner(memory, &filler);
     if (mode == 2u) core_machine_memory_release_parity(memory);
-    failed |= core_machine_d4_memory_configure(&machine, &config) != LIB_STATUS_OK ||
-        !machine.board->d4_memory.configured ||
+    failed |= core_machine_d4_memory_configure(&board, &config) != LIB_STATUS_OK ||
+        !board.d4_memory.configured ||
         memory->connect.device_provider_count != 2u ||
         memory->connect.write_observer_count != 1u ||
-        memory->connect.parity_owner != &machine ||
-        memory->connect.device_providers[0].owner != &machine ||
-        memory->connect.device_providers[1].owner != &machine ||
+        memory->connect.parity_owner != &board ||
+        memory->connect.device_providers[0].owner != &board ||
+        memory->connect.device_providers[1].owner != &board ||
         !memory->connect.device_providers[0].replacement ||
         !memory->connect.device_providers[1].replacement ||
-        memory->connect.write_observers[0].owner != &machine;
+        memory->connect.write_observers[0].owner != &board;
     failed |= core_machine_memory_read_physical(memory, 0x80c00000u,
         (lib_uptr)&value, 1u) != LIB_STATUS_OK || value != 0xf7u;
-    machine.board->d4_memory.parity_fault_mask = 1u;
-    machine.board->d4_memory.ram_setup = 1u;
-    core_machine_d4_memory_reset(&machine);
-    failed |= machine.board->d4_memory.parity_fault_mask != 0u ||
-        machine.board->d4_memory.ram_setup != config.ram_setup ||
-        machine.board->d4_memory.control != 0xffu;
-    failed |= core_machine_remove_memory_device_routes(&machine, &machine) !=
+    board.d4_memory.parity_fault_mask = 1u;
+    board.d4_memory.ram_setup = 1u;
+    core_machine_d4_memory_reset(&board);
+    failed |= board.d4_memory.parity_fault_mask != 0u ||
+        board.d4_memory.ram_setup != config.ram_setup ||
+        board.d4_memory.control != 0xffu;
+    failed |= core_machine_remove_memory_device_routes(&machine, &board) !=
         LIB_STATUS_OK || memory->connect.device_provider_count != 0u ||
         memory->connect.write_observer_count != 0u ||
         memory->connect.parity != 0u;

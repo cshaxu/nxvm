@@ -226,6 +226,16 @@ class and RAM-resize veto, followed by constructor/direct-fixture association
 removal and physical Core/flat IBM-PC relocation. These are whole receiving
 boundaries, not one-function repairs or a completed move.
 
+S86 consumes the complete remaining electrical/RAM-admission class: parity,
+D4, speaker, absent-memory and D4 memory no longer obtain their owner through
+Core's private board field. The existing attachment supplies the exact board
+resize veto, with one neutral Core resize implementation. Its
+[evidence](../evidence/t540-s86-board-electrical-boundary.md) records source
+comparison and complete proof. The constructor/private association and full
+direct-fixture class are the next single receiving boundary; actual neutral
+Core and flat IBM-PC movement follow. Independent linkage and these handle
+receivers do not complete physical extraction.
+
 The S37 prospective “S43 physical move” is superseded by this measured
 split; it was never executed. The S45 source inventory finds PIC in three
 production and fifty direct test files, PIT in four/eight, DMA in three/

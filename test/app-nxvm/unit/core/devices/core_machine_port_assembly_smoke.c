@@ -207,12 +207,13 @@ static lib_i32 port_assembly_port_b_time(void)
         .values = {0}
     };
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_run_result result = {0};
     core_machine_time_observation time = {0};
     lib_u32 eax = 0u;
-    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    lib_i32 failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
 
-    if (!failed) failed = core_machine_configure_planar_parity(machine, &parity) !=
+    if (!failed) failed = core_machine_configure_planar_parity(board, &parity) !=
         LIB_STATUS_OK;
     for (lib_size index = 0u; !failed && index < sizeof(ticks) / sizeof(ticks[0]);
             ++index) {
@@ -463,12 +464,13 @@ static lib_i32 port_assembly_port_b_transaction(lib_bool d4, lib_size fail_at)
     };
     core_machine_port_test_allocation allocation = {fail_at, 0u};
     core_machine *machine = LIB_NULL;
-    lib_i32 failed = core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    core_machine_board_state *board = LIB_NULL;
+    lib_i32 failed = core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
 
     if (!failed) {
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
-        failed |= (d4 ? core_machine_configure_d4_platform(machine, &d4_config) :
-            core_machine_configure_planar_parity(machine, &parity)) !=
+        failed |= (d4 ? core_machine_configure_d4_platform(board, &d4_config) :
+            core_machine_configure_planar_parity(board, &parity)) !=
                 LIB_STATUS_NO_MEMORY ||
             machine->board->planar_parity_configured ||
             machine->board->d4_platform_configured ||
@@ -479,8 +481,8 @@ static lib_i32 port_assembly_port_b_transaction(lib_bool d4, lib_size fail_at)
             core_machine_port_has_write(&machine->executor_port, CORE_MACHINE_PC_AT_PORT_B);
         allocation.fail_at = 0u;
         allocation.attempts = 0u;
-        failed |= (d4 ? core_machine_configure_d4_platform(machine, &d4_config) :
-            core_machine_configure_planar_parity(machine, &parity)) != LIB_STATUS_OK ||
+        failed |= (d4 ? core_machine_configure_d4_platform(board, &d4_config) :
+            core_machine_configure_planar_parity(board, &parity)) != LIB_STATUS_OK ||
             !core_machine_port_has_read(&machine->executor_port,
                 CORE_MACHINE_PC_AT_PORT_B) ||
             !core_machine_port_has_write(&machine->executor_port,

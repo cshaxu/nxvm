@@ -90,7 +90,7 @@ lib_i32 main(void)
         CHECK(write_byte(session->core_machine, 0x00ff1234u, 0x73u,
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00ff1234u, 0x73u));
-        CHECK(core_machine_get_d4_platform_observation(session->core_machine,
+        CHECK(core_machine_get_d4_platform_observation(session->board,
             &d4) == LIB_STATUS_OK && !d4.iochk_latched && !d4.failsafe_latched);
         CHECK(write_byte(session->core_machine, 0x00fa0000u, 0x3cu,
             LIB_STATUS_OK));

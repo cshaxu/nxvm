@@ -206,3 +206,19 @@ identity, twelve complete definitions, seventeen unextended callers and both
 extended fixtures. Governance P2 accepts S85 only and removes its active packet. Parity/D4,
 RAM-resize veto, direct-fixture/constructor association and physical
 relocation remain open; this controller boundary does not close T540.
+
+## S86: Whole Electrical And RAM-Admission Receiver
+
+All 28 remaining electrical operations/helpers, D4 memory callbacks and their
+construction/cold-reset registrations use the actual borrowed board handle.
+The neutral Core owns one RAM-resize operation; the existing copied attachment
+delivers the exact optional board veto before allocation or mapping mutation.
+No getter, duplicate state, waveform change or second resize implementation is
+introduced. [S86 evidence](../etc/evidence/t540-s86-board-electrical-boundary.md)
+records whole-definition/caller comparison, the initial fixture/gate failures
+and their repairs, full 470/470 units per width, both specialized targets,
+34 injected negatives, eight neutral executions/single INI boot checkpoints
+and eight fresh stripped 0540 products. Source/test changes are +375/-353
+across 26 paths; with four gates, +455/-361 across 30 paths. Shared, MyNES,
+owner INIs and external masters remain unchanged. Constructor/private
+association and actual Core/flat IBM-PC source movement remain required.

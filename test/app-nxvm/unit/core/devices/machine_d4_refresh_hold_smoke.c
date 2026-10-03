@@ -144,6 +144,7 @@ lib_i32 main(void)
     refresh_probe probe = {{{0}}, 0u};
     refresh_dma_source source = {0xa5u};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u8 byte = 0u;
     lib_u8 refresh_address = 0xffu;
     lib_u32 start;
@@ -163,8 +164,8 @@ lib_i32 main(void)
     config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = refresh_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
-    failed |= core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
+    failed |= core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
     failed |= core_machine_dma_bind_channel(&machine->board->shared_dma_latch,

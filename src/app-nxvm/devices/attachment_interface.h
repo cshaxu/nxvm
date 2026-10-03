@@ -44,6 +44,8 @@ typedef lib_bool (*core_machine_attachment_shutdown_reset_provider)(
     void *owner);
 typedef void (*core_machine_attachment_phase_provider)(void *owner);
 typedef lib_status (*core_machine_attachment_firmware_provider)(void *owner);
+typedef lib_status (*core_machine_attachment_memory_admission_provider)(void *owner,
+    lib_size memory_bytes);
 
 /* Copied once during construction. Context remains valid until finalize_devices
  * returns during Core destruction. Callbacks run on the Core execution owner;
@@ -70,6 +72,9 @@ typedef struct core_machine_attachment {
     core_machine_attachment_phase_provider refresh_nmi;
     core_machine_attachment_phase_provider finalize_devices;
     core_machine_attachment_firmware_provider firmware;
+    /* Optional board admission before stopped RAM replacement. A rejection
+     * changes no Core allocation, mapping or lifecycle state. */
+    core_machine_attachment_memory_admission_provider memory_admission;
     void *context;
 } core_machine_attachment;
 

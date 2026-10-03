@@ -212,6 +212,7 @@ static lib_i32 d4_refresh_external_cycle_contract(void)
     core_machine_config config = {0};
     core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     core_machine_cpu_external_cycle_provider provider;
     void *context;
     lib_i32 failed = 0;
@@ -220,8 +221,8 @@ static lib_i32 d4_refresh_external_cycle_contract(void)
     config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = LIB_TRUE;
     config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
-    failed |= core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK;
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
+    failed |= core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
     failed |= core_machine_reset(machine) != LIB_STATUS_OK;
     provider = core_machine_cpu_external_cycle_trace;

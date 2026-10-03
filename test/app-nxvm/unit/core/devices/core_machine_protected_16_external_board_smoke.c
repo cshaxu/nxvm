@@ -130,9 +130,9 @@ static lib_i32 s47_s4_outer_nmi(core_machine_cpu_profile profile, lib_u8 type)
                 nop, sizeof(nop));
     }
     if (!failed) {
-        failed = core_machine_report_planar_parity_fault(state.machine) !=
+        failed = core_machine_report_planar_parity_fault(state.board) !=
             LIB_STATUS_OK || core_machine_get_planar_parity_observation(
-            state.machine, &parity) != LIB_STATUS_OK || !parity.nmi_signaled;
+            state.board, &parity) != LIB_STATUS_OK || !parity.nmi_signaled;
     }
     if (!failed) {
         failed = core_machine_run(state.machine, (core_machine_run_budget){32u,0u},

@@ -18,15 +18,16 @@ static lib_i32 core_machine_port_b_exclusivity(void)
     };
     core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u32 value = 0u;
     lib_i32 failed = 0;
 
     config.memory_bytes = 2u * 1024u * 1024u;
     config.auxiliary_pit_present = LIB_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_configure_planar_parity(machine, &planar) != LIB_STATUS_OK ||
-        core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_INVALID_ARGUMENT ||
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+        core_machine_configure_planar_parity(board, &planar) != LIB_STATUS_OK ||
+        core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_bus_read(machine, CORE_MACHINE_PC_AT_PORT_B, &value) !=
@@ -35,10 +36,10 @@ static lib_i32 core_machine_port_b_exclusivity(void)
 
     machine = LIB_NULL;
     value = 0u;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK ||
-        core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK ||
-        core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_INVALID_STATE ||
-        core_machine_configure_planar_parity(machine, &planar) != LIB_STATUS_INVALID_ARGUMENT ||
+    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
+        core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_OK ||
+        core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_INVALID_STATE ||
+        core_machine_configure_planar_parity(board, &planar) != LIB_STATUS_INVALID_ARGUMENT ||
         core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
         core_machine_bus_read(machine, CORE_MACHINE_PC_AT_PORT_B, &value) !=
@@ -75,7 +76,7 @@ lib_i32 main(void)
     cmos.nmi_mask_bit = 0x80u;
     cmos.ticks_per_second = 1u;
     failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-        core_machine_configure_d4_platform(machine, &d4) != LIB_STATUS_OK ||
+        core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_OK ||
         core_machine_configure_rtc_cmos(board, &cmos) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
@@ -85,7 +86,7 @@ lib_i32 main(void)
         read_refresh_count(machine) != 18u ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
         value != 0x1fu ||
-        core_machine_get_d4_platform_observation(machine, &observation) !=
+        core_machine_get_d4_platform_observation(board, &observation) !=
             LIB_STATUS_OK || !observation.configured || observation.iochk_enabled ||
         observation.failsafe_enabled || observation.iochk_latched ||
         observation.failsafe_latched || observation.nmi_signaled;
@@ -109,40 +110,40 @@ lib_i32 main(void)
     if (!failed) printf("M5:T386:S25:D4-PORT-B-SYSTEM-PIT:OK\n");
 
     if (!failed) failed |= core_machine_bus_write(machine, 0x0061u, 0x02u) !=
-        LIB_STATUS_OK || core_machine_get_speaker_observation(machine, &speaker) !=
+        LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || !speaker.configured || speaker.timer_gate ||
         !speaker.data_enabled || !speaker.output ||
         core_machine_bus_write(machine, 0x0061u, 0x00u) != LIB_STATUS_OK ||
-        core_machine_get_speaker_observation(machine, &speaker) != LIB_STATUS_OK ||
+        core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         speaker.output || core_machine_bus_write(machine, 0x0043u, 0xb4u) !=
         LIB_STATUS_OK || core_machine_bus_write(machine, 0x0042u, 2u) !=
         LIB_STATUS_OK || core_machine_bus_write(machine, 0x0042u, 0u) !=
         LIB_STATUS_OK || core_machine_bus_write(machine, 0x0061u, 0x03u) !=
-        LIB_STATUS_OK || core_machine_get_speaker_observation(machine, &speaker) !=
+        LIB_STATUS_OK || core_machine_get_speaker_observation(board, &speaker) !=
         LIB_STATUS_OK || !speaker.timer_gate || !speaker.data_enabled ||
         !speaker.timer_output || !speaker.output || core_machine_advance_time(machine,
-        3u) != LIB_STATUS_OK || core_machine_get_speaker_observation(machine,
+        3u) != LIB_STATUS_OK || core_machine_get_speaker_observation(board,
         &speaker) != LIB_STATUS_OK || speaker.timer_output || speaker.output ||
         core_machine_advance_time(machine, 1u) != LIB_STATUS_OK ||
-        core_machine_get_speaker_observation(machine, &speaker) != LIB_STATUS_OK ||
+        core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         !speaker.timer_output || !speaker.output;
     if (!failed) printf("M5:T421:S1:D4-SPEAKER-LINE:OK\n");
     if (!failed) failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_get_speaker_observation(machine, &speaker) != LIB_STATUS_OK ||
+        core_machine_get_speaker_observation(board, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || !speaker.timer_gate || !speaker.data_enabled ||
         speaker.output != speaker.timer_output;
 
     if (!failed) failed |= test_core_machine_fixture_nmi_prepare(machine);
     if (!failed) failed |= core_machine_bus_write(machine, 0x0061u, 0x03u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0070u, 0x80u) !=
-            LIB_STATUS_OK || core_machine_report_d4_iochk_fault(machine) !=
-            LIB_STATUS_OK || core_machine_get_d4_platform_observation(machine,
+            LIB_STATUS_OK || core_machine_report_d4_iochk_fault(board) !=
+            LIB_STATUS_OK || core_machine_get_d4_platform_observation(board,
             &observation) != LIB_STATUS_OK || !observation.iochk_latched ||
         observation.nmi_signaled ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
         value != 0x53u || test_core_machine_fixture_nmi_execute(machine, LIB_FALSE) ||
         core_machine_bus_write(machine, 0x0070u, 0u) !=
-            LIB_STATUS_OK || core_machine_get_d4_platform_observation(machine,
+            LIB_STATUS_OK || core_machine_get_d4_platform_observation(board,
             &observation) != LIB_STATUS_OK || !observation.nmi_signaled ||
         test_core_machine_fixture_nmi_execute(machine, LIB_TRUE);
     if (!failed) printf("M5:T386:S4:D4-NMI-MASK:OK\n");
@@ -156,7 +157,7 @@ lib_i32 main(void)
         core_machine_bus_write(machine, 0x0048u, 1u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0048u, 0u) != LIB_STATUS_OK ||
         core_machine_advance_time(machine, 2u) != LIB_STATUS_OK ||
-        core_machine_get_d4_platform_observation(machine, &observation) !=
+        core_machine_get_d4_platform_observation(board, &observation) !=
             LIB_STATUS_OK || !observation.failsafe_enabled ||
         !observation.failsafe_latched || !observation.nmi_signaled ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
@@ -179,12 +180,12 @@ lib_i32 main(void)
             core_machine_get_cpu_state(machine, &cpu) != LIB_STATUS_OK ||
             cpu.eip != 0x0000fff0u ||
             machine->elapsed_ticks != elapsed_before_shutdown ||
-            core_machine_get_d4_platform_observation(machine, &observation) !=
+            core_machine_get_d4_platform_observation(board, &observation) !=
                 LIB_STATUS_OK || !observation.failsafe_enabled ||
             !observation.failsafe_latched;
     }
     if (!failed) failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_get_d4_platform_observation(machine, &observation) !=
+        core_machine_get_d4_platform_observation(board, &observation) !=
             LIB_STATUS_OK || observation.iochk_enabled || observation.failsafe_enabled ||
         observation.iochk_latched || observation.failsafe_latched ||
         observation.nmi_signaled ||

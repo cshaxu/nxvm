@@ -195,6 +195,13 @@ separate route-publication Core context remains opaque. Parity/D4, neutral RAM
 resize veto, constructor association and direct-fixture ownership remain
 subsequent receivers before physical movement. No new getter or owner exists.
 
+S86 consolidates all remaining parity/D4/speaker/absent-memory operation,
+callback and registration migration, including D4 memory and the exact
+RAM-resize veto. The existing attachment supplies optional neutral admission;
+Core receives the sole resize implementation, not a new board-state mirror or
+forwarding wrapper. Constructor/direct-fixture association removal then
+precedes the real neutral Core and flat IBM-PC source cut.
+
 - Shared board code depends on chip public contracts and declared neutral
   capabilities, never an App path; independently built x86 tests prove this.
 - Common board contract tests live with their flat receiver under

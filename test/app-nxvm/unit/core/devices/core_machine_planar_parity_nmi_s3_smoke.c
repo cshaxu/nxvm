@@ -19,13 +19,14 @@ static lib_i32 planar_parity_s4_shared_memory(void)
     };
     core_machine_planar_parity_observation observation;
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     lib_u8 written = 0x5au;
     lib_u8 read = 0u;
     lib_i32 failed = 0;
 
     config.memory_bytes = 512u * 1024u;
-    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) failed = 1;
-    else if (core_machine_configure_planar_parity(machine, &parity) != LIB_STATUS_OK) failed = 2;
+    if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK) failed = 1;
+    else if (core_machine_configure_planar_parity(board, &parity) != LIB_STATUS_OK) failed = 2;
     else if (core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK) failed = 3;
     else if (core_machine_reset(machine) != LIB_STATUS_OK) failed = 4;
     if (!failed) failed |= core_machine_memory_write(machine, 0x1234u, &written,
@@ -35,7 +36,7 @@ static lib_i32 planar_parity_s4_shared_memory(void)
     if (!failed) ((lib_u8 *)machine->executor_memory.connect.parity)[0x1234u] ^= 1u;
     if (!failed) failed |= core_machine_memory_read(machine, 0x1234u, &read,
             sizeof(read)) != LIB_STATUS_OK || read != written ||
-        core_machine_get_planar_parity_observation(machine, &observation) !=
+        core_machine_get_planar_parity_observation(board, &observation) !=
             LIB_STATUS_OK || !observation.latched || !observation.nmi_signaled;
     core_machine_destroy(machine);
     return failed;
@@ -74,23 +75,24 @@ static lib_i32 planar_parity_publication_rollback(void)
         .refresh_status_source = CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_PIT_COUNTER_1
     };
     core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
     const core_machine_port_route conflict = {
         .address = CORE_MACHINE_PC_AT_PORT_B, .read = planar_conflict_read,
         .owner = &machine
     };
     lib_i32 failed = 1;
 
-    if (core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK) goto done;
+    if (core_machine_create(&config, &machine, &board) != LIB_STATUS_OK) goto done;
     if (core_machine_install_port_routes(machine, &conflict, 1u) != LIB_STATUS_OK ||
-        core_machine_configure_planar_parity(machine, &parity) !=
+        core_machine_configure_planar_parity(board, &parity) !=
             LIB_STATUS_INVALID_ARGUMENT ||
         machine->executor_memory.connect.parity != 0u ||
         machine->executor_memory.connect.parity_owner != LIB_NULL ||
         machine->board->planar_parity_configured ||
         core_machine_remove_port_routes(machine, &machine) != LIB_STATUS_OK ||
-        core_machine_configure_planar_parity(machine, &parity) != LIB_STATUS_OK ||
+        core_machine_configure_planar_parity(board, &parity) != LIB_STATUS_OK ||
         machine->executor_memory.connect.parity == 0u ||
-        machine->executor_memory.connect.parity_owner != machine ||
+        machine->executor_memory.connect.parity_owner != board ||
         !machine->board->planar_parity_configured) goto done;
     failed = 0;
 done:
@@ -121,7 +123,7 @@ lib_i32 main(void)
     cmos.nmi_mask_bit = 0x80u;
     cmos.ticks_per_second = 1u;
     failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK ||
-        core_machine_configure_planar_parity(machine, &parity) != LIB_STATUS_OK ||
+        core_machine_configure_planar_parity(board, &parity) != LIB_STATUS_OK ||
         core_machine_configure_rtc_cmos(board, &cmos) != LIB_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 16u) != LIB_STATUS_OK ||
@@ -134,11 +136,11 @@ lib_i32 main(void)
         (value & 0x10u) != 0u ||
 
         core_machine_bus_write(machine, 0x0070u, 0x80u) != LIB_STATUS_OK ||
-        core_machine_report_planar_parity_fault(machine) != LIB_STATUS_OK ||
-        core_machine_get_planar_parity_observation(machine, &observation) !=
+        core_machine_report_planar_parity_fault(board) != LIB_STATUS_OK ||
+        core_machine_get_planar_parity_observation(board, &observation) !=
             LIB_STATUS_OK || !observation.latched || observation.nmi_signaled ||
         core_machine_bus_write(machine, 0x0070u, 0u) != LIB_STATUS_OK ||
-        core_machine_get_planar_parity_observation(machine, &observation) !=
+        core_machine_get_planar_parity_observation(board, &observation) !=
             LIB_STATUS_OK || !observation.nmi_signaled ||
         core_machine_bus_read(machine, 0x0061u, &value) != LIB_STATUS_OK ||
         (value & 0x84u) != 0x84u ||
@@ -147,10 +149,10 @@ lib_i32 main(void)
         (value & 0xc0u) != 0x80u ||
         core_machine_bus_write(machine, 0x0061u, 0u) != LIB_STATUS_OK ||
         core_machine_bus_write(machine, 0x0061u, 0x04u) != LIB_STATUS_OK ||
-        core_machine_get_planar_parity_observation(machine, &observation) !=
+        core_machine_get_planar_parity_observation(board, &observation) !=
             LIB_STATUS_OK || observation.latched || observation.nmi_signaled ||
         core_machine_reset(machine) != LIB_STATUS_OK ||
-        core_machine_get_planar_parity_observation(machine, &observation) !=
+        core_machine_get_planar_parity_observation(board, &observation) !=
             LIB_STATUS_OK || !observation.enabled || observation.latched;
     core_machine_destroy(machine);
     if (failed) return 1;

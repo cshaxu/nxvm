@@ -377,20 +377,20 @@ lib_status core_machine_get_fdc_dma_request_binding(const core_machine_board_sta
     core_machine_dma_request_binding *out_binding);
 lib_status core_machine_configure_rtc_cmos(core_machine_board_state *board,
     const core_machine_rtc_cmos_config *config);
-lib_status core_machine_configure_planar_parity(core_machine *machine,
+lib_status core_machine_configure_planar_parity(core_machine_board_state *board,
     const core_machine_planar_parity_config *config);
-lib_status core_machine_configure_d4_platform(core_machine *machine,
+lib_status core_machine_configure_d4_platform(core_machine_board_state *board,
     const core_machine_d4_platform_config *config);
-lib_status core_machine_configure_absent_memory(core_machine *machine,
+lib_status core_machine_configure_absent_memory(core_machine_board_state *board,
     const core_machine_absent_memory_config *config);
-lib_status core_machine_report_planar_parity_fault(core_machine *machine);
-lib_status core_machine_clear_d4_iochk_fault(core_machine *machine);
-lib_status core_machine_report_d4_iochk_fault(core_machine *machine);
-lib_status core_machine_get_planar_parity_observation(const core_machine *machine,
+lib_status core_machine_report_planar_parity_fault(core_machine_board_state *board);
+lib_status core_machine_clear_d4_iochk_fault(core_machine_board_state *board);
+lib_status core_machine_report_d4_iochk_fault(core_machine_board_state *board);
+lib_status core_machine_get_planar_parity_observation(const core_machine_board_state *board,
     core_machine_planar_parity_observation *out_observation);
-lib_status core_machine_get_d4_platform_observation(const core_machine *machine,
+lib_status core_machine_get_d4_platform_observation(const core_machine_board_state *board,
     core_machine_d4_platform_observation *out_observation);
-lib_status core_machine_get_speaker_observation(const core_machine *machine,
+lib_status core_machine_get_speaker_observation(const core_machine_board_state *board,
     core_machine_speaker_observation *out_observation);
 
 #ifdef __cplusplus
