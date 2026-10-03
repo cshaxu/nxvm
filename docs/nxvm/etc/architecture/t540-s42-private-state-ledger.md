@@ -14,7 +14,8 @@ the complete media registry and display-provider slot (four source/header
 files). Both own their existing opaque allocation, binding/freeze and release
 mechanisms; neither needs a board-private layout, App policy or native file API.
 Their sole receiver is flat x86/ibmpc-common, with all callers and standalone
-tests. This is a physical implementation receiver, not another Core seam.
+tests. Actual-commit review accepts Shared P1 `4e23f14b6` and NXVM P2
+`eed6b8e54`; this is a physical implementation receiver, not another Core seam.
 
 PIC/PIT/DMA port/source adapters, FDC/HDC/video wiring and the shared board
 construction/time/deadline owner remain the subsequent common-board batch.

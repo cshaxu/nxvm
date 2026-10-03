@@ -1,8 +1,9 @@
 # T540 S89 Common Provider Extraction: Delivery Evidence
 
 Baseline: accepted S88 `bbeb245b418d425e0433c0e9a55cd0fc635b9815`.
-The complete S89 implementation is qualified and ready for target-separated
-delivery; coordinator acceptance is recorded separately after pushed-diff review.
+Coordinator actual-commit review accepts target-separated Shared P1
+`4e23f14b64361e1118b9a8af92dac45ad32c6116` and NXVM P2
+`eed6b8e54cea01b2bd07b0f8e612d5c97b370635`.
 
 ## Complete Receiving Batch
 
@@ -107,9 +108,12 @@ The delivered implementation commits below will identify this same graph;
 no source change or rebuild intervenes after the recorded qualification.
 
 Shared P1 `4e23f14b64361e1118b9a8af92dac45ad32c6116` delivers only src/test x86.
-The immediately following NXVM P removes the old App files and connects the
-same qualified source graph; the intermediate Shared-only commit is not a
-claimed new NXVM runtime baseline. Acceptance must inspect both actual commits.
+NXVM P2 removes the old App files and connects the same qualified source graph;
+the intermediate Shared-only commit is not a claimed new NXVM runtime baseline.
+Coordinator review inspected both actual commits, their target boundaries,
+mechanical source comparison, original assertions, verification logs and eight
+artifact hashes. No MyNES or owner INI change is present. Acceptance closes S89
+only; the ledger retains common bus, family wiring and unused mode-binding work.
 
 | Product path | Bytes | SHA-256 |
 | --- | --- | --- |

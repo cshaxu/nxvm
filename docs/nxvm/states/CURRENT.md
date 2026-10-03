@@ -2,35 +2,33 @@
 
 ## Current Work
 
-### Active Packet: M5 T540 S89
+M5 T540 S1-S89 are accepted. No implementation packet is active between
+acceptance and the next receiver admission.
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; next unused S89 after accepted S88. |
-| Admission And Approval | Owner-approved T540 flat IBM-PC extraction and automatic numeric S admission; targets Shared and NXVM. NXVM is the sole receiving App; MyNES does not link x86 and must not change or rebuild. |
-| Objective | Physically deliver the complete frozen media registry and display-provider binding in x86/ibmpc-common, with sole independent source/build/test ownership and all NXVM callers connected. |
-| Non-goals | No hardware/timing change, App split, INI/firmware/media relocation, new device framework, or claim that AT/XT board extraction is complete. |
-| Reference Baseline | Clean bbeb245b418d425e0433c0e9a55cd0fc635b9815; accepted S88 Core and unchanged four-profile eight-EXE baseline. |
-| Candidate Proposal | [T540 proposal](../history/M5-T540-shared-ibmpc-integration-proposal.md); S89 consumes the complete provider-registry batch in the [ownership ledger](../etc/architecture/t540-s42-private-state-ledger.md). |
-| Files And ABI Surface | Move media_interface.c/h and display.c/display_interface.h to src/x86/ibmpc-common; preserve exported names/signatures and algorithms. Move the pure media registry test to test/x86/ibmpc-common; add direct display-binding coverage. Update actual includes, Shared/NXVM build lists, ownership gates, manifests, product documentation and affected NXVM EXEs. |
-| Applicable Rules | Task Reading Set, Execution, Architecture, Coding, Document, NXVM architecture/layout and source policy. Single registry/provider owner, opaque layouts, public-only cross-component edges, one target per P and no unrelated App changes. |
-| Verification | Independent x86 build/tests; preserved media assertions and display binding tests; full unit x86/x64; specialized ownership gates and negative checks; six manifests, documentation governance and diff checks; rebuild eight stripped 0540 artifacts and one unchanged-INI boot checkpoint per product/width. |
-| Expected Markers | x86-ibmpc-common builds without App source; old four source/header paths absent; no duplicated source compilation; full suites and eight final boot checkpoints pass. |
-| Asset Needs | Existing approved embedded firmware and unchanged external integration inputs only. No asset acquisition or owner INI edits. |
-| Reporting Requirements | Confirm measured boundary, report physical migration and verification nodes; final actual-diff/code-size/evidence review before complete Shared and NXVM P delivery, then separate acceptance governance. |
-| Stop Conditions | New behavior/API, independent third-party provenance, mirrored state, private cross-owner dependency or failed original checkpoint without explained repair. |
-| Exit Criteria | Entire two-mechanism batch physically shared, standalone and connected; old implementations deleted; original behavior/coverage preserved, required verification/artifacts current and reviewed/pushed. T540 stays open for bus and family wiring. |
-| Original Owner Request | Construct real x86/core and flat ibmpc-common/ibmpc-at/ibmpc-xt reusable board components, remove App duplication, preserve machines and stop endless per-field preparation. |
-| Similar-Issue Sweep | Search tracked source/tests/build/gates for both old public paths and both implementation paths; migrate every live include/build owner, retain hardware/firmware tests at their real App owner, reject restored duplicate implementations. |
-
-M5 T540 S1-S88 are accepted. The real neutral source/test/build component now
+The real neutral source/test/build component now
 lives in `src/x86/core`; NXVM links its sole implementation. Core owns guest
 execution/time and copied attachment lifetime, not a named PC-board pointer.
 Actual board, profile, firmware and media choices remain outside this component.
 
 | Task | Progress |
 | --- | --- |
-| T540 S89 | Active: complete frozen media/display provider receiver; S88 accepted. Bus and AT/XT wiring remain required for T540. |
+| T540 S89 | Accepted: sole Shared media/display provider receiver connected and qualified. Common bus, AT/XT wiring and retained D4 ownership remain required for T540. |
+
+## S89 Accepted Review
+
+Coordinator actual-commit review accepts Shared P1 `4e23f14b6` and NXVM P2
+`eed6b8e54`: four provider source/header files and the original registry test
+have one Shared owner; every App caller is connected and old copies/archive
+are deleted. Production bodies and original assertions retain their behavior.
+The standalone suite passes all 123 cases; complete units pass 471/471 per
+width. Specialized gates, six manifests and all eight single-run unchanged-INI
+boot checkpoints pass. Eight stripped 0540 products are current; MyNES and
+owner INIs are unchanged.
+
+The [S89 evidence](../etc/evidence/t540-s89-common-provider-extraction.md)
+records actual-diff review, line counts and hashes. The next common-board
+receiver must also remove the pre-existing unused display-mode binding half;
+this does not defer any provider extraction or claim T540 complete.
 
 ## S88 Accepted Review
 
@@ -4098,7 +4096,7 @@ packages by the current work plan.
 
 Four fixed products remain XT, AT, Model40 and default PC/AT; PC110 is not
 runnable. Eight optimized compiler-debug-stripped 0540 EXEs were rebuilt by
-T540 S88 with unchanged owner INIs; S88 evidence records their hashes, PE
+T540 S89 with unchanged owner INIs; S89 evidence records their hashes, PE
 architecture and verification limits. The 0539 pairs remain in Git history.
 Run native desktop test suites without cross-tree overlap.
 
