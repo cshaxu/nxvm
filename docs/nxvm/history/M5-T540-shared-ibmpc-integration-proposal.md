@@ -150,6 +150,17 @@ records verification and the retained Core-handle context bridge. The opaque
 board handle and direct-test owner classification are still required before
 physical relocation; a copied callback bundle alone does not complete them.
 
+## S89 Actual Common Receiver
+
+Receive the complete frozen media registry and display-provider slot into
+flat x86/ibmpc-common, preserving algorithms and exported names. Their opaque
+state, binding/freeze, dispatch and destruction have one implementation and
+independent build/test ownership. NXVM consumes the public headers and target;
+the former App copies are deleted. Preserve the existing pure media assertions
+and add direct display-provider coverage. Full units, gates and affected
+dual-width products/checkpoints precede acceptance. Bus/family wiring and D4
+classification remain required under the task ledger, not implied complete.
+
 ## Verification And Exit
 
 S80 receives the complete callback-context class from S79: the existing board

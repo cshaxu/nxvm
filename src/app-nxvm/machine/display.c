@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
 
-#include "app-nxvm/devices/display_interface.h"
+#include "x86/ibmpc-common/display_interface.h"
 
 #include "app-nxvm/machine/display.h"
 #include "app-nxvm/machine/frame.h"

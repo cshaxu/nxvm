@@ -2,7 +2,7 @@
 #ifndef TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 #define TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 
-#include "app-nxvm/devices/media_interface.h"
+#include "x86/ibmpc-common/media_interface.h"
 #include "app-nxvm/machine/media/media.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/product/ini_interface.h"

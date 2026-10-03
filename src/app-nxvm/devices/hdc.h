@@ -4,7 +4,7 @@
 #include "x86/chips/hdc/hdc_interface.h"
 #include "app-nxvm/devices/controller_interface.h"
 #include "app-nxvm/devices/dma_bus.h"
-#include "app-nxvm/devices/media_interface.h"
+#include "x86/ibmpc-common/media_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "x86/core/port_interface.h"
 

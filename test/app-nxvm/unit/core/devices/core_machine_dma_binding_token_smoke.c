@@ -4,7 +4,7 @@
 
 #include "x86/core/machine.h"
 #include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/media_interface.h"
+#include "x86/ibmpc-common/media_interface.h"
 
 static const core_machine_config core_machine_dma_binding_token_config = {
     .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,

@@ -2,7 +2,7 @@
 #define VM_PROFILE_DEVICE_FLOPPY_H
 #include "lib/types/types_interface.h"
 
-#include "app-nxvm/devices/media_interface.h"
+#include "x86/ibmpc-common/media_interface.h"
 #include "app-nxvm/devices/controller_interface.h"
 
 typedef enum vm_profile_floppy_kind {

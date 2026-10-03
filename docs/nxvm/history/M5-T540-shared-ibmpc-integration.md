@@ -7,6 +7,17 @@ T539 extracted independent chip mechanisms to `src/x86/devices`; T540 now
 examines reusable IBM-PC board assembly without turning distinct machines into
 one profile-driven pseudo-board.
 
+## S89: Common Provider Receiver Qualified
+
+The complete media registry/display-provider source and original pure media
+test physically move to flat x86/ibmpc-common. NXVM links the sole Shared
+implementation; old copies and the display-only App archive are removed.
+The [delivery evidence](../etc/evidence/t540-s89-common-provider-extraction.md)
+records exact mechanical comparison, complete units/gates and all eight
+unchanged-INI product terminals. Shared P1 `4e23f14b6` is pushed; the connected
+NXVM delivery awaits actual-commit coordinator review before acceptance.
+Common bus and family wiring remain required before T540 can close.
+
 ## S1: Board-Graph And Reuse Audit
 
 S1 is documentation-only. It inventories XT, IBM 5170, DeskPro Model 40 and

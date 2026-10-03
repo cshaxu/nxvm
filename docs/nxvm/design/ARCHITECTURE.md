@@ -46,7 +46,9 @@ it does not change runtime ownership before the corresponding cutover.
   independent-chip source ownership. T540 S88 moves the neutral executor,
   guest timeline, memory/port routes and plan transaction to `x86/core`.
   Its production target depends only on Types, CPU and FPU; NXVM links that
-  sole implementation. `app-nxvm/devices` retains IBM-PC board attachments
+  sole implementation. S89's active migration puts the complete media registry
+  and display-provider slot in `x86/ibmpc-common`, consumed through public
+  contracts. `app-nxvm/devices` retains the remaining IBM-PC board attachments
   pending the flat `x86/ibmpc-*` receivers. Chip state stays in `x86/chips`,
   guest execution time in one Core, and profile/firmware/media choices in
   App composition. Flat board receivers stay separate from this neutral Core.

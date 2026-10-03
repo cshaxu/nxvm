@@ -7,6 +7,30 @@ runtime contract or assert that the mixed header is ready for Shared. The
 existing `core_machine` allocation, `core_machine_create`, cold reset, run,
 and destroy remain the only production paths.
 
+## S89 Physical IBM-PC Receiver
+
+At S88 baseline the remaining App board corpus has 34 files. S89 receives
+the complete media registry and display-provider slot (four source/header
+files). Both own their existing opaque allocation, binding/freeze and release
+mechanisms; neither needs a board-private layout, App policy or native file API.
+Their sole receiver is flat x86/ibmpc-common, with all callers and standalone
+tests. This is a physical implementation receiver, not another Core seam.
+
+PIC/PIT/DMA port/source adapters, FDC/HDC/video wiring and the shared board
+construction/time/deadline owner remain the subsequent common-board batch.
+AT KBC/RTC/Port-B and XT PPI/keyboard wiring require actual family contracts;
+their current shared private board layout cannot be moved into peer directories
+and advertised as independent components. D4 remains an explicitly retained
+machine-specific electrical mechanism, not silently renamed generic AT.
+Guest input/display adapter values remain classified by actual App consumers.
+All these members remain open under T540; S89 accepts none by implication.
+
+S89's contract-preserving source review also retains one existing unused
+display mode-notification binding (two stored fields and the App callback).
+The next common-board/provider caller batch removes that whole unused ABI
+half; snapshot dispatch remains the only live path. This residual is not
+accepted as a required shared capability merely because its files moved.
+
 ## Existing facts and intended sole owners
 
 | State or behavior in the present private header | Present users and final owner | Receiver |

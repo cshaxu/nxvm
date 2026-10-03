@@ -3,7 +3,7 @@
 
 #include "x86/core/entry_plan_interface.h"
 #include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/media_interface.h"
+#include "x86/ibmpc-common/media_interface.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
 
 typedef struct mantle_fixture {

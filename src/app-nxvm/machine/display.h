@@ -4,7 +4,7 @@
 
 
 
-#include "app-nxvm/devices/display_interface.h"
+#include "x86/ibmpc-common/display_interface.h"
 struct vm_machine;
 void vm_machine_bind_display(struct vm_machine *machine);
 x86_video_kind vm_machine_publish_display(struct vm_machine *machine,

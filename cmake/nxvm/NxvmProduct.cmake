@@ -69,7 +69,6 @@ add_library(core-machine STATIC
     src/app-nxvm/devices/machine_board.c
     src/app-nxvm/devices/machine_plan.c
     src/app-nxvm/devices/machine_display.c
-    src/app-nxvm/devices/media_interface.c
     src/app-nxvm/devices/pic_bus.c
     src/app-nxvm/devices/pit_bus.c
     src/app-nxvm/devices/xt_ppi_keyboard.c
@@ -98,7 +97,7 @@ add_library(core-machine-observable STATIC ${PROJECT_CORE_MACHINE_SOURCES})
 target_include_directories(core-machine-observable PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-observable PUBLIC core-machine-executor
+target_link_libraries(core-machine-observable PUBLIC x86-ibmpc-common
     x86-core-observable)
 target_compile_definitions(core-machine-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
@@ -1176,20 +1175,9 @@ set(VM_MEDIA_SOURCES
 # forwarding library or a second compiled source set.
 add_library(x86-cpu ALIAS x86-cpu-shared)
 
-set(CORE_MACHINE_SOURCES
-    src/app-nxvm/devices/display.c
-)
-add_library(core-machine-executor STATIC
-    ${CORE_MACHINE_SOURCES}
-)
-# RAM/port primitives used by the one runtime target above. The legacy
-# target name stays for existing build scripts; new CMake code uses this alias.
-add_library(core-machine-primitives ALIAS core-machine-executor)
-target_include_directories(core-machine-executor PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(core-machine-executor PUBLIC x86-cpu x86-fpu x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
-target_link_libraries(core-machine PUBLIC core-machine-executor x86-core)
+target_link_libraries(core-machine PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x86-pic8259 x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
+target_link_libraries(core-machine PUBLIC x86-ibmpc-common x86-core)
 
 add_executable(vm-machine-frame-smoke
     test/app-nxvm/unit/core/machine/vm_machine_frame_smoke.c)
@@ -1351,10 +1339,6 @@ add_executable(core-machine-dma-binding-token-smoke
     test/app-nxvm/unit/core/devices/core_machine_dma_binding_token_smoke.c
 )
 target_link_libraries(core-machine-dma-binding-token-smoke PRIVATE core-machine)
-add_executable(core-machine-media-provider-smoke
-    test/app-nxvm/unit/core/devices/core_machine_media_provider_smoke.c
-)
-target_link_libraries(core-machine-media-provider-smoke PRIVATE core-machine)
 add_executable(core-machine-rtc-smoke test/app-nxvm/unit/core/devices/core_machine_rtc_smoke.c)
 target_link_libraries(core-machine-rtc-smoke PRIVATE core-machine)
 add_executable(core-machine-fdc-smoke test/app-nxvm/unit/core/devices/core_machine_fdc_smoke.c)
@@ -3553,7 +3537,6 @@ file(GENERATE
 # the verifier; the supporting evidence and TODO define each domain's risk and
 # next admission condition.
 set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
-    "core-machine-executor|src/app-nxvm/devices/display.c|machine-executor"
     "vm-app|src/app-nxvm/product/command.c|console-product"
     "vm-app|src/app-nxvm/product/keyboard.c|keyboard-product"
     "vm-app|src/app-nxvm/product/startup.c|session-startup"
@@ -3586,7 +3569,7 @@ file(GENERATE
 # substitutes for the direct compile command of a smoke source.
 set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
-    core-machine-executor
+    x86-ibmpc-common
     x86-core
     x86-cpu-shared
     common-machine

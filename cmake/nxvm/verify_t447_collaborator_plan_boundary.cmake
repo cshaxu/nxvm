@@ -3,8 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(project_t447_s6_contracts
-    "src/app-nxvm/devices/media_interface.h|core_machine_media_registry"
-    "src/app-nxvm/devices/display_interface.h|core_machine_display_provider_slot"
+    "src/x86/ibmpc-common/media_interface.h|core_machine_media_registry"
+    "src/x86/ibmpc-common/display_interface.h|core_machine_display_provider_slot"
     "src/app-nxvm/devices/machine_board_interface.h|core_machine_plan")
 
 foreach(project_t447_s6_contract IN LISTS project_t447_s6_contracts)

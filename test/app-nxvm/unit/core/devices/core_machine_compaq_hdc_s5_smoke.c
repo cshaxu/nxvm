@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "app-nxvm/devices/hdc.h"
-#include "app-nxvm/devices/media_interface.h"
+#include "x86/ibmpc-common/media_interface.h"
 #include "app-nxvm/devices/pic_bus.h"
 #include "x86/core/machine.h"
 #include "x86/core/port.h"

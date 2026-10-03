@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/media_interface.h"
+#include "x86/ibmpc-common/media_interface.h"
 #include "app-nxvm/machine/media/fdd_private.h"
 #include "app-nxvm/machine/media/hdd_private.h"
 #include "lib/storage/file_interface.h"

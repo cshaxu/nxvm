@@ -4,7 +4,7 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/machine.h"
-#include "app-nxvm/devices/media_interface.h"
+#include "x86/ibmpc-common/media_interface.h"
 #include "support/core_machine_board_fixture.h"
 
 static lib_i32 port_probe_prepare_real_mode(core_machine *machine)

@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "app-nxvm/devices/media_interface.h"
+#include "x86/ibmpc-common/media_interface.h"
 
 #define CORE_MACHINE_FDC_DRIVE_COUNT 4u
 #define CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT 41820u
