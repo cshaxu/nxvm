@@ -111,6 +111,11 @@ target_link_libraries(x86-core-observable PUBLIC types x86-cpu-shared x86-fpu)
 target_compile_definitions(x86-core-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
+add_library(x86-ibmpc-common STATIC
+    ibmpc-common/media_interface.c ibmpc-common/display.c)
+target_include_directories(x86-ibmpc-common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-ibmpc-common PUBLIC types)
+
 if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)
 target_include_directories(x86-xasm32 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)

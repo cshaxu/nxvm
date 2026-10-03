@@ -11,6 +11,7 @@ state machine belongs here.
 | Component | Responsibility | Public interface |
 | --- | --- | --- |
 | core | Neutral CPU/FPU execution, guest timeline, bus transactions, RAM/port/ROM routes and bounded debug operations | machine_interface.h and adjacent *_interface.h contracts |
+| ibmpc-common | Frozen media-provider registry and copied display-provider binding; bus/family extraction remains pending | media_interface.h, display_interface.h |
 | debug | Original DOS/X command implementation and copied x86 protocol | debug_interface.h, protocol_interface.h |
 | xasm32 | x86 byte/text assembly and disassembly | xasm32_interface.h |
 | chips/cpu | 8086 through 80386 execution state, instruction decoding and CPU-local timing | cpu_interface.h |
@@ -29,7 +30,14 @@ state machine belongs here.
 | chips/fpu | Existing partial 8087 arithmetic and 8087/287/387 extension completion model | fpu_interface.h |
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
-only on Types. Public names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
+only on Types. The current ibmpc-common implementation also depends only on
+Types; its display value ABI uses the public video-values header. Media
+providers and their contexts are borrowed until registry destruction; freeze
+prevents rebinding. The display slot likewise borrows contexts, freezes binding,
+and captures copied snapshots. Neither component opens files, owns media bytes,
+selects a profile, or schedules guest execution. Calls are serialized by the
+owning board/driver; destruction must not overlap a provider call.
+Public tool names use x86_debug_/X86_DEBUG_ and x86_xasm32_/X86_XASM32_.
 Core depends only on Types, CPU and FPU. `x86-core` is its production target;
 `x86-core-observable` compiles the same implementation for trace-contract tests.
 Each machine links one variant. An opaque Core handle owns one copied attachment

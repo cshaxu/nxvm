@@ -18,6 +18,14 @@ endif()
 set(SHARED_X86_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
+add_executable(core-machine-media-provider-smoke
+    ibmpc-common/core_machine_media_provider_smoke.c)
+target_link_libraries(core-machine-media-provider-smoke PRIVATE x86-ibmpc-common)
+add_test(NAME unit.core-machine-media-provider-smoke COMMAND core-machine-media-provider-smoke)
+set_tests_properties(unit.core-machine-media-provider-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+list(APPEND SHARED_X86_TEST_TARGETS core-machine-media-provider-smoke)
+shared_register_test(x86 ibmpc-common/display_provider x86-ibmpc-common)
+
 add_executable(core-machine-neutral-link-smoke core/neutral_link.c)
 target_link_libraries(core-machine-neutral-link-smoke PRIVATE x86-core)
 add_test(NAME unit.core-machine-neutral-link-smoke COMMAND core-machine-neutral-link-smoke)
