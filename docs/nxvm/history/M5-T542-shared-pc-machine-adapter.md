@@ -803,3 +803,13 @@ The complete S6 package is ready for separate Shared and NXVM deliveries.
 Acceptance follows publication of both targets. S7 still owns the App plan
 union/dispatch retirement; S8/S9 and all 58 original integration contexts
 remain required before T542 can close.
+
+### S6 Acceptance
+
+Shared implementation 8956e9936 and NXVM implementation/artifacts 6f74ef631
+are separately committed and pushed to origin/master. The coordinator accepts
+the complete S6 boundary after the actual-change review and evidence above.
+The eight SHA-256 identities refer to this delivered source package. No new
+runtime verification is inferred from the documentation-only acceptance.
+S1-S6 are accepted; T542 stays open for S7-S9. The unchanged warm verification
+trees remain needed by S7 and no owned native process is still running.
