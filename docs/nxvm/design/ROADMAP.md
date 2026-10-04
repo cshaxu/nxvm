@@ -29,7 +29,7 @@ Retain lawful external firmware composition and Console/debugger interaction.
 The structural sequence is closed T539 independent chips at `x86/chips`,
 closed T540 neutral `x86/core` and flat `x86/ibmpc-*` board extraction, then
 the implemented T541 shared `x86/product` extraction, then admitted
-[T542 shared Machine/helper extraction](../proposals/m5-shared-pc-machine-adapter.md), then the queued
+[T542 shared Machine/helper extraction](../history/M5-T542-shared-pc-machine-adapter-proposal.md), then the queued
 `app-mypcxt`, `app-mypcat`, `app-mypcdeskpro386` and default-386 `app-nxvm` split. [Current](../states/CURRENT.md) records the accepted S
 boundaries and the remaining implementation work.
 Retained qualification work follows the new owners without reduced coverage.

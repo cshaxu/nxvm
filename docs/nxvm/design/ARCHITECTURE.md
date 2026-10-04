@@ -242,7 +242,7 @@ and [queued App split](../proposals/m5-independent-pc-apps.md):
    generic App framework is introduced.
    T541 keeps the four current builds and deployment paths intact. Lib/Common
    and existing x86 components are not implementation-change targets.
-4. Admitted [T542](../proposals/m5-shared-pc-machine-adapter.md) first extracts
+4. Admitted [T542](../history/M5-T542-shared-pc-machine-adapter-proposal.md) first extracts
    the remaining shared PC Machine adapter into x86/product and proven
    construction helpers into ibmpc-common. S2-S6 implement those receivers;
    S7 replaces the App's all-profile plan unions and runtime construction

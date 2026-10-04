@@ -15,7 +15,7 @@ Common board integration is closed as [T540](../history/M5-T540-shared-ibmpc-int
 [T541](../history/M5-T541-independent-pc-apps.md) delivers the shared
 [PC Product](../history/m5-shared-pc-product.md). The owner separated the
 four-App split into the first candidate; it has no allocated numeric T yet.
-Active [T542](../proposals/m5-shared-pc-machine-adapter.md) now extracts the
+Active [T542](../history/M5-T542-shared-pc-machine-adapter-proposal.md) now extracts the
 remaining shared Machine adapter/helpers before that split. Current owns
 active work; it is not an unnumbered Queue candidate.
 The later candidates retain their semantic qualification scope against the

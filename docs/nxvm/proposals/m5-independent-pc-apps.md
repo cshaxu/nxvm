@@ -5,7 +5,7 @@
 This is the first queued successor, not active T541 and not yet numerically
 allocated. The owner separated this cutover from T541 on 2026-10-04. After
 the accepted [shared PC Product extraction](../history/m5-shared-pc-product.md)
-and [T542 remaining shared Machine/helper extraction](m5-shared-pc-machine-adapter.md), split
+and [T542 remaining shared Machine/helper extraction](../history/M5-T542-shared-pc-machine-adapter-proposal.md), split
 the existing four-machine NXVM shell into four top-level products:
 
 - `src/app-mypcxt`: existing IBM 5160 XT.

@@ -5,7 +5,7 @@
 The owner requests a new implementation T for remaining shared logic and its
 S breakdown on 2026-10-04. Allocate M5 T542 from closed T541 at
 55f9fb1920af9316c6102b7aff5550fe1d7b6dfc. Initial worktree: clean.
-The [proposal](../proposals/m5-shared-pc-machine-adapter.md) defines scope;
+The [archived proposal](M5-T542-shared-pc-machine-adapter-proposal.md) defines scope;
 [Current](../states/CURRENT.md) alone owns the active S packet.
 
 The preceding read-only audit found one existing Machine implementation:
@@ -35,7 +35,7 @@ or justified App retention.
 | Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | S5/S6 accepted; Profile facts isolated from cohesive adapter |
 | Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | S6/S7 accepted; one transfer with build-selected constructors |
 | Retained differences | XT/AT/default/Model40 values, ROM layout, D4, CMOS, HDC geometry and firmware source | Concrete App profile/firmware owner | S5/S7 accepted; real Profile contexts and fixed composition |
-| Verification/build | tests, source lists, static gates, tools, manifests and eight artifacts | Behavior owner; external integration remains NXVM | S8/S9 aggregate audit and 58 contexts pending |
+| Verification/build | tests, source lists, static gates, tools, manifests and eight artifacts | Behavior owner; external integration remains NXVM | S8 accepted; S9 complete proof below awaits coordinator acceptance |
 
 Closure resolves every pending entry, proves each shared migration and
 reconciles full affected batches rather than only a successful local replay.
@@ -1001,3 +1001,80 @@ and executes the original 58 external contexts once each across the eight fixed
 Release trees. Fresh complete units and gates support, but cannot replace, that
 runtime proof. Missing inputs/skips/failures block acceptance. T542 stays open;
 the independent App split remains unadmitted.
+
+## S9: Whole-Task Verification And Actual-Change Review
+
+Verification source is delivered S8 9cf4f1955, with executable inputs last
+changed by S7 7ca0ee5a9; S8 preserves the original diagnostic flags. No S9
+production or test code change is required. All eight Release trees had built
+their product and registered integration programs before execution. Each external
+context executes exactly once; no repeat round, reduced predicate or budget-only
+success substitutes for its original assertions.
+
+| Fixed product | x64 contexts / seconds | x86 contexts / seconds | Result |
+| --- | --- | --- | --- |
+| default | 22 / 53.92 | 22 / 62.88 | All passed |
+| IBM 5160 XT | 1 / 17.03 | 1 / 24.58 | All passed |
+| IBM 5170 AT | 3 / 37.20 | 3 / 41.76 | All passed |
+| DeskPro Model40 | 3 / 59.02 | 3 / 74.99 | All passed |
+
+Parsing the eight CTest JUnit results verifies 58 named testcase entries with
+status run, zero failure/error/skipped entries and no missing context. These
+include the original DOS prompt/input/video/media, native product lifecycle,
+CMOS, real four-profile boot and Windows 3.1 checkpoints. The exact registrations,
+arguments and acceptance bodies remain in NxvmProduct.cmake and the retained
+App integration corpus; S8 accounts for every source migration.
+
+| Report under its retained build tree | SHA-256 |
+| --- | --- |
+| t542-s2-release-default-x64/t542-s9-integration.xml | 680B35525C4B0DED202DAB42BE85E53591583EC6D103C5C6F2436E17239916B6 |
+| t542-s2-release-default-x86/t542-s9-integration.xml | 6A40ACD50BEF00BA86FCBF19682FA06B4F6EBA83C356B93597C5F73C58AB219D |
+| t542-s2-release-xt-x64/t542-s9-integration.xml | DF44B139E7DB1F1A27CB1F7EAF96A8FC2EE7FAD68CC5E7164F942E01D7A67593 |
+| t542-s2-release-xt-x86/t542-s9-integration.xml | 751A8DAFB8E125AA05BF5937B997380A33BCD48FDD772F1D6EDA345F2C75BB8A |
+| t542-s2-release-at-x64/t542-s9-integration.xml | 79EC2B6EEC5AE8B47B938D56C0AE9F369C56B8C0018780E1C0EC0201E0169119 |
+| t542-s2-release-at-x86/t542-s9-integration.xml | 0033F3492F451B9ECA7AFAA2F7C0B10765CCD328DF38AC2AD6877C6AECF5CDE7 |
+| t542-s2-release-model40-x64/t542-s9-integration.xml | A66E3F15A20E02A268645293E04361E299A32DE35938FCA9CF8E40D89D16480E |
+| t542-s2-release-model40-x86/t542-s9-integration.xml | 7F6A4E9FDBF1B41A4883DD36B9F8AE27DCBB070ABBCDAE13D0412720C503B64A |
+| t542-s2-unit-x64/t542-s9-unit.xml | EB3FE10148813C2FB20E5BF9F77A21F097DC24F85ACB02CA6036C67E9B69F495 |
+| t542-s2-unit-x86/t542-s9-unit.xml | 77793C0002B15DED8E8AFD768DA774694BB5E7F087AD98DFF004DF06267F3E1F |
+
+Fresh S9 complete units pass 499/499 on each width; the same JUnit inspection
+finds no skipped/failing case. The independent tools-on x86 build and complete
+313 tests passed in S8; S9 rechecks all four manifest/corpus/negative cases (4/4),
+all current specialized gates and six complete manifests. The independent
+tools-off tree remains a successful no-op build, with no App/Common dependency.
+Documentation and actual-diff checks are required again after closure edits.
+
+The completion audit maps every frozen ledger batch to actual source and proof:
+S2 owns floppy geometry/Option ROM validation/contracts in ibmpc-common;
+S3 owns media providers and sole Lib leases; S4/S6 own one input/frame conversion
+and publication route; S5 owns Model40 observations at its real context; S6 owns
+one execution/debug adapter and publication/rollback; S7 owns build-selected
+real constructors without all-profile unions or runtime dispatch. Failure,
+reset and teardown tests prove transfer and cleanup at the same owner. Retained
+Profile ROM/layout/topology/clock/CMOS/HDC/D4 and project firmware have concrete
+App owners, not unresolved shared mechanisms. Surviving plan getters/materialize
+serve original code-owned firmware/probe fixtures; production uses the one
+prepared-construction transfer, not a second constructor. Retirement guards and
+the controlled negative fixture are the only remaining retired-path references.
+
+Actual T541-to-final diff inspection retains CPU/chip/Core/family algorithms,
+all original capabilities/assertions and board-specific behavior. No new worker,
+FIFO, guest clock, registry, presenter, file backend or live video/CMOS truth
+is introduced. The successor App split can consume the shared receivers without
+copying a peer App; it remains queued, not admitted. Timing/software qualification
+is unchanged and remains in its separately bounded queue candidates.
+
+Git rename-aware numstat over production C/H reports 1,065 added and 1,059
+removed lines (net +6); test C/H reports 1,128 added and 402 removed (net +726).
+Counts include blanks/fixture additions and exclude docs/CMake/artifacts. File
+moves are not capability deletion. Production stays essentially size-neutral:
+new copied boundaries/real contexts replace old carriers/unions/dispatch; test
+growth preserves fixtures and adds ownership, failure and conversion regressions.
+
+All eight deployed EXEs retain S7's exact hashes, expected PE 8664/014C machine
+codes and 0.5.0542 identity, with no debug/zdebug sections. No new artifact diff
+is needed for acceptance-only work. Runtime debugger remains. Full task diff
+confirms no Lib/Common source/test, MyNES source/test/EXE or owner INI changes;
+no external master write is introduced. S9 proof is complete; publication and
+coordinator closure follow, with the proposal retained in history.
