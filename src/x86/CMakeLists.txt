@@ -27,6 +27,11 @@ add_library(x86-product-media STATIC product/machine/media/fdd.c
 target_include_directories(x86-product-media PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-product-media PUBLIC types storage x86-ibmpc-common)
 
+add_library(x86-product-conversion STATIC product/machine/frame.c
+    product/machine/keyboard_mapper.c product/machine/mouse_mapper.c)
+target_include_directories(x86-product-conversion PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-product-conversion PUBLIC types x86-ibmpc-common)
+
 add_library(x86-pit825x STATIC chips/pit825x/pit.c)
 target_include_directories(x86-pit825x PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-pit825x PUBLIC types)

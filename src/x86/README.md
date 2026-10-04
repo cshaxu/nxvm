@@ -174,6 +174,13 @@ Provider contexts borrow the stable object until the Machine removes its routes.
 Serialize operations with the Machine owner; the adapter adds no worker or lock.
 Direct/Readonly/Overlay bytes and OS file locking remain solely Lib-owned.
 
+Product Machine also owns pure keyboard/mouse mapping and copied video-snapshot
+conversion into Common frames. Board capabilities select the keyboard scan set;
+the mapper owns no keyboard queue. The frame converter consumes the existing
+video snapshot and a caller-owned presentation sequence, preserving CP437,
+palette, glyph and cursor geometry without device capture or guest mutation.
+No intermediate guest-frame/display-event transport or native handle is needed.
+
 Video memory inspection returns the same selected CGA/planar bytes as a CPU
 read without updating EGA latches. Callers serialize both operations with the
 device owner; inspection is not a concurrent snapshot or guest bus cycle.
