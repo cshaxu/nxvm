@@ -184,6 +184,10 @@ target_link_libraries(x86-xasm32 PUBLIC types)
 add_library(x86-debug STATIC debug/command.c)
 target_include_directories(x86-debug PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-debug PUBLIC common-machine x86-xasm32 storage)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    # Preserve the importing root's retained bounded-format diagnostic policy.
+    target_compile_options(x86-debug PRIVATE -Wno-error=format-truncation)
+endif()
 
 add_library(x86-product STATIC product/command.c product/composition.c product/keyboard.c
     product/entry.c)

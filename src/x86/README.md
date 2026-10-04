@@ -2,6 +2,9 @@
 
 This package selects C11 without extensions in standalone and embedded builds.
 GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
+The retained GNU format-truncation diagnostic remains a warning for Debug
+and its two formatting fixtures, as in the importing root's original policy.
+Those target-local settings live here and in test/x86, including standalone builds.
 
 Architecture-specific copied protocols, chip mechanisms and DOS-style debug/assembly tools.
 Products explicitly add this corpus; Common and Lib never depend on it.

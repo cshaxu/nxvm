@@ -46,12 +46,8 @@ add_subdirectory(test/lib)
 add_subdirectory(test/common)
 add_subdirectory(test/x86)
 
-# The frozen upstream x86 corpus is strict under GNU/Clang. GCC 16 also emits
-# a bounded-format false positive for two retained Debug display buffers.
+# The native capture fixture needs its existing larger stack.
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(x86-debug PRIVATE -Wno-error=format-truncation)
-    target_compile_options(x86-test-debug_output PRIVATE -Wno-error=format-truncation)
-    target_compile_options(x86-test-debug_linear PRIVATE -Wno-error=format-truncation)
     target_link_options(lib-test-kvm_window_capture_contract PRIVATE
         -Wl,--stack,8388608)
 elseif(MSVC)
