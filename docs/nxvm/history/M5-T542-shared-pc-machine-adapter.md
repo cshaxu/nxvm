@@ -590,3 +590,24 @@ No new external integration run is claimed. All 58 once-only contexts remain
 mandatory S9 task acceptance. Warm trees remain needed for S6; all S5 native
 build/test handles are terminal. Executor delivery awaits scoped publication
 and coordinator actual-diff review; T542 remains open.
+
+### S5 Coordinator Acceptance
+
+Review pushed NXVM P1 5202a06b0 against every S5 packet field and the retained
+construction contract. Inspect the actual changed source/public layout,
+callback publication, successful-reset guard, Core-before-Profile teardown,
+all original D4/FDC predicates, stateless test views, probe self-test/control
+flow, static prohibition, DAG disposition, documents and eight artifacts.
+The unique observer moved, not duplicated; no hardware or timing value changed.
+Copied snapshots contain no pointer and failed captures leave output intact.
+The old fake Machine fixture is removed, not used as an alternate production
+path. The same original predicate now executes in the code-owned probe proof.
+
+Both complete unit suites and predicate proofs pass on final relevant inputs.
+Six manifests, D4/DAG/document checks and whitespace pass. Verify all eight
+recorded hashes/PE identities, and Git source inspection confirms no shared
+six-component, MyNES or INI changes. HEAD/origin agree at 5202a06b0 and the
+worktree is clean before this pure governance acceptance. All S5 native handles
+are terminal; warm trees remain needed for the next S. Accept/close S5 only.
+T542 remains open for S6-S9, complete extraction and all 58 once-only external
+contexts. No App-split task is admitted and no task-level completion is claimed.
