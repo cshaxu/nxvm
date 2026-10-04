@@ -11,7 +11,7 @@ extern "C"
 
 
 #include "app-nxvm/product/composition.h"
-#include "app-nxvm/product/ini_interface.h"
+#include "x86/product/ini_interface.h"
 
     typedef struct vm_app_console_context vm_app_console_context;
 

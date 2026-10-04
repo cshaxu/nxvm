@@ -80,9 +80,9 @@ Lib/Common edit, hardware/timing upgrade, new ROM or MyNES change is included.
 
 S1 is accepted and closed with design delivery 360dfd776. It completed read-only
 Product inspection, receiving-owner/dependency design and bounded planning.
-This is design delivery only, not runtime extraction. Necessary connection
-permissions are pending, so no implementation S is admitted. No T541 runtime
-or artifact has been delivered and no new App is declared runnable.
+This is design delivery only, not runtime extraction. The owner approved the
+enumerated necessary connections on 2026-10-04; S2 now implements the complete
+INI/request/startup batch. No independent App split is admitted.
 
 ## S1 Actual Product Inventory
 
@@ -227,3 +227,78 @@ Accept S1's design, not completion of T541. P2 records only this acceptance and
 removes the active packet. S2 is not admitted until the owner authorizes the
 enumerated necessary App/test/build/manifest connection edits. No new target,
 rule change, hardware behavior or artifact is admitted by this closure.
+
+## S2: Sole INI And Startup Receiver
+
+The owner approved the enumerated connection surface on 2026-10-04. S2 moves
+ini.c, ini_interface.h, request_interface.h, startup.c and the renamed public
+startup_interface.h with git mv into x86/product. All live App and integration
+includes now use that receiver; the App source list and strict residual owner
+list no longer compile the old parser/startup. The fixed hardware projection
+remains in App config.c. Existing symbol names and request layout are retained.
+No compatibility include, duplicate parser, new configuration key or native
+file/presentation API is added. NXVM-only presets select the current 0541 target.
+
+Shared INI assertions move into test/x86/product; the fixed-config cleared-output
+assertion stays in the original App unit target. Strict shared compilation
+requires explicit char-pointer conversions at existing Types/Base calls and
+uses existing lib_c formatting in the test; these are signature adaptations,
+not changed parse/error behavior. Original style and all prior assertions remain.
+The new x86-product-config target links only Types, Storage and Base; it works
+with tools disabled and does not require a Common driver or NXVM profile.
+
+The corpus gate registers Product and rejects App-private imports. New negative
+cases reject an App config include and an undeclared Common private dependency.
+The similar-issue sweep searches old INI/startup/request paths across src, test,
+cmake and tools and finds no surviving live references. Historical records keep
+their baseline paths. Lib/Common, existing chip/Core/board implementation,
+MyNES, owner INIs, raw external inputs, root README and rules are unchanged.
+
+Complete repository units pass 493/493 on each width. The extra registration
+separates the old combined parser/fixed-config test without losing an assertion.
+x64's first complete run reaches 445 tests but exceeds its unchanged 300-second
+aggregate budget; that is not acceptance. Its complete retry passes in 88.43s;
+x86 passes in 66.49s. Shared tools-on unit suites pass 295/295 each, plus all
+four manifest/corpus/negative gates; tools-off complete suites pass 293/293 each.
+Six shared manifests pass 6/6 each width. Both current specialized static gate
+aggregates pass, including 516 strict matrix rows, 497 retained strict and 19
+explicit residual owners. Documentation governance and whitespace checks pass.
+
+Review uses git diff --cached --numstat --find-renames, counting tracked C/H
+source/test changes including renamed headers and excluding documentation,
+manifests and generated/artifact paths: 13 logical paths, +103/-96, net +7.
+Those seven lines come from splitting the fixed-config test into its own owner;
+there is no production algorithm increase. Including build/registration/gate
+files gives 19 logical paths, +123/-105, net +18. Independent compilation and
+the new forbidden-edge regressions justify that small registration increase.
+Warm build/test caches remain needed by S3-S5; no temporary source is published.
+
+### S2 Product Artifacts
+
+Shared P1 d0a7499a9 is pushed to origin/master and contains only the x86
+receiver, matching tests and their build/boundary/manifest metadata. The
+ordered NXVM P2 removes the original bodies and delivers actual caller/build
+connections, current artifact revision and product evidence. This separation
+keeps each commit within its declared target rather than mixing a cross-root
+rename into one commit.
+
+All eight existing t535-s4 profile/width Release caches build vm-0-5-0541.
+The actual deployed files pass the existing PE-width and optimized-Release
+checks; objdump finds no debug/stab sections and strings confirms 0.5.0541.
+They retain the runtime debugger and unchanged adjacent INIs. Firmware input
+masters are not changed. Once validated, superseded 0540 EXEs are removed from
+the four deployment directories; Git history retains them. MyNES is not linked
+to x86-product-config and neither its source nor its 0043 pair is changed.
+This is S2 packaging proof, not a new whole integration qualification; S5 owns
+the original 58 integration contexts after the complete Product extraction.
+
+| Deployed file under assets/nxvm | Bytes | SHA-256 |
+| --- | --- | --- |
+| compaq-deskpro-386-model-40-1200k/nxvm_model40_0_5_0541_x64.exe | 1346537 | AFF0624C74130E0045DAF1BDF832D077E01F3D478E4967A8E7876818DB8BCF62 |
+| compaq-deskpro-386-model-40-1200k/nxvm_model40_0_5_0541_x86.exe | 1517277 | DAF0497C55A4D3F92D23C83717B10EB550A58069C6A28E84E768449A42B67153 |
+| default-pc-at-80386-1440k-hdd/nxvm_default_0_5_0541_x64.exe | 1362854 | F65B7192DB1EF7916D093955BEB2F121B6BE0463A541084FA579C48E38F4321A |
+| default-pc-at-80386-1440k-hdd/nxvm_default_0_5_0541_x86.exe | 1533592 | D277FE315A50BE25AF6C165A3ACFB4C6D1979DABFD8F501ACE3FEBF897BA8482 |
+| ibm-5160-model-268-360k/nxvm_xt_0_5_0541_x64.exe | 1362822 | 15AD2C410EE6995708241DB489BFA846115E1FDDF4F265C76FBA483A6B6D1DF3 |
+| ibm-5160-model-268-360k/nxvm_xt_0_5_0541_x86.exe | 1533559 | CCC0B31412092C68239E11AC64B3B5EC2385CBB6C6256E2FB3A58F80EA4098FC |
+| ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x64.exe | 1362888 | C14135FF5239C35E9BBA2F74F09F0897B6F29C2B486AE1A81599A1AFCE42E695 |
+| ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x86.exe | 1533627 | D1AC6065AA65671FAA16E134E931B46FA19269A818383F1A2E00892D129A72AE |

@@ -31,8 +31,11 @@ The following map describes the implemented baseline. The queued successor
 target is specified under **Queued Shared-Hardware And App Split** below;
 it does not change runtime ownership before the corresponding cutover.
 
-- `app-nxvm/product` owns INI syntax, runtime-media paths, product CLI and the one composition root.
-  It assembles Common Session/UI/Machine and the NXVM driver.
+- `x86/product` owns the shared INI syntax, copied runtime request and
+  executable-adjacent path construction. App supplies fixed hardware projection.
+- `app-nxvm/product` still owns product CLI and the one composition root until
+  the remaining T541 batches migrate them. It assembles Common Session/UI/Machine
+  and the NXVM driver.
 - `app-nxvm/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.
@@ -108,8 +111,8 @@ build-selected profile + compiled immutable firmware + App INI options
            one Core + Board instance -> Machine adapter -> Common Machine
 ```
 
-Profile owns hardware constraints and firmware asset resolution; App owns INI
-syntax and runtime-media path resolution; Core owns
+Profile owns hardware constraints and firmware asset resolution; shared Product
+owns INI syntax and runtime-media path resolution; Core owns
 generic structural/state invariants. These are distinct checks, not copies of
 one board rule in all three layers. Share constants or construction helpers
 only where semantics match. Fixed targets need no profile inheritance

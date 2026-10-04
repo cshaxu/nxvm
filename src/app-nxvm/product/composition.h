@@ -6,7 +6,7 @@
 #include "common/session/session_interface.h"
 #include "common/ui/ui_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
-#include "app-nxvm/product/request_interface.h"
+#include "x86/product/request_interface.h"
 typedef struct vm_app vm_app;
 
 /* Borrowed immutable firmware bytes must outlive the App. */

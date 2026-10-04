@@ -13,7 +13,7 @@
 #include "banner.h"
 #include "app-nxvm/product/composition.h"
 #include "app-nxvm/product/command.h"
-#include "app-nxvm/product/startup.h"
+#include "x86/product/startup_interface.h"
 #include "app-nxvm/product/profile_binding.h"
 
 lib_i32 main(void)

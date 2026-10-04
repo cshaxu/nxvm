@@ -1,90 +1,13 @@
 #include "lib/types/types_interface.h"
-#include <stdio.h>
-
-#include "app-nxvm/product/ini_interface.h"
 #include "app-nxvm/product/config.h"
-#include "app-nxvm/product/startup.h"
-
-static lib_bool text_equal(const lib_u8 *left, const char *right)
-{
-    while (*left != '\0' && *right != '\0') {
-        if (*left++ != (lib_u8)*right++) return LIB_FALSE;
-    }
-    return *left == '\0' && *right == '\0';
-}
-
-static lib_i32 parse(lib_u8 *text, vm_session_request *request)
-{
-    return vm_app_ini_parse((const lib_u8 *)"unit-root",
-        (const lib_u8 *)"NXVM.ini", text, request) == LIB_STATUS_OK;
-}
 
 lib_i32 main(void)
 {
-    static lib_u8 valid[] =
-        "[machine]\nmemory_kib=640\n[presentation]\ndisplay=window\n"
-        "console_control=1\n[media]\nfloppy0=boot.img|overlay\n"
-        "floppy1=C:/owner/second.img|readonly\nfixed_disk0=disk.img|direct\n";
-    static lib_u8 duplicate[] = "[media]\nfloppy0=one.img|overlay\nfloppy0=two.img|overlay\n";
-    static lib_u8 sparse[] = "[media]\nfloppy1=two.img|overlay\n";
-    static lib_u8 forbidden[] = "[machine]\nprofile=ibm-5170-model-339\n";
-    static lib_u8 bad_mode[] = "[media]\nfixed_disk0=disk.img|transient\n";
-    static lib_u8 root[] = "[media]\nfloppy0=boot.img|overlay\n";
-    vm_session_request request;
     vm_machine_config config;
-    vm_session_request cleared_request = {0};
-    vm_machine_config cleared_config = {0};
-    lib_u8 executable_ini_path[1024];
-    lib_u8 rejected_path[] = "unchanged";
-    lib_size executable_ini_length;
+    vm_machine_config cleared = {0};
 
-    static const char *const boolean_values[] = {
-        "0", "1", "true", "false", "TRUE", "FALSE", "2", "-1", "01", "", "yes", "on"
-    };
-    for (lib_size i = 0u; i < sizeof(boolean_values) / sizeof(boolean_values[0]); ++i) {
-        lib_u8 text[80];
-        snprintf((char *)text, sizeof(text), "[presentation]\nconsole_control=%s\n",
-            boolean_values[i]);
-        lib_memory_set(&request, 0xff, sizeof(request));
-        if (i < 2u) {
-            if (!parse(text, &request) || request.console_control != (i == 1u)) return 1;
-        } else if (parse(text, &request) ||
-            lib_memory_compare(&request, &cleared_request, sizeof(request))) return 1;
-    }
-
-    lib_memory_set(&request, 0xff, sizeof(request));
-    if (vm_app_ini_load(LIB_NULL, &request) != LIB_STATUS_INVALID_ARGUMENT ||
-        lib_memory_compare(&request, &cleared_request, sizeof(request)) ||
-        vm_app_ini_load((const lib_u8 *)"NXVM.ini", LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
-        !parse(valid, &request) || request.memory_bytes != 640u * 1024u ||
-        !text_equal(request.display, "window") || !request.console_control ||
-        request.floppy_count != 2u || request.fixed_disk_count != 1u ||
-        !text_equal(request.floppy[0u], "unit-root/boot.img") ||
-        !text_equal(request.floppy[1u], "C:/owner/second.img") ||
-        request.floppy_mode[0u] != LIB_STORAGE_MEDIUM_OVERLAY ||
-        request.floppy_mode[1u] != LIB_STORAGE_MEDIUM_READONLY ||
-        request.fixed_disk_mode[0u] != LIB_STORAGE_MEDIUM_DIRECT) return 1;
-    lib_memory_set(&request, 0xff, sizeof(request));
-    if (vm_app_ini_load((const lib_u8 *)"", &request) != LIB_STATUS_INTERNAL_ERROR ||
-        lib_memory_compare(&request, &cleared_request, sizeof(request))) return 1;
-    lib_memory_set(&request, 0xff, sizeof(request));
-    if (parse(duplicate, &request) ||
-        lib_memory_compare(&request, &cleared_request, sizeof(request)) ||
-        parse(sparse, &request) || parse(forbidden, &request) || parse(bad_mode, &request))
-        return 1;
-    if (vm_app_ini_parse((const lib_u8 *)"\\", (const lib_u8 *)"\\NXVM.ini", root,
-            &request) != LIB_STATUS_OK || !text_equal(request.floppy[0u], "\\boot.img")) return 1;
-    if (vm_app_ini_executable_path(executable_ini_path, sizeof(executable_ini_path)) !=
-            LIB_STATUS_OK) return 1;
-    executable_ini_length = lib_text_length((const char *)executable_ini_path);
-    if (executable_ini_length < sizeof("NXVM.ini") ||
-        !text_equal(executable_ini_path + executable_ini_length - sizeof("NXVM.ini") + 1u,
-            "NXVM.ini")) return 1;
-    if (vm_app_ini_executable_path(rejected_path, sizeof("NXVM.ini")) !=
-            LIB_STATUS_INVALID_ARGUMENT || !text_equal(rejected_path, "unchanged")) return 1;
     lib_memory_set(&config, 0xff, sizeof(config));
     if (vm_app_configure_machine(LIB_NULL, &config) != LIB_STATUS_INVALID_ARGUMENT ||
-        lib_memory_compare(&config, &cleared_config, sizeof(config))) return 1;
-    printf("M5:T533:S4:NXVM-INI:OK\n");
+        lib_memory_compare(&config, &cleared, sizeof(config))) return 1;
     return 0;
 }

@@ -14,9 +14,9 @@ future Profile only when its separate evidence task admits real source files.
 src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
-  x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug}/
+  x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug,product}/
   app-nxvm/             NXVM product implementation
-    product/            main, INI configuration, CLI and composition
+    product/            main, fixed config projection, CLI and composition
     machine/            NXVM driver, asset/media and execution adapter
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/
@@ -27,6 +27,9 @@ src/
 ```
 
 Keep shared profile declarations and proven helpers at the profiles root. The
+shared Product INI/request/startup files and their parser assertions now live
+in x86/product and test/x86/product. Other Product bodies remain App-owned
+until their complete T541 receiving batches are accepted. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
 live in the flat `x86/ibmpc-*` receivers; genuine D4 state stays in
 `app-nxvm/profiles/model40`. Current records delivery acceptance, not this layout.

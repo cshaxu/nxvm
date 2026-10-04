@@ -12,7 +12,7 @@
 #include "common/ui/ui_interface.h"
 #include "app-nxvm/product/composition.h"
 #include "app-nxvm/machine/machine_interface.h"
-#include "app-nxvm/product/ini_interface.h"
+#include "x86/product/ini_interface.h"
 #include "app-nxvm/product/command.h"
 #include "app-nxvm/product/keyboard.h"
 

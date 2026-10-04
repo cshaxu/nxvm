@@ -806,8 +806,6 @@ set(VM_PROFILE_SOURCES
 set(VM_APP_SOURCES
     src/app-nxvm/product/command.c
     src/app-nxvm/product/keyboard.c
-    src/app-nxvm/product/ini.c
-    src/app-nxvm/product/startup.c
     src/app-nxvm/product/composition.c
     src/app-nxvm/product/config.c
 )
@@ -899,6 +897,7 @@ target_include_directories(vm-app PUBLIC
     "${CMAKE_BINARY_DIR}/generated"
 )
 target_link_libraries(vm-app PUBLIC
+    x86-product-config
     common-session
     common-ui
     x86-debug
@@ -2159,8 +2158,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0540)
-add_current_vm_artifact(vm-0-5-0540 "0.5.0540")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0541)
+add_current_vm_artifact(vm-0-5-0541 "0.5.0541")
 
 function(project_add_t533_console_integration_test target)
     set(project_t533_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/integration.${target}")
@@ -3082,9 +3081,7 @@ file(GENERATE
 set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-app|src/app-nxvm/product/command.c|console-product"
     "vm-app|src/app-nxvm/product/keyboard.c|keyboard-product"
-    "vm-app|src/app-nxvm/product/startup.c|session-startup"
     "vm-machine|src/app-nxvm/machine/frame.c|display-adaptation"
-    "vm-app|src/app-nxvm/product/ini.c|session-ini"
     "vm-app|src/app-nxvm/product/composition.c|session-composition"
     "vm-media|src/app-nxvm/machine/media/fdd.c|vm-media"
     "vm-media|src/app-nxvm/machine/media/hdd.c|vm-media"
