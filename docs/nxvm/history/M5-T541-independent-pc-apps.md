@@ -447,3 +447,16 @@ Build/test trees are retained only for the immediately following S5 audit.
 | assets/nxvm/ibm-5160-model-268-360k/nxvm_xt_0_5_0541_x86.exe | 1535954 | F297DF8F38A5CD67A6770AA735D6C52B0F3AA45A0AD0F956455ED7E27D7B5D7F |
 | assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x64.exe | 1365297 | 3CD74FF687649EE9A7EA51F7AA4D73FBD0D5CFE5CA0044948546E206A2EB40B9 |
 | assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x86.exe | 1536022 | 99D6779E22366296113E6E1DF50B28C025656512C7109566DBA4947257EC01B6 |
+
+### S4 Coordinator Acceptance
+
+Review actual Shared P1 c40bc5299 and NXVM P2 f24ec482b additions, old banner
+deletion, reduced main, immutable identity, registration/target/manifests,
+tests, documentation and all eight EXEs against the complete entry/banner batch.
+All requested original startup/exit semantics and cleanup paths retain their
+sole owner. No App-private import or raw host API enters Product. The six-path
+code count and original failure predicates match the delivered changes.
+Packet fields are 16/16; required suites/gates and eight artifact hashes match.
+Excluded paths and owner INIs are unchanged, HEAD equals origin/master and the
+worktree is clean before this governance-only P3. Accept and close S4. T541
+remains open for all 58 integration contexts and whole-ledger review in S5.
