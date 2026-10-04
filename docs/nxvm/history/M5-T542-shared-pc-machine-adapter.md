@@ -227,8 +227,9 @@ the Common manifest verifier with each of the six corpus roots.
 
 Release trees are `build/t542-s2-release-<default|xt|at|model40>-<x64|x86>`;
 configure each with the fixed profile and corresponding compiler, MyNES OFF,
-Release, then build only `vm-0-5-0542` with `-j 12`. The existing artifact
-verifier checks architecture, name and stripped sections; verify hashes and
+Release, then build only `vm-0-5-0542` (`-j 12` for default, `-j 8` for the
+remaining six builds). Existing gates check Release and PE architecture;
+separate name/embedded-identity/objdump checks prove stripped products. Verify hashes and
 unchanged owner INIs before replacing each admitted pair. These trees remain
 needed through S2 review and the next migration batch; no other build tree
 or process is claimed or cleaned by this S. All commands are containment and
@@ -293,3 +294,22 @@ App caller/source retirement and artifacts, before coordinator acceptance.
 Shared P1 ebe5172d5 is pushed. It contains only src/test x86 ownership,
 registration, README and manifest changes; the receiving App changes remain
 the separately verified NXVM P2 delivery. There is no Lib/Common change.
+
+### S2 Coordinator Acceptance
+
+Review Shared P1 ebe5172d5 and NXVM P2 e0bc4f14c against the complete Helpers
+batch and every packet exit. All three production source bodies match their
+originals after include substitution; all six moved headers and the original
+contract assertions retain their boundaries/values. Review the new 4-by-4
+drive/media matrix, rejection cases, both CMake registries, direct App callers,
+removed originals, corpus metadata, document changes and all eight artifacts.
+No parallel production compilation, Shared-to-App dependency, new runtime
+state or hardware change is introduced. Every requested outcome has direct
+build/test/source evidence above; no helper member is unresolved or deferred.
+
+Recheck all six manifests, x86 corpus, documentation governance, whitespace,
+unchanged INIs and excluded Lib/Common/MyNES paths successfully. Reconcile
+Git/origin at e0bc4f14c and confirm clean worktree before this governance update.
+Accept and close S2; retain T542 open for S3 onward. Warm S2 trees remain
+explicitly needed by the immediately next media batch. No new task or
+implementation scope is admitted by this acceptance commit.
