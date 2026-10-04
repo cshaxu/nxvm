@@ -24,27 +24,36 @@ static inline lib_status test_dma_initialize(core_machine_dma_bus **out_bus,
 
 static inline lib_u32 test_dma_port_read(core_machine *machine, lib_u16 port)
 {
-    lib_u32 value = 0u;
-    core_machine_bus_read(machine, port, &value);
+    lib_u32 value;
+    if (core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK)
+        exit(EXIT_FAILURE);
     return value;
+}
+
+static inline void test_dma_port_write(core_machine *machine, lib_u16 port,
+    lib_u32 value)
+{
+    if (core_machine_bus_write(machine, port, value) != LIB_STATUS_OK)
+        exit(EXIT_FAILURE);
 }
 
 static inline lib_u16 test_dma_register_word(core_machine *machine,
     lib_bool secondary, lib_u8 selector)
 {
     lib_u16 port = secondary ? (lib_u16)(0xc0u + 2u * selector) : selector;
-    core_machine_bus_write(machine, secondary ? 0xd8u : 0x0cu, 0u);
+    if (core_machine_bus_write(machine, secondary ? 0xd8u : 0x0cu, 0u) !=
+            LIB_STATUS_OK) exit(EXIT_FAILURE);
     lib_u16 low = (lib_u16)test_dma_port_read(machine, port);
     return (lib_u16)(low | test_dma_port_read(machine, port) << 8);
 }
 
 static inline void test_dma_transfers(core_machine_dma_bus *bus,
-    core_machine *machine, core_machine *port_owner, lib_u64 transfers)
+    core_machine *machine, core_machine *port_owner, lib_u64 transfers,
+    lib_u8 controller_count)
 {
     for (lib_u64 transfer = 0u; transfer < transfers; ++transfer) {
         lib_u16 before[16];
-        /* The original full channel matrix constructs both controllers. */
-        lib_u8 registers = 16u;
+        lib_u8 registers = controller_count == 2u ? 16u : 8u;
         for (lib_u8 selector = 0u; selector < registers; ++selector)
             before[selector] = test_dma_register_word(port_owner, selector >= 8u, selector & 7u);
         for (lib_u8 clock = 0u; clock < 16u; ++clock) {

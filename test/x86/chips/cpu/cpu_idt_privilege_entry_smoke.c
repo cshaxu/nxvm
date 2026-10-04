@@ -9,8 +9,8 @@
 #define IDT_HANDLER_OFFSET 0x0100u
 #define IDT_VECTOR 0x30u
 
-/* This receiver owns only CPU-local software INT privilege transfer.  The
- * corresponding PIC delivery case remains a board receiver. */
+/* CPU cache rollback and NMI latches stay here; PIC delivery and public
+ * Core diagnostics stay with the board receiver. */
 static void idt_prepare(cpu_instruction_fixture *state, lib_u8 gate_access,
     lib_u8 stack_access, lib_bool stack_big)
 {
@@ -159,13 +159,137 @@ static lib_bool idt_test_atomic(lib_u8 gate_access, lib_u8 stack_access,
         state.memory[IDT_GDT_BASE + 21u] == ss_before;
 }
 
+static lib_bool idt_test_nmi(lib_bool invalid_gate, lib_bool user_source)
+{
+    cpu_instruction_fixture state;
+    t_cpu before;
+    lib_u8 gate[] = {IDT_HANDLER_OFFSET & 0xffu, IDT_HANDLER_OFFSET >> 8u,
+        8u,0,0,0x8eu,0,0};
+    const lib_u8 loop[] = {0xebu,0xfeu};
+    const lib_u32 code_base = user_source ? IDT_USER_CODE_BASE : IDT_KERNEL_CODE_BASE;
+    const lib_u16 code_selector = user_source ? 0x1bu : 8u;
+
+    idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+    state.cpu.data.cs.selector = code_selector;
+    state.cpu.data.cs.base = code_base;
+    state.cpu.data.cs.dpl = user_source ? 3u : 0u;
+    state.cpu.data.ss.selector = user_source ? 0x23u : 0x10u;
+    state.cpu.data.ss.dpl = user_source ? 3u : 0u;
+    state.cpu.data.esp = 0x8000u;
+    state.cpu.data.eflags = 0x202u;
+    state.cpu.data.flagNMI = LIB_TRUE;
+    gate[2] = (lib_u8)code_selector;
+    if (invalid_gate) gate[5] = 0x80u;
+    lib_memory_copy(state.memory + IDT_IDT_BASE + 2u * 8u, gate, sizeof(gate));
+    lib_memory_copy(state.memory + code_base, loop, sizeof(loop));
+    lib_memory_copy(state.memory + code_base + IDT_HANDLER_OFFSET,
+        user_source ? loop : (const lib_u8[]){0xf4u},
+        user_source ? sizeof(loop) : 1u);
+    before = state.cpu;
+    core_machine_cpu_execution_refresh(&state.execution);
+    if (invalid_gate)
+        return state.execution.stop_requested && state.fault.valid &&
+            (state.fault.exception_mask & VCPUINS_EXCEPT_DF) != 0u &&
+            state.cpu.data.flagNMI && state.cpu.data.eip == before.data.eip &&
+            state.cpu.data.esp == before.data.esp &&
+            state.cpu.data.eflags == before.data.eflags &&
+            lib_memory_compare(&state.cpu.data.cs, &before.data.cs,
+                sizeof(before.data.cs)) == 0 &&
+            lib_memory_compare(&state.cpu.data.ss, &before.data.ss,
+                sizeof(before.data.ss)) == 0;
+    if (state.execution.stop_requested || state.fault.valid ||
+        state.cpu.data.flagNMI || state.cpu.data.esp != 0x7ff4u ||
+        state.cpu.data.cs.selector != code_selector ||
+        state.cpu.data.cs.dpl != (user_source ? 3u : 0u) ||
+        state.cpu.data.eip != IDT_HANDLER_OFFSET) return LIB_FALSE;
+    core_machine_cpu_execution_refresh(&state.execution);
+    return !state.execution.stop_requested && !state.cpu.data.flagNMI &&
+        state.cpu.data.esp == 0x7ff4u &&
+        (user_source ? !state.cpu.data.flagHalt &&
+            state.cpu.data.eip == IDT_HANDLER_OFFSET : state.cpu.data.flagHalt);
+}
+
+static lib_bool idt_test_delivery_cache_rollback(lib_u8 failure)
+{
+    cpu_instruction_fixture state;
+    t_cpu before, after;
+    lib_u8 gate[] = {IDT_HANDLER_OFFSET & 0xffu, IDT_HANDLER_OFFSET >> 8u,
+        0x1bu,0,0,0x8eu,0,0};
+    const lib_u8 code[] = {0x0fu,0x01u,0xf0u};
+    lib_u32 stack_before[4], stack_after[4];
+    lib_u8 access;
+
+    idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+    if (failure == 0u) gate[5] = 0x80u;
+    if (failure == 1u) gate[5] = 0x0eu;
+    if (failure == 2u) state.memory[IDT_GDT_BASE + 29u] = 0x7au;
+    if (failure == 3u) state.cpu.data.ss.limit = state.cpu.data.esp - 2u;
+    lib_memory_copy(state.memory + IDT_IDT_BASE + 0x0du * 8u, gate, sizeof(gate));
+    lib_memory_copy(state.memory + IDT_USER_CODE_BASE, code, sizeof(code));
+    before = state.cpu;
+    access = state.memory[IDT_GDT_BASE + 29u];
+    lib_memory_copy(stack_before, state.memory + before.data.esp - 16u,
+        sizeof(stack_before));
+    if (!idt_fault(&state, &after)) return LIB_FALSE;
+    lib_memory_copy(stack_after, state.memory + before.data.esp - 16u,
+        sizeof(stack_after));
+    return !state.delivered_exception.valid &&
+        after.data.eip == before.data.eip && after.data.esp == before.data.esp &&
+        after.data.eflags == before.data.eflags &&
+        lib_memory_compare(&after.data.cs, &before.data.cs, sizeof(before.data.cs)) == 0 &&
+        lib_memory_compare(&after.data.ss, &before.data.ss, sizeof(before.data.ss)) == 0 &&
+        state.memory[IDT_GDT_BASE + 29u] == access &&
+        lib_memory_compare(stack_before, stack_after, sizeof(stack_before)) == 0;
+}
+
+static lib_bool idt_test_software_full_rollback(lib_u8 negative)
+{
+    static const lib_u8 forms[][2] = {{0xccu,0}, {0xcdu,IDT_VECTOR}, {0xceu,0}};
+    static const lib_u8 vectors[] = {3u,IDT_VECTOR,4u};
+    cpu_instruction_fixture state;
+    t_cpu before, after;
+    lib_u8 gate[] = {IDT_HANDLER_OFFSET & 0xffu, IDT_HANDLER_OFFSET >> 8u,
+        8u,0,0,0x8eu,0,0};
+    idt_prepare(&state, 0xeeu, 0x92u, LIB_TRUE);
+    if (negative < 3u) {
+        lib_memory_copy(state.memory + IDT_IDT_BASE + vectors[negative] * 8u,
+            gate, sizeof(gate));
+        lib_memory_copy(state.memory + IDT_USER_CODE_BASE, forms[negative], 2u);
+        state.cpu.data.eflags |= VCPU_EFLAGS_OF;
+    } else {
+        state.cpu.data.cs.selector = 8u;
+        state.cpu.data.cs.base = IDT_KERNEL_CODE_BASE;
+        state.cpu.data.cs.dpl = 0u;
+        state.cpu.data.ss.selector = 0x10u;
+        state.cpu.data.ss.dpl = 0u;
+        lib_memory_copy(state.memory + IDT_KERNEL_CODE_BASE, forms[1], 2u);
+        if (negative == 3u) state.cpu.data.idtr.limit = 7u;
+        if (negative == 4u) state.memory[IDT_GDT_BASE + 13u] = 0x92u;
+        if (negative == 5u) {
+            state.cpu.data.eflags = VCPU_EFLAGS_VM | VCPU_EFLAGS_CF | 2u;
+            core_machine_cpu_execution_load_segment(&state.execution, &state.cpu.data.cs, 0u);
+            core_machine_cpu_execution_load_segment(&state.execution, &state.cpu.data.ss, 0u);
+            lib_memory_copy(state.memory, forms[1], 2u);
+        }
+    }
+    before = state.cpu;
+    return idt_fault(&state, &after) &&
+        lib_memory_compare(&before, &after, sizeof(before)) == 0;
+}
+
 int main(void)
 {
     if (!idt_test_success(0xeeu, LIB_FALSE) ||
         !idt_test_success(0xefu, LIB_TRUE) || !idt_test_16bit_stack() ||
         !idt_test_atomic(0x8eu, 0x92u, LIB_FALSE) ||
         !idt_test_atomic(0xeeu, 0x12u, LIB_FALSE) ||
-        !idt_test_atomic(0xeeu, 0x92u, LIB_TRUE)) return 1;
+        !idt_test_atomic(0xeeu, 0x92u, LIB_TRUE) ||
+        !idt_test_nmi(LIB_FALSE, LIB_FALSE) || !idt_test_nmi(LIB_TRUE, LIB_FALSE) ||
+        !idt_test_nmi(LIB_FALSE, LIB_TRUE) || !idt_test_nmi(LIB_TRUE, LIB_TRUE)) return 1;
+    for (lib_u8 failure = 0u; failure < 4u; ++failure)
+        if (!idt_test_delivery_cache_rollback(failure)) return 1;
+    for (lib_u8 negative = 0u; negative < 6u; ++negative)
+        if (!idt_test_software_full_rollback(negative)) return 1;
     puts("M5:T307:IDT-PRIVILEGE-ENTRY:CPU:OK");
     return 0;
 }

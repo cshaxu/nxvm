@@ -83,6 +83,68 @@ static lib_i32 cpu_prefetch_case(core_machine_cpu_profile profile)
     return failed;
 }
 
+static lib_i32 run_8088_prefetch_capacity(void)
+{
+    static const lib_u8 program[] = {
+        0xbbu, 0x07u, 0x00u, /* mov bx, 7 */
+        0xc6u, 0x07u, 0xccu, /* mov byte ptr [bx], 0cch */
+        0x90u, 0x90u
+    };
+    cpu_bus_fixture state;
+    core_machine_cpu_execution_context *execution;
+    lib_i32 failed = 0;
+
+    cpu_bus_prepare(&state, CORE_MACHINE_CPU_PROFILE_8088);
+    state.cpu.data.eip = 0u;
+
+    lib_memory_copy(state.memory, program, sizeof(program));
+    core_machine_cpu_execution_refresh(&state.execution);
+    failed |= state.faults != 0u || state.instructions.data.except != 0u;
+    execution = &state.execution;
+    failed |= execution->prefetch_capacity != 4u ||
+        execution->prefetch_count != 4u;
+    core_machine_cpu_execution_reserve_prefetch(execution);
+    failed |= !execution->prefetch_reservation_valid;
+    core_machine_cpu_execution_advance_prefetch_reservation(execution);
+    failed |= execution->prefetch_reservation_valid ||
+        execution->prefetch_count != 2u || execution->prefetch_bytes[1] != 0x07u;
+    core_machine_cpu_execution_invalidate_prefetch(execution);
+    failed |= execution->prefetch_valid || execution->prefetch_count != 0u;
+    return failed;
+}
+
+static lib_i32 run_8088_prefetch_control_and_self_modify(void)
+{
+    static const lib_u8 self_modifying[] = {
+        0xbbu, 0x07u, 0x00u, /* mov bx, 7 */
+        0xc6u, 0x07u, 0xccu, /* queued mov byte ptr [bx], 0cch */
+        0x90u
+    };
+    const lib_u8 replacement = 0x90u;
+    cpu_bus_fixture state;
+    core_machine_cpu_execution_context *execution;
+    lib_i32 failed = 0;
+
+    cpu_bus_prepare(&state, CORE_MACHINE_CPU_PROFILE_8088);
+    state.cpu.data.eip = 0u;
+
+    lib_memory_copy(state.memory, self_modifying, sizeof(self_modifying));
+    core_machine_cpu_execution_refresh(&state.execution);
+    failed |= state.faults != 0u || state.instructions.data.except != 0u;
+    execution = &state.execution;
+    failed |= execution->prefetch_count != 4u || execution->prefetch_bytes[3] !=
+        0xc6u;
+    /* A byte already owned by the 8088 queue remains stale after the
+     * write; this is not a second VM-side instruction cache. */
+    state.memory[3u] = replacement;
+    failed |= execution->prefetch_bytes[3] != 0xc6u;
+    /* The same CPU-owned flush called by control transfers drops the old
+     * queue before the target may be fetched. */
+    core_machine_cpu_execution_invalidate_prefetch(execution);
+    failed |= execution->prefetch_valid || execution->prefetch_count != 0u;
+    return failed;
+}
+
 lib_i32 main(void)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -99,8 +161,11 @@ lib_i32 main(void)
         result |= cpu_signal_case(profiles[index]);
         result |= cpu_prefetch_case(profiles[index]);
     }
+    result |= run_8088_prefetch_capacity();
+    result |= run_8088_prefetch_control_and_self_modify();
     if (result != 0) return 1;
 
     puts("M5:T539:S89:CPU-EXECUTION-SIGNAL-PREFETCH:OK");
+    puts("M5:T484:S3:XT-8088-QUEUE:OK");
     return 0;
 }

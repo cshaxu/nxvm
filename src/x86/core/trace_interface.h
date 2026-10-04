@@ -10,6 +10,33 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
+/* Copied transaction trace detail encodes owner in bits 0-7 and kind in
+ * bits 8-15. These values describe events, not mutable transaction state. */
+typedef enum core_machine_transaction_owner {
+    CORE_MACHINE_TRANSACTION_OWNER_NONE = 0,
+    CORE_MACHINE_TRANSACTION_OWNER_CPU,
+    CORE_MACHINE_TRANSACTION_OWNER_DMA,
+    CORE_MACHINE_TRANSACTION_OWNER_REFRESH
+} core_machine_transaction_owner;
+
+typedef enum core_machine_transaction_kind {
+    CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ = 1,
+    CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE,
+    CORE_MACHINE_TRANSACTION_CPU_PORT_READ,
+    CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE,
+    CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ,
+    CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE,
+    CORE_MACHINE_TRANSACTION_DMA_MEMORY_COPY,
+    CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE,
+    /* ESC command issue is CPU-owned control traffic.  It deliberately is
+     * not a HOLD grant: an 80287/80387 asks its paired CPU to move operands
+     * through the processor-extension channel. */
+    CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND,
+    /* The first logical INTA acknowledges the selected PIC request.  Vector
+     * delivery remains the CPU interrupt-entry operation that follows. */
+    CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE
+} core_machine_transaction_kind;
+
 #ifndef CORE_MACHINE_RUNTIME_TRACE_ENABLED
 #define CORE_MACHINE_RUNTIME_TRACE_ENABLED 1
 #endif

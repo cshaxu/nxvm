@@ -1,0 +1,62 @@
+#include "lib/types/types_interface.h"
+#include <stdio.h>
+
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include "x86/core/memory_interface.h"
+#include "x86/ibmpc-common/vadp.h"
+
+int main(void)
+{
+    core_machine_config machine_config = {0};
+    core_machine_display_config display_config = {0};
+    core_machine *machine = LIB_NULL;
+    core_machine_board_state *board = LIB_NULL;
+    lib_u8 pixel = 0x5au;
+    lib_i32 failed = 0;
+
+    machine_config.memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES;
+    display_config.text_timing.active_display_ticks = 48u;
+    display_config.text_timing.horizontal_blank_ticks = 8u;
+    display_config.text_timing.vertical_retrace_ticks = 8u;
+    display_config.ega_present = LIB_TRUE;
+    display_config.ega_sequencer.aperture_base = CORE_MACHINE_VADP_EGA_APERTURE_BASE;
+    display_config.ega_sequencer.aperture_bytes = CORE_MACHINE_VADP_EGA_APERTURE_BYTES;
+    display_config.ega_sequencer.reset = 0x03u;
+    display_config.ega_sequencer.clocking_mode = 0x00u;
+    display_config.ega_sequencer.map_mask = 0x0fu;
+    display_config.ega_sequencer.memory_mode = 0x02u;
+    display_config.ega_sequencer.planar_ega = LIB_TRUE;
+    display_config.ports.attribute_first = CORE_MACHINE_VADP_PORT_ATTRIBUTE;
+    display_config.ports.attribute_last = CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ;
+    display_config.ports.sequencer_first = CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX;
+    display_config.ports.sequencer_last = CORE_MACHINE_VADP_PORT_SEQUENCER_DATA;
+    display_config.ports.graphics_first = CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX;
+    display_config.ports.graphics_last = CORE_MACHINE_VADP_PORT_GRAPHICS_DATA;
+    display_config.ports.crtc_first = CORE_MACHINE_VADP_PORT_CRTC_INDEX;
+    display_config.ports.crtc_last = CORE_MACHINE_VADP_PORT_STATUS;
+
+    if (core_machine_configure_display(LIB_NULL, &display_config) !=
+            LIB_STATUS_INVALID_STATE ||
+        core_machine_create(&machine_config, &machine, &board) != LIB_STATUS_OK ||
+        !core_machine_configuration_is_open(machine) ||
+        core_machine_configuration_is_open(LIB_NULL) ||
+        core_machine_configure_display(board, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT ||
+        core_machine_configure_display(board, &display_config) != LIB_STATUS_OK ||
+        core_machine_configure_display(board, &display_config) !=
+            LIB_STATUS_INVALID_STATE ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_configuration_is_open(machine) ||
+        core_machine_configure_display(board, &display_config) !=
+            LIB_STATUS_INVALID_STATE ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, CORE_MACHINE_VADP_EGA_APERTURE_BASE,
+            &pixel, sizeof(pixel)) != LIB_STATUS_OK) {
+        failed = 1;
+    }
+    core_machine_destroy(machine);
+    if (!failed) {
+        printf("M5:T296:S2:DISPLAY-AUTHORITY:OK\n");
+        printf("M5:T540:S84:BOARD-DISPLAY-HANDLE:OK\n");
+    }
+    return failed;
+}

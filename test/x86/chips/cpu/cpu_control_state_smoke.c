@@ -361,6 +361,188 @@ static lib_i32 control_test_mov_cr(void)
     return 1;
 }
 
+static lib_i32 control_real_data_cache(const t_cpu_data_sreg *sreg,
+    lib_u16 selector, t_cpu_data_sreg_type type)
+{
+    return sreg->flagValid && sreg->selector == selector &&
+        sreg->base == (lib_u32)selector << 4u &&
+        sreg->limit == 0xffffu && sreg->dpl == 0u &&
+        sreg->sregtype == type && sreg->seg.accessed &&
+        !sreg->seg.executable && sreg->seg.data.writable &&
+        !sreg->seg.data.big && !sreg->seg.data.expdown;
+}
+
+/* The full cache assertions formerly mixed into the Core descriptor receiver
+ * belong here: copied Core snapshots do not expose CPU cache bookkeeping. */
+static lib_i32 control_test_leave_protected_mode(void)
+{
+    static const lib_u8 code[] = {
+        0x0fu, 0x22u, 0xc0u, 0xeau, 0x0au, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xbbu, 0x48u, 0x00u, 0x8eu, 0xc3u, 0x8eu,
+        0xd3u, 0x8eu, 0xdbu, 0xf4u
+    };
+    cpu_instruction_fixture fixture;
+    t_cpu *cpu = &fixture.cpu;
+
+    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    control_enter_protected(&fixture, 0u, LIB_FALSE);
+    cpu->data.ds.base = 0u;
+    cpu->data.ds.limit = 0xffffu;
+    cpu->data.ds.selector = 0x0010u;
+    cpu->data.ds.flagValid = LIB_TRUE;
+    cpu->data.ds.sregtype = SREG_DATA;
+    cpu->data.ds.seg.executable = LIB_FALSE;
+    cpu->data.ds.seg.data.writable = LIB_TRUE;
+    cpu->data.ds.dpl = 0u;
+    cpu->data.cs.seg.exec.defsize = LIB_TRUE;
+    cpu->data.ds.seg.data.big = LIB_TRUE;
+    cpu->data.es.seg.data.big = LIB_TRUE;
+    cpu->data.ss.seg.data.big = LIB_TRUE;
+    cpu->data.eax = 0u;
+    lib_memory_copy(fixture.memory, code, sizeof(code));
+    for (lib_u32 index = 0u; index != 32u && !cpu->data.flagHalt &&
+            !fixture.execution.stop_requested; ++index)
+        core_machine_cpu_execution_refresh(&fixture.execution);
+    return !fixture.execution.stop_requested && !fixture.fault.valid &&
+        !fixture.delivered_exception.valid && cpu->data.flagHalt &&
+        cpu->data.cr0 == 0u && cpu->data.cs.selector == 0u &&
+        cpu->data.cs.base == 0u && cpu->data.cs.limit == 0xffffu &&
+        cpu->data.cs.flagValid && cpu->data.cs.seg.accessed &&
+        cpu->data.cs.seg.executable && !cpu->data.cs.seg.exec.defsize &&
+        !cpu->data.cs.seg.exec.conform && cpu->data.cs.seg.exec.readable &&
+        cpu->data.ebx == 0x00000048u &&
+        control_real_data_cache(&cpu->data.es, 0x0048u, SREG_DATA) &&
+        control_real_data_cache(&cpu->data.ss, 0x0048u, SREG_STACK) &&
+        control_real_data_cache(&cpu->data.ds, 0x0048u, SREG_DATA);
+}
+
+/* Full private storage preservation belongs to the CPU, not a PC board
+ * borrowing its execution context. Reject vector 6 to retain producer rollback. */
+static lib_status control_cli_sti_read(void *opaque, lib_u32 address,
+    void *destination, lib_u8 bytes,
+    core_machine_cpu_memory_access_provenance provenance,
+    lib_bool observe_only, lib_bool reset_fetch)
+{
+    if (address < 28u && (lib_u64)address + bytes > 24u)
+        return LIB_STATUS_IO_ERROR;
+    return cpu_instruction_read(opaque, address, destination, bytes,
+        provenance, observe_only, reset_fetch);
+}
+
+static lib_i32 control_cli_sti_storage_preserved(const t_cpu *before,
+    const t_cpu *after)
+{
+    return before->data.eax == after->data.eax &&
+        before->data.ecx == after->data.ecx &&
+        before->data.edx == after->data.edx &&
+        before->data.ebx == after->data.ebx &&
+        before->data.esp == after->data.esp &&
+        before->data.ebp == after->data.ebp &&
+        before->data.esi == after->data.esi &&
+        before->data.edi == after->data.edi &&
+        lib_memory_compare(&before->data.es, &after->data.es,
+            sizeof(before->data.es)) == 0 &&
+        lib_memory_compare(&before->data.cs, &after->data.cs,
+            sizeof(before->data.cs)) == 0 &&
+        lib_memory_compare(&before->data.ss, &after->data.ss,
+            sizeof(before->data.ss)) == 0 &&
+        lib_memory_compare(&before->data.ds, &after->data.ds,
+            sizeof(before->data.ds)) == 0 &&
+        lib_memory_compare(&before->data.fs, &after->data.fs,
+            sizeof(before->data.fs)) == 0 &&
+        lib_memory_compare(&before->data.gs, &after->data.gs,
+            sizeof(before->data.gs)) == 0;
+}
+
+static lib_i32 control_test_interrupt_control_storage(void)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const lib_u8 prefixes[][2] = {
+        {0u,0u}, {0x66u,0u}, {0x67u,0u}, {0x66u,0x67u}
+    };
+    static const lib_u8 opcodes[] = {0xfau, 0xfbu, 0xf4u};
+    const core_machine_cpu_bus_provider bus = {
+        .read_memory = control_cli_sti_read,
+        .write_memory = cpu_instruction_write,
+        .interrupt_pending = cpu_instruction_interrupt_pending
+    };
+    cpu_instruction_fixture fixture;
+
+    for (lib_size profile = 0u; profile != 4u; ++profile)
+        for (lib_size form = 0u; form != 4u; ++form)
+            for (lib_u8 lock = 0u; lock != 2u; ++lock)
+                for (lib_size instruction = 0u; instruction != 3u; ++instruction) {
+                    const lib_u8 opcode = opcodes[instruction];
+                    lib_u8 code[4u] = {0u};
+                    lib_u8 bytes = 0u;
+                    lib_bool rejected = lock || (form != 0u && profile != 3u);
+                    t_cpu before, after;
+                    lib_status status;
+                    lib_u32 expected;
+
+                    if (lock && profile != 3u) continue;
+                    if (lock) code[bytes++] = 0xf0u;
+                    if (form != 0u) code[bytes++] = prefixes[form][0];
+                    if (form == 3u) code[bytes++] = prefixes[form][1];
+                    code[bytes++] = opcode;
+                    cpu_instruction_prepare_with_bus(&fixture, profiles[profile],
+                        &bus, &fixture);
+                    control_seed(&fixture);
+                    fixture.cpu.data.eflags |= VCPU_EFLAGS_DF;
+                    if (opcode != 0xfau) fixture.cpu.data.eflags &= ~VCPU_EFLAGS_IF;
+                    if (opcode == 0xf4u) fixture.cpu.data.eax = 0xaabbccddu;
+                    before = fixture.cpu;
+                    expected = opcode == 0xf4u ? before.data.eflags :
+                        (before.data.eflags & ~VCPU_EFLAGS_IF) |
+                        (opcode == 0xfbu ? VCPU_EFLAGS_IF : 0u);
+                    status = cpu_instruction_run(&fixture, code, bytes, &after);
+                    if (rejected) {
+                        if (status != LIB_STATUS_INTERNAL_ERROR || !fixture.fault.valid ||
+                            (fixture.fault.exception_mask & VCPUINS_EXCEPT_UD) == 0u ||
+                            lib_memory_compare(&before, &after, sizeof(before)) != 0) {
+                            printf("CLI-STI storage profile=%zu form=%zu lock=%u opcode=%x status=%u fault=%x\n",
+                                profile, form, lock, opcode, status, fixture.fault.exception_mask);
+                            return 0;
+                        }
+                    } else if (status != LIB_STATUS_OK || fixture.fault.valid ||
+                        after.data.eip != bytes || after.data.eflags != expected ||
+                        after.data.flagHalt != (opcode == 0xf4u) ||
+                        !control_cli_sti_storage_preserved(&before, &after)) {
+                        printf("CLI-STI storage profile=%zu form=%zu lock=%u opcode=%x status=%u flags=%x expected=%x\n",
+                            profile, form, lock, opcode, status, after.data.eflags, expected);
+                        return 0;
+                    }
+                }
+    return 1;
+}
+
+static lib_i32 control_test_hlt_privilege_storage(void)
+{
+    static const lib_u8 code[] = {0xf4u};
+    cpu_instruction_fixture fixture;
+    t_cpu before, after;
+
+    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    control_seed(&fixture);
+    control_enter_protected(&fixture, 0u, LIB_FALSE);
+    before = fixture.cpu;
+    if (!control_run(&fixture, code, sizeof(code), &after) ||
+        fixture.delivered_exception.valid || !after.data.flagHalt ||
+        after.data.eip != 1u || after.data.eflags != before.data.eflags ||
+        !control_cli_sti_storage_preserved(&before, &after))
+        return 0;
+
+    cpu_instruction_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
+    control_seed(&fixture);
+    control_enter_protected(&fixture, 3u, LIB_FALSE);
+    before = fixture.cpu;
+    return control_fault(&fixture, code, sizeof(code), VCPUINS_EXCEPT_GP, &after) &&
+        lib_memory_compare(&before, &after, sizeof(before)) == 0;
+}
+
 int main(void)
 {
     if (!control_test_clts()) {
@@ -385,6 +567,18 @@ int main(void)
     }
     if (!control_test_mov_cr()) {
         printf("control-state stage=mov-cr\n");
+        return 1;
+    }
+    if (!control_test_leave_protected_mode()) {
+        printf("control-state stage=leave-protected\n");
+        return 1;
+    }
+    if (!control_test_interrupt_control_storage()) {
+        printf("control-state stage=interrupt-control-storage\n");
+        return 1;
+    }
+    if (!control_test_hlt_privilege_storage()) {
+        printf("control-state stage=hlt-privilege-storage\n");
         return 1;
     }
     printf("M5:T539:S45:CONTROL-STATE:OK\n");

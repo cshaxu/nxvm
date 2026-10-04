@@ -70,9 +70,7 @@ add_library(x86-xtkeyboard STATIC chips/xtkeyboard/keyboard.c)
 target_include_directories(x86-xtkeyboard PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-xtkeyboard PUBLIC types)
 
-# The canonical CPU corpus is introduced under a distinct target while NXVM
-# still owns the old consumer target.  The subsequent NXVM handoff retires
-# that consumer definition; this target never creates a second CPU instance.
+# The canonical CPU corpus has one target, used by Core and independent tests.
 add_library(x86-cpu-shared STATIC
     chips/cpu/cpu.c
     chips/cpu/cpu_instructions.c
@@ -83,8 +81,7 @@ target_link_libraries(x86-cpu-shared PUBLIC types PRIVATE x86-fpu)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     # The legacy instruction engine was deliberately compiled without the
     # shared strict-warning profile; its timing sources alone were strict.
-    # Preserve that diagnostic contract during the location-only cutover.
-    # The final CPU receiving audit owns eliminating this temporary exception.
+    # Preserve that diagnostic contract; extraction does not change warnings.
     set_source_files_properties(
         chips/cpu/cpu.c
         chips/cpu/cpu_instructions.c
@@ -111,12 +108,38 @@ target_link_libraries(x86-core-observable PUBLIC types x86-cpu-shared x86-fpu)
 target_compile_definitions(x86-core-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
-add_library(x86-ibmpc-common STATIC
+set(x86_ibmpc_common_sources
     ibmpc-common/media_interface.c ibmpc-common/display.c
-    ibmpc-common/pit_bus.c ibmpc-common/pic_bus.c ibmpc-common/dma_bus.c)
+    ibmpc-common/pit_bus.c ibmpc-common/pic_bus.c ibmpc-common/dma_bus.c
+    ibmpc-common/fdc.c ibmpc-common/hdc.c ibmpc-common/vadp.c
+    ibmpc-common/board_advance.c ibmpc-common/board_deadline.c
+    ibmpc-common/machine_board.c ibmpc-common/machine_plan.c
+    ibmpc-common/machine_display.c)
+add_library(x86-ibmpc-common STATIC ${x86_ibmpc_common_sources})
 target_include_directories(x86-ibmpc-common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 # Composition selects the Core implementation, including observation tests.
-target_link_libraries(x86-ibmpc-common PUBLIC types x86-pit825x x86-pic8259 x86-dma8237)
+target_link_libraries(x86-ibmpc-common PUBLIC types x86-pit825x x86-pic8259
+    x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-rtc146818 x86-xtkeyboard
+    x86-ibmpc-at x86-ibmpc-xt)
+target_compile_definitions(x86-ibmpc-common PUBLIC
+    CORE_MACHINE_RUNTIME_TRACE_ENABLED=$<IF:$<CONFIG:Debug>,1,0>)
+
+# Trace-contract tests select this variant instead of the production board.
+# Neither variant selects a Core implementation; composition owns that choice.
+add_library(x86-ibmpc-common-observable STATIC EXCLUDE_FROM_ALL ${x86_ibmpc_common_sources})
+target_include_directories(x86-ibmpc-common-observable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-ibmpc-common-observable PUBLIC types x86-pit825x x86-pic8259
+    x86-dma8237 x86-fdc8272 x86-hdc x86-video x86-rtc146818 x86-xtkeyboard
+    x86-ibmpc-at x86-ibmpc-xt)
+target_compile_definitions(x86-ibmpc-common-observable PUBLIC CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
+
+add_library(x86-ibmpc-at STATIC ibmpc-at/kbc.c ibmpc-at/parity.c)
+target_include_directories(x86-ibmpc-at PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-ibmpc-at PUBLIC types x86-kbc8042 x86-keyboard x86-ps2mouse x86-pit825x)
+
+add_library(x86-ibmpc-xt STATIC ibmpc-xt/xt_ppi_keyboard.c)
+target_include_directories(x86-ibmpc-xt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-ibmpc-xt PUBLIC types x86-ppi8255)
 
 if(X86_BUILD_TOOLS)
 add_library(x86-xasm32 STATIC xasm32/xasm32.c xasm32/aasm32.c xasm32/dasm32.c)

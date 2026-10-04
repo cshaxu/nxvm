@@ -31,21 +31,27 @@ static void pic_lifecycle_initialize(pic_lifecycle_fixture *fixture,
     const core_machine_executor_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
     };
-    if (core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK) return;
-    core_machine_pic_initialize(&fixture->master, &fixture->slave, fixture->machine,
-        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
-    if (pit != LIB_NULL) core_machine_pit_install_ports(fixture->machine, pit, 0x0040u);
-    core_machine_freeze_execution_providers(fixture->machine);
-    core_machine_reset(fixture->machine);
+    *fixture = (pic_lifecycle_fixture){0};
+    if (core_machine_neutral_create(&config, &fixture->machine) != LIB_STATUS_OK ||
+        core_machine_pic_initialize(&fixture->master, &fixture->slave, fixture->machine,
+            CORE_MACHINE_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
+        (pit != LIB_NULL && core_machine_pit_install_ports(fixture->machine, pit,
+            0x0040u) != LIB_STATUS_OK) ||
+        core_machine_freeze_execution_providers(fixture->machine) != LIB_STATUS_OK ||
+        core_machine_reset(fixture->machine) != LIB_STATUS_OK) {
+        core_machine_pic_finalize(fixture->master, fixture->slave);
+        core_machine_destroy(fixture->machine);
+        exit(EXIT_FAILURE);
+    }
     core_machine_pic_reset(fixture->master, fixture->slave);
-    core_machine_bus_write(fixture->machine, 0x0020u, icw1);
-    core_machine_bus_write(fixture->machine, 0x0021u, 0x08u);
-    core_machine_bus_write(fixture->machine, 0x0021u, 0x04u);
-    core_machine_bus_write(fixture->machine, 0x0021u, 0x01u);
-    core_machine_bus_write(fixture->machine, 0x00a0u, icw1);
-    core_machine_bus_write(fixture->machine, 0x00a1u, 0x70u);
-    core_machine_bus_write(fixture->machine, 0x00a1u, 0x02u);
-    core_machine_bus_write(fixture->machine, 0x00a1u, 0x01u);
+    test_pic_port_write(fixture->machine, 0x0020u, icw1);
+    test_pic_port_write(fixture->machine, 0x0021u, 0x08u);
+    test_pic_port_write(fixture->machine, 0x0021u, 0x04u);
+    test_pic_port_write(fixture->machine, 0x0021u, 0x01u);
+    test_pic_port_write(fixture->machine, 0x00a0u, icw1);
+    test_pic_port_write(fixture->machine, 0x00a1u, 0x70u);
+    test_pic_port_write(fixture->machine, 0x00a1u, 0x02u);
+    test_pic_port_write(fixture->machine, 0x00a1u, 0x01u);
 }
 
 static void pic_lifecycle_finalize(pic_lifecycle_fixture *fixture)
@@ -55,10 +61,20 @@ static void pic_lifecycle_finalize(pic_lifecycle_fixture *fixture)
 }
 
 static void pic_lifecycle_eoi(pic_lifecycle_fixture *fixture,
-    lib_u8 slave)
+    lib_bool slave)
 {
-    if (slave) core_machine_bus_write(fixture->machine, 0x00a0u, 0x20u);
-    core_machine_bus_write(fixture->machine, 0x0020u, 0x20u);
+    if (slave) test_pic_port_write(fixture->machine, 0x00a0u, 0x20u);
+    test_pic_port_write(fixture->machine, 0x0020u, 0x20u);
+}
+
+static void pic_lifecycle_bind(pic_lifecycle_fixture *fixture,
+    core_machine_pic_irq_source **source, lib_u8 irq)
+{
+    if (core_machine_pic_irq_source_bind(source, fixture->master, fixture->slave,
+            irq) != LIB_STATUS_OK) {
+        pic_lifecycle_finalize(fixture);
+        exit(EXIT_FAILURE);
+    }
 }
 
 static lib_i32 pic_lifecycle_test_master_level(void)
@@ -69,8 +85,8 @@ static lib_i32 pic_lifecycle_test_master_level(void)
     lib_i32 failed = 0;
 
     pic_lifecycle_initialize(&fixture, 0x19u, LIB_NULL);
-    core_machine_pic_irq_source_bind(&first, fixture.master, fixture.slave, 5u);
-    core_machine_pic_irq_source_bind(&second, fixture.master, fixture.slave, 5u);
+    pic_lifecycle_bind(&fixture, &first, 5u);
+    pic_lifecycle_bind(&fixture, &second, 5u);
     core_machine_pic_irq_source_assert(first);
     core_machine_pic_irq_source_assert(second);
     failed |= fixture.master->asserted[5u] != 2u ||
@@ -99,8 +115,8 @@ static lib_i32 pic_lifecycle_test_slave_level(void)
     lib_i32 failed = 0;
 
     pic_lifecycle_initialize(&fixture, 0x19u, LIB_NULL);
-    core_machine_pic_irq_source_bind(&first, fixture.master, fixture.slave, 14u);
-    core_machine_pic_irq_source_bind(&second, fixture.master, fixture.slave, 14u);
+    pic_lifecycle_bind(&fixture, &first, 14u);
+    pic_lifecycle_bind(&fixture, &second, 14u);
     core_machine_pic_irq_source_assert(first);
     core_machine_pic_irq_source_assert(second);
     core_machine_pic_refresh(fixture.master, fixture.slave);
@@ -131,21 +147,21 @@ static lib_i32 pic_lifecycle_test_pit_reset(void)
 
     if (x86_pit_create(X86_PIT_PERSONALITY_8254, &pit) != LIB_STATUS_OK) return 1;
     pic_lifecycle_initialize(&fixture, 0x11u, pit);
-    core_machine_pic_irq_source_bind(&irq0, fixture.master, fixture.slave, 0u);
+    pic_lifecycle_bind(&fixture, &irq0, 0u);
     x86_pit_reset(pit);
     x86_pit_set_output(pit, 0u, core_machine_pic_timer_output, irq0);
-    core_machine_bus_write(fixture.machine, 0x0043u, 0x34u);
-    core_machine_bus_write(fixture.machine, 0x0040u, 3u);
-    core_machine_bus_write(fixture.machine, 0x0040u, 0u);
+    test_pic_port_write(fixture.machine, 0x0043u, 0x34u);
+    test_pic_port_write(fixture.machine, 0x0040u, 3u);
+    test_pic_port_write(fixture.machine, 0x0040u, 0u);
     /* The first clock transfers CR to CE; the IRQ0 edge is the fifth clock. */
     x86_pit_advance(pit, 5u);
     failed |= !irq0->asserted || fixture.master->asserted[0u] != 1u;
     core_machine_pic_reset(fixture.master, fixture.slave);
     x86_pit_reset(pit);
     failed |= irq0->asserted || fixture.master->asserted[0u] != 0u;
-    core_machine_bus_write(fixture.machine, 0x0043u, 0x34u);
-    core_machine_bus_write(fixture.machine, 0x0040u, 3u);
-    core_machine_bus_write(fixture.machine, 0x0040u, 0u);
+    test_pic_port_write(fixture.machine, 0x0043u, 0x34u);
+    test_pic_port_write(fixture.machine, 0x0040u, 3u);
+    test_pic_port_write(fixture.machine, 0x0040u, 0u);
     x86_pit_advance(pit, 5u);
     failed |= !irq0->asserted || fixture.master->asserted[0u] != 1u ||
         (test_pic_read(fixture.master, 0x0au) & VPIC_IRR_IRQ(0u)) == 0u;
@@ -163,13 +179,15 @@ static lib_i32 pic_lifecycle_test_edge_empty_and_bind(void)
 
     pic_lifecycle_initialize(&fixture, 0x11u, LIB_NULL);
     lib_memory_set(&source, 0u, sizeof(source));
-    core_machine_pic_irq_source_bind(&source, fixture.master, fixture.slave, 2u);
+    failed |= core_machine_pic_irq_source_bind(&source, fixture.master,
+        fixture.slave, 2u) != LIB_STATUS_INVALID_ARGUMENT;
     failed |= source != LIB_NULL || core_machine_pic_irq_source_is_asserted(source);
-    core_machine_pic_irq_source_bind(&source, fixture.master, fixture.slave, 16u);
+    failed |= core_machine_pic_irq_source_bind(&source, fixture.master,
+        fixture.slave, 16u) != LIB_STATUS_INVALID_ARGUMENT;
     failed |= source != LIB_NULL || core_machine_pic_irq_source_is_asserted(source);
     failed |= core_machine_pic_get_interrupt(fixture.master, fixture.slave) != 0x0fu ||
         test_pic_read(fixture.master, 0x0bu) != 0u || test_pic_read(fixture.slave, 0x0bu) != 0u;
-    core_machine_pic_irq_source_bind(&source, fixture.master, fixture.slave, 1u);
+    pic_lifecycle_bind(&fixture, &source, 1u);
     core_machine_pic_irq_source_assert(source);
     core_machine_pic_irq_source_deassert(source);
     failed |= core_machine_pic_get_interrupt(fixture.master, fixture.slave) != 0x09u;

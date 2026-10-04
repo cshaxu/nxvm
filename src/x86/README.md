@@ -11,7 +11,9 @@ state machine belongs here.
 | Component | Responsibility | Public interface |
 | --- | --- | --- |
 | core | Neutral CPU/FPU execution, guest timeline, bus transactions, RAM/port/ROM routes and bounded debug operations | machine_interface.h and adjacent *_interface.h contracts |
-| ibmpc-common | Frozen media-provider registry, copied display binding, PIT port attachment, PIC aggregation and single/dual DMA bus; remaining board/family extraction is pending | media_interface.h, display_interface.h, pit_bus_interface.h, pic_bus_interface.h, dma_bus_interface.h |
+| ibmpc-common | Board construction/reset/time/deadline/teardown, media/display providers, PIT/PIC/DMA buses and opaque FDC/HDC/video adapters | machine_board_interface.h and adjacent *_interface.h contracts |
+| ibmpc-at | AT KBC/AUX/A20/reset wiring and planar parity/Port B | kbc_interface.h, parity_interface.h |
+| ibmpc-xt | XT PPI keyboard, DIP, IRQ/NMI and speaker wiring | xt_ppi_keyboard_interface.h |
 | debug | Original DOS/X command implementation and copied x86 protocol | debug_interface.h, protocol_interface.h |
 | xasm32 | x86 byte/text assembly and disassembly | xasm32_interface.h |
 | chips/cpu | 8086 through 80386 execution state, instruction decoding and CPU-local timing | cpu_interface.h |
@@ -30,9 +32,12 @@ state machine belongs here.
 | chips/fpu | Existing partial 8087 arithmetic and 8087/287/387 extension completion model | fpu_interface.h |
 
 Debug depends on Common Machine, xasm32, Lib Storage and Types. xasm32 depends
-only on Types. ibmpc-common depends on Types and public PIT/PIC chip contracts;
-its port adapters use the Core public contract without selecting a Core build
-variant. Its display value ABI uses the public video-values header. Media
+only on Types. ibmpc-common composes public chip and AT/XT family contracts;
+the families depend on Types, their chips and neutral Core, never back on
+common-board layouts. Core selection remains the composition root's decision.
+The board owns one attachment lifetime; optional product-specific state uses
+one construction-frozen profile binding, not a registry or model-name branch.
+Its display value ABI uses the public video-values header. Media
 providers and their contexts are borrowed until registry destruction; freeze
 prevents rebinding. The display slot likewise borrows contexts, freezes binding,
 and captures copied snapshots. Neither component opens files, owns media bytes,
@@ -58,9 +63,9 @@ CPU depends on Types and the FPU public interface. It owns one opaque execution
 context and accepts only copied profile values plus a callback-only bus; a board
 owns address mapping, port routing, interrupts and the clock that schedules
 execution. The source is the legacy instruction engine moved without semantic
-rewriting. Its two historical implementation files retain the old non-strict
-diagnostic scope during this location cutover; CPU receipt closes only after the
-final receiving audit removes that exception or records a justified successor.
+rewriting. Its two historical implementation files retain their inherited
+non-strict diagnostic scope; the timing sources remain strict. This extraction
+does not change warning qualification or introduce a future CPU handoff.
 
 PIT depends only on Types. Its opaque instance owns counter state; the board
 owns port addresses, clock conversion and OUT consumers (interrupt, refresh,

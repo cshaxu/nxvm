@@ -1,0 +1,724 @@
+#include "lib/types/types_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include <stdio.h>
+
+#include "x86/core/machine.h"
+#include "x86/core/machine_interface.h"
+#include "../ibmpc-common/core_machine_board_fixture.h"
+#include "exception_fixture.h"
+
+#define TIMING_LEDGER_RESET_LINEAR 0xfffffff0u
+#define TIMING_LEDGER_RESET_PHYSICAL 0x000ffff0u
+#define TIMING_LEDGER_WINDOW_BYTES 16u
+
+typedef struct timing_ledger_state {
+    lib_u32 reads;
+    lib_u32 writes;
+    lib_u64 advanced_ticks;
+} timing_ledger_state;
+
+static lib_status timing_ledger_port_read(void *owner,
+    lib_u16 port, lib_u64 tick,
+    lib_u32 *out_value)
+{
+    (void)tick;
+    timing_ledger_state *state = (timing_ledger_state *)owner;
+
+    if (state == LIB_NULL || out_value == LIB_NULL || port != 0x00e0u) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    ++state->reads;
+    *out_value = 0x5au;
+    return LIB_STATUS_OK;
+}
+
+static lib_status timing_ledger_port_write(void *owner,
+    lib_u16 port, lib_u32 value)
+{
+    timing_ledger_state *state = (timing_ledger_state *)owner;
+
+    if (state == LIB_NULL || port != 0x00e0u || value > 0xffu) {
+        return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    ++state->writes;
+    return LIB_STATUS_OK;
+}
+
+static const core_machine_port_provider timing_ledger_port_provider = {
+    timing_ledger_port_read,
+    timing_ledger_port_write
+};
+
+static void timing_ledger_execution_reset(void *opaque)
+{
+    timing_ledger_state *state = (timing_ledger_state *)opaque;
+
+    if (state != LIB_NULL) state->advanced_ticks = 0u;
+}
+
+static void timing_ledger_execution_advance(void *opaque,
+    lib_u64 elapsed_ticks)
+{
+    timing_ledger_state *state = (timing_ledger_state *)opaque;
+
+    if (state != LIB_NULL) state->advanced_ticks += elapsed_ticks;
+}
+
+static const core_machine_execution_provider timing_ledger_execution_provider = {
+    timing_ledger_execution_reset,
+    timing_ledger_execution_advance
+};
+
+typedef struct timing_ledger_qualification_probe {
+    core_machine_retirement_eligibility_key key;
+    lib_u8 captured;
+} timing_ledger_qualification_probe;
+
+static void timing_ledger_qualification_record(void *context,
+    const core_machine_retirement_observation *observation)
+{
+    timing_ledger_qualification_probe *probe =
+        (timing_ledger_qualification_probe *)context;
+
+    if (probe != LIB_NULL && observation != LIB_NULL) {
+        probe->key = observation->eligibility_key;
+        probe->captured = LIB_TRUE;
+    }
+}
+static lib_i32 timing_ledger_prepare(core_machine **out_machine,
+    timing_ledger_state *state)
+{
+    const core_machine_executor_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    core_machine *machine = LIB_NULL;
+
+    if (out_machine == LIB_NULL || state == LIB_NULL ||
+        core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        machine == LIB_NULL ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
+            TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
+        core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
+            &timing_ledger_port_provider, state) != LIB_STATUS_OK ||
+        test_core_exception_block_vector(machine, 6u, state) != LIB_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &timing_ledger_execution_provider, state)) {
+        core_machine_destroy(machine);
+        return 0;
+    }
+    *out_machine = machine;
+    return 1;
+}
+
+static lib_i32 timing_ledger_patch_register(core_machine *machine,
+    core_machine_debug_register register_id, lib_u32 mask, lib_u32 value)
+{
+    lib_u32 previous;
+
+    return core_machine_debug_read_register(machine, register_id, &previous) == LIB_STATUS_OK &&
+        core_machine_debug_write_register(machine, register_id,
+            (previous & ~mask) | value) == LIB_STATUS_OK;
+}
+
+static lib_i32 timing_ledger_register_matches(core_machine *machine,
+    core_machine_debug_register register_id, lib_u32 mask, lib_u32 expected)
+{
+    lib_u32 value;
+
+    return core_machine_debug_read_register(machine, register_id, &value) == LIB_STATUS_OK &&
+        (value & mask) == expected;
+}
+
+static lib_i32 timing_ledger_real_entry(core_machine *machine)
+{
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
+        .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0200u}
+    };
+    return core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK;
+}
+
+static lib_i32 timing_ledger_load(core_machine *machine,
+    const lib_u8 *program, lib_size program_bytes)
+{
+    return machine != LIB_NULL && program != LIB_NULL &&
+        core_machine_reset(machine) == LIB_STATUS_OK &&
+        core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR, program,
+            program_bytes) == LIB_STATUS_OK;
+}
+
+static lib_i32 timing_ledger_execute(core_machine *machine,
+    lib_u64 instructions, lib_u64 expected_ticks,
+    timing_ledger_state *state)
+{
+    const core_machine_run_budget budget = { instructions, 0u };
+    core_machine_run_result result;
+
+    return machine != LIB_NULL && state != LIB_NULL &&
+        core_machine_run(machine, budget, &result) == LIB_STATUS_OK &&
+        result.reason == CORE_MACHINE_STOP_BUDGET &&
+        result.executed == instructions && result.ticks == expected_ticks &&
+        result.elapsed_ticks == expected_ticks &&
+        state->advanced_ticks == expected_ticks;
+}
+
+static lib_i32 timing_ledger_case(const lib_u8 *program,
+    lib_size program_bytes, lib_u64 instructions,
+    lib_u64 expected_ticks)
+{
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state) ||
+        !timing_ledger_load(machine, program, program_bytes) ||
+        !timing_ledger_execute(machine, instructions, expected_ticks, &state);
+
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_ledger_test_baseline(void)
+{
+    static const lib_u8 nop[] = { 0x90u };
+    static const lib_u8 clc[] = { 0xf8u };
+    static const lib_u8 cld[] = { 0xfcu };
+    static const lib_u8 sal_register_one[] = { 0xd0u, 0xe3u };
+    static const lib_u8 rcl_register_one_32[] = {
+        0x66u, 0xd1u, 0xd0u
+    };
+    static const lib_u8 cli[] = { 0xfau };
+    static const lib_u8 sahf[] = { 0x9eu };
+    static const lib_u8 lahf[] = { 0x9fu };
+    static const lib_u8 rcl_register_cl_32[] = { 0x66u, 0xd3u, 0xd3u };
+    static const lib_u8 mov_sreg_register[] = { 0x8eu, 0xd8u };
+    static const lib_u8 mov_imm[] = { 0xb8u, 0x34u, 0x12u };
+    static const lib_u8 mov_register[] = { 0x8bu, 0xc1u };
+
+    return !timing_ledger_case(nop, sizeof(nop), 1u, 3u) &&
+        !timing_ledger_case(clc, sizeof(clc), 1u, 2u) &&
+        !timing_ledger_case(cld, sizeof(cld), 1u, 2u) &&
+        !timing_ledger_case(sal_register_one, sizeof(sal_register_one), 1u, 3u) &&
+        !timing_ledger_case(rcl_register_one_32, sizeof(rcl_register_one_32),
+            1u, 9u) &&
+        !timing_ledger_case(cli, sizeof(cli), 1u, 3u) &&
+        !timing_ledger_case(sahf, sizeof(sahf), 1u, 3u) &&
+        !timing_ledger_case(lahf, sizeof(lahf), 1u, 2u) &&
+        !timing_ledger_case(rcl_register_cl_32, sizeof(rcl_register_cl_32),
+            1u, 9u) &&
+        !timing_ledger_case(mov_sreg_register, sizeof(mov_sreg_register), 1u,
+            2u) && !timing_ledger_case(mov_imm, sizeof(mov_imm), 1u, 2u) &&
+        !timing_ledger_case(mov_register, sizeof(mov_register), 1u, 2u);
+}
+
+static lib_i32 timing_ledger_capture_qualification(const lib_u8 *program,
+    lib_size program_bytes, core_machine_retirement_eligibility_key *out_key)
+{
+    timing_ledger_state state = { 0u, 0u, 0u };
+    timing_ledger_qualification_probe probe = { { 0 }, LIB_FALSE };
+    const core_machine_retirement_observation_provider provider = {
+        timing_ledger_qualification_record, &probe
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = out_key == LIB_NULL || !timing_ledger_prepare(&machine, &state) ||
+        core_machine_set_retirement_observation_provider(machine, &provider) !=
+            LIB_STATUS_OK || !timing_ledger_load(machine, program, program_bytes) ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+        !probe.captured;
+
+    if (!failed) *out_key = probe.key;
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_ledger_physical_case(const lib_u8 *program,
+    lib_size program_bytes, lib_status expected_status,
+    lib_u64 expected_ticks)
+{
+    core_machine_retirement_eligibility_key entry = { 0 };
+    const core_machine_retirement_qualification_descriptor qualification = {
+        &entry, 1u
+    };
+    core_machine_executor_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
+        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = 0;
+
+    if (expected_status == LIB_STATUS_OK) {
+        failed = timing_ledger_capture_qualification(program, program_bytes, &entry);
+        config.retirement_qualification = &qualification;
+    }
+    if (failed) return 1;
+    failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        machine == LIB_NULL ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
+            TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &timing_ledger_execution_provider, &state) ||
+        !timing_ledger_load(machine, program, program_bytes) ||
+        core_machine_run(machine, budget, &result) != expected_status;
+
+    if (!failed && expected_status == LIB_STATUS_OK) {
+        failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
+            result.executed != 1u || result.ticks != expected_ticks ||
+            result.elapsed_ticks != expected_ticks ||
+            state.advanced_ticks != expected_ticks;
+    }
+    if (!failed && expected_status == LIB_STATUS_INTERNAL_ERROR) {
+        failed |= result.reason != CORE_MACHINE_STOP_FAULT ||
+            result.executed != 0u || result.ticks != 0u ||
+            result.elapsed_ticks != 0u || state.advanced_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+static lib_i32 timing_ledger_physical_protected_mov_sreg_memory(void)
+{
+    static const lib_u8 gdt_pointer[] = { 0x3fu, 0u, 0u, 0x03u, 0u, 0u };
+    static const lib_u8 gdt[] = {
+        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x30u, 0u, 0x92u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x30u, 0u, 0x12u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x30u, 0u, 0x98u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x50u, 0u, 0x92u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x50u, 0u, 0x92u, 0u, 0u,
+        0x0fu, 0u, 0u, 0x50u, 0u, 0x92u, 0u, 0u
+    };
+    static const lib_u8 boot[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u, 0xf0u,
+        0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
+        0xb8u, 0x10u, 0x00u, 0x8eu, 0xd0u,
+        0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
+    };
+    static const lib_u8 program[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
+    static const lib_u8 selector[] = { 0x30u, 0x00u };
+    const core_machine_executor_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_u64 elapsed_before = 0u;
+    lib_i32 failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        machine == LIB_NULL ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &timing_ledger_execution_provider, &state) ||
+        !timing_ledger_real_entry(machine) ||
+        core_machine_memory_write(machine, 0x0100u, gdt_pointer,
+            sizeof(gdt_pointer)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) !=
+            LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0200u, boot, sizeof(boot)) !=
+            LIB_STATUS_OK ||
+        core_machine_run(machine, (core_machine_run_budget){10u, 0u},
+            &result) != LIB_STATUS_OK || result.reason !=
+            CORE_MACHINE_STOP_BUDGET;
+
+    if (!failed) {
+        failed |= core_machine_memory_write(machine, 0x4000u, selector,
+            sizeof(selector)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x2000u, program,
+                sizeof(program)) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        elapsed_before = machine->elapsed_ticks;
+        state.advanced_ticks = 0u;
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            result.ticks != 19u || result.elapsed_ticks != elapsed_before + 19u ||
+            state.advanced_ticks != 19u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+static lib_i32 timing_ledger_physical_far_jmp_memory(lib_i32 protected_mode)
+{
+    static const lib_u8 instruction[] = {
+        0x2eu, 0xffu, 0x2eu, 0xf6u, 0xffu
+    };
+    static const lib_u8 pointer[] = { 0xfeu, 0xffu, 0x00u, 0xf0u };
+    static const lib_u8 target[] = { 0x90u };
+    const core_machine_executor_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
+        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        machine == LIB_NULL ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
+            TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &timing_ledger_execution_provider, &state) ||
+        !timing_ledger_load(machine, instruction, sizeof(instruction)) ||
+        core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR + 6u,
+            pointer, sizeof(pointer)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR + 14u,
+            target, sizeof(target)) != LIB_STATUS_OK;
+
+    if (!failed && protected_mode) {
+        failed = !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_CR0, 0u, 1u);
+    }
+    if (!failed) {
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != 0u ||
+            state.advanced_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+static lib_i32 timing_ledger_physical_protected_far_jmp_memory(void)
+{
+    static const lib_u8 gdt_pointer[] = { 0x17u, 0u, 0u, 0x03u, 0u, 0u };
+    static const lib_u8 gdt[] = {
+        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
+        0xffu, 0xffu, 0u, 0u, 0u, 0x92u, 0xcfu, 0u
+    };
+    static const lib_u8 real_code[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u, 0xf0u,
+        0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
+        0xb8u, 0x10u, 0x00u, 0x8eu, 0xd0u,
+        0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
+    };
+    static const lib_u8 instruction[] = {
+        0x2eu, 0xffu, 0x2eu, 0x1fu, 0x00u
+    };
+    static const lib_u8 pointer[] = { 0x28u, 0u, 0x08u, 0u };
+    static const lib_u8 target[] = { 0x90u };
+    const core_machine_executor_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const core_machine_run_budget setup_budget = { 10u, 0u };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_u64 elapsed_before = 0u;
+    lib_i32 failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        machine == LIB_NULL ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &timing_ledger_execution_provider, &state) ||
+        !timing_ledger_real_entry(machine) ||
+        core_machine_memory_write(machine, 0x0100u, gdt_pointer,
+            sizeof(gdt_pointer)) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) !=
+            LIB_STATUS_OK || core_machine_memory_write(machine, 0x0200u, real_code,
+            sizeof(real_code)) != LIB_STATUS_OK ||
+        core_machine_run(machine, setup_budget, &result) !=
+            LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET;
+    if (!failed) {
+        failed |= core_machine_memory_write(machine, 0x2000u, instruction,
+            sizeof(instruction)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x201fu, pointer,
+                sizeof(pointer)) != LIB_STATUS_OK ||
+            core_machine_memory_write(machine, 0x2028u, target,
+                sizeof(target)) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        machine->retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+        elapsed_before = machine->elapsed_ticks;
+        state.advanced_ticks = 0u;
+        failed |= core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != elapsed_before ||
+            state.advanced_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+static lib_i32 timing_ledger_test_physical_classifier_boundary(void)
+{
+    static const lib_u8 cli[] = { 0xfau };
+    static const lib_u8 cld[] = { 0xfcu };
+    static const lib_u8 prefixed_cld[] = { 0x26u, 0xfcu };
+    static const lib_u8 sal_register_one[] = { 0xd0u, 0xe3u };
+    static const lib_u8 sal_memory_one[] = { 0xd0u, 0x26u, 0x00u, 0x10u };
+    static const lib_u8 rcl_register_one_32[] = {
+        0x66u, 0xd1u, 0xd0u
+    };
+    static const lib_u8 rcl_register_one_16[] = { 0xd1u, 0xd0u };
+    static const lib_u8 rcl_memory_one_32[] = {
+        0x66u, 0xd1u, 0x16u, 0x00u, 0x10u
+    };
+    static const lib_u8 rcl_register_cl_32[] = { 0x66u, 0xd3u, 0xd3u };
+    static const lib_u8 rcl_memory_cl_32[] = {
+        0x66u, 0xd3u, 0x16u, 0x00u, 0x10u
+    };
+    static const lib_u8 lahf[] = { 0x9fu };
+    static const lib_u8 prefixed_lahf[] = { 0x26u, 0x9fu };
+    static const lib_u8 sahf[] = { 0x9eu };
+    static const lib_u8 mov_sreg_register[] = { 0x8eu, 0xd8u };
+    static const lib_u8 mov_sreg_memory[] = {
+        0x8eu, 0x1eu, 0x00u, 0x10u
+    };
+
+    return timing_ledger_physical_case(cli, sizeof(cli), LIB_STATUS_OK, 3u) ||
+        timing_ledger_physical_case(cld, sizeof(cld), LIB_STATUS_OK, 2u) ||
+        timing_ledger_physical_case(prefixed_cld, sizeof(prefixed_cld),
+            LIB_STATUS_INTERNAL_ERROR, 0u) ||
+        timing_ledger_physical_case(sal_register_one, sizeof(sal_register_one),
+            LIB_STATUS_OK, 3u) ||
+        timing_ledger_physical_case(sal_memory_one, sizeof(sal_memory_one),
+            LIB_STATUS_INTERNAL_ERROR, 0u) ||
+        timing_ledger_physical_case(rcl_register_one_32,
+            sizeof(rcl_register_one_32), LIB_STATUS_OK, 9u) ||
+        timing_ledger_physical_case(rcl_register_one_16,
+            sizeof(rcl_register_one_16), LIB_STATUS_INTERNAL_ERROR, 0u) ||
+        timing_ledger_physical_case(rcl_memory_one_32,
+            sizeof(rcl_memory_one_32), LIB_STATUS_INTERNAL_ERROR, 0u) ||
+        timing_ledger_physical_case(rcl_register_cl_32,
+            sizeof(rcl_register_cl_32), LIB_STATUS_OK, 9u) ||
+        timing_ledger_physical_case(rcl_memory_cl_32,
+            sizeof(rcl_memory_cl_32), LIB_STATUS_INTERNAL_ERROR, 0u) ||
+        timing_ledger_physical_case(lahf, sizeof(lahf), LIB_STATUS_OK, 2u) ||
+        timing_ledger_physical_case(prefixed_lahf, sizeof(prefixed_lahf),
+            LIB_STATUS_INTERNAL_ERROR, 0u) ||
+        timing_ledger_physical_case(sahf, sizeof(sahf), LIB_STATUS_OK, 3u) ||
+        timing_ledger_physical_case(mov_sreg_register,
+            sizeof(mov_sreg_register), LIB_STATUS_OK, 2u) ||
+        timing_ledger_physical_case(mov_sreg_memory,
+            sizeof(mov_sreg_memory), LIB_STATUS_OK, 5u) ||
+        timing_ledger_physical_protected_mov_sreg_memory() ||
+        timing_ledger_physical_far_jmp_memory(0) ||
+        timing_ledger_physical_far_jmp_memory(1) ||
+        timing_ledger_physical_protected_far_jmp_memory();
+}
+
+static lib_i32 timing_ledger_test_memory(void)
+{
+    static const lib_u8 mov_read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
+    static const lib_u8 mov_write[] = { 0x89u, 0x0eu, 0x00u, 0x10u };
+    static const lib_u8 moffs_read[] = { 0xa1u, 0x00u, 0x10u };
+    static const lib_u8 moffs_write[] = { 0xa3u, 0x00u, 0x10u };
+    const lib_u16 value = 0x5aa5u;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state);
+
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, mov_read, sizeof(mov_read)) ||
+            core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
+                LIB_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
+            !timing_ledger_register_matches(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, value);
+    }
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, mov_write, sizeof(mov_write)) ||
+            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, value) ||
+            !timing_ledger_execute(machine, 1u, 2u, &state);
+    }
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, moffs_read, sizeof(moffs_read)) ||
+            core_machine_memory_write(machine, 0x1000u, &value, sizeof(value)) !=
+                LIB_STATUS_OK || !timing_ledger_execute(machine, 1u, 4u, &state) ||
+            !timing_ledger_register_matches(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, value);
+    }
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, moffs_write, sizeof(moffs_write)) ||
+            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EAX, 0xffffu, value) ||
+            !timing_ledger_execute(machine, 1u, 2u, &state);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_ledger_test_ports(void)
+{
+    static const lib_u8 in_immediate[] = { 0xe4u, 0xe0u };
+    static const lib_u8 out_immediate[] = { 0xe6u, 0xe0u };
+    static const lib_u8 in_dx[] = { 0xecu };
+    static const lib_u8 out_dx[] = { 0xeeu };
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state);
+
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, in_immediate, sizeof(in_immediate)) ||
+            !timing_ledger_execute(machine, 1u, 12u, &state) || state.reads != 1u;
+    }
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, out_immediate,
+            sizeof(out_immediate)) || !timing_ledger_execute(machine, 1u, 10u,
+                &state) || state.writes != 1u;
+    }
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, in_dx, sizeof(in_dx)) ||
+            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0x00e0u) ||
+            !timing_ledger_execute(machine, 1u, 13u, &state) || state.reads != 2u;
+    }
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, out_dx, sizeof(out_dx)) ||
+            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EDX, 0xffffu, 0x00e0u) ||
+            !timing_ledger_execute(machine, 1u, 11u, &state) || state.writes != 2u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_ledger_test_jcc_and_repeat(void)
+{
+    static const lib_u8 taken[] = { 0x74u, 0x01u, 0x90u, 0x90u };
+    static const lib_u8 not_taken[] = { 0x75u, 0x01u, 0x90u, 0x90u };
+    static const lib_u8 rep_movsb[] = { 0xf3u, 0xa4u };
+    static const lib_u8 source[] = { 0x11u, 0x22u, 0x33u };
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state);
+
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, taken, sizeof(taken)) ||
+            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
+                0u, CORE_MACHINE_DEBUG_EFLAGS_ZF) ||
+            !timing_ledger_execute(machine, 1u, 8u, &state);
+    }
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, not_taken, sizeof(not_taken)) ||
+            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EFLAGS,
+                0u, CORE_MACHINE_DEBUG_EFLAGS_ZF) ||
+            !timing_ledger_execute(machine, 1u, 3u, &state);
+    }
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, rep_movsb, sizeof(rep_movsb)) ||
+            core_machine_memory_write(machine, 0x1000u, source, sizeof(source)) !=
+                LIB_STATUS_OK ||
+            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_ECX, 0xffffu, 3u) ||
+            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_ESI, 0xffffu, 0x1000u) ||
+            !timing_ledger_patch_register(machine, CORE_MACHINE_DEBUG_EDI, 0xffffu, 0x1100u) ||
+            !timing_ledger_execute(machine, 3u, 17u, &state);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_ledger_test_unavailable_and_fault(void)
+{
+    static const lib_u8 rol_register_one[] = { 0xd0u, 0xc0u };
+    static const lib_u8 fault[] = { 0xf0u, 0x90u };
+    timing_ledger_state state = { 0u, 0u, 0u };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state);
+
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, rol_register_one,
+            sizeof(rol_register_one)) || !timing_ledger_execute(machine, 1u, 3u,
+                &state);
+    }
+    if (!failed) {
+        failed |= !timing_ledger_load(machine, fault, sizeof(fault)) ||
+            core_machine_run(machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != 0u ||
+            state.advanced_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_ledger_test_budget_overflow_and_reset(void)
+{
+    static const lib_u8 nop[] = { 0x90u };
+    const core_machine_run_budget insufficient = { 1u, 105u };
+    const core_machine_run_budget sufficient = { 1u, 106u };
+    core_machine_run_result result;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = !timing_ledger_prepare(&machine, &state) ||
+        !timing_ledger_load(machine, nop, sizeof(nop));
+
+    if (!failed) {
+        failed |= core_machine_run(machine, insufficient, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != 0u ||
+            !timing_ledger_register_matches(machine, CORE_MACHINE_DEBUG_EIP, 0xffffffffu, 0xfff0u) || state.advanced_ticks != 0u;
+    }
+    if (!failed) {
+        failed |= core_machine_run(machine, sufficient, &result) != LIB_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            result.ticks != 3u || result.elapsed_ticks != 3u ||
+            state.advanced_ticks != 3u || core_machine_reset(machine) != LIB_STATUS_OK ||
+            core_machine_get_elapsed_ticks(machine, &result.elapsed_ticks) !=
+                LIB_STATUS_OK || result.elapsed_ticks != 0u ||
+            !timing_ledger_load(machine, nop, sizeof(nop)) ||
+            !timing_ledger_execute(machine, 1u, 3u, &state);
+    }
+    if (!failed) {
+        failed = !timing_ledger_load(machine, nop, sizeof(nop));
+    }
+    if (!failed) {
+        machine->elapsed_ticks = UINT64_MAX - 2u;
+        state.advanced_ticks = 0u;
+        failed |= core_machine_run(machine, sufficient, &result) != LIB_STATUS_INTERNAL_ERROR ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != UINT64_MAX - 2u ||
+            machine->elapsed_ticks != UINT64_MAX - 2u || state.advanced_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 timing_ledger_test_compatibility_is_not_source_truth(void)
+{
+    static const lib_u8 prefixed_nop[] = { 0x26u, 0x90u };
+    const core_machine_executor_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .ticks_per_instruction = 10u,
+        .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    core_machine *machine = LIB_NULL;
+    lib_i32 failed = core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
+        machine == LIB_NULL ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
+            TIMING_LEDGER_WINDOW_BYTES) != LIB_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR,
+            prefixed_nop, sizeof(prefixed_nop)) != LIB_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != LIB_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+        result.ticks != 3u || result.elapsed_ticks != 3u;
+
+    core_machine_destroy(machine);
+    return failed;
+}
+
+lib_i32 main(void)
+{
+    if (!timing_ledger_test_baseline()) return 1;
+    if (timing_ledger_test_memory()) return 2;
+    if (timing_ledger_test_ports()) return 3;
+    if (timing_ledger_test_jcc_and_repeat()) return 4;
+    if (timing_ledger_test_unavailable_and_fault()) return 5;
+    if (timing_ledger_test_budget_overflow_and_reset()) return 6;
+    if (timing_ledger_test_compatibility_is_not_source_truth()) return 7;
+    if (timing_ledger_test_physical_classifier_boundary()) return 8;
+    printf("M5:T357:S3:INSTRUCTION-TIMING-LEDGER:OK\n");
+    return 0;
+}

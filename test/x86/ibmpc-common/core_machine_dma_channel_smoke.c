@@ -114,13 +114,13 @@ static void core_machine_dma_failure_fixture_write(void *owner,
 static void core_machine_dma_write_channel2(core_machine *port, lib_u16 address,
     lib_u8 page, lib_u16 count, lib_u8 mode)
 {
-    core_machine_bus_write(port, 0x000cu, 0u);
-    core_machine_bus_write(port, 0x0004u, address & 0xffu);
-    core_machine_bus_write(port, 0x0004u, address >> 8);
-    core_machine_bus_write(port, 0x0005u, count & 0xffu);
-    core_machine_bus_write(port, 0x0005u, count >> 8);
-    core_machine_bus_write(port, 0x0081u, page);
-    core_machine_bus_write(port, 0x000bu, mode);
+    test_dma_port_write(port, 0x000cu, 0u);
+    test_dma_port_write(port, 0x0004u, address & 0xffu);
+    test_dma_port_write(port, 0x0004u, address >> 8);
+    test_dma_port_write(port, 0x0005u, count & 0xffu);
+    test_dma_port_write(port, 0x0005u, count >> 8);
+    test_dma_port_write(port, 0x0081u, page);
+    test_dma_port_write(port, 0x000bu, mode);
 }
 
 static void core_machine_dma_write_primary_channel(core_machine *port,
@@ -128,12 +128,12 @@ static void core_machine_dma_write_primary_channel(core_machine *port,
 {
     lib_u16 address_port = (lib_u16)(channel * 2u);
 
-    core_machine_bus_write(port, 0x000cu, 0u);
-    core_machine_bus_write(port, address_port, address & 0xffu);
-    core_machine_bus_write(port, address_port, address >> 8u);
-    core_machine_bus_write(port, (lib_u16)(address_port + 1u), count & 0xffu);
-    core_machine_bus_write(port, (lib_u16)(address_port + 1u), count >> 8u);
-    core_machine_bus_write(port, 0x000bu, mode);
+    test_dma_port_write(port, 0x000cu, 0u);
+    test_dma_port_write(port, address_port, address & 0xffu);
+    test_dma_port_write(port, address_port, address >> 8u);
+    test_dma_port_write(port, (lib_u16)(address_port + 1u), count & 0xffu);
+    test_dma_port_write(port, (lib_u16)(address_port + 1u), count >> 8u);
+    test_dma_port_write(port, 0x000bu, mode);
 }
 
 static lib_u16 core_machine_dma_secondary_page_port(
@@ -151,16 +151,16 @@ static void core_machine_dma_write_secondary_channel(core_machine *port,
 {
     lib_u16 address_port = (lib_u16)(0x00c0u + channel * 4u);
 
-    core_machine_bus_write(port, 0x00d8u, 0u);
-    core_machine_bus_write(port, address_port, address & 0xffu);
-    core_machine_bus_write(port, address_port, address >> 8u);
-    core_machine_bus_write(port, (lib_u16)(address_port + 2u),
+    test_dma_port_write(port, 0x00d8u, 0u);
+    test_dma_port_write(port, address_port, address & 0xffu);
+    test_dma_port_write(port, address_port, address >> 8u);
+    test_dma_port_write(port, (lib_u16)(address_port + 2u),
         count & 0xffu);
-    core_machine_bus_write(port, (lib_u16)(address_port + 2u),
+    test_dma_port_write(port, (lib_u16)(address_port + 2u),
         count >> 8u);
-    core_machine_bus_write(port, core_machine_dma_secondary_page_port(channel),
+    test_dma_port_write(port, core_machine_dma_secondary_page_port(channel),
         page);
-    core_machine_bus_write(port, 0x00d6u, mode);
+    test_dma_port_write(port, 0x00d6u, mode);
 }
 
 static lib_u16 core_machine_dma_read_pair(core_machine *port,
@@ -168,7 +168,7 @@ static lib_u16 core_machine_dma_read_pair(core_machine *port,
 {
     lib_u16 value;
 
-    core_machine_bus_write(port, clear_port, 0u);
+    test_dma_port_write(port, clear_port, 0u);
     value = (lib_u16)test_dma_port_read(port, value_port);
     return (lib_u16)(value |
         (test_dma_port_read(port, value_port) << 8u));
@@ -311,9 +311,9 @@ static lib_i32 core_machine_dma_first_service_matrix(void)
             core_machine_dma_write_primary_channel(machine, channel, 0x1000u,
                 0u, (lib_u8)(mode | transfer | channel));
         }
-        core_machine_bus_write(machine, status_port,
+        test_dma_port_write(machine, status_port,
             compressed ? 0x08u : 0u);
-        core_machine_bus_write(machine, word ? 0xd4u : 0x0au, channel);
+        test_dma_port_write(machine, word ? 0xd4u : 0x0au, channel);
         core_machine_dma_request_assert(bus, &bindings[index]);
         /* One arbitration tick enters S1; no transfer until S4 executes. */
         for (phase = 0u; phase < (compressed ? 3u : 4u); ++phase) {
@@ -430,8 +430,8 @@ lib_i32 main(void)
     /* Intel's normal service is S1 -> S2 -> S3 -> S4, while TM removes
      * S3. Memory/I/O work commits only in S4. */
     core_machine_dma_write_channel2(machine, 0x1200u, 0u, 0u, 0x86u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
-    core_machine_bus_write(machine, 0x00d4u, 0u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x00d4u, 0u);
     core_machine_dma_request_assert(bus, &binding);
     core_machine_dma_advance_phases(bus, machine, 1u);
     core_machine_dma_advance_phases(bus, machine, 3u);
@@ -451,7 +451,7 @@ lib_i32 main(void)
         failed = 1;
     }
     core_machine_dma_write_channel2(machine, 0x1200u, 0u, 0u, 0x82u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
     core_machine_dma_request_assert(bus, &binding);
     core_machine_dma_advance_phases(bus, machine, 5u);
     if (fixture.next != 1u || core_machine_memory_read(machine, 0x11200u,
@@ -462,9 +462,9 @@ lib_i32 main(void)
     core_machine_dma_reset(bus);
     fixture.next = 0u;
     core_machine_dma_write_channel2(machine, 0x1200u, 0u, 0u, 0x86u);
-    core_machine_bus_write(machine, 0x0008u, 0x08u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
-    core_machine_bus_write(machine, 0x00d4u, 0u);
+    test_dma_port_write(machine, 0x0008u, 0x08u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x00d4u, 0u);
     core_machine_dma_request_assert(bus, &binding);
     core_machine_dma_advance_phases(bus, machine, 3u);
     if (fixture.next != 0u || x86_dma_get_signals(bus->primary.device).active_channel != 2u) {
@@ -481,10 +481,10 @@ lib_i32 main(void)
     /* Block-mode device -> RAM: count is inclusive, but each core DMA grant
      * may expose only one byte. */
     core_machine_dma_write_channel2(machine, 0x1234u, 0x01u, 1u, 0x86u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
     core_machine_dma_request_assert(bus, &binding);
-    core_machine_bus_write(machine, 0x00d4u, 0x00u);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_port_write(machine, 0x00d4u, 0x00u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (core_machine_memory_read(machine, 0x11234u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK ||
@@ -493,7 +493,7 @@ lib_i32 main(void)
         (test_dma_blocked_inputs(bus->primary.device) & (1u << 2u)) != 0u) {
         failed = 1;
     }
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (core_machine_memory_read(machine, 0x11234u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK ||
@@ -513,17 +513,17 @@ lib_i32 main(void)
         goto done;
     }
     core_machine_dma_write_channel2(machine, 0x1234u, 0x01u, 0u, 0x46u);
-    core_machine_bus_write(machine, 0x000au, 0x06u);
+    test_dma_port_write(machine, 0x000au, 0x06u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x11234u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK ||
         bytes[0] != 0u) {
         failed = 1;
     }
-    core_machine_bus_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
     core_machine_dma_request_deassert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x11234u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK ||
         bytes[0] != 0u) {
@@ -536,11 +536,11 @@ lib_i32 main(void)
     fixture.bytes[1] = 0xc3u;
     fixture.next = 0u;
     core_machine_dma_write_channel2(machine, 0x1236u, 0x01u, 0u, 0x96u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x11236u,
             bytes, 1u) != LIB_STATUS_OK ||
         bytes[0] != 0xc3u || test_dma_register_word(machine, LIB_FALSE, 2u * 2u) != 0x1236u ||
@@ -553,9 +553,9 @@ lib_i32 main(void)
     fixture.bytes[0] = 0x7eu;
     fixture.next = 0u;
     core_machine_dma_write_channel2(machine, 0x1238u, 0x01u, 0u, 0xa6u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x11238u,
             bytes, 1u) != LIB_STATUS_OK ||
         bytes[0] != 0x7eu || test_dma_register_word(machine, LIB_FALSE, 2u * 2u) != 0x1237u) {
@@ -571,11 +571,11 @@ lib_i32 main(void)
     fixture.terminal_count = 0u;
     core_machine_dma_reset(bus);
     core_machine_dma_write_channel2(machine, 0x1240u, 0x01u, 1u, 0x06u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
-    core_machine_bus_write(machine, 0x00d4u, 0x00u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x00d4u, 0x00u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x11240u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK ||
         bytes[0] != 0x11u || bytes[1] != 0x22u || fixture.terminal_count != 1u ||
@@ -588,11 +588,11 @@ lib_i32 main(void)
     fixture.terminal_count = 0u;
     core_machine_dma_reset(bus);
     core_machine_dma_write_channel2(machine, 0x1242u, 0x01u, 1u, 0x46u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
-    core_machine_bus_write(machine, 0x00d4u, 0x00u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x00d4u, 0x00u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x11242u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK ||
         bytes[0] != 0x33u || bytes[1] != 0x44u || fixture.terminal_count != 1u ||
@@ -613,10 +613,10 @@ lib_i32 main(void)
     core_machine_dma_reset(bus);
     core_machine_dma_write_primary_channel(machine, 0u, 0x0200u, 1u, 0x80u);
     core_machine_dma_write_primary_channel(machine, 1u, 0x0300u, 1u, 0x81u);
-    core_machine_bus_write(machine, 0x0008u, 0x01u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
-    core_machine_bus_write(machine, 0x00d4u, 0u);
-    core_machine_bus_write(machine, 0x0009u, 0x04u);
+    test_dma_port_write(machine, 0x0008u, 0x01u);
+    test_dma_port_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x00d4u, 0u);
+    test_dma_port_write(machine, 0x0009u, 0x04u);
     core_machine_dma_advance_phases(bus, machine, 5u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (core_machine_memory_read(machine, 0x0300u,
@@ -657,10 +657,10 @@ lib_i32 main(void)
     core_machine_dma_reset(bus);
     core_machine_dma_write_primary_channel(machine, 0u, 0x0221u, 1u, 0xa0u);
     core_machine_dma_write_primary_channel(machine, 1u, 0x0320u, 1u, 0x81u);
-    core_machine_bus_write(machine, 0x0008u, 0x01u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
-    core_machine_bus_write(machine, 0x00d4u, 0u);
-    core_machine_bus_write(machine, 0x0009u, 0x04u);
+    test_dma_port_write(machine, 0x0008u, 0x01u);
+    test_dma_port_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x00d4u, 0u);
+    test_dma_port_write(machine, 0x0009u, 0x04u);
     core_machine_dma_advance_phases(bus, machine, 16u);
     if (core_machine_memory_read(machine, 0x0320u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK ||
@@ -672,14 +672,14 @@ lib_i32 main(void)
 
     /* PC/AT page ports retain their complete readable latch; the word
      * controller ignores page bit zero only while it forms its address. */
-    core_machine_bus_write(machine, 0x0081u, 0x11u);
-    core_machine_bus_write(machine, 0x0082u, 0x12u);
-    core_machine_bus_write(machine, 0x0083u, 0x13u);
-    core_machine_bus_write(machine, 0x0087u, 0x17u);
-    core_machine_bus_write(machine, 0x0089u, 0x19u);
-    core_machine_bus_write(machine, 0x008au, 0x1au);
-    core_machine_bus_write(machine, 0x008bu, 0x1bu);
-    core_machine_bus_write(machine, 0x008fu, 0x1fu);
+    test_dma_port_write(machine, 0x0081u, 0x11u);
+    test_dma_port_write(machine, 0x0082u, 0x12u);
+    test_dma_port_write(machine, 0x0083u, 0x13u);
+    test_dma_port_write(machine, 0x0087u, 0x17u);
+    test_dma_port_write(machine, 0x0089u, 0x19u);
+    test_dma_port_write(machine, 0x008au, 0x1au);
+    test_dma_port_write(machine, 0x008bu, 0x1bu);
+    test_dma_port_write(machine, 0x008fu, 0x1fu);
     if (test_dma_port_read(machine, 0x0081u) != 0x11u ||
         test_dma_port_read(machine, 0x0082u) != 0x12u ||
         test_dma_port_read(machine, 0x0083u) != 0x13u ||
@@ -695,7 +695,7 @@ lib_i32 main(void)
     for (page_port = 0x0080u; page_port <= 0x008fu; ++page_port) {
         lib_u8 value = (lib_u8)(page_port - 0x0080u);
 
-        core_machine_bus_write(machine, page_port, value);
+        test_dma_port_write(machine, page_port, value);
         if (test_dma_port_read(machine, page_port) != value) failed = 1;
     }
 
@@ -712,17 +712,17 @@ lib_i32 main(void)
         lib_u16 base = channel ? 0xc0u : 0u;
         lib_u16 stride = channel ? 2u : 1u;
         core_machine_dma_reset(bus);
-        core_machine_bus_write(machine, (lib_u16)(base + stride * 8u), 0x10u);
-        core_machine_bus_write(machine, (lib_u16)(base + stride * 11u), 0x82u);
-        core_machine_bus_write(machine, (lib_u16)(base + stride * 9u), 6u);
-        core_machine_bus_write(machine, (lib_u16)(base + stride * 10u), 6u);
-        core_machine_bus_write(machine, (lib_u16)(base + stride * 15u), 5u);
+        test_dma_port_write(machine, (lib_u16)(base + stride * 8u), 0x10u);
+        test_dma_port_write(machine, (lib_u16)(base + stride * 11u), 0x82u);
+        test_dma_port_write(machine, (lib_u16)(base + stride * 9u), 6u);
+        test_dma_port_write(machine, (lib_u16)(base + stride * 10u), 6u);
+        test_dma_port_write(machine, (lib_u16)(base + stride * 15u), 5u);
         if (x86_dma_get_signals(chip).requests != 4u) failed = 1;
-        core_machine_bus_write(machine, (lib_u16)(base + stride * 9u), 2u);
+        test_dma_port_write(machine, (lib_u16)(base + stride * 9u), 2u);
         if (test_dma_blocked_inputs(chip) != 5u) failed = 1;
-        core_machine_bus_write(machine, (lib_u16)(base + stride * 14u), 0u);
+        test_dma_port_write(machine, (lib_u16)(base + stride * 14u), 0u);
         if (test_dma_blocked_inputs(chip) != 0u) failed = 1;
-        core_machine_bus_write(machine, (lib_u16)(base + stride * 13u), 0u);
+        test_dma_port_write(machine, (lib_u16)(base + stride * 13u), 0u);
         if (test_dma_blocked_inputs(chip) != 15u ||
             x86_dma_get_signals(chip).requests != 0u ||
             !x86_dma_get_signals(chip).enabled) failed = 1;
@@ -731,7 +731,7 @@ lib_i32 main(void)
     /* Channels 5--7 retain the real word address layout and their sparse
      * secondary-controller ports. */
     core_machine_dma_reset(bus);
-    core_machine_bus_write(machine, 0x00dcu, 0u);
+    test_dma_port_write(machine, 0x00dcu, 0u);
     word_fixture.next = 0u;
     for (channel = 1u; channel <= 3u; ++channel) {
         lib_u32 physical = 0x20000u +
@@ -749,7 +749,7 @@ lib_i32 main(void)
         }
         core_machine_dma_request_assert(bus,
             &word_bindings[channel - 1u]);
-        test_dma_transfers(bus, machine, machine, 1u);
+        test_dma_transfers(bus, machine, machine, 1u, 2u);
         if (core_machine_memory_read(machine, physical,
                 words, sizeof(words[0])) != LIB_STATUS_OK ||
             words[0] != word_fixture.words[channel - 1u]) {
@@ -760,14 +760,14 @@ lib_i32 main(void)
     /* Increment and decrement wrap the controller address while retaining the
      * programmed PC/AT page for byte and word channels. */
     core_machine_dma_reset(bus);
-    core_machine_bus_write(machine, 0x00d4u, 0u);
+    test_dma_port_write(machine, 0x00d4u, 0u);
     fixture.bytes[0] = 0x41u;
     fixture.bytes[1] = 0x42u;
     fixture.next = 0u;
     core_machine_dma_write_channel2(machine, 0xffffu, 0x01u, 1u, 0x86u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 2u);
+    test_dma_transfers(bus, machine, machine, 2u, 2u);
     if (core_machine_memory_read(machine, 0x1ffffu,
             bytes, 1u) != LIB_STATUS_OK ||
         bytes[0] != 0x41u ||
@@ -777,14 +777,14 @@ lib_i32 main(void)
     }
 
     core_machine_dma_reset(bus);
-    core_machine_bus_write(machine, 0x00dcu, 0u);
+    test_dma_port_write(machine, 0x00dcu, 0u);
     word_fixture.words[0] = 0x369cu;
     word_fixture.words[1] = 0x48adu;
     word_fixture.next = 0u;
     core_machine_dma_write_secondary_channel(machine, 1u, 0u, 0x01u, 0x02u,
         0xa5u);
     core_machine_dma_request_assert(bus, &word_bindings[0]);
-    test_dma_transfers(bus, machine, machine, 2u);
+    test_dma_transfers(bus, machine, machine, 2u, 2u);
     if (core_machine_memory_read(machine, 0x20000u,
             words, sizeof(words[0])) != LIB_STATUS_OK ||
         words[0] != 0x369cu ||
@@ -795,14 +795,14 @@ lib_i32 main(void)
     }
 
     core_machine_dma_reset(bus);
-    core_machine_bus_write(machine, 0x00d4u, 0u);
+    test_dma_port_write(machine, 0x00d4u, 0u);
     fixture.bytes[0] = 0x43u;
     fixture.bytes[1] = 0x44u;
     fixture.next = 0u;
     core_machine_dma_write_channel2(machine, 0u, 0x01u, 1u, 0xa6u);
-    core_machine_bus_write(machine, 0x000au, 0x02u);
+    test_dma_port_write(machine, 0x000au, 0x02u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 2u);
+    test_dma_transfers(bus, machine, machine, 2u, 2u);
     if (core_machine_memory_read(machine, 0x10000u,
             bytes, 1u) != LIB_STATUS_OK ||
         bytes[0] != 0x43u ||
@@ -812,14 +812,14 @@ lib_i32 main(void)
     }
 
     core_machine_dma_reset(bus);
-    core_machine_bus_write(machine, 0x00dcu, 0u);
+    test_dma_port_write(machine, 0x00dcu, 0u);
     word_fixture.words[0] = 0x1357u;
     word_fixture.words[1] = 0x2468u;
     word_fixture.next = 0u;
     core_machine_dma_write_secondary_channel(machine, 1u, 0xffffu, 0x01u,
         0x02u, 0x85u);
     core_machine_dma_request_assert(bus, &word_bindings[0]);
-    test_dma_transfers(bus, machine, machine, 2u);
+    test_dma_transfers(bus, machine, machine, 2u, 2u);
     if (core_machine_memory_read(machine, 0x3fffeu,
             words, sizeof(words[0])) != LIB_STATUS_OK ||
         words[0] != 0x1357u ||
@@ -838,9 +838,9 @@ lib_i32 main(void)
     fixture.next = 0u;
     fixture.terminal_count = 0u;
     core_machine_dma_write_channel2(machine, 0x1800u, 0u, 1u, 0x86u);
-    core_machine_bus_write(machine, 0x000au, 0x06u);
-    core_machine_bus_write(machine, 0x0009u, 0x06u);
-    test_dma_transfers(bus, machine, machine, 2u);
+    test_dma_port_write(machine, 0x000au, 0x06u);
+    test_dma_port_write(machine, 0x0009u, 0x06u);
+    test_dma_transfers(bus, machine, machine, 2u, 2u);
     if (core_machine_memory_read(machine, 0x1800u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK ||
         bytes[0] != 0x61u || bytes[1] != 0x62u ||
@@ -854,15 +854,15 @@ lib_i32 main(void)
     fixture.bytes[0] = 0x63u;
     fixture.next = 0u;
     core_machine_dma_write_channel2(machine, 0x1810u, 0u, 0u, 0x06u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
-    core_machine_bus_write(machine, 0x0009u, 0x06u);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_port_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x0009u, 0x06u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x1810u,
             bytes, 1u) != LIB_STATUS_OK || bytes[0] != 0u) {
         failed = 1;
     }
 
-    core_machine_bus_write(machine, 0x000bu, 0x86u);
+    test_dma_port_write(machine, 0x000bu, 0x86u);
     if ((x86_dma_get_signals(bus->primary.device).requests & 4u) == 0u) failed = 1;
 
     /* A programmed cascade slot delegates priority only: it must not invent
@@ -871,9 +871,9 @@ lib_i32 main(void)
     fixture.next = 0u;
     fixture.terminal_count = 0u;
     core_machine_dma_write_channel2(machine, 0x1820u, 0u, 0u, 0xc6u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x000eu, 0u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (fixture.next != 0u || fixture.terminal_count != 0u ||
         (dma_status & (1u << 2u)) != 0u ||
@@ -888,8 +888,8 @@ lib_i32 main(void)
             &provider, &fixture, &binding) != LIB_STATUS_INVALID_ARGUMENT) {
         failed = 1;
     }
-    core_machine_bus_write(machine, 0x00d2u, 0x04u);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_port_write(machine, 0x00d2u, 0x04u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x1810u,
             bytes, 1u) != LIB_STATUS_OK || bytes[0] != 0u) {
         failed = 1;
@@ -904,10 +904,10 @@ lib_i32 main(void)
     priority_fixture.next = 0u;
     core_machine_dma_write_primary_channel(machine, 1u, 0x1900u, 0u, 0x45u);
     core_machine_dma_write_primary_channel(machine, 2u, 0x1902u, 0u, 0x46u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x000eu, 0u);
     core_machine_dma_request_assert(bus, &priority_binding);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x1900u,
             bytes, 1u) != LIB_STATUS_OK || bytes[0] != 0x71u ||
         core_machine_memory_read(machine, 0x1902u,
@@ -924,11 +924,11 @@ lib_i32 main(void)
     priority_fixture.next = 0u;
     core_machine_dma_write_primary_channel(machine, 1u, 0x1910u, 1u, 0x45u);
     core_machine_dma_write_primary_channel(machine, 2u, 0x1912u, 1u, 0x46u);
-    core_machine_bus_write(machine, 0x0008u, 0x10u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x0008u, 0x10u);
+    test_dma_port_write(machine, 0x000eu, 0u);
     core_machine_dma_request_assert(bus, &priority_binding);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 2u);
+    test_dma_transfers(bus, machine, machine, 2u, 2u);
     if (core_machine_memory_read(machine, 0x1910u,
             bytes, 1u) != LIB_STATUS_OK || bytes[0] != 0x81u ||
         core_machine_memory_read(machine, 0x1912u,
@@ -946,11 +946,11 @@ lib_i32 main(void)
         0x45u);
     core_machine_dma_write_secondary_channel(machine, 2u, 0x0a01u, 1u, 0u,
         0x46u);
-    core_machine_bus_write(machine, 0x00d0u, 0x10u);
-    core_machine_bus_write(machine, 0x00dcu, 0u);
+    test_dma_port_write(machine, 0x00d0u, 0x10u);
+    test_dma_port_write(machine, 0x00dcu, 0u);
     core_machine_dma_request_assert(bus, &word_bindings[0]);
     core_machine_dma_request_assert(bus, &word_bindings[1]);
-    test_dma_transfers(bus, machine, machine, 2u);
+    test_dma_transfers(bus, machine, machine, 2u, 2u);
     if (core_machine_memory_read(machine, 0x1400u,
             words, sizeof(words[0])) != LIB_STATUS_OK ||
         words[0] != 0xa135u ||
@@ -970,10 +970,10 @@ lib_i32 main(void)
     core_machine_dma_write_channel2(machine, 0x1a20u, 0u, 0u, 0x86u);
     core_machine_dma_write_secondary_channel(machine, 1u, 0x0b20u, 0u, 0u,
         0x85u);
-    core_machine_bus_write(machine, 0x00dcu, 0u);
+    test_dma_port_write(machine, 0x00dcu, 0u);
     core_machine_dma_request_assert(bus, &binding);
     core_machine_dma_request_assert(bus, &word_bindings[0]);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (core_machine_memory_read(machine, 0x1640u,
             words, sizeof(words[0])) != LIB_STATUS_OK ||
@@ -989,12 +989,12 @@ lib_i32 main(void)
     fixture.bytes[0] = 0xa1u;
     fixture.next = 0u;
     core_machine_dma_write_channel2(machine, 0x1a00u, 0u, 0u, 0x86u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x000eu, 0u);
     core_machine_dma_request_assert(bus, &binding);
-    core_machine_bus_write(machine, 0x0008u, 0x04u);
-    test_dma_transfers(bus, machine, machine, 1u);
-    core_machine_bus_write(machine, 0x0008u, 0u);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_port_write(machine, 0x0008u, 0x04u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
+    test_dma_port_write(machine, 0x0008u, 0u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x1a00u,
             bytes, 1u) != LIB_STATUS_OK || bytes[0] != 0xa1u) {
         failed = 1;
@@ -1006,10 +1006,10 @@ lib_i32 main(void)
     word_fixture.next = 0u;
     core_machine_dma_write_secondary_channel(machine, 1u, 0x0af0u, 0u, 0u,
         0x85u);
-    core_machine_bus_write(machine, 0x00dcu, 0u);
-    core_machine_bus_write(machine, 0x0008u, 0x04u);
+    test_dma_port_write(machine, 0x00dcu, 0u);
+    test_dma_port_write(machine, 0x0008u, 0x04u);
     core_machine_dma_request_assert(bus, &word_bindings[0]);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x15e0u,
             words, sizeof(words[0])) != LIB_STATUS_OK ||
         words[0] != 0xb357u) {
@@ -1022,12 +1022,12 @@ lib_i32 main(void)
     word_fixture.next = 0u;
     core_machine_dma_write_secondary_channel(machine, 1u, 0x0b00u, 0u, 0u,
         0x85u);
-    core_machine_bus_write(machine, 0x00dcu, 0u);
+    test_dma_port_write(machine, 0x00dcu, 0u);
     core_machine_dma_request_assert(bus, &word_bindings[0]);
-    core_machine_bus_write(machine, 0x00d0u, 0x04u);
-    test_dma_transfers(bus, machine, machine, 1u);
-    core_machine_bus_write(machine, 0x00d0u, 0u);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_port_write(machine, 0x00d0u, 0x04u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
+    test_dma_port_write(machine, 0x00d0u, 0u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x1600u,
             words, sizeof(words[0])) != LIB_STATUS_OK ||
         words[0] != 0xc357u) {
@@ -1043,9 +1043,9 @@ lib_i32 main(void)
     eop_fixture.transfer.terminal_count = 0u;
     eop_fixture.terminate_on_read = LIB_TRUE;
     core_machine_dma_write_primary_channel(machine, 3u, 0x1b00u, 2u, 0x87u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x000eu, 0u);
     core_machine_dma_request_assert(bus, &eop_binding);
-    test_dma_transfers(bus, machine, machine, 2u);
+    test_dma_transfers(bus, machine, machine, 2u, 2u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (core_machine_memory_read(machine, 0x1b00u,
             bytes, sizeof(bytes)) != LIB_STATUS_OK ||
@@ -1062,9 +1062,9 @@ lib_i32 main(void)
     eop_fixture.transfer.terminal_count = 0u;
     eop_fixture.terminate_on_read = LIB_TRUE;
     core_machine_dma_write_primary_channel(machine, 3u, 0x1b10u, 2u, 0x97u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x000eu, 0u);
     core_machine_dma_request_assert(bus, &eop_binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (eop_fixture.transfer.terminal_count != 1u ||
         test_dma_register_word(machine, LIB_FALSE, 3u * 2u) != 0x1b10u || test_dma_register_word(machine, LIB_FALSE, 3u * 2u + 1u) != 2u ||
@@ -1080,9 +1080,9 @@ lib_i32 main(void)
     fixture.next = 0u;
     fixture.terminal_count = 0u;
     core_machine_dma_write_channel2(machine, 0x0000u, 0x20u, 0u, 0x86u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x000eu, 0u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (fixture.next != 0u || fixture.terminal_count != 0u ||
         test_dma_register_word(machine, LIB_FALSE, 2u * 2u) != 0u || test_dma_register_word(machine, LIB_FALSE, 2u * 2u + 1u) != 0u ||
@@ -1095,10 +1095,10 @@ lib_i32 main(void)
     core_machine_dma_reset(bus);
     failure_fixture.writes = 0u;
     core_machine_dma_write_primary_channel(machine, 0u, 0u, 0u, 0x88u);
-    core_machine_bus_write(machine, 0x0087u, 0x20u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x0087u, 0x20u);
+    test_dma_port_write(machine, 0x000eu, 0u);
     core_machine_dma_request_assert(bus, &failure_binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (failure_fixture.writes != 0u || test_dma_register_word(machine, LIB_FALSE, 0u * 2u) != 0u ||
         test_dma_register_word(machine, LIB_FALSE, 0u * 2u + 1u) != 0u ||
@@ -1123,9 +1123,9 @@ lib_i32 main(void)
     priority_fixture.terminal_count = 0u;
     core_machine_dma_write_primary_channel(machine, 0u, 0x0210u, 0u, 0x90u);
     core_machine_dma_write_primary_channel(machine, 1u, 0x0310u, 0u, 0x91u);
-    core_machine_bus_write(machine, 0x0008u, 0x01u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
-    core_machine_bus_write(machine, 0x0009u, 0x04u);
+    test_dma_port_write(machine, 0x0008u, 0x01u);
+    test_dma_port_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x0009u, 0x04u);
     core_machine_dma_advance_phases(bus, machine, 9u);
     dma_status = (lib_u8)test_dma_port_read(machine, 8u);
     if (core_machine_memory_read(machine, 0x0310u,
@@ -1157,9 +1157,9 @@ lib_i32 main(void)
     priority_fixture.terminal_count = 0u;
     core_machine_dma_write_primary_channel(machine, 0u, 0x0220u, 1u, 0x80u);
     core_machine_dma_write_primary_channel(machine, 1u, 0x0320u, 1u, 0x81u);
-    core_machine_bus_write(machine, 0x0008u, 0x01u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
-    core_machine_bus_write(machine, 0x0009u, 0x04u);
+    test_dma_port_write(machine, 0x0008u, 0x01u);
+    test_dma_port_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x0009u, 0x04u);
     core_machine_dma_advance_phases(bus, machine, 9u);
     core_machine_dma_request_terminate(bus, &failure_binding);
     core_machine_dma_advance_phases(bus, machine, 3u);
@@ -1181,10 +1181,10 @@ lib_i32 main(void)
     core_machine_dma_reset(bus);
     core_machine_dma_write_primary_channel(machine, 0u, 0u, 0u, 0x80u);
     core_machine_dma_write_primary_channel(machine, 1u, 0x0400u, 0u, 0x81u);
-    core_machine_bus_write(machine, 0x0087u, 0x20u);
-    core_machine_bus_write(machine, 0x0008u, 0x01u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
-    core_machine_bus_write(machine, 0x0009u, 0x04u);
+    test_dma_port_write(machine, 0x0087u, 0x20u);
+    test_dma_port_write(machine, 0x0008u, 0x01u);
+    test_dma_port_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x0009u, 0x04u);
     core_machine_dma_advance_phases(bus, machine, 5u);
     if (test_dma_register_word(machine, LIB_FALSE, 0u * 2u) != 0u || test_dma_register_word(machine, LIB_FALSE, 1u * 2u) != 0x0400u ||
         test_dma_register_word(machine, LIB_FALSE, 1u * 2u + 1u) != 0u || !(x86_dma_get_signals(bus->primary.device).requests & (1u << 0u)) || x86_dma_get_signals(bus->primary.device).active_channel != 4u ||
@@ -1195,10 +1195,10 @@ lib_i32 main(void)
     core_machine_dma_reset(bus);
     core_machine_dma_write_primary_channel(machine, 0u, 0x0410u, 0u, 0x80u);
     core_machine_dma_write_primary_channel(machine, 1u, 0u, 0u, 0x81u);
-    core_machine_bus_write(machine, 0x0083u, 0x20u);
-    core_machine_bus_write(machine, 0x0008u, 0x01u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
-    core_machine_bus_write(machine, 0x0009u, 0x04u);
+    test_dma_port_write(machine, 0x0083u, 0x20u);
+    test_dma_port_write(machine, 0x0008u, 0x01u);
+    test_dma_port_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x0009u, 0x04u);
     core_machine_dma_advance_phases(bus, machine, 9u);
     if (test_dma_register_word(machine, LIB_FALSE, 0u * 2u) != 0x0410u || test_dma_register_word(machine, LIB_FALSE, 1u * 2u) != 0u ||
         test_dma_register_word(machine, LIB_FALSE, 1u * 2u + 1u) != 0u || !(x86_dma_get_signals(bus->primary.device).requests & (1u << 0u)) || x86_dma_get_signals(bus->primary.device).active_channel != 4u ||
@@ -1223,9 +1223,9 @@ lib_i32 main(void)
     fixture.bytes[0] = 0x6du;
     fixture.next = 0u;
     core_machine_dma_write_channel2(machine, 0x1c00u, 0u, 0u, 0x86u);
-    core_machine_bus_write(machine, 0x000eu, 0u);
+    test_dma_port_write(machine, 0x000eu, 0u);
     core_machine_dma_request_assert(bus, &binding);
-    test_dma_transfers(bus, machine, machine, 1u);
+    test_dma_transfers(bus, machine, machine, 1u, 2u);
     if (core_machine_memory_read(machine, 0x1c00u,
             bytes, 1u) != LIB_STATUS_OK ||
         bytes[0] != 0x6du) {

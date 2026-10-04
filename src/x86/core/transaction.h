@@ -1,36 +1,12 @@
 #ifndef CORE_MACHINE_TRANSACTION_H
 #define CORE_MACHINE_TRANSACTION_H
 #include "lib/types/types_interface.h"
+#include "x86/core/trace_interface.h"
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef enum core_machine_transaction_owner {
-    CORE_MACHINE_TRANSACTION_OWNER_NONE = 0,
-    CORE_MACHINE_TRANSACTION_OWNER_CPU,
-    CORE_MACHINE_TRANSACTION_OWNER_DMA,
-    CORE_MACHINE_TRANSACTION_OWNER_REFRESH
-} core_machine_transaction_owner;
-
-typedef enum core_machine_transaction_kind {
-    CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ = 1,
-    CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE,
-    CORE_MACHINE_TRANSACTION_CPU_PORT_READ,
-    CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE,
-    CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ,
-    CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE,
-    CORE_MACHINE_TRANSACTION_DMA_MEMORY_COPY,
-    CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE,
-    /* ESC command issue is CPU-owned control traffic.  It deliberately is
-     * not a HOLD grant: an 80287/80387 asks its paired CPU to move operands
-     * through the processor-extension channel. */
-    CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND,
-    /* The first logical INTA acknowledges the selected PIC request.  Vector
-     * delivery remains the CPU interrupt-entry operation that follows. */
-    CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE
-} core_machine_transaction_kind;
 
 typedef enum core_machine_transaction_phase {
     CORE_MACHINE_TRANSACTION_PHASE_BEGIN = 1,
