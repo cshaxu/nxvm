@@ -83,6 +83,8 @@ Product inspection, receiving-owner/dependency design and bounded planning.
 This is design delivery only, not runtime extraction. The owner approved the
 enumerated necessary connections on 2026-10-04; S2 now implements the complete
 INI/request/startup batch. No independent App split is admitted.
+S2 is accepted and closed at Shared P1 d0a7499a9 and NXVM P2 4d6750b1a.
+The remaining command/factory/composition/entry batches are not delivered yet.
 
 ## S1 Actual Product Inventory
 
@@ -302,3 +304,19 @@ the original 58 integration contexts after the complete Product extraction.
 | ibm-5160-model-268-360k/nxvm_xt_0_5_0541_x86.exe | 1533559 | CCC0B31412092C68239E11AC64B3B5EC2385CBB6C6256E2FB3A58F80EA4098FC |
 | ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x64.exe | 1362888 | C14135FF5239C35E9BBA2F74F09F0897B6F29C2B486AE1A81599A1AFCE42E695 |
 | ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x86.exe | 1533627 | D1AC6065AA65671FAA16E134E931B46FA19269A818383F1A2E00892D129A72AE |
+
+### S2 Coordinator Acceptance
+
+Review the actual two pushed commits, every relocated source/header and test,
+caller/source/link/preset changes, manifest entries, negative checks and the
+eight deployed identities against the complete S2 ledger batch. All original
+assertions have their correct owner; parser grammar and failure publication are
+unchanged. Exactly one parser/startup source is linked. Shared-to-App imports
+and old direct sources are absent. Artifact hashes match the table; the four
+owner INIs and excluded paths have no diff against bba227a8b. Complete unit,
+independent, static and manifest results above apply to the delivered tree.
+Packet fields are 16/16; changed relative links, documentation governance and
+diff whitespace checks pass. HEAD equals origin/master and the worktree is
+clean before this governance-only P3. Accept S2 and remove its active packet;
+T541 stays open, with no timing/guest/four-App qualification claim. Automatically
+admit the next bounded S3 under the owner's standing sequential authorization.
