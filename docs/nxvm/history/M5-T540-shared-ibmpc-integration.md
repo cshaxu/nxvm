@@ -317,6 +317,15 @@ integration rows are covered without repeating successful boot groups.
 Both specialized aggregates and six manifests per width pass on the final
 staged file universe. [S97 review](../etc/evidence/t540-s97-delivery-review.md)
 records actual-diff/code-size, final identities, cost improvements and the
-concrete App-split handoff. Implementation delivery and coordinator acceptance
-are recorded after the ordered target-scoped pushes; this entry alone does not
-close T540.
+concrete App-split handoff. Shared P1 `4f2511b13` and NXVM P2 `c83d3a252`
+deliver the complete reviewed tree and are immediately pushed. Coordinator
+reviews the actual committed changes, sole source/state owners, original finite
+ledger/assertions, product and test graph, scoped artifacts and documentary
+handoff. Both pushed-tree specialized aggregates and six manifests per width
+pass; tested artifact hashes and owner inputs remain exact. The worktree is
+clean and HEAD equals origin/master before governance.
+
+Coordinator accepts S97 and closes T540. Governance P3 records only closure;
+the App split remains queued and not admitted. The extraction preserves known
+timing classifications and guest predicates; it does not qualify additional
+hardware, PC110 or the separately retained native-test/deep guest debts.

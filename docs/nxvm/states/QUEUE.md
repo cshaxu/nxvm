@@ -11,8 +11,8 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 5. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 
 Independent chips are closed as [T539](../history/M5-T539-independent-shared-chips.md).
-Common board integration is admitted as [T540](../history/M5-T540-shared-ibmpc-integration.md);
-the App split remains queued behind it.
+Common board integration is closed as [T540](../history/M5-T540-shared-ibmpc-integration.md);
+the App split is the next candidate, not yet admitted.
 The later candidates retain their semantic qualification scope against the
 resulting owners; extraction alone does not qualify new hardware or timing.
 

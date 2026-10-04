@@ -2,8 +2,8 @@
 
 Owner: NXVM. This record reconciles the complete pending extraction with
 S94-S96, records final verification and explains the owner's build/test cost
-request. Current remains the admission/acceptance authority. No partial P has
-been delivered; this progress record is not T closure.
+request. Current remains the admission/acceptance authority. The complete
+ordered delivery and coordinator acceptance are recorded below.
 
 ## Reviewed Input Reconciliation
 
@@ -108,9 +108,8 @@ The S96 deployment/gate identities are retained. Current is reduced from its
 480,638 historical characters (LF normalized) remain in the existing receiver
 work record with relative links rebased, not discarded or promoted to status.
 
-Complete scoped delivery and actual pushed-tree audit remain pending. Current
-and the T history must record those outcomes before acceptance; the tests above
-alone cannot close T540.
+The final delivery/acceptance audit below supplements these execution results;
+tests alone do not close T540.
 
 ## Final Change And Closure Audit
 
@@ -158,3 +157,23 @@ failure cleanup, external inputs, queue handoff and actual CMake target graph.
 No unresolved member of the structural extraction scope remains. Existing
 hardware/guest/native-test debt stays in its named Queue/TODO receiver; it is
 not falsely claimed repaired by this source relocation.
+
+## Pushed Delivery And Acceptance
+
+Shared P1 `4f2511b13` delivers only src/x86 and test/x86. NXVM P2 `c83d3a252`
+delivers the corresponding App cutover, build/tools, eight artifacts and
+product records. Both are immediately pushed to origin/master without force.
+Pushed-tree specialized aggregates pass on each width; six manifests pass
+6/6 per width in 2.26/1.32 seconds. Working source/artifact blobs have no diff
+against those commits; HEAD equals origin/master and the worktree is clean
+before coordinator governance. Scoped comparison against S92 has no MyNES,
+owner INI, root README or shared-rule change. Changed-document relative links
+and documentation governance pass.
+
+Coordinator accepts S97's whole receiver and closes T540: the original finite
+structural extraction predicate is exhausted, the next App-split owner map is
+concrete, and remaining hardware/guest/native-test qualification is explicitly
+outside this task, in its existing Queue/TODO receiver. Governance P3 records
+only that acceptance; it adds no implementation. Retain warm verification
+trees/logs for the immediately next App-split baseline; disposable negative
+fixtures are removed. No subsequent candidate is admitted by this closure.

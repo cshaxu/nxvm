@@ -27,7 +27,7 @@ Retain lawful external firmware composition and Console/debugger interaction.
 ## M5: Fixed Machine Builds And Shared Devices
 
 The structural sequence is closed T539 independent chips at `x86/chips`,
-active T540 neutral `x86/core` and flat `x86/ibmpc-*` board extraction, then
+closed T540 neutral `x86/core` and flat `x86/ibmpc-*` board extraction, then
 the queued `app-mypcxt`, `app-mypcat`, `app-mypcdeskpro386` and default-386
 `app-nxvm` split. [Current](../states/CURRENT.md) records the accepted S
 boundaries and the remaining implementation work.
