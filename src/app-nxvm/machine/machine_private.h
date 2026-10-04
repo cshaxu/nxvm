@@ -17,7 +17,7 @@
 #include "app-nxvm/machine/media/hdd_private.h"
 #include "common/machine/machine_interface.h"
 #include "app-nxvm/machine/event_interface.h"
-#include "app-nxvm/profiles/device/floppy.h"
+#include "x86/ibmpc-common/floppy_interface.h"
 
 struct vm_machine {
     lib_i32 active;

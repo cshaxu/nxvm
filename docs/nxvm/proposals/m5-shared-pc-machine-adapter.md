@@ -45,8 +45,8 @@ only bounded integration changes required by the admitted extraction qualify.
 
 ## Planned S Sequence
 
-Only S1 is active. Later briefs are admitted sequentially from the S1 ledger
-and preceding evidence, never as eight simultaneous packets.
+Briefs are admitted sequentially from the S1 ledger and preceding evidence,
+never as eight simultaneous packets. CURRENT.md owns the active S status.
 
 1. **S1: Inventory and contracts.** Map all Machine/media/profile-helper/factory
    capabilities and test/build/tool consumers to receivers. Freeze dependencies,

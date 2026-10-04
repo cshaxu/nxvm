@@ -2,13 +2,13 @@
 #include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 
-#include "app-nxvm/profiles/byob/blob.h"
+#include "x86/ibmpc-common/rom_validation_interface.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "app-nxvm/profiles/model40/composition_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
-#include "app-nxvm/profiles/device/floppy.h"
+#include "x86/ibmpc-common/floppy_interface.h"
 
 #define VM_PROFILE_MACHINE_FDD_MEDIA_ID 1u
 #define VM_PROFILE_MACHINE_HDD_MEDIA_ID 2u

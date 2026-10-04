@@ -2,7 +2,7 @@
 #include "x86/ibmpc-common/machine_board_interface.h"
 
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
-#include "app-nxvm/profiles/device/floppy.h"
+#include "x86/ibmpc-common/floppy_interface.h"
 
 /* This bit represents only the B1 CPU/Core input. It is not a claim that a
  * 5160 board device has been bound. */

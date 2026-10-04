@@ -204,3 +204,92 @@ exit. Re-run documentation governance and diff checks successfully; review
 all eight changed documents and verify the working tree is clean. Only NXVM
 documents changed; runtime and artifact inputs remain untouched. Accept S1,
 remove its active packet and retain open T542 progress for the next admission.
+
+## S2: Shared Construction Helpers
+
+Admitted from accepted S1 d7b92e35a. Migrate the complete Helpers batch while
+preserving symbols and behaviors; independent contract assertions follow their
+Shared owner. File moves use git mv, direct caller/build repairs are in this S,
+and no source/test or EXE acceptance is claimed until actual verification.
+
+### S2 Verification Commands And Owned Trees
+
+Configure Debug root trees `build/t542-s2-unit-x64` and `build/t542-s2-unit-x86`
+with Ninja, the corresponding WinLibs GCC compiler,
+`REPOSITORY_BUILD_MYNES=OFF`, and `PROJECT_ARTIFACT_ARCHITECTURE=x64|x86`.
+Build their default targets with `cmake --build <tree> -j 12`, then execute
+`ctest --test-dir <tree> -L unit -j 12 --output-on-failure`.
+Standalone helper/build proof uses `cmake -S test/x86 -B
+build/t542-s2-shared-x64 -G Ninja -DCMAKE_BUILD_TYPE=Debug`, builds
+`vm-profile-contract-smoke` and `x86-test-construction_helpers`, and executes
+their registered tests. Static proof runs `src/x86/verify_corpus.cmake` and
+the Common manifest verifier with each of the six corpus roots.
+
+Release trees are `build/t542-s2-release-<default|xt|at|model40>-<x64|x86>`;
+configure each with the fixed profile and corresponding compiler, MyNES OFF,
+Release, then build only `vm-0-5-0542` with `-j 12`. The existing artifact
+verifier checks architecture, name and stripped sections; verify hashes and
+unchanged owner INIs before replacing each admitted pair. These trees remain
+needed through S2 review and the next migration batch; no other build tree
+or process is claimed or cleaned by this S. All commands are containment and
+verification, not a runtime hardware-qualification claim.
+
+### S2 Implementation And Verification
+
+The complete Helpers batch is migrated: six source/header files and the
+original contract test move to their Shared owner. App callers consume the
+three public interfaces; only x86-ibmpc-common compiles the three production
+implementations. Old helper paths have no remaining source/test/build/tool
+references. Independent linkage uses no App source. Compare each original C
+file against its receiver after only the declared include substitution:
+all three are identical. Symbols, enum values, four media geometries/rates,
+double stepping, ROM signature/length/checksum and board constraints are
+unchanged. The original contract test retains all assertions and drops one
+unused stdio include. A 64-line code-owned matrix test adds direct proof of
+the complete helper contract; it reads no asset or INI.
+
+Full root units pass 496/496 on each width: x64 257.42s and x86 59.55s.
+Independent helper tests pass 2/2; the standalone x86 corpus, manifest,
+test-manifest and negative verifier tests pass 4/4. All six corpus manifests
+validate. Documentation governance and whitespace checks pass. The initial
+sandboxed compiler probes remained live without compiler children; only those
+three owned roots/children were terminated, and elevated configurations/builds
+completed. Two ad-hoc static invocations lacked their required script/path
+arguments; the registered standalone gates above were then run successfully.
+These were harness invocation errors, not product/test regressions.
+
+Actual-diff review confirms no Lib/Common, MyNES, owner INI, firmware payload
+or external-master change. All original unit registrations survive; the
+contract test keeps its name and adds the Shared label/independent linkage.
+Rename-aware Git numstat over changed C/H source/test paths against d7b92e35a,
+excluding docs/build/manifests/binaries, records 84 added, 21 removed, net +63.
+The increase is the 64-line independent contract matrix minus the unused
+include, not another production abstraction; production algorithms add no
+lines. File movement is not counted as code deletion.
+
+Eight Release products built with the sole vm-0-5-0542 recipe verify their PE
+architecture, 0.5.0542 identity and absence of .debug_* sections. Runtime Debug
+remains linked through the unchanged Product/Common driver. The old eight
+0541 EXEs are removed only after replacement verification and remain recoverable
+in Git; owner INIs are unchanged. This S does not claim fresh external boot
+qualification; the preserved 58 integration contexts remain T-level S8 proof.
+
+| Machine | Width | SHA-256 |
+| --- | --- | --- |
+| default | x64 | 197D0C56DB6DD003022EA205A0F49B6820A35D1BD87B1AB457CB69C8C6C116D7 |
+| default | x86 | 7078EF9D3797D419CF1A471325540B699D2E2E29AA990AABF4237DDCE66A3963 |
+| XT | x64 | 45EE28E42B65D5883429D490C9DDF6BC998D4CAC5F02409A6634D808BA913E51 |
+| XT | x86 | EC7CFAAA869207688F9A9A870AAFE550D259CDC0F05D6ED90C5AA6F2B959F1DD |
+| AT | x64 | 178502455F2FC28345A2A035AC89E76D160AFE30C91A697A0D3246DEA3923CA8 |
+| AT | x86 | 5A25C82F5E6A2E0E5B05A0F0CB2BD904A925D020AF953138319F22AB33706916 |
+| Model40 | x64 | 3EAF397F23402D0A6762039AD8076BCB80D59C75F9FEF44FECA7D0AB8DC02CEC |
+| Model40 | x86 | F9E44C7FD40DE63E93EA443903684782C44F6801858A2ABE1CEE37A48DB3D262 |
+
+Each hash names the corresponding assets/nxvm fixed-profile 0542 file; source
+baseline is d7b92e35a plus the complete reviewed S2 Shared/NXVM deliveries.
+The separate target-scoped P sequence publishes Shared helpers first, then
+App caller/source retirement and artifacts, before coordinator acceptance.
+
+Shared P1 ebe5172d5 is pushed. It contains only src/test x86 ownership,
+registration, README and manifest changes; the receiving App changes remain
+the separately verified NXVM P2 delivery. There is no Lib/Common change.

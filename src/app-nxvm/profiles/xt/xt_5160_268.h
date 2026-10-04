@@ -3,7 +3,7 @@
 #ifndef VM_PROFILE_XT_5160_268_H
 #define VM_PROFILE_XT_5160_268_H
 
-#include "app-nxvm/profiles/profile_contract_interface.h"
+#include "x86/ibmpc-common/profile_contract_interface.h"
 #include "x86/core/firmware_interface.h"
 
 #define VM_PROFILE_XT_5160_268_FDD_MEDIA_ID 1u

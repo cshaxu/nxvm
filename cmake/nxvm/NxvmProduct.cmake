@@ -261,9 +261,6 @@ target_link_libraries(vm-machine-speed-policy-smoke PRIVATE vm-machine)
 add_executable(vm-timing-qualification-smoke
     test/app-nxvm/unit/core/machine/vm_timing_qualification_smoke.c)
 target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-machine)
-add_executable(vm-profile-contract-smoke
-    test/app-nxvm/unit/core/machine/vm_profile_contract_smoke.c)
-target_link_libraries(vm-profile-contract-smoke PRIVATE vm-profile)
 add_executable(vm-ibm-5170-direct-plan-smoke
     test/app-nxvm/unit/core/machine/vm_ibm_5170_direct_plan_smoke.c)
 target_link_libraries(vm-ibm-5170-direct-plan-smoke PRIVATE vm-profile)
@@ -779,8 +776,6 @@ if(POWERSHELL_EXECUTABLE)
 endif()
 
 set(VM_PROFILE_SOURCES
-    src/app-nxvm/profiles/profile_contract.c
-    src/app-nxvm/profiles/byob/blob.c
     src/app-nxvm/profiles/xt/xt_5160_268.c
     src/app-nxvm/profiles/xt/rom/xt_5160_268_rom.c
     src/app-nxvm/profiles/machine_plan.c
@@ -788,7 +783,6 @@ set(VM_PROFILE_SOURCES
     src/app-nxvm/profiles/default_profile/keyboard_mapper.c
     src/app-nxvm/profiles/default_profile/mouse_mapper.c
     src/app-nxvm/profiles/default_profile/external_pc_at_rom.c
-    src/app-nxvm/profiles/device/floppy.c
     src/app-nxvm/profiles/model40/model40.c
     src/app-nxvm/profiles/model40/composition.c
     src/app-nxvm/profiles/model40/rom/model40_rom.c
@@ -1507,7 +1501,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-machine-media-lifecycle-s3-smoke
     vm-machine-speed-policy-smoke
     vm-timing-qualification-smoke
-    vm-profile-contract-smoke
     vm-ibm-5170-direct-plan-smoke
     vm-xt-5160-268-profile-smoke)
 list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
@@ -2144,8 +2137,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0541)
-add_current_vm_artifact(vm-0-5-0541 "0.5.0541")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0542)
+add_current_vm_artifact(vm-0-5-0542 "0.5.0542")
 
 function(project_add_t533_console_integration_test target)
     set(project_t533_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/integration.${target}")

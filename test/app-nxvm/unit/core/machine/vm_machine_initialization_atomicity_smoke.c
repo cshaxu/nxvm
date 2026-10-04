@@ -8,7 +8,7 @@
 #include "app-nxvm/machine/machine_interface.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
-#include "app-nxvm/profiles/byob/blob.h"
+#include "x86/ibmpc-common/rom_validation_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
 

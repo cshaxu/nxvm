@@ -4,7 +4,7 @@
 
 #include "x86/core/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
-#include "app-nxvm/profiles/byob/blob.h"
+#include "x86/ibmpc-common/rom_validation_interface.h"
 
 static lib_status vm_profile_external_pc_at_rom_configure(void *opaque,
     core_machine_firmware_context *firmware)

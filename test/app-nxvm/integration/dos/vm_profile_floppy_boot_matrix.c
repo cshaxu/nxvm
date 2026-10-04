@@ -10,7 +10,7 @@
 #include "x86/core/debug_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/profiles/device/floppy.h"
+#include "x86/ibmpc-common/floppy_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define BOOT_TIMEOUT 180000u

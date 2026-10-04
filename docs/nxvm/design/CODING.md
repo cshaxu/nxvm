@@ -26,7 +26,10 @@ src/
       default_profile/  retained default PC/AT composition and firmware slots
 ```
 
-Keep shared profile declarations and proven helpers at the profiles root. The
+Keep machine-specific profile declarations at the profiles root. Common
+floppy geometry/channel, Option ROM validation and profile-contract validation
+live in flat `x86/ibmpc-common`, with their independent tests under `test/x86`.
+The
 shared Product INI, command/hotkey and Common composition files and their
 reusable assertions live in x86/product and test/x86/product. Shared process
 entry/banner formatting consumes App-owned immutable identity and factory values. The
@@ -81,8 +84,9 @@ live below `test/app-nxvm/`, mirroring `app-nxvm` beneath `unit/`.
 Shared board and family tests live in `test/x86/ibmpc-common`,
 `test/x86/ibmpc-at` and `test/x86/ibmpc-xt`, with their actual source owners.
 Profile tests mirror their real `src/app-nxvm/profiles/` owner when
-implemented. The current product roots are `xt`, `default_profile`, `model40`,
-`device`, and `byob`; do not create empty future-profile directories. Retained
+implemented. The current product roots are `xt`, `default_profile`, and `model40`;
+the former helper-only `device` and `byob` roots are retired. Do not create
+empty future-profile directories. Retained
 NXVM composition/firmware tests live in `test/app-nxvm/unit/core/` with their
 product owner. CPU mechanism and retained board-timing recipe tests live under
 `test/x86`, preserving all CPU models. Neutral Core tests live

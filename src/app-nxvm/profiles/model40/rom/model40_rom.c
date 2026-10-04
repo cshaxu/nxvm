@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 
-#include "app-nxvm/profiles/byob/blob.h"
+#include "x86/ibmpc-common/rom_validation_interface.h"
 
 lib_i32 vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom)

@@ -7,7 +7,7 @@
 
 #include "x86/core/firmware_interface.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
-#include "app-nxvm/profiles/device/floppy.h"
+#include "x86/ibmpc-common/floppy_interface.h"
 
 typedef struct vm_profile_machine_plan vm_profile_machine_plan;
 typedef struct vm_profile_model40_external_rom vm_profile_model40_external_rom;

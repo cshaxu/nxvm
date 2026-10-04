@@ -8,7 +8,7 @@
 #include "app-nxvm/machine/guest_input_interface.h"
 #include "app-nxvm/profiles/selection_interface.h"
 #include "app-nxvm/machine/event_interface.h"
-#include "app-nxvm/profiles/byob/blob.h"
+#include "x86/ibmpc-common/rom_validation_interface.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "common/machine/machine_interface.h"
 #include "lib/storage/medium_interface.h"
