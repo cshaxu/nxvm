@@ -32,10 +32,10 @@ justified App retention.
 | Helpers | profiles/device/floppy; profiles/byob/blob; profile_contract and callers | x86/ibmpc-common | S2 accepted; proof below |
 | Media | machine/media FDD/HDD providers, geometry, marks, leases and callers | x86/product/machine/media | S3 accepted; proof below |
 | Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | S4 conversion accepted; cohesive Machine ingress/capture orchestration remains S5 |
-| Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | Receiver frozen; S5 pending |
-| Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | Contract frozen below; S5/S6 pending |
-| Retained differences | XT/AT/default/Model40 values, ROM layout, D4, CMOS, HDC geometry and firmware source | Concrete App profile/firmware owner | Retention justified below; S6 verification pending |
-| Verification/build | tests, source lists, static gates, tools, manifests and eight artifacts | Behavior owner; external integration remains NXVM | Routing frozen below; all code batches and S7/S8 pending |
+| Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | S5 isolates prerequisite Profile state; cohesive receiver S6 pending |
+| Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | Contract frozen below; S6/S7 pending |
+| Retained differences | XT/AT/default/Model40 values, ROM layout, D4, CMOS, HDC geometry and firmware source | Concrete App profile/firmware owner | S5 Profile observation isolation delivered; fixed composition S7 pending |
+| Verification/build | tests, source lists, static gates, tools, manifests and eight artifacts | Behavior owner; external integration remains NXVM | S8/S9 aggregate audit and 58 contexts pending |
 
 Closure resolves every pending entry, proves each shared migration and
 reconciles full affected batches rather than only a successful local replay.
@@ -504,3 +504,89 @@ Accept/close S4. Live App ingress/display cadence/capture remain explicitly
 scheduled with the cohesive S5 Machine owner, not an unclassified shared member
 or a parallel conversion. T542 stays open for S5-S8 and its full integration
 obligation. Warm trees remain needed; no successor App split is admitted.
+
+## S5: Profile Observation Ownership
+
+Coordinator refines the original execution batch before implementation at
+6ee21f50a. Actual source still put a borrowed Model40 D4 handle, completed FDC
+record and validity flag in generic Machine, with App integration tests reading
+that layout. A blind Shared move would retain App state or require a reverse
+dependency. Separate this complete prerequisite as linear S5; execution/debug,
+fixed composition, aggregate audit and final acceptance become S6-S9. The
+earlier S1/S4 sequence descriptions are historical planning. The proposal and
+convergence ledger retain the same full scope and all 58 contexts.
+
+The existing opaque prepared Profile context now owns those Model40 facts.
+Its materialization operation installs the sole terminal sink and receives the
+existing D4 factory result itself. Generic Machine no longer receives either
+output or stores the three fields. Core attachment still destroys D4; Profile
+does not acquire a second teardown owner. A successful Machine reset clears
+the Profile's terminal validity at the same completion point as before; a
+failed reset leaves it unchanged. Core teardown precedes borrowed-handle
+revocation, then media/plan cleanup and finally Profile destruction.
+
+The copied Model40 observation operation returns D4 and terminal values, never
+a device pointer or mutable layout. Non-Model40/invalid calls preserve the
+output with explicit status. The Profile already held selected ROM/context
+lifetime; no side registry, worker, additional Profile allocation or live
+state mirror is added. Its all-profile construction union remains scheduled
+for S7 removal, not accepted as the final factory architecture.
+
+App tests use a stateless copied view of the actual Profile. All former D4
+assertions and FDC command/result/drive/sequence/success predicates remain.
+The retirement capture predicate consumes that copied record, and its former
+fake Machine fixture is now a value-only fixture. Review found five existing
+synthetic predicate routines with no execution entry: the probe's --self-test
+branch now exercises them without a session, INI or external ROM. This is
+code-owned predicate proof, not external boot qualification or a new CTest
+integration context. Normal probe runs do not capture the extra observation
+per instruction unless their existing FDC diagnostic is enabled.
+
+### S5 Sweep And Verification
+
+Search `rg -n 'model40_board|model40_fdc_terminal|vm_profile_machine_plan_materialize'
+src test cmake tools` reconciles the complete class. Original hits were the
+generic fields/sink/reset/teardown, five D4 unit consumers, the FDC unit, three
+integration consumers and the firmware plan fixture. All are migrated. Genuine
+Model40 factory/D4 behavior stays Profile-owned and unchanged. The existing
+D4 static gate now rejects borrowed D4 pointers or former Model40 fields in
+either App or Shared generic Machine. It passes. The DAG review also removes
+one stale direct-include allowlist edge for machine.c; its two remaining
+header edges are explicitly scheduled for the complete Shared adapter move.
+
+- Full repository units: x64 497/497, 78.54 seconds; x86 497/497, 77.14 seconds.
+  Logs remain in ignored build/t542-s5-unit-<width>.log while the next S needs
+  these warm trees. Both complete builds pass with warnings-as-errors.
+- Existing FDC unit proves terminal capture, successful reset invalidation,
+  failed reset preservation, detach validity and copied-record independence.
+  Atomicity unit proves unsupported/invalid observation does not overwrite.
+- Five code-owned retirement capture matrices pass on both widths through
+  vm-model40-byob-retirement-capture --self-test. The final probe-only adjustment
+  is rebuilt/retested; it does not change the previously passed unit inputs.
+- Six manifests pass unchanged; D4 boundary, dependency DAG, documentation and
+  whitespace checks pass. No Shared, Lib/Common, MyNES or owner INI changes.
+- Rename-aware Git numstat over 16 tracked C/H paths: +195/-83, net +112;
+  documents, scripts and binaries excluded. The positive difference is the
+  explicit copied Profile boundary and failure/teardown/predicate proof, not
+  another production state or execution path. The moved sink has one receiver.
+
+All eight sole vm-0-5-0542 Release targets are rebuilt and deployed only to
+assets/nxvm/<profile>. PE 8664/014C, embedded 0.5.0542 and no .debug sections
+are verified; runtime debugger remains linked. Source baseline is 6ee21f50a
+plus the complete S5 delivery. Product hashes:
+
+| Machine | Width | SHA-256 |
+| --- | --- | --- |
+| default | x64 | 1A4237F36E529FF94415826234443BA39BE6D3B81169C41B9EB69906F88B8FE4 |
+| default | x86 | AA6357B795DAA636BC26244B96FA33A7419D659EF37BDF11DA4EE642A2C090BD |
+| XT | x64 | 98726A8F8CC1B22C628B9D9E5DCBD4701F0FD3E49C0D78C716D6EFD042D3D254 |
+| XT | x86 | 35302B891B52EBF8FA919154C097CBECF3E2DD92C85F060621BC0A4637B03F3A |
+| AT | x64 | 4FAB0A5E45F7B00436623492B11B541169E42F4D3687E200FDD2B8D91BBFF66D |
+| AT | x86 | D0DBF791B57B1AAF7217F19451CCB954CAC7E3681C5AA3CB7C415D4EBB7972AA |
+| Model40 | x64 | 97C953794857C2118639ABA7ABFE30A2BEAE44BC6FAC1BAD96AEE11A176E3594 |
+| Model40 | x86 | 497878C82DA013278C3DA11875150BBD5BBDEC26C5702E95222E1DA11D5DB37A |
+
+No new external integration run is claimed. All 58 once-only contexts remain
+mandatory S9 task acceptance. Warm trees remain needed for S6; all S5 native
+build/test handles are terminal. Executor delivery awaits scoped publication
+and coordinator actual-diff review; T542 remains open.

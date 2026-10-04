@@ -188,6 +188,19 @@ static lib_i32 verify_recovery(void)
         vm_machine_destroy(session);
         return 1;
     }
+    {
+        vm_profile_model40_observation observation = { .fdc_terminal_valid = LIB_TRUE };
+
+        if (vm_profile_machine_plan_observe_model40(session->profile_plan, &observation) !=
+                LIB_STATUS_UNSUPPORTED || !observation.fdc_terminal_valid ||
+            vm_profile_machine_plan_observe_model40(LIB_NULL, &observation) !=
+                LIB_STATUS_INVALID_ARGUMENT ||
+            vm_profile_machine_plan_observe_model40(session->profile_plan, LIB_NULL) !=
+                LIB_STATUS_INVALID_ARGUMENT) {
+            vm_machine_destroy(session);
+            return 1;
+        }
+    }
     vm_machine_destroy(session);
     return 0;
 }

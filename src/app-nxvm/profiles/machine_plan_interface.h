@@ -12,6 +12,12 @@
 typedef struct vm_profile_machine_plan vm_profile_machine_plan;
 typedef struct vm_profile_model40_external_rom vm_profile_model40_external_rom;
 
+typedef struct vm_profile_model40_observation {
+    core_machine_d4_platform_observation d4;
+    core_machine_fdc_terminal_observation fdc_terminal;
+    lib_bool fdc_terminal_valid;
+} vm_profile_model40_observation;
+
 lib_status vm_profile_machine_plan_create(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_profile_machine_plan **out_plan);
 void vm_profile_machine_plan_destroy(vm_profile_machine_plan *plan);
@@ -44,9 +50,16 @@ lib_status vm_profile_machine_plan_copy_cmos_seed(const vm_profile_machine_plan 
 lib_status vm_profile_machine_plan_copy_text_glyphs(const vm_profile_machine_plan *plan,
     x86_video_text_glyph_config *out_glyphs);
 lib_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
-    core_machine_plan *core_plan,
-    core_machine_fdc_terminal_observation_provider terminal_observation,
-    core_machine_d4_platform **construction_output);
+    core_machine_plan *core_plan);
+/* Serialized with Core execution, or captured while its executor is paused.
+ * The Profile owns observations; Core's attachment owns the borrowed D4.
+ * A non-Model40 plan returns UNSUPPORTED without changing the output. */
+lib_status vm_profile_machine_plan_observe_model40(
+    const vm_profile_machine_plan *plan, vm_profile_model40_observation *out_observation);
+/* Successful Core reset invalidates the completed-command observation.
+ * Detach follows Core teardown and revokes the borrowed board handle. */
+void vm_profile_machine_plan_reset_observation(vm_profile_machine_plan *plan);
+void vm_profile_machine_plan_detach_board(vm_profile_machine_plan *plan);
 lib_u8 vm_profile_machine_plan_hdd_geometry_get(const vm_profile_machine_plan *plan,
     lib_u16 *out_cylinders, lib_u8 *out_heads,
     lib_u8 *out_sectors);

@@ -1,3 +1,4 @@
+#include "../../support/model40.h"
 #include "../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
@@ -201,9 +202,10 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
             printf("T515:INI-BOOT:%s:STATE:elapsed=%llu:lifecycle=%u\n", name,
                 (unsigned long long)observation.elapsed_ticks, observation.lifecycle);
         }
-        if (session->model40_fdc_terminal_observation_valid) {
+        const vm_profile_model40_observation profile = vm_test_model40_observation(session);
+        if (profile.fdc_terminal_valid) {
             const core_machine_fdc_terminal_observation *terminal =
-                &session->model40_fdc_terminal_observation;
+                &profile.fdc_terminal;
             printf("T515:INI-BOOT:%s:FDC-LAST-TERMINAL:sequence=%llu:cmd=%02X:drive=%u:result=%02X/%02X/%02X/%02X/%02X/%02X/%02X:success=%u\n",
                 name, (unsigned long long)terminal->sequence, terminal->command,
                 terminal->drive, terminal->result[0], terminal->result[1],

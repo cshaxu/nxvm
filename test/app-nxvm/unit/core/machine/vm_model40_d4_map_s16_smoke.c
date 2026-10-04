@@ -1,3 +1,4 @@
+#include "../../../support/model40.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -90,7 +91,7 @@ lib_i32 main(void)
         CHECK(write_byte(session->core_machine, 0x00ff1234u, 0x73u,
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00ff1234u, 0x73u));
-        CHECK(core_machine_d4_platform_observe(session->model40_board,
+        CHECK(vm_test_model40_d4_observe(session,
             &d4) == LIB_STATUS_OK && !d4.iochk_latched && !d4.failsafe_latched);
         CHECK(write_byte(session->core_machine, 0x00fa0000u, 0x3cu,
             LIB_STATUS_OK));

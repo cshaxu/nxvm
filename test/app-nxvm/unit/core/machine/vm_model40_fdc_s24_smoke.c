@@ -1,3 +1,4 @@
+#include "../../../support/model40.h"
 #include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "lib/types/types_interface.h"
@@ -149,7 +150,7 @@ lib_i32 main(void)
             core_machine_bus_write(machine, 0x03f7u, 0u) != LIB_STATUS_OK ||
             !model40_fdc_command(board, machine, specify, sizeof(specify)) ||
             !model40_fdc_command(board, machine, read_last, sizeof(read_last)) ||
-            session->model40_fdc_terminal_observation_valid ||
+            vm_test_model40_observation(session).fdc_terminal_valid ||
             core_machine_bus_read(machine, 0x03f5u, &value) != LIB_STATUS_OK ||
             value != 0xa5u) goto done;
         for (index = 1u; index < 512u; ++index) {
@@ -159,10 +160,10 @@ lib_i32 main(void)
         if (!model40_fdc_result(board, machine, result, sizeof(result)) ||
             result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
             result[5] != 16u || result[6] != 2u ||
-            !session->model40_fdc_terminal_observation_valid ||
-            session->model40_fdc_terminal_observation.command != 0xe6u ||
-            session->model40_fdc_terminal_observation.result[0] != result[0] ||
-            session->model40_fdc_terminal_observation.result[1] != result[1] ||
+            !vm_test_model40_observation(session).fdc_terminal_valid ||
+            vm_test_model40_observation(session).fdc_terminal.command != 0xe6u ||
+            vm_test_model40_observation(session).fdc_terminal.result[0] != result[0] ||
+            vm_test_model40_observation(session).fdc_terminal.result[1] != result[1] ||
             !model40_fdc_command(board, machine, specify_dma, sizeof(specify_dma)) ||
             !model40_fdc_write_dma2(machine, 0x0600u, 511u) ||
             !model40_fdc_command(board, machine, read_last, sizeof(read_last))) goto done;
@@ -176,17 +177,17 @@ lib_i32 main(void)
                 sizeof(result[0])) != LIB_STATUS_OK || result[0] != 0xa5u ||
             !model40_fdc_result(board, machine, result, sizeof(result)) ||
             result[0] != TEST_FDC_ST0_NORMAL || result[1] != 0u ||
-            !session->model40_fdc_terminal_observation_valid ||
-            !session->model40_fdc_terminal_observation.successful ||
+            !vm_test_model40_observation(session).fdc_terminal_valid ||
+            !vm_test_model40_observation(session).fdc_terminal.successful ||
             vm_machine_reset(session) != LIB_STATUS_OK ||
-            session->model40_fdc_terminal_observation_valid ||
+            vm_test_model40_observation(session).fdc_terminal_valid ||
             !model40_fdc_command(board, machine, read_oob, sizeof(read_oob)) ||
             !model40_fdc_result(board, machine, result, sizeof(result)) ||
             result[0] != TEST_FDC_ST0_ABNORMAL || result[1] != 0x04u ||
-            !session->model40_fdc_terminal_observation_valid ||
-            session->model40_fdc_terminal_observation.successful ||
-            session->model40_fdc_terminal_observation.result[0] != result[0] ||
-            session->model40_fdc_terminal_observation.result[1] != result[1] ||
+            !vm_test_model40_observation(session).fdc_terminal_valid ||
+            vm_test_model40_observation(session).fdc_terminal.successful ||
+            vm_test_model40_observation(session).fdc_terminal.result[0] != result[0] ||
+            vm_test_model40_observation(session).fdc_terminal.result[1] != result[1] ||
             vm_machine_fdd_remove_for(session->fdd) != LIB_FALSE) goto done;
         test_board_fdc_refresh(board);
         if (!model40_fdc_command(board, machine, read_last, sizeof(read_last)) ||
@@ -246,6 +247,18 @@ lib_i32 main(void)
             !model40_fdc_command(board, machine, (const lib_u8[]){0x4au, 0u}, 2u) ||
             !model40_fdc_result(board, machine, result, sizeof(result)) ||
             result[0] != 0u || result[1] != 0u || result[2] != 0u) goto done;
+    }
+    {
+        const vm_profile_model40_observation captured = vm_test_model40_observation(session);
+        vm_profile_model40_observation detached = {0};
+
+        if (!captured.d4.configured || !captured.fdc_terminal_valid ||
+            vm_machine_finish_reset(session, LIB_STATUS_INTERNAL_ERROR) != LIB_STATUS_INTERNAL_ERROR ||
+            !vm_test_model40_observation(session).fdc_terminal_valid) goto done;
+        vm_machine_finalize(session);
+        if (vm_profile_machine_plan_observe_model40(session->profile_plan, &detached) !=
+                LIB_STATUS_OK || detached.d4.configured || detached.fdc_terminal_valid ||
+            !captured.d4.configured || !captured.fdc_terminal_valid) goto done;
     }
     failed = 0;
 done:

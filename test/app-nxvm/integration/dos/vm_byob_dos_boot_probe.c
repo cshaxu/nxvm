@@ -1,3 +1,4 @@
+#include "../../support/model40.h"
 #include "../../../x86/ibmpc-common/boot_fixture.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
@@ -1852,7 +1853,7 @@ int main(lib_i32 argc, char **argv)
                     (unsigned int)fault_cpu.gdtr.base, (unsigned int)fault_cpu.gdtr.limit);
             }
             core_machine_d4_platform_observation d4 = {0};
-            (void)core_machine_d4_platform_observe(session->model40_board, &d4);
+            (void)vm_test_model40_d4_observe(session, &d4);
             printf("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
                 (unsigned int)d4.memory_control,
                 (unsigned int)d4.memory_ram_setup);
@@ -2564,7 +2565,7 @@ done:
             (unsigned long long)trace.model40_video_delay_entries,
             (unsigned int)trace.model40_video_delay_predecessor);
         core_machine_d4_platform_observation d4 = {0};
-        (void)core_machine_d4_platform_observe(session->model40_board, &d4);
+        (void)vm_test_model40_d4_observe(session, &d4);
         printf("BOOT-PROBE=model40-d4-control=%02X-ram-setup=%04X\n",
             (unsigned int)d4.memory_control,
             (unsigned int)d4.memory_ram_setup);

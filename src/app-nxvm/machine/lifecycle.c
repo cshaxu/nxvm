@@ -149,7 +149,7 @@ lib_status vm_machine_finish_reset(vm_machine *machine, lib_status status)
     vm_machine_pacing_reset(machine);
     machine->runner_failed = LIB_FALSE;
     machine->display_snapshot_generation_valid = LIB_FALSE;
-    machine->model40_fdc_terminal_observation_valid = LIB_FALSE;
+    vm_profile_machine_plan_reset_observation(machine->profile_plan);
     if (!vm_machine_control_is_running(&machine->control)) {
         vm_machine_publish_display(machine, 1);
     }

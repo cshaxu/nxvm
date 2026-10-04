@@ -28,8 +28,6 @@ struct vm_machine {
     core_machine *core_machine;
     /* Borrowed from the sole Core attachment lifetime. */
     core_machine_board_state *board;
-    /* Borrowed Profile object; the common board owns its lifetime. */
-    core_machine_d4_platform *model40_board;
     core_machine_dma_request_binding fdc_dma_request;
     union { t_fdd *fdd; t_fdd *floppy[VM_MACHINE_FLOPPY_SLOT_COUNT]; };
     union { t_hdd *hdd; t_hdd *fixed_disk[VM_MACHINE_FIXED_DISK_SLOT_COUNT]; };
@@ -62,8 +60,6 @@ struct vm_machine {
     x86_video_text_glyph_config text_glyphs;
     vm_profile_floppy_kind floppy_kind;
     vm_profile_floppy_kind fdd_media_kind;
-    core_machine_fdc_terminal_observation model40_fdc_terminal_observation;
-    lib_u8 model40_fdc_terminal_observation_valid;
     union { char fdd_image_path[1024];
         char floppy_image_path[VM_MACHINE_FLOPPY_SLOT_COUNT][1024]; };
     union { char hdd_image_path[1024];

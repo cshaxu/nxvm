@@ -67,6 +67,10 @@ struct vm_profile_machine_plan {
             lib_u8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
             lib_u8 video[VM_PROFILE_MODEL40_VIDEO_ROM_BYTES];
             vm_profile_model40_external_rom context;
+            /* Borrowed only while the sole Core attachment is alive. */
+            core_machine_d4_platform *board;
+            core_machine_fdc_terminal_observation fdc_terminal;
+            lib_bool fdc_terminal_valid;
         } model40;
         struct {
             lib_u8 *system;
@@ -511,18 +515,58 @@ static lib_status vm_profile_machine_plan_materialize_pc_at(
         CORE_MACHINE_MEDIA_ID_INVALID, &profile->hdc);
 }
 
+static void vm_profile_machine_plan_capture_fdc_terminal(void *context,
+    const core_machine_fdc_terminal_observation *observation)
+{
+    vm_profile_machine_plan *plan = context;
+
+    if (plan == LIB_NULL || observation == LIB_NULL) return;
+    plan->firmware.model40.fdc_terminal = *observation;
+    plan->firmware.model40.fdc_terminal_valid = LIB_TRUE;
+}
+
 lib_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
-    core_machine_plan *core_plan,
-    core_machine_fdc_terminal_observation_provider terminal_observation,
-    core_machine_d4_platform **construction_output)
+    core_machine_plan *core_plan)
 {
     if (plan == LIB_NULL || core_plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (plan->kind == VM_PROFILE_MACHINE_PLAN_MODEL40) {
-        return vm_profile_model40_materialize_plan(core_plan, terminal_observation,
-            construction_output);
+        return vm_profile_model40_materialize_plan(core_plan,
+            (core_machine_fdc_terminal_observation_provider) {
+                vm_profile_machine_plan_capture_fdc_terminal, plan },
+            &plan->firmware.model40.board);
     }
     if (plan->kind == VM_PROFILE_MACHINE_PLAN_XT) return LIB_STATUS_OK;
     return vm_profile_machine_plan_materialize_pc_at(plan, core_plan);
+}
+
+lib_status vm_profile_machine_plan_observe_model40(
+    const vm_profile_machine_plan *plan, vm_profile_model40_observation *out_observation)
+{
+    vm_profile_model40_observation observation = {0};
+    lib_status status;
+
+    if (plan == LIB_NULL || out_observation == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (plan->kind != VM_PROFILE_MACHINE_PLAN_MODEL40) return LIB_STATUS_UNSUPPORTED;
+    status = core_machine_d4_platform_observe(plan->firmware.model40.board,
+        &observation.d4);
+    if (status != LIB_STATUS_OK) return status;
+    observation.fdc_terminal = plan->firmware.model40.fdc_terminal;
+    observation.fdc_terminal_valid = plan->firmware.model40.fdc_terminal_valid;
+    *out_observation = observation;
+    return LIB_STATUS_OK;
+}
+
+void vm_profile_machine_plan_reset_observation(vm_profile_machine_plan *plan)
+{
+    if (plan != LIB_NULL && plan->kind == VM_PROFILE_MACHINE_PLAN_MODEL40)
+        plan->firmware.model40.fdc_terminal_valid = LIB_FALSE;
+}
+
+void vm_profile_machine_plan_detach_board(vm_profile_machine_plan *plan)
+{
+    if (plan == LIB_NULL || plan->kind != VM_PROFILE_MACHINE_PLAN_MODEL40) return;
+    plan->firmware.model40.board = LIB_NULL;
+    plan->firmware.model40.fdc_terminal_valid = LIB_FALSE;
 }
 
 lib_u8 vm_profile_machine_plan_hdd_geometry_get(const vm_profile_machine_plan *plan,

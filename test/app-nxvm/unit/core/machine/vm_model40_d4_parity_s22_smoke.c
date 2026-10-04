@@ -1,3 +1,4 @@
+#include "../../../support/model40.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -53,17 +54,17 @@ lib_i32 main(void)
         CHECK(read_byte(session->core_machine, parity_physical, &value) && value == 0x5au);
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, &value) && value == 0x8du);
-        CHECK(core_machine_d4_platform_observe(session->model40_board,
+        CHECK(vm_test_model40_d4_observe(session,
             &observation) == LIB_STATUS_OK && observation.iochk_latched &&
             !observation.nmi_signaled);
         CHECK(core_machine_bus_read(session->core_machine, 0x0061u, &port_value) ==
             LIB_STATUS_OK && (port_value & 0x40u) != 0u);
         CHECK(core_machine_bus_write(session->core_machine, 0x0070u, 0u) == LIB_STATUS_OK);
-        CHECK(core_machine_d4_platform_observe(session->model40_board,
+        CHECK(vm_test_model40_d4_observe(session,
             &observation) == LIB_STATUS_OK && observation.iochk_latched &&
             observation.nmi_signaled);
         CHECK(write_byte(session->core_machine, clear_physical, 0xa5u));
-        CHECK(core_machine_d4_platform_observe(session->model40_board,
+        CHECK(vm_test_model40_d4_observe(session,
             &observation) == LIB_STATUS_OK && !observation.iochk_latched &&
             !observation.nmi_signaled);
         CHECK(read_byte(session->core_machine,
@@ -75,7 +76,7 @@ lib_i32 main(void)
         CHECK(core_machine_reset(session->core_machine) == LIB_STATUS_OK);
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, &value) && value == 0x8fu);
-        CHECK(core_machine_d4_platform_observe(session->model40_board,
+        CHECK(vm_test_model40_d4_observe(session,
             &observation) == LIB_STATUS_OK && !observation.iochk_latched &&
             !observation.nmi_signaled);
     }

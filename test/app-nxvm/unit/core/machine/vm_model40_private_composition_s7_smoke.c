@@ -1,3 +1,4 @@
+#include "../../../support/model40.h"
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "../../../../x86/ibmpc-common/cmos_fixture.h"
@@ -82,7 +83,7 @@ lib_i32 main(void)
         test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u ||
         test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_EXTMEM_LSB) != 0u ||
         test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_EXTMEM_MSB) != 0x04u ||
-        core_machine_d4_platform_observe(session->model40_board, &d4) !=
+        vm_test_model40_d4_observe(session, &d4) !=
             LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
         core_machine_bus_read(session->core_machine, 0x07c6u, &value) !=

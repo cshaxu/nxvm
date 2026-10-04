@@ -1,3 +1,4 @@
+#include "../../support/model40.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -562,15 +563,16 @@ static lib_u8 model40_capture_c0a_reached(
 }
 
 static lib_u8 model40_capture_has_fdc_read_data(
-    const model40_retirement_capture *capture, const vm_machine *session)
+    const model40_retirement_capture *capture,
+    const vm_profile_model40_observation *profile)
 {
     const core_machine_fdc_terminal_observation *observation;
 
-    if (capture == LIB_NULL || session == LIB_NULL ||
+    if (capture == LIB_NULL || profile == LIB_NULL ||
         !capture->fdc_read_data_baseline_valid ||
         !model40_capture_c0a_reached(capture) ||
-        !session->model40_fdc_terminal_observation_valid) return LIB_FALSE;
-    observation = &session->model40_fdc_terminal_observation;
+        !profile->fdc_terminal_valid) return LIB_FALSE;
+    observation = &profile->fdc_terminal;
     return observation->sequence > capture->fdc_terminal_sequence_at_c0a &&
         observation->command == 0xe6u && observation->drive == 0u &&
         observation->successful;
@@ -1171,7 +1173,7 @@ static lib_i32 model40_capture_synthetic_c0a_smoke(void)
 static lib_i32 model40_capture_synthetic_fdc_read_data_smoke(void)
 {
     model40_retirement_capture capture = { 0 };
-    vm_machine session = { 0 };
+    vm_profile_model40_observation profile = {0};
 
     capture.checkpoint_reached = LIB_TRUE;
     capture.post_c0_io_seen = LIB_TRUE;
@@ -1180,22 +1182,22 @@ static lib_i32 model40_capture_synthetic_fdc_read_data_smoke(void)
     capture.post_c0_io_port = 0x0061u;
     capture.fdc_read_data_baseline_valid = LIB_TRUE;
     capture.fdc_terminal_sequence_at_c0a = 7u;
-    session.model40_fdc_terminal_observation_valid = LIB_TRUE;
-    session.model40_fdc_terminal_observation.sequence = 7u;
-    session.model40_fdc_terminal_observation.command = 0xe6u;
-    session.model40_fdc_terminal_observation.drive = 0u;
-    session.model40_fdc_terminal_observation.successful = LIB_TRUE;
-    if (model40_capture_has_fdc_read_data(&capture, &session)) return 1;
-    session.model40_fdc_terminal_observation.sequence = 8u;
-    session.model40_fdc_terminal_observation.drive = 1u;
-    if (model40_capture_has_fdc_read_data(&capture, &session)) return 1;
-    session.model40_fdc_terminal_observation.drive = 0u;
-    session.model40_fdc_terminal_observation.successful = LIB_FALSE;
-    if (model40_capture_has_fdc_read_data(&capture, &session)) return 1;
-    session.model40_fdc_terminal_observation.successful = LIB_TRUE;
-    if (!model40_capture_has_fdc_read_data(&capture, &session)) return 1;
-    session.model40_fdc_terminal_observation_valid = LIB_FALSE;
-    if (model40_capture_has_fdc_read_data(&capture, &session)) return 1;
+    profile.fdc_terminal_valid = LIB_TRUE;
+    profile.fdc_terminal.sequence = 7u;
+    profile.fdc_terminal.command = 0xe6u;
+    profile.fdc_terminal.drive = 0u;
+    profile.fdc_terminal.successful = LIB_TRUE;
+    if (model40_capture_has_fdc_read_data(&capture, &profile)) return 1;
+    profile.fdc_terminal.sequence = 8u;
+    profile.fdc_terminal.drive = 1u;
+    if (model40_capture_has_fdc_read_data(&capture, &profile)) return 1;
+    profile.fdc_terminal.drive = 0u;
+    profile.fdc_terminal.successful = LIB_FALSE;
+    if (model40_capture_has_fdc_read_data(&capture, &profile)) return 1;
+    profile.fdc_terminal.successful = LIB_TRUE;
+    if (!model40_capture_has_fdc_read_data(&capture, &profile)) return 1;
+    profile.fdc_terminal_valid = LIB_FALSE;
+    if (model40_capture_has_fdc_read_data(&capture, &profile)) return 1;
     printf("M5:T393:S4:FDC-READ-DATA-CAPTURE:OK\n");
     return 0;
 }
@@ -1266,6 +1268,14 @@ lib_i32 main(lib_i32 argc, char **argv)
     lib_i32 warm_reset_diagnostic = argc == 4 && argv != LIB_NULL &&
         !lib_text_compare(argv[3], "--warm-reset-diagnostic");
 
+    /* Code-owned predicate proof requires no session, INI or external ROM. */
+    if (argc == 2 && !lib_text_compare(argv[1], "--self-test")) {
+        return model40_capture_synthetic_c0_smoke() ||
+            model40_capture_synthetic_key_mapping_smoke() ||
+            model40_capture_synthetic_c0a_smoke() ||
+            model40_capture_synthetic_fdc_read_data_smoke() ||
+            model40_capture_synthetic_c1_transfer_smoke();
+    }
     if (!model40_capture_create_session(argc, argv, &ini_session)) {
         fprintf(stderr, "usage: capture sessions-directory model40-session.ini "
             "[--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic|--c0a-diagnostic|--c1-transfer-diagnostic|--fdc-read-data-diagnostic|--port-sequence-diagnostic|--d4-memory-diagnostic|--warm-reset-diagnostic]\n");
@@ -1408,16 +1418,16 @@ lib_i32 main(lib_i32 argc, char **argv)
                 }
             }
         }
-        if (fdc_read_data_diagnostic && !capture.fdc_read_data_baseline_valid &&
-            model40_capture_c0a_reached(&capture)) {
-            capture.fdc_read_data_baseline_valid = LIB_TRUE;
-            if (session->model40_fdc_terminal_observation_valid) {
-                capture.fdc_terminal_sequence_at_c0a =
-                    session->model40_fdc_terminal_observation.sequence;
+        if (fdc_read_data_diagnostic) {
+            const vm_profile_model40_observation profile = vm_test_model40_observation(session);
+            if (!capture.fdc_read_data_baseline_valid && model40_capture_c0a_reached(&capture)) {
+                capture.fdc_read_data_baseline_valid = LIB_TRUE;
+                if (profile.fdc_terminal_valid) {
+                    capture.fdc_terminal_sequence_at_c0a = profile.fdc_terminal.sequence;
+                }
+            } else if (model40_capture_has_fdc_read_data(&capture, &profile)) {
+                capture.fdc_read_data_reached = LIB_TRUE;
             }
-        } else if (fdc_read_data_diagnostic &&
-            model40_capture_has_fdc_read_data(&capture, session)) {
-            capture.fdc_read_data_reached = LIB_TRUE;
         }
     }
     if (fdc_read_data_diagnostic && capture.fdc_read_data_reached) terminal = "fdc-read-data";
@@ -1488,7 +1498,7 @@ lib_i32 main(lib_i32 argc, char **argv)
             (unsigned)capture.fdc_read_data_baseline_valid,
             (unsigned)capture.fdc_port_seen,
             (unsigned)capture.fdc_read_data_reached,
-            (unsigned)session->model40_fdc_terminal_observation_valid,
+            (unsigned)vm_test_model40_observation(session).fdc_terminal_valid,
             (unsigned)capture.post_c0_io_seen);
         if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK) {
             linear_pc = cpu.cs_base + cpu.eip;

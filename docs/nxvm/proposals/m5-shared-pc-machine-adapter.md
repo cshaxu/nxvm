@@ -65,21 +65,27 @@ never as eight simultaneous packets. CURRENT.md owns the active S status.
    carriers only where direct conversion preserves the full contract. Exit:
    one ingress/frame path; unchanged text/graphics/palette/cursor behavior,
    no native handles or second guest-video state.
-5. **S5: Execution and debug adapter.** Move the cohesive remaining Machine
+5. **S5: Profile observation ownership.** Remove Model40 D4 handles and FDC
+   terminal observations from generic Machine state. The existing prepared
+   Profile context owns those facts, exposes only copied observations, and
+   invalidates/revokes them at successful reset/Core teardown. Preserve all
+   Model40 probe predicates. This prerequisite is separated after S4 actual
+   source review; no new registry or execution path is introduced.
+6. **S6: Execution and debug adapter.** Move the cohesive remaining Machine
    owner: Common driver, bounded runner, pacing, HLT progress, reset/fault
    and paused-debug/budget completion. Keep Model40 attachment local. Exit:
    one adapter/Common worker/Core clock; no App include or model state in
    Shared. Do not generalize this into a worker shared with CCPU.
-6. **S6: Fixed composition and Product binding.** Connect the four build-selected
+7. **S7: Fixed composition and Product binding.** Connect the four build-selected
    profiles to the shared adapter/factory; retire all-profile plan union and
    runtime dispatch, preserving real profile/ROM rules. Exit: four working
    fixed compositions, no peer-App imports or permanent forwarding shim.
-7. **S7: Build/test and obsolete-path audit.** Reconcile source lists, manifests,
+8. **S8: Build/test and obsolete-path audit.** Reconcile source lists, manifests,
    standalone x86 builds, dependency gates and test ownership. Earlier batches
-   must already repair their direct builds/tests; S7 cannot defer that duty.
+   must already repair their direct builds/tests; S8 cannot defer that duty.
    Exit: Shared builds without App source; old shared paths/targets removed;
    original assertions and every integration context remain accounted for.
-8. **S8: Whole-task acceptance.** Review every ledger member and actual diff,
+9. **S9: Whole-task acceptance.** Review every ledger member and actual diff,
    unique state owners, code-size change, complete units/integration/manifests
    and artifacts. Exit: no unresolved extraction member, all gates pass,
    eight verified optimized stripped 0542 EXEs delivered, and the App-split

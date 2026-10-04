@@ -141,6 +141,9 @@ composition assertions, not the shared media layouts.
 S4 places pure mapper/frame conversion in flat x86/product/machine. The
 remaining App display orchestration directly converts the video snapshot;
 the old guest-frame view lives only in test support, not production source.
+The prepared Profile context retains Model40 D4 and terminal observations;
+generic Machine holds neither. App probes consume copied Profile values, with
+their stateless views under test/app-nxvm/support.
 No App can retain another App's shared Machine implementation as its library.
 
 The owner-required x86/product receiver owns the identical PC Console/API,

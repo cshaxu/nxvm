@@ -192,8 +192,7 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
         display == LIB_NULL ||
         core_machine_plan_bind_display_provider(plan, display) != LIB_STATUS_OK ||
         core_machine_plan_bind_media_registry(plan, registry) != LIB_STATUS_OK ||
-        vm_profile_machine_plan_materialize(profile, plan,
-            (core_machine_fdc_terminal_observation_provider){0}, LIB_NULL) != LIB_STATUS_OK ||
+        vm_profile_machine_plan_materialize(profile, plan) != LIB_STATUS_OK ||
         core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
         machine == LIB_NULL || board == LIB_NULL ||
         core_machine_bind_firmware_provider(machine,

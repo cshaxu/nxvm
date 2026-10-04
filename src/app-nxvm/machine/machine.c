@@ -17,16 +17,6 @@ static lib_i32 vm_machine_insert_floppy_at(vm_machine *session, lib_size slot,
     const char *path, lib_storage_medium_mode mode);
 static lib_i32 vm_machine_remove_fdd_direct(vm_machine *session);
 
-static void vm_machine_capture_fdc_terminal(void *opaque,
-    const core_machine_fdc_terminal_observation *observation)
-{
-    vm_machine *machine = (vm_machine *)opaque;
-
-    if (machine == LIB_NULL || observation == LIB_NULL) return;
-    machine->model40_fdc_terminal_observation = *observation;
-    machine->model40_fdc_terminal_observation_valid = LIB_TRUE;
-}
-
 static lib_status vm_machine_deliver_key(vm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
 {
@@ -350,9 +340,7 @@ lib_status vm_machine_storage_initialize(vm_machine *machine)
         return status;
     }
     status = vm_profile_machine_plan_materialize(machine->profile_plan,
-        machine->core_machine_plan,
-        (core_machine_fdc_terminal_observation_provider) {
-            vm_machine_capture_fdc_terminal, machine }, &machine->model40_board);
+        machine->core_machine_plan);
     if (status != LIB_STATUS_OK) {
         vm_machine_storage_finalize(machine);
         return status;
@@ -376,7 +364,7 @@ void vm_machine_storage_finalize(vm_machine *machine)
     if (machine == LIB_NULL) return;
     core_machine_destroy(machine->core_machine);
     machine->core_machine = LIB_NULL;
-    machine->model40_board = LIB_NULL;
+    vm_profile_machine_plan_detach_board(machine->profile_plan);
     machine->board = LIB_NULL;
     core_machine_display_provider_slot_destroy(machine->display_provider);
     machine->display_provider = LIB_NULL;
