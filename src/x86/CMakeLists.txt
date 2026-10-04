@@ -154,7 +154,8 @@ add_library(x86-debug STATIC debug/command.c)
 target_include_directories(x86-debug PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-debug PUBLIC common-machine x86-xasm32 storage)
 
-add_library(x86-product STATIC product/command.c product/composition.c product/keyboard.c)
+add_library(x86-product STATIC product/command.c product/composition.c product/keyboard.c
+    product/entry.c)
 target_include_directories(x86-product PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-product PUBLIC x86-product-config common-session common-ui x86-debug types)
 endif()

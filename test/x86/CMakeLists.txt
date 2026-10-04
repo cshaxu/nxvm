@@ -29,6 +29,7 @@ if(X86_BUILD_TOOLS)
     set_tests_properties(x86.composition PROPERTIES LABELS "unit;x86" TIMEOUT 30)
     list(APPEND SHARED_X86_TEST_TARGETS x86-test-composition)
     shared_register_test(x86 product/keyboard kvm-base)
+    shared_register_test(x86 product/entry types)
 endif()
 
 add_executable(core-mantle-shape-smoke ibmpc-common/machine_provider_composition_smoke.c)

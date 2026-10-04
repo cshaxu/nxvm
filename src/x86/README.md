@@ -11,7 +11,7 @@ second lifecycle reducer, native presenter or input loop.
 
 | Component | Responsibility | Public interface |
 | --- | --- | --- |
-| product | Shared PC INI, Console/Debug/hotkey policy and atomic Common composition; frozen factory, fixed hardware/firmware projection and copied INFO/speed facts stay App-bound | ini_interface.h, request_interface.h, startup_interface.h, machine_interface.h, composition_interface.h, command_interface.h |
+| product | Shared PC entry/banner, INI, Console/Debug/hotkey policy and atomic Common composition; immutable identity, frozen factory, fixed hardware/firmware projection and copied INFO/speed facts stay App-bound | entry_interface.h, ini_interface.h, request_interface.h, startup_interface.h, machine_interface.h, composition_interface.h, command_interface.h |
 | core | Neutral CPU/FPU execution, guest timeline, bus transactions, RAM/port/ROM routes and bounded debug operations | machine_interface.h and adjacent *_interface.h contracts |
 | ibmpc-common | Board construction/reset/time/deadline/teardown, media/display providers, PIT/PIC/DMA buses and opaque FDC/HDC/video adapters | machine_board_interface.h and adjacent *_interface.h contracts |
 | ibmpc-at | AT KBC/AUX/A20/reset wiring and planar parity/Port B | kbc_interface.h, parity_interface.h |
