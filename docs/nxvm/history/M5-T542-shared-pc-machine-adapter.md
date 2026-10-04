@@ -194,3 +194,13 @@ Markdown links resolve; git diff --check passes. Actual-change review finds
 only NXVM documents and no Shared/MyNES/configuration/artifact changes.
 Git allocation follows closed T541; the Queue remains unnumbered and the
 successor explicitly depends on T542. No rule exception is requested.
+
+### S1 Coordinator Acceptance
+
+Review pushed P1 e3027c982 against the owner's extraction request and S1 packet.
+The complete source partition, caller/build/test routing, construction transfer
+and rollback, Model40 retention and successor dependency satisfy the design
+exit. Re-run documentation governance and diff checks successfully; review
+all eight changed documents and verify the working tree is clean. Only NXVM
+documents changed; runtime and artifact inputs remain untouched. Accept S1,
+remove its active packet and retain open T542 progress for the next admission.
