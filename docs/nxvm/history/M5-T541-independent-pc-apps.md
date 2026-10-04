@@ -84,7 +84,8 @@ This is design delivery only, not runtime extraction. The owner approved the
 enumerated necessary connections on 2026-10-04; S2 now implements the complete
 INI/request/startup batch. No independent App split is admitted.
 S2 is accepted and closed at Shared P1 d0a7499a9 and NXVM P2 4d6750b1a.
-The remaining command/factory/composition/entry batches are not delivered yet.
+S3 is accepted at 52b96585c with the sole command/factory/composition receiver.
+Current owns the remaining entry and final verification admission.
 
 ## S1 Actual Product Inventory
 
@@ -396,3 +397,53 @@ Excluded paths and four owner INIs have no diff; required suites/gates and
 eight artifact identities match this delivery. HEAD equals origin/master,
 worktree is clean. Accept and close S3; T541 remains open for entry/banner and
 the full integration/ledger audit. Automatically admit the next bounded S4.
+
+## S4: Sole Process Entry And Banner
+
+The complete S1 entry/banner batch moves to Product's entry.c and its public
+immutable definition. App main supplies name, version, copyright, build time
+and its existing frozen factory, then calls vm_app_run. Product owns the one
+banner format, executable-adjacent INI discovery, Console start and ordered
+cleanup. The original App banner macro/header and startup body are removed;
+fixed config, firmware and profile construction remain App-owned. No worker,
+queue, parser, host API or new Lib/Common capability is added.
+
+Review source and tests line-by-line against 52b96585c. Output format, process
+exit code, short-circuit creation and context-before-App cleanup are preserved.
+The entry fixture covers success, path failure, App/context creation failure,
+Console failure and destruction failure without external input. Its initial
+assertion accidentally included success among pre-creation failures; correcting
+that fixture condition makes the original cleanup contract explicit, without
+changing production code. The search for PRODUCT_PRINT_BANNER and product/banner.h
+in source, tests, CMake and tools has no remaining hit.
+
+Full repository units pass 495/495 per width (x64 66.96s, x86 65.36s).
+Standalone tools-on units pass 299/299 per width (8.94s/6.92s); tools-off full
+tests pass 293/293 per width. Six manifests, x86 corpus/negative probes and
+specialized gates pass on both widths. The direct matrix has 516 rows, 500
+strict and 16 retained residuals. Documentation governance and diff checks
+pass. Source/test x86 manifests identify shared-m5-t541-s4.
+
+Counted six changed C/H source/test paths by baseline-to-delivery Git numstat:
++145/-48, net +97; documentation/build/manifests/artifacts excluded. Of the
+added lines, 82 are deterministic failure/cleanup regression tests. The real
+production increase is the immutable definition and shared entry boundary;
+no duplicate startup or banner rendering remains. All four builds consume the
+same Product source. Existing Lib/Common, other x86 implementations, MyNES,
+root README/rules and owner INIs remain excluded and unchanged.
+
+All eight optimized Release EXEs are rebuilt from the S4 source delivery.
+PE width and absence of compiler debug sections are independently verified;
+runtime Debug remains linked. Their unchanged owner INIs remain adjacent.
+Build/test trees are retained only for the immediately following S5 audit.
+
+| S4 deployed file | Bytes | SHA-256 |
+| --- | --- | --- |
+| assets/nxvm/compaq-deskpro-386-model-40-1200k/nxvm_model40_0_5_0541_x64.exe | 1348946 | AD95F5D2233DB9BBAF097382EE6AD3D2C3D743CBC0D6E8480975210D80136244 |
+| assets/nxvm/compaq-deskpro-386-model-40-1200k/nxvm_model40_0_5_0541_x86.exe | 1519672 | 4C3D07FBEFB39E7CAC475DE295FE74C954624593F2B846B98C7ED8665A0CD6B9 |
+| assets/nxvm/default-pc-at-80386-1440k-hdd/nxvm_default_0_5_0541_x64.exe | 1365263 | 767C952FD37CB687AD07CADFE550AE97060777FD2249E63BCA73CC42C1FDF51D |
+| assets/nxvm/default-pc-at-80386-1440k-hdd/nxvm_default_0_5_0541_x86.exe | 1535987 | 5628AEA9019E3B53D042804D44D6F53C8FA37A9D67182375FF61510CEE38F879 |
+| assets/nxvm/ibm-5160-model-268-360k/nxvm_xt_0_5_0541_x64.exe | 1365231 | 4F8387C76193C357391DE6904BA87F2DAED374C2E7D8549CB936250D395D511E |
+| assets/nxvm/ibm-5160-model-268-360k/nxvm_xt_0_5_0541_x86.exe | 1535954 | F297DF8F38A5CD67A6770AA735D6C52B0F3AA45A0AD0F956455ED7E27D7B5D7F |
+| assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x64.exe | 1365297 | 3CD74FF687649EE9A7EA51F7AA4D73FBD0D5CFE5CA0044948546E206A2EB40B9 |
+| assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x86.exe | 1536022 | 99D6779E22366296113E6E1DF50B28C025656512C7109566DBA4947257EC01B6 |

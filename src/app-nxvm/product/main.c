@@ -4,41 +4,18 @@
  * Repository: https://github.com/cshaxu/nxvm
  * Start:      01/25/2012
  */
-#include "lib/types/types_interface.h"
-#include <stdio.h>
-
-
+#include "x86/product/entry_interface.h"
 #include "app-nxvm/product/version.h"
-
-#include "banner.h"
-#include "x86/product/composition_interface.h"
-#include "x86/product/command_interface.h"
 #include "app-nxvm/product/config.h"
-#include "x86/product/startup_interface.h"
 #include "app-nxvm/product/profile_binding.h"
 
 lib_i32 main(void)
 {
-    vm_app *session = LIB_NULL;
-    vm_app_console_context *console_context = LIB_NULL;
-    lib_u8 ini_path[1024];
-    lib_status status;
-    lib_status destroy_status;
-    vm_app_factory factory;
+    vm_app_definition definition = {
+        .name = PRODUCT_NAME, .version = PRODUCT_BUILD_VERSION,
+        .copyright = PRODUCT_COPYRIGHT, .build_time = __DATE__ " " __TIME__
+    };
 
-    PRODUCT_PRINT_BANNER();
-    if (vm_app_ini_executable_path(ini_path, sizeof(ini_path)) != LIB_STATUS_OK) {
-        printf("Unable to determine NXVM.ini path.\n");
-        return 1;
-    }
-    vm_app_configure_factory(&vm_app_firmware, &factory);
-    if (vm_app_create(&factory, &session) != LIB_STATUS_OK ||
-        vm_app_console_context_create(&console_context) != LIB_STATUS_OK) {
-        (void)vm_app_destroy(session);
-        return 1;
-    }
-    status = vm_app_console_main(console_context, session, ini_path);
-    vm_app_console_context_destroy(console_context);
-    destroy_status = vm_app_destroy(session);
-    return status == LIB_STATUS_OK && destroy_status == LIB_STATUS_OK ? 0 : 1;
+    vm_app_configure_factory(&vm_app_firmware, &definition.factory);
+    return vm_app_run(&definition);
 }

@@ -35,8 +35,8 @@ it does not change runtime ownership before the corresponding cutover.
   Console/Debug/hotkey policy and atomic Common Session/UI/Machine composition.
   App supplies one frozen factory with copied INFO/speed operations; it owns
   fixed hardware/firmware projection and the underlying Machine adapter.
-- `app-nxvm/product` retains fixed configuration/factory binding and process
-  entry/banner until the remaining T541 entry batch migrates the shared body.
+- `app-nxvm/product` supplies fixed configuration/factory binding and immutable
+  identity to the sole `x86/product` process entry, banner and cleanup body.
 - `app-nxvm/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.

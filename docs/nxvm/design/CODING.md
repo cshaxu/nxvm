@@ -28,8 +28,8 @@ src/
 
 Keep shared profile declarations and proven helpers at the profiles root. The
 shared Product INI, command/hotkey and Common composition files and their
-reusable assertions live in x86/product and test/x86/product. Process entry/banner
-remain App-owned until the complete T541 entry batch is accepted. The
+reusable assertions live in x86/product and test/x86/product. Shared process
+entry/banner formatting consumes App-owned immutable identity and factory values. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
 live in the flat `x86/ibmpc-*` receivers; genuine D4 state stays in
 `app-nxvm/profiles/model40`. Current records delivery acceptance, not this layout.

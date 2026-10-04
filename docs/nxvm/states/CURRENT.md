@@ -4,7 +4,7 @@
 
 M5 T541 remains open. S1's completed Product inventory and design are accepted
 at 360dfd776. S2 is accepted and closed at Shared P1 d0a7499a9 and NXVM P2
-4d6750b1a. S3 is accepted and closed at 4b6c0ca19 / 0fe507d50; no S is active between batches. Shared implementation remains
+4d6750b1a. S3 is accepted and closed at 52b96585c; S4 is active for the shared process entry. Shared implementation remains
 limited to the new x86/product; Lib/Common and existing x86 implementations
 are excluded. The independent four-App split remains the queue-head candidate.
 
@@ -14,11 +14,26 @@ are excluded. The independent four-App split remains the queue-head candidate.
 | T541 S3 | Accepted sole command/hotkey/Common composition receiver and eight 0541 pairs; T open for entry/banner and final integration audit. |
 
 
-Shared implementation P1 `4f2511b13` and NXVM implementation P2 `c83d3a252`
-are pushed to origin/master. Coordinator review accepts the actual committed
-tree: all original structural ledger members have their sole receiving owner,
-required coverage/independent linkage remains intact, and other-App inputs
-are unchanged. This closure changes no hardware timing grade.
+## Active S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation, M5 T541 S4 after accepted S3 at 52b96585c. |
+| Admission And Approval | Owner automatic sequential admission and approved Shared/NXVM supporting edits, 2026-10-04; single-session dual-role review. |
+| Objective | Exhaust S1 entry/banner ledger: share the complete process startup/cleanup body and banner formatting; App supplies only immutable identity and its frozen factory. |
+| Non-goals | No new App/profile/deployment identity, Lib/Common/existing x86 implementation change, MyNES or owner INI/ROM/media edit. |
+| Reference Baseline | 52b96585c, accepted S3 source and eight 0541 EXEs. |
+| Candidate Proposal | [Shared PC Product](../proposals/m5-shared-pc-product.md), [T541 ledger](../history/M5-T541-independent-pc-apps.md). |
+| Files And ABI Surface | Shared Product entry C/public definition header, matching deterministic entry tests, x86 target/registration/manifests/README. NXVM main/version binding, old banner deletion, build/source ownership references, docs and eight 0541 EXEs. |
+| Applicable Rules | Task Reading Set, Execution/Architecture/Coding/Document, NXVM Architecture/Coding/UI and source policy. One startup/cleanup body, immutable identity values, no host/native API, no second console loop or factory. |
+| Verification | Full repository units x64/x86; standalone shared entry/unit and tools-off/corpus/manifests; specialized/documentation gates; startup failure/cleanup ordering regressions; eight optimized stripped Release pairs. Integration completion remains S5. |
+| Expected Markers | App main supplies values and calls one shared entry; no old banner macro/body; output and process exit semantics preserved; no App imports in Product. |
+| Asset Needs | Existing immutable embedded firmware build inputs only; EXE deployment preserves adjacent INIs and all excluded artifacts. |
+| Reporting Requirements | Boundary confirmation, progress, actual-diff and counted code review, verification/artifact identities, separate Shared/NXVM P delivery. |
+| Stop Conditions | New runtime/native/public capability outside Product, identity or hardware behavior change, lost coverage or failed startup cleanup. |
+| Exit Criteria | Entire entry/banner batch has sole receiver; required tests/gates/eight artifacts pass; no obsolete production path; complete source/ABI/diff reviewed and pushed. |
+| Original Owner Request | Extract all four PC Apps' identical Product implementation; keep Lib/Common unchanged and automatically execute bounded S tasks to T completion. |
+| Similar-Issue Sweep | Inspect all banner/entry consumers and build macros, old header includes, direct CRT and startup/cleanup copies; retire the whole shared entry class without changing firmware/Machine lifetimes. |
 
 ## Current Technical Baseline
 
@@ -28,7 +43,7 @@ are unchanged. This closure changes no hardware timing grade.
   mechanisms. Genuine D4 remains Model40-owned.
 - NXVM retains four fixed implemented products: XT, AT, Model40 and default.
   PC110 is not runnable; Product INI/request/startup now has a sole shared
-  receiver accepted in S2; command/composition/entry migration remains. The
+  receiver accepted in S2 and command/composition in S3; process entry is S4. The
   independent four-App split is queued, not implemented.
 - Eight optimized stripped 0541 EXEs now reside under their `assets/nxvm/<profile>`
   directories, with the runtime debugger and unchanged owner INIs. MyNES
