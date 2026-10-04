@@ -18,6 +18,13 @@ endif()
 set(SHARED_X86_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
+add_executable(vm-profile-contract-smoke ibmpc-common/profile_contract_smoke.c)
+target_link_libraries(vm-profile-contract-smoke PRIVATE x86-ibmpc-common)
+add_test(NAME unit.vm-profile-contract-smoke COMMAND vm-profile-contract-smoke)
+set_tests_properties(unit.vm-profile-contract-smoke PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+list(APPEND SHARED_X86_TEST_TARGETS vm-profile-contract-smoke)
+shared_register_test(x86 ibmpc-common/construction_helpers x86-ibmpc-common)
+
 shared_register_test(x86 product/ini x86-product-config)
 if(X86_BUILD_TOOLS)
     shared_register_test(x86 product/command x86-product)

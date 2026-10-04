@@ -113,6 +113,8 @@ target_compile_definitions(x86-core-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
 set(x86_ibmpc_common_sources
+    ibmpc-common/floppy.c ibmpc-common/rom_validation.c
+    ibmpc-common/profile_contract.c
     ibmpc-common/media_interface.c ibmpc-common/display.c
     ibmpc-common/pit_bus.c ibmpc-common/pic_bus.c ibmpc-common/dma_bus.c
     ibmpc-common/fdc.c ibmpc-common/hdc.c ibmpc-common/vadp.c
