@@ -12,7 +12,9 @@ Ordered unnumbered candidates; no numeric implementation task is admitted here.
 
 Independent chips are closed as [T539](../history/M5-T539-independent-shared-chips.md).
 Common board integration is closed as [T540](../history/M5-T540-shared-ibmpc-integration.md);
-the App split is the next candidate, not yet admitted.
+[T541](../history/M5-T541-independent-pc-apps.md) now extracts the shared
+[PC Product](../proposals/m5-shared-pc-product.md). The owner separated the
+four-App split into the first candidate; it has no allocated numeric T yet.
 The later candidates retain their semantic qualification scope against the
 resulting owners; extraction alone does not qualify new hardware or timing.
 

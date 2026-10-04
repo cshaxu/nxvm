@@ -100,7 +100,7 @@ The queued [App split](../states/QUEUE.md) targets:
 src/
   lib/
   common/
-  x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug}/
+  x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug,product}/
   app-mypcxt/
   app-mypcat/
   app-mypcdeskpro386/
@@ -118,3 +118,15 @@ Matching shared tests live in
 `test/app-<product>` unit/integration tree, documentation, tools and build entry.
 No source, test, firmware, INI or executable is relocated by this proposal-only
 governance. Deployment identities/paths are separately governed at App cutover.
+
+T541 first extracts Product while the existing App/profile directories stay
+in place. The separate queued split creates the four App roots afterward.
+Neither stage modifies Lib or Common under the current owner restriction.
+
+The owner-required x86/product receiver owns the identical PC Console/API,
+INI/startup/UX implementation once, with matching test/x86/product coverage.
+Its final flat file set and minimum typed Machine binding are determined by
+T541 S1's actual-source inventory; existing board/media/execution adapter files
+stay App-owned. Each App retains real
+product identity, fixed board/firmware composition and build binding; no App
+is the source library of another App or the shared Product implementation.

@@ -2,75 +2,50 @@
 
 ## Goal And Dependencies
 
-Third ordered migration candidate, unnumbered and not admitted. After
-[shared chips](m5-shared-chip-extraction.md) and
-[shared PC integration](../history/M5-T540-shared-ibmpc-integration-proposal.md), replace the four-machine
-NXVM product shell with four top-level products:
+This is the first queued successor, not active T541 and not yet numerically
+allocated. The owner separated this cutover from T541 on 2026-10-04. After
+the accepted [shared PC Product extraction](m5-shared-pc-product.md), split
+the existing four-machine NXVM shell into four top-level products:
 
 - `src/app-mypcxt`: existing IBM 5160 XT.
 - `src/app-mypcat`: existing IBM 5170 AT.
 - `src/app-mypcdeskpro386`: existing DeskPro 386 Model 40.
 - `src/app-nxvm`: existing default 386 PC/AT only.
 
-Later `src/app-mypc110` is the receiver of the separate
-[PC110 proposal](m6-pc110-evidence-and-implementation.md), not a stub fifth App.
+PC110 remains a separate [future task](m6-pc110-evidence-and-implementation.md),
+not an empty fifth App. T539 chips and T540 shared board integration remain
+accepted dependencies; this task does not reimplement them or T541 Product.
 
-## Design
+## Design And Cutover
 
-Each App owns its entry/configuration/CLI composition, board-specific assembly,
-asset roles and Common Machine binding. Apps consume `x86/core`, `x86/chips`
-and the appropriate flat `x86/ibmpc-*` component; no App imports another App's headers, source, private state or
-executable. Common and Lib retain their existing neutral responsibilities.
+Each App owns immutable identity, board composition, firmware/build binding
+and its product-local documentation, tests, tools and artifacts. All four
+consume the same accepted x86/product command/API/INI/startup/UX implementation,
+x86 Core/chips and appropriate IBM-PC board contracts. No App imports a peer
+App or copies a parser, runner, queue, debugger or presenter.
 
-Do not copy the former whole NXVM product four times. Reuse the existing
-Common session/UI/machine contracts and the proven shared PC mechanisms.
-Common PC adapter behavior belongs in the appropriate shared PC contract,
-not four copied runners. Keep actual product policies local and avoid a new
-universal App shell or pass-through facade solely to hide duplication.
+Freeze the complete source/test/configuration/CMake/tool/document/artifact
+receiving-owner map before moves. Shared tests stay shared; board/firmware and
+external integration scenarios follow their concrete App. Preserve original
+assertions, provenance, CPU families and all existing machine capabilities.
+Do not reintroduce runtime model selection, YAML or host BIOS shortcuts.
 
-Each EXE still has one build-fixed board. Preserve current INI option meanings,
-media modes, debugger, lifecycle and firmware-driven boot; do not reintroduce
-YAML, runtime machine selection or a BIOS compatibility bypass. Protected
-firmware/media stay in the existing external archive; directory renaming alone
-does not authorize changing owner INIs or moving external masters.
-
-## Coverage And Cutover
-
-The first S freezes a four-row product migration map and a complete file/test/
-tool/build/artifact/document map. Each original integration scenario receives
-one named destination and unchanged acceptance predicate. CPU/device and
-common-board tests stay in x86, not duplicated per App.
-
-Tests mirror `test/app-mypcxt`, `test/app-mypcat`,
-`test/app-mypcdeskpro386` and `test/app-nxvm`, with separate integration trees.
-Each product receives its own docs guide, design, states, proposals/history,
-tools and CMake entry using shared build mechanics. Preserve provenance of
-existing NXVM task history; move/link records rather than renumbering it.
-
-Before any new-target commit, admit a separate governance Td to extend the
-current rules' NXVM/MyNES/Shared target vocabulary and executable deployment
-mapping for the new Apps. Freeze product names, INI compatibility, dual-width
-EXE names, version continuity and `assets/<product>/` destinations there.
-Do not change docs/rules from an implementation S or silently invent commit
-prefixes. Current `assets/nxvm/<profile>/` remains authoritative until cutover.
+Before new-target commits, a separately admitted Td establishes allowed
+commit targets, product guides, executable names/version continuity and
+deployment directories. Until then assets/nxvm/<profile> and adjacent owner
+INIs remain authoritative. Relative media paths must retain their meaning;
+moving source alone does not authorize INI or external-archive rewrites.
 
 ## Verification And Exit
 
-- All four products independently configure/build with only their own and
-  declared shared inputs; product-private edits do not affect sibling Apps.
-- No old multi-machine selector, cross-App include, duplicated chip/board
-  implementation or orphaned build/test/document reference survives.
-- Preserve all existing test coverage and qualify every current machine on
-  both x64 and x86 with real external assets and its actual adjacent INI.
-- Full required units/integration, shared manifests, dependency/static and
-  all affected documentation gates pass. Deliver verified optimized stripped
-  dual EXEs for each App; retire old EXEs only after verified replacements.
-- All four owner maps and the docs/queue handoffs are complete. MyNES remains
-  unchanged except explicitly admitted Shared receiver requirements. PC110
-  remains future work, not falsely marked runnable.
+All four Apps independently configure/build using only their own and declared
+shared inputs. Tests mirror test/app-<product>, with separate integration trees.
+No obsolete cross-App reference, duplicate shared Product implementation or
+orphaned build/tool/document path remains. Preserve every existing integration
+scenario and acceptance predicate, including all 58 profile/width contexts.
 
-## Stops
-
-Missing scope/deployment governance, lost capability, incompatible INI/asset
-behavior, unresolved duplicated ownership or new hardware requirements block
-the affected cutover; obtain approval rather than weakening the baseline.
+Required units/integration, manifests and dependency/document gates pass.
+Deliver each App's optimized stripped x64/x86 pair under the approved mapping;
+retire old artifacts only after replacement verification. MyNES and external
+masters remain unchanged. Missing governance, lost capability or incompatible
+INI/media behavior blocks cutover rather than weakening acceptance.

@@ -63,7 +63,7 @@ it does not change runtime ownership before the corresponding cutover.
   Port B and refresh state through one frozen board-profile binding.
   The former `app-nxvm/devices` implementation is removed. Chip state stays
   in `x86/chips`, guest time in Core, and profile/firmware/media choices in
-  App composition. Current records the remaining S97 delivery and acceptance.
+  App composition. Current records T540 acceptance and the next App cutover.
 - `common/machine` owns the shared execution/control protocol and paused-debug
   lease; `common/session` is the sole product-control reducer;
   `common/ui` binds Lib KVM and the Console broker.
@@ -208,9 +208,10 @@ maps this design to observed code and bounded migration evidence.
 
 ## Queued Shared-Hardware And App Split
 
-The owner-approved planning direction has three ordered stages. The first is
+The owner-approved planning direction has four ordered stages. The first is
 [closed T539](../history/M5-T539-independent-shared-chips.md), followed by
-the active T540 board receiver and [queued App split](../states/QUEUE.md):
+the closed T540 board receiver, [active Product extraction](../proposals/m5-shared-pc-product.md)
+and [queued App split](../proposals/m5-independent-pc-apps.md):
 
 1. `x86/chips` is the target owner of independent chips, including CPU, PIC, PIT and DMA;
    each retains its state and internal timing. It does not own a PC profile,
@@ -222,7 +223,17 @@ the active T540 board receiver and [queued App split](../states/QUEUE.md):
    wiring. Both use independent chip contracts; product-specific topology and
    asset selection stay in the App. No mirrored device state, product policy or
    second Common lifecycle loop is introduced.
-3. Four independent Apps compose these shared capabilities: `app-mypcxt`
+3. `x86/product` receives the four PC products' identical Console command/API,
+   INI/startup/composition and UX implementation. Common/Lib keep their
+   existing reducer, queue and native presentation owners. The complete
+   Product-to-Machine boundary uses the existing Common driver plus a frozen
+   typed App factory and copied INFO/speed operations, never an App-private
+   include. The board/media/execution adapter stays App-owned. Frozen identity,
+   hardware construction and firmware definitions bind that implementation; no per-machine console copy or new
+   generic App framework is introduced.
+   T541 keeps the four current builds and deployment paths intact. Lib/Common
+   and existing x86 components are not implementation-change targets.
+4. The separate queued task makes four independent Apps compose these capabilities: `app-mypcxt`
    (5160), `app-mypcat` (5170), `app-mypcdeskpro386` (Model 40), and
    `app-nxvm` (default 386). Later PC110 belongs to `app-mypc110` after its
    separate hardware qualification. No App depends on another App.
@@ -233,4 +244,4 @@ their shared owner; product firmware/boot/INI tests follow their App. Preserve
 existing CPU families, personalities and tests. Structural moves are not V30,
 Raiden II, 486 or PC110 implementation and do not upgrade timing evidence.
 New product scope names and deployment rules require separate Td governance
-before the third candidate's cutover; current names/locations remain valid.
+before the fourth stage's cutover; current names/locations remain valid.
