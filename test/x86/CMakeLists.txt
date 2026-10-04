@@ -19,6 +19,17 @@ set(SHARED_X86_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
 shared_register_test(x86 product/ini x86-product-config)
+if(X86_BUILD_TOOLS)
+    shared_register_test(x86 product/command x86-product)
+    add_executable(x86-test-composition product/composition_smoke.c
+        "${X86_ROOT}/product/composition.c")
+    target_link_libraries(x86-test-composition PRIVATE types)
+    target_include_directories(x86-test-composition PRIVATE "${X86_ROOT}/..")
+    add_test(NAME x86.composition COMMAND x86-test-composition)
+    set_tests_properties(x86.composition PROPERTIES LABELS "unit;x86" TIMEOUT 30)
+    list(APPEND SHARED_X86_TEST_TARGETS x86-test-composition)
+    shared_register_test(x86 product/keyboard kvm-base)
+endif()
 
 add_executable(core-mantle-shape-smoke ibmpc-common/machine_provider_composition_smoke.c)
 target_link_libraries(core-mantle-shape-smoke PRIVATE x86-ibmpc-common x86-core)

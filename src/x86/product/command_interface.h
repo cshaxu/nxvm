@@ -1,0 +1,32 @@
+/* Copyright 2012-2014 Neko. */
+
+#ifndef VM_APP_COMMAND_INTERFACE_H
+#define VM_APP_COMMAND_INTERFACE_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include "lib/types/types_interface.h"
+
+
+#include "x86/product/composition_interface.h"
+#include "x86/product/ini_interface.h"
+
+    typedef struct vm_app_console_context vm_app_console_context;
+
+    lib_status vm_app_console_context_create(
+        vm_app_console_context **out_context);
+    void vm_app_console_context_destroy(
+        vm_app_console_context *context);
+
+/* Product console returns one outcome for the App process boundary. */
+lib_status vm_app_console_main(vm_app_console_context *context,
+    vm_app *session,
+    const lib_u8 *ini_path);
+
+#ifdef __cplusplus
+} /*_EOCD_*/
+#endif
+
+#endif
