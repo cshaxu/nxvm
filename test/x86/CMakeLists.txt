@@ -18,6 +18,8 @@ endif()
 set(SHARED_X86_TEST_TARGETS)
 include("${CMAKE_CURRENT_LIST_DIR}/../register.cmake")
 
+shared_register_test(x86 product/ini x86-product-config)
+
 add_executable(core-mantle-shape-smoke ibmpc-common/machine_provider_composition_smoke.c)
 target_link_libraries(core-mantle-shape-smoke PRIVATE x86-ibmpc-common x86-core)
 add_test(NAME unit.core-mantle-shape-smoke COMMAND core-mantle-shape-smoke)

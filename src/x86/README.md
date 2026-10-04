@@ -5,11 +5,13 @@ GNU/Clang builds enable -Wall -Wextra -Wpedantic -Werror in this package only.
 
 Architecture-specific copied protocols, chip mechanisms and DOS-style debug/assembly tools.
 Products explicitly add this corpus; Common and Lib never depend on it.
-Core owns the guest executor; no host worker, Console, input loop or product
-state machine belongs here.
+Core owns the guest executor; it has no host worker, Console or product state
+machine. Product consumes existing Common/Lib contracts rather than owning a
+second lifecycle reducer, native presenter or input loop.
 
 | Component | Responsibility | Public interface |
 | --- | --- | --- |
+| product | Shared PC INI grammar, copied runtime request and executable-adjacent startup path; fixed hardware projection stays in the App | ini_interface.h, request_interface.h, startup_interface.h |
 | core | Neutral CPU/FPU execution, guest timeline, bus transactions, RAM/port/ROM routes and bounded debug operations | machine_interface.h and adjacent *_interface.h contracts |
 | ibmpc-common | Board construction/reset/time/deadline/teardown, media/display providers, PIT/PIC/DMA buses and opaque FDC/HDC/video adapters | machine_board_interface.h and adjacent *_interface.h contracts |
 | ibmpc-at | AT KBC/AUX/A20/reset wiring and planar parity/Port B | kbc_interface.h, parity_interface.h |

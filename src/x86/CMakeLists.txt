@@ -18,6 +18,10 @@ if(X86_BUILD_TOOLS AND NOT TARGET common-machine)
     add_subdirectory("${X86_COMMON_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/common")
 endif()
 
+add_library(x86-product-config STATIC product/ini.c product/startup.c)
+target_include_directories(x86-product-config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-product-config PUBLIC types storage base)
+
 add_library(x86-pit825x STATIC chips/pit825x/pit.c)
 target_include_directories(x86-pit825x PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-pit825x PUBLIC types)
