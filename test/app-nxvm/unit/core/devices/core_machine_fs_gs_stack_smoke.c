@@ -1,5 +1,5 @@
-#include "support/core_machine_board_fixture.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "x86/core/device_support_interface.h"
 #include <stdio.h>
 
@@ -75,27 +75,23 @@ static lib_i32 fs_gs_test_pop_stack_fault(void)
         core_machine_cpu_diagnostic diagnostic;
         core_machine_debug_cpu_snapshot before;
         core_machine_debug_cpu_snapshot after;
-        lib_u16 before_selector;
-        lib_u32 before_flags;
         lib_i32 failed = !fs_gs_prepare_protected(&state);
         if (!failed) {
             failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-            before_selector = opcode == 0u ? before.fs.selector : before.gs.selector;
-            before_flags = before.eflags;
-            failed |= core_machine_memory_write(state.machine, 0x2000u,
-                    (lib_u8[]){0x0fu,opcodes[opcode]}, 2u) != LIB_STATUS_OK;
-            failed |= core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+                core_machine_memory_write(state.machine, 0x2000u,
+                    (lib_u8[]){0x0fu,opcodes[opcode]}, 2u) != LIB_STATUS_OK ||
+                core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
                     &result) != LIB_STATUS_INTERNAL_ERROR || result.reason != CORE_MACHINE_STOP_FAULT ||
-                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK;
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
-            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, (1u << 8)) ||
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(state.machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
+                    diagnostic.first_fault.exception_mask, (1u << 8)) ||
                 after.eip != 0u || after.esp != 0x8000u ||
-                after.eflags != before_flags ||
+                after.eflags != before.eflags ||
                 (opcode == 0u ? after.fs.selector : after.gs.selector) !=
-                    before_selector;
+                    (opcode == 0u ? before.fs.selector : before.gs.selector);
         }
         core_machine_destroy(state.machine);
         if (failed) return 0;

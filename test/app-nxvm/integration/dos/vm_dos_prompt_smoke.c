@@ -91,7 +91,7 @@ static lib_i32 has_dos_prompt(const vm_machine *session)
     lib_size cell;
 
     if (session == LIB_NULL) return 0;
-    (void)test_vm_machine_capture_presentation(session, &frame);
+    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const lib_u8 drive = frame.characters[cell];
         if (isalpha((lib_u8)drive) && frame.characters[cell + 1u] == ':' &&

@@ -3,7 +3,7 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 
 lib_i32 main(void)
 {

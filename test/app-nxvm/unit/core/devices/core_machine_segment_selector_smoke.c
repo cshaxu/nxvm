@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
-#include "support/core_machine_board_fixture.h"
+#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
 
 #define SEG_GDT_POINTER 0x0100u
 #define SEG_GDT_ADDRESS 0x0300u
@@ -115,15 +115,13 @@ static lib_i32 segment_boot_protected(segment_machine *state)
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
     const core_machine_run_budget budget = { 9u, 0u };
-    core_machine_run_result result;
-    lib_i32 installed;
+    core_machine_run_result result = {0};
     lib_status run_status;
 
-    installed = segment_write(state, SEG_GDT_POINTER, gdt_pointer,
-        sizeof(gdt_pointer));
-    installed &= segment_write(state, SEG_GDT_ADDRESS, gdt, sizeof(gdt));
-    installed &= segment_write(state, 0u, real_code, sizeof(real_code));
-    if (!installed) {
+    if (!segment_write(state, SEG_GDT_POINTER, gdt_pointer,
+            sizeof(gdt_pointer)) ||
+        !segment_write(state, SEG_GDT_ADDRESS, gdt, sizeof(gdt)) ||
+        !segment_write(state, 0u, real_code, sizeof(real_code))) {
         fprintf(stderr,
             "M5:T301:SEGMENT-SELECTOR bootstrap-install-failed\n");
         return 0;
@@ -229,7 +227,7 @@ static lib_i32 segment_test_80286_protected_cache_rejections(void)
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         segment_machine state;
-        core_machine_run_result result;
+        core_machine_run_result result = {0};
         core_machine_cpu_diagnostic diagnostic;
         core_machine_debug_cpu_snapshot before = {0};
         core_machine_debug_cpu_snapshot after = {0};
@@ -237,17 +235,15 @@ static lib_i32 segment_test_80286_protected_cache_rejections(void)
             !segment_boot_protected_286(&state);
 
         if (!failed) {
-            failed |= !segment_capture(&state, &before);
-            failed |= !segment_write(&state, SEG_CODE_ADDRESS, codes[form],
-                sizes[form]);
-            failed |= !segment_patch(&state, CORE_MACHINE_DEBUG_EIP, 0u);
-            failed |= core_machine_run(state.machine,
+            failed |= !segment_capture(&state, &before) ||
+                !segment_write(&state, SEG_CODE_ADDRESS, codes[form], sizes[form]) ||
+                !segment_patch(&state, CORE_MACHINE_DEBUG_EIP, 0u) ||
+                core_machine_run(state.machine,
                 (core_machine_run_budget){ form == 2u ? 16u : 2u, 0u },
                 &result) != LIB_STATUS_OK ||
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                LIB_STATUS_OK;
-            failed |= !segment_capture(&state, &after);
-            if (form == 2u) {
+                LIB_STATUS_OK || !segment_capture(&state, &after);
+            if (!failed && form == 2u) {
                 failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
                     diagnostic.first_fault.valid || after.ds.selector != 0u ||
                     after.eax != (lib_u32)(codes[form][1] | (codes[form][2] << 8u)) ||
@@ -255,7 +251,7 @@ static lib_i32 segment_test_80286_protected_cache_rejections(void)
                     sizeof(after.es)) != 0 ||
                     lib_memory_compare(&after.ss, &before.ss,
                     sizeof(after.ss)) != 0;
-            } else {
+            } else if (!failed) {
                 const core_machine_debug_segment_snapshot *target = form == 3u ? &after.ss :
                     &after.ds;
                 const core_machine_debug_segment_snapshot *before_target = form == 3u ?
@@ -306,7 +302,10 @@ static lib_i32 segment_test_lxs_fault_atomicity(void)
             VCPUINS_EXCEPT_NP;
 
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
-            !segment_boot_protected(&state)) return 1;
+            !segment_boot_protected(&state)) {
+            core_machine_destroy(state.machine);
+            return 1;
+        }
         code[code_size++] = forms[index].first;
         if (forms[index].bytes == 2u) code[code_size++] = forms[index].second;
         code[code_size++] = 0x05u;
@@ -314,8 +313,8 @@ static lib_i32 segment_test_lxs_fault_atomicity(void)
         code[code_size++] = 0x04u;
         code[code_size++] = 0x00u;
         code[code_size++] = 0x00u;
-        failed |= !segment_capture(&state, &before);
-        failed |= !segment_write(&state, SEG_DATA_ADDRESS + 0x0400u, pointer,
+        failed |= !segment_capture(&state, &before) ||
+            !segment_write(&state, SEG_DATA_ADDRESS + 0x0400u, pointer,
                 sizeof(pointer)) || !segment_run_exception(&state, code,
                 code_size, SEG_CODE_ADDRESS, exception, &after) ||
             before.eax != after.eax ||
@@ -332,6 +331,7 @@ static lib_i32 segment_test_lxs_fault_atomicity(void)
             lib_memory_compare(&before.gs, &after.gs,
                 sizeof(before.gs)) != 0;
         core_machine_destroy(state.machine);
+        if (failed) return 1;
     }
     return failed;
 }
@@ -357,7 +357,6 @@ static lib_i32 segment_test_protected_sreg_failures(void)
     static const lib_u8 pop_ss[] = { 0x66u,0x17u };
     static const lib_u8 selector_nonpresent[] = { 0x18u,0,0,0 };
     lib_size index;
-    lib_i32 failed = 0;
 
     for (index = 0u; index < sizeof(failures) / sizeof(failures[0]); ++index) {
         lib_u8 code[] = { 0xb8u,0,0,0,0,0x8eu,failures[index].mov_modrm };
@@ -371,13 +370,16 @@ static lib_i32 segment_test_protected_sreg_failures(void)
         code[1u] = (lib_u8)failures[index].selector;
         code[2u] = (lib_u8)(failures[index].selector >> 8u);
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
-            !segment_boot_protected(&state)) return 1;
+            !segment_boot_protected(&state)) {
+            core_machine_destroy(state.machine);
+            return 1;
+        }
         case_failed = !segment_capture(&state, &before) ||
             !segment_run_exception(&state, code, sizeof(code),
             SEG_CODE_ADDRESS, failures[index].exception, &after);
         before_sreg = segment_sreg(&before, failures[index].target);
         after_sreg = segment_sreg(&after, failures[index].target);
-        case_failed |= before_sreg == LIB_NULL || after_sreg == LIB_NULL ||
+        case_failed = case_failed || before_sreg == LIB_NULL || after_sreg == LIB_NULL ||
             lib_memory_compare(before_sreg, after_sreg, sizeof(*before_sreg)) != 0 ||
             before.esp != after.esp ||
             before.eflags != after.eflags;
@@ -385,8 +387,8 @@ static lib_i32 segment_test_protected_sreg_failures(void)
             "M5:T539:S28:SEGMENT-SELECTOR mov-fail index=%u selector=%04x esp=%08x/%08x flags=%08x/%08x\n",
             (unsigned)index, failures[index].selector, before.esp,
             after.esp, before.eflags, after.eflags);
-        failed |= case_failed;
         core_machine_destroy(state.machine);
+        if (case_failed) return 1;
     }
     for (index = 0u; index < 2u; ++index) {
         const lib_u8 *code = index == 0u ? pop_fs : pop_ss;
@@ -401,16 +403,19 @@ static lib_i32 segment_test_protected_sreg_failures(void)
         lib_i32 case_failed;
 
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
-            !segment_boot_protected(&state)) return 1;
-        if (!segment_patch(&state, CORE_MACHINE_DEBUG_ESP, 0x8000u)) return 1;
-        case_failed = !segment_capture(&state, &before);
-        case_failed |= !segment_write(&state, SEG_DATA_ADDRESS + 0x8000u,
+            !segment_boot_protected(&state) ||
+            !segment_patch(&state, CORE_MACHINE_DEBUG_ESP, 0x8000u)) {
+            core_machine_destroy(state.machine);
+            return 1;
+        }
+        case_failed = !segment_capture(&state, &before) ||
+            !segment_write(&state, SEG_DATA_ADDRESS + 0x8000u,
                 selector_nonpresent, sizeof(selector_nonpresent)) ||
             !segment_run_exception(&state, code, code_size, SEG_CODE_ADDRESS,
                 exception, &after);
         before_sreg = segment_sreg(&before, target);
         after_sreg = segment_sreg(&after, target);
-        case_failed |= before_sreg == LIB_NULL || after_sreg == LIB_NULL ||
+        case_failed = case_failed || before_sreg == LIB_NULL || after_sreg == LIB_NULL ||
             lib_memory_compare(before_sreg, after_sreg, sizeof(*before_sreg)) != 0 ||
             before.esp != after.esp ||
             before.eflags != after.eflags;
@@ -418,10 +423,10 @@ static lib_i32 segment_test_protected_sreg_failures(void)
             "M5:T539:S28:SEGMENT-SELECTOR pop-fail index=%u esp=%08x/%08x flags=%08x/%08x\n",
             (unsigned)index, before.esp, after.esp,
             before.eflags, after.eflags);
-        failed |= case_failed;
         core_machine_destroy(state.machine);
+        if (case_failed) return 1;
     }
-    return failed;
+    return 0;
 }
 
 static lib_i32 segment_test_pop_fault_atomicity(void)
@@ -429,7 +434,7 @@ static lib_i32 segment_test_pop_fault_atomicity(void)
     static const lib_u8 pop_fs[] = { 0x66u,0x0fu,0xa1u };
     static const lib_u8 selector[] = { 0x18u,0x00u,0,0 };
     const core_machine_run_budget budget = { 8u, 0u };
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     core_machine_cpu_diagnostic diagnostic;
     segment_machine state;
     core_machine_debug_cpu_snapshot before = {0};
@@ -438,20 +443,18 @@ static lib_i32 segment_test_pop_fault_atomicity(void)
 
     if (!failed) failed |= !segment_boot_protected(&state);
     if (!failed) {
-        failed |= !segment_patch(&state, CORE_MACHINE_DEBUG_ESP, 0x8000u);
-        failed |= !segment_capture(&state, &before);
-        failed |= !segment_write(&state, SEG_DATA_ADDRESS + 0x8000u, selector,
+        failed |= !segment_patch(&state, CORE_MACHINE_DEBUG_ESP, 0x8000u) ||
+            !segment_capture(&state, &before) ||
+            !segment_write(&state, SEG_DATA_ADDRESS + 0x8000u, selector,
             sizeof(selector)) || !segment_write(&state, SEG_CODE_ADDRESS, pop_fs,
-            sizeof(pop_fs));
-        failed |= !segment_patch(&state, CORE_MACHINE_DEBUG_EIP, 0u);
-        failed |= core_machine_run(state.machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
+            sizeof(pop_fs)) || !segment_patch(&state, CORE_MACHINE_DEBUG_EIP, 0u) ||
+            core_machine_run(state.machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
             result.reason != CORE_MACHINE_STOP_FAULT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
             LIB_STATUS_OK || !diagnostic.first_fault.valid ||
             !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
-            diagnostic.first_fault.exception_code != 0u;
-        failed |= !segment_capture(&state, &after);
-        failed |= after.esp != before.esp ||
+            diagnostic.first_fault.exception_code != 0u ||
+            !segment_capture(&state, &after) || after.esp != before.esp ||
             lib_memory_compare(&after.fs, &before.fs, sizeof(after.fs)) != 0;
     }
     core_machine_destroy(state.machine);

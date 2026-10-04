@@ -43,8 +43,8 @@ it does not change runtime ownership before the corresponding cutover.
   contracts; it does not depend on Common or Machine-adapter internals.
 - `x86/chips` owns the extracted CPU, FPU, PIC, PIT, DMA, RTC, KBC, PPI,
   keyboard, mouse, FDC, HDC and video chip mechanisms. T539 closed their
-  independent-chip source ownership. T540 S88 moves the neutral executor,
-  guest timeline, memory/port routes and plan transaction to `x86/core`.
+  independent-chip source ownership. The neutral executor,
+  guest timeline, memory/port routes and plan transaction live in `x86/core`.
   Its production target depends only on Types, CPU and FPU; NXVM links that
   sole implementation. Accepted S89 puts the complete media registry
   and display-provider slot in `x86/ibmpc-common`, consumed through public
@@ -55,10 +55,15 @@ it does not change runtime ownership before the corresponding cutover.
   producers borrow sources for that aggregation's lifetime; copied register
   diagnostics do not expose a chip or mutable layout. Current records its
   verification and acceptance status.
-  `app-nxvm/devices` retains the remaining IBM-PC board attachments
-  pending the flat `x86/ibmpc-*` receivers. Chip state stays in `x86/chips`,
-  guest execution time in one Core, and profile/firmware/media choices in
-  App composition. Flat board receivers stay separate from this neutral Core.
+  `x86/ibmpc-common` also owns the complete board construction, reset,
+  clock/deadline reduction and teardown, plus opaque FDC/HDC/video adapters.
+  `x86/ibmpc-at` owns KBC and planar parity; `x86/ibmpc-xt` owns PPI keyboard
+  wiring. Common composition integrates their public contracts; neither
+  family reads the common board layout. Model40 alone owns D4 memory,
+  Port B and refresh state through one frozen board-profile binding.
+  The former `app-nxvm/devices` implementation is removed. Chip state stays
+  in `x86/chips`, guest time in Core, and profile/firmware/media choices in
+  App composition. Current records the remaining S97 delivery and acceptance.
 - `common/machine` owns the shared execution/control protocol and paused-debug
   lease; `common/session` is the sole product-control reducer;
   `common/ui` binds Lib KVM and the Console broker.
@@ -74,36 +79,20 @@ it does not change runtime ownership before the corresponding cutover.
   immutable Core mapping route; no host BDA/IVT/reset
   service or software-interrupt interception is restored.
 
-### Attachment Target Before Physical Relocation
+### Core And Board Lifetime
 
-T540's remaining attachment cut uses one opaque board handle and one copied
-Core callback binding. Board APIs consume the board handle; execution/debug
-APIs consume the Core handle. Composition establishes their lifetime without
-exporting layouts, a private-state getter or a side registry. Binding is
-published once before freeze; existing Core destruction finalizes attachment
-state before its execution resources. The [S78 intake](../etc/evidence/t540-s78-attachment-owner-intake.md)
-records the current private dependencies and distinguishes this target from
-implemented behavior. It adds no device framework or lifecycle queue.
+Board APIs consume an opaque board handle; execution/debug APIs consume the
+opaque Core handle. Construction publishes both only after the frozen plan
+succeeds. Core's one attachment binding owns board teardown; the driver merely
+borrows the board and clears that handle on destruction. No private association,
+lookup getter, side registry or second lifetime owner remains.
 
-S79 implements the copied callback/publication half through
-`attachment_interface.h`: all nineteen callbacks share one opaque context,
-published once during configuration and finalized by Core destruction.
-S80 changes that context to the existing board allocation, which borrows an
-opaque Core execution handle until Core finalizes the attachment. The public
-board API and driver still use the temporary private Core-to-board association;
-their whole caller migration remains required before physical relocation.
-Neither callback closure authorizes a layout getter or completes that API cut.
-See [S79 evidence](../etc/evidence/t540-s79-copied-attachment-binding.md) and
-[S80 evidence](../etc/evidence/t540-s80-board-callback-context.md).
-
-S81's frozen-plan constructor publishes the opaque board and Core handles
-together only after successful construction; Core remains their sole lifetime
-owner. The driver holds the borrowed board handle and clears it on destruction.
-S82 extends the existing configuration constructor and both allocation seams
-with the same optional borrowed output; no getter or lifetime owner is added.
-Public board operations and direct-board fixtures remain the next migration
-boundary, not a completed physical move. See [S81 evidence](../etc/evidence/t540-s81-plan-board-publication.md)
-and [S82 evidence](../etc/evidence/t540-s82-config-board-publication.md).
+The board owns peripheral/family allocations and IRQ leases. Its optional
+profile binding is frozen during construction and finalized before borrowed
+PITs. Failed candidates follow the same teardown path. The
+[S93 receiver](../etc/architecture/t540-s93-whole-board-receiver.md) defines this
+boundary; its [work evidence](../etc/evidence/t540-s93-whole-board-receiver-work.md)
+and Current distinguish implementation from accepted delivery.
 
 ### Fixed Composition Without A New Framework
 
@@ -116,7 +105,7 @@ build-selected profile + compiled immutable firmware + App INI options
        Profile resolves its fixed assets, then constructs one frozen Core plan
                               |
                               v
-           one Devices instance -> Machine adapter -> Common Machine
+           one Core + Board instance -> Machine adapter -> Common Machine
 ```
 
 Profile owns hardware constraints and firmware asset resolution; App owns INI
@@ -150,8 +139,8 @@ the normal product artifact directory; see the source policy.
 
 ### CPU And Machine Preservation
 
-CPU identity, feature/timing tables and instruction dispatch remain Core-owned
-and selectable by Core callers and repository-only CPU tests. Preserve all
+CPU identity, feature/timing tables and instruction dispatch remain chip-owned
+at `x86/chips/cpu` and selectable by Core callers and repository-only CPU tests. Preserve all
 existing models and tests even when no shipped machine uses them. New 188/486
 coverage needs sources and implementation; an enum alias cannot turn 386 into
 486. Fixed products choose their documented CPU once. Do not scatter build
@@ -197,10 +186,11 @@ Omitted values use selected-profile defaults; explicit unsupported values fail
 clearly rather than selecting another board or silently changing hardware.
 
 Each selected product deploys once to the versioned
-`assets/nxvm/<profile>/` directory, alongside its generated `NXVM.ini`.
+`assets/nxvm/<profile>/` directory, alongside its owner-maintained `NXVM.ini`.
 That is the only current executable location; `build/` remains compiler state
 apart from historical evidence. The tracked executable/INI pair is adjacent
-and updated only for the selected profile.
+and used by deployed-product integration. EXE deployment never rewrites or
+relocates the owner INI: its relative media paths belong to that directory.
 
 ## Runtime Admission Boundary
 
@@ -219,8 +209,8 @@ maps this design to observed code and bounded migration evidence.
 ## Queued Shared-Hardware And App Split
 
 The owner-approved planning direction has three ordered stages. The first is
-[T539](../proposals/m5-shared-chip-extraction.md), executing staged chip extraction;
-the other two remain [implementation candidates](../states/QUEUE.md):
+[closed T539](../history/M5-T539-independent-shared-chips.md), followed by
+the active T540 board receiver and [queued App split](../states/QUEUE.md):
 
 1. `x86/chips` is the target owner of independent chips, including CPU, PIC, PIT and DMA;
    each retains its state and internal timing. It does not own a PC profile,

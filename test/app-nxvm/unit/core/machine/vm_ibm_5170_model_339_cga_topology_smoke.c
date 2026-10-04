@@ -1,11 +1,11 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "x86/core/port.h"
-#include "app-nxvm/devices/vadp.h"
+#include "x86/ibmpc-common/vadp_interface.h"
+#include "../../../../x86/core/bus_fixture.h"
+#include "../../../../x86/core/video_topology_fixture.h"
+#include "../../../../x86/ibmpc-common/video_topology_fixture.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -22,24 +22,8 @@ static lib_i32 vm_model_339_cga_topology(void)
     lib_i32 failed = vm_test_ibm_5170_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
 
-    if (!failed) failed |= (core_machine_port_has_read(
-        &session->core_machine->executor_port, CORE_MACHINE_VADP_PORT_CRTC_INDEX) << 1) |
-        (core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_MODE) << 2) |
-        (core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COLOR) << 3) |
-        (!core_machine_port_has_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_MODE) << 4) |
-        (!core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_STATUS) << 5) |
-        (core_machine_port_has_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_ATTRIBUTE) << 6) |
-        (core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 7) |
-        (core_machine_port_has_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_DATA) << 8) |
-        (x86_video_ega_aperture_contains(session->board->shared_vadp.chip,
-            0xa0000u, 1u) << 9) |
+    if (!failed) failed |= test_video_cga_ports(session->core_machine) |
+        (test_video_aperture_mismatch(session->board, LIB_FALSE) << 9) |
         ((core_machine_capture_display_snapshot(session->board, &snapshot) !=
             LIB_STATUS_OK ||
             snapshot.kind != X86_VIDEO_KIND_TEXT) << 10) |
@@ -57,19 +41,11 @@ static lib_i32 vm_default_ega_topology(void)
     lib_i32 failed = vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
 
-    if (!failed) failed |= (!core_machine_port_has_write(
-        &session->core_machine->executor_port, CORE_MACHINE_VADP_PORT_ATTRIBUTE) << 1) |
-        (!core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_MODE) << 2) |
-        (!core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COLOR) << 3) |
-        (!core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 4) |
-        (!x86_video_ega_aperture_contains(session->board->shared_vadp.chip,
-            0xa0000u, 1u) << 5);
+    if (!failed) failed |= test_video_ega_ports(session->core_machine) |
+        (test_video_aperture_mismatch(session->board, LIB_TRUE) << 5);
     if (!failed) {
-        core_machine_port_write(&session->core_machine->executor_port, 0x3ceu, 6u);
-        failed |= (core_machine_port_read(&session->core_machine->executor_port,
+        test_core_machine_fixture_write_port(session->core_machine, 0x3ceu, 6u);
+        failed |= (test_core_machine_fixture_read_bus(session->core_machine,
             0x3cfu) != 0x05u) << 6;
     }
     vm_machine_destroy(session);

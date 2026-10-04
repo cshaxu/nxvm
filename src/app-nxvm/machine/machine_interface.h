@@ -5,7 +5,7 @@
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/chips/fpu/fpu_interface.h"
-#include "app-nxvm/devices/guest_input_interface.h"
+#include "app-nxvm/machine/guest_input_interface.h"
 #include "app-nxvm/profiles/selection_interface.h"
 #include "app-nxvm/machine/event_interface.h"
 #include "app-nxvm/profiles/byob/blob.h"

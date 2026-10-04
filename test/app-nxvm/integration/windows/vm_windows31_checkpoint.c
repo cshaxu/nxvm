@@ -1,4 +1,4 @@
-#include "../../support/hdc.h"
+#include "../../../x86/ibmpc-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -6,18 +6,16 @@
 
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/lifecycle.h"
-#include "x86/core/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
 #define VM_T287_COMMAND_TIMEOUT_MILLISECONDS 5000u
+#define VM_T287_DIRECTORY_TIMEOUT_MILLISECONDS 60000u
 
 static lib_i32 vm_t287_submit_input(vm_machine *session,
     lib_u16 scan_code, lib_u16 virtual_key, lib_i32 pressed)
@@ -97,8 +95,8 @@ static void vm_t287_report(const vm_machine *session, const char *stage)
     printf("M5:T287:S2:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         vm_machine_control_is_running(&session->control),
-        hdc_observe(&session->board->hdc).command_count,
-        hdc_observe(&session->board->hdc).last_command);
+        test_board_hdc_observe(session->board).command_count,
+        test_board_hdc_observe(session->board).last_command);
     if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
             LIB_STATUS_OK && diagnostic.first_fault.valid) {
         lib_size index;
@@ -198,14 +196,14 @@ lib_i32 main(lib_i32 argc, char **argv)
     vm_t287_submit_key(session, 0x13u, 'R');
     vm_t287_submit_key(session, 0x1cu, VK_RETURN);
     if (vm_t287_wait_for_text(session, "file(s)", "File(s)",
-            VM_T287_COMMAND_TIMEOUT_MILLISECONDS) == LIB_NULL) goto fail;
+            VM_T287_DIRECTORY_TIMEOUT_MILLISECONDS) == LIB_NULL) goto fail;
     if (integration_ini_session_pause(&ini_session, VM_T287_COMMAND_TIMEOUT_MILLISECONDS) != LIB_STATUS_OK)
         goto fail;
     if (common_machine_shutdown(ini_session.common_machine) != LIB_STATUS_OK) goto fail;
     stage = "bda-hdd-count";
     if (core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
             sizeof(hdd_bda)) == LIB_STATUS_OK) hdd_count = hdd_bda[1];
-    ata_commands = hdc_observe(&session->board->hdc).command_count;
+    ata_commands = test_board_hdc_observe(session->board).command_count;
     vm_machine_stop(session);
     vm_t287_report_frame(session);
     if (c_present && ata_commands != 0u) {

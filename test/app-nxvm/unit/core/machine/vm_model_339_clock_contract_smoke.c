@@ -1,18 +1,13 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/kbc_state_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "support/rom/session_assets.h"
-
-static void keyboard_repeat(void *context, lib_u8 byte)
-{
-    *(lib_u8 *)context = byte;
-}
 
 static lib_i32 vm_model_339_clock_contract_is_selected(void)
 {
@@ -25,6 +20,8 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
     };
     vm_machine *session = LIB_NULL;
     core_machine_time_observation time_observation;
+    test_board_plan_observation plan;
+    test_board_composition_observation board;
     lib_i32 failed = 0;
 
     if (model_339 == LIB_NULL || generic == LIB_NULL ||
@@ -34,7 +31,9 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         return 1;
     }
 
-    failed |= model_339->clock_plan.dma.numerator != 3u ||
+    plan = test_board_capture_plan(session->core_machine_plan);
+    board = test_board_capture_composition(session->board);
+    failed = failed || model_339->clock_plan.dma.numerator != 3u ||
         model_339->clock_plan.dma.denominator != 8u ||
         model_339->clock_plan.pit.numerator != 596591u ||
         model_339->clock_plan.pit.denominator != 4000000u ||
@@ -54,69 +53,77 @@ static lib_i32 vm_model_339_clock_contract_is_selected(void)
         generic->clock_plan.rtc.numerator != 1u ||
         generic->clock_plan.rtc.denominator != 1u ||
         generic->rtc_ticks_per_second != 50000u;
-    failed |= session->core_machine_plan->configuration.memory_bytes != 512u * 1024u ||
-        session->core_machine_plan->configuration.time_axis.kind !=
+    failed = failed || plan.memory_bytes != 512u * 1024u ||
+        plan.time_axis_kind !=
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
-        session->core_machine_plan->controller_timing.dma_service !=
+        plan.controller_timing.dma_service !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
-        session->board->dma_clock.numerator != 3u ||
-        session->board->dma_clock.denominator != 8u ||
-        session->board->pit_clock.numerator != 596591u ||
-        session->board->pit_clock.denominator != 4000000u ||
-        session->board->pit_clock.reset_phase != 0u ||
-        session->board->rtc_clock.numerator != 64u ||
-        session->board->rtc_clock.denominator != 15625u ||
-        session->board->rtc_clock.reset_phase != 0u ||
-        session->board->vadp_clock.numerator != 315u ||
-        session->board->vadp_clock.denominator != 1408u ||
-        session->board->vadp_clock.reset_phase != 0u ||
-        session->board->rtc_cmos_config.ticks_per_second != 32768u ||
-        session->board->rtc_cmos_config.timing.provenance !=
+        board.dma_clock.numerator != 3u ||
+        board.dma_clock.denominator != 8u ||
+        board.pit_clock.numerator != 596591u ||
+        board.pit_clock.denominator != 4000000u ||
+        board.pit_clock.reset_phase != 0u ||
+        board.rtc_clock.numerator != 64u ||
+        board.rtc_clock.denominator != 15625u ||
+        board.rtc_clock.reset_phase != 0u ||
+        board.vadp_clock.numerator != 315u ||
+        board.vadp_clock.denominator != 1408u ||
+        board.vadp_clock.reset_phase != 0u ||
+        board.rtc_ticks_per_second != 32768u ||
+        board.rtc_provenance !=
             CORE_MACHINE_RTC_TIMING_L3_SOURCE;
-    failed |= session->board->controller_timing.dma_clock !=
+    failed = failed || board.controller_timing.dma_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
-        session->board->controller_timing.dma_service !=
+        board.controller_timing.dma_service !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
-        session->board->controller_timing.pit_clock !=
+        board.controller_timing.pit_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
-        session->board->controller_timing.rtc_clock !=
+        board.controller_timing.rtc_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     {
         core_machine_timing_disposition disposition;
 
-        failed |= core_machine_get_timing_disposition(session->core_machine,
+        failed = failed || core_machine_get_timing_disposition(session->core_machine,
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != LIB_STATUS_OK ||
             disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
-        failed |= core_machine_get_timing_disposition(session->core_machine,
+        failed = failed || core_machine_get_timing_disposition(session->core_machine,
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS, &disposition) !=
             LIB_STATUS_OK || disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-        failed |= core_machine_get_timing_disposition(session->core_machine,
+        failed = failed || core_machine_get_timing_disposition(session->core_machine,
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA, &disposition) != LIB_STATUS_OK ||
             disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
-        failed |= core_machine_get_timing_disposition(session->core_machine,
+        failed = failed || core_machine_get_timing_disposition(session->core_machine,
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != LIB_STATUS_OK ||
             disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     }
-    failed |= session->board->kbc_typematic_initial_ticks != 4000000u ||
-        session->board->kbc_typematic_repeat_ticks != 800000u ||
-        session->board->kbc_command_response_ticks != 0u;
+    failed = failed || board.kbc_typematic_initial_ticks != 4000000u ||
+        board.kbc_typematic_repeat_ticks != 800000u ||
+        board.kbc_command_response_ticks != 0u;
+    failed = failed || test_board_keyboard_repeat_cadence(session->board, 4000000u, 800000u);
     {
-        x86_keyboard *keyboard = session->board->shared_kbc.connect.keyboard;
         lib_u64 ticks = 0u;
-        lib_u8 repeated = 0u;
-        failed |= x86_keyboard_admit(keyboard, 0x1cu) != LIB_STATUS_OK;
-        failed |= x86_keyboard_ticks_until_repeat(keyboard, &ticks) != LIB_STATUS_OK ||
+        lib_u32 value = 0u;
+        /* Exercise the selected keyboard through its real serial/controller
+         * path. Native set-2 A is translated to the guest set-1 byte 1Eh. */
+        failed = failed || test_board_kbc_submit_native_byte(session->board, 0x1cu) != LIB_STATUS_OK;
+        failed = failed || core_machine_bus_read(session->core_machine, 0x60u, &value) !=
+            LIB_STATUS_OK || value != 0x1eu;
+        failed = failed || test_board_kbc_ticks_until_event(session->board, &ticks) != LIB_STATUS_OK ||
             ticks != 4000000u;
-        failed |= x86_keyboard_advance(keyboard, 3999999u, keyboard_repeat, &repeated) ||
-            repeated != 0u;
-        failed |= !x86_keyboard_advance(keyboard, 1u, keyboard_repeat, &repeated) ||
-            repeated != 0x1cu;
-        failed |= x86_keyboard_ticks_until_repeat(keyboard, &ticks) != LIB_STATUS_OK ||
+        if (!failed) test_board_kbc_advance(session->board, 3999999u);
+        failed = failed || core_machine_bus_read(session->core_machine, 0x64u, &value) !=
+            LIB_STATUS_OK || (value & 0x01u) != 0u;
+        failed = failed || test_board_kbc_ticks_until_event(session->board, &ticks) != LIB_STATUS_OK ||
+            ticks != 1u;
+        if (!failed) test_board_kbc_advance(session->board, 1u);
+        failed = failed || core_machine_bus_read(session->core_machine, 0x60u, &value) !=
+            LIB_STATUS_OK || value != 0x1eu;
+        failed = failed || test_board_kbc_ticks_until_event(session->board, &ticks) != LIB_STATUS_OK ||
             ticks != 800000u;
-        failed |= x86_keyboard_admit(keyboard, 0xf0u) != LIB_STATUS_OK;
-        failed |= x86_keyboard_admit(keyboard, 0x1cu) != LIB_STATUS_OK;
+        failed = failed || test_board_kbc_submit_native_byte(session->board, 0xf0u) != LIB_STATUS_OK;
+        failed = failed || test_board_kbc_submit_native_byte(session->board, 0x1cu) != LIB_STATUS_OK;
     }
-    failed |= core_machine_capture_time_observation(session->core_machine,
+    failed = failed || core_machine_capture_time_observation(session->core_machine,
         &time_observation) != LIB_STATUS_OK || !time_observation.pacing_time_available ||
         time_observation.pacing_ticks_per_second != 8000000u ||
         time_observation.physical_time_available ||

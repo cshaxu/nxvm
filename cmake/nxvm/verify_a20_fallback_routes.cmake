@@ -2,9 +2,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/kbc.c" kbc)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/kbc.h" kbc_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/kbc.c" kbc)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/kbc.h" kbc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" board)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" machine)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
 

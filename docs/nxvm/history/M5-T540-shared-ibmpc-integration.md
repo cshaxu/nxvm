@@ -287,3 +287,36 @@ once. MyNES and owner INIs are unchanged. The [S91 evidence](../etc/evidence/t54
 records the actual-pushed-diff audit, +2076/-1852 C/header lines and final hashes.
 Coordinator accepts both target-scoped P commits; governance P3 closes S91.
 DMA, complete board/family assembly and D4 remain required under open T540.
+
+## S96: Accepted Artifact And Boot Verification Result
+
+The owner-approved S94-S97 split defers complete implementation delivery to
+S97. S96 builds eight optimized stripped 0540 products, checks their profile,
+PE width, banner, sole-Core link and deployed/build identity, and passes each
+unchanged-INI boot group once: default DOS prompt; XT/AT/Model40 installer-running.
+The owner additionally requests build/test cost optimization before continuing.
+Source/diff review identifies deployment rewriting its same configure-input
+INI after linking. Delete that write-back and unused argument, retain EXE-only
+deployment, and guard it in the existing artifact gate. Repeated deployment
+preserves all four INI bytes/timestamps; both-width gates and negative proof pass.
+Runtime/shared source, MyNES and external masters remain unchanged. The
+[S96 record](../etc/evidence/t540-s96-artifacts-and-performance.md) retains
+exact artifact identities, actual timings, reviewed changes and acceptance limits.
+Coordinator accepts verification only, without partial P. T540 remains open
+for S97 whole-tree reconciliation, full external integration and complete delivery.
+
+## S97: Complete Receiver Delivery Review
+
+Reconcile the complete pending S93 receiver with S94's 626-path/coverage review,
+S95's independent suites and S96's eight verified products/boot rows. The
+remaining default integration passes 21/21 per width; AT and Model40 each
+pass 2/2 per width. Correct the complete Console registration class to launch
+deployed EXEs beside their unchanged owner INIs, rather than copy relative
+configuration into a wrong build directory. All 58 four-profile/two-width
+integration rows are covered without repeating successful boot groups.
+Both specialized aggregates and six manifests per width pass on the final
+staged file universe. [S97 review](../etc/evidence/t540-s97-delivery-review.md)
+records actual-diff/code-size, final identities, cost improvements and the
+concrete App-split handoff. Implementation delivery and coordinator acceptance
+are recorded after the ordered target-scoped pushes; this entry alone does not
+close T540.

@@ -1,5 +1,5 @@
 #include "support/protected_16_bootstrap_fixture.h"
-#include "x86/chips/cpu/cpu.h"
+#include "x86/chips/cpu/cpu_interface.h"
 #include <stdio.h>
 
 #define S48_GATE_SELECTOR 0x0033u
@@ -56,7 +56,7 @@ static lib_i32 s48_outer_parameter_copy(lib_u8 parameter_count)
 
     if (!failed) {
         failed = !s48_install_call_gate(&state, (lib_u8)(0x80u | (3u << 5u) |
-            VCPU_DESC_SYS_TYPE_CALLGATE_32), parameter_count, 0x0008u) ||
+            TEST_PROTECTED_CALL_GATE_32), parameter_count, 0x0008u) ||
             !s48_write_call(&state) || (parameter_count != 0u &&
             !test_protected_16_write(&state, 0x7000u, parameters,
                 (lib_size)parameter_count * sizeof(parameters[0]))) ||
@@ -84,7 +84,7 @@ static lib_i32 s48_install_gp_handler(test_protected_16_machine *state)
     static const lib_u8 hlt[] = {0xf4u};
 
     return test_protected_16_install_gate(state, 0x0du, S48_GP_HANDLER,
-        0x0008u, VCPU_DESC_SYS_TYPE_INTGATE_32, 0u, LIB_TRUE) &&
+        0x0008u, TEST_PROTECTED_INTERRUPT_GATE_32, 0u, LIB_TRUE) &&
         test_protected_16_write(state, TEST_PROTECTED_16_CODE_BASE +
             S48_GP_HANDLER, hlt, sizeof(hlt));
 }
@@ -121,12 +121,12 @@ int main(void)
 {
     if (!s48_outer_parameter_copy(0u)) return 1;
     if (!s48_outer_parameter_copy(2u)) return 2;
-    if (!s48_gate_rejection((lib_u8)(0x80u | VCPU_DESC_SYS_TYPE_CALLGATE_32),
+    if (!s48_gate_rejection((lib_u8)(0x80u | TEST_PROTECTED_CALL_GATE_32),
             0u)) return 3;
     if (!s48_gate_rejection((lib_u8)(0x80u | (3u << 5u) |
-            VCPU_DESC_SYS_TYPE_CALLGATE_16), 0u)) return 4;
+            TEST_PROTECTED_CALL_GATE_16), 0u)) return 4;
     if (!s48_gate_rejection((lib_u8)(0x80u | (3u << 5u) |
-            VCPU_DESC_SYS_TYPE_CALLGATE_32), 0x92u)) return 5;
+            TEST_PROTECTED_CALL_GATE_32), 0x92u)) return 5;
     printf("M5:T539:S48:CALL-GATE-PRIVILEGE-ENTRY:OK\n");
     return 0;
 }

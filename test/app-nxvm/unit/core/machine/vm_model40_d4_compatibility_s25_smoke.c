@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/core/machine_interface.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
@@ -41,7 +41,7 @@ lib_i32 main(void)
         LIB_STATUS_OK || session == LIB_NULL ||
         core_machine_bus_read(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
             &port_b) != LIB_STATUS_OK || (port_b & 0x10u) == 0u ||
-        (x86_pit_advance(session->board->shared_pit, 19u),
+        (test_board_pit_advance(session->board, 19u),
          core_machine_bus_read(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
             &port_b) != LIB_STATUS_OK) || (port_b & 0x10u) != 0u ||
         !vm_model40_d4_read(session->core_machine,

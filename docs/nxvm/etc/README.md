@@ -27,6 +27,18 @@ owns its pending acceptance and the remaining flat IBM-PC receivers.
 T540 S67: [neutral validation owner](evidence/t540-s67-neutral-validation-owner.md)
 records the five verbatim implementation moves and their receiving proof.
 
+T540 S94: [source and coverage review](evidence/t540-s94-source-review.md)
+indexes the complete pending receiver review, actual defects and closure proof.
+T540 S95: [independent verification](evidence/t540-s95-independent-verification.md)
+records tools-on/off dual-width execution and manifest identities; Current
+owns acceptance, and neither record accepts the pending implementation.
+
+T540 S96: [artifacts and build cost](evidence/t540-s96-artifacts-and-performance.md)
+T540 S97: [delivery review](evidence/t540-s97-delivery-review.md) reconciles
+reviewed inputs, complete external integration and build/test cost; Current
+owns final acceptance.
+records once-only product checkpoints and the EXE deployment timestamp repair.
+
 T540 S70: [Core signal boundary](evidence/t540-s70-core-signal-boundary.md)
 records the four CPU signal callers and remaining measured private-consumer
 classes before physical relocation.

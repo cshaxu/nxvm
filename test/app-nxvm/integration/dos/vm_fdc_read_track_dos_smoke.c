@@ -4,9 +4,8 @@
 
 #include <windows.h>
 
-#include "app-nxvm/devices/fdc.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/core/machine_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "x86/core/memory_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/waiting.h"

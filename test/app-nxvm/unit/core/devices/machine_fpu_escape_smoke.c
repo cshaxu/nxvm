@@ -2,26 +2,12 @@
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
-#include "x86/chips/cpu/cpu.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "x86/core/memory.h"
-#include "support/machine_cpu_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
 
 typedef struct fpu_escape_machine {
     core_machine *machine;
 } fpu_escape_machine;
-
-static void fpu_escape_reset(void *opaque)
-{
-    fpu_escape_machine *state = (fpu_escape_machine *)opaque;
-
-    if (state != LIB_NULL) (void)test_core_machine_fixture_reset_real_mode(
-        state->machine);
-}
-
-static const core_machine_execution_provider fpu_escape_provider = {
-    fpu_escape_reset, LIB_NULL
-};
 
 static lib_i32 prepare_machine(x86_fpu_profile fpu_profile,
     lib_u32 cr0, fpu_escape_machine *state)
@@ -31,16 +17,25 @@ static lib_i32 prepare_machine(x86_fpu_profile fpu_profile,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = fpu_profile
     };
+    const core_machine_debug_register_patch entry = {
+        .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_ES) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_SS) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP) |
+            CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CR0),
+        .values = {[CORE_MACHINE_DEBUG_CR0] = cr0}
+    };
     if (state == LIB_NULL) return 1;
     lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK) return 1;
     if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
-            &fpu_escape_provider, state)) {
+            LIB_NULL, LIB_NULL) ||
+        core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK) {
         core_machine_destroy(state->machine);
         state->machine = LIB_NULL;
         return 1;
     }
-    (void)test_core_machine_fixture_set_control_zero(state->machine, cr0);
     return 0;
 }
 
@@ -66,13 +61,13 @@ static lib_i32 run_case(const lib_u8 *program, lib_size program_size,
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
             LIB_STATUS_OK;
         failed |= core_machine_get_cpu_state(state.machine, &cpu) != LIB_STATUS_OK;
-        if (expected_exception != 0u) {
+        if (!failed && expected_exception != 0u) {
             failed |= !diagnostic.first_fault.valid ||
                 !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                     expected_exception) ||
                 CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
-        } else {
+        } else if (!failed) {
             failed |= diagnostic.first_fault.valid || cpu.eip != expected_eip;
         }
     }
@@ -90,8 +85,8 @@ static lib_i32 run_nm_delivery_case(const lib_u8 *program,
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
-    t_cpu after;
+    core_machine_debug_cpu_snapshot before = {0};
+    core_machine_debug_cpu_snapshot after = {0};
     lib_u16 frame[3] = { 0u, 0u, 0u };
     lib_u32 original_eax = 0u;
     lib_i32 failed = prepare_machine(X86_FPU_PROFILE_NONE, cr0, &state);
@@ -106,36 +101,39 @@ static lib_i32 run_nm_delivery_case(const lib_u8 *program,
             sizeof(handler)) != LIB_STATUS_OK;
     }
     if (!failed) {
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        original_eax = before.data.eax;
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
+        original_eax = before.eax;
         failed |= core_machine_run(state.machine, budget, &result) !=
             LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
             LIB_STATUS_OK;
-        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= diagnostic.first_fault.valid ||
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+        if (!failed) failed |= diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.last_delivered_exception.exception_mask,
-                VCPUINS_EXCEPT_NM) || after.data.eip != handler_offset ||
-            after.data.esp != ((before.data.esp & 0xffff0000u) |
-                (lib_u16)(before.data.esp - 6u)) ||
-            after.data.ss.selector != before.data.ss.selector ||
-            after.data.ss.base != before.data.ss.base ||
-            core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (lib_u16)after.data.esp,
-                CORE_MACHINE_REFERENCE_OF(frame), sizeof(frame)) != LIB_STATUS_OK ||
+                VCPUINS_EXCEPT_NM) || after.eip != handler_offset ||
+            after.esp != ((before.esp & 0xffff0000u) |
+                (lib_u16)(before.esp - 6u)) ||
+            after.ss.selector != before.ss.selector ||
+            after.ss.base != before.ss.base ||
+            core_machine_memory_read(state.machine,
+                after.ss.base + (lib_u16)after.esp,
+                (void *)CORE_MACHINE_REFERENCE_OF(frame), sizeof(frame)) != LIB_STATUS_OK ||
             frame[0] != 0u ||
-            frame[1] != before.data.cs.selector || frame[2] !=
-                (lib_u16)before.data.eflags;
+            frame[1] != before.cs.selector || frame[2] !=
+                (lib_u16)before.eflags;
     }
     if (!failed) {
         budget.instructions = 2u;
         failed |= core_machine_run(state.machine, budget, &result) !=
             LIB_STATUS_OK || result.reason !=
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= after.data.eip != handler_offset + sizeof(handler) ||
-            after.data.eax != original_eax + 1u;
+        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
+        failed |= after.eip != handler_offset + sizeof(handler) ||
+            after.eax != original_eax + 1u;
     }
     core_machine_destroy(state.machine);
     return failed;

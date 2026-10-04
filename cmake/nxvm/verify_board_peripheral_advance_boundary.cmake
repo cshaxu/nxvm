@@ -3,16 +3,20 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" creation)
 foreach(effect "x86_xt_keyboard_advance(" "core_machine_kbc_advance("
-    "core_machine_pic_advance(" "x86_video_advance(")
+    "core_machine_pic_advance(" "core_machine_vadp_advance(")
     string(FIND "${core}" "${effect}" core_position)
     string(FIND "${board}" "${effect}" board_position)
     if(NOT core_position LESS 0 OR board_position LESS 0)
         message(FATAL_ERROR "Peripheral effect has wrong owner: ${effect}")
     endif()
 endforeach()
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/vadp.c" video)
+if(NOT video MATCHES "x86_video_advance\\(adapter->chip, ticks\\)")
+    message(FATAL_ERROR "Video adapter does not forward the settled device ticks")
+endif()
 string(FIND "${core}" "core_machine_readiness_advance(machine, source_ticks, due_tick);"
     readiness_position)
 string(FIND "${core}" "machine->attachment.peripheral(machine->attachment.context, source_ticks);"

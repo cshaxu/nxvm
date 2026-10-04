@@ -1,12 +1,12 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 
 #include "x86/ibmpc-common/display_interface.h"
 
 #include "app-nxvm/machine/display.h"
 #include "app-nxvm/machine/frame.h"
 
-#include "app-nxvm/devices/guest_display_frame.h"
+#include "app-nxvm/machine/guest_display_interface.h"
 
 #include "lib/base/clock_interface.h"
 

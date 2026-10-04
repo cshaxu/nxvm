@@ -5,15 +5,15 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c"
     scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_deadline.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_deadline.c"
     board_deadline_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c"
     board_advance_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/execution_provider_interface.h"
     execution_provider_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_interface.h"
     machine_interface_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/kbc.c" kbc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/kbc.c" kbc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c"
     lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
@@ -69,7 +69,7 @@ foreach(required IN ITEMS "core_machine_dma_advance_transaction"
     "x86_pit_advance" "core_machine_pic_refresh"
     "core_machine_fdc_advance_at" "core_machine_hdc_advance"
     "x86_rtc_advance" "core_machine_kbc_advance"
-    "x86_xt_keyboard_advance" "x86_video_advance")
+    "x86_xt_keyboard_advance" "core_machine_vadp_advance")
     string(FIND "${scheduler_source}${board_advance_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T499 lacks scheduler-owned controller migration: ${required}")

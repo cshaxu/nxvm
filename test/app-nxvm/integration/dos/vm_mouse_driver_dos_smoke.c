@@ -4,10 +4,10 @@
 
 #include <windows.h>
 
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/waiting.h"
-#include "app-nxvm/devices/guest_input_interface.h"
+#include "app-nxvm/machine/guest_input_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_MOUSE_DOS_BOOT_BUDGET 6000000u

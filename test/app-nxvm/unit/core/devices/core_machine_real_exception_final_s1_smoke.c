@@ -3,8 +3,8 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "support/core_machine_board_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
 
 #define REAL_FINAL_CODE_OFFSET 0x0200u
 #define REAL_FINAL_HANDLER_OFFSET 0x0100u
@@ -16,10 +16,8 @@ typedef struct real_final_machine {
     lib_status reset_status;
 } real_final_machine;
 
-static void real_final_reset(void *opaque)
+static lib_status real_final_set_entry(core_machine *machine)
 {
-    real_final_machine *state = (real_final_machine *)opaque;
-
     const core_machine_debug_register_patch entry = {
         .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_DS) |
@@ -28,14 +26,8 @@ static void real_final_reset(void *opaque)
             CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_EIP),
         .values = {[CORE_MACHINE_DEBUG_EIP] = 0x0500u}
     };
-    if (state != LIB_NULL) state->reset_status =
-        core_machine_cpu_debug_patch_registers(
-            state->machine->executor_cpu_execution, &entry);
+    return core_machine_debug_patch_registers(machine, &entry);
 }
-
-static const core_machine_execution_provider real_final_provider = {
-    real_final_reset, LIB_NULL
-};
 
 static lib_i32 real_final_prepare(real_final_machine *state,
     lib_u16 idtr_limit)
@@ -70,8 +62,8 @@ static lib_i32 real_final_prepare(real_final_machine *state,
         return 0;
     lib_memory_set(state, 0, sizeof(*state));
     if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
-            &real_final_provider, state, &state->machine, LIB_NULL) ||
-        state->reset_status != LIB_STATUS_OK ||
+            LIB_NULL, LIB_NULL, &state->machine, LIB_NULL) ||
+        (state->reset_status = real_final_set_entry(state->machine)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, 0x0500u, lidt,
             sizeof(lidt)) != LIB_STATUS_OK ||
         core_machine_memory_write(state->machine, 0x0600u, idt_pointer,
@@ -96,37 +88,27 @@ static lib_i32 real_final_prepare(real_final_machine *state,
     return 1;
 }
 
-static lib_i32 real_final_run(real_final_machine *state, lib_status *status,
-    core_machine_run_result *result, core_machine_debug_cpu_snapshot *after,
-    core_machine_cpu_diagnostic *diagnostic)
-{
-    *status = core_machine_run(state->machine,
-        (core_machine_run_budget){ 1u, 0u }, result);
-    if (core_machine_debug_capture_cpu_snapshot(state->machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, after) != LIB_STATUS_OK) return 0;
-    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        LIB_STATUS_OK;
-}
-
 static lib_i32 real_final_test_gp_delivery(void)
 {
     real_final_machine state;
     core_machine_cpu_diagnostic diagnostic;
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     lib_u16 frame[3] = { 0u, 0u, 0u };
     core_machine_debug_cpu_snapshot before = {0};
     core_machine_debug_cpu_snapshot after = {0};
-    lib_status status;
     lib_i32 failed = !real_final_prepare(&state,
         REAL_FINAL_GP_VECTOR * 4u + 3u);
 
     if (!failed) {
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= before.eflags !=
-            (CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF);
-        failed |= !real_final_run(&state, &status, &result, &after,
-            &diagnostic) || status != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+            before.eflags !=
+            (CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF) ||
+            core_machine_run(state.machine,
+                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
@@ -151,18 +133,20 @@ static lib_i32 real_final_test_gp_delivery_failure(void)
 {
     real_final_machine state;
     core_machine_cpu_diagnostic diagnostic;
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     core_machine_debug_cpu_snapshot before = {0};
     core_machine_debug_cpu_snapshot after = {0};
-    lib_status status;
     lib_i32 failed = !real_final_prepare(&state,
         REAL_FINAL_GP_VECTOR * 4u - 1u);
 
     if (!failed) {
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= !real_final_run(&state, &status, &result, &after,
-            &diagnostic) || status != LIB_STATUS_INTERNAL_ERROR ||
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+            core_machine_run(state.machine,
+                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_FAULT ||
             !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_GP) ||

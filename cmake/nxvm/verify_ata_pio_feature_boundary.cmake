@@ -3,14 +3,14 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/hdc/hdc.c" hdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/hdc.c" hdc_adapter)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/hdc.c" hdc_adapter)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
     profile_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.c"
     plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_hdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/core_machine_hdc_smoke.c"
     core_fixture)
 
 if(hdc_source MATCHES "#include[ \t]+\"(vm|app-nxvm)/")

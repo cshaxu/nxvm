@@ -5,7 +5,7 @@
 #include <windows.h>
 
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/fault.h"
 #include "app-nxvm/machine/display.h"
 #include "app-nxvm/machine/lifecycle.h"
@@ -44,7 +44,7 @@ static lib_i32 vm_dos_keyboard_has_text(const vm_machine *session,
     lib_size character;
     lib_size length = lib_text_length(text);
 
-    (void)test_vm_machine_capture_presentation(session, &frame);
+    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= TEXT_VIDEO_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (lib_u8)text[character]) break;
@@ -59,7 +59,7 @@ static lib_i32 vm_dos_keyboard_has_prompt(const vm_machine *session)
     core_machine_guest_display_frame frame;
     lib_size cell;
 
-    (void)test_vm_machine_capture_presentation(session, &frame);
+    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (isalpha(frame.characters[cell]) &&
             frame.characters[cell + 1u] == ':' &&
@@ -156,14 +156,17 @@ static void vm_dos_keyboard_report_failure(const vm_machine *session,
         state->cs_base + state->eip, instructions, sizeof(instructions));
     (void)core_machine_keyboard_get_native_scan_set(session->board,
         &scan_set);
-    (void)test_vm_machine_capture_presentation(session, &frame);
     printf("keyboard smoke timed out: BDA head=%04x tail=%04x\n", head, tail);
-    for (cell = 0u; cell < 25u; ++cell) {
-        for (index = 0u; index < 80u; ++index) {
-            lib_u8 character = frame.characters[cell * 80u + index];
-            printf("%c", character == 0u ? ' ' : character);
+    if (test_vm_machine_capture_presentation(session, &frame) == LIB_STATUS_OK) {
+        for (cell = 0u; cell < 25u; ++cell) {
+            for (index = 0u; index < 80u; ++index) {
+                lib_u8 character = frame.characters[cell * 80u + index];
+                printf("%c", character == 0u ? ' ' : character);
+            }
+            printf("\n");
         }
-        printf("\n");
+    } else {
+        printf("keyboard display unavailable\n");
     }
     printf("edit state: mode=%02x BDA head=%04x tail=%04x halt=%u bytes="
         "%02x %02x %02x %02x %02x %02x %02x %02x\n", video_mode, head, tail,

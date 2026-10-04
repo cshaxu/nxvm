@@ -1,11 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
-#include "x86/ibmpc-common/dma_bus_interface.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "x86/core/port.h"
+#include "../../../../x86/core/bus_fixture.h"
+#include "../../../../x86/core/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -19,44 +18,40 @@ lib_i32 main(void)
     core_machine_dma_request_binding duplicate_request = {0};
 
     if (vm_model40_fixture_create(&session) != LIB_STATUS_OK ||
-        session == LIB_NULL || !session->board->dma_configured ||
-        session->core_machine->transaction_contract.dma_cycle_wait_quanta != 1u ||
-        !session->core_machine->transaction_contract.dma_cycle_bus_ready_gate_enabled ||
-        !session->core_machine->dma_cycle_bus_ready ||
-        session->board->dma_wiring.fdc_channel != 2u ||
-        session->board->dma_wiring.controller_count !=
+        session == LIB_NULL || !test_board_capture_composition(session->board).dma_configured ||
+        !test_core_dma_timing_matches(session->core_machine, 1u, LIB_TRUE, LIB_TRUE) ||
+        test_board_capture_composition(session->board).dma_wiring.fdc_channel != 2u ||
+        test_board_capture_composition(session->board).dma_wiring.controller_count !=
             CORE_MACHINE_DMA_CONTROLLER_COUNT ||
-        session->board->dma_wiring.cascade_channel !=
+        test_board_capture_composition(session->board).dma_wiring.cascade_channel !=
             CORE_MACHINE_DMA_CASCADE_CHANNEL ||
-        core_machine_dma_bind_channel(session->board->shared_dma, 2u,
-            &duplicate_provider, &duplicate_request, &duplicate_request) !=
+        test_board_dma_duplicate_bind(session->board, 2u,
+            &duplicate_provider, &duplicate_request) !=
             LIB_STATUS_INVALID_STATE ||
-        !core_machine_port_has_write(&session->core_machine->executor_port,
-            0x00d6u) || !core_machine_port_has_write(
-            &session->core_machine->executor_port, 0x00d4u)) {
+        !test_core_port_has_write(session->core_machine,
+            0x00d6u) || !test_core_port_has_write(
+            session->core_machine, 0x00d4u)) {
         failed = 1;
         goto done;
     }
 
-    core_machine_port_write(&session->core_machine->executor_port, 0x00d6u,
+    test_core_machine_fixture_write_port(session->core_machine, 0x00d6u,
         0xc0u);
-    core_machine_port_write(&session->core_machine->executor_port, 0x00d4u,
+    test_core_machine_fixture_write_port(session->core_machine, 0x00d4u,
         0u);
-    core_machine_port_write(&session->core_machine->executor_port, 0x000bu,
+    test_core_machine_fixture_write_port(session->core_machine, 0x000bu,
         0x86u);
-    core_machine_port_write(&session->core_machine->executor_port, 0x000eu,
+    test_core_machine_fixture_write_port(session->core_machine, 0x000eu,
         0u);
-    core_machine_port_write(&session->core_machine->executor_port, 0x0009u,
+    test_core_machine_fixture_write_port(session->core_machine, 0x0009u,
         0x06u);
-    if (!core_machine_dma_has_pending_request(
-            session->board->shared_dma)) {
+    if (!test_board_dma_has_pending_request(session->board)) {
         failed = 1;
         goto done;
     }
 
     vm_machine_reset(session);
-    if (core_machine_dma_has_pending_request(
-            session->board->shared_dma)) {
+    if (test_board_dma_has_pending_request(session->board)) {
         failed = 1;
         goto done;
     }

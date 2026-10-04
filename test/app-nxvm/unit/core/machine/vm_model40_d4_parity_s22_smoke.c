@@ -1,8 +1,9 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "../../../../x86/core/composition_fixture.h"
+#include "x86/core/memory_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 
@@ -33,7 +34,7 @@ lib_i32 main(void)
     lib_i32 failed = 0;
     lib_i32 step = 0;
 
-#define CHECK(expression) do { ++step; if (!(expression)) failed = step; } while (0)
+#define CHECK(expression) do { ++step; if (!(expression)) { failed = step; goto done; } } while (0)
     CHECK(vm_model40_fixture_create_bytes(even, odd, &session) == LIB_STATUS_OK &&
         session != LIB_NULL);
     if (!failed) {
@@ -47,25 +48,22 @@ lib_i32 main(void)
          * keeps the fault latched until the following observation. */
         CHECK(core_machine_bus_write(session->core_machine, 0x0061u, 0x07u) ==
             LIB_STATUS_OK);
-        CHECK(session->core_machine->executor_memory.connect.parity != 0u);
-        if (!failed) {
-            ((lib_u8 *)session->core_machine->executor_memory.connect.parity)
-                [parity_physical] ^= 1u;
-        }
+        CHECK(test_core_has_parity_storage(session->core_machine));
+        test_core_flip_parity(session->core_machine, parity_physical);
         CHECK(read_byte(session->core_machine, parity_physical, &value) && value == 0x5au);
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, &value) && value == 0x8du);
-        CHECK(core_machine_get_d4_platform_observation(session->board,
+        CHECK(core_machine_d4_platform_observe(session->model40_board,
             &observation) == LIB_STATUS_OK && observation.iochk_latched &&
             !observation.nmi_signaled);
         CHECK(core_machine_bus_read(session->core_machine, 0x0061u, &port_value) ==
             LIB_STATUS_OK && (port_value & 0x40u) != 0u);
         CHECK(core_machine_bus_write(session->core_machine, 0x0070u, 0u) == LIB_STATUS_OK);
-        CHECK(core_machine_get_d4_platform_observation(session->board,
+        CHECK(core_machine_d4_platform_observe(session->model40_board,
             &observation) == LIB_STATUS_OK && observation.iochk_latched &&
             observation.nmi_signaled);
         CHECK(write_byte(session->core_machine, clear_physical, 0xa5u));
-        CHECK(core_machine_get_d4_platform_observation(session->board,
+        CHECK(core_machine_d4_platform_observe(session->model40_board,
             &observation) == LIB_STATUS_OK && !observation.iochk_latched &&
             !observation.nmi_signaled);
         CHECK(read_byte(session->core_machine,
@@ -77,10 +75,11 @@ lib_i32 main(void)
         CHECK(core_machine_reset(session->core_machine) == LIB_STATUS_OK);
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, &value) && value == 0x8fu);
-        CHECK(core_machine_get_d4_platform_observation(session->board,
+        CHECK(core_machine_d4_platform_observe(session->model40_board,
             &observation) == LIB_STATUS_OK && !observation.iochk_latched &&
             !observation.nmi_signaled);
     }
+done:
 #undef CHECK
     vm_machine_destroy(session);
     if (failed) {

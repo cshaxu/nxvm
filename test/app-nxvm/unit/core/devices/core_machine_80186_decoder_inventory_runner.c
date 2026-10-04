@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/chips/cpu/cpu_instructions.h"
+#include "x86/chips/cpu/cpu_interface.h"
 
 /* A decoder-boundary inventory is intentionally separate from the timing
  * manifest: this runner reports what the current lexical decoder accepts,
@@ -39,39 +39,28 @@ lib_i32 main(void)
     if (accepted_pairs != 61530u || accepted_opcodes != 247u) return 1;
 
     file = fopen(path, "wb");
-    if (file == LIB_NULL || fprintf(file,
+    if (file == LIB_NULL) return 1;
+    if (fprintf(file,
             "{\n  \"schema\": \"nxvm.80186-decoder-inventory.v1\",\n"
             "  \"lexeme_opcode_modrm_candidates\": %u,\n"
             "  \"lexeme_primary_opcode_count\": %u,\n"
             "  \"lexeme_primary_opcodes\": [",
-            accepted_pairs, accepted_opcodes) < 0) {
-        if (file != LIB_NULL) fclose(file);
-        return 1;
-    }
+            accepted_pairs, accepted_opcodes) < 0) goto fail;
     accepted_opcodes = 0u;
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         if (!opcode_seen[opcode]) continue;
         if ((accepted_opcodes != 0u && fprintf(file, ",") < 0) ||
-            fprintf(file, "\"%02X\"", opcode) < 0) {
-            fclose(file);
-            return 1;
-        }
+            fprintf(file, "\"%02X\"", opcode) < 0) goto fail;
         ++accepted_opcodes;
     }
-    if (fprintf(file, "],\n  \"accepted_modrm_masks\": {") < 0) {
-        fclose(file);
-        return 1;
-    }
+    if (fprintf(file, "],\n  \"accepted_modrm_masks\": {") < 0) goto fail;
     accepted_opcodes = 0u;
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         lib_u16 byte;
 
         if (!opcode_seen[opcode]) continue;
         if ((accepted_opcodes != 0u && fprintf(file, ",") < 0) ||
-            fprintf(file, "\n    \"%02X\":\"", opcode) < 0) {
-            fclose(file);
-            return 1;
-        }
+            fprintf(file, "\n    \"%02X\":\"", opcode) < 0) goto fail;
         for (byte = 0u; byte < 32u; ++byte) {
             lib_u8 bits = 0u;
             lib_u8 bit;
@@ -79,21 +68,19 @@ lib_i32 main(void)
             for (bit = 0u; bit < 8u; ++bit) {
                 if (modrm_seen[opcode][byte * 8u + bit]) bits |= 1u << bit;
             }
-            if (fprintf(file, "%02X", bits) < 0) {
-                fclose(file);
-                return 1;
-            }
+            if (fprintf(file, "%02X", bits) < 0) goto fail;
         }
-        if (fprintf(file, "\"") < 0) {
-            fclose(file);
-            return 1;
-        }
+        if (fprintf(file, "\"") < 0) goto fail;
         ++accepted_opcodes;
     }
     if (fprintf(file,
-            "\n  },\n  \"semantic_only_prefixes\": [\"F0\"]\n}\n") < 0 ||
-        fclose(file) != 0) return 1;
+            "\n  },\n  \"semantic_only_prefixes\": [\"F0\"]\n}\n") < 0) goto fail;
+    if (fclose(file) != 0) return 1;
     printf("M5:T435:S6:I186-DECODER-LEXEME:%u:%u\n", accepted_pairs,
         accepted_opcodes);
     return 0;
+
+fail:
+    fclose(file);
+    return 1;
 }

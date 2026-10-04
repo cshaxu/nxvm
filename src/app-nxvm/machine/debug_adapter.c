@@ -5,9 +5,8 @@
 #include "app-nxvm/machine/debug.h"
 #include "app-nxvm/machine/machine_private.h"
 
-/* Core and Lib intentionally use distinct status domains.  This is the sole
- * debug-adapter crossing: retain every shared classification and map Core's
- * residual FAULT to Lib's generic operational failure. */
+/* Preserve the adapter's existing classification policy: recognized Core
+ * statuses pass through; internal or unrecognized failures become IO_ERROR. */
 static lib_status vm_machine_debug_status_from_type(lib_status status)
 {
     switch (status) {

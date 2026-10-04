@@ -1,7 +1,7 @@
 #ifndef TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #define TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "x86/core/device_support_interface.h"
 
 #include "x86/chips/rtc146818/rtc146818_interface.h"

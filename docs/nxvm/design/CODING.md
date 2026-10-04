@@ -5,7 +5,7 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 ## Current Tree
 
-The product/shared-corpus layout is current. `devices`, `machine`, `product`
+The product/shared-corpus layout is current. `machine`, `product`
 and `profiles` are NXVM runtime roots below `app-nxvm`; `firmware` owns
 project-authored guest firmware source and its build tools. `pc110` remains a
 future Profile only when its separate evidence task admits real source files.
@@ -14,10 +14,9 @@ future Profile only when its separate evidence task admits real source files.
 src/
   lib/                  shared C and platform services
   common/{session,machine,ui}/
-  x86/{chips,core,ibmpc-common,xasm32,debug}/
+  x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug}/
   app-nxvm/             NXVM product implementation
     product/            main, INI configuration, CLI and composition
-    devices/            retained IBM-PC board adapters
     machine/            NXVM driver, asset/media and execution adapter
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/
@@ -25,15 +24,18 @@ src/
       at/               IBM 5170 board composition and firmware slots
       model40/          retained DeskPro 386 composition and firmware slots
       default_profile/  retained default PC/AT composition and firmware slots
-      pc110/            PC110 board C, frozen configuration and ROM slots
 ```
 
 Keep shared profile declarations and proven helpers at the profiles root. The
+former `app-nxvm/devices` implementation is removed. Shared board mechanisms
+live in the flat `x86/ibmpc-*` receivers; genuine D4 state stays in
+`app-nxvm/profiles/model40`. Current records delivery acceptance, not this layout.
+The
 former singular `core/profile` root is retired; do not restore a compatibility
 directory. Preserve existing machine identities and
 variants rather than renaming them into a replacement Standard profile.
 Do not add a framework or empty future directories. CPU-family implementations
-and selection tables stay in generic Core, not copied into board directories.
+and selection tables stay in `x86/chips/cpu`, not copied into board directories.
 
 ROM mapping declarations and asset roles remain with the NXVM product profile.
 Project-owned BIOS source/build lives in `src/app-nxvm/firmware`, not in the
@@ -73,13 +75,14 @@ from actual construction requirements during implementation.
 
 Repository-only shared tests remain `test/{lib,common,x86}`. NXVM-only tests
 live below `test/app-nxvm/`, mirroring `app-nxvm` beneath `unit/`.
-Media registry, display-provider, PIT port and PIC aggregation tests live in `test/x86/ibmpc-common`;
-remaining board/family tests stay with their current source until extraction.
+Shared board and family tests live in `test/x86/ibmpc-common`,
+`test/x86/ibmpc-at` and `test/x86/ibmpc-xt`, with their actual source owners.
 Profile tests mirror their real `src/app-nxvm/profiles/` owner when
 implemented. The current product roots are `xt`, `default_profile`, `model40`,
 `device`, and `byob`; do not create empty future-profile directories. Retained
-NXVM board tests live in `test/app-nxvm/unit/core/` with their source owner,
-preserving CPU-family tests including unused models. Neutral Core tests live
+NXVM composition/firmware tests live in `test/app-nxvm/unit/core/` with their
+product owner. CPU mechanism and retained board-timing recipe tests live under
+`test/x86`, preserving all CPU models. Neutral Core tests live
 in `test/x86/core` and build independently of NXVM board composition.
 `test/app-nxvm/integration/` stays separate;
 at cutover it uses the real INI path and external assets. Unit tests use code-
@@ -91,7 +94,7 @@ fixtures or removing duplicate machinery must not reduce behavior coverage.
 
 ## Queued Successor Layout
 
-The three ordered [migration proposals](../states/QUEUE.md) target:
+The queued [App split](../states/QUEUE.md) targets:
 
 ```text
 src/
@@ -105,8 +108,8 @@ src/
 ```
 
 `app-mypc110` is future work, not an empty directory to create now. The neutral
-x86 machine executor moves to `x86/core`; real chip responsibilities move to
-`x86/chips`; common PC board mechanisms move to the flat `x86/ibmpc-*`
+x86 machine executor lives in `x86/core`; real chip responsibilities live in
+`x86/chips`; common PC board mechanisms live in the flat `x86/ibmpc-*`
 components; product-specific assembly
 remains App-owned. Existing CPU implementation style and coherent file
 boundaries are preserved, not rewritten for renaming.

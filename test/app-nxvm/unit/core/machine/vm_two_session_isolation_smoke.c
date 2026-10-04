@@ -2,11 +2,8 @@
 #include <stdio.h>
 #include "app-nxvm/machine/machine_private.h"
 
-
-
-
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
+#include "../../../../x86/core/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "x86/core/debug_interface.h"
 
 #include "app-nxvm/machine/machine_interface.h"
@@ -23,12 +20,8 @@ static lib_bool sessions_are_isolated(core_machine *first, core_machine *second,
     lib_u32 eax;
     lib_u32 index;
 
-    if (first == LIB_NULL || second == LIB_NULL || first == second ||
-        first->executor_cpu_execution == second->executor_cpu_execution ||
-        &first->executor_memory == &second->executor_memory ||
-        &first->executor_port == &second->executor_port ||
-        first_board->shared_rtc == second_board->shared_rtc ||
-        &first_board->fdc == &second_board->fdc || &first_board->hdc == &second_board->hdc) return LIB_FALSE;
+    if (!test_core_instances_are_distinct(first, second) ||
+        !test_board_instances_are_distinct(first_board, second_board)) return LIB_FALSE;
     for (index = 0u; index < 2u; ++index) {
         if (core_machine_debug_write_real(machines[index], 0u, 0u,
                 &values[index], 1u) != LIB_STATUS_OK ||
@@ -59,11 +52,13 @@ lib_i32 main(void)
     lib_i32 failed = 0;
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &first) != LIB_STATUS_OK ||
-        vm_test_default_pc_at_session_create(LIB_NULL, &second) != LIB_STATUS_OK) failed = 1;
+        first == LIB_NULL ||
+        vm_test_default_pc_at_session_create(LIB_NULL, &second) != LIB_STATUS_OK ||
+        second == LIB_NULL) failed = 1;
 
     if (!failed) {
-        failed |= first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;
-        failed |= !sessions_are_isolated(
+        failed = first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;
+        failed = failed || !sessions_are_isolated(
             first->core_machine, second->core_machine, first->board, second->board);
     }
 

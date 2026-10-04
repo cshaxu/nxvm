@@ -5,8 +5,8 @@
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/chips/fpu/fpu_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/vadp.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include "x86/ibmpc-common/vadp_interface.h"
 #include "app-nxvm/profiles/profile_contract_interface.h"
 
 typedef enum vm_profile_default_pc_at_device_role {
@@ -142,7 +142,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     lib_u8 hdc_present;
     lib_u8 planar_parity_present;
     /* Port 61h bit 4 is a frozen board input.  It is independent of PIT1's
-     * DMA-refresh request path, which remains owned by Core. */
+     * DMA-refresh request wiring, which remains owned by Board. */
     core_machine_planar_parity_refresh_status_source refresh_status_source;
     lib_u32 refresh_status_toggle_ticks;
     lib_u8 ega_present;

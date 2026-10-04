@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 #include "x86/ibmpc-common/media_interface.h"
-#include "app-nxvm/devices/controller_interface.h"
+#include "x86/ibmpc-common/controller_interface.h"
 
 typedef enum vm_profile_floppy_kind {
     VM_PROFILE_FLOPPY_35_1440K = 0,

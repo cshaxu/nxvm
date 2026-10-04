@@ -3,7 +3,7 @@
 
 #include "x86/core/entry_plan_interface.h"
 #include "x86/core/machine_interface.h"
-#include "app-nxvm/devices/guest_input_interface.h"
+#include "app-nxvm/machine/guest_input_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/session_assets.h"
@@ -53,7 +53,8 @@ static lib_i32 vm_kbc_aux_run_until_count(vm_machine *session, lib_u16 expected)
     for (instruction = 0u; instruction < VM_KBC_AUX_BOOT_BUDGET; ++instruction) {
         if (core_machine_run(session->core_machine, budget, &result) != LIB_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) return 0;
-        if (vm_kbc_aux_read_count(session, &count) && count >= expected) return 1;
+        if (!vm_kbc_aux_read_count(session, &count)) return 0;
+        if (count >= expected) return 1;
     }
     return 0;
 }
@@ -85,6 +86,7 @@ lib_i32 main(void)
 
     create_status = vm_test_default_pc_at_session_create(&config, &session);
     if (create_status != LIB_STATUS_OK || session == LIB_NULL ||
+        session->core_machine == LIB_NULL ||
         (plan_status = core_machine_apply_entry_plan(session->core_machine,
             &plan)) != LIB_STATUS_OK) { stage = 1; goto done; }
     if (!vm_kbc_aux_run_until_count(session, 1u) ||

@@ -2,7 +2,7 @@
 
 #include "app-nxvm/machine/machine_private.h"
 
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/display.h"
@@ -352,7 +352,7 @@ lib_status vm_machine_storage_initialize(vm_machine *machine)
     status = vm_profile_machine_plan_materialize(machine->profile_plan,
         machine->core_machine_plan,
         (core_machine_fdc_terminal_observation_provider) {
-            vm_machine_capture_fdc_terminal, machine });
+            vm_machine_capture_fdc_terminal, machine }, &machine->model40_board);
     if (status != LIB_STATUS_OK) {
         vm_machine_storage_finalize(machine);
         return status;
@@ -376,6 +376,7 @@ void vm_machine_storage_finalize(vm_machine *machine)
     if (machine == LIB_NULL) return;
     core_machine_destroy(machine->core_machine);
     machine->core_machine = LIB_NULL;
+    machine->model40_board = LIB_NULL;
     machine->board = LIB_NULL;
     core_machine_display_provider_slot_destroy(machine->display_provider);
     machine->display_provider = LIB_NULL;

@@ -1,14 +1,14 @@
+#include "../../../../x86/core/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/cmos_fixture.h"
+#include "../../../../x86/ibmpc-common/kbc_state_fixture.h"
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "support/kbc_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
-#include "app-nxvm/devices/kbc.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "x86/core/port.h"
+#include "x86/ibmpc-at/kbc_interface.h"
 #include "support/rom/model40_session_assets.h"
 
 lib_i32 main(void)
@@ -33,47 +33,56 @@ lib_i32 main(void)
     even[0x3ff8u] = 0x26u;
     odd[0x3ff8u] = 0x90u;
 
-    failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
+    failed = vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
-    if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
-        LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
-        session->core_machine->retirement_time_contract !=
+    if (!failed) failed = vm_model40_fixture_create_bytes(even, odd, &session) !=
+        LIB_STATUS_OK || session == LIB_NULL;
+    if (!failed) {
+        const core_machine_transaction_contract transaction =
+            test_core_capture_transaction_contract(session->core_machine);
+        const test_board_composition_observation composition =
+            test_board_capture_composition(session->board);
+        const test_board_plan_observation plan =
+            test_board_capture_plan(session->core_machine_plan);
+
+        failed = !vm_profile_machine_plan_is_model40(session->profile_plan) ||
+        test_core_retirement_contract(session->core_machine) !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
-        session->core_machine->transaction_contract.external_cycle_timing.page_bytes != 2048u ||
-        session->core_machine->transaction_contract.external_cycle_timing.page_miss_ticks != 2u ||
-        session->core_machine->transaction_contract.external_cycle_timing.page_hit_ticks != 0u ||
-        session->core_machine->transaction_contract.external_cycle_timing.first_eligible_address != 0u ||
-        session->core_machine->transaction_contract.external_cycle_timing.last_eligible_address != 0x0009ffffu ||
-        session->core_machine->transaction_contract.external_access_wait_windows[0].space !=
+        transaction.external_cycle_timing.page_bytes != 2048u ||
+        transaction.external_cycle_timing.page_miss_ticks != 2u ||
+        transaction.external_cycle_timing.page_hit_ticks != 0u ||
+        transaction.external_cycle_timing.first_eligible_address != 0u ||
+        transaction.external_cycle_timing.last_eligible_address != 0x0009ffffu ||
+        transaction.external_access_wait_windows[0].space !=
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT ||
-        session->core_machine->transaction_contract.external_access_wait_windows[0].first_address != 0x03b4u ||
-        session->core_machine->transaction_contract.external_access_wait_windows[2].last_address != 0x03dcu ||
-        session->core_machine->transaction_contract.external_access_wait_windows[5].first_address != 0x0fc6u ||
-        session->core_machine->transaction_contract.external_access_wait_windows[5].wait_ticks != 1u ||
-        session->core_machine->transaction_contract.external_access_wait_windows[6].space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY ||
-        session->core_machine->transaction_contract.external_access_wait_windows[6].first_address != 0x000a0000u ||
-        session->core_machine->transaction_contract.external_access_wait_windows[6].last_address != 0x000affffu ||
-        session->core_machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled != LIB_TRUE ||
-        session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled != LIB_TRUE ||
-        session->core_machine->transaction_contract.external_cycle_timing.overlap_policy !=
+        transaction.external_access_wait_windows[0].first_address != 0x03b4u ||
+        transaction.external_access_wait_windows[2].last_address != 0x03dcu ||
+        transaction.external_access_wait_windows[5].first_address != 0x0fc6u ||
+        transaction.external_access_wait_windows[5].wait_ticks != 1u ||
+        transaction.external_access_wait_windows[6].space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY ||
+        transaction.external_access_wait_windows[6].first_address != 0x000a0000u ||
+        transaction.external_access_wait_windows[6].last_address != 0x000affffu ||
+        transaction.cpu_cycle_bus_ready_gate_enabled != LIB_TRUE ||
+        transaction.cpu_prefetch_reservation_enabled != LIB_TRUE ||
+        transaction.external_cycle_timing.overlap_policy !=
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL ||
-        session->board->dma_clock.numerator != 1u ||
-        session->board->dma_clock.denominator != 1u ||
-        session->board->pit_clock.numerator != 1u ||
-        session->board->pit_clock.denominator != 1u ||
-        session->board->auxiliary_pit_clock.numerator != 5u ||
-        session->board->auxiliary_pit_clock.denominator != 16u ||
-        session->board->rtc_clock.numerator != 1u ||
-        session->board->rtc_clock.denominator != 1u ||
+        composition.dma_clock.numerator != 1u ||
+        composition.dma_clock.denominator != 1u ||
+        composition.pit_clock.numerator != 1u ||
+        composition.pit_clock.denominator != 1u ||
+        composition.auxiliary_pit_clock.numerator != 5u ||
+        composition.auxiliary_pit_clock.denominator != 16u ||
+        composition.rtc_clock.numerator != 1u ||
+        composition.rtc_clock.denominator != 1u ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
             LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
-        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x80u ||
-        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u ||
-        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_LSB) != 0u ||
-        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_EXTMEM_MSB) != 0x04u ||
-        core_machine_get_d4_platform_observation(session->board, &d4) !=
+        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x80u ||
+        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u ||
+        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_EXTMEM_LSB) != 0u ||
+        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_EXTMEM_MSB) != 0x04u ||
+        core_machine_d4_platform_observe(session->model40_board, &d4) !=
             LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
         core_machine_bus_read(session->core_machine, 0x07c6u, &value) !=
@@ -86,23 +95,24 @@ lib_i32 main(void)
             LIB_STATUS_OK || value != 0x1fu ||
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
             sizeof(rom_byte)) != LIB_STATUS_OK || rom_byte != 0x26u ||
-        x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
+        test_board_kbc_aux_enabled(session->board) ||
         core_machine_bus_write(session->core_machine, 0x0061u, 0x02u) !=
             LIB_STATUS_OK || core_machine_get_speaker_observation(
             session->board, &speaker) != LIB_STATUS_OK ||
         !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
         !speaker.output || core_machine_bus_write(session->core_machine, 0x0061u,
             0x0fu) != LIB_STATUS_OK ||
-        session->core_machine_plan->configuration.memory_bytes != 2u * 1024u * 1024u ||
-        session->core_machine_plan->configuration.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
-        x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
-        !kbc_test_command_matches(&session->board->shared_kbc,
-            &session->core_machine->executor_port, 0x20u,
-            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
+        plan.memory_bytes != 2u * 1024u * 1024u ||
+        plan.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        test_board_kbc_aux_enabled(session->board) ||
+        !test_board_kbc_command_matches(session->board,
+            session->core_machine, 0x20u,
+            0x20u, 0x20u);
+    }
     if (!failed) {
         /* Model-40 selects the existing generic-AT 2-tick initial prefetch
          * locality miss in addition to the deterministic base instruction tick. */
-        failed |= core_machine_run(session->core_machine, budget, &result) !=
+        failed = core_machine_run(session->core_machine, budget, &result) !=
             LIB_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             result.executed != 1u || result.ticks != 3u ||
             result.elapsed_ticks != 3u;
@@ -114,31 +124,27 @@ lib_i32 main(void)
         event.data.relative_mouse.delta_x = 1;
         event.data.relative_mouse.delta_y = 1;
         event.data.relative_mouse.buttons = 1u;
-        failed |= (core_machine_port_read(&session->core_machine->executor_port,
-            0x64u) & VKBC_STATUS_OBF) != 0u;
-        failed |= vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK;
-        failed |= (core_machine_port_read(&session->core_machine->executor_port,
-            0x64u) & VKBC_STATUS_OBF) != 0u;
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x0064u, 0xa8u);
-        failed |= x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
-            !kbc_test_command_matches(&session->board->shared_kbc,
-            &session->core_machine->executor_port, 0x20u,
-            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x0060u, 0xf5u);
-        failed |= kbc_test_read_reply(&session->board->shared_kbc,
-            &session->core_machine->executor_port) != 0xfau;
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x0064u, 0xd4u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x0060u, 0xf4u);
-        failed |= x86_keyboard_get_signals(session->board->shared_kbc.connect.keyboard).scanning ||
-            (core_machine_port_read(&session->core_machine->executor_port,
-                0x64u) & VKBC_STATUS_OBF) != 0u;
-        core_machine_port_write(&session->core_machine->executor_port, 0x60u, 0xeeu);
-        failed |= kbc_test_read_reply(&session->board->shared_kbc,
-            &session->core_machine->executor_port) != 0xeeu;
+        failed = core_machine_bus_read(session->core_machine, 0x64u, &value) !=
+            LIB_STATUS_OK || (value & 0x01u) != 0u ||
+            vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK ||
+            core_machine_bus_read(session->core_machine, 0x64u, &value) !=
+            LIB_STATUS_OK || (value & 0x01u) != 0u ||
+            core_machine_bus_write(session->core_machine, 0x0064u, 0xa8u) !=
+            LIB_STATUS_OK || test_board_kbc_aux_enabled(session->board) ||
+            !test_board_kbc_command_matches(session->board,
+                session->core_machine, 0x20u, 0x20u, 0x20u) ||
+            core_machine_bus_write(session->core_machine, 0x0060u, 0xf5u) !=
+            LIB_STATUS_OK || test_board_kbc_read_reply(session->board,
+                session->core_machine) != 0xfau ||
+            core_machine_bus_write(session->core_machine, 0x0064u, 0xd4u) !=
+            LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x0060u, 0xf4u) !=
+            LIB_STATUS_OK || test_board_keyboard_scanning(session->board) ||
+            core_machine_bus_read(session->core_machine, 0x64u, &value) !=
+            LIB_STATUS_OK || (value & 0x01u) != 0u ||
+            core_machine_bus_write(session->core_machine, 0x60u, 0xeeu) !=
+            LIB_STATUS_OK || test_board_kbc_read_reply(session->board,
+            session->core_machine) != 0xeeu;
     }
     if (!failed) printf("M5:T386:S7:MODEL40-PRIVATE-COMPOSITION:OK\n");
     if (!failed) printf("M5:T421:S1:MODEL40-SPEAKER-SELECTION:OK\n");

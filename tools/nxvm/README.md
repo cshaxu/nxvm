@@ -24,8 +24,9 @@ and `-DPROJECT_ARTIFACT_ARCHITECTURE=x86`.  Select exactly one of the four
 documented fixed profiles through `NXVM_PRODUCT_PROFILE`; CMake validates the
 matching manifest, hashes and firmware slots before it builds.
 
-The resulting versioned executable and its adjacent `NXVM.ini` are emitted
-only below `assets/nxvm/<profile>/`.  Runtime media paths in that INI
+The resulting versioned executable is deployed only below
+`assets/nxvm/<profile>/`, beside its existing owner-maintained `NXVM.ini`.
+Deployment never rewrites that INI. Runtime media paths in that INI
 refer to the external `nxvm-assets/media-nxvm` archive; no protected asset is
 copied into this repository.
 

@@ -1,10 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
-#include "x86/core/machine.h"
-#include "x86/core/port.h"
+#include "../../../../x86/core/composition_fixture.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -13,19 +12,15 @@
 static lib_u8 vm_model40_cmos_read(vm_machine *session,
     lib_u8 index)
 {
-    t_port *port = &session->core_machine->executor_port;
-
-    core_machine_port_write(port, 0x0070u, index);
-    return (lib_u8)core_machine_port_read(port, 0x0071u);
+    test_core_write_port_after_run(session->core_machine, 0x0070u, index);
+    return (lib_u8)test_core_read_port_after_run(session->core_machine, 0x0071u);
 }
 
 static void vm_model40_cmos_write(vm_machine *session, lib_u8 index,
     lib_u8 value)
 {
-    t_port *port = &session->core_machine->executor_port;
-
-    core_machine_port_write(port, 0x0070u, index);
-    core_machine_port_write(port, 0x0071u, value);
+    test_core_write_port_after_run(session->core_machine, 0x0070u, index);
+    test_core_write_port_after_run(session->core_machine, 0x0071u, value);
 }
 
 static lib_i32 vm_model40_cmos_checksum_is_valid(vm_machine *session)
@@ -106,21 +101,22 @@ lib_i32 main(void)
     lib_u8 seed[VM_MACHINE_CMOS_SEED_BYTES];
     lib_i32 failed = 0;
 
-    failed |= vm_model40_cmos_seed_session_create(LIB_NULL, &first) != LIB_STATUS_OK ||
+    failed = failed || vm_model40_cmos_seed_session_create(LIB_NULL, &first) != LIB_STATUS_OK ||
         first == LIB_NULL;
-    if (!failed) failed |= !vm_model40_cmos_seed_matches(first);
+    if (!failed) failed = !vm_model40_cmos_seed_matches(first);
     if (!failed) {
         vm_model40_cmos_write(first, CORE_MACHINE_RTC_EQUIPMENT, 0x5au);
-        failed |= vm_machine_reset(first) != LIB_STATUS_OK ||
+        failed = vm_machine_reset(first) != LIB_STATUS_OK ||
             vm_model40_cmos_read(first, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au;
     }
-    failed |= vm_model40_cmos_seed_session_create(LIB_NULL, &second) != LIB_STATUS_OK ||
+    failed = failed || vm_model40_cmos_seed_session_create(LIB_NULL, &second) != LIB_STATUS_OK ||
         second == LIB_NULL;
-    if (!failed) failed |= !vm_model40_cmos_seed_matches(second);
+    if (!failed) failed = !vm_model40_cmos_seed_matches(second);
     vm_model40_cmos_seed_bytes(seed);
-    failed |= !failed && vm_model40_cmos_seed_session_create(seed, &seeded) != LIB_STATUS_OK;
+    failed = failed || vm_model40_cmos_seed_session_create(seed, &seeded) !=
+        LIB_STATUS_OK || seeded == LIB_NULL;
     if (!failed) {
-        failed |= vm_model40_cmos_read(seeded, CORE_MACHINE_RTC_EQUIPMENT) !=
+        failed = vm_model40_cmos_read(seeded, CORE_MACHINE_RTC_EQUIPMENT) !=
                 seed[CORE_MACHINE_RTC_EQUIPMENT] ||
             vm_model40_cmos_read(seeded, 0x33u) != seed[0x33u] ||
             vm_model40_cmos_read(seeded, 0x2eu) != seed[0x2eu] ||

@@ -3,9 +3,10 @@
 #define VM_PROFILE_MACHINE_PLAN_INTERFACE_H
 
 #include "app-nxvm/profiles/selection_interface.h"
+#include "app-nxvm/profiles/model40/d4_platform_interface.h"
 
 #include "x86/core/firmware_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/profiles/device/floppy.h"
 
 typedef struct vm_profile_machine_plan vm_profile_machine_plan;
@@ -44,7 +45,8 @@ lib_status vm_profile_machine_plan_copy_text_glyphs(const vm_profile_machine_pla
     x86_video_text_glyph_config *out_glyphs);
 lib_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
     core_machine_plan *core_plan,
-    core_machine_fdc_terminal_observation_provider terminal_observation);
+    core_machine_fdc_terminal_observation_provider terminal_observation,
+    core_machine_d4_platform **construction_output);
 lib_u8 vm_profile_machine_plan_hdd_geometry_get(const vm_profile_machine_plan *plan,
     lib_u16 *out_cylinders, lib_u8 *out_heads,
     lib_u8 *out_sectors);

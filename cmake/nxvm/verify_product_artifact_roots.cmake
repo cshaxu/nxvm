@@ -36,4 +36,9 @@ foreach(project_live_path_authority IN LISTS project_live_path_authorities)
     endif()
 endforeach()
 
+file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/deploy_current_artifact.cmake" project_deployment)
+if(project_deployment MATCHES "file\\([ \t\r\n]*(WRITE|APPEND)[ \t\r\n]")
+    message(FATAL_ERROR "EXE deployment must not write owner configuration files")
+endif()
+
 message(STATUS "M6:T41:S10:PRODUCT-ARTIFACT-ROOTS:OK")

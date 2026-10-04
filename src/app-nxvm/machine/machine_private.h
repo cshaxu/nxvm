@@ -4,7 +4,7 @@
 
 #include "app-nxvm/machine/machine_interface.h"
 
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "x86/ibmpc-common/media_interface.h"
 #include "x86/ibmpc-common/display_interface.h"
 #include "lib/base/sync_interface.h"
@@ -28,6 +28,8 @@ struct vm_machine {
     core_machine *core_machine;
     /* Borrowed from the sole Core attachment lifetime. */
     core_machine_board_state *board;
+    /* Borrowed Profile object; the common board owns its lifetime. */
+    core_machine_d4_platform *model40_board;
     core_machine_dma_request_binding fdc_dma_request;
     union { t_fdd fdd; t_fdd floppy[VM_MACHINE_FLOPPY_SLOT_COUNT]; };
     union { t_hdd hdd; t_hdd fixed_disk[VM_MACHINE_FIXED_DISK_SLOT_COUNT]; };

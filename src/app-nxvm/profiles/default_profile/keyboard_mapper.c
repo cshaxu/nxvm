@@ -1,6 +1,6 @@
 #include "lib/types/types_interface.h"
 
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/profiles/default_profile/keyboard_mapper.h"
 
 static lib_u8 vm_profile_default_keyboard_map_ascii(lib_u16 value)

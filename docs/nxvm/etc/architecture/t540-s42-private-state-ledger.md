@@ -88,6 +88,16 @@ checkpoint, lifecycle, cycle, binding and failure obligations. Shared board
 construction/reset/time/deadlines, family wiring and D4 are still unresolved
 T540 receivers, not covered by the DMA disposition.
 
+## S93 Whole Board Batch
+
+The [S93 receiving design](t540-s93-whole-board-receiver.md) consumes all
+remaining common/family dependencies of construction/reset/time/deadline
+ownership together. It is active, not accepted. Public opaque peripheral
+owners replace embedded cross-module layouts; family IRQ line callbacks leave
+PIC lease ownership at the board composition and prevent a common/family
+dependency cycle. Genuine D4 remains assigned to Model40 Profile. No member
+is accepted from an intermediate source move or a passing narrow regression.
+
 ## Existing facts and intended sole owners
 
 | State or behavior in the present private header | Present users and final owner | Receiver |

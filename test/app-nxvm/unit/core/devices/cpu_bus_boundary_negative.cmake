@@ -8,31 +8,31 @@ file(REMOVE_RECURSE "${WORK}")
 set(cpu_files cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
     cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
 set(paths src/app-nxvm/machine/machine.c src/x86/core/machine.c
-    src/x86/core/cpu_bus.c src/app-nxvm/devices/board_advance.c
-    test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_push_immediate_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_pusha_popa_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c
+    src/x86/core/cpu_bus.c src/x86/ibmpc-common/board_advance.c
+    test/x86/ibmpc-common/core_machine_lea_smoke.c
+    test/x86/ibmpc-common/core_machine_gpr_mov_smoke.c
+    test/x86/ibmpc-common/core_machine_moffs_smoke.c
+    test/x86/ibmpc-common/core_machine_xchg_smoke.c
+    test/x86/ibmpc-common/core_machine_gpr_push_pop_smoke.c
+    test/x86/ibmpc-common/core_machine_push_immediate_smoke.c
+    test/x86/ibmpc-common/core_machine_pusha_popa_smoke.c
+    test/x86/ibmpc-common/core_machine_enter_leave_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c
+    test/x86/ibmpc-common/core_machine_legacy_sreg_stack_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_les_lds_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c
+    test/x86/ibmpc-common/core_machine_les_lds_s41_smoke.c
+    test/x86/ibmpc-common/core_machine_les_lds_smoke.c
+    test/x86/ibmpc-common/core_machine_lss_lfs_lgs_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c
+    test/x86/ibmpc-common/core_machine_sreg_mov_smoke.c
+    test/x86/ibmpc-common/core_machine_bit_scan_smoke.c
+    test/x86/ibmpc-common/core_machine_bit_test_smoke.c
+    test/x86/ibmpc-common/core_machine_double_shift_smoke.c
+    test/x86/ibmpc-common/core_machine_imul2_smoke.c
+    test/x86/ibmpc-common/core_machine_setcc_smoke.c
+    test/x86/ibmpc-common/core_machine_sign_extend_smoke.c
     test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c
-    test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c)
+    test/x86/ibmpc-common/core_machine_prefix_attributes_s64_smoke.c)
 foreach(name IN LISTS cpu_files)
     list(APPEND paths "src/x86/chips/cpu/${name}")
 endforeach()
@@ -111,7 +111,10 @@ foreach(name core_machine_lea_smoke.c core_machine_movx_smoke.c
         core_machine_lss_lfs_lgs_smoke.c core_machine_segment_selector_smoke.c
         core_machine_sreg_mov_smoke.c
         core_machine_operand_address_smoke.c core_machine_prefix_attributes_s64_smoke.c)
-    set(path "${WORK}/test/app-nxvm/unit/core/devices/${name}")
+    set(path "${WORK}/test/x86/ibmpc-common/${name}")
+    if(NOT EXISTS "${path}")
+        set(path "${WORK}/test/app-nxvm/unit/core/devices/${name}")
+    endif()
     file(READ "${path}" original)
     foreach(injection IN ITEMS "machine->executor_cpu.data.eax = 0\;"
             "#include \"support/machine_cpu_fixture.h\""

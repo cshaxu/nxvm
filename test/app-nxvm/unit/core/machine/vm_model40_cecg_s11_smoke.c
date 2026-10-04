@@ -1,24 +1,13 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "x86/core/memory.h"
-#include "x86/core/port.h"
-#include "app-nxvm/devices/vadp.h"
+#include "x86/ibmpc-common/vadp_interface.h"
+#include "../../../../x86/core/bus_fixture.h"
+#include "../../../../x86/core/video_topology_fixture.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
-
-static lib_i32 t386_s11_session_route(const vm_machine *session,
-    lib_u32 physical, core_machine_memory_route expected)
-{
-    core_machine_memory_route route;
-
-    return core_machine_memory_query_physical(&session->core_machine->executor_memory,
-        physical, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) == LIB_STATUS_OK &&
-        route == expected;
-}
 
 lib_i32 main(void)
 {
@@ -28,54 +17,54 @@ lib_i32 main(void)
     failed |= vm_model40_fixture_create(&session) !=
         LIB_STATUS_OK || session == LIB_NULL;
     if (!failed) {
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-        failed |= !t386_s11_session_route(session, 0x000a0000u,
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03ceu, 6u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03cfu, 0x05u);
+        failed |= !test_video_memory_route(session->core_machine, 0x000a0000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
         /* Model 40's low B0000h page is an unpopulated D4 decode.  It is not
          * ordinary RAM merely because the current EGA map selects A0000h. */
-        failed |= !t386_s11_session_route(session, 0x000b0000u,
+        failed |= !test_video_memory_route(session->core_machine, 0x000b0000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
         /* Display enable suppresses presentation, not the CPU's mapped EGA
          * aperture.  Firmware clears text VRAM before it enables output. */
-        (void)core_machine_port_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_STATUS);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
-        failed |= !t386_s11_session_route(session, 0x000a0000u,
+        (void)test_core_machine_fixture_read_bus(session->core_machine,
+            0x03dau);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03c0u, 0x00u);
+        failed |= !test_video_memory_route(session->core_machine, 0x000a0000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
-        (void)core_machine_port_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_STATUS);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x20u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
-        failed |= !t386_s11_session_route(session, 0x000a0000u,
+        (void)test_core_machine_fixture_read_bus(session->core_machine,
+            0x03dau);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03c0u, 0x20u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03c2u, 0x02u);
+        failed |= !test_video_memory_route(session->core_machine, 0x000a0000u,
             CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x00u);
-        failed |= !t386_s11_session_route(session, 0x000a0000u,
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03c2u, 0x00u);
+        failed |= !test_video_memory_route(session->core_machine, 0x000a0000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x09u);
-        failed |= !t386_s11_session_route(session, 0x000a0000u,
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03c2u, 0x02u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03ceu, 6u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03cfu, 0x09u);
+        failed |= !test_video_memory_route(session->core_machine, 0x000a0000u,
             CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
-        failed |= !t386_s11_session_route(session, 0x000b0000u,
+        failed |= !test_video_memory_route(session->core_machine, 0x000b0000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     }
     if (!failed) {
         vm_machine_reset(session);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
-        failed |= !t386_s11_session_route(session, 0x000a0000u,
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03ceu, 6u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03cfu, 0x05u);
+        failed |= !test_video_memory_route(session->core_machine, 0x000a0000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     }
     vm_machine_destroy(session);

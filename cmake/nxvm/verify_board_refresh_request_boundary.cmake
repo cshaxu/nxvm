@@ -3,10 +3,12 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" core)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" creation)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" board)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" creation)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" core_state)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_state)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_state.h" board_state)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/d4_platform.h" profile_state)
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/d4_platform.c" profile)
 foreach(field "d4_refresh_hold_pending" "d4_refresh_address")
     string(FIND "${core}" "${field}" position)
     if(NOT position LESS 0)
@@ -17,8 +19,12 @@ foreach(field "d4_refresh_hold_pending" "d4_refresh_address")
         message(FATAL_ERROR "Flat Core state owns board refresh state: ${field}")
     endif()
     string(FIND "${board_state}" "${field}" position)
+    if(NOT position LESS 0)
+        message(FATAL_ERROR "Common Board owns Profile refresh state: ${field}")
+    endif()
+    string(FIND "${profile_state}" "${field}" position)
     if(position LESS 0)
-        message(FATAL_ERROR "Board attachment lacks refresh state: ${field}")
+        message(FATAL_ERROR "Model40 Profile lacks its refresh state: ${field}")
     endif()
 endforeach()
 foreach(required "core_machine_transaction_hold_request("
@@ -32,11 +38,21 @@ foreach(required "core_machine_transaction_hold_request("
     endif()
 endforeach()
 foreach(required "core_machine_board_refresh_request(" "core_machine_board_refresh_complete("
-    "board->d4_refresh_address = (lib_u8)(board->d4_refresh_address + 1u);"
-    "board->d4_refresh_hold_pending = LIB_FALSE;")
+    "board->profile_binding.refresh_request(board->profile_binding.context, out_address)"
+    "board->profile_binding.refresh_complete(board->profile_binding.context)")
     string(FIND "${board}" "${required}" position)
     if(position LESS 0)
         message(FATAL_ERROR "Board refresh completion lacks ${required}")
+    endif()
+endforeach()
+foreach(required "core_machine_d4_platform_refresh_request("
+    "platform->d4_refresh_address = (lib_u8)(platform->d4_refresh_address + 1u);"
+    "platform->d4_refresh_hold_pending = LIB_FALSE;"
+    ".refresh_request = core_machine_d4_platform_refresh_request"
+    ".refresh_complete = core_machine_d4_platform_refresh_complete")
+    string(FIND "${profile}" "${required}" position)
+    if(position LESS 0)
+        message(FATAL_ERROR "Profile refresh completion/binding lacks ${required}")
     endif()
 endforeach()
 foreach(binding "core_machine_board_refresh_request" "core_machine_board_refresh_complete")

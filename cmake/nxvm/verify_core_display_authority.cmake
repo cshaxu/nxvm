@@ -2,19 +2,19 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_display.c" core_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_display.c" core_display_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" machine_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_state.h" board_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
-if(machine_header MATCHES "t_vadp[ \t]+shared_vadp;" OR
-    NOT board_header MATCHES "t_vadp[ \t]+shared_vadp;" OR
+if(machine_header MATCHES "t_vadp[ \t]+\\*?[ \t]*shared_vadp;" OR
+    NOT board_header MATCHES "t_vadp[ \t]+\\*shared_vadp;" OR
     scheduler_source MATCHES "board->shared_vadp")
     message(FATAL_ERROR "VADP instance must have one board owner")
 endif()
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" board_display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/vadp.c" board_display_source)
 set(core_source "${core_plan_source}${core_display_source}${board_display_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_interface.h" neutral_header)
 foreach(operation IN ITEMS capture_display_snapshot observe_display_snapshot configure_display)
     foreach(source IN ITEMS core_display_source core_header)
@@ -37,7 +37,11 @@ if(NOT core_plan_source MATCHES "core_machine_configure_display\\(board," OR
     message(FATAL_ERROR "Topology must consume the constructed board rather than recover private state")
 endif()
 file(GLOB_RECURSE display_callers
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c" "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c" "${PROJECT_SOURCE_DIR}/test/x86/core/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c" "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c" "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c" "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-xt/*.c")
 foreach(caller IN LISTS display_callers)
     file(READ "${caller}" caller_source)
     if(caller_source MATCHES

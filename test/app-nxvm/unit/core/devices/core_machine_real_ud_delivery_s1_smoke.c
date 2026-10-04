@@ -3,7 +3,7 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 
 /* T337_REAL_UD_VECTOR6_DELIVERY: this owner proves the shared real #UD path. */
 
@@ -90,35 +90,25 @@ static lib_i32 real_ud_prepare(real_ud_machine *state,
     return 1;
 }
 
-static lib_i32 real_ud_run(real_ud_machine *state, lib_u32 budget,
-    lib_status *status, core_machine_run_result *result, core_machine_debug_cpu_snapshot *after,
-    core_machine_cpu_diagnostic *diagnostic)
-{
-    *status = core_machine_run(state->machine,
-        (core_machine_run_budget){ budget, 0u }, result);
-    return core_machine_debug_capture_cpu_snapshot(state->machine,
-        CORE_MACHINE_CPU_SNAPSHOT_CURRENT, after) == LIB_STATUS_OK &&
-        core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        LIB_STATUS_OK;
-}
-
 static lib_i32 real_ud_test_delivery_case(const real_ud_case *test_case)
 {
     real_ud_machine state;
     core_machine_cpu_diagnostic diagnostic;
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     lib_u16 frame[3] = { 0u, 0u, 0u };
     core_machine_debug_cpu_snapshot before = {0};
     core_machine_debug_cpu_snapshot after = {0};
-    lib_status status;
     lib_i32 failed = !real_ud_prepare(&state, test_case,
         REAL_UD_VECTOR * 4u + 3u);
 
     if (!failed) {
         failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= !real_ud_run(&state, 1u, &status, &result, &after,
-            &diagnostic) || status != LIB_STATUS_OK ||
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+            core_machine_run(state.machine,
+                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid || !CORE_MACHINE_BIT_IS_SET(
@@ -135,8 +125,13 @@ static lib_i32 real_ud_test_delivery_case(const real_ud_case *test_case)
             REAL_UD_CODE_OFFSET || frame[1] != before.cs.selector ||
             frame[2] != (lib_u16)((before.eflags &
                 0x00037fd5u) | 0x02u);
-        failed |= !real_ud_run(&state, 2u, &status, &result, &after,
-            &diagnostic) || status != LIB_STATUS_OK ||
+    }
+    if (!failed) {
+        failed |= core_machine_run(state.machine,
+                (core_machine_run_budget){ 2u, 0u }, &result) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             after.eip != REAL_UD_HANDLER_OFFSET + 2u ||
             after.eax != before.eax + 1u;
@@ -174,21 +169,23 @@ static lib_i32 real_ud_test_delivery_failure(void)
     };
     real_ud_machine state;
     core_machine_cpu_diagnostic diagnostic;
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     core_machine_debug_cpu_snapshot before = {0};
     core_machine_debug_cpu_snapshot after = {0};
-    lib_status status;
     lib_i32 failed = !real_ud_prepare(&state, &test_case,
         REAL_UD_VECTOR * 4u - 1u);
 
     if (!failed) {
         failed |= core_machine_debug_write_register(state.machine,
             CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF |
-            CORE_MACHINE_DEBUG_EFLAGS_IF) != LIB_STATUS_OK;
-        failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK;
-        failed |= !real_ud_run(&state, 1u, &status, &result, &after,
-            &diagnostic) || status != LIB_STATUS_INTERNAL_ERROR ||
+            CORE_MACHINE_DEBUG_EFLAGS_IF) != LIB_STATUS_OK ||
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &before) != LIB_STATUS_OK ||
+            core_machine_run(state.machine,
+                (core_machine_run_budget){ 1u, 0u }, &result) != LIB_STATUS_INTERNAL_ERROR ||
+            core_machine_debug_capture_cpu_snapshot(state.machine,
+                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_FAULT ||
             !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||

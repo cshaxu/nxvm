@@ -1,12 +1,15 @@
+#include "app-nxvm/profiles/model40/d4_platform_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
+#include "../profiles/model40/d4_refresh_fixture.h"
 
 #include "x86/ibmpc-common/dma_bus_interface.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "x86/core/transaction.h"
-#include "support/core_machine_board_fixture.h"
+#include "../../../../x86/core/composition_fixture.h"
+#include "../../../../x86/core/time_fixture.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include "x86/core/trace_interface.h"
+#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
 
 #define REFRESH_PROBE_EVENT_CAPACITY 1024u
 
@@ -38,16 +41,16 @@ static void refresh_dma_read(void *opaque, t_latch *latch)
     }
 }
 
-static void refresh_program_dma_channel2(t_port *port)
+static void refresh_program_dma_channel2(core_machine *machine)
 {
-    core_machine_port_write(port, 0x000cu, 0u);
-    core_machine_port_write(port, 0x0004u, 0x34u);
-    core_machine_port_write(port, 0x0004u, 0x12u);
-    core_machine_port_write(port, 0x0005u, 0u);
-    core_machine_port_write(port, 0x0005u, 0u);
-    core_machine_port_write(port, 0x0081u, 1u);
-    core_machine_port_write(port, 0x000bu, 0x46u);
-    core_machine_port_write(port, 0x000au, 0x02u);
+    test_core_machine_fixture_write_port(machine, 0x000cu, 0u);
+    test_core_machine_fixture_write_port(machine, 0x0004u, 0x34u);
+    test_core_machine_fixture_write_port(machine, 0x0004u, 0x12u);
+    test_core_machine_fixture_write_port(machine, 0x0005u, 0u);
+    test_core_machine_fixture_write_port(machine, 0x0005u, 0u);
+    test_core_machine_fixture_write_port(machine, 0x0081u, 1u);
+    test_core_machine_fixture_write_port(machine, 0x000bu, 0x46u);
+    test_core_machine_fixture_write_port(machine, 0x000au, 0x02u);
 }
 
 static lib_i32 refresh_find_transaction_after(const refresh_probe *probe,
@@ -118,14 +121,14 @@ static lib_i32 refresh_non_d4_contract(void)
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     trace.callback = refresh_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
-    failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+    failed = failed || core_machine_create(&config, &machine, LIB_NULL) != LIB_STATUS_OK;
+    failed = failed || test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
-    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
-    failed |= core_machine_advance_time(machine, 20u) != LIB_STATUS_OK;
-    failed |= refresh_find_transaction_after(&probe,
+    failed = failed || core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed = failed || core_machine_reset(machine) != LIB_STATUS_OK;
+    failed = failed || core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
+    failed = failed || test_core_machine_advance_time(machine, 20u) != LIB_STATUS_OK;
+    failed = failed || refresh_find_transaction_after(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
         CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
         CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE, 0u, &index);
@@ -145,6 +148,7 @@ lib_i32 main(void)
     refresh_dma_source source = {0xa5u};
     core_machine *machine = LIB_NULL;
     core_machine_board_state *board = LIB_NULL;
+    core_machine_d4_platform *d4_board = LIB_NULL;
     lib_u8 byte = 0u;
     lib_u8 refresh_address = 0xffu;
     lib_u32 start;
@@ -164,79 +168,74 @@ lib_i32 main(void)
     config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = refresh_trace;
     trace.context = &probe;
-    failed |= core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
-    failed |= core_machine_configure_d4_platform(board, &d4) != LIB_STATUS_OK;
-    failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+    failed = failed || core_machine_create(&config, &machine, &board) != LIB_STATUS_OK;
+    failed = failed || core_machine_d4_platform_attach(board, &d4, &d4_board) != LIB_STATUS_OK;
+    failed = failed || test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != LIB_STATUS_OK;
-    failed |= core_machine_dma_bind_channel(board->shared_dma, 2u,
+    failed = failed || test_board_dma_bind_channel(board, 2u,
         &dma_provider, &source, &binding) != LIB_STATUS_OK;
-    failed |= core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
-    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
-    refresh_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(board->shared_dma, &binding);
-    failed |= core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
-    core_machine_port_write(&machine->executor_port, 0x0064u, 0xd1u);
-    core_machine_port_write(&machine->executor_port, 0x0060u, 0x01u);
-    failed |= machine->executor_memory.data.flagA20;
-    failed |= core_machine_reset(machine) != LIB_STATUS_OK;
-    refresh_program_dma_channel2(&machine->executor_port);
-    core_machine_dma_request_assert(board->shared_dma, &binding);
-    failed |= core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
+    failed = failed || core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK;
+    failed = failed || core_machine_reset(machine) != LIB_STATUS_OK;
+    failed = failed || core_machine_set_trace_provider(machine, &trace) != LIB_STATUS_OK;
+    if (!failed) refresh_program_dma_channel2(machine);
+    if (!failed) test_board_dma_request_assert(board, &binding);
+    failed = failed || core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
+    if (!failed) test_core_machine_fixture_write_port(machine, 0x0064u, 0xd1u);
+    if (!failed) test_core_machine_fixture_write_port(machine, 0x0060u, 0x01u);
+    failed = failed || test_core_a20_is_enabled(machine);
+    failed = failed || core_machine_reset(machine) != LIB_STATUS_OK;
+    if (!failed) refresh_program_dma_channel2(machine);
+    if (!failed) test_board_dma_request_assert(board, &binding);
+    failed = failed || core_machine_set_dma_bus_ready(machine, 0) != LIB_STATUS_OK;
     start = probe.count;
-    failed |= core_machine_advance_time(machine, 19u) != LIB_STATUS_OK;
-    failed |= !board->d4_refresh_hold_pending ||
-        board->d4_refresh_address != 0u ||
-        machine->dma_cycle_wait_remaining != 0u;
-    failed |= !machine->attachment.refresh_request(machine->attachment.context,
-        &refresh_address) || refresh_address != 0u;
-    failed |= core_machine_capture_time_observation(machine, &observation) !=
+    failed = failed || test_core_machine_advance_time(machine, 19u) != LIB_STATUS_OK;
+    failed = failed || !test_model40_refresh_hold_matches(d4_board, LIB_TRUE, 0u) ||
+        !test_core_dma_wait_remaining_matches(machine, 0u);
+    failed = failed || !test_core_refresh_request(machine, &refresh_address) || refresh_address != 0u;
+    failed = failed || core_machine_capture_time_observation(machine, &observation) !=
         LIB_STATUS_OK || observation.next_deadline_valid ||
         observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY;
-    failed |= core_machine_set_dma_bus_ready(machine, 1) != LIB_STATUS_OK;
+    failed = failed || core_machine_set_dma_bus_ready(machine, 1) != LIB_STATUS_OK;
     /* BUSRDY releases the DMA cycle gate; normal 8237A timing then needs
      * channel selection plus S1..S4, with this contract's one wait quantum
      * per controller step. */
-    failed |= core_machine_advance_time(machine, 11u) != LIB_STATUS_OK;
-    failed |= board->d4_refresh_hold_pending ||
-        board->d4_refresh_address != 1u ||
-        machine->dma_cycle_wait_remaining != 0u;
+    failed = failed || test_core_machine_advance_time(machine, 11u) != LIB_STATUS_OK;
+    failed = failed || !test_model40_refresh_hold_matches(d4_board, LIB_FALSE, 1u) ||
+        !test_core_dma_wait_remaining_matches(machine, 0u);
     refresh_address = 0xffu;
-    failed |= machine->attachment.refresh_request(machine->attachment.context,
-        &refresh_address) || refresh_address != 0xffu;
-    failed |= core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
+    failed = failed || test_core_refresh_request(machine, &refresh_address) || refresh_address != 0xffu;
+    failed = failed || core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
         LIB_STATUS_OK || byte != 0xa5u;
-    failed |= !refresh_find_hold_after(&probe,
+    failed = failed || !refresh_find_hold_after(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST,
         CORE_MACHINE_TRANSACTION_OWNER_REFRESH, start, &refresh_request);
-    failed |= !refresh_find_hold_after(&probe,
+    failed = failed || !refresh_find_hold_after(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_ACKNOWLEDGE,
         CORE_MACHINE_TRANSACTION_OWNER_REFRESH, start, &refresh_acknowledge);
-    failed |= !refresh_find_transaction_after(&probe,
+    failed = failed || !refresh_find_transaction_after(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
         CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
         CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE, start, &refresh_begin);
-    failed |= !refresh_find_transaction_after(&probe,
+    failed = failed || !refresh_find_transaction_after(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
         CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
         CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE, start, &refresh_commit);
-    failed |= !refresh_find_hold_after(&probe,
+    failed = failed || !refresh_find_hold_after(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_RELEASE,
         CORE_MACHINE_TRANSACTION_OWNER_REFRESH, start, &refresh_release);
-    failed |= !refresh_find_transaction_after(&probe,
+    failed = failed || !refresh_find_transaction_after(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
         CORE_MACHINE_TRANSACTION_OWNER_DMA,
         CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, start, &dma_begin);
-    failed |= refresh_request >= refresh_acknowledge ||
+    failed = failed || refresh_request >= refresh_acknowledge ||
         refresh_acknowledge >= refresh_begin || refresh_begin >= refresh_commit ||
         refresh_commit >= refresh_release || refresh_release >= dma_begin ||
         refresh_has_cpu_transaction_between(&probe, refresh_release, dma_begin);
-    failed |= core_machine_reset(machine) != LIB_STATUS_OK ||
-        board->d4_refresh_hold_pending || board->d4_refresh_pulse_active ||
-        board->d4_refresh_address != 0u;
+    failed = failed || core_machine_reset(machine) != LIB_STATUS_OK ||
+        !test_model40_refresh_reset_is_clear(d4_board);
 
     core_machine_destroy(machine);
-    failed |= !refresh_non_d4_contract();
+    failed = failed || !refresh_non_d4_contract();
     if (failed) return 1;
     printf("M5:T419:S4:D4-REFRESH-HOLD:OK\n");
     return 0;

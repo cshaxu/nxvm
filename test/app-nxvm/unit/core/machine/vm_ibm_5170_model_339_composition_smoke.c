@@ -1,12 +1,12 @@
 #include "lib/types/types_interface.h"
-#include "support/kbc_fixture.h"
+#include "../../../../x86/core/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/kbc_state_fixture.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "x86/core/port.h"
+#include "../../../../x86/core/bus_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
@@ -46,6 +46,7 @@ static lib_i32 vm_model_339_selected_contract(void)
         .profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339,
         .bios_count = 2u
     };
+    test_board_composition_observation board;
     core_machine_cpu_profile cpu_profile;
     core_machine_planar_parity_observation parity;
     core_machine_speaker_observation speaker;
@@ -71,35 +72,27 @@ static lib_i32 vm_model_339_selected_contract(void)
         vm_machine_destroy(session);
         return 1;
     }
+    board = test_board_capture_composition(session->board);
     failed |= (core_machine_capture_display_snapshot(session->board,
         &snapshot) != LIB_STATUS_OK || !snapshot.text_glyphs_present ||
         snapshot.text_glyphs['A' *
         X86_VIDEO_TEXT_GLYPH_ROWS] != 0x81u ||
         snapshot.text_glyphs['A' *
         X86_VIDEO_TEXT_GLYPH_ROWS + 8u] != 0x42u) ? 0x2000 : 0;
-    failed |= (session->core_machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled ||
-        session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled ||
-        session->core_machine->transaction_contract.external_cycle_timing.page_bytes != 0u ||
-        session->core_machine->transaction_contract.external_cycle_timing.page_miss_ticks != 0u ||
-        session->core_machine->transaction_contract.external_cycle_timing.page_hit_ticks != 0u ||
-        session->core_machine->transaction_contract.external_cycle_timing.overlap_policy !=
-            CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED ||
-        session->core_machine->transaction_contract.external_access_wait_windows[0].wait_ticks != 0u) ?
-        0x0002 : 0;
+    failed |= !test_core_transaction_timing_is_disabled(session->core_machine) ? 0x0002 : 0;
     failed |= (core_machine_bus_write(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
         0x02u) != LIB_STATUS_OK || core_machine_get_speaker_observation(
         session->board, &speaker) != LIB_STATUS_OK || !speaker.configured ||
         speaker.timer_gate || !speaker.data_enabled || !speaker.output) ? 0x0004 : 0;
     failed |= (core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
         LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) ? 0x0008 : 0;
-    failed |= (x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
-        x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
-        !kbc_test_command_matches(&session->board->shared_kbc,
-            &session->core_machine->executor_port, 0x20u,
-            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX)) ? 0x0010 : 0;
-    failed |= (!kbc_test_command_matches(&session->board->shared_kbc,
-        &session->core_machine->executor_port, 0xd0u, 0xffu, 0x03u) ||
-        !session->core_machine->executor_memory.data.flagA20) ? 0x0011 : 0;
+    failed |= (test_board_kbc_aux_enabled(session->board) ||
+        !test_board_kbc_command_matches(session->board,
+            session->core_machine, 0x20u,
+            0x20u, 0x20u)) ? 0x0010 : 0;
+    failed |= (!test_board_kbc_command_matches(session->board,
+            session->core_machine, 0xd0u, 0xffu, 0x03u) ||
+        !test_core_a20_is_enabled(session->core_machine)) ? 0x0011 : 0;
     failed |= (core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
         LIB_STATUS_OK || memory_bytes != 512u * 1024u) ? 0x0020 : 0;
     failed |= (core_machine_get_planar_parity_observation(session->board,
@@ -117,28 +110,12 @@ static lib_i32 vm_model_339_selected_contract(void)
     failed |= (core_machine_memory_read(session->core_machine, 0x000c0000u,
         &option_rom_probe, sizeof(option_rom_probe)) != LIB_STATUS_OK ||
         option_rom_probe != 0xffu) ? 0x0900 : 0;
-    failed |= (!core_machine_port_has_read(&session->core_machine->executor_port, 0x01f0u) ||
-        !core_machine_port_has_write(&session->core_machine->executor_port, 0x01f0u) ||
-        core_machine_port_read(&session->core_machine->executor_port, 0x03f1u) != 0x50u ||
-        session->board->hdc.connect.config.service.command_ticks != 16000u ||
-        session->board->hdc.connect.config.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
-    {
-        core_machine_pic_bus *bus = session->board->shared_pic_master;
-        core_machine_pic_irq_source *source = LIB_NULL;
-        lib_u64 ticks = 0u;
-        core_machine_pic_write_register(bus, 0u, 0x13u);
-        core_machine_pic_write_register(bus, 1u, 8u);
-        core_machine_pic_write_register(bus, 1u, 1u);
-        core_machine_pic_write_register(bus, 1u, 2u);
-        failed |= core_machine_pic_irq_source_bind(&source, bus,
-            session->board->shared_pic_slave, 1u) != LIB_STATUS_OK;
-        core_machine_pic_irq_source_assert(source);
-        core_machine_pic_irq_source_deassert(source);
-        core_machine_pic_write_register(bus, 1u, 0u);
-        failed |= core_machine_pic_ticks_until_event(bus,
-            session->board->shared_pic_slave, &ticks) !=
-            LIB_STATUS_OK || ticks != 120u ? 0x0012 : 0;
-    }
+    failed |= (!test_core_port_has_read(session->core_machine, 0x01f0u) ||
+        !test_core_port_has_write(session->core_machine, 0x01f0u) ||
+        test_core_machine_fixture_read_bus(session->core_machine, 0x03f1u) != 0x50u ||
+        board.hdc.service.command_ticks != 16000u ||
+        board.hdc.service.next_sector_ticks != 7840u) ? 0x1000 : 0;
+    failed |= test_board_pic_unmask_delay_matches(session->board, 120u);
     vm_machine_destroy(session);
     return failed;
 }
@@ -169,7 +146,7 @@ static lib_i32 vm_model_339_floppy_contract(void)
         session->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
         session->fdd.data.ncyl != 40u || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != 9u ||
-        session->board->fdc.connect.drives.cylinder_count[0u] != 80u;
+        test_board_capture_composition(session->board).drive_cylinders != 80u;
     vm_machine_destroy(session);
     session = LIB_NULL;
     failed |= vm_test_create_5170(&rejected, &session) == LIB_STATUS_OK || session != LIB_NULL;

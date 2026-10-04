@@ -60,19 +60,10 @@ set(PROJECT_SHARED_CORPUS_TEST_TARGETS
     shared-x86-tests)
 
 add_library(core-machine STATIC
-    src/app-nxvm/devices/board_advance.c
-    src/app-nxvm/devices/board_deadline.c
-    src/app-nxvm/devices/d4_memory.c
-    src/app-nxvm/devices/fdc.c
-    src/app-nxvm/devices/hdc.c
-    src/app-nxvm/devices/machine_board.c
-    src/app-nxvm/devices/machine_plan.c
-    src/app-nxvm/devices/machine_display.c
-    src/app-nxvm/devices/xt_ppi_keyboard.c
-    src/app-nxvm/devices/kbc.c
-    src/app-nxvm/devices/vadp.c
+    src/app-nxvm/profiles/model40/d4_memory.c
+    src/app-nxvm/profiles/model40/d4_platform.c
 )
-# NXVM owns the retained PC board attachment, not the Shared Core executor.
+# NXVM owns only its concrete Model40 extension; the board is Shared-owned.
 add_library(core-machine-runtime ALIAS core-machine)
 target_include_directories(core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -94,19 +85,11 @@ add_library(core-machine-observable STATIC ${PROJECT_CORE_MACHINE_SOURCES})
 target_include_directories(core-machine-observable PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-machine-observable PUBLIC x86-ibmpc-common
+target_link_libraries(core-machine-observable PUBLIC x86-ibmpc-common-observable x86-ibmpc-at x86-ibmpc-xt
     x86-core-observable)
 target_compile_definitions(core-machine-observable PUBLIC
     CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
 
-add_executable(core-machine-instance-smoke
-    test/app-nxvm/unit/core/devices/machine_instance_smoke.c)
-target_link_libraries(core-machine-instance-smoke PRIVATE core-machine)
-
-add_executable(core-machine-plan-smoke
-    test/app-nxvm/unit/core/devices/core_machine_plan_smoke.c
-)
-target_link_libraries(core-machine-plan-smoke PRIVATE core-machine)
 add_executable(vm-default-pc-at-profile-smoke
     test/app-nxvm/unit/core/profiles/default_pc_at_profile_smoke.c)
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
@@ -123,7 +106,8 @@ add_executable(vm-model40-private-composition-s7-smoke
     test/app-nxvm/unit/core/machine/vm_model40_private_composition_s7_smoke.c)
 target_link_libraries(vm-model40-private-composition-s7-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cmos-seed-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_cmos_seed_smoke.c)
+    test/app-nxvm/unit/core/machine/vm_model40_cmos_seed_smoke.c
+    test/x86/core/composition_fixture.c)
 target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-machine)
 add_executable(vm-model40-integration-s8-smoke
     test/app-nxvm/unit/core/machine/vm_model40_integration_s8_smoke.c)
@@ -131,12 +115,14 @@ target_link_libraries(vm-model40-integration-s8-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cecg-s9-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s9_smoke.c)
 target_link_libraries(vm-model40-cecg-s9-smoke PRIVATE vm-machine)
+target_sources(vm-model40-cecg-s9-smoke PRIVATE test/x86/core/video_topology_fixture.c)
 add_executable(vm-model40-cecg-s10-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s10_smoke.c)
 target_link_libraries(vm-model40-cecg-s10-smoke PRIVATE vm-machine)
 add_executable(vm-model40-cecg-s11-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s11_smoke.c)
 target_link_libraries(vm-model40-cecg-s11-smoke PRIVATE vm-machine)
+target_sources(vm-model40-cecg-s11-smoke PRIVATE test/x86/core/video_topology_fixture.c)
 add_executable(vm-model40-cecg-s12-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s12_smoke.c)
 target_link_libraries(vm-model40-cecg-s12-smoke PRIVATE vm-machine)
@@ -156,13 +142,17 @@ add_executable(vm-model40-d4-map-s16-smoke
     test/app-nxvm/unit/core/machine/vm_model40_d4_map_s16_smoke.c)
 target_link_libraries(vm-model40-d4-map-s16-smoke PRIVATE vm-machine)
 add_executable(vm-model40-d4-parity-s22-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_d4_parity_s22_smoke.c)
+    test/app-nxvm/unit/core/machine/vm_model40_d4_parity_s22_smoke.c
+    test/x86/core/composition_fixture.c)
 target_link_libraries(vm-model40-d4-parity-s22-smoke PRIVATE vm-machine)
 add_executable(vm-model40-fdc-s24-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_fdc_s24_smoke.c)
+    test/app-nxvm/unit/core/machine/vm_model40_fdc_s24_smoke.c
+    test/x86/ibmpc-common/controller_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c)
 target_link_libraries(vm-model40-fdc-s24-smoke PRIVATE vm-machine)
 add_executable(vm-model40-d4-skey-s23-smoke
-    test/app-nxvm/unit/core/machine/vm_model40_d4_skey_s23_smoke.c)
+    test/app-nxvm/unit/core/machine/vm_model40_d4_skey_s23_smoke.c
+    test/x86/core/composition_fixture.c)
 target_link_libraries(vm-model40-d4-skey-s23-smoke PRIVATE vm-machine)
 add_executable(vm-model40-dma-s17-smoke
     test/app-nxvm/unit/core/machine/vm_model40_dma_s17_smoke.c)
@@ -174,7 +164,9 @@ add_executable(vm-model40-byob-s20-smoke
     test/app-nxvm/unit/core/machine/vm_model40_byob_s20_smoke.c)
 target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-machine)
 add_executable(vm-model40-byob-retirement-capture
-    test/app-nxvm/integration/model40/vm_model40_retirement_capture.c)
+    test/app-nxvm/integration/model40/vm_model40_retirement_capture.c
+    test/x86/core/composition_fixture.c
+    test/x86/ibmpc-common/cmos_fixture.c)
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
     integration-session-ini-support)
 add_executable(vm-model40-byob-boot-media-s5-smoke
@@ -191,10 +183,17 @@ target_include_directories(vm-model40-console-s20-smoke PRIVATE
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-machine)
 add_executable(vm-model-339-clock-contract-smoke
     test/app-nxvm/unit/core/machine/vm_model_339_clock_contract_smoke.c)
+target_sources(vm-model-339-clock-contract-smoke PRIVATE
+    test/x86/ibmpc-common/composition_fixture.c
+    test/x86/ibmpc-common/kbc_state_fixture.c
+    test/x86/ibmpc-at/state_fixture.c)
 target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-machine)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     test/app-nxvm/unit/core/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-machine)
+target_sources(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE
+    test/x86/core/video_topology_fixture.c
+    test/x86/ibmpc-common/video_topology_fixture.c)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     test/app-nxvm/unit/core/profiles/ibm_5170_model_339/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-machine)
@@ -205,7 +204,9 @@ target_link_libraries(vm-media-provider-smoke PRIVATE vm-machine core-machine)
 add_executable(vm-media-direct-readonly-smoke
     test/app-nxvm/unit/core/machine/vm_media_direct_readonly_smoke.c)
 target_link_libraries(vm-media-direct-readonly-smoke PRIVATE vm-machine core-machine)
-add_executable(vm-hdc-hdd-boot-smoke test/app-nxvm/integration/hdd/vm_hdc_hdd_boot_smoke.c)
+add_executable(vm-hdc-hdd-boot-smoke
+    test/app-nxvm/integration/hdd/vm_hdc_hdd_boot_smoke.c
+    test/x86/ibmpc-common/controller_fixture.c)
 target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-default-pc-at-apply-smoke
     test/app-nxvm/unit/core/machine/vm_default_pc_at_apply_smoke.c)
@@ -235,7 +236,8 @@ if(WIN32)
     target_link_libraries(nxvm-deployed-boot-probe PRIVATE gdi32 user32)
 endif()
 add_executable(vm-ini-cmos-seed-smoke
-    test/app-nxvm/integration/product/vm_ini_cmos_seed_smoke.c)
+    test/app-nxvm/integration/product/vm_ini_cmos_seed_smoke.c
+    test/x86/core/composition_fixture.c)
 target_link_libraries(vm-ini-cmos-seed-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-app-ini-smoke
     test/app-nxvm/unit/product/nxvm_ini_smoke.c)
@@ -252,6 +254,8 @@ add_executable(vm-app-session-smoke test/app-nxvm/unit/core/machine/nxvm_machine
 target_link_libraries(vm-app-session-smoke PRIVATE vm-machine)
 add_executable(vm-machine-initialization-atomicity-smoke
     test/app-nxvm/unit/core/machine/vm_machine_initialization_atomicity_smoke.c)
+target_sources(vm-machine-initialization-atomicity-smoke PRIVATE
+    test/x86/ibmpc-common/composition_fixture.c)
 target_link_libraries(vm-machine-initialization-atomicity-smoke PRIVATE vm-machine)
 add_executable(vm-machine-reconfigure-smoke
     test/app-nxvm/unit/core/machine/nxvm_machine_reconfigure_smoke.c)
@@ -273,151 +277,66 @@ add_executable(vm-ibm-5170-direct-plan-smoke
 target_link_libraries(vm-ibm-5170-direct-plan-smoke PRIVATE vm-profile)
 add_executable(vm-xt-5160-268-profile-smoke
     test/app-nxvm/unit/core/machine/vm_xt_5160_268_profile_smoke.c)
+target_sources(vm-xt-5160-268-profile-smoke PRIVATE
+    test/x86/core/composition_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c
+    test/x86/ibmpc-common/controller_fixture.c)
 target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-machine)
 
 
 
 
-add_executable(core-machine-firmware-capability-smoke
-    test/app-nxvm/unit/core/devices/machine_firmware_capability_smoke.c)
-target_link_libraries(core-machine-firmware-capability-smoke PRIVATE core-machine)
-add_executable(core-machine-reset-rom-alias-smoke
-    test/app-nxvm/unit/core/devices/machine_reset_rom_alias_smoke.c)
-target_link_libraries(core-machine-reset-rom-alias-smoke PRIVATE core-machine)
-add_executable(core-machine-memory-device-registration-s16-smoke
-    test/app-nxvm/unit/core/devices/machine_memory_device_registration_s16_smoke.c)
-target_link_libraries(core-machine-memory-device-registration-s16-smoke PRIVATE core-machine)
-
 add_executable(core-machine-time-smoke test/app-nxvm/unit/core/devices/machine_time_smoke.c)
+target_sources(core-machine-time-smoke PRIVATE
+    test/x86/core/composition_fixture.c
+    test/x86/core/time_fixture.c
+    test/app-nxvm/unit/core/profiles/model40/d4_refresh_fixture.c)
 target_link_libraries(core-machine-time-smoke PRIVATE core-machine)
-add_executable(core-machine-explicit-time-s4-smoke
-    test/app-nxvm/unit/core/devices/machine_explicit_time_s4_smoke.c)
-target_link_libraries(core-machine-explicit-time-s4-smoke PRIVATE core-machine)
 
-add_executable(core-machine-scheduler-smoke
-    test/app-nxvm/unit/core/devices/machine_scheduler_smoke.c)
-target_link_libraries(core-machine-scheduler-smoke PRIVATE core-machine)
-
-add_executable(core-machine-timing-checkpoint-smoke
-    test/app-nxvm/unit/core/devices/machine_timing_checkpoint_smoke.c)
-target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE core-machine)
-
-add_executable(core-machine-transaction-s2-smoke
-    test/app-nxvm/unit/core/devices/machine_transaction_s2_smoke.c)
-target_link_libraries(core-machine-transaction-s2-smoke PRIVATE core-machine-observable)
-add_executable(core-machine-prefetch-locality-smoke
-    test/app-nxvm/unit/core/devices/machine_prefetch_locality_smoke.c)
-# Observe the board-to-CPU grant without exposing CPU reservation storage.
-# Compile the same scheduler with only its outgoing call redirected to the spy.
-add_library(core-machine-prefetch-scheduler-test OBJECT
-    src/x86/core/machine_scheduler.c)
-target_link_libraries(core-machine-prefetch-scheduler-test PRIVATE core-machine)
-target_compile_definitions(core-machine-prefetch-scheduler-test PRIVATE
-    core_machine_cpu_execution_advance_prefetch_reservation=test_cpu_prefetch_grant)
-target_link_libraries(core-machine-prefetch-locality-smoke PRIVATE
+add_executable(model40-d4-prefetch-locality-smoke
+    test/app-nxvm/unit/core/profiles/model40/d4_prefetch_locality_smoke.c)
+target_link_libraries(model40-d4-prefetch-locality-smoke PRIVATE
     core-machine-prefetch-scheduler-test core-machine)
 
 add_executable(core-machine-competition-s3-smoke
-    test/app-nxvm/unit/core/devices/machine_competition_s3_smoke.c)
+    test/app-nxvm/unit/core/devices/machine_competition_s3_smoke.c
+    test/x86/core/composition_fixture.c
+    test/x86/core/time_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c)
 target_link_libraries(core-machine-competition-s3-smoke PRIVATE core-machine-observable)
 
 add_executable(core-machine-d4-refresh-hold-smoke
-    test/app-nxvm/unit/core/devices/machine_d4_refresh_hold_smoke.c)
+    test/app-nxvm/unit/core/devices/machine_d4_refresh_hold_smoke.c
+    test/app-nxvm/unit/core/profiles/model40/d4_refresh_fixture.c
+    test/x86/core/composition_fixture.c
+    test/x86/core/time_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c)
 target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE core-machine-observable)
 
-add_executable(core-machine-competition-80386-s1-smoke
-    test/app-nxvm/unit/core/devices/machine_competition_80386_s1_smoke.c)
-target_link_libraries(core-machine-competition-80386-s1-smoke PRIVATE core-machine-observable)
 
-add_executable(core-machine-transaction-lifecycle-s4-smoke
-    test/app-nxvm/unit/core/devices/machine_transaction_lifecycle_s4_smoke.c)
-target_link_libraries(core-machine-transaction-lifecycle-s4-smoke PRIVATE core-machine-observable)
 
-add_executable(core-machine-rational-clock-smoke
-    test/app-nxvm/unit/core/devices/machine_rational_clock_smoke.c)
-target_link_libraries(core-machine-rational-clock-smoke PRIVATE core-machine)
 
-add_executable(core-machine-timeline-s2-smoke
-    test/app-nxvm/unit/core/devices/machine_timeline_s2_smoke.c)
-target_link_libraries(core-machine-timeline-s2-smoke PRIVATE core-machine)
 
-add_executable(core-machine-arbitration-s3-smoke
-    test/app-nxvm/unit/core/devices/machine_arbitration_s3_smoke.c)
-target_link_libraries(core-machine-arbitration-s3-smoke PRIVATE core-machine-observable)
 
-add_executable(core-machine-rtc-storage-s4-smoke
-    test/app-nxvm/unit/core/devices/machine_rtc_storage_s4_smoke.c)
-target_link_libraries(core-machine-rtc-storage-s4-smoke PRIVATE core-machine-observable)
 
-add_executable(core-machine-input-display-s5-smoke
-    test/app-nxvm/unit/core/devices/machine_input_display_s5_smoke.c)
-target_link_libraries(core-machine-input-display-s5-smoke PRIVATE core-machine-observable)
 
-add_executable(core-machine-real-mode-tick-smoke
-    test/app-nxvm/unit/core/devices/core_machine_real_mode_tick_smoke.c)
-target_link_libraries(core-machine-real-mode-tick-smoke PRIVATE core-machine)
 
-add_executable(machine-instruction-timing-smoke
-    test/app-nxvm/unit/core/devices/machine_instruction_timing_smoke.c)
-target_link_libraries(machine-instruction-timing-smoke PRIVATE core-machine)
 
-add_executable(core-machine-cpu-timing-preview-smoke
-    test/app-nxvm/unit/core/devices/core_machine_cpu_timing_preview_smoke.c)
-target_link_libraries(core-machine-cpu-timing-preview-smoke PRIVATE core-machine)
-
-add_executable(machine-instruction-timing-ledger-smoke
-    test/app-nxvm/unit/core/devices/machine_instruction_timing_ledger_smoke.c)
-target_link_libraries(machine-instruction-timing-ledger-smoke PRIVATE
-    core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-instruction-timing-ledger-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-add_executable(machine-t359-s2-timing-smoke
-    test/app-nxvm/unit/core/devices/machine_t359_s2_timing_smoke.c)
-target_link_libraries(machine-t359-s2-timing-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-t359-s2-timing-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-add_executable(machine-t359-s3-timing-smoke
-    test/app-nxvm/unit/core/devices/machine_t359_s3_timing_smoke.c)
-target_link_libraries(machine-t359-s3-timing-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-t359-s3-timing-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-add_executable(machine-t359-s4-timing-smoke
-    test/app-nxvm/unit/core/devices/machine_t359_s4_timing_smoke.c)
-target_link_libraries(machine-t359-s4-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-t359-s4-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(machine-t359-s5-timing-smoke
-    test/app-nxvm/unit/core/devices/machine_t359_s5_timing_smoke.c)
-target_link_libraries(machine-t359-s5-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-t359-s5-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(machine-t359-s6-timing-smoke
-    test/app-nxvm/unit/core/devices/machine_t359_s6_timing_smoke.c)
-target_link_libraries(machine-t359-s6-timing-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-t359-s6-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(machine-8086-instruction-timing-ledger-smoke
-    test/app-nxvm/unit/core/devices/machine_8086_instruction_timing_ledger_smoke.c)
-target_link_libraries(machine-8086-instruction-timing-ledger-smoke PRIVATE
-    core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-8086-instruction-timing-ledger-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -429,7 +348,7 @@ file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/test-results")
 add_executable(machine-8086-timing-manifest-runner
     test/app-nxvm/unit/core/devices/machine_8086_timing_manifest_runner.c)
 target_link_libraries(machine-8086-timing-manifest-runner PRIVATE
-    core-machine)
+    x86-core)
 target_compile_definitions(machine-8086-timing-manifest-runner PRIVATE
     PROJECT_TEST_8086_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-timing-results.json"
     PROJECT_TEST_8086_DECODER_INVENTORY_PATH="${CMAKE_BINARY_DIR}/generated/test-results/8086-decoder-inventory.json")
@@ -448,7 +367,7 @@ endif()
 add_executable(machine-8088-timing-manifest-runner
     test/app-nxvm/unit/core/devices/machine_8086_timing_manifest_runner.c)
 target_link_libraries(machine-8088-timing-manifest-runner PRIVATE
-    core-machine)
+    x86-core)
 target_compile_definitions(machine-8088-timing-manifest-runner PRIVATE
     PROJECT_TEST_TIMING_MANIFEST_CPU_PROFILE=CORE_MACHINE_CPU_PROFILE_8088
     PROJECT_TEST_TIMING_MANIFEST_PROFILE_NAME="8088"
@@ -464,21 +383,16 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(machine-80186-instruction-timing-ledger-smoke
-    test/app-nxvm/unit/core/devices/machine_80186_instruction_timing_ledger_smoke.c)
-target_link_libraries(machine-80186-instruction-timing-ledger-smoke PRIVATE
-    core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-80186-instruction-timing-ledger-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-# This is intentionally not a unit target yet: it records only the
-# real I186 recipes currently migrated to the manifest-result mechanism.
+# The unit runner records real I186 recipes in the manifest-result document.
 add_executable(machine-80186-timing-manifest-runner
     test/app-nxvm/unit/core/devices/machine_80186_timing_manifest_runner.c)
 target_link_libraries(machine-80186-timing-manifest-runner PRIVATE
-    core-machine)
+    x86-core)
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated/test-results")
 target_compile_definitions(machine-80186-timing-manifest-runner PRIVATE
     PROJECT_TEST_80186_RESULTS_PATH="${CMAKE_BINARY_DIR}/generated/test-results/80186-timing-results.json")
@@ -491,8 +405,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-# S10 starts the 80286 generated-key runner with real retirement observations.
-# It does not write the final result document until every legal recipe exists.
+# The unit runner records 80286 generated-key retirement observations.
 add_executable(machine-80286-timing-manifest-runner
     test/app-nxvm/unit/core/devices/machine_80286_timing_manifest_runner.c)
 target_link_libraries(machine-80286-timing-manifest-runner PRIVATE
@@ -544,7 +457,8 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 add_executable(machine-80386-timing-manifest-runner
-    test/app-nxvm/unit/core/devices/machine_80386_timing_manifest_runner.c)
+    test/app-nxvm/unit/core/devices/machine_80386_timing_manifest_runner.c
+    test/x86/core/composition_fixture.c)
 target_link_libraries(machine-80386-timing-manifest-runner PRIVATE
     core-machine)
 target_compile_definitions(machine-80386-timing-manifest-runner PRIVATE
@@ -558,46 +472,15 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(machine-legacy-timing-normalization-s2-smoke
-    test/app-nxvm/unit/core/devices/machine_legacy_timing_normalization_s2_smoke.c)
-target_link_libraries(machine-legacy-timing-normalization-s2-smoke PRIVATE
-    core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-legacy-timing-normalization-s2-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-add_executable(machine-80286-instruction-timing-ledger-smoke
-    test/app-nxvm/unit/core/devices/machine_80286_instruction_timing_ledger_smoke.c)
-target_link_libraries(machine-80286-instruction-timing-ledger-smoke PRIVATE
-    core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-80286-instruction-timing-ledger-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-
-add_executable(machine-80386-protected-io-timing-smoke
-    test/app-nxvm/unit/core/devices/machine_80386_protected_io_timing_smoke.c)
-target_link_libraries(machine-80386-protected-io-timing-smoke PRIVATE
-    core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-80386-protected-io-timing-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-real-mode-corpus-smoke
-    test/app-nxvm/unit/core/devices/core_machine_real_mode_corpus_smoke.c)
-target_link_libraries(core-machine-real-mode-corpus-smoke PRIVATE core-machine)
 
-add_executable(core-machine-real-mode-386-address-smoke
-    test/app-nxvm/unit/core/devices/core_machine_real_mode_386_address_smoke.c)
-target_link_libraries(core-machine-real-mode-386-address-smoke PRIVATE core-machine)
 add_executable(core-machine-operand-address-smoke
     test/app-nxvm/unit/core/devices/core_machine_operand_address_smoke.c)
 target_link_libraries(core-machine-operand-address-smoke PRIVATE core-machine)
-add_executable(core-machine-prefix-attributes-s64-smoke
-    test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c)
-target_link_libraries(core-machine-prefix-attributes-s64-smoke PRIVATE core-machine)
 add_executable(core-machine-legacy-lock-s1-smoke
     test/app-nxvm/unit/core/devices/core_machine_legacy_lock_s1_smoke.c)
 target_link_libraries(core-machine-legacy-lock-s1-smoke PRIVATE core-machine)
@@ -605,33 +488,8 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-legacy-lock-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-setcc-smoke test/app-nxvm/unit/core/devices/core_machine_setcc_smoke.c)
-target_link_libraries(core-machine-setcc-smoke PRIVATE core-machine)
 add_executable(core-machine-movx-smoke test/app-nxvm/unit/core/devices/core_machine_movx_smoke.c)
 target_link_libraries(core-machine-movx-smoke PRIVATE core-machine)
-add_executable(core-machine-bit-test-smoke test/app-nxvm/unit/core/devices/core_machine_bit_test_smoke.c)
-target_link_libraries(core-machine-bit-test-smoke PRIVATE core-machine)
-add_executable(core-machine-inc-dec-first-group-board-smoke
-    test/app-nxvm/unit/core/devices/core_machine_inc_dec_first_group_board_smoke.c)
-target_link_libraries(core-machine-inc-dec-first-group-board-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-inc-dec-first-group-board-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(core-machine-inc-dec-second-group-board-smoke
-    test/app-nxvm/unit/core/devices/core_machine_inc_dec_second_group_board_smoke.c)
-target_link_libraries(core-machine-inc-dec-second-group-board-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-inc-dec-second-group-board-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(core-machine-inc-dec-final-group-board-smoke
-    test/app-nxvm/unit/core/devices/core_machine_inc_dec_final_group_board_smoke.c)
-target_link_libraries(core-machine-inc-dec-final-group-board-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-inc-dec-final-group-board-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
 add_executable(core-machine-legacy-alu-s2-smoke
     test/app-nxvm/unit/core/devices/core_machine_legacy_alu_s2_smoke.c)
 target_link_libraries(core-machine-legacy-alu-s2-smoke PRIVATE core-machine)
@@ -639,17 +497,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-legacy-alu-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-rotate-smoke test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c)
-target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
-add_executable(core-machine-direct-flags-board-smoke
-    test/app-nxvm/unit/core/devices/core_machine_direct_flags_board_smoke.c)
-target_link_libraries(core-machine-direct-flags-board-smoke PRIVATE core-machine)
-add_executable(core-machine-lahf-sahf-board-smoke
-    test/app-nxvm/unit/core/devices/core_machine_lahf_sahf_board_smoke.c)
-target_link_libraries(core-machine-lahf-sahf-board-smoke PRIVATE core-machine)
-add_executable(core-machine-pushf-popf-board-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pushf_popf_board_smoke.c)
-target_link_libraries(core-machine-pushf-popf-board-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-direct-flags-board-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -658,100 +505,9 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-pushf-popf-board-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(machine-cli-sti-interrupt-smoke test/app-nxvm/unit/core/devices/machine_cli_sti_interrupt_smoke.c)
-target_link_libraries(machine-cli-sti-interrupt-smoke PRIVATE core-machine)
-add_executable(core-machine-cli-sti-s48-smoke test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c)
-target_link_libraries(core-machine-cli-sti-s48-smoke PRIVATE core-machine)
-add_executable(core-machine-hlt-s49-smoke test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c)
-target_link_libraries(core-machine-hlt-s49-smoke PRIVATE core-machine)
-add_executable(core-machine-software-int-s50-smoke test/app-nxvm/unit/core/devices/core_machine_software_int_s50_smoke.c)
-target_link_libraries(core-machine-software-int-s50-smoke PRIVATE core-machine)
-add_executable(core-machine-iret-s51-smoke test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c)
-target_link_libraries(core-machine-iret-s51-smoke PRIVATE core-machine)
 add_executable(core-machine-fs-gs-stack-smoke test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c)
 target_link_libraries(core-machine-fs-gs-stack-smoke PRIVATE core-machine)
-add_executable(core-machine-lss-lfs-lgs-smoke test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c)
-target_link_libraries(core-machine-lss-lfs-lgs-smoke PRIVATE core-machine)
-add_executable(core-machine-les-lds-smoke test/app-nxvm/unit/core/devices/core_machine_les_lds_smoke.c)
-target_link_libraries(core-machine-les-lds-smoke PRIVATE core-machine)
 
-add_executable(core-machine-les-lds-s41-smoke
-    test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c)
-target_link_libraries(core-machine-les-lds-s41-smoke PRIVATE core-machine)
-add_executable(core-machine-lea-smoke test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c)
-target_link_libraries(core-machine-lea-smoke PRIVATE core-machine)
-add_executable(core-machine-xchg-smoke test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c)
-target_link_libraries(core-machine-xchg-smoke PRIVATE core-machine)
-add_executable(core-machine-sign-extend-smoke test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c)
-target_link_libraries(core-machine-sign-extend-smoke PRIVATE core-machine)
-add_executable(core-machine-moffs-smoke test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c)
-target_link_libraries(core-machine-moffs-smoke PRIVATE core-machine)
-add_executable(core-machine-gpr-mov-smoke test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c)
-target_link_libraries(core-machine-gpr-mov-smoke PRIVATE core-machine)
-add_executable(core-machine-sreg-mov-smoke test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c)
-target_link_libraries(core-machine-sreg-mov-smoke PRIVATE core-machine)
-add_executable(machine-movs-board-smoke
-    test/app-nxvm/unit/core/devices/machine_movs_board_smoke.c)
-target_link_libraries(machine-movs-board-smoke PRIVATE core-machine)
-add_executable(machine-stos-board-smoke
-    test/app-nxvm/unit/core/devices/machine_stos_board_smoke.c)
-target_link_libraries(machine-stos-board-smoke PRIVATE core-machine)
-add_executable(machine-lods-board-smoke
-    test/app-nxvm/unit/core/devices/machine_lods_board_smoke.c)
-target_link_libraries(machine-lods-board-smoke PRIVATE core-machine)
-add_executable(machine-scas-board-smoke
-    test/app-nxvm/unit/core/devices/machine_scas_board_smoke.c)
-target_link_libraries(machine-scas-board-smoke PRIVATE core-machine)
-add_executable(core-machine-pusha-popa-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pusha_popa_smoke.c)
-target_link_libraries(core-machine-pusha-popa-smoke PRIVATE core-machine)
-add_executable(core-machine-enter-leave-smoke
-    test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c)
-target_link_libraries(core-machine-enter-leave-smoke PRIVATE core-machine)
-add_executable(core-machine-gpr-push-pop-smoke
-    test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c)
-target_link_libraries(core-machine-gpr-push-pop-smoke PRIVATE core-machine)
-add_executable(core-machine-push-immediate-smoke
-    test/app-nxvm/unit/core/devices/core_machine_push_immediate_smoke.c)
-target_link_libraries(core-machine-push-immediate-smoke PRIVATE core-machine)
-add_executable(core-machine-legacy-sreg-stack-smoke
-    test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c)
-target_link_libraries(core-machine-legacy-sreg-stack-smoke PRIVATE core-machine)
-add_executable(core-machine-double-shift-smoke test/app-nxvm/unit/core/devices/core_machine_double_shift_smoke.c)
-target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
-add_executable(core-machine-bit-scan-smoke test/app-nxvm/unit/core/devices/core_machine_bit_scan_smoke.c)
-target_link_libraries(core-machine-bit-scan-smoke PRIVATE core-machine)
-add_executable(core-machine-imul2-smoke test/app-nxvm/unit/core/devices/core_machine_imul2_smoke.c)
-target_link_libraries(core-machine-imul2-smoke PRIVATE core-machine)
-add_executable(core-machine-imul-immediate-s56-smoke
-    test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c)
-target_link_libraries(core-machine-imul-immediate-s56-smoke PRIVATE core-machine)
-add_executable(machine-debug-state-board-smoke
-    test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c)
-target_link_libraries(machine-debug-state-board-smoke PRIVATE core-machine)
-add_executable(machine-idt-privilege-pic-board-smoke
-    test/app-nxvm/unit/core/devices/machine_idt_privilege_pic_board_smoke.c)
-target_include_directories(machine-idt-privilege-pic-board-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(machine-idt-privilege-pic-board-smoke PRIVATE core-machine)
-add_executable(machine-control-state-board-smoke
-    test/app-nxvm/unit/core/devices/machine_control_state_board_smoke.c)
-target_link_libraries(machine-control-state-board-smoke PRIVATE core-machine)
-add_executable(machine-outer-iret-pic-board-smoke
-    test/app-nxvm/unit/core/devices/machine_outer_iret_pic_board_smoke.c)
-target_include_directories(machine-outer-iret-pic-board-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(machine-outer-iret-pic-board-smoke PRIVATE core-machine)
-add_executable(machine-protected-far-pic-board-smoke
-    test/app-nxvm/unit/core/devices/machine_protected_far_pic_board_smoke.c)
-target_include_directories(machine-protected-far-pic-board-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(machine-protected-far-pic-board-smoke PRIVATE core-machine)
-add_executable(machine-protected-data-pic-board-smoke
-    test/app-nxvm/unit/core/devices/machine_protected_data_pic_board_smoke.c)
-target_include_directories(machine-protected-data-pic-board-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(machine-protected-data-pic-board-smoke PRIVATE core-machine)
 add_executable(core-machine-protected-16-gate-s3-smoke
     test/app-nxvm/unit/core/devices/core_machine_protected_16_gate_board_smoke.c)
 target_link_libraries(core-machine-protected-16-gate-s3-smoke PRIVATE core-machine)
@@ -787,119 +543,45 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-call-gate-s7-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(core-machine-descriptor-system-smoke
-    test/app-nxvm/unit/core/devices/core_machine_descriptor_system_smoke.c)
-target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
-add_executable(machine-table-register-board-smoke
-    test/app-nxvm/unit/core/devices/machine_table_register_board_smoke.c)
-target_link_libraries(machine-table-register-board-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-table-register-board-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(machine-vm86-delivery-smoke
-    test/app-nxvm/unit/core/devices/machine_vm86_delivery_smoke.c)
-target_link_libraries(machine-vm86-delivery-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(machine-vm86-delivery-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(machine-vm86-iret-smoke
-    test/app-nxvm/unit/core/devices/machine_vm86_iret_smoke.c)
-target_link_libraries(machine-vm86-iret-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(machine-vm86-iret-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(machine-interrupt-entry-smoke
-    test/app-nxvm/unit/core/devices/machine_interrupt_entry_smoke.c)
-target_link_libraries(machine-interrupt-entry-smoke PRIVATE core-machine)
-add_executable(core-machine-real-mode-386-rep-cmps-smoke
-    test/app-nxvm/unit/core/devices/core_machine_real_mode_386_rep_cmps_smoke.c)
-target_link_libraries(core-machine-real-mode-386-rep-cmps-smoke PRIVATE core-machine)
 
-add_executable(machine-cmps-board-smoke
-    test/app-nxvm/unit/core/devices/machine_cmps_board_smoke.c)
-target_link_libraries(machine-cmps-board-smoke PRIVATE core-machine)
 
-add_executable(machine-port-io-board-smoke
-    test/app-nxvm/unit/core/devices/machine_port_io_board_smoke.c)
-target_link_libraries(machine-port-io-board-smoke PRIVATE core-machine)
-add_executable(machine-port-strings-board-smoke
-    test/app-nxvm/unit/core/devices/machine_port_strings_board_smoke.c)
-target_link_libraries(machine-port-strings-board-smoke PRIVATE core-machine)
 
 
 add_executable(core-machine-80286-protected-mode-smoke
     test/app-nxvm/unit/core/devices/core_machine_80286_protected_mode_smoke.c)
 target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
 
-add_executable(machine-arpl-board-smoke
-    test/app-nxvm/unit/core/devices/machine_arpl_board_smoke.c)
-target_link_libraries(machine-arpl-board-smoke PRIVATE core-machine)
-add_executable(machine-bound-board-smoke
-    test/app-nxvm/unit/core/devices/machine_bound_board_smoke.c)
-target_link_libraries(machine-bound-board-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(machine-arpl-board-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(machine-bound-board-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
 
 add_executable(core-machine-segment-selector-smoke
     test/app-nxvm/unit/core/devices/core_machine_segment_selector_smoke.c)
 target_link_libraries(core-machine-segment-selector-smoke PRIVATE core-machine)
 
-add_executable(core-machine-80386-paging-smoke
-    test/app-nxvm/unit/core/devices/core_machine_80386_paging_smoke.c)
-target_link_libraries(core-machine-80386-paging-smoke PRIVATE core-machine-observable)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(core-machine-80386-paging-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
 
 add_executable(machine-protected-privilege-board-smoke
     test/app-nxvm/unit/core/devices/machine_protected_privilege_board_smoke.c)
 target_link_libraries(machine-protected-privilege-board-smoke PRIVATE core-machine)
 
-add_executable(machine-protected-iret-smoke
-    test/app-nxvm/unit/core/devices/machine_protected_iret_smoke.c)
-target_link_libraries(machine-protected-iret-smoke PRIVATE core-machine)
 
-add_executable(machine-call-gate-smoke
-    test/app-nxvm/unit/core/devices/machine_call_gate_smoke.c)
-target_link_libraries(machine-call-gate-smoke PRIVATE core-machine)
 add_executable(core-machine-call-gate-privilege-entry-smoke
     test/app-nxvm/unit/core/devices/core_machine_call_gate_privilege_entry_board_smoke.c)
 target_link_libraries(core-machine-call-gate-privilege-entry-smoke PRIVATE core-machine)
 
-add_executable(machine-tss-iomap-port-authorization-smoke
-    test/app-nxvm/unit/core/devices/machine_tss_iomap_port_authorization_smoke.c)
-target_link_libraries(machine-tss-iomap-port-authorization-smoke PRIVATE core-machine)
 
-add_executable(machine-task-switch-cross-width-smoke
-    test/app-nxvm/unit/core/devices/machine_task_switch_cross_width_smoke.c)
-target_link_libraries(machine-task-switch-cross-width-smoke PRIVATE core-machine)
 add_executable(machine-task-switch32-paging-smoke
     test/app-nxvm/unit/core/devices/machine_task_switch32_paging_smoke.c)
 target_link_libraries(machine-task-switch32-paging-smoke PRIVATE core-machine)
-add_executable(machine-task-switch16-pic-board-smoke
-    test/app-nxvm/unit/core/devices/machine_task_switch16_pic_board_smoke.c)
-target_include_directories(machine-task-switch16-pic-board-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(machine-task-switch16-pic-board-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(machine-task-switch-cross-width-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(machine-task-switch32-paging-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-
 # These established corpus owners assert handler-visible results.  T361 S3
 # keeps fault delivery and handler retirement as two public runs; compile the
 # owners against the fixture adapter so their retained assertions observe the
 # latter only after the zero-retirement delivery boundary.
 foreach(target IN ITEMS
     machine-t359-s4-timing-smoke
-    machine-interrupt-entry-smoke
-    machine-vm86-delivery-smoke
     machine-protected-privilege-board-smoke
     core-machine-call-gate-privilege-entry-smoke
     machine-tss-iomap-port-authorization-smoke
@@ -908,42 +590,11 @@ foreach(target IN ITEMS
         CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
 endforeach()
 
-add_executable(core-machine-cpu-pic-lifecycle-smoke
-    test/app-nxvm/unit/core/devices/machine_cpu_pic_lifecycle_smoke.c
-)
-target_link_libraries(core-machine-cpu-pic-lifecycle-smoke PRIVATE core-machine)
-
-add_executable(core-machine-checked-memory-smoke
-    test/app-nxvm/unit/core/devices/machine_checked_memory_smoke.c
-)
-target_link_libraries(core-machine-checked-memory-smoke PRIVATE core-machine)
 
 
-add_executable(core-machine-immutable-rom-mapping-smoke
-    test/app-nxvm/unit/core/devices/machine_immutable_rom_mapping_smoke.c
-)
-target_link_libraries(core-machine-immutable-rom-mapping-smoke PRIVATE core-machine)
-
-add_executable(core-machine-entry-plan-smoke
-    test/app-nxvm/unit/core/devices/machine_entry_plan_smoke.c
-)
-target_link_libraries(core-machine-entry-plan-smoke PRIVATE core-machine)
-
-add_executable(core-machine-configuration-smoke
-    test/app-nxvm/unit/core/devices/machine_configuration_smoke.c
-)
-target_link_libraries(core-machine-configuration-smoke PRIVATE core-machine)
-
-add_executable(machine-port-ownership-board-smoke
-    test/app-nxvm/unit/core/devices/machine_port_ownership_board_smoke.c
-)
-target_link_libraries(machine-port-ownership-board-smoke PRIVATE core-machine)
 
 
-add_executable(core-machine-retirement-observation-s3-smoke
-    test/app-nxvm/unit/core/devices/machine_retirement_observation_s3_smoke.c
-)
-target_link_libraries(core-machine-retirement-observation-s3-smoke PRIVATE core-machine)
+
 
 
 
@@ -952,8 +603,8 @@ target_link_libraries(core-machine-retirement-observation-s3-smoke PRIVATE core-
 # evidence of strict compilation for a smoke source.
 function(project_configure_t317_strict_cpu_smokes)
 set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
-    "core-machine-cli-sti-s48-smoke|test/app-nxvm/unit/core/devices/core_machine_cli_sti_s48_smoke.c"
-    "machine-cli-sti-interrupt-smoke|test/app-nxvm/unit/core/devices/machine_cli_sti_interrupt_smoke.c"
+    "core-machine-cli-sti-s48-smoke|test/x86/ibmpc-common/core_machine_cli_sti_s48_smoke.c"
+    "machine-cli-sti-interrupt-smoke|test/x86/ibmpc-common/machine_cli_sti_interrupt_smoke.c"
     "x86-test-cpu_control_state|chips/cpu/cpu_control_state_smoke.c"
     "x86-test-cpu_control_transfer_branch|chips/cpu/cpu_control_transfer_branch_smoke.c"
     "x86-test-cpu_control_transfer_near|chips/cpu/cpu_control_transfer_near_smoke.c"
@@ -967,35 +618,35 @@ set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
     "x86-test-cpu_lar_lsl|chips/cpu/cpu_lar_lsl_smoke.c"
     "x86-test-cpu_verr_verw|chips/cpu/cpu_verr_verw_smoke.c"
     "x86-test-cpu_eflags_local|chips/cpu/cpu_eflags_local_smoke.c"
-    "core-machine-enter-leave-smoke|test/app-nxvm/unit/core/devices/core_machine_enter_leave_smoke.c"
-    "machine-fpu-interface-s65-smoke|test/app-nxvm/unit/core/devices/machine_fpu_interface_s65_smoke.c"
+    "core-machine-enter-leave-smoke|test/x86/ibmpc-common/core_machine_enter_leave_smoke.c"
+    "machine-fpu-interface-s65-smoke|test/x86/core/machine_fpu_interface_s65_smoke.c"
     "core-machine-fs-gs-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_fs_gs_stack_smoke.c"
-    "core-machine-gpr-mov-smoke|test/app-nxvm/unit/core/devices/core_machine_gpr_mov_smoke.c"
-    "core-machine-gpr-push-pop-smoke|test/app-nxvm/unit/core/devices/core_machine_gpr_push_pop_smoke.c"
-    "core-machine-hlt-s49-smoke|test/app-nxvm/unit/core/devices/core_machine_hlt_s49_smoke.c"
-    "core-machine-imul-immediate-s56-smoke|test/app-nxvm/unit/core/devices/core_machine_imul_immediate_s56_smoke.c"
+    "core-machine-gpr-mov-smoke|test/x86/ibmpc-common/core_machine_gpr_mov_smoke.c"
+    "core-machine-gpr-push-pop-smoke|test/x86/ibmpc-common/core_machine_gpr_push_pop_smoke.c"
+    "core-machine-hlt-s49-smoke|test/x86/ibmpc-common/core_machine_hlt_s49_smoke.c"
+    "core-machine-imul-immediate-s56-smoke|test/x86/ibmpc-common/core_machine_imul_immediate_s56_smoke.c"
     "x86-test-cpu_outer_return|chips/cpu/cpu_outer_return_smoke.c"
     "x86-test-cpu_task_switch16|chips/cpu/cpu_task_switch16_smoke.c"
     "x86-test-cpu_task_switch32_decode|chips/cpu/cpu_task_switch32_decode_smoke.c"
     "x86-test-cpu_task_switch32_state|chips/cpu/cpu_task_switch32_state_smoke.c"
-    "core-machine-iret-s51-smoke|test/app-nxvm/unit/core/devices/core_machine_iret_s51_smoke.c"
+    "core-machine-iret-s51-smoke|test/x86/ibmpc-common/core_machine_iret_s51_smoke.c"
     "x86-test-cpu_lgdt_lidt|chips/cpu/cpu_lgdt_lidt_smoke.c"
-    "core-machine-lea-smoke|test/app-nxvm/unit/core/devices/core_machine_lea_smoke.c"
-    "core-machine-legacy-sreg-stack-smoke|test/app-nxvm/unit/core/devices/core_machine_legacy_sreg_stack_smoke.c"
-    "core-machine-les-lds-s41-smoke|test/app-nxvm/unit/core/devices/core_machine_les_lds_s41_smoke.c"
-    "core-machine-les-lds-smoke|test/app-nxvm/unit/core/devices/core_machine_les_lds_smoke.c"
-    "core-machine-lss-lfs-lgs-smoke|test/app-nxvm/unit/core/devices/core_machine_lss_lfs_lgs_smoke.c"
-    "core-machine-moffs-smoke|test/app-nxvm/unit/core/devices/core_machine_moffs_smoke.c"
-    "core-machine-prefix-attributes-s64-smoke|test/app-nxvm/unit/core/devices/core_machine_prefix_attributes_s64_smoke.c"
-    "core-machine-push-immediate-smoke|test/app-nxvm/unit/core/devices/core_machine_push_immediate_smoke.c"
-    "core-machine-pusha-popa-smoke|test/app-nxvm/unit/core/devices/core_machine_pusha_popa_smoke.c"
-    "core-machine-rotate-smoke|test/app-nxvm/unit/core/devices/core_machine_rotate_smoke.c"
-    "core-machine-sign-extend-smoke|test/app-nxvm/unit/core/devices/core_machine_sign_extend_smoke.c"
-    "core-machine-software-int-s50-smoke|test/app-nxvm/unit/core/devices/core_machine_software_int_s50_smoke.c"
-    "core-machine-sreg-mov-smoke|test/app-nxvm/unit/core/devices/core_machine_sreg_mov_smoke.c"
+    "core-machine-lea-smoke|test/x86/ibmpc-common/core_machine_lea_smoke.c"
+    "core-machine-legacy-sreg-stack-smoke|test/x86/ibmpc-common/core_machine_legacy_sreg_stack_smoke.c"
+    "core-machine-les-lds-s41-smoke|test/x86/ibmpc-common/core_machine_les_lds_s41_smoke.c"
+    "core-machine-les-lds-smoke|test/x86/ibmpc-common/core_machine_les_lds_smoke.c"
+    "core-machine-lss-lfs-lgs-smoke|test/x86/ibmpc-common/core_machine_lss_lfs_lgs_smoke.c"
+    "core-machine-moffs-smoke|test/x86/ibmpc-common/core_machine_moffs_smoke.c"
+    "core-machine-prefix-attributes-s64-smoke|test/x86/ibmpc-common/core_machine_prefix_attributes_s64_smoke.c"
+    "core-machine-push-immediate-smoke|test/x86/ibmpc-common/core_machine_push_immediate_smoke.c"
+    "core-machine-pusha-popa-smoke|test/x86/ibmpc-common/core_machine_pusha_popa_smoke.c"
+    "core-machine-rotate-smoke|test/x86/ibmpc-common/core_machine_rotate_smoke.c"
+    "core-machine-sign-extend-smoke|test/x86/ibmpc-common/core_machine_sign_extend_smoke.c"
+    "core-machine-software-int-s50-smoke|test/x86/ibmpc-common/core_machine_software_int_s50_smoke.c"
+    "core-machine-sreg-mov-smoke|test/x86/ibmpc-common/core_machine_sreg_mov_smoke.c"
     "x86-test-cpu_sgdt_sidt|chips/cpu/cpu_sgdt_sidt_smoke.c"
-    "machine-debug-state-board-smoke|test/app-nxvm/unit/core/devices/machine_debug_state_board_smoke.c"
-    "core-machine-xchg-smoke|test/app-nxvm/unit/core/devices/core_machine_xchg_smoke.c")
+    "machine-debug-state-board-smoke|test/x86/ibmpc-common/machine_debug_state_board_smoke.c"
+    "core-machine-xchg-smoke|test/x86/ibmpc-common/core_machine_xchg_smoke.c")
 
 list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
 if(NOT project_t317_inventory_count EQUAL 44)
@@ -1013,7 +664,22 @@ foreach(project_t317_inventory_entry IN LISTS PROJECT_T317_STRICT_CPU_SMOKE_INVE
         message(FATAL_ERROR "T317 strict CPU smoke target is missing: ${project_t317_target}")
     endif()
     get_target_property(project_t317_target_sources ${project_t317_target} SOURCES)
-    list(FIND project_t317_target_sources ${project_t317_source}
+    get_target_property(project_t317_target_directory ${project_t317_target} SOURCE_DIR)
+    set(project_t317_absolute_sources)
+    foreach(project_t317_target_source IN LISTS project_t317_target_sources)
+        get_filename_component(project_t317_absolute_source
+            "${project_t317_target_source}" ABSOLUTE
+            BASE_DIR "${project_t317_target_directory}")
+        list(APPEND project_t317_absolute_sources "${project_t317_absolute_source}")
+    endforeach()
+    if(project_t317_source MATCHES "^test/")
+        set(project_t317_inventory_directory "${CMAKE_SOURCE_DIR}")
+    else()
+        set(project_t317_inventory_directory "${project_t317_target_directory}")
+    endif()
+    get_filename_component(project_t317_expected_source "${project_t317_source}"
+        ABSOLUTE BASE_DIR "${project_t317_inventory_directory}")
+    list(FIND project_t317_absolute_sources "${project_t317_expected_source}"
         project_t317_source_index)
     if(project_t317_source_index EQUAL -1)
         message(FATAL_ERROR
@@ -1045,7 +711,7 @@ file(GENERATE
 
 # S2 consumes the S1 inventory above and no broader test or source surface.
 set(PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS
-    "test/app-nxvm/unit/core/devices/support/machine_cpu_fixture.h")
+    "test/x86/core/debug_fixture.h")
 string(REPLACE ";" "\n" project_t317_type_support_contents
     "${PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS}")
 file(GENERATE
@@ -1174,7 +840,7 @@ add_library(x86-cpu ALIAS x86-cpu-shared)
 
 target_link_libraries(core-machine PUBLIC x86-pit825x x86-rtc146818 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
-target_link_libraries(core-machine PUBLIC x86-ibmpc-common x86-core)
+target_link_libraries(core-machine PUBLIC x86-ibmpc-common x86-ibmpc-at x86-ibmpc-xt x86-core)
 
 add_executable(vm-machine-frame-smoke
     test/app-nxvm/unit/core/machine/vm_machine_frame_smoke.c)
@@ -1248,15 +914,6 @@ target_link_libraries(vm-control-lifecycle-smoke PRIVATE
     integration-session-ini-support
 )
 
-add_executable(core-machine-cpu-context-smoke
-    test/app-nxvm/unit/core/devices/cpu_execution_context_smoke.c
-)
-target_include_directories(core-machine-cpu-context-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/test")
-target_link_libraries(core-machine-cpu-context-smoke PRIVATE
-    x86-cpu
-)
-
 add_executable(core-machine-cpu-fault-diagnostic-smoke
     test/app-nxvm/unit/core/devices/cpu_fault_diagnostic_smoke.c
 )
@@ -1264,84 +921,17 @@ target_link_libraries(core-machine-cpu-fault-diagnostic-smoke PRIVATE
     core-machine-observable
 )
 
-add_executable(core-machine-ram-port-context-smoke
-    test/app-nxvm/unit/core/machine/ram_port_context_smoke.c
-)
-target_link_libraries(core-machine-ram-port-context-smoke PRIVATE
-    core-machine
-)
-add_executable(core-machine-pit-divider-smoke
-    test/app-nxvm/unit/core/devices/machine_pit_divider_smoke.c
-)
-target_link_libraries(core-machine-pit-divider-smoke PRIVATE core-machine)
-add_executable(core-machine-auxiliary-pit-s3-smoke
-    test/app-nxvm/unit/core/devices/core_machine_auxiliary_pit_s3_smoke.c
-)
-target_link_libraries(core-machine-auxiliary-pit-s3-smoke PRIVATE core-machine)
 add_executable(core-machine-d4-platform-s4-smoke
     test/app-nxvm/unit/core/devices/core_machine_d4_platform_s4_smoke.c
+    test/x86/core/composition_fixture.c
+    test/x86/core/time_fixture.c
 )
 target_link_libraries(core-machine-d4-platform-s4-smoke PRIVATE core-machine)
 add_executable(core-machine-d4-memory-transaction-smoke
-    test/app-nxvm/unit/core/devices/core_machine_d4_memory_transaction_smoke.c)
+    test/app-nxvm/unit/core/profiles/model40/d4_memory_transaction_smoke.c
+    test/x86/core/composition_fixture.c
+    test/x86/core/memory_registration_fixture.c)
 target_link_libraries(core-machine-d4-memory-transaction-smoke PRIVATE core-machine)
-add_executable(core-machine-rom-route-transaction-smoke
-    test/app-nxvm/unit/core/devices/core_machine_rom_route_transaction_smoke.c)
-target_link_libraries(core-machine-rom-route-transaction-smoke PRIVATE core-machine)
-add_executable(core-machine-rtc-cmos-s3-smoke
-    test/app-nxvm/unit/core/devices/core_machine_rtc_cmos_s3_smoke.c
-)
-target_link_libraries(core-machine-rtc-cmos-s3-smoke PRIVATE core-machine)
-add_executable(core-machine-planar-parity-nmi-s3-smoke
-    test/app-nxvm/unit/core/devices/core_machine_planar_parity_nmi_s3_smoke.c)
-target_link_libraries(core-machine-planar-parity-nmi-s3-smoke PRIVATE core-machine)
-add_executable(core-machine-pic-phase-s2-smoke
-    test/app-nxvm/unit/core/devices/core_machine_pic_phase_s2_smoke.c)
-target_link_libraries(core-machine-pic-phase-s2-smoke PRIVATE core-machine-observable)
-add_executable(core-machine-kbc-controller-smoke
-    test/app-nxvm/unit/core/devices/core_machine_kbc_controller_smoke.c
-)
-target_link_libraries(core-machine-kbc-controller-smoke PRIVATE core-machine)
-add_executable(core-machine-xt-ppi-keyboard-smoke
-    test/app-nxvm/unit/core/devices/core_machine_xt_ppi_keyboard_smoke.c)
-target_link_libraries(core-machine-xt-ppi-keyboard-smoke PRIVATE core-machine)
-add_executable(core-machine-kbc-serial-cadence-smoke
-    test/app-nxvm/unit/core/devices/core_machine_kbc_serial_cadence_smoke.c)
-target_link_libraries(core-machine-kbc-serial-cadence-smoke PRIVATE core-machine)
-add_executable(core-machine-kbc-aux-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_kbc_aux_port_smoke.c
-)
-target_link_libraries(core-machine-kbc-aux-port-smoke PRIVATE core-machine)
-add_executable(core-machine-dma-binding-token-smoke
-    test/app-nxvm/unit/core/devices/core_machine_dma_binding_token_smoke.c
-)
-target_link_libraries(core-machine-dma-binding-token-smoke PRIVATE core-machine)
-add_executable(core-machine-rtc-smoke test/app-nxvm/unit/core/devices/core_machine_rtc_smoke.c)
-target_link_libraries(core-machine-rtc-smoke PRIVATE core-machine)
-add_executable(core-machine-fdc-smoke test/app-nxvm/unit/core/devices/core_machine_fdc_smoke.c)
-target_link_libraries(core-machine-fdc-smoke PRIVATE core-machine)
-add_executable(core-machine-fdc-topology-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_fdc_topology_port_smoke.c)
-target_link_libraries(core-machine-fdc-topology-port-smoke PRIVATE core-machine)
-add_executable(core-machine-fdc-media-change-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_fdc_media_change_port_smoke.c)
-target_link_libraries(core-machine-fdc-media-change-port-smoke PRIVATE core-machine)
-add_executable(core-machine-compaq-hdc-s5-smoke
-    test/app-nxvm/unit/core/devices/core_machine_compaq_hdc_s5_smoke.c)
-target_link_libraries(core-machine-compaq-hdc-s5-smoke PRIVATE core-machine)
-add_executable(core-machine-compaq-hdc-machine-s5-smoke
-    test/app-nxvm/unit/core/devices/core_machine_compaq_hdc_machine_s5_smoke.c)
-target_link_libraries(core-machine-compaq-hdc-machine-s5-smoke PRIVATE core-machine)
-add_executable(core-machine-hdc-smoke test/app-nxvm/unit/core/devices/core_machine_hdc_smoke.c)
-target_link_libraries(core-machine-hdc-smoke PRIVATE core-machine)
-add_executable(core-machine-xebec-wiring-smoke
-    test/app-nxvm/unit/core/devices/core_machine_xebec_wiring_smoke.c)
-target_link_libraries(core-machine-xebec-wiring-smoke PRIVATE core-machine)
-add_executable(core-machine-controller-authority-smoke
-    test/app-nxvm/unit/core/devices/core_machine_controller_authority_smoke.c)
-target_link_libraries(core-machine-controller-authority-smoke PRIVATE core-machine)
-add_executable(core-mantle-shape-smoke test/app-nxvm/unit/core/machine/core_mantle_shape_smoke.c)
-target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine)
 add_executable(vm-kbc-aux-guest-smoke
     test/app-nxvm/unit/core/machine/vm_kbc_aux_guest_smoke.c
 )
@@ -1360,6 +950,13 @@ add_executable(vm-ata-pio-dos-smoke
 target_link_libraries(vm-ata-pio-dos-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-byob-dos-boot-probe
     test/app-nxvm/integration/dos/vm_byob_dos_boot_probe.c
+    test/x86/core/boot_fixture.c
+    test/x86/core/composition_fixture.c
+    test/x86/ibmpc-common/boot_fixture.c
+    test/x86/ibmpc-common/controller_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c
+    test/x86/ibmpc-at/boot_fixture.c
+    test/x86/ibmpc-xt/boot_fixture.c
 )
 target_link_libraries(vm-byob-dos-boot-probe PRIVATE integration-session-ini-support)
 add_library(integration-session-ini-support STATIC
@@ -1382,6 +979,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 add_executable(vm-windows31-checkpoint
     test/app-nxvm/integration/windows/vm_windows31_checkpoint.c
+    test/x86/ibmpc-common/controller_fixture.c
 )
 target_link_libraries(vm-windows31-checkpoint PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -1389,6 +987,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 add_executable(vm-windows31-setup-probe
     test/app-nxvm/integration/windows/vm_windows31_setup_probe.c
+    test/x86/ibmpc-common/controller_fixture.c
 )
 target_link_libraries(vm-windows31-setup-probe PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -1410,6 +1009,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 add_executable(vm-windows31-hdd-admission-probe
     test/app-nxvm/integration/windows/vm_windows31_hdd_admission_probe.c
+    test/x86/ibmpc-common/controller_fixture.c
 )
 target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE integration-session-ini-support)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -1420,74 +1020,6 @@ add_executable(vm-keyboard-set1-mapper-smoke
 )
 target_link_libraries(vm-keyboard-set1-mapper-smoke PRIVATE vm-profile)
 
-add_executable(core-machine-ega-external-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_ega_external_port_smoke.c
-)
-target_link_libraries(core-machine-ega-external-port-smoke PRIVATE core-machine)
-add_executable(core-machine-display-authority-smoke
-    test/app-nxvm/unit/core/devices/core_machine_display_authority_smoke.c
-)
-target_link_libraries(core-machine-display-authority-smoke PRIVATE core-machine)
-add_executable(core-machine-dma-rtc-authority-smoke
-    test/app-nxvm/unit/core/devices/core_machine_dma_rtc_authority_smoke.c
-)
-target_link_libraries(core-machine-dma-rtc-authority-smoke PRIVATE core-machine)
-add_executable(core-machine-cga-graphics-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_cga_graphics_port_smoke.c
-)
-target_link_libraries(core-machine-cga-graphics-port-smoke PRIVATE core-machine)
-add_executable(core-machine-cga-640-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_cga_640_port_smoke.c
-)
-target_link_libraries(core-machine-cga-640-port-smoke PRIVATE core-machine)
-add_executable(core-machine-ega-sequencer-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_ega_sequencer_port_smoke.c
-)
-target_link_libraries(core-machine-ega-sequencer-port-smoke PRIVATE core-machine)
-add_executable(core-machine-ega-registration-transaction-smoke
-    test/app-nxvm/unit/core/devices/core_machine_ega_registration_transaction_smoke.c
-)
-
-target_include_directories(core-machine-ega-registration-transaction-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(core-machine-ega-registration-transaction-smoke PRIVATE
-    core-machine
-)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(core-machine-ega-registration-transaction-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(core-machine-memory-inspection-smoke
-    test/app-nxvm/unit/core/devices/core_machine_memory_inspection_smoke.c)
-target_link_libraries(core-machine-memory-inspection-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(core-machine-memory-inspection-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(core-machine-ega-controller-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_ega_controller_port_smoke.c
-)
-target_link_libraries(core-machine-ega-controller-port-smoke PRIVATE core-machine)
-
-add_executable(core-machine-ega-planar-port-smoke
-    test/app-nxvm/unit/core/devices/core_machine_ega_planar_port_smoke.c
-)
-target_link_libraries(core-machine-ega-planar-port-smoke PRIVATE core-machine)
-add_executable(core-machine-compaq-cecg-s9-smoke
-    test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s9_smoke.c
-)
-target_link_libraries(core-machine-compaq-cecg-s9-smoke PRIVATE core-machine)
-
-add_executable(core-machine-compaq-cecg-s11-smoke
-    test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s11_smoke.c
-)
-target_link_libraries(core-machine-compaq-cecg-s11-smoke PRIVATE core-machine)
-
-
-add_executable(core-machine-compaq-cecg-s28-smoke
-    test/app-nxvm/unit/core/devices/core_machine_compaq_cecg_s28_smoke.c)
-target_link_libraries(core-machine-compaq-cecg-s28-smoke PRIVATE core-machine)
 add_executable(vm-ega-controller-system-smoke
     test/app-nxvm/unit/core/machine/vm_ega_controller_system_smoke.c
 )
@@ -1504,6 +1036,15 @@ add_executable(vm-ega-sequencer-system-smoke
     test/app-nxvm/unit/core/machine/vm_ega_sequencer_system_smoke.c
 )
 target_link_libraries(vm-ega-sequencer-system-smoke PRIVATE vm-machine)
+add_executable(vm-cga-graphics-system-smoke
+    test/app-nxvm/unit/core/machine/vm_cga_graphics_system_smoke.c)
+target_link_libraries(vm-cga-graphics-system-smoke PRIVATE vm-machine)
+add_executable(vm-cga-640-system-smoke
+    test/app-nxvm/integration/dos/vm_cga_640_system_smoke.c)
+target_link_libraries(vm-cga-640-system-smoke PRIVATE integration-session-ini-support)
+add_executable(vm-no-media-video-port-smoke
+    test/app-nxvm/integration/dos/vm_no_media_video_port_smoke.c)
+target_link_libraries(vm-no-media-video-port-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-cga-graphics-dos-smoke
     test/app-nxvm/integration/dos/vm_cga_graphics_dos_smoke.c
 )
@@ -1520,7 +1061,47 @@ target_compile_definitions(vm-rom-ega-int10-dos-smoke PRIVATE
 target_link_libraries(vm-rom-ega-int10-dos-smoke PRIVATE integration-session-ini-support)
 
 add_executable(vm-cmos-rtc-port-smoke test/app-nxvm/unit/core/machine/vm_cmos_rtc_port_smoke.c)
+target_sources(vm-cmos-rtc-port-smoke PRIVATE test/x86/ibmpc-common/cmos_fixture.c)
+target_sources(vm-default-pc-at-apply-smoke PRIVATE
+    test/x86/core/time_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c
+    test/x86/ibmpc-common/cmos_fixture.c)
+foreach(_pcat_composition_target IN ITEMS vm-pcat-topology-s2-smoke
+        vm-pcat-composition-s4-smoke vm-ibm-5170-model-339-composition-smoke)
+    target_sources(${_pcat_composition_target} PRIVATE
+        test/x86/core/composition_fixture.c
+        test/x86/ibmpc-common/composition_fixture.c
+        test/x86/ibmpc-common/kbc_state_fixture.c
+        test/x86/ibmpc-at/state_fixture.c)
+endforeach()
 target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-machine)
+target_sources(vm-model40-fdd-s18-smoke PRIVATE
+    test/x86/ibmpc-common/controller_fixture.c)
+target_sources(vm-model40-hdc-s26-smoke PRIVATE
+    test/x86/ibmpc-common/controller_fixture.c)
+target_sources(vm-model40-dma-s17-smoke PRIVATE
+    test/x86/core/composition_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c)
+target_sources(vm-model40-d4-compatibility-s25-smoke PRIVATE
+    test/x86/ibmpc-common/composition_fixture.c)
+target_sources(vm-model40-byob-s20-smoke PRIVATE
+    test/x86/core/composition_fixture.c
+    test/x86/core/time_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c)
+foreach(_model40_composition_target IN ITEMS vm-model40-private-composition-s7-smoke
+        vm-model40-integration-s8-smoke)
+    target_sources(${_model40_composition_target} PRIVATE
+        test/x86/core/composition_fixture.c
+        test/x86/ibmpc-common/composition_fixture.c
+        test/x86/ibmpc-common/cmos_fixture.c
+        test/x86/ibmpc-common/kbc_state_fixture.c
+        test/x86/ibmpc-at/state_fixture.c)
+endforeach()
+target_sources(vm-model40-integration-s8-smoke PRIVATE
+    test/x86/ibmpc-common/controller_fixture.c)
+target_sources(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE
+    test/x86/core/composition_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c)
 add_executable(vm-pcat-ownership-smoke test/app-nxvm/unit/core/machine/vm_pcat_ownership_smoke.c)
 target_link_libraries(vm-pcat-ownership-smoke PRIVATE vm-machine)
 add_executable(vm-fdc-authority-smoke test/app-nxvm/unit/core/machine/vm_fdc_authority_smoke.c)
@@ -1530,6 +1111,11 @@ target_link_libraries(vm-fdc-port-smoke PRIVATE vm-machine)
 add_executable(vm-fdc-t242-corpus-port-smoke
     test/app-nxvm/unit/core/machine/vm_fdc_t242_corpus_port_smoke.c)
 target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-machine)
+foreach(_controller_composition_target IN ITEMS vm-fdc-authority-smoke
+        vm-fdc-port-smoke vm-fdc-t242-corpus-port-smoke vm-hdc-port-smoke)
+    target_sources(${_controller_composition_target} PRIVATE
+        test/x86/ibmpc-common/controller_fixture.c)
+endforeach()
 add_executable(vm-boot-failure-lifecycle-smoke
     test/app-nxvm/unit/core/machine/vm_boot_failure_lifecycle_smoke.c)
 target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-machine)
@@ -1558,25 +1144,16 @@ add_executable(vm-fault-outcome-runner-smoke
     test/app-nxvm/unit/core/machine/vm_fault_outcome_runner_smoke.c)
 target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-machine)
 add_executable(vm-runner-error-propagation-smoke
-    test/app-nxvm/unit/core/machine/vm_runner_error_propagation_smoke.c)
+    test/app-nxvm/unit/core/machine/vm_runner_error_propagation_smoke.c
+    test/x86/core/composition_fixture.c)
 target_link_libraries(vm-runner-error-propagation-smoke PRIVATE vm-machine)
 add_executable(core-machine-cpu-fpu-profile-smoke
     test/app-nxvm/unit/core/devices/cpu_fpu_profile_smoke.c)
 target_link_libraries(core-machine-cpu-fpu-profile-smoke PRIVATE
     core-machine)
-add_executable(machine-cpu-profile-gate-smoke
-    test/app-nxvm/unit/core/devices/machine_cpu_profile_gate_smoke.c)
-target_link_libraries(machine-cpu-profile-gate-smoke PRIVATE
-    core-machine)
 add_executable(machine-fpu-escape-smoke
     test/app-nxvm/unit/core/devices/machine_fpu_escape_smoke.c)
 target_link_libraries(machine-fpu-escape-smoke PRIVATE core-machine)
-add_executable(machine-fpu-interface-s65-smoke
-    test/app-nxvm/unit/core/devices/machine_fpu_interface_s65_smoke.c)
-target_link_libraries(machine-fpu-interface-s65-smoke PRIVATE core-machine)
-add_executable(core-machine-fpu-8087-smoke
-    test/app-nxvm/unit/core/devices/core_machine_fpu_8087_smoke.c)
-target_link_libraries(core-machine-fpu-8087-smoke PRIVATE core-machine)
 add_executable(core-machine-real-exception-final-s1-smoke
     test/app-nxvm/unit/core/devices/core_machine_real_exception_final_s1_smoke.c)
 target_link_libraries(core-machine-real-exception-final-s1-smoke PRIVATE core-machine)
@@ -1598,33 +1175,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-real-ud-delivery-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(machine-hardware-delivery-s3-smoke
-    test/app-nxvm/unit/core/devices/machine_hardware_delivery_s3_smoke.c)
-target_link_libraries(machine-hardware-delivery-s3-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(machine-hardware-delivery-s3-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(core-machine-interrupt-return-composition-s4-smoke
-    test/app-nxvm/unit/core/devices/core_machine_interrupt_return_composition_s4_smoke.c)
-target_link_libraries(core-machine-interrupt-return-composition-s4-smoke PRIVATE core-machine)
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(core-machine-interrupt-return-composition-s4-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(machine-vm86-lgdt-lidt-s5-smoke
-    test/app-nxvm/unit/core/devices/machine_vm86_lgdt_lidt_s5_smoke.c)
-target_link_libraries(machine-vm86-lgdt-lidt-s5-smoke PRIVATE core-machine)
-target_compile_definitions(machine-vm86-lgdt-lidt-s5-smoke PRIVATE
-    CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(machine-vm86-lgdt-lidt-s5-smoke PRIVATE
-        -Wall -Wextra -Wpedantic -Werror)
-endif()
-add_executable(core-machine-int-ivt-smoke
-    test/app-nxvm/unit/core/devices/cpu_int_ivt_smoke.c)
-target_link_libraries(core-machine-int-ivt-smoke PRIVATE
-    core-machine)
 add_executable(core-machine-cpu-fpu-profile-closure-smoke
     test/app-nxvm/unit/core/devices/cpu_fpu_profile_closure_smoke.c)
 target_link_libraries(core-machine-cpu-fpu-profile-closure-smoke PRIVATE
@@ -1637,7 +1187,11 @@ add_custom_target(core-machine-lifecycle-ownership-closure
     COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
         -P ${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_core_lifecycle_ownership.cmake)
 add_executable(vm-two-session-isolation-smoke
-    test/app-nxvm/unit/core/machine/vm_two_session_isolation_smoke.c)
+    test/app-nxvm/unit/core/machine/vm_two_session_isolation_smoke.c
+    test/x86/core/composition_fixture.c
+    test/x86/ibmpc-common/composition_fixture.c)
+target_sources(vm-timing-qualification-smoke PRIVATE
+    test/x86/ibmpc-common/composition_fixture.c)
 target_link_libraries(vm-two-session-isolation-smoke PRIVATE
     vm-machine)
 add_executable(vm-debug-pause-boundary-smoke
@@ -1664,23 +1218,15 @@ add_executable(vm-core-executor-storage-smoke
 )
 target_link_libraries(vm-core-executor-storage-smoke PRIVATE
     vm-machine)
-add_executable(core-machine-executor-run-smoke
-    test/app-nxvm/unit/core/devices/core_machine_executor_run_smoke.c
-)
-target_link_libraries(core-machine-executor-run-smoke PRIVATE
-    core-machine
-    core-machine
-)
-
-add_executable(core-machine-ram-create-smoke
-    test/app-nxvm/unit/core/devices/core_machine_ram_create_smoke.c
-)
-target_link_libraries(core-machine-ram-create-smoke PRIVATE core-machine)
 
 add_executable(core-machine-port-assembly-smoke
     test/app-nxvm/unit/core/devices/core_machine_port_assembly_smoke.c
 )
 target_link_libraries(core-machine-port-assembly-smoke PRIVATE core-machine)
+target_sources(core-machine-port-assembly-smoke PRIVATE
+    test/x86/core/port_assembly_fixture.c
+    test/x86/ibmpc-common/port_assembly_board_fixture.c
+    test/x86/ibmpc-common/board_construction_fixture.c)
 
 set(PROJECT_UNIT_TEST_TARGETS
     nxvm-firmware-floppy-smoke
@@ -1718,19 +1264,24 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-core-executor-storage-smoke
     core-machine-executor-run-smoke
     core-machine-ram-create-smoke
+    core-machine-port-rollback-smoke
     core-machine-port-assembly-smoke
     core-machine-time-smoke
+    core-mantle-shape-smoke
+    core-machine-entry-plan-smoke
+    core-machine-arbitration-s3-smoke
     core-machine-scheduler-smoke
+    core-machine-board-timing-qualification-smoke
     core-machine-timing-checkpoint-smoke
     core-machine-transaction-s2-smoke
     core-machine-prefetch-locality-smoke
+    model40-d4-prefetch-locality-smoke
     core-machine-competition-s3-smoke
     core-machine-d4-refresh-hold-smoke
     core-machine-competition-80386-s1-smoke
     core-machine-transaction-lifecycle-s4-smoke
     core-machine-rational-clock-smoke
     core-machine-timeline-s2-smoke
-    core-machine-arbitration-s3-smoke
     core-machine-retirement-observation-s3-smoke
     core-machine-rtc-storage-s4-smoke
     core-machine-planar-parity-nmi-s3-smoke
@@ -1739,6 +1290,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     machine-instruction-timing-smoke
     core-machine-cpu-timing-preview-smoke
     machine-instruction-timing-ledger-smoke
+    machine-fpu-irq-s65-smoke
     machine-t359-s2-timing-smoke
     machine-t359-s3-timing-smoke
     machine-t359-s4-timing-smoke
@@ -1908,7 +1460,8 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-compaq-hdc-s5-smoke
     core-machine-compaq-hdc-machine-s5-smoke
     core-machine-controller-authority-smoke
-    core-mantle-shape-smoke
+    core-machine-board-binding-identity-smoke
+    core-machine-attachment-phases-smoke
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
     core-machine-ega-external-port-smoke
@@ -1925,14 +1478,15 @@ set(PROJECT_UNIT_TEST_TARGETS
     core-machine-compaq-cecg-s11-smoke
     core-machine-compaq-cecg-s28-smoke
     vm-ega-sequencer-system-smoke
+    vm-cga-graphics-system-smoke
     vm-ega-controller-system-smoke
     vm-display-composition-s5-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-cpu-pic-lifecycle-smoke
+    core-machine-cpu-reset-identity-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-checked-memory-smoke
     core-machine-immutable-rom-mapping-smoke
-    core-machine-entry-plan-smoke
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
     common-machine-smoke
@@ -1985,6 +1539,8 @@ list(REMOVE_ITEM PROJECT_UNIT_TEST_TARGETS
 # their explicit no-handler terminal contracts. Keep this list exact so a new
 # unit #UD source cannot silently bypass that classification.
 set(PROJECT_T337_UD_UNIT_TEST_TARGETS
+    machine-instruction-timing-smoke
+    machine-t359-s5-timing-smoke
     core-machine-80286-protected-mode-smoke
     x86-test-cpu_arpl
     x86-test-cpu_bit_test
@@ -2001,7 +1557,6 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_execution_fault_event
     core-machine-cpu-fault-diagnostic-smoke
     machine-cpu-profile-gate-smoke
-    core-machine-descriptor-system-smoke
     x86-test-cpu_descriptor_system
     x86-test-cpu_lar_lsl
     x86-test-cpu_verr_verw
@@ -2021,7 +1576,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_inc_dec_second_group
     x86-test-cpu_inc_dec_final_group
     x86-test-cpu_outer_return
-    core-machine-iret-s51-smoke
+    x86-test-cpu_iret_s51_state
     x86-test-cpu_lea
     x86-test-cpu_legacy_lock_s1
     x86-test-cpu_legacy_alu_s2
@@ -2051,7 +1606,7 @@ set(PROJECT_T337_UD_UNIT_TEST_TARGETS
     x86-test-cpu_bit_scan
     x86-test-cpu_setcc
     x86-test-cpu_sign_extend
-    core-machine-software-int-s50-smoke
+    x86-test-cpu_software_int_state
     x86-test-cpu_sreg_mov
     x86-test-cpu_stos
     machine-vm86-delivery-smoke
@@ -2081,6 +1636,7 @@ list(APPEND PROJECT_UNIT_TEST_TARGETS
     x86-test-cpu_execution_fault_event
     vm-fdc-authority-smoke
     core-machine-cpu-fpu-profile-smoke
+    core-machine-cpu-context-smoke
     core-machine-cpu-fpu-profile-closure-smoke)
 
 # A real-mode #UD owner must not rely on an all-zero IVT entry.  The terminal
@@ -2211,6 +1767,8 @@ set(PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS
     vm-dos-mem-fault-smoke
     vm-dos-video-port-smoke
     vm-cga-graphics-dos-smoke
+    vm-cga-640-system-smoke
+    vm-no-media-video-port-smoke
     vm-ega-planar-dos-smoke
     vm-rom-ega-int10-dos-smoke
     vm-mouse-driver-dos-smoke
@@ -2449,9 +2007,9 @@ add_test(NAME unit.cpu-bus-boundary-negative
         "-DWORK=${CMAKE_BINARY_DIR}/test/cpu-bus-boundary-negative"
         -P "${CMAKE_SOURCE_DIR}/test/app-nxvm/unit/core/devices/cpu_bus_boundary_negative.cmake")
 # Negative controls mutate owned copies, never the production CPU headers.
-# Keep the existing serial order and bound the complete multi-process probe.
+# Its exclusive work directory permits overlap with other unit tests.
 set_tests_properties(unit.cpu-bus-boundary-negative PROPERTIES
-    LABELS unit TIMEOUT 600 RUN_SERIAL TRUE)
+    LABELS unit TIMEOUT 600)
 
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
@@ -2514,6 +2072,7 @@ foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
         target STREQUAL "vm-dos-video-port-smoke" OR
         target STREQUAL "vm-dos-mem-fault-smoke" OR
         target STREQUAL "vm-cga-graphics-dos-smoke" OR
+        target STREQUAL "vm-cga-640-system-smoke" OR
         target STREQUAL "vm-ega-planar-dos-smoke" OR
         target STREQUAL "vm-rom-ega-int10-dos-smoke" OR
         target STREQUAL "vm-mouse-driver-dos-smoke" OR
@@ -2547,14 +2106,68 @@ foreach(target IN LISTS PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS)
 endforeach()
 endif()
 
-set(PROJECT_CURRENT_VM_RUNTIME_PATH
-    "${CMAKE_BINARY_DIR}/vm-0-5-0540.exe")
-configure_file("${CMAKE_SOURCE_DIR}/assets/nxvm/${NXVM_PRODUCT_PROFILE}/NXVM.ini"
-    "${CMAKE_BINARY_DIR}/NXVM.ini" COPYONLY)
+
+# CMake builds the current source artifact only.  Each current product is
+# deployed once beneath assets/nxvm; historical artifacts are never
+# regenerated from newer source under their former task/version names.
+function(add_current_vm_artifact target version)
+    string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])$"
+        "nxvm_${NXVM_PRODUCT_MACHINE_KEY}_\\1_\\2_\\3_${PROJECT_ARTIFACT_ARCHITECTURE}.exe"
+        task_artifact_filename "${version}")
+    if(task_artifact_filename STREQUAL version)
+        message(FATAL_ERROR "Invalid NXVM current artifact version: ${version}")
+    endif()
+    set(PROJECT_CURRENT_VM_RUNTIME_PATH
+        "${CMAKE_SOURCE_DIR}/assets/nxvm/${NXVM_PRODUCT_PROFILE}/${task_artifact_filename}"
+        PARENT_SCOPE)
+
+    add_executable(${target} EXCLUDE_FROM_ALL
+        src/app-nxvm/product/main.c)
+    target_compile_definitions(${target} PRIVATE "PRODUCT_BUILD_VERSION=\"${version}\"")
+    target_include_directories(${target} PRIVATE
+        "${CMAKE_SOURCE_DIR}/src")
+    target_link_libraries(${target} PRIVATE
+        vm-app
+        nxvm-product-firmware
+        vm-machine)
+
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        target_link_options(${target} PRIVATE -Wl,--strip-debug)
+    endif()
+    if(PROJECT_ARTIFACT_ARCHITECTURE STREQUAL "x86")
+        target_link_options(${target} PRIVATE -Wl,--stack,2097152)
+    endif()
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        add_custom_command(TARGET ${target} PRE_LINK
+            COMMAND ${CMAKE_COMMAND}
+                -DPROJECT_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_current_artifact_optimized.cmake"
+            COMMENT "Verifying current NXVM artifact is optimized Release")
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND}
+                -DPROJECT_ARTIFACT_PATH:FILEPATH=$<TARGET_FILE:${target}>
+                -DPROJECT_ARTIFACT_ARCHITECTURE:STRING=${PROJECT_ARTIFACT_ARCHITECTURE}
+                -DPROJECT_ARTIFACT_FILENAME:STRING=${task_artifact_filename}
+                -DPROJECT_PRODUCT_PROFILE:STRING=${NXVM_PRODUCT_PROFILE}
+                -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+                -DPROJECT_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
+                -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/deploy_current_artifact.cmake")
+    endif()
+endfunction()
+
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0540)
+add_current_vm_artifact(vm-0-5-0540 "0.5.0540")
+
 function(project_add_t533_console_integration_test target)
     set(project_t533_workspace "${CMAKE_CURRENT_BINARY_DIR}/test/integration.${target}")
+    get_filename_component(project_t533_runtime_directory
+        "${PROJECT_CURRENT_VM_RUNTIME_PATH}" DIRECTORY)
     file(MAKE_DIRECTORY "${project_t533_workspace}")
-    project_add_test(${target} integration "${CMAKE_BINARY_DIR}"
+    project_add_test(${target} integration "${project_t533_runtime_directory}"
         "${PROJECT_CURRENT_VM_RUNTIME_PATH}")
     set_tests_properties("integration.${target}" PROPERTIES
         SKIP_RETURN_CODE 77
@@ -2712,58 +2325,6 @@ add_custom_target(verify-t338-legacy-profile-metadata
     VERBATIM)
 
 
-# CMake builds the current source artifact only.  Each current product is
-# deployed once beneath assets/binary; historical artifacts are never
-# regenerated from newer source under their former task/version names.
-function(add_current_vm_artifact target version)
-    string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])$"
-        "nxvm_${NXVM_PRODUCT_MACHINE_KEY}_\\1_\\2_\\3_${PROJECT_ARTIFACT_ARCHITECTURE}.exe"
-        task_artifact_filename "${version}")
-    if(task_artifact_filename STREQUAL version)
-        message(FATAL_ERROR "Invalid NXVM current artifact version: ${version}")
-    endif()
-
-    add_executable(${target} EXCLUDE_FROM_ALL
-        src/app-nxvm/product/main.c)
-    target_compile_definitions(${target} PRIVATE "PRODUCT_BUILD_VERSION=\"${version}\"")
-    target_include_directories(${target} PRIVATE
-        "${CMAKE_SOURCE_DIR}/src")
-    target_link_libraries(${target} PRIVATE
-        vm-app
-        nxvm-product-firmware
-        vm-machine)
-
-    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    endif()
-    if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-        target_link_options(${target} PRIVATE -Wl,--strip-debug)
-    endif()
-    if(PROJECT_ARTIFACT_ARCHITECTURE STREQUAL "x86")
-        target_link_options(${target} PRIVATE -Wl,--stack,2097152)
-    endif()
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_custom_command(TARGET ${target} PRE_LINK
-            COMMAND ${CMAKE_COMMAND}
-                -DPROJECT_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/verify_current_artifact_optimized.cmake"
-            COMMENT "Verifying current NXVM artifact is optimized Release")
-        add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND}
-                -DPROJECT_ARTIFACT_PATH:FILEPATH=$<TARGET_FILE:${target}>
-                -DPROJECT_ARTIFACT_ARCHITECTURE:STRING=${PROJECT_ARTIFACT_ARCHITECTURE}
-                -DPROJECT_ARTIFACT_FILENAME:STRING=${task_artifact_filename}
-                -DPROJECT_PRODUCT_PROFILE:STRING=${NXVM_PRODUCT_PROFILE}
-                -DPROJECT_RUNTIME_INI_SOURCE_PATH:FILEPATH=${CMAKE_SOURCE_DIR}/assets/nxvm/${NXVM_PRODUCT_PROFILE}/NXVM.ini
-                -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-                -DPROJECT_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
-                -P "${CMAKE_SOURCE_DIR}/cmake/nxvm/deploy_current_artifact.cmake")
-    endif()
-endfunction()
-
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0540)
-add_current_vm_artifact(vm-0-5-0540 "0.5.0540")
 if(TARGET run-integration-tests)
     add_dependencies(run-integration-tests ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 endif()
@@ -2773,12 +2334,13 @@ option(PROJECT_VERIFY_DEPENDENCY_DAG
 if(PROJECT_VERIFY_DEPENDENCY_DAG)
     function(project_verify_target_source_owners target)
         get_target_property(target_sources ${target} SOURCES)
+        get_target_property(target_source_dir ${target} SOURCE_DIR)
         set(owners)
         foreach(source IN LISTS target_sources)
             get_filename_component(source_path "${source}" ABSOLUTE
-                BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+                BASE_DIR "${target_source_dir}")
             file(RELATIVE_PATH source_relative "${CMAKE_SOURCE_DIR}" "${source_path}")
-            if(source_relative MATCHES "^src/(app|core)/([^/]+)/")
+            if(source_relative MATCHES "^src/(app-nxvm)/([^/]+)/")
                 list(APPEND owners "${CMAKE_MATCH_1}/${CMAKE_MATCH_2}")
             endif()
         endforeach()
@@ -3331,6 +2893,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-ata-pio-feature-boundary
     verify-media-sole-route
     verify-core-debug-completion-boundary
+    verify-vm-machine-owner
     verify-vm-machine-lifecycle
     verify-t344-unit-registration
     verify-t533-integration-ini-boundary
@@ -3417,13 +2980,16 @@ foreach(project_t345_target IN LISTS PROJECT_ALL_TEST_TARGETS)
         continue()
     endif()
     get_target_property(project_t345_sources ${project_t345_target} SOURCES)
+    get_target_property(project_t345_source_dir ${project_t345_target} SOURCE_DIR)
     set(project_t345_has_c_source FALSE)
     set(project_t345_all_test_sources TRUE)
     foreach(project_t345_source IN LISTS project_t345_sources)
         if(IS_ABSOLUTE "${project_t345_source}")
             set(project_t345_source_path "${project_t345_source}")
         else()
-            set(project_t345_source_path "${CMAKE_SOURCE_DIR}/${project_t345_source}")
+            get_filename_component(project_t345_source_path
+                "${project_t345_source}" ABSOLUTE
+                BASE_DIR "${project_t345_source_dir}")
         endif()
         if(NOT project_t345_source_path MATCHES "\\.c$" OR
                 NOT EXISTS "${project_t345_source_path}")

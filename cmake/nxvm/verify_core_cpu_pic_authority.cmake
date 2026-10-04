@@ -16,7 +16,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" core_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/cpu_bus.c" bus_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c"
     board_source)
 string(FIND "${core_source}"
     "core_machine_cpu_create(&core_machine_cpu_bus," core_cpu_bus_bind)
@@ -72,7 +72,13 @@ foreach(old_file cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions
     endif()
 endforeach()
 file(GLOB_RECURSE board_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.h")
 list(APPEND board_sources "${PROJECT_SOURCE_DIR}/src/x86/core/cpu_bus.c")
 foreach(board_source IN LISTS board_sources)
     file(READ "${board_source}" contents)
@@ -99,7 +105,11 @@ foreach(board_test core_machine_lea_smoke.c core_machine_movx_smoke.c
         core_machine_lss_lfs_lgs_smoke.c core_machine_segment_selector_smoke.c
         core_machine_sreg_mov_smoke.c
         core_machine_operand_address_smoke.c core_machine_prefix_attributes_s64_smoke.c)
-    file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/${board_test}" contents)
+    set(board_test_path "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/${board_test}")
+    if(NOT EXISTS "${board_test_path}")
+        set(board_test_path "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/${board_test}")
+    endif()
+    file(READ "${board_test_path}" contents)
     if(contents MATCHES "executor_cpu|machine_cpu_fixture|x86/chips/cpu/cpu(_instructions)?\\.h")
         message(FATAL_ERROR "Migrated board test bypasses CPU boundary: ${board_test}")
     endif()
@@ -108,8 +118,17 @@ file(GLOB_RECURSE pic_consumers
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h")
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.h")
 foreach(consumer IN LISTS pic_consumers)
+    if(consumer MATCHES "/src/x86/ibmpc-common/pic_bus\\.(c|h)$")
+        continue()
+    endif()
     file(READ "${consumer}" contents)
     if(contents MATCHES "x86/chips/pic8259/pic\\.h" OR
        contents MATCHES "x86/ibmpc-common/pic_bus\\.h" OR

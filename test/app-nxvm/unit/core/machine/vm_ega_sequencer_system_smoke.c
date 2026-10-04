@@ -3,7 +3,7 @@
 
 #include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/devices/vadp.h"
+#include "x86/ibmpc-common/vadp_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
@@ -19,20 +19,22 @@ lib_i32 main(void)
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->active || session->core_machine == LIB_NULL) {
-        return 1;
+        failed = 1;
+        goto done;
     }
-    vm_machine_reset(session);
-    failed |= core_machine_debug_read_port(session->core_machine, 0x03c4u, &port_value) != LIB_STATUS_OK || port_value != 0u;
-    failed |= core_machine_debug_read_port(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_OK || port_value != 0x03u;
-    failed |= core_machine_debug_write_port(session->core_machine, 0x03c4u, 4u) != LIB_STATUS_OK || core_machine_debug_write_port(session->core_machine, 0x03c5u, 0xffu) != LIB_STATUS_OK;
-    failed |= core_machine_debug_read_port(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_OK || port_value != 0x0eu;
-    failed |= core_machine_memory_write(session->core_machine,
+    failed = vm_machine_reset(session) != LIB_STATUS_OK ||
+        core_machine_debug_read_port(session->core_machine, 0x03c4u, &port_value) != LIB_STATUS_OK || port_value != 0u ||
+        core_machine_debug_read_port(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_OK || port_value != 0x03u ||
+        core_machine_debug_write_port(session->core_machine, 0x03c4u, 4u) != LIB_STATUS_OK || core_machine_debug_write_port(session->core_machine, 0x03c5u, 0xffu) != LIB_STATUS_OK ||
+        core_machine_debug_read_port(session->core_machine, 0x03c5u, &port_value) != LIB_STATUS_OK || port_value != 0x0eu ||
+        core_machine_memory_write(session->core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, &aperture_value,
-        sizeof(aperture_value)) != LIB_STATUS_OK;
-    failed |= core_machine_memory_read(session->core_machine,
+        sizeof(aperture_value)) != LIB_STATUS_OK ||
+        core_machine_memory_read(session->core_machine,
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, &read_value,
         sizeof(read_value)) != LIB_STATUS_OK || read_value != aperture_value;
 
+done:
     vm_machine_destroy(session);
     if (failed) return 1;
     printf("M5:T235:S3:EGA-SEQUENCER:SYSTEM:OK\n");

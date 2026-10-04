@@ -1,7 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 
@@ -48,7 +48,7 @@ lib_i32 main(void)
     even[0u] = 0x11u;
     odd[0u] = 0x22u;
 #define CHECK(expression) do { ++step; if (!(expression)) { \
-    failed = step; printf("D4-MAP failed step=%d line=%d\n", step, __LINE__); \
+    failed = step; printf("D4-MAP failed step=%d line=%d\n", step, __LINE__); goto done; \
 } } while (0)
     lib_i32 step = 0;
 
@@ -90,7 +90,7 @@ lib_i32 main(void)
         CHECK(write_byte(session->core_machine, 0x00ff1234u, 0x73u,
             LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00ff1234u, 0x73u));
-        CHECK(core_machine_get_d4_platform_observation(session->board,
+        CHECK(core_machine_d4_platform_observe(session->model40_board,
             &d4) == LIB_STATUS_OK && !d4.iochk_latched && !d4.failsafe_latched);
         CHECK(write_byte(session->core_machine, 0x00fa0000u, 0x3cu,
             LIB_STATUS_OK));
@@ -188,8 +188,9 @@ lib_i32 main(void)
             0x4au, LIB_STATUS_OK));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
             0x4au));
-        CHECK(core_machine_set_a20(session->core_machine, 1) == LIB_STATUS_OK);
+        CHECK(core_machine_set_a20(session->core_machine, LIB_TRUE) == LIB_STATUS_OK);
     }
+done:
 #undef CHECK
     if (!failed) printf("M5:T386:S16:D4-ROM-MAP:OK\n");
     if (!failed) printf("M5:T386:S16:D4-SOLE-ROM-OWNER:OK\n");

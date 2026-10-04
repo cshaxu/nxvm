@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c" machine_lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" machine_scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board_advance_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c" board_advance_source)
 set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}${board_advance_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/clock.c" clock_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/execution_provider_interface.h"

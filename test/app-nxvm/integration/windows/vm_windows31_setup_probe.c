@@ -1,19 +1,17 @@
-#include "../../support/hdc.h"
+#include "../../../x86/ibmpc-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include <windows.h>
+#undef exception_code
 
 #include "x86/core/debug_interface.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
 #include "x86/core/machine_interface.h"
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/fault.h"
 #include "app-nxvm/machine/lifecycle.h"
-#include "x86/core/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
@@ -181,8 +179,8 @@ static void vm_t287_report_fault(integration_ini_session *ini_session, const cha
     printf("M5:T287:S23:WINDOWS31:SETUP:CHECKPOINT stage=%s running=%d "
         "ata_commands=%u last_command=%02X\n", stage,
         was_running,
-        hdc_observe(&session->board->hdc).command_count,
-        hdc_observe(&session->board->hdc).last_command);
+        test_board_hdc_observe(session->board).command_count,
+        test_board_hdc_observe(session->board).last_command);
     if (diagnostic.first_fault.valid) {
         const core_machine_cpu_fault_snapshot *fault = &diagnostic.first_fault;
 

@@ -1,6 +1,6 @@
 /* Repository guest firmware and synthetic media only; no external asset files. */
 #include "app-nxvm/profiles/machine_plan_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "x86/ibmpc-common/media_interface.h"
 #include "lib/types/file.h"
 
@@ -177,20 +177,25 @@ static lib_bool check(lib_u16 ax, lib_u16 cx, lib_u16 dx, lib_u8 expected,
     if (offset > 510u) goto done;
     media->bytes[510u] = 0x55u; media->bytes[511u] = 0xaau;
     if (vm_profile_machine_plan_create(&config, &vm_app_firmware, &profile) != LIB_STATUS_OK ||
+        profile == LIB_NULL ||
         core_machine_plan_create(vm_profile_machine_plan_core_config_get(profile), &plan) != LIB_STATUS_OK ||
+        plan == LIB_NULL ||
         core_machine_plan_set_controller_timing_rules(plan,
             vm_profile_machine_plan_timing_rules_get(profile)) != LIB_STATUS_OK ||
         core_machine_plan_set_topology(plan, vm_profile_machine_plan_topology_get(profile)) != LIB_STATUS_OK ||
         core_machine_media_registry_create(&registry) != LIB_STATUS_OK ||
+        registry == LIB_NULL ||
         core_machine_media_registry_bind(registry, 1u, media, &provider) != LIB_STATUS_OK ||
         core_machine_media_registry_bind(registry, 2u, empty, &provider) != LIB_STATUS_OK ||
         core_machine_media_registry_freeze(registry) != LIB_STATUS_OK ||
         core_machine_display_provider_slot_create(&display) != LIB_STATUS_OK ||
+        display == LIB_NULL ||
         core_machine_plan_bind_display_provider(plan, display) != LIB_STATUS_OK ||
         core_machine_plan_bind_media_registry(plan, registry) != LIB_STATUS_OK ||
         vm_profile_machine_plan_materialize(profile, plan,
-            (core_machine_fdc_terminal_observation_provider){0}) != LIB_STATUS_OK ||
+            (core_machine_fdc_terminal_observation_provider){0}, LIB_NULL) != LIB_STATUS_OK ||
         core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
+        machine == LIB_NULL || board == LIB_NULL ||
         core_machine_bind_firmware_provider(machine,
             vm_profile_machine_plan_firmware_provider_get(profile),
             vm_profile_machine_plan_firmware_context_get(profile)) != LIB_STATUS_OK ||

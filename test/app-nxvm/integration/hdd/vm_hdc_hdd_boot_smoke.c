@@ -1,11 +1,9 @@
-#include "../../support/hdc.h"
+#include "../../../x86/ibmpc-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/waiting.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -67,7 +65,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         VM_HDC_HDD_BOOT_QUANTUM, 0u
     };
     vm_machine *session = LIB_NULL;
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     core_machine_cpu_diagnostic diagnostic;
     lib_status run_status;
     lib_u32 executed = 0u;
@@ -99,7 +97,7 @@ lib_i32 main(lib_i32 argc, char **argv)
                 fprintf(stderr,
                     "M5:T213:S3:HDC:SYSTEM-STOP reason=%u status=%u count=%u\n",
                     (lib_u32)result.reason, (lib_u32)run_status,
-                    hdc_observe(&session->board->hdc).command_count);
+                    test_board_hdc_observe(session->board).command_count);
             }
             goto fail;
         }
@@ -110,8 +108,8 @@ lib_i32 main(lib_i32 argc, char **argv)
                 !advanced) goto fail;
         }
         executed += result.executed;
-        if (hdc_observe(&session->board->hdc).command_count >= 2u &&
-            hdc_observe(&session->board->hdc).last_command == 0x20u &&
+        if (test_board_hdc_observe(session->board).command_count >= 2u &&
+            test_board_hdc_observe(session->board).last_command == 0x20u &&
             vm_hdc_hdd_boot_matches_partition_vbr(session)) {
             loaded = 1;
             break;
@@ -129,14 +127,14 @@ lib_i32 main(lib_i32 argc, char **argv)
             VM_HDC_HDD_BOOT_BYTES, image_bytes, sizeof(image_bytes), &image_result);
         fprintf(stderr,
             "M5:T213:S3:HDC:SYSTEM-NO-HANDOFF count=%u command=%02X memory=%02X%02X%02X%02X expected=%02X%02X%02X%02X\n",
-            hdc_observe(&session->board->hdc).command_count,
-            hdc_observe(&session->board->hdc).last_command,
+            test_board_hdc_observe(session->board).command_count,
+            test_board_hdc_observe(session->board).last_command,
             bytes[0], bytes[1], bytes[2], bytes[3],
             image_bytes[0], image_bytes[1], image_bytes[2], image_bytes[3]);
         goto fail;
     }
     printf("M5:T287:S22:HDD-ONLY-BOOT:OK command=20 reads=%u instructions=%u\n",
-        hdc_observe(&session->board->hdc).command_count, executed);
+        test_board_hdc_observe(session->board).command_count, executed);
     integration_ini_session_close(&ini_session);
     return 0;
 

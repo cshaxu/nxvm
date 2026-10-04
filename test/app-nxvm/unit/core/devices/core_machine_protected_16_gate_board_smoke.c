@@ -1,5 +1,5 @@
 #include "support/protected_16_bootstrap_fixture.h"
-#include "x86/chips/cpu/cpu.h"
+#include "x86/chips/cpu/cpu_interface.h"
 #include <stdio.h>
 
 #define S47_VECTOR 0x30u
@@ -40,8 +40,8 @@ static lib_i32 s47_gate_entry(core_machine_cpu_profile profile, lib_u8 type)
         failed = !s47_install_gate(&state, S47_VECTOR, type, LIB_TRUE) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE,
                 interrupt, sizeof(interrupt)) || !s47_patch_register(&state,
-                CORE_MACHINE_DEBUG_EFLAGS, VCPU_EFLAGS_CF | VCPU_EFLAGS_IF |
-                VCPU_EFLAGS_TF) || core_machine_run(state.machine,
+                CORE_MACHINE_DEBUG_EFLAGS, CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF |
+                CORE_MACHINE_DEBUG_EFLAGS_TF) || core_machine_run(state.machine,
                 (core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             !test_protected_16_snapshot(&state, &snapshot) ||
@@ -49,8 +49,8 @@ static lib_i32 s47_gate_entry(core_machine_cpu_profile profile, lib_u8 type)
             snapshot.esp != TEST_PROTECTED_16_STACK_TOP - sizeof(frame) ||
             !test_protected_16_read(&state, TEST_PROTECTED_16_STACK_TOP -
                 sizeof(frame), frame, sizeof(frame)) || frame[0] != 2u ||
-            frame[1] != 0x0008u || frame[2] != (VCPU_EFLAGS_CF |
-                VCPU_EFLAGS_IF | VCPU_EFLAGS_TF);
+            frame[1] != 0x0008u || frame[2] != (CORE_MACHINE_DEBUG_EFLAGS_CF |
+                CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF);
     }
     if (failed) {
         printf("profile=%u type=%u reason=%u ip=%08x sp=%08x frame=%04x/%04x/%04x\n",
@@ -93,7 +93,7 @@ static lib_i32 s47_not_present_gate(void)
 
     if (!failed) {
         failed = !s47_install_gate(&state, S47_VECTOR,
-            VCPU_DESC_SYS_TYPE_INTGATE_16, LIB_FALSE) ||
+            TEST_PROTECTED_INTERRUPT_GATE_16, LIB_FALSE) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE,
                 interrupt, sizeof(interrupt)) || core_machine_run(state.machine,
                 (core_machine_run_budget){8u,0u}, &result) != LIB_STATUS_INTERNAL_ERROR ||
@@ -122,13 +122,13 @@ int main(void)
     static const lib_u8 lock[] = {0xf0u,0xcdu,S47_VECTOR};
 
     if (!s47_gate_entry(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_INTGATE_16)) return 1;
+            TEST_PROTECTED_INTERRUPT_GATE_16)) return 1;
     if (!s47_gate_entry(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_TRAPGATE_16)) return 2;
+            TEST_PROTECTED_TRAP_GATE_16)) return 2;
     if (!s47_gate_entry(CORE_MACHINE_CPU_PROFILE_80386,
-            VCPU_DESC_SYS_TYPE_INTGATE_16)) return 3;
+            TEST_PROTECTED_INTERRUPT_GATE_16)) return 3;
     if (!s47_gate_entry(CORE_MACHINE_CPU_PROFILE_80386,
-            VCPU_DESC_SYS_TYPE_TRAPGATE_16)) return 4;
+            TEST_PROTECTED_TRAP_GATE_16)) return 4;
     if (!s47_outer_entry(CORE_MACHINE_CPU_PROFILE_80286)) return 5;
     if (!s47_outer_entry(CORE_MACHINE_CPU_PROFILE_80386)) return 6;
     if (!s47_rejected_encoding(CORE_MACHINE_CPU_PROFILE_80286, prefix66,

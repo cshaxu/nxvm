@@ -3,9 +3,8 @@
 
 #include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_board_state.h"
+#include "test/x86/core/composition_fixture.h"
+#include "test/x86/ibmpc-common/cmos_fixture.h"
 #include "x86/core/retirement_observation_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/machine/machine_private.h"
@@ -774,9 +773,9 @@ static void model40_capture_observe(void *opaque,
         }
         if (capture->machine != LIB_NULL && reset_sample < MODEL40_CAPTURE_RESET_HISTORY) {
             capture->reset_vector_shutdown_status[reset_sample] =
-                x86_rtc_read_register(capture->board->shared_rtc, 0x0fu);
+                test_board_cmos_read_register(capture->board, 0x0fu);
             capture->reset_vector_a20[reset_sample] =
-                capture->machine->executor_memory.data.flagA20;
+                test_core_a20_is_enabled(capture->machine);
         }
     }
     if (capture->machine != LIB_NULL && !capture->reset_instruction_seen &&
@@ -786,9 +785,9 @@ static void model40_capture_observe(void *opaque,
         capture->reset_instruction_port = observation->point.bytes[1u];
         capture->reset_instruction_value = (lib_u8)observation->instruction_entry_cpu.eax;
         capture->reset_instruction_state_seen = LIB_TRUE;
-        capture->reset_instruction_shutdown_status = x86_rtc_read_register(capture->board->shared_rtc, 0x0fu);
+        capture->reset_instruction_shutdown_status = test_board_cmos_read_register(capture->board, 0x0fu);
         capture->reset_instruction_a20 =
-            capture->machine->executor_memory.data.flagA20;
+            test_core_a20_is_enabled(capture->machine);
     }
     if (capture->machine != LIB_NULL && capture->low_stack_transition_seen &&
         (!capture->minimum_stack_seen ||
@@ -871,7 +870,7 @@ static void model40_capture_observe(void *opaque,
                 observation->current_cpu.cs.base +
                 observation->current_cpu.eip;
             capture->last_software_interrupt_target_read =
-                core_machine_memory_read_physical(&capture->machine->executor_memory,
+                test_core_read_physical(capture->machine,
                     capture->last_software_interrupt_target,
                     (lib_uptr)capture->last_software_interrupt_target_bytes,
                     sizeof(capture->last_software_interrupt_target_bytes)) == LIB_STATUS_OK;

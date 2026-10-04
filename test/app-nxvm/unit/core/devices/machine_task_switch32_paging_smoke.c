@@ -3,7 +3,7 @@
 
 #include "x86/core/debug_interface.h"
 #include "x86/core/entry_plan_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 
 #define GDT_POINTER 0x0100u
 #define GDT_BASE 0x0300u
@@ -46,8 +46,10 @@ static lib_i32 prepare(core_machine **out_machine,
         .entry_route = CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM
     };
 
-    return out_machine != LIB_NULL && core_machine_create(&config, out_machine, out_board) ==
-        LIB_STATUS_OK && core_machine_freeze_execution_providers(*out_machine) ==
+    return out_machine != LIB_NULL && out_board != LIB_NULL &&
+        core_machine_create(&config, out_machine, out_board) == LIB_STATUS_OK &&
+        *out_machine != LIB_NULL && *out_board != LIB_NULL &&
+        core_machine_freeze_execution_providers(*out_machine) ==
         LIB_STATUS_OK && core_machine_reset(*out_machine) == LIB_STATUS_OK &&
         core_machine_apply_entry_plan(*out_machine, &plan) == LIB_STATUS_OK;
 }
@@ -155,26 +157,24 @@ static lib_i32 run_case(lib_bool fault_case, lib_bool pending_irq, lib_bool nest
     core_machine_run_result result = {0};
     core_machine_cpu_diagnostic diagnostic = {0};
     core_machine_debug_cpu_snapshot cpu = {0};
-    lib_i32 failed = !prepare(&machine, &board);
+    lib_i32 failed = 1;
 
-    if (!failed) failed |= !install(machine, fault_case, pending_irq, nested);
-    if (!failed && pending_irq) failed |= core_machine_keyboard_receive_native_byte(
-        board, 0x1eu) != LIB_STATUS_OK;
-    if (!failed) {
-        failed |= !run_until_waiting_for_interrupt(machine, &result) ||
-            core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
-            core_machine_debug_capture_cpu_snapshot(machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK;
-        if (fault_case) failed |= diagnostic.first_fault.valid ||
-            !diagnostic.last_delivered_exception.valid ||
-            diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_PF ||
-            cpu.eip != 0x181u || cpu.tr.selector != 0x28u || cpu.cr3 != 0x1000u;
-        else if (pending_irq) failed |= diagnostic.first_fault.valid ||
-            diagnostic.last_delivered_exception.valid || cpu.tr.selector != 0x30u ||
-            cpu.eip != 0x181u || cpu.eax != 0xa1a12222u;
-        else failed |= diagnostic.first_fault.valid || cpu.tr.selector != 0x30u ||
-            cpu.eax != 0x00001234u || cpu.cr3 != 0x4000u;
-    }
+    if (!prepare(&machine, &board) || !install(machine, fault_case, pending_irq, nested) ||
+        (pending_irq && core_machine_keyboard_receive_native_byte(board, 0x1eu) !=
+        LIB_STATUS_OK) || !run_until_waiting_for_interrupt(machine, &result) ||
+        core_machine_get_cpu_diagnostic(machine, &diagnostic) != LIB_STATUS_OK ||
+        core_machine_debug_capture_cpu_snapshot(machine,
+            CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &cpu) != LIB_STATUS_OK) goto done;
+    if (fault_case) failed = diagnostic.first_fault.valid ||
+        !diagnostic.last_delivered_exception.valid ||
+        diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_PF ||
+        cpu.eip != 0x181u || cpu.tr.selector != 0x28u || cpu.cr3 != 0x1000u;
+    else if (pending_irq) failed = diagnostic.first_fault.valid ||
+        diagnostic.last_delivered_exception.valid || cpu.tr.selector != 0x30u ||
+        cpu.eip != 0x181u || cpu.eax != 0xa1a12222u;
+    else failed = diagnostic.first_fault.valid || cpu.tr.selector != 0x30u ||
+        cpu.eax != 0x00001234u || cpu.cr3 != 0x4000u;
+done:
     core_machine_destroy(machine);
     return failed;
 }

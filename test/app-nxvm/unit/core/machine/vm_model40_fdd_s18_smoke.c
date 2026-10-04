@@ -1,8 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
+#include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include "x86/ibmpc-common/media_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/media/media.h"
@@ -23,7 +22,7 @@ lib_i32 main(void)
     vm_machine *model339 = LIB_NULL;
     core_machine_media_info info;
     core_machine_media_result result;
-    lib_i32 failed = 0;
+    lib_i32 failed = 1;
 
     if (vm_model40_fixture_create(&model40) != LIB_STATUS_OK ||
         model40 == LIB_NULL || model40->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
@@ -37,20 +36,15 @@ lib_i32 main(void)
         core_machine_media_query(model40->media_registry, VM_MACHINE_MEDIA_FDD_ID,
             &info, &result) != LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.cylinders != 80u || info.geometry.heads != 2u ||
-        info.geometry.sectors_per_track != 15u || info.geometry.bytes_per_sector != 512u ||
-        model40->board->fdc.connect.config.irq != 6u ||
-        model40->board->fdc.connect.config.dma_channel != 2u) {
-        failed = 1;
+        info.geometry.sectors_per_track != 15u || info.geometry.bytes_per_sector != 512u)
         goto done;
-    }
+    const core_machine_fdc_config config = test_board_fdc_connection_config(model40->board);
+    if (config.irq != 6u || config.dma_channel != 2u) goto done;
 
-    vm_machine_reset(model40);
-    if (model40->fdd.data.ncyl != 80u || model40->fdd.data.nhead != 2u ||
+    if (vm_machine_reset(model40) != LIB_STATUS_OK ||
+        model40->fdd.data.ncyl != 80u || model40->fdd.data.nhead != 2u ||
         model40->fdd.data.nsector != 15u || model40->fdd.data.nbyte != 512u ||
-        !model40->fdd.connect.flagDiskExist) {
-        failed = 1;
-        goto done;
-    }
+        !model40->fdd.connect.flagDiskExist) goto done;
 
     {
         lib_u8 even_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
@@ -65,19 +59,17 @@ lib_i32 main(void)
             model40_360k->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
             model40_360k->fdd.data.ncyl != 40u ||
             vm_machine_fdd_replace_bytes(&model40_360k->fdd, compatible_media,
-                sizeof(compatible_media)) != LIB_FALSE) {
-            failed = 1;
-            goto done;
-        }
+                sizeof(compatible_media)) != LIB_FALSE) goto done;
     }
 
     model339_config.profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339;
     if (vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
+        default_session == LIB_NULL ||
         vm_test_ibm_5170_session_create(&model339_config, &model339) != LIB_STATUS_OK ||
+        model339 == LIB_NULL ||
         default_session->fdd.data.nsector != 18u ||
-        model339->fdd.data.nsector != 15u) {
-        failed = 1;
-    }
+        model339->fdd.data.nsector != 15u) goto done;
+    failed = 0;
 
 done:
     vm_machine_destroy(model40_360k);

@@ -1,19 +1,15 @@
-#include "../../../support/hdc.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "../devices/support/fdc_fixture.h"
+#include "../../../../x86/core/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/cmos_fixture.h"
+#include "../../../../x86/ibmpc-common/kbc_state_fixture.h"
+#include "../../../../x86/ibmpc-common/controller_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "lib/types/types_interface.h"
-#include "support/kbc_fixture.h"
 #include <stdio.h>
 
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/devices/fdc.h"
-#include "app-nxvm/devices/hdc.h"
-#include "app-nxvm/devices/kbc.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "x86/core/port.h"
 #include "support/rom/model40_session_assets.h"
 
 lib_i32 main(void)
@@ -33,20 +29,24 @@ lib_i32 main(void)
     lib_u8 sense_status = 0u;
     lib_u8 sense_cylinder = 0u;
     lib_u8 reset_status[CORE_MACHINE_FDC_DRIVE_COUNT] = {0};
-    lib_i32 failed = 0;
+    test_board_composition_observation composition = {0};
+    lib_u8 floppy_type = 0u;
+    lib_i32 failed = 1;
     lib_i32 stage = 0;
 
     even[0x3ff8u] = 0xa5u;
 
-    failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
-        LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
-    if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=
-        LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan) ||
+    stage = 1;
+    if (vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
+        LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL ||
+        vm_model40_fixture_create_bytes(even, odd, &session) !=
+        LIB_STATUS_OK || session == LIB_NULL || session->core_machine == LIB_NULL ||
+        !vm_profile_machine_plan_is_model40(session->profile_plan) ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
             LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
-        core_machine_get_d4_platform_observation(session->board, &d4) !=
+        core_machine_d4_platform_observe(session->model40_board, &d4) !=
             LIB_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
         core_machine_bus_read(session->core_machine, 0x07c6u, &value) !=
@@ -59,124 +59,112 @@ lib_i32 main(void)
             LIB_STATUS_OK || value != 0x1fu ||
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
             sizeof(rom_byte)) != LIB_STATUS_OK || rom_byte != 0xa5u ||
-        x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
-            x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
-        !kbc_test_command_matches(&session->board->shared_kbc,
-            &session->core_machine->executor_port, 0x20u,
-            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
-    if (failed) stage = 1;
-    if (!failed) {
+        test_board_kbc_aux_enabled(session->board) ||
+        !test_board_kbc_command_matches(session->board,
+            session->core_machine, 0x20u,
+            0x20u, 0x20u)) goto done;
+    stage = 2;
+    {
         core_machine_guest_input_event event = {0};
 
         event.kind = CORE_MACHINE_GUEST_INPUT_RELATIVE_MOUSE;
         event.data.relative_mouse.delta_x = 1;
         event.data.relative_mouse.delta_y = 1;
         event.data.relative_mouse.buttons = 1u;
-        failed |= (core_machine_port_read(&session->core_machine->executor_port,
-            0x64u) & VKBC_STATUS_OBF) != 0u;
-        failed |= vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK;
-        failed |= (core_machine_port_read(&session->core_machine->executor_port,
-            0x64u) & VKBC_STATUS_OBF) != 0u;
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x0064u, 0xa8u);
-        failed |= x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
-            !kbc_test_command_matches(&session->board->shared_kbc,
-            &session->core_machine->executor_port, 0x20u,
-            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX, CORE_MACHINE_KBC_COMMAND_DISABLE_AUX);
-    failed |= !failed && (session->board->fdc_topology.drives.installed_mask !=
-        0x03u || session->board->fdc_topology.drives.double_sided_mask != 0x03u ||
-        session->board->fdc_topology.drives.cylinder_count[0u] != 80u ||
-        session->board->fdc_topology.drives.cylinder_count[1u] != 80u ||
-        session->board->fdc_topology.drives.track_zero_active_low_mask != 0u ||
-        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY) !=
-            0x22u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x0060u, 0xf5u);
-        failed |= kbc_test_read_reply(&session->board->shared_kbc,
-            &session->core_machine->executor_port) != 0xfau;
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x0064u, 0xd4u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x0060u, 0xf4u);
-        failed |= x86_keyboard_get_signals(session->board->shared_kbc.connect.keyboard).scanning ||
-            (core_machine_port_read(&session->core_machine->executor_port,
-                0x64u) & VKBC_STATUS_OBF) != 0u;
-        core_machine_port_write(&session->core_machine->executor_port, 0x60u, 0xeeu);
-        failed |= kbc_test_read_reply(&session->board->shared_kbc,
-            &session->core_machine->executor_port) != 0xeeu;
-        if (failed) stage = 2;
+        if (core_machine_bus_read(session->core_machine, 0x64u, &value) != LIB_STATUS_OK ||
+            (value & 0x01u) != 0u ||
+            vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK ||
+            core_machine_bus_read(session->core_machine, 0x64u, &value) != LIB_STATUS_OK ||
+            (value & 0x01u) != 0u ||
+            core_machine_bus_write(session->core_machine, 0x0064u, 0xa8u) != LIB_STATUS_OK ||
+            test_board_kbc_aux_enabled(session->board) ||
+            !test_board_kbc_command_matches(session->board,
+            session->core_machine, 0x20u,
+            0x20u, 0x20u)) goto done;
+        composition = test_board_capture_composition(session->board);
+        if (composition.drives.installed_mask != 0x03u ||
+            composition.drives.double_sided_mask != 0x03u ||
+            composition.drives.cylinder_count[0u] != 80u ||
+            composition.drives.cylinder_count[1u] != 80u ||
+            composition.drives.track_zero_active_low_mask != 0u) goto done;
+        floppy_type = test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY);
+        if (floppy_type != 0x22u ||
+            core_machine_bus_write(session->core_machine, 0x0060u, 0xf5u) != LIB_STATUS_OK ||
+            test_board_kbc_read_reply(session->board, session->core_machine) != 0xfau ||
+            core_machine_bus_write(session->core_machine, 0x0064u, 0xd4u) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x0060u, 0xf4u) != LIB_STATUS_OK ||
+            test_board_keyboard_scanning(session->board) ||
+            core_machine_bus_read(session->core_machine, 0x64u, &value) != LIB_STATUS_OK ||
+            (value & 0x01u) != 0u ||
+            core_machine_bus_write(session->core_machine, 0x60u, 0xeeu) != LIB_STATUS_OK ||
+            test_board_kbc_read_reply(session->board, session->core_machine) != 0xeeu) goto done;
     }
-    if (!failed) {
-        vm_machine_reset(session);
-        failed |= !session->board->auxiliary_pit_configured ||
-            !session->board->fdc_configured ||
-            session->board->fdc_topology.config.irq != 6u ||
-            session->board->fdc_topology.config.dma_channel != 2u ||
-            !session->board->hdc_configured ||
-            session->board->hdc_topology.config.irq != 14u ||
-            session->board->hdc_topology.config.protocol !=
+    stage = 3;
+    if (vm_machine_reset(session) != LIB_STATUS_OK) goto done;
+    composition = test_board_capture_composition(session->board);
+    if (!composition.auxiliary_pit_configured || !composition.fdc_configured ||
+            composition.fdc.irq != 6u || composition.fdc.dma_channel != 2u ||
+            !composition.hdc_configured || composition.hdc.irq != 14u ||
+            composition.hdc.protocol !=
                 CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB ||
-            !session->board->rtc_cmos_configured ||
-            session->board->rtc_cmos_config.irq != 8u ||
-            !core_machine_port_has_read(&session->core_machine->executor_port,
-                0x03f7u) || !core_machine_port_has_write(
-                &session->core_machine->executor_port, 0x004bu);
-    }
-    if (!failed) {
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x03f2u, 0u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x03f2u, 0x1cu);
-        failed |= !test_fdc_advance_due(&session->board->fdc);
-        failed |= !core_machine_pic_irq_source_is_asserted(session->board->fdc.connect.irq_source);
+            !composition.rtc_cmos_configured || composition.rtc_irq != 8u ||
+            !test_core_port_has_read(session->core_machine,
+                0x03f7u) || !test_core_port_has_write(
+                session->core_machine, 0x004bu)) goto done;
+    stage = 4;
+    {
+        if (core_machine_bus_write(session->core_machine, 0x03f2u, 0u) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x03f2u, 0x1cu) != LIB_STATUS_OK ||
+            !test_board_fdc_advance_due(session->board) ||
+            !test_board_fdc_irq_source_is_asserted(session->board)) goto done;
         for (sense_status = 0u; sense_status < CORE_MACHINE_FDC_DRIVE_COUNT;
             ++sense_status) {
-            core_machine_port_write(&session->core_machine->executor_port,
-                0x03f5u, 0x08u);
-            test_fdc_advance(&session->board->fdc);
-            reset_status[sense_status] = (lib_u8)core_machine_port_read(
-                &session->core_machine->executor_port, 0x03f5u);
-            sense_cylinder = (lib_u8)core_machine_port_read(
-                &session->core_machine->executor_port, 0x03f5u);
-            failed |= reset_status[sense_status] !=
+            if (core_machine_bus_write(session->core_machine, 0x03f5u, 0x08u) != LIB_STATUS_OK ||
+                !test_board_fdc_advance_ticks(session->board, 1u) ||
+                core_machine_bus_read(session->core_machine, 0x03f5u, &value) != LIB_STATUS_OK)
+                goto done;
+            reset_status[sense_status] = (lib_u8)value;
+            if (core_machine_bus_read(session->core_machine, 0x03f5u, &value) != LIB_STATUS_OK)
+                goto done;
+            sense_cylinder = (lib_u8)value;
+            if (reset_status[sense_status] !=
                 (TEST_FDC_ST0_READY_CHANGE | sense_status) ||
-                sense_cylinder != 0u;
+                sense_cylinder != 0u) goto done;
         }
-        core_machine_port_write(&session->core_machine->executor_port, 0x03f5u, 0x08u);
-        test_fdc_advance(&session->board->fdc);
-        sense_status = (lib_u8)core_machine_port_read(
-            &session->core_machine->executor_port, 0x03f5u);
-        failed |= sense_status != 0x80u ||
-            (core_machine_port_read(&session->core_machine->executor_port, 0x03f4u) &
-            (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_CB)) != TEST_FDC_MSR_RQM;
-        if (failed) stage = 4;
+        if (core_machine_bus_write(session->core_machine, 0x03f5u, 0x08u) != LIB_STATUS_OK ||
+            !test_board_fdc_advance_ticks(session->board, 1u) ||
+            core_machine_bus_read(session->core_machine, 0x03f5u, &value) != LIB_STATUS_OK)
+            goto done;
+        sense_status = (lib_u8)value;
+        if (sense_status != 0x80u ||
+            core_machine_bus_read(session->core_machine, 0x03f4u, &value) != LIB_STATUS_OK ||
+            (value & (TEST_FDC_MSR_RQM | TEST_FDC_MSR_DIO | TEST_FDC_MSR_CB)) !=
+            TEST_FDC_MSR_RQM) goto done;
     }
-    if (!failed) {
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x01f6u, 0x2au);
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x01f7u, 0x90u);
-        hdc_service(&session->board->hdc);
-        failed |= hdc_observe(&session->board->hdc).error != 0x01u ||
-            !core_machine_hdc_irq_pending(&session->board->hdc);
-        (void)core_machine_port_read(&session->core_machine->executor_port,
-            0x01f7u);
-        failed |= core_machine_hdc_irq_pending(&session->board->hdc);
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x01f7u, 0xecu);
-        hdc_service(&session->board->hdc);
-        failed |= (core_machine_port_read(&session->core_machine->executor_port,
-            0x01f7u) & X86_HDC_STATUS_ERR) == 0u ||
-            core_machine_port_read(&session->core_machine->executor_port,
-                0x01f1u) != X86_HDC_ERROR_ABORT;
-        if (failed) stage = 5;
+    stage = 5;
+    {
+        if (core_machine_bus_write(session->core_machine, 0x01f6u, 0x2au) != LIB_STATUS_OK ||
+            core_machine_bus_write(session->core_machine, 0x01f7u, 0x90u) != LIB_STATUS_OK) goto done;
+        test_board_hdc_service(session->board);
+        if (test_board_hdc_observe(session->board).error != 0x01u ||
+            !test_board_hdc_irq_pending(session->board) ||
+            core_machine_bus_read(session->core_machine, 0x01f7u, &value) != LIB_STATUS_OK ||
+            test_board_hdc_irq_pending(session->board) ||
+            core_machine_bus_write(session->core_machine, 0x01f7u, 0xecu) != LIB_STATUS_OK) goto done;
+        test_board_hdc_service(session->board);
+        if (core_machine_bus_read(session->core_machine, 0x01f7u, &value) != LIB_STATUS_OK ||
+            (value & X86_HDC_STATUS_ERR) == 0u ||
+            core_machine_bus_read(session->core_machine, 0x01f1u, &value) != LIB_STATUS_OK ||
+            value != X86_HDC_ERROR_ABORT) goto done;
     }
-    if (failed && session != LIB_NULL) {
+    failed = 0;
+done:
+    if (failed) {
         printf("M5:T386:S8:MODEL40-INTEGRATION:FAILED-stage=%u-fdc=%02X/%02X-cmos=%02X-reset=%02X,%02X,%02X,%02X-final=%02X\n",
             (unsigned int)stage,
-            (unsigned int)session->board->fdc_topology.drives.installed_mask,
-            (unsigned int)session->board->fdc_topology.drives.track_zero_active_low_mask,
-            (unsigned int)x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY), (unsigned int)reset_status[0u],
+            (unsigned int)composition.drives.installed_mask,
+            (unsigned int)composition.drives.track_zero_active_low_mask,
+            (unsigned int)floppy_type, (unsigned int)reset_status[0u],
             (unsigned int)reset_status[1u], (unsigned int)reset_status[2u],
             (unsigned int)reset_status[3u], (unsigned int)sense_status);
     }

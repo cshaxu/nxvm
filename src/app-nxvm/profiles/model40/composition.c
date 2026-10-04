@@ -1,8 +1,8 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/profiles/model40/composition_interface.h"
 
-#include "app-nxvm/devices/vadp.h"
+#include "x86/ibmpc-common/vadp_interface.h"
 #include "app-nxvm/profiles/device/floppy.h"
 
 static lib_status vm_profile_model40_materialize_controllers(core_machine_plan *plan,
@@ -53,7 +53,6 @@ lib_status vm_profile_model40_topology_materialize(
     core_machine_dma_wiring dma = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    core_machine_d4_platform_config d4 = { CORE_MACHINE_PC_AT_PORT_B, 0u };
     core_machine_rtc_cmos_config rtc = {0};
     core_machine_plan_topology topology = {0};
     if (out_topology == LIB_NULL) {
@@ -84,8 +83,6 @@ lib_status vm_profile_model40_topology_materialize(
     rtc.ticks_per_second = 32768u;
     rtc.timing = (core_machine_rtc_timing_plan) {8u, 65u,
         CORE_MACHINE_RTC_TIMING_L3_SOURCE};
-    topology.d4_platform_present = LIB_TRUE;
-    topology.d4_platform = d4;
     /* The selected D4 setup has 640 KiB conventional RAM and relocates the
      * remaining 384 KiB of the built-in first MiB to FA0000h--FFFFFFh.
      * Core owns the single RAM backing; the frozen profile declares only the
@@ -115,15 +112,38 @@ lib_status vm_profile_model40_topology_materialize(
     return LIB_STATUS_OK;
 }
 
-lib_status vm_profile_model40_materialize_plan(core_machine_plan *plan,
-    core_machine_fdc_terminal_observation_provider terminal_observation)
+static lib_status model40_selected_board_factory(
+    const core_machine_board_profile_services *services, void *context,
+    core_machine_board_profile_binding *out_binding)
 {
+    const core_machine_d4_platform_config config = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     const core_machine_d4_memory_config d4_memory = {
         LIB_TRUE, 0x8fu, 0xfdu, 0xfc42u };
+    core_machine_d4_platform *platform = LIB_NULL;
+    core_machine_d4_platform **construction_output = context;
+    lib_status status;
 
-    if (plan == LIB_NULL || core_machine_plan_configure_d4_memory(plan,
-            &d4_memory) != LIB_STATUS_OK) {
-        return LIB_STATUS_INVALID_ARGUMENT;
+    if (construction_output != LIB_NULL) *construction_output = LIB_NULL;
+    status = core_machine_d4_platform_create(services->core, services->pit,
+        services->auxiliary_pit, &config, services->speaker,
+        services->speaker_context, &platform);
+    if (status != LIB_STATUS_OK) return status;
+    status = core_machine_d4_platform_configure_memory(platform, &d4_memory);
+    if (status != LIB_STATUS_OK) {
+        core_machine_d4_platform_destroy(platform);
+        return status;
     }
+    *out_binding = core_machine_d4_platform_binding(platform);
+    if (construction_output != LIB_NULL) *construction_output = platform;
+    return LIB_STATUS_OK;
+}
+
+lib_status vm_profile_model40_materialize_plan(core_machine_plan *plan,
+    core_machine_fdc_terminal_observation_provider terminal_observation,
+    core_machine_d4_platform **construction_output)
+{
+    if (plan == LIB_NULL || core_machine_plan_bind_profile_factory(plan,
+            model40_selected_board_factory, construction_output) != LIB_STATUS_OK)
+        return LIB_STATUS_INVALID_ARGUMENT;
     return vm_profile_model40_materialize_controllers(plan, terminal_observation);
 }

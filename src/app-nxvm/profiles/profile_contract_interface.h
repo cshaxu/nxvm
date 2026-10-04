@@ -1,7 +1,7 @@
 #ifndef VM_PROFILE_CONTRACT_INTERFACE_H
 #define VM_PROFILE_CONTRACT_INTERFACE_H
 
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "lib/types/types_interface.h"
 
 #define VM_PROFILE_CONTRACT_PORT_LEAF_CAPACITY 96u

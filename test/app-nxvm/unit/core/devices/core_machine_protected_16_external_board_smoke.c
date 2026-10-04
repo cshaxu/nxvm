@@ -1,6 +1,6 @@
 #include "support/protected_16_bootstrap_fixture.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "x86/chips/cpu/cpu.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include "x86/chips/cpu/cpu_interface.h"
 #include <stdio.h>
 
 #define S47_S4_VECTOR 0x30u
@@ -43,7 +43,7 @@ static lib_i32 s47_s4_outer_software(core_machine_cpu_profile profile,
     if (!failed) {
         failed = !s47_s4_install_handler(&state, S47_S4_VECTOR, type, 3u,
             S47_S4_HANDLER) || !s47_s4_patch_eflags(&state,
-            VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF) ||
+            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE + 0x0100u,
                 interrupt, sizeof(interrupt)) || (run_status = core_machine_run(state.machine,
                 (core_machine_run_budget){32u,0u}, &result)) != LIB_STATUS_OK ||
@@ -55,19 +55,17 @@ static lib_i32 s47_s4_outer_software(core_machine_cpu_profile profile,
             snapshot.ss.selector != 0x0010u || snapshot.ss.dpl != 0u ||
             snapshot.eip != S47_S4_HANDLER + 1u || snapshot.esp !=
                 TEST_PROTECTED_16_STACK_TOP - sizeof(frame) ||
-            (snapshot.eflags & VCPU_EFLAGS_CF) == 0u ||
-            (snapshot.eflags & VCPU_EFLAGS_TF) != 0u ||
-            ((snapshot.eflags & VCPU_EFLAGS_IF) != 0u) !=
-                (type == VCPU_DESC_SYS_TYPE_TRAPGATE_16) ||
+            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_CF) == 0u ||
+            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_TF) != 0u ||
+            ((snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_IF) != 0u) !=
+                (type == TEST_PROTECTED_TRAP_GATE_16) ||
             !test_protected_16_read(&state, TEST_PROTECTED_16_STACK_TOP -
                 sizeof(frame), frame, sizeof(frame)) || frame[0] != 0x0102u ||
-            frame[1] != 0x001bu || frame[2] != (VCPU_EFLAGS_CF |
-                VCPU_EFLAGS_IF | VCPU_EFLAGS_TF) || frame[3] != 0x7000u ||
+            frame[1] != 0x001bu || frame[2] != (CORE_MACHINE_DEBUG_EFLAGS_CF |
+                CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF) || frame[3] != 0x7000u ||
             frame[4] != 0x0023u;
     }
     if (failed) {
-        (void)core_machine_get_cpu_diagnostic(state.machine, &diagnostic);
-        (void)test_protected_16_snapshot(&state, &snapshot);
         printf("outer profile=%u status=%u reason=%u first=%u/%08x cs=%04x ss=%04x ip=%08x sp=%08x frame=%04x/%04x/%04x/%04x/%04x\n",
         profile, run_status, result.reason, diagnostic.first_fault.valid,
         diagnostic.first_fault.exception_mask, snapshot.cs.selector,
@@ -90,9 +88,9 @@ static lib_i32 s47_s4_outer_dpl_rejection(core_machine_cpu_profile profile)
 
     if (!failed) {
         failed = !s47_s4_install_handler(&state, S47_S4_VECTOR,
-            VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, S47_S4_HANDLER) ||
+            TEST_PROTECTED_INTERRUPT_GATE_16, 0u, S47_S4_HANDLER) ||
             !s47_s4_install_handler(&state, 0x0du,
-                VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, S47_S4_HANDLER + 0x0010u) ||
+                TEST_PROTECTED_INTERRUPT_GATE_16, 0u, S47_S4_HANDLER + 0x0010u) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE + 0x0100u,
                 interrupt, sizeof(interrupt)) || core_machine_run(state.machine,
                 (core_machine_run_budget){32u,0u}, &result) != LIB_STATUS_OK ||
@@ -125,7 +123,7 @@ static lib_i32 s47_s4_outer_nmi(core_machine_cpu_profile profile, lib_u8 type)
     if (!failed) {
         failed = !s47_s4_install_handler(&state, 0x02u, type, 0u,
             S47_S4_HANDLER) || !s47_s4_patch_eflags(&state,
-            VCPU_EFLAGS_CF | VCPU_EFLAGS_IF) ||
+            CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE + 0x0100u,
                 nop, sizeof(nop));
     }
@@ -142,13 +140,13 @@ static lib_i32 s47_s4_outer_nmi(core_machine_cpu_profile profile, lib_u8 type)
             snapshot.cs.selector != 0x0008u || snapshot.ss.selector != 0x0010u ||
             snapshot.eip != S47_S4_HANDLER + 1u || snapshot.esp !=
                 TEST_PROTECTED_16_STACK_TOP - sizeof(frame) ||
-            (snapshot.eflags & VCPU_EFLAGS_CF) == 0u ||
-            ((snapshot.eflags & VCPU_EFLAGS_IF) != 0u) !=
-                (type == VCPU_DESC_SYS_TYPE_TRAPGATE_16) ||
+            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_CF) == 0u ||
+            ((snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_IF) != 0u) !=
+                (type == TEST_PROTECTED_TRAP_GATE_16) ||
             !test_protected_16_read(&state, TEST_PROTECTED_16_STACK_TOP -
                 sizeof(frame), frame, sizeof(frame)) || frame[0] != 0x0101u ||
-            frame[1] != 0x001bu || frame[2] != (VCPU_EFLAGS_CF |
-                VCPU_EFLAGS_IF) || frame[3] != 0x7000u || frame[4] != 0x0023u;
+            frame[1] != 0x001bu || frame[2] != (CORE_MACHINE_DEBUG_EFLAGS_CF |
+                CORE_MACHINE_DEBUG_EFLAGS_IF) || frame[3] != 0x7000u || frame[4] != 0x0023u;
     }
     test_protected_16_destroy(&state);
     return !failed;
@@ -157,23 +155,23 @@ static lib_i32 s47_s4_outer_nmi(core_machine_cpu_profile profile, lib_u8 type)
 int main(void)
 {
     if (!s47_s4_outer_software(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_INTGATE_16)) return 1;
+            TEST_PROTECTED_INTERRUPT_GATE_16)) return 1;
     if (!s47_s4_outer_software(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_TRAPGATE_16)) return 2;
+            TEST_PROTECTED_TRAP_GATE_16)) return 2;
     if (!s47_s4_outer_software(CORE_MACHINE_CPU_PROFILE_80386,
-            VCPU_DESC_SYS_TYPE_INTGATE_16)) return 3;
+            TEST_PROTECTED_INTERRUPT_GATE_16)) return 3;
     if (!s47_s4_outer_software(CORE_MACHINE_CPU_PROFILE_80386,
-            VCPU_DESC_SYS_TYPE_TRAPGATE_16)) return 4;
+            TEST_PROTECTED_TRAP_GATE_16)) return 4;
     if (!s47_s4_outer_dpl_rejection(CORE_MACHINE_CPU_PROFILE_80286)) return 5;
     if (!s47_s4_outer_dpl_rejection(CORE_MACHINE_CPU_PROFILE_80386)) return 6;
     if (!s47_s4_outer_nmi(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_INTGATE_16)) return 7;
+            TEST_PROTECTED_INTERRUPT_GATE_16)) return 7;
     if (!s47_s4_outer_nmi(CORE_MACHINE_CPU_PROFILE_80286,
-            VCPU_DESC_SYS_TYPE_TRAPGATE_16)) return 8;
+            TEST_PROTECTED_TRAP_GATE_16)) return 8;
     if (!s47_s4_outer_nmi(CORE_MACHINE_CPU_PROFILE_80386,
-            VCPU_DESC_SYS_TYPE_INTGATE_16)) return 9;
+            TEST_PROTECTED_INTERRUPT_GATE_16)) return 9;
     if (!s47_s4_outer_nmi(CORE_MACHINE_CPU_PROFILE_80386,
-            VCPU_DESC_SYS_TYPE_TRAPGATE_16)) return 10;
+            TEST_PROTECTED_TRAP_GATE_16)) return 10;
     printf("M5:T323:S4:PROTECTED-16-EXTERNAL:OK\n");
     return 0;
 }

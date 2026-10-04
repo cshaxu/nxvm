@@ -14,6 +14,7 @@ endif()
 set(project_t344_seen_rows)
 set(project_t344_strict_count 0)
 set(project_t344_deferred_count 0)
+set(project_t344_targets)
 foreach(project_t344_entry IN LISTS project_t344_matrix)
     string(REPLACE "|" ";" project_t344_fields "${project_t344_entry}")
     list(LENGTH project_t344_fields project_t344_field_count)
@@ -37,17 +38,39 @@ foreach(project_t344_entry IN LISTS project_t344_matrix)
         message(FATAL_ERROR "Duplicate T344 direct-compilation row: ${project_t344_row_key}")
     endif()
     list(APPEND project_t344_seen_rows "${project_t344_row_key}")
+    list(APPEND project_t344_targets "${project_t344_target}")
+endforeach()
 
-    get_filename_component(project_t344_source_name "${project_t344_source}" NAME)
-    execute_process(
-        COMMAND "${PROJECT_T344_NINJA}" -t commands "${project_t344_target}"
-        RESULT_VARIABLE project_t344_command_result
-        OUTPUT_VARIABLE project_t344_command_output
-        ERROR_VARIABLE project_t344_command_error)
-    if(NOT project_t344_command_result EQUAL 0)
-        message(FATAL_ERROR
-            "Could not inspect T344 Ninja commands for ${project_t344_target}: ${project_t344_command_error}")
+list(REMOVE_DUPLICATES project_t344_targets)
+# Ninja emits the current dependency commands once for this complete target set.
+# Index actual object owners so a dependency cannot satisfy its caller's row.
+execute_process(
+    COMMAND "${PROJECT_T344_NINJA}" -t commands ${project_t344_targets}
+    RESULT_VARIABLE project_t344_command_result
+    OUTPUT_VARIABLE project_t344_command_output
+    ERROR_VARIABLE project_t344_command_error)
+if(NOT project_t344_command_result EQUAL 0)
+    message(FATAL_ERROR "Could not inspect T344 Ninja commands: ${project_t344_command_error}")
+endif()
+string(REGEX MATCHALL "[^\n]*[ \t]-c[ \t]+[^\n]*"
+    project_t344_compile_commands "${project_t344_command_output}")
+foreach(project_t344_command IN LISTS project_t344_compile_commands)
+    if(project_t344_command MATCHES "CMakeFiles/([^ /]+)\\.dir/")
+        string(SHA256 project_t344_command_key "${CMAKE_MATCH_1}")
+        string(APPEND project_t344_commands_${project_t344_command_key}
+            "${project_t344_command}\n")
     endif()
+endforeach()
+
+foreach(project_t344_entry IN LISTS project_t344_matrix)
+    string(REPLACE "|" ";" project_t344_fields "${project_t344_entry}")
+    list(GET project_t344_fields 0 project_t344_target)
+    list(GET project_t344_fields 1 project_t344_source)
+    list(GET project_t344_fields 2 project_t344_status)
+    get_filename_component(project_t344_source_name "${project_t344_source}" NAME)
+    string(SHA256 project_t344_command_key "${project_t344_target}")
+    set(project_t344_command_output
+        "${project_t344_commands_${project_t344_command_key}}")
     # A generated source also appears in its generator invocation. Inspect
     # the compiler's -c command, never that generator or the later link line.
     string(REGEX MATCH "[^\n]*[ \t]-c[ \t]+[^\n]*${project_t344_source_name}[^\n]*"

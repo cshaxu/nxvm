@@ -17,12 +17,12 @@ function Expand-Template {
     foreach ($property in $Template.PSObject.Properties) {
         if ($property.Name -in @("id", "level", "source_rule", "route", "status", "batch", "test", "overrides", "base_selector", "id_suffix", "phase", "kind", "bytes", "count", "default_status", "string_status")) { continue }
         if ($property.Value -isnot [System.Array]) { continue }
-        $next = @()
+        $next = [System.Collections.Generic.List[object]]::new()
         foreach ($record in $records) {
             foreach ($value in $property.Value) {
                 $axes = @{}; foreach ($name in $record.axes.Keys) { $axes[$name] = $record.axes[$name] }
                 $axes[$property.Name] = [string]$value
-                $next += [pscustomobject]@{ key_id = $record.key_id.Replace("{" + $property.Name + "}", [string]$value); axes = $axes }
+                $next.Add([pscustomobject]@{ key_id = $record.key_id.Replace("{" + $property.Name + "}", [string]$value); axes = $axes })
             }
         }
         $records = $next
@@ -54,7 +54,8 @@ function New-CanonicalRecord {
     }
 }
 
-$allRecords = @()
+$allRecords = [System.Collections.Generic.List[object]]::new()
+$keyIndex = @{}
 $derivedManifests = @()
 foreach ($path in $ManifestPath) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Manifest not found: $path" }
@@ -70,7 +71,7 @@ foreach ($path in $ManifestPath) {
         continue
     }
     if ($manifest.schema -ne "nxvm.cpu-timing-manifest.v1" -or [string]::IsNullOrWhiteSpace([string]$manifest.profile)) { throw "Unexpected manifest: $path" }
-    $profileRecords = @()
+    $profileRecords = [System.Collections.Generic.List[object]]::new()
     $base = @{}
     foreach ($template in $manifest.base_templates) {
         foreach ($field in @("id", "level", "source_rule", "route", "status", "batch", "test")) {
@@ -85,7 +86,9 @@ foreach ($path in $ManifestPath) {
             if ($null -ne $override) { $status = [string]$override.Value }
             if ($manifest.status_values -notcontains $status) { throw "Unknown status for $($expanded.key_id)" }
             $record = New-CanonicalRecord $manifest.profile $expanded.key_id $template.level $template.source_rule $template.route $status $template.batch $template.test "BASE"
-            $base[$expanded.key_id] = $record; $profileRecords += $record; $allRecords += $record
+            $base[$expanded.key_id] = $record
+            $profileRecords.Add($record); $allRecords.Add($record)
+            $keyIndex[$record.key_id] = $true
         }
     }
     if ($base.Count -ne [int]$manifest.expected.base) { throw "$($manifest.profile) base count mismatch: $($base.Count)" }
@@ -108,7 +111,7 @@ foreach ($path in $ManifestPath) {
                 if (-not $selector.IsMatch($baseRecord.key_id)) { continue }
                 foreach ($suffix in $suffixes) {
                     $key = "$($baseRecord.key_id)-$suffix"
-                    if ($allRecords.key_id -contains $key) { throw "Duplicate generated key: $key" }
+                    if ($keyIndex.ContainsKey($key)) { throw "Duplicate generated key: $key" }
                     $status = if ($null -ne $set.status) { [string]$set.status } elseif ($baseRecord.key_id -match "-(STRING|REP)-") { [string]$set.string_status } else { [string]$set.default_status }
                     if ($manifest.status_values -notcontains $status) { throw "Unknown context status for $key" }
                     $sourceRule = if ($null -ne $set.source_rule) { $set.source_rule } else { $defaults.source_rule }
@@ -116,7 +119,8 @@ foreach ($path in $ManifestPath) {
                     $batch = if ($null -ne $set.batch) { $set.batch } else { $defaults.batch }
                     $test = if ($null -ne $set.test) { $set.test } else { $defaults.test }
                     $record = New-CanonicalRecord $manifest.profile $key $baseRecord.level $sourceRule $route $status $batch $test $suffix
-                    $profileRecords += $record; $allRecords += $record
+                    $profileRecords.Add($record); $allRecords.Add($record)
+                    $keyIndex[$key] = $true
                 }
             }
         }
@@ -148,7 +152,7 @@ foreach ($manifest in $derivedManifests) {
                 break
             }
         }
-        $allRecords += [pscustomobject]@{
+        $allRecords.Add([pscustomobject]@{
             key_id = ([string]$manifest.key_prefix_to) + $key.Substring(
                 ([string]$manifest.key_prefix_from).Length)
             profile = [string]$manifest.profile
@@ -163,7 +167,7 @@ foreach ($manifest in $derivedManifests) {
             regression_id = ([string]$parent.regression_id).Replace(
                 [string]$manifest.key_prefix_from, [string]$manifest.key_prefix_to)
             status = $status
-        }
+        })
     }
 }
 

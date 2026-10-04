@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/vadp.h"
+#include "x86/ibmpc-common/vadp_interface.h"
+#include "../../../../x86/core/bus_fixture.h"
 #include "app-nxvm/machine/display.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -14,7 +14,7 @@
 static void vm_display_s5_port_write(vm_machine *session, lib_u16 port,
     lib_u8 value)
 {
-    core_machine_port_write(&session->core_machine->executor_port, port, value);
+    test_core_machine_fixture_write_port(session->core_machine, port, value);
 }
 
 static lib_i32 vm_display_s5_capture(vm_machine *session,
@@ -33,7 +33,7 @@ static lib_i32 vm_display_s5_enable_planar(vm_machine *session)
     vm_display_s5_port_write(session, 0x03ceu, 6u);
     vm_display_s5_port_write(session, 0x03cfu, 0x05u);
     vm_display_s5_port_write(session, 0x03c2u, 0x01u);
-    (void)core_machine_port_read(&session->core_machine->executor_port, 0x03dau);
+    (void)test_core_machine_fixture_read_bus(session->core_machine, 0x03dau);
     vm_display_s5_port_write(session, 0x03c0u, 0x30u);
     vm_display_s5_port_write(session, 0x03c0u, 0x01u);
     vm_display_s5_port_write(session, 0x03d4u, 0x01u);
@@ -76,9 +76,9 @@ lib_i32 main(void)
     vm_display_s5_port_write(session, 0x03d8u, 0x0au);
     vm_display_s5_port_write(session, 0x03d9u, 0x00u);
     failed |= core_machine_memory_write(session->core_machine,
-        CORE_MACHINE_VADP_VIDEO_BASE, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
+        0x000b8000u, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
         core_machine_memory_write(session->core_machine,
-            CORE_MACHINE_VADP_VIDEO_BASE + 0x2000u, &cga_odd,
+            0x000b8000u + 0x2000u, &cga_odd,
             sizeof(cga_odd)) != LIB_STATUS_OK;
     failed |= !vm_display_s5_capture(session, &frame,
         X86_VIDEO_KIND_CGA_320X200X4) ||
@@ -90,7 +90,7 @@ lib_i32 main(void)
     cga_generation = frame.generation;
     cga_even = 0xffu;
     failed |= core_machine_memory_write(session->core_machine,
-        CORE_MACHINE_VADP_VIDEO_BASE, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
+        0x000b8000u, &cga_even, sizeof(cga_even)) != LIB_STATUS_OK ||
         test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK ||
         frame.generation != cga_generation ||
         frame.pixels[0] != 0u || frame.pixels[1] != 1u || frame.pixels[2] != 2u;

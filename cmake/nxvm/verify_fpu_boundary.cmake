@@ -20,7 +20,23 @@ file(GLOB_RECURSE consumers
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
     "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h")
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.h"
+    "${PROJECT_SOURCE_DIR}/test/x86/core/*.c"
+    "${PROJECT_SOURCE_DIR}/test/x86/core/*.h"
+    "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/*.c"
+    "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/*.h"
+    "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-at/*.c"
+    "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-at/*.h"
+    "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-xt/*.h")
 foreach(path IN LISTS consumers)
     file(READ "${path}" consumer)
     if(consumer MATCHES "x86/chips/fpu/fpu\\.h" OR

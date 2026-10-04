@@ -4,7 +4,7 @@
 #include "lib/types/types_interface.h"
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 
 #define TEST_PROTECTED_16_GDT_POINTER 0x0100u
 #define TEST_PROTECTED_16_GDT_BASE 0x0300u
@@ -13,6 +13,16 @@
 #define TEST_PROTECTED_16_CODE_BASE 0x2000u
 #define TEST_PROTECTED_16_STACK_TOP 0x8000u
 #define TEST_PROTECTED_16_RESET_PHYSICAL 0x000ffff0u
+
+/* Encodings written into guest descriptors/FLAGS, independent of CPU internals. */
+enum {
+    TEST_PROTECTED_CALL_GATE_16 = 0x04u,
+    TEST_PROTECTED_INTERRUPT_GATE_16 = 0x06u,
+    TEST_PROTECTED_TRAP_GATE_16 = 0x07u,
+    TEST_PROTECTED_CALL_GATE_32 = 0x0cu,
+    TEST_PROTECTED_INTERRUPT_GATE_32 = 0x0eu,
+    TEST_PROTECTED_IOPL_MASK = 0x3000u
+};
 
 #if defined(__GNUC__) || defined(__clang__)
 #define TEST_PROTECTED_16_UNUSED __attribute__((unused))
@@ -118,6 +128,7 @@ static lib_i32 TEST_PROTECTED_16_UNUSED test_protected_16_prepare_with_planar_pa
         gdt[45u] = 0x81u;
     }
     if (core_machine_create(&config, &state->machine, &state->board) != LIB_STATUS_OK ||
+        state->machine == LIB_NULL ||
         (planar_parity && core_machine_configure_planar_parity(state->board,
             &parity) != LIB_STATUS_OK) ||
         core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||

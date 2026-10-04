@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "support/core_machine_board_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include "../../../../x86/ibmpc-common/core_machine_board_fixture.h"
 
 #define MOVX_SOURCE_MEMORY 0x5000u
 
@@ -63,6 +63,12 @@ static lib_i32 movx_prepare(core_machine_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = X86_FPU_PROFILE_NONE
     };
+    const core_machine_memory_device_route routes[] = {
+        {.physical_start = MOVX_SOURCE_MEMORY, .bytes = 2u,
+            .callbacks = {movx_read, movx_write, movx_query}},
+        {.physical_start = 0x18u, .bytes = 4u,
+            .callbacks = {movx_read, movx_write, movx_query}}
+    };
 
     const core_machine_debug_register_patch entry = {
         .mask = CORE_MACHINE_DEBUG_REGISTER_MASK(CORE_MACHINE_DEBUG_CS) |
@@ -75,12 +81,9 @@ static lib_i32 movx_prepare(core_machine_cpu_profile profile,
     if (state == LIB_NULL) return 0;
     lib_memory_set(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine, LIB_NULL) != LIB_STATUS_OK ||
-        (provider != LIB_NULL && test_core_machine_fixture_register_memory_device_provider(
-            state->machine, MOVX_SOURCE_MEMORY, 2u, movx_read, movx_write,
-            movx_query, provider) != LIB_STATUS_OK) ||
-        (provider != LIB_NULL && test_core_machine_fixture_register_memory_device_provider(
-            state->machine, 0x18u, 4u, movx_read, movx_write,
-            movx_query, provider) != LIB_STATUS_OK) ||
+        (provider != LIB_NULL && core_machine_install_memory_device_routes(
+            state->machine, routes, sizeof(routes) / sizeof(routes[0]),
+            LIB_NULL, LIB_NULL, provider) != LIB_STATUS_OK) ||
         core_machine_freeze_execution_providers(state->machine) != LIB_STATUS_OK ||
         core_machine_reset(state->machine) != LIB_STATUS_OK ||
         core_machine_debug_patch_registers(state->machine, &entry) != LIB_STATUS_OK) {
@@ -179,8 +182,8 @@ static lib_i32 movx_test_read_boundaries(void)
                 form_code[changed_byte] = opcode;
                 if (!failed) {
                     failed |= core_machine_debug_patch_registers(state.machine,
-                        &registers) != LIB_STATUS_OK;
-                    failed |= !movx_run(&state, form_code, sizeof(form_code),
+                        &registers) != LIB_STATUS_OK ||
+                        !movx_run(&state, form_code, sizeof(form_code),
                         &after, &diagnostic) || !diagnostic.first_fault.valid ||
                         !CORE_MACHINE_BIT_IS_SET(diagnostic.first_fault.exception_mask,
                             VCPUINS_EXCEPT_UD) || provider.reads != 0u ||
@@ -204,17 +207,17 @@ static lib_i32 movx_test_read_boundaries(void)
 
         if (!failed) {
             failed |= core_machine_debug_patch_registers(state.machine,
-                &registers) != LIB_STATUS_OK;
-            failed |= core_machine_memory_write(state.machine, 0x2000u,
-                limit_code, sizeof(limit_code)) != LIB_STATUS_OK;
-            failed |= core_machine_run(state.machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
+                &registers) != LIB_STATUS_OK ||
+                core_machine_memory_write(state.machine, 0x2000u,
+                    limit_code, sizeof(limit_code)) != LIB_STATUS_OK ||
+                core_machine_run(state.machine, budget, &result) != LIB_STATUS_INTERNAL_ERROR ||
                 result.reason != CORE_MACHINE_STOP_FAULT ||
                 core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                    LIB_STATUS_OK;
-            failed |= core_machine_debug_capture_cpu_snapshot(state.machine,
-                CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK;
-            failed |= !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+                    LIB_STATUS_OK ||
+                core_machine_debug_capture_cpu_snapshot(state.machine,
+                    CORE_MACHINE_CPU_SNAPSHOT_CURRENT, &after) != LIB_STATUS_OK ||
+                !diagnostic.first_fault.valid || !CORE_MACHINE_BIT_IS_SET(
+                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
                 after.ecx != 0xaabbccddu || after.eflags != flags ||
                 after.eip != 0u;
         }

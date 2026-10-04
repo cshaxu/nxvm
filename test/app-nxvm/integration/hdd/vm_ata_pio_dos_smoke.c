@@ -1,12 +1,11 @@
-#include "../../support/hdc.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
 #include <windows.h>
 
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "app-nxvm/devices/hdc.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include "x86/chips/hdc/hdc_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/machine/waiting.h"
 #include "app-nxvm/machine/machine_private.h"

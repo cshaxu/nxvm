@@ -1,7 +1,6 @@
 #include "lib/types/types_interface.h"
+#include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include <stdio.h>
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
 #include "app-nxvm/machine/machine_private.h"
 
 
@@ -13,7 +12,6 @@
 
 #include "app-nxvm/machine/lifecycle.h"
 
-#include "app-nxvm/devices/fdc.h"
 #include "support/rom/session_assets.h"
 
 lib_i32 main(void)
@@ -26,16 +24,8 @@ lib_i32 main(void)
     machine = session;
     if (machine == LIB_NULL ||
         machine->media_registry == LIB_NULL ||
-        machine->board->fdc.connect.drives.media_id[0] !=
-            VM_MACHINE_MEDIA_FDD_ID ||
-        machine->board->fdc.connect.drives.media_id[1] !=
-            CORE_MACHINE_MEDIA_ID_INVALID ||
-        machine->board->fdc.connect.dma_request.core_token == 0u ||
-        machine->board->fdc.connect.dma_request.channel != 2u ||
-        machine->board->fdc.connect.irq_source == LIB_NULL ||
-        machine->board->shared_pic_master == LIB_NULL ||
-        machine->board->shared_pic_slave == LIB_NULL ||
-        machine->board->fdc.connect.machine != machine->core_machine) {
+        !test_board_fdc_binding_matches(machine->board, machine->core_machine,
+            VM_MACHINE_MEDIA_FDD_ID, 2u)) {
         vm_machine_destroy(session);
         return 1;
     }

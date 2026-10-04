@@ -1,8 +1,7 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "x86/core/port.h"
+#include "test/x86/core/composition_fixture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "app-nxvm/machine/machine_private.h"
 
@@ -14,10 +13,10 @@ static lib_i32 vm_ini_cmos_seed_matches(const char *directory,
 
     if (integration_ini_session_open(directory, file_name, &ini_session) !=
         LIB_STATUS_OK) return 0;
-    core_machine_port_write(&ini_session.session->core_machine->executor_port,
+    test_core_write_port_after_run(ini_session.session->core_machine,
         0x0070u, index);
-    observed = (lib_u8)core_machine_port_read(
-        &ini_session.session->core_machine->executor_port, 0x0071u);
+    observed = (lib_u8)test_core_read_port_after_run(
+        ini_session.session->core_machine, 0x0071u);
     integration_ini_session_close(&ini_session);
     return observed == expected;
 }

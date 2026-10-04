@@ -2,12 +2,12 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c" core_plan_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" core_board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" core_board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" core_scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board_advance_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c" board_advance_source)
 set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}${board_advance_source}")
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_interface.h" core_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
@@ -66,7 +66,7 @@ foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_state.h" board_header)
 foreach(operation IN ITEMS configure_dma get_fdc_dma_request_binding
     configure_rtc_cmos configure_fdc configure_hdc)
     if(NOT core_board_source MATCHES
@@ -117,7 +117,11 @@ if(NOT refresh_binding_count EQUAL 2)
     message(FATAL_ERROR "Construction and cold reset must both bind board refresh")
 endif()
 file(GLOB_RECURSE controller_callers "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c")
+    "${PROJECT_SOURCE_DIR}/test/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c" "${PROJECT_SOURCE_DIR}/test/x86/core/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c" "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c" "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c" "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-xt/*.c")
 foreach(caller IN LISTS controller_callers)
     file(READ "${caller}" caller_source)
     if(caller_source MATCHES

@@ -1,15 +1,13 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 
 #include <windows.h>
 
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
+#include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
-#include "x86/core/port.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/profiles/device/floppy.h"
@@ -21,7 +19,6 @@
 #define ASSET_UNAVAILABLE 77
 #define BOOT_TRACE_KBC_TRANSACTIONS 32u
 #define BOOT_TRACE_FDC_TRANSACTIONS 64u
-#define BOOT_TRACE_FDC_TERMINALS 64u
 #define BOOT_TRACE_POST_CODES 64u
 
 typedef struct boot_trace_kbc_transaction {
@@ -29,14 +26,6 @@ typedef struct boot_trace_kbc_transaction {
     lib_u8 value;
     lib_u8 kind;
 } boot_trace_kbc_transaction;
-
-typedef struct boot_trace_fdc_terminal_record {
-    core_machine_fdc_terminal_observation result;
-    lib_u8 command[9];
-    lib_u8 ccr;
-    lib_u8 pcn;
-    lib_u16 physical_cylinder;
-} boot_trace_fdc_terminal_record;
 
 typedef struct boot_trace_probe {
     lib_u64 cpu_retires;
@@ -54,11 +43,6 @@ typedef struct boot_trace_probe {
     boot_trace_kbc_transaction kbc_transactions[BOOT_TRACE_KBC_TRANSACTIONS];
     lib_u32 fdc_transaction_count;
     boot_trace_kbc_transaction fdc_transactions[BOOT_TRACE_FDC_TRANSACTIONS];
-    lib_u32 fdc_read_data_commands;
-    lib_u32 fdc_read_id_commands;
-    lib_u32 fdc_terminal_count;
-    const core_machine_fdc *fdc;
-    boot_trace_fdc_terminal_record fdc_terminals[BOOT_TRACE_FDC_TERMINALS];
     lib_u32 kbc_data_read_values[256];
     lib_u32 interrupt_acknowledges;
     lib_u32 interrupt_vectors[256];
@@ -67,28 +51,6 @@ typedef struct boot_trace_probe {
     lib_u32 post_code_count;
     lib_u8 post_codes[BOOT_TRACE_POST_CODES];
 } boot_trace_probe;
-
-static void boot_trace_fdc_terminal(void *opaque,
-    const core_machine_fdc_terminal_observation *observation)
-{
-    boot_trace_probe *probe = (boot_trace_probe *)opaque;
-
-    if (probe == LIB_NULL || observation == LIB_NULL) return;
-    boot_trace_fdc_terminal_record *terminal = &probe->fdc_terminals[
-        probe->fdc_terminal_count % BOOT_TRACE_FDC_TERMINALS];
-
-    terminal->result = *observation;
-    if (probe->fdc != LIB_NULL) {
-        x86_fdc_observation chip;
-        if (x86_fdc_capture(probe->fdc->chip, &chip) != LIB_STATUS_OK) return;
-        lib_memory_copy(terminal->command, chip.command, sizeof(terminal->command));
-        terminal->ccr = probe->fdc->data.ccr;
-        terminal->pcn = chip.pcn[observation->drive & 3u];
-        terminal->physical_cylinder = probe->fdc->drive_cylinder[
-            probe->fdc->data.dor & VFDC_DOR_DS];
-    }
-    ++probe->fdc_terminal_count;
-}
 
 static void boot_trace_observe(void *opaque, const core_machine_trace_event *event)
 {
@@ -229,22 +191,23 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
 
     if (session == LIB_NULL || name == LIB_NULL) return;
     if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK) {
-        (void)core_machine_capture_observation(session->core_machine, &observation);
-        printf("T515:INI-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:elapsed=%llu:lifecycle=%u:FDD=%u:%ux%ux%u:CMOS10=%02X\n",
+        printf("T515:INI-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:FDD=%u:%ux%ux%u\n",
             name, cpu.cs, cpu.eip, cpu.cs_base, cpu.eflags, cpu.halted,
-            (unsigned long long)observation.elapsed_ticks, observation.lifecycle,
             session->fdd.connect.flagDiskExist,
-            session->fdd.data.ncyl, session->fdd.data.nhead, session->fdd.data.nsector,
-            x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY));
-        x86_fdc_observation chip;
-        if (x86_fdc_capture(session->board->fdc.chip, &chip) == LIB_STATUS_OK) {
-            printf("T515:INI-BOOT:%s:FDC:phase=%u:cmd=%02X:index=%u:CHRN=%u/%u/%u:EOT=%u:CCR=%02X:result=%02X/%02X/%02X:remaining=%u:gate=%u:due=%llu:irq=%u\n",
-                name, chip.phase, chip.command[0u], chip.command_index,
-                chip.cylinder, chip.head, chip.sector, chip.eot,
-                session->board->fdc.data.ccr, chip.st0, chip.st1, chip.st2,
-                chip.transfer_remaining, chip.dma_byte_gate_pending,
-                (unsigned long long)chip.next_dma_byte_tick,
-                core_machine_pic_irq_source_is_asserted(session->board->fdc.connect.irq_source));
+            session->fdd.data.ncyl, session->fdd.data.nhead, session->fdd.data.nsector);
+        if (core_machine_capture_observation(session->core_machine, &observation) ==
+                LIB_STATUS_OK) {
+            printf("T515:INI-BOOT:%s:STATE:elapsed=%llu:lifecycle=%u\n", name,
+                (unsigned long long)observation.elapsed_ticks, observation.lifecycle);
+        }
+        if (session->model40_fdc_terminal_observation_valid) {
+            const core_machine_fdc_terminal_observation *terminal =
+                &session->model40_fdc_terminal_observation;
+            printf("T515:INI-BOOT:%s:FDC-LAST-TERMINAL:sequence=%llu:cmd=%02X:drive=%u:result=%02X/%02X/%02X/%02X/%02X/%02X/%02X:success=%u\n",
+                name, (unsigned long long)terminal->sequence, terminal->command,
+                terminal->drive, terminal->result[0], terminal->result[1],
+                terminal->result[2], terminal->result[3], terminal->result[4],
+                terminal->result[5], terminal->result[6], terminal->successful);
         }
         if (core_machine_capture_time_observation(session->core_machine,
                 &time_observation) == LIB_STATUS_OK) {
@@ -253,23 +216,6 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 time_observation.next_deadline_valid,
                 time_observation.progress_disposition);
         }
-        printf("T515:INI-BOOT:%s:PIC:pending=%u:IRQ0=%u\n",
-            name, core_machine_pic_scan_interrupt(
-                session->board->shared_pic_master,
-                session->board->shared_pic_slave),
-            core_machine_pic_irq_source_is_asserted(session->board->shared_pit_irq0_source));
-        printf("T515:INI-BOOT:%s:PIT:out0=%u:out1=%u\n", name,
-            (unsigned int)x86_pit_get_output(session->board->shared_pit, 0u),
-            (unsigned int)x86_pit_get_output(session->board->shared_pit, 1u));
-        printf("T515:INI-BOOT:%s:CMOS:diag=%02X:floppy=%02X:fixed=%02X:equip=%02X:base=%02X%02X:extended=%02X%02X\n",
-            name, x86_rtc_read_register(session->board->shared_rtc, 0x0eu),
-            x86_rtc_read_register(session->board->shared_rtc, 0x10u),
-            x86_rtc_read_register(session->board->shared_rtc, 0x12u),
-            x86_rtc_read_register(session->board->shared_rtc, 0x14u),
-            x86_rtc_read_register(session->board->shared_rtc, 0x16u),
-            x86_rtc_read_register(session->board->shared_rtc, 0x15u),
-            x86_rtc_read_register(session->board->shared_rtc, 0x18u),
-            x86_rtc_read_register(session->board->shared_rtc, 0x17u));
         if (core_machine_memory_read(session->core_machine, 0x00000410u,
                 equipment, sizeof(equipment)) == LIB_STATUS_OK) {
             printf("T515:INI-BOOT:%s:BDA:equipment=%02X%02X\n", name,
@@ -300,16 +246,9 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 boot_signature[1u], boot_signature[0u]);
         }
         {
-            const t_kbc *kbc = &session->board->shared_kbc;
-            const x86_keyboard_signals signals = x86_keyboard_get_signals(kbc->connect.keyboard);
-            lib_u64 ticks = 0u;
-            const lib_status status = core_machine_kbc_ticks_until_event(kbc, &ticks);
-            printf("T539:INI-BOOT:%s:KBC:scan=%u:bat=%u:irq1=%u:irq12=%u:a20=%u:deadline-status=%u:ticks=%llu\n",
-                name, (unsigned int)signals.scanning, (unsigned int)signals.bat_ready,
-                (unsigned int)core_machine_pic_irq_source_is_asserted(kbc->connect.irq1_source),
-                (unsigned int)core_machine_pic_irq_source_is_asserted(kbc->connect.irq12_source),
-                (unsigned int)session->core_machine->executor_memory.data.flagA20,
-                (unsigned int)status, (unsigned long long)ticks);
+            lib_bool a20;
+            if (core_machine_observe_a20(session->core_machine, &a20) == LIB_STATUS_OK)
+                printf("T539:INI-BOOT:%s:A20=%u\n", name, (unsigned int)a20);
         }
         if (trace_probe != LIB_NULL) {
             printf("T516:INI-BOOT:%s:TRACE:retired=%llu:external=%llu:port61=%llu:low=%llu:high=%llu:ports-pit=%u:last=%04X/%02X:kbc=%u:last=%04X/%02X\n",
@@ -357,8 +296,7 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                 trace_probe->kbc_data_read_values[0xfau],
                 trace_probe->kbc_data_read_values[0xabu],
                 trace_probe->kbc_data_read_values[0x83u]);
-            printf("T516:INI-BOOT:%s:FDC-CPU:read=%u:id=%u:", name,
-                trace_probe->fdc_read_data_commands, trace_probe->fdc_read_id_commands);
+            printf("T516:INI-BOOT:%s:FDC-CPU:", name);
             const lib_u32 retained_fdc = trace_probe->fdc_transaction_count <
                 BOOT_TRACE_FDC_TRANSACTIONS ? trace_probe->fdc_transaction_count :
                 BOOT_TRACE_FDC_TRANSACTIONS;
@@ -370,28 +308,6 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
                         BOOT_TRACE_FDC_TRANSACTIONS];
                 printf("%04X/%02X/%u ", transaction->port,
                     transaction->value, transaction->kind);
-            }
-            printf("\n");
-            printf("T516:INI-BOOT:%s:FDC-TERMINALS:", name);
-            const lib_u32 retained_terminal = trace_probe->fdc_terminal_count <
-                BOOT_TRACE_FDC_TERMINALS ? trace_probe->fdc_terminal_count :
-                BOOT_TRACE_FDC_TERMINALS;
-            const lib_u32 first_terminal = trace_probe->fdc_terminal_count -
-                retained_terminal;
-            for (index = 0u; index < retained_terminal; ++index) {
-                const boot_trace_fdc_terminal_record *terminal =
-                    &trace_probe->fdc_terminals[(first_terminal + index) %
-                        BOOT_TRACE_FDC_TERMINALS];
-                printf("%02X:%u:%02X/%02X/%02X/%02X/%02X/%02X/%02X:%u:cmd=%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X/%02X:ccr=%02X:pcn=%u:physical=%u ",
-                    terminal->result.command, terminal->result.drive,
-                    terminal->result.result[0u], terminal->result.result[1u],
-                    terminal->result.result[2u], terminal->result.result[3u],
-                    terminal->result.result[4u], terminal->result.result[5u],
-                    terminal->result.result[6u], terminal->result.successful,
-                    terminal->command[0u], terminal->command[1u], terminal->command[2u],
-                    terminal->command[3u], terminal->command[4u], terminal->command[5u],
-                    terminal->command[6u], terminal->command[7u], terminal->command[8u],
-                    terminal->ccr, terminal->pcn, terminal->physical_cylinder);
             }
             printf("\n");
         }
@@ -463,17 +379,16 @@ static lib_i32 boot_timeout_parse(const char *text, DWORD *out_timeout)
 
 static lib_i32 boot_cmos_seed_matches(const vm_machine *session)
 {
-    t_port *port;
     lib_u8 index;
 
     if (session == LIB_NULL || !session->cmos_seed_present) return 1;
-    port = &session->core_machine->executor_port;
     for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
         lib_u8 expected = session->cmos_seed[index];
-        lib_u8 actual;
+        lib_u32 actual;
 
-        core_machine_port_write(port, 0x0070u, index);
-        actual = (lib_u8)core_machine_port_read(port, 0x0071u);
+        if (core_machine_bus_write(session->core_machine, 0x0070u, index) != LIB_STATUS_OK ||
+            core_machine_bus_read(session->core_machine, 0x0071u, &actual) != LIB_STATUS_OK)
+            return 0;
         if (actual != expected) {
             printf("T515:CMOS:index=%02X:expected=%02X:actual=%02X\n", index,
                 expected, actual);
@@ -517,12 +432,12 @@ int main(int argc, char **argv)
     }
     session = ini_session.session;
     if (trace_enabled) {
-        trace_probe.fdc = &session->board->fdc;
-        (void)core_machine_set_trace_provider(session->core_machine,
-            &(core_machine_trace_provider) {boot_trace_observe, &trace_probe});
-        session->board->fdc.connect.observation_provider =
-            (core_machine_fdc_terminal_observation_provider) {boot_trace_fdc_terminal,
-                &trace_probe};
+        if (core_machine_set_trace_provider(session->core_machine,
+                &(core_machine_trace_provider) {boot_trace_observe, &trace_probe}) !=
+                LIB_STATUS_OK) {
+            fprintf(stderr, "T515:INI-BOOT:%s:TRACE-SETUP-FAILED\n", argv[2]);
+            goto done;
+        }
     }
     if (!boot_cmos_seed_matches(session)) {
         fprintf(stderr, "T515:INI-BOOT:%s:CMOS-SEED-MISMATCH\n", argv[2]);

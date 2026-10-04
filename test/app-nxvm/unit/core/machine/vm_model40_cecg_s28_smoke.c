@@ -1,12 +1,10 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
 #include "x86/ibmpc-common/display_interface.h"
-#include "x86/core/machine.h"
-#include "x86/core/memory.h"
-#include "x86/core/port.h"
-#include "app-nxvm/devices/vadp.h"
+#include "x86/ibmpc-common/vadp_interface.h"
+#include "../../../../x86/core/bus_fixture.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -14,29 +12,29 @@
 
 static lib_i32 t386_s28_session_write(vm_machine *session, lib_u8 value)
 {
-    return core_machine_memory_write_physical(&session->core_machine->executor_memory,
-        CORE_MACHINE_VADP_EGA_APERTURE_BASE, (lib_uptr)&value,
+    return core_machine_memory_write(session->core_machine,
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE, &value,
         sizeof(value)) == LIB_STATUS_OK;
 }
 
 static void t386_s28_select_ega_320(vm_machine *session)
 {
-    core_machine_port_write(&session->core_machine->executor_port,
-        CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
-    core_machine_port_write(&session->core_machine->executor_port,
-        CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x27u);
-    core_machine_port_write(&session->core_machine->executor_port,
-        CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x07u);
-    core_machine_port_write(&session->core_machine->executor_port,
-        CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x00u);
-    core_machine_port_write(&session->core_machine->executor_port,
-        CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x12u);
-    core_machine_port_write(&session->core_machine->executor_port,
-        CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xc7u);
-    core_machine_port_write(&session->core_machine->executor_port,
-        CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
-    core_machine_port_write(&session->core_machine->executor_port,
-        CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x14u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d4u, 0x01u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d5u, 0x27u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d4u, 0x07u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d5u, 0x00u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d4u, 0x12u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d5u, 0xc7u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d4u, 0x13u);
+    test_core_machine_fixture_write_port(session->core_machine,
+        0x03d5u, 0x14u);
 }
 
 lib_i32 main(void)
@@ -50,15 +48,15 @@ lib_i32 main(void)
         LIB_STATUS_OK || session == LIB_NULL;
     if (!failed) {
         t386_s28_select_ega_320(session);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x07u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03ceu, 6u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03cfu, 0x07u);
         failed |= !t386_s28_session_write(session, 0x80u) ||
             !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 15u;
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x20u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03c2u, 0x20u);
         failed |= !t386_s28_session_write(session, 0x00u) ||
             !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 0u ||
@@ -79,10 +77,10 @@ lib_i32 main(void)
     if (!failed) {
         vm_machine_reset(session);
         t386_s28_select_ega_320(session);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x07u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03ceu, 6u);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03cfu, 0x07u);
         failed |= !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 0u;
     }

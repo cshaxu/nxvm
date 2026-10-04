@@ -1,9 +1,9 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "x86/core/port.h"
-#include "app-nxvm/devices/vadp.h"
+#include "x86/ibmpc-common/vadp_interface.h"
+#include "../../../../x86/core/bus_fixture.h"
+#include "../../../../x86/core/video_topology_fixture.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -17,29 +17,28 @@ lib_i32 main(void)
     failed |= vm_model40_fixture_create(&session) !=
         LIB_STATUS_OK || session == LIB_NULL;
     if (!failed) {
-        failed |= core_machine_port_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0x40u ||
-            !core_machine_port_has_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE, 0x7fu);
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET, 0u);
-        failed |= core_machine_port_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0x7fu ||
-            (core_machine_port_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_STATUS) & 0x06u) != 0x06u;
-        core_machine_port_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE, 0xa5u);
-        failed |= core_machine_port_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0xa5u;
+        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+            0x03c6u) != 0x40u ||
+            test_video_missing_write_port(session->core_machine, 0x03dcu);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03c6u, 0x7fu);
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03dcu, 0u);
+        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+            0x03c6u) != 0x7fu ||
+            (test_core_machine_fixture_read_bus(session->core_machine,
+            0x03dau) & 0x06u) != 0x06u;
+        test_core_machine_fixture_write_port(session->core_machine,
+            0x03c6u, 0xa5u);
+        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+            0x03c6u) != 0xa5u;
     }
     if (!failed) {
         vm_machine_reset(session);
-        failed |= core_machine_port_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) != 0x40u ||
-            (core_machine_port_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_STATUS) & 0x06u) != 0x04u;
+        failed |= test_core_machine_fixture_read_bus(session->core_machine,
+            0x03c6u) != 0x40u ||
+            (test_core_machine_fixture_read_bus(session->core_machine,
+            0x03dau) & 0x06u) != 0x04u;
     }
     vm_machine_destroy(session);
     if (!failed) {

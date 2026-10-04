@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "x86/core/entry_plan_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/session_assets.h"
@@ -58,8 +58,8 @@ lib_i32 main(void)
             goto done;
         }
         if (core_machine_capture_display_snapshot(session->board,
-                &snapshot) != LIB_STATUS_OK ||
-            snapshot.kind != X86_VIDEO_KIND_CGA_320X200X4) {
+                &snapshot) != LIB_STATUS_OK) goto done;
+        if (snapshot.kind != X86_VIDEO_KIND_CGA_320X200X4) {
             continue;
         }
         if (snapshot.pixels[0] == 0u && snapshot.pixels[1] == 1u &&

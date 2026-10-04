@@ -1,11 +1,10 @@
-#include "../../../../x86/ibmpc-common/pic_fixture.h"
 #include "lib/types/types_interface.h"
+#include "../../../../x86/core/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/kbc_state_fixture.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "x86/core/port.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
@@ -23,19 +22,19 @@ static lib_i32 vm_pcat_s4_topology_matches(
     const vm_profile_default_pc_at_route *aux_route;
     const vm_profile_default_pc_at_route *cmos_route;
     const vm_profile_default_pc_at_route *fdc_route;
+    test_board_composition_observation board;
     lib_size index;
     lib_i32 failed = 0;
 
     if (session == LIB_NULL || session->core_machine == LIB_NULL ||
         profile == LIB_NULL) return 1;
+    board = test_board_capture_composition(session->board);
     for (index = 0u; index < profile->port_leaf_count; ++index) {
         const vm_profile_default_pc_at_port_leaf *leaf =
             &profile->port_leaves[index];
 
-        failed |= core_machine_port_has_read(
-            &session->core_machine->executor_port, leaf->port) != leaf->read ||
-            core_machine_port_has_write(
-                &session->core_machine->executor_port, leaf->port) != leaf->write;
+        failed |= test_core_port_has_read(session->core_machine, leaf->port) != leaf->read ||
+            test_core_port_has_write(session->core_machine, leaf->port) != leaf->write;
     }
     pit_route = vm_profile_default_pc_at_route_find(profile,
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_PIT_IRQ0);
@@ -49,44 +48,31 @@ static lib_i32 vm_pcat_s4_topology_matches(
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
     failed |= pit_route == LIB_NULL || keyboard_route == LIB_NULL || aux_route == LIB_NULL ||
         cmos_route == LIB_NULL || fdc_route == LIB_NULL ||
-        !test_pic_source_route(session->board->shared_pic_master,
-            session->board->shared_pic_slave, session->board->shared_pit_irq0_source, pit_route->irq) ||
-        !test_pic_source_route(session->board->shared_pic_master,
-            session->board->shared_pic_slave, session->board->shared_kbc.connect.irq1_source, keyboard_route->irq) ||
-        !x86_kbc8042_aux_enabled(session->board->shared_kbc.chip) ||
-        !test_pic_source_route(session->board->shared_pic_master,
-            session->board->shared_pic_slave, session->board->shared_kbc.connect.irq12_source, aux_route->irq) ||
-        session->board->rtc_cmos_config.irq != cmos_route->irq ||
-        session->board->rtc_cmos_config.timing.provenance !=
+        !test_board_pic_source_matches(session->board, TEST_BOARD_PIT_IRQ0, pit_route->irq) ||
+        !test_board_pic_source_matches(session->board, TEST_BOARD_KEYBOARD_IRQ1, keyboard_route->irq) ||
+        !test_board_kbc_aux_enabled(session->board) ||
+        !test_board_kbc_command_matches(session->board,
+            session->core_machine, 0x20u, 0x20u, 0u) ||
+        !test_board_pic_source_matches(session->board, TEST_BOARD_KEYBOARD_IRQ12, aux_route->irq) ||
+        board.rtc_irq != cmos_route->irq ||
+        board.rtc_provenance !=
             CORE_MACHINE_RTC_TIMING_L2_RATIO ||
-        session->board->fdc_topology.config.irq != fdc_route->irq ||
-        session->board->fdc_topology.config.dma_channel !=
+        board.fdc.irq != fdc_route->irq ||
+        board.fdc.dma_channel !=
             fdc_route->dma_channel ||
-        session->board->hdc_topology.config.irq != profile->hdc.irq;
-    failed |= !core_machine_port_has_read(&session->core_machine->executor_port,
-            0x0061u) ||
-        !core_machine_port_has_write(&session->core_machine->executor_port,
-            0x0061u) ||
-        core_machine_port_has_read(&session->core_machine->executor_port,
-            0x0062u) ||
-        core_machine_port_has_write(&session->core_machine->executor_port,
-            0x0062u) ||
-        core_machine_port_has_read(&session->core_machine->executor_port,
-            0x0063u) ||
-        core_machine_port_has_write(&session->core_machine->executor_port,
-            0x0063u) ||
-        core_machine_port_has_read(&session->core_machine->executor_port,
-            0x03d6u) ||
-        core_machine_port_has_write(&session->core_machine->executor_port,
-            0x03d6u) ||
-        core_machine_port_has_read(&session->core_machine->executor_port,
-            0x03d7u) ||
-        core_machine_port_has_write(&session->core_machine->executor_port,
-            0x03d7u) ||
-        core_machine_port_has_read(&session->core_machine->executor_port,
-            0x03f3u) ||
-        core_machine_port_has_write(&session->core_machine->executor_port,
-            0x03f3u);
+        board.hdc.irq != profile->hdc.irq;
+    failed |= !test_core_port_has_read(session->core_machine, 0x0061u) ||
+        !test_core_port_has_write(session->core_machine, 0x0061u) ||
+        test_core_port_has_read(session->core_machine, 0x0062u) ||
+        test_core_port_has_write(session->core_machine, 0x0062u) ||
+        test_core_port_has_read(session->core_machine, 0x0063u) ||
+        test_core_port_has_write(session->core_machine, 0x0063u) ||
+        test_core_port_has_read(session->core_machine, 0x03d6u) ||
+        test_core_port_has_write(session->core_machine, 0x03d6u) ||
+        test_core_port_has_read(session->core_machine, 0x03d7u) ||
+        test_core_port_has_write(session->core_machine, 0x03d7u) ||
+        test_core_port_has_read(session->core_machine, 0x03f3u) ||
+        test_core_port_has_write(session->core_machine, 0x03f3u);
     return failed;
 }
 
@@ -139,8 +125,7 @@ static lib_i32 vm_pcat_s4_reset_rearms_selected_machine(
             &timeline) != LIB_STATUS_OK || timeline.now == 0u) {
         return 1;
     }
-    core_machine_port_write(&session->core_machine->executor_port,
-        0x0070u, 0x80u);
+    test_core_write_port_after_run(session->core_machine, 0x0070u, 0x80u);
     if (core_machine_get_nmi_mask(session->core_machine, &nmi_masked) !=
             LIB_STATUS_OK || !nmi_masked) return 1;
     vm_machine_reset(session);

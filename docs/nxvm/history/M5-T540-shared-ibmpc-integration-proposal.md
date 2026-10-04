@@ -229,6 +229,92 @@ INI checkpoints. The [evidence](../etc/evidence/t540-s92-dma-aggregation.md)
 records the retained matrix and source/artifact proof. This is not board/family
 or T540 closure.
 
+## S93 Whole Board Receiver
+
+Receive the complete remaining board construction/reset/time/deadline owner
+and its common peripheral and AT/XT dependencies in one implementation batch.
+The [receiving design](../etc/architecture/t540-s93-whole-board-receiver.md)
+maps every state class and rejects both a Shared import of App private state
+and indiscriminate movement of genuine DeskPro D4 into common code. Internal
+working phases do not allocate more preparation subtasks or accepted partial
+P deliveries. Public opaque family/controller owners, one board candidate,
+one Core attachment lifetime, preserved rollback/reset/event ordering and
+independent tests are required before the full batch may be accepted.
+
+## Remaining Acceptance S94-S97
+
+Owner revision, 2026-10-03: split the oversized, uncommitted S93 remainder
+into four bounded numeric continuations. S93 is superseded, not accepted.
+S94-S96 accept only their review/verification result; S97 delivers the complete
+pending implementation. The original component coverage and eight-product
+completion predicate stay unchanged. No partial component, weakened assertion,
+discarded carryover or out-of-scope cleanup is authorized. Admit one S at a time.
+
+### S94: Actual Source And Coverage Review
+
+Review every pending production/test/build addition, modification, move and
+deletion against the accepted S92 baseline and frozen 99-row board intake,
+including the reconciled CPU/indirect fixture batch. Check sole state/time/
+route/lifetime owners, source-list uniqueness, inward dependencies, opaque
+interfaces, rollback/reset/finalization order and preservation of original
+hardware/failure assertions. Identify every retained path and its distinct reason.
+
+Exit: every changed logical file and coverage row has an actual-diff review
+disposition; no unclassified missing case, duplicate production path or private
+cross-owner import remains. Record defects and their precise receiving scope
+before repair; a required repair revises the packet and reruns affected proof,
+not silently expands the S. Complete dual-width root units and applicable
+specialized/boundary gates pass. Deliver the reviewed inventory and code-size
+method; do not accept or partially commit the pending implementation. Existing
+491-case/gate evidence may be reused only if all their inputs remain unchanged.
+
+### S95: Independent Component And Corpus Verification
+
+Consume S94's reviewed source graph. Verify independent Shared x86 builds and
+complete registered unit execution on x64/x86, each with tools enabled/disabled.
+Check all six manifests, public/private and reverse-dependency negatives, and
+the root registration/strict compilation gates. Preserve every registered case;
+tools-off exclusions must be its existing declared tool capability exclusions.
+
+Exit: all four independent build/test combinations finish successfully with
+actual counts and logs; root full units and applicable gates pass; six manifests
+match the tested tree. No App linkage or copied production implementation is
+needed. Deliver exact results, not component implementation acceptance. Already
+completed final-input runs need not be repeated merely to obtain new S labels.
+
+### S96: Eight Product Artifacts And Boot Checkpoints
+
+Consume the reviewed and tested tree. Verify or rebuild/deploy XT, AT, Model40
+and default 0540 x64/x86 pairs. Check identity/banner, PE architecture, stripped
+compiler debug information, SHA-256 and exactly one production Core per product.
+Run each unchanged owner-INI boot group once: default DOS prompt; XT, AT and
+Model40 installer-running. Keep the asset masters and MyNES unchanged.
+
+Exit: eight current artifact identities/hashes/link records and eight actual
+semantic checkpoints pass, with launch inputs recorded. A timeout, build or
+diagnostic probe is not a checkpoint. Full root units remain green. Any new
+source repair invalidates affected earlier verification and is reflected in
+the active packet before execution. Deliver artifact/boot evidence; pending
+implementation/artifacts remain unaccepted until S97's complete delivery.
+
+### S97: Complete Delivery And T540 Closure Review
+
+Reconcile S94-S96 proof to the actual final tree, refresh stale current-status,
+architecture and evidence links without copying historical progress into new
+authorities, then perform coordinator actual-change review. Deliver the entire
+pending implementation, documents and eight qualified artifacts as ordered
+Shared/NXVM commits, one target per commit, and push immediately. All named
+paths receive a final owner; no test/production carryover is left behind.
+
+Exit: no unresolved S94-S96 disposition; complete root units, specialized gates,
+manifests and documentation/diff checks remain valid for the delivered inputs;
+required external integration passes for T closure. Actual pushed commits
+match the reviewed/tested tree, MyNES/owner INIs/external masters are unchanged,
+and the worktree is clean. Only then accept the complete receiver and perform
+the T540 original-request/ledger/architecture/code/debt closure audit. If that
+audit has a residual, T540 stays open with its exact disposition; green S tests
+alone never authorize T closure.
+
 ## Verification And Exit
 
 S80 receives the complete callback-context class from S79: the existing board

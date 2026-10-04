@@ -1,5 +1,5 @@
 #include "support/protected_16_bootstrap_fixture.h"
-#include "x86/chips/cpu/cpu.h"
+#include "x86/chips/cpu/cpu_interface.h"
 #include <stdio.h>
 
 #define S47_S7_GATE_SELECTOR 0x0033u
@@ -12,7 +12,7 @@ static lib_i32 s47_s7_install_interrupt_gate(test_protected_16_machine *state,
     static const lib_u8 hlt[] = {0xf4u};
 
     return test_protected_16_install_gate(state, vector, offset, 0x0008u,
-        VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, LIB_TRUE) &&
+        TEST_PROTECTED_INTERRUPT_GATE_16, 0u, LIB_TRUE) &&
         test_protected_16_write(state, TEST_PROTECTED_16_CODE_BASE + offset,
             hlt, sizeof(hlt));
 }
@@ -28,7 +28,7 @@ static lib_i32 s47_s7_install_call_gate(test_protected_16_machine *state,
     descriptor[2] = 0x08u;
     descriptor[4] = parameter_count;
     descriptor[5] = (lib_u8)(0x80u | (dpl << 5u) |
-        VCPU_DESC_SYS_TYPE_CALLGATE_16);
+        TEST_PROTECTED_CALL_GATE_16);
     return test_protected_16_write(state, TEST_PROTECTED_16_GDT_BASE + 48u,
         descriptor, sizeof(descriptor)) && test_protected_16_write(state,
         TEST_PROTECTED_16_CODE_BASE + S47_S7_TARGET, hlt, sizeof(hlt));
@@ -132,8 +132,6 @@ static lib_i32 s47_s7_dpl_rejection(void)
                 S47_S7_GP_HANDLER;
     }
     if (failed) {
-        (void)core_machine_get_cpu_diagnostic(state.machine, &diagnostic);
-        (void)test_protected_16_snapshot(&state, &snapshot);
         printf("dpl reason=%u last=%u/%08x cs=%04x ss=%04x ip=%08x\n",
             result.reason, diagnostic.last_delivered_exception.valid,
             diagnostic.last_delivered_exception.exception_mask, snapshot.cs.selector,

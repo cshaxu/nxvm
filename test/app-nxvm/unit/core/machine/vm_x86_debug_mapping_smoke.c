@@ -1,7 +1,6 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
 #include "x86/core/debug_interface.h"
 #include "x86/debug/protocol_interface.h"
 #include "app-nxvm/machine/lifecycle.h"

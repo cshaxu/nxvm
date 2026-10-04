@@ -1,13 +1,12 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/runner.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/machine_interface.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 #include "app-nxvm/profiles/byob/blob.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
@@ -15,7 +14,7 @@
 
 static lib_i32 verify_recovery(void);
 
-static lib_i32 verify_reset_outcome(void)
+static lib_i32 verify_missing_firmware_rejection(void)
 {
     const vm_machine_config config = {
         .profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT,
@@ -23,14 +22,12 @@ static lib_i32 verify_reset_outcome(void)
     };
     const vm_machine_assets missing_assets = {0};
     vm_machine *session = LIB_NULL;
+    lib_i32 failed;
 
-    return vm_machine_create_from_assets(&config, &missing_assets, &session) ==
-        LIB_STATUS_INVALID_ARGUMENT && session == LIB_NULL ? 0 : 1;
-}
-
-static lib_i32 verify_running_reset_outcome(void)
-{
-    return verify_reset_outcome();
+    failed = vm_machine_create_from_assets(&config, &missing_assets, &session) !=
+        LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
+    vm_machine_destroy(session);
+    return failed;
 }
 
 static lib_i32 verify_constructor_output_contract(void)
@@ -62,27 +59,23 @@ static lib_i32 verify_option_rom_argument_contract(void)
     return vm_profile_byob_option_rom_is_valid(bytes, sizeof(bytes), sizeof(bytes));
 }
 
-static lib_i32 profile_timing_is_materialized(const core_machine_config *config,
+static lib_i32 profile_timing_is_materialized(const core_machine_plan *plan,
     const vm_profile_default_pc_at_descriptor *profile)
 {
-    return config != LIB_NULL && profile != LIB_NULL &&
-        config->ticks_per_instruction == profile->ticks_per_instruction &&
-        lib_memory_compare(&config->instruction_timing, &profile->instruction_timing,
-            sizeof(config->instruction_timing)) == 0 &&
-        lib_memory_compare(&config->transaction_contract, &profile->transaction_contract,
-            sizeof(config->transaction_contract)) == 0 &&
-        lib_memory_compare(&config->clock_plan, &profile->clock_plan,
-            sizeof(config->clock_plan)) == 0 &&
-        lib_memory_compare(&config->time_axis, &profile->time_axis,
-            sizeof(config->time_axis)) == 0 &&
-        config->kbc_typematic_initial_ticks ==
-            profile->kbc_typematic_initial_ticks &&
-        config->kbc_typematic_repeat_ticks ==
-            profile->kbc_typematic_repeat_ticks &&
-        config->kbc_command_response_ticks ==
-            profile->kbc_command_response_ticks &&
-        config->kbc_command_response_status_polls ==
-            profile->kbc_command_response_status_polls;
+    core_machine_config expected = {0};
+    if (plan == LIB_NULL || profile == LIB_NULL) return LIB_FALSE;
+    expected.ticks_per_instruction = profile->ticks_per_instruction;
+    lib_memory_copy(&expected.instruction_timing, &profile->instruction_timing,
+        sizeof(expected.instruction_timing));
+    lib_memory_copy(&expected.transaction_contract, &profile->transaction_contract,
+        sizeof(expected.transaction_contract));
+    lib_memory_copy(&expected.clock_plan, &profile->clock_plan, sizeof(expected.clock_plan));
+    lib_memory_copy(&expected.time_axis, &profile->time_axis, sizeof(expected.time_axis));
+    expected.kbc_typematic_initial_ticks = profile->kbc_typematic_initial_ticks;
+    expected.kbc_typematic_repeat_ticks = profile->kbc_typematic_repeat_ticks;
+    expected.kbc_command_response_ticks = profile->kbc_command_response_ticks;
+    expected.kbc_command_response_status_polls = profile->kbc_command_response_status_polls;
+    return test_board_plan_timing_matches(plan, &expected, &profile->controller_timing_rules);
 }
 
 static lib_i32 session_core_config_is_applied(const vm_machine *session,
@@ -114,38 +107,36 @@ static lib_i32 verify_create_materialization(
     };
     vm_machine *default_session = LIB_NULL;
     vm_machine *configured_session = LIB_NULL;
-    lib_i32 failed = 0;
+    test_board_plan_observation observed;
+    lib_i32 failed = 1;
 
-    failed |= vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
-        default_session == LIB_NULL ||
-        default_session->core_machine_plan->configuration.memory_bytes !=
-            profile->default_memory_bytes ||
-        default_session->core_machine_plan->configuration.cpu_profile != profile->cpu_profile ||
-        default_session->core_machine_plan->configuration.fpu_profile != profile->fpu_profile ||
-        lib_memory_compare(&default_session->core_machine_plan->controller_timing,
-            &profile->controller_timing_rules,
-            sizeof(default_session->core_machine_plan->controller_timing)) != 0 ||
-        !profile_timing_is_materialized(&default_session->core_machine_plan->configuration,
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &default_session) != LIB_STATUS_OK ||
+        default_session == LIB_NULL || default_session->core_machine_plan == LIB_NULL)
+        goto done;
+    observed = test_board_capture_plan(default_session->core_machine_plan);
+    if (observed.memory_bytes != profile->default_memory_bytes ||
+        observed.cpu_profile != profile->cpu_profile ||
+        observed.fpu_profile != profile->fpu_profile ||
+        !profile_timing_is_materialized(default_session->core_machine_plan,
             profile) || !session_core_config_is_applied(default_session,
             profile->default_memory_bytes, profile->cpu_profile,
-            profile->fpu_profile);
-    failed |= !failed && (vm_test_default_pc_at_session_create(&overrides, &configured_session) !=
+            profile->fpu_profile)) goto done;
+    if (vm_test_default_pc_at_session_create(&overrides, &configured_session) !=
         LIB_STATUS_OK || configured_session == LIB_NULL ||
-        configured_session->core_machine_plan->configuration.memory_bytes !=
-            overrides.memory_bytes ||
-        configured_session->core_machine_plan->configuration.cpu_profile !=
-            overrides.cpu_profile ||
-        configured_session->core_machine_plan->configuration.fpu_profile !=
-            overrides.fpu_profile ||
+        configured_session->core_machine_plan == LIB_NULL) goto done;
+    observed = test_board_capture_plan(configured_session->core_machine_plan);
+    if (observed.memory_bytes != overrides.memory_bytes ||
+        observed.cpu_profile != overrides.cpu_profile ||
+        observed.fpu_profile != overrides.fpu_profile ||
         configured_session->retained_config.memory_bytes != overrides.memory_bytes ||
         configured_session->retained_config.cpu_profile != overrides.cpu_profile ||
         configured_session->retained_config.fpu_profile != overrides.fpu_profile ||
-        lib_memory_compare(&configured_session->core_machine_plan->controller_timing,
-            &profile->controller_timing_rules,
-            sizeof(configured_session->core_machine_plan->controller_timing)) != 0 ||
-        !profile_timing_is_materialized(&configured_session->core_machine_plan->configuration,
+        !profile_timing_is_materialized(configured_session->core_machine_plan,
             profile) || !session_core_config_is_applied(configured_session,
-            overrides.memory_bytes, overrides.cpu_profile, overrides.fpu_profile));
+            overrides.memory_bytes, overrides.cpu_profile, overrides.fpu_profile))
+        goto done;
+    failed = 0;
+done:
     vm_machine_destroy(configured_session);
     vm_machine_destroy(default_session);
     return failed;
@@ -189,8 +180,7 @@ lib_i32 main(void)
         vm_profile_default_pc_at_descriptor_get();
     if (profile == LIB_NULL || verify_create_materialization(profile) != 0 ||
         verify_invalid_media_slot(profile) != 0 ||
-        verify_recovery() != 0 || verify_reset_outcome() != 0 ||
-        verify_running_reset_outcome() != 0 ||
+        verify_recovery() != 0 || verify_missing_firmware_rejection() != 0 ||
         verify_constructor_output_contract() != 0 ||
         verify_option_rom_argument_contract() != 0) {
         return 1;
@@ -198,6 +188,6 @@ lib_i32 main(void)
     printf("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");
     printf("M5:T332:S1:SESSION-CONFIG-MATERIALIZATION:OK\n");
     printf("M5:T332:S2:SESSION-CONSTRUCTION-TRANSACTION:OK\n");
-    printf("M5:T439:S1:SESSION-RESET-OUTCOME:OK\n");
+    printf("M5:T439:S1:SESSION-FIRMWARE-REJECTION:OK\n");
     return 0;
 }

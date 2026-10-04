@@ -9,7 +9,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/external_
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/rtc146818/rtc.c" rtc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.c" fdc_source)
 
 foreach(required IN ITEMS
     "default-pc-at"

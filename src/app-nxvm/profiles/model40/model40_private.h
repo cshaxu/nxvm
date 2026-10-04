@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 #include "x86/core/firmware_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/profiles/model40/model40.h"
 #include "app-nxvm/profiles/profile_contract_interface.h"
 
@@ -17,7 +17,7 @@
 #define VM_PROFILE_MODEL40_VIDEO_ROM_COMPATIBILITY_ALIAS_START 0x000e0000u
 #define VM_PROFILE_MODEL40_VIDEO_ROM_ALIAS_SKIP_BYTES 3u
 
-/* Test-visible board addresses; their runtime decoder is Core-owned. */
+/* Test-visible board addresses; Profile owns decoding, Core owns dispatch. */
 #define VM_PROFILE_MODEL40_D4_COMPATIBILITY_START 0x00fe0000u
 #define VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL 0x80c00000u
 

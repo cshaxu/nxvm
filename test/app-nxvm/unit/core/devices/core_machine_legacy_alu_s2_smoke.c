@@ -1,7 +1,7 @@
 #include "x86/core/debug_interface.h"
-#include "x86/chips/cpu/cpu.h"
+#include "x86/chips/cpu/cpu_interface.h"
 #include "x86/core/device_support_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
 static lib_u16 legacy_alu_real_flags_known_mask(
@@ -54,8 +54,8 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
             patch.values[CORE_MACHINE_DEBUG_EAX] = 5u;
             patch.values[CORE_MACHINE_DEBUG_EDX] = 0xaabbccddu;
             patch.values[CORE_MACHINE_DEBUG_ESP] = 0x00008000u;
-            patch.values[CORE_MACHINE_DEBUG_EFLAGS] = VCPU_EFLAGS_CF |
-                VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
+            patch.values[CORE_MACHINE_DEBUG_EFLAGS] = CORE_MACHINE_DEBUG_EFLAGS_CF |
+                CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_DF;
             patch.values[CORE_MACHINE_DEBUG_EIP] = code_offset;
             failed = core_machine_debug_patch_registers(machine, &patch) !=
                     LIB_STATUS_OK ||
@@ -84,7 +84,7 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
                 after.eip != handler_offset || after.eax != before.eax ||
                 after.ecx != before.ecx || after.edx != before.edx ||
                 after.eflags !=
-                    (before.eflags & ~(VCPU_EFLAGS_IF | VCPU_EFLAGS_TF)) ||
+                    (before.eflags & ~(CORE_MACHINE_DEBUG_EFLAGS_IF | CORE_MACHINE_DEBUG_EFLAGS_TF)) ||
                 after.esp != ((before.esp & 0xffff0000u) |
                     (lib_u16)(before.esp - 6u)) ||
                 core_machine_memory_read(machine,
@@ -92,7 +92,7 @@ static lib_i32 legacy_alu_divide_error_delivery(void)
                     sizeof(frame)) != LIB_STATUS_OK ||
                 frame[0] != code_offset || frame[1] != before.cs.selector ||
                 (frame[2] & known) !=
-                    ((((lib_u16)(before.eflags & ~VCPU_EFLAGS_RESERVED)) |
+                    ((((lib_u16)(before.eflags & ~0xfffc802au)) |
                         0x02u) & known);
         }
         core_machine_destroy(machine);

@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 
 #include "app-nxvm/profiles/byob/blob.h"
@@ -513,11 +513,13 @@ static lib_status vm_profile_machine_plan_materialize_pc_at(
 
 lib_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
     core_machine_plan *core_plan,
-    core_machine_fdc_terminal_observation_provider terminal_observation)
+    core_machine_fdc_terminal_observation_provider terminal_observation,
+    core_machine_d4_platform **construction_output)
 {
     if (plan == LIB_NULL || core_plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (plan->kind == VM_PROFILE_MACHINE_PLAN_MODEL40) {
-        return vm_profile_model40_materialize_plan(core_plan, terminal_observation);
+        return vm_profile_model40_materialize_plan(core_plan, terminal_observation,
+            construction_output);
     }
     if (plan->kind == VM_PROFILE_MACHINE_PLAN_XT) return LIB_STATUS_OK;
     return vm_profile_machine_plan_materialize_pc_at(plan, core_plan);

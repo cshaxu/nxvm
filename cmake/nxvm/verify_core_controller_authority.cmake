@@ -2,26 +2,22 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-# Shared provider mechanisms must not regain an App implementation or facade.
-foreach(retired IN ITEMS media_interface.c media_interface.h display.c display_interface.h pit_bus.c pit_bus.h pic_bus.c pic_bus.h pic_bus_interface.h)
-    if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/${retired}")
-        message(FATAL_ERROR "Shared IBM-PC provider has a duplicate App path: ${retired}")
-    endif()
-endforeach()
+# The entire former App device root is retired, not just selected providers.
+file(GLOB_RECURSE retired_devices "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/*")
+if(retired_devices)
+    message(FATAL_ERROR "Shared IBM-PC provider has a duplicate App path: ${retired_devices}")
+endif()
 file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" product_build)
-foreach(retired IN ITEMS media_interface.c display.c pit_bus.c pic_bus.c)
-    string(FIND "${product_build}" "src/app-nxvm/devices/${retired}" retired_source)
-    if(NOT retired_source EQUAL -1)
-        message(FATAL_ERROR "App build restores a Shared provider implementation: ${retired}")
-    endif()
-endforeach()
+if(product_build MATCHES "src/app-nxvm/devices/")
+    message(FATAL_ERROR "App build restores a Shared provider implementation")
+endif()
 
-set(machine_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c")
+set(machine_source "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c")
 set(machine_lifecycle_source "${PROJECT_SOURCE_DIR}/src/x86/core/machine.c")
-set(machine_plan_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_plan.c")
+set(machine_plan_source "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_plan.c")
 set(profile_plan_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.c")
 set(composition_source "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c")
-set(fixture "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_controller_authority_smoke.c")
+set(fixture "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/core_machine_controller_authority_smoke.c")
 foreach(source IN ITEMS "${machine_source}" "${machine_lifecycle_source}" "${machine_plan_source}" "${profile_plan_source}" "${composition_source}" "${fixture}")
     if(NOT EXISTS "${source}")
         message(FATAL_ERROR "T296 S4 authority source missing: ${source}")
@@ -30,7 +26,7 @@ endforeach()
 
 file(READ "${machine_source}" machine_board_text)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_interface.h" neutral_contract)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_interface.h" board_contract)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_interface.h" board_contract)
 foreach(forbidden IN ITEMS "machine_board_interface.h" "controller_interface.h"
     "display_interface.h" "pic_bus_interface.h" "fdc_observation_interface.h"
     "core_machine_config" "core_machine_clock_plan" "core_machine_plan_topology"
@@ -113,14 +109,17 @@ foreach(source IN ITEMS "${machine_source}" "${machine_plan_source}")
     endif()
 endforeach()
 file(GLOB_RECURSE nxvm_signal_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c")
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c")
 foreach(source IN LISTS nxvm_signal_sources)
     file(READ "${source}" source_text)
-    if(source MATCHES "/src/app-nxvm/" AND
+    if(source MATCHES "/src/(app-nxvm|x86/ibmpc-(common|at|xt))/" AND
        source_text MATCHES "#[ \t]*include[ \t]*[<\"]x86/core/(machine|memory|port|transaction|timeline)\\.h[>\"]")
         message(FATAL_ERROR "Board source imports private Core layout: ${source}")
     endif()
-    if(source MATCHES "/devices/(board[^/]*|machine_board[^/]*|machine_plan|machine_display)\\.c$" AND
+    if(source MATCHES "/ibmpc-common/(board[^/]*|machine_board[^/]*|machine_plan|machine_display)\\.c$" AND
        source_text MATCHES "->[ \t]*elapsed_ticks")
         message(FATAL_ERROR "Board must receive copied Core time: ${source}")
     endif()
@@ -131,7 +130,7 @@ foreach(source IN LISTS nxvm_signal_sources)
     if(source STREQUAL machine_lifecycle_source)
         continue()
     endif()
-    if(source MATCHES "/devices/(board[^/]*|machine_board[^/]*|machine_plan|machine_display)\\.c$" AND
+    if(source MATCHES "/ibmpc-common/(board[^/]*|machine_board[^/]*|machine_plan|machine_display)\\.c$" AND
        source_text MATCHES "(machine|mutable_machine)->(lifecycle|transaction_contract|cpu_cycle_bus_ready|dma_cycle_bus_ready)")
         message(FATAL_ERROR "Board borrows private Core lifecycle or READY state: ${source}")
     endif()
@@ -208,13 +207,13 @@ foreach(required IN ITEMS ".context = board" "board->core = machine;")
     endif()
 endforeach()
 foreach(source IN ITEMS board_advance board_deadline)
-    file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/${source}.c" callback_text)
+    file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/${source}.c" callback_text)
     if(callback_text MATCHES "machine->|board->core->|core_machine \\*machine = owner")
         message(FATAL_ERROR "Board callbacks borrow the Core layout: ${source}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_advance.c" board_advance_text)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_deadline.c" board_deadline_text)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_advance.c" board_advance_text)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_deadline.c" board_deadline_text)
 set(board_callbacks "${machine_board_text}${board_advance_text}${board_deadline_text}")
 foreach(callback IN ITEMS deadline_observe refresh_request refresh_complete dma_ticks
     dma_request dma_advance pit_ticks_advance pit_pic_advance pic_pending pic_acknowledge
@@ -283,8 +282,8 @@ foreach(forbidden IN ITEMS "core_machine_board_state" "->board")
         message(FATAL_ERROR "Neutral Core retains a private board association: ${forbidden}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board_state.h" board_state)
-set(board_headers "src/app-nxvm/devices/machine_board_state.h")
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_state.h" board_state)
+set(board_headers "src/x86/ibmpc-common/machine_board_state.h")
 set(visited_headers)
 while(board_headers)
     list(POP_FRONT board_headers header)
@@ -341,11 +340,11 @@ foreach(validator IN ITEMS retirement_time_contract_is_valid
 endforeach()
 set(machine_text "${machine_board_text}${machine_lifecycle_text}${machine_plan_text}")
 foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_hdc"
-    "core_machine_fdc_connect" "core_machine_fdc_initialize"
-    "core_machine_hdc_connect" "core_machine_hdc_initialize"
+    "core_machine_fdc_create" "core_machine_fdc_configure"
+    "core_machine_hdc_create" "core_machine_hdc_configure"
     "core_machine_install_port_routes" "core_machine_fdc_reset"
-    "core_machine_hdc_reset" "core_machine_fdc_finalize"
-    "core_machine_hdc_finalize")
+    "core_machine_hdc_reset" "core_machine_fdc_destroy"
+    "core_machine_hdc_destroy")
     string(FIND "${machine_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T296 S4 core lifecycle route is incomplete: ${required}")
@@ -416,7 +415,7 @@ foreach(required IN ITEMS "M5:T296:S4:CONTROLLER-AUTHORITY:OK"
 endforeach()
 
 # Pending operations must not borrow the next command's input buffer.
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.c" fdc_source)
 string(FIND "${fdc_source}" "void core_machine_fdc_advance_at(" fdc_advance_start)
 string(FIND "${fdc_source}" "lib_status core_machine_fdc_next_due_tick(" fdc_advance_end)
 if(fdc_advance_start LESS 0 OR fdc_advance_end LESS fdc_advance_start)

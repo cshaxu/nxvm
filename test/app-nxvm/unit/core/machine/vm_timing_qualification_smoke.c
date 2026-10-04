@@ -2,9 +2,8 @@
 #include <stdio.h>
 
 #include "x86/ibmpc-common/dma_bus_interface.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
@@ -90,12 +89,13 @@ static lib_i32 vm_timing_qualification_assert_case(
     wiring.cascade_channel = configuration.dma_controller_count == 1u ? 0u :
         CORE_MACHINE_DMA_CASCADE_CHANNEL;
     status = core_machine_plan_create(&configuration, &plan);
-    if (status != LIB_STATUS_OK) {
+    if (status != LIB_STATUS_OK || plan == LIB_NULL) {
         printf("%s: plan create status %d\n", test_case->name, status);
-        return 1;
+        failed = 1;
+        goto done;
     }
     status = core_machine_create_from_plan(plan, &machine, &board);
-    if (status != LIB_STATUS_OK) {
+    if (status != LIB_STATUS_OK || machine == LIB_NULL || board == LIB_NULL) {
         printf("%s: core create status %d\n", test_case->name, status);
         failed = 1;
     }
@@ -121,17 +121,21 @@ static lib_i32 vm_timing_qualification_assert_case(
         }
     }
     if (!failed) {
-        core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
-        core_machine_dma_request_assert(board->shared_dma, &request);
+        failed = core_machine_bus_write(machine, 0x000au, 0x02u) != LIB_STATUS_OK;
+    }
+    if (!failed) {
+        test_board_dma_request_assert(board, &request);
         status = core_machine_capture_time_observation(machine, &observation);
         if (status != LIB_STATUS_OK || !observation.next_deadline_valid ||
             observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE) {
-            printf("%s: observation status %d deadline %u disposition %d\n",
-                test_case->name, status, observation.next_deadline_valid,
-                observation.progress_disposition);
+            printf("%s: observation status %d\n", test_case->name, status);
+            if (status == LIB_STATUS_OK)
+                printf("deadline %u disposition %d\n", observation.next_deadline_valid,
+                    observation.progress_disposition);
             failed = 1;
         }
     }
+done:
     core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;

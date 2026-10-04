@@ -36,7 +36,7 @@ static lib_i32 vm_dos_mem_fault_has_prompt(const vm_machine *session)
     core_machine_guest_display_frame frame;
     lib_size cell;
 
-    (void)test_vm_machine_capture_presentation(session, &frame);
+    if (test_vm_machine_capture_presentation(session, &frame) != LIB_STATUS_OK) return 0;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (isalpha(frame.characters[cell]) &&
             frame.characters[cell + 1u] == ':' &&

@@ -1,4 +1,4 @@
-#include "../../support/hdc.h"
+#include "../../../x86/ibmpc-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -6,10 +6,7 @@
 
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "x86/core/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/waiting.h"
 
@@ -92,7 +89,7 @@ lib_i32 main(lib_i32 argc, char **argv)
 {
     const core_machine_run_budget budget = {1u, 0u};
     integration_ini_session ini_session = {0};
-    core_machine_run_result result;
+    core_machine_run_result result = {0};
     core_machine_cpu_state cpu = {0};
     vm_machine *session = LIB_NULL;
     lib_u8 host_mbr[512] = {0};
@@ -148,11 +145,11 @@ lib_i32 main(lib_i32 argc, char **argv)
                 !advanced) goto done;
         }
         if (values[10] != 0u && first_command_count == 0u) {
-            first_sector_number = hdc_observe(&session->board->hdc).sector_number;
-            first_cylinder_low = hdc_observe(&session->board->hdc).cylinder_low;
-            first_cylinder_high = hdc_observe(&session->board->hdc).cylinder_high;
-            first_drive_head = hdc_observe(&session->board->hdc).drive_head;
-            first_command_count = hdc_observe(&session->board->hdc).command_count;
+            first_sector_number = test_board_hdc_observe(session->board).sector_number;
+            first_cylinder_low = test_board_hdc_observe(session->board).cylinder_low;
+            first_cylinder_high = test_board_hdc_observe(session->board).cylinder_high;
+            first_drive_head = test_board_hdc_observe(session->board).drive_head;
+            first_command_count = test_board_hdc_observe(session->board).command_count;
         }
         if (values[8] == 0xa55au) break;
     }
@@ -180,13 +177,12 @@ lib_i32 main(lib_i32 argc, char **argv)
                 sizeof(guest_vbr)) == 0;
 
 done:
-    lib_release(hdd_overlay);
     if (session != LIB_NULL) (void)core_machine_get_cpu_state(session->core_machine,
         &cpu);
     if (passed) {
         printf("M5:T287:S16:HDD-ADMISSION:OK lba=%u chs=%u/%u/%u spt=%u heads=%u "
             "ata_commands=%u\n", lba, cylinder, head, sector, sectors_per_track,
-            heads, hdc_observe(&session->board->hdc).command_count);
+            heads, test_board_hdc_observe(session->board).command_count);
     } else {
         fprintf(stderr,
             "M5:T287:S16:HDD-ADMISSION:FAIL done=%04X ah08=%04X/%04X/%04X/%04X "
@@ -202,11 +198,12 @@ done:
             guest_mbr[0], guest_mbr[1], guest_mbr[2], guest_mbr[3],
             host_mbr[0], host_mbr[1], host_mbr[2], host_mbr[3], guest_vbr[0], guest_vbr[1],
             guest_vbr[2], guest_vbr[3], cpu.cs, cpu.eip, cpu.halted, (lib_u32)result.reason,
-            (lib_u32)(session == LIB_NULL ? 0u : hdc_observe(&session->board->hdc).phase),
-            (lib_u32)(session == LIB_NULL ? 0u : hdc_observe(&session->board->hdc).data_index),
-            session == LIB_NULL ? 0u : hdc_observe(&session->board->hdc).status,
-            session == LIB_NULL ? 0u : hdc_observe(&session->board->hdc).command_count);
+            (lib_u32)(session == LIB_NULL ? 0u : test_board_hdc_observe(session->board).phase),
+            (lib_u32)(session == LIB_NULL ? 0u : test_board_hdc_observe(session->board).data_index),
+            session == LIB_NULL ? 0u : test_board_hdc_observe(session->board).status,
+            session == LIB_NULL ? 0u : test_board_hdc_observe(session->board).command_count);
     }
+    lib_release(hdd_overlay);
     integration_ini_session_close(&ini_session);
     return passed ? 0 : 1;
 }

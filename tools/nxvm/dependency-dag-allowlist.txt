@@ -1,23 +1,6 @@
 # Exact temporary source-owner edges.  Every entry is a direct include audited
-# by T533 S3; T540 S66 makes four existing board-value consumers explicit.
+# by T533 S3; T540 S93 removes the former App devices owner.
 # Remove each edge with its consumer rather than silently widening a layer.
-src/app-nxvm/machine/display.c|app-nxvm/devices
-src/app-nxvm/machine/machine.c|app-nxvm/devices
 src/app-nxvm/machine/machine.c|app-nxvm/profiles
-src/app-nxvm/machine/machine_interface.h|app-nxvm/devices
 src/app-nxvm/machine/machine_interface.h|app-nxvm/profiles
-src/app-nxvm/machine/machine_private.h|app-nxvm/devices
 src/app-nxvm/machine/machine_private.h|app-nxvm/profiles
-src/app-nxvm/profiles/default_profile/keyboard_mapper.c|app-nxvm/devices
-src/app-nxvm/profiles/default_profile/pc_at_profile.c|app-nxvm/devices
-src/app-nxvm/profiles/default_profile/pc_at_profile_private.h|app-nxvm/devices
-src/app-nxvm/profiles/device/floppy.h|app-nxvm/devices
-src/app-nxvm/profiles/machine_plan_interface.h|app-nxvm/devices
-src/app-nxvm/profiles/machine_plan.c|app-nxvm/devices
-src/app-nxvm/profiles/profile_contract_interface.h|app-nxvm/devices
-src/app-nxvm/profiles/model40/composition.c|app-nxvm/devices
-src/app-nxvm/profiles/model40/composition_interface.h|app-nxvm/devices
-src/app-nxvm/profiles/model40/model40_private.h|app-nxvm/devices
-src/app-nxvm/profiles/model40/model40.c|app-nxvm/devices
-src/app-nxvm/profiles/xt/xt_5160_268.h|app-nxvm/devices
-src/app-nxvm/profiles/xt/xt_5160_268.c|app-nxvm/devices

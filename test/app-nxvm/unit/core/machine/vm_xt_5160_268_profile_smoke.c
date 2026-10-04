@@ -1,10 +1,10 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "x86/core/port.h"
+#include "../../../../x86/core/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "../../../../x86/ibmpc-common/controller_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/profiles/xt/xt_5160_268.h"
@@ -125,66 +125,63 @@ static lib_i32 vm_xt_5160_268_topology_constructs_one_xt_route(void)
     core_machine_dma_request_binding binding = {0};
     core_machine_media_registry *media = LIB_NULL;
     x86_video_snapshot snapshot = {0};
+    test_board_composition_observation composition;
     const lib_u8 cells[] = { 'X', 0x1fu };
     lib_u8 open_bus_byte = 0u;
-    lib_i32 failed = 0;
+    lib_i32 failed = 1;
 
-    failed |= vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_plan_create(
-        &profile.values.core.configuration, &plan) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_media_registry_create(&media) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_media_registry_bind(media,
+    if (vm_profile_xt_5160_268_plan_create(&profile, LIB_FALSE) != LIB_STATUS_OK ||
+        core_machine_plan_create(&profile.values.core.configuration, &plan) != LIB_STATUS_OK ||
+        plan == LIB_NULL || core_machine_media_registry_create(&media) != LIB_STATUS_OK ||
+        media == LIB_NULL || core_machine_media_registry_bind(media,
         VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, LIB_NULL,
-        &vm_xt_5160_268_fdd_provider) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_media_registry_freeze(media) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_plan_bind_media_registry(plan, media) !=
-        LIB_STATUS_OK;
-    failed |= !failed && core_machine_plan_set_topology(plan, &profile.topology) !=
-        LIB_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_get_fdc_dma_request_binding(board, &binding) !=
-        LIB_STATUS_OK;
-    failed |= !failed && (binding.core_token == 0u || binding.channel != 2u ||
-        board->fdc.connect.config.irq != 6u ||
-        board->fdc.connect.config.dma_channel != 2u ||
-        board->fdc.connect.config.clock_ticks_per_second != 4772727u ||
-        !core_machine_port_has_read(&machine->executor_port, 0x03f4u) ||
-        !core_machine_port_has_read(&machine->executor_port, 0x03f5u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x03f2u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x03f5u) ||
-        core_machine_port_has_read(&machine->executor_port, 0x03f7u) ||
-        core_machine_port_has_write(&machine->executor_port, 0x03f7u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x03d4u) ||
-        !core_machine_port_has_read(&machine->executor_port, 0x03d5u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x03d8u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x03d9u) ||
-        !core_machine_port_has_read(&machine->executor_port, 0x03dau) ||
-        core_machine_port_has_read(&machine->executor_port, 0x03c0u) ||
-        !board->hdc_configured ||
-        board->hdc.connect.config.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
-        board->hdc.connect.config.bus.xebec.drive_type !=
+        &vm_xt_5160_268_fdd_provider) != LIB_STATUS_OK ||
+        core_machine_media_registry_freeze(media) != LIB_STATUS_OK ||
+        core_machine_plan_bind_media_registry(plan, media) != LIB_STATUS_OK ||
+        core_machine_plan_set_topology(plan, &profile.topology) != LIB_STATUS_OK ||
+        core_machine_create_from_plan(plan, &machine, &board) != LIB_STATUS_OK ||
+        machine == LIB_NULL || board == LIB_NULL ||
+        core_machine_get_fdc_dma_request_binding(board, &binding) != LIB_STATUS_OK ||
+        binding.core_token == 0u || binding.channel != 2u) goto done;
+    composition = test_board_capture_composition(board);
+    if (composition.fdc.irq != 6u || composition.fdc.dma_channel != 2u ||
+        composition.fdc.clock_ticks_per_second != 4772727u ||
+        !test_core_port_has_read(machine, 0x03f4u) ||
+        !test_core_port_has_read(machine, 0x03f5u) ||
+        !test_core_port_has_write(machine, 0x03f2u) ||
+        !test_core_port_has_write(machine, 0x03f5u) ||
+        test_core_port_has_read(machine, 0x03f7u) ||
+        test_core_port_has_write(machine, 0x03f7u) ||
+        !test_core_port_has_write(machine, 0x03d4u) ||
+        !test_core_port_has_read(machine, 0x03d5u) ||
+        !test_core_port_has_write(machine, 0x03d8u) ||
+        !test_core_port_has_write(machine, 0x03d9u) ||
+        !test_core_port_has_read(machine, 0x03dau) ||
+        test_core_port_has_read(machine, 0x03c0u) ||
+        !composition.hdc_configured ||
+        composition.hdc.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
+        composition.hdc.bus.xebec.drive_type !=
             CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||
-        !core_machine_port_has_read(&machine->executor_port, 0x0320u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x0320u) ||
-        !core_machine_port_has_read(&machine->executor_port, 0x0321u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x0321u) ||
-        !core_machine_port_has_read(&machine->executor_port, 0x0322u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x0322u) ||
-        core_machine_port_has_read(&machine->executor_port, 0x0323u) ||
-        !core_machine_port_has_write(&machine->executor_port, 0x0323u));
-    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
-        LIB_STATUS_OK;
-    failed |= !failed && core_machine_reset(machine) != LIB_STATUS_OK;
-    failed |= !failed && (core_machine_memory_read(machine, 0x000c8000u,
+        !test_core_port_has_read(machine, 0x0320u) ||
+        !test_core_port_has_write(machine, 0x0320u) ||
+        !test_core_port_has_read(machine, 0x0321u) ||
+        !test_core_port_has_write(machine, 0x0321u) ||
+        !test_core_port_has_read(machine, 0x0322u) ||
+        !test_core_port_has_write(machine, 0x0322u) ||
+        test_core_port_has_read(machine, 0x0323u) ||
+        !test_core_port_has_write(machine, 0x0323u) ||
+        core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        core_machine_reset(machine) != LIB_STATUS_OK ||
+        core_machine_memory_read(machine, 0x000c8000u,
         &open_bus_byte, sizeof(open_bus_byte)) != LIB_STATUS_OK ||
-        open_bus_byte != 0xffu);
-    core_machine_port_write(&machine->executor_port, 0x03d8u, 0x0du);
-    failed |= !failed && core_machine_memory_write(machine, 0x000b8000u,
-        cells, sizeof(cells)) != LIB_STATUS_OK;
-    failed |= !failed && core_machine_capture_display_snapshot(board, &snapshot) !=
-        LIB_STATUS_OK;
-    failed |= !failed && (snapshot.kind != X86_VIDEO_KIND_TEXT ||
-        snapshot.characters[0] != 'X' || snapshot.attributes[0] != 0x1fu);
+        open_bus_byte != 0xffu ||
+        core_machine_bus_write(machine, 0x03d8u, 0x0du) != LIB_STATUS_OK ||
+        core_machine_memory_write(machine, 0x000b8000u, cells, sizeof(cells)) != LIB_STATUS_OK ||
+        core_machine_capture_display_snapshot(board, &snapshot) != LIB_STATUS_OK ||
+        snapshot.kind != X86_VIDEO_KIND_TEXT ||
+        snapshot.characters[0] != 'X' || snapshot.attributes[0] != 0x1fu) goto done;
+    failed = 0;
+done:
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     core_machine_plan_destroy(plan);
@@ -206,26 +203,28 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     vm_machine *session = LIB_NULL;
     vm_machine_reset_vector vector;
     lib_u8 observed[2] = {0};
-    lib_i32 failed = 0;
+    const char *name = vm_profile_name(config.profile_kind);
+    lib_i32 failed = 1;
 
-    failed |= lib_text_compare(vm_profile_name(config.profile_kind),
-        "ibm-5160-model-268") != 0;
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL;
-    failed |= !failed && vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK;
-    failed |= !failed && (core_machine_memory_read(session->core_machine, 0x000c0000u,
+    if (name == LIB_NULL || lib_text_compare(name, "ibm-5160-model-268") != 0 ||
+        vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+        session == LIB_NULL || session->core_machine == LIB_NULL ||
+        vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
+        core_machine_memory_read(session->core_machine, 0x000c0000u,
         observed, sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x55u ||
-        observed[1u] != 0xaau);
+        observed[1u] != 0xaau) goto done;
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.bios_count = 2u;
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL;
+    if (vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+        session == LIB_NULL) goto done;
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) !=
-        LIB_STATUS_INVALID_ARGUMENT;
+    failed = vm_machine_create_from_assets(&config, &assets, &session) !=
+        LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
+done:
+    vm_machine_destroy(session);
     return failed;
 }
 

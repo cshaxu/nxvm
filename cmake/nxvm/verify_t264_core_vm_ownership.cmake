@@ -3,11 +3,17 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(GLOB_RECURSE core_sources
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/*.h")
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.h")
 foreach(source IN LISTS core_sources)
     file(READ "${source}" source_text)
-    string(REGEX MATCH "#include[ \t]*[\"<]vm/" core_depends_on_vm
+    string(REGEX MATCH "#include[ \t]*[\"<](vm/|app-nxvm/)" core_depends_on_vm
         "${source_text}")
     if(core_depends_on_vm)
         message(FATAL_ERROR "Core source depends on VM: ${source}")
@@ -25,8 +31,8 @@ foreach(forbidden "x86_rtc_create" "x86_rtc_reset"
 endforeach()
 
 file(GLOB_RECURSE vm_sources
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/*.h")
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
 foreach(source IN LISTS vm_sources)
     file(READ "${source}" source_text)
     string(FIND "${source_text}" "core_machine_run(" run_position)

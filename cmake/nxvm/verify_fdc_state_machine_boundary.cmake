@@ -2,15 +2,15 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.h" fdc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.h" fdc_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.c" chip_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc.h" chip_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/chips/fdc8272/fdc8272_interface.h" chip_interface)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/board_deadline.c" board_deadline_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/board_deadline.c" board_deadline_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/devices/core_machine_fdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/core_machine_fdc_smoke.c"
     core_fixture)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.h" fdd_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.c" fdd_source)
@@ -94,7 +94,13 @@ endif()
 file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
     "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h"
     "${PROJECT_SOURCE_DIR}/src/x86/core/*.c"
-    "${PROJECT_SOURCE_DIR}/src/x86/core/*.h")
+    "${PROJECT_SOURCE_DIR}/src/x86/core/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-xt/*.h")
 foreach(path IN LISTS app_sources)
     file(READ "${path}" source)
     if(source MATCHES "x86/chips/fdc8272/fdc\\.[ch]" OR

@@ -57,6 +57,13 @@ foreach(source IN LISTS unit_sources)
     endif()
 endforeach()
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_text)
+file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" product_cmake_text)
+if(product_cmake_text MATCHES "configure_file\\([^)]*NXVM\\.ini" OR
+   NOT product_cmake_text MATCHES "assets/nxvm/\\$\\{NXVM_PRODUCT_PROFILE\\}/\\$\\{task_artifact_filename\\}" OR
+   NOT product_cmake_text MATCHES "project_add_test\\(\\$\\{target\\} integration[ \t\r\n]+\"\\$\\{project_t533_runtime_directory\\}\"")
+    message(FATAL_ERROR
+        "Console integration must launch the deployed EXE beside its owner INI, not a copied build-tree INI.")
+endif()
 if(cmake_text MATCHES "project_add_test\\([^\\n]*integration[^\\n]*(PROJECT_FDD_SMOKE_IMAGE|PROJECT_M1_FDD_SMOKE_IMAGE|PROJECT_HDD_SMOKE_IMAGE)")
     message(FATAL_ERROR
         "T533 integration must be registered through the INI helper, not a media path.")

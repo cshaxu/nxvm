@@ -1,5 +1,5 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
 static lib_i32 vm_profile_ibm_5170_memory_is_valid(lib_size memory_bytes);
@@ -239,7 +239,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK },
     /* PCjs's Rev-3 model retains a 120-instruction keyboard IRQ phase for
-     * this ROM.  The Core PIC owns the delayed IMR-release eligibility; this
+     * this ROM.  The Board PIC owns the delayed IMR-release eligibility; this
      * immutable board value is Other-L2, never a BIOS-side exception. */
     {{0u, 120u}},
     /* IBM 6280099 Keyboard: default 500 ms delay and 10 cps typematic,
@@ -277,7 +277,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
      * readable port-61h waveform.  PCjs's Rev-3 model ties that observation
      * to the 8 MHz cycle axis and documents a 64-cycle half period required
      * by this ROM's two refresh POST checks.  Keep the physical PIT1-to-DMA
-     * route in Core; this frozen Other-L2 board observation owns only bit 4. */
+     * route in Board; this frozen Other-L2 board observation owns only bit 4. */
     CORE_MACHINE_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
     64u,
     LIB_FALSE,

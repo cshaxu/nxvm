@@ -2,9 +2,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.c" source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/vadp.h" header)
-file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" targets)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/vadp.c" source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/vadp.h" header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/CMakeLists.txt" targets)
+file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProduct.cmake" app_targets)
 
 foreach(required "append_ports(routes, 0u, cga_ports"
     "compaq ? compaq_ports : generic_ports"
@@ -27,9 +28,10 @@ foreach(forbidden "t_port" "core_machine_port_add_"
     endif()
 endforeach()
 
-string(FIND "${targets}" "    src/app-nxvm/devices/vadp.c\n)" runtime_position)
-if(runtime_position LESS 0)
-    message(FATAL_ERROR "VADP is not owned by the Core runtime target")
+if(NOT targets MATCHES "ibmpc-common/fdc\\.c ibmpc-common/hdc\\.c ibmpc-common/vadp\\.c" OR
+    NOT targets MATCHES "add_library\\(x86-ibmpc-common STATIC" OR
+    app_targets MATCHES "src/(app-nxvm/devices|x86/ibmpc-common)/vadp\\.c")
+    message(FATAL_ERROR "VADP must be built once by the Shared board source list, not App")
 endif()
 
 message("M5:T540:S15:VADP-PORT-ROUTES:OK")

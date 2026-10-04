@@ -1,6 +1,6 @@
 #include "support/protected_16_bootstrap_fixture.h"
-#include "app-nxvm/devices/machine_board_interface.h"
-#include "x86/chips/cpu/cpu.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
+#include "x86/chips/cpu/cpu_interface.h"
 #include <stdio.h>
 
 #define S47_S5_HANDLER 0x0320u
@@ -43,7 +43,7 @@ static lib_i32 s47_s5_outer_nmi(core_machine_cpu_profile profile,
         failed = !s47_s5_install_handler(&state, 0x02u, type) ||
             !test_protected_16_write(&state, TEST_PROTECTED_16_CODE_BASE +
                 0x0100u, nop, sizeof(nop)) || !s47_s5_patch_eflags(&state,
-                VCPU_EFLAGS_CF | VCPU_EFLAGS_IF) ||
+                CORE_MACHINE_DEBUG_EFLAGS_CF | CORE_MACHINE_DEBUG_EFLAGS_IF) ||
             core_machine_report_planar_parity_fault(state.board) !=
                 LIB_STATUS_OK || core_machine_get_planar_parity_observation(
                 state.board, &parity) != LIB_STATUS_OK || !parity.nmi_signaled ||
@@ -55,13 +55,13 @@ static lib_i32 s47_s5_outer_nmi(core_machine_cpu_profile profile,
             snapshot.ss.selector != 0x0010u || snapshot.ss.dpl != 0u ||
             snapshot.eip != S47_S5_HANDLER + 1u || snapshot.esp !=
                 TEST_PROTECTED_16_STACK_TOP - sizeof(frame) ||
-            (snapshot.eflags & VCPU_EFLAGS_CF) == 0u ||
-            ((snapshot.eflags & VCPU_EFLAGS_IF) != 0u) !=
-                (type == VCPU_DESC_SYS_TYPE_TRAPGATE_16) ||
+            (snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_CF) == 0u ||
+            ((snapshot.eflags & CORE_MACHINE_DEBUG_EFLAGS_IF) != 0u) !=
+                (type == TEST_PROTECTED_TRAP_GATE_16) ||
             !test_protected_16_read(&state, TEST_PROTECTED_16_STACK_TOP -
                 sizeof(frame), frame, sizeof(frame)) || frame[0] != 0x0101u ||
-            frame[1] != 0x001bu || frame[2] != (VCPU_EFLAGS_CF |
-                VCPU_EFLAGS_IF) || frame[3] != 0x7000u || frame[4] != 0x0023u;
+            frame[1] != 0x001bu || frame[2] != (CORE_MACHINE_DEBUG_EFLAGS_CF |
+                CORE_MACHINE_DEBUG_EFLAGS_IF) || frame[3] != 0x7000u || frame[4] != 0x0023u;
     }
     test_protected_16_destroy(&state);
     return !failed;
@@ -73,7 +73,7 @@ int main(void)
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     static const lib_u8 types[] = {
-        VCPU_DESC_SYS_TYPE_INTGATE_16, VCPU_DESC_SYS_TYPE_TRAPGATE_16
+        TEST_PROTECTED_INTERRUPT_GATE_16, TEST_PROTECTED_TRAP_GATE_16
     };
     lib_size profile;
     lib_size type;

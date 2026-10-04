@@ -2,12 +2,12 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.h" fdc_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.h" fdc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.c" fdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c" devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/dma_bus.c" dma_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core_memory_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/devices/machine_board.c" board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" board_source)
 
 foreach(forbidden IN ITEMS "dma_primary" "dma_secondary" "dma_latch"
     "core_machine_dma_set_drq" "core_machine_memory_")

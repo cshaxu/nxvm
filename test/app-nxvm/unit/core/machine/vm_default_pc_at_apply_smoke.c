@@ -1,15 +1,14 @@
 #include "lib/types/types_interface.h"
-#include "app-nxvm/devices/machine_board_interface.h"
+#include "../../../../x86/ibmpc-common/composition_fixture.h"
+#include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
-#include "x86/core/machine.h"
-#include "app-nxvm/devices/machine_board_state.h"
-#include "app-nxvm/devices/machine_board_state.h"
 #include "x86/core/debug_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
-#include "x86/chips/rtc146818/rtc146818_interface.h"
+#include "../../../../x86/core/time_fixture.h"
+#include "../../../../x86/ibmpc-common/cmos_fixture.h"
 #include "support/rom/session_assets.h"
 
 static lib_i32 vm_default_pc_at_fdd_format_is_valid(
@@ -23,52 +22,50 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
     lib_u32 tick;
     lib_u16 checksum = 0u;
     lib_u8 index;
+    lib_u8 observed_type;
+    lib_i32 valid = 0;
 
     config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
     config.floppy_format = format;
     if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL ||
-        session->fdd.data.ncyl != cylinders || session->fdd.data.nhead != 2u ||
+        session == LIB_NULL) goto done;
+    observed_type = test_board_cmos_read_register(session->board,
+        CORE_MACHINE_RTC_TYPE_DISK_FLOPPY);
+    if (session->fdd.data.ncyl != cylinders || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != sectors || session->fdd.data.nbyte != 512u ||
-        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY) !=
-            cmos_type) {
+        observed_type != cmos_type) {
         printf("FDD setup format=%u cmos=%02x expected=%02x\n",
-            (unsigned int)format, (unsigned int)x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY),
+            (unsigned int)format, (unsigned int)observed_type,
             (unsigned int)cmos_type);
-        vm_machine_destroy(session);
-        return 0;
+        goto done;
     }
     for (index = 0x10u; index < 0x2eu; ++index) {
         checksum = (lib_u16)(checksum +
-            x86_rtc_read_register(session->board->shared_rtc, index));
+            test_board_cmos_read_register(session->board, index));
     }
-    if (x86_rtc_read_register(session->board->shared_rtc, 0x2eu) !=
+    if (test_board_cmos_read_register(session->board, 0x2eu) !=
             (lib_u8)(checksum >> 8u) ||
-        x86_rtc_read_register(session->board->shared_rtc, 0x2fu) !=
+        test_board_cmos_read_register(session->board, 0x2fu) !=
             (lib_u8)checksum) {
-        vm_machine_destroy(session);
-        return 0;
+        goto done;
     }
     if (core_machine_bus_read(session->core_machine, 0x0061u, &port_b) !=
         LIB_STATUS_OK) {
-        vm_machine_destroy(session);
-        return 0;
+        goto done;
     }
     for (tick = 0u; tick < 200u; ++tick) {
-        if (core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK ||
+        if (test_core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK ||
             core_machine_bus_read(session->core_machine, 0x0061u, &next_port_b) !=
                 LIB_STATUS_OK) {
-            vm_machine_destroy(session);
-            return 0;
+            goto done;
         }
         if ((port_b & 0x10u) != (next_port_b & 0x10u)) break;
     }
-    if (tick == 200u) {
-        vm_machine_destroy(session);
-        return 0;
-    }
+    if (tick == 200u) goto done;
+    valid = 1;
+done:
     vm_machine_destroy(session);
-    return 1;
+    return valid;
 }
 
 static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
@@ -99,12 +96,17 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
 
     if (vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) {
+        vm_machine_destroy(session);
         return 0;
     }
     for (tick = 0u; tick < 200u; ++tick) {
         if (core_machine_bus_read(session->core_machine, 0x0061u, &port_b) !=
-                LIB_STATUS_OK || (port_b & 0x10u) == 0u) break;
-        if (core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK) {
+                LIB_STATUS_OK) {
+            failed = 1;
+            break;
+        }
+        if ((port_b & 0x10u) == 0u) break;
+        if (test_core_machine_advance_time(session->core_machine, 1u) != LIB_STATUS_OK) {
             failed = 1;
             break;
         }
@@ -126,21 +128,27 @@ static lib_i32 vm_default_pc_at_80186_refresh_polling_is_live(void)
 lib_i32 main(void)
 {
     vm_machine *session = LIB_NULL;
-    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK) return 1;
-    if (!session->active || session->profile_plan == LIB_NULL ||
-        session->board->fdc.connect.config.dor_port != 0x03f2u ||
-        session->board->fdc.connect.config.status_port != 0x03f4u ||
-        session->board->fdc.connect.config.data_port != 0x03f5u ||
-        session->board->fdc.connect.config.direction_port != 0x03f7u ||
-        session->board->fdc.connect.config.irq != 6u ||
-        session->board->fdc.connect.config.dma_channel != 2u ||
-        session->board->fdc.connect.config.ready_mask != 0x0fu) {
+    test_board_composition_observation board;
+    if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
+        session == LIB_NULL) {
         vm_machine_destroy(session);
         return 1;
     }
-    if (x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_EQUIPMENT) !=
-            0x21u || x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x7fu ||
-        x86_rtc_read_register(session->board->shared_rtc, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u) {
+    board = test_board_capture_composition(session->board);
+    if (!session->active || session->profile_plan == LIB_NULL ||
+        board.fdc.dor_port != 0x03f2u ||
+        board.fdc.status_port != 0x03f4u ||
+        board.fdc.data_port != 0x03f5u ||
+        board.fdc.direction_port != 0x03f7u ||
+        board.fdc.irq != 6u ||
+        board.fdc.dma_channel != 2u ||
+        board.fdc.ready_mask != 0x0fu) {
+        vm_machine_destroy(session);
+        return 1;
+    }
+    if (test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_EQUIPMENT) !=
+            0x21u || test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_LSB) != 0x7fu ||
+        test_board_cmos_read_register(session->board, CORE_MACHINE_RTC_BASEMEM_MSB) != 0x02u) {
         vm_machine_destroy(session);
         return 1;
     }
