@@ -1,11 +1,13 @@
+#include "../../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/model40.h"
 #include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/lifecycle.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/lifecycle.h"
 #include "x86/product/machine/media/fdd_interface.h"
 #include "support/rom/model40_session_assets.h"
 
@@ -127,7 +129,7 @@ lib_i32 main(void)
             config.clock_ticks_per_second != 8000000u ||
             drives.installed_mask != 0x03u ||
             drives.track_zero_active_low_mask != 0u ||
-            session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K) goto done;
+            session->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K) goto done;
         static const struct { lib_u8 index; lib_u8 value; } cmos[] = {
             {0x14u, 0x41u}, {0x10u, 0x22u}, {0x12u, 0x80u},
             {0x19u, 0u}, {0x17u, 0u}, {0x18u, 0x04u}
@@ -256,7 +258,7 @@ lib_i32 main(void)
             vm_machine_finish_reset(session, LIB_STATUS_INTERNAL_ERROR) != LIB_STATUS_INTERNAL_ERROR ||
             !vm_test_model40_observation(session).fdc_terminal_valid) goto done;
         vm_machine_finalize(session);
-        if (vm_profile_machine_plan_observe_model40(session->profile_plan, &detached) !=
+        if (vm_profile_machine_plan_observe_model40(vm_test_profile_plan(session), &detached) !=
                 LIB_STATUS_OK || detached.d4.configured || detached.fdc_terminal_valid ||
             !captured.d4.configured || !captured.fdc_terminal_valid) goto done;
     }

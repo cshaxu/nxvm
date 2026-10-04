@@ -1,3 +1,4 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../support/model40.h"
 #include "../../support/media.h"
 #include "lib/types/types_interface.h"
@@ -10,8 +11,8 @@
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "x86/core/machine_interface.h"
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/lifecycle.h"
+#include "x86/product/machine/machine_private.h"
 #include "x86/ibmpc-common/floppy_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
@@ -384,9 +385,9 @@ static lib_i32 boot_cmos_seed_matches(const vm_machine *session)
 {
     lib_u8 index;
 
-    if (session == LIB_NULL || !session->cmos_seed_present) return 1;
+    if (session == LIB_NULL || !session->construction.cmos_seed_present) return 1;
     for (index = 0x0eu; index < VM_MACHINE_CMOS_SEED_BYTES; ++index) {
-        lib_u8 expected = session->cmos_seed[index];
+        lib_u8 expected = session->construction.cmos_seed[index];
         lib_u32 actual;
 
         if (core_machine_bus_write(session->core_machine, 0x0070u, index) != LIB_STATUS_OK ||

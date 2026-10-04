@@ -9,9 +9,9 @@ set(machine_source "${machine_lifecycle_source}${machine_scheduler_source}${boar
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/clock.c" clock_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/execution_provider_interface.h"
     provider_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile_private.h"
     profile_header)

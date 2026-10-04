@@ -1,15 +1,18 @@
+#include "../../support/guest_input.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
 
 #include <windows.h>
+#undef exception_code
 
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/core/machine_interface.h"
-#include "app-nxvm/machine/control.h"
-#include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/control.h"
+#include "x86/product/machine/lifecycle.h"
+#include "x86/product/machine/machine_private.h"
 #include "test/app-nxvm/unit/core/machine/support/vm_presentation_capture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
@@ -28,7 +31,7 @@ static lib_i32 vm_dos_mem_fault_submit_key(vm_machine *session,
     event.data.key.scan_code = scan_code;
     event.data.key.virtual_key = virtual_key;
     event.data.key.pressed = LIB_TRUE;
-    return vm_machine_submit_host_input(session, &event) == LIB_STATUS_OK;
+    return vm_test_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
 static lib_i32 vm_dos_mem_fault_has_prompt(const vm_machine *session)

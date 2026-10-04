@@ -1,3 +1,6 @@
+#include "../../../support/guest_input.h"
+#include "../../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/model40.h"
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
@@ -8,9 +11,9 @@
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/machine_interface.h"
-#include "app-nxvm/machine/lifecycle.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/machine_interface.h"
+#include "x86/product/machine/lifecycle.h"
 #include "support/rom/model40_session_assets.h"
 
 lib_i32 main(void)
@@ -42,7 +45,7 @@ lib_i32 main(void)
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL ||
         vm_model40_fixture_create_bytes(even, odd, &session) !=
         LIB_STATUS_OK || session == LIB_NULL || session->core_machine == LIB_NULL ||
-        !vm_profile_machine_plan_is_model40(session->profile_plan) ||
+        !vm_profile_machine_plan_is_model40(vm_test_profile_plan(session)) ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             LIB_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
@@ -74,7 +77,7 @@ lib_i32 main(void)
         event.data.relative_mouse.buttons = 1u;
         if (core_machine_bus_read(session->core_machine, 0x64u, &value) != LIB_STATUS_OK ||
             (value & 0x01u) != 0u ||
-            vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK ||
+            vm_test_submit_host_input(session, &event) != LIB_STATUS_OK ||
             core_machine_bus_read(session->core_machine, 0x64u, &value) != LIB_STATUS_OK ||
             (value & 0x01u) != 0u ||
             core_machine_bus_write(session->core_machine, 0x0064u, 0xa8u) != LIB_STATUS_OK ||

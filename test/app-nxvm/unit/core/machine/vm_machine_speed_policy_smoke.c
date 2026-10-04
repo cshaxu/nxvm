@@ -1,10 +1,11 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/core/machine_interface.h"
-#include "app-nxvm/machine/control.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/waiting.h"
+#include "x86/product/machine/control.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/waiting.h"
 #include "support/rom/session_assets.h"
 
 static lib_i32 verify_ratio_compare(void)

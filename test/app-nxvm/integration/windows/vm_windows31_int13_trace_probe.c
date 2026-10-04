@@ -1,10 +1,11 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/waiting.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_T287_TRACE_BUDGET 2000000u

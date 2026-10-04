@@ -1,3 +1,5 @@
+#include "../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../x86/ibmpc-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
@@ -7,8 +9,8 @@
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/waiting.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/waiting.h"
 
 #define VM_T287_PROBE_FDD_BYTES (1440u * 1024u)
 #define VM_T287_PROBE_BUDGET 500000u
@@ -192,7 +194,7 @@ done:
             head, sector, entry == LIB_NULL ? 0u : entry[4], (lib_u32)mbr_mismatch,
             (lib_u32)vbr_mismatch, int13_vector[1], int13_vector[0],
             session == LIB_NULL ? 0u : (lib_u32)vm_profile_machine_plan_external_firmware(
-                session->profile_plan), values[9],
+                vm_test_profile_plan(session)), values[9],
             values[10], values[11], first_sector_number,
             first_cylinder_low, first_cylinder_high, first_drive_head, first_command_count,
             guest_mbr[0], guest_mbr[1], guest_mbr[2], guest_mbr[3],

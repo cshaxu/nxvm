@@ -1,11 +1,13 @@
+#include "../../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/runner.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/lifecycle.h"
+#include "x86/product/machine/runner.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/machine_interface.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 #include "x86/ibmpc-common/rom_validation_interface.h"
@@ -146,9 +148,9 @@ static lib_i32 verify_create_materialization(
     if (observed.memory_bytes != overrides.memory_bytes ||
         observed.cpu_profile != overrides.cpu_profile ||
         observed.fpu_profile != overrides.fpu_profile ||
-        configured_session->retained_config.memory_bytes != overrides.memory_bytes ||
-        configured_session->retained_config.cpu_profile != overrides.cpu_profile ||
-        configured_session->retained_config.fpu_profile != overrides.fpu_profile ||
+        configured_session->construction.core_config.memory_bytes != overrides.memory_bytes ||
+        configured_session->construction.core_config.cpu_profile != overrides.cpu_profile ||
+        configured_session->construction.core_config.fpu_profile != overrides.fpu_profile ||
         !profile_timing_is_materialized(configured_session->core_machine_plan,
             profile) || !session_core_config_is_applied(configured_session,
             overrides.memory_bytes, overrides.cpu_profile, overrides.fpu_profile))
@@ -191,11 +193,11 @@ static lib_i32 verify_recovery(void)
     {
         vm_profile_model40_observation observation = { .fdc_terminal_valid = LIB_TRUE };
 
-        if (vm_profile_machine_plan_observe_model40(session->profile_plan, &observation) !=
+        if (vm_profile_machine_plan_observe_model40(vm_test_profile_plan(session), &observation) !=
                 LIB_STATUS_UNSUPPORTED || !observation.fdc_terminal_valid ||
             vm_profile_machine_plan_observe_model40(LIB_NULL, &observation) !=
                 LIB_STATUS_INVALID_ARGUMENT ||
-            vm_profile_machine_plan_observe_model40(session->profile_plan, LIB_NULL) !=
+            vm_profile_machine_plan_observe_model40(vm_test_profile_plan(session), LIB_NULL) !=
                 LIB_STATUS_INVALID_ARGUMENT) {
             vm_machine_destroy(session);
             return 1;

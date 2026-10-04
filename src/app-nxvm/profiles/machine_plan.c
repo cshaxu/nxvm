@@ -582,3 +582,54 @@ lib_u8 vm_profile_machine_plan_hdd_geometry_get(const vm_profile_machine_plan *p
     *out_sectors = 17u;
     return LIB_TRUE;
 }
+
+static lib_status vm_profile_machine_plan_configure(void *context,
+    core_machine_plan *plan)
+{
+    return vm_profile_machine_plan_materialize(context, plan);
+}
+
+static void vm_profile_machine_plan_notify(void *context,
+    vm_machine_profile_event event)
+{
+    if (event == VM_MACHINE_PROFILE_RESET_COMPLETED)
+        vm_profile_machine_plan_reset_observation(context);
+    else if (event == VM_MACHINE_PROFILE_BOARD_DETACHED)
+        vm_profile_machine_plan_detach_board(context);
+}
+
+static void vm_profile_machine_plan_release(void *context)
+{
+    vm_profile_machine_plan_destroy(context);
+}
+
+lib_status vm_profile_machine_plan_describe(vm_profile_machine_plan *plan,
+    vm_machine_construction *out_construction)
+{
+    vm_machine_construction construction;
+
+    if (plan == LIB_NULL || out_construction == LIB_NULL)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    construction = (vm_machine_construction) {
+        .core_config = plan->core_config,
+        .timing_rules = plan->timing_rules,
+        .topology = plan->topology,
+        .floppy_kind = plan->drive_floppy,
+        .media_kind = plan->media_floppy,
+        .floppy_slot_count = plan->floppy_slot_count,
+        .hdc_present = plan->hdc_present,
+        .memory_reconfigurable = plan->memory_reconfigurable,
+        .cmos_seed_present = plan->cmos_seed_present,
+        .text_glyphs = plan->text_glyphs,
+        .firmware_provider = plan->firmware_provider,
+        .firmware_context = plan->firmware_context,
+        .profile = { plan, vm_profile_machine_plan_configure,
+            vm_profile_machine_plan_notify, vm_profile_machine_plan_release }
+    };
+    lib_memory_copy(construction.cmos_seed, plan->cmos_seed,
+        sizeof(construction.cmos_seed));
+    construction.fixed_geometry = vm_profile_machine_plan_hdd_geometry_get(plan,
+        &construction.cylinders, &construction.heads, &construction.sectors);
+    *out_construction = construction;
+    return LIB_STATUS_OK;
+}

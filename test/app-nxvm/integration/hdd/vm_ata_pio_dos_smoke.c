@@ -1,3 +1,4 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -7,8 +8,8 @@
 #include "x86/ibmpc-common/machine_board_interface.h"
 #include "x86/chips/hdc/hdc_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "app-nxvm/machine/waiting.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/waiting.h"
+#include "x86/product/machine/machine_private.h"
 
 #define VM_ATA253_BOOT_BUDGET 6000000u
 #define VM_ATA253_RUN_BUDGET 400000u

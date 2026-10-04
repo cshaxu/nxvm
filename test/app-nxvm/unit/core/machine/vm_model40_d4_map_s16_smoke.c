@@ -1,9 +1,10 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/model40.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/ibmpc-common/machine_board_interface.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 
 static lib_i32 read_byte(core_machine *machine, lib_u32 physical,

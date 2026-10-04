@@ -1,11 +1,12 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/core/debug_interface.h"
 #include "x86/debug/protocol_interface.h"
-#include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/debug_adapter.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/lifecycle.h"
+#include "x86/product/machine/debug_adapter.h"
+#include "x86/product/machine/machine_private.h"
 #include "support/common_machine_fixture.h"
 #include "support/rom/session_assets.h"
 

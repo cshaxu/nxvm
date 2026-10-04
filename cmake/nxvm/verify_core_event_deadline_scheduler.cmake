@@ -14,9 +14,9 @@ file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/execution_provider_interface.h"
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_interface.h"
     machine_interface_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-at/kbc.c" kbc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/lifecycle.c"
     lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine_devices.c"
     machine_devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/fdd.c" fdd_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/hdd.c" hdd_source)

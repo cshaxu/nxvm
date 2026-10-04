@@ -1,3 +1,5 @@
+#include "../../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../x86/core/time_fixture.h"
@@ -6,9 +8,9 @@
 #include <stdio.h>
 
 #include "x86/ibmpc-common/machine_board_interface.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_private.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
 static lib_bool refresh_count_matches(core_machine *machine, lib_u16 expected)
@@ -51,7 +53,7 @@ lib_i32 main(void)
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     if (vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || !vm_profile_machine_plan_is_model40(session->profile_plan)) goto done;
+        session == LIB_NULL || !vm_profile_machine_plan_is_model40(vm_test_profile_plan(session))) goto done;
     const test_board_plan_observation plan = test_board_capture_plan(session->core_machine_plan);
     if (plan.memory_bytes != 2u * 1024u * 1024u ||
         plan.retirement_time_contract !=
@@ -62,7 +64,7 @@ lib_i32 main(void)
         plan.fpu_profile != X86_FPU_PROFILE_NONE || !plan.cpu_80386_cr_mov_ignores_mod)
         goto done;
     const vm_profile_model40_external_rom *rom =
-        vm_profile_machine_plan_model40_rom_get(session->profile_plan);
+        vm_profile_machine_plan_model40_rom_get(vm_test_profile_plan(session));
     if (rom == LIB_NULL || rom->even_bytes == LIB_NULL || rom->even_bytes[0] != 0u ||
         rom->odd_bytes == LIB_NULL || rom->odd_bytes[0] != 1u ||
         rom->video_bytes == LIB_NULL || rom->video_bytes[0u] != 0x55u) goto done;
@@ -86,11 +88,11 @@ lib_i32 main(void)
         sizeof(observed_memory)) != LIB_STATUS_OK || observed_memory != video_body_byte ||
         vm_machine_get_reset_vector(session, &reset_vector) != LIB_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u) goto done;
-    retained_memory_bytes = session->retained_config.memory_bytes;
+    retained_memory_bytes = session->construction.core_config.memory_bytes;
     if (vm_machine_reconfigure_memory(session, 2u * 1024u * 1024u) !=
         LIB_STATUS_INVALID_STATE || core_machine_get_memory_bytes(session->core_machine,
         &memory_bytes) != LIB_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
-        session->retained_config.memory_bytes != retained_memory_bytes ||
+        session->construction.core_config.memory_bytes != retained_memory_bytes ||
         core_machine_run(session->core_machine,
         (core_machine_run_budget) {1u, 0u}, &result) != LIB_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||

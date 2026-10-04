@@ -6,8 +6,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/model40/d4_memory.c" d4)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core)
 
 file(GLOB_RECURSE generic_machine_sources
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/*.c"
-    "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/*.h"
+    "${PROJECT_SOURCE_DIR}/src/x86/product/machine/*.c"
+    "${PROJECT_SOURCE_DIR}/src/x86/product/machine/*.h"
     "${PROJECT_SOURCE_DIR}/src/x86/product/machine/*.c"
     "${PROJECT_SOURCE_DIR}/src/x86/product/machine/*.h")
 foreach(source_file IN LISTS generic_machine_sources)

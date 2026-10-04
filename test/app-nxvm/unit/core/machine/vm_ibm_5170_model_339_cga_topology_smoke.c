@@ -1,3 +1,4 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
@@ -6,9 +7,9 @@
 #include "../../../../x86/core/bus_fixture.h"
 #include "../../../../x86/core/video_topology_fixture.h"
 #include "../../../../x86/ibmpc-common/video_topology_fixture.h"
-#include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/lifecycle.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
 
 static lib_i32 vm_model_339_cga_topology(void)

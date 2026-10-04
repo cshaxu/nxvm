@@ -1,3 +1,5 @@
+#include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
@@ -6,9 +8,9 @@
 #include "x86/ibmpc-common/pic_bus_interface.h"
 #include "../../../../x86/core/bus_fixture.h"
 #include "../../../../x86/ibmpc-common/cmos_fixture.h"
-#include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/machine_interface.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/lifecycle.h"
+#include "x86/product/machine/machine_interface.h"
+#include "x86/product/machine/machine_private.h"
 #include "x86/chips/rtc146818/rtc146818_interface.h"
 #include "support/rom/session_assets.h"
 

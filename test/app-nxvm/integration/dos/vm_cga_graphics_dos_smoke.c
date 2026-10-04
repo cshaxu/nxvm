@@ -1,3 +1,4 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -5,8 +6,8 @@
 #include <windows.h>
 
 #include "x86/ibmpc-common/machine_board_interface.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/waiting.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_CGA_DOS_BOOT_BUDGET 6000000u

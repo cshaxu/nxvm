@@ -1,11 +1,12 @@
+#include "../../../support/guest_input.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/core/entry_plan_interface.h"
 #include "x86/core/machine_interface.h"
-#include "app-nxvm/machine/guest_input_interface.h"
-#include "app-nxvm/machine/machine_interface.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_interface.h"
+#include "x86/product/machine/machine_private.h"
 #include "support/rom/session_assets.h"
 
 #define VM_KBC_AUX_BOOT_BUDGET 500000u
@@ -100,7 +101,7 @@ lib_i32 main(void)
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;
-        if (vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK) { stage = 3; goto done; }
+        if (vm_test_submit_host_input(session, &event) != LIB_STATUS_OK) { stage = 3; goto done; }
     }
     if (!vm_kbc_aux_read_count(session, &count) || count != 1u) goto done;
     if (!vm_kbc_aux_run_until_count(session, 4u) ||

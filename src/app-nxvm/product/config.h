@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "app-nxvm/machine/machine_interface.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "x86/product/request_interface.h"
 #include "x86/product/machine_interface.h"
 

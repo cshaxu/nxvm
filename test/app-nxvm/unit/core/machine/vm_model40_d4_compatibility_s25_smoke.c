@@ -1,11 +1,12 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/core/machine_interface.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/machine_interface.h"
 #include "support/rom/model40_session_assets.h"
 
 static lib_i32 vm_model40_d4_read(core_machine *machine,

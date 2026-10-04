@@ -1,3 +1,6 @@
+#include "../../support/guest_input.h"
+#include "../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../support/model40.h"
 #include "../../../x86/ibmpc-common/boot_fixture.h"
 #include "lib/types/types_interface.h"
@@ -16,11 +19,11 @@
 #include "x86/core/retirement_observation_interface.h"
 #include "x86/core/trace_interface.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "app-nxvm/machine/control.h"
-#include "app-nxvm/machine/lifecycle.h"
+#include "x86/product/machine/control.h"
+#include "x86/product/machine/lifecycle.h"
 #include "x86/core/machine_interface.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/waiting.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/waiting.h"
 
 #define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 90000u
 #define VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS 15000u
@@ -1523,7 +1526,7 @@ static lib_i32 vm_byob_send_f1(vm_machine *session, lib_i32 pressed,
     event.data.key.scan_code = 0x3bu;
     event.data.key.virtual_key = 0x70u;
     event.data.key.pressed = pressed != 0;
-    return vm_machine_submit_host_input(session, &event) == LIB_STATUS_OK;
+    return vm_test_submit_host_input(session, &event) == LIB_STATUS_OK;
 }
 
 static lib_i32 vm_byob_text_memory_has(core_machine *machine, const char *text)
@@ -1750,8 +1753,7 @@ int main(lib_i32 argc, char **argv)
     }
     trace.machine = session->core_machine;
     trace.board = session->board;
-    if (session->retained_config.profile_kind ==
-        VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
+    if (vm_profile_machine_plan_is_model40(vm_test_profile_plan(session))) {
         if (!test_core_boot_bind_write_observer(session->core_machine,
                 vm_byob_model40_memory_write_observe, &trace)) {
             printf("BOOT-PROBE=setup-failed\n");

@@ -1,12 +1,13 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "lib/storage/file_interface.h"
 
-#include "app-nxvm/machine/control.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/control.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/machine_interface.h"
 #include "support/common_machine_fixture.h"
 #include "support/rom/session_assets.h"
 
@@ -66,8 +67,7 @@ lib_i32 main(void)
         session->fdd_image_path[0] == '\0';
     vm_machine_executor_state_stop(session->control.state);
     failed |= vm_machine_eject_fdd(session) != 0 ||
-        vm_test_fdd_info(session->fdd).present || session->fdd_image_path[0] != '\0' ||
-        session->retained_config.floppy_image[0u] != LIB_NULL;
+        vm_test_fdd_info(session->fdd).present || session->fdd_image_path[0] != '\0';
     vm_test_common_machine_unbind(session);
     vm_machine_destroy(session);
     (void)remove(floppy_path);

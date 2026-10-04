@@ -1,3 +1,5 @@
+#include "../../support/guest_input.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <ctype.h>
 #include <stdio.h>
@@ -5,9 +7,8 @@
 #include <windows.h>
 
 #include "x86/ibmpc-common/machine_board_interface.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/waiting.h"
-#include "app-nxvm/machine/guest_input_interface.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/waiting.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 
 #define VM_MOUSE_DOS_BOOT_BUDGET 6000000u
@@ -356,7 +357,7 @@ lib_i32 main(lib_i32 argc, char **argv)
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;
-        if (vm_machine_submit_host_input(session, &event) !=
+        if (vm_test_submit_host_input(session, &event) !=
             LIB_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||

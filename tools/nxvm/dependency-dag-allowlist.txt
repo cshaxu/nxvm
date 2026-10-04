@@ -1,5 +1,3 @@
 # Exact temporary source-owner edges.  Every entry is a direct include audited
 # by T533 S3; T540 S93 removes the former App devices owner.
 # Remove each edge with its consumer rather than silently widening a layer.
-src/app-nxvm/machine/machine_interface.h|app-nxvm/profiles
-src/app-nxvm/machine/machine_private.h|app-nxvm/profiles

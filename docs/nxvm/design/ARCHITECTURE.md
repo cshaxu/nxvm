@@ -34,12 +34,16 @@ it does not change runtime ownership before the corresponding cutover.
 - `x86/product` owns shared INI syntax, copied runtime request, path construction,
   Console/Debug/hotkey policy and atomic Common Session/UI/Machine composition.
   App supplies one frozen factory with copied INFO/speed operations; it owns
-  fixed hardware/firmware projection and the underlying Machine adapter.
+  fixed hardware/firmware projection. The PC Machine adapter's S6 receiver is
+  `x86/product/machine`; Current records its acceptance status.
 - `app-nxvm/product` supplies fixed configuration/factory binding and immutable
   identity to the sole `x86/product` process entry, banner and cleanup body.
-- `app-nxvm/machine` is that driver: asset/media lifetime, bounded execution,
+- `x86/product/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.
+  App prepares copied construction values and transfers its genuine Profile
+  context. The adapter owns publication/rollback and releases the context only
+  after Core routes, providers and media cease borrowing it.
 - `app-nxvm/profiles` owns each board's actual composition: device construction,
   wiring, clocks, memory constraints, firmware slots, fixed relative asset names
   and board-specific behavior.

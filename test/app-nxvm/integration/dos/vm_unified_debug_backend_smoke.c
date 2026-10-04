@@ -1,6 +1,7 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_private.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
 #include "x86/debug/protocol_interface.h"
 

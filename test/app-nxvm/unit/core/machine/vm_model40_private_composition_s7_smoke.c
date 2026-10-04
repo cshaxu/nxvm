@@ -1,3 +1,6 @@
+#include "../../../support/guest_input.h"
+#include "../../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/model40.h"
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
@@ -7,8 +10,8 @@
 #include "x86/ibmpc-common/machine_board_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/machine_interface.h"
 #include "x86/ibmpc-at/kbc_interface.h"
 #include "support/rom/model40_session_assets.h"
 
@@ -46,7 +49,7 @@ lib_i32 main(void)
         const test_board_plan_observation plan =
             test_board_capture_plan(session->core_machine_plan);
 
-        failed = !vm_profile_machine_plan_is_model40(session->profile_plan) ||
+        failed = !vm_profile_machine_plan_is_model40(vm_test_profile_plan(session)) ||
         test_core_retirement_contract(session->core_machine) !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         transaction.external_cycle_timing.page_bytes != 2048u ||
@@ -127,7 +130,7 @@ lib_i32 main(void)
         event.data.relative_mouse.buttons = 1u;
         failed = core_machine_bus_read(session->core_machine, 0x64u, &value) !=
             LIB_STATUS_OK || (value & 0x01u) != 0u ||
-            vm_machine_submit_host_input(session, &event) != LIB_STATUS_OK ||
+            vm_test_submit_host_input(session, &event) != LIB_STATUS_OK ||
             core_machine_bus_read(session->core_machine, 0x64u, &value) !=
             LIB_STATUS_OK || (value & 0x01u) != 0u ||
             core_machine_bus_write(session->core_machine, 0x0064u, 0xa8u) !=

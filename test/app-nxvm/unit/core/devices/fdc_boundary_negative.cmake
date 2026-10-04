@@ -14,7 +14,7 @@ set(paths
     src/x86/ibmpc-common/machine_board.c
     src/x86/ibmpc-common/dma_bus.c
     src/x86/core/memory_interface.c
-    src/app-nxvm/machine/machine_devices.c
+    src/x86/product/machine/machine_devices.c
     src/x86/product/machine/media/fdd.c
     src/x86/product/machine/media/fdd_interface.h
     src/x86/chips/fdc8272/fdc.c

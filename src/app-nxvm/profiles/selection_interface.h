@@ -6,6 +6,7 @@
 #include "x86/chips/cpu/cpu_interface.h"
 #include "x86/chips/fpu/fpu_interface.h"
 #include "lib/storage/medium_interface.h"
+#include "x86/product/machine/construction_interface.h"
 
 typedef enum vm_machine_profile_kind {
     VM_MACHINE_PROFILE_DEFAULT_PC_AT,
@@ -24,9 +25,6 @@ typedef enum vm_machine_floppy_format {
     VM_MACHINE_FLOPPY_FORMAT_1440K
 } vm_machine_floppy_format;
 
-#define VM_MACHINE_FLOPPY_SLOT_COUNT 2u
-#define VM_MACHINE_FIXED_DISK_SLOT_COUNT 2u
-#define VM_MACHINE_CMOS_SEED_BYTES 64u
 #define VM_MACHINE_TEXT_GLYPH_ROW_PLANE_BYTES (2u * 1024u)
 #define VM_MACHINE_TEXT_CHARACTER_GENERATOR_BYTES \
     (4u * VM_MACHINE_TEXT_GLYPH_ROW_PLANE_BYTES)

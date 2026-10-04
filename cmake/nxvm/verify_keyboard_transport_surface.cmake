@@ -2,11 +2,13 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/guest_input_interface.h" input_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine_interface.h" input_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine.h" machine_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board_state.h" board_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c" input_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine.c" input_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/lifecycle.c" driver_source)
+file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/support/guest_input.h" fixture_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/app-nxvm/unit/core/machine/vm_keyboard_host_ingress_smoke.c"
     input_smoke_source)
 
@@ -31,11 +33,14 @@ foreach(source_text IN ITEMS "${input_header}" "${input_source}" "${input_smoke_
     endforeach()
 endforeach()
 
-string(FIND "${input_header}" "CORE_MACHINE_GUEST_INPUT_KEY" keypress_surface_position)
-string(FIND "${input_source}" "vm_machine_submit_host_input"
+string(FIND "${input_source}" "KVM_EVENT_KEY" keypress_surface_position)
+string(FIND "${input_source}" "vm_machine_deliver_common_input"
     keypress_operation_position)
 if(keypress_surface_position EQUAL -1 OR keypress_operation_position EQUAL -1 OR
-   NOT input_smoke_source MATCHES "vm_machine_submit_host_input")
+   NOT driver_source MATCHES "vm_machine_deliver_common_input" OR
+   NOT fixture_source MATCHES "common_machine_enqueue_input" OR
+   NOT fixture_source MATCHES "vm_machine_deliver_common_input" OR
+   NOT input_smoke_source MATCHES "vm_test_submit_host_input")
     message(FATAL_ERROR "VM keyboard transport lost its real keypress path")
 endif()
 

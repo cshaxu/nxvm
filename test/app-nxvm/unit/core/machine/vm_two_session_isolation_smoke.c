@@ -1,12 +1,13 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_private.h"
 
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "x86/core/debug_interface.h"
 
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
 
 static lib_bool sessions_are_isolated(core_machine *first, core_machine *second,

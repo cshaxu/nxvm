@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c" source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/lifecycle.c" source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/composition.c" app_source)
 
 if(source MATCHES "vm_platform_|run_handle|executor_fifo")

@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c" lifecycle)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/lifecycle.c" lifecycle)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.c" plan)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/external_pc_at_rom.c" provider)
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)

@@ -1,10 +1,11 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #ifndef TEST_VM_PRESENTATION_CAPTURE_H
 #define TEST_VM_PRESENTATION_CAPTURE_H
 #include "lib/types/types_interface.h"
 
 
 #include "guest_display.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_private.h"
 
 /* Test-only view of the one production Common frame. It never publishes or
  * stores a frame, so production has no second presentation route. */

@@ -95,74 +95,74 @@ add_executable(vm-default-pc-at-profile-smoke
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
 add_executable(vm-pcat-topology-s2-smoke
     test/app-nxvm/unit/core/machine/vm_pcat_topology_s2_smoke.c)
-target_link_libraries(vm-pcat-topology-s2-smoke PRIVATE vm-machine)
+target_link_libraries(vm-pcat-topology-s2-smoke PRIVATE vm-profile)
 add_executable(vm-pcat-composition-s4-smoke
     test/app-nxvm/unit/core/machine/vm_pcat_composition_s4_smoke.c)
-target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-machine)
+target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-profile)
 add_executable(vm-ibm-5170-model-339-composition-smoke
     test/app-nxvm/unit/core/machine/vm_ibm_5170_model_339_composition_smoke.c)
-target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-machine)
+target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-profile)
 add_executable(vm-model40-private-composition-s7-smoke
     test/app-nxvm/unit/core/machine/vm_model40_private_composition_s7_smoke.c)
-target_link_libraries(vm-model40-private-composition-s7-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-private-composition-s7-smoke PRIVATE vm-profile)
 add_executable(vm-model40-cmos-seed-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cmos_seed_smoke.c
     test/x86/core/composition_fixture.c)
-target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-cmos-seed-smoke PRIVATE vm-profile)
 add_executable(vm-model40-integration-s8-smoke
     test/app-nxvm/unit/core/machine/vm_model40_integration_s8_smoke.c)
-target_link_libraries(vm-model40-integration-s8-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-integration-s8-smoke PRIVATE vm-profile)
 add_executable(vm-model40-cecg-s9-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s9_smoke.c)
-target_link_libraries(vm-model40-cecg-s9-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-cecg-s9-smoke PRIVATE vm-profile)
 target_sources(vm-model40-cecg-s9-smoke PRIVATE test/x86/core/video_topology_fixture.c)
 add_executable(vm-model40-cecg-s10-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s10_smoke.c)
-target_link_libraries(vm-model40-cecg-s10-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-cecg-s10-smoke PRIVATE vm-profile)
 add_executable(vm-model40-cecg-s11-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s11_smoke.c)
-target_link_libraries(vm-model40-cecg-s11-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-cecg-s11-smoke PRIVATE vm-profile)
 target_sources(vm-model40-cecg-s11-smoke PRIVATE test/x86/core/video_topology_fixture.c)
 add_executable(vm-model40-cecg-s12-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s12_smoke.c)
-target_link_libraries(vm-model40-cecg-s12-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-cecg-s12-smoke PRIVATE vm-profile)
 add_executable(vm-model40-cecg-s13-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s13_smoke.c)
-target_link_libraries(vm-model40-cecg-s13-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-cecg-s13-smoke PRIVATE vm-profile)
 add_executable(vm-model40-cecg-s28-smoke
     test/app-nxvm/unit/core/machine/vm_model40_cecg_s28_smoke.c)
-target_link_libraries(vm-model40-cecg-s28-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-cecg-s28-smoke PRIVATE vm-profile)
 add_executable(vm-model40-rom-layout-s14-smoke
     test/app-nxvm/unit/core/profiles/model40/rom/model40_rom_layout_s14_smoke.c)
-target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-profile)
 add_executable(vm-model40-d4-compatibility-s25-smoke
     test/app-nxvm/unit/core/machine/vm_model40_d4_compatibility_s25_smoke.c)
-target_link_libraries(vm-model40-d4-compatibility-s25-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-d4-compatibility-s25-smoke PRIVATE vm-profile)
 add_executable(vm-model40-d4-map-s16-smoke
     test/app-nxvm/unit/core/machine/vm_model40_d4_map_s16_smoke.c)
-target_link_libraries(vm-model40-d4-map-s16-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-d4-map-s16-smoke PRIVATE vm-profile)
 add_executable(vm-model40-d4-parity-s22-smoke
     test/app-nxvm/unit/core/machine/vm_model40_d4_parity_s22_smoke.c
     test/x86/core/composition_fixture.c)
-target_link_libraries(vm-model40-d4-parity-s22-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-d4-parity-s22-smoke PRIVATE vm-profile)
 add_executable(vm-model40-fdc-s24-smoke
     test/app-nxvm/unit/core/machine/vm_model40_fdc_s24_smoke.c
     test/x86/ibmpc-common/controller_fixture.c
     test/x86/ibmpc-common/composition_fixture.c)
-target_link_libraries(vm-model40-fdc-s24-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-fdc-s24-smoke PRIVATE vm-profile)
 add_executable(vm-model40-d4-skey-s23-smoke
     test/app-nxvm/unit/core/machine/vm_model40_d4_skey_s23_smoke.c
     test/x86/core/composition_fixture.c)
-target_link_libraries(vm-model40-d4-skey-s23-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-d4-skey-s23-smoke PRIVATE vm-profile)
 add_executable(vm-model40-dma-s17-smoke
     test/app-nxvm/unit/core/machine/vm_model40_dma_s17_smoke.c)
-target_link_libraries(vm-model40-dma-s17-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-dma-s17-smoke PRIVATE vm-profile)
 add_executable(vm-model40-fdd-s18-smoke
     test/app-nxvm/unit/core/machine/vm_model40_fdd_s18_smoke.c)
-target_link_libraries(vm-model40-fdd-s18-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-fdd-s18-smoke PRIVATE vm-profile)
 add_executable(vm-model40-byob-s20-smoke
     test/app-nxvm/unit/core/machine/vm_model40_byob_s20_smoke.c)
-target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-profile)
 add_executable(vm-model40-byob-retirement-capture
     test/app-nxvm/integration/model40/vm_model40_retirement_capture.c
     test/x86/core/composition_fixture.c
@@ -171,45 +171,45 @@ target_link_libraries(vm-model40-byob-retirement-capture PRIVATE
     integration-session-ini-support)
 add_executable(vm-model40-byob-boot-media-s5-smoke
     test/app-nxvm/unit/core/machine/vm_model40_byob_boot_media_s5_smoke.c)
-target_link_libraries(vm-model40-byob-boot-media-s5-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-byob-boot-media-s5-smoke PRIVATE vm-profile)
 add_executable(vm-model40-hdc-s26-smoke
     test/app-nxvm/unit/core/machine/vm_model40_hdc_s26_smoke.c)
-target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-profile)
 add_executable(vm-model40-console-s20-smoke
     test/app-nxvm/integration/product/vm_model40_console_s20_smoke.c
     test/app-nxvm/integration/support/nxvm_console_process.c)
 target_include_directories(vm-model40-console-s20-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
-target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-machine)
+target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-app vm-profile)
 add_executable(vm-model-339-clock-contract-smoke
     test/app-nxvm/unit/core/machine/vm_model_339_clock_contract_smoke.c)
 target_sources(vm-model-339-clock-contract-smoke PRIVATE
     test/x86/ibmpc-common/composition_fixture.c
     test/x86/ibmpc-common/kbc_state_fixture.c
     test/x86/ibmpc-at/state_fixture.c)
-target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-machine)
+target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-profile)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     test/app-nxvm/unit/core/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
-target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-machine)
+target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-profile)
 target_sources(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE
     test/x86/core/video_topology_fixture.c
     test/x86/ibmpc-common/video_topology_fixture.c)
 add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     test/app-nxvm/unit/core/profiles/ibm_5170_model_339/rom/ibm_5170_model_339_firmware_fdc_topology_smoke.c)
-target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-machine)
+target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-profile)
 add_executable(vm-hdc-port-smoke test/app-nxvm/unit/core/machine/vm_hdc_port_smoke.c)
-target_link_libraries(vm-hdc-port-smoke PRIVATE vm-machine)
+target_link_libraries(vm-hdc-port-smoke PRIVATE vm-profile)
 add_executable(vm-hdc-hdd-boot-smoke
     test/app-nxvm/integration/hdd/vm_hdc_hdd_boot_smoke.c
     test/x86/ibmpc-common/controller_fixture.c)
 target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE integration-session-ini-support)
 add_executable(vm-default-pc-at-apply-smoke
     test/app-nxvm/unit/core/machine/vm_default_pc_at_apply_smoke.c)
-target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-machine)
+target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-profile)
 
 add_executable(vm-default-pc-at-rom-materialization-smoke
     test/app-nxvm/unit/core/profiles/default_pc_at/rom/default_pc_at_rom_materialization_smoke.c)
-target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-machine)
+target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-profile)
 add_executable(vm-timer-firmware-smoke
     test/app-nxvm/integration/dos/vm_timer_firmware_smoke.c)
 target_link_libraries(vm-timer-firmware-smoke PRIVATE integration-session-ini-support)
@@ -221,7 +221,7 @@ add_executable(vm-app-console-lifecycle-smoke
 target_include_directories(vm-app-console-lifecycle-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}")
 target_link_libraries(vm-app-console-lifecycle-smoke PRIVATE
-    vm-app vm-machine)
+    vm-app vm-profile)
 if(WIN32)
     # Diagnostic observer only: a captured screen requires semantic review;
     # process survival must not become a passing CTest boot assertion.
@@ -238,34 +238,35 @@ add_executable(vm-app-ini-smoke
     test/app-nxvm/unit/product/nxvm_ini_smoke.c)
 target_link_libraries(vm-app-ini-smoke PRIVATE vm-app)
 add_executable(vm-app-session-smoke test/app-nxvm/unit/core/machine/nxvm_machine_smoke.c)
-target_link_libraries(vm-app-session-smoke PRIVATE vm-machine)
+target_link_libraries(vm-app-session-smoke PRIVATE vm-profile)
 add_executable(vm-machine-initialization-atomicity-smoke
     test/app-nxvm/unit/core/machine/vm_machine_initialization_atomicity_smoke.c)
 target_sources(vm-machine-initialization-atomicity-smoke PRIVATE
     test/x86/ibmpc-common/composition_fixture.c)
-target_link_libraries(vm-machine-initialization-atomicity-smoke PRIVATE vm-machine)
+target_link_libraries(vm-machine-initialization-atomicity-smoke PRIVATE vm-profile)
 add_executable(vm-machine-reconfigure-smoke
     test/app-nxvm/unit/core/machine/nxvm_machine_reconfigure_smoke.c)
-target_link_libraries(vm-machine-reconfigure-smoke PRIVATE vm-machine)
+target_link_libraries(vm-machine-reconfigure-smoke PRIVATE vm-profile)
 add_executable(vm-machine-media-lifecycle-s3-smoke
     test/app-nxvm/unit/core/machine/vm_machine_media_lifecycle_s3_smoke.c)
-target_link_libraries(vm-machine-media-lifecycle-s3-smoke PRIVATE vm-machine)
+target_link_libraries(vm-machine-media-lifecycle-s3-smoke PRIVATE vm-profile)
 add_executable(vm-machine-speed-policy-smoke
     test/app-nxvm/unit/core/machine/vm_machine_speed_policy_smoke.c)
-target_link_libraries(vm-machine-speed-policy-smoke PRIVATE vm-machine)
+target_link_libraries(vm-machine-speed-policy-smoke PRIVATE vm-profile)
 add_executable(vm-timing-qualification-smoke
     test/app-nxvm/unit/core/machine/vm_timing_qualification_smoke.c)
-target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-machine)
+target_link_libraries(vm-timing-qualification-smoke PRIVATE vm-profile)
 add_executable(vm-ibm-5170-direct-plan-smoke
     test/app-nxvm/unit/core/machine/vm_ibm_5170_direct_plan_smoke.c)
-target_link_libraries(vm-ibm-5170-direct-plan-smoke PRIVATE vm-profile)
+target_link_libraries(vm-ibm-5170-direct-plan-smoke PRIVATE
+    vm-profile x86-ibmpc-common x86-core)
 add_executable(vm-xt-5160-268-profile-smoke
     test/app-nxvm/unit/core/machine/vm_xt_5160_268_profile_smoke.c)
 target_sources(vm-xt-5160-268-profile-smoke PRIVATE
     test/x86/core/composition_fixture.c
     test/x86/ibmpc-common/composition_fixture.c
     test/x86/ibmpc-common/controller_fixture.c)
-target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-machine)
+target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-profile)
 
 
 
@@ -774,6 +775,7 @@ set(VM_PROFILE_SOURCES
     src/app-nxvm/profiles/xt/xt_5160_268.c
     src/app-nxvm/profiles/xt/rom/xt_5160_268_rom.c
     src/app-nxvm/profiles/machine_plan.c
+    src/app-nxvm/profiles/machine_factory.c
     src/app-nxvm/profiles/default_profile/pc_at_profile.c
     src/app-nxvm/profiles/default_profile/external_pc_at_rom.c
     src/app-nxvm/profiles/model40/model40.c
@@ -783,23 +785,6 @@ set(VM_PROFILE_SOURCES
 
 set(VM_APP_SOURCES
     src/app-nxvm/product/config.c
-)
-set(VM_MACHINE_RUNTIME_SOURCES
-    src/app-nxvm/machine/debug_adapter.c
-    src/app-nxvm/machine/display.c
-    src/app-nxvm/machine/lifecycle.c
-    src/app-nxvm/machine/machine.c
-    src/app-nxvm/machine/control.c
-    src/app-nxvm/machine/fault.c
-    src/app-nxvm/machine/runner.c
-    src/app-nxvm/machine/executor_state.c
-    src/app-nxvm/machine/waiting.c
-    src/app-nxvm/machine/machine_devices.c
-    src/app-nxvm/machine/machine_info.c
-)
-set(VM_MACHINE_SOURCES
-    src/app-nxvm/machine/debug.c
-    ${VM_MACHINE_RUNTIME_SOURCES}
 )
 # The Shared CPU target is the sole CPU implementation linked by NXVM.  The
 # compatibility alias retains the established consumer target name without a
@@ -819,37 +804,22 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
-    storage)
-
-add_executable(vm-machine-executor-state-smoke
-    test/app-nxvm/unit/core/machine/vm_machine_executor_state_smoke.c)
-target_link_libraries(vm-machine-executor-state-smoke PRIVATE vm-machine)
+    storage
+    x86-product-machine)
 
 add_executable(vm-keyboard-host-ingress-smoke
     test/app-nxvm/unit/core/machine/vm_keyboard_host_ingress_smoke.c
 )
 target_link_libraries(vm-keyboard-host-ingress-smoke PRIVATE
-    vm-machine)
+    vm-profile)
 add_executable(vm-host-cancellation-smoke
     test/app-nxvm/unit/core/machine/vm_host_cancellation_smoke.c
 )
 target_link_libraries(vm-host-cancellation-smoke PRIVATE
-    vm-machine)
+    vm-profile)
 
 
 
-
-add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
-target_include_directories(vm-machine PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(vm-machine PUBLIC
-    core-machine
-    vm-profile
-    common-machine
-    storage
-    x86-product-media
-    x86-product-conversion)
 
 add_library(vm-app STATIC ${VM_APP_SOURCES})
 target_include_directories(vm-app PUBLIC
@@ -862,7 +832,7 @@ target_link_libraries(vm-app PUBLIC
     common-ui
     x86-debug
     x86-xasm32
-    vm-machine
+    vm-profile
     storage
     base)
 
@@ -894,7 +864,7 @@ target_link_libraries(core-machine-d4-memory-transaction-smoke PRIVATE core-mach
 add_executable(vm-kbc-aux-guest-smoke
     test/app-nxvm/unit/core/machine/vm_kbc_aux_guest_smoke.c
 )
-target_link_libraries(vm-kbc-aux-guest-smoke PRIVATE vm-machine)
+target_link_libraries(vm-kbc-aux-guest-smoke PRIVATE vm-profile)
 add_executable(vm-mouse-driver-dos-smoke
     test/app-nxvm/integration/dos/vm_mouse_driver_dos_smoke.c
 )
@@ -922,7 +892,7 @@ add_library(integration-session-ini-support STATIC
     test/app-nxvm/integration/support/session_ini.c
 )
 target_link_libraries(integration-session-ini-support PUBLIC
-    vm-machine
+    vm-profile
     vm-app
     nxvm-product-firmware)
 target_include_directories(integration-session-ini-support PUBLIC
@@ -977,11 +947,11 @@ endif()
 add_executable(vm-ega-controller-system-smoke
     test/app-nxvm/unit/core/machine/vm_ega_controller_system_smoke.c
 )
-target_link_libraries(vm-ega-controller-system-smoke PRIVATE vm-machine)
+target_link_libraries(vm-ega-controller-system-smoke PRIVATE vm-profile)
 add_executable(vm-display-composition-s5-smoke
     test/app-nxvm/unit/core/machine/vm_display_composition_s5_smoke.c
 )
-target_link_libraries(vm-display-composition-s5-smoke PRIVATE vm-machine)
+target_link_libraries(vm-display-composition-s5-smoke PRIVATE vm-profile)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-display-composition-s5-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -989,10 +959,10 @@ endif()
 add_executable(vm-ega-sequencer-system-smoke
     test/app-nxvm/unit/core/machine/vm_ega_sequencer_system_smoke.c
 )
-target_link_libraries(vm-ega-sequencer-system-smoke PRIVATE vm-machine)
+target_link_libraries(vm-ega-sequencer-system-smoke PRIVATE vm-profile)
 add_executable(vm-cga-graphics-system-smoke
     test/app-nxvm/unit/core/machine/vm_cga_graphics_system_smoke.c)
-target_link_libraries(vm-cga-graphics-system-smoke PRIVATE vm-machine)
+target_link_libraries(vm-cga-graphics-system-smoke PRIVATE vm-profile)
 add_executable(vm-cga-640-system-smoke
     test/app-nxvm/integration/dos/vm_cga_640_system_smoke.c)
 target_link_libraries(vm-cga-640-system-smoke PRIVATE integration-session-ini-support)
@@ -1028,7 +998,7 @@ foreach(_pcat_composition_target IN ITEMS vm-pcat-topology-s2-smoke
         test/x86/ibmpc-common/kbc_state_fixture.c
         test/x86/ibmpc-at/state_fixture.c)
 endforeach()
-target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-machine)
+target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-profile)
 target_sources(vm-model40-fdd-s18-smoke PRIVATE
     test/x86/ibmpc-common/controller_fixture.c)
 target_sources(vm-model40-hdc-s26-smoke PRIVATE
@@ -1057,14 +1027,14 @@ target_sources(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE
     test/x86/core/composition_fixture.c
     test/x86/ibmpc-common/composition_fixture.c)
 add_executable(vm-pcat-ownership-smoke test/app-nxvm/unit/core/machine/vm_pcat_ownership_smoke.c)
-target_link_libraries(vm-pcat-ownership-smoke PRIVATE vm-machine)
+target_link_libraries(vm-pcat-ownership-smoke PRIVATE vm-profile)
 add_executable(vm-fdc-authority-smoke test/app-nxvm/unit/core/machine/vm_fdc_authority_smoke.c)
-target_link_libraries(vm-fdc-authority-smoke PRIVATE vm-machine)
+target_link_libraries(vm-fdc-authority-smoke PRIVATE vm-profile)
 add_executable(vm-fdc-port-smoke test/app-nxvm/unit/core/machine/vm_fdc_port_smoke.c)
-target_link_libraries(vm-fdc-port-smoke PRIVATE vm-machine)
+target_link_libraries(vm-fdc-port-smoke PRIVATE vm-profile)
 add_executable(vm-fdc-t242-corpus-port-smoke
     test/app-nxvm/unit/core/machine/vm_fdc_t242_corpus_port_smoke.c)
-target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-machine)
+target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-profile)
 foreach(_controller_composition_target IN ITEMS vm-fdc-authority-smoke
         vm-fdc-port-smoke vm-fdc-t242-corpus-port-smoke vm-hdc-port-smoke)
     target_sources(${_controller_composition_target} PRIVATE
@@ -1072,13 +1042,13 @@ foreach(_controller_composition_target IN ITEMS vm-fdc-authority-smoke
 endforeach()
 add_executable(vm-boot-failure-lifecycle-smoke
     test/app-nxvm/unit/core/machine/vm_boot_failure_lifecycle_smoke.c)
-target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-machine)
+target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-profile)
 add_executable(vm-runner-display-cadence-smoke
     test/app-nxvm/unit/core/machine/vm_runner_display_cadence_smoke.c)
-target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-machine)
+target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-profile)
 add_executable(vm-console-pause-resume-smoke
     test/app-nxvm/unit/core/machine/vm_console_pause_resume_smoke.c)
-target_link_libraries(vm-console-pause-resume-smoke PRIVATE vm-machine)
+target_link_libraries(vm-console-pause-resume-smoke PRIVATE vm-profile)
 add_executable(vm-dos-video-port-smoke
     test/app-nxvm/integration/dos/vm_dos_video_port_smoke.c)
 target_link_libraries(vm-dos-video-port-smoke PRIVATE integration-session-ini-support)
@@ -1096,11 +1066,11 @@ target_link_libraries(vm-dos-mem-fault-smoke PRIVATE
     integration-session-ini-support)
 add_executable(vm-fault-outcome-runner-smoke
     test/app-nxvm/unit/core/machine/vm_fault_outcome_runner_smoke.c)
-target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-machine)
+target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-profile)
 add_executable(vm-runner-error-propagation-smoke
     test/app-nxvm/unit/core/machine/vm_runner_error_propagation_smoke.c
     test/x86/core/composition_fixture.c)
-target_link_libraries(vm-runner-error-propagation-smoke PRIVATE vm-machine)
+target_link_libraries(vm-runner-error-propagation-smoke PRIVATE vm-profile)
 add_executable(core-machine-cpu-fpu-profile-smoke
     test/app-nxvm/unit/core/devices/cpu_fpu_profile_smoke.c)
 target_link_libraries(core-machine-cpu-fpu-profile-smoke PRIVATE
@@ -1147,7 +1117,7 @@ add_executable(vm-two-session-isolation-smoke
 target_sources(vm-timing-qualification-smoke PRIVATE
     test/x86/ibmpc-common/composition_fixture.c)
 target_link_libraries(vm-two-session-isolation-smoke PRIVATE
-    vm-machine)
+    vm-profile)
 add_executable(vm-debug-pause-boundary-smoke
     test/app-nxvm/integration/dos/vm_debug_pause_boundary_smoke.c)
 target_link_libraries(vm-debug-pause-boundary-smoke PRIVATE
@@ -1160,7 +1130,7 @@ add_executable(vm-x86-debug-mapping-smoke
     test/app-nxvm/unit/core/machine/vm_x86_debug_mapping_smoke.c
 )
 target_link_libraries(vm-x86-debug-mapping-smoke PRIVATE
-    vm-machine
+    vm-profile
 )
 add_executable(vm-full-pc-session-smoke
     test/app-nxvm/integration/dos/nxvm_full_pc_session_smoke.c
@@ -1171,7 +1141,7 @@ add_executable(vm-core-executor-storage-smoke
     test/app-nxvm/unit/core/machine/vm_core_executor_storage_smoke.c
 )
 target_link_libraries(vm-core-executor-storage-smoke PRIVATE
-    vm-machine)
+    vm-profile)
 
 add_executable(core-machine-port-assembly-smoke
     test/app-nxvm/unit/core/devices/core_machine_port_assembly_smoke.c
@@ -1448,6 +1418,7 @@ set(PROJECT_UNIT_TEST_TARGETS
     common-ui-smoke
     common-adapter-conformance
     vm-machine-frame-smoke
+    vm-profile-contract-smoke
     host-smoke
     vm-machine-executor-state-smoke
     storage-smoke
@@ -2078,7 +2049,7 @@ function(add_current_vm_artifact target version)
     target_link_libraries(${target} PRIVATE
         vm-app
         nxvm-product-firmware
-        vm-machine)
+        vm-profile)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3029,22 +3000,7 @@ file(GENERATE
 # the verifier; the supporting evidence and TODO define each domain's risk and
 # next admission condition.
 set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
-    "x86-product-conversion|src/x86/product/machine/frame.c|display-adaptation"
-    "x86-product-media|src/x86/product/machine/media/fdd.c|x86-product-media"
-    "x86-product-media|src/x86/product/machine/media/hdd.c|x86-product-media"
-    "vm-machine|src/app-nxvm/machine/debug.c|vm-machine"
-    "vm-app|src/app-nxvm/product/config.c|session-composition"
-    "vm-machine|src/app-nxvm/machine/debug_adapter.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/display.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/lifecycle.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/machine.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/control.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/executor_state.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/fault.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/runner.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/waiting.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/machine_devices.c|vm-machine"
-    "vm-machine|src/app-nxvm/machine/machine_info.c|vm-machine")
+    "vm-app|src/app-nxvm/product/config.c|session-composition")
 string(REPLACE ";" "\n" project_t345_s4_residual_contents
     "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")
 file(GENERATE
@@ -3066,7 +3022,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     x86-debug
     vm-profile
     x86-product-media
-    vm-machine
+    x86-product-machine
     common-session
     vm-app
     common-ui

@@ -1,9 +1,10 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "test/x86/core/composition_fixture.h"
 #include "test/app-nxvm/integration/support/session_ini.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_private.h"
 
 static lib_i32 vm_ini_cmos_seed_matches(const char *directory,
     const char *file_name, lib_u8 index, lib_u8 expected)

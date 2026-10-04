@@ -1,3 +1,6 @@
+#include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
+#include "../../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "../../../../x86/core/composition_fixture.h"
@@ -8,8 +11,8 @@
 #include "x86/core/debug_interface.h"
 #include "../../../../x86/core/bus_fixture.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
-#include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/machine_private.h"
+#include "x86/product/machine/machine_interface.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
 
 #include "support/rom/session_assets.h"
@@ -136,15 +139,15 @@ static lib_i32 vm_model_339_floppy_contract(void)
     };
     vm_machine *session = LIB_NULL;
     lib_i32 failed = vm_test_create_5170(&native, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+        session == LIB_NULL || session->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         vm_test_fdd_info(session->fdd).geometry.cylinders != 80u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
         vm_test_fdd_info(session->fdd).geometry.sectors_per_track != 15u;
 
     vm_machine_destroy(session);
     session = LIB_NULL;
     failed |= vm_test_create_5170(&compatible, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
-        session->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
+        session == LIB_NULL || session->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+        session->construction.media_kind != VM_PROFILE_FLOPPY_525_360K ||
         vm_test_fdd_info(session->fdd).geometry.cylinders != 40u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
         vm_test_fdd_info(session->fdd).geometry.sectors_per_track != 9u ||
         test_board_capture_composition(session->board).drive_cylinders != 80u;
@@ -295,7 +298,7 @@ static lib_i32 vm_model_339_external_rom_route(void)
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
     failed = vm_machine_create_from_assets(&config, &assets, &session) !=
             LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_external_firmware(
-                session->profile_plan) ||
+                vm_test_profile_plan(session)) ||
         core_machine_memory_read(session->core_machine, 0x000f0000u, observed,
             sizeof(observed)) != LIB_STATUS_OK || observed[0u] != 0x12u ||
             observed[1u] != 0x34u ||
@@ -320,7 +323,7 @@ lib_i32 main(void)
     const lib_i32 rom = vm_model_339_external_rom_route();
     const lib_i32 default_create = vm_test_create_default(&default_config,
         &default_session) != LIB_STATUS_OK || default_session == LIB_NULL ||
-        !vm_profile_machine_plan_hdc_present(default_session->profile_plan);
+        !vm_profile_machine_plan_hdc_present(vm_test_profile_plan(default_session));
     lib_i32 failed = selected || floppy || refresh || refresh_post || dma_word_io || rom || default_create;
 
     vm_machine_destroy(default_session);

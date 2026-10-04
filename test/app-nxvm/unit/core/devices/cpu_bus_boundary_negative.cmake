@@ -7,7 +7,7 @@ endif()
 file(REMOVE_RECURSE "${WORK}")
 set(cpu_files cpu.c cpu.h cpu_interface.h cpu_instructions.c cpu_instructions.h
     cpu_timing.c cpu_timing.h cpu_timing_model.c cpu_trace.h)
-set(paths src/app-nxvm/machine/machine.c src/x86/core/machine.c
+set(paths src/x86/product/machine/machine.c src/x86/core/machine.c
     src/x86/core/cpu_bus.c src/x86/ibmpc-common/board_advance.c
     test/x86/ibmpc-common/core_machine_lea_smoke.c
     test/x86/ibmpc-common/core_machine_gpr_mov_smoke.c

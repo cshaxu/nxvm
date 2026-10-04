@@ -1,3 +1,4 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #ifndef TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #define TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #include "lib/types/types_interface.h"
@@ -5,7 +6,7 @@
 #include "x86/core/device_support_interface.h"
 
 #include "x86/chips/rtc146818/rtc146818_interface.h"
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/machine_interface.h"
 #include "app-nxvm/profiles/model40/model40_private.h"
 
 static inline void vm_model40_fixture_cmos_seed(

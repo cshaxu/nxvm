@@ -1,3 +1,5 @@
+#include "../../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
@@ -5,9 +7,9 @@
 #include <stdio.h>
 
 #include "x86/core/debug_interface.h"
-#include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/machine_interface.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/lifecycle.h"
+#include "x86/product/machine/machine_interface.h"
+#include "x86/product/machine/machine_private.h"
 #include "../../../../x86/core/time_fixture.h"
 #include "../../../../x86/ibmpc-common/cmos_fixture.h"
 #include "support/rom/session_assets.h"
@@ -136,7 +138,7 @@ lib_i32 main(void)
         return 1;
     }
     board = test_board_capture_composition(session->board);
-    if (!session->active || session->profile_plan == LIB_NULL ||
+    if (!session->active || vm_test_profile_plan(session) == LIB_NULL ||
         board.fdc.dor_port != 0x03f2u ||
         board.fdc.status_port != 0x03f4u ||
         board.fdc.data_port != 0x03f5u ||

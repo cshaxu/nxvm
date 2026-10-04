@@ -1,9 +1,12 @@
+#include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
+#include "../../../../../support/profile.h"
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/core/machine_interface.h"
-#include "app-nxvm/machine/machine_interface.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_interface.h"
+#include "x86/product/machine/machine_private.h"
 
 int main(void)
 {
@@ -25,7 +28,7 @@ int main(void)
     assets.bios[0u] = (vm_machine_asset_bytes) { image, sizeof(image) };
     failed = vm_machine_create_from_assets(&config, &assets, &session) !=
             LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_external_firmware(
-                session->profile_plan);
+                vm_test_profile_plan(session));
     if (!failed) {
         failed |= core_machine_memory_query(session->core_machine, 0x000f0000u,
             1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) != LIB_STATUS_OK ||

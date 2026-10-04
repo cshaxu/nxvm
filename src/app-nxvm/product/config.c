@@ -75,7 +75,7 @@ static lib_status vm_app_read_information(const void *machine,
 
     if (status != LIB_STATUS_OK) return status;
     *out_info = (vm_app_information){
-        .machine_name = vm_profile_name(info.profile_kind),
+        .machine_name = vm_profile_name(VM_APP_PROFILE_KIND),
         .cpu_name = core_machine_cpu_profile_name(info.cpu_profile),
         .memory_bytes = info.memory_bytes,
         .floppy_image_bytes = info.floppy_image_bytes,

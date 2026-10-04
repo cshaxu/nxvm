@@ -10,6 +10,9 @@
 #include "x86/ibmpc-common/floppy_interface.h"
 
 typedef struct vm_profile_machine_plan vm_profile_machine_plan;
+
+lib_status vm_profile_machine_plan_describe(vm_profile_machine_plan *plan,
+    vm_machine_construction *out_construction);
 typedef struct vm_profile_model40_external_rom vm_profile_model40_external_rom;
 
 typedef struct vm_profile_model40_observation {

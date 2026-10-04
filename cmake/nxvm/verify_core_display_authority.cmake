@@ -49,11 +49,11 @@ foreach(caller IN LISTS display_callers)
         message(FATAL_ERROR "Display caller retains a Core receiver: ${caller}")
     endif()
 endforeach()
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine.c" machine_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/display.c" display_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/lifecycle.c" lifecycle_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/display.c" display_source)
 
 foreach(required IN ITEMS "core_machine_display_config"
     "core_machine_configure_display" "core_machine_display_ports_are_vadp"
@@ -80,9 +80,9 @@ endif()
 foreach(forbidden IN ITEMS "core_machine_profile_binding_configure_"
     "core_machine_vadp_configure_" "x86_video_configure_" "core_machine_install_port_provider")
     foreach(vm_source IN ITEMS
-        "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c"
-        "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/display.c")
-        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine.c")
+        "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine.c"
+        "${PROJECT_SOURCE_DIR}/src/x86/product/machine/display.c")
+        if(vm_source STREQUAL "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine.c")
             set(vm_source_text "${machine_source}")
         else()
             set(vm_source_text "${display_source}")

@@ -1,10 +1,11 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/core/firmware_interface.h"
 #include "../../../../x86/core/composition_fixture.h"
-#include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/lifecycle.h"
+#include "x86/product/machine/machine_private.h"
 #include "support/common_machine_fixture.h"
 #include "support/rom/session_assets.h"
 

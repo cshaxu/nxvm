@@ -5,8 +5,8 @@ dependencies belong to [System Architecture](ARCHITECTURE.md).
 
 ## Current Tree
 
-The product/shared-corpus layout is current. `machine`, `product`
-and `profiles` are NXVM runtime roots below `app-nxvm`; `firmware` owns
+The product/shared-corpus layout is current. `product` and `profiles`
+are NXVM runtime roots below `app-nxvm`; `firmware` owns
 project-authored guest firmware source and its build tools. `pc110` remains a
 future Profile only when its separate evidence task admits real source files.
 
@@ -17,7 +17,6 @@ src/
   x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug,product}/
   app-nxvm/             NXVM product implementation
     product/            main and fixed config/factory projection
-    machine/            NXVM driver and execution adapter; opaque shared media
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/
       xt/               IBM 5160 board composition and firmware slots
@@ -29,8 +28,10 @@ src/
 Keep machine-specific profile declarations at the profiles root. Common
 floppy geometry/channel, Option ROM validation and profile-contract validation
 live in flat `x86/ibmpc-common`, with their independent tests under `test/x86`.
-The
-shared Product INI, command/hotkey and Common composition files and their
+The shared execution/debug adapter lives in `x86/product/machine`; App profiles
+prepare copied construction values and transfer their real context lifetime.
+Shared owns candidate publication and rollback, never an App layout or model ID.
+The shared Product INI, command/hotkey and Common composition files and their
 reusable assertions live in x86/product and test/x86/product. Shared process
 entry/banner formatting consumes App-owned immutable identity and factory values. The
 former `app-nxvm/devices` implementation is removed. Shared board mechanisms
@@ -133,13 +134,13 @@ Neither stage modifies Lib or Common under the current owner restriction.
 Before the App split, admitted T542 receives the remaining shared adapter in
 `x86/product/machine` (with its real media subresponsibility) and common
 construction helpers in flat `x86/ibmpc-common`. Matching independent tests
-follow those owners. This is the planned receiver, not current source status;
-Current and the T542 ledger distinguish design from delivered migration.
+follow those owners. Current and the T542 ledger distinguish working source
+from accepted delivery.
 S3 relocates media implementation/tests to x86/product/machine/media and
 test/x86/product/machine/media; App keeps only opaque media handles and its
 composition assertions, not the shared media layouts.
 S4 places pure mapper/frame conversion in flat x86/product/machine. The
-remaining App display orchestration directly converts the video snapshot;
+shared display orchestration directly converts the video snapshot;
 the old guest-frame view lives only in test support, not production source.
 The prepared Profile context retains Model40 D4 and terminal observations;
 generic Machine holds neither. App probes consume copied Profile values, with
@@ -149,7 +150,6 @@ No App can retain another App's shared Machine implementation as its library.
 The owner-required x86/product receiver owns the identical PC Console/API,
 INI/startup/UX implementation once, with matching test/x86/product coverage.
 Its final flat file set and minimum typed Machine binding are determined by
-T541 S1's actual-source inventory; existing board/media/execution adapter files
-stay App-owned. Each App retains real
+T541 S1's actual-source inventory and T542's construction ledger. Each App retains real
 product identity, fixed board/firmware composition and build binding; no App
 is the source library of another App or the shared Product implementation.

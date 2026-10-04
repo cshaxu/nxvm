@@ -1,12 +1,13 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include "x86/ibmpc-common/media_interface.h"
-#include "app-nxvm/machine/lifecycle.h"
+#include "x86/product/machine/lifecycle.h"
 #include "x86/product/machine/media/media_interface.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 #include "support/rom/session_assets.h"
 
@@ -26,7 +27,7 @@ lib_i32 main(void)
     lib_i32 failed = 1;
 
     if (vm_model40_fixture_create(&model40) != LIB_STATUS_OK ||
-        model40 == LIB_NULL || model40->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+        model40 == LIB_NULL || model40->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         vm_test_fdd_info(model40->fdd).geometry.cylinders != 80u || vm_test_fdd_info(model40->fdd).geometry.heads != 2u ||
         vm_test_fdd_info(model40->fdd).geometry.sectors_per_track != 15u || vm_test_fdd_info(model40->fdd).geometry.bytes_per_sector != 512u ||
         vm_machine_fdd_image_size(model40->fdd) != MODEL40_FDD_BYTES ||
@@ -56,8 +57,8 @@ lib_i32 main(void)
         if (vm_model40_fixture_create_bytes_with_floppy_format(even_bytes, odd_bytes,
                 VM_MACHINE_FLOPPY_FORMAT_360K, &model40_360k) !=
                 LIB_STATUS_OK || model40_360k == LIB_NULL ||
-            model40_360k->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
-            model40_360k->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
+            model40_360k->construction.floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+            model40_360k->construction.media_kind != VM_PROFILE_FLOPPY_525_360K ||
             vm_test_fdd_info(model40_360k->fdd).geometry.cylinders != 40u ||
             vm_machine_fdd_replace_bytes(model40_360k->fdd, compatible_media,
                 sizeof(compatible_media)) != LIB_FALSE) goto done;

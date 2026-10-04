@@ -1,3 +1,4 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 #include "x86/core/device_support_interface.h"
@@ -5,12 +6,12 @@
 #include "x86/core/debug_interface.h"
 #include "x86/core/machine_interface.h"
 #include "x86/core/memory_interface.h"
-#include "app-nxvm/machine/control.h"
-#include "app-nxvm/machine/fault.h"
-#include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/machine_interface.h"
+#include "x86/product/machine/control.h"
+#include "x86/product/machine/fault.h"
+#include "x86/product/machine/lifecycle.h"
+#include "x86/product/machine/machine_interface.h"
 #include "support/rom/session_assets.h"
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_private.h"
 
 static lib_i32 vm_fault_outcome_prepare(vm_machine *session)
 {

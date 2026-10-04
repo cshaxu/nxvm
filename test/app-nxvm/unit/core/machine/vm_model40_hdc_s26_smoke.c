@@ -1,9 +1,10 @@
+#include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
 #include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
-#include "app-nxvm/machine/machine_private.h"
+#include "x86/product/machine/machine_private.h"
 #include "x86/product/machine/media/hdd_interface.h"
 #include "support/rom/model40_session_assets.h"
 

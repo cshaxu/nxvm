@@ -31,7 +31,7 @@ justified App retention.
 | --- | --- | --- | --- |
 | Helpers | profiles/device/floppy; profiles/byob/blob; profile_contract and callers | x86/ibmpc-common | S2 accepted; proof below |
 | Media | machine/media FDD/HDD providers, geometry, marks, leases and callers | x86/product/machine/media | S3 accepted; proof below |
-| Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | S4 conversion accepted; cohesive Machine ingress/capture orchestration remains S5 |
+| Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | S4 conversion accepted; cohesive Machine ingress/capture orchestration remains S6 |
 | Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | S5 isolates prerequisite Profile state; cohesive receiver S6 pending |
 | Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | Contract frozen below; S6/S7 pending |
 | Retained differences | XT/AT/default/Model40 values, ROM layout, D4, CMOS, HDC geometry and firmware source | Concrete App profile/firmware owner | S5 Profile observation isolation delivered; fixed composition S7 pending |
@@ -611,3 +611,195 @@ worktree is clean before this pure governance acceptance. All S5 native handles
 are terminal; warm trees remain needed for the next S. Accept/close S5 only.
 T542 remains open for S6-S9, complete extraction and all 58 once-only external
 contexts. No App-split task is admitted and no task-level completion is claimed.
+
+## S6: Cohesive Execution And Debug Adapter (In Progress)
+
+Admitted from accepted S5 0d8d47c8b. Current holds the complete S6 packet;
+this is an internal work checkpoint, not a partial P or acceptance. The
+owner's automatic sequential admission applies. Single-session coordinator
+reviews admission before switching to execution; no additional agent is used.
+
+Actual dependency inspection covers Machine private/public layout, control,
+runner, waiting, lifecycle, devices, information, debug/protocol and the S1
+construction contract. Search `rg -n 'vm_profile_|retained_config|profile_kind|app-nxvm/'
+src/app-nxvm/machine` confirms the remaining reverse-dependency class: the
+whole adapter cannot move while it calls App plan getters/materialization.
+Shared receives copied prepared values and bounded Profile lifetime/wiring
+operations. Identity projection and the all-profile firmware union remain App
+facts; S7 retires the dispatcher rather than moving it into Shared.
+
+The first internal relocation uses git mv for debug.c/h and executor_state.c/h
+into x86/product/machine, preserves their algorithms and removes debug.h's
+unused App Machine include. The executor signal header becomes
+executor_state_interface.h because App currently consumes its opaque public
+contract. x86-product-machine is the one receiving target, not another runner;
+the same source is removed from the App compilation list. The existing
+execution-state smoke follows that owner with its original assertions/marker.
+New code-owned debug budget matrices independently cover trace counts
+1/10/4096, zero progress, both breakpoint address forms, watchpoint completion,
+single consumption and reset invalidation. No external fixture is used.
+
+Current evidence: standalone x64 target builds without App sources and both
+mechanism tests pass; root x64 Machine builds, root x86 Machine builds and both
+mechanism tests pass on x86. The x86 corpus boundary, changed manifests,
+documentation structure and whitespace checks pass at this checkpoint.
+All launched native build/test handles have terminated. No full-unit,
+integration, artifact freshness, dependency-DAG or S6 acceptance is claimed.
+
+App still owns the remaining Machine runtime and temporarily includes the
+moved private debug layout while that same cohesive owner is being relocated.
+This is unaccepted in-progress work, not a retained public ABI or permission
+to close S6. The complete move must remove those App runtime consumers,
+establish neutral construction/rollback, repair every actual caller/test/gate,
+run the packet's full verification and deliver the eight current products.
+No Lib/Common, MyNES, owner INI or deployed binary has changed. Changes remain
+uncommitted until the entire S6 brief is satisfied; no partial P is published.
+
+### S6 Neutral Construction And Whole Runtime Relocation
+
+The next work checkpoint reads the actual contents of all 22 remaining runtime
+files before git mv. No App Profile, identity, assets or plan dependency remains
+in those files. They now reside under x86/product/machine with their self-includes
+updated; the old App Machine production library and source list are removed.
+The receiving target compiles the complete runtime, not just debug helpers.
+
+App profiles/machine_factory.c resolves the existing real plan and prepares
+copied Core configuration, timing, topology, geometry, CMOS, glyph and firmware
+values. Its transferred context has three cohesive operations: configure once,
+notify successful reset/board detach, and release after routes/media teardown.
+The Shared creation transaction owns allocation, media preparation, Core/reset
+publication and rollback; it contains no App headers or machine-name selection.
+App identity formatting uses its compile-selected profile, not generic INFO.
+The remaining App plan union/dispatch is still the S7 receiver.
+
+App-owned tests retain their assertions while reading the copied construction
+or their actual Profile context. A stateless support/profile.h borrowed view
+does not add production API, registry or mirror state. ROM fixture constants
+now explicitly include their App owner instead of relying on a generic Machine
+header. Two existing native integration probes suppress Windows' exception_code
+macro after windows.h so it cannot rewrite the Core fault field name. The direct
+plan test declares its board/Core dependencies instead of relying on the removed
+runtime library's accidental object pull-in.
+
+The full x64 target graph compiled at the preceding internal checkpoint; a fresh
+complete build/unit run follows the final header cleanup. The Shared corpus
+dependency verifier passes, and stale Shared-to-App allowlist entries are
+removed. Full x64/x86 unit results, standalone construction/lifetime proof,
+remaining gates and eight artifact rebuilds are not yet accepted. No P is
+published and S6/T542 remain open.
+
+Fresh post-relocation proof: the complete root target graph builds on x64 and
+x86. `ctest --test-dir build/t542-s2-unit-x64 -L unit -j 12
+--output-on-failure` passes 498/498 in 65.18 seconds; the corresponding x86
+command passes 498/498 in 57.62 seconds. The standalone test/x86 build compiles
+the complete x86-product-machine target without App sources and executes both
+executor-state and debug-budget cases successfully (2/2). This archive build
+plus those two cases does not yet prove the neutral construction API's complete
+successful-publication and failure lifetime; that independent proof remains S6.
+
+The x86 corpus gate, both changed manifests, zero-edge NXVM DAG, machine owner
+and lifecycle source gates, documentation gate and diff whitespace pass.
+All launched handles are terminal. Protected Lib/Common and MyNES source/test
+and MyNES deployed artifacts have no diff. Remaining S6 exits are independent
+construction/rollback/lifetime coverage, final ABI and caller disposition audit,
+all required gates/manifests and eight fresh 0542 artifacts, followed by complete
+target-scoped delivery and coordinator acceptance. No partial P is committed.
+
+### S6 Independent Construction And Closure-Gate Checkpoint
+
+The independent code-owned construction test now exercises the full Shared
+adapter, with no App sources or external files: normal publication, copied
+construction values, driver reset, configure failure and firmware-reset failure.
+It checks configure-once, successful-reset-only notice, output remaining NULL
+on failure, one detach notification and context release last. Repeated partial
+rollback uses the existing non-NULL Core plan lifetime to avoid repeating the
+detach notice; no new state flag or registry is introduced.
+
+Two unused production ingress APIs are removed: vm_machine_submit_input and
+vm_machine_submit_host_input. Production already delivers kvm_input_event
+through the sole Common driver. Original guest-input fixtures and their
+conversion now live in test/app-nxvm/support/guest_input.h, not a second public
+production interface. Existing App assertions are retained. The transport gate
+checks the actual driver/delivery and the fixture's existing Common input route.
+
+The independent test/x86 build executes construction, construction helpers,
+debug budget and executor state: 4/4 pass in 1.25 seconds. The complete current
+x86 unit suite passes 499/499 in 61.30 seconds. The corresponding x64 suite is
+still running at this checkpoint; it is not claimed as passed. Both root builds
+and the standalone full Machine target compile successfully.
+
+All six manifests, the x86 dependency/private/platform corpus gate, documentation
+governance and all current specialized gates pass. Repairs retain the original
+gate purposes: reject retired App media paths rather than the receiving Shared
+path; account for the original Profile-contract unit registration; update the
+current artifact presets to 0542; remove obsolete deferred compilation entries
+now actually compiled strictly in Shared. The strict matrix has 514 rows, 513
+retained-strict and one deferred App composition source; the DAG has zero
+migration exceptions. No Lib/Common or MyNES source/test/artifact diff exists.
+
+Eight Release product builds are being refreshed sequentially using the existing
+0542 target and deployment recipe. No owner INI is rewritten. Artifact identity,
+hash evidence, final actual-diff review and complete target-scoped publication
+remain required; S6 and T542 are still open and no partial P is published.
+
+The same x64 unit handle subsequently completes 499/499 with exit zero in
+254.82 seconds; it was polled, not restarted. Both widths now prove the current
+implementation, including the new construction regression. The final build-only
+change preserves X86_BUILD_TOOLS=OFF: the PC adapter/Common are gated with tools,
+while chip targets remain independent. A fresh src/x86 chip-only tree configures
+without Common or App sources and compiles x86-pit825x successfully. ON builds
+retain identical production/test inputs. The final specialized gate is rerun
+against that description; final publication remains pending actual-diff review.
+
+All eight sequential Release builds finish with exit zero and deploy through
+the existing recipe. Each deployed PE has the expected host architecture,
+contains 0.5.0542, and has no .debug/.zdebug sections under objdump inspection.
+The S6 working-source hashes are:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | 8A6272DDC61A00A439AB2C1A6614F69DFE8AC9A331B58821FE2CF67DFEDE42E1 |
+| nxvm_default_0_5_0542_x86.exe | F09EB17638D07C62D173CCBA0B58A87281CCB77514CC9E01D7EC8A0F7691EC8C |
+| nxvm_xt_0_5_0542_x64.exe | E1291AF2953B8D5E6B1487D44187993116C8D3F77FF6D1B11DA188F48E789BA2 |
+| nxvm_xt_0_5_0542_x86.exe | FDC31DF767BEA4FEE79F9439611A8DFA561193E7E5C45D57C33917465D8CCA39 |
+| nxvm_at_0_5_0542_x64.exe | 2572BF541E7ABEF8C0928617769D3345EC0679142157BBDA8EAB6EAB369D5714 |
+| nxvm_at_0_5_0542_x86.exe | 1ABB3D0255C729F257A85549FCB748FB4020B6B632199F68B2E0A1517FAF2607 |
+| nxvm_model40_0_5_0542_x64.exe | EA5B37DB3A2D5A0FC8B9854938D55EE6430B241216266F67BE73C6719343ADF5 |
+| nxvm_model40_0_5_0542_x86.exe | 264EB9CE344AA64D415C3514E3718836B92CB5D97079259BCD1F89B57B5E6E35 |
+
+The source diff and artifact checks confirm unchanged Lib/Common, MyNES and
+owner INIs. All 58 original integration contexts remain a T-level S9 exit;
+their execution is not inferred from these unit and build results.
+
+### S6 Coordinator Actual-Change Review
+
+The coordinator reviews the rename-aware runtime diff, neutral construction
+contract, App factory, caller/test migrations, source lists, gate repairs and
+artifact delivery against the admitted packet. Runner, control, waiting and
+debug algorithms retain their original implementation; relocation does not
+introduce a worker, FIFO, guest clock or model-name dispatcher. Construction
+values are copied once. Core tears down board routes before providers and
+the transferred Profile context are released; failed publication keeps the
+output NULL and rollback sends the detach notice once.
+
+The retired host-input wrappers had no production callers. Their original
+fixture conversion now belongs to App test support and uses the existing
+Common ingress. The obsolete retained-config mirror assertion is removed
+with its field; actual media lease/path/generation assertions remain. The
+original executor-state test moves to its Shared owner without losing its
+assertions. New construction and debug-budget cases prove the receiving
+boundary independently of App sources and external inputs.
+
+Rename-aware production C/H counts are 290 added and 293 removed (net -3);
+test C/H counts are 705 added and 262 removed (net +443). These include
+boundary regressions, explicit owner includes and test-only fixtures, not a
+new framework. Relocated lines are not reported as deleted functionality.
+Six manifests, standalone corpus/negative gates, specialized closure gates,
+documentation governance and whitespace checks pass. Full units are 499/499
+on each width, as recorded above; all eight deployed artifacts are current.
+Lib/Common, MyNES and owner INIs have no changes.
+
+The complete S6 package is ready for separate Shared and NXVM deliveries.
+Acceptance follows publication of both targets. S7 still owns the App plan
+union/dispatch retirement; S8/S9 and all 58 original integration contexts
+remain required before T542 can close.

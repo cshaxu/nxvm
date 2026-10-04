@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.h" fdc_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/fdc.c" fdc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c" devices_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/machine_devices.c" devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/dma_bus.c" dma_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/memory_interface.c" core_memory_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" board_source)
