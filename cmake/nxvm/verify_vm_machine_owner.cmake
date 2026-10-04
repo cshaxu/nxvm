@@ -94,4 +94,27 @@ foreach(source IN LISTS app_sources)
     endif()
 endforeach()
 
+# A fixed product has one constructor supplied by its build. Cross-profile
+# fixture selection must not recreate a production plan registry or union.
+file(GLOB_RECURSE profile_plans
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.[ch]"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/*/machine_plan.c")
+foreach(source IN LISTS profile_plans)
+    file(READ "${source}" plan_text)
+    if(plan_text MATCHES "union[ \t\r\n]*\\{|VM_PROFILE_MACHINE_PLAN_(DEFAULT|IBM|XT|MODEL40)|config->profile_kind")
+        message(FATAL_ERROR "Fixed composition retains model dispatch/storage: ${source}")
+    endif()
+endforeach()
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_factory.c" factory_text)
+if(NOT factory_text MATCHES "VM_PROFILE_PLAN_CREATE\\(config, assets, &plan\\)" OR
+        factory_text MATCHES "config->profile_kind|vm_profile_machine_plan_create\\(")
+    message(FATAL_ERROR "Machine factory does not use its fixed build constructor")
+endif()
+file(READ "${PROJECT_SOURCE_DIR}/cmake/nxvm/NxvmProductProfile.cmake" profile_build)
+foreach(constructor IN ITEMS default 5170 xt model40)
+    if(NOT profile_build MATCHES "set\\(NXVM_PROFILE_PLAN_CREATE vm_profile_machine_plan_create_${constructor}\\)")
+        message(FATAL_ERROR "Build does not bind the ${constructor} constructor")
+    endif()
+endforeach()
+
 message(STATUS "M5 NXVM machine Common-owner and copied-fact boundary verified")

@@ -1,3 +1,4 @@
+#include "../../../../../support/profile.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #ifndef TEST_VM_SUPPORT_ROM_SESSION_ASSETS_H
@@ -27,7 +28,7 @@ static inline lib_status vm_test_default_pc_at_session_create(
     config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
     config.bios_count = 1u;
     vm_test_default_pc_at_assets(&assets, rom);
-    return vm_machine_create_from_assets(&config, &assets, out_session);
+    return vm_test_machine_create_from_assets(&config, &assets, out_session);
 }
 
 static inline void vm_test_ibm_5170_assets(vm_machine_assets *assets,
@@ -56,7 +57,7 @@ static inline lib_status vm_test_ibm_5170_session_create(
     config.profile_kind = VM_MACHINE_PROFILE_IBM_5170_MODEL_339;
     config.bios_count = 2u;
     vm_test_ibm_5170_assets(&assets, even, odd);
-    return vm_machine_create_from_assets(&config, &assets, out_session);
+    return vm_test_machine_create_from_assets(&config, &assets, out_session);
 }
 
 #endif

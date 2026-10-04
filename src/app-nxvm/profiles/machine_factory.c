@@ -5,14 +5,25 @@ lib_status vm_machine_create_from_assets(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_machine **out_machine)
 {
     vm_profile_machine_plan *plan = LIB_NULL;
+    lib_status status;
+
+    if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *out_machine = LIB_NULL;
+    status = VM_PROFILE_PLAN_CREATE(config, assets, &plan);
+    if (status != LIB_STATUS_OK) return status;
+    return vm_machine_create_from_plan(config, plan, out_machine);
+}
+
+lib_status vm_machine_create_from_plan(const vm_machine_config *config,
+    vm_profile_machine_plan *plan, vm_machine **out_machine)
+{
     vm_machine_construction construction;
     vm_machine_runtime_config runtime = {0};
     lib_status status;
 
     if (out_machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     *out_machine = LIB_NULL;
-    status = vm_profile_machine_plan_create(config, assets, &plan);
-    if (status != LIB_STATUS_OK) return status;
+    if (config == LIB_NULL || plan == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     status = vm_profile_machine_plan_describe(plan, &construction);
     if (status != LIB_STATUS_OK) {
         vm_profile_machine_plan_destroy(plan);

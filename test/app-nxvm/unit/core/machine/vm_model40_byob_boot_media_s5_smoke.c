@@ -1,3 +1,4 @@
+#include "../../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "../../../support/media.h"
 #include "lib/types/types_interface.h"
@@ -36,7 +37,7 @@ lib_i32 main(void)
     assets.bios[0u] = (vm_machine_asset_bytes) { even, sizeof(even) };
     assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+    failed |= vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || vm_machine_fdd_replace_bytes(session->fdd, image,
             sizeof(image)) != LIB_FALSE || !vm_test_fdd_info(session->fdd).present ||
         vm_test_fdd_info(session->fdd).geometry.cylinders != 80u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||

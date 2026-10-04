@@ -1,3 +1,4 @@
+#include "../../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
@@ -91,7 +92,7 @@ static lib_status vm_model40_cmos_seed_session_create(
     vm_model40_fixture_cmos_seed(default_seed);
     assets.cmos_seed = (vm_machine_asset_bytes) { seed == LIB_NULL ? default_seed : seed,
         VM_MACHINE_CMOS_SEED_BYTES };
-    return vm_machine_create_from_assets(&config, &assets, out_session);
+    return vm_test_machine_create_from_assets(&config, &assets, out_session);
 }
 
 lib_i32 main(void)

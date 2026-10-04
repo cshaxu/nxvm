@@ -15,7 +15,7 @@ foreach(source IN LISTS vm_sources)
     endforeach()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/machine_plan.c"
     profile_plan)
 foreach(required "core_machine_plan_configure_hdc")
     string(FIND "${profile_plan}" "${required}" position)

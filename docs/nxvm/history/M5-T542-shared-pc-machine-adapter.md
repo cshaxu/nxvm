@@ -813,3 +813,110 @@ The eight SHA-256 identities refer to this delivered source package. No new
 runtime verification is inferred from the documentation-only acceptance.
 S1-S6 are accepted; T542 stays open for S7-S9. The unchanged warm verification
 trees remain needed by S7 and no owned native process is still running.
+
+## S7 Fixed Composition Admission And Source Audit
+
+S7 starts from clean delivered S6 edbc98531. The complete remaining
+machine_plan.c is read: it still stores a model enum, two all-profile unions,
+copied configuration/topology and a retained firmware provider/context. Its
+create/materialize/destroy/observation methods branch on the model. The real
+EXE configuration already has generated VM_APP_PROFILE_KIND, but vm-profile
+compiles every model into the same archive and factory creation still selects
+at runtime. Thus a fixed EXE alone has not removed the construction dispatch.
+
+This is the S7 mechanism to retire, not a chip/Core deficiency. Real Model40
+D4 and terminal observations remain Model40-owned; PC/AT descriptor-derived
+FDC/HDC wiring and XT ROM layout retain their existing semantics. Common
+configuration/ROM preparation may share a helper only where those semantics
+actually match. No new model registry or executor is needed.
+
+Existing units/integration fixtures explicitly construct several boards in
+one test build. Their coverage must survive through explicit real constructors
+or test-owned selection, not by weakening checks or shipping a multi-model
+production dispatcher. The generated binding and actual source/dependency
+graph must select the product composition; per-model firmware storage must
+not be an all-model union or a mirror in Shared Machine. Constructor and
+failure-lifetime design is the next source-audit step before implementation.
+
+### S7 Constructor And Lifetime Decision
+
+Use explicit Default/5170/XT/Model40 constructors at their real Profile
+owners. Each actual context embeds the one opaque plan prefix and stores only
+its own descriptor/firmware/observations. The prefix is the accepted copied
+construction value, not a second model enum, firmware union or state registry.
+Reuse its existing configure/notify/release binding for profile-specific
+materialization and teardown; do not add another operations framework.
+Default and 5170 may share the actual PC/AT ROM and descriptor materialization
+body because their layout/lifetime match; their topology constraints remain
+separate constructor inputs. XT and Model40 retain distinct firmware lifetimes.
+
+The generated product binding chooses the constructor at build time. The
+App factory owns media-runtime projection and transfer of the prepared plan
+to Shared Machine; no production model selector remains. Multi-board tests
+select explicit constructors in test support and use the same factory transfer
+transaction. Original getters with no callers are removed; surviving fixture
+observations remain copied or explicitly borrowed under the existing lifetime.
+No Lib/Common or Shared source change is required by this design.
+
+### S7 Implementation And Verification
+
+The common plan now holds only the accepted construction prefix. Real PC/AT,
+XT and Model40 contexts own their descriptors, ROM storage and observations.
+Default and 5170 share the existing PC/AT ROM layout and materialization body,
+with separate topology/constraint constructors. Existing configure/notify/release
+operations own materialization and cleanup; no new operations framework exists.
+Common validation, CMOS/glyph copying, publication and failure cleanup retain
+one path. Model40 keeps its original 925/5/17 geometry, D4 borrow and terminal
+invalidation. XT retains its original ROM and media restrictions.
+
+The build table supplies VM_PROFILE_PLAN_CREATE to the factory translation
+unit. Inspection of all eight factory objects with the selected toolchain's
+nm confirms exactly one unresolved constructor: default, xt, 5170 or model40,
+matching its fixed product. The name enum remains for immutable identity and
+test fixture selection only. It no longer dispatches production construction.
+Original cross-profile units select the real constructors in test support;
+the media transfer/publication body is the same production factory transaction.
+Unused getters and the old all-profile constructor/reset/detach entry points
+are removed. Existing test assertions are unchanged.
+
+Complete root units pass 499/499 on x64 (67.58 seconds) and 499/499 on x86
+(53.19 seconds). All current specialized gates pass, including the fixed
+composition closure and existing ROM/FDC/HDC/ownership checks. Four standalone
+adapter/helper tests and four manifest/corpus/negative checks pass (8/8).
+An initial overbroad standalone CTest command selected 299 unbuilt executables
+and reported Not Run; this was a verification-selection error, not a test pass
+or runtime defect. The corrected selection uses the built independent tests;
+the full root unit results cover the full unit universe. The independent
+src/x86 tools-off tree also builds successfully without App or Common sources.
+All six manifests verify unchanged. No integration execution is claimed here;
+the original 58 contexts remain S9's once-only whole-task exit.
+
+All eight retained Release trees build only vm-0-5-0542 and deploy through the
+existing recipe. Deployed PE width, 0.5.0542 identity and absence of debug/zdebug
+sections are inspected. The working-source artifact identities are:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| nxvm_default_0_5_0542_x64.exe | 09B7A98DBFD1D504D97551BF650421892977F88B969C73309245693917ABA3A5 |
+| nxvm_default_0_5_0542_x86.exe | 54A883A20991E034450D8A4D68ADE11AA8B74721DF1E0BCC991BEC23192F2D07 |
+| nxvm_xt_0_5_0542_x64.exe | 5DC805C9FD543F1DCE714D35C60AD0A73281D0BAB5D5B33931B40B6D9A894277 |
+| nxvm_xt_0_5_0542_x86.exe | 2267CA2E08AE28FAF8A87FBA25CF8D3AB2F529248E65752CD0C06D7D62BA6D8A |
+| nxvm_at_0_5_0542_x64.exe | D7192B0F59449DD24ABE3A96D64A3E0DEABDA2BEC450C89C3CBCA88AB185FC81 |
+| nxvm_at_0_5_0542_x86.exe | 12EE0917A533440C822A5E8523CDE6F9011581924AD5BEFCEBAC8430187C1134 |
+| nxvm_model40_0_5_0542_x64.exe | 887FE74B0D53D064A6ED41F41F0EABF649FBE9A851BFB620FC4558BACA0E2EAB |
+| nxvm_model40_0_5_0542_x86.exe | F3DB0CC88E91A7422D9ED55A17769918E63B20CD47F0590ABC52F07C1838AD1D |
+
+Actual source/test/build review confirms one candidate publication/rollback
+owner, unchanged hardware/firmware behavior, no Shared-to-App edge and no
+new queue/clock/registry. Gate edits follow the relocated real PC/AT owner;
+they do not relax assertions. Lib/Common, Shared source/tests, MyNES and owner
+INIs have no diff. S7 delivery/acceptance remain pending publication; T stays
+open for S8/S9.
+
+Git's staged numstat across the eight changed production C/H paths records
+541 added and 532 removed lines (net +9). Across the sixteen changed test C/H
+paths it records 67 added and 24 removed (net +43). Counts include blank lines
+and relocated bodies, exclude CMake/docs/artifacts, and do not describe moved
+code as deleted capability. The small production increase buys real family
+contexts and direct constructors while retiring the central union/dispatcher;
+the test increase keeps multi-board coverage outside production dispatch.

@@ -776,6 +776,9 @@ set(VM_PROFILE_SOURCES
     src/app-nxvm/profiles/xt/rom/xt_5160_268_rom.c
     src/app-nxvm/profiles/machine_plan.c
     src/app-nxvm/profiles/machine_factory.c
+    src/app-nxvm/profiles/default_profile/machine_plan.c
+    src/app-nxvm/profiles/xt/machine_plan.c
+    src/app-nxvm/profiles/model40/machine_plan.c
     src/app-nxvm/profiles/default_profile/pc_at_profile.c
     src/app-nxvm/profiles/default_profile/external_pc_at_rom.c
     src/app-nxvm/profiles/model40/model40.c
@@ -796,6 +799,8 @@ target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x
 target_link_libraries(core-machine PUBLIC x86-ibmpc-common x86-ibmpc-at x86-ibmpc-xt x86-core)
 
 add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
+target_compile_definitions(vm-profile PRIVATE
+    VM_PROFILE_PLAN_CREATE=${NXVM_PROFILE_PLAN_CREATE})
 target_include_directories(vm-profile PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )

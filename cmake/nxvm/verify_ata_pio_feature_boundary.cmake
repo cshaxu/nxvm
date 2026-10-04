@@ -8,7 +8,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_pro
     profile_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/machine_plan.c"
+file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/profiles/default_profile/machine_plan.c"
     plan_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/core_machine_hdc_smoke.c"
     core_fixture)

@@ -41,7 +41,7 @@ lib_i32 main(void)
     even[0x3ff8u] = 0xa5u;
 
     stage = 1;
-    if (vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
+    if (vm_test_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL ||
         vm_model40_fixture_create_bytes(even, odd, &session) !=
         LIB_STATUS_OK || session == LIB_NULL || session->core_machine == LIB_NULL ||

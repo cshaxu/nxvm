@@ -1,3 +1,4 @@
+#include "../../../../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
@@ -33,7 +34,7 @@ lib_i32 main(void)
     odd[0u] = 0x22u;
     even[0x3ff8u] = 0xf4u;
 
-    failed |= vm_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
+    failed |= vm_test_machine_create_from_assets(&invalid_config, &missing_assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL;
     if (!failed) failed |= vm_model40_fixture_create_bytes(even, odd, &session) !=

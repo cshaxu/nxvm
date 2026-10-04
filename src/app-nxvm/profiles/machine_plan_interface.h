@@ -21,7 +21,13 @@ typedef struct vm_profile_model40_observation {
     lib_bool fdc_terminal_valid;
 } vm_profile_model40_observation;
 
-lib_status vm_profile_machine_plan_create(const vm_machine_config *config,
+lib_status vm_profile_machine_plan_create_default(const vm_machine_config *config,
+    const vm_machine_assets *assets, vm_profile_machine_plan **out_plan);
+lib_status vm_profile_machine_plan_create_5170(const vm_machine_config *config,
+    const vm_machine_assets *assets, vm_profile_machine_plan **out_plan);
+lib_status vm_profile_machine_plan_create_xt(const vm_machine_config *config,
+    const vm_machine_assets *assets, vm_profile_machine_plan **out_plan);
+lib_status vm_profile_machine_plan_create_model40(const vm_machine_config *config,
     const vm_machine_assets *assets, vm_profile_machine_plan **out_plan);
 void vm_profile_machine_plan_destroy(vm_profile_machine_plan *plan);
 
@@ -35,23 +41,11 @@ const core_machine_firmware_provider *vm_profile_machine_plan_firmware_provider_
     const vm_profile_machine_plan *plan);
 void *vm_profile_machine_plan_firmware_context_get(
     vm_profile_machine_plan *plan);
-vm_profile_floppy_kind vm_profile_machine_plan_drive_floppy_get(
-    const vm_profile_machine_plan *plan);
-vm_profile_floppy_kind vm_profile_machine_plan_media_floppy_get(
-    const vm_profile_machine_plan *plan);
 lib_u8 vm_profile_machine_plan_hdc_present(const vm_profile_machine_plan *plan);
-lib_u8 vm_profile_machine_plan_memory_reconfigurable(
-    const vm_profile_machine_plan *plan);
-lib_u8 vm_profile_machine_plan_floppy_slot_count(
-    const vm_profile_machine_plan *plan);
 const vm_profile_model40_external_rom *vm_profile_machine_plan_model40_rom_get(
     const vm_profile_machine_plan *plan);
 lib_u8 vm_profile_machine_plan_is_model40(const vm_profile_machine_plan *plan);
 lib_u8 vm_profile_machine_plan_external_firmware(const vm_profile_machine_plan *plan);
-lib_status vm_profile_machine_plan_copy_cmos_seed(const vm_profile_machine_plan *plan,
-    lib_u8 *out_seed, lib_u8 *out_present);
-lib_status vm_profile_machine_plan_copy_text_glyphs(const vm_profile_machine_plan *plan,
-    x86_video_text_glyph_config *out_glyphs);
 lib_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
     core_machine_plan *core_plan);
 /* Serialized with Core execution, or captured while its executor is paused.
@@ -59,12 +53,5 @@ lib_status vm_profile_machine_plan_materialize(vm_profile_machine_plan *plan,
  * A non-Model40 plan returns UNSUPPORTED without changing the output. */
 lib_status vm_profile_machine_plan_observe_model40(
     const vm_profile_machine_plan *plan, vm_profile_model40_observation *out_observation);
-/* Successful Core reset invalidates the completed-command observation.
- * Detach follows Core teardown and revokes the borrowed board handle. */
-void vm_profile_machine_plan_reset_observation(vm_profile_machine_plan *plan);
-void vm_profile_machine_plan_detach_board(vm_profile_machine_plan *plan);
-lib_u8 vm_profile_machine_plan_hdd_geometry_get(const vm_profile_machine_plan *plan,
-    lib_u16 *out_cylinders, lib_u8 *out_heads,
-    lib_u8 *out_sectors);
 
 #endif

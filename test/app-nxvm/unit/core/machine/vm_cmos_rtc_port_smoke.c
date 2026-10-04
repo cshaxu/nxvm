@@ -1,3 +1,4 @@
+#include "../../../support/profile.h"
 #include "app-nxvm/profiles/default_profile/external_pc_at_rom.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
@@ -64,7 +65,7 @@ static lib_i32 default_at_cmos_seed_is_loaded(void)
     assets.cmos_seed = (vm_machine_asset_bytes) { seed, sizeof(seed) };
     config.profile_kind = VM_MACHINE_PROFILE_DEFAULT_PC_AT;
     config.bios_count = 1u;
-    failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+    failed |= vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL;
     if (!failed) {
         core_machine *core = session->core_machine;

@@ -1,3 +1,4 @@
+#include "../../../../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #ifndef TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
 #define TESTS_SUPPORT_VM_MODEL40_BYOB_FIXTURE_H
@@ -47,7 +48,7 @@ static inline lib_status vm_model40_fixture_create_bytes_with_floppy_format(
     config.profile_kind = VM_MACHINE_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.bios_count = 2u;
     config.floppy_format = floppy_format;
-    return vm_machine_create_from_assets(&config, &assets, out_session);
+    return vm_test_machine_create_from_assets(&config, &assets, out_session);
 }
 
 static inline lib_status vm_model40_fixture_create_bytes(

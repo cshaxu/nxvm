@@ -29,7 +29,7 @@ static lib_status vm_test_create_5170(const vm_machine_config *config,
     font['A' * 8u] = 0x81u;
     font[2048u + 'A' * 8u] = 0x42u;
     assets.font = (vm_machine_asset_bytes) { font, sizeof(font) };
-    return vm_machine_create_from_assets(config, &assets, out_session);
+    return vm_test_machine_create_from_assets(config, &assets, out_session);
 }
 
 static lib_status vm_test_create_default(const vm_machine_config *config,
@@ -39,7 +39,7 @@ static lib_status vm_test_create_default(const vm_machine_config *config,
     vm_machine_assets assets;
 
     vm_test_default_pc_at_assets(&assets, rom);
-    return vm_machine_create_from_assets(config, &assets, out_session);
+    return vm_test_machine_create_from_assets(config, &assets, out_session);
 }
 
 static lib_i32 vm_model_339_selected_contract(void)
@@ -296,7 +296,7 @@ static lib_i32 vm_model_339_external_rom_route(void)
     even[0u] = 0x12u;
     odd[0u] = 0x34u;
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
-    failed = vm_machine_create_from_assets(&config, &assets, &session) !=
+    failed = vm_test_machine_create_from_assets(&config, &assets, &session) !=
             LIB_STATUS_OK || session == LIB_NULL || !vm_profile_machine_plan_external_firmware(
                 vm_test_profile_plan(session)) ||
         core_machine_memory_read(session->core_machine, 0x000f0000u, observed,

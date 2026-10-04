@@ -44,7 +44,7 @@ static lib_i32 verify_missing_firmware_rejection(void)
     vm_machine *session = LIB_NULL;
     lib_i32 failed;
 
-    failed = vm_machine_create_from_assets(&config, &missing_assets, &session) !=
+    failed = vm_test_machine_create_from_assets(&config, &missing_assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
     vm_machine_destroy(session);
     return failed;
@@ -57,9 +57,9 @@ static lib_i32 verify_constructor_output_contract(void)
     vm_profile_machine_plan *plan =
         (vm_profile_machine_plan *)(lib_uptr)1u;
 
-    if (vm_machine_create_from_assets(LIB_NULL, &assets, &session) !=
+    if (vm_test_machine_create_from_assets(LIB_NULL, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL) return 1;
-    if (vm_profile_machine_plan_create(LIB_NULL, &assets, &plan) !=
+    if (vm_test_profile_plan_create(LIB_NULL, &assets, &plan) !=
         LIB_STATUS_INVALID_ARGUMENT || plan != LIB_NULL) return 1;
     return 0;
 }

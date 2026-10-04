@@ -236,15 +236,17 @@ and [queued App split](../proposals/m5-independent-pc-apps.md):
    existing reducer, queue and native presentation owners. The complete
    Product-to-Machine boundary uses the existing Common driver plus a frozen
    typed App factory and copied INFO/speed operations, never an App-private
-   include. The board/media/execution adapter stays App-owned. Frozen identity,
-   hardware construction and firmware definitions bind that implementation; no per-machine console copy or new
+   include. The shared board/media/execution adapter now lives in
+   `x86/product/machine`; App retains frozen identity,
+   hardware construction and firmware definitions, with no per-machine console copy or new
    generic App framework is introduced.
    T541 keeps the four current builds and deployment paths intact. Lib/Common
    and existing x86 components are not implementation-change targets.
 4. Admitted [T542](../proposals/m5-shared-pc-machine-adapter.md) first extracts
    the remaining shared PC Machine adapter into x86/product and proven
-   construction helpers into ibmpc-common. This is a target boundary, not yet
-   an implemented move. App retains fixed profile/firmware rules and genuine
+   construction helpers into ibmpc-common. S2-S6 implement those receivers;
+   S7 replaces the App's all-profile plan unions and runtime construction
+   dispatch with build-selected constructors. App retains fixed profile/firmware rules and genuine
    D4; no Lib/Common change, extra queue or profile registry is introduced.
    The [S1 receiver ledger](../history/M5-T542-shared-pc-machine-adapter.md)
    owns the task-specific migration contract and evidence.

@@ -1,3 +1,4 @@
+#include "../../../support/profile.h"
 #include "app-nxvm/profiles/machine_factory_interface.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
@@ -208,7 +209,7 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     lib_i32 failed = 1;
 
     if (name == LIB_NULL || lib_text_compare(name, "ibm-5160-model-268") != 0 ||
-        vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+        vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->core_machine == LIB_NULL ||
         vm_machine_get_reset_vector(session, &vector) != LIB_STATUS_OK ||
         core_machine_memory_read(session->core_machine, 0x000c0000u,
@@ -217,12 +218,12 @@ static lib_i32 vm_xt_5160_268_byob_session_uses_one_xt_route(void)
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.bios_count = 2u;
-    if (vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+    if (vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL) goto done;
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
-    failed = vm_machine_create_from_assets(&config, &assets, &session) !=
+    failed = vm_test_machine_create_from_assets(&config, &assets, &session) !=
         LIB_STATUS_INVALID_ARGUMENT || session != LIB_NULL;
 done:
     vm_machine_destroy(session);

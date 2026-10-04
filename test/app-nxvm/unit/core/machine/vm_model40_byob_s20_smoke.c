@@ -52,7 +52,7 @@ lib_i32 main(void)
     assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
     assets.video = (vm_machine_asset_bytes) { video, sizeof(video) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
-    if (vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
+    if (vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !vm_profile_machine_plan_is_model40(vm_test_profile_plan(session))) goto done;
     const test_board_plan_observation plan = test_board_capture_plan(session->core_machine_plan);
     if (plan.memory_bytes != 2u * 1024u * 1024u ||
@@ -106,7 +106,7 @@ lib_i32 main(void)
     vm_machine_destroy(session);
     session = LIB_NULL;
     config.memory_bytes = 2u * 1024u * 1024u;
-    if (vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_INVALID_ARGUMENT ||
+    if (vm_test_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_INVALID_ARGUMENT ||
         session != LIB_NULL) goto done;
     config.memory_bytes = 0u;
     failed = 0;
