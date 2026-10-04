@@ -11,8 +11,9 @@
 #include "app-nxvm/product/version.h"
 
 #include "banner.h"
-#include "app-nxvm/product/composition.h"
-#include "app-nxvm/product/command.h"
+#include "x86/product/composition_interface.h"
+#include "x86/product/command_interface.h"
+#include "app-nxvm/product/config.h"
 #include "x86/product/startup_interface.h"
 #include "app-nxvm/product/profile_binding.h"
 
@@ -23,13 +24,15 @@ lib_i32 main(void)
     lib_u8 ini_path[1024];
     lib_status status;
     lib_status destroy_status;
+    vm_app_factory factory;
 
     PRODUCT_PRINT_BANNER();
     if (vm_app_ini_executable_path(ini_path, sizeof(ini_path)) != LIB_STATUS_OK) {
         printf("Unable to determine NXVM.ini path.\n");
         return 1;
     }
-    if (vm_app_create(&vm_app_firmware, &session) != LIB_STATUS_OK ||
+    vm_app_configure_factory(&vm_app_firmware, &factory);
+    if (vm_app_create(&factory, &session) != LIB_STATUS_OK ||
         vm_app_console_context_create(&console_context) != LIB_STATUS_OK) {
         (void)vm_app_destroy(session);
         return 1;

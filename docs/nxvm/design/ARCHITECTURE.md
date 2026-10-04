@@ -31,11 +31,12 @@ The following map describes the implemented baseline. The queued successor
 target is specified under **Queued Shared-Hardware And App Split** below;
 it does not change runtime ownership before the corresponding cutover.
 
-- `x86/product` owns the shared INI syntax, copied runtime request and
-  executable-adjacent path construction. App supplies fixed hardware projection.
-- `app-nxvm/product` still owns product CLI and the one composition root until
-  the remaining T541 batches migrate them. It assembles Common Session/UI/Machine
-  and the NXVM driver.
+- `x86/product` owns shared INI syntax, copied runtime request, path construction,
+  Console/Debug/hotkey policy and atomic Common Session/UI/Machine composition.
+  App supplies one frozen factory with copied INFO/speed operations; it owns
+  fixed hardware/firmware projection and the underlying Machine adapter.
+- `app-nxvm/product` retains fixed configuration/factory binding and process
+  entry/banner until the remaining T541 entry batch migrates the shared body.
 - `app-nxvm/machine` is that driver: asset/media lifetime, bounded execution,
   pacing and copied input/output/debug adaptation. It has no machine-name
   switch, independent lifecycle queue or guest-device state.

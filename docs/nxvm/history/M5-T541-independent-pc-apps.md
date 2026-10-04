@@ -320,3 +320,64 @@ diff whitespace checks pass. HEAD equals origin/master and the worktree is
 clean before this governance-only P3. Accept S2 and remove its active packet;
 T541 stays open, with no timing/guest/four-App qualification claim. Automatically
 admit the next bounded S3 under the owner's standing sequential authorization.
+
+## S3: Sole Command And Composition Receiver
+
+Shared P1 4b6c0ca19 receives command, keyboard and Common composition bodies
+with their original symbol/style vocabulary. NXVM's paired P2 removes their
+old source/test paths and registrations and binds the receiving implementation.
+The factory is copied once; App retains fixed hardware/firmware projection,
+construction/driver description, candidate cleanup and INFO/speed translation.
+Product alone owns Common construction, sink publication and ordered teardown.
+No Core pointer, App header, per-command registry, queue or worker is added.
+
+The complete S1 command/composition batch changes from App-owned to the sole
+Product receiver. Preserve all five machine-construction failure classes,
+Session/UI create/bind failures and shutdown-failure/retry assertions; the
+prepare fixture includes App-owned rollback before candidate publication.
+INFO still derives Running from Common's completed state (all six states,
+both worker-active values), not the worker. Added command/lifecycle/prompt,
+speed, Debug lifecycle and keyboard make/reverse-break assertions reinforce
+the migrated owner. AltEnter now sends Alt/Enter, rather than Alt/Alt; CAD
+retains Ctrl/Alt/extended Delete. FLOPPY and chords use the existing Common
+media/input transport; machine-side codec/media implementation is unchanged.
+
+The similar-issue sweep reads all Product files, callers, registrations and
+ownership gates; searches old command/composition/keyboard paths and App
+imports in Product. Obsolete paths and residual warning rows are removed.
+App media/input APIs remain live in machine-owned tests/integration and are
+not copied into Product. Existing Lib/Common, x86 chips/Core/boards/Debug/xasm32,
+MyNES, root README/rules and owner INIs have no diff against 9432c70b1.
+
+Full repository units pass 494/494 on each width (final x64 68.22s, x86
+55.43s). Standalone shared tools-on units pass 298/298 per width; tools-off
+complete tests pass 293/293 per width. All six manifests pass on each width;
+x86 corpus and negative gates pass. Specialized gates pass with 515 direct
+compile rows, 499 strict and 16 retained residual rows; the new Product targets
+are explicitly included. The duplicate-ownership negative self-test emits its
+expected rejection then passes. Documentation governance and diff whitespace
+checks pass. Source/test manifests identify shared-m5-t541-s3.
+
+All eight Release caches rebuild vm-0-5-0541 and deploy only their existing
+NXVM EXE. PE width and stripped-section verification pass; runtime Debug
+remains linked. MyNES is not rebuilt. Owner INIs and external firmware/media
+masters remain unchanged. This S claims Product/unit/packaging proof, not the
+T-level 58 integration closure, which remains S5.
+
+Counted baseline-to-delivery Git numstat with rename detection: 15 logical
+C/H source/test paths, +451/-203, net +248. Documentation, artifacts and
+build scripts are excluded. The positive cost is the real frozen factory
+boundary, App projection and added command/chord regressions; no second
+implementation/state owner is retained. Cross-target renames are delivered as
+Shared additions followed by NXVM deletion, as in S2.
+
+| S3 deployed file | Bytes | SHA-256 |
+| --- | --- | --- |
+| assets/nxvm/compaq-deskpro-386-model-40-1200k/nxvm_model40_0_5_0541_x64.exe | 1348135 | 0F0F40166FA04A3AAAB6AA5C8C424F32709619B77F7332FA1EB200665BD5F257 |
+| assets/nxvm/compaq-deskpro-386-model-40-1200k/nxvm_model40_0_5_0541_x86.exe | 1519408 | DA77AABB2ACDE2CA41C676165C03DCEC78753114549DF6E97C71CF29054A7AAF |
+| assets/nxvm/default-pc-at-80386-1440k-hdd/nxvm_default_0_5_0541_x64.exe | 1364452 | BFBFB702445104193859ACA51920364A6F75B7BCB8A6944FE63801654E0D85E7 |
+| assets/nxvm/default-pc-at-80386-1440k-hdd/nxvm_default_0_5_0541_x86.exe | 1535723 | 9FA84CF77D203E061516652EA5A26A8BCD370EE4C41C094BFD0EF444ED52210D |
+| assets/nxvm/ibm-5160-model-268-360k/nxvm_xt_0_5_0541_x64.exe | 1364420 | C5A3184B3BF45BE4780287E2582A2CB8C74F5511A4192F48E5090A825534EB8D |
+| assets/nxvm/ibm-5160-model-268-360k/nxvm_xt_0_5_0541_x86.exe | 1535690 | 89F7448C5605100A76B8136E49D39A0AF6E2CE828AAD871021B85734D77545C1 |
+| assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x64.exe | 1364486 | 2759889703C3F1E39A14C93B8A4847A349E1E181DD4B50DBC2FC87DDA22036E8 |
+| assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x86.exe | 1535758 | 885068BD89F7CC37DBD8DCCE0837D92738C5697FEF74B6D56C1980C91550CAA3 |

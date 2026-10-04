@@ -8,8 +8,8 @@ if(EXISTS "${obsolete_adapter}")
     message(FATAL_ERROR "Retired Console-to-composition adapter remains")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/composition.c" app_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/command.c" product_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/command.c" product_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/debug_adapter.c"
     debug_source)
 

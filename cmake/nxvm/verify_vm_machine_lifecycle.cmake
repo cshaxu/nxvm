@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c" source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/composition.c" app_source)
 
 if(source MATCHES "vm_platform_|run_handle|executor_fifo")
         message(FATAL_ERROR "VM machine lifecycle retains a platform run-handle path")
@@ -21,8 +21,8 @@ foreach(helper IN ITEMS
     endif()
 endforeach()
 
-foreach(helper IN ITEMS common_machine_create vm_machine_describe_common_driver
-    vm_machine_bind_common_machine)
+foreach(helper IN ITEMS common_machine_create app->factory.prepare
+    app->factory.bind)
     string(FIND "${app_source}" "${helper}" helper_position)
     if(helper_position EQUAL -1)
         message(FATAL_ERROR "App Common composition helper is missing: ${helper}")

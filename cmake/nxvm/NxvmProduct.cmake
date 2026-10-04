@@ -242,14 +242,6 @@ target_link_libraries(vm-ini-cmos-seed-smoke PRIVATE integration-session-ini-sup
 add_executable(vm-app-ini-smoke
     test/app-nxvm/unit/product/nxvm_ini_smoke.c)
 target_link_libraries(vm-app-ini-smoke PRIVATE vm-app)
-add_executable(vm-app-console-info-smoke
-    test/app-nxvm/unit/product/nxvm_console_info_smoke.c)
-target_link_libraries(vm-app-console-info-smoke PRIVATE vm-app)
-add_executable(vm-app-composition-atomicity-smoke
-    test/app-nxvm/unit/product/nxvm_composition_atomicity_smoke.c
-    src/app-nxvm/product/composition.c)
-target_include_directories(vm-app-composition-atomicity-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src")
 add_executable(vm-app-session-smoke test/app-nxvm/unit/core/machine/nxvm_machine_smoke.c)
 target_link_libraries(vm-app-session-smoke PRIVATE vm-machine)
 add_executable(vm-machine-initialization-atomicity-smoke
@@ -752,7 +744,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-app-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-app-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-app-composition-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-machine-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -804,9 +795,6 @@ set(VM_PROFILE_SOURCES
 )
 
 set(VM_APP_SOURCES
-    src/app-nxvm/product/command.c
-    src/app-nxvm/product/keyboard.c
-    src/app-nxvm/product/composition.c
     src/app-nxvm/product/config.c
 )
 set(VM_MACHINE_RUNTIME_SOURCES
@@ -897,7 +885,7 @@ target_include_directories(vm-app PUBLIC
     "${CMAKE_BINARY_DIR}/generated"
 )
 target_link_libraries(vm-app PUBLIC
-    x86-product-config
+    x86-product
     common-session
     common-ui
     x86-debug
@@ -1512,8 +1500,6 @@ set(PROJECT_UNIT_TEST_TARGETS
     vm-console-pause-resume-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
-    vm-app-composition-atomicity-smoke
-    vm-app-console-info-smoke
     vm-x86-debug-mapping-smoke
     vm-app-session-smoke
     vm-machine-initialization-atomicity-smoke
@@ -3079,10 +3065,7 @@ file(GENERATE
 # the verifier; the supporting evidence and TODO define each domain's risk and
 # next admission condition.
 set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
-    "vm-app|src/app-nxvm/product/command.c|console-product"
-    "vm-app|src/app-nxvm/product/keyboard.c|keyboard-product"
     "vm-machine|src/app-nxvm/machine/frame.c|display-adaptation"
-    "vm-app|src/app-nxvm/product/composition.c|session-composition"
     "vm-media|src/app-nxvm/machine/media/fdd.c|vm-media"
     "vm-media|src/app-nxvm/machine/media/hdd.c|vm-media"
     "vm-machine|src/app-nxvm/machine/debug.c|vm-machine"
@@ -3109,6 +3092,8 @@ file(GENERATE
 # substitutes for the direct compile command of a smoke source.
 set(PROJECT_T344_PRODUCTION_TARGETS
     core-machine
+    x86-product-config
+    x86-product
     x86-ibmpc-common
     x86-core
     x86-cpu-shared

@@ -13,7 +13,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/event_interface.h" event_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c" lifecycle_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/product/composition.c" app_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/composition.c" app_source)
 
 # Common owns the sole lifecycle queue and worker.  App composition constructs
 # it from the vm/machine driver, then forwards copied facts to Common Session.
@@ -30,9 +30,9 @@ foreach(required IN ITEMS
 endforeach()
 
 foreach(required IN ITEMS
-    "vm_machine_describe_common_driver"
+    "app->factory.prepare"
     "common_machine_create"
-    "vm_machine_bind_common_machine")
+    "app->factory.bind")
     string(FIND "${app_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "VM app Common composition lacks ${required}")
