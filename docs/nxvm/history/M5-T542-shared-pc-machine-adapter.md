@@ -31,7 +31,7 @@ justified App retention.
 | --- | --- | --- | --- |
 | Helpers | profiles/device/floppy; profiles/byob/blob; profile_contract and callers | x86/ibmpc-common | S2 accepted; proof below |
 | Media | machine/media FDD/HDD providers, geometry, marks, leases and callers | x86/product/machine/media | S3 accepted; proof below |
-| Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | S4 conversion implemented/verified; cohesive Machine orchestration remains S5; acceptance pending |
+| Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | S4 conversion accepted; cohesive Machine ingress/capture orchestration remains S5 |
 | Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | Receiver frozen; S5 pending |
 | Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | Contract frozen below; S5/S6 pending |
 | Retained differences | XT/AT/default/Model40 values, ROM layout, D4, CMOS, HDC geometry and firmware source | Concrete App profile/firmware owner | Retention justified below; S6 verification pending |
@@ -483,3 +483,24 @@ next adapter batch. No other product/process/tree is modified or cleaned.
 These are S4 assets/nxvm/<profile> replacements. Source baseline is cdb768907
 plus complete S4 Shared/NXVM deliveries; scoped publication and coordinator
 actual-diff review remain required before acceptance.
+
+### S4 Coordinator Acceptance
+
+Review Shared P1 5531231e6 and NXVM P2 878468ec4 against every conversion packet
+exit and the ledger. Re-read the direct converter, unchanged mapper bodies and
+public interfaces, App capture/sequence logic, removed carriers, relocated test
+view, complete old assertions/new matrices, source lists and standalone target,
+corpus path/edge checks, manifests, documents and artifact evidence. The full
+actual diff maps to the declared two targets. No App-private header enters
+Shared; no Lib/Common/MyNES/INI change exists. Output padding and cursor/CP437/
+palette/font/graphics rules follow the original production path, not a new
+renderer. The reviewed Set-1 regression now rejects failure correctly in main.
+
+The final full suites and independent seven-test run pass; six manifests and
+display/document/diff gates pass. Verify the eight recorded hashes/PE identities,
+retired conversion paths and absence of both production redundant frame types.
+Git/origin agree at 878468ec4 and worktree is clean before this governance P.
+Accept/close S4. Live App ingress/display cadence/capture remain explicitly
+scheduled with the cohesive S5 Machine owner, not an unclassified shared member
+or a parallel conversion. T542 stays open for S5-S8 and its full integration
+obligation. Warm trees remain needed; no successor App split is admitted.
