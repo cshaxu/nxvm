@@ -920,3 +920,18 @@ and relocated bodies, exclude CMake/docs/artifacts, and do not describe moved
 code as deleted capability. The small production increase buys real family
 contexts and direct constructors while retiring the central union/dispatcher;
 the test increase keeps multi-board coverage outside production dispatch.
+
+### S7 Acceptance And S8 Admission
+
+NXVM implementation 7ca0ee5a9 is committed and pushed to origin/master.
+Coordinator actual-change review accepts its complete source/build/test/docs
+and eight artifacts against the S7 packet: real family lifetime, one factory
+transfer, no production model dispatch, unchanged original constraints/assertions
+and no excluded-surface changes. The hashes above identify this delivered source.
+S1-S7 are accepted; T542 remains open.
+
+Under the owner's automatic sequential admission, S8 consumes the complete
+verification/build and obsolete-path ledger batch, not a new extraction target.
+It reconciles actual source/test/build/tool callers and all 58 integration
+registrations/predicates before S9's once-only execution and whole-task acceptance.
+The current packet defines S8; this record is evidence, not another active status.
