@@ -1,3 +1,4 @@
+#include "../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
 #include <ctype.h>
@@ -193,8 +194,8 @@ static void boot_timeout_report(const vm_machine *session, const char *name,
     if (core_machine_get_cpu_state(session->core_machine, &cpu) == LIB_STATUS_OK) {
         printf("T515:INI-BOOT:%s:CPU:%04X:%08X:base=%08X:flags=%08X:halted=%u:FDD=%u:%ux%ux%u\n",
             name, cpu.cs, cpu.eip, cpu.cs_base, cpu.eflags, cpu.halted,
-            session->fdd.connect.flagDiskExist,
-            session->fdd.data.ncyl, session->fdd.data.nhead, session->fdd.data.nsector);
+            vm_test_fdd_info(session->fdd).present,
+            vm_test_fdd_info(session->fdd).geometry.cylinders, vm_test_fdd_info(session->fdd).geometry.heads, vm_test_fdd_info(session->fdd).geometry.sectors_per_track);
         if (core_machine_capture_observation(session->core_machine, &observation) ==
                 LIB_STATUS_OK) {
             printf("T515:INI-BOOT:%s:STATE:elapsed=%llu:lifecycle=%u\n", name,

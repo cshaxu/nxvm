@@ -12,8 +12,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/x86/ibmpc-common/machine_board.c" board_sou
 file(READ "${PROJECT_SOURCE_DIR}/src/x86/core/machine_scheduler.c" scheduler_source)
 file(READ "${PROJECT_SOURCE_DIR}/test/x86/ibmpc-common/core_machine_fdc_smoke.c"
     core_fixture)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.h" fdd_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/fdd_interface.h" fdd_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/fdd.c" fdd_source)
 
 if(scheduler_source MATCHES "board->fdc|core_machine_fdc_")
     message(FATAL_ERROR "Core scheduler directly owns board FDC")

@@ -1,3 +1,4 @@
+#include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
@@ -51,21 +52,21 @@ lib_i32 main(void)
         (void)remove(floppy_path);
         return 1;
     }
-    fdd_generation = session->fdd.connect.media_generation;
+    fdd_generation = vm_test_fdd_info(session->fdd).generation;
     failed |= vm_machine_insert_fdd(session, floppy_path) != 0 ||
-        session->fdd.connect.media_generation != fdd_generation + 1u ||
+        vm_test_fdd_info(session->fdd).generation != fdd_generation + 1u ||
         session->fdd_image_path[0] == '\0';
-    fdd_generation = session->fdd.connect.media_generation;
+    fdd_generation = vm_test_fdd_info(session->fdd).generation;
     vm_machine_executor_state_start(session->control.state);
     failed |= vm_machine_insert_fdd(session, "t404-running-removable.img") == 0 ||
-        session->fdd.connect.media_generation != fdd_generation ||
+        vm_test_fdd_info(session->fdd).generation != fdd_generation ||
         session->fdd_image_path[0] == '\0';
     failed |= vm_machine_eject_fdd(session) == 0 ||
-        session->fdd.connect.media_generation != fdd_generation ||
+        vm_test_fdd_info(session->fdd).generation != fdd_generation ||
         session->fdd_image_path[0] == '\0';
     vm_machine_executor_state_stop(session->control.state);
     failed |= vm_machine_eject_fdd(session) != 0 ||
-        session->fdd.connect.flagDiskExist || session->fdd_image_path[0] != '\0' ||
+        vm_test_fdd_info(session->fdd).present || session->fdd_image_path[0] != '\0' ||
         session->retained_config.floppy_image[0u] != LIB_NULL;
     vm_test_common_machine_unbind(session);
     vm_machine_destroy(session);

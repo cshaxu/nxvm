@@ -5,7 +5,7 @@
 
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/media/fdd.h"
+#include "x86/product/machine/media/fdd_interface.h"
 #include "support/rom/model40_session_assets.h"
 
 #define MODEL40_FDC_BYTES (80u * 2u * 15u * 512u)
@@ -110,7 +110,7 @@ lib_i32 main(void)
     image[511u] = 0xaau;
     image[(15u - 1u) * 512u] = 0xa5u;
     if (vm_model40_fixture_create_bytes(even, odd, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
+        session == LIB_NULL || vm_machine_fdd_replace_bytes(session->fdd, image,
             sizeof(image)) != LIB_FALSE) goto done;
     {
         board = session->board;
@@ -187,7 +187,7 @@ lib_i32 main(void)
             session->model40_fdc_terminal_observation.successful ||
             session->model40_fdc_terminal_observation.result[0] != result[0] ||
             session->model40_fdc_terminal_observation.result[1] != result[1] ||
-            vm_machine_fdd_remove_for(&session->fdd) != LIB_FALSE) goto done;
+            vm_machine_fdd_remove_for(session->fdd) != LIB_FALSE) goto done;
         test_board_fdc_refresh(board);
         if (!model40_fdc_command(board, machine, read_last, sizeof(read_last)) ||
             core_machine_bus_read(machine, 0x03f4u, &value) != LIB_STATUS_OK ||
@@ -230,7 +230,7 @@ lib_i32 main(void)
             {{0x4au, 0u}, 2u},
             {{0x4du, 0u, 2u, 15u, 0x54u, 0xf6u}, 6u}
         };
-        if (vm_machine_fdd_replace_bytes(&session->fdd, image, sizeof(image))) goto done;
+        if (vm_machine_fdd_replace_bytes(session->fdd, image, sizeof(image))) goto done;
         for (lib_u8 rate = 1u; rate <= 3u; ++rate) {
             for (lib_size command = 0u; command < sizeof(commands) / sizeof(commands[0]); ++command) {
                 test_board_fdc_reset(board);

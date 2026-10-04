@@ -13,8 +13,8 @@
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/profiles/machine_plan_interface.h"
 #include "app-nxvm/machine/debug.h"
-#include "app-nxvm/machine/media/fdd_private.h"
-#include "app-nxvm/machine/media/hdd_private.h"
+#include "x86/product/machine/media/fdd_interface.h"
+#include "x86/product/machine/media/hdd_interface.h"
 #include "common/machine/machine_interface.h"
 #include "app-nxvm/machine/event_interface.h"
 #include "x86/ibmpc-common/floppy_interface.h"
@@ -31,8 +31,8 @@ struct vm_machine {
     /* Borrowed Profile object; the common board owns its lifetime. */
     core_machine_d4_platform *model40_board;
     core_machine_dma_request_binding fdc_dma_request;
-    union { t_fdd fdd; t_fdd floppy[VM_MACHINE_FLOPPY_SLOT_COUNT]; };
-    union { t_hdd hdd; t_hdd fixed_disk[VM_MACHINE_FIXED_DISK_SLOT_COUNT]; };
+    union { t_fdd *fdd; t_fdd *floppy[VM_MACHINE_FLOPPY_SLOT_COUNT]; };
+    union { t_hdd *hdd; t_hdd *fixed_disk[VM_MACHINE_FIXED_DISK_SLOT_COUNT]; };
     t_debug debug;
     core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;

@@ -1,11 +1,12 @@
+#include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "x86/ibmpc-common/media_interface.h"
-#include "app-nxvm/machine/media/media.h"
+#include "x86/product/machine/media/media_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/media/fdd.h"
+#include "x86/product/machine/media/fdd_interface.h"
 #include "support/rom/model40_session_assets.h"
 
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)
@@ -35,10 +36,10 @@ lib_i32 main(void)
     assets.bios[1u] = (vm_machine_asset_bytes) { odd, sizeof(odd) };
     assets.cmos_seed = (vm_machine_asset_bytes) { cmos_seed, sizeof(cmos_seed) };
     failed |= vm_machine_create_from_assets(&config, &assets, &session) != LIB_STATUS_OK ||
-        session == LIB_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
-            sizeof(image)) != LIB_FALSE || !session->fdd.connect.flagDiskExist ||
-        session->fdd.data.ncyl != 80u || session->fdd.data.nhead != 2u ||
-        session->fdd.data.nsector != 15u || session->fdd.data.nbyte != 512u ||
+        session == LIB_NULL || vm_machine_fdd_replace_bytes(session->fdd, image,
+            sizeof(image)) != LIB_FALSE || !vm_test_fdd_info(session->fdd).present ||
+        vm_test_fdd_info(session->fdd).geometry.cylinders != 80u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
+        vm_test_fdd_info(session->fdd).geometry.sectors_per_track != 15u || vm_test_fdd_info(session->fdd).geometry.bytes_per_sector != 512u ||
         core_machine_media_query(session->media_registry, VM_MACHINE_MEDIA_FDD_ID,
             &info, &result) != LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.logical_sector_count != 2400u ||

@@ -247,10 +247,11 @@ lib_status vm_machine_initialize(vm_machine *machine) {
 }
 
 void vm_machine_finalize(vm_machine *machine) {
-    if (machine == LIB_NULL || machine->core_machine == LIB_NULL) return;
+    if (machine == LIB_NULL) return;
     vm_machine_stop(machine);
     machine->executor = LIB_NULL;
     machine->active = 0;
-    vm_machine_control_finalize(&machine->control, machine);
+    /* Revoke Core routes before freeing their borrowed provider contexts. */
     vm_machine_storage_finalize(machine);
+    vm_machine_control_finalize(&machine->control, machine);
 }

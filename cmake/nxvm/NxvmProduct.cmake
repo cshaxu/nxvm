@@ -199,11 +199,6 @@ add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
 target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-machine)
 add_executable(vm-hdc-port-smoke test/app-nxvm/unit/core/machine/vm_hdc_port_smoke.c)
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-machine)
-add_executable(vm-media-provider-smoke test/app-nxvm/unit/core/machine/vm_media_provider_smoke.c)
-target_link_libraries(vm-media-provider-smoke PRIVATE vm-machine core-machine)
-add_executable(vm-media-direct-readonly-smoke
-    test/app-nxvm/unit/core/machine/vm_media_direct_readonly_smoke.c)
-target_link_libraries(vm-media-direct-readonly-smoke PRIVATE vm-machine core-machine)
 add_executable(vm-hdc-hdd-boot-smoke
     test/app-nxvm/integration/hdd/vm_hdc_hdd_boot_smoke.c
     test/x86/ibmpc-common/controller_fixture.c)
@@ -809,10 +804,6 @@ set(VM_MACHINE_SOURCES
     src/app-nxvm/machine/debug.c
     ${VM_MACHINE_RUNTIME_SOURCES}
 )
-set(VM_MEDIA_SOURCES
-    src/app-nxvm/machine/media/fdd.c
-    src/app-nxvm/machine/media/hdd.c
-)
 # The Shared CPU target is the sole CPU implementation linked by NXVM.  The
 # compatibility alias retains the established consumer target name without a
 # forwarding library or a second compiled source set.
@@ -854,13 +845,6 @@ target_link_libraries(vm-host-cancellation-smoke PRIVATE
 
 
 
-add_library(vm-media STATIC ${VM_MEDIA_SOURCES})
-target_include_directories(vm-media PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(vm-media PUBLIC
-    core-machine
-    storage)
 
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
 target_include_directories(vm-machine PUBLIC
@@ -871,7 +855,7 @@ target_link_libraries(vm-machine PUBLIC
     vm-profile
     common-machine
     storage
-    vm-media)
+    x86-product-media)
 
 add_library(vm-app STATIC ${VM_APP_SOURCES})
 target_include_directories(vm-app PUBLIC
@@ -1992,8 +1976,6 @@ set_tests_properties(unit.cpu-bus-boundary-negative PROPERTIES
 # Fixed-write unit smokes need an owned build-tree directory so CTest jobs
 # cannot contribute fixture state to another smoke.
 foreach(target IN ITEMS
-    vm-media-provider-smoke
-    vm-media-direct-readonly-smoke
     vm-xt-5160-268-profile-smoke)
     set(project_console_smoke_workspace
         "${CMAKE_CURRENT_BINARY_DIR}/test/${target}")
@@ -3059,8 +3041,8 @@ file(GENERATE
 # next admission condition.
 set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-machine|src/app-nxvm/machine/frame.c|display-adaptation"
-    "vm-media|src/app-nxvm/machine/media/fdd.c|vm-media"
-    "vm-media|src/app-nxvm/machine/media/hdd.c|vm-media"
+    "x86-product-media|src/x86/product/machine/media/fdd.c|x86-product-media"
+    "x86-product-media|src/x86/product/machine/media/hdd.c|x86-product-media"
     "vm-machine|src/app-nxvm/machine/debug.c|vm-machine"
     "vm-app|src/app-nxvm/product/config.c|session-composition"
     "vm-machine|src/app-nxvm/machine/debug_adapter.c|vm-machine"
@@ -3094,7 +3076,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     x86-xasm32
     x86-debug
     vm-profile
-    vm-media
+    x86-product-media
     vm-machine
     common-session
     vm-app

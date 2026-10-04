@@ -1,3 +1,4 @@
+#include "../../../support/media.h"
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../x86/core/time_fixture.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
@@ -69,7 +70,7 @@ lib_i32 main(void)
             &time_observation) != LIB_STATUS_OK || !time_observation.pacing_time_available ||
         time_observation.pacing_ticks_per_second != 16000000u || time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u ||
-        session->fdd.data.nsector != 15u ||
+        vm_test_fdd_info(session->fdd).geometry.sectors_per_track != 15u ||
         core_machine_memory_read(session->core_machine,
             VM_PROFILE_MODEL40_VIDEO_ROM_PHYSICAL_START, &observed_memory,
             sizeof(observed_memory)) != LIB_STATUS_OK || observed_memory != 0x55u ||

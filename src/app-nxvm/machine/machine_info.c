@@ -4,8 +4,8 @@
 
 #include "x86/core/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/media/fdd.h"
-#include "app-nxvm/machine/media/hdd.h"
+#include "x86/product/machine/media/fdd_interface.h"
+#include "x86/product/machine/media/hdd_interface.h"
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/fault.h"
 
@@ -29,13 +29,13 @@ lib_status vm_machine_get_information(const vm_machine *session,
     out_information->profile_kind = session->retained_config.profile_kind;
     out_information->cpu_profile = cpu_profile;
     out_information->memory_bytes = memory_bytes;
-    out_information->floppy_image_bytes = vm_machine_fdd_image_size(&session->fdd);
-    out_information->floppy_media_inserted = vm_machine_fdd_has_media(&session->fdd);
+    out_information->floppy_image_bytes = vm_machine_fdd_image_size(session->fdd);
+    out_information->floppy_media_inserted = vm_machine_fdd_has_media(session->fdd);
     out_information->fixed_disk_present = vm_profile_machine_plan_hdc_present(
         session->profile_plan);
-    out_information->fixed_disk_cylinders = vm_machine_hdd_cylinders(&session->hdd);
-    out_information->fixed_disk_image_bytes = vm_machine_hdd_image_size(&session->hdd);
-    out_information->fixed_disk_media_connected = vm_machine_hdd_has_media(&session->hdd);
+    out_information->fixed_disk_cylinders = vm_machine_hdd_cylinders(session->hdd);
+    out_information->fixed_disk_image_bytes = vm_machine_hdd_image_size(session->hdd);
+    out_information->fixed_disk_media_connected = vm_machine_hdd_has_media(session->hdd);
     out_information->external_firmware = session->profile_plan != LIB_NULL;
     out_information->active = vm_machine_executor_state_is_active(
         session->control.state);

@@ -1,3 +1,4 @@
+#include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "../../../../x86/core/composition_fixture.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
@@ -136,16 +137,16 @@ static lib_i32 vm_model_339_floppy_contract(void)
     vm_machine *session = LIB_NULL;
     lib_i32 failed = vm_test_create_5170(&native, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
-        session->fdd.data.ncyl != 80u || session->fdd.data.nhead != 2u ||
-        session->fdd.data.nsector != 15u;
+        vm_test_fdd_info(session->fdd).geometry.cylinders != 80u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
+        vm_test_fdd_info(session->fdd).geometry.sectors_per_track != 15u;
 
     vm_machine_destroy(session);
     session = LIB_NULL;
     failed |= vm_test_create_5170(&compatible, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         session->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
-        session->fdd.data.ncyl != 40u || session->fdd.data.nhead != 2u ||
-        session->fdd.data.nsector != 9u ||
+        vm_test_fdd_info(session->fdd).geometry.cylinders != 40u || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
+        vm_test_fdd_info(session->fdd).geometry.sectors_per_track != 9u ||
         test_board_capture_composition(session->board).drive_cylinders != 80u;
     vm_machine_destroy(session);
     session = LIB_NULL;

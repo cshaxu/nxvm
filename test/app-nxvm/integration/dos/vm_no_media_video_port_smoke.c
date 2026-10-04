@@ -38,10 +38,12 @@ static lib_status vm_no_media_fixture(integration_ini_session *ini_session,
 
     (void)opaque;
     for (slot = 0u; slot < VM_MACHINE_FLOPPY_SLOT_COUNT; ++slot)
-        if (vm_machine_fdd_remove_for(&session->floppy[slot]))
+        if (session->floppy[slot] != LIB_NULL &&
+            vm_machine_fdd_remove_for(session->floppy[slot]))
             return LIB_STATUS_IO_ERROR;
     for (slot = 0u; slot < VM_MACHINE_FIXED_DISK_SLOT_COUNT; ++slot)
-        if (vm_machine_hdd_remove(&session->fixed_disk[slot]))
+        if (session->fixed_disk[slot] != LIB_NULL &&
+            vm_machine_hdd_remove(session->fixed_disk[slot]))
             return LIB_STATUS_IO_ERROR;
     return LIB_STATUS_OK;
 }

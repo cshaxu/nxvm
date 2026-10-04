@@ -1,9 +1,10 @@
+#include "../../../support/media.h"
 #include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/media/hdd.h"
+#include "x86/product/machine/media/hdd_interface.h"
 #include "support/rom/model40_session_assets.h"
 
 #define MODEL40_HDC_BYTES (925u * 5u * 17u * 512u)
@@ -57,13 +58,13 @@ lib_i32 main(void)
         image[0u] = 0xa5u;
         image[1u] = 0x5au;
         failed = vm_model40_fixture_create(&session) != LIB_STATUS_OK || session == LIB_NULL ||
-            vm_machine_hdd_replace_bytes(&session->hdd, image, MODEL40_HDC_BYTES) ||
-            vm_machine_hdd_set_geometry(&session->hdd, 925u, 5u, 17u) ||
-            !session->hdd.connect.flagDiskExist ||
+            vm_machine_hdd_replace_bytes(session->hdd, image, MODEL40_HDC_BYTES) ||
+            vm_machine_hdd_set_geometry(session->hdd, 925u, 5u, 17u) ||
+            !vm_test_hdd_info(session->hdd).present ||
             test_board_hdc_connection_config(session->board).service.command_ticks != 0u ||
             test_board_hdc_connection_config(session->board).service.next_sector_ticks != 0u ||
-            session->hdd.data.ncyl != 925u || session->hdd.data.nhead != 5u ||
-            session->hdd.data.nsector != 17u || session->hdd.data.nbyte != 512u ||
+            vm_test_hdd_info(session->hdd).geometry.cylinders != 925u || vm_test_hdd_info(session->hdd).geometry.heads != 5u ||
+            vm_test_hdd_info(session->hdd).geometry.sectors_per_track != 17u || vm_test_hdd_info(session->hdd).geometry.bytes_per_sector != 512u ||
             test_board_hdc_slave_media_id(session->board) != CORE_MACHINE_MEDIA_ID_INVALID ||
             !read_first_sector(session, 0x20u, 0x5aa5u) ||
             !read_first_sector(session, 0xa0u, 0x5aa5u);

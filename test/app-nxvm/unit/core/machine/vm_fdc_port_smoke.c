@@ -1,3 +1,4 @@
+#include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include <stdio.h>
@@ -6,8 +7,9 @@
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/media/fdd.h"
+#include "x86/product/machine/media/fdd_interface.h"
 #include "support/rom/session_assets.h"
+#include "lib/storage/file_interface.h"
 
 static lib_bool fdc_command(core_machine_board_state *board, core_machine *machine,
     const lib_u8 *bytes, lib_size count)
@@ -55,6 +57,9 @@ lib_i32 main(void)
     };
     lib_u8 format_id[] = { 0x00u, 0x00u, 0x01u, 0x02u };
     lib_i32 failed = 1;
+    static lib_u8 protected_image[80u * 2u * 18u * 512u];
+    lib_storage_file_writer *writer = LIB_NULL;
+    const char *protected_path = "fdc-write-protect.img";
 
     if (vm_test_default_pc_at_session_create(LIB_NULL, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || !session->active ||
@@ -71,7 +76,7 @@ lib_i32 main(void)
         !fdc_read_result(session->board, machine, result, sizeof(result)) ||
         (result[0] & TEST_FDC_ST0_ABNORMAL) == 0u) goto done;
 
-    vm_machine_fdd_create_for(&session->fdd);
+    vm_machine_fdd_create_for(session->fdd);
     test_board_fdc_refresh(session->board);
     if (core_machine_bus_read(machine, 0x03f7u, &value) != LIB_STATUS_OK ||
         (value & 0x80u) == 0u) goto done;
@@ -97,12 +102,26 @@ lib_i32 main(void)
         !fdc_read_result(session->board, machine, result, 1u) ||
         result[0] != 0x80u) goto done;
 
-    session->fdd.connect.flagReadOnly = LIB_TRUE;
+    /* Protection is a real medium access mode, not a private flag mutation. */
+    lib_memory_set(protected_image, 0xa5u, sizeof(protected_image));
+    if (lib_storage_file_writer_open(protected_path,
+            LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) != LIB_STATUS_OK ||
+        lib_storage_file_writer_write(writer, protected_image,
+            sizeof(protected_image)) != LIB_STATUS_OK) goto done;
+    if (lib_storage_file_writer_close(writer) != LIB_STATUS_OK) {
+        writer = LIB_NULL;
+        goto done;
+    }
+    writer = LIB_NULL;
+    if (vm_machine_fdd_insert_for(session->fdd, protected_path,
+            LIB_STORAGE_MEDIUM_READONLY)) goto done;
     if (!fdc_command(session->board, machine, write_sector, sizeof(write_sector)) ||
         core_machine_bus_write(machine, 0x03f5u, 0x5au) != LIB_STATUS_OK ||
         !fdc_read_result(session->board, machine, result, sizeof(result)) ||
         (result[1] & 0x02u) == 0u) goto done;
-    session->fdd.connect.flagReadOnly = LIB_FALSE;
+    if (vm_machine_fdd_remove_for(session->fdd) ||
+        vm_machine_fdd_insert_for(session->fdd, protected_path,
+            LIB_STORAGE_MEDIUM_OVERLAY)) goto done;
 
     /* Reserved rate is rejected; restore this medium's 500-kbps rate. */
     if (core_machine_bus_write(machine, 0x03f7u, 0x03u) != LIB_STATUS_OK ||
@@ -123,7 +142,9 @@ lib_i32 main(void)
         result[0] != TEST_FDC_ST0_NORMAL) goto done;
     failed = 0;
 done:
+    if (writer != LIB_NULL) (void)lib_storage_file_writer_close(writer);
     vm_machine_destroy(session);
+    (void)remove(protected_path);
     if (failed) return 1;
     puts("M5:T231:S3:FDC-PORT:OK");
     return 0;

@@ -3,7 +3,7 @@
 #define TEST_INTEGRATION_SUPPORT_SESSION_INI_H
 
 #include "x86/ibmpc-common/media_interface.h"
-#include "app-nxvm/machine/media/media.h"
+#include "x86/product/machine/media/media_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "x86/product/ini_interface.h"
 

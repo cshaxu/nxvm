@@ -6,10 +6,10 @@
 #include "app-nxvm/machine/control.h"
 #include "app-nxvm/machine/lifecycle.h"
 #include "app-nxvm/machine/display.h"
-#include "app-nxvm/machine/media/media.h"
+#include "x86/product/machine/media/media_interface.h"
 #include "app-nxvm/machine/machine_devices.h"
-#include "app-nxvm/machine/media/fdd.h"
-#include "app-nxvm/machine/media/hdd.h"
+#include "x86/product/machine/media/fdd_interface.h"
+#include "x86/product/machine/media/hdd_interface.h"
 #include "app-nxvm/profiles/default_profile/keyboard_mapper.h"
 #include "app-nxvm/profiles/default_profile/mouse_mapper.h"
 
@@ -237,7 +237,7 @@ static lib_i32 vm_machine_insert_floppy_at(vm_machine *session, lib_size slot,
         vm_machine_control_is_running(&session->control) ||
         mode > LIB_STORAGE_MEDIUM_OVERLAY ||
         !vm_machine_copy_path(candidate, sizeof(candidate), path) ||
-        vm_machine_fdd_insert_for(&session->floppy[slot], candidate, mode) != 0 ||
+        vm_machine_fdd_insert_for(session->floppy[slot], candidate, mode) != 0 ||
         !vm_machine_copy_path(session->floppy_image_path[slot],
             sizeof(session->floppy_image_path[slot]),
             candidate)) return -1;
@@ -249,7 +249,7 @@ static lib_i32 vm_machine_insert_floppy_at(vm_machine *session, lib_size slot,
 static lib_i32 vm_machine_remove_fdd_direct(vm_machine *session)
 {
     if (session == LIB_NULL || vm_machine_control_is_running(&session->control) ||
-        vm_machine_fdd_remove_for(&session->fdd) != 0) return -1;
+        vm_machine_fdd_remove_for(session->fdd) != 0) return -1;
     session->fdd_image_path[0] = '\0';
     session->retained_config.floppy_image[0u] = LIB_NULL;
     return 0;
@@ -286,7 +286,7 @@ static lib_i32 vm_machine_insert_hdd_at_startup(vm_machine *session,
     if (session == LIB_NULL || session->profile_plan == LIB_NULL ||
         !vm_profile_machine_plan_hdc_present(session->profile_plan) || !vm_machine_copy_path(candidate,
             sizeof(candidate), path) || mode > LIB_STORAGE_MEDIUM_OVERLAY ||
-        vm_machine_hdd_insert(&session->hdd, candidate, mode) != 0 ||
+        vm_machine_hdd_insert(session->hdd, candidate, mode) != 0 ||
         !vm_machine_copy_path(session->hdd_image_path, sizeof(session->hdd_image_path),
             candidate)) return -1;
     session->retained_config.fixed_disk_image[0u] = session->hdd_image_path;
@@ -294,8 +294,8 @@ static lib_i32 vm_machine_insert_hdd_at_startup(vm_machine *session,
     if (vm_profile_machine_plan_hdd_geometry_get(session->profile_plan,
             &cylinders, &heads, &sectors)) {
         const lib_size expected_bytes = (lib_size)cylinders * heads * sectors * 512u;
-        if (vm_machine_hdd_raw_byte_count(&session->hdd) != expected_bytes ||
-            vm_machine_hdd_set_geometry(&session->hdd, cylinders, heads, sectors) != LIB_FALSE) {
+        if (vm_machine_hdd_raw_byte_count(session->hdd) != expected_bytes ||
+            vm_machine_hdd_set_geometry(session->hdd, cylinders, heads, sectors) != LIB_FALSE) {
             return -1;
         }
     }
@@ -427,10 +427,10 @@ static lib_status vm_machine_create_from_plan(const vm_machine_config *config,
         vm_machine_destroy(session);
         return LIB_STATUS_INTERNAL_ERROR;
     }
-    if (config->create_fdd) vm_machine_fdd_create_for(&session->fdd);
+    if (config->create_fdd) vm_machine_fdd_create_for(session->fdd);
     if (vm_profile_machine_plan_hdc_present(session->profile_plan) &&
         config->create_hdd_cylinders != 0u &&
-        vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders) != LIB_FALSE) {
+        vm_machine_hdd_create(session->hdd, config->create_hdd_cylinders) != LIB_FALSE) {
         vm_machine_destroy(session);
         return LIB_STATUS_NO_MEMORY;
     }

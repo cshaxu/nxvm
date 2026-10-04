@@ -14,6 +14,24 @@
 
 static lib_i32 verify_recovery(void);
 
+static lib_i32 verify_partial_media_cleanup(void)
+{
+    vm_machine partial = {0};
+    const core_machine_media_geometry geometry = {2880u, 512u, 80u, 2u, 18u};
+
+    if (vm_machine_fdd_allocate(&geometry, &partial.floppy[0u]) != LIB_STATUS_OK ||
+        vm_machine_hdd_allocate(&partial.fixed_disk[0u]) != LIB_STATUS_OK) {
+        vm_machine_finalize(&partial);
+        return 1;
+    }
+    /* Even without a Core, the one rollback path closes allocated media. */
+    vm_machine_finalize(&partial);
+    if (partial.floppy[0u] != LIB_NULL || partial.fixed_disk[0u] != LIB_NULL)
+        return 1;
+    vm_machine_finalize(&partial);
+    return 0;
+}
+
 static lib_i32 verify_missing_firmware_rejection(void)
 {
     const vm_machine_config config = {
@@ -178,7 +196,8 @@ lib_i32 main(void)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
-    if (profile == LIB_NULL || verify_create_materialization(profile) != 0 ||
+    if (profile == LIB_NULL || verify_partial_media_cleanup() != 0 ||
+        verify_create_materialization(profile) != 0 ||
         verify_invalid_media_slot(profile) != 0 ||
         verify_recovery() != 0 || verify_missing_firmware_rejection() != 0 ||
         verify_constructor_output_contract() != 0 ||

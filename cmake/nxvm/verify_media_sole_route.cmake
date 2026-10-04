@@ -2,9 +2,23 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/hdd.c" hdd_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/hdd.h" hdd_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/hdd.c" hdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/hdd_interface.h" hdd_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/fdd.c" fdd_source)
+
+foreach(retired IN ITEMS fdd.c fdd.h fdd_private.h hdd.c hdd.h hdd_private.h media.h)
+    if(EXISTS "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/${retired}")
+        message(FATAL_ERROR "Retired App media implementation remains: ${retired}")
+    endif()
+endforeach()
+file(GLOB_RECURSE app_sources "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.c"
+    "${PROJECT_SOURCE_DIR}/src/app-nxvm/*.h")
+foreach(app_source IN LISTS app_sources)
+    file(READ "${app_source}" source)
+    if(source MATCHES "x86/product/machine/media/(fdd|hdd)\\.h")
+        message(FATAL_ERROR "App imports Shared-private media layout: ${app_source}")
+    endif()
+endforeach()
 
 foreach(forbidden IN ITEMS "pCurrByte" "transCount"
     "vm_machine_hdd_set_pointer" "vm_machine_hdd_transfer_read"

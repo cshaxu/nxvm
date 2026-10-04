@@ -17,7 +17,7 @@ src/
   x86/{chips,core,ibmpc-common,ibmpc-at,ibmpc-xt,xasm32,debug,product}/
   app-nxvm/             NXVM product implementation
     product/            main and fixed config/factory projection
-    machine/            NXVM driver, asset/media and execution adapter
+    machine/            NXVM driver and execution adapter; opaque shared media
     firmware/           project-owned BIOS source and offline ROM construction
     profiles/
       xt/               IBM 5160 board composition and firmware slots
@@ -135,6 +135,9 @@ Before the App split, admitted T542 receives the remaining shared adapter in
 construction helpers in flat `x86/ibmpc-common`. Matching independent tests
 follow those owners. This is the planned receiver, not current source status;
 Current and the T542 ledger distinguish design from delivered migration.
+S3 relocates media implementation/tests to x86/product/machine/media and
+test/x86/product/machine/media; App keeps only opaque media handles and its
+composition assertions, not the shared media layouts.
 No App can retain another App's shared Machine implementation as its library.
 
 The owner-required x86/product receiver owns the identical PC Console/API,

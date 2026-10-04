@@ -15,8 +15,8 @@ set(paths
     src/x86/ibmpc-common/dma_bus.c
     src/x86/core/memory_interface.c
     src/app-nxvm/machine/machine_devices.c
-    src/app-nxvm/machine/media/fdd.c
-    src/app-nxvm/machine/media/fdd.h
+    src/x86/product/machine/media/fdd.c
+    src/x86/product/machine/media/fdd_interface.h
     src/x86/chips/fdc8272/fdc.c
     src/x86/chips/fdc8272/fdc.h
     src/x86/chips/fdc8272/fdc8272_interface.h
@@ -60,7 +60,7 @@ foreach(case RANGE 0 6)
         set(gate "${dma_gate}")
         set(expected "FDC retains forbidden raw DMA or RAM access")
     elseif(case EQUAL 5)
-        set(path src/app-nxvm/machine/media/fdd.h)
+        set(path src/x86/product/machine/media/fdd_interface.h)
         set(injection "lib_u32 transCount;")
         set(expected "FDD retains a controller-owned transfer cursor")
     else()

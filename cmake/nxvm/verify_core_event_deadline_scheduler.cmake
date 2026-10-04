@@ -18,8 +18,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/lifecycle.c"
     lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/machine_devices.c"
     machine_devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/fdd.c" fdd_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/app-nxvm/machine/media/hdd.c" hdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/fdd.c" fdd_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/x86/product/machine/media/hdd.c" hdd_source)
 set(core_source "${machine_source}${scheduler_source}${board_deadline_source}${board_advance_source}${kbc_source}")
 
 foreach(forbidden IN ITEMS "core_machine_arbitration_tick"

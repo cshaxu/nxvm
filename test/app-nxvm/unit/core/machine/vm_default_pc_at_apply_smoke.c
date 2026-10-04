@@ -1,3 +1,4 @@
+#include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "../../../../x86/ibmpc-common/composition_fixture.h"
 #include "x86/ibmpc-common/machine_board_interface.h"
@@ -31,8 +32,8 @@ static lib_i32 vm_default_pc_at_fdd_format_is_valid(
         session == LIB_NULL) goto done;
     observed_type = test_board_cmos_read_register(session->board,
         CORE_MACHINE_RTC_TYPE_DISK_FLOPPY);
-    if (session->fdd.data.ncyl != cylinders || session->fdd.data.nhead != 2u ||
-        session->fdd.data.nsector != sectors || session->fdd.data.nbyte != 512u ||
+    if (vm_test_fdd_info(session->fdd).geometry.cylinders != cylinders || vm_test_fdd_info(session->fdd).geometry.heads != 2u ||
+        vm_test_fdd_info(session->fdd).geometry.sectors_per_track != sectors || vm_test_fdd_info(session->fdd).geometry.bytes_per_sector != 512u ||
         observed_type != cmos_type) {
         printf("FDD setup format=%u cmos=%02x expected=%02x\n",
             (unsigned int)format, (unsigned int)observed_type,

@@ -6,7 +6,7 @@
 #include "x86/core/memory_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
-#include "app-nxvm/machine/media/fdd.h"
+#include "x86/product/machine/media/fdd_interface.h"
 #include "support/rom/session_assets.h"
 
 #define VM_FDC_T242_IMAGE_BYTES (1440u * 1024u)
@@ -85,7 +85,7 @@ lib_i32 main(void)
         vm_machine_config fixture_config = config;
         if (vm_test_default_pc_at_session_create(&fixture_config, &session) != LIB_STATUS_OK ||
             session == LIB_NULL || session->core_machine == LIB_NULL) goto done;
-        if (vm_machine_fdd_replace_bytes(&session->fdd, vm_fdc_t242_image,
+        if (vm_machine_fdd_replace_bytes(session->fdd, vm_fdc_t242_image,
                 sizeof(vm_fdc_t242_image)) != 0) goto done;
     }
     machine = session->core_machine;
@@ -94,7 +94,7 @@ lib_i32 main(void)
     if (core_machine_bus_write(machine, 0x03f7u, 0x00u) != LIB_STATUS_OK) goto done;
     for (index = 0u; index < sizeof(expected); ++index) {
         expected[index] = (lib_u8)((index * 17u) ^ (index >> 4u));
-        if (vm_machine_fdd_write_byte(&session->fdd, 0u, 0u,
+        if (vm_machine_fdd_write_byte(session->fdd, 0u, 0u,
                 (lib_u16)(index / 512u + 1u),
                 (lib_u16)(index % 512u), expected[index])) {
             goto done;

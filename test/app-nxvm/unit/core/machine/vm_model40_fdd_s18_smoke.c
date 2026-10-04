@@ -1,10 +1,11 @@
+#include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include <stdio.h>
 
 #include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include "x86/ibmpc-common/media_interface.h"
 #include "app-nxvm/machine/lifecycle.h"
-#include "app-nxvm/machine/media/media.h"
+#include "x86/product/machine/media/media_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "support/rom/model40_session_assets.h"
 #include "support/rom/session_assets.h"
@@ -26,12 +27,12 @@ lib_i32 main(void)
 
     if (vm_model40_fixture_create(&model40) != LIB_STATUS_OK ||
         model40 == LIB_NULL || model40->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
-        model40->fdd.data.ncyl != 80u || model40->fdd.data.nhead != 2u ||
-        model40->fdd.data.nsector != 15u || model40->fdd.data.nbyte != 512u ||
-        vm_machine_fdd_image_size(&model40->fdd) != MODEL40_FDD_BYTES ||
-        vm_machine_fdd_replace_bytes(&model40->fdd, image, sizeof(image) - 1u) ==
+        vm_test_fdd_info(model40->fdd).geometry.cylinders != 80u || vm_test_fdd_info(model40->fdd).geometry.heads != 2u ||
+        vm_test_fdd_info(model40->fdd).geometry.sectors_per_track != 15u || vm_test_fdd_info(model40->fdd).geometry.bytes_per_sector != 512u ||
+        vm_machine_fdd_image_size(model40->fdd) != MODEL40_FDD_BYTES ||
+        vm_machine_fdd_replace_bytes(model40->fdd, image, sizeof(image) - 1u) ==
             LIB_FALSE ||
-        vm_machine_fdd_replace_bytes(&model40->fdd, image, sizeof(image)) !=
+        vm_machine_fdd_replace_bytes(model40->fdd, image, sizeof(image)) !=
             LIB_FALSE ||
         core_machine_media_query(model40->media_registry, VM_MACHINE_MEDIA_FDD_ID,
             &info, &result) != LIB_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
@@ -42,9 +43,9 @@ lib_i32 main(void)
     if (config.irq != 6u || config.dma_channel != 2u) goto done;
 
     if (vm_machine_reset(model40) != LIB_STATUS_OK ||
-        model40->fdd.data.ncyl != 80u || model40->fdd.data.nhead != 2u ||
-        model40->fdd.data.nsector != 15u || model40->fdd.data.nbyte != 512u ||
-        !model40->fdd.connect.flagDiskExist) goto done;
+        vm_test_fdd_info(model40->fdd).geometry.cylinders != 80u || vm_test_fdd_info(model40->fdd).geometry.heads != 2u ||
+        vm_test_fdd_info(model40->fdd).geometry.sectors_per_track != 15u || vm_test_fdd_info(model40->fdd).geometry.bytes_per_sector != 512u ||
+        !vm_test_fdd_info(model40->fdd).present) goto done;
 
     {
         lib_u8 even_bytes[VM_PROFILE_MODEL40_ROM_CHIP_BYTES] = {0};
@@ -57,8 +58,8 @@ lib_i32 main(void)
                 LIB_STATUS_OK || model40_360k == LIB_NULL ||
             model40_360k->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
             model40_360k->fdd_media_kind != VM_PROFILE_FLOPPY_525_360K ||
-            model40_360k->fdd.data.ncyl != 40u ||
-            vm_machine_fdd_replace_bytes(&model40_360k->fdd, compatible_media,
+            vm_test_fdd_info(model40_360k->fdd).geometry.cylinders != 40u ||
+            vm_machine_fdd_replace_bytes(model40_360k->fdd, compatible_media,
                 sizeof(compatible_media)) != LIB_FALSE) goto done;
     }
 
@@ -67,8 +68,8 @@ lib_i32 main(void)
         default_session == LIB_NULL ||
         vm_test_ibm_5170_session_create(&model339_config, &model339) != LIB_STATUS_OK ||
         model339 == LIB_NULL ||
-        default_session->fdd.data.nsector != 18u ||
-        model339->fdd.data.nsector != 15u) goto done;
+        vm_test_fdd_info(default_session->fdd).geometry.sectors_per_track != 18u ||
+        vm_test_fdd_info(model339->fdd).geometry.sectors_per_track != 15u) goto done;
     failed = 0;
 
 done:

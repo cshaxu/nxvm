@@ -1,9 +1,10 @@
+#include "../../../support/media.h"
 #include "lib/types/types_interface.h"
 #include "../../../../x86/ibmpc-common/controller_fixture.h"
 #include <stdio.h>
 
 #include "x86/core/machine_interface.h"
-#include "app-nxvm/machine/media/media.h"
+#include "x86/product/machine/media/media_interface.h"
 #include "app-nxvm/machine/machine_interface.h"
 #include "app-nxvm/machine/machine_private.h"
 #include "app-nxvm/profiles/default_profile/pc_at_profile_private.h"
@@ -163,8 +164,8 @@ lib_i32 main(void)
     if (!vm_hdc_profile_contract_is_valid() ||
         vm_test_default_pc_at_session_create(&config, &session) != LIB_STATUS_OK ||
         session == LIB_NULL || session->core_machine == LIB_NULL) goto fail;
-    invalid_lba = (lib_u32)session->hdd.data.ncyl * session->hdd.data.nhead *
-        session->hdd.data.nsector;
+    invalid_lba = (lib_u32)vm_test_hdd_info(session->hdd).geometry.cylinders * vm_test_hdd_info(session->hdd).geometry.heads *
+        vm_test_hdd_info(session->hdd).geometry.sectors_per_track;
     if (core_machine_media_query(session->media_registry, VM_MACHINE_MEDIA_HDD_ID,
             &media_info, &media_result) != LIB_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK || !media_info.present ||

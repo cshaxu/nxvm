@@ -29,8 +29,8 @@ justified App retention.
 
 | Batch | Initial capability/source universe | Proposed owner | Disposition |
 | --- | --- | --- | --- |
-| Helpers | profiles/device/floppy; profiles/byob/blob; profile_contract and callers | x86/ibmpc-common | Receiver frozen; S2 implementation pending |
-| Media | machine/media FDD/HDD providers, geometry, marks, leases and callers | x86/product/machine/media | Receiver frozen; S3 pending |
+| Helpers | profiles/device/floppy; profiles/byob/blob; profile_contract and callers | x86/ibmpc-common | S2 accepted; proof below |
+| Media | machine/media FDD/HDD providers, geometry, marks, leases and callers | x86/product/machine/media | S3 implemented and verified; coordinator acceptance pending |
 | Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | Receiver frozen; S4 pending |
 | Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | Receiver frozen; S5 pending |
 | Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | Contract frozen below; S5/S6 pending |
@@ -313,3 +313,73 @@ Git/origin at e0bc4f14c and confirm clean worktree before this governance update
 Accept and close S2; retain T542 open for S3 onward. Warm S2 trees remain
 explicitly needed by the immediately next media batch. No new task or
 implementation scope is admitted by this acceptance commit.
+
+## S3: Shared Media Provider And Resource Lifetime
+
+Admitted from accepted S2 2c4962430. Seven media C/H files and the two original
+owner-local tests move with git mv to x86/product/machine/media and its matching
+test receiver. The sole production target is x86-product-media; standalone
+linkage requires no App source. Existing test names and assertions survive.
+Lib remains the only file/lock/direct/readonly/overlay backend. Four new public
+operations allocate/destroy opaque FDD/HDD objects; failed allocation does not
+publish a handle, destruction closes resources and clears the caller slot.
+App no longer embeds or reads Shared-private media layout. Construction binds
+stable borrowed provider contexts; Core routes/registry/plan are destroyed
+before the media objects. Cleanup also handles partial construction without a
+Core, using the same finalizer rather than another rollback path.
+
+The original FDD/HDD algorithm bodies match exactly after removing the new
+allocation/destruction blocks and mechanical include/comment substitutions.
+Geometry, protection, address marks, generations, replacement/eject and provider
+result semantics are preserved. App tests read copied media observations through
+the existing provider; the FDC protection test opens a real generated readonly
+fixture instead of changing the private flag. Independent tests retain private
+access only within their actual media owner. Partial-construction and empty-slot
+destruction tests cover the new resource boundary. This is extraction proof,
+not a new hardware/timing qualification or a claim that all legacy algorithms
+have been redesigned.
+
+### S3 Verification And Artifacts
+
+Reuse the owned S2 unit, standalone and eight Release trees with the same
+configure/compiler/profile settings recorded above. Build full root targets,
+then run the complete unit label with -j 12: x64 496/496 in 66.16s and x86
+496/496 in 62.28s. The final logs are t542-s3-final-unit-<width>.log under build;
+these results include partial-media cleanup and the final opaque-handle tests.
+Standalone media tests pass 2/2; corpus, source/test manifests and negative
+boundary gates pass 4/4. All six corpus manifests validate. NXVM media sole-route
+gate, documentation governance and git diff --check pass. Shared metadata
+reconciles canonical LF hashes where prior working-file line endings differed;
+those hash-only rows do not change source tokens. No original test registration
+or assertion is dropped. Initial CMake child-registration/source-list and test
+fixture include errors were corrected before these final runs.
+
+Actual source/build/test review confirms one source owner, opaque App handles,
+no Shared-to-App include, no private media consumer outside the owner, and no
+Lib/Common/MyNES/owner INI/firmware-input change. Rename-aware C/H numstat
+against accepted S2 counts 27 paths: 245 added, 115 removed, net +130, excluding
+docs/build/manifests/binaries. The increase is opaque resource construction and
+its rollback/provider tests plus copied test observations, not another backend
+or controller path. File moves are not code deletion. All 58 external integration
+contexts remain mandatory once-only T-level S8 proof, not fresh S3 boot evidence.
+
+Eight vm-0-5-0542 Release targets built successfully. Each deployed PE verifies
+its host architecture, 0.5.0542 identity and absence of .debug_* sections;
+runtime Debug remains linked. Owner INIs and MyNES artifacts are unchanged.
+
+| Machine | Width | SHA-256 |
+| --- | --- | --- |
+| default | x64 | 03882587562CC7C76B537D5F50FE8897A4ACE26B8770B428818188BE95E5F407 |
+| default | x86 | 62672E0D813E8A04B8DD7B26363EE47C4BC9CC8CF8D0314A91357C58FFF7182B |
+| XT | x64 | 4A6E6C1F87C633FE894649169F4EA39AAEE540BDF7F8DAFF5C121103933F4807 |
+| XT | x86 | 0FE814AB479155E65C86F264385B99DF66814459A038AF774A37F0CBCE66A19B |
+| AT | x64 | C6D9AAE6620433DFA30D4A47C8A6FB563D5A55FC5CA567220D34813129A03399 |
+| AT | x86 | CBB05DC04B9B399006EB802FB4C030BA48FDBA512C07C83E75F088A8255B453A |
+| Model40 | x64 | 93C5AA55F48131462612398953883077A1EEA9A006D6D3074DA68FB8EE31B2EE |
+| Model40 | x86 | 15173D68E8AFF30461DCEB5BCE209DC5BED769021E3AB16F76B3CB1A471FA6D8 |
+
+These hashes identify the S3 replacement pairs in assets/nxvm/<profile>.
+Source baseline is 2c4962430 plus the complete S3 Shared/NXVM delivery. Warm
+trees remain owned and needed for acceptance and the next conversion batch.
+Publish Shared receiving code first and NXVM consumers/retired paths/artifacts
+second as separate target-scoped Ps; coordinator acceptance follows both.
