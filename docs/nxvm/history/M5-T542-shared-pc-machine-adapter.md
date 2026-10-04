@@ -31,7 +31,7 @@ justified App retention.
 | --- | --- | --- | --- |
 | Helpers | profiles/device/floppy; profiles/byob/blob; profile_contract and callers | x86/ibmpc-common | S2 accepted; proof below |
 | Media | machine/media FDD/HDD providers, geometry, marks, leases and callers | x86/product/machine/media | S3 accepted; proof below |
-| Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | Receiver frozen; S4 pending |
+| Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | S4 conversion implemented/verified; cohesive Machine orchestration remains S5; acceptance pending |
 | Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | Receiver frozen; S5 pending |
 | Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | Contract frozen below; S5/S6 pending |
 | Retained differences | XT/AT/default/Model40 values, ROM layout, D4, CMOS, HDC geometry and firmware source | Concrete App profile/firmware owner | Retention justified below; S6 verification pending |
@@ -404,3 +404,82 @@ origin/master agree at 449c8fcc0; the worktree is clean before this governance
 update. Accept/close S3 and remove its packet; retain T542 open. Prevent the
 same coupling with the App-private-media include/retired-path gate. Next S4
 must receive its own packet before implementation; warm trees remain needed.
+
+## S4: Input And Display Conversion
+
+Admitted from accepted S3 cdb768907. Source inspection finds no profile-specific
+mapper algorithm: scan-set selection is a supplied board capability, mouse Y
+conversion is a host-coordinate convention. Both move unchanged to Product
+Machine conversion. The production frame currently traverses video snapshot,
+guest frame, display event and Common frame. The two middle carriers copy the
+same pixels/glyphs/palette and have no independent consumer or state owner.
+Replace that production chain with the existing copied snapshot directly into
+the existing Common frame, retaining the adapter-owned sequence. The old guest
+frame remains only a test view and moves to test support, not a public Shared
+ABI. App display.c still owns cadence/capture/publication until S5 moves the
+cohesive Machine owner; this is live orchestration, not a forwarding shim.
+
+S4 preserves video-owner state, generation acknowledgment, 16ms host publication
+cadence, text bounds, zeroed padding, CP437 tables, glyph bytes, palette encoding
+and raster-to-8x16 cursor mapping. Shared conversion performs no device capture,
+host scheduling or input injection. Existing integration predicates are retained.
+No implementation or verification completion is claimed by this admission.
+
+### S4 Implementation And Verification
+
+Both mapper C/H pairs and frame conversion move with git mv to flat
+x86/product/machine; their original two tests move with their owner. The sole
+x86-product-conversion target builds independently of App source. Mapper bodies
+match S3 exactly after include substitution. Scan-set tables, Pause/E0 sequences,
+mouse sign/clamping/buttons and error semantics are unchanged; retained symbol
+prefixes do not imply profile selection. App still delivers input through its
+one existing board path, to move with the cohesive Machine owner in S5.
+
+Frame conversion consumes x86_video_snapshot plus the adapter sequence directly.
+App display.c retains only its actual capture/cadence/generation orchestration;
+the duplicate guest-frame/display-event production carriers and conversion
+copies are removed. The former guest-frame declaration moves unchanged into
+test support as a view of the one Common frame. Frame validation, text bounds,
+zero padding, CP437 primary/secondary maps, palette/glyph bytes, 8x16 cursor
+interval mapping and graphics dimensions remain. The 16ms cadence, dirty check,
+generation acknowledgment and failure publication behavior are preserved.
+No native handle, new video state, presenter logic or second queue is added.
+
+Complete units pass 497/497 each: final x64 62.94s, x86 64.49s. Commands/tree
+settings match S2 above; final build/CTest logs are t542-s4-final-unit-<width>
+under build. Standalone mapper/frame/mouse tests plus the actual registered
+manifest/corpus/negative/test-manifest tests pass 7/7 in 15.53s. All six manifests,
+display authority/ROM-EGA gates, documentation and diff checks pass. The extra
+mouse matrix is the one additional registered unit; no old registration or
+assertion is removed. Set-1 E0 transitions, mouse sign/clamp/button mask, copied
+sequence/glyph/palette and partial text padding have direct tests. Actual review
+caught a misplaced new Set-1 failure check in a boolean test helper; move it to
+main, then repeat the full suites and independent tests for the final proof.
+Only tests changed after product builds; the production artifact inputs did not.
+
+Rename-aware staged Git numstat against accepted S3 cdb768907 counts 15 C/H paths,
+108 added, 149 removed, net -41; docs/build/manifests/binaries excluded. File moves
+are not deletion. The net reduction removes actual redundant frame preparation
+despite added regression coverage. Both manifests use deterministic path ordering
+and exact LF hashes. No Lib/Common/MyNES/owner INI/master/firmware input changes.
+All 58 integration contexts are retained for S8, not freshly claimed here.
+
+Eight sole vm-0-5-0542 Release builds succeed. PE machine values, embedded
+0.5.0542 and objdump absence of .debug sections verify each deployed product;
+the runtime debugger stays linked. Warm S2 build trees remain needed for the
+next adapter batch. No other product/process/tree is modified or cleaned.
+
+| Machine | Width | SHA-256 |
+| --- | --- | --- |
+| default | x64 | 7955A4D59924AD96F827ECC35B9D26C955CF49F05E56247A4D5B1CAEF0B84E17 |
+| default | x86 | F66EB462E7EA6112A5132778880BC2CCA0A378236B3C0F16D8501F400DB1F07A |
+| XT | x64 | A63F75DBACDFE0351FE2EF7F27FBAB8D04C10680893B4D56DA7F53451231D1D6 |
+| XT | x86 | C2D246916835E1CCF4176FFA79D89761CBAFF5C24EB1E0BAB9FBA85001E67EC5 |
+| AT | x64 | 36D3A5420736EFABF1F7A570CAB8C732447D46F10BCC35328CF1A37BA6BD50A5 |
+| AT | x86 | 144C534E359969A2FE4C29C153BB9526981EA64F630CD968D6B6DD37C970EBAC |
+| Model40 | x64 | E6B902E24333D70CD49453F40AA1670BEDE8A8C193D4E9F2C398D5FA942FD12D |
+| Model40 | x86 | 3B661675E838E37CB37032F3436D63220979EA6B43EA609634B188C8B95BC164 |
+
+These are S4 assets/nxvm/<profile> replacements. Source baseline is cdb768907
+plus complete S4 Shared/NXVM deliveries; scoped publication and coordinator
+actual-diff review remain required before acceptance.

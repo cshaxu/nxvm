@@ -138,6 +138,9 @@ Current and the T542 ledger distinguish design from delivered migration.
 S3 relocates media implementation/tests to x86/product/machine/media and
 test/x86/product/machine/media; App keeps only opaque media handles and its
 composition assertions, not the shared media layouts.
+S4 places pure mapper/frame conversion in flat x86/product/machine. The
+remaining App display orchestration directly converts the video snapshot;
+the old guest-frame view lives only in test support, not production source.
 No App can retain another App's shared Machine implementation as its library.
 
 The owner-required x86/product receiver owns the identical PC Console/API,

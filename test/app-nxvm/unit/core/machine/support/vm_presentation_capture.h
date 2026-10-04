@@ -3,7 +3,7 @@
 #include "lib/types/types_interface.h"
 
 
-#include "app-nxvm/machine/guest_display_interface.h"
+#include "guest_display.h"
 #include "app-nxvm/machine/machine_private.h"
 
 /* Test-only view of the one production Common frame. It never publishes or

@@ -33,37 +33,6 @@ typedef struct vm_machine_input {
     } data;
 } vm_machine_input;
 
-#define VM_MACHINE_EVENT_TEXT_COLUMNS 80u
-#define VM_MACHINE_EVENT_TEXT_ROWS 25u
-#define VM_MACHINE_EVENT_TEXT_CELLS \
-    (VM_MACHINE_EVENT_TEXT_COLUMNS * VM_MACHINE_EVENT_TEXT_ROWS)
-#define VM_MACHINE_EVENT_MAX_PIXELS (640u * 350u)
-#define VM_MACHINE_EVENT_PALETTE_ENTRIES 256u
-#define VM_MACHINE_EVENT_GLYPH_BYTES (256u * 16u)
-
-typedef struct vm_machine_display_event {
-    lib_i32 graphics;
-    lib_u8 characters[VM_MACHINE_EVENT_TEXT_CELLS];
-    lib_u8 attributes[VM_MACHINE_EVENT_TEXT_CELLS];
-    lib_u16 columns;
-    lib_u16 rows;
-    lib_u8 text_cell_height;
-    lib_u8 cursor_top;
-    lib_u8 cursor_bottom;
-    lib_u8 cursor_x;
-    lib_u8 cursor_y;
-    lib_i32 cursor_visible;
-    lib_i32 buffer_changed;
-    lib_i32 cursor_changed;
-    lib_u8 glyphs_present;
-    lib_u8 glyphs[VM_MACHINE_EVENT_GLYPH_BYTES];
-    lib_u16 pixel_width;
-    lib_u16 pixel_height;
-    lib_u8 pixels[VM_MACHINE_EVENT_MAX_PIXELS];
-    lib_u32 palette_rgb[VM_MACHINE_EVENT_PALETTE_ENTRIES];
-    lib_u64 generation;
-} vm_machine_display_event;
-
 /* Removable-media presentation is a VM product fact.  Common's public
  * media call intentionally carries only a path, so no Common-private media
  * request record crosses this boundary. */

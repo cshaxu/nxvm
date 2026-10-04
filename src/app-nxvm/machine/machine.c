@@ -10,8 +10,8 @@
 #include "app-nxvm/machine/machine_devices.h"
 #include "x86/product/machine/media/fdd_interface.h"
 #include "x86/product/machine/media/hdd_interface.h"
-#include "app-nxvm/profiles/default_profile/keyboard_mapper.h"
-#include "app-nxvm/profiles/default_profile/mouse_mapper.h"
+#include "x86/product/machine/keyboard_mapper_interface.h"
+#include "x86/product/machine/mouse_mapper_interface.h"
 
 static lib_i32 vm_machine_insert_floppy_at(vm_machine *session, lib_size slot,
     const char *path, lib_storage_medium_mode mode);

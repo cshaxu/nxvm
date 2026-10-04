@@ -775,8 +775,6 @@ set(VM_PROFILE_SOURCES
     src/app-nxvm/profiles/xt/rom/xt_5160_268_rom.c
     src/app-nxvm/profiles/machine_plan.c
     src/app-nxvm/profiles/default_profile/pc_at_profile.c
-    src/app-nxvm/profiles/default_profile/keyboard_mapper.c
-    src/app-nxvm/profiles/default_profile/mouse_mapper.c
     src/app-nxvm/profiles/default_profile/external_pc_at_rom.c
     src/app-nxvm/profiles/model40/model40.c
     src/app-nxvm/profiles/model40/composition.c
@@ -789,7 +787,6 @@ set(VM_APP_SOURCES
 set(VM_MACHINE_RUNTIME_SOURCES
     src/app-nxvm/machine/debug_adapter.c
     src/app-nxvm/machine/display.c
-    src/app-nxvm/machine/frame.c
     src/app-nxvm/machine/lifecycle.c
     src/app-nxvm/machine/machine.c
     src/app-nxvm/machine/control.c
@@ -812,10 +809,6 @@ add_library(x86-cpu ALIAS x86-cpu-shared)
 target_link_libraries(core-machine PUBLIC x86-pit825x x86-rtc146818 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine-observable PUBLIC x86-pit825x x86-rtc146818 x86-fdc8272 x86-hdc x86-video x86-ps2mouse x86-keyboard x86-kbc8042 x86-ppi8255 x86-xtkeyboard)
 target_link_libraries(core-machine PUBLIC x86-ibmpc-common x86-ibmpc-at x86-ibmpc-xt x86-core)
-
-add_executable(vm-machine-frame-smoke
-    test/app-nxvm/unit/core/machine/vm_machine_frame_smoke.c)
-target_link_libraries(vm-machine-frame-smoke PRIVATE vm-machine)
 
 add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
 target_include_directories(vm-profile PUBLIC
@@ -855,7 +848,8 @@ target_link_libraries(vm-machine PUBLIC
     vm-profile
     common-machine
     storage
-    x86-product-media)
+    x86-product-media
+    x86-product-conversion)
 
 add_library(vm-app STATIC ${VM_APP_SOURCES})
 target_include_directories(vm-app PUBLIC
@@ -980,11 +974,6 @@ target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE integration-sessi
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-hdd-admission-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
-add_executable(vm-keyboard-set1-mapper-smoke
-    test/app-nxvm/unit/core/machine/vm_keyboard_set1_mapper_smoke.c
-)
-target_link_libraries(vm-keyboard-set1-mapper-smoke PRIVATE vm-profile)
-
 add_executable(vm-ega-controller-system-smoke
     test/app-nxvm/unit/core/machine/vm_ega_controller_system_smoke.c
 )
@@ -3040,7 +3029,7 @@ file(GENERATE
 # the verifier; the supporting evidence and TODO define each domain's risk and
 # next admission condition.
 set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
-    "vm-machine|src/app-nxvm/machine/frame.c|display-adaptation"
+    "x86-product-conversion|src/x86/product/machine/frame.c|display-adaptation"
     "x86-product-media|src/x86/product/machine/media/fdd.c|x86-product-media"
     "x86-product-media|src/x86/product/machine/media/hdd.c|x86-product-media"
     "vm-machine|src/app-nxvm/machine/debug.c|vm-machine"

@@ -4,9 +4,7 @@
 #include "x86/ibmpc-common/display_interface.h"
 
 #include "app-nxvm/machine/display.h"
-#include "app-nxvm/machine/frame.h"
-
-#include "app-nxvm/machine/guest_display_interface.h"
+#include "x86/product/machine/frame_interface.h"
 
 #include "lib/base/clock_interface.h"
 
@@ -39,43 +37,10 @@ static lib_i32 vm_machine_capture_display_snapshot(void *context,
         session->board, out_snapshot) == LIB_STATUS_OK;
 }
 
-static void vm_machine_display_result(vm_machine *machine,
-    const core_machine_guest_display_frame *frame)
-{
-    vm_machine_display_event display = {0};
-
-    if (machine == LIB_NULL || frame == LIB_NULL) return;
-    display.graphics = frame->kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS;
-    display.columns = frame->columns;
-    display.rows = frame->rows;
-    display.text_cell_height = frame->text_cell_height;
-    display.cursor_top = frame->cursor_top;
-    display.cursor_bottom = frame->cursor_bottom;
-    display.cursor_x = frame->cursor_x;
-    display.cursor_y = frame->cursor_y;
-    display.cursor_visible = frame->cursor_visible;
-    display.buffer_changed = frame->buffer_changed;
-    display.cursor_changed = frame->cursor_changed;
-    display.glyphs_present = frame->text_glyphs_present;
-    display.pixel_width = frame->pixel_width;
-    display.pixel_height = frame->pixel_height;
-    display.generation = frame->generation;
-    lib_memory_copy(display.characters, frame->characters, sizeof(display.characters));
-    lib_memory_copy(display.attributes, frame->attributes, sizeof(display.attributes));
-    lib_memory_copy(display.glyphs, frame->text_glyphs, sizeof(display.glyphs));
-    lib_memory_copy(display.pixels, frame->pixels, sizeof(display.pixels));
-    lib_memory_copy(display.palette_rgb, frame->palette_rgb, sizeof(display.palette_rgb));
-    if (vm_machine_frame_from_display(&display, &machine->latest_frame) ==
-        LIB_STATUS_OK) machine->latest_frame_valid = LIB_TRUE;
-}
-
 x86_video_kind vm_machine_publish_display(vm_machine *machine,
     lib_i32 force)
 {
-    core_machine_guest_display_frame frame;
     x86_video_snapshot_observation observation;
-    lib_u16 row;
-    lib_u16 column;
     lib_i32 buffer_changed;
     lib_i32 cursor_changed;
 
@@ -97,48 +62,16 @@ x86_video_kind vm_machine_publish_display(vm_machine *machine,
     cursor_changed = snapshot.cursor_changed;
     if (!force && !buffer_changed && !cursor_changed) return snapshot.kind;
 
-    lib_memory_set(&frame, 0, sizeof(frame));
-    frame.kind = snapshot.kind != X86_VIDEO_KIND_TEXT ?
-        CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS : CORE_MACHINE_GUEST_DISPLAY_KIND_TEXT;
-    frame.buffer_changed = buffer_changed;
-    frame.cursor_changed = cursor_changed;
-    if (frame.kind == CORE_MACHINE_GUEST_DISPLAY_KIND_INDEXED_PIXELS) {
-        frame.pixel_width = snapshot.pixel_width;
-        frame.pixel_height = snapshot.pixel_height;
-        lib_memory_copy(frame.pixels, snapshot.pixels, sizeof(frame.pixels));
-        lib_memory_copy(frame.palette_rgb, snapshot.palette_rgb,
-            sizeof(frame.palette_rgb));
-    } else {
-        frame.columns = snapshot.columns;
-        frame.rows = snapshot.rows;
-        frame.text_cell_height = snapshot.text_cell_height;
-        if (frame.columns > CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS) {
-            frame.columns = CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS;
-        }
-        if (frame.rows > CORE_MACHINE_GUEST_DISPLAY_MAX_ROWS) {
-            frame.rows = CORE_MACHINE_GUEST_DISPLAY_MAX_ROWS;
-        }
-        frame.cursor_top = snapshot.cursor_top;
-        frame.cursor_bottom = snapshot.cursor_bottom;
-        frame.cursor_x = snapshot.cursor_x;
-        frame.cursor_y = snapshot.cursor_y;
-        frame.cursor_visible = snapshot.cursor_visible;
-        frame.text_glyphs_present = snapshot.text_glyphs_present;
-        lib_memory_copy(frame.text_glyphs, snapshot.text_glyphs,
-            sizeof(frame.text_glyphs));
-        lib_memory_copy(frame.palette_rgb, snapshot.palette_rgb,
-            sizeof(frame.palette_rgb));
-        for (row = 0u; row < frame.rows; ++row) {
-            for (column = 0u; column < frame.columns; ++column) {
-                lib_u16 index = row * CORE_MACHINE_GUEST_DISPLAY_MAX_COLUMNS + column;
-                frame.characters[index] = snapshot.characters[index];
-                frame.attributes[index] = snapshot.attributes[index];
-            }
-        }
+    if (snapshot.kind == X86_VIDEO_KIND_TEXT) {
+        if (snapshot.columns > X86_VIDEO_MAX_COLUMNS)
+            snapshot.columns = X86_VIDEO_MAX_COLUMNS;
+        if (snapshot.rows > X86_VIDEO_MAX_ROWS)
+            snapshot.rows = X86_VIDEO_MAX_ROWS;
     }
-    frame.generation = machine->display_generation + 1u;
-    vm_machine_display_result(machine, &frame);
-    machine->display_generation = frame.generation;
+    if (vm_machine_frame_from_display(&snapshot, machine->display_generation + 1u,
+            &machine->latest_frame) == LIB_STATUS_OK)
+        machine->latest_frame_valid = LIB_TRUE;
+    ++machine->display_generation;
     if (core_machine_observe_display_snapshot(machine->board,
             LIB_FALSE, 0u, &observation) == LIB_STATUS_OK &&
         observation.generation_reliable) {
