@@ -22,19 +22,19 @@ test, executable or INI changes have been made by this S.
 
 ## Convergence Ledger
 
-The S1 inventory below freezes receiving owners, not delivered source. All
-implementation batches remain pending until their code and regressions prove
-the move. Accept a batch only when every member has a proven receiver or
-justified App retention.
+The S1 inventory below freezes receiving owners. The disposition column is
+reconciled as batches deliver proof; the original inventory and contract remain
+historical evidence. Accept a batch only when every member has a proven receiver
+or justified App retention.
 
 | Batch | Initial capability/source universe | Proposed owner | Disposition |
 | --- | --- | --- | --- |
 | Helpers | profiles/device/floppy; profiles/byob/blob; profile_contract and callers | x86/ibmpc-common | S2 accepted; proof below |
 | Media | machine/media FDD/HDD providers, geometry, marks, leases and callers | x86/product/machine/media | S3 accepted; proof below |
-| Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | S4 conversion accepted; cohesive Machine ingress/capture orchestration remains S6 |
-| Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | S5 isolates prerequisite Profile state; cohesive receiver S6 pending |
-| Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | Contract frozen below; S6/S7 pending |
-| Retained differences | XT/AT/default/Model40 values, ROM layout, D4, CMOS, HDC geometry and firmware source | Concrete App profile/firmware owner | S5 Profile observation isolation delivered; fixed composition S7 pending |
+| Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | S4/S6 accepted; one conversion and orchestration owner |
+| Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | S5/S6 accepted; Profile facts isolated from cohesive adapter |
+| Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | S6/S7 accepted; one transfer with build-selected constructors |
+| Retained differences | XT/AT/default/Model40 values, ROM layout, D4, CMOS, HDC geometry and firmware source | Concrete App profile/firmware owner | S5/S7 accepted; real Profile contexts and fixed composition |
 | Verification/build | tests, source lists, static gates, tools, manifests and eight artifacts | Behavior owner; external integration remains NXVM | S8/S9 aggregate audit and 58 contexts pending |
 
 Closure resolves every pending entry, proves each shared migration and
@@ -935,3 +935,55 @@ verification/build and obsolete-path ledger batch, not a new extraction target.
 It reconciles actual source/test/build/tool callers and all 58 integration
 registrations/predicates before S9's once-only execution and whole-task acceptance.
 The current packet defines S8; this record is evidence, not another active status.
+
+## S8: Aggregate Build/Test And Obsolete-Path Audit
+
+Actual source lists and callers resolve every S1 mechanism to its accepted
+receiver. Retired App machine/media/helper directories contain no C/H source.
+Their remaining code/build references are retirement guards and the deliberate
+Shared-to-App negative fixture, not live compatibility implementations. Common
+still owns the worker/FIFO/generation/paused lease; Core owns guest time and
+board teardown. The Product adapter owns its media, converted frames and one
+construction transfer. App contexts retain ROM layout, topology and Model40 D4.
+The dependency allowlist contains zero remaining migration edges.
+
+Review of every integration diff against T541 confirms the same assertions,
+budgets and acceptance predicates. Includes follow receiving owners; media
+observations use opaque handles; input fixtures call the existing Common ingress;
+Model40 probes observe the actual Profile context. The FDC predicate still
+requires a newer sequence, command E6h, drive zero and successful completion.
+Its synthetic tests retain the same rejection cases. The additional self-test
+entry only runs code-owned predicates, without replacing external acceptance.
+No integration registration, timeout, serial policy or skip policy was removed.
+
+A real standalone build gap was found: the root CMake supplied three existing
+GNU format-truncation diagnostic settings for Shared Debug and its two fixtures.
+The root build passed while standalone test/x86 failed to compile those retained
+formatters. Move those same private settings to their actual source/test targets;
+delete the root settings. No algorithm, public API or warning exemption is added.
+The root Lib fixture stack policy remains unchanged. Shared C/H diff is zero;
+the three CMake files total nine added and five removed lines, including comments.
+README documents that retained policy; both affected manifests are rehashed.
+
+After this repair, the independent tools-on x86 build completes and all 313
+registered tests pass (153.41 seconds), including manifest/corpus/negative checks
+and the adapter regressions. The independent tools-off src/x86 tree configures
+and builds with no App/Common requirement. Fresh complete root units pass
+499/499 on each width; LastTest logs contain 499 passed and zero failed each.
+All current specialized gates, six full manifest checks, documentation governance
+and diff checks pass. An initial command used the wrong specialized-target name;
+the corrected verify-current-specialized-gates invocation passes all its gates.
+
+All eight Release trees build the current product plus only their registered
+integration executables. Actual CTest registrations and resolved executable
+commands prove 22 default, one XT, three AT and three Model40 contexts per width:
+58 total. Direct probes receive the canonical product INI; native console probes
+launch the current product EXE in its directory and load that same NXVM.ini.
+No external integration execution or skip is counted as a pass in S8.
+
+The eight deployed 0542 hashes remain exactly the S7 table above after current
+product-target builds. No product binary commit is necessary. MyNES is not rebuilt;
+its source/tests/artifacts, Lib/Common source/tests, owner INIs and external masters
+are unchanged. The successor App-split proposal consumes these sole receivers and
+retains all 58 contexts; it is not admitted. S8 delivery awaits publication and
+coordinator acceptance; S9 must still execute every external context once.
