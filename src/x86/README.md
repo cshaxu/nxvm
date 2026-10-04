@@ -181,6 +181,17 @@ video snapshot and a caller-owned presentation sequence, preserving CP437,
 palette, glyph and cursor geometry without device capture or guest mutation.
 No intermediate guest-frame/display-event transport or native handle is needed.
 
+The complete PC Core-to-Common execution/debug adapter is in product/machine.
+Its construction_interface.h consumes copied, prepared hardware values and a
+bounded profile binding; no importing-App header or model selector is retained.
+The adapter owns publication/rollback, media resources and bounded Core runs;
+Common owns the sole worker/FIFO/paused lease and Core owns guest time.
+The transferred profile context outlives Core routes, providers and media;
+release runs last. Missing create arguments do not transfer ownership.
+Configure runs once, reset notification follows successful complete reset,
+and teardown notification follows Core route revocation. Calls are serialized
+with the existing Common lifecycle; destruction cannot overlap execution.
+
 Video memory inspection returns the same selected CGA/planar bytes as a CPU
 read without updating EGA latches. Callers serialize both operations with the
 device owner; inspection is not a concurrent snapshot or guest bus cycle.

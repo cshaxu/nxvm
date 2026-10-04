@@ -32,6 +32,25 @@ add_library(x86-product-conversion STATIC product/machine/frame.c
 target_include_directories(x86-product-conversion PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-product-conversion PUBLIC types x86-ibmpc-common)
 
+if(X86_BUILD_TOOLS)
+add_library(x86-product-machine STATIC product/machine/debug.c
+    product/machine/executor_state.c
+    product/machine/debug_adapter.c
+    product/machine/display.c
+    product/machine/lifecycle.c
+    product/machine/machine.c
+    product/machine/control.c
+    product/machine/fault.c
+    product/machine/runner.c
+    product/machine/waiting.c
+    product/machine/machine_devices.c
+    product/machine/machine_info.c)
+target_include_directories(x86-product-machine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-product-machine PUBLIC types base storage
+    common-machine x86-product-media x86-product-conversion
+    x86-ibmpc-common x86-core)
+endif()
+
 add_library(x86-pit825x STATIC chips/pit825x/pit.c)
 target_include_directories(x86-pit825x PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-pit825x PUBLIC types)
