@@ -1,5 +1,8 @@
 # Shared PC Product
 
+Historical T541 design, implemented through S4. The [task ledger](M5-T541-independent-pc-apps.md)
+records verification; [Current](../states/CURRENT.md) owns final acceptance.
+
 ## Admission And Goal
 
 The owner revises active M5 T541 on 2026-10-04: extract the shared Product
@@ -7,7 +10,7 @@ logic of the four existing PC builds into `src/x86/product` before splitting
 their Apps. [Current](../states/CURRENT.md) owns admission and progress;
 [T541 history](../history/M5-T541-independent-pc-apps.md) preserves the original
 request and this scope change. The separate
-[four-App split](m5-independent-pc-apps.md) is the first queued successor.
+[four-App split](../proposals/m5-independent-pc-apps.md) is the first queued successor.
 
 The existing XT, AT, Model40 and default builds remain under app-nxvm and keep
 their identities, fixed compositions, deployed directories and adjacent INIs.

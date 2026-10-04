@@ -22,7 +22,7 @@ implementation still follows its design and separate governance prerequisite.
 On 2026-10-04 the owner separates the four-App split into an unnumbered
 queue-head [successor proposal](../proposals/m5-independent-pc-apps.md).
 T541 instead extracts all common Product logic of the four current PC builds
-into src/x86/product. Its [revised proposal](../proposals/m5-shared-pc-product.md)
+into src/x86/product. Its [revised design](m5-shared-pc-product.md)
 owns the current target. Lib/Common and existing x86 mechanisms are excluded;
 new App creation, governance targets and deployment cutover are transferred,
 not silently counted as T541 delivery.
@@ -460,3 +460,81 @@ Packet fields are 16/16; required suites/gates and eight artifact hashes match.
 Excluded paths and owner INIs are unchanged, HEAD equals origin/master and the
 worktree is clean before this governance-only P3. Accept and close S4. T541
 remains open for all 58 integration contexts and whole-ledger review in S5.
+
+## S5: Complete Ledger And Integration Delivery
+
+Audit the actual committed T541 tree against the original request, revised
+Product-only scope, all original 16 source paths and generated binding. Every
+member is accepted at the receiver below; no Product member remains deferred.
+The independent four-App split alone remains the separately queued successor.
+
+| Complete original member batch | Sole receiver and proof |
+| --- | --- |
+| INI grammar, request and media/path parsing | x86/product ini/request; shared INI assertions, unchanged fixed App projection assertion, all real INI integration inputs. |
+| Executable-adjacent startup | x86/product startup; existing Base capability, shared startup assertions and deployed Console tests. |
+| Commands, prompt/state notices and Debug entry/continuations | x86/product command; shared command/INFO matrix plus lifecycle/debug integration; Common retains its reducer and queues. |
+| Registered shortcuts and guest chords | x86/product keyboard; shared complete make/reverse-break regressions; App retains actual guest codec. |
+| Atomic Machine/Session/UI construction, sinks and teardown | x86/product composition; migrated five machine-failure classes, Session/UI failures and shutdown retry. |
+| Runtime request versus fixed config and generated firmware binding | Product owns copied request; App config owns only fixed hardware projection, candidate creation/destruction and copied INFO/speed translation. App and profile tests remain. |
+| Main body and banner format | x86/product entry; shared success/failure/ordered cleanup fixture. App main/version supply immutable identity and factory only. |
+
+The eight profile/width groups execute once each, with no skipped or failed
+context. Current source registers default 22, XT 1, AT 3 and Model40 3 per
+width, preserving all 58 original contexts and predicates.
+
+| Profile | x64 result / seconds | x86 result / seconds |
+| --- | --- | --- |
+| default-pc-at-80386-1440k-hdd | 22/22, 60.84 | 22/22, 73.97 |
+| ibm-5160-model-268-360k | 1/1, 21.93 | 1/1, 26.68 |
+| ibm-5170-model-339-1200k | 3/3, 39.91 | 3/3, 49.73 |
+| compaq-deskpro-386-model-40-1200k | 3/3, 69.69 | 3/3, 80.59 |
+
+Default retains the named vm-timer-firmware-smoke, vm-debug-pause-boundary-smoke,
+vm-unified-debug-backend-smoke, vm-control-lifecycle-smoke, vm-dos-prompt-smoke,
+vm-dos-keyboard-smoke, vm-dos-mem-fault-smoke, vm-dos-video-port-smoke,
+vm-cga-graphics-dos-smoke, vm-cga-640-system-smoke, vm-no-media-video-port-smoke,
+vm-ega-planar-dos-smoke, vm-rom-ega-int10-dos-smoke, vm-mouse-driver-dos-smoke,
+vm-fdc-read-track-dos-smoke, vm-hdc-hdd-boot-smoke, vm-app-default-profile-smoke,
+vm-full-pc-session-smoke, vm-windows31-checkpoint, vm-windows31-int13-trace-probe
+and vm-ata-pio-dos-smoke. Every profile retains its named INI boot-matrix row;
+AT adds vm-app-console-lifecycle-smoke and vm-ini-cmos-seed-smoke, Model40 adds
+vm-model40-console-s20-smoke and vm-ini-cmos-seed-smoke. Each is registered for
+the actual fixed profile and each host width, not copied/default hardware.
+
+Integration uses the existing Release Ninja trees and exact registered targets,
+then ctest -L integration -R '^integration.vm-' -j 1 --output-on-failure.
+One preparation attempt enumerated targets from CTest JSON command fields,
+which are absent for two not-yet-built tests. Stop those two owned Make build
+trees before any test executes, and enumerate target names from registrations
+instead. No test is omitted or replayed. Inputs, predicates, timeout budgets
+and readonly/overlay media routes are unchanged. These are semantic checkpoints,
+not a timing upgrade or a claim to qualify all guest software.
+
+Final full repository units pass 495/495 per width (95.04s/106.80s), with
+unchanged source from S4. Both final specialized gates pass, including all 516
+direct rows, 500 strict and 16 retained residuals. Six manifests and x86
+corpus/negative probes pass on each width. S4's independent tools-on/off
+results remain applicable to this unchanged source. Documentation structure,
+changed relative links and diff checks pass. No C/H path changes in S5.
+
+Whole-T Git numstat with rename detection against 9240a3041 counts 28 logical
+C/H source/test paths, +693/-341, net +352. This includes genuine factory/value
+boundaries and extra regression coverage, not copied Product implementations.
+All relocated production files have their original owner removed. Searches in
+src/test/cmake/tools find no retired App parser/command/startup/composition or
+banner reference, App-private Product include, native API or vm_machine call.
+The complete code/build/header/test diff is mapped to this ledger.
+
+All eight deployed files still match the S4 SHA-256 table, PE widths and
+stripped Release verification; no new build is needed for this documentation-
+only S. Runtime Debug remains. All four owner INIs, MyNES, root README/rules,
+Lib/Common, prior x86 implementations, App machine/profiles/firmware and
+external ROM/media masters remain untouched. The receiving MyNES executable
+does not link Product and is not rebuilt. No second production path remains.
+
+After verification and evidence reconciliation, confirm no process uses the
+16 explicitly named reused unit/standalone/integration/Release trees. Resolve
+each absolute target beneath build before deleting its disposable compiler,
+test and generated outputs. All 16 are removed; they are reconstructible from
+source and external build inputs. No assets, INIs, snapshots, repository-external
+BIOS assembly product or unrelated build tree is deleted.

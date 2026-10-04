@@ -214,7 +214,7 @@ maps this design to observed code and bounded migration evidence.
 
 The owner-approved planning direction has four ordered stages. The first is
 [closed T539](../history/M5-T539-independent-shared-chips.md), followed by
-the closed T540 board receiver, [active Product extraction](../proposals/m5-shared-pc-product.md)
+the closed T540 board receiver, [delivered Product extraction](../history/m5-shared-pc-product.md)
 and [queued App split](../proposals/m5-independent-pc-apps.md):
 
 1. `x86/chips` is the target owner of independent chips, including CPU, PIC, PIT and DMA;
