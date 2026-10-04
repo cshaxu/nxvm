@@ -25,6 +25,21 @@ set_tests_properties(unit.vm-profile-contract-smoke PROPERTIES LABELS "unit;x86"
 list(APPEND SHARED_X86_TEST_TARGETS vm-profile-contract-smoke)
 shared_register_test(x86 ibmpc-common/construction_helpers x86-ibmpc-common)
 
+foreach(media_case IN ITEMS provider direct_readonly)
+    if(media_case STREQUAL "provider")
+        set(media_target vm-media-provider-smoke)
+    else()
+        set(media_target vm-media-direct-readonly-smoke)
+    endif()
+    add_executable(${media_target} product/machine/media/${media_case}_smoke.c)
+    target_link_libraries(${media_target} PRIVATE x86-product-media)
+    add_test(NAME unit.${media_target} COMMAND ${media_target})
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/${media_target}")
+    set_tests_properties(unit.${media_target} PROPERTIES LABELS "unit;x86" TIMEOUT 30
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test/${media_target}")
+    list(APPEND SHARED_X86_TEST_TARGETS ${media_target})
+endforeach()
+
 shared_register_test(x86 product/ini x86-product-config)
 if(X86_BUILD_TOOLS)
     shared_register_test(x86 product/command x86-product)

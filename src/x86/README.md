@@ -166,6 +166,14 @@ production versus observable Core; the independent port test links Core itself.
 
 ## Build and verification
 
+The PC Product media adapter lives in product/machine/media. FDD/HDD objects
+are opaque and own their Lib Storage lease, geometry, change generation and
+floppy address marks. Allocate into an empty caller-owned slot; destroy closes
+resources and clears the slot, including partially constructed/empty slots.
+Provider contexts borrow the stable object until the Machine removes its routes.
+Serialize operations with the Machine owner; the adapter adds no worker or lock.
+Direct/Readonly/Overlay bytes and OS file locking remain solely Lib-owned.
+
 Video memory inspection returns the same selected CGA/planar bytes as a CPU
 read without updating EGA latches. Callers serialize both operations with the
 device owner; inspection is not a concurrent snapshot or guest bus cycle.

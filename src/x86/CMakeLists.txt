@@ -22,6 +22,11 @@ add_library(x86-product-config STATIC product/ini.c product/startup.c)
 target_include_directories(x86-product-config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-product-config PUBLIC types storage base)
 
+add_library(x86-product-media STATIC product/machine/media/fdd.c
+    product/machine/media/hdd.c)
+target_include_directories(x86-product-media PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_link_libraries(x86-product-media PUBLIC types storage x86-ibmpc-common)
+
 add_library(x86-pit825x STATIC chips/pit825x/pit.c)
 target_include_directories(x86-pit825x PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(x86-pit825x PUBLIC types)
