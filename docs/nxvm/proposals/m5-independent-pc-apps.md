@@ -4,7 +4,8 @@
 
 This is the first queued successor, not active T541 and not yet numerically
 allocated. The owner separated this cutover from T541 on 2026-10-04. After
-the accepted [shared PC Product extraction](../history/m5-shared-pc-product.md), split
+the accepted [shared PC Product extraction](../history/m5-shared-pc-product.md)
+and [T542 remaining shared Machine/helper extraction](m5-shared-pc-machine-adapter.md), split
 the existing four-machine NXVM shell into four top-level products:
 
 - `src/app-mypcxt`: existing IBM 5160 XT.
@@ -14,14 +15,17 @@ the existing four-machine NXVM shell into four top-level products:
 
 PC110 remains a separate [future task](m6-pc110-evidence-and-implementation.md),
 not an empty fifth App. T539 chips and T540 shared board integration remain
-accepted dependencies; this task does not reimplement them or T541 Product.
+accepted dependencies; T542 is an admitted prerequisite, not yet accepted.
+This task does not reimplement them, T541 Product or T542's shared adapter.
 
 ## Design And Cutover
 
 Each App owns immutable identity, board composition, firmware/build binding
 and its product-local documentation, tests, tools and artifacts. All four
 consume the same accepted x86/product command/API/INI/startup/UX implementation,
-x86 Core/chips and appropriate IBM-PC board contracts. No App imports a peer
+x86 Core/chips, the sole T542 PC Machine adapter and appropriate IBM-PC board
+contracts. Apps supply fixed composition, not copies of app-nxvm/machine.
+No App imports a peer
 App or copies a parser, runner, queue, debugger or presenter.
 
 Freeze the complete source/test/configuration/CMake/tool/document/artifact

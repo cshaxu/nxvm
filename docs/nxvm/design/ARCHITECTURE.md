@@ -212,7 +212,7 @@ maps this design to observed code and bounded migration evidence.
 
 ## Queued Shared-Hardware And App Split
 
-The owner-approved planning direction has four ordered stages. The first is
+The owner-approved planning direction has five ordered stages. The first is
 [closed T539](../history/M5-T539-independent-shared-chips.md), followed by
 the closed T540 board receiver, [delivered Product extraction](../history/m5-shared-pc-product.md)
 and [queued App split](../proposals/m5-independent-pc-apps.md):
@@ -237,7 +237,14 @@ and [queued App split](../proposals/m5-independent-pc-apps.md):
    generic App framework is introduced.
    T541 keeps the four current builds and deployment paths intact. Lib/Common
    and existing x86 components are not implementation-change targets.
-4. The separate queued task makes four independent Apps compose these capabilities: `app-mypcxt`
+4. Admitted [T542](../proposals/m5-shared-pc-machine-adapter.md) first extracts
+   the remaining shared PC Machine adapter into x86/product and proven
+   construction helpers into ibmpc-common. This is a target boundary, not yet
+   an implemented move. App retains fixed profile/firmware rules and genuine
+   D4; no Lib/Common change, extra queue or profile registry is introduced.
+   The [S1 receiver ledger](../history/M5-T542-shared-pc-machine-adapter.md)
+   owns the task-specific migration contract and evidence.
+5. The separate queued task makes four independent Apps compose these capabilities: `app-mypcxt`
    (5160), `app-mypcat` (5170), `app-mypcdeskpro386` (Model 40), and
    `app-nxvm` (default 386). Later PC110 belongs to `app-mypc110` after its
    separate hardware qualification. No App depends on another App.
@@ -248,4 +255,4 @@ their shared owner; product firmware/boot/INI tests follow their App. Preserve
 existing CPU families, personalities and tests. Structural moves are not V30,
 Raiden II, 486 or PC110 implementation and do not upgrade timing evidence.
 New product scope names and deployment rules require separate Td governance
-before the fourth stage's cutover; current names/locations remain valid.
+before the final App cutover; current names/locations remain valid.
