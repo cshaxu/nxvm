@@ -30,7 +30,7 @@ justified App retention.
 | Batch | Initial capability/source universe | Proposed owner | Disposition |
 | --- | --- | --- | --- |
 | Helpers | profiles/device/floppy; profiles/byob/blob; profile_contract and callers | x86/ibmpc-common | S2 accepted; proof below |
-| Media | machine/media FDD/HDD providers, geometry, marks, leases and callers | x86/product/machine/media | S3 implemented and verified; coordinator acceptance pending |
+| Media | machine/media FDD/HDD providers, geometry, marks, leases and callers | x86/product/machine/media | S3 accepted; proof below |
 | Input/display | keyboard_mapper, mouse_mapper, machine ingress, display/frame carriers | x86/product/machine | Receiver frozen; S4 pending |
 | Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | Receiver frozen; S5 pending |
 | Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | Contract frozen below; S5/S6 pending |
@@ -383,3 +383,24 @@ Source baseline is 2c4962430 plus the complete S3 Shared/NXVM delivery. Warm
 trees remain owned and needed for acceptance and the next conversion batch.
 Publish Shared receiving code first and NXVM consumers/retired paths/artifacts
 second as separate target-scoped Ps; coordinator acceptance follows both.
+
+### S3 Coordinator Acceptance
+
+Review pushed Shared P1 d3fe05a67 and NXVM P2 449c8fcc0 against the complete
+media batch and packet. Inspect both provider bodies, opaque/public and private
+headers, initialization/finalization, stable registry bindings, all changed
+test observations and preserved assertions, the generated readonly fixture,
+partial-construction regression, moved test registrations, specialized/negative
+gates, manifests, documents and eight deployed artifacts. The new ownership
+boundary removes App layout coupling without a second media backend or state
+mirror. No unresolved media extraction member remains. Source comparisons and
+final full-unit runs supply preservation proof; integration remains S8's
+explicit task-level obligation, not waived by these units.
+
+Recheck all six manifests, media sole-route, documentation and diff checks;
+verify all eight deployed hashes above and no excluded-path or INI differences.
+The only live old-path string is the retirement rejection gate. Git HEAD and
+origin/master agree at 449c8fcc0; the worktree is clean before this governance
+update. Accept/close S3 and remove its packet; retain T542 open. Prevent the
+same coupling with the App-private-media include/retired-path gate. Next S4
+must receive its own packet before implementation; warm trees remain needed.
