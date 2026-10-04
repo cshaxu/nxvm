@@ -381,3 +381,18 @@ Shared additions followed by NXVM deletion, as in S2.
 | assets/nxvm/ibm-5160-model-268-360k/nxvm_xt_0_5_0541_x86.exe | 1535690 | 89F7448C5605100A76B8136E49D39A0AF6E2CE828AAD871021B85734D77545C1 |
 | assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x64.exe | 1364486 | 2759889703C3F1E39A14C93B8A4847A349E1E181DD4B50DBC2FC87DDA22036E8 |
 | assets/nxvm/ibm-5170-model-339-1200k/nxvm_at_0_5_0541_x86.exe | 1535758 | 885068BD89F7CC37DBD8DCCE0837D92738C5697FEF74B6D56C1980C91550CAA3 |
+
+### S3 Coordinator Acceptance
+
+Review the actual Shared P1 4b6c0ca19 and NXVM P2 0fe507d50 source/header,
+test, target/gate, manifest, documentation and artifact changes against the
+complete S1 command/composition batch. All original assertions retain their
+owning behavior; the only intended UX correction is the approved AltEnter
+chord. Candidate/driver publication and failure retry remain atomic. The
+Common reducer/queues/native presenters are unchanged. No Shared-to-App include
+or original Product path remains; all affected products link the sole receiver.
+Packet has 16 required fields and scope/coverage/marker evidence is complete.
+Excluded paths and four owner INIs have no diff; required suites/gates and
+eight artifact identities match this delivery. HEAD equals origin/master,
+worktree is clean. Accept and close S3; T541 remains open for entry/banner and
+the full integration/ledger audit. Automatically admit the next bounded S4.

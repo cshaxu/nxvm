@@ -4,14 +4,14 @@
 
 M5 T541 remains open. S1's completed Product inventory and design are accepted
 at 360dfd776. S2 is accepted and closed at Shared P1 d0a7499a9 and NXVM P2
-4d6750b1a. S3 is now admitted for the complete command/composition binding batch. Shared implementation remains
+4d6750b1a. S3 is accepted and closed at 4b6c0ca19 / 0fe507d50; no S is active between batches. Shared implementation remains
 limited to the new x86/product; Lib/Common and existing x86 implementations
 are excluded. The independent four-App split remains the queue-head candidate.
 
 | Task | Progress |
 | --- | --- |
 | T540 | Closed through accepted S97 at 9240a3041; complete shared Core/board extraction. |
-| T541 S2 | Accepted sole INI/request/startup receiver and eight 0541 artifacts; S2 closed, T open for remaining Product batches. |
+| T541 S3 | Accepted sole command/hotkey/Common composition receiver and eight 0541 pairs; T open for entry/banner and final integration audit. |
 
 
 Shared implementation P1 `4f2511b13` and NXVM implementation P2 `c83d3a252`
@@ -21,28 +21,6 @@ required coverage/independent linkage remains intact, and other-App inputs
 are unchanged. This closure changes no hardware timing grade.
 
 ## Current Technical Baseline
-
-## Active S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation, M5 T541 S3 after accepted S2 at 9432c70b1. |
-| Admission And Approval | Owner approval and automatic sequential S admission on 2026-10-04; supporting Shared/NXVM connection edits approved. Single-session coordinator/executor review. |
-| Objective | Move command, hotkey and Common composition ownership to x86/product through one frozen App factory and copied INFO/speed binding. Consume the S1 command/composition ledger batch. |
-| Non-goals | No four-App split, Lib/Common change, existing x86 implementation change, MyNES change, owner INI change, hardware/timing change or new worker/queue. |
-| Reference Baseline | 9432c70b1, accepted S2 source and eight 0541 artifacts. |
-| Candidate Proposal | [Shared PC Product](../proposals/m5-shared-pc-product.md), [T541 ledger](../history/M5-T541-independent-pc-apps.md). |
-| Files And ABI Surface | Shared: new Product command/composition/keyboard and typed factory, matching test/x86/product, x86 target/corpus registrations and manifests. NXVM: old Product deletion, config/main binding, App tests/build references, docs and eight 0541 EXEs. App machine implementation remains unchanged unless a proven obsolete wrapper is removed. |
-| Applicable Rules | Task Reading Set; shared Execution/Architecture/Coding/Document; NXVM Architecture/Coding/UI and source policy. Sole Product owner, declared acyclic dependencies, opaque construction handle, atomic publication/rollback, unchanged Common reducer and copied inputs. |
-| Verification | Complete repository units x64/x86; standalone shared tools-on/off tests and corpus/manifests; specialized/documentation gates; composition rollback, INFO state, command/Debug and CAD/AltEnter regressions; eight optimized stripped 0541 builds. T-level 58 integrations retained for S5. |
-| Expected Markers | Full suites pass; no App include in Product; old command/composition/keyboard production paths absent; one Common Machine/Session/UI composition; AltEnter complete make/break sequence. |
-| Asset Needs | Existing immutable embedded firmware build inputs only; no external master or INI writes; MyNES artifacts unchanged. |
-| Reporting Requirements | Initial boundary confirmation, material progress, complete verification/evidence, counted code delta and separate Shared/NXVM P delivery. |
-| Stop Conditions | Missing public capability requiring Lib/Common edits, changed hardware behavior, unapproved consumer or failed rollback/coverage proof. |
-| Exit Criteria | Entire ledger batch has sole receiver, all original assertions preserved, no reverse dependency/second runner, required tests/artifacts/gates verified and actual-diff reviewed, ordered target-specific commits pushed. |
-| Original Owner Request | Extract all four Apps' shared Product logic into src/x86/product; do not modify Lib/Common; automatically admit each bounded S until T closure. |
-| Similar-Issue Sweep | Search all Product/App callers, build lists and tests for private App dependencies, duplicated media/input routes, raw CRT and old paths; repair the complete affected batch, retain genuine machine adapter paths with caller proof. |
-
 
 - `src/x86/chips` owns independent chips; `src/x86/core` owns the sole neutral
   execution/time/memory engine.
