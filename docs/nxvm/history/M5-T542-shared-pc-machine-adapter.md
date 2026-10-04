@@ -987,3 +987,17 @@ its source/tests/artifacts, Lib/Common source/tests, owner INIs and external mas
 are unchanged. The successor App-split proposal consumes these sole receivers and
 retains all 58 contexts; it is not admitted. S8 delivery awaits publication and
 coordinator acceptance; S9 must still execute every external context once.
+
+### S8 Acceptance And S9 Admission
+
+Shared e65c421e8 and NXVM d670e49b2 are committed and pushed. Coordinator
+actual-change review accepts S8: the only build repair relocates existing
+diagnostic policy, no algorithm/API or excluded surface changes; all receiving
+owners and original assertions remain represented and the 58 executables are
+ready. S1-S8 are accepted, not whole-task acceptance.
+
+Under automatic sequential admission, S9 consumes the entire convergence ledger
+and executes the original 58 external contexts once each across the eight fixed
+Release trees. Fresh complete units and gates support, but cannot replace, that
+runtime proof. Missing inputs/skips/failures block acceptance. T542 stays open;
+the independent App split remains unadmitted.
