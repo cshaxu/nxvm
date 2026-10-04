@@ -35,7 +35,7 @@ or justified App retention.
 | Execution/debug | runner/waiting/control/executor_state/lifecycle/fault/debug/debug_adapter and driver | x86/product/machine | S5/S6 accepted; Profile facts isolated from cohesive adapter |
 | Construction | machine create/destroy/storage; profiles/machine_plan; product/config; fixed build bindings | Shared mechanism plus fixed App composition | S6/S7 accepted; one transfer with build-selected constructors |
 | Retained differences | XT/AT/default/Model40 values, ROM layout, D4, CMOS, HDC geometry and firmware source | Concrete App profile/firmware owner | S5/S7 accepted; real Profile contexts and fixed composition |
-| Verification/build | tests, source lists, static gates, tools, manifests and eight artifacts | Behavior owner; external integration remains NXVM | S8 accepted; S9 complete proof below awaits coordinator acceptance |
+| Verification/build | tests, source lists, static gates, tools, manifests and eight artifacts | Behavior owner; external integration remains NXVM | S8/S9 accepted; all 58 external contexts and full units passed |
 
 Closure resolves every pending entry, proves each shared migration and
 reconciles full affected batches rather than only a successful local replay.
@@ -1065,10 +1065,15 @@ is introduced. The successor App split can consume the shared receivers without
 copying a peer App; it remains queued, not admitted. Timing/software qualification
 is unchanged and remains in its separately bounded queue candidates.
 
-Git rename-aware numstat over production C/H reports 1,065 added and 1,059
-removed lines (net +6); test C/H reports 1,128 added and 402 removed (net +726).
-Counts include blanks/fixture additions and exclude docs/CMake/artifacts. File
-moves are not capability deletion. Production stays essentially size-neutral:
+Coordinator count reconciliation includes modified rename records and the
+53-line guest-display carrier relocated from production to fixture-only code.
+Git rename-aware C/H counts are production 1,079 added / 1,153 removed (net -74)
+and tests 1,266 added / 443 removed (net +823). Disabling rename detection gives
+production 4,373 / 4,447 and tests 1,632 / 809: the same two net changes. This
+corrects P1's counts, which omitted modified trailing-brace rename records and
+misclassified that cross-root move. Counts include blanks/fixtures and exclude
+docs/CMake/artifacts; moving a file is not deleting a capability. Production
+stays essentially size-neutral:
 new copied boundaries/real contexts replace old carriers/unions/dispatch; test
 growth preserves fixtures and adds ownership, failure and conversion regressions.
 
@@ -1076,5 +1081,27 @@ All eight deployed EXEs retain S7's exact hashes, expected PE 8664/014C machine
 codes and 0.5.0542 identity, with no debug/zdebug sections. No new artifact diff
 is needed for acceptance-only work. Runtime debugger remains. Full task diff
 confirms no Lib/Common source/test, MyNES source/test/EXE or owner INI changes;
-no external master write is introduced. S9 proof is complete; publication and
-coordinator closure follow, with the proposal retained in history.
+no external master write is introduced. S9 proof is complete and published in
+598e64a78, with the proposal retained in history.
+
+### S9 Coordinator Acceptance And T542 Closure
+
+Coordinator actual-change review accepts S9 delivery 598e64a78, all nine
+subtasks and the complete convergence ledger. The review reconciles the corrected production/test counts
+above, inspects the retained owners and original integration predicates, and
+confirms every task exit has direct proof. Complete units pass 499/499 on each
+width; all 58 original external contexts passed once without skips or retries.
+Standalone builds/tests, all six manifests and applicable static/document
+gates pass. The eight deployed 0542 artifacts remain current at their S7 hashes;
+acceptance-only edits require no rebuild. MyNES, Lib/Common and owner INIs
+remain unchanged.
+
+All owned build/test handles are terminal. Cleanup validated and removed the
+12 T542 generated trees under build, without touching source, deployed assets,
+INIs, MyNES trees or external masters. The reports indexed above were disposable
+build outputs; their results and hashes remain in this committed evidence.
+Generated trees can be recreated from source, not recovered as retained logs.
+
+Accept and close S9/T542, remove its active packet, and retain the proposal in
+history. The four-App split remains queued, not admitted. No new hardware,
+timing grade or guest-software qualification is claimed by this extraction.

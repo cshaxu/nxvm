@@ -131,7 +131,7 @@ T541 first extracts Product while the existing App/profile directories stay
 in place. The separate queued split creates the four App roots afterward.
 Neither stage modifies Lib or Common under the current owner restriction.
 
-Before the App split, admitted T542 receives the remaining shared adapter in
+Before the App split, accepted T542 delivers the remaining shared adapter in
 `x86/product/machine` (with its real media subresponsibility) and common
 construction helpers in flat `x86/ibmpc-common`. Matching independent tests
 follow those owners. Current and the T542 ledger distinguish working source
